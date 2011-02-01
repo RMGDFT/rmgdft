@@ -144,4 +144,143 @@
 #define       	GGA_XP_CP       3
 #define       	GGA_PBE         4
 
+
+
+/* Some stuff for timing and performance measurements */
+#define TOTAL_TIME (0)
+#define ORTHO_TIME (1)
+//#define NL_TIME (2)
+//#define NS_TIME (3)
+#define EIG_TIME (4)
+#define IMAGE_TIME (5)
+//#define APPCIL_TIME (6)
+//#define APPCIR_TIME (7)
+#define RESTRICT_TIME (8)
+#define EXPAND_TIME (9)
+#define PACK_TIME (10)
+#define INIT_TIME (11)
+#define HARTREE_TIME (12)
+#define DIAG_TIME (13)
+#define LFORCE_TIME (14)
+#define NLFORCE_TIME (15)
+#define APPGRAD_TIME (16)
+#define GATHER_TIME (17)
+#define MG_EIGTIME (18)
+#define INTERPOLATION_TIME (19)
+#define RHO_TIME (20)
+#define FORCE_TIME (21)
+#define SCF_TIME (22)
+//#define MD_LOOP (23)
+#define NLCCFORCE_TIME (24)
+#define IIFORCE_TIME (25)
+#define MG_EIG_NLS_TIME (26)
+#define MG_EIG_APPCIL_TIME (27)
+#define MG_EIG_APPCIR_TIME (28)
+#define MG_EIG_TRADE_TIME (29)
+#define DIAG_NL_TIME (30)
+#define DIAG_APPCIL_TIME (31)
+#define DIAG_APPCIR_TIME (32)
+#define GET_TE_XC_TIME (33)
+#define GET_TE_II_TIME (34)
+#define GET_TE_TIME (35)
+#define SCF_XC_TIME (36)
+#define INTERP_SETUP_TIME (37)
+#define INTERP_EVAL_TIME (38)
+#define DIAG_SUBDIAG1_TIME (39)
+#define DIAG_MATRIX_TIME (40)
+#define DIAG_WAVEUP_TIME (41)
+#define DIAG_SUBDIAG1_LOOP_TIME (42)
+#define DIAG_APP_A (43)
+#define DIAG_APP_S (44)
+#define DIAG_APP_B (45)
+#define DIAG_DGEMM (46)
+#define DIAG_GENVPSI_TIME (47)
+#define DIAG_GLOB_SUMS (48)
+#define DIAG_BETAXPSI (49)
+#define ALLOC_TIME (50)
+#define ORTHO_BETAXPSI (51)
+#define ORTHO_NORM_PSI (52)
+#define ORTHO_NEW_PSI (53)
+#define ORTHO_GET_COEFF (54)
+#define ORTHO_GLOB_SUM (55)
+#define ORTHO_UPDATE_WAVES (56)
+#define DIAG_APPCIR_TIME2 (57)
+#define MG_EIG_GENVPSI_TIME (58)
+#define MG_EIG_EIGVALUE_TIME (59)
+#define MG_EIG_APPSMOOTH_TIME (60)
+#define MG_EIG_MGRIDSOLV_TIME (61)
+#define MG_EIG_PACK_TIME (62)
+#define DIAG_NLS_TIME (63)
+#define PREINIT_TIME (64)
+#define FINISH_TIME (65)
+#define DIAG_SCALAPACK_INIT (66)
+#define DIAG_DISTMAT (67)
+#define REAL_SUM_ALL_TIME (68)
+#define GLOBAL_SUMS_TIME (69)
+#define DIAG_BCAST_EIGS (70)
+#define READ_PSEUDO_TIME 71
+#define READ_CONTROL_TIME 72
+
+#define LAST_TIME (80)
+
+
+/* Occupation flags */
+#define OCC_NONE 0
+#define OCC_FD 1
+#define OCC_GS 2
+#define OCC_EF 3
+
+
+/* SMP directives for the threads */
+#define     SMP_EIG       1
+#define     SMP_ORTHO1    2
+#define     SMP_ORTHO2    3
+#define     SMP_GET_RHO   4
+#define     SMP_SORT_PSI  5
+#define     SMP_SKIP      6
+#define     SMP_DIAG1     7
+#define     SMP_DIAG2     8
+#define     SMP_NLFORCE   9
+#define     SMP_GETNLOP  10
+
+
+/* Crystal lattice types */
+/** Simple cubic lattice type.
+ *  @doc Set input file value = 1 */
+#define CUBIC_PRIMITIVE 	1
+
+/** Face centered cubic lattice type. 
+ *  @doc Set input file value = 2 */
+#define CUBIC_FC		2
+
+/** Bodycentered cubic lattice type. 
+ *  @doc Set input file value = 3 */
+#define CUBIC_BC		3
+
+/** Hexagonal lattice type. 
+ *  @doc Set input file value = 4 */
+#define HEXAGONAL		4
+
+#define TRIGONAL_PRIMITIVE	5
+#define TETRAGONAL_PRIMITIVE	6
+#define TETRAGONAL_BC           7
+
+/** Orthorhombic lattice type. 
+ *  @doc Set input file value = 8 */
+#define ORTHORHOMBIC_PRIMITIVE  8
+
+#define ORTHORHOMBIC_BASE_CENTRED 9
+#define ORTHORHOMBIC_BC         10
+#define ORTHORHOMBIC_FC 11
+#define MONOCLINIC_PRIMITIVE 12
+#define MONOCLINIC_BASE_CENTRED 13
+#define TRICLINIC_PRIMITIVE 14
+
+/* The real or imaginary part of a wavefunction */
+#define PSI_REAL     0
+#define PSI_IMAG     1
+
+
+
+
 #endif /* CONST_H_INCLUDED */

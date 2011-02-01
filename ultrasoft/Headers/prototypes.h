@@ -1,0 +1,387 @@
+/************************** SVN Revision Information **************************
+ **    $Id$    **
+******************************************************************************/
+ 
+/*** QMD-MGDFT/main.h *****
+ * NAME
+ *   Ab initio real space code with multigrid acceleration
+ *   Quantum molecular dynamics package.
+ *   Version: 2.1.5
+ * COPYRIGHT
+ *   Copyright (C) 1995  Emil Briggs
+ *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
+ *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
+ *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
+ *                       Marco Buongiorno Nardelli,Charles Brabec, 
+ *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
+ *                       Jerzy Bernholc
+ * FUNCTION
+ *   
+ * INPUTS
+ *
+ * OUTPUT
+ *  
+ * PARENTS
+ *
+ * CHILDREN
+ * 
+ * SEE ALSO
+ *  
+ * SOURCE
+ */
+
+
+/* Function prototypes */
+void app_4del2 (S0_GRID *f, P0_GRID *work);
+REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+                REAL gridhx, REAL gridhy, REAL gridhz);
+void app6_del2 (REAL *rho, P0_GRID * work);
+void app6_del2f (REAL *rho, FP0_GRID * work);
+void app_smooth (S0_GRID *f, S0_GRID *work, REAL sfac);
+void app_cir_sixth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir_ortho (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir_bcc (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir_fcc (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir_hex (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+REAL app_cilr (REAL *a, REAL *b, REAL *c, int dimx, int dimy, int dimz,
+               REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cilr_bcc (REAL *a, REAL *b, REAL *c, int dimx, int dimy, int dimz,
+                   REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cilr_fcc (REAL *a, REAL *b, REAL *c, int dimx, int dimy, int dimz,
+                   REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cilr_hex (REAL *a, REAL *b, REAL *c, int dimx, int dimy, int dimz,
+                   REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cilr_ortho (REAL *a, REAL *b, REAL *c, int dimx, int dimy,
+                     int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cil (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
+              REAL gridhy, REAL gridhz);
+REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,
+                    REAL gridhx, REAL gridhy, REAL gridhz);
+void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz);
+void app_gradf (REAL * rho, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
+void constrain();
+void corlyp (REAL *dp, REAL *dm, REAL *dp1, REAL *dm1, REAL *dp2, REAL *dm2, REAL *ec,
+             REAL *vcp0, REAL *vcm0, int *ndm);
+void cross_product (REAL *a, REAL *b, REAL *c);
+void destroy_fftw_wisdom (void);
+void eval_residual (REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz,
+                    REAL gridhx, REAL gridhy, REAL gridhz, REAL *res);
+void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
+                int dimx, int dimy, int dimz, REAL gridhx,
+                REAL gridhy, REAL gridhz, REAL step);
+REAL fill (STATE *states, REAL width, REAL nel, REAL mix,
+           int num_st, int occ_flag);
+void find_phase (int nldim, REAL *nlcdrs, REAL *phase_sin,
+                 REAL *phase_cos);
+void finish_release_mem(STATE *states);
+void genvpsi (REAL *psi, REAL *twovpsi, REAL *pvtot, REAL *pvnl,
+              REAL *kd, REAL kmag, int dimx, int dimy, int dimz);
+void get_nlop (void);
+void get_weight (void);
+void get_phase (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
+void get_nlop_smp (int tid);
+void get_eig (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc);
+char *get_num (char *str);
+void get_te (REAL *rho, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
+             STATE *states);
+void get_vxc (REAL *rho, REAL *rhocore, REAL *vxc);
+void get_zdens (STATE *states, int state, REAL *zvec);
+void xclda_pz81 (REAL *rho, REAL *vxc);
+void exclda_pz81 (REAL *rho, REAL *exc);
+double mu_pz (double rho);
+double e_pz (double rho);
+void xcgga (REAL *rho, REAL *vxc, REAL *exc, int flag);
+void gram (KPOINT *kpoint, REAL h, int numst, int maxst, int numpt,
+           int maxpt);
+int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
+REAL get_ke (STATE *sp, int tid);
+void get_vh (REAL *rho, REAL *rhoc, REAL *vh, int cycles, int maxlevel);
+char *get_symbol (int atomic_number);
+void global_sums (REAL *vect, int *length);
+void init (REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
+           REAL *vnuc, REAL *vxc);
+void init_derweight (void);
+void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
+                       fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
+                       fftwnd_plan p1);
+void init_derweight_p (SPECIES *sp, fftw_complex *rtptr_x,
+                       fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
+                       fftwnd_plan p1);
+void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
+                       fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
+                       fftwnd_plan p1);
+void init_fftw_wisdom (void);
+void init_kbr (void);
+void init_IO ( int argc, char **argv );
+void init_pe (void);
+void init_img_topo ( int dimensionality );
+void init_pegrid (void);
+STATE *init_states (void);
+void init_weight (void);
+void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
+                    fftwnd_plan p1);
+void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip,
+                    fftwnd_plan p1);
+void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip,
+                    fftwnd_plan p1);
+void init_wf (STATE *states);
+void init_nuc (REAL *vnuc, REAL *rhoc, REAL *rhocore);
+void init_pos (void);
+void init_sym (void);
+void symmetrize_rho (FP0_GRID *rho);
+void symforce (void);
+void cforce (P0_GRID *rho, P0_GRID *vh);
+void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
+                 int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy,
+                 REAL gridhz, int level, int *nb_ids, int max_levels,
+                 int *pre_cyc, int *post_cyc, int mu_cyc, REAL step);
+void rmg_timings (int what, REAL time, int tid);
+REAL minimage (ION *ip1, ION *ip2, REAL *xtal_r);
+REAL my_crtc (void);
+FILE *open_xbs_movie (char *filename);
+int open_wave_file (char *filename);
+void xbsmovie (FILE *movie);
+void ortho_half (STATE *states);
+void ortho_bcc (STATE *states);
+void output_eigenvalues( STATE *states, int ikbs, int iscf );
+void pe2xyz (int pe, int *x, int *y, int *z);
+void pack_ptos (REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
+void pack_stop (REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
+void pack_stop_axpy (REAL *sg, REAL *pg, REAL alpha, int dimx, int dimy,
+                     int dimz);
+void pack_ptos_trade (REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
+void pack_vhstod (REAL *s, REAL *d, int dimx, int dimy, int dimz);
+void pack_vhdtos (REAL *s, REAL *d, int dimx, int dimy, int dimz);
+double radint (double *f, double *r, int n, double al);
+REAL radint1 (REAL *f, REAL *r, REAL *dr_di, int n);
+void radiff (double *f, double *df, double *r, int n, double al);
+void ra2diff (double *f, double *df, double *r, int n, double al);
+void ranv (void);
+void read_control(void);
+void write_pdb (void);
+int read_atom_line(char *species, REAL *crds, int *movable, FILE *fhand, char *tbuf, int index);
+int assign_species (CONTROL * c, char *buf);
+void read_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
+                STATE *states);
+void read_pseudo (void);
+REAL real_sum_all (REAL x);
+REAL real_min_all (REAL x);
+void reset_timers (void);
+void sortpsi (STATE *states);
+void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
+void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz,
+                    int images);
+void set_bc (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
+void set_bcx (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
+void getpoi_bc (REAL *rho, REAL *vh_bc, int dimx, int dimy, int dimz);
+/*void trade_images2(S0_GRID *f, SS0_GRID *w);
+void trade_images2f(FS0_GRID *f, FSS0_GRID *w);
+void trade_images3(S0_GRID *f, S30_GRID *w);
+void trade_images5(S0_GRID *f, S50_GRID *w);*/
+void vol_rho (P0_GRID *rho, int step);
+void vol_wf (STATE *states, int state, int step);
+void write_avgd (REAL *rho);
+void write_avgv (REAL *vh, REAL *vnuc);
+void write_zstates (STATE *states);
+void write_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
+                 STATE *states);
+void write_header (void);
+void write_occ (STATE *states);
+void write_force (void);
+void write_timings (void);
+void wvfn_residual(STATE *states);
+REAL rand0 (long *idum);
+void cgen_prolong(REAL coef[], REAL fraction, int order);
+void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz);
+void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz);
+void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz);
+void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz);
+void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int scale, int order);
+void gather_psi (REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
+void scatter_psi (REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
+void get_milliken (STATE *states);
+
+#ifdef SMP
+void create_threads (STATE *states);
+void start_threads (int action);
+void wait_for_threads (void);
+void thread_spinlock (int *lockptr);
+void *thread_scheduler (void *);
+void thread_dispatch (SCF_THREAD_CONTROL *s, int job);
+void ortho1_smp (SCF_THREAD_CONTROL *s);
+void ortho2_smp (SCF_THREAD_CONTROL *s);
+void get_rho_smp (SCF_THREAD_CONTROL *s);
+void sort_psi_smp (SCF_THREAD_CONTROL *s);
+void subdiag1_smp (SCF_THREAD_CONTROL *s);
+void subdiag2_smp (SCF_THREAD_CONTROL *s);
+#endif
+
+void bandstructure( STATE *states, REAL *vxc, REAL *vh, REAL *vnuc );
+void output_wave( STATE *states, int kpt, int fhand );
+
+void QMD_sem_init (QMD_sem_t *sem);
+void QMD_sem_destroy (QMD_sem_t *sem);
+void QMD_sem_wait (QMD_sem_t *sem);
+void QMD_sem_post (QMD_sem_t *sem);
+
+/* Blas wrappers */
+void QMD_saxpy (int n, REAL alpha, REAL *x, int incx, REAL *y, int incy);
+void QMD_sscal (int n, REAL alpha, REAL *x, int incx);
+void QMD_scopy (int n, REAL *x, int incx, REAL *y, int incy);
+REAL QMD_sdot (int n, REAL *x, int incx, REAL *y, int incy);
+
+
+
+int get_index (ION *iptr, int *Aix, int *Aiy, int *Aiz,
+               int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
+               int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
+               int nxgrid, int nygrid, int nzgrid,
+               REAL *lxcstart, REAL *lycstart, REAL *lzcstart);
+
+REAL linint (REAL *y, REAL rv, REAL invdr);
+void my_barrier (void);
+
+
+/* Conversion between crystal and cartesian coordinate prototypes */
+void latgen (int *ibrav, REAL *celldm, REAL *A0I, REAL *A1I, REAL *A2I,
+             REAL *OMEGAI, int *flag);
+void recips (void);
+void to_cartesian (REAL crystal[], REAL cartesian[]);
+void to_crystal (REAL crystal[], REAL cartesian[]);
+REAL metric (REAL *crystal);
+
+/* Md run types */
+void quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
+             REAL *rhocore, REAL *rhoc);
+void fastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+              REAL *rho, REAL *rhocore, REAL *rhoc);
+void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+              REAL *rho, REAL *rhocore, REAL *rhoc);
+void cdfastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+                REAL *rho, REAL *rhocore, REAL *rhoc);
+void moldyn (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+             REAL *rho, REAL *rhoc, REAL *rhocore);
+void dx (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc,
+         P0_GRID *rho, P0_GRID *rhoc);
+void psidx (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc,
+            P0_GRID *rho, P0_GRID *rhoc);
+void cholesky (REAL *a, int n);
+
+
+/*the function for softpseudopotential*/
+void aainit (int lli, int mix, int lx, int mx, int nlx, double ap[][9][9],
+             int lpx[][9], int lpl[][9][9]);
+REAL app_cil1 (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+               REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cil1_bcc (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+                   REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cil1_fcc (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+                   REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cil1_hex (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+                   REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cil1_ortho (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+                     REAL gridhx, REAL gridhy, REAL gridhz);
+void app_nl_psi (REAL *psiR, REAL *psiI, REAL *workR, REAL *workI,
+                 int state, int flag, int kidx, int tid);
+void app_nl_eig (REAL *psiR, REAL *psiI, REAL *workR, REAL *workI,
+                 int state, int flag, int kidx, int tid);
+void app_ns_psi (REAL *psiR, REAL *psiI, REAL *workR, REAL *workI,
+                 int state, int kidx, int tid);
+void app_ns_eig (REAL *psiR, REAL *psiI, REAL *workR, REAL *workI,
+                 int state, int kidx, int tid);
+void get_ddd (REAL *veff);
+void get_nlop_d (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
+void get_nlop_p (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
+void get_nlop_s (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
+void get_QI (void);
+void get_qqq (void);
+void get_new_rho (STATE * states, REAL * rho);
+void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_x, int length_y, int length_z);
+void init_psp (void);
+void init_qfunct (void);
+void mg_eig_state (STATE *sp, int tid, REAL *vtot_psi);
+void ortho_full (STATE *states);
+void ortho (STATE *states, int kpt);
+REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
+           int *nhtom, int *indv, REAL *ylm, REAL ap[][9][9], int lpx[][9],
+           int lpl[][9][9], SPECIES *sp);
+void scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+          REAL *rho, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
+#if GAMMA_PT
+void subdiag_gamma (STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
+#else
+void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
+#endif
+
+void ylmr2 (double *r, double *ylm);
+REAL gcutoff (REAL g1, REAL gcut, REAL width);
+void rft1 (REAL cparm, REAL *f, REAL *r, REAL *ffil, REAL *rab,
+           int rg_points, int lval, REAL dr, REAL width, int lrg_points);
+void norm_psi1 (STATE *sp, int istate, int kpt);
+void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL *cR, REAL *cI);
+void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL cR, REAL cI);
+REAL get_QnmL (int idx, int ltot, REAL r, SPECIES *sp);
+
+void force (REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
+            STATE *states);
+void iiforce (void);
+void lforce (REAL *rho, REAL *vh);
+void nlforce1 (REAL *veff);
+void get_gamma (REAL *gammaR, ION *iptr, int nh);
+void partial_gamma (int ion, REAL *par_gammaR, REAL *par_omegaR, ION *iptr,
+                    int nh, REAL *newsintR_x, REAL *newsintR_y,
+                    REAL *newsintR_z, REAL *newsintI_x, REAL *newsintI_y,
+                    REAL *newsintI_z);
+void partial_betaxpsi (int ion, fftwnd_plan p2, REAL *newsintR_x,
+                       REAL *newsintR_y, REAL *newsintR_z,
+                       REAL *newsintI_x, REAL *newsintI_y,
+                       REAL *newsintI_z, ION *iptr);
+void nlforce1_par_Q (REAL *veff, REAL *gamma, int ion, ION *iptr, int nh,
+                     REAL *forces);
+void nlforce1_par_gamma (REAL *par_gamma, int ion, int nh);
+void nlforce1_par_omega (REAL *par_omega, int ion, ION *iptr, int nh);
+void partial_QI (int ion, REAL *QI_R, ION *iptr);
+void qval_R (int ih, int jh, REAL r, REAL *x, REAL *qlig, REAL *drqlig,
+             REAL invdr, int *nhtol, int *nhtom, int *indv, REAL *ylm,
+             REAL *ylm_x, REAL *ylm_y, REAL *ylm_z, REAL ap[][9][9],
+             int lpx[][9], int lpl[][9][9], REAL *Q_x, REAL *Q_y,
+             REAL *Q_z, SPECIES *sp);
+void ylmr2_x (double *r, double *ylm_x);
+void ylmr2_y (double *r, double *ylm_y);
+void ylmr2_z (double *r, double *ylm_z);
+void nlccforce (REAL *rho, REAL *vxc);
+REAL get_ve_nl (STATE *sta, int istate);
+void pack_rho_ctof (REAL *rhoc, REAL *rhof);
+void bspline_interp_full (REAL *rho, REAL *rho_f);
+void get_vtot_psi (REAL *vtot_psi, REAL *vtot);
+void betaxpsi (STATE *states);
+void betaxpsi1 (STATE *states, int kpt);
+void assign_weight (SPECIES *sp, int ion, fftw_complex *beptr,
+                    REAL *rtptr);
+void assign_weight2 (int nldim, int ion, REAL *beptr, REAL *rtptr);
+void pack_gftoc (SPECIES *sp, fftw_complex *gwptr, fftw_complex *gbptr);
+void debug_write_rho_z (REAL *rhoz);
+void print_density_z_direction (int grid_x, int grid_y, REAL *density,
+                                int px0_grid, int py0_grid, int pz0_grid,
+                                REAL zside);
+void get_derweight (int ion, REAL *beta_x, REAL *beta_y, REAL *beta_z,
+                    ION *iptr, fftwnd_plan p2);
+void partial_beta_fdiff (fftw_complex *beptr, int nldim, REAL *beta_x,
+                         REAL *beta_y, REAL *beta_z);
+
+void mulliken (STATE *states);
+REAL ylm(int l, REAL *r);
+int listlen (FILE * fh, char *id);
+int del_space (FILE * fh, int *tchr, int isdata);
+void norm_psi1_parallel (STATE * sp, int istate, int kidx);
+void print_matrix(double *b, int n, int ldb);
+void sl_init(int *ictxt, int size);
+void sl_exit(int ictxt);
+void set_desca(int *desca, int *ictxt, int size);
+void distribute_mat(int *desca, double *bigmat, double *dismat, int *size);
+void matinit(int *desca, double *dismat, double *globmat, int size);
+void print_distribute_mat(double *dismat, int *desca, int size);
+void init_efield (REAL * vnuc);
+void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, REAL ***hist, REAL ***rhist, int special_metric, REAL weight);
+void mg_restrict_4th (REAL * full, REAL * half, int dimx, int dimy, int dimz);
