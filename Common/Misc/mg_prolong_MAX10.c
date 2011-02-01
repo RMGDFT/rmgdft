@@ -1,0 +1,234 @@
+/************************** SVN Revision Information **************************
+ **    $Id: mg_prolong_MAX10.c 1227 2011-01-30 23:19:35Z miro $    **
+******************************************************************************/
+
+/****f* QMD-MGDFT/mg_restrict_6.c *****
+ * NAME
+ *   Ab initio real space code with multigrid acceleration
+ *   Quantum molecular dynamics package.
+ *   Version: 2.1.5
+ * COPYRIGHT
+ *   Copyright (C) 1995  Emil Briggs
+ *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
+ *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
+ *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
+ *                       Marco Buongiorno Nardelli,Charles Brabec, 
+ *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
+ *                       Jerzy Bernholc
+ * FUNCTION
+ *   void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int scale, int order)
+ *   get full dimensioned array in the fine grid from half dimensioned 
+ *   array in the fine grid. 
+ *   Attention: order <= Max_order = 10
+ * OUTPUTS
+ *   full[(dimx)*(dimy)*(dimz)]: array in the fine grid
+ *      image value must be there
+ *   dimx, dimy, dimz: dimensions of array in the fine grid
+ * INPUT
+ *   half[(dimx/scale+10)*(dimy/scale+10)*(dimz/scale+10)] array in the corse grid
+ * PARENTS
+ *   get_rho.c or get_new_rho.c
+ * CHILDREN
+ *   cgen_prolong.c 
+ * SOURCE
+ */
+
+
+
+#include <stdlib.h>
+#include <float.h>
+#include <math.h>
+#include "main.h"
+
+
+#define MAX_ORDER 10
+
+void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int scale, int order)
+{
+
+    int ix, iy, iz, i, k;
+    int incz, incy, incx, incz2, incy2, incx2, incx3;
+    double a[MAX_ORDER][MAX_ORDER];
+    double * fulla, *sg_half;
+    double * fullb;
+    double c[MAX_ORDER];
+    double fraction;
+	
+    my_malloc (sg_half, (half_dimx+10)*(half_dimy+10)*(half_dimz+10), double);
+    trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5);
+     
+
+    incz = 1;
+    incy = dimz / scale + 10;
+    incx = (dimz / scale + 10) * (dimy / scale + 10);
+
+    incz2 = 1;
+    incy2 = dimz;
+    incx2 = dimz  * dimy;
+ 
+    incx3 = (dimz / scale+ 10) * dimy;   
+
+    /*Order has to be even number*/
+    if (order %2)
+	error_handler("This function works only for even orders, but order %d was specified",order);
+
+
+    for (ix = 0; ix < MAX_ORDER; ix++)
+    {
+	    for (iy = 0; iy < MAX_ORDER; iy++)
+	    {
+
+		    a[ix][iy] = 0.0;
+	    }
+    }
+
+
+    for (i = 0; i < scale; i++)
+    {
+
+	    fraction = (double)i/scale;
+	    cgen_prolong(c, fraction , order);
+
+	    for (iy = 0; iy < order; iy++)
+	    {
+		    k = iy + (MAX_ORDER-order)/2;   
+		    a[i][k] = c[iy];
+		//  printf("  a[%d][%d]= %f \n ", i, k, a[i][k]);
+	    }
+
+
+
+
+    }
+
+   fulla = (double *) malloc ( dimx * (dimy / scale+ 10) * (dimz / scale + 10) * sizeof(double) );
+   fullb = (double *) malloc ( dimx * dimy * (dimz / scale + 10) * sizeof(double) );
+
+
+        for (ix = 0; ix < dimx / scale; ix++)
+        {
+
+            for (iy = 0; iy < dimy / scale + 10; iy++)
+            {
+
+
+                for (iz = 0; iz < dimz / scale + 10; iz++)
+                {
+
+
+                 for (i = 0; i < scale; i++)
+
+
+                   {   
+
+
+                    fulla[((scale * ix)+ i) * incx + iy * incy + iz] =
+                             a[i][0]* sg_half[(ix+1) * incx + iy * incy + iz] +
+                             a[i][1]* sg_half[(ix+2) * incx + iy * incy + iz] +
+                             a[i][2]* sg_half[(ix+3) * incx + iy * incy + iz] +
+                             a[i][3]* sg_half[(ix+4) * incx + iy * incy + iz] + 
+                             a[i][4]* sg_half[(ix+5) * incx + iy * incy + iz] +
+                             a[i][5]* sg_half[(ix+6) * incx + iy * incy + iz] +
+                             a[i][6]* sg_half[(ix+7) * incx + iy * incy + iz] +
+                             a[i][7]* sg_half[(ix+8) * incx + iy * incy + iz] +
+                             a[i][8]* sg_half[(ix+9) * incx + iy * incy + iz] +
+                             a[i][9]* sg_half[(ix+10) * incx + iy * incy + iz] ;
+
+                      }         /* end for */
+
+                }               /* end for */
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+
+
+        for (ix = 0; ix < dimx ; ix++)
+        {
+        
+            for (iy = 0; iy < dimy / scale; iy++)
+            {
+    
+
+                for (iz = 0; iz < dimz / scale + 10; iz++)
+                {
+
+
+                 for (i = 0; i < scale; i++)
+
+
+                   {
+
+                    fullb[ix * incx3 + (scale * iy + i) * incy + iz] =
+                               a[i][0]* fulla[ix * incx + (iy+1) * incy + iz] +
+                               a[i][1]* fulla[ix * incx + (iy+2) * incy + iz] +
+                               a[i][2]* fulla[ix * incx + (iy+3) * incy + iz] +
+                               a[i][3]* fulla[ix * incx + (iy+4) * incy + iz] +
+                               a[i][4]* fulla[ix * incx + (iy+5) * incy + iz] +
+                               a[i][5]* fulla[ix * incx + (iy+6) * incy + iz] +
+                               a[i][6]* fulla[ix * incx + (iy+7) * incy + iz] +
+                               a[i][7]* fulla[ix * incx + (iy+8) * incy + iz] +
+                               a[i][8]* fulla[ix * incx + (iy+9) * incy + iz] +
+                               a[i][9]* fulla[ix * incx + (iy+10) * incy + iz] ;
+
+                      }         /* end for */
+
+                }               /* end for */
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+
+
+        for (ix = 0; ix < dimx ; ix++)
+        {
+        
+            for (iy = 0; iy < dimy ; iy++)
+            {
+    
+
+                for (iz = 0; iz < dimz / scale; iz++)
+                {
+
+
+                 for (i = 0; i < scale; i++)
+
+
+                   {
+
+
+                    full[ix * incx2 + iy * incy2 + scale * iz + i] =
+                               a[i][0]* fullb[ix * incx3 + iy* incy + iz+1 ] +
+                               a[i][1]* fullb[ix * incx3 + iy* incy + iz+2 ] +
+                               a[i][2]* fullb[ix * incx3 + iy* incy + iz+3 ] +
+                               a[i][3]* fullb[ix * incx3 + iy* incy + iz+4 ] +
+                               a[i][4]* fullb[ix * incx3 + iy* incy + iz+5 ] +
+                               a[i][5]* fullb[ix * incx3 + iy* incy + iz+6 ] +
+                               a[i][6]* fullb[ix * incx3 + iy* incy + iz+7 ] +
+                               a[i][7]* fullb[ix * incx3 + iy* incy + iz+8 ] +
+                               a[i][8]* fullb[ix * incx3 + iy* incy + iz+9 ] +
+                               a[i][9]* fullb[ix * incx3 + iy* incy + iz+10 ] ;
+
+
+                      }         /* end for */
+                    
+                }               /* end for */
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+
+        free (fulla);
+        free (fullb);
+	my_free(sg_half);
+
+
+
+
+}                               /* end mg_prolong_MAX10 */
+
+
+/******/

@@ -1,0 +1,279 @@
+/************************** SVN Revision Information **************************
+ **    $Id$    **
+******************************************************************************/
+
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "main.h"
+
+/*
+ * INPUTS
+ * f[dimx*dimy*dimz] - raw array without images. pack_ptos should not be called, this is 
+ *                     handled inside the function now
+ * OUTPUT
+ * w[(dimx+2*images) * (dimy+2*images) * (dimz+2*images)]
+ *    This array is completely filled, i.e. the original data is filled in and then 
+ *    the image data are added*/
+
+
+#if MPI
+
+
+void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
+{
+    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione=1;
+    int ixs, iys, ixs2, iys2, c1, c2;
+    int xlen, ylen, zlen;
+    int *nb_ids;
+    MPI_Status mrstatus;
+    REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+    REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
+
+#if MD_TIMERS
+    REAL time1, time2;
+    time1 = my_crtc ();
+#endif
+
+    tim = 2 * images;
+
+    incx = (dimy + tim) * (dimz + tim);
+    incy = dimz + tim;
+    incx0 = dimy  * dimz;
+    incy0 = dimz;
+
+    zlen = dimx * dimy * images;
+    ylen = dimx * images * (dimz + tim);
+    xlen = images * (dimy + tim) * (dimz + tim);
+
+
+
+    my_malloc (frdx1, 2 * (xlen + ylen + zlen), REAL);
+    frdx2 = frdx1 + xlen;
+    frdy1 = frdx2 + xlen;
+    frdy2 = frdy1 + ylen;
+    frdz1 = frdy2 + ylen;
+    frdz2 = frdz1 + zlen;
+
+    my_malloc (frdx1n, 2 * (xlen + ylen + zlen), REAL);
+    frdx2n = frdx1n + xlen;
+    frdy1n = frdx2n + xlen;
+    frdy2n = frdy1n + ylen;
+    frdz1n = frdy2n + ylen;
+    frdz2n = frdz1n + zlen;
+
+
+    nb_ids = &pct.neighbors[0];
+
+    /* Load up w with the basic stuff */
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs = ix * incx0;
+        ixs2 = (ix + images) * incx;
+
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys = ixs + iy * incy0;
+            iys2 = ixs2 + (iy + images) * incy;
+
+	    scopy (&dimz, &f[iys], &ione, &w[iys2+images], &ione); 
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the positive z-plane and negative z-planes */
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs = ix * dimy * images;
+        ixs2 = (ix + images) * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys = ixs + iy * images;
+            iys2 = ixs2 + (iy + images) * incy;
+            for (iz = 0; iz < images; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdz1[iys + iz] = w[index + images];
+                frdz2[iys + iz] = w[index + dimz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], 1,
+                  frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], 1, pct.grid_comm, &mrstatus);
+
+    MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], 2,
+                  frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], 2, pct.grid_comm, &mrstatus);
+
+
+    /* Unpack them */
+    c1 = dimz + images;
+    for (ix = 0; ix < dimx; ix++)
+    {
+
+        ixs = ix * dimy * images;
+        ixs2 = (ix + images) * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys = ixs + iy * images;
+            iys2 = ixs2 + (iy + images) * incy;
+            for (iz = 0; iz < images; iz++)
+            {
+
+                index = iys2 + iz;
+
+                w[index] = frdz1n[iys + iz];
+                w[index + c1] = frdz2n[iys + iz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+
+    /* Collect the north and south planes */
+    c1 = images * incy;
+    c2 = dimy * incy;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs = ix * images * (dimz + tim);
+        ixs2 = (ix + images) * incx;
+        for (iy = 0; iy < images; iy++)
+        {
+
+            iys = ixs + iy * (dimz + tim);
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz + tim; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdy1[iys + iz] = w[index + c1];
+                frdy2[iys + iz] = w[index + c2];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], 1,
+                  frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], 1, pct.grid_comm, &mrstatus);
+
+    MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], 2,
+                  frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], 2, pct.grid_comm, &mrstatus);
+
+
+    /* Unpack them */
+    c1 = (dimy + images) * incy;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs = ix * images * (dimz + tim);
+        ixs2 = (ix + images) * incx;
+        for (iy = 0; iy < images; iy++)
+        {
+            iys = ixs + iy * (dimz + tim);
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz + tim; iz++)
+            {
+
+                index = iys2 + iz;
+
+                w[index] = frdy1n[iys + iz];
+                w[index + c1] = frdy2n[iys + iz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the east and west planes */
+    c1 = images * incx;
+    c2 = dimx * incx;
+    for (ix = 0; ix < images; ix++)
+    {
+        ixs = ix * (dimy + tim) * (dimz + tim);
+        ixs2 = ix * incx;
+        for (iy = 0; iy < dimy + tim; iy++)
+        {
+            iys = ixs + iy * (dimz + tim);
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz + tim; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdx1[iys + iz] = w[index + c1];
+                frdx2[iys + iz] = w[index + c2];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], 1,
+                  frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], 1, pct.grid_comm, &mrstatus);
+
+    MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], 2,
+                  frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], 2, pct.grid_comm, &mrstatus);
+
+
+    /* Unpack them */
+    c1 = (dimx + images) * incx;
+    for (ix = 0; ix < images; ix++)
+    {
+        ixs = ix * (dimy + tim) * (dimz + tim);
+        ixs2 = ix * incx;
+        for (iy = 0; iy < dimy + tim; iy++)
+        {
+            iys = ixs + iy * (dimz + tim);
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz + tim; iz++)
+            {
+
+                index = iys2 + iz;
+
+                w[index] = frdx1n[iys + iz];
+                w[index + c1] = frdx2n[iys + iz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+    /* For clusters set the boundaries to zero
+     * There really is not anything outside, so everything "sticking outside"
+     * be zero*/
+    if ((ct.boundaryflag == CLUSTER) || (ct.boundaryflag == SURFACE))
+        set_bcx (w, dimx, dimy, dimz, images, 0.0);
+
+
+    my_free (frdx1n);
+    my_free (frdx1);
+
+#if MD_TIMERS
+    time2 = my_crtc ();
+    rmg_timings (IMAGE_TIME, (time2 - time1), 0);
+#endif
+
+}                               /* end trade_images2 */
+
+#endif

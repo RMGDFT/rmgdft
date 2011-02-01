@@ -1,0 +1,68 @@
+#************************** SVN Revision Information **************************
+#**    $Id: Make.aix 1117 2010-04-19 16:13:54Z froze $    **
+#*****************************************************************************/
+ 
+#
+#  Make.AIX_MPI - Compiles code for IBM-SP systems using MPI
+#
+#
+# CACHE_LINE_SIZE is the size in bytes of a L1 cache line
+# L1_CACHE_LINES is the number of lines in the L1 cache
+#
+DEFS = -D_THREAD_SAFE
+
+
+# Modules(directories) that contain the necessary source files
+MODULES = Common Input ../Common/*
+CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
+FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+HFILES := $(wildcard Headers/*.h)
+H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
+HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
+
+
+COBJECTS = $(CFILES:.c=.o)
+FOBJECTS = $(FFILES:.f=.o)
+OBJECTS = $(COBJECTS) $(FOBJECTS)
+
+
+LIBS= -lm -lxlf90_r -lessl -lblas -lpmapi -L$(PET_HOME)/MATH/IBM/lib64 -lblacsF77init -lblacs -llapack -lscalapack -lfftw
+LDFLAGS = -bloadmap:loadmap  -bmaxdata:1879048192
+
+
+CC = mpcc_r
+FC = mpxlf_r
+
+
+# Makefiles: if these change, whole code should be recompiled
+MFILES = Makefile Make.aix
+
+
+# Compile flags
+ARCH = -q64 -qarch=pwr5 -qtune=pwr5
+FFLAGS = $(ARCH) -O4 -qnosave -qstrict -c
+# Add -qcheck=all to get the code that does runtime checks of various things 
+CFLAGS = $(ARCH) -O4 -qcpluscmt $(DEFS) -qstrict  -IHeaders
+
+
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+
+# Runs svnrev to create svnrev.h
+Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+	SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+
+
+# Compiles to get svnrev binary
+SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
+	cc $< -o $@
+	rm -f svnrev.o
+
+
+#dependencies
+$(OBJECTS): $(HFILES) $(MFILES)
+
+
+#write_header needs to be recompiled everytime svnrev.h changes
+Common/write_header.o: Headers/svnrev.h

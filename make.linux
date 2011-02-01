@@ -1,0 +1,7 @@
+cd order-n
+make linux >../makeresult.order-n
+cd ../ultrasoft
+make linux>../makeresult.ultrasoft
+cd ../ultrasoft-lsda
+make linux>../makeresult.ultrasoft
+

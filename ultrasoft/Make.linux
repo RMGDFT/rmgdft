@@ -1,0 +1,70 @@
+#************************** SVN Revision Information **************************
+#**    $Id$    **
+#*****************************************************************************/
+ 
+#
+#  Make.linux - Compiles code for Linux with MPI
+#
+#
+# CACHE_LINE_SIZE is the size in bytes of a L1 cache line
+# L1_CACHE_LINES is the number of lines in the L1 cache
+#
+#This seems that this has no effect, nothing in the code uses CACHE_LINE_SIZE or L1_CACHE_LINES
+CACHE_LINE_SIZE = 128
+L1_CACHE_LINES = 128
+DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
+
+
+# Modules(directories) that contain the necessary source files
+MODULES = Common Input ../Common/*
+CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
+FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+HFILES := $(wildcard Headers/*.h)
+H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
+HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
+
+COBJECTS = $(CFILES:.c=.o)
+FOBJECTS = $(FFILES:.f=.o)
+OBJECTS = $(COBJECTS) $(FOBJECTS)
+
+
+LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi
+LDFLAGS =
+
+
+CC = mpicc
+FC = mpif77
+
+
+# Makefiles: if these change, whole code should be recompiled
+MFILES = Makefile Make.linux
+
+
+# Compile flags
+ARCH =
+#CWARN = -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Wundef -Wshadow  -Wredundant-decls -lefence
+FFLAGS = $(ARCH) -O3 
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
+
+
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+
+# Runs svnrev to create svnrev.h
+Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+	SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+
+
+# Compiles to get svnrev binary
+SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
+	cc $< -o $@
+	rm -f svnrev.o
+
+
+#dependencies
+$(OBJECTS): $(HFILES) $(MFILES)
+
+
+#write_header needs to be recompiled everytime svnrev.h changes
+Common/write_header.o: Headers/svnrev.h

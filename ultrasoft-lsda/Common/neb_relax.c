@@ -1,0 +1,203 @@
+/************************** SVN Revision Information **************************
+ **    $Id$    **
+******************************************************************************/
+
+/****f* QMD-MGDFT/neb_relax.c *****
+ * NAME
+ *   Ab initio real space code with multigrid acceleration
+ *   Quantum molecular dynamics package.
+ *   Version: 2.1.5
+ * COPYRIGHT
+ *   Copyright (C) 2001  Frisco Rose, Jerzy Bernholc
+ * FUNCTION
+ *   void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+ *                REAL *rho, REAL *rhocore, REAL *rhoc)
+ *   drive routine for elementary nudged elastic band relax.
+ * INPUTS
+ *   states: all wave functions (see main.h)
+ *   vxc: exchange-correlation potential
+ *   vh:  Hartree potential
+ *   vnuc: pseudopotential
+ *   rho:  total charge density
+ *   rhocore: charge density of core electrons, only useful when we 
+ *            include non-linear core correction for pseudopotential.
+ *   rhoc:    compensating charge density
+ * OUTPUT
+ *   all the above inputs are updated
+ * PARENTS
+ *   main.c
+ * CHILDREN
+ *   quench.c to_crystal.c to_cartesian.c init_nuc.c get_nlop.c scf.c
+ *   get_te.c force.c rmg_fastrelax.c
+ * SOURCE
+ */
+
+#include "main.h"
+#include <math.h>
+#include <stdbool.h>
+
+#define LEFT 0
+#define SELF 1
+#define RIGHT 2
+
+#define X 0
+#define Y 1
+#define Z 2
+
+void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
+              REAL * rho, REAL * rhocore, REAL * rhoc)
+{
+    /* This may need to be malloced if we start using large ion counts */
+    int count, neb_steps = 0, img_rank_map[3];
+    REAL imgA[3*ct.num_ions], imgB[3*ct.num_ions], imgC[3*ct.num_ions];
+    REAL tmp_mag, max_frc, *fp, *L_ptr, *S_ptr, *R_ptr;
+    bool CONV_FORCE, DONE = false;
+    MPI_Request req[3];
+    MPI_Status status;
+	printf("\tEntering NEB routine.\n");
+
+    if ( pct.thispe == 0 )
+    {
+        MPI_Cart_shift (pct.img_topo_comm, 0, 1, &img_rank_map[LEFT], &img_rank_map[RIGHT] );
+        MPI_Comm_rank (pct.img_topo_comm, &img_rank_map[SELF]);
+    }
+	printf("\tNEB routine: got adjacent image ranks in topo_comm.\n");
+
+    /* Loop NEB relaxations */
+    while ( !DONE )
+    {
+		printf ("\nNEBrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps/ct.max_rlx_steps, ct.max_rmg_steps);
+        L_ptr = imgA;
+        S_ptr = imgB;
+        R_ptr = imgC;
+
+        /* get adjacent image ion positions */
+        if ( pct.thispe == 0 )
+        {
+			printf("\tNEB adjacent image coords L:%d, S:%d, R:%d.\n", img_rank_map[LEFT], img_rank_map[SELF], img_rank_map[RIGHT]);
+			fflush (NULL); fsync( fileno(ct.logfile) );
+            /* pack coordinates for mpi transfer */
+            for ( count = 0; count < ct.num_ions; count++ )
+            {
+                S_ptr[3*count + X] = ct.ions[count].crds[X];
+                S_ptr[3*count + Y] = ct.ions[count].crds[Y];
+                S_ptr[3*count + Z] = ct.ions[count].crds[Z];
+            }
+
+            if ( img_rank_map[LEFT] != MPI_PROC_NULL  ) 
+			{
+				MPI_Isend ( S_ptr, 3*ct.num_ions, MPI_DOUBLE, img_rank_map[LEFT], LEFT, pct.img_topo_comm, &req[SELF] );
+				MPI_Irecv ( L_ptr, 3*ct.num_ions, MPI_DOUBLE, img_rank_map[LEFT], RIGHT, pct.img_topo_comm, &req[LEFT] );
+			}
+
+            if ( img_rank_map[RIGHT] != MPI_PROC_NULL  ) 
+			{
+				MPI_Isend ( S_ptr, 3*ct.num_ions, MPI_DOUBLE, img_rank_map[RIGHT], RIGHT, pct.img_topo_comm, &req[SELF] );
+				MPI_Irecv ( R_ptr, 3*ct.num_ions, MPI_DOUBLE, img_rank_map[RIGHT], LEFT, pct.img_topo_comm, &req[RIGHT] );
+			}
+
+			/* if data from left,wait; else use self data as left data */
+            if ( img_rank_map[LEFT] != MPI_PROC_NULL  ) 
+			{
+				MPI_Wait( &req[LEFT], &status );
+			}
+			else
+            {
+                L_ptr = imgB;
+                S_ptr = imgA;
+            }
+			printf("\tNEB passed left wait.\n");
+			fflush (NULL); fsync( fileno(ct.logfile) );
+
+			/* if data from right,wait; else use self data as right data */
+            if ( img_rank_map[RIGHT] != MPI_PROC_NULL  ) 
+			{
+				MPI_Wait( &req[RIGHT], &status );
+			}
+			else
+            {
+                R_ptr = imgB;
+                S_ptr = imgC;
+            }
+			printf("\tNEB passed right wait.\n");
+			fflush (NULL); fsync( fileno(ct.logfile) );
+
+            /* calculate self force constraints from right and left data*/
+            for ( count = 0; count < ct.num_ions; count++ )
+            {
+                S_ptr[3*count + X] = R_ptr[3*count + X] - L_ptr[3*count + X];
+                S_ptr[3*count + Y] = R_ptr[3*count + Y] - L_ptr[3*count + Y];
+                S_ptr[3*count + Z] = R_ptr[3*count + Z] - L_ptr[3*count + Z];
+
+                tmp_mag = 0.0;
+                tmp_mag += S_ptr[3*count + X]*S_ptr[3*count + X];
+                tmp_mag += S_ptr[3*count + Y]*S_ptr[3*count + Y];
+                tmp_mag += S_ptr[3*count + Z]*S_ptr[3*count + Z];
+                if (tmp_mag != ZERO)
+                {
+                    tmp_mag = sqrt (tmp_mag);
+                    S_ptr[3*count + X] /= tmp_mag;
+                    S_ptr[3*count + Y] /= tmp_mag;
+                    S_ptr[3*count + Z] /= tmp_mag;
+                }
+            }
+        }
+		printf("\tNEB push constraints to group PE's.\n");
+
+        /* broadcast force constraints to image procs */
+        MPI_Bcast( S_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.grid_comm );
+
+        /* put force constraints into control structure */
+        for ( count = 0; count < ct.num_ions; count++ )
+        {
+            ct.ions[count].constraint[X] = S_ptr[3*count + X]; 
+            ct.ions[count].constraint[Y] = S_ptr[3*count + Y];
+            ct.ions[count].constraint[Z] = S_ptr[3*count + Z];
+            ct.ions[count].constraint_type = 1;
+        }
+
+        printf ("    Constrained per atom dynamics vector field.\n");
+        for (count = 0; count < ct.num_ions; count++)
+        {
+            printf ("       % 10f % 10f % 10f %d\n",
+					ct.ions[count].constraint[0],
+					ct.ions[count].constraint[1],
+					ct.ions[count].constraint[2],
+					ct.ions[count].constraint_type);
+        }
+
+		printf("\tNEB call fast relax.\n");
+        /* Call fastrelax for max_rlx_steps steps */
+        fastrlx (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+		printf("\tNEB finished fast relax.\n");
+
+        /* Check for NEB convergence */
+        /* Are we force converged? */
+        tmp_mag = 0.0;
+        max_frc = 0.0;
+        for (count = 0; count < ct.num_ions; count++)
+        {
+            fp = ct.ions[count].force[ct.fpt[0]];
+            tmp_mag =  fp[X] * fp[X] + fp[Y] * fp[Y] + fp[Z] * fp[Z];
+            if ( tmp_mag > max_frc )
+                max_frc = tmp_mag;
+        }
+
+        printf(" Find max force amongst all images ");
+		tmp_mag = max_frc;
+		MPI_Barrier( MPI_COMM_WORLD );
+        printf(" Passed Global max force barrier ");
+		MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+        printf(" Max force to all procs, loop termination condition ");
+        //MPI_Bcast( &max_frc, 1, MPI_DOUBLE, 0, pct.grid_comm );
+
+        CONV_FORCE = (max_frc > ct.thr_frc * ct.thr_frc);
+		printf("\tNEB are we converged? If no, continue.\n");
+
+        DONE = (CONV_FORCE || (++neb_steps == ct.max_rmg_steps));
+
+    } /* end while(!DONE) */
+}                               /* end neb_relax */
+
+
+/******/

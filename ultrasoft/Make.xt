@@ -1,0 +1,66 @@
+#************************** SVN Revision Information **************************
+#**    $Id: Make.xt3_mpi 770 2007-04-20 22:16:14Z miro $    **
+#*****************************************************************************/
+ 
+#
+#  Make.xt3_mpi - Compiles the real-space code for CRAY XT# system with MPI
+#
+#
+
+
+# Modules(directories) that contain the necessary source files
+MODULES = Common Input ../Common/*
+CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
+FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+HFILES := $(wildcard Headers/*.h)
+H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
+HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
+
+
+COBJECTS = $(CFILES:.c=.o)
+FOBJECTS = $(FFILES:.f=.o)
+OBJECTS = $(COBJECTS) $(FOBJECTS)
+
+
+#LIBS = -L /apps/FFTW/prod/jaguar/lib -L /usr/local/usp/fftw/fftw-2.1.5/lib -lfftw 
+LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -ldfftw
+LDFLAGS = -pgf90libs
+
+
+CC = cc
+CF = ftn
+
+
+# Makefiles: if these change, whole code should be recompiled
+MFILES = Makefile Make.xt
+
+
+# Compile flags
+ARCH =
+# Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
+# Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
+FFLAGS = $(ARCH)  -O3 -fast -Mflushz -c -Mipa=fast,inline
+CFLAGS = $(ARCH)  -O3 -fast -Mflushz -B -Mipa=fast,inline -IHeaders
+
+
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+
+# Runs svnrev to create svnrev.h
+Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+	SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+
+
+# Compiles to get svnrev binary
+SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
+	pgcc $< -o $@
+	rm -f svnrev.o
+
+
+#dependencies
+$(OBJECTS): $(HFILES) $(MFILES)
+
+
+#write_header needs to be recompiled everytime svnrev.h changes
+Common/write_header.o: Headers/svnrev.h
