@@ -38,44 +38,102 @@ void init_pe ()
 
     int npes, ii, jj, kk;
     char tmpstring[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH];
-    int instance, mastergrp[pct.instances], range[1][3];
-    MPI_Group group, grp_world, grp_master;
+    int image, image_grp_map[pct.images], grid_grp_map[pct.grids], range[1][3];
+    MPI_Group group, world_grp, image_grp, img_masters;
+
 
     /* Setup values for this parallel run */
+    MPI_Comm_rank (MPI_COMM_WORLD, &pct.thispe);
     MPI_Comm_size (MPI_COMM_WORLD, &npes);
 
-    /* Check for sufficient processors for (multi-instance) run */
-    if (NPES * pct.instances != npes)
+    /* Every image gets an equal number of PEs. */
+    image = npes / pct.images;
+    if (image * pct.images != npes)
         error_handler
-            ("RMG compiled for %d PEs and running %d instances, but allocated %d PEs != PEs*instances !!\n",
-             NPES, pct.instances, npes);
+            ("Total MPI processes must be a multiple of the number of images in this run.");
+    pct.thisimg = pct.thispe / image;
 
-    /* setup pct.thisgrp_comm to include all pe's in this instance */
+    /* Infer the number of cpu grids in each image. */
+    pct.grids = image / NPES;
+    if (NPES * pct.grids != image)
+        error_handler ("MPI processes per image must be a multiple of NPES (PE_X*PE_Y*PE_Z).");
+
+
+    /* setup pct.img_comm to include all pe's in this image */
+
     /* get world group handle */
-    MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
+    MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
 
-    /* determine range of pe ranks in this instance */
-    range[0][0] = pct.thisgrp * NPES;
-    range[0][1] = (pct.thisgrp + 1) * NPES - 1;
+    /* determine range of pe ranks in this image */
+    range[0][0] = pct.thisimg * pct.grids * NPES;
+    range[0][1] = (pct.thisimg + 1) * pct.grids * NPES - 1;
     range[0][2] = 1;
 
-    /* define this instances group and make its comm global */
-    MPI_Group_range_incl (grp_world, 1, range, &group);
-    MPI_Comm_create (MPI_COMM_WORLD, group, &pct.thisgrp_comm);
+    /* define this images group and put its comm in pct */
+    MPI_Group_range_incl (world_grp, 1, range, &group);
+    MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
 
-    /* reset thispe rank value to local instance value */
-    MPI_Group_rank (group, &pct.thispe);
-
-
-    /* setup pct.master_comm to include all group_rank 0 pe's */
+    /* setup pct.rmg_comm to include all image group_rank 0 pe's */
     /* build rank list of group masters, this assumes contiguous ranges */
     /* NOTE: this explicitly depends on range assignment method above! */
-	for (instance = 0; instance < pct.instances; instance++)
-		mastergrp[instance] = instance * NPES;
+    for (image = 0; image < pct.images; image++)
+        image_grp_map[image] = image * NPES * pct.grids;
 
 	/* define master group and make its comm global */
-	MPI_Group_incl (grp_world, pct.instances, mastergrp, &grp_master);
-	MPI_Comm_create (MPI_COMM_WORLD, grp_master, &pct.master_comm);
+    MPI_Group_incl (world_grp, pct.images, image_grp_map, &img_masters);
+    MPI_Comm_create (MPI_COMM_WORLD, img_masters, &pct.rmg_comm);
+
+    /* set thispe rank value to its image rank */
+    MPI_Comm_rank (pct.img_comm, &pct.imgpe);
+
+    /* Read in our control information, depends on pct.img_comm for dissemination */
+    read_control ();
+
+
+    /* this will need to be extnded if we want to parallelize over k_points */
+    if (pct.grids == 1)
+    {
+        if (pct.spin_flag)
+            error_handler
+                ("Spin calculations require 2 grids, please rerun with twice as many PEs.");
+        MPI_Comm_dup (pct.img_comm, &pct.grid_comm);
+    }
+    else if (pct.grids == 2)
+    {
+        if (!pct.spin_flag)
+            error_handler
+                ("2 grids allocated but spin disabled, please rerun with half as many PEs or enable spin.");
+        int ndims = 2;
+        int dims[] = { NPES, 2 };
+        int periods[] = { 0, 0 };
+        int reorder = 1;
+        int remains[] = { 1, 0 };
+
+        MPI_Cart_create (pct.img_comm, ndims, dims, periods, reorder, &pct.grid_topo_comm);
+        MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.grid_comm);
+
+        remains[0] = 0;
+        remains[1] = 1;
+        MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.spin_comm);
+    	/* set thisspin rank value to local spin rank value */
+    	MPI_Comm_rank (pct.spin_comm, &pct.thisspin);
+
+	/* for debug usage*/
+	/* MPI_Comm_rank(pct.grid_comm, &pct.thisgrid); */
+	
+	/*printf("My spin rank is %d and my image rank is %d\n", pct.thisspin, pct.imgpe);*/
+	
+
+    }
+    else
+    {
+        error_handler ("Other than one or two grids per image not implimented.");
+    }
+
+    /* set thispe rank value to local grid rank value */
+    MPI_Comm_rank (pct.grid_comm, &pct.thispe);
+    /*printf("My grid rank is %d and my image rank is %d\n", pct.thispe, pct.imgpe);*/
+
 
 
 

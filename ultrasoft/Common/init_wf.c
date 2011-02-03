@@ -75,6 +75,12 @@ void init_wf (STATE * states)
 
     if (ct.occ_flag && (ct.runflag == 0))
     {
+        if (pct.spin_flag)
+        {
+            sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
+            sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
+        }
+        else
         sp->occupation = ct.nel / ct.num_states;
     }
 
@@ -114,6 +120,12 @@ void init_wf (STATE * states)
 
         if (ct.occ_flag && (ct.runflag == 0))
         {
+            if (pct.spin_flag)
+            {
+                sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
+                sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
+            }
+            else
             sp->occupation = ct.nel / ct.num_states;
         }
         idx = 0;

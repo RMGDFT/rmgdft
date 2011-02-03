@@ -46,7 +46,7 @@
  *
  *    bidx = pack_doublesc(nmat1, (unsigned *)nmat3, idx, 6);
  *    MPI_Sendrecv(nmat3, bidx, MPI_BYTE, nb_ids[NB_U], 1, nmat4, bidx,
- *                 MPI_BYTE, nb_ids[NB_D], 1, pct.thisgrp_comm, &mstatus);
+ *                 MPI_BYTE, nb_ids[NB_D], 1, pct.grid_comm, &mstatus);
  *    unpack_doublesc(nmat2, (unsigned *)nmat4, idx, 6);                           
  *
  *

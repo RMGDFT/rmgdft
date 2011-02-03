@@ -28,6 +28,16 @@ int open_wave_file (char *filename)
 
 
     /* Make the new output file name */
+
+    if (pct.spin_flag)
+    {   
+	if (pct.thisspin==0)
+    		sprintf (newname, "%s.up%d", filename, pct.thispe);
+	else if(pct.thisspin==1) 
+    		sprintf (newname, "%s.dw%d", filename, pct.thispe);
+		
+    }
+    else
     sprintf (newname, "%s%d", filename, pct.thispe);
 
     amode = S_IREAD | S_IWRITE;
@@ -35,7 +45,7 @@ int open_wave_file (char *filename)
 
     /*PE 0 will be first one to try to open output file
      * and create directory if needed*/
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
     {
         fhand = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 
@@ -67,11 +77,11 @@ int open_wave_file (char *filename)
 
 
     /*All processors should wait until 0 is done */
-    my_barrier ();
-
+    //my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     /*Other processors can now try to open */
-    if (pct.thispe)
+    if (pct.imgpe)
         my_open (fhand, newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 
     return fhand;

@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: fastrlx.c 1145 2010-09-24 17:56:49Z froze $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/fastrlx.c *****
@@ -53,8 +53,8 @@ void movie (FILE *);
 
 
 
-void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-              REAL * rho, REAL * rhocore, REAL * rhoc)
+void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
+              REAL * rho, REAL * rho_buff, REAL * rhocore, REAL * rhoc)
 {
 
     int iion;
@@ -84,23 +84,23 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         xbsfp1 = open_xbs_movie (xbs_filename);
     }
 
-
-	/* quench the electrons and calculate forces */
-	quench (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+    //dprintf("fastrlx ok\n");
+    /* quench the electrons and calculate forces */
+    quench_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);
 
     /* ---------- begin relax loop --------- */
 
     DONE = (ct.max_rlx_steps < 1 );
 	/* save data to file for future restart */
 	if (DONE)
-		write_data (ct.outfile, vh, rho, vxc, states);
+		write_data_spin (ct.outfile, vh, rho, rho_buff, vxc, states);
 
     while (!DONE)
     {
 
 		rlx_steps++;
 
-        if (pct.thispe == 0)
+        if (pct.imgpe == 0)
             printf ("\nfastrlx: ---------- [rlx: %d/%d] ----------\n", rlx_steps, ct.max_rlx_steps);
 
         /* not done yet ? => move atoms */
@@ -119,13 +119,13 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
 		/* quench the electrons and calculate forces */
-		quench (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+		quench_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);
 
 
 		/* save data to file for future restart */
 		if (ct.checkpoint)
 			if ( ct.md_steps % ct.checkpoint == 0 )
-				write_data (ct.outfile, vh, rho, vxc, states);
+				write_data_spin (ct.outfile, vh, rho, rho_buff, vxc, states);
 
 
 		/* check force convergence */
@@ -150,7 +150,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 	}
 	/* ---------- end relax loop --------- */
 
-	if (ct.max_rlx_steps > 0 && pct.imgpe == 0)
+	if (ct.max_rlx_steps > 0 && pct.thispe == 0)
 	{
 
 		printf ("\n");
@@ -166,7 +166,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
 	/*Write out final data */
-	write_data (ct.outfile, vh, rho, vxc, states);
+	write_data_spin (ct.outfile, vh, rho, rho_buff, vxc, states);
 
 
 }                               /* end fastrlx */

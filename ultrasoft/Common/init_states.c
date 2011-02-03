@@ -163,7 +163,7 @@ STATE *init_states ()
     }
 
 
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
     {
         printf ("\n");
         printf ("total pseudopotential charge =  %8.3f e\n", ct.ionic_charge);

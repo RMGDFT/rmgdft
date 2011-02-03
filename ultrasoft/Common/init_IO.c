@@ -19,7 +19,7 @@
  * PARENTS
  *   main.c
  * CHILDREN
- *   None
+ *   init_pe.c read_pseudo.c
  * SOURCE
  */
 
@@ -35,7 +35,7 @@
 void init_IO (int argc, char **argv)
 {
 
-    int status, lognum=0;
+    int status, lognum = 0;
     char workdir[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH], *quantity, *extension, *endptr;
     struct stat buffer;
     time_t timer;
@@ -43,63 +43,54 @@ void init_IO (int argc, char **argv)
     /* Set start of program time */
     timer = time (NULL);
 
-    /* Initialize MPI, we need it for error_handler, amongst others */
-    MPI_Init (&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &pct.thispe);
-    pct.thisgrp = pct.thispe / NPES;
-
-    /* Define a default output stream, gets redefined to log file later */
-    ct.logfile = stdout;
-
     /* 1st argument must exist as a file, use it as the control file or die */
     if ((status = stat (argv[1], &buffer)) == -1)
         error_handler ("Command line argument \"%s\" is malformed, file D.N.E.", argv[1]);
     strncpy (ct.cfile, argv[1], MAX_PATH);
 
-    /* test to see if argument 1 determines a multi-instance run, fail gracefully if not */
-    pct.instances = 1;
+    /* test to see if argument 1 determines a multi-image run, fail gracefully if not */
+    pct.images = 1;
     strncpy (basename, argv[1], MAX_PATH);
     if ((extension = rindex (basename, '.')) != NULL)
         *extension++ = '\0';
     if ((quantity = rindex (basename, '.')) != NULL)
     {
         *quantity++ = '\0';
-        pct.instances = (int) strtol (quantity, &endptr, 10);
+        pct.images = (int) strtol (quantity, &endptr, 10);
 
         /*Check if this is *just* a number, not some numerical naming convention*/
         if (quantity == endptr)
-            pct.instances = 1;
+            pct.images = 1;
     }
 
-    Dprintf("RMG will run with %d instances", pct.instances);
+    Dprintf ("RMG will run with %d images", pct.images);
 
     /* PE(MPI) initialization, need mpi groups defined before logfile is initialized */
     init_pe ();
 
-    if (pct.instances > 1)
+    if (pct.images > 1)
     {
         if (strcmp (extension, "rmg") != 0)
             error_handler
-                ("Multi-instance input file %s does not end with proper \"rmg\" extension.",
-                 argv[1]);
+                ("Multi-image input file %s does not end with proper \"rmg\" extension.", argv[1]);
 
-        /* logfile name is based on input file and this instances group number */
+        /* logfile name is based on input file and this images group number */
         /* if second command line argument exists, use it as a basename for output */
         if (argc == 3)
         {
-            snprintf (logname, MAX_PATH, "%s.%d.log", argv[2], pct.thisgrp + 1);
+            snprintf (logname, MAX_PATH, "%s.%d.log", argv[2], pct.thisimg + 1);
         }
         else
         {
-            snprintf (logname, MAX_PATH, "%s.%d.log", basename, pct.thisgrp + 1);
+            snprintf (logname, MAX_PATH, "%s.%d.log", basename, pct.thisimg + 1);
         }
 
         /* After chdir, this groups control file will be in parent directory */
-        snprintf (ct.cfile, MAX_PATH, "../%s.%d.rmg", basename, pct.thisgrp + 1);
+        snprintf (ct.cfile, MAX_PATH, "../%s.%d.rmg", basename, pct.thisimg + 1);
 
-        /* every instance has it own output/working directory */
-        sprintf (workdir, "image.%d", pct.thisgrp + 1);
-        if ( pct.thispe == 0 )
+        /* every image has it own output/working directory */
+        sprintf (workdir, "image.%d", pct.thisimg + 1);
+        if (pct.imgpe == 0)
         {
             if (status = stat ( workdir, &buffer ) == 0)
             {
@@ -124,7 +115,7 @@ void init_IO (int argc, char **argv)
     }
     else
     {
-        /* Not multi-instance run, so set output file accordingly */
+        /* Not multi-image run, so set output file accordingly */
         /* if second command line argument exists, use it as a basename for output */
         if (argc == 3)
         {
@@ -150,8 +141,10 @@ void init_IO (int argc, char **argv)
     }
 
     /* if logname exists, increment until unique filename found */
-    if (pct.thispe == 0 ) {
-        while ((status = stat (logname, &buffer)) != -1) {
+    if (pct.imgpe == 0)
+    {
+        while ((status = stat (logname, &buffer)) != -1)
+        {
             strncpy (basename, logname, MAX_PATH);
             if (++lognum > 99)
                 error_handler("You have over 100 logfiles, you need to think of a better job scenario!\n");
@@ -167,12 +160,9 @@ void init_IO (int argc, char **argv)
         my_fopen (ct.logfile, logname, "w");
     }
 
-    MPI_Comm_size (pct.thisgrp_comm, &status);
+    MPI_Comm_size (pct.grid_comm, &status);
     printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));
     printf ("\nRMG running in message passing mode with %d procs.\n", status);
-
-    /* Read in our control information */
-    read_control ();
 
     /* Read in our pseudopotential information */
     read_pseudo ();

@@ -139,7 +139,7 @@ void nlforce1 (REAL * veff)
     sum2y = 0.0;
     sum2z = 0.0;
 
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
         printf ("\n\n True Non-local forces");
 #endif
 
@@ -174,7 +174,7 @@ void nlforce1 (REAL * veff)
 
 #if VERBOSE
         /*Print out true NL force */
-        if (pct.thispe == 0)
+        if (pct.imgpe == 0)
         {
             printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f", ion,
                     iptr->force[fpt0][0] - old_force[3 * ion],
@@ -199,7 +199,7 @@ void nlforce1 (REAL * veff)
 
 
 #if VERBOSE
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
     {
         printf ("\n\n Eiegenvalue force:");
 
@@ -228,9 +228,9 @@ void nlforce1 (REAL * veff)
 
 #if VERBOSE
 
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
         printf ("\n True NL sum in x, y and z directions: %e %e %e", sum1x, sum1y, sum1z);
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
         printf ("\n Eigenvalue force sum in x, y and z directions: %e %e %e", sum2x, sum2y, sum2z);
     my_free (old_force);
 #endif

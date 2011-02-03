@@ -212,7 +212,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
         printf(" Max force to all procs, loop termination condition ");
 		
-        MPI_Bcast( &max_frc, 1, MPI_DOUBLE, 0, pct.thisgrp_comm );
+        MPI_Bcast( &max_frc, 1, MPI_DOUBLE, 0, pct.img_comm );
 
         CONV_FORCE = (max_frc < ct.thr_frc * ct.thr_frc);
 		printf("\nNEB is max_frc^2:%f < ct.thr_frc^2:%f ? If so, DONE.\n", max_frc, ct.thr_frc*ct.thr_frc);

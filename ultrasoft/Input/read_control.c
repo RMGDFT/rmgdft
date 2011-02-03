@@ -235,6 +235,11 @@ NEB Relax";
         get_data ("neb_spring_constant", &ct.neb_spring_constant, DBL, "0.5");
     }
 
+    /* do spin polarized calculation? */
+    get_data ("enable_spin_polarized_calculation", &pct.spin_flag, BOOL, "false");
+
+    get_data ("equal_initial_density", &pct.init_equal_density_flag, BOOL, "false");
+    /* Initialized spin up and down charge density equally? */
 
     /*maximum number of md steps */
     get_data ("max_md_steps", &ct.max_md_steps, INT, "100");
@@ -324,7 +329,18 @@ Anderson Rescaling";
     /* Number of states */
     get_data ("states_per_kpoint", &ct.num_states, INT, "0");
 
-    get_data ("states_count_and_occupation", ct.occupation_str, STR, NULL);
+    /* check whether do spin polarized calculation or not*/
+    if(pct.spin_flag)
+    {
+        get_data ("states_count_and_occupation_spin_up", ct.occupation_str_spin_up, STR, NULL);
+        get_data ("states_count_and_occupation_spin_down", ct.occupation_str_spin_down, STR, NULL);
+    } 
+    else
+    {
+        get_data ("states_count_and_occupation", ct.occupation_str, STR, NULL);
+
+    }
+		
 
 
     if (strcmp (ct.occupation_str, "") == 0)

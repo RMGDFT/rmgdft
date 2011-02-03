@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: get_vxc.c 1066 2009-08-31 18:41:09Z froze $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/get_vxc.c *****
@@ -39,52 +39,62 @@
 
 
 
-void get_vxc (REAL * rho_f, REAL * rhocore_f, REAL * vxc_f)
+void get_vxc_spin (REAL * rho_f, REAL * rho_oppo,  REAL * rhocore_f, REAL * vxc_f)
 {
 
     int idx;
-    REAL *exc, *nrho;
+    REAL *exc, *nrho_up, *nrho_dn;    
+    
+     /* up and down is convenient for naming the processor's own spin and the opposite spin,  
+        but not the real meaning of spin up and down */
 
-
-    my_malloc (exc, 2 * FP0_BASIS, REAL);
-    nrho = exc + FP0_BASIS;
+    my_malloc (exc, 3 * FP0_BASIS, REAL);
+    nrho_up = exc + FP0_BASIS;
+    nrho_dn = exc + 2 * FP0_BASIS;
 
     for (idx = 0; idx < FP0_BASIS; idx++)
-        nrho[idx] = rho_f[idx];
+    {
+        nrho_up[idx] = rho_f[idx];
+	nrho_dn[idx] = rho_oppo[idx];
+	
+    }
 
     /* Add in the core charges */
     for (idx = 0; idx < FP0_BASIS; idx++)
-        nrho[idx] += rhocore_f[idx];
+    {
+        nrho_up[idx] += rhocore_f[idx] / 2.0;         /*Divide by two since the core charges are spin up and spin down paired*/
+	nrho_dn[idx] += rhocore_f[idx] / 2.0;
+    }
 
 
+
+    /* Evaluate the XC potential */
     switch (ct.xctype)
     {
-    case LDA_PZ81:             /* LDA Perdew Zunger 81 */
+    case LDA_PZ81:       /* Perdew Wang Physical Review B, Volume 45, Number 23, 1992 */
+        
 
-        /* xclda_pz81 (nrho, vxc_f); */
-
-	/* incoporate both the Perdew Zunger 1981 and Ortiz Ballone 1994, default is PZ 1981 */
-        xclda (nrho, vxc_f, exc);
+        xclsda_spin (nrho_up, nrho_dn, vxc_f, exc);
         break;
 
     case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_PBE:              /* GGA Perdew, Burke, Ernzerhof */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     default:
@@ -92,9 +102,7 @@ void get_vxc (REAL * rho_f, REAL * rhocore_f, REAL * vxc_f)
 
     }                           /* end switch */
 
-
     my_free (exc);
-
 
 }                               /* end get_vxc */
 

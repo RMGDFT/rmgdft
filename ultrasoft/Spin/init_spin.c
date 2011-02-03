@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: init.c 1158 2010-10-25 19:12:12Z froze $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/init.c *****
@@ -51,7 +51,7 @@ static void init_alloc_nonloc_mem (void);
 
 
 
-void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
+void init_spin (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
            STATE * states, REAL * vnuc, REAL * vxc)
 {
 
@@ -63,6 +63,7 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     ION *iptr, *iptr0;
     REAL time1, time2, v1, v2, v3;
     STATE *st;
+    REAL rho_tot[FP0_BASIS];
 
 #ifdef SMP
     int thread, offset, stop;
@@ -84,13 +85,6 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     ct.psi_fnxgrid = FNX_GRID;
     ct.psi_fnygrid = FNY_GRID;
     ct.psi_fnzgrid = FNZ_GRID;
-
-
-    /*Initialize ScaLapack, get context */
-    sl_init (&pct.ictxt, ct.num_states);
-
-    /*Set desca, variable used in ScaLapack functions */
-    set_desca (pct.desca, &pct.ictxt, ct.num_states);
 
 
     /* Allocate storage for non-local projectors */
@@ -249,7 +243,7 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     Dprintf ("If not an initial run read data from files");
     if (ct.runflag == 1)
     {
-        read_data (ct.infile, vh, rho, vxc, states);
+        read_data_spin (ct.infile, vh, rho, rho_oppo, vxc, states);
     }
     else if ((ct.runflag == 0) || (ct.runflag == 2))    /* Initial run */
     {
@@ -314,7 +308,7 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     time2 = my_crtc ();
 
-	printf ("\n\n init: Starting FFTW initialization ...");
+    printf ("\n\n init: Starting FFTW initialization ...");
 
     fflush (NULL);
 
@@ -338,7 +332,7 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     /*The same for derivative of beta */
     init_derweight ();
 
-	printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
+    printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
     fflush (NULL);
 
 
@@ -376,9 +370,41 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     Dprintf ("Set the initial density to be equal to the compensating charges");
     if (!ct.runflag)
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            rho[idx] = rhoc[idx];
+    {
+	if (pct.spin_flag)
+        {   
+	    if (pct.thisspin==0)	
+       	   	 for (idx = 0; idx < FP0_BASIS; idx++)
+	    	{
+			if (pct.init_equal_density_flag)
+	   			rho[idx] = rhoc[idx] * 1.0 / 2.0;
+	      		else
+	   			rho[idx] = rhoc[idx] * 2.0 / 3.0;           
+           	 	
+			rho_oppo[idx] = rhoc[idx] - rho[idx];  
+		 	rho_tot[idx] = rhoc[idx];
+	    	}
 
+	    else if (pct.thisspin==1)	
+       	   	 for (idx = 0; idx < FP0_BASIS; idx++)
+	    	{
+			if (pct.init_equal_density_flag)
+	   			rho[idx] = rhoc[idx] * 1.0 / 2.0;
+	      		else
+	   			rho[idx] = rhoc[idx] * 1.0 / 3.0;           
+           	 	
+			rho_oppo[idx] = rhoc[idx] - rho[idx];
+		 	rho_tot[idx] = rhoc[idx];
+	    	}
+	    
+
+	}
+	else
+	{
+  	    for (idx = 0; idx < FP0_BASIS; idx++)
+            	rho[idx] = rhoc[idx];
+	}
+    }
 
 
 #ifdef SMP
@@ -399,9 +425,19 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     Dprintf ("Condition of run flag is %d", ct.runflag);
     if (ct.runflag != 1)
     {
-        get_vxc (rho, rhocore, vxc);
-        Dprintf ("get vxc completed");
-        get_vh (rho, rhoc, vh, 30, ct.poi_parm.levels);
+	if (pct.spin_flag)
+	{
+        	get_vxc_spin (rho, rho_oppo, rhocore, vxc);
+        	Dprintf ("get vxc completed");
+        	get_vh (rho_tot, rhoc, vh, 30, ct.poi_parm.levels);
+	}
+	else
+	{
+        	get_vxc (rho, rhocore, vxc);
+        	Dprintf ("get vxc completed");
+        	get_vh (rho, rhoc, vh, 30, ct.poi_parm.levels);
+	}
+
     }
 
     Dprintf ("If diagonalization is requested do a subspace diagonalization");

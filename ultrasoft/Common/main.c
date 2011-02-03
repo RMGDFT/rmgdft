@@ -60,7 +60,7 @@ STATE *states;
 
 
 /* Electronic Charge density */
-REAL rho[FP0_BASIS];
+REAL rho[FP0_BASIS], rho_buff[FP0_BASIS];   /* buff used to hold opposite spin density*/
 
 
 /* Core Charge density */
@@ -148,6 +148,9 @@ void initialize(int argc, char **argv) {
     init_IO (argc, argv);
 
     /* initialize states */
+    if (pct.spin_flag)
+	    states=init_states_spin ();
+    else
     states = init_states ();
 
     my_barrier ();
@@ -156,10 +159,16 @@ void initialize(int argc, char **argv) {
     rmg_timings ( PREINIT_TIME, my_crtc () - ct.time0, 0);
 
     /* Perform any necessary initializations */
+    
+    if (pct.spin_flag)
+    	init_spin (vh, rho, rho_buff, rhocore, rhoc, states, vnuc, vxc);
+    else 
     init (vh, rho, rhocore, rhoc, states, vnuc, vxc);
 
 
-    if (pct.thispe == 0)
+  
+
+    if (pct.imgpe == 0 )
     {
 
         /* Write header to stdout */
@@ -177,7 +186,8 @@ void initialize(int argc, char **argv) {
 
 
     /* Wait until everybody gets here */
-    my_barrier ();
+    MPI_Barrier(MPI_COMM_WORLD);
+
 }
 
 void run (void)
@@ -191,10 +201,20 @@ void run (void)
 
     case MD_QUENCH:            /* Quench the electrons */
         ct.max_rlx_steps = 0;
+	if (pct.spin_flag)
+	{
+		fastrlx_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);
+	}
+	else
         fastrlx (states, vxc, vh, vnuc, rho, rhocore, rhoc);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
+	if (pct.spin_flag)
+	{
+		fastrlx_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);
+	}
+	else
         fastrlx (states, vxc, vh, vnuc, rho, rhocore, rhoc);
         break;
 
@@ -259,7 +279,7 @@ void report ()
     }
 
     /* Write timing information */
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
     {
         write_timings ();
     }

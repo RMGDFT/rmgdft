@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: force.c 1066 2009-08-31 18:41:09Z froze $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/force.c *****
@@ -49,12 +49,13 @@
 
 
 
-void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
+void force_spin (REAL * rho, REAL * rho_buff, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
 {
     int ion, st, kpt, idx;
     REAL *vtot;
     STATE *sp;
     REAL time1, time2, time3;
+    REAL rho_tot[FP0_BASIS];
 #if VERBOSE
     REAL *old_force;
     REAL sumx, sumy, sumz;
@@ -75,7 +76,11 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE *
 
     my_malloc (vtot, FP0_BASIS, REAL);
     for (idx = 0; idx < FP0_BASIS; idx++)
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx]; 
+
+    /* get the total charge density to calculate local contribution of force */
+    for (idx = 0; idx < FP0_BASIS; idx++)
+	    rho_tot[idx] = rho[idx] + rho_buff[idx];
 
     /* Compute residual information */
     ct.meanres = 0.0;
@@ -146,7 +151,8 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE *
 
 
     /* Add in the local */
-    lforce (rho, vh);
+    //lforce (rho, vh);
+    lforce (rho_tot, vh);
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -247,8 +253,13 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE *
     my_free (vtot);
 
     /* Impose force constraints, if any */
-    if( ct.constrainforces )
-        constrain ();
+    if (verify ("atom_constraints", NULL))
+    {
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            constrain (&ct.ions[ion]);
+        }
+    }
 
 #if VERBOSE
     my_free (old_force);

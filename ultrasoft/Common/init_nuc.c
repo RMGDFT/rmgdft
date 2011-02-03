@@ -121,7 +121,12 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
 
 
     ct.crho = ct.crho * ct.vel_f;
-    ct.crho = real_sum_all (ct.crho);
+    ct.crho = real_sum_all (ct.crho);  /* sum over pct.grid_comm  */
+
+    
+    if (pct.imgpe==0)
+	    printf("\nCompensating charge is %.4e\n", ct.crho);
+    
 
     t1 = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)

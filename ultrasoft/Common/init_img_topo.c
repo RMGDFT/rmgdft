@@ -21,10 +21,10 @@ void init_img_topo (int ndims)
         {
             /* default to a 1D non-periodic topology */
             ndims = 1;
-            dims[0] = pct.instances;
+            dims[0] = pct.images;
             periods[0] = 0;
         }
 
-    MPI_Cart_create ( pct.master_comm, ndims, dims, periods, 1, &pct.img_topo_comm );
+    MPI_Cart_create ( pct.rmg_comm, ndims, dims, periods, 1, &pct.img_topo_comm );
     }
 }

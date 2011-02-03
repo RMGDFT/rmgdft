@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: get_te.c 1066 2009-08-31 18:41:09Z froze $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/get_te.c *****
@@ -45,12 +45,12 @@
 #include "main.h"
 
 
-void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states)
+void get_te_spin (REAL * rho, REAL * rho_oppo,  REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states)
 {
-    int state, kpt, idx, i, j, three = 3;
+    int state, kpt, idx, i, j, three = 3, two=2, one=1;
     REAL r, esum[3], t1, eigsum, xcstate, xtal_r[3];
     REAL vel;
-    REAL *exc, *nrho;
+    REAL *exc, *nrho, *nrho_oppo, *vxc_oppo, rho_tot[FP0_BASIS];
     ION *iptr1, *iptr2;
     REAL time1, time2;
 
@@ -59,12 +59,15 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
     vel = ct.vel_f;
 
     /* Grab some memory */
-    my_malloc (exc, 2 * FP0_BASIS, REAL);
+    my_malloc (exc, 3 * FP0_BASIS, REAL);
     nrho = exc + FP0_BASIS;
+    nrho_oppo = exc + 2 * FP0_BASIS;
 
 
     /* Loop over states and get sum of the eigenvalues */
     eigsum = 0.0;
+
+    /* For processor's own spin */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
         t1 = 0.0;
@@ -77,66 +80,101 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
         }
         eigsum += t1 * ct.kp[kpt].kweight;
     }
+    
+    /* For the opposite spin */
+    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    {
+        t1 = 0.0;
+        for (state = 0; state < ct.num_states_oppo; state++)
+        {
 
+            t1 += (states[state + kpt * ct.num_states_oppo].occupation_oppo *
+                   states[state + kpt * ct.num_states_oppo].eig_oppo);
 
+        }
+        eigsum += t1 * ct.kp[kpt].kweight;
+    }
+
+    /*Calculate the total charge density at each grid*/
+    for (idx = 0; idx < FP0_BASIS; idx++)
+        rho_tot[idx] = rho[idx] + rho_oppo[idx];
+ 
     /* Evaluate electrostatic energy correction terms */
     esum[0] = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)
-        esum[0] += (rho[idx] + rhoc[idx]) * vh[idx];
+    {    
+	    esum[0] += (rho_tot[idx] + rhoc[idx]) * vh[idx];
+    }
 
 
     time2 = my_crtc ();
     for (idx = 0; idx < FP0_BASIS; idx++)
-        nrho[idx] = rhocore[idx] + rho[idx];
+    {    
+	    nrho[idx] = rhocore[idx] / 2.0 + rho[idx];
+	    nrho_oppo[idx] = rhocore[idx] / 2.0 + rho_oppo[idx];
 
+    }
+     
 
-    /* Evaluate XC energy correction terms */
+     
+
+    /* Evaluate XC energy terms */
     switch (ct.xctype)
     {
 
     case LDA_PZ81:             /* LDA Perdew Zunger 81 */
-        /* exclda_pz81 (nrho, exc); */
 
-	/* incoporate both the Perdew Zunger 1981 and Ortiz Ballone 1994, default is PZ 1981 */
-        xclda (nrho, vxc, exc);
+        xclsda_spin (nrho, nrho_oppo, vxc, exc);
         break;
 
     case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */
-        xcgga (nrho, vxc, exc, ct.xctype);
+        xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+
         break;
 
     case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
-        xcgga (nrho, vxc, exc, ct.xctype);
+        xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+	
         break;
 
     case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
-        xcgga (nrho, vxc, exc, ct.xctype);
+        xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+
         break;
 
     case GGA_PBE:              /* GGA Perdew, Burke, Ernzerhof */
-        xcgga (nrho, vxc, exc, ct.xctype);
-        break;
+	xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        
+	break;
 
     default:
         error_handler ("Unknown exchange-correlation functional");
 
     }                           /* end switch */
 
-
+    
+    
     esum[1] = 0.0;
     esum[2] = 0.0;
 
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-        esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
+        esum[1] += (rhocore[idx] + rho_tot[idx]) * (exc[idx]);
+	
         esum[2] += rho[idx] * vxc[idx];
+    	    
     }
 
-    rmg_timings (GET_TE_XC_TIME, (my_crtc () - time2), 0);
+    rmg_timings (GET_TE_XC_TIME, (my_crtc () - time2), 0); 
 
 
-    /*Sum emergies over all processors */
-    global_sums (esum, &three);
+    global_sums (esum, &two);
+
+    if (pct.spin_flag)
+    	global_sums_spin (&esum[2], &one);  /* for spin case, sum over all processors in all grid communicators  */
+    else
+    	global_sums (&esum[2], &one);
+
 
 
     /*Electrostatic E */
@@ -144,10 +182,12 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
 
     /* XC E */
     ct.XC = vel * esum[1];
+    dprintf("xc energy ct.XC: %e \n", ct.XC);
 
 
     /*XC potential energy */
     xcstate = vel * esum[2];
+    dprintf("xc energy xcstate: %e \n", xcstate);
 
 
     time2 = my_crtc ();
@@ -183,7 +223,7 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
 
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
     {
         printf ("\n\n");
 

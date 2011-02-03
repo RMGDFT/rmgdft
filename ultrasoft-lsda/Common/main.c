@@ -55,7 +55,7 @@ void finish (void);
 
 
 
-/* "VariableName_buff" used to receive and hold the same variable from the oppisite spin*/
+/* "VariableName_buff" used to receive and hold the same variable from the opposite spin*/
 
 /* State storage pointer (memory allocated dynamically in rd_cont */
 STATE *states;  

@@ -10,6 +10,17 @@
 # Description of run. Default: "QMD run"
 description="Sample MD calculation"
 
+# Spin polarized calculation flag. Default: "True"
+enable_spin_polarized_calculaton=
+"false"
+#"true" 
+
+# For spin polarized and random start using the following option to set equal or not equal 
+#	 initialization of up and down density. Default: "False"
+equal_initial_density=
+"false"
+#"true"
+
 
 occupations_type=
 "Fixed"  #i.e. use occupations as specified elswhere in this file
@@ -20,7 +31,16 @@ occupations_type=
 # Occupation for states, 
 # Format: Number of states with certain occupancy followed by the occupancy
 #         repeat for all occupancies
-states_count_and_occupation="6 2.0  4 0.0"
+
+# For spin unpolarized calculation using the following line to set the fixed occupations for states
+#states_count_and_occupation="6 2.0  4 0.0"  
+
+
+# For spin polarized calculation using the following line to set the fixed occupations 
+#                      for spin up states and spin down states respectively
+states_count_and_occupation_spin_up="3 1.0  4 0.0"
+states_count_and_occupation_spin_down="3 1.0  4 0.0 "
+
 
 # If states_count_and_occupation is not given  
 # states and their occupations can be specified using the 
@@ -351,11 +371,11 @@ do_restart_coordinates_with_current_as_initial=
 "false"
 #"true"
 
-# Setup the communicator topology for a multi-instance run. For details 
+# Setup the communicator topology for a multi-grid run. For details 
 # on possibilities, see MPI_Cart_create documentation.
 # This is a 2 column integer list of the following form
 # dimension size <space> periodic (1 = yes, 0 = no)
-# Defaults to 1D non-periodic of instance count size,
+# Defaults to 1D non-periodic of grid count size,
 # example is 3x4 cylindrical
 #image_communicator_topology = "
 #    3   1

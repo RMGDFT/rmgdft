@@ -78,7 +78,7 @@ int open_wave_file (char *filename)
 
     /*All processors should wait until 0 is done */
     //my_barrier ();
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(pct.img_comm);
 
     /*Other processors can now try to open */
     if (pct.imgpe)

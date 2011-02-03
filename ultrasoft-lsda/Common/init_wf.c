@@ -75,12 +75,12 @@ void init_wf (STATE * states)
 
     if (ct.occ_flag && (ct.runflag == 0))
     {
-	if (pct.spin_flag)
-	{
-        	sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
-        	sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
-	}
-	else
+        if (pct.spin_flag)
+        {
+            sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
+            sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
+        }
+        else
         	sp->occupation = ct.nel / ct.num_states;
     }
 
@@ -118,14 +118,14 @@ void init_wf (STATE * states)
            each state equally occupied  */
     	if (ct.occ_flag && (ct.runflag == 0))
     	{
-		if (pct.spin_flag)
-		{
-        		sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
-        		sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
-		}
-		else
-        		sp->occupation = ct.nel / ct.num_states;
-    	}
+            if (pct.spin_flag)
+            {
+                sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
+                sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
+            }
+            else
+                sp->occupation = ct.nel / ct.num_states;
+        }
 
         idx = 0;
         for (ix = 0; ix < PX0_GRID; ix++)
@@ -142,8 +142,8 @@ void init_wf (STATE * states)
 #if !GAMMA_PT
                     tmp_psiI[idx] =
                         xrand[ct.psi_nxgrid + xoff + ix] * yrand[ct.psi_nygrid + yoff +
-                                                                 iy] * zrand[ct.psi_nzgrid + zoff +
-                                                                             iz];
+                        iy] * zrand[ct.psi_nzgrid + zoff +
+                        iz];
                     tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
 
 #endif
