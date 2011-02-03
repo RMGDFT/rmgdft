@@ -673,7 +673,7 @@ c
          flag(irg(is,1)) = .false.
   11  continue
 c
-      do 35 nc =2, nrot/nsym
+      do 35 nc =2, (nrot+ nsym -1)/nsym
          do 33 ir = 1, nrot
             if(flag(ir)) then
                do 31 is = 1, nsym
