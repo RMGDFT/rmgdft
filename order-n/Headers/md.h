@@ -1150,7 +1150,6 @@ void cholesky (REAL * a, int n);
 void cross_product (REAL * a, REAL * b, REAL * c);
 void eval_residual (REAL * mat, REAL * f_mat, int dimx, int dimy, int dimz,
         REAL gridhx, REAL gridhy, REAL gridhz, REAL * res);
-void error_handler (int pe, char *filename, int line, char *message);
 void solv_pois (REAL * vmat, REAL * fmat, REAL * work,
         int dimx, int dimy, int dimz, REAL gridhx,
         REAL gridhy, REAL gridhz);
