@@ -48,12 +48,6 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, doublecomplex * sigma, int * sigma_id
         H_tri[i].i = eneI * Stri[i];
     }
 
-/*
-    for (i = 0; i < ntot; i++)
-    {
-      if(pct.thispe == 0) printf (" \n H_tri %f \n", H_tri[i].r);
-    }
-*/
 	
     /* put the sigma for a probe in the corresponding block 
 	   of the Green's matrices  */

@@ -115,10 +115,6 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     state_corner_xyz (states);
 
-    if (ct.runflag == 1)
-    {
-        read_states_info (ct.infile, states);
-    }
 
     /* allocate memory for wave functions states.psiR and psiI */
     allocate_psi (states, states1);

@@ -387,7 +387,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
             }
 
 /* 
-            diff_hx_interpolation2 (vh_new,  vh_old,  FNX_GRID, hx_new, xold, 0.0, 0.0); 
+ *           diff_hx_interpolation2 (vh_new,  vh_old,  FNX_GRID, hx_new, xold, 0.0, 0.0); 
 */
 
             spline(xold, vh_old, FNX_GRID, 0.0, 0.0, vh_new); 
