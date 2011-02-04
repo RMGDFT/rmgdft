@@ -35,6 +35,7 @@
 
 /* Version information */
 #include    "version.h"
+#include    "input.h"
 
 
 
@@ -108,7 +109,7 @@ typedef struct { double r, i; } doublecomplex;
 
 
 
-int MXLLDA, NPROW, NPCOL;
+int MXLLDA;
 REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vcomp, *vxc, *rhocore, *vtot, *vtot_old;
 REAL *vh_old, *vxc_old; 
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
@@ -149,7 +150,9 @@ typedef struct
 {
 
     /** Number (rank in MPI terminology) of this processor */
-    int thispe;
+    int thispe, thisgrp;
+    MPI_Comm thisgrp_comm;
+    int instances;
   
     /** Neighboring processors in three-dimensional space */
     int neighbors[6];
@@ -232,6 +235,13 @@ typedef struct
     double *psi2; 
 
     double *projectors; 
+
+    int desca[DLEN];
+    int descb[DLEN];
+    int mycol;
+    int myrow;
+    int nprow;
+    int npcol;
 
 } PE_CONTROL;
 
@@ -724,6 +734,8 @@ typedef struct
      */
     char cfile[MAX_PATH];
 
+    FILE *logfile;
+
     /** Input file name to read wavefunctions  and potential and rho from when doing a restart */
     char infile[MAX_PATH];
     char infile_rho[MAX_PATH];
@@ -994,7 +1006,6 @@ typedef struct
     int forceflag;
 
     /* Number of scf steps per md step */
-    int scfpermd;
 
     /* Desired vector for constrained dynamics */
     REAL cd_vector[3];
@@ -1150,7 +1161,6 @@ void cholesky(REAL *a, int n);
 void cross_product(REAL *a, REAL *b, REAL *c);
 void eval_residual( REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz, 
         REAL gridhx, REAL gridhy, REAL gridhz, REAL *res );
-void error_handler(int pe, char *filename, int line, char *message);
 void solv_pois( REAL *vmat, REAL *fmat, REAL *work, 
         int dimx, int dimy, int dimz, REAL gridhx, 
         REAL gridhy,REAL gridhz);

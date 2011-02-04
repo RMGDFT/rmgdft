@@ -39,7 +39,7 @@ void allocate_matrix_soft ()
     int ispin, sizeofmatrix, item, item1, item2, lwork;
     int ictxt, nproc, myrow, mycol, icrow, iccol;
     int izero = 0, ione = 1, itwo = 2, nb = NB, nn = NN;
-    int nprow = NPROW, npcol = NPCOL, npes = NPES;
+    int nprow = pct.nprow, npcol = pct.npcol, npes = NPES;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
 
     ispin = ct.spin + 1;
@@ -95,12 +95,12 @@ void allocate_matrix_soft ()
     item = max (13 * S0_BASIS, item2);
 
 
-    nproc = NPROW * NPCOL;
+    nproc = pct.nprow * pct.npcol;
     locr = ((ct.num_states / NB + 1) / nproc + 1) * NB + NB;
     lwork = 10 * (locr * 5 + NB);
     item1 = max (lwork, item);
 
-    sl_init (&ictxt, NPROW, NPCOL);
+    sl_init (&ictxt, pct.nprow, pct.npcol);
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if (myrow != -1)
         Cblacs_gridexit (ictxt);

@@ -37,6 +37,12 @@
 
 REAL timings[LAST_TIME];
 
+void rmg_timings (int what, REAL time, int tid)
+{
+
+    timings[what] += time;
+
+}                               /* end md_timings */
 
 void md_timings (int what, REAL time)
 {
@@ -106,7 +112,7 @@ void write_timings (void)
         printf ("---------------------------------\n");
         printf ("    sigma_all        %12.4f\n", timings[SIGMA_ALL_TIME]);
         printf ("    SCF              %12.4f   (%12.4f /step)\n", timings[SCF_TIME],
-                timings[SCF_TIME] / ct.scfpermd);
+                timings[SCF_TIME] / ct.max_scf_steps);
         printf ("---------------------------------\n");
         printf ("      get_ddd        %12.4f\n", timings[GET_DDD_TIME]);
         printf ("      get_Hij        %12.4f\n", timings[GET_Hij_TIME]);

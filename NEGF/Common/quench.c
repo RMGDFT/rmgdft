@@ -174,7 +174,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 
  
 
-    for (ct.steps = 0; ct.steps < ct.scfpermd; ct.steps++)
+    for (ct.steps = 0; ct.steps < ct.max_scf_steps; ct.steps++)
     {
 
         if (pct.thispe == 0)

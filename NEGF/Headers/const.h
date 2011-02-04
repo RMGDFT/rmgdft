@@ -141,22 +141,6 @@
 #define NB_D 5
 #define NB_SELF 7
 
-/* Pre-defined flags for the operation type flag of get_input.c */
-enum
-{
-    SEQ = 1,
-    LIST = 2,
-    BOOL = 4,
-    INT = 8,
-    DBL = 16,
-    VEC = 32,
-    STR = 64,
-    OPT = 128,
-    LINE = 256,
-    RAW = 512
-};
-
-
 
 /* Some stuff for timing and performance measurements */
 #define TOTAL_TIME (0)
@@ -227,6 +211,8 @@ enum
 #define PAR_D_VNUC_COMM (86)
 #define NLFORCE_GREE_F (87)
 #define PAR_VLOCPSI (88)
+
+#define READ_PSEUDO_TIME  (89)
 
 
 #define LAST_TIME     100

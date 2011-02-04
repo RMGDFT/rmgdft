@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id: get_nlop.c 1242 2011-02-02 18:55:23Z luw $    **
+ **    $Id: get_nlop.c 780 2007-05-14 21:08:54Z luw $    **
  ******************************************************************************/
 
 /*
@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "method.h"
 #include "md.h"
 #include "fftw.h"
 
@@ -46,6 +45,16 @@ void get_nlop(void)
     fftw_complex *fptr, *fptr_x, *fptr_y, *fptr_z;
     fftw_complex *beptr, *gbptr;
 
+
+
+    double time2 = my_crtc();
+    /*Do forward transform for each species and store results on the coarse grid */
+    init_weight ();
+    /*The same for derivative of beta */
+    init_derweight ();
+
+    if (pct.thispe == 0)
+        printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
 
     /*Get memory to store the phase factor applied to the forward Fourier transform
      *      * and to store the backwards transform*/
@@ -95,19 +104,20 @@ void get_nlop(void)
         my_free(projectors);
     my_malloc_init( projectors, PROJECTOR_SPACE, REAL );
 
+    /*allocate memorry for weight factor of partial_beta/partial_x */
+    if (projectors_x != NULL)
+        my_free(projectors_x);
+    my_malloc_init( projectors_x, PROJECTOR_SPACE, REAL );
 
-    if(ct.forceflag !=0)
-    {
-        /*allocate memorry for weight factor of partial_beta/partial_x, y,z */
-        if (projectors_x != NULL) my_free(projectors_x);
-        my_malloc_init( projectors_x, PROJECTOR_SPACE, REAL ); 
+    /*allocate memorry for weight factor of partial_beta/partial_y */
+    if (projectors_y != NULL)
+        my_free(projectors_y);
+    my_malloc_init( projectors_y, PROJECTOR_SPACE, REAL );
 
-        if (projectors_y != NULL) my_free(projectors_y);
-        my_malloc_init( projectors_y, PROJECTOR_SPACE, REAL );
-
-        if (projectors_z != NULL) my_free(projectors_z);
-        my_malloc_init( projectors_z, PROJECTOR_SPACE, REAL ); 
-    }
+    /*allocate memorry for weight factor of partial_beta/partial_z */
+    if (projectors_z != NULL)
+        my_free(projectors_z);
+    my_malloc_init( projectors_z, PROJECTOR_SPACE, REAL );
 
 
     for (isp = 0; isp < ct.num_species; isp++)
@@ -131,15 +141,6 @@ void get_nlop(void)
     beta_y = projectors_y;
     beta_z = projectors_z;
 
-
-    double time2 = my_crtc();
-    /*Do forward transform for each species and store results on the coarse grid */
-    init_weight ();
-    /*The same for derivative of beta */
-    init_derweight ();
-
-    if (pct.thispe == 0)
-        printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
 
 
     prjcount = 0;
@@ -173,7 +174,7 @@ void get_nlop(void)
 
 
         coarse_size = sp->nldim *sp->nldim *sp->nldim ;
-
+        
         /*Calculate the phase factor */
         find_phase (sp->nldim, nlcrds, fftw_phase_sin, fftw_phase_cos);
 
@@ -206,65 +207,63 @@ void get_nlop(void)
             /*This takes and stores the part of beta that is useful for this PE */
             assign_weight (sp, beptr, &beta[prjcount]);
 
-            if(ct.forceflag !=0)
+            /****************** beta_X *************/
+            /*Apply the phase factor   */
+            for (idx = 0; idx < coarse_size; idx++)
             {
-                /****************** beta_X *************/
-                /*Apply the phase factor   */
-                for (idx = 0; idx < coarse_size; idx++)
-                {
-                    gbptr[idx].re =
-                        fptr_x[idx].re *fftw_phase_cos[idx] +
-                        fptr_x[idx].im * fftw_phase_sin[idx];
-                    gbptr[idx].im =
-                        fptr_x[idx].im * fftw_phase_cos[idx] -
-                        fptr_x[idx].re * fftw_phase_sin[idx];
-                }
-
-
-                /*Do the backwards transform */
-                fftwnd_one (p2, gbptr, beptr);
-                /*This takes and stores the part of beta that is useful for this PE */
-                assign_weight (sp, beptr, &beta_x[prjcount]);
-
-
-                /****************** beta_Y *************/
-                /*Apply the phase factor   */
-                for (idx = 0; idx < coarse_size; idx++)
-                {
-                    gbptr[idx].re =
-                        fptr_y[idx].re *fftw_phase_cos[idx] +
-                        fptr_y[idx].im * fftw_phase_sin[idx];
-                    gbptr[idx].im =
-                        fptr_y[idx].im * fftw_phase_cos[idx] -
-                        fptr_y[idx].re * fftw_phase_sin[idx];
-                }
-
-
-                /*Do the backwards transform */
-                fftwnd_one (p2, gbptr, beptr);
-                /*This takes and stores the part of beta that is useful for this PE */
-                assign_weight (sp, beptr, &beta_y[prjcount]);
-
-
-
-                /****************** beta_Z *************/
-                /*Apply the phase factor   */
-                for (idx = 0; idx < coarse_size; idx++)
-                {
-                    gbptr[idx].re =
-                        fptr_z[idx].re *fftw_phase_cos[idx] +
-                        fptr_z[idx].im * fftw_phase_sin[idx];
-                    gbptr[idx].im =
-                        fptr_z[idx].im * fftw_phase_cos[idx] -
-                        fptr_z[idx].re * fftw_phase_sin[idx];
-                }
-
-
-                /*Do the backwards transform */
-                fftwnd_one (p2, gbptr, beptr);
-                /*This takes and stores the part of beta that is useful for this PE */
-                assign_weight (sp, beptr, &beta_z[prjcount]);
+                gbptr[idx].re =
+                    fptr_x[idx].re *fftw_phase_cos[idx] +
+                    fptr_x[idx].im * fftw_phase_sin[idx];
+                gbptr[idx].im =
+                    fptr_x[idx].im * fftw_phase_cos[idx] -
+                    fptr_x[idx].re * fftw_phase_sin[idx];
             }
+
+
+            /*Do the backwards transform */
+            fftwnd_one (p2, gbptr, beptr);
+            /*This takes and stores the part of beta that is useful for this PE */
+            assign_weight (sp, beptr, &beta_x[prjcount]);
+
+
+            /****************** beta_Y *************/
+            /*Apply the phase factor   */
+            for (idx = 0; idx < coarse_size; idx++)
+            {
+                gbptr[idx].re =
+                    fptr_y[idx].re *fftw_phase_cos[idx] +
+                    fptr_y[idx].im * fftw_phase_sin[idx];
+                gbptr[idx].im =
+                    fptr_y[idx].im * fftw_phase_cos[idx] -
+                    fptr_y[idx].re * fftw_phase_sin[idx];
+            }
+
+
+            /*Do the backwards transform */
+            fftwnd_one (p2, gbptr, beptr);
+            /*This takes and stores the part of beta that is useful for this PE */
+            assign_weight (sp, beptr, &beta_y[prjcount]);
+
+
+
+            /****************** beta_Z *************/
+            /*Apply the phase factor   */
+            for (idx = 0; idx < coarse_size; idx++)
+            {
+                gbptr[idx].re =
+                    fptr_z[idx].re *fftw_phase_cos[idx] +
+                    fptr_z[idx].im * fftw_phase_sin[idx];
+                gbptr[idx].im =
+                    fptr_z[idx].im * fftw_phase_cos[idx] -
+                    fptr_z[idx].re * fftw_phase_sin[idx];
+            }
+
+
+            /*Do the backwards transform */
+            fftwnd_one (p2, gbptr, beptr);
+            /*This takes and stores the part of beta that is useful for this PE */
+            assign_weight (sp, beptr, &beta_z[prjcount]);
+
 
 
             fptr += coarse_size;

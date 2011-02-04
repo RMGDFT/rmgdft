@@ -250,7 +250,7 @@ void write_header (void)
         }                       /* end switch */
 
         printf ("\n\n    TIMESTEP FOR MOLECULAR DYNAMICS = %12.8f", ct.iondt);
-        printf ("\n\n    SCF COUNT PER MD STEP           = %d", ct.scfpermd);
+        printf ("\n\n    SCF COUNT PER MD STEP           = %d", ct.max_scf_steps);
 
 
     }

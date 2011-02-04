@@ -42,7 +42,7 @@ Documentation:
 *  Purpose
 *  =======
 *
-*  SL_INIT initializes an NPROW x NPCOL process grid using a row-major
+*  SL_INIT initializes an pct.nprow x pct.npcol process grid using a row-major
 *  ordering  of  the  processes. This routine retrieves a default system
 *  context  which  will  include all available processes. In addition it
 *  spawns the processes if needed.
@@ -54,12 +54,12 @@ Documentation:
 *          ictxt specifies the BLACS context handle identifying 
 *          created process grid.  The context itself is global.
 *
-*  NPROW   (global input) int
-*          NPROW specifies the number of process rows in the grid
+*  pct.nprow   (global input) int
+*          pct.nprow specifies the number of process rows in the grid
 *          to be created.
 *
-*  NPCOL   (global input) int
-*          NPCOL specifies the number of process columns in the grid
+*  pct.npcol   (global input) int
+*          pct.npcol specifies the number of process columns in the grid
 *          to be created.
 *
 *  ============================================================
@@ -105,7 +105,7 @@ void sl_init (int *ictxt, int nprow, int npcol)
      */
 
 
-    my_malloc( pmap, NPROW * NPCOL, int );
+    my_malloc( pmap, pct.nprow * pct.npcol, int );
     for (i = 0; i < nprow * npcol; i++)
         pmap[i] = i;
 
@@ -281,14 +281,14 @@ void distribute_mat (double *bigmat, double *dismat)
 {
     int desca[DLEN];
     int ictxt;
-    int nb = NB, npcol = NPCOL, nprow = NPROW, numst = ct.num_states;
+    int nb = NB, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
     int mycol, myrow, mxllda;
     int rsrc = 0, csrc = 0, info;
 
 
     mxllda = MXLLDA;
     /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, NPROW, NPCOL);
+    sl_init (&ictxt, pct.nprow, pct.npcol);
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
@@ -324,7 +324,7 @@ void print_distribute_mat (double *dismat)
 {
     int desca[DLEN];
     int ictxt;
-    int nb = NB, npcol = NPCOL, nprow = NPROW, numst = ct.num_states;
+    int nb = NB, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
     int mycol, myrow, mxllda;
     int rsrc = 0, csrc = 0, info;
     int n2 = ct.num_states * ct.num_states, idx;
@@ -333,7 +333,7 @@ void print_distribute_mat (double *dismat)
     mxllda = MXLLDA;
 
     /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, NPROW, NPCOL);
+    sl_init (&ictxt, pct.nprow, pct.npcol);
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
@@ -385,7 +385,7 @@ void get_distributed_mat (double *bigmat, double *dismat)
 {
     int desca[DLEN];
     int ictxt;
-    int nb = NB, npcol = NPCOL, nprow = NPROW, numst = ct.num_states;
+    int nb = NB, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
     int mycol, myrow, mxllda;
     int rsrc = 0, csrc = 0, info, idx;
     int n2 = ct.num_states * ct.num_states;
@@ -393,7 +393,7 @@ void get_distributed_mat (double *bigmat, double *dismat)
     mxllda = MXLLDA;
 
     /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, NPROW, NPCOL);
+    sl_init (&ictxt, pct.nprow, pct.npcol);
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
@@ -437,7 +437,7 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 {
     int desca[DLEN];
     int ictxt;
-    int nb = NB, npcol = NPCOL, nprow = NPROW;
+    int nb = NB, npcol = pct.npcol, nprow = pct.nprow;
     int mycol, myrow, mxllda;
     int rsrc = 0, csrc = 0, info;
     _fcd char_fcd1;
@@ -447,7 +447,7 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 
     mxllda = MXLLDA;
     /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, NPROW, NPCOL);
+    sl_init (&ictxt, pct.nprow, pct.npcol);
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 

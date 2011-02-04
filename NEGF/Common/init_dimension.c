@@ -41,7 +41,7 @@ void init_dimension ()
     if (ct.num_states < NB)
         NB = ct.num_states;
     NNBB = (ct.num_states + NB - 1) / NB;
-    NNBBR = (NNBB + NPROW - 1) / NPROW;
+    NNBBR = (NNBB + pct.nprow - 1) / pct.nprow;
     NNBBRB = (NNBBR * NB);
     MXLLDA = (NNBBRB + NN % NB);
 

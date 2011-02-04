@@ -93,20 +93,8 @@ int main (int argc, char **argv)
 
     }
 
-#if 0
-#ifdef XT3
-    /*For XT3 we set buffer for writing to stdout, otherwise stdout output is VERY slow*/
-    int bsize = 8192;
-    char *buf;
-    my_malloc(buf, bsize, char);
-    setvbuf(stdout, buf, _IOFBF, bsize);
 
-#endif
-#endif
-
-
-
-
+    init_IO();
 
     /* Read in our control information */
     read_control ();
