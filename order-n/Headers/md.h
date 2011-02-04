@@ -1359,6 +1359,12 @@ void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt, int *ftau,
         int *wflag);
 void symrho (REAL * rho, int *nr1, int *nr2, int *nr3, int *nsym, int *s,
         int *irg, int *ftau);
+
+void sgama (int *nrot,int *nat,double *s,double *at,double *bg,double *tau,
+            int *ityp,int *nsym,int *nr1,int *nr2,int *nr3,int *irg,
+            int *irt,double *ftau,double *rtau,int *npk,int *nks,double *xk,
+            double *wk,double *xau,double *rau,bool *invsym, int *wflag);
+
 void line_min_three_point (STATE *, STATE *, REAL, REAL, REAL *, REAL *,
         REAL *, REAL *, REAL *);
 

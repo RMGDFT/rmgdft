@@ -1,0 +1,131 @@
+/************************** SVN Revision Information **************************
+ **    $Id: Sgreen_semi_infinite_p.c 1242 2011-02-02 18:55:23Z luw $    **
+******************************************************************************/
+ 
+/*
+ *
+ */
+
+#include <float.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include "md.h"
+#include "pmo.h"
+
+
+#define 	MAX_STEP 	40
+
+
+void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
+                           double *S00, double *S01, double eneR, double eneI,
+                           int jprobe)
+{
+
+    double converge1, converge2, tem;
+    doublecomplex *ch00, *ch01;
+    doublecomplex *chnn, *chtem;
+    doublecomplex alpha, beta, mone;
+    int info;
+    int *ipiv;
+    int i, j, step;
+    int ione = 1, n1;
+    int maxrow, maxcol, *desca, nmax;
+    char fcd1, fcd2;
+
+
+    desca = &pmo.desc_lead[(jprobe -1) * DLEN];
+    nmax = desca[2];
+
+    fcd1 = 'N';
+    fcd2 = 'T';
+
+
+    maxrow = pmo.mxllda_lead[jprobe-1];
+    maxcol = pmo.mxlocc_lead[jprobe-1];
+
+    n1 = maxrow * maxcol;
+
+    /* allocate matrix and initialization  */
+    alpha.r = 1.0;
+    alpha.i = 0.0;
+    beta.r = 0.0;
+    beta.i = 0.0;
+    mone.r = -1.0;
+    mone.i = 0.0;
+
+    my_malloc_init( ch00, n1, doublecomplex );
+    my_malloc_init( ch01, n1, doublecomplex );
+    my_malloc_init( chnn, n1, doublecomplex );
+    my_malloc_init( chtem, n1, doublecomplex );
+    my_malloc_init( ipiv, maxrow + pmo.mblock, int );
+
+    for(i = 0; i < n1; i++)
+    {
+        ch00[i].r = eneR * S00[i] - Ha_eV * H00[i];
+        ch00[i].i = eneI * S00[i];
+        ch01[i].r = eneR * S01[i] - Ha_eV * H01[i];
+        ch01[i].i = eneI * S01[i];
+    }
+
+    /*  green = (e S00- H00)^-1  */
+
+    ZCOPY (&n1, ch00, &ione, chnn, &ione);
+    get_inverse_block_p (chnn, green, ipiv, desca);
+
+    converge1 = 0.0;
+    for (i = 0; i < n1; i++)
+    {
+        converge1 += green[i].r * green[i].r + green[i].i * green[i].i;
+    }
+
+    comm_sums(&converge1, &ione, COMM_EN2);
+
+    converge1 = sqrt (converge1);
+
+    for (step = 0; step < MAX_STEP; step++)
+    {
+
+        /*  calculate chnn = ch00 - Hn+1, n * Gnn * Hn,n+1  */
+
+
+        ZCOPY (&n1, ch00, &ione, chnn, &ione);
+        PZGEMM (&fcd1, "N", &nmax, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
+               green, &ione, &ione, desca,  &beta, chtem, &ione, &ione, desca);
+        PZGEMM ("N", &fcd2, &nmax, &nmax, &nmax, &mone, chtem, &ione, &ione, desca,
+                ch01, &ione, &ione, desca, &alpha, chnn, &ione, &ione, desca);
+
+        get_inverse_block_p (chnn, green, ipiv, desca);
+
+        converge2 = 0.0;
+        for (i = 0; i < n1; i++)
+        {
+            converge2 += green[i].r * green[i].r + green[i].i * green[i].i;
+        }
+    comm_sums(&converge2, &ione, COMM_EN2);
+
+        converge2 = sqrt (converge2);
+        /* printf("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
+
+        tem = converge1 - converge2;
+        tem = sqrt (tem * tem);
+
+        if (tem < 1.0e-7)
+            break;
+        converge1 = converge2;
+    }
+
+    if (tem > 1.0e-7)
+    {
+        printf ("\n green not converge %f \n", tem);
+        exit (0);
+    }
+    /*    printf("\n %d %f %f converge\n", step, eneR, eneI); */
+
+    my_free( ch00 );
+    my_free( ch01 );
+    my_free( chnn );
+    my_free( chtem );
+    my_free( ipiv );
+}
