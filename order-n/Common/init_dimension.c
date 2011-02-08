@@ -43,8 +43,10 @@ void init_dimension()
     NNBB = (ct.num_states + NB - 1) / NB;
     NNBBR = (NNBB + pct.nprow - 1) / pct.nprow;
     NNBBRB = (NNBBR * NB);
-    MXLLDA = (NNBBRB + NN % NB);
+    MXLLDA = NNBBRB ;
 
+    NNBBR = (NNBB + pct.npcol - 1) / pct.npcol;
+    MXLCOL = NNBBR * NB;
 
 }
 

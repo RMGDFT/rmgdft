@@ -48,14 +48,15 @@ void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc,
     if (pct.thispe == 0)
     {
 
-        printf("\n\n @@ EIGENVALUE SUM = %20.10f\n", eigsum);
-        printf("@@ ION_ION            = %20.10f\n", ct.II);
-        printf("@@ ELECTROSTATIC      = %20.10f\n", ct.Evh_rho);
-        printf("@@ ELECTROSTATIC rhoc = %20.10f\n", ct.Evh_rhoc);
-        printf("@@ ELECTROSTATIC old  = %20.10f\n", ct.Evhold_rho);
-        printf("@@ XC                 = %20.10f\n", ct.XC);
-        printf("@@ XC potential       = %20.10f\n", ct.Evxcold_rho);
-        printf("@@ SC ENERGY          = %20.12f\n", energy_sc);
+        printf("\n");
+        printf("@@ EIGENVALUE SUM     = %25.15f\n", eigsum);
+        printf("@@ ION_ION            = %25.15f\n", ct.II);
+        printf("@@ ELECTROSTATIC      = %25.15f\n", ct.Evh_rho);
+        printf("@@ ELECTROSTATIC rhoc = %25.15f\n", ct.Evh_rhoc);
+        printf("@@ ELECTROSTATIC old  = %25.15f\n", ct.Evhold_rho);
+        printf("@@ XC                 = %25.15f\n", ct.XC);
+        printf("@@ XC potential       = %25.15f\n", ct.Evxcold_rho);
+        printf("@@ SC ENERGY          = %25.15f\n", energy_sc);
 
     }                           /* end if */
 

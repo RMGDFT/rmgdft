@@ -9,7 +9,7 @@
  *   Version: 3.0.0
  * COPYRIGHT
  *   Copyright (C) 2001  Wenchang Lu,
- *                       Jerzy Bernholc
+*                       Jerzy Bernholc
  * FUNCTION
  *   void allocate_matrix()   
  *   allocate memory for matrixs
@@ -20,7 +20,7 @@
  * PARENTS
  *   run.c
  * CHILDREN
- *   
+ 
  * SOURCE
  */
 
@@ -58,7 +58,7 @@ void allocate_matrix()
 
     my_malloc_init( sg_res, S0_BASIS, REAL );
 
-    sizeofmatrix = MXLLDA * MXLLDA;
+    sizeofmatrix = MXLLDA * MXLCOL;
 
 #if !GAMMA_PT
     sizeofmatrix *= 2.0;

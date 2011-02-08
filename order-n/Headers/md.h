@@ -61,7 +61,7 @@
 #define     REAL    double
 
 
-int MXLLDA;
+int MXLLDA, MXLCOL;
 REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vcomp, *vxc, *rhocore, *vtot,
     *vtot_c;
 REAL *vh_old, *vxc_old;
@@ -766,6 +766,7 @@ typedef struct
 
     /* Maxium number of SCF steps in an MD step */
     int max_scf_steps;
+    int freeze_orbital_step;
 
     /* Actual number of steps done */
     int scf_steps;
@@ -892,6 +893,19 @@ typedef struct
 
     /* Projector mixing parameter */
     REAL prjmix;
+
+
+ /*Order of Pulay mixing for charge density*/
+    int charge_pulay_order;
+
+    /*How often to refresh Pulay history*/
+    int charge_pulay_refresh;
+
+    /*Flag to test whether or not the modified metrics should be used in * Pulay mixing*/
+    int charge_pulay_special_metrics;
+
+    /*Weight for Pulay special metrics*/
+    REAL charge_pulay_special_metrics_weight;
 
 
     /* Global uniform grid corner */

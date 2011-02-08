@@ -38,7 +38,7 @@ void get_mat_Omega(STATE * states, double Omega[])
 
 
     mxllda = MXLLDA;
-    mxllda2 = MXLLDA * MXLLDA;
+    mxllda2 = MXLLDA * MXLCOL;
     npcol = pct.npcol;
     nprow = pct.nprow;
 

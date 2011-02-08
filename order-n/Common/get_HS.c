@@ -29,7 +29,6 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
 
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
 
-    n2 = ct.num_states * ct.num_states;
     maxst = ct.num_states;
 
     distribute_to_global(vtot_c, vtot_global);
@@ -88,6 +87,10 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
 
         /** Add sum_n,m,I(q_n,m * <phi|beta_n,I> * <beta_m,I|phi>) **/
     get_matB_qnm(Bij_00);          /* shuchun wang */
+
+    n2 = (ct.state_end-ct.state_begin) * ct.num_states;
+    sscal (&n2, &ct.vel, Hij_00, &ione);
+    sscal (&n2, &ct.vel, Bij_00, &ione);
 
     Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Aij, IB, JB,
             pct.desca, pct.desca[1]);

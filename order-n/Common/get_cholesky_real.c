@@ -60,7 +60,7 @@ void get_cholesky_real(double *matS)
 
 
     mxllda = MXLLDA;
-    mxllda2 = MXLLDA * MXLLDA;
+    mxllda2 = MXLLDA * MXLCOL;
 
     /* If I'm in the process grid, execute the program */
     if (pct.myrow != -1)

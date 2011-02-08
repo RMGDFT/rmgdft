@@ -49,7 +49,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     numst = ct.num_states;
 
-    mxllda2 = MXLLDA * MXLLDA;
+    mxllda2 = MXLLDA * MXLCOL;
     diag = -1. / ct.Ac;
     ct.meanres = 0.;
     ct.minres = 100000.0;

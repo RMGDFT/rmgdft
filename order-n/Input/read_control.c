@@ -98,6 +98,20 @@ Surface";
     get_data ("charge_density_mixing", &ct.mix, DBL, "0.5");
 
 
+  /*Order of Pulay mixing for charge density*/
+    get_data ("charge_pulay_order", &ct.charge_pulay_order, INT, "5");
+
+
+    /*How often to refresh Pulay history*/
+    get_data ("charge_pulay_refresh", &ct.charge_pulay_refresh, INT, "100");
+
+    /*Flag to test whether or not the modified metrics should be used in * Pulay mixing*/
+    get_data ("charge_pulay_special_metrics", &ct.charge_pulay_special_metrics, BOOL, "false");
+
+    /*Weight to use for Pulay special metrics*/
+    get_data ("charge_pulay_special_metrics_weight", &ct.charge_pulay_special_metrics_weight, DBL, "100.0");
+
+
   /* Set up and validate input options */
     char exchange_correlation_type_opts[] = "\
 LDA\n\
@@ -113,6 +127,7 @@ GGA PBE";
 
     /* Number of scf steps */
     get_data ("max_scf_steps", &ct.max_scf_steps, INT, "100");
+    get_data ("freeze_orbital_step", &ct.freeze_orbital_step, INT, "90");
 
     /* RMS convergence criterion */
     get_data ("rms_convergence_criterion", &ct.thr_rms, DBL, "1.0E-7");

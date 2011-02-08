@@ -180,19 +180,18 @@ void state_corner_xyz(STATE * states)
     int minnz = 1000000;
     for (state = 0; state < ct.num_states; state++)
     {
-/*
- *		states[state].ixmin -= 4; 
- *		states[state].ixmax += 4; 
- *		states[state].iymin -= 4; 
- *		states[state].iymax += 4; 
- *		states[state].izmin -= 4; 
- *		states[state].izmax += 4; 
- *
- *		states[state].orbit_nx +=8; 
- *		states[state].orbit_ny +=8; 
- *		states[state].orbit_nz +=8; 
- *		states[state].size = states[state].orbit_nx * states[state].orbit_ny * states[state].orbit_ny;    
- **/
+
+ 		states[state].ixmin -= 4; 
+ 		states[state].ixmax += 4; 
+ 		states[state].iymin -= 4; 
+ 		states[state].iymax += 4; 
+ 		states[state].izmin -= 4; 
+ 		states[state].izmax += 4; 
+
+ 		states[state].orbit_nx +=8; 
+ 		states[state].orbit_ny +=8; 
+ 		states[state].orbit_nz +=8; 
+ 		states[state].size = states[state].orbit_nx * states[state].orbit_ny * states[state].orbit_ny;    
         maxnx = max(maxnx, states[state].orbit_nx);
         maxny = max(maxny, states[state].orbit_ny);
         maxnz = max(maxnz, states[state].orbit_nz);

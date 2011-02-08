@@ -33,6 +33,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     int st1, idx, ione = 1;
     double tem;
     int flag;
+    int steps;
 
     time1 = my_crtc();
 
@@ -54,8 +55,16 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     time3 = my_crtc();
 
 
-    mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
-
+    if(ct.scf_steps < ct.freeze_orbital_step)
+    {
+        steps = ct.scf_steps;
+        mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
+    }
+    else
+    {
+        steps = ct.scf_steps - ct.freeze_orbital_step;
+        ct.charge_pulay_order = max(5,ct.charge_pulay_order);
+    }
     time4 = my_crtc();
     rmg_timings(MG_TIME, time4 - time3, 0);
 
@@ -84,14 +93,14 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
     get_new_rho(states, rho);
 
-        for (idx = 0; idx < FP0_BASIS; idx++)
-        {
-            tem = rho_old[idx];
-            rho_old[idx] = -rho[idx] + rho_old[idx];
-            rho[idx] = tem;
-        }
+    for (idx = 0; idx < FP0_BASIS; idx++)
+    {
+        tem = rho_old[idx];
+        rho_old[idx] = -rho[idx] + rho_old[idx];
+        rho[idx] = tem;
+    }
 
-        pulay_rho (ct.scf_steps, FP0_BASIS, rho, rho_old, 1, 20, ct.mix, 0); 
+    pulay_rho (steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 
     /* Update potential */
@@ -112,15 +121,15 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 /*
-    Function to update potentials vh and vxc:
-    
-    The new potentials are computed as a linear combination 
-    of the old ones (input "vh" and "vxc") and the ones 
-    corresponding to the input "rho".
-*/
+   Function to update potentials vh and vxc:
+
+   The new potentials are computed as a linear combination 
+   of the old ones (input "vh" and "vxc") and the ones 
+   corresponding to the input "rho".
+ */
 void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
-                double *vnuc, double *rho, double *rhoc, double *rhocore,
-                int *CONVERGENCE, STATE * states)
+        double *vnuc, double *rho, double *rhoc, double *rhocore,
+        int *CONVERGENCE, STATE * states)
 {
     int n = FP0_BASIS, idx, ione = 1;
 

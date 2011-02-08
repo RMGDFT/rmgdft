@@ -65,21 +65,13 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
         if (pct.thispe == 0)
             write_eigs(states);
 
-/*        if (CONVERGENCE)
+        if (CONVERGENCE)
         {
             if (pct.thispe == 0)
                 printf ("\n\n Convergence has been achieved. stopping ...\n");
-
-            get_mat_Omega(states, mat_Omega);
-
-            force (rho, rhoc, vh, vxc, vnuc, states);
-
-            if (pct.thispe == 0)
-                write_force ();
-
             break;
         }
-*/
+
 
         /* Check if we need to output intermediate results */
         if (outcount >= ct.outcount)

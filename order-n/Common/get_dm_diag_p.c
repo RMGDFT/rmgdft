@@ -149,7 +149,7 @@ void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
             work_matrix_row[st1] = 0.5 * states[st1].occupation;
         }
 
-        diaginit(gamma_dis, pct.desca, work_matrix_row, ct.num_states);
+        diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);
 
 
         /* Get the eigenvectors Z of the generalized eigenvalue problem */
