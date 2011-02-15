@@ -99,7 +99,7 @@ Surface";
 
 
   /*Order of Pulay mixing for charge density*/
-    get_data ("charge_pulay_order", &ct.charge_pulay_order, INT, "5");
+    get_data ("charge_pulay_order", &ct.charge_pulay_order, INT, "1");
 
 
     /*How often to refresh Pulay history*/

@@ -29,13 +29,14 @@ void global_sums(REAL * vect, int *length)
     int sizr, steps, blocks, newsize;
     REAL *rptr, *rptr1;
     REAL rptr2[100];
+    int ione = 1;
 
     /* Check for small vector case and handle on stack */
     if (*length < 100)
     {
 
         sizr = *length;
-        QMD_scopy(sizr, vect, 1, rptr2, 1);
+        dcopy(&sizr, vect, &ione, rptr2, &ione);
         MPI_Allreduce(rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         return;
 
@@ -52,7 +53,7 @@ void global_sums(REAL * vect, int *length)
     for (steps = 0; steps < blocks; steps++)
     {
 
-        QMD_scopy(newsize, rptr1, 1, rptr, 1);
+        dcopy(&newsize, rptr1, &ione, rptr, &ione);
         MPI_Allreduce(rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         rptr1 += newsize;
@@ -63,7 +64,7 @@ void global_sums(REAL * vect, int *length)
     if (sizr)
     {
 
-        QMD_scopy(sizr, rptr1, 1, rptr, 1);
+        dcopy(&sizr, rptr1, &ione, rptr, &ione);
         MPI_Allreduce(rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     }                           /* end if */

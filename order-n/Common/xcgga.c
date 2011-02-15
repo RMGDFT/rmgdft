@@ -80,7 +80,7 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
     nrho = rho1;
 
     /* Generate the gradient of the density */
-    app_grad(rho1, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    app_grad6(rho1, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
 
     /* Get the Laplacian of the density */
@@ -97,7 +97,7 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
 
 
     /* Get its gradient */
-    app_grad(agg, agx, agy, agz, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    app_grad6(agg, agx, agy, agz, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
 
 
@@ -105,17 +105,21 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
     ndim = 3;
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-
-        if ((d = nrho[idx]) < SMALL)
-        {
-            d = SMALL;
-            fac = exp(50. * (nrho[idx] / d - 1.0));
-        }
-        else
+        d = nrho[idx];
+        if (d  > SMALL)
         {
             fac = 1.0;
         }
-        kf = pow(pisq3 * d, 0.333333333333333);
+        else if (d >SMALL * 0.001)
+        {
+            fac = exp(50. * (nrho[idx] / SMALL - 1.0));
+        }
+        else
+        {
+            d = SMALL * 0.001;
+            fac = 0.0;
+        }
+        kf = cbrt(pisq3 * d);
 
         s = agg[idx] / (TWO * kf * d);
         us = gx[idx] * agx[idx] + gy[idx] * agy[idx] + gz[idx] * agz[idx];
@@ -196,8 +200,11 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
             cpot = vcup + dvcup;
             cen = ec + h;
 
-            vxc[idx] = cpot + vx;
-            exc[idx] = cen + ex;
+//            vxc[idx] = fac * (cpot + vx) + (1.0-fac) * mu_pz(nrho[idx]);
+//            exc[idx] = fac * (cen + ex) + (1.0-fac) * e_pz(nrho[idx]);
+            vxc[idx] = fac * (cpot + vx);
+            exc[idx] = fac * (cen + ex) ;
+
 
         }
         else
@@ -210,12 +217,6 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
 
             sk = TWO * sqrt(kf / PI);
 
-#if 0
-            /* commented out for speed since we are doing spin-unpolarized calculations */
-            g = pow(1.0 + zet, 0.6666666666666666);
-            g += pow(1.0 - zet, 0.6666666666666666);
-            g = g / TWO;
-#endif
             g = ONE;
 
             gks2 = TWO * sk * g;

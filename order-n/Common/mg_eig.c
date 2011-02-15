@@ -62,7 +62,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     get_ddd(vtot);
 
     time1 = my_crtc();
-    get_vtot_psi(vtot_c, vtot);
 
     distribute_to_global(vtot_c, vtot_global);
     time2 = my_crtc();

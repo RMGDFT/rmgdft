@@ -63,7 +63,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     else
     {
         steps = ct.scf_steps - ct.freeze_orbital_step;
-        ct.charge_pulay_order = max(5,ct.charge_pulay_order);
+        if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
     }
     time4 = my_crtc();
     rmg_timings(MG_TIME, time4 - time3, 0);
@@ -146,7 +146,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
     pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
     /* Generate hartree potential */
-    get_vh(rho, rhoc, vh, 15, ct.poi_parm.levels);
+    get_vh(rho, rhoc, vh, 30, ct.poi_parm.levels);
 
 
     /* evaluate correction vh+vxc */
@@ -185,6 +185,8 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
     for (idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
+   get_vtot_psi(vtot_c, vtot);
+    
     if (t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;
 }

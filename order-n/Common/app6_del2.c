@@ -32,7 +32,7 @@
 
 
 
-#include "md.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 
@@ -45,6 +45,7 @@ void app6_del2(REAL * f, REAL * work, int dimx, int dimy, int dimz,
     REAL h2, t0, t1x, t2x;
     REAL t1y, t2y;
     REAL t1z, t2z;
+    double t3x,t3y,t3z;
     REAL *dum2;
     int ixs, iys, ix1, iy1;
 
@@ -53,54 +54,63 @@ void app6_del2(REAL * f, REAL * work, int dimx, int dimy, int dimz,
     time1 = my_crtc();
 #endif
 
-    ixs = (dimy + 4) * (dimz + 4);
-    iys = (dimz + 4);
+    ixs = (dimy + 6) * (dimz + 6);
+    iys = (dimz + 6);
     ix1 = dimy * dimz;
     iy1 = dimz;
 
-    my_malloc_init( dum2, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL );
-    trade_images2(f, dum2, dimx, dimy, dimz);
+    my_malloc_init( dum2, (dimx + 6) * (dimy + 6) * (dimz + 6), REAL );
+    trade_imagesx(f, dum2, dimx, dimy, dimz, 3);
 
     h2 = hxgrid * hxgrid * ct.xside * ct.xside;
-    t0 = -30.0 / (12.0 * h2);
-    t1x = 16.0 / (12.0 * h2);
-    t2x = -1.0 / (12.0 * h2);
+    t0 = -49.0 / (18.0 * h2);
+    t1x =  3.0 / ( 2.0 * h2);
+    t2x = -3.0 / (20.0 * h2);
+    t3x =  1.0 / (90.0 * h2);
 
     h2 = hygrid * hygrid * ct.yside * ct.yside;
-    t0 -= 30.0 / (12.0 * h2);
-    t1y = 16.0 / (12.0 * h2);
-    t2y = -1.0 / (12.0 * h2);
+    t0 -= 49.0 / (18.0 * h2);
+    t1y =  3.0 / ( 2.0 * h2);
+    t2y = -3.0 / (20.0 * h2);
+    t3y =  1.0 / (90.0 * h2);
 
     h2 = hzgrid * hzgrid * ct.zside * ct.zside;
-    t0 -= 30.0 / (12.0 * h2);
-    t1z = 16.0 / (12.0 * h2);
-    t2z = -1.0 / (12.0 * h2);
+    t0 -= 49.0 / (18.0 * h2);
+    t1z =  3.0 / ( 2.0 * h2);
+    t2z = -3.0 / (20.0 * h2);
+    t3z =  1.0 / (90.0 * h2);
 
 
 
-    for (ix = 2; ix < dimx + 2; ix++)
+    for (ix = 3; ix < dimx + 3; ix++)
     {
 
-        for (iy = 2; iy < dimy + 2; iy++)
+        for (iy = 3; iy < dimy + 3; iy++)
         {
 
-            for (iz = 2; iz < dimz + 2; iz++)
+            for (iz = 3; iz < dimz + 3; iz++)
             {
 
-                work[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
+                work[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
                     t0 * dum2[ix * ixs + iy * iys + iz] +
                     t1x * dum2[(ix - 1) * ixs + iy * iys + iz] +
                     t1x * dum2[(ix + 1) * ixs + iy * iys + iz] +
-                    t1y * dum2[ix * ixs + (iy - 1) * iys + iz] +
-                    t1y * dum2[ix * ixs + (iy + 1) * iys + iz] +
-                    t1z * dum2[ix * ixs + iy * iys + iz - 1] +
-                    t1z * dum2[ix * ixs + iy * iys + iz + 1] +
                     t2x * dum2[(ix - 2) * ixs + iy * iys + iz] +
                     t2x * dum2[(ix + 2) * ixs + iy * iys + iz] +
+                    t3x * dum2[(ix - 3) * ixs + iy * iys + iz] +
+                    t3x * dum2[(ix + 3) * ixs + iy * iys + iz] +
+                    t1y * dum2[ix * ixs + (iy - 1) * iys + iz] +
+                    t1y * dum2[ix * ixs + (iy + 1) * iys + iz] +
                     t2y * dum2[ix * ixs + (iy - 2) * iys + iz] +
                     t2y * dum2[ix * ixs + (iy + 2) * iys + iz] +
+                    t3y * dum2[ix * ixs + (iy - 3) * iys + iz] +
+                    t3y * dum2[ix * ixs + (iy + 3) * iys + iz] +
+                    t1z * dum2[ix * ixs + iy * iys + iz - 1] +
+                    t1z * dum2[ix * ixs + iy * iys + iz + 1] +
                     t2z * dum2[ix * ixs + iy * iys + iz - 2] +
-                    t2z * dum2[ix * ixs + iy * iys + iz + 2];
+                    t2z * dum2[ix * ixs + iy * iys + iz + 2] +
+                    t3z * dum2[ix * ixs + iy * iys + iz - 3] +
+                    t3z * dum2[ix * ixs + iy * iys + iz + 3];
 
             }                   /* end for */
         }                       /* end for */

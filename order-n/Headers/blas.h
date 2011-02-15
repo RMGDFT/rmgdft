@@ -82,6 +82,12 @@
 #define               latgen latgen_
 #define               fgram   dfgram_
 
+#define     dcopy   dcopy_
+#define     ddot   ddot_
+#define     dgesv   dgesv_
+#define     daxpy   daxpy_
+#define     dscal   dscal_
+
 #endif
 
 #if (AIX || AIX_MPI )
