@@ -113,6 +113,8 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     allocate_psi(states, states1);
     if(thispe == 0) printf("\n init_allocate_psi  done %f sec",my_crtc()-time1 );
 
+    init_states();
+
     is_state_overlap(states);
 
     if(thispe == 0) printf("\n init_is_state_overlap  done %f sec",my_crtc()-time1 );
