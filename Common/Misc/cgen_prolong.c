@@ -95,7 +95,6 @@ void cgen_prolong(REAL  coef[], REAL fraction, int order)
 
 	    }                   /* end for */
          
-            printf("\n");
 
     }                       /* end for */
 
