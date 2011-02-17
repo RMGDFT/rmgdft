@@ -114,7 +114,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (!firststep && t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;
 
-    get_vtot_psi (vtot_psi, vtot);
+    get_vtot_psi (vtot_psi, vtot, FG_NX);
 
     /*Generate the Dnm_I */
     get_ddd (vtot);

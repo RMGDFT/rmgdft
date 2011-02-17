@@ -73,7 +73,7 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     get_ddd (vtot);
-    get_vtot_psi (vtot_psi, vtot);
+    get_vtot_psi (vtot_psi, vtot, FG_NX);
 
     /*  loop for k point */
     for (ik = 0; ik < ct.num_kpts; ik++)

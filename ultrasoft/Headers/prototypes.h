@@ -354,7 +354,7 @@ void nlccforce (REAL *rho, REAL *vxc);
 REAL get_ve_nl (STATE *sta, int istate);
 void pack_rho_ctof (REAL *rhoc, REAL *rhof);
 void bspline_interp_full (REAL *rho, REAL *rho_f);
-void get_vtot_psi (REAL *vtot_psi, REAL *vtot);
+void get_vtot_psi (REAL *vtot_psi, REAL *vtot, int);
 void betaxpsi (STATE *states);
 void betaxpsi1 (STATE *states, int kpt);
 void assign_weight (SPECIES *sp, int ion, fftw_complex *beptr,

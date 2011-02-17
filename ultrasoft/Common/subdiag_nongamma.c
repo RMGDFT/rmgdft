@@ -121,7 +121,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     my_malloc (vtot, FP0_BASIS, REAL);
     for (idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
-    get_vtot_psi (vtot_eig, vtot);
+    get_vtot_psi (vtot_eig, vtot, FG_NX);
 
     /*Release memory for vtot, do it already here since vtot is on fine grid */
     my_free (vtot);

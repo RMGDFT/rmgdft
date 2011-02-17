@@ -8,38 +8,33 @@
 #include <stdio.h>
 #include "main.h"
 
-void get_vtot_psi (REAL * vtot_psi, REAL * vtot)
+void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int scale)
 {
 
-   REAL *sg_vtot;
+    int idx, ione =1;
+    REAL *sg_vtot;
 
-   my_malloc (sg_vtot,(FPX0_GRID+10)*(FPY0_GRID+10)*(FPZ0_GRID+10),REAL);
-   trade_imagesx (vtot,sg_vtot,FPX0_GRID,FPY0_GRID,FPZ0_GRID,5);
-
-   mg_restrict_6 (sg_vtot,vtot_psi,FPX0_GRID,FPY0_GRID,FPZ0_GRID);
-   my_free (sg_vtot);
-
-/*
-
-    int i, j, k;       
-    P0_GRID *ptr_vtot_psi;
-    FP0_GRID *ptr_vtot;
- 
-    ptr_vtot_psi = (P0_GRID *) vtot_psi;
-    ptr_vtot = (FP0_GRID *) vtot;
-
-
-    for (i = 0; i < PX0_GRID; i++)
+    if(scale ==1)
     {
-        for (j = 0; j < PY0_GRID; j++)
-        {
-            for (k = 0; k < PZ0_GRID; k++)
-            {
-                ptr_vtot_psi->s1.b[i][j][k] = ptr_vtot->s1.b[FG_NX * i][FG_NY * j][FG_NZ * k];
-            }
-        }
+        idx = FPX0_GRID * FPY0_GRID * FPZ0_GRID;    
+        dcopy(&idx, vtot, &ione, vtot_psi, &ione);
+        return;
     }
-*/  
+
+    my_malloc (sg_vtot,(FPX0_GRID+10)*(FPY0_GRID+10)*(FPZ0_GRID+10),REAL);
+    trade_imagesx (vtot,sg_vtot,FPX0_GRID,FPY0_GRID,FPZ0_GRID,5);
+
+    if(scale == 2) 
+    {
+        mg_restrict_6 (sg_vtot,vtot_psi,FPX0_GRID,FPY0_GRID,FPZ0_GRID);
+    } 
+    else
+    {
+        printf("\n scale = %d ", scale);
+        error_handler ("not programed for that scale"); 
+    }
+        my_free (sg_vtot);
+
 
 
 }
