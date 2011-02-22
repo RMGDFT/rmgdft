@@ -23,6 +23,11 @@ void is_state_overlap(STATE * states)
     REAL r;
     REAL r1, r2;
 
+    double hx4;
+/*  add hx4 to account derivative */
+    hx4 = 4.0* ct.hxgrid * ct.xside;
+    
+
     for (state1 = 0; state1 < ct.num_states; state1++)
     {
         for (state2 = state1; state2 < ct.num_states; state2++)
@@ -31,7 +36,7 @@ void is_state_overlap(STATE * states)
             r1 = states[state1].radius;
             r2 = states[state2].radius;
 
-            if (r < (r1 + r2))
+            if (r < (r1 + r2 + hx4))
                 state_overlap_or_not[state1 * ct.num_states + state2] = 1;
             else
                 state_overlap_or_not[state1 * ct.num_states + state2] = 0;

@@ -1,7 +1,7 @@
 /************************** SVN Revision Information **************************
  **    $Id: state_corner_xyz.c 1059 2009-07-27 19:10:28Z luw $    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -100,7 +100,7 @@ void state_corner_xyz(STATE * states)
         iyy = states[state].iymax - states[state].iymin + 1;
         izz = states[state].izmax - states[state].izmin + 1;
         if (ixx > states[state].orbit_nx || iyy > states[state].orbit_ny
-            || izz > states[state].orbit_nz)
+                || izz > states[state].orbit_nz)
         {
             printf
                 ("states[state].orbit_nx, ny, nz and ixx: %d, %d, %d,   %d \n",
@@ -170,7 +170,7 @@ void state_corner_xyz(STATE * states)
     }
 
 
-/* include orbit size in x,y,z by 8 */
+    /* include orbit size in x,y,z by 8 */
 
     int maxnx = 0; 
     int maxny = 0;
@@ -181,18 +181,18 @@ void state_corner_xyz(STATE * states)
     for (state = 0; state < ct.num_states; state++)
     {
 
-/* 		states[state].ixmin -= 4; 
- *		states[state].ixmax += 4; 
- *	states[state].iymin -= 4; 
- *	states[state].iymax += 4; 
- *	states[state].izmin -= 4; 
- *	states[state].izmax += 4; 
+        states[state].ixmin -= 2; 
+        states[state].ixmax += 2; 
+        states[state].iymin -= 2; 
+        states[state].iymax += 2; 
+        states[state].izmin -= 2; 
+        states[state].izmax += 2; 
 
- *		states[state].orbit_nx +=8; 
- *		states[state].orbit_ny +=8; 
- *		states[state].orbit_nz +=8; 
-*/
- 		states[state].size = states[state].orbit_nx * states[state].orbit_ny * states[state].orbit_ny;    
+        states[state].orbit_nx +=4; 
+        states[state].orbit_ny +=4; 
+        states[state].orbit_nz +=4; 
+
+        states[state].size = states[state].orbit_nx * states[state].orbit_ny * states[state].orbit_ny;    
         maxnx = max(maxnx, states[state].orbit_nx);
         maxny = max(maxny, states[state].orbit_ny);
         maxnz = max(maxnz, states[state].orbit_nz);

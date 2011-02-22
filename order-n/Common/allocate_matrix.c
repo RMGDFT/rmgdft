@@ -45,10 +45,10 @@ void allocate_matrix()
 
     my_malloc_init( rho, FP0_BASIS * ispin, REAL );
     my_malloc_init( rhoc, FP0_BASIS, REAL );
-    my_malloc_init( vh, FP0_BASIS, REAL );
+    my_malloc_init( vh, 2*FP0_BASIS, REAL );
+    vxc = vh + FP0_BASIS;
     my_malloc_init( vnuc, FP0_BASIS, REAL );
     my_malloc_init( vcomp, FP0_BASIS, REAL );
-    my_malloc_init( vxc, FP0_BASIS * ispin, REAL );
     my_malloc_init( vtot, FP0_BASIS, REAL );
     my_malloc_init( vtot_c, P0_BASIS, REAL ); /*shuchun add */
     my_malloc_init( rhocore, FP0_BASIS, REAL );

@@ -1138,7 +1138,7 @@ void app_4del2 (REAL * f, REAL * work);
 REAL app_del2c (REAL * a, REAL * b, int dimx, int dimy, int dimz,
         REAL gridhx, REAL gridhy, REAL gridhz);
 
-void app_smooth (REAL * f, REAL * work, REAL sfac);
+void app_smooth (REAL * f, int dimx, int dimy, int dimz);
 void app_cir (REAL * a, REAL * b, int dimx, int dimy, int dimz);
 void app_cir_0 (REAL * a, REAL * b, int dimx, int dimy, int dimz);
 void app_cir_ortho_0 (REAL * a, REAL * b, int dimx, int dimy, int dimz);

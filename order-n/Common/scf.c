@@ -22,6 +22,7 @@ void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning);
 static double t[2];
 extern int it_scf;
+double tem1;
 
 void scf(STATE * states, STATE * states1, double *vxc, double *vh,
          double *vnuc, double *rho, double *rhoc, double *rhocore,
@@ -93,13 +94,16 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
     get_new_rho(states, rho);
 
+    tem1 = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
         tem = rho_old[idx];
         rho_old[idx] = -rho[idx] + rho_old[idx];
         rho[idx] = tem;
+        tem1 += rho_old[idx] * rho_old[idx];
     }
 
+    tem1 = sqrt(real_sum_all (tem1) ) /(double) FP0_BASIS;
     pulay_rho (steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 
@@ -168,7 +172,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
     t[1] = sqrt(t[1] / ((double) (ct.vh_nbasis)));
 
     if (pct.thispe == 0)
-        printf(" SCF CHECKS: <rho dv>/MAX_IONS = %15.10f RMS[dv] = %15.10e\n", t[0], t[1]);
+        printf(" SCF CHECKS: RMS[dv] = %15.10e RMS[drho] = %15.10e \n", t[1], tem1);
 
     fflush(NULL);
     my_barrier();
