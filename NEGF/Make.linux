@@ -16,7 +16,7 @@ DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
 
 
 # Modules(directories) that contain the necessary source files
-MODULES = Common Input ../Common/*
+MODULES = Common Input ../Common/* ../order-n/ON-NEGF-share
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
 HFILES := $(wildcard Headers/*.h)
