@@ -155,17 +155,22 @@ typedef struct
 typedef struct
 {
 
-    /** Number (rank in MPI terminology) of this processor in this image instance */
-    int thispe, thisgrp;
+    /** Number (rank in MPI terminology) of this processor in this image grid */
+    int thispe, imgpe, thisimg, thisspin, thisgrid;
 
-	/** Number of instances to be run simultaneously **/
-	int instances;
+	/** Number of grids (typically 1) per image to be run simultaneously **/
+	int images, grids;
 
-	/* MPI communicators for each code instance (thisgrp_comm) and one (master_comm)
+	/* MPI communicators for each code grid (grid_comm) and one (rmg_comm)
 	 * for all group rank 0 pe's. The later effectively replaces MPI_COMM_WORLD
-	 * unless you really need all-to-all, even across instances, communication. */
-	MPI_Comm master_comm, img_topo_comm, thisgrp_comm;
+	 * unless you really need all-to-all, even across grids, communication. */
+	MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm;
 
+    /* determine if this image is processing spin up or spin down. */
+    int spin_flag;
+
+    /* determine whether to initialize up and down density equally or not */
+    int init_equal_density_flag;
 
 	/* scalapack variables */
 	int desca[DLEN];
@@ -331,6 +336,12 @@ typedef struct
 
     /** Index showing which k-point this orbital is associated with */
     int kidx;
+
+    /* eigenvalue of the opposite spin for the corresponding orbital (state)*/
+    REAL eig_oppo;
+
+    /* Hold occupation of the opposite spins orbital*/
+    REAL occupation_oppo;
 
 } STATE;
 
@@ -915,11 +926,24 @@ typedef struct
     /** Number of states */
     int num_states;
 
+    /* Number of states for the opposite spin*/
+    int num_states_oppo; 
+
+    /*Number of states for spin up and down used for initialization*/
+    int num_states_up, num_states_down;
+
     /** Number of unoccupied states above Fermi level */
     int num_unocc_states;
 
     /** string to store repeat count occupations */
     char occupation_str[256];
+
+    /*string to store repeat count occupations for spin up*/
+    char occupation_str_spin_up[256];
+
+    /*string to store repeat count occupations for spin down*/
+    char occupation_str_spin_down[256]; 
+    
 
     /** Number of ions */
     int num_ions;

@@ -38,14 +38,6 @@
 
 #if MPI
 
-#  if (LINUX || XT3)
-void global_sums_spin__ (REAL * vect, int *length)
-{
-    global_sums_spin (vect, length);
-}
-#  endif
-
-
 
 void global_sums_spin (REAL * vect, int *length)
 {
@@ -83,7 +75,7 @@ void global_sums_spin (REAL * vect, int *length)
     for (steps = 0; steps < blocks; steps++)
     {
         QMD_scopy (newsize, rptr1, 1, rptr, 1);
-       	MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);  /* sum over all processors in all  cpugrid*/
+       	MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, pct.img_comm);  /* sum over all processors in all  cpugrid*/
 		 
         rptr1 += newsize;
     }
@@ -91,7 +83,7 @@ void global_sums_spin (REAL * vect, int *length)
     if (sizr)
     {
         QMD_scopy (sizr, rptr1, 1, rptr, 1);
-        MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, pct.img_comm);
     }
 
     my_free (rptr);

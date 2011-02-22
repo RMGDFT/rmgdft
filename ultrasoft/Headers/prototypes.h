@@ -72,6 +72,8 @@ void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
                 REAL gridhy, REAL gridhz, REAL step);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix,
            int num_st, int occ_flag);
+REAL fill_spin(STATE *states_up, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
+
 void find_phase (int nldim, REAL *nlcdrs, REAL *phase_sin,
                  REAL *phase_cos);
 void finish_release_mem(STATE *states);
@@ -85,13 +87,91 @@ void get_eig (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc);
 char *get_num (char *str);
 void get_te (REAL *rho, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
              STATE *states);
+void get_te_spin (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
+             STATE *states);
+
 void get_vxc (REAL *rho, REAL *rhocore, REAL *vxc);
+void get_vxc_spin (REAL *rho, REAL * rho_oppo, REAL *rhocore, REAL *vxc);
+
+
 void get_zdens (STATE *states, int state, REAL *zvec);
 void xclda_pz81 (REAL *rho, REAL *vxc);
 void exclda_pz81 (REAL *rho, REAL *exc);
+
+/* new lda function incorporating both  1981 and 1994 monte carlo data */
+void xclda(REAL *rho, REAL *vxc, REAL *exc);
+void slater(REAL rs, REAL *ex, REAL *vx);
+void pz(REAL rs, int iflag, REAL *ec, REAL *vc); 
+
+/* lsda exchange correlation functional */
+void xclsda_spin(REAL *rho, REAL *rho_oppo, REAL *vxc, REAL *exc);
+void slater_spin(REAL arhox, REAL zeta, REAL *ex, REAL *vx, REAL *vx_oppo);
+void pz_spin(REAL rs, REAL zeta, REAL *ec, REAL *vc, REAL *vc_oppo);
+void pz_polarized(REAL rs, REAL *ec, REAL *vc);
+void pw_spin (REAL rs, REAL zeta, REAL *ec, REAL *vcup, REAL *vcdw);
+void pw (REAL rs, int iflag, REAL *ec, REAL *vc) ;
+
+
 double mu_pz (double rho);
 double e_pz (double rho);
 void xcgga (REAL *rho, REAL *vxc, REAL *exc, int flag);
+void xcgga_spin (REAL *rho, REAL *rho_oppo, REAL *vxc, REAL *exc, int flag);
+
+
+/* exchange correlation functional for PBE */
+
+void gcxcpbe_spin(REAL rho_up, REAL rho_dw,
+  REAL grad_up, REAL grad_dw, REAL grad, REAL *enxc,
+  REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
+  REAL *vxc2_updw, REAL *vxc2_dwup);
+void pbex (REAL rho, REAL grho, int iflag, REAL *sx, REAL *v1x, REAL *v2x);
+void pbec_spin (REAL rho, REAL zeta, REAL grho, int iflag, REAL *sc, REAL *v1cup, REAL *v1cdw, REAL *v2c);
+
+void gcxcpbe (REAL rho, REAL grad, REAL *enxc, REAL *vxc1, REAL *vxc2);
+
+void pbec (REAL rho, REAL grad, int iflag, REAL *sc, REAL *v1c, REAL *v2c);
+
+
+
+/* becke88 exchange and perdew86 correlation */
+
+void becke88 ( REAL rho, REAL grho, REAL *sx, REAL *v1x, REAL *v2x );
+void perdew86 ( REAL rho, REAL grho, REAL *sc, REAL *v1c, REAL *v2c );
+void gcxbcp (REAL rho, REAL grad, REAL *enxc, REAL *vxc1, REAL *vxc2);
+void perdew86_spin ( REAL rho, REAL zeta, REAL grho, REAL *sc, REAL *v1cup, REAL *v1cdw, REAL *v2c );
+void becke88_spin ( REAL rho, REAL grho, REAL *sx, REAL *v1x, REAL *v2x );
+void gcxbcp_spin (REAL rho_up, REAL rho_dw,
+  REAL grad_up, REAL grad_dw, REAL grad, REAL *enxc,
+  REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
+  REAL *vxc2_updw, REAL *vxc2_dwup);
+
+
+/* PW91 exchange correlation */
+
+void ggax(REAL rho, REAL grho, REAL *sx, REAL *v1x, REAL *v2x);
+void ggac (REAL rho, REAL grho, REAL *sc, REAL *v1c, REAL *v2c);
+void ggac_spin (REAL rho, REAL zeta, REAL grho, REAL *sc, REAL *v1cup, REAL *v1cdw, REAL *v2c);
+void gcxcpw91 (REAL rho, REAL grad, REAL *enxc, REAL *vxc1, REAL *vxc2);
+void gcxcpw91_spin(REAL rho_up, REAL rho_dw,
+  REAL grad_up, REAL grad_dw, REAL grad, REAL *enxc,
+  REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
+  REAL *vxc2_updw, REAL *vxc2_dwup);
+
+
+/* BLYP exchange correlation */
+
+void lyp ( REAL rs, REAL *ec, REAL *vc );
+void glyp ( REAL rho, REAL grho, REAL *sc, REAL *v1c, REAL *v2c );
+void lsd_lyp ( REAL rho, REAL zeta, REAL * elyp, REAL * valyp, REAL * vblyp );
+void lsd_glyp ( REAL rhoa, REAL rhob, REAL grhoaa, REAL grhoab2, REAL grhobb, REAL *sc, REAL *v1ca, REAL *v2ca, REAL *v1cb, REAL *v2cb, REAL *v2cab );
+void gcxcblyp (REAL rho, REAL grad, REAL *enxc, REAL *vxc1, REAL *vxc2);
+void gcxcblyp_spin (REAL rho_up, REAL rho_dw,
+  REAL grad_up, REAL grad_dw, REAL grad_updw2, REAL *enxc,
+  REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
+  REAL *vxc2_updw, REAL *vxc2_dwup);
+
+
+
 void gram (KPOINT *kpoint, REAL h, int numst, int maxst, int numpt,
            int maxpt);
 int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
@@ -99,7 +179,10 @@ REAL get_ke (STATE *sp, int tid);
 void get_vh (REAL *rho, REAL *rhoc, REAL *vh, int cycles, int maxlevel);
 char *get_symbol (int atomic_number);
 void global_sums (REAL *vect, int *length);
+void global_sums_spin (REAL *vect, int *length);
 void init (REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
+           REAL *vnuc, REAL *vxc);
+void init_spin (REAL *vh, REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, STATE *states,
            REAL *vnuc, REAL *vxc);
 void init_derweight (void);
 void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
@@ -118,6 +201,7 @@ void init_pe (void);
 void init_img_topo ( int dimensionality );
 void init_pegrid (void);
 STATE *init_states (void);
+STATE *init_states_spin(void);
 void init_weight (void);
 void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
                     fftwnd_plan p1);
@@ -164,9 +248,16 @@ int read_atom_line(char *species, REAL *crds, int *movable, FILE *fhand, char *t
 int assign_species (CONTROL * c, char *buf);
 void read_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
                 STATE *states);
+void read_data_spin (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
+                STATE *states);
+
 void read_pseudo (void);
 REAL real_sum_all (REAL x);
+REAL real_sum_all_spin (REAL x);
 REAL real_min_all (REAL x);
+REAL real_min_all_spin (REAL x);
+
+
 void reset_timers (void);
 void sortpsi (STATE *states);
 void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
@@ -185,6 +276,9 @@ void write_avgd (REAL *rho);
 void write_avgv (REAL *vh, REAL *vnuc);
 void write_zstates (STATE *states);
 void write_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
+                 STATE *states);
+
+void write_data_spin (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
                  STATE *states);
 void write_header (void);
 void write_occ (STATE *states);
@@ -254,8 +348,12 @@ REAL metric (REAL *crystal);
 /* Md run types */
 void quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
              REAL *rhocore, REAL *rhoc);
+void quench_spin (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
+             REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void fastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rhocore, REAL *rhoc);
+void fastrlx_spin (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+              REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rhocore, REAL *rhoc);
 void cdfastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
@@ -296,6 +394,7 @@ void get_nlop_p (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
 void get_nlop_s (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
 void get_QI (void);
 void get_qqq (void);
+void get_rho (STATE * states, REAL * rho, REAL * rhocore);
 void get_new_rho (STATE * states, REAL * rho);
 void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_x, int length_y, int length_z);
 void init_psp (void);
@@ -308,6 +407,9 @@ REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
            int lpl[][9][9], SPECIES *sp);
 void scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
           REAL *rho, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
+void scf_spin (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+          REAL *rho,REAL *rho_oppo, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
+
 #if GAMMA_PT
 void subdiag_gamma (STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
 #else
@@ -325,6 +427,10 @@ REAL get_QnmL (int idx, int ltot, REAL r, SPECIES *sp);
 
 void force (REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
             STATE *states);
+
+void force_spin (REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
+            STATE *states);
+
 void iiforce (void);
 void lforce (REAL *rho, REAL *vh);
 void nlforce1 (REAL *veff);

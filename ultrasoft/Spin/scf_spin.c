@@ -164,7 +164,7 @@ void scf_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (!firststep && t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;
 
-    get_vtot_psi (vtot_psi, vtot);
+    get_vtot_psi (vtot_psi, vtot, FG_NX);
 
     /*Generate the Dnm_I */
     get_ddd (vtot);
@@ -239,7 +239,7 @@ void scf_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 	
         /* Take care of occupation filling */
         if (!firststep)
-       		ct.efermi = fill_spin (states, eigval_rv, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+       		ct.efermi = fill_spin (states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
 
     }
 

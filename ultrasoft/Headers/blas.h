@@ -47,6 +47,7 @@
 #  define		global_sums     global_sums_
 #  define		saxpy		daxpy_
 #  define		scopy   	dcopy_
+#  define		dcopy   	dcopy_
 #  define		sdot    	ddot_
 #  define		sscal   	dscal_
 #  define		ssyrk   	dsyrk_

@@ -105,19 +105,19 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
         if (flags == (INIT | TAGS))
         {
             Dprintf ("Entering TAGS|INIT for %s\n", meta);
-            if (pct.thispe == 0)
+            if (pct.imgpe == 0)
             {
                 newNode (meta, newItem (STR, filetostr (meta)));
                 size = tagstrip ();
                 dstr = this->is->the.string;
             }
-            MPI_Bcast (&size, 1, MPI_INT, 0, pct.thisgrp_comm);
-            if (pct.thispe != 0)
+            MPI_Bcast (&size, 1, MPI_INT, 0, pct.img_comm);
+            if (pct.imgpe != 0)
             {
                 my_malloc (dstr, size, char);
             }
-            MPI_Bcast (dstr, size, MPI_CHAR, 0, pct.thisgrp_comm);
-            if (pct.thispe != 0)
+            MPI_Bcast (dstr, size, MPI_CHAR, 0, pct.img_comm);
+            if (pct.imgpe != 0)
             {
                 newNode (meta, newItem (STR, dstr));
             }
@@ -130,19 +130,19 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
         else if (flags == (INIT | LINES))
         {
             Dprintf ("Entering LINES|INIT for %s\n", meta);
-            if (pct.thispe == 0)
+            if (pct.imgpe == 0)
             {
                 newNode (meta, newItem (STR, filetostr (meta)));
                 size = sstripcmnt (this->is->the.string, '#' );
                 dstr = this->is->the.string;
             }
-            MPI_Bcast (&size, 1, MPI_INT, 0, pct.thisgrp_comm);
-            if (pct.thispe != 0)
+            MPI_Bcast (&size, 1, MPI_INT, 0, pct.img_comm);
+            if (pct.imgpe != 0)
             {
                 my_malloc (dstr, size, char);
             }
-            MPI_Bcast (dstr, size, MPI_CHAR, 0, pct.thisgrp_comm);
-            if (pct.thispe != 0)
+            MPI_Bcast (dstr, size, MPI_CHAR, 0, pct.img_comm);
+            if (pct.imgpe != 0)
             {
                 newNode (meta, newItem (STR, dstr));
             }

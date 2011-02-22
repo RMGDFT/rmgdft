@@ -58,7 +58,7 @@ void read_pseudo (void)
 
         sp = &ct.sp[i];
 
-        if (pct.instances > 1)
+        if (pct.images > 1)
         {
             snprintf (tbuf, MAX_CHAR, "../%s", sp->pseudo_filename);
             strncpy (sp->pseudo_filename, tbuf, MAX_CHAR);

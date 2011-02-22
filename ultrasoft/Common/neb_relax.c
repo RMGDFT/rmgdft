@@ -57,7 +57,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     MPI_Status status;
 	printf("\tEntering NEB routine.\n");
 
-    if ( pct.thispe == 0 )
+    if ( pct.imgpe == 0 )
     {
         MPI_Cart_shift (pct.img_topo_comm, 0, 1, &img_rank_map[LEFT], &img_rank_map[RIGHT] );
         MPI_Comm_rank (pct.img_topo_comm, &img_rank_map[SELF]);
@@ -157,10 +157,10 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
         }
 		/* broadcast force constraint parameters to image procs */
-		MPI_Bcast( L_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.thisgrp_comm );
-		MPI_Bcast( R_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.thisgrp_comm );
-		MPI_Bcast( &L_total, 1, MPI_DOUBLE, 0, pct.thisgrp_comm );
-		MPI_Bcast( &R_total, 1, MPI_DOUBLE, 0, pct.thisgrp_comm );
+		MPI_Bcast( L_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.img_comm );
+		MPI_Bcast( R_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.img_comm );
+		MPI_Bcast( &L_total, 1, MPI_DOUBLE, 0, pct.img_comm );
+		MPI_Bcast( &R_total, 1, MPI_DOUBLE, 0, pct.img_comm );
 
 		/* capture force constraint parameters from right and left data*/
 		for ( count = 0; count < ct.num_ions; count++ )
