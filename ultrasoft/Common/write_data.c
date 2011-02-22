@@ -83,14 +83,14 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     time0 = my_crtc ();
 
 
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
         printf ("\nwrite_data: -------------- %s --------------\n\n", name);
 
 
     /*If output file is specified as /dev/null, skip writing */
     if (strcmp ("/dev/null", name) == 0)
     {
-        if (pct.thispe == 0)
+        if (pct.imgpe == 0)
             printf ("write_data: Output file given as /dev/null, no output written ...\n");
         return;
     }
@@ -254,7 +254,7 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     write_time = my_crtc () - time0;
 
-    if (pct.thispe == 0)
+    if (pct.imgpe == 0)
     {
         /*Things like grids and number of precessors should be written in the beginning of the file */
         /*printf( "write_data: psi grid = %d %d %d\n", ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid);

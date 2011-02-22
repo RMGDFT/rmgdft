@@ -54,7 +54,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
     /*printf("\nPE %d: ii %d jj %d kk %d",pct.thispe, ii, jj, kk);
        fflush(NULL);
 
-       MPI_Barrier(pct.thisgrp_comm); */
+       MPI_Barrier(pct.grid_comm); */
 
 
     for (i = 0; i < PE_Z; i++)
@@ -94,7 +94,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
             }
 
             /*send data to PE 0 */
-            MPI_Send (temp_buff, pz0_grid, MPI_DOUBLE, 0, 100, pct.thisgrp_comm);
+            MPI_Send (temp_buff, pz0_grid, MPI_DOUBLE, 0, 100, pct.grid_comm);
 
         }                       /*end if ((ii == ((double) PE_X)/2.0) ... */
 
@@ -102,7 +102,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
         if (pct.thispe == 0)
         {
 
-            MPI_Recv (temp_buff, pz0_grid, MPI_DOUBLE, MPI_ANY_SOURCE, 100, pct.thisgrp_comm,
+            MPI_Recv (temp_buff, pz0_grid, MPI_DOUBLE, MPI_ANY_SOURCE, 100, pct.grid_comm,
                       &mstatus);
 
             for (j = 0; j < pz0_grid; j++)
@@ -113,7 +113,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
 
         }                       /*end if(pct.thispe == 0) */
 
-        MPI_Barrier (pct.thisgrp_comm);
+        MPI_Barrier (pct.grid_comm);
 
     }                           /*end for (i=0;i<PE_Z;i++) */
 

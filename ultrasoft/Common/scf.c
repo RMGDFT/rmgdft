@@ -52,7 +52,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
           REAL * rho, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
 {
 
-    int kpt, st1, idx, ik;
+    int kpt, st1, idx, ik, st, sttemp;
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
@@ -100,7 +100,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     t[1] = sqrt (t[1] / ((REAL) (ct.psi_fnbasis)));
     t[2] /= ((REAL) (ct.psi_fnbasis));
 
-    if (pct.thispe == 0 && !firststep)
+    if (pct.imgpe == 0 && !firststep)
     {
         printf ("\n");
         progress_tag ();
@@ -163,7 +163,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 #endif
 
-    if (pct.thispe == 0 && ct.occ_flag == 1 && !firststep)
+    if (pct.thisimg == 0 && ct.occ_flag == 1 && !firststep)
     {
         printf ("\n");
         progress_tag ();

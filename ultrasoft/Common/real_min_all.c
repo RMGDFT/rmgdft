@@ -49,7 +49,7 @@ REAL real_min_all (REAL x)
 
     inreg = x;
 
-    MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_MIN, pct.thisgrp_comm);
+    MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_MIN, pct.grid_comm);
 
     return outreg;
 

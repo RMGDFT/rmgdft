@@ -44,23 +44,16 @@
 
 
 #define    crs    1.91915829267751281
-#define    SMALL  1.e-8
+#define    SMALL  1.e-10
 
 
 void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 {
-#if 1
-    int ix, iy, iz, idx;
-    FP0_GRID *gx, *gy, *gz, *agx, *agy, *agz, *agg, *d2rho;
-    REAL d, s, u, v, kf, us, uu, t, vv, ww;
-    REAL pisq3, ex, vx, ec;
-    REAL zet, rs, g, h, sk, gks2;
-    REAL vcup, vcdn;
-    REAL dvcup, dvcdn;
-    REAL ecrs, eczet, alfc;
-    REAL cpot, cen, xen;
-    REAL dhalf, d1half[3], d2half, vcm0, fac;
-    int ndim = 3, lgga, lpot;
+    int ix, iy, iz, idx, iflag;
+    FP0_GRID *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
+    REAL d, grad, vxc1, vxc2[FP0_BASIS], enxc;
+    REAL kf, pisq3, ex, vx, ec, vc, rs;
+
 
     pisq3 = THREE * PI * PI;
 
@@ -69,9 +62,9 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
     my_malloc (gx, 1, FP0_GRID);
     my_malloc (gy, 1, FP0_GRID);
     my_malloc (gz, 1, FP0_GRID);
-    my_malloc (agx, 1, FP0_GRID);
-    my_malloc (agy, 1, FP0_GRID);
-    my_malloc (agz, 1, FP0_GRID);
+    my_malloc (vgx, 1, FP0_GRID);
+    my_malloc (vgy, 1, FP0_GRID);
+    my_malloc (vgz, 1, FP0_GRID);
     my_malloc (agg, 1, FP0_GRID);
     my_malloc (d2rho, 1, FP0_GRID);
 
@@ -98,158 +91,141 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
     }                           /* end for */
 
 
-
-
-    /* Get its gradient */
-    app_gradf (agg->s2, agx, agy, agz);
-
-
-
-    /* Now get the potential */
+    /* The LDA part of exchange correlation potential and energy */
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
+	    d = fabs (rho[idx]);
+	    if (d < SMALL && ct.scf_steps < 10)
+	    {
+		    vxc[idx] = 0.0;
+		    exc[idx] = 0.0;
+		    continue;
+	    }
 
-        if ((d=rho[idx]) < SMALL && ct.scf_steps < 10)
-        {
-            d = SMALL;
-            fac = exp (50. * (rho[idx] / d - 1.0));
+	    kf = pow (pisq3 * d, 0.333333333333333);
+            rs = crs / kf;
+
+	    /* to determine which set of monte carlo parameter to use for certain xc functionals */
+	    iflag = 0;           
+
+	    if (mode == GGA_PBE)
+	    {
+	            /* exchange potential and energy */
+                    slater (rs, &ex, &vx); 
+
+	            /* correlation potential and energy */
+	            pw (rs, iflag , &ec, &vc);
+	    }
+	    else if (mode == GGA_XB_CP)
+	    {
+                    slater (rs, &ex, &vx); 
+
+		    pz (rs, iflag , &ec, &vc);
+	    }
+	    else if (mode == GGA_XP_CP)
+    {
+                    slater (rs, &ex, &vx); 
+
+	            pw (rs, iflag , &ec, &vc);
         }
-        else
+	    else if (mode == GGA_BLYP)
         {
-            fac = 1.0;
+                    slater (rs, &ex, &vx); 
+	
+	            lyp (rs, &ec, &vc);
         }
-        //kf = pow (pisq3 * d, 0.333333333333333);
-        kf = cbrt (pisq3 * d);
 
-        s = agg->s2[idx] / (TWO * kf * d);
-        us = gx->s2[idx] * agx->s2[idx] + gy->s2[idx] * agy->s2[idx] + gz->s2[idx] * agz->s2[idx];
-        /* 
-           us = agg->s2[idx] * d2rho->s2[idx];
-         */
 
-        u = us / (d * d * EIGHT * kf * kf * kf);
+	    vxc[idx] = vc + vx;  
+	    /* local density approximation contribution to xc potential and energy */
+            exc[idx] = ex + ec;
+	    
+    }                             /* end for */
 
-        v = d2rho->s2[idx] / (FOUR * d * kf * kf);
 
-        if (mode == GGA_BLYP || mode == GGA_XB_CP)
+
+    /* add the gradient correction for exchange correlation potential and energy */
+    for (idx = 0; idx < FP0_BASIS; idx++)
         {
 
-            /* Exchange potential from becke */
-            xbecke (&d, &s, &u, &v, &ex, &vx);
+	d = rho[idx];
+	grad = agg->s2[idx]; 
 
+        if (mode == GGA_PBE)
+        {
+	     if (fabs(d) < (1.e-6) || grad < (1.e-5)  )
+	     {
+		     vxc2[idx] = 0;
         }
-        else if (mode == GGA_PBE)
+	     else
         {
+	    	     gcxcpbe (d, grad, &enxc, &vxc1, &vxc2[idx]); 
 
-            /* exchange potential from Perdew, Burke, Ernzerhof */
-            lpot = 1;
-            lgga = 1;
-            exchpbe (&d, &s, &u, &v, &lpot, &lgga, &ex, &vx);
+		     /* add the gradient correction to xc potential and energy now */
+	             exc[idx] += enxc;
+                     vxc[idx] += vxc1;    /* first term of gradient correction to potential*/
+	     }	     
+        }
+	else if (mode == GGA_XB_CP)
+        {
+	     if (fabs(d) < (1.e-6) || grad < (1.e-5)  )
+	     {
+		     vxc2[idx] = 0;
+	     }
+	     else
+	     {
+	    	     gcxbcp (d, grad, &enxc, &vxc1, &vxc2[idx]); 
+	             exc[idx] += enxc;
+                     vxc[idx] += vxc1;
+	     }	     
         }
         else if (mode == GGA_XP_CP)
         {
-
-            /* Exchange potential from Perdew */
-            exch (&d, &s, &u, &v, &ex, &vx);
-
-        }                       /* end if */
-
-
-        if (mode == GGA_BLYP)
-        {
-            if ((d = rho[idx]) < 1.e-15)
+	     if (fabs(d) < (1.e-6) || grad < (1.e-5)  )
             {
-                cen = 0.0;
-                cpot = 0.0;
+		     vxc2[idx] = 0;
             }
             else
             {
-                if (d < SMALL)
-                    d = SMALL;
-                dhalf = d / 2.0;
-                d1half[0] = gx->s2[idx] / 2.0;
-                d1half[1] = gy->s2[idx] / 2.0;
-                d1half[2] = gz->s2[idx] / 2.0;
-                d2half = d2rho->s2[idx] / 2.0;
-                corlyp (&dhalf, &dhalf, d1half, d1half, &d2half, &d2half, &cen, &cpot, &vcm0,
-                        &ndim);
+	    	     gcxcpw91 (d, grad, &enxc, &vxc1, &vxc2[idx]); 
+	             exc[idx] += enxc;
+                     vxc[idx] += vxc1;
             }
-            vxc[idx] = fac * (cpot + vx);
-            exc[idx] = fac * (cen + ex);
         }
-        else if (mode == GGA_PBE)
+	else if (mode == GGA_BLYP)
         {
-            zet = ZERO;         /* Spin up = spin down */
-            rs = crs / kf;
-            sk = TWO * sqrt (kf / PI);
-
-            g = ONE;
-
-            gks2 = TWO * sk * g;
-
-
-            t = agg->s2[idx] / (d * gks2);
-            uu = us / (d * d * gks2 * gks2 * gks2);
-            vv = d2rho->s2[idx] / (d * gks2 * gks2);
-            ww = ZERO;          /* Non-spin polarized case */
-
-            lpot = 1;
-            lgga = 1;
-            corpbe (&rs, &zet, &t, &uu, &vv, &ww, &lgga, &lpot, &ec, &vcup, &vcdn,
-                    &h, &dvcup, &dvcdn);
-
-            cpot = vcup + dvcup;
-            cen = ec + h;
-
-            vxc[idx] = cpot + vx;
-            exc[idx] = cen + ex;
-            
-	    if (d < 1.e-12)
+	     if (fabs(d) < (1.e-6) || grad < (1.e-5)  )
 	    { 
-		    vxc[idx] = mu_pz(d);
-		    exc[idx] = e_pz(d);
-
-	    }
-
+		     vxc2[idx] = 0;
         }
         else
         {
-            /* LSD contribution to correlation */
-            zet = ZERO;         /* Spin up = spin down */
-            rs = crs / kf;
-            corlsd (&rs, &zet, &ec, &vcup, &vcdn, &ecrs, &eczet, &alfc);
-
-
-            sk = TWO * sqrt (kf / PI);
-
-#if 0
-            /* commented out for speed since we are doing spin-unpolarized calculations */
-            g = pow (1.0 + zet, 0.6666666666666666);
-            g += pow (1.0 - zet, 0.6666666666666666);
-            g = g / TWO;
-#endif
-            g = ONE;
-
-            gks2 = TWO * sk * g;
-
-
-            t = agg->s2[idx] / (d * gks2);
-            uu = us / (d * d * gks2 * gks2 * gks2);
-            vv = d2rho->s2[idx] / (d * gks2 * gks2);
-            ww = ZERO;          /* Non-spin polarized case */
-
-            corgga (&rs, &zet, &t, &uu, &vv, &ww, &h, &dvcup, &dvcdn, &kf, &sk,
-                    &g, &ec, &ecrs, &eczet);
-
-            cpot = vcup + dvcup;
-            cen = ec + h;
-
-            vxc[idx] = cpot + vx;
-            exc[idx] = cen + ex;
-
+	    	     gcxcblyp (d, grad, &enxc, &vxc1, &vxc2[idx]); 
+	             exc[idx] += enxc;
+                     vxc[idx] += vxc1;
+	     }	     
         }
 
-    }                           /* end for */
+    }                           /* end for */ 
+
+
+
+    /* Get gradient of vxc2 */
+    app_gradf (vxc2, vgx, vgy, vgz);
+
+
+     /* add the second term gradient correction to xc potential */
+    for (idx = 0; idx < FP0_BASIS; idx++)
+    {
+	     vxc[idx] += ( vgx->s2[idx] * gx->s2[idx] + 
+	     		   vgy->s2[idx] * gy->s2[idx] + vgz->s2[idx] * gz->s2[idx] ) ;
+	     vxc[idx] += vxc2[idx] * d2rho->s2[idx];
+    }
+
+
+
+
+
 /*
     printf ("\nprint out 50_50 vxc\n");
     print_density_z_direction(50,50,vxc,FPX0_GRID,FPY0_GRID,FPZ0_GRID,20);
@@ -258,12 +234,11 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
     /* Release our memory */
     my_free (d2rho);
     my_free (agg);
-    my_free (agz);
-    my_free (agy);
-    my_free (agx);
+    my_free (vgz);
+    my_free (vgy);
+    my_free (vgx);
     my_free (gz);
     my_free (gy);
     my_free (gx);
-#endif
 
 }                               /* end xcgga */

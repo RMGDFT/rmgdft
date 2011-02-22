@@ -90,7 +90,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     }
 
     MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], 1, nmat2, idx,
-                  MPI_DOUBLE, nb_ids[NB_D], 1, pct.thisgrp_comm, &mstatus);
+                  MPI_DOUBLE, nb_ids[NB_D], 1, pct.grid_comm, &mstatus);
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -116,7 +116,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
 
     MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], 1, nmat2, idx,
-                  MPI_DOUBLE, nb_ids[NB_U], 1, pct.thisgrp_comm, &mstatus);
+                  MPI_DOUBLE, nb_ids[NB_U], 1, pct.grid_comm, &mstatus);
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -137,9 +137,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     MPI_Type_vector (dimx, alen, incx, MPI_DOUBLE, &newtype);
     MPI_Type_commit (&newtype);
     MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], 3, &mat[incx], 1,
-                  newtype, nb_ids[NB_S], 3, pct.thisgrp_comm, &mstatus);
+                  newtype, nb_ids[NB_S], 3, pct.grid_comm, &mstatus);
     MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], 4, &mat[incx + ymax + incy], 1,
-                  newtype, nb_ids[NB_N], 4, pct.thisgrp_comm, &mstatus);
+                  newtype, nb_ids[NB_N], 4, pct.grid_comm, &mstatus);
 
     MPI_Type_free (&newtype);
 
@@ -151,9 +151,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
     stop = (dimy + 2) * (dimz + 2);
     MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], 5,
-                  mat, stop, MPI_DOUBLE, nb_ids[NB_W], 5, pct.thisgrp_comm, &mstatus);
+                  mat, stop, MPI_DOUBLE, nb_ids[NB_W], 5, pct.grid_comm, &mstatus);
     MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], 6,
-                  &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], 6, pct.thisgrp_comm, &mstatus);
+                  &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], 6, pct.grid_comm, &mstatus);
 
 
     /* For clusters set the boundaries to zero -- this is wrong for the hartree

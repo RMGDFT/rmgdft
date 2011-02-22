@@ -564,7 +564,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         time2 = my_crtc ();
 
-        MPI_Bcast (eigs, num_states, MPI_DOUBLE, 0, pct.thisgrp_comm);
+        MPI_Bcast (eigs, num_states, MPI_DOUBLE, 0, pct.grid_comm);
 
         /*Assign eigenvalues */
         for (st1 = 0; st1 < ct.num_states; st1++)

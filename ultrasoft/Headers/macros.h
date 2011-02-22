@@ -29,7 +29,9 @@
 #define Dprintf( format, args...) ;
 #endif
 
-#define dprintf( message... ) fprintf( stderr, message )
+#define dprintf( format, args...) fprintf (stderr, "\ngrid rank %d of spin %d:    \t"format"\n", pct.thispe, pct.thisspin,  ##args), fflush(NULL)
+//#define dprintf( format, args...) fprintf (stderr, "\n#WARNING from IMG PE %d in IMG %d  of grid rank %d of spin %d:    \t"format"\n", pct.imgpe, pct.thisimg, pct.thispe, pct.thisspin,  ##args), fflush(NULL)
+
 
 #define my_strncpy(buf1, buf2, num) strncpy(buf1, buf2, num), buf1[num]=0
 
@@ -41,12 +43,13 @@
 
 
 #define printf( message... ) \
-	 ((pct.thispe == 0) ? fprintf( ct.logfile, message ): 0)
+	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
+	
 
 /* variadic error_handler, use is the same as printf. Calls MPI_Abort, since MPI_Finalize hangs if called on single PE. */
 #define error_handler( message... ) \
-    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.thispe, pct.thisgrp+1, __FILE__, __LINE__, pct.thispe), \
-    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.thispe, pct.thisgrp+1, __FILE__, __LINE__, pct.thispe), \
+    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.thispe, pct.thisimg+1, __FILE__, __LINE__, pct.thispe), \
+    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.thispe, pct.thisimg+1, __FILE__, __LINE__, pct.thispe), \
 	fprintf (stderr,  message ), \
 	fprintf (stderr,  "\n\n" ), \
 	printf ( message ), \

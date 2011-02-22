@@ -61,7 +61,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
          ct.scf_steps < ct.max_scf_steps && !CONVERGENCE; ct.scf_steps++, ct.total_scf_steps++)
     {
 
-        if (pct.thispe == 0)
+        if (pct.imgpe == 0)
             printf ("\n\nquench: ------ [md: %d/%d  scf: %d/%d] ------\n",
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps);
 

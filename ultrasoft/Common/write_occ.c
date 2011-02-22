@@ -63,12 +63,28 @@ void write_occ (STATE * states)
         error_handler ("unknown filling procedure");
     }
 
-    printf ("\n\n  STATE OCCUPATIONS:\n");
+    if (pct.spin_flag)
+    {
+	printf ("\n\n  STATE OCCUPATIONS for spin up:\n");
 
     for (i = 0; i < ct.num_states; i++)
         printf (" %7.2f%s", states[i].occupation, ((i % 10 == 9) ? "\n" : ""));
 
+	printf ("\n\n  STATE OCCUPATIONS for spin down:\n");
+
+    	for (i = 0; i < ct.num_states_oppo; i++)
+        	printf (" %7.2f%s", states[i].occupation_oppo, ((i % 10 == 9) ? "\n" : ""));
+	printf ("\n");
+    }  
+    else 
+    {
+	printf ("\n\n  STATE OCCUPATIONS :\n");
+
+    	for (i = 0; i < ct.num_states; i++)
+        	printf (" %7.2f%s", states[i].occupation, ((i % 10 == 9) ? "\n" : ""));
     printf ("\n");
+
+    }
 
 
 }                               /* end write_occ */

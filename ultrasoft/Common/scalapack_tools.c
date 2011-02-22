@@ -113,7 +113,7 @@ void sl_init (int *ictxt, int size)
     /* Get the world rank maping of this groups processes,
        blacs appears to operate on world group ranking */
     MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
-    MPI_Comm_group (pct.thisgrp_comm, &grp_this);
+    MPI_Comm_group (pct.grid_comm, &grp_this);
     MPI_Group_translate_ranks (grp_this, NPES, tgmap, grp_world, pmap);
 
     /* Assign nprow*npcol processes to blacs for calculations */

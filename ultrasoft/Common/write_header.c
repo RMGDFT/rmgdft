@@ -228,7 +228,18 @@ void write_header (void)
 
 
     printf ("\n");
+
+    if (pct.spin_flag)
+    {
+    	printf ("    This is a spin polarized calculation \n");
+    	printf ("    Number of spin up states   = %d\n", ct.num_states);
+    	printf ("    Number of spin down states   = %d\n", ct.num_states_oppo);
+    }
+    else
+    {
+    	printf ("    This is NOT a spin polarized calculation \n");
     printf ("    Number of states   = %d\n", ct.num_states);
+    }	
     printf ("    Number of species  = %d\n", ct.num_species);
     printf ("    Number of ions     = %d\n", ct.num_ions);
     printf ("    Density mixing     = %12.6f\n", ct.mix);
@@ -390,7 +401,7 @@ void write_header (void)
     init_write_pos ();
 
 
-    if ((pct.thispe == 0) && (verify ("pdb_atoms", NULL)))
+    if ((pct.imgpe == 0) && (verify ("pdb_atoms", NULL)))
         write_pdb ();
 
 

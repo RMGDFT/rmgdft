@@ -497,7 +497,7 @@ void salloc_report (char *fn, int ln, int ipe, char *tag)
     char repfn[200];
     int jpe, npe;
 
-    MPI_Comm_size (pct.thisgrp_comm, &npe);
+    MPI_Comm_size (pct.grid_comm, &npe);
 
 
     sprintf (repfn, "%s.alloc.log", tag);
