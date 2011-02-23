@@ -43,6 +43,12 @@ void init_IO (int argc, char **argv)
     /* Set start of program time */
     timer = time (NULL);
 
+    /* Initialize MPI, we need it for error_handler, amongst others */
+    MPI_Init (&argc, &argv);
+
+    /* Define a default output stream, gets redefined to log file later */
+    ct.logfile = stdout;
+
     /* 1st argument must exist as a file, use it as the control file or die */
     if ((status = stat (argv[1], &buffer)) == -1)
         error_handler ("Command line argument \"%s\" is malformed, file D.N.E.", argv[1]);
