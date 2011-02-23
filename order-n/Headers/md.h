@@ -124,9 +124,9 @@ typedef struct
 {
 
     /** Number (rank in MPI terminology) of this processor */
-    int thispe, thisgrp;
+    int thispe, thisgrp, imgpe,images;
 
-    MPI_Comm thisgrp_comm;
+    MPI_Comm thisgrp_comm, img_comm, grid_comm;
 
     int instances;
     /** Neighboring processors in three-dimensional space */
