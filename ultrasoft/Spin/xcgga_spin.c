@@ -271,13 +271,13 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
 
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-	    vxc_up[idx] += ( gx_vuu->s2[idx] * gx_up->s2[idx] + 
+	    vxc_up[idx] -= ( gx_vuu->s2[idx] * gx_up->s2[idx] + 
 		           gy_vuu->s2[idx] * gy_up->s2[idx] + gz_vuu->s2[idx] * gz_up->s2[idx] );
-	    vxc_up[idx] +=  vxc2_upup[idx] * d2rho_up->s2[idx] ;
+	    vxc_up[idx] -=  vxc2_upup[idx] * d2rho_up->s2[idx] ;
 	    
-	    vxc_up[idx] += ( gx_vud->s2[idx] * gx_dw->s2[idx] + 
+	    vxc_up[idx] -= ( gx_vud->s2[idx] * gx_dw->s2[idx] + 
 		           gy_vud->s2[idx] * gy_dw->s2[idx] + gz_vud->s2[idx] * gz_dw->s2[idx] );
-	    vxc_up[idx] += vxc2_updw[idx] * d2rho_dw->s2[idx];
+	    vxc_up[idx] -= vxc2_updw[idx] * d2rho_dw->s2[idx];
     }
 
 #endif    

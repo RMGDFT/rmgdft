@@ -217,9 +217,9 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
      /* add the second term gradient correction to xc potential */
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-	     vxc[idx] += ( vgx->s2[idx] * gx->s2[idx] + 
+	     vxc[idx] -= ( vgx->s2[idx] * gx->s2[idx] + 
 	     		   vgy->s2[idx] * gy->s2[idx] + vgz->s2[idx] * gz->s2[idx] ) ;
-	     vxc[idx] += vxc2[idx] * d2rho->s2[idx];
+	     vxc[idx] -= vxc2[idx] * d2rho->s2[idx];
     }
 
 
