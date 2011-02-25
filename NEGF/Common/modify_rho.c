@@ -79,12 +79,11 @@ void modify_rho (REAL * rho, REAL * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < FP0_BASIS; idx++)
             tcharge += rho[idx];
-        ct.tcharge = real_sum_all (tcharge);
+        ct.tcharge = real_sum_all (tcharge) * ct.vel_f;
         if (pct.thispe == 0)
             printf ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
 
-        ct.tcharge *= ct.vel_f;
         t2 = ct.nel / ct.tcharge;
 
         sscal (&FP0_BASIS, &t2, &rho[0], &ione);

@@ -6,9 +6,9 @@
 #ifndef SVNREV_H
 #define SVNREV_H
 
-#define SVN_REV		1242
-#define SVN_REVSTR	"1242"
-#define SVN_REVDATE	"2011-02-02"
-#define SVN_REVSTAMP	20110202L
+#define SVN_REV		1265
+#define SVN_REVSTR	"1265"
+#define SVN_REVDATE	"2011-02-22"
+#define SVN_REVSTAMP	20110222L
 
 #endif /* SVNREV_H */

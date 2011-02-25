@@ -22,7 +22,7 @@ void rho_augmented(REAL * rho, REAL * global_mat_X)
     SPECIES *sp;
     double alfa;
 
-    alfa = 2.0 / (REAL) (RHO_NX * RHO_NY * RHO_NZ);
+    alfa = 2.0;
 
 
     size = ct.num_ions * ct.max_nl * ct.max_nl;

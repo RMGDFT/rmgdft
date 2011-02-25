@@ -104,6 +104,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
 
     global_sums (Aij, &n2);     /* sum up Aij contributions */
 
+    dscal (&n2, &ct.vel, Aij, &ione);
 
     if (pct.thispe == 0)
     {

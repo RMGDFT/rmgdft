@@ -170,7 +170,7 @@ void scf (doublecomplex * sigma_all, STATE * states, STATE * states1, double *vx
 #if DEBUG |1
     write_rho_x (rho, "rhoooo_1");
     if (pct.thispe == 0)
-        printf ("\n %rhoooo");
+        printf ("\n rhoooo");
 #endif
 
 

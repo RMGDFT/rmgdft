@@ -67,14 +67,13 @@ Documentation:
 */
 void sl_init(int *ictxt, int nprow, int npcol)
 {
-    int i, j, iam, nprocs;
+    int i, j;
     /*char    order='R'; */
     int *pmap;
 
     assert(nprow > 0);
     assert(npcol > 0);
 
-    Cblacs_pinfo(&iam, &nprocs);
 
 /*
  *  Define process grid

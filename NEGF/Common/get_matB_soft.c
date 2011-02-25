@@ -85,6 +85,9 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
     /* Sum over all processors */
     global_sums (mat, &n2);
 
+
+    dscal (&n2, &ct.vel, mat, &ione);
+
     /* symmetrize the mat */
 
     for (istate = 0; istate < ct.num_states - 1; istate++)

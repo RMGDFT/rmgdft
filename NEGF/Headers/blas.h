@@ -56,6 +56,7 @@
   #define		sdot    ddot_
   #define		ddot    ddot_
   #define		sscal   dscal_
+  #define		dscal   dscal_
   #define               sgemvx  dgemvx_
   #define               sgemv   dgemv_
   #define               sgemm   dgemm_

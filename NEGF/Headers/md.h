@@ -150,8 +150,8 @@ typedef struct
 {
 
     /** Number (rank in MPI terminology) of this processor */
-    int thispe, thisgrp;
-    MPI_Comm thisgrp_comm;
+    int thispe, thisgrp, imgpe, images;
+    MPI_Comm thisgrp_comm, grid_comm, img_comm;
     int instances;
   
     /** Neighboring processors in three-dimensional space */

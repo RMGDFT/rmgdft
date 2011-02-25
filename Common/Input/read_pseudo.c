@@ -363,13 +363,10 @@ void read_pseudo (void)
             /* Number of wavefunctions (there should be one for s, p, d etc. states) */
             get_data (sp->pseudo_filename, &sp->num_atomic_waves, ITEM | INT, NULL); 
 
-            /*Allocate memory for atomic wave function array */
-            my_malloc(sp->atomic_wave, sp->num_atomic_waves * sizeof (REAL *), REAL *);
-
             for (j = 0; j < sp->num_atomic_waves; j++ )
             {
                 /*Allocate and zero memory for atomic wave functions */
-                my_malloc(sp->atomic_wave[j], sp->rg_points * sizeof (REAL), REAL);
+                my_malloc(sp->atomic_wave[j], sp->rg_points, REAL);
                 for (k = 0; k < sp->rg_points; k++)
                     sp->atomic_wave[j][k] = 0.0;
 
