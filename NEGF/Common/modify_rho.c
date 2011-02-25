@@ -131,36 +131,39 @@ void modify_rho (REAL * rho, REAL * rho_old)
             }
         }
 
-        t2 = real_sum_all (total_charge);
+        t2 = real_sum_all (total_charge) * ct.vel_f;
         t_fixed = real_sum_all (tcharge_fixed) * ct.vel_f;
 
         if (pct.thispe == 0)
             printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
                     t2, t_fixed, t2 + t_fixed, t2 + t_fixed - ct.nel, ct.nel);
-        t2 = (ct.nel - t_fixed) / (t2 * ct.vel_f);
-        t2 = 1.0 / ct.vel_f;
 
-        for (i = 0; i < FPX0_GRID; i++)
-        {
-            for (j = 0; j < FPY0_GRID; j++)
-            {
-                for (k = 0; k < FPZ0_GRID; k++)
-                {
-                    idx = i * FPY0_GRID * FPZ0_GRID + j * FPZ0_GRID + k;
-                    test = (((i + xoff) < chargeDensityCompass.box1.x1)
-                            || ((i + xoff) >= chargeDensityCompass.box1.x2)
-                            || ((j + yoff) < chargeDensityCompass.box1.y1)
-                            || ((j + yoff) >= chargeDensityCompass.box1.y2)
-                            || ((k + zoff) < chargeDensityCompass.box1.z1)
-                            || ((k + zoff) >= chargeDensityCompass.box1.z2));
-                    if (!test)
-                    {
-                        rho[i * FPY0_GRID * FPZ0_GRID + j * FPZ0_GRID + k] *= t2;
+        /*
+           t2 = (ct.nel - t_fixed) / (t2 * ct.vel_f);
+           t2 = 1.0 / ct.vel_f;
 
-                    }
-                }
-            }
-        }
+           for (i = 0; i < FPX0_GRID; i++)
+           {
+           for (j = 0; j < FPY0_GRID; j++)
+           {
+           for (k = 0; k < FPZ0_GRID; k++)
+           {
+           idx = i * FPY0_GRID * FPZ0_GRID + j * FPZ0_GRID + k;
+           test = (((i + xoff) < chargeDensityCompass.box1.x1)
+           || ((i + xoff) >= chargeDensityCompass.box1.x2)
+           || ((j + yoff) < chargeDensityCompass.box1.y1)
+           || ((j + yoff) >= chargeDensityCompass.box1.y2)
+           || ((k + zoff) < chargeDensityCompass.box1.z1)
+           || ((k + zoff) >= chargeDensityCompass.box1.z2));
+           if (!test)
+           {
+           rho[i * FPY0_GRID * FPZ0_GRID + j * FPZ0_GRID + k] *= t2;
+
+           }
+           }
+           }
+           }
+         */
 
     }
     my_barrier ();
