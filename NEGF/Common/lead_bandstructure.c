@@ -59,48 +59,8 @@ void lead_bandstructure ()
 
     int st1, st2, ik, kpoints, info;
 
+    int ntot, iprobe;
     /* Open the input file for reading */
-    /*
-    if (NULL == (fhand = fopen ("cond.input", "r")))
-        error_handler ("Unable to open file cond.input");
-
-    idx = atoi (get_line (tbuf, fhand));
-    ct.num_states = idx;
-
-    if (NULL == (tptr = get_num (tbuf)))
-    {
-        printf (" missing the lcr[1].num_states \n");
-        exit (0);
-    }
-    else
-        lcr[1].num_states = atoi (tptr);
-
-    if (NULL == (tptr = get_num (tptr)))
-    {
-        printf (" missing the lcr[2].num_states \n");
-        exit (0);
-    }
-    else
-        lcr[2].num_states = atoi (tptr);
-
-    ct.num_blocks = atoi (get_line (tbuf, fhand));
-    tptr = tbuf;
-    for (idx = 0; idx > ct.num_blocks; idx++)
-    {
-        tptr = get_num (tptr);
-        ct.block_dim[idx] = atoi (tptr);
-    }
-
-
-    emin = atof (get_line (tbuf, fhand));
-    emax = atof (tptr = get_num (tbuf));
-    E_POINTS = atoi (get_num (tptr));
-
-    E_image = atof (get_line (tbuf, fhand));
-    kbt = atof (get_line (tbuf, fhand));
-
-    kpoints = atoi (get_line (tbuf, fhand));
-    */
 
     read_cond_input (&emin, &emax, &E_POINTS, &E_image, &kbt, &kpoints);
 
@@ -122,13 +82,44 @@ void lead_bandstructure ()
     mxlocc = pmo.mxlocc_lead[0];
     ndim = mxllda * mxlocc;
 
+
+    ntot = 0;
+    for (i = 0; i < ct.num_blocks; i++)
+    {
+        ntot += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
+    }
+    for (i = 1; i < ct.num_blocks; i++)
+    {
+        ntot += pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i];
+    }
+
+
+    my_malloc_init( lcr[0].Htri, ntot, REAL );
+    my_malloc_init( lcr[0].Stri, ntot, REAL );
+
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {
+        idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
+        my_malloc_init( lcr[iprobe].H00, idx, REAL );
+        my_malloc_init( lcr[iprobe].S00, idx, REAL );
+        my_malloc_init( lcr[iprobe].H01, idx, REAL );
+        my_malloc_init( lcr[iprobe].S01, idx, REAL );
+    }
+
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {
+        i = cei.probe_in_block[iprobe - 1];
+        idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
+        my_malloc_init( lcr[iprobe].HCL, idx, REAL );
+        my_malloc_init( lcr[iprobe].SCL, idx, REAL );
+    }
+
+
+
+
     my_malloc_init( GAP, pmo.nrow * pmo.ncol, REAL );
     my_malloc_init( ICLUSTR, 2* pmo.nrow * pmo.ncol, int );
     my_malloc_init( IFAIL, nL, int );
-    my_malloc_init( lcr[1].H00, mxllda * mxlocc, REAL );
-    my_malloc_init( lcr[1].S00, mxllda * mxlocc, REAL );
-    my_malloc_init( lcr[1].H01, mxllda * mxlocc, REAL );
-    my_malloc_init( lcr[1].S01, mxllda * mxlocc, REAL );
     my_malloc_init( matH, mxllda * mxlocc, doublecomplex );
     my_malloc_init( matS, mxllda * mxlocc, doublecomplex );
     my_malloc_init( z_vec, mxllda * mxlocc, doublecomplex );
@@ -139,7 +130,7 @@ void lead_bandstructure ()
 
     my_malloc_init( eig_val, nL, REAL );
 
-     pmo_unitary_matrix_double(unitary_matrix, desca);
+    pmo_unitary_matrix_double(unitary_matrix, desca);
 
     read_matrix_pp();
 

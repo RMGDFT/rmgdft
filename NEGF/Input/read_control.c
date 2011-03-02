@@ -460,26 +460,6 @@ ct.sp[is].pseudo_symbol,
     }
 
 
-    /* read info about atomic orbital filenames for each species for
- * LCAO start */
-        char s[32], fn[MAX_PATH];
-    require (get_data ("atomic_orbital_files", &ns, INIT | LIST, NULL));
-    if(ns != ct.num_species) printf(" \n number of species %d is not equal to number of atomic orbital filesi %d", ct.num_species, ns);
-
-    while (get_data ("atomic_orbital_files", tbuf, ITEM | STR,  NULL)) 
-    {
-        if (sscanf (tbuf, " %s %s ", s, fn))
-        {
-            /* search for the species among the known species */
-            is = 0;
-            while (is < ns && strcmp (s, ct.sp[is].pseudo_symbol))
-                is++;
-
-            if (is < ns)        /* we've found it */
-                strcpy (ct.file_atomic_orbit[is], fn);
-        }
-    }
-
 
     /* Set up and validate input options */
     char atomic_coordinate_type_opts[] = "\
