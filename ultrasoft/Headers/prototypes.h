@@ -288,7 +288,7 @@ void wvfn_residual(STATE *states);
 REAL rand0 (long *idum);
 void cgen_prolong(REAL coef[], REAL fraction, int order);
 void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz);
-void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz);
+void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int scale);
 void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz);
 void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int scale, int order);

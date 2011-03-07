@@ -24,17 +24,12 @@ void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int scale)
     my_malloc (sg_vtot,(FPX0_GRID+10)*(FPY0_GRID+10)*(FPZ0_GRID+10),REAL);
     trade_imagesx (vtot,sg_vtot,FPX0_GRID,FPY0_GRID,FPZ0_GRID,5);
 
-    if(scale == 2) 
+    if(scale !=1 ) 
     {
-        mg_restrict_6 (sg_vtot,vtot_psi,FPX0_GRID,FPY0_GRID,FPZ0_GRID);
+        mg_restrict_6 (sg_vtot,vtot_psi,FPX0_GRID,FPY0_GRID,FPZ0_GRID,scale);
     } 
-    else
-    {
-        printf("\n scale = %d ", scale);
-        error_handler ("not programed for that scale"); 
-    }
-        my_free (sg_vtot);
+        
 
-
+    my_free (sg_vtot);
 
 }
