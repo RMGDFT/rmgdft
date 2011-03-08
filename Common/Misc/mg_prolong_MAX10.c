@@ -9,7 +9,7 @@
  *   Version: 2.1.5
  * COPYRIGHT
  * FUNCTION
- *   void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int scale, int order)
+ *   void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int grid_ratio, int order)
  *   get full dimensioned array in the fine grid from half dimensioned 
  *   array in the fine grid. 
  *   Attention: order <= Max_order = 10
@@ -18,7 +18,7 @@
  *      image value must be there
  *   dimx, dimy, dimz: dimensions of array in the fine grid
  * INPUT
- *   half[(dimx/scale+10)*(dimy/scale+10)*(dimz/scale+10)] array in the corse grid
+ *   half[(dimx/grid_ratio+10)*(dimy/grid_ratio+10)*(dimz/grid_ratio+10)] array in the corse grid
  * PARENTS
  *   get_rho.c or get_new_rho.c
  * CHILDREN
@@ -36,7 +36,7 @@
 
 #define MAX_ORDER 10
 
-void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int scale, int order)
+void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int grid_ratio, int order)
 {
 
     int ix, iy, iz, i, k;
@@ -52,14 +52,14 @@ void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dim
 
 
     incz = 1;
-    incy = dimz / scale + 10;
-    incx = (dimz / scale + 10) * (dimy / scale + 10);
+    incy = dimz / grid_ratio + 10;
+    incx = (dimz / grid_ratio + 10) * (dimy / grid_ratio + 10);
 
     incz2 = 1;
     incy2 = dimz;
     incx2 = dimz  * dimy;
 
-    incx3 = (dimz / scale+ 10) * dimy;   
+    incx3 = (dimz / grid_ratio+ 10) * dimy;   
 
     /*Order has to be even number*/
     if (order %2)
@@ -76,10 +76,10 @@ void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dim
     }
 
 
-    for (i = 0; i < scale; i++)
+    for (i = 0; i < grid_ratio; i++)
     {
 
-        fraction = (double)i/scale;
+        fraction = (double)i/grid_ratio;
         cgen_prolong(c, fraction , order);
 
         for (iy = 0; iy < order; iy++)
@@ -94,28 +94,28 @@ void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dim
 
     }
 
-    my_malloc (fulla,  dimx * (dimy / scale+ 10) * (dimz / scale + 10), double );
-    my_malloc (fullb,  dimx * dimy * (dimz / scale + 10), double );
+    my_malloc (fulla,  dimx * (dimy / grid_ratio+ 10) * (dimz / grid_ratio + 10), double );
+    my_malloc (fullb,  dimx * dimy * (dimz / grid_ratio + 10), double );
 
 
-    for (ix = 0; ix < dimx / scale; ix++)
+    for (ix = 0; ix < dimx / grid_ratio; ix++)
     {
 
-        for (iy = 0; iy < dimy / scale + 10; iy++)
+        for (iy = 0; iy < dimy / grid_ratio + 10; iy++)
         {
 
 
-            for (iz = 0; iz < dimz / scale + 10; iz++)
+            for (iz = 0; iz < dimz / grid_ratio + 10; iz++)
             {
 
 
-                for (i = 0; i < scale; i++)
+                for (i = 0; i < grid_ratio; i++)
 
 
                 {   
 
 
-                    fulla[((scale * ix)+ i) * incx + iy * incy + iz] =
+                    fulla[((grid_ratio * ix)+ i) * incx + iy * incy + iz] =
                         a[i][0]* sg_half[(ix+1) * incx + iy * incy + iz] +
                         a[i][1]* sg_half[(ix+2) * incx + iy * incy + iz] +
                         a[i][2]* sg_half[(ix+3) * incx + iy * incy + iz] +
@@ -140,20 +140,20 @@ void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dim
     for (ix = 0; ix < dimx ; ix++)
     {
 
-        for (iy = 0; iy < dimy / scale; iy++)
+        for (iy = 0; iy < dimy / grid_ratio; iy++)
         {
 
 
-            for (iz = 0; iz < dimz / scale + 10; iz++)
+            for (iz = 0; iz < dimz / grid_ratio + 10; iz++)
             {
 
 
-                for (i = 0; i < scale; i++)
+                for (i = 0; i < grid_ratio; i++)
 
 
                 {
 
-                    fullb[ix * incx3 + (scale * iy + i) * incy + iz] =
+                    fullb[ix * incx3 + (grid_ratio * iy + i) * incy + iz] =
                         a[i][0]* fulla[ix * incx + (iy+1) * incy + iz] +
                         a[i][1]* fulla[ix * incx + (iy+2) * incy + iz] +
                         a[i][2]* fulla[ix * incx + (iy+3) * incy + iz] +
@@ -182,17 +182,17 @@ void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dim
         {
 
 
-            for (iz = 0; iz < dimz / scale; iz++)
+            for (iz = 0; iz < dimz / grid_ratio; iz++)
             {
 
 
-                for (i = 0; i < scale; i++)
+                for (i = 0; i < grid_ratio; i++)
 
 
                 {
 
 
-                    full[ix * incx2 + iy * incy2 + scale * iz + i] =
+                    full[ix * incx2 + iy * incy2 + grid_ratio * iz + i] =
                         a[i][0]* fullb[ix * incx3 + iy* incy + iz+1 ] +
                         a[i][1]* fullb[ix * incx3 + iy* incy + iz+2 ] +
                         a[i][2]* fullb[ix * incx3 + iy* incy + iz+3 ] +

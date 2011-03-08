@@ -8,28 +8,25 @@
 #include <stdio.h>
 #include "main.h"
 
-void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int scale)
+void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int grid_ratio)
 {
-
     int idx, ione =1;
     REAL *sg_vtot;
 
-    if(scale ==1)
+    /*If the grids are the same, just copy the data*/
+    if ( grid_ratio == 1)
     {
-        idx = FPX0_GRID * FPY0_GRID * FPZ0_GRID;    
-        dcopy(&idx, vtot, &ione, vtot_psi, &ione);
-        return;
+	idx = FPX0_GRID * FPY0_GRID * FPZ0_GRID;    
+	dcopy(&idx, vtot, &ione, vtot_psi, &ione);
     }
-
-    my_malloc (sg_vtot,(FPX0_GRID+10)*(FPY0_GRID+10)*(FPZ0_GRID+10),REAL);
-    trade_imagesx (vtot,sg_vtot,FPX0_GRID,FPY0_GRID,FPZ0_GRID,5);
-
-    if(scale !=1 ) 
+    /* For different grids, restriction algorithm is used to obtain potential on coarse grid*/ 
+    else
     {
-        mg_restrict_6 (sg_vtot,vtot_psi,FPX0_GRID,FPY0_GRID,FPZ0_GRID,scale);
-    } 
-        
+	my_malloc (sg_vtot,(FPX0_GRID+10)*(FPY0_GRID+10)*(FPZ0_GRID+10),REAL);
+	trade_imagesx (vtot,sg_vtot,FPX0_GRID,FPY0_GRID,FPZ0_GRID,5);
 
-    my_free (sg_vtot);
+	mg_restrict_6 (sg_vtot,vtot_psi,FPX0_GRID,FPY0_GRID,FPZ0_GRID, grid_ratio);
 
+	my_free (sg_vtot);
+    }
 }
