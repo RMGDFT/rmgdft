@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id: get_vh.c 587 2006-08-18 22:57:56Z miro $    **
+ **    $Id$    **
 ******************************************************************************/
  
 /****f* QMD-MGDFT/get_vh.c *****
@@ -59,6 +59,7 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     REAL *sg_rho, *nrho;
     int stop = FP0_BASIS, ione = 1;
     REAL scale;
+    double tem;
 
     int incx = 1, cycles;
 
@@ -130,12 +131,19 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
             diag = -1.0 / diag;
 
             /* Generate residual vector */
+            tem = 0.0;
             for (idx = 0; idx < pbasis; idx++)
             {
 
                 mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+                tem += mgresarr[idx] * mgresarr[idx];
 
             }                   /* end for */
+            
+            tem = real_sum_all(tem);
+            tem = sqrt(tem);
+
+            if(pct.thispe == 0) printf("\n  get_vh  step %d  RMS= %16.8e", its, tem);
 
             /*  Fix Hartree in some region  */
             /*   confine(mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 1); */
@@ -164,6 +172,7 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
                 /* Update vh */
                 t1 = ONE;
+                t1 = 0.5;
                 QMD_saxpy(pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }
@@ -173,7 +182,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
 /*                t1  = 1.0/ct.Ac;*/
-
 
                 QMD_saxpy(pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 

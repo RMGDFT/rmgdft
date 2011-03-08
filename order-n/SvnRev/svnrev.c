@@ -1,10 +1,10 @@
 /************************** SVN Revision Information **************************
- **    $Id: svnrev.c 1065 2009-08-31 16:23:01Z froze $    **
+ **    $Id$    **
 ******************************************************************************/
 
 /*  SvnRev
  *
- *  This utility retrieves the highest number that follows the "$Id: svnrev.c 1065 2009-08-31 16:23:01Z froze $" keyword
+ *  This utility retrieves the highest number that follows the "$Id$" keyword
  *  or a combination of the $Rev:$ and $Date:$ keywords. The Subversion
  *  version control system expands these keywords and keeps them up to date.
  *  For an example of the tag, see the end of this comment.

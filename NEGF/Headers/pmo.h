@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id: pmo.h 1242 2011-02-02 18:55:23Z luw $    **
+ **    $Id$    **
 ******************************************************************************/
  
 /*  pmo.h: define structure and parameters for parallel matrix operation  */

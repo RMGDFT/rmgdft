@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id: scf.c 1175 2011-01-10 16:11:11Z luw $    **
+ **    $Id$    **
 ******************************************************************************/
  
 /*
@@ -150,7 +150,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
     pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
     /* Generate hartree potential */
-    get_vh(rho, rhoc, vh, 30, ct.poi_parm.levels);
+    get_vh(rho, rhoc, vh, 100, ct.poi_parm.levels);
 
 
     /* evaluate correction vh+vxc */
