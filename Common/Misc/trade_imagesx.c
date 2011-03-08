@@ -23,7 +23,7 @@
 
 void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
 {
-    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione=1;
+    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, c2;
     int xlen, ylen, zlen;
     int *nb_ids;
@@ -40,7 +40,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 
     incx = (dimy + tim) * (dimz + tim);
     incy = dimz + tim;
-    incx0 = dimy  * dimz;
+    incx0 = dimy * dimz;
     incy0 = dimz;
 
     zlen = dimx * dimy * images;
@@ -77,7 +77,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-	    scopy (&dimz, &f[iys], &ione, &w[iys2+images], &ione); 
+            scopy (&dimz, &f[iys], &ione, &w[iys2 + images], &ione);
 
         }                       /* end for */
 
@@ -268,4 +268,3 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 #endif
 
 }                               /* end trade_images2 */
-

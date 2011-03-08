@@ -43,72 +43,72 @@
 
 
 
-void cgen_prolong(REAL  coef[], REAL fraction, int order)
+void cgen_prolong (REAL coef[], REAL fraction, int order)
 {
 
     int ix, iy;
-    REAL A[ order*order ];
-    REAL b[ order ];
-    REAL d[ order ];
-    int ipvt[ order ];
-    int info; 
+    REAL A[order * order];
+    REAL b[order];
+    REAL d[order];
+    int ipvt[order];
+    int info;
     int ione = 1;
 
 
-    /*initialize A and b to be zero*/
+    /*initialize A and b to be zero */
 
 
     for (ix = 0; ix < order; ix++)
     {
 
-        b[ix]=0.0;
+        b[ix] = 0.0;
 
         for (iy = 0; iy < order; iy++)
         {
 
-            A[ix*order+iy]=0.0;  
+            A[ix * order + iy] = 0.0;
 
-        }                   /* end for */
+        }                       /* end for */
 
-    }                       /* end for */
+    }                           /* end for */
 
 
     /*filling A , b and d (d is distance from different coarse grids to the interpolated pt, 
-      coarse grid spacing is normalized to be ONE)*/
+       coarse grid spacing is normalized to be ONE) */
 
-    b[0]=1.0;  
+    b[0] = 1.0;
 
     for (iy = 0; iy < order; iy++)
     {
 
 
-            d[iy] = iy + 1.0 - fraction - (double)order/2;
+        d[iy] = iy + 1.0 - fraction - (double) order / 2;
 
-	    for (ix = 0; ix < order; ix++)
+        for (ix = 0; ix < order; ix++)
 
-	    {
+        {
 
-		    A[iy*order+ix]=pow(d[iy],ix);  
-        	/*  printf("  A[%d][%d]= %f  ", ix, iy, A[ix][iy]); */
+            A[iy * order + ix] = pow (d[iy], ix);
+            /*  printf("  A[%d][%d]= %f  ", ix, iy, A[ix][iy]); */
 
-	        /*  here we flip ix and iy, just to transpose matrix A since C code treat array in row fashion */
+            /*  here we flip ix and iy, just to transpose matrix A since C code treat array in row fashion */
 
-	    }                   /* end for */
-         
+        }                       /* end for */
 
-    }                       /* end for */
+
+    }                           /* end for */
 
 
     /*  solving Ac=b for c using  b = A^(-1) * b  */
-    sgesv(&order, &ione, A, &order, ipvt, b, &order, &info);
+    sgesv (&order, &ione, A, &order, ipvt, b, &order, &info);
 
 
 
     for (ix = 0; ix < order; ix++)
     {
 
-        coef[ix]=b[ix]; 
-        
+        coef[ix] = b[ix];
+
     }
 
 

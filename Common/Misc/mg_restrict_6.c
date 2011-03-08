@@ -47,9 +47,9 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
 
     int ix, iy, iz;
     int incz, incy, incx, incz2, incy2, incx2, incx3;
-    REAL  a0, a1, a2, a3, a4, a5;
-    REAL * fulla;
-    REAL * fullb;
+    REAL a0, a1, a2, a3, a4, a5;
+    REAL *fulla;
+    REAL *fullb;
 
 
     incz = 1;
@@ -57,122 +57,122 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
     incx = (dimz + 10) * (dimy + 10);
 
     incz2 = 1;
-    incy2 = dimz / grid_ratio ;
+    incy2 = dimz / grid_ratio;
     incx2 = (dimz / grid_ratio) * (dimy / grid_ratio);
- 
-    incx3 = (dimz + 10) * (dimy / grid_ratio);   
 
-    a0 = 3.0/7.0;
-    a1 = (1.0-a0)*15.0/20.0;
-    a2 = (1.0-a0)*(-6.0)/20.0;
-    a3 = (1.0-a0)*1.0/20.0;
+    incx3 = (dimz + 10) * (dimy / grid_ratio);
+
+    a0 = 3.0 / 7.0;
+    a1 = (1.0 - a0) * 15.0 / 20.0;
+    a2 = (1.0 - a0) * (-6.0) / 20.0;
+    a3 = (1.0 - a0) * 1.0 / 20.0;
     a4 = 0.0;
     a5 = 0.0;
 
-   my_malloc (fulla,(FPX0_GRID / grid_ratio)*(FPY0_GRID + 10)*(FPZ0_GRID + 10),REAL);
-   my_malloc (fullb,(FPX0_GRID / grid_ratio)*(FPY0_GRID / grid_ratio)*(FPZ0_GRID + 10),REAL);
+    my_malloc (fulla, (FPX0_GRID / grid_ratio) * (FPY0_GRID + 10) * (FPZ0_GRID + 10), REAL);
+    my_malloc (fullb, (FPX0_GRID / grid_ratio) * (FPY0_GRID / grid_ratio) * (FPZ0_GRID + 10), REAL);
 
 
-        for (ix = 0; ix < dimx / grid_ratio; ix++)
+    for (ix = 0; ix < dimx / grid_ratio; ix++)
+    {
+
+        for (iy = 0; iy < dimy + 10; iy++)
         {
 
-            for (iy = 0; iy < dimy + 10; iy++)
+
+            for (iz = 0; iz < dimz + 10; iz++)
             {
 
 
-                for (iz = 0; iz < dimz + 10; iz++)
-                {
+                fulla[ix * incx + iy * incy + iz] =
+                    a5 * full[(grid_ratio * ix + 0) * incx + iy * incy + iz] +
+                    a4 * full[(grid_ratio * ix + 1) * incx + iy * incy + iz] +
+                    a3 * full[(grid_ratio * ix + 2) * incx + iy * incy + iz] +
+                    a2 * full[(grid_ratio * ix + 3) * incx + iy * incy + iz] +
+                    a1 * full[(grid_ratio * ix + 4) * incx + iy * incy + iz] +
+                    a0 * full[(grid_ratio * ix + 5) * incx + iy * incy + iz] +
+                    a1 * full[(grid_ratio * ix + 6) * incx + iy * incy + iz] +
+                    a2 * full[(grid_ratio * ix + 7) * incx + iy * incy + iz] +
+                    a3 * full[(grid_ratio * ix + 8) * incx + iy * incy + iz] +
+                    a4 * full[(grid_ratio * ix + 9) * incx + iy * incy + iz] +
+                    a5 * full[(grid_ratio * ix + 10) * incx + iy * incy + iz];
 
-
-                    fulla[ix * incx + iy * incy + iz] =
-                               a5* full[(grid_ratio*ix+0) * incx + iy * incy + iz] +
-                               a4* full[(grid_ratio*ix+1) * incx + iy * incy + iz] +
-                               a3* full[(grid_ratio*ix+2) * incx + iy * incy + iz] +
-                               a2* full[(grid_ratio*ix+3) * incx + iy * incy + iz] + 
-                               a1* full[(grid_ratio*ix+4) * incx + iy * incy + iz] +
-                               a0* full[(grid_ratio*ix+5) * incx + iy * incy + iz] +
-                               a1* full[(grid_ratio*ix+6) * incx + iy * incy + iz] +
-                               a2* full[(grid_ratio*ix+7) * incx + iy * incy + iz] +
-                               a3* full[(grid_ratio*ix+8) * incx + iy * incy + iz] +
-                               a4* full[(grid_ratio*ix+9) * incx + iy * incy + iz] +
-                               a5* full[(grid_ratio*ix+10) * incx + iy * incy + iz] ;
-
-
-                }               /* end for */
 
             }                   /* end for */
 
         }                       /* end for */
 
+    }                           /* end for */
 
 
-        for (ix = 0; ix < dimx / grid_ratio; ix++)
+
+    for (ix = 0; ix < dimx / grid_ratio; ix++)
+    {
+
+        for (iy = 0; iy < dimy / grid_ratio; iy++)
         {
-        
-            for (iy = 0; iy < dimy / grid_ratio; iy++)
+
+
+            for (iz = 0; iz < dimz + 10; iz++)
             {
-    
-
-                for (iz = 0; iz < dimz + 10; iz++)
-                {
 
 
-                    fullb[ix * incx3 + iy * incy + iz] =
-                               a5* fulla[ix * incx + (grid_ratio*iy+0) * incy + iz] +
-                               a4* fulla[ix * incx + (grid_ratio*iy+1) * incy + iz] +
-                               a3* fulla[ix * incx + (grid_ratio*iy+2) * incy + iz] +
-                               a2* fulla[ix * incx + (grid_ratio*iy+3) * incy + iz] +
-                               a1* fulla[ix * incx + (grid_ratio*iy+4) * incy + iz] +
-                               a0* fulla[ix * incx + (grid_ratio*iy+5) * incy + iz] +
-                               a1* fulla[ix * incx + (grid_ratio*iy+6) * incy + iz] +
-                               a2* fulla[ix * incx + (grid_ratio*iy+7) * incy + iz] +
-                               a3* fulla[ix * incx + (grid_ratio*iy+8) * incy + iz] +
-                               a4* fulla[ix * incx + (grid_ratio*iy+9) * incy + iz] +
-                               a5* fulla[ix * incx + (grid_ratio*iy+10) * incy + iz] ;
+                fullb[ix * incx3 + iy * incy + iz] =
+                    a5 * fulla[ix * incx + (grid_ratio * iy + 0) * incy + iz] +
+                    a4 * fulla[ix * incx + (grid_ratio * iy + 1) * incy + iz] +
+                    a3 * fulla[ix * incx + (grid_ratio * iy + 2) * incy + iz] +
+                    a2 * fulla[ix * incx + (grid_ratio * iy + 3) * incy + iz] +
+                    a1 * fulla[ix * incx + (grid_ratio * iy + 4) * incy + iz] +
+                    a0 * fulla[ix * incx + (grid_ratio * iy + 5) * incy + iz] +
+                    a1 * fulla[ix * incx + (grid_ratio * iy + 6) * incy + iz] +
+                    a2 * fulla[ix * incx + (grid_ratio * iy + 7) * incy + iz] +
+                    a3 * fulla[ix * incx + (grid_ratio * iy + 8) * incy + iz] +
+                    a4 * fulla[ix * incx + (grid_ratio * iy + 9) * incy + iz] +
+                    a5 * fulla[ix * incx + (grid_ratio * iy + 10) * incy + iz];
 
-
-                }               /* end for */
 
             }                   /* end for */
 
         }                       /* end for */
 
+    }                           /* end for */
 
 
-        for (ix = 0; ix < dimx / grid_ratio; ix++)
+
+    for (ix = 0; ix < dimx / grid_ratio; ix++)
+    {
+
+        for (iy = 0; iy < dimy / grid_ratio; iy++)
         {
-        
-            for (iy = 0; iy < dimy / grid_ratio; iy++)
+
+
+            for (iz = 0; iz < dimz / grid_ratio; iz++)
             {
-    
-
-                for (iz = 0; iz < dimz / grid_ratio; iz++)
-                {
 
 
-                    half[ix * incx2 + iy * incy2 + iz] =
-                               a5* fullb[ix * incx3 + iy* incy + grid_ratio*iz+0 ] +
-                               a4* fullb[ix * incx3 + iy* incy + grid_ratio*iz+1 ] +
-                               a3* fullb[ix * incx3 + iy* incy + grid_ratio*iz+2 ] +
-                               a2* fullb[ix * incx3 + iy* incy + grid_ratio*iz+3 ] +
-                               a1* fullb[ix * incx3 + iy* incy + grid_ratio*iz+4 ] +
-                               a0* fullb[ix * incx3 + iy* incy + grid_ratio*iz+5 ] +
-                               a1* fullb[ix * incx3 + iy* incy + grid_ratio*iz+6 ] +
-                               a2* fullb[ix * incx3 + iy* incy + grid_ratio*iz+7 ] +
-                               a3* fullb[ix * incx3 + iy* incy + grid_ratio*iz+8 ] +
-                               a4* fullb[ix * incx3 + iy* incy + grid_ratio*iz+9 ] +
-                               a5* fullb[ix * incx3 + iy* incy + grid_ratio*iz+10 ] ;
+                half[ix * incx2 + iy * incy2 + iz] =
+                    a5 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 0] +
+                    a4 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 1] +
+                    a3 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 2] +
+                    a2 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 3] +
+                    a1 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 4] +
+                    a0 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 5] +
+                    a1 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 6] +
+                    a2 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 7] +
+                    a3 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 8] +
+                    a4 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 9] +
+                    a5 * fullb[ix * incx3 + iy * incy + grid_ratio * iz + 10];
 
-
-                }               /* end for */
 
             }                   /* end for */
 
         }                       /* end for */
 
+    }                           /* end for */
 
-        my_free (fulla);
-        my_free (fullb);
+
+    my_free (fulla);
+    my_free (fullb);
 
 
 
