@@ -21,7 +21,6 @@
  *   array in the fine grid. The returned values are smoothed.
  * INPUTS
  *   full[(dimx+10)*(dimy+10)*(dimz+10)]: array in the fine grid
- *      image value must be there
  *   dimx, dimy, dimz: dimensions of array in the fine grid
  * OUTPUT
  *   half[(dimx/grid_ratio)*(dimy/grid_ratio)*(dimz/grid_ratio)] array in the corse grid
@@ -50,7 +49,10 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
     REAL a0, a1, a2, a3, a4, a5;
     REAL *fulla;
     REAL *fullb;
+    REAL *sg_full;
 
+    my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), REAL);
+    trade_imagesx (sg_full, full, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 5);
 
     incz = 1;
     incy = dimz + 10;
@@ -85,17 +87,17 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
 
 
                 fulla[ix * incx + iy * incy + iz] =
-                    a5 * full[(grid_ratio * ix + 0) * incx + iy * incy + iz] +
-                    a4 * full[(grid_ratio * ix + 1) * incx + iy * incy + iz] +
-                    a3 * full[(grid_ratio * ix + 2) * incx + iy * incy + iz] +
-                    a2 * full[(grid_ratio * ix + 3) * incx + iy * incy + iz] +
-                    a1 * full[(grid_ratio * ix + 4) * incx + iy * incy + iz] +
-                    a0 * full[(grid_ratio * ix + 5) * incx + iy * incy + iz] +
-                    a1 * full[(grid_ratio * ix + 6) * incx + iy * incy + iz] +
-                    a2 * full[(grid_ratio * ix + 7) * incx + iy * incy + iz] +
-                    a3 * full[(grid_ratio * ix + 8) * incx + iy * incy + iz] +
-                    a4 * full[(grid_ratio * ix + 9) * incx + iy * incy + iz] +
-                    a5 * full[(grid_ratio * ix + 10) * incx + iy * incy + iz];
+                    a5 * sg_full[(grid_ratio * ix + 0) * incx + iy * incy + iz] +
+                    a4 * sg_full[(grid_ratio * ix + 1) * incx + iy * incy + iz] +
+                    a3 * sg_full[(grid_ratio * ix + 2) * incx + iy * incy + iz] +
+                    a2 * sg_full[(grid_ratio * ix + 3) * incx + iy * incy + iz] +
+                    a1 * sg_full[(grid_ratio * ix + 4) * incx + iy * incy + iz] +
+                    a0 * sg_full[(grid_ratio * ix + 5) * incx + iy * incy + iz] +
+                    a1 * sg_full[(grid_ratio * ix + 6) * incx + iy * incy + iz] +
+                    a2 * sg_full[(grid_ratio * ix + 7) * incx + iy * incy + iz] +
+                    a3 * sg_full[(grid_ratio * ix + 8) * incx + iy * incy + iz] +
+                    a4 * sg_full[(grid_ratio * ix + 9) * incx + iy * incy + iz] +
+                    a5 * sg_full[(grid_ratio * ix + 10) * incx + iy * incy + iz];
 
 
             }                   /* end for */
@@ -173,6 +175,7 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
 
     my_free (fulla);
     my_free (fullb);
+    my_free (sg_full);
 
 
 

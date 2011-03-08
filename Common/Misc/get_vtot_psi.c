@@ -11,7 +11,6 @@
 void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int grid_ratio)
 {
     int idx, ione = 1;
-    REAL *sg_vtot;
 
     /*If the grids are the same, just copy the data */
     if (grid_ratio == 1)
@@ -22,11 +21,6 @@ void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int grid_ratio)
     /* For different grids, restriction algorithm is used to obtain potential on coarse grid */
     else
     {
-        my_malloc (sg_vtot, (FPX0_GRID + 10) * (FPY0_GRID + 10) * (FPZ0_GRID + 10), REAL);
-        trade_imagesx (vtot, sg_vtot, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 5);
-
-        mg_restrict_6 (sg_vtot, vtot_psi, FPX0_GRID, FPY0_GRID, FPZ0_GRID, grid_ratio);
-
-        my_free (sg_vtot);
+        mg_restrict_6 (vtot, vtot_psi, FPX0_GRID, FPY0_GRID, FPZ0_GRID, grid_ratio);
     }
 }
