@@ -143,7 +143,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
             tem = real_sum_all(tem);
             tem = sqrt(tem);
 
-            if(pct.thispe == 0) printf("\n  get_vh  step %d  RMS= %16.8e", its, tem);
 
             /*  Fix Hartree in some region  */
             /*   confine(mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 1); */
@@ -212,6 +211,7 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
     }                           /* end for */
 
+    if(pct.thispe == 0) printf("\n  get_vh  step %d  RMS= %16.8e", its, tem);
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
