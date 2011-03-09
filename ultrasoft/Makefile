@@ -37,7 +37,7 @@ sunfire: Headers/make_conf.h
 linux: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h
 	@echo '#define LINUX 1' >> Headers/arch.h
-	$(MAKE) -f Make.linux
+	$(MAKE) -j 8 -f Make.linux
 
 linux_mpich: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h
@@ -96,6 +96,7 @@ Headers/make_conf.h:
 
 clean:
 	find . \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
+	find ../Common \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 	rm -f SvnRev/svnrev Headers/svnrev.h Headers/arch.h Headers/grid.h Make.vars loadmap core mppcore rmg
 
 tar:
