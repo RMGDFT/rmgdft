@@ -257,6 +257,15 @@ typedef struct
     /** points to start of qqq storage for this ion*/
     //REAL *qqq[MAX_IONS];
     REAL **qqq;
+
+    int num_nonloc_ions;
+    int nonloc_ions_list[MAX_NONLOC_IONS];
+
+    int num_nonloc_pes;
+    int nonloc_pe_list[MAX_NONLOC_PROCS];
+    int nonloc_atom_list_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
+    int nonloc_atom_count_per_pe[MAX_NONLOC_IONS];
+
 } PE_CONTROL;
 
 

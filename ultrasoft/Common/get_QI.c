@@ -117,7 +117,7 @@ void get_QI (void)
         icenter = sp->qdim / 2;
         icut = (icenter + 1) * (icenter + 1);
 
-        map = get_index (iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
+        map = get_index (pct.thispe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          sp->qdim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);

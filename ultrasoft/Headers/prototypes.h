@@ -325,13 +325,10 @@ void QMD_sscal (int n, REAL alpha, REAL *x, int incx);
 void QMD_scopy (int n, REAL *x, int incx, REAL *y, int incy);
 REAL QMD_sdot (int n, REAL *x, int incx, REAL *y, int incy);
 
-
-
-int get_index (ION *iptr, int *Aix, int *Aiy, int *Aiz,
+int get_index (int thispe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
                int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-               int nxgrid, int nygrid, int nzgrid,
-               REAL *lxcstart, REAL *lycstart, REAL *lzcstart);
+               int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart);
 
 REAL linint (REAL *y, REAL rv, REAL invdr);
 void my_barrier (void);

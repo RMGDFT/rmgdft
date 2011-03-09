@@ -77,7 +77,7 @@ void mulliken (STATE * states)
 
         count = 0;
 
-        map = get_index (iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
+        map = get_index (pct.thispe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          dim, PX0_GRID, PY0_GRID, PZ0_GRID,
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid, &xcstart, &ycstart, &zcstart);
 

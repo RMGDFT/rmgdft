@@ -75,6 +75,11 @@
  * dynamically allocated data structures. */
 #define         MAX_IONS        512
 
+/* Maximum number of atoms whose projectors have overlap with current processor */
+#define MAX_NONLOC_IONS         64 
+
+/* Maximum number of processors with which the current processor will communicate to calculate <beta|psi> */
+#define MAX_NONLOC_PROCS        128
 
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4

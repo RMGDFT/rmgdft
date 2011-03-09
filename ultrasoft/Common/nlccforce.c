@@ -99,7 +99,7 @@ void nlccforce (REAL * rho, REAL * vxc)
             invdr = ONE / sp->drlig;
 
             /* Determine mapping indices or even if a mapping exists */
-            map = get_index (iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
+            map = get_index (pct.thispe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                              sp->ldim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
                              ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                              &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
