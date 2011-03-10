@@ -171,7 +171,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
                 /* Update vh */
                 t1 = ONE;
-                t1 = 0.5;
                 QMD_saxpy(pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }
@@ -180,37 +179,36 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-/*                t1  = 1.0/ct.Ac;*/
 
                 QMD_saxpy(pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }                   /* end if */
 
 
-            if (ct.boundaryflag == PERIODIC && potentialCompass.type != 1)
-            {
-
-
-                /* Evaluate the average potential */
-                vavgcor = 0.0;
-                for (idx = 0; idx < pbasis; idx++)
-                    vavgcor += ct.vh_ext[idx];
-
-                vavgcor = real_sum_all(vavgcor);
-                t1 = (REAL) (ct.vh_nxgrid * ct.vh_nygrid * ct.vh_nzgrid);
-                vavgcor = vavgcor / t1;
-
-
-                /* Make sure that the average value is zero */
-                for (idx = 0; idx < pbasis; idx++)
-                    ct.vh_ext[idx] -= vavgcor;
-
-            }                   /* end if */
 
         }                       /* end for */
 
     }                           /* end for */
 
+    if (ct.boundaryflag == PERIODIC && potentialCompass.type != 1)
+    {
+
+
+        /* Evaluate the average potential */
+        vavgcor = 0.0;
+        for (idx = 0; idx < pbasis; idx++)
+            vavgcor += ct.vh_ext[idx];
+
+        vavgcor = real_sum_all(vavgcor);
+        t1 = (REAL) (ct.vh_nxgrid * ct.vh_nygrid * ct.vh_nzgrid);
+        vavgcor = vavgcor / t1;
+
+
+        /* Make sure that the average value is zero */
+        for (idx = 0; idx < pbasis; idx++)
+            ct.vh_ext[idx] -= vavgcor;
+
+    }                   /* end if */
     if(pct.thispe == 0) printf("\n  get_vh  step %d  RMS= %16.8e", its, tem);
 
     /* Pack the portion of the hartree potential used by the wavefunctions
