@@ -17,7 +17,7 @@ void normalize_orbits(STATE * states)
     REAL tmp;
     int ione = 1;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n STATE  NORMALIZATION  ");
 
     for (st = ct.state_begin; st < ct.state_end; st++)

@@ -35,7 +35,7 @@ void make_mask_grid (REAL rcut, int level, STATE * states)
     delta = max (delta, hgrid[1]);
     delta = max (delta, hgrid[2]);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n  make_mask_grid: level %d, rcut = %f rcut+delta = %f\n",
                 level, rcut, rcut + delta);
@@ -84,7 +84,7 @@ void make_mask_grid (REAL rcut, int level, STATE * states)
         }
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf (" make_mask_grid: mask done\n");
 }
 

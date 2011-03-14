@@ -26,7 +26,7 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 
     sprintf(newname, "%s%s", name, ".pot_rho");
 
-    pe2xyz(pct.thispe, &pex, &pey, &pez);
+    pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
     int sizes[3], subsizes[3], starts[3];
     MPI_Info fileinfo;
@@ -75,7 +75,7 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 
     my_barrier();
     tem1 = my_crtc();
-    if(pct.thispe == 0) printf("\n aaaa read pot_rho %f", tem2 - tem1);
+    if(pct.gridpe == 0) printf("\n aaaa read pot_rho %f", tem2 - tem1);
     fflush(NULL);
 
 }

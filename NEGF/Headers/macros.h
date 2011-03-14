@@ -24,7 +24,7 @@
 #define DEBUG 0
 
 #if DEBUG
-#define Dprintf( format, args...) fprintf (stderr, "\n#DEBUG from PE %d in %s line %d:    \t"format"\n", pct.thispe, __FILE__, __LINE__, ##args), fflush(NULL)
+#define Dprintf( format, args...) fprintf (stderr, "\n#DEBUG from PE %d in %s line %d:    \t"format"\n", pct.gridpe, __FILE__, __LINE__, ##args), fflush(NULL)
 #else
 #define Dprintf( format, args...) ;
 #endif
@@ -41,13 +41,13 @@
 
 
 /*#define printf( message... ) \
-*	 ((pct.thispe == 0) ? fprintf( ct.logfile, message ): 0)
+*	 ((pct.gridpe == 0) ? fprintf( ct.logfile, message ): 0)
 */
 
 /* variadic error_handler, use is the same as printf. Calls MPI_Abort, since MPI_Finalize hangs if called on single PE. */
 #define error_handler( message... ) \
-    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.thispe, pct.thisgrp+1, __FILE__, __LINE__, pct.thispe), \
-    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.thispe, pct.thisgrp+1, __FILE__, __LINE__, pct.thispe), \
+    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisgrp+1, __FILE__, __LINE__, pct.gridpe), \
+    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisgrp+1, __FILE__, __LINE__, pct.gridpe), \
 	fprintf (stderr,  message ), \
 	fprintf (stderr,  "\n\n" ), \
 	printf ( message ), \
@@ -57,8 +57,8 @@
     sleep (2), \
 	MPI_Abort( MPI_COMM_WORLD, 0 )
 
-#define where() printf("\nPE: %d file %s line %d\n\n", pct.thispe, __FILE__, __LINE__), fflush(NULL)
-#define Where() fprintf( stderr, "\nPE: %d file %s line %d\n\n", pct.thispe, __FILE__, __LINE__), fflush(NULL)
+#define where() printf("\nPE: %d file %s line %d\n\n", pct.gridpe, __FILE__, __LINE__), fflush(NULL)
+#define Where() fprintf( stderr, "\nPE: %d file %s line %d\n\n", pct.gridpe, __FILE__, __LINE__), fflush(NULL)
 
 
 #define progress_tag() printf("[ %3d %3d %4d %8.0f ] %s: ", \

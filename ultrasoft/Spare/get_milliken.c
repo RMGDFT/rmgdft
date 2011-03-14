@@ -73,14 +73,14 @@ void get_milliken (STATE * states)
         app_nl_eig (tmp_psi, NULL, work, NULL, sp->istate, FALSE, sp->kidx, 0);
         if (ct.milliken == 2)
         {
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
 
                 printf ("\n\nMilliken Population Information\n");
 
                 printf ("Energy of state %d: %7.2f; Occupation: %4.2f\n",
                         istate, sp->eig * Ha_eV, sp->occupation);
-            }                   /* if(pct.thispe == 0) */
+            }                   /* if(pct.gridpe == 0) */
         }                       /* if (ct.milliken==2 */
         for (ion = 0; ion < ct.num_ions; ion++)
         {
@@ -105,14 +105,14 @@ void get_milliken (STATE * states)
                 }
                 if (ct.milliken == 2)
                 {
-                    if (pct.thispe == 0)
+                    if (pct.gridpe == 0)
                     {
 
                         printf ("State %d, ion %d, species %d, angular momentum %d, %12.6f\n",
                                 istate, ion, iptr->species + 1, channel,
                                 iptr->oldsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
                                                istate * ct.max_nl + ip]);
-                    }           /* if(pct.thispe == 0) */
+                    }           /* if(pct.gridpe == 0) */
                 }               /* if (ct.milliken==2) */
 
                 charge[ion] +=
@@ -130,7 +130,7 @@ void get_milliken (STATE * states)
 
     if (ct.milliken > 0)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             printf ("\n\nMilliken Charges\n");
             for (ion = 0; ion < ct.num_ions; ion++)
@@ -140,7 +140,7 @@ void get_milliken (STATE * states)
 
                 printf ("Ion %d, species %d, charge = %f\n", ion, iptr->species + 1, charge[ion]);
             }                   /* end for */
-        }                       /* end if(pct.thispe == 0) */
+        }                       /* end if(pct.gridpe == 0) */
     }                           /* if (ct.milliken>0) */
     ct.milliken = FALSE;
 

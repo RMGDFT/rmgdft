@@ -49,7 +49,7 @@ void read_atoms (void)
 
 
 
-    //    if (pct.thispe == 0)
+    //    if (pct.gridpe == 0)
     //       printf ("\n Number of ions is %d", ct.num_ions);
 
     /*Allocate memory for ions */

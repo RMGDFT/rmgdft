@@ -207,7 +207,7 @@ int get_index (ION * iptr, int *Aix, int *Aiy, int *Aiz,
 
     /* Now we need to determine if any of this ions */
     /* projector maps onto this processors space.   */
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     *ilow = ii * pxgrid;
     *jlow = jj * pygrid;
     *klow = kk * pzgrid;

@@ -12,7 +12,7 @@ void debug_write_rho_z (REAL * rhoz)
     int basis;
     FILE *ftpr;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         my_fopen (ftpr, "rho_soft_separate.txt", "a+");
 

@@ -51,7 +51,7 @@ void write_zstates (STATE * states)
 
     my_malloc (tmp_psi, P0_BASIS, REAL);
     /* Get this processors offset */
-    pe2xyz (pct.thispe, &px, &py, &pz);
+    pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = pz * PZ0_GRID;
 
     incix = PY0_GRID * PZ0_GRID;
@@ -89,7 +89,7 @@ void write_zstates (STATE * states)
         iz = NZ_GRID;
         global_sums (zvec, &iz);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             /* Make the new output file name */
             sprintf (newname, "%s%d", "zavg.", istate);

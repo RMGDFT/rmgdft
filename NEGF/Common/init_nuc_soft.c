@@ -55,7 +55,7 @@ void init_nuc_soft (double *vnuc, double *rhoc, double *rhocore)
     int L0_LDIM;
     REAL hxgrid, hygrid, hzgrid;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf (" Begin init_nuc_soft ...\n");
@@ -141,7 +141,7 @@ void init_nuc_soft (double *vnuc, double *rhoc, double *rhocore)
         /* Now we need to determine if any of this ions local short */
         /* ranged difference potential maps onto this particular    */
         /* processors space.                                        */
-        pe2xyz (pct.thispe, &ii, &jj, &kk);
+        pe2xyz (pct.gridpe, &ii, &jj, &kk);
         ilow = ii * FPX0_GRID;
         jlow = jj * FPY0_GRID;
         klow = kk * FPZ0_GRID;
@@ -245,7 +245,7 @@ void init_nuc_soft (double *vnuc, double *rhoc, double *rhocore)
 
 
     /* Rescale compensating charges */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n compensating charges: %e \n", ct.crho);
         printf (" Rescaling compensating charges\n");
@@ -258,13 +258,13 @@ void init_nuc_soft (double *vnuc, double *rhoc, double *rhocore)
     /* Check new compensating charges */
     ct.crho = get_charge (rhoc);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf (" Rescaled compensating charges: %e \n", ct.crho);
 
 
     t1 = get_charge (rhocore);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf (" core charges: %e \n", t1);
 
 
@@ -274,7 +274,7 @@ void init_nuc_soft (double *vnuc, double *rhoc, double *rhocore)
     my_free( Aiy );
     my_free( Aiz );
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf (" init_nuc_soft done\n");
@@ -310,7 +310,7 @@ static void init_vcomp (double *vc)
     }                           /* end for */
 
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ilow = ii * FPX0_GRID;
     jlow = jj * FPY0_GRID;
     klow = kk * FPZ0_GRID;

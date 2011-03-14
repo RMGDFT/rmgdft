@@ -98,7 +98,7 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
             pct.desca, pct.desca[1]);
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf(" matrix Hij\n");
         print_matrix(Hij_00, 5, maxst);

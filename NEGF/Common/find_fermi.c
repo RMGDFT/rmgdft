@@ -66,7 +66,7 @@ void find_fermi (doublecomplex * sigma_all)
          comm_sums(&ct.tcharge, &ione, COMM_EN2);
 
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n total charge, %f %f \n Fermi energy %16.10f %16.10f",
                     ct.nel, ct.tcharge, bias1, bias2);
 

@@ -98,7 +98,7 @@ void write_timings (void)
     nn = ct.num_steps;
 
 /* Write timing information */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
 
@@ -161,7 +161,7 @@ void write_timings (void)
 
     }                           /* end if */
     my_barrier ();
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n run done... \n");
 }                               /* end write_timings */
 

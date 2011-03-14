@@ -60,7 +60,7 @@ void set_energy_weight_ne (REAL * eneR, REAL * eneI, REAL * weightR, REAL * weig
         a = EF1 - 25.0 * KT;
         b = EF2 + 25.0 * KT;
     }
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n fff %f %f %d", a, b, nmax_gq2);
 
 /* then determine the Gauss-Legand parameters */
@@ -92,7 +92,7 @@ void set_energy_weight_ne (REAL * eneR, REAL * eneI, REAL * weightR, REAL * weig
 
     my_free(xc);
     my_free(wc);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n set_energy_weigh_ne done %d", *nenergy);
         printf ("\n eneR   eneI   weightR   weightI ");

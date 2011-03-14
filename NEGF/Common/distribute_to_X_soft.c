@@ -29,7 +29,7 @@ void distribute_to_X_soft (REAL * distr_array, REAL * global_array)
     incx = FPY0_GRID * FPZ0_GRID;
     incy = FPZ0_GRID;
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ii *= FPX0_GRID;
 
     for (idx1 = 0; idx1 < FNX_GRID * FPY0_GRID * FPZ0_GRID; idx1++)

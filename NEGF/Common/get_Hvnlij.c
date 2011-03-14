@@ -43,7 +43,7 @@ void get_Hvnlij(double *Aij)
 
     /* Loop over states on this proce onle 
        (distribution of work AND Aij contributions) */
-    proc = pct.thispe;
+    proc = pct.gridpe;
     for (st1 = state_begin[proc]; st1 < state_end[proc]; st1++)
         for (st2 = state_begin[proc]; st2 < state_end[proc]; st2++)
         {
@@ -89,10 +89,10 @@ void get_Hvnlij(double *Aij)
     for (idx = 1; idx < NPES; idx++)
     {
 
-        proc1 = pct.thispe + idx;
+        proc1 = pct.gridpe + idx;
         if (proc1 >= NPES)
             proc1 = proc1 - NPES;
-        proc2 = pct.thispe - idx;
+        proc2 = pct.gridpe - idx;
         if (proc2 < 0)
             proc2 += NPES;
 

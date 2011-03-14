@@ -286,7 +286,7 @@ void get_QI (void)
 
     }                           /*end for ion */
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf (" get_QI.c  done\n");

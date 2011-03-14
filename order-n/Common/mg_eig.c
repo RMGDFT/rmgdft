@@ -70,7 +70,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     gamma = get_gamma(vtot_c, states[0].eig);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf("\n time step for low frequencies corrections = %e\n", gamma);
         printf(" levels= %d\n", ct.eig_parm.levels);
@@ -229,7 +229,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     if (ct.restart_mix == 1 || ct.move_centers_at_this_step == 1)
     {
         mix_steps = 0;
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\n restart the orbital mixing at step %d \n", ct.scf_steps);
     }
 

@@ -39,7 +39,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
 
     my_malloc (temp_buff, p0_basis, REAL);
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
     /*Max and minimum global grid for given processor */
     min_grid_x = ii * px0_grid;
@@ -51,7 +51,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
     max_grid_z = min_grid_z + pz0_grid;
 
 
-    /*printf("\nPE %d: ii %d jj %d kk %d",pct.thispe, ii, jj, kk);
+    /*printf("\nPE %d: ii %d jj %d kk %d",pct.gridpe, ii, jj, kk);
        fflush(NULL);
 
        MPI_Barrier(pct.grid_comm); */
@@ -83,13 +83,13 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
 
             }                   /*end for (j=1;j<P0_BASIS;j++) */
 
-            /*printf("\nPE %d: ii %d jj %d kk %d, sending %d data points to 0",pct.thispe, ii, jj, kk, counter);
-               printf("\nPE %d: Sent temp_buff[0]=%e",pct.thispe, temp_buff[0]); */
+            /*printf("\nPE %d: ii %d jj %d kk %d, sending %d data points to 0",pct.gridpe, ii, jj, kk, counter);
+               printf("\nPE %d: Sent temp_buff[0]=%e",pct.gridpe, temp_buff[0]); */
 
             /*check */
             if (counter != pz0_grid)
             {
-                printf ("\n\n PE %d: Counter is %d, expected %d !!", pct.thispe, counter, pz0_grid);
+                printf ("\n\n PE %d: Counter is %d, expected %d !!", pct.gridpe, counter, pz0_grid);
                 fflush (NULL);
             }
 
@@ -99,7 +99,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
         }                       /*end if ((ii == ((double) PE_X)/2.0) ... */
 
         /*PE 0 will write the data out */
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
 
             MPI_Recv (temp_buff, pz0_grid, MPI_DOUBLE, MPI_ANY_SOURCE, 100, pct.grid_comm,
@@ -111,7 +111,7 @@ void print_density_z_direction (int grid_x, int grid_y, REAL * density, int px0_
 
             fflush (NULL);
 
-        }                       /*end if(pct.thispe == 0) */
+        }                       /*end if(pct.gridpe == 0) */
 
         MPI_Barrier (pct.grid_comm);
 

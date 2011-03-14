@@ -51,7 +51,7 @@ void read_control (void)
     int is,ns;
     int i;
 
-    if(pct.thispe == 0) 
+    if(pct.gridpe == 0) 
     {
         printf("\n ********************************");
         printf("\n  control file read informations");
@@ -217,7 +217,7 @@ KAIN";
     get_data("movable_orbital_centers_steps", &ct.movingSteps, INT, "40");
     if(ct.movingSteps == 0) 
     {
-        if(pct.thispe == 0) 
+        if(pct.gridpe == 0) 
         {
             printf("\n  *************WARNING: ct.movingSteps reset to 100 \n");
         }
@@ -520,7 +520,7 @@ Absolute";
     {
         ct.plane[i] = strtol(tbuf, &tbuf, 10);
     }
-    if(pct.thispe == 0)
+    if(pct.gridpe == 0)
     {
         printf(" \n average plane of rho ");
         for(i=0; i < 5; i++) printf(" %d ", ct.plane[i]);

@@ -80,7 +80,7 @@ void write_timings(void)
 
 
 /* Write timing information */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf("\n\n  TIMING INFORMATION\n");
         printf("*******************************************\n");
@@ -159,7 +159,7 @@ void write_timings(void)
         fflush(NULL);
     }                           /* end if */
     my_barrier();
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n run done... \n");
 }                               /* end write_timings */
 

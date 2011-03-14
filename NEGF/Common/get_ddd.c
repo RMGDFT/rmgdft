@@ -53,7 +53,7 @@ void get_ddd (REAL * veff)
                 dnmI[i * nh + j] = sp->ddd0[i][j] + sum;
                 if (i != j)
                     dnmI[j * nh + i] = dnmI[i * nh + j];
-/*if (pct.thispe==0) printf("i=%d j=%d ddd=%15.8f \n",i,j,dnmI[i*nh+j]);*/
+/*if (pct.gridpe==0) printf("i=%d j=%d ddd=%15.8f \n",i,j,dnmI[i*nh+j]);*/
 
                 idx++;
             }                   /*end for j */

@@ -52,7 +52,7 @@ void init_kbr(void)
     char newname[20];
     FILE *psp = NULL;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf("QMD status message: Opening projectors.xmgr\n");
@@ -75,7 +75,7 @@ void init_kbr(void)
     for (isp = 0; isp < ct.num_species; isp++)
     {
         sprintf(newname, "%s%d.xmgr", name, isp);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             psp = fopen(newname, "w+");
         sp = &ct.sp[isp];
 
@@ -126,7 +126,7 @@ void init_kbr(void)
 
         }                       /* end for */
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             for (idx = 0; idx < sp->rg_points; idx++)
             {
@@ -192,7 +192,7 @@ void init_kbr(void)
             }                   /* end if */
 
             /* output local projector */
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
 
                 if ((!(idx % 32)) && (rfil < sp->lradius))
@@ -205,7 +205,7 @@ void init_kbr(void)
         }                       /* end for idx */
 
         /* output xmgr data separator */
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
 
             fprintf(psp, "&&\n");
@@ -221,7 +221,7 @@ void init_kbr(void)
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
                 for (idx = 0; idx < sp->kkbeta; idx++)
                     fprintf(psp, "%15.8f  %15.8f\n", sp->r[idx], sp->beta[ip][idx]);
@@ -275,7 +275,7 @@ void init_kbr(void)
                 }               /* end if */
 
                 /* output non-local projector */
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                 {
 
 /*                        if(!(idx % 32))*/
@@ -288,7 +288,7 @@ void init_kbr(void)
             }                   /* end for */
 
             /* output xmgr data separator */
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
 
                 fprintf(psp, "&&\n");
@@ -308,7 +308,7 @@ void init_kbr(void)
 
             }                   /* end for */
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
                 for (idx = 0; idx < sp->rg_points; idx++)
                 {
@@ -350,7 +350,7 @@ void init_kbr(void)
                 if (sp->rhocorelig[idx] < 0.0)
                     sp->rhocorelig[idx] = 0.0;
 
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                 {
 
                     if ((!(idx % 32)) && (rfil < rcut))
@@ -362,7 +362,7 @@ void init_kbr(void)
 
             }                   /* end for */
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 fprintf(psp, "&&\n");
 
 
@@ -374,7 +374,7 @@ void init_kbr(void)
         if (sp->localidx < 0)
             error_handler("No local potential defined");
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             fclose(psp);
 
     }                           /* end for */
@@ -382,7 +382,7 @@ void init_kbr(void)
 
     my_free(work);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf("QMD status message: Closing projectors.xmgr\n");

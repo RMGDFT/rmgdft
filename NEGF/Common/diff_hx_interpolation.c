@@ -74,7 +74,7 @@ void diff_hx_interpolation (double *xi, double *xi_old, int NX,
         cc3 = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
 
         xi[ix] = cc0 * xi_old[i0] + cc1 * xi_old[i1] + cc2 * xi_old[i2] + cc3 * xi_old[i3];
-/*	if(pct.thispe ==0) printf("\n %d %f %f dddd", ix, xi[ix], xi_old[ix]); */
+/*	if(pct.gridpe ==0) printf("\n %d %f %f dddd", ix, xi[ix], xi_old[ix]); */
     }
 
 

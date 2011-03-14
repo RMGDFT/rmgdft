@@ -102,7 +102,7 @@ void mix_rho(REAL * rho_out, REAL * rho_in, REAL mix, int steps, int mode)
             alpha1 = (tem11 - tem12) / (tem22 - 2.0 * tem12 + tem11);
             alpha2 = (tem22 - tem12) / (tem22 - 2.0 * tem12 + tem11);
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf("\n mixing rho parameter %f %f", alpha1, alpha2);
 
             for (idx = 0; idx < P0_BASIS; idx++)

@@ -18,8 +18,8 @@ void init_IO(void)
     MPI_Comm_dup ( MPI_COMM_WORLD, &pct.grid_comm);
     ct.logfile = stdout;
     pct.instances = 1;
-    pct.imgpe = pct.thispe;
-    pct.images = pct.thispe;
+    pct.imgpe = pct.gridpe;
+    pct.images = pct.gridpe;
 
 
 }

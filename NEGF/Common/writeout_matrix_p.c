@@ -143,7 +143,7 @@ void writeout_matrix_p ()
 
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n THE MATRICES are written out ");
 }
 

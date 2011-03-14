@@ -34,7 +34,7 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
     sumbetaR = 0.0;
 
     /*Ion parallelization */
-    for (ion = pct.thispe; ion < ct.num_ions; ion += NPES)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
     {
         qqq = pct.qqq[ion];
         nh = pct.prj_per_ion[ion];
@@ -95,7 +95,7 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
 
     /* update <beta|psi> */
     /* Again, this is parallelized over ions */
-    for (ion = pct.thispe; ion < ct.num_ions; ion += NPES)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
     {
 
         iptr = &ct.ions[ion];

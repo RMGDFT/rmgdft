@@ -88,7 +88,7 @@ void allocate_matrix()
     item = max(13 * S0_BASIS, item2);
 
     nproc = pct.nprow * pct.npcol;
-    iproc = pct.thispe;
+    iproc = pct.gridpe;
     locr = ((ct.num_states / NB + 1) / nproc + 1) * NB + NB;
     lwork = 10 * (locr * 5 + NB);
     item1 = max(lwork, item);

@@ -31,7 +31,7 @@ void global_to_distribute (REAL * global_array, REAL * distr_array)
     incx1 = NY_GRID * NZ_GRID;
     incy1 = NZ_GRID;
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ii *= PX0_GRID;
     jj *= PY0_GRID;
     kk *= PZ0_GRID;

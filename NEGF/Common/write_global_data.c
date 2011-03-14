@@ -39,7 +39,7 @@ void write_global_data (int file_handle, double *data, int NX, int NY, int NZ)
     my_malloc( x_plane, size, double );
 
 
-    pe2xyz (pct.thispe, &pe_x, &pe_y, &pe_z);
+    pe2xyz (pct.gridpe, &pe_x, &pe_y, &pe_z);
     x_off = pe_x * NX / pct.pe_x;
     y_off = pe_y * NY / pct.pe_y;
     z_off = pe_z * NZ / pct.pe_z;
@@ -66,7 +66,7 @@ void write_global_data (int file_handle, double *data, int NX, int NY, int NZ)
         global_sums (x_plane, &size);
 
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             write (file_handle, x_plane, NY * NZ * sizeof (double));
 
     }
@@ -95,7 +95,7 @@ void write_global_data_lead (int file_handle, double *data, int NX, int NY, int 
     my_malloc( x_plane, size, double );
 
 
-    pe2xyz (pct.thispe, &pe_x, &pe_y, &pe_z);
+    pe2xyz (pct.gridpe, &pe_x, &pe_y, &pe_z);
     x_off = pe_x * NX / pct.pe_x;
     y_off = pe_y * NY / pct.pe_y;
     z_off = pe_z * NZ / pct.pe_z;
@@ -123,7 +123,7 @@ void write_global_data_lead (int file_handle, double *data, int NX, int NY, int 
         global_sums (x_plane, &size);
 
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             write (file_handle, x_plane, NY * NZ * sizeof (double));
 
     }

@@ -100,7 +100,7 @@ void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
     szx = ZERO;
 
 
-    pe2xyz (pct.thispe, &pex, &pey, &pez);
+    pe2xyz (pct.gridpe, &pex, &pey, &pez);
 
     xc = pex * ct.hxgrid * PX0_GRID;
 

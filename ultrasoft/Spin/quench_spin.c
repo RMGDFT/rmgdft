@@ -185,12 +185,12 @@ void quench_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho
 
 #if 0
     /* compute kinetic energy of all states */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n");
     for (ist = 0; ist < ct.num_states; ist++)
     {
         KE = get_ke (&states[ist], 0);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             progress_tag ();
             printf ("kinetic energy for state %3d = %14.6f\n", ist, KE);

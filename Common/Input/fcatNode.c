@@ -9,7 +9,7 @@ void fcatNode( FILE *stream, node_t *here )
 {
     int i = 1;
     item_t *item;
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         if (here == NULL)
         {

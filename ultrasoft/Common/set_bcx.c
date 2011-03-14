@@ -54,7 +54,7 @@ void set_bcx (REAL * mat, int dimx, int dimy, int dimz, int images, REAL val)
 
 
     /* Figure out which processor we are */
-    /*pe2xyz(pct.thispe, &pex, &pey, &pez); */
+    /*pe2xyz(pct.gridpe, &pex, &pey, &pez); */
     pex = pct.pe_x;
     pey = pct.pe_y;
     pez = pct.pe_z;

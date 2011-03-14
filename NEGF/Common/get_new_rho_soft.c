@@ -41,7 +41,7 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     state_per_proc = ct.state_per_proc + 2;
     time1 = my_crtc ();
-/*    if (pct.thispe == 0)
+/*    if (pct.gridpe == 0)
         printf (" Compute new density\n");*/
 
     my_malloc_init( rho_global, NX_GRID * NY_GRID * NZ_GRID, REAL );

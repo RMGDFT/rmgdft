@@ -34,7 +34,7 @@ void get_state_to_proc(STATE * states)
         states[st].index = st;
     }
 
-    ct.state_begin = ct.state_per_proc * pct.thispe;
+    ct.state_begin = ct.state_per_proc * pct.gridpe;
     ct.state_end = ct.state_begin + ct.state_per_proc;
 
     if(ct.state_begin > ct.num_states ) ct.state_begin = ct.num_states;

@@ -43,15 +43,14 @@ void init_pe ()
 
 
     /* Setup values for this parallel run */
-    MPI_Comm_rank (MPI_COMM_WORLD, &pct.thispe);
+    MPI_Comm_rank (MPI_COMM_WORLD, &pct.gridpe);
     MPI_Comm_size (MPI_COMM_WORLD, &npes);
 
     /* Every image gets an equal number of PEs. */
     image = npes / pct.images;
     if (image * pct.images != npes)
-        error_handler
-            ("Total MPI processes must be a multiple of the number of images in this run.");
-    pct.thisimg = pct.thispe / image;
+        error_handler ("Total MPI processes must be a multiple of the number of images in this run.");
+    pct.thisimg = pct.gridpe / image;
 
     /* Infer the number of cpu grids in each image. */
     pct.grids = image / NPES;
@@ -83,7 +82,7 @@ void init_pe ()
     MPI_Group_incl (world_grp, pct.images, image_grp_map, &img_masters);
     MPI_Comm_create (MPI_COMM_WORLD, img_masters, &pct.rmg_comm);
 
-    /* set thispe rank value to its image rank */
+    /* set gridpe rank value to its image rank */
     MPI_Comm_rank (pct.img_comm, &pct.imgpe);
 
     /* Read in our control information, depends on pct.img_comm for dissemination */
@@ -130,9 +129,9 @@ void init_pe ()
         error_handler ("Other than one or two grids per image not implimented.");
     }
 
-    /* set thispe rank value to local grid rank value */
-    MPI_Comm_rank (pct.grid_comm, &pct.thispe);
-    /*printf("My grid rank is %d and my image rank is %d\n", pct.thispe, pct.imgpe);*/
+    /* set gridpe rank value to local grid rank value */
+    MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
+    /*printf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);*/
 
 
 
@@ -141,7 +140,7 @@ void init_pe ()
     /* Legacy portion of init_pe */
 
     /* XYZ coordinates of this processor */
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
     /* Now wrap them in case we are running with some processors duplicated */
     /* Two should be enough for any case that we might be doing.            */

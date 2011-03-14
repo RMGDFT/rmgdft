@@ -76,7 +76,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
 
     /* Make the new output file name */
-    sprintf (newname, "%s%d", name, pct.thispe);
+    sprintf (newname, "%s%d", name, pct.gridpe);
 
     my_open (fhand, newname, O_RDWR, S_IREAD | S_IWRITE);
 
@@ -115,7 +115,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
         printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
@@ -142,7 +142,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     if (ns != ct.num_states)
         error_handler ("Wrong number of states");
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("read_data: gamma = %d\n", gamma);
         printf ("read_data: nk = %d\n", ct.num_kpts);
@@ -153,17 +153,17 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     /* read the hartree potential */
     read_double (fhand, vh, fgrid_size);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("read_data: read 'vh'\n");
 
     /* read density */
     read_double (fhand, rho, fgrid_size);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("read_data: read 'rho'\n");
 
     /* read Vxc */
     read_double (fhand, vxc, fgrid_size);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("read_data: read 'vxc'\n");
 
 
@@ -178,7 +178,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
         my_malloc (occ, nk * ns, REAL);
         read_double (fhand, occ, nk * ns);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("read_data: read 'occupations'\n");
 
         if (ct.override_occ != 1 && ct.forceflag != BAND_STRUCTURE)
@@ -237,7 +237,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
                 sp++;
             }
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("read_data: read 'eigenvalues'\n");
 
     }
@@ -280,7 +280,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
         /* Release memory */
         my_free (work1);
 #endif
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("read_data: read 'wfns'\n");
 
     }

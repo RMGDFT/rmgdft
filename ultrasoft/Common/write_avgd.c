@@ -43,7 +43,7 @@ void write_avgd (REAL * rho)
     REAL zvec[FNZ_GRID];
 
     /* Get this processors offset */
-    pe2xyz (pct.thispe, &px, &py, &pz);
+    pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = pz * FPZ0_GRID;
 
 
@@ -80,7 +80,7 @@ void write_avgd (REAL * rho)
     iz = FNZ_GRID;
     global_sums (zvec, &iz);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n Planar average of the electrostatic density\n");
         for (iz = 0; iz < FNZ_GRID; iz++)

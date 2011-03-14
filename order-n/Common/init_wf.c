@@ -43,11 +43,11 @@ static void init_wf_gamma(STATE * states)
     yrand = xrand + NX_GRID;
     zrand = yrand + NY_GRID;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" Begin init_wf ...\n");
     my_barrier();
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" Initialize random functions\n");
 
     /* Initialize the random number generator */
@@ -132,7 +132,7 @@ static void init_wf_gamma(STATE * states)
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" init_wf done  \n");
 
 #if     DEBUG

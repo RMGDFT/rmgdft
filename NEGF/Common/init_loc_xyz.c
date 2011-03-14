@@ -67,7 +67,7 @@ void init_loc_xyz ()
 
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf ("\n init_loc_xyz.c  done\n");

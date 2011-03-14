@@ -77,7 +77,7 @@ void init_sym (void)
     nr3 = ct.psi_nzgrid;
 
     /* Only have PE zero output symmetry information */
-    wflag = pct.thispe;
+    wflag = pct.gridpe;
 
 
     /* Set up atomic positions and species for fortran routines */
@@ -150,7 +150,7 @@ void symmetrize_rho (FP0_GRID * rho)
 
 
     /* Put this processors charge in the correct place */
-    pe2xyz (pct.thispe, &ix, &iy, &iz);
+    pe2xyz (pct.gridpe, &ix, &iy, &iz);
     xoff = ix * FPX0_GRID;
     yoff = iy * FPY0_GRID;
     zoff = iz * FPZ0_GRID;

@@ -31,7 +31,7 @@ void global_to_distribute_soft(REAL * global_array, REAL * distr_array)
     incx1 = FNY_GRID * FNZ_GRID;
     incy1 = FNZ_GRID;
 
-    pe2xyz(pct.thispe, &ii, &jj, &kk);
+    pe2xyz(pct.gridpe, &ii, &jj, &kk);
     ii *= FPX0_GRID;
     jj *= FPY0_GRID;
     kk *= FPZ0_GRID;

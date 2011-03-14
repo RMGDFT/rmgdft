@@ -209,7 +209,7 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
             ct.vh_ext[idx] -= vavgcor;
 
     }                   /* end if */
-    if(pct.thispe == 0) printf("\n  get_vh  step %d  RMS= %16.8e", its, tem);
+    if(pct.gridpe == 0) printf("\n  get_vh  step %d  RMS= %16.8e", its, tem);
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */

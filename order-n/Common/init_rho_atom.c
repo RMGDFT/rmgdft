@@ -41,7 +41,7 @@ void init_rho_atom(double *rho)
     hygrid_new = ct.hyygrid * ct.yside;
     hzgrid_new = ct.hzzgrid * ct.zside;
 
-    pe2xyz(pct.thispe, &pex, &pey, &pez);
+    pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
     ix0 = pex * FPX0_GRID;
     iy0 = pey * FPY0_GRID;
@@ -52,7 +52,7 @@ void init_rho_atom(double *rho)
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" initial rho from atom \n");
     my_barrier();
 
@@ -239,7 +239,7 @@ void init_rho_atom(double *rho)
     my_barrier();
     my_free(rho_tem);
     my_free(map);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" initial rho  done  \n");
 
 

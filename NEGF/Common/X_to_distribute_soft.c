@@ -26,7 +26,7 @@ void X_to_distribute_soft (REAL * global_array, REAL * distr_array)
 
     incx = FPY0_GRID * FPZ0_GRID;
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ii *= FPX0_GRID;
 
 

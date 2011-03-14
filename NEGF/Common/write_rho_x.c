@@ -17,7 +17,7 @@ void write_rho_x (REAL * rho, char *ab)
     int pyoff, pzoff;
 
     /* Get this processors offset */
-    pe2xyz (pct.thispe, &px, &py, &pz);
+    pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = px * FPX0_GRID;
     pyoff = py * FPY0_GRID;
     pzoff = pz * FPZ0_GRID;
@@ -49,7 +49,7 @@ void write_rho_x (REAL * rho, char *ab)
     ix = FNX_GRID;
     global_sums (zvec, &ix);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n Planar average of the electrostatic density\n");
         for (ix = 0; ix < FNX_GRID; ix++)

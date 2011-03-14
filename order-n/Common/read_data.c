@@ -66,7 +66,7 @@ tem1 = my_crtc();
     nbytes = read(fhand, &t1, sizeof(int));
     if (nbytes != sizeof(int))
         error_handler("Unexpected end of file");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" %d states\n", t1);
     if (t1 != ct.num_states)
         error_handler("Wrong number of states");
@@ -74,7 +74,7 @@ tem1 = my_crtc();
     nbytes = read(fhand, &t1, sizeof(int));
     if (nbytes != sizeof(int))
         error_handler("Unexpected end of file");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" Read %d ions\n", t1);
     if (t1 != ct.num_ions)
         error_handler("Wrong number of ions");
@@ -100,7 +100,7 @@ tem1 = my_crtc();
 
 
     nbytes = read(fhand, &t1, sizeof(int));
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" Read functions on %d grid points\n", t1);
     if (nbytes != sizeof(int))
         error_handler("Unexpected end of file");
@@ -127,7 +127,7 @@ tem1 = my_crtc();
     }                           /* end for */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\n  %d   %10.4f  %10.4f  %10.4f",
                     ct.ions[ion].species + 1,
                     ct.ions[ion].crds[0], ct.ions[ion].crds[1], ct.ions[ion].crds[2]);
@@ -149,11 +149,11 @@ tem1 = my_crtc();
             error_handler("Unexpected end of file");
 
     }
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n Initial coordinates \n");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("  %d   %10.4f  %10.4f  %10.4f \n",
                     ct.ions[ion].species + 1,
                     ct.ions[ion].icrds[0], ct.ions[ion].icrds[1], ct.ions[ion].icrds[2]);
@@ -218,12 +218,12 @@ tem1 = my_crtc();
     close(fhand);
 
     tem2 = my_crtc();
-    if(pct.thispe == 0) printf("\n aaaa read basis %f", tem2 - tem1);
+    if(pct.gridpe == 0) printf("\n aaaa read basis %f", tem2 - tem1);
     fflush(NULL);
 
     sprintf(newname, "%s%s", name, ".pot_rho");
 
-    pe2xyz(pct.thispe, &pex, &pey, &pez);
+    pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
     int sizes[3], subsizes[3], starts[3];
     MPI_Info fileinfo;
@@ -274,7 +274,7 @@ tem1 = my_crtc();
 
     my_barrier();
     tem1 = my_crtc();
-    if(pct.thispe == 0) printf("\n aaaa read pot_rho %f", tem2 - tem1);
+    if(pct.gridpe == 0) printf("\n aaaa read pot_rho %f", tem2 - tem1);
     fflush(NULL);
 
     for (state = ct.state_begin; state < ct.state_end; state++)
@@ -299,7 +299,7 @@ tem1 = my_crtc();
     my_barrier();
 
     tem1 = my_crtc();
-    if(pct.thispe == 0) printf("\n aaaa read orbit %f", tem2 - tem1);
+    if(pct.gridpe == 0) printf("\n aaaa read orbit %f", tem2 - tem1);
     fflush(NULL);
     fflush(NULL);
 

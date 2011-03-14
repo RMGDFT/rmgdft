@@ -100,7 +100,7 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
         }
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         print_matrix (mat, 5, maxst);
     }

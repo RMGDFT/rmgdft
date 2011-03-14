@@ -145,7 +145,7 @@ void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
         /*   b = A^(-1) * b     */
         sgesv(&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             printf("\n");
             for (i = 0; i < size; i++)

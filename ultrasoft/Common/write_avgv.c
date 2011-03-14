@@ -47,7 +47,7 @@ void write_avgv (REAL * vh, REAL * vnuc)
 
 
     /* Get this processors offset */
-    pe2xyz (pct.thispe, &px, &py, &pz);
+    pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = pz * PZ0_GRID;
 
 
@@ -85,7 +85,7 @@ void write_avgv (REAL * vh, REAL * vnuc)
     iz = NZ_GRID;
     global_sums (zvec, &iz);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n Planar average of the electron potential\n");
         for (iz = 0; iz < NZ_GRID; iz++)

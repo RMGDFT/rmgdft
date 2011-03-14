@@ -111,7 +111,7 @@ void read_trans (complex_energy_integral * cei)
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n  PARAMETERS control the complex energy integral  \n");
 

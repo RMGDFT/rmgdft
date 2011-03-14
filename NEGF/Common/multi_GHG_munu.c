@@ -75,7 +75,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
         /*   parallel for the processor on energy grid */
         /*   make sure the energy points on each process are same, this guarantee 
          *   the parallelization of the calculation of par_Hij_tri and par_Sij_tri*/
-        for (iene = pct.thispe; iene < lcr[iprobe].nenergy; iene += NPES)
+        for (iene = pct.gridpe; iene < lcr[iprobe].nenergy; iene += NPES)
         {
 
             eneR = lcr[iprobe].eneR[iene];
@@ -200,7 +200,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
         {
 
             /*   parallel for the processor on energy grid */
-            for (iene = pct.thispe; iene < lcr[iprobe].lcr_ne[0].nenergy_ne; iene += NPES)
+            for (iene = pct.gridpe; iene < lcr[iprobe].lcr_ne[0].nenergy_ne; iene += NPES)
             {
 
                 eneR = lcr[iprobe].lcr_ne[0].eneR_ne[iene];

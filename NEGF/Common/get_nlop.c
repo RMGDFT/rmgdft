@@ -53,7 +53,7 @@ void get_nlop(void)
     /*The same for derivative of beta */
     init_derweight ();
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
 
     /*Get memory to store the phase factor applied to the forward Fourier transform
@@ -290,11 +290,11 @@ void get_nlop(void)
     my_free(fftw_phase_sin);
 
 #if	DEBUG
-    printf("PE: %d leave  get_nlop ...\n", pct.thispe);
+    printf("PE: %d leave  get_nlop ...\n", pct.gridpe);
     fflush(NULL);
 #endif
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf(" get_nlop.c  done\n");

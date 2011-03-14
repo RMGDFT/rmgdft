@@ -156,7 +156,7 @@ typedef struct
 {
 
     /** Number (rank in MPI terminology) of this processor in this image grid */
-    int thispe, imgpe, thisimg, thisspin, thisgrid;
+    int gridpe, imgpe, thisimg, thisspin, thisgrid;
 
 	/** Number of grids (typically 1) per image to be run simultaneously **/
 	int images, grids;

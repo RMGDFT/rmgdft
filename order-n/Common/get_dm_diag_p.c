@@ -215,7 +215,7 @@ void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
 
     /* my_free(work); */
     my_barrier();
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         time2 = my_crtc();
         rmg_timings(DIAG_TIME, time2 - time3, 0);

@@ -56,7 +56,7 @@
 #include <math.h>
 
 
-int get_index (int thispe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
+int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
                int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
                int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart)
@@ -205,7 +205,7 @@ int get_index (int thispe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
 
     /* Now we need to determine if any of this ions */
     /* projector maps onto this processors space.   */
-    pe2xyz (thispe, &ii, &jj, &kk);
+    pe2xyz (gridpe, &ii, &jj, &kk);
     *ilow = ii * pxgrid;
     *jlow = jj * pygrid;
     *klow = kk * pzgrid;

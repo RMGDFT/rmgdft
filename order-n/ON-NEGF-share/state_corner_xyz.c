@@ -202,7 +202,7 @@ void state_corner_xyz(STATE * states)
 
     }
 
-    if(pct.thispe == 0)
+    if(pct.gridpe == 0)
     {
         printf("\n lagest orbital size: %d %d %d", maxnx, maxny, maxnz);
         printf("\n smallest orbital size: %d %d %d", minnx, minny, minnz);

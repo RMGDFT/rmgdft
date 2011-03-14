@@ -84,7 +84,7 @@ void init_wf (STATE * states)
         sp->occupation = ct.nel / ct.num_states;
     }
 
-    pe2xyz (pct.thispe, &ix, &iy, &iz);
+    pe2xyz (pct.gridpe, &ix, &iy, &iz);
     xoff = ix * PX0_GRID;
     yoff = iy * PY0_GRID;
     zoff = iz * PZ0_GRID;

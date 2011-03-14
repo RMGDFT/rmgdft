@@ -35,10 +35,10 @@ void get_ion_orbit_overlap_loc (STATE * states)
     int st1;
     int ion2;
     int flagx, flagy, flagz;
-    int num_states_thispe, index;
+    int num_states_gridpe, index;
 
-    num_states_thispe = ct.state_end - ct.state_begin;
-    my_malloc( ion_orbit_overlap_region_loc, ct.num_ions * num_states_thispe, ION_ORBIT_OVERLAP );
+    num_states_gridpe = ct.state_end - ct.state_begin;
+    my_malloc( ion_orbit_overlap_region_loc, ct.num_ions * num_states_gridpe, ION_ORBIT_OVERLAP );
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         for (ion2 = 0; ion2 < ct.num_ions; ion2++)

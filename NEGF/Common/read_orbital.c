@@ -133,7 +133,7 @@ void read_orbital (STATE * states)
                                     idx2= iz + ix * states[st].orbit_nz + iy * incy; /* Check */ 
                                     states[st].psiR[idx] = array_tmp[idx2];
 /*
-                       if(pct.thispe ==0) printf (" urgent  %d %d %d %f \n", ix, iy, iz, 
+                       if(pct.gridpe ==0) printf (" urgent  %d %d %d %f \n", ix, iy, iz, 
                                   states[st].psiR[idx]); 
                        printf (" urgent  %d %d %d %f \n", ix, iy, iz, states[st].psiR[idx]); 
 */

@@ -54,7 +54,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 	/* Make the new output file name */
 
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 	{
 		sprintf (newname, "%s%s", name, ".pot_rho");
 		amode = S_IREAD | S_IWRITE;
@@ -81,7 +81,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 			lcr[1].NZ_GRID * RHO_NZ);
 
 
-	if (pct.thispe == 0) close(fhand);
+	if (pct.gridpe == 0) close(fhand);
 
 
 	int ictxt = pmo.ictxt[pmo.myblacs];

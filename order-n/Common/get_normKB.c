@@ -41,7 +41,7 @@ void get_normKB(SPECIES * sp, double *pd)
             case S_STATE:
                 pd[pcount] = sp->kbnorm[ip];
 #if DEBUG
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                     printf(" kbnorm[%d]= %f\n", ip, sp->kbnorm[ip]);
 #endif
                 pcount++;

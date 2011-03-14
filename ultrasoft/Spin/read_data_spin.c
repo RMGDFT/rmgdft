@@ -81,12 +81,12 @@ void read_data_spin (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * 
     if (pct.spin_flag)
     {
 	    if (pct.thisspin == 0)
-		    sprintf(newname, "%s.up%d", name, pct.thispe);
+		    sprintf(newname, "%s.up%d", name, pct.gridpe);
 	    else if (pct.thisspin == 1)
-		    sprintf(newname, "%s.dw%d", name, pct.thispe);
+		    sprintf(newname, "%s.dw%d", name, pct.gridpe);
     }
     else
-    	    sprintf (newname, "%s%d", name, pct.thispe);
+    	    sprintf (newname, "%s%d", name, pct.gridpe);
 
     my_open (fhand, newname, O_RDWR, S_IREAD | S_IWRITE);
 

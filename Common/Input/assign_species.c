@@ -27,7 +27,7 @@ int assign_species (CONTROL * c, char *buf)
     if (symbol_nonexistant)
     {
         printf ("\n\n PE:%d Specified symbol \"%s\" does not match any of known species symbol",
-                pct.thispe, buf);
+                pct.gridpe, buf);
         for (i = 0; i < c->num_species; i++)
             printf ("\n \"%s\"", c->sp[i].pseudo_symbol);
 

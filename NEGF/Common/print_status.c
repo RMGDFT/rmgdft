@@ -20,22 +20,22 @@ void print_status (STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh
     total = 0;
     for (i = 0; i < P0_BASIS; i++)
         total += vh[i];
-    printf ("PE: %d, vh total: %22.16f \n", pct.thispe, total);
+    printf ("PE: %d, vh total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
     for (i = 0; i < P0_BASIS; i++)
         total += vxc[i];
-    printf ("PE: %d, vxc total: %22.16f \n", pct.thispe, total);
+    printf ("PE: %d, vxc total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
     for (i = 0; i < P0_BASIS; i++)
         total += vnuc[i];
-    printf ("PE: %d, vnuc total: %22.16f \n", pct.thispe, total);
+    printf ("PE: %d, vnuc total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
     for (i = 0; i < P0_BASIS; i++)
         total += vh_old[i];
-    printf ("PE: %d, vh_old total: %22.16f \n", pct.thispe, total);
+    printf ("PE: %d, vh_old total: %22.16f \n", pct.gridpe, total);
 
     for (i = ct.state_begin; i < ct.state_end; i++)
     {
@@ -45,7 +45,7 @@ void print_status (STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh
         {
             total += states[i].psiR[j];
         }
-        printf ("PE: %d, state: %d, orbital total: %22.16f \n", pct.thispe, i, total);
+        printf ("PE: %d, state: %d, orbital total: %22.16f \n", pct.gridpe, i, total);
 
     }
     fflush (NULL);
@@ -61,7 +61,7 @@ void print_state_projections (STATE * states, char direction)
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
-        sprintf (newname, "PE%d.STATE%d:", pct.thispe, st);
+        sprintf (newname, "PE%d.STATE%d:", pct.gridpe, st);
         projection (states[st].psiR, states[st].orbit_nx, states[st].orbit_ny,
                     states[st].orbit_nz, direction, newname);
     }
@@ -80,7 +80,7 @@ void print_state_sum (STATE * states)
         temp = 0.0;
         for (i = 0; i < states[st].size; i++)
             temp += states[st].psiR[i];
-        printf ("\n PE: %d STATE: %d ---sum---: %22.16f", pct.thispe, st, temp);
+        printf ("\n PE: %d STATE: %d ---sum---: %22.16f", pct.gridpe, st, temp);
     }
     fflush (NULL);
 }
@@ -94,7 +94,7 @@ void print_state (STATE * state)
     temp = 0.0;
     for (i = 0; i < state->size; i++)
         temp += state->psiR[i];
-    printf ("\n PE: %d.STATE: %d---sum---: %22.16f", pct.thispe, temp);
+    printf ("\n PE: %d.STATE: %d---sum---: %22.16f", pct.gridpe, temp);
     fflush (NULL);
 }
 
@@ -142,7 +142,7 @@ void print_states_dot_product (STATE * states)
         temp = 0.0;
         for (i = 0; i < states[st].size; i++)
             temp += states[st].psiR[i] * states[st].psiR[i];
-        printf ("\n PE: %d.STATE: %d dot_product : %22.16f", pct.thispe, st, temp);
+        printf ("\n PE: %d.STATE: %d dot_product : %22.16f", pct.gridpe, st, temp);
     }
     fflush (NULL);
 }

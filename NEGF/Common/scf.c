@@ -73,13 +73,13 @@ void scf (doublecomplex * sigma_all, STATE * states, STATE * states1, double *vx
 
 #if DEBUG | 0
     write_rho_x (vtot, "vtot_1");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n  vtot");
     write_rho_x (vh, "vhhh_1");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n  vhhh");
     write_rho_x (vxc, "vxc_1");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n  vxccch");
 #endif
 
@@ -169,7 +169,7 @@ void scf (doublecomplex * sigma_all, STATE * states, STATE * states1, double *vx
 
 #if DEBUG |1
     write_rho_x (rho, "rhoooo_1");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n rhoooo");
 #endif
 
@@ -177,7 +177,7 @@ void scf (doublecomplex * sigma_all, STATE * states, STATE * states1, double *vx
     get_new_rho_soft (states, rho);
 #if DEBUG
     write_rho_x (rho, "rhoaaa_1");
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n %rhoaaa");
 #endif
 
@@ -193,7 +193,7 @@ void scf (doublecomplex * sigma_all, STATE * states, STATE * states1, double *vx
     tem = real_sum_all (tem);
     tem = sqrt (tem);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf (" \nSCF CHECKS: <drho>/ion = %12.6e RMS[drho/GRID] = %12.6e\n",
                 tem / ct.num_ions, tem / FP0_BASIS / NPES);
 
@@ -292,7 +292,7 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
      *   t[0] /= (double)ct.num_ions;
      *   t[1] = sqrt(t[1] / ( (double) (ct.vh_nbasis) ) );
      *
-     *   if (pct.thispe == 0)
+     *   if (pct.gridpe == 0)
      *printf(" SCF CHECKS: <rho dv>/MAX_IONS = %15.10f RMS[dv] = %15.10e\n",
      *       t[0],t[1]);
      *

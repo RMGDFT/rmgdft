@@ -83,6 +83,6 @@ void make_mask_grid_state(int level, STATE * states)
         }
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" make_mask_grid_state is  done\n");
 }

@@ -35,7 +35,7 @@ void get_new_rho(STATE * states, double *rho)
 
     state_per_proc = ct.state_per_proc + 2;
     time1 = my_crtc();
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" Compute new density\n");
 
     my_malloc_init( rho_temp, P0_BASIS, REAL );
@@ -297,7 +297,7 @@ void get_new_rho(STATE * states, double *rho)
    t2 = ct.nel / ct.tcharge;
    sscal(&FP0_BASIS, &t2, &rho[0], &ione);
 
-   if (pct.thispe == 0)
+   if (pct.gridpe == 0)
        printf("\n total charge Normalization constant = %f  \n", t2);
 
 

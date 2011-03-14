@@ -65,7 +65,7 @@ void lead_bandstructure ()
     read_cond_input (&emin, &emax, &E_POINTS, &E_image, &kbt, &kpoints);
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n band struture calculations for left lead\n\n ");
         printf ("lcr[1].num_states = %d \n", lcr[1].num_states);
@@ -208,7 +208,7 @@ void lead_bandstructure ()
     comm_sums (ener_band, &idx, COMM_EN1);
 
     my_barrier ();
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         file = fopen ("band.dat", "w");
         for (st1 = 0; st1 < nL; st1++)

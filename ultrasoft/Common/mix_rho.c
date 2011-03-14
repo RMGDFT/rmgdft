@@ -88,7 +88,7 @@ void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_
     min = real_min_all (min);
     min2 = real_min_all (min2);
 
-    if ((pct.thispe == 0) && (min < ZERO)){
+    if ((pct.gridpe == 0) && (min < ZERO)){
         printf ("\n\n Charge density is NEGATIVE after interpolation, minimum is %e", min);
         printf ("\n Minimum charge density with core charge added is %e", min2);
     }

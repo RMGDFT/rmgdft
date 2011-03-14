@@ -67,7 +67,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
 
     /* open movie file and output initial frame */
-    if ((ct.rmvmovie) && (ct.max_rlx_steps > 1 && pct.thispe == 0))
+    if ((ct.rmvmovie) && (ct.max_rlx_steps > 1 && pct.gridpe == 0))
     {
         my_fopen (mfp, "traj.rmv", "w");
         if (setvbuf (mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
@@ -77,7 +77,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
     /* open XBS movie file */
-    if ((ct.xbsmovie) && (ct.max_rlx_steps > 1 && pct.thispe == 0))
+    if ((ct.xbsmovie) && (ct.max_rlx_steps > 1 && pct.gridpe == 0))
     {
 
         strcpy (xbs_filename, "traj");
@@ -97,7 +97,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 		rlx_steps++;
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\nfastrlx: ---------- [rlx: %d/%d] ----------\n", rlx_steps, ct.max_rlx_steps);
 
         /* not done yet ? => move atoms */

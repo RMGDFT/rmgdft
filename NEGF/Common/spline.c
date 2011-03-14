@@ -33,7 +33,7 @@ void spline(double *x, double *y, int n, double yp1, double ypn, double *y2)
 /*
     for (i = 0; i < n; i++)
     {
-    if(pct.thispe ==0) printf (" hello  %d    %f    %f  \n", i, y[i], x[i] );
+    if(pct.gridpe ==0) printf (" hello  %d    %f    %f  \n", i, y[i], x[i] );
     }
 */
 

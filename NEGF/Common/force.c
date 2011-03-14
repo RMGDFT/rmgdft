@@ -37,7 +37,7 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc,
     /* Get the ion-ion component and store. */
     iiforce ();
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n iiforce");
         for (ion = 0; ion < ct.num_ions; ion++)
@@ -49,7 +49,7 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc,
     /* Add in the local */
     lforce (rho, vh);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n lforce");
         for (ion = 0; ion < ct.num_ions; ion++)
@@ -62,7 +62,7 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc,
     /* Add in the non-local stuff */
     nlforce (vtot, states, states1, sigma_all);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n nlforce");
         for (ion = 0; ion < ct.num_ions; ion++)

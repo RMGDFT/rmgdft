@@ -11,7 +11,7 @@ void init_img_topo (int ndims)
     char buf[MAX_CHAR];
 
     /* only group masters partake of inter-image communications */
-    if ( pct.thispe == 0 ) 
+    if ( pct.imgpe == 0 ) 
     {
         if ( ndims > 0 ) {
             for ( count = 0; get_data( "image_communicator_topology", &buf, LINE, NULL); count++ )

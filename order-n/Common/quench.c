@@ -55,19 +55,19 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
 
     for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\n\n\n ITERATION     %d\n", ct.scf_steps);
 
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
             scf(states, states1, vxc, vh, vnuc, rho, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             write_eigs(states);
 
         if (CONVERGENCE)
         {
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n\n Convergence has been achieved. stopping ...\n");
             break;
         }
@@ -76,7 +76,7 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
         /* Check if we need to output intermediate results */
         if (outcount >= ct.outcount)
         {
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf("\n TOTAL ENERGY = %14.7f\n", ct.TOTAL);
             outcount = 0;
         }
@@ -87,7 +87,7 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
     /* Calculate the force */
     force(rho, rhoc, vh, vxc, vnuc, states); 
     /* write out the force */
-   if (pct.thispe == 0) write_force();
+   if (pct.gridpe == 0) write_force();
 
 
     time2 = my_crtc();

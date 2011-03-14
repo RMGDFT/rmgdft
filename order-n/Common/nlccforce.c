@@ -97,7 +97,7 @@ void nlccforce(REAL * rho, REAL * vxc)
             /* Now we need to determine if any of this ions local short */
             /* ranged difference potential maps onto this particular    */
             /* processors space.                                        */
-            pe2xyz(pct.thispe, &ii, &jj, &kk);
+            pe2xyz(pct.gridpe, &ii, &jj, &kk);
             ilow = ii * FPX0_GRID;
             jlow = jj * FPY0_GRID;
             klow = kk * FPZ0_GRID;

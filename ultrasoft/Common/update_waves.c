@@ -45,7 +45,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
     /* update <beta|psi2> */
     /*Parallelization over ions */
-    for (ion = pct.thispe; ion < ct.num_ions; ion += NPES)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
     {
 
         iptr = &ct.ions[ion];
@@ -88,7 +88,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
     /* update <beta|psi2> */
     /*Parallelization over ions */
-    for (ion = pct.thispe; ion < ct.num_ions; ion += NPES)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
     {
 
         iptr = &ct.ions[ion];

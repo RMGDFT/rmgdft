@@ -38,7 +38,7 @@ void rho_nm_mat(double *Aij, REAL * global_mat_X)
 
     /* Loop over states on this proce onle 
        (distribution of work AND Aij contributions) */
-    proc = pct.thispe;
+    proc = pct.gridpe;
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         for (st2 = ct.state_begin; st2 < ct.state_end; st2++)
         {
@@ -80,10 +80,10 @@ void rho_nm_mat(double *Aij, REAL * global_mat_X)
     for (idx = 1; idx < NPES; idx++)
     {
 
-        proc1 = pct.thispe + idx;
+        proc1 = pct.gridpe + idx;
         if (proc1 >= NPES)
             proc1 = proc1 - NPES;
-        proc2 = pct.thispe - idx;
+        proc2 = pct.gridpe - idx;
         if (proc2 < 0)
             proc2 += NPES;
 

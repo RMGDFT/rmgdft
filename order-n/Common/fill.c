@@ -158,7 +158,7 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
 
     if (fabs(fmid) > charge_tol)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\nfill: \\sum f - n_el= %e", fmid);
         error_handler("did not converge");
     }                           /* end if */
@@ -182,7 +182,7 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
 
     if (fabs(fmid) > charge_tol)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\nfill: \\sum f - n_el= %e", fmid);
         error_handler("error in mixing occupations");
     }

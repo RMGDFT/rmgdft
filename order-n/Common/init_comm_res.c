@@ -76,7 +76,7 @@ void init_comm_res(STATE * states)
     for (proc1 = 0; proc1 < NPES * NPES; proc1++)
         matrix_pairs[proc1] = 0;
 
-proc1 = pct.thispe;
+proc1 = pct.gridpe;
         for (proc2 = 0; proc2 < NPES; proc2++)
         {
             num_overlap = 0;
@@ -95,7 +95,7 @@ idx = NPES * NPES;
  global_sums_int(matrix_pairs, &idx);
 
     /*
-    *if (pct.thispe == 0)
+    *if (pct.gridpe == 0)
     *{
     *    printf("\n initial communication matrix ");
     *    for (i = 0; i < NPES; i++)
@@ -130,12 +130,12 @@ idx = NPES * NPES;
             if (max_send_states > 0)
             {
                 proc_recv[recv_proc] = 1;
-                if (pct.thispe == proc1)
+                if (pct.gridpe == proc1)
                 {
                     send_to1[loop * state_per_proc] = recv_proc;
                     send_to1[loop * state_per_proc + 1] = max_send_states;
                 }
-                if (pct.thispe == recv_proc)
+                if (pct.gridpe == recv_proc)
                 {
                     recv_from1[loop * state_per_proc] = proc1;
                     recv_from1[loop * state_per_proc + 1] = max_send_states;
@@ -154,7 +154,7 @@ idx = NPES * NPES;
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
-        proc1 = pct.thispe;
+        proc1 = pct.gridpe;
         proc2 = send_to1[loop * state_per_proc];
         send_order = 0;
         if (proc2 != MPI_PROC_NULL)
@@ -171,7 +171,7 @@ idx = NPES * NPES;
             }
         assert(send_order == send_to1[loop * state_per_proc + 1]);
 
-        proc1 = pct.thispe;
+        proc1 = pct.gridpe;
         proc2 = recv_from1[loop * state_per_proc];
         recv_order = 0;
         if (proc2 != MPI_PROC_NULL)
@@ -196,12 +196,12 @@ idx = NPES * NPES;
     {
 
         printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
-               pct.thispe, send_to1[loop * state_per_proc + 1], send_to1[loop * state_per_proc]);
+               pct.gridpe, send_to1[loop * state_per_proc + 1], send_to1[loop * state_per_proc]);
         for (st2 = 0; st2 < send_to1[loop * state_per_proc + 1]; st2++)
             printf("  %d ", send_to1[loop * state_per_proc + 2 + st2]);
 
         printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
-               pct.thispe, recv_from1[loop * state_per_proc + 1],
+               pct.gridpe, recv_from1[loop * state_per_proc + 1],
                recv_from1[loop * state_per_proc]);
         for (st2 = 0; st2 < recv_from1[loop * state_per_proc + 1]; st2++)
             printf("  %d ", recv_from1[loop * state_per_proc + 2 + st2]);

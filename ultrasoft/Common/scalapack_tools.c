@@ -173,7 +173,7 @@ void proc_gridsetup (int nproc, int *nprow, int *npcol)
 
 #if !GAMMA_PT
     /*Do not write this info in non-gamma point calculations, the same information is repeated over and over */
-    if (!pct.thispe)
+    if (!pct.gridpe)
         printf ("\n Scalapack processor distribution is nprow:%d and npcol:%d, total processors %d",
                 *nprow, *npcol, nproc);
 #endif

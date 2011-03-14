@@ -22,11 +22,11 @@ void get_orbit_overlap_region(STATE * states)
     int size;
     int index;
     int st1, st2;
-    int num_state_thispe;
+    int num_state_gridpe;
 
 
-    num_state_thispe = ct.state_end - ct.state_begin;
-    size = ct.num_states * num_state_thispe;
+    num_state_gridpe = ct.state_end - ct.state_begin;
+    size = ct.num_states * num_state_gridpe;
     my_malloc( orbit_overlap_region, size, ORBIT_ORBIT_OVERLAP );
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)

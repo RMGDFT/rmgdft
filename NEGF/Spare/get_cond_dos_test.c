@@ -167,7 +167,7 @@ void get_cond_dos_test (STATE * states)
 
 
     idx = 0;
-    for (iene = pct.thispe; iene < E_POINTS; iene += NPES)
+    for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)
     {
         eneR = emin + iene * de;
         eneI = 0.0005;
@@ -226,7 +226,7 @@ void get_cond_dos_test (STATE * states)
 
     MPI_Barrier (MPI_COMM_WORLD);
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
 
     xoff = ii * FPX0_GRID;
@@ -234,7 +234,7 @@ void get_cond_dos_test (STATE * states)
     {
         root_pe = iene % NPES;
         idx = iene / NPES;
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             printf ("root_pe, iene idx %d %d %d\n", root_pe, iene, idx);
             fflush (NULL);
@@ -260,7 +260,7 @@ void get_cond_dos_test (STATE * states)
 
     iene = E_POINTS * FNX_GRID;
     global_sums (rho_energy, &iene);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         double dx = ct.celldm[0] / NX_GRID;
         double x0 = 0.5 * ct.celldm[0];

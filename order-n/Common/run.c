@@ -55,7 +55,7 @@ void run(STATE * states, STATE * states1)
     init_pe();
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n  MXLLDA: %d ", MXLLDA);
 
     /* allocate memory for matrixs  */

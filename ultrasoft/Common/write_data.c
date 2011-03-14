@@ -102,12 +102,12 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
      * and hangups so if wait_flag is set in the input file the
      * total bandwidth going to disk is throttled */
     if (ct.wait_flag)
-        sleep (ct.wait_flag * pct.thispe);
+        sleep (ct.wait_flag * pct.gridpe);
 
 
     /*This opens file, creates a directory if needed */
     fhand = open_wave_file (name);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("write_data: Wavefile %s opened...\n", name);
 
     /* write lattice information */

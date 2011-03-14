@@ -45,7 +45,7 @@ void init_pe(void)
     npes = mpi_nprocs;
 
     /* This pe number or rank of this pe */
-    pct.thispe = mpi_myrank;
+    pct.gridpe = mpi_myrank;
 
     /* Create a Cartisian topology for parallel in kpoint */
     ndims = 2;
@@ -62,7 +62,7 @@ void init_pe(void)
     pct.coords[0] = coords[0];
     pct.coords[1] = coords[1];
     if (pct.pe_kpoint == 1)
-        pct.coords[1] = pct.thispe;
+        pct.coords[1] = pct.gridpe;
     /* determine the lower and upper bounds 
      *  of K-point for each group of processors
      */

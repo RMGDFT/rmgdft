@@ -362,7 +362,7 @@ void aainit (int lli, int mix, int lx, int mx, int nlx, REAL ap[][9][9], int lpx
                                 }
                                 ap[ilp][il][ik] = sumR;
                                 lpl[il][ik][lpx[il][ik]] = ilp;
-/*if(pct.thispe==0) printf("ap[%d][%d][%d]=%f lpx[%d][%d]=%d lpl[%d][%d][%d]=%d\n",ilp,il,ik,ap[ilp][il][ik],il,ik,lpx[il][ik],il,ik,lpx[il][ik],ilp);*/
+/*if(pct.gridpe==0) printf("ap[%d][%d][%d]=%f lpx[%d][%d]=%d lpl[%d][%d][%d]=%d\n",ilp,il,ik,ap[ilp][il][ik],il,ik,lpx[il][ik],il,ik,lpx[il][ik],ilp);*/
                                 lpx[il][ik] = lpx[il][ik] + 1;
                             }   /*end for if */
                         }       /*end for n */

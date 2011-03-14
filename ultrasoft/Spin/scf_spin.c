@@ -220,8 +220,8 @@ void scf_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
  
         /*Communicate for spin up and spin down energy eigenvalues*/    
-    	MPI_Send(eigval_sd, st, MPI_DOUBLE, (pct.thisspin+1)%2, pct.thispe, pct.spin_comm);
-    	MPI_Recv(eigval_rv, st_oppo, MPI_DOUBLE, (pct.thisspin+1)%2, pct.thispe, pct.spin_comm, &status);
+    	MPI_Send(eigval_sd, st, MPI_DOUBLE, (pct.thisspin+1)%2, pct.gridpe, pct.spin_comm);
+    	MPI_Recv(eigval_rv, st_oppo, MPI_DOUBLE, (pct.thisspin+1)%2, pct.gridpe, pct.spin_comm, &status);
 
 	
 	/* Unpack the received eigenvalue to state structure */
@@ -270,8 +270,8 @@ void scf_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     
     /*  Communite for spin up and spin down density  */
-    MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.thisspin+1)%2, pct.thispe, pct.spin_comm, &req[0]);
-    MPI_Irecv(rho_oppo,(int) FP0_BASIS, MPI_DOUBLE, (pct.thisspin+1)%2, pct.thispe, pct.spin_comm, &req[1]);
+    MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.thisspin+1)%2, pct.gridpe, pct.spin_comm, &req[0]);
+    MPI_Irecv(rho_oppo,(int) FP0_BASIS, MPI_DOUBLE, (pct.thisspin+1)%2, pct.gridpe, pct.spin_comm, &req[1]);
 
 
     time2 = my_crtc ();

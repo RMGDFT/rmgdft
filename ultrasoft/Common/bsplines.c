@@ -141,7 +141,7 @@ void dbsnak (int nx, double *xvec, int kxord, double *xknot)
         eps = dlamch ("precision", (int) 9);
 
         /*Print out eps */
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n\n subroutine dbsnak: eps = %e", eps);
 
     }                           /*end if (first) */
@@ -2239,7 +2239,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
             if (knots_x[ix] > knots_x[ix + 1])
             {
                 printf ("\n PE %d: knots_x[%d]=%f knots_x[%d]=%f",
-                        pct.thispe, ix, knots_x[ix], ix + 1, knots_x[ix + 1]);
+                        pct.gridpe, ix, knots_x[ix], ix + 1, knots_x[ix + 1]);
                 error_handler ("knots_x are not non-decreasing");
             }
 
@@ -2248,7 +2248,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
             if (knots_y[iy] > knots_y[iy + 1])
             {
                 printf ("\n PE %d: knots_y[%d]=%f knots_y[%d]=%f",
-                        pct.thispe, iy, knots_y[iy], iy + 1, knots_y[iy + 1]);
+                        pct.gridpe, iy, knots_y[iy], iy + 1, knots_y[iy + 1]);
                 error_handler ("knots_y are not non-decreasing");
             }
 
@@ -2257,7 +2257,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
             if (knots_z[iz] > knots_z[iz + 1])
             {
                 printf ("\n PE %d: knots_z[%d]=%f knots_z[%d]=%f",
-                        pct.thispe, iz, knots_z[iz], iz + 1, knots_z[iz + 1]);
+                        pct.gridpe, iz, knots_z[iz], iz + 1, knots_z[iz + 1]);
                 error_handler ("knots_z are not non-decreasing");
             }
 
@@ -2280,7 +2280,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
 
 
 
-    /*if (pct.thispe == 0) {
+    /*if (pct.gridpe == 0) {
        printf("\n Value at 0,0,0 %e", dbs3vl(0,0,0,xorder,yorder,zorder,
        knots_x, knots_y, knots_z, cmax_x, cmax_y, cmax_z, bscoef)) ;
        printf("rho_c->b[0][0][0] %e", rho_c->b[0][0][0]);

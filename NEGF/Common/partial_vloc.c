@@ -137,7 +137,7 @@ void partial_vloc ()
     } /* end for ion1 */
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf (" partial_vloc.c  done\n");

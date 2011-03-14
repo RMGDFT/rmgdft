@@ -84,7 +84,7 @@ void get_nlop (void)
 
 
 	/* Determine mapping indices or even if a mapping exists */
-	map = get_index (pct.thispe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
+	map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
 		sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
 		ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
 		&iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
@@ -234,7 +234,7 @@ void get_nlop (void)
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
 
-    printf("\n PE %d: Number of nonlocal ions is %d", pct.thispe, pct.num_nonloc_ions);
+    printf("\n PE %d: Number of nonlocal ions is %d", pct.gridpe, pct.num_nonloc_ions);
 
     for (i=0; i<pct.num_nonloc_ions; i++)
 	printf(" %d", pct.nonloc_ions_list[i]);
@@ -263,7 +263,7 @@ void get_nlop (void)
 	{
 
 	    /* Skip current processor*/
-	    if (pe == pct.thispe) continue;
+	    if (pe == pct.gridpe) continue;
 
 
 	    /************* This is a copy of what is done above to find whether an ion has overlap with a given processor
@@ -386,7 +386,7 @@ void get_nlop (void)
     }
 
 #if 0
-    printf("\n PE %d: Number of nonloc ions %d, number of PEs to communicate with is %d", pct.thispe, pct.num_nonloc_ions, pct.num_nonloc_pes);
+    printf("\n PE %d: Number of nonloc ions %d, number of PEs to communicate with is %d", pct.gridpe, pct.num_nonloc_ions, pct.num_nonloc_pes);
 
     for (i=0; i<pct.num_nonloc_pes; i++)
     {

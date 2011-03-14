@@ -71,13 +71,13 @@ void mulliken (STATE * states)
         a = sp->aa;
         b = sp->bb;
 
-        /*if (pct.thispe == 0)
+        /*if (pct.gridpe == 0)
            printf("\n Ion:%d a:%f b:%f  num_atomic_waves:%d  sum_atomic_waves:%d rg_points:%d", ion, a, b, sp->num_atomic_waves, sp->sum_atomic_waves, sp->rg_points); */
 
 
         count = 0;
 
-        map = get_index (pct.thispe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
+        map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          dim, PX0_GRID, PY0_GRID, PZ0_GRID,
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid, &xcstart, &ycstart, &zcstart);
 
@@ -136,7 +136,7 @@ void mulliken (STATE * states)
 
                                     printf
                                         ("\nPE%d: Possibly wrong index:  ion %d, r  %f sp->r[rindex] %f sp->r[rindex+1] %f rleft %f rright %f",
-                                         pct.thispe, ion, r, sp->r[rindex], sp->r[rindex + 1],
+                                         pct.gridpe, ion, r, sp->r[rindex], sp->r[rindex + 1],
                                          rleft, rright);
                                     //error_handler("wrong rindex");
                                 }
@@ -218,7 +218,7 @@ void mulliken (STATE * states)
         if (count && (sp->sum_atomic_waves != count))
         {
             printf ("\n PE %d: Ion %d, species %d, sum_state_atomic_wave is %d, count is %d",
-                    pct.thispe, ion, species, sp->sum_atomic_waves, count);
+                    pct.gridpe, ion, species, sp->sum_atomic_waves, count);
 
             error_handler ("count should be equal to sum_state_atomic_wave !!!");
         }
@@ -256,7 +256,7 @@ void mulliken (STATE * states)
 
             norm_factor[nindex] = dot_product;
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n Ion %d:   atomic state %d is normalized to %e", ion, i, dot_product);
 
             /*for(idx=0; idx < basis; idx++) 
@@ -273,7 +273,7 @@ void mulliken (STATE * states)
 
                     dot_product = ct.vel * real_sum_all (dot_product);
 
-                    if (pct.thispe == 0)
+                    if (pct.gridpe == 0)
                         printf ("\n Ion %d:  Dot product between  atomic states %d and %d  is %e",
                                 ion, i, j, dot_product);
                 }
@@ -288,7 +288,7 @@ void mulliken (STATE * states)
         for (i = 0; i < sp->sum_atomic_waves; i++)
         {
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n");
 
             for (state = 0; state < ct.num_states; state++)
@@ -304,7 +304,7 @@ void mulliken (STATE * states)
 
                 overlap[oindex] = ct.vel * real_sum_all (dot_product);
 
-                /*if (pct.thispe == 0)
+                /*if (pct.gridpe == 0)
                    printf("\n Ion %d: Dot product between state %d and atomic state %d is %e", ion, state, i, overlap[oindex]); */
 
                 oindex++;
@@ -324,7 +324,7 @@ void mulliken (STATE * states)
 
 
     /*Now let us print table with results */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n");
 
@@ -616,7 +616,7 @@ void mulliken (STATE * states)
 
 
 
-    }                           /*end if (pct.thispe == 0) */
+    }                           /*end if (pct.gridpe == 0) */
 
 
     my_free (awave);

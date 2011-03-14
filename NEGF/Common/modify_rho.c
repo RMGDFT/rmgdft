@@ -80,7 +80,7 @@ void modify_rho (REAL * rho, REAL * rho_old)
         for (idx = 0; idx < FP0_BASIS; idx++)
             tcharge += rho[idx];
         ct.tcharge = real_sum_all (tcharge) * ct.vel_f;
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
 
@@ -99,7 +99,7 @@ void modify_rho (REAL * rho, REAL * rho_old)
         z1 = chargeDensityCompass.box1.z1;
         z2 = chargeDensityCompass.box1.z2;
 
-        pe2xyz (pct.thispe, &pex, &pey, &pez);
+        pe2xyz (pct.gridpe, &pex, &pey, &pez);
         xoff = pex * FPX0_GRID;
         yoff = pey * FPY0_GRID;
         zoff = pez * FPZ0_GRID;
@@ -134,7 +134,7 @@ void modify_rho (REAL * rho, REAL * rho_old)
         t2 = real_sum_all (total_charge) * ct.vel_f;
         t_fixed = real_sum_all (tcharge_fixed) * ct.vel_f;
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
                     t2, t_fixed, t2 + t_fixed, t2 + t_fixed - ct.nel, ct.nel);
 

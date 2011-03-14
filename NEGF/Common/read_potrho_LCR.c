@@ -47,7 +47,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     read_potrho (vh,  1, 0);
-        if(pct.thispe ==0) printf (" vh calc is done \n"); 
+        if(pct.gridpe ==0) printf (" vh calc is done \n"); 
 
 
 /* ===================== writing pot ======================= */
@@ -69,7 +69,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
     my_malloc_init(vtot_global, FNXY, double);
 
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ii *= FPX0_GRID;
     jj *= FPY0_GRID;
     kk *= FPZ0_GRID;
@@ -94,7 +94,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
     global_sums (vtot_global, &FNXY);
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {          
         file = fopen ("pot_init.dat", "w");
 
@@ -121,9 +121,9 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     read_potrho (vxc, 0, 1);
-        if(pct.thispe ==0) printf (" vxc calc is done \n"); 
+        if(pct.gridpe ==0) printf (" vxc calc is done \n"); 
     read_potrho (rho, 0, 2);
-        if(pct.thispe ==0) printf (" rho calc is done \n"); 
+        if(pct.gridpe ==0) printf (" rho calc is done \n"); 
 
 
 

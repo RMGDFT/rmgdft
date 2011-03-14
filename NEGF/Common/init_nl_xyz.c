@@ -69,7 +69,7 @@ void init_nl_xyz (void)
 
     }                           /* end for ion */
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf (" init_nl_xyz.c  done\n");

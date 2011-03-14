@@ -179,6 +179,6 @@ void read_matrix_pp ()
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n THE MATRICES are read in ");
 }

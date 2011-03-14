@@ -255,7 +255,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
     istep = lrg_points / NPES;
     t1 = (REAL) istep;
     rstep = t1 * dr;
-    t1 = (REAL) pct.thispe;
+    t1 = (REAL) pct.gridpe;
     rfil = t1 * rstep + 1.0e-10;
 
     switch (lval)
@@ -263,7 +263,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     case S_STATE:
 
-        for (idx = istep * pct.thispe; idx < istep * pct.thispe + istep; idx++)
+        for (idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
         {
 
 
@@ -333,7 +333,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     case P_STATE:
 
-        for (idx = istep * pct.thispe; idx < istep * pct.thispe + istep; idx++)
+        for (idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
         {
 
 
@@ -398,7 +398,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     case D_STATE:
 
-        for (idx = istep * pct.thispe; idx < istep * pct.thispe + istep; idx++)
+        for (idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
         {
 
 
@@ -468,7 +468,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     case F_STATE:
 
-        for (idx = istep * pct.thispe; idx < istep * pct.thispe + istep; idx++)
+        for (idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
         {
 
             for (ift = 0; ift < gnum; ift++)
@@ -535,7 +535,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     case G_STATE:
 
-        for (idx = istep * pct.thispe; idx < istep * pct.thispe + istep; idx++)
+        for (idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
         {
 
             for (ift = 0; ift < gnum; ift++)

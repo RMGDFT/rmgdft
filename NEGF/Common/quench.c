@@ -177,7 +177,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     for (ct.steps = 0; ct.steps < ct.max_scf_steps; ct.steps++)
     {
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n\n\n ITERATION     %d\n", ct.steps);
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
@@ -196,7 +196,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
         if (CONVERGENCE)
         {
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n\n     convergence has been achieved. stopping ...\n");
 
 
@@ -223,7 +223,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
         /* Calculate the force */
         force (rho, rhoc, vh, vxc, vnuc, states, states1, sigma_all);
         /* write out the force */
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             write_force ();
     }
     /* end of addition */
@@ -233,7 +233,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 
     if(sigma_all != NULL) my_free(sigma_all);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n Quench is done \n");
 
 

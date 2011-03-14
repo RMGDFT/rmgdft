@@ -81,7 +81,7 @@ void nlforce(REAL * veff, STATE * states)
         nlforce_par_Q(veff, rho_nm, ion, nh, &forces_tem[ion*3]);
 
         /*
-           if(pct.thispe == 0) {
+           if(pct.gridpe == 0) {
            printf("\nafter nlforce_par_Q \n");
            write_force();
            }
@@ -89,7 +89,7 @@ void nlforce(REAL * veff, STATE * states)
 
         nlforce_par_rho(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, ion, nh);
         /*
-           if(pct.thispe == 0) {
+           if(pct.gridpe == 0) {
            printf("after nlforce_par_rho \n");
            write_force();
            }
@@ -97,7 +97,7 @@ void nlforce(REAL * veff, STATE * states)
 
         nlforce_par_omega(part_omega_nm_x, part_omega_nm_y, part_omega_nm_z, ion, nh);
         /*
-           if(pct.thispe == 0) {
+           if(pct.gridpe == 0) {
            printf("\nafter nlforce_par_omega \n");
            write_force();
            }

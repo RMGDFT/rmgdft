@@ -119,7 +119,7 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
         sgesv(&size, &ione, A, &size, ipvt, b, &size, &info);
 
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             printf("\n");
             for (i = 0; i < size; i++)

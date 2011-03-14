@@ -101,7 +101,7 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 /*----------------------------
     for(idx =0; idx < n1; idx++)
     {
-        if(pct.thispe ==0) 
+        if(pct.gridpe ==0) 
         printf (" Green_C %d %d %f %f \n", i, j, &Green_C[[0] + idx].r, &Green_C[[0] + idx].i);  
     }
 ----------------------------*/
@@ -309,7 +309,7 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 		descc = &pmo.desc_cond[ ( m+1 + (m+1) * N) * DLEN ];
 
 		/*
-		   if(pct.thispe ==0)
+		   if(pct.gridpe ==0)
 		   {
 		   printf (" desca 0....  %d %d %d \n", desca[0], descb[0], descc[0]);
 		   printf (" desca 1....  %d %d %d \n", desca[1], descb[1], descc[1]);

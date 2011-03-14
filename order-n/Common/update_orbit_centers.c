@@ -33,7 +33,7 @@ void update_orbit_centers(STATE * states)
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n Update the localization centers.. \n");
 
     size = ct.num_states * 3;
@@ -63,7 +63,7 @@ void update_orbit_centers(STATE * states)
             shift_y = (y - states[st].crds[1]) / (ct.hygrid * ct.yside);
             shift_z = (z - states[st].crds[2]) / (ct.hzgrid * ct.zside);
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf
                     ("\n State_%d: %f, %f, %f, ---->  %f, %f, %f, Shift: %d, %d, %d  ",
                      st, states[st].crds[0], states[st].crds[1],

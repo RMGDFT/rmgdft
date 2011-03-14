@@ -47,7 +47,7 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 
 
     /* Make the new output file name */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         sprintf (newname, "%s%s", name, ".basis");
 
@@ -128,12 +128,12 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 
 		close (fhand);
 
-	}                           /* end if(pct.thispe == 0) */
+	}                           /* end if(pct.gridpe == 0) */
 
 	my_barrier ();
 
 
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 	{
 		sprintf (newname, "%s%s", name, ".pot_rho");
 		my_open (fhand, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
@@ -149,37 +149,37 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 	idx = ct.num_states * ct.num_states;
 	get_distributed_mat (work_matrix, matB);
 	global_sums (work_matrix, &idx);
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 		write (fhand, work_matrix, idx * sizeof (double));
 
 	get_distributed_mat (work_matrix, Hij);
 	global_sums (work_matrix, &idx);
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 		write (fhand, work_matrix, idx * sizeof (double));
 
 	/*        ntot = 0;
 	 *        for (i =0; i <ct.num_blocks; i++) ntot += ct.block_dim[i] * ct.block_dim[i];
 	 *        for (i =1; i <ct.num_blocks; i++) ntot += ct.block_dim[i-1] * ct.block_dim[i];
-	 *  	if(pct.thispe ==0) write(fhand, lcr[0].Htri, ntot * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[0].Stri, ntot * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[0].Htri, ntot * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[0].Stri, ntot * sizeof(double));
 	 *
 	 *	idx = lcr[1].num_states * lcr[1].num_states;
-	 *  	if(pct.thispe ==0) write(fhand, lcr[1].H00, idx * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[1].S00, idx * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[1].H01, idx * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[1].S01, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[1].H00, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[1].S00, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[1].H01, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[1].S01, idx * sizeof(double));
 	 *
 	 *	idx = lcr[2].num_states * lcr[2].num_states;
-	 *  	if(pct.thispe ==0) write(fhand, lcr[2].H00, idx * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[2].S00, idx * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[2].H01, idx * sizeof(double));
-	 *  	if(pct.thispe ==0) write(fhand, lcr[2].S01, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[2].H00, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[2].S00, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[2].H01, idx * sizeof(double));
+	 *  	if(pct.gridpe ==0) write(fhand, lcr[2].S01, idx * sizeof(double));
 	 */
 	my_barrier ();
 	/* Force change mode of output file */
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 		chmod (newname, S_IREAD | S_IWRITE);
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 		close (fhand);
 
 /* ===================== writing pot ======================= */
@@ -220,7 +220,7 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
     my_malloc_init(rho_global, FNXY, double);
 
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ii *= FPX0_GRID;
     jj *= FPY0_GRID;
     kk *= FPZ0_GRID;
@@ -247,7 +247,7 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
     global_sums (rho_global, &FNXY);
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {          
         file = fopen ("pot.dat", "w");
         file2 = fopen ("rho.dat", "w");

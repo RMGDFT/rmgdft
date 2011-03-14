@@ -121,7 +121,7 @@ plus some statistics
 
 #  define my_free_all() sfree_all(__FILE__,__LINE__)
 
-#  define my_alloc_report(_tag_) salloc_report(__FILE__,__LINE__, pct.thispe, _tag_)
+#  define my_alloc_report(_tag_) salloc_report(__FILE__,__LINE__, pct.gridpe, _tag_)
 
 
 

@@ -65,9 +65,9 @@ void run (STATE * states, STATE * states1)
         time1 = my_crtc ();
         lead_bandstructure ();
         time2 = my_crtc ();
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\nTIME for lead bandstructure %f\n", time2 - time1);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\nband structrue file: band.dat\n");
     }
     else if (ct.runflag == 110)
@@ -75,7 +75,7 @@ void run (STATE * states, STATE * states1)
         time1 = my_crtc ();
         get_cond_frommatrix ();
         time2 = my_crtc ();
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\nTIME for get_cond_dos %f\n", time2 - time1);
     }
 
@@ -86,7 +86,7 @@ void run (STATE * states, STATE * states1)
  *        time1 = my_crtc();
  *        get_cond_lead();
  *        time2 = my_crtc();
- *        if(pct.thispe ==0) printf("\n TIME for get_cond_dos %f", time2 - time1);
+ *        if(pct.gridpe ==0) printf("\n TIME for get_cond_dos %f", time2 - time1);
  *        exit(0);
  *    }
  */
@@ -109,13 +109,13 @@ void run (STATE * states, STATE * states1)
             time1 = my_crtc ();
             get_dos (states);
             time2 = my_crtc ();
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n TIME for get_cond_dos %f", time2 - time1);
         }
         else 
         {
             
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("init_soft is done\n");
 
             /* total energy point = # of poles + ncircle + nmax_gq1 */
@@ -225,7 +225,7 @@ void run (STATE * states, STATE * states1)
             writeout_matrix_p ();
 
             my_barrier ();
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n Run done...\n");
             fflush (NULL);
 

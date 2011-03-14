@@ -183,7 +183,7 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
 
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n");
 

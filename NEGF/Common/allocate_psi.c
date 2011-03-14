@@ -57,7 +57,7 @@ void allocate_psi (STATE * states, STATE * states1)
         rptr1 += states[st1].size;
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n allocate_psi Done! ");
 
 }

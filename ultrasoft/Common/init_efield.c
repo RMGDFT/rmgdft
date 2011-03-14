@@ -50,7 +50,7 @@ void init_efield (REAL * vnuc)
     ct.x_field_0 = ct.x_field_0 / norm_field_0;
     ct.y_field_0 = ct.y_field_0 / norm_field_0;
     ct.z_field_0 = ct.z_field_0 / norm_field_0;
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
         printf ("\n ====================================== \n");
@@ -61,7 +61,7 @@ void init_efield (REAL * vnuc)
         printf ("\n Potential Slope: %16.8f eV/A\n", ct.e_field * Ha_eV / a0_A);
     }
     /* find the cartesian coordinate of the corner */
-    pe2xyz (pct.thispe, &ix, &iy, &iz);
+    pe2xyz (pct.gridpe, &ix, &iy, &iz);
     xoff = ix * ct.hxgrid * ct.xside * PX0_GRID;
     yoff = iy * ct.hygrid * ct.yside * PY0_GRID;
     zoff = iz * ct.hzgrid * ct.zside * PZ0_GRID;

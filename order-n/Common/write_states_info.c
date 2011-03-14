@@ -36,7 +36,7 @@ void write_states_info(char *name, STATE * states)
 
     my_barrier();
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         sprintf(newname, "%s%s", name, ".states_info");
 

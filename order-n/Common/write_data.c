@@ -63,7 +63,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     my_barrier();
 
     /* Make the new output file name */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 		sprintf(newname, "%s%s", name, ".basis");
 
@@ -154,18 +154,18 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 		close(fhand);
 
-	}                           /* end if(pct.thispe == 0) */
+	}                           /* end if(pct.gridpe == 0) */
 
 	my_barrier();
 
 	time(&tt);
 	timeptr = ctime(&tt);
 
-	if(pct.thispe == 0) printf("\n    Write start at %s\n", timeptr);
+	if(pct.gridpe == 0) printf("\n    Write start at %s\n", timeptr);
 
 	sprintf(newname, "%s%s", name, ".pot_rho");
 
-	pe2xyz (pct.thispe, &pex, &pey, &pez);
+	pe2xyz (pct.gridpe, &pex, &pey, &pez);
 
 	int sizes[3], subsizes[3], starts[3];
 	MPI_Info fileinfo;
@@ -219,16 +219,16 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	time(&tt);
 	timeptr = ctime(&tt);
 
-	if(pct.thispe == 0) printf("\n    Write middle at %s\n", timeptr);
+	if(pct.gridpe == 0) printf("\n    Write middle at %s\n", timeptr);
 
 	my_free(work_memory);
 
 
 	/* Force change mode of output file */
 	amode = S_IREAD | S_IWRITE;
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 		chmod(newname, amode);
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 		close(fhand);
 
 	hxgrid = ct.hxgrid * ct.xside;
@@ -287,7 +287,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 		rho_tem[idx] = 0.0;
 	}
 
-	pe2xyz (pct.thispe, &pex, &pey, &pez);
+	pe2xyz (pct.gridpe, &pex, &pey, &pez);
 	PNX0 = pex * FPX0_GRID;
 	PNY0 = pey * FPY0_GRID;
 	PNZ0 = pez * FPZ0_GRID;
@@ -334,7 +334,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	idx = ixdim * iydim * izdim ;
 	global_sums(rho_tem, &idx);
 	idx = ixdim * iydim * izdim * sizeof(double);
-	if (pct.thispe == 0)
+	if (pct.gridpe == 0)
 	{
 		sprintf(newname, "%s%s", name, ".rho_firstatom");
 		amode = S_IREAD | S_IWRITE;

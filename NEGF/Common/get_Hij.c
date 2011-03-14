@@ -75,7 +75,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
     /* calculate the < states.psiR | states1.psiR>  */
 
     my_barrier ();
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n AAAAAAAAAAA %f", Aij[0]);
     time3 = my_crtc ();
     orbit_dot_orbit (states, states1, work_matrix);
@@ -106,7 +106,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
 
     dscal (&n2, &ct.vel, Aij, &ione);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf (" matrix Hij\n");
         print_matrix (work_matrix, 5, maxst);

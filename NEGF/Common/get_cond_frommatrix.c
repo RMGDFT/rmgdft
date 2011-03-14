@@ -49,7 +49,7 @@ void get_cond_frommatrix ()
     de = (emax - emin) / (E_POINTS - 1);
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n transmission calculations from known matrix \n");
         for (idx = 0; idx < ct.num_cond_curve; idx++)
@@ -283,7 +283,7 @@ void get_cond_frommatrix ()
         iene = E_POINTS;
         global_sums (cond, &iene);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             sprintf(newname, "%s%d%d%s", "cond_", iprobe1, iprobe2, ".dat");
             file = fopen (newname, "w");
@@ -308,7 +308,7 @@ void get_cond_frommatrix ()
 
         current *= 2.0 * e_C * e_C / h_SI;
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             printf ("\n bias = %f eV    current = %e microA\n", EF1 - EF2, current * 1e6);
         }

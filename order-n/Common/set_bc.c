@@ -49,7 +49,7 @@ void set_bc(REAL * mat, int dimx, int dimy, int dimz, REAL val, int *nb_ids)
 
 
     /* Figure out what processor we are */
-    pe2xyz(pct.thispe, &pex, &pey, &pez);
+    pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
 
     ibnd = FALSE;

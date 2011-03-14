@@ -67,7 +67,7 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
 
     /* open movie file and output initial frame */
-    if ((ct.rmvmovie) && (ct.max_md_steps > 0 && pct.thispe == 0))
+    if ((ct.rmvmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0))
     {
         mfp = fopen("traj.rmv", "w");
         if (setvbuf(mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
@@ -77,7 +77,7 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     }
 
     /* open XBS movie file */
-    if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.thispe == 0))
+    if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0))
     {
 
         strcpy(xbs_filename, "traj");
@@ -97,7 +97,7 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     while (!DONE)
     {
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\nfastrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps, ct.max_md_steps);
 
         /* quench the electrons and calculate forces */
@@ -192,12 +192,12 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 
 
             /* write out frame */
-            if ((ct.rmvmovie) && (ct.max_md_steps > 0 && pct.thispe == 0))
+            if ((ct.rmvmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0))
                 movie(mfp);
 
 
             /* output xbs frame */
-            if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.thispe == 0))
+            if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0))
             {
 
                 if (ct.md_steps % ct.xbsmovie == 0)
@@ -206,7 +206,7 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
                 /*Flush the file from time to time */
                 if ((ct.md_steps) && (ct.md_steps % 10 == 0))
                     fflush(xbsfp1);
-            }                   /*end if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.thispe == 0)) */
+            }                   /*end if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0)) */
 
             /* ct.md_steps measures the number of updates to the atomic positions */
             ct.md_steps++;
@@ -217,7 +217,7 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     }
     /* ---------- end relax loop --------- */
 
-    if (ct.max_md_steps > 0 && pct.thispe == 0)
+    if (ct.max_md_steps > 0 && pct.gridpe == 0)
     {
 
         printf("\n");
@@ -237,8 +237,8 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     /*write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, states); */
 
     /* close moviefile */
-    if ((ct.rmvmovie) && (ct.max_md_steps > 0 && pct.thispe == 0))
-        if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.thispe == 0))
+    if ((ct.rmvmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0))
+        if ((ct.xbsmovie) && (ct.max_md_steps > 0 && pct.gridpe == 0))
             fclose(mfp);
 
 

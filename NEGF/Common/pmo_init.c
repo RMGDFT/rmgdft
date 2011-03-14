@@ -216,7 +216,7 @@ void pmo_init ()
         pmo.offdiag_begin[i] = pmo.diag_begin[i] + pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
         pmo.diag_begin[i+1] = pmo.offdiag_begin[i] + pmo.mxllda_cond[i] * pmo.mxlocc_cond[i+1];
 
-        if(pct.thispe == 0) printf (" diag/offdiag begin: %d %d %d \n",
+        if(pct.gridpe == 0) printf (" diag/offdiag begin: %d %d %d \n",
                     i, pmo.offdiag_begin[i], pmo.diag_begin[i+1]); 
 
     }

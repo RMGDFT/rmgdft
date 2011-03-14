@@ -22,7 +22,7 @@ double get_gamma(double *vtot, double small_eig)
             vmax = vtot[idx];
     vmax = real_max_all(vmax);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n sssss %f %f %f ", vmax, small_eig, diag);
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
 
@@ -35,7 +35,7 @@ double get_gamma(double *vtot, double small_eig)
     /* gamma = inverse of the largest eigenvalue for the low frequency error */
     gamma = 1.0 / (2.0 / gamma + vmax + fabs(small_eig));
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n get_gamma %22.16f ", gamma);
     return gamma;
 }

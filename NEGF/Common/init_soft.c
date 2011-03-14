@@ -96,7 +96,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         /* Write header to stdout */
@@ -118,7 +118,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     /* allocate memory for wave functions states.psiR and psiI */
     allocate_psi (states, states1);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("Allocate_psi is done \n");
     fflush (NULL);
 
@@ -138,13 +138,13 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     nameR = lcr[2].name;
 */
         read_orbital(states);
-        if (pct.thispe == 0) printf ("completed: read_orbital \n");
+        if (pct.gridpe == 0) printf ("completed: read_orbital \n");
         allocate_matrix_LCR();
-        if (pct.thispe == 0) printf ("completed: allocate_matrix \n");
+        if (pct.gridpe == 0) printf ("completed: allocate_matrix \n");
     if (ct.runflag > 111)
     {
         read_lead_matrix();
-        if (pct.thispe == 0) printf ("completed: read_lead_matrix \n");
+        if (pct.gridpe == 0) printf ("completed: read_lead_matrix \n");
     }
 
     /*exit(0); */ 
@@ -157,12 +157,12 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if(ct.runflag <113)
     {
         read_potrho_LCR (vh, vxc, rho);
-        if (pct.thispe == 0) printf ("completed: read_potrho_LCR \n");
+        if (pct.gridpe == 0) printf ("completed: read_potrho_LCR \n");
     }
     else
     {    
         read_rho_and_pot (ct.infile, vh, vxc, vh_old, vxc_old, rho);
-        if (pct.thispe == 0) printf ("completed: read_rho_and_pot \n");
+        if (pct.gridpe == 0) printf ("completed: read_rho_and_pot \n");
     }
      
 

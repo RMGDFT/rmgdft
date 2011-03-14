@@ -31,7 +31,7 @@ void init_wf_atom(STATE * states)
     int ion, species, ist, fhand, nbytes;
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" readin initial wavefunction \n");
     my_barrier();
 
@@ -66,7 +66,7 @@ void init_wf_atom(STATE * states)
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" readin initial orbitals  done  \n");
 
 

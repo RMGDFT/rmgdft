@@ -25,7 +25,7 @@ void ortho_norm_local (STATE *states)
 
     time1 = my_crtc ();
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n LOCAL ORTHONORMALIZATION  ");
 
     for (k = ct.ion_begin; k < ct.ion_end; k++)

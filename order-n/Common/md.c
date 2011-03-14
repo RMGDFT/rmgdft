@@ -65,11 +65,11 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_nprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_myrank);
-    pct.thispe = mpi_myrank;
+    pct.gridpe = mpi_myrank;
 
     time(&tt);
     timeptr = ctime(&tt);
-    if(pct.thispe == 0)
+    if(pct.gridpe == 0)
     {
         printf ("\n  Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
         printf ("\n  Run started at %s\n", timeptr);

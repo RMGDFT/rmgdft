@@ -52,12 +52,12 @@ void interpolation_orbit (STATE * states)
     my_malloc_init( psi_new, max_orbit_nx_ny, REAL );
 
 #if 	LDEBUG
-    printf ("\n PE: %d  xside %f  %f %f  ", pct.thispe, lcr[1].xside, lcr[0].xside, lcr[2].xside);
-    printf ("\n PE: %d  x_shift %f  %f %f  ", pct.thispe, lcr[1].x_shift, lcr[0].x_shift,
+    printf ("\n PE: %d  xside %f  %f %f  ", pct.gridpe, lcr[1].xside, lcr[0].xside, lcr[2].xside);
+    printf ("\n PE: %d  x_shift %f  %f %f  ", pct.gridpe, lcr[1].x_shift, lcr[0].x_shift,
             lcr[2].x_shift);
-    printf ("\n PE: %d  NX_GRID %d  %d %d  ", pct.thispe, lcr[1].NX_GRID, lcr[0].NX_GRID,
+    printf ("\n PE: %d  NX_GRID %d  %d %d  ", pct.gridpe, lcr[1].NX_GRID, lcr[0].NX_GRID,
             lcr[2].NX_GRID);
-    printf ("\n PE: %d  num_states %d  %d %d  ", pct.thispe, lcr[1].num_states, lcr[0].num_states,
+    printf ("\n PE: %d  num_states %d  %d %d  ", pct.gridpe, lcr[1].num_states, lcr[0].num_states,
             lcr[2].num_states);
 #endif
 
@@ -164,7 +164,7 @@ void interpolation_orbit (STATE * states)
                                     psi_old[iy] = states[st].psiR[idx1];
                                 }
 /*
-                                if(pct.thispe ==0) 
+                                if(pct.gridpe ==0) 
                                 printf (" urgent %d %d %f %f %f %f \n", idx0, NY, hy_new, hy_old, y1_new, y1_old);
 */
                                 diff_hx_interpolation (psi_new, psi_old, NY, hy_new, hy_old, y1_new, y1_old); 
@@ -174,7 +174,7 @@ void interpolation_orbit (STATE * states)
                                     idx1 = iz + iy * NZ + ix * incx;
                                     states[st].psiR[idx1] = psi_new[iy];
 /*
-                                    if(pct.thispe ==0) 
+                                    if(pct.gridpe ==0) 
                                     printf (" urgent %f %f \n", psi_old[iy], psi_new[iy]);
 */
                                 }
@@ -207,6 +207,6 @@ void interpolation_orbit (STATE * states)
     my_free(psi_new);
 
     my_barrier ();
-    if (pct.thispe == 0) printf ("\n interpolation_orbit  is done! ");
+    if (pct.gridpe == 0) printf ("\n interpolation_orbit  is done! ");
 
 }

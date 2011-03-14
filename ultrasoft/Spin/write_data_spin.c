@@ -103,7 +103,7 @@ void write_data_spin (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL *
      * and hangups so if wait_flag is set in the input file the
      * total bandwidth going to disk is throttled */
     if (ct.wait_flag)
-        sleep (ct.wait_flag * pct.thispe);
+        sleep (ct.wait_flag * pct.gridpe);
 
 
     /*This opens file, creates a directory if needed */

@@ -150,7 +150,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 	}
 	/* ---------- end relax loop --------- */
 
-	if (ct.max_rlx_steps > 0 && pct.thispe == 0)
+	if (ct.max_rlx_steps > 0 && pct.gridpe == 0)
 	{
 
 		printf ("\n");

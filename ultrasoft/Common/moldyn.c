@@ -91,7 +91,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n ==============================================");
 
@@ -133,7 +133,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
     /* open movie file */
-    if (ct.rmvmovie != 0 && pct.thispe == 0)
+    if (ct.rmvmovie != 0 && pct.gridpe == 0)
     {
         my_fopen (mfp, "traj.rmv", "w");
         if (setvbuf (mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
@@ -141,7 +141,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
     /* open XBS movie file */
-    if (ct.xbsmovie && pct.thispe == 0)
+    if (ct.xbsmovie && pct.gridpe == 0)
     {
 
         strcpy (xbs_filename, "traj");
@@ -172,7 +172,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* check to see if random velocities are needed */
     if (ct.nose.randomvel)
     {
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             printf ("\n\n Initializing temperature to %14.10f K\n", ct.nose.temp);
         }
@@ -206,7 +206,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n ==============================================");
     }
@@ -328,7 +328,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             /* Perform a single self-consistent step */
             scf (states, vxc, vh, vnuc, rho, rhocore, rhoc, &CONVERGENCE);
 
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\nThis is SCF step # %d", ct.scf_steps);
 
 
@@ -341,7 +341,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         }
 
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n %d SCF steps were needed to reach the converegence criterion",
                     ct.scf_steps);
 #endif
@@ -423,14 +423,14 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         /* output a frame to the rotmovie file */
         if ((ct.rmvmovie) && ((ct.md_steps % ct.rmvmovie) == 0))
         {
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
                 movie (mfp);
             }
         }
 
         /* output xbs frame */
-        if ((pct.thispe == 0) && (ct.xbsmovie))
+        if ((pct.gridpe == 0) && (ct.xbsmovie))
         {
             if ((ct.md_steps % ct.xbsmovie) == 0)
                 xbsmovie (xbsfp1);
@@ -444,7 +444,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         if (ct.chmovie != 0 && (ct.md_steps % ct.chmovie == 0))
         {
             /*vol_rho((P0_GRID *)rho,ct.md_steps); */
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
                 strcpy (filename, "rmv");
                 sprintf (filename, "%s.%d", filename, ct.md_steps);
@@ -459,11 +459,11 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             if ((ct.md_steps != 0) && (ct.md_steps % ct.checkpoint == 0))
             {
                 write_data (ct.outfile, vh, rho, vxc, states);
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                     printf ("\n Writing data to output file ...\n");
             }
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             switch (ct.forceflag)
             {
@@ -504,13 +504,13 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }                           /* end for ct.md_steps */
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n Total number of SCF steps %d", ct.total_scf_steps);
 
-    if (ct.rmvmovie && pct.thispe == 0)
+    if (ct.rmvmovie && pct.gridpe == 0)
         fclose (mfp);
 
-    if (ct.xbsmovie && pct.thispe == 0)
+    if (ct.xbsmovie && pct.gridpe == 0)
         fclose (xbsfp1);
 
 
@@ -584,7 +584,7 @@ void init_nose ()
 
     nosesteps = 2.0 * PI / (wNose * step);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n Nose Frequency (THz) = %14.10f ", ct.nose.fNose);
         printf ("\n Steps/Oscillation    = %14.10f ", nosesteps);
@@ -656,7 +656,7 @@ void velup1 ()
             if (ct.ionke > 0.0)
             {
                 scale = sqrt (ct.nose.temp / temperature);
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                     printf ("\ntscale=%f\n", scale);
             }
             else
@@ -1175,7 +1175,7 @@ void nose_energy (REAL * nosekin, REAL * nosepot)
     *nosekin = 0.5 * ct.nose.xq[0] * ct.nose.xv[0] * ct.nose.xv[0];
     *nosepot = 2.0 * ct.nose.k0 * ct.nose.xx[0];
 #if 0
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
                 0, ct.nose.xx[0], ct.nose.xv[0], ct.nose.xf[ct.fpt[0]][0],
                 ct.nose.xf[ct.fpt[1]][0], ct.nose.xf[ct.fpt[2]][0], ct.nose.xf[ct.fpt[3]][0]);
@@ -1185,7 +1185,7 @@ void nose_energy (REAL * nosekin, REAL * nosepot)
         *nosekin += 0.5 * ct.nose.xq[jc] * ct.nose.xv[jc] * ct.nose.xv[jc];
         *nosepot += ct.nose.temp * kB * ct.nose.xx[jc];
 #if 0
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n @therm%d %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f",
                     jc, ct.nose.xx[jc], ct.nose.xv[jc], ct.nose.xf[ct.fpt[0]][jc],
                     ct.nose.xf[ct.fpt[1]][jc],
@@ -1195,7 +1195,7 @@ void nose_energy (REAL * nosekin, REAL * nosepot)
     }
 
 #if 0
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n nose_energy: %20.10f %20.10f %20.10f", *nosekin, *nosepot, *nosekin + *nosepot);
 #endif
 

@@ -38,7 +38,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     /*This loop should be the same for all ions - qqq and newsintR should have 
      * the same values everywhere*/
     /*This is parallelized over ions */
-    for (ion = pct.thispe; ion < ct.num_ions; ion += NPES)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
     {
         qqq = pct.qqq[ion];
         nh = pct.prj_per_ion[ion];
@@ -98,7 +98,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     sumbetaI = 0.0;
 
     /*This is parallelized over ions */
-    for (ion = pct.thispe; ion < ct.num_ions; ion += NPES)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
     {
         qqq = pct.qqq[ion];
         nh = pct.prj_per_ion[ion];

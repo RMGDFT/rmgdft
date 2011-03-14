@@ -87,7 +87,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     /* Generate new density */
     ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
-    if (pct.thispe == 0 && ct.occ_flag == 1)
+    if (pct.gridpe == 0 && ct.occ_flag == 1)
         printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
     scopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
@@ -171,7 +171,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
     t[0] /= (double) ct.num_ions;
     t[1] = sqrt(t[1] / ((double) (ct.vh_nbasis)));
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf(" SCF CHECKS: RMS[dv] = %15.10e RMS[drho] = %15.10e \n", t[1], tem1);
 
     fflush(NULL);

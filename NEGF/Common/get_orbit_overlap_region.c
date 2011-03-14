@@ -21,13 +21,13 @@ void get_orbit_overlap_region (STATE * states)
     int i1, i2, i3, i4, i5, i6;
     int index;
     int st1, st2;
-    int num_state_thispe;
+    int num_state_gridpe;
 
 
-    num_state_thispe = ct.state_end - ct.state_begin;
-    my_malloc( orbit_overlap_region, ct.num_states * num_state_thispe, ORBIT_ORBIT_OVERLAP);
+    num_state_gridpe = ct.state_end - ct.state_begin;
+    my_malloc( orbit_overlap_region, ct.num_states * num_state_gridpe, ORBIT_ORBIT_OVERLAP);
 
-    if (orbit_overlap_region == NULL && num_state_thispe >0)
+    if (orbit_overlap_region == NULL && num_state_gridpe >0)
         error_handler ("\n NO ram for orbit_overlap_region \n");
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)

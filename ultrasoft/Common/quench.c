@@ -89,7 +89,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
         {
             if (ct.scf_steps % ct.write_eigvals_period == 0)
             {
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                 {
                     output_eigenvalues (states, 0, ct.scf_steps);
                     printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
@@ -117,7 +117,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
     /* ---------- end scf loop ---------- */
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         if (CONVERGENCE)
         {
@@ -134,7 +134,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
 
     /* output final eigenvalues with occupations */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         output_eigenvalues (states, 0, ct.scf_steps);
         printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
@@ -179,19 +179,19 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
         force (rho, rhoc, vh, vxc, vnuc, states);
 
     /* output the forces */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         write_force ();
 
 
 
 #if 0
     /* compute kinetic energy of all states */
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n");
     for (ist = 0; ist < ct.num_states; ist++)
     {
         KE = get_ke (&states[ist], 0);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             progress_tag ();
             printf ("kinetic energy for state %3d = %14.6f\n", ist, KE);

@@ -45,7 +45,7 @@ void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc,
     ct.TOTAL = energy_sc;
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
 
         printf("\n");

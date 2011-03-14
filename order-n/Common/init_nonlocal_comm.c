@@ -37,7 +37,7 @@ void init_nonlocal_comm(void)
     my_malloc(num_nonlocal_ion, NPES, int);
     for (idx = 0; idx < NPES; idx++)
         num_nonlocal_ion[idx] = 0;
-    num_nonlocal_ion[pct.thispe] = pct.n_ion_center;
+    num_nonlocal_ion[pct.gridpe] = pct.n_ion_center;
     global_sums_int(num_nonlocal_ion, &NPES);
 
     max_ion_nonlocal = 0;
@@ -58,7 +58,7 @@ void init_nonlocal_comm(void)
         ionidx_allproc[idx] = 0.0;
 
     for (ion = 0; ion < pct.n_ion_center; ion++)
-        ionidx_allproc[pct.thispe * max_ion_nonlocal + ion] = pct.ionidx[ion];
+        ionidx_allproc[pct.gridpe * max_ion_nonlocal + ion] = pct.ionidx[ion];
 
     item = max_ion_nonlocal * NPES;
     global_sums_int(ionidx_allproc, &item);

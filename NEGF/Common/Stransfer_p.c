@@ -93,7 +93,7 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL * 
 
     if (info != 0)
     {
-        printf ("Stransfer_p.c: error in PZGESV with INFO = %d in pe %d\n", info, pct.thispe);
+        printf ("Stransfer_p.c: error in PZGESV with INFO = %d in pe %d\n", info, pct.gridpe);
         fflush (NULL);
         MPI_Finalize ();
         exit (0);
@@ -253,5 +253,5 @@ static void my_print_sum (doublecomplex * matrix, int nmax, int index)
     for (i = 0; i < nmax; i++)
         a += matrix[i].r + matrix[i].i;
 
-    /*if(pct.thispe == 0) printf("\n sum of %f %d\n", a, index);  */
+    /*if(pct.gridpe == 0) printf("\n sum of %f %d\n", a, index);  */
 }

@@ -175,7 +175,7 @@ void read_pdb (void)
 
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n Number of lines in PDB input is %d", ct.num_ions);
 
 
@@ -231,7 +231,7 @@ void read_pdb (void)
     }                           /*end if get_data("atoms", tbuf, STR, 1234) */
 #endif
 
-    /*if (pct.thispe == 0)
+    /*if (pct.gridpe == 0)
        {
        printf("\n Read PDB file");
        write_pdb();

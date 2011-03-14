@@ -54,7 +54,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     REAL time1, time2, cut_init;
     double tem, tem1;
 
-   int  thispe = pct.thispe;
+   int  gridpe = pct.gridpe;
 
     time1 = my_crtc();
     /* initialize the lattice basis vectors */
@@ -65,13 +65,13 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     ct.states = states;
 
     init_parameter(states);
-    if(thispe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
 
     latgen(&ct.ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
-    if(thispe == 0) printf("\n init latgen done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init latgen done %f sec",my_crtc()-time1 );
 
     init_parameter(states);
-    if(thispe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
 
     /* initialize the reciprocal lattice vectors */
     recips();
@@ -87,63 +87,63 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
             ct.ions[ion].ixtal[ic] = ct.ions[ion].xtal[ic];
         }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         write_header();
     }
 
-    if(thispe == 0) printf("\n init write_header done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init write_header done %f sec",my_crtc()-time1 );
     my_barrier();
-    if(thispe == 0) printf("\n init my_brarrier done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init my_brarrier done %f sec",my_crtc()-time1 );
 
     /* Initialize the mehrstellen weights */
     get_mehr();
 
     get_state_to_proc(states);
 
-    if(thispe == 0) printf("\n init get_state_to_proc done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init get_state_to_proc done %f sec",my_crtc()-time1 );
 
     /* allocate memory for wave functions states.psiR and psiI */
     init_state_size(states);
-    if(thispe == 0) printf("\n init_state_size  done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_state_size  done %f sec",my_crtc()-time1 );
 
     state_corner_xyz(states);
-    if(thispe == 0) printf("\n init_state_corner_xyz  done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_state_corner_xyz  done %f sec",my_crtc()-time1 );
 
     allocate_psi(states, states1);
-    if(thispe == 0) printf("\n init_allocate_psi  done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_allocate_psi  done %f sec",my_crtc()-time1 );
 
     init_states();
 
     is_state_overlap(states);
 
-    if(thispe == 0) printf("\n init_is_state_overlap  done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_is_state_overlap  done %f sec",my_crtc()-time1 );
 
     get_orbit_overlap_region(states);
-    if(thispe == 0) printf("\n init_get_orbit_overlap_region  done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_get_orbit_overlap_region  done %f sec",my_crtc()-time1 );
 
     init_comm(states);
 
     init_comm_res(states);
-    if(thispe == 0) printf("\n init_comm_ress  done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_comm_ress  done %f sec",my_crtc()-time1 );
 
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);
 
-    if(thispe == 0) printf("\n init_duplicate_states_info done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_duplicate_states_info done %f sec",my_crtc()-time1 );
     my_barrier();
-    if(thispe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
 
     /* If not an initial run read data from files */
     if (ct.runflag == 1)
     {
         read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
-    if(thispe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
         pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
     }
 
     allocate_masks(states);
-    if(thispe == 0) printf("\n init_allocate mask done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_allocate mask done %f sec",my_crtc()-time1 );
 
     if (ct.runflag == 0)
     {
@@ -158,7 +158,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
                 init_wf(&states[kpt1 * ct.num_states]);
             }
 
-    if(thispe == 0) printf("\n init_wf done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_wf done %f sec",my_crtc()-time1 );
     }
 
 
@@ -168,15 +168,15 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     /* Initialize the radial potential stuff */
     init_kbr();
-    if(thispe == 0) printf("\n init_kbr done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_kbr done %f sec",my_crtc()-time1 );
 
     /* Initialize symmetry stuff */
     init_sym();
-    if(thispe == 0) printf("\n init_sys done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_sys done %f sec",my_crtc()-time1 );
 
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc(vnuc, rhoc, rhocore);
-    if(thispe == 0) printf("\n init_nuc done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_nuc done %f sec",my_crtc()-time1 );
 
     if (ct.runflag == INIT_FIREBALL)
     {
@@ -187,7 +187,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
             vxc[idx] = ZERO;
 
         init_rho_atom(rho);
-    if(thispe == 0) printf("\n init_rho_atom done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_rho_atom done %f sec",my_crtc()-time1 );
 
 #if DEBUG
         tem = 0.0;
@@ -201,7 +201,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
         }
         tem = real_sum_all(tem);
         tem1 = real_sum_all(tem1);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf("\n %f %f initial rho sum ", tem, tem1);
         write_rho_x(rho, "rhoooo");
         write_rho_x(rhoc, "rhoccc");
@@ -214,7 +214,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
             vh_old[idx] = vh[idx];
         for (idx = 0; idx < FP0_BASIS; idx++)
             vxc_old[idx] = vxc[idx];
-    if(thispe == 0) printf("\n init_vpot done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_vpot done %f sec",my_crtc()-time1 );
 
     }
 
@@ -235,7 +235,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
             vh_old[idx] = vh[idx];
         for (idx = 0; idx < FP0_BASIS; idx++)
             vxc_old[idx] = vxc[idx];
-    if(thispe == 0) printf("\n init_vpot_0 done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_vpot_0 done %f sec",my_crtc()-time1 );
 
         if (ct.spin == 1)
         {
@@ -249,27 +249,27 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     /* Initialize Non-local operators */
     init_nl_xyz();
-    if(thispe == 0) printf("\n init_nl_xyz done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_nl_xyz done %f sec",my_crtc()-time1 );
     get_ion_orbit_overlap_nl(states);
-    if(thispe == 0) printf("\n init_get_ion_orbit_overlap_nl done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_get_ion_orbit_overlap_nl done %f sec",my_crtc()-time1 );
 
     get_nlop();
-    if(pct.thispe == 0) printf("\n pe %d init_get_lop done %f sec",pct.thispe, my_crtc()-time1 );
+    if(pct.gridpe == 0) printf("\n pe %d init_get_lop done %f sec",pct.gridpe, my_crtc()-time1 );
     my_barrier();
-    if(pct.thispe == 0) printf("\n pe %d my_barrier %f sec",pct.thispe, my_crtc()-time1 );
+    if(pct.gridpe == 0) printf("\n pe %d my_barrier %f sec",pct.gridpe, my_crtc()-time1 );
     init_nonlocal_comm();
-    if(pct.thispe == 0) printf("\n pe %d init_nonlocal_comm done %f sec",pct.thispe,my_crtc()-time1 );
+    if(pct.gridpe == 0) printf("\n pe %d init_nonlocal_comm done %f sec",pct.gridpe,my_crtc()-time1 );
 
 
     /* Initialize qfuction in Cartesin coordinates */
     init_qfunct();
-    if(thispe == 0) printf("\n init_qfunct done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_qfunct done %f sec",my_crtc()-time1 );
     get_QI();
-    if(thispe == 0) printf("\n init_get_QI done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_get_QI done %f sec",my_crtc()-time1 );
 
     /* Get the qqq */
     get_qqq();
-    if(thispe == 0) printf("\n init_get_qqq done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_get_qqq done %f sec",my_crtc()-time1 );
 
 
     /* If diagonalization is requested do a subspace diagonalization */
@@ -286,17 +286,17 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
             flag = 0;
             matrix_and_diag(ct.kp[kpt1].kstate, states1, vtot_c, flag);
-    if(thispe == 0) printf("\n init_matrix_and_diag done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_matrix_and_diag done %f sec",my_crtc()-time1 );
         }
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             write_eigs(states);
-    if(thispe == 0) printf("\n init_write_eigs done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_write_eigs done %f sec",my_crtc()-time1 );
     }
 
     time2 = my_crtc();
     rmg_timings(INIT_TIME, (time2 - time1), 0);
     my_barrier();
-    if(thispe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
+    if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
 
 
 #if	DEBUG
@@ -307,7 +307,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 /* some utilities, used in debuging */
 
-    if (pct.thispe > 100000)
+    if (pct.gridpe > 100000)
     {
         print_status(states, vh, vxc, vnuc, vh_old, "before leaving init.c  ");
         print_state_sum(states1);

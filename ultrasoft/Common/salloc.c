@@ -315,7 +315,7 @@ void *salloc (size_t nobj, size_t size1, char *vn, char *type, char *fn, int ln,
     if (debug)
         printf
             ("PE:%4d allocated: %p %10d b = %10d x %10d b (%s* %s @ %s:%d %.6fs) node memory:%10d b totalmem:%10d b\n",
-             pct.thispe, node->ptr, (int) node->size, (int) nobj, (int) size1, node->type, node->vn,
+             pct.gridpe, node->ptr, (int) node->size, (int) nobj, (int) size1, node->type, node->vn,
              node->fn, node->ln, node->time, (int) sizeof (salloc_node_t), (int) totalmem);
 
     salloc_ncalls++;
@@ -384,7 +384,7 @@ void sfree (void *ptr, char *vn, char *fn, int ln)
                 {
                     printf
                         ("PE:%4d deallocated: %p %10d b = %10d x %10d b (%s* %s @ %s:%d)\n deall. mode memory:%10d b totalmem:%10d b",
-                         pct.thispe, node->ptr, (int) node->size, (int) node->nobj,
+                         pct.gridpe, node->ptr, (int) node->size, (int) node->nobj,
                          (int) node->size1, node->type, vn, fn, ln, (int) sizeof (salloc_node_t),
                          (int) totalmem);
                 }

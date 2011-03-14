@@ -161,7 +161,7 @@ void get_dos (STATE * states)
                                                                                               
                                                                                               
                                                                                               
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     xoff = ii * FPX0_GRID;
     yoff = jj * FPY0_GRID;
     zoff = kk * FPZ0_GRID;
@@ -172,7 +172,7 @@ void get_dos (STATE * states)
 
 
     idx = 0;
-    /*for (iene = pct.thispe; iene < E_POINTS; iene += NPES)*/
+    /*for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)*/
     for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
     {
         eneR = emin + iene * de;
@@ -300,7 +300,7 @@ COMM_EN1);
 
     iene = E_POINTS * FNX_GRID;
     global_sums (rho_energy, &iene);
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         double dx = ct.celldm[0] / NX_GRID;
         double x0 = 0.5 * ct.celldm[0];
@@ -328,7 +328,7 @@ COMM_EN1);
                                                                                                                   
         iene = E_POINTS * FNY_GRID;
         global_sums (rho_energy2, &iene);
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             double y = ct.celldm[1] * ct.celldm[0];
             double dy = y / NY_GRID;

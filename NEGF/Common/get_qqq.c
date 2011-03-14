@@ -17,7 +17,7 @@ void get_qqq ()
     SPECIES *sp;
     FILE *ftpr;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         ftpr = fopen ("check_q.txt", "w+");
 
 
@@ -34,7 +34,7 @@ void get_qqq ()
             my_calloc( pct.qqq[ion], nh * nh, REAL );
         qqq = pct.qqq[ion];
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             fprintf (ftpr, "%% for ion %d :\n", ion);
 
         idx = 0;
@@ -55,7 +55,7 @@ void get_qqq ()
                 sum = sum * ct.vel_f;
                 if (fabs (sum) < 1.0e-8)
                     sum = 0.0;
-                if (pct.thispe == 0)
+                if (pct.gridpe == 0)
                     fprintf (ftpr, "i=%d j=%d q_cal=%15.8f q_rel=%15.8f\n", i, j,
                              sum, sp->qqq[i][j]);
                 qqq[i * nh + j] = sum;
@@ -65,10 +65,10 @@ void get_qqq ()
                 idx++;
             }                   /*end for j */
         }                       /*end for i */
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             fprintf (ftpr, "\n");
     }                           /*end for ion */
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         fclose (ftpr);
 }

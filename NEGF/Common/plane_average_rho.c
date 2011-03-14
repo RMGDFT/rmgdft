@@ -37,7 +37,7 @@ void plane_average_rho (double *rho)
 
 
     /* Get this processors offset */
-    pe2xyz (pct.thispe, &px, &py, &pz);
+    pe2xyz (pct.gridpe, &px, &py, &pz);
     pxoff = px * FPX0_GRID;
     pyoff = py * FPY0_GRID;
     pzoff = pz * FPZ0_GRID;
@@ -78,7 +78,7 @@ void plane_average_rho (double *rho)
         ix = FNY_GRID * FNZ_GRID;
         global_sums (zvec, &ix);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             file = fopen("rho_yz_plane.dat", "w");
             fprintf (file, "\n average of rho from nx = %d to %d", ct.plane[3], ct.plane[4]);
@@ -121,7 +121,7 @@ void plane_average_rho (double *rho)
         ix = FNX_GRID * FNZ_GRID;
         global_sums (zvec, &ix);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             file = fopen("rho_xz_plane.dat", "w");
             fprintf (file, "\n average of rho from ny = %d to %d", ct.plane[3], ct.plane[4]);
@@ -165,7 +165,7 @@ void plane_average_rho (double *rho)
         ix = FNX_GRID * FNY_GRID;
         global_sums (zvec, &ix);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
         {
             file = fopen("rho_xy_plane.dat", "w");
             fprintf (file, "\n average of rho from nz = %d to %d", ct.plane[3], ct.plane[4]);

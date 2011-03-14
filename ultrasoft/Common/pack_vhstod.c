@@ -62,7 +62,7 @@ void pack_vhstod (REAL * s, REAL * d, int dimx, int dimy, int dimz)
 
     }                           /* end if */
 
-    pe2xyz (pct.thispe, &pex, &pey, &pez);
+    pe2xyz (pct.gridpe, &pex, &pey, &pez);
     sxlo = pex * dimx;
     sylo = pey * dimy;
     szlo = pez * dimz;

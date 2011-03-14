@@ -127,7 +127,7 @@ void set_energy_weight (REAL * eneR, REAL * eneI, REAL * weightR, REAL * weightI
     my_free(xc);
     my_free(wc);
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n set_energy_weight done %d", *nenergy);
         printf ("\n    eneR   eneI   weightR   weightI");

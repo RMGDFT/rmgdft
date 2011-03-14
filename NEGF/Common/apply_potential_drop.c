@@ -40,7 +40,7 @@ void apply_potential_drop (REAL *vbias)
 
     my_barrier ();
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     xoff = ii * FPX0_GRID;
     yoff = jj * FPY0_GRID;
 
@@ -100,7 +100,7 @@ void apply_potential_drop (REAL *vbias)
         V4 = (lcr[4].bias) * eV_Ha;
 
  
-        if(pct.thispe ==0)
+        if(pct.gridpe ==0)
         {
             printf (" hello0 %d %d %d %d \n", x1, x2, y1, y2);
             printf (" hello2 %d %d %d %d \n", ny1, ny2, ny3, ny4);
@@ -356,7 +356,7 @@ void apply_potential_drop (REAL *vbias)
 
 
 
-                if(pct.thispe ==0)
+                if(pct.gridpe ==0)
                 {
                     for (i = 0; i < FNX_GRID; i++)
                     {

@@ -49,7 +49,7 @@ void wvfn_residual (STATE * states)
 
     eigmean = eigmean / ((REAL) ct.num_states);
     ct.meanres = eigmean;
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("Mean occupied wavefunction residual = %14.6e\n", eigmean);
 
 }

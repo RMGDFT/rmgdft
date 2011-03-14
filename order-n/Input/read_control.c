@@ -50,7 +50,7 @@ void read_control (void)
     FILE *fhand;
     int is,ns;
 
-    if(pct.thispe == 0) 
+    if(pct.gridpe == 0) 
     {
         printf("\n ********************************");
         printf("\n  control file read informations");
@@ -231,7 +231,7 @@ KAIN";
     get_data("movable_orbital_centers_steps", &ct.movingSteps, INT, "40");
     if(ct.movingSteps == 0) 
     {
-        if(pct.thispe == 0) 
+        if(pct.gridpe == 0) 
         {
             printf("\n  *************WARNING: ct.movingSteps reset to 100 \n");
         }

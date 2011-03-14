@@ -215,7 +215,7 @@ void get_new_rho (STATE * states, REAL * rho)
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */
     t1 = ct.nel / ct.tcharge;
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n get_rho: Normalization constant for new charge is %f", t1);
     QMD_sscal (n, t1, rho, incx);
 

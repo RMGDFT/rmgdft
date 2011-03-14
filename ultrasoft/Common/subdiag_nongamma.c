@@ -95,7 +95,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     time1 = my_crtc ();
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf ("\n SUBSPACE DIAGONALIZATION");
 
     kidx = states[0].kidx;
@@ -162,7 +162,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 #if 0
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n Bij");
         print_matrix2 (Bij, num_states);
@@ -233,11 +233,11 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 #if 0
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n\n Distributed Bij");
         print_dist_matrix (distBij, num_states, pct.desca);
 
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n\n Distributed Aij");
         print_dist_matrix (distAij, num_states, pct.desca);
 #endif
@@ -263,7 +263,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
             if (info)
             {
-                printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.thispe, info);
+                printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
                 error_handler (" p{d,z}gesv failed");
             }
 
@@ -271,7 +271,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         }
 
 #if 0
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             printf ("\n\n Inverse Bij");
         print_dist_matrix (distCij, num_states, pct.desca);
 #endif
@@ -295,7 +295,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #endif
 
 #if 0
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
                 printf ("\n\n Inverse Bij multiplied by Aij, symmetrized");
             print_dist_matrix (distBij, num_states, pct.desca);
 #endif
@@ -387,7 +387,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 #if 0
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf ("\n\n Final final matrix");
         print_matrix2 (Aij, ct.num_states);
@@ -711,7 +711,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
     /*Sum Aij over all PEs */
     global_sums (glob_matrix, &stop);
 
-    if (!pct.thispe)
+    if (!pct.gridpe)
         print_matrix2 (glob_matrix, global_size);
 
     my_free (glob_matrix);

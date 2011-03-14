@@ -59,7 +59,7 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
     char name[] = "wavefunc.dat";
 
     /* Make the new output file name */
-    sprintf (newname, "%s%d", name, pct.thispe);
+    sprintf (newname, "%s%d", name, pct.gridpe);
 
     /* Open output files for wfs and energies */
     /*my_open( wave_f, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE ); */
@@ -111,7 +111,7 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
                 sortpsi (ct.kp[0].kstate);
 
             /* Output the energies */
-            if (pct.thispe == 0)
+            if (pct.gridpe == 0)
             {
                 output_eigenvalues (states, ik, ct.scf_steps);
                 printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
@@ -126,7 +126,7 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
         /*output_wave( states, ik, wave_f ); */
 
         /* Dump eigenvalues for this k-point */
-        if (pct.thispe == 0)
+        if (pct.gridpe == 0)
             write_bs_eigenvalues ("eigenvalues.dat", states, ik);
 
 

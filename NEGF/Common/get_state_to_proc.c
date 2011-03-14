@@ -35,21 +35,21 @@ void get_state_to_proc (STATE * states)
 
     if (ion_mode > 0)
     {
-        if (pct.thispe < ion_mode)
+        if (pct.gridpe < ion_mode)
         {
-            ion1 = (ion_per_proc + 1) * pct.thispe;
+            ion1 = (ion_per_proc + 1) * pct.gridpe;
             ion2 = ion1 + ion_per_proc + 1;
         }
         else
         {
-            ion1 = ion_per_proc * pct.thispe + ion_mode;
+            ion1 = ion_per_proc * pct.gridpe + ion_mode;
             ion2 = ion1 + ion_per_proc;
         }
     }
     else
     {
 
-        ion1 = ion_per_proc * pct.thispe;
+        ion1 = ion_per_proc * pct.gridpe;
         ion2 = ion1 + ion_per_proc;
     }
     assert (ion2 <= ct.num_ions);
@@ -67,7 +67,7 @@ void get_state_to_proc (STATE * states)
         {
             ct.state_begin = min (ct.state_begin, st);
             ct.state_end = max (ct.state_end, st);
-            state_to_proc[st] = pct.thispe;
+            state_to_proc[st] = pct.gridpe;
         }
     }
 
@@ -106,7 +106,7 @@ void get_state_to_proc (STATE * states)
         state_end[st] = 0;
     }
 
-    st = pct.thispe;
+    st = pct.gridpe;
     state_begin[st] = ct.state_begin;
     state_end[st] = ct.state_end;
 

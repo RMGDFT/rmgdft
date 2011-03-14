@@ -30,7 +30,7 @@ void destroy_fftw_wisdom (void)
     }
 
     else
-        printf ("\n\n PE:%d: NOT releasing fftw wisdom, it was NOT setup before", pct.thispe);
+        printf ("\n\n PE:%d: NOT releasing fftw wisdom, it was NOT setup before", pct.gridpe);
 
 }
 

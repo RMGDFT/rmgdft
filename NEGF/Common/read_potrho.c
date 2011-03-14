@@ -62,7 +62,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     FNYPZ = FPZ0_GRID * FNY_GRID; 
     FNYZ = FNY_GRID * FNZ_GRID; 
 
-    pe2xyz (pct.thispe, &ii, &jj, &kk);
+    pe2xyz (pct.gridpe, &ii, &jj, &kk);
     ii *= FPX0_GRID;
     jj *= FPY0_GRID;
     kk *= FPZ0_GRID;
@@ -70,7 +70,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
     hx_new = ct.xside * ct.hxxgrid;
     hy_new = ct.yside * ct.hyygrid;
-    if(pct.thispe ==0) printf (" hx_new, hy_new  =  %f  %f \n", hx_new, hy_new); 
+    if(pct.gridpe ==0) printf (" hx_new, hy_new  =  %f  %f \n", hx_new, hy_new); 
 
 
 /* =========== Allocate memory & Reading ON2 data ================ */
@@ -92,7 +92,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         NZ0 = lcr[subsystem].NZ_GRID *RHO_NZ;
 
         idx = NX0 * NY0 * NZ0;
-        /*if(pct.thispe ==0) printf (" idx +++++  =   %d \n", idx );*/
+        /*if(pct.gridpe ==0) printf (" idx +++++  =   %d \n", idx );*/
 
         my_malloc_init(array_tmp, idx, double);
 
@@ -119,24 +119,24 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         x0 = lcr[subsystem].x0 * RHO_NX;
         y0 = lcr[subsystem].y0 * RHO_NY;
         z0 = lcr[subsystem].z0 * RHO_NZ;
-        /*if(pct.thispe ==0) printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
+        /*if(pct.gridpe ==0) printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
 
 
         x1 = lcr[subsystem].x1 * RHO_NX;
         y1 = lcr[subsystem].y1 * RHO_NY;
         /*z1 = lcr[subsystem].z1 * RHO_NZ;
-        if(pct.thispe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
+        if(pct.gridpe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
 
 
         x2 = lcr[subsystem].x2 * RHO_NX;
         y2 = lcr[subsystem].y2 * RHO_NY;
         z2 = lcr[subsystem].z2 * RHO_NZ;
-        /*if(pct.thispe ==0) printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
+        /*if(pct.gridpe ==0) printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
 
         x3 = x2 + x1 - x0;
         y3 = y2 + y1 - y0;
         /*z3 = z2 + z1 - z0;
-        if(pct.thispe ==0) printf (" x3, y3, z3 = %d %d %d %d \n", subsystem, x3, y3, z3 );*/
+        if(pct.gridpe ==0) printf (" x3, y3, z3 = %d %d %d %d \n", subsystem, x3, y3, z3 );*/
 
 
         NYZ0 = NY0 * NZ0;
@@ -144,11 +144,11 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
         x0_old = lcr[subsystem].x_shift;
         hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/RHO_NX;
-        /*if(pct.thispe ==0) printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
+        /*if(pct.gridpe ==0) printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
 
         y0_old = lcr[subsystem].y_shift;
         hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/RHO_NY;
-        /*if(pct.thispe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
+        /*if(pct.gridpe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
  
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
 
@@ -203,7 +203,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     } /*  subsystem loop ends here */
 
 
-        /*if(pct.thispe ==0) printf (" Potential patching is done...  \n" );*/
+        /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
 
 
 
@@ -406,7 +406,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         }
     }
 
-    /*if(pct.thispe ==0) printf (" x-interpolation is done \n" );*/
+    /*if(pct.gridpe ==0) printf (" x-interpolation is done \n" );*/
 
 
     my_free(xold);
@@ -454,7 +454,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 }
             }
         }
-        /*if(pct.thispe ==0) printf (" y-interpolation is done \n" );*/
+        /*if(pct.gridpe ==0) printf (" y-interpolation is done \n" );*/
 
 
         my_free(yold);

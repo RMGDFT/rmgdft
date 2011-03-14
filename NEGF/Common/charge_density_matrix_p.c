@@ -277,7 +277,7 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
 
 
             /*
-               if(pct.thispe == 0) 
+               if(pct.gridpe == 0) 
                printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
                printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
              */

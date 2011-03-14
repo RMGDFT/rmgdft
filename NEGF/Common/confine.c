@@ -28,7 +28,7 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
 
 
     /* find the offset  */
-    pe2xyz (pct.thispe, &pex, &pey, &pez);
+    pe2xyz (pct.gridpe, &pex, &pey, &pez);
     xoff = pex * FPX0_GRID;
     yoff = pey * FPY0_GRID;
     zoff = pez * FPZ0_GRID;

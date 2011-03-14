@@ -52,7 +52,7 @@ void get_cholesky_real(double *matS)
     maxst = ct.num_states;
     time3 = my_crtc();
 #if DEBUG
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf("\n Compute Cholesky decomposition \n");
     }
@@ -84,7 +84,7 @@ void get_cholesky_real(double *matS)
         /* Compute the conditioning of statearray */
         time1 = my_crtc();
         nproc = pct.nprow * pct.npcol;
-        iproc = pct.thispe;
+        iproc = pct.gridpe;
         locr = ((numst / nb + 1) / nproc + 1) * nb + nb;
         lwork = locr * 5 + nb;
         liwork = locr;
@@ -113,7 +113,7 @@ void get_cholesky_real(double *matS)
     }
 
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         printf("\n Reciprocal of the condition number of the overlap matrix = %f\n", rcond);
         if (rcond < 0.0001)
@@ -123,7 +123,7 @@ void get_cholesky_real(double *matS)
             exit(0);
         }
     }
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
     {
         time2 = my_crtc();
         rmg_timings(COND_S_TIME, (time2 - time1), 0);

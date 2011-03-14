@@ -45,7 +45,7 @@ void init_state_size(STATE * states)
     max_ny = 0;
     max_nz = 0;
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n  States orbital size: x.y.z   \n");
 
     for (state = 0; state < ct.num_states; state++)
@@ -73,11 +73,11 @@ void init_state_size(STATE * states)
         max_nx = max(max_nx, states[state].orbit_nx);
         max_ny = max(max_ny, states[state].orbit_ny);
         max_nz = max(max_nz, states[state].orbit_nz);
-/*		if(pct.thispe == 0) 
+/*		if(pct.gridpe == 0) 
 *			printf(" %d: %d.%d.%d ", 
 *					state, states[state].orbit_nx, states[state].orbit_ny, 
 *					states[state].orbit_nz); 
-*		if( pct.thispe == 0 && (state-state/5*5)==0 )
+*		if( pct.gridpe == 0 && (state-state/5*5)==0 )
 *			printf("\n"); 
 */
     }
@@ -93,7 +93,7 @@ void init_state_size(STATE * states)
         pct.psi_size += states[st1].size;
     }
 
-    if (pct.thispe == 0)
+    if (pct.gridpe == 0)
         printf("\n init_state_size Done! ");
 
 }
