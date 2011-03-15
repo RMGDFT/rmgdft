@@ -51,7 +51,7 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 {
     int ix, iy, iz, idx, iflag;
     FP0_GRID *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
-    REAL d, grad, vxc1, vxc2[FP0_BASIS], enxc;
+    REAL d, grad, vxc1, *vxc2, enxc;
     REAL kf, pisq3, ex, vx, ec, vc, rs;
 
 
@@ -69,6 +69,7 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
     my_malloc (d2rho, 1, FP0_GRID);
 
 
+    my_malloc (vxc2, FP0_BASIS, REAL);
 
 
 
@@ -232,6 +233,7 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 */
 
     /* Release our memory */
+    my_free (vxc2);
     my_free (d2rho);
     my_free (agg);
     my_free (vgz);
