@@ -35,7 +35,7 @@
 void init_IO (int argc, char **argv)
 {
 
-    int status, lognum = 0;
+    int npes, worldpe, image, status, lognum = 0;
     char workdir[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH], *quantity, *extension, *endptr;
     struct stat buffer;
     time_t timer;
@@ -45,6 +45,12 @@ void init_IO (int argc, char **argv)
 
     /* Initialize MPI, we need it for error_handler, amongst others */
     MPI_Init (&argc, &argv);
+
+    /* get this cores mpi rank */
+    MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);
+
+    /* get total mpi core count */
+    MPI_Comm_size (MPI_COMM_WORLD, &npes);
 
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
@@ -68,34 +74,41 @@ void init_IO (int argc, char **argv)
         if (quantity == endptr)
             pct.images = 1;
     }
-
     Dprintf ("RMG will run with %d images", pct.images);
+    if ( pct.images > MAX_IMGS )
+        error_handler ("Multi-image input file %s asks for more images (%d) than MAX_IMGS in params.h.", argv[1], pct.images);
+
+
+    /* Setup image number that this core belongs to */
+    image = npes / pct.images;
+    if (image * pct.images != npes)
+        error_handler ("Total MPI processes must be a multiple of the number of images in this run.");
+    pct.thisimg = worldpe / image;
+
+    if (pct.images > 1)
+        snprintf (ct.cfile, MAX_PATH, "%s.%02d.rmg", basename, pct.thisimg + 1);
 
     /* PE(MPI) initialization, need mpi groups defined before logfile is initialized */
-    init_pe ();
+    init_pe ( image );
 
     if (pct.images > 1)
     {
         if (strcmp (extension, "rmg") != 0)
-            error_handler
-                ("Multi-image input file %s does not end with proper \"rmg\" extension.", argv[1]);
+            error_handler ("Multi-image input file %s does not end with proper \"rmg\" extension.", argv[1]);
 
         /* logfile name is based on input file and this images group number */
         /* if second command line argument exists, use it as a basename for output */
         if (argc == 3)
         {
-            snprintf (logname, MAX_PATH, "%s.%d.log", argv[2], pct.thisimg + 1);
+            snprintf (logname, MAX_PATH, "%s.%02d.log", argv[2], pct.thisimg + 1);
         }
         else
         {
-            snprintf (logname, MAX_PATH, "%s.%d.log", basename, pct.thisimg + 1);
+            snprintf (logname, MAX_PATH, "%s.%02d.log", basename, pct.thisimg + 1);
         }
 
-        /* After chdir, this groups control file will be in parent directory */
-        snprintf (ct.cfile, MAX_PATH, "../%s.%d.rmg", basename, pct.thisimg + 1);
-
         /* every image has it own output/working directory */
-        sprintf (workdir, "image.%d", pct.thisimg + 1);
+        sprintf (workdir, "image.%02d", pct.thisimg + 1);
         if (pct.imgpe == 0)
         {
             if (status = stat ( workdir, &buffer ) == 0)

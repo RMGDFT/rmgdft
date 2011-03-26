@@ -91,6 +91,13 @@
 /* Maximum pathname length for input file names */
 #define         MAX_PATH        MAX_CHAR
 
+/* Maximum image count */
+#define         MAX_IMGS        99
+
+/* Maximum cpu grids, now spin enabled -> 2.
+ * This will need to be dynamic if we parallelize over k-points */
+#define         MAX_GRIDS        2
+
 /* Maximum number of points in pseudopotential radial grid */
 #define         MAX_RGRID	(1000)
 

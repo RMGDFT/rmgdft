@@ -33,35 +33,29 @@
 #include "main.h"
 
 
-void init_pe ()
+void init_pe ( int image )
 {
 
-    int npes, ii, jj, kk;
+    int ii, jj, kk;
     char tmpstring[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH];
-    int image, image_grp_map[pct.images], grid_grp_map[pct.grids], range[1][3];
+    int image_grp_map[MAX_IMGS], grid_grp_map[MAX_GRIDS], range[1][3];
     MPI_Group group, world_grp, image_grp, img_masters;
 
 
-    /* Setup values for this parallel run */
-    MPI_Comm_rank (MPI_COMM_WORLD, &pct.gridpe);
-    MPI_Comm_size (MPI_COMM_WORLD, &npes);
-
-    /* Every image gets an equal number of PEs. */
-    image = npes / pct.images;
-    if (image * pct.images != npes)
-        error_handler ("Total MPI processes must be a multiple of the number of images in this run.");
-    pct.thisimg = pct.gridpe / image;
+    /* Setup MPI */
+    /* get world group handle */
+    MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
 
     /* Infer the number of cpu grids in each image. */
     pct.grids = image / NPES;
     if (NPES * pct.grids != image)
         error_handler ("MPI processes per image must be a multiple of NPES (PE_X*PE_Y*PE_Z).");
 
+    if ( pct.grids > MAX_GRIDS )
+        error_handler ("CPU Grid multiplicity (%d) is more than MAX_GRIDS in params.h.", pct.grids);
+
 
     /* setup pct.img_comm to include all pe's in this image */
-
-    /* get world group handle */
-    MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
 
     /* determine range of pe ranks in this image */
     range[0][0] = pct.thisimg * pct.grids * NPES;
@@ -71,6 +65,7 @@ void init_pe ()
     /* define this images group and put its comm in pct */
     MPI_Group_range_incl (world_grp, 1, range, &group);
     MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
+
 
     /* setup pct.rmg_comm to include all image group_rank 0 pe's */
     /* build rank list of group masters, this assumes contiguous ranges */

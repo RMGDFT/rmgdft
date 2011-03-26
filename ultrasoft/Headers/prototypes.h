@@ -197,7 +197,7 @@ void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
 void init_fftw_wisdom (void);
 void init_kbr (void);
 void init_IO ( int argc, char **argv );
-void init_pe (void);
+void init_pe ( int image );
 void init_img_topo ( int dimensionality );
 void init_pegrid (void);
 STATE *init_states (void);
