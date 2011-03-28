@@ -45,6 +45,7 @@
 
 #define printf( message... ) \
 	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
+//	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ), fflush (NULL), fsync ( fileno (ct.logfile) ): 0)
 	
 
 /* variadic error_handler, use is the same as printf. Calls MPI_Abort, since MPI_Finalize hangs if called on single PE. */
