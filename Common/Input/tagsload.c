@@ -16,7 +16,7 @@ int tagsload (void)
     i = itemize (delim);
     if (odd (i))
     {
-        error_handler ("Tag/Value paring error\n");
+        error_handler ("Tag/Value pairing error\n");
     }
     while ((tmpItem = popItem (here)) != NULL)
     {
