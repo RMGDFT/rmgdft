@@ -104,6 +104,14 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     my_calloc (iptr0->oldsintI, ct.num_kpts * ct.num_ions * ct.num_states * ct.max_nl, REAL);
 #endif
 
+    
+    pct.newsintR_local = NULL;
+    pct.oldsintR_local = NULL;
+#if !GAMMA_PT
+    pct.newsintI_local = NULL;
+    pct.oldsintI_local = NULL;
+#endif
+
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];

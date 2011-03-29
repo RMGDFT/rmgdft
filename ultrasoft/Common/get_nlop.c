@@ -239,6 +239,19 @@ void get_nlop (void)
     for (i=0; i<pct.num_nonloc_ions; i++)
 	printf(" %d", pct.nonloc_ions_list[i]);
 
+    /*Memory for nonlocal projectors*/
+    if (pct.newsintR_local) my_free (pct.newsintR_local);
+    if (pct.oldsintR_local) my_free (pct.oldsintR_local);
+    my_calloc (pct.newsintR_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL);
+    my_calloc (pct.oldsintR_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL);
+    
+#if !GAMMA_PT
+    if (pct.newsintI_local) my_free (pct.newsintI_local);
+    if (pct.oldsintI_local) my_free (pct.oldsintI_local);
+    my_calloc (pct.newsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL)
+    my_calloc (pct.oldsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL);
+#endif
+    
 
 
     /* Loop over all nonlocal ions to obtain the lists necessary for communication*/

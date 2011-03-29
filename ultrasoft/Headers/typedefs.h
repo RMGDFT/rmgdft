@@ -265,6 +265,11 @@ typedef struct
     int nonloc_pe_list[MAX_NONLOC_PROCS];
     int nonloc_atom_list_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     int nonloc_atom_count_per_pe[MAX_NONLOC_IONS];
+    
+    REAL *oldsintR_local;
+    REAL *oldsintI_local;
+    REAL *newsintR_local;
+    REAL *newsintI_local;
 
 } PE_CONTROL;
 
@@ -698,6 +703,7 @@ typedef struct
     REAL *oldsintI;
     REAL *newsintR;
     REAL *newsintI;
+    
 
     /* Stores sine and cosine of a phase factor for backwards fourier transform */
     REAL *fftw_phase_sin;

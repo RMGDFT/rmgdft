@@ -137,6 +137,15 @@ void betaxpsi1 (STATE * states, int kpt)
 #endif
 
 
+    /*Write data into local projector array*/
+    for (ion=0; ion<pct.num_nonloc_ions; ion++)
+    {
+	    for (idx=0; idx < ct.num_states * ct.max_nl; idx++)
+		    pct.newsintR_local[kpt * ion *  ct.num_states * ct.max_nl + idx] =  sintR[kpt * pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl + idx];
+    }
+
+
+
     my_free (nlarrayR);
 
 }
