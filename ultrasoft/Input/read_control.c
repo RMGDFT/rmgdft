@@ -493,7 +493,7 @@ Triclinic Primitive";
 
     /* Multigrid levels */
     get_data ("kohn_sham_mg_levels", &ct.eig_parm.levels, INT, "1");
-    get_data ("poisson_mg_levels", &ct.poi_parm.levels, INT, "1");
+    get_data ("poisson_mg_levels", &ct.poi_parm.levels, INT, "2");
 
     if ((PX0_GRID / (1 << ct.eig_parm.levels)) < 3)
         error_handler ("PX0_GRID: too many eigenvalue MG levels");
