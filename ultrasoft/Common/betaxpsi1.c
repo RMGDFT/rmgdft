@@ -12,7 +12,7 @@
 void betaxpsi1 (STATE * states, int kpt)
 {
 
-    int idx, ion, stop, ip, ipindex, alloc;
+    int idx, ion, stop, ip, ipindex, alloc, index1, index2;
     int istate;
     int id1, incx = 1, *pidx;
     REAL *nlarrayR, *nlarrayI, *sintR;
@@ -137,13 +137,11 @@ void betaxpsi1 (STATE * states, int kpt)
 #endif
 
 
-    /*Write data into local projector array*/
-    for (ion=0; ion<pct.num_nonloc_ions; ion++)
-    {
-	    for (idx=0; idx < ct.num_states * ct.max_nl; idx++)
-		    pct.newsintR_local[kpt * ion *  ct.num_states * ct.max_nl + idx] =  sintR[kpt * pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl + idx];
-    }
 
+    index1 = kpt * pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl;
+    index2 = kpt * ion *  ct.num_states * ct.max_nl;
+
+    my_copy(&sintR[index1], &pct.newsintR_local[index2], ct.num_states * ct.max_nl);
 
 
     my_free (nlarrayR);

@@ -101,6 +101,9 @@
 #endif
 #endif
 
+/* Macro to simplify calling dcopy*/
+#define my_copy(in, out, length)  do{ int my_one = 1; int my_length = length;  dcopy(& (my_length),  (in), & (my_one),  (out), & (my_one)); }while(0)
+
 void fsymforces (REAL * force, int *s, int *irg, int *irt,
                  int *nat, int *ibrav, int *nsym,
                  REAL * celldm, int *nr1, int *nr2, int *nr3);
