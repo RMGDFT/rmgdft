@@ -64,27 +64,32 @@ void get_vxc (REAL * rho_f, REAL * rhocore_f, REAL * vxc_f)
         /* xclda_pz81 (nrho, vxc_f); */
 
 	/* incoporate both the Perdew Zunger 1981 and Ortiz Ballone 1994, default is PZ 1981 */
-        xclda (nrho, vxc_f, exc);
+        //xclda (nrho, vxc_f, exc);
+        xclda_libxc (nrho, vxc_f, exc);
         break;
 
     case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        //xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_libxc (nrho, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        //xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_libxc (nrho, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        //xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_libxc (nrho, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_PBE:              /* GGA Perdew, Burke, Ernzerhof */
 
-        xcgga (nrho, vxc_f, exc, ct.xctype);
+        //xcgga (nrho, vxc_f, exc, ct.xctype);
+        xcgga_libxc (nrho, vxc_f, exc, ct.xctype);
         break;
 
     default:

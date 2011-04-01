@@ -124,26 +124,31 @@ void get_te_spin (REAL * rho, REAL * rho_oppo,  REAL * rhocore, REAL * rhoc, REA
 
     case LDA_PZ81:             /* LDA Perdew Zunger 81 */
 
-        xclsda_spin (nrho, nrho_oppo, vxc, exc);
+        //xclsda_spin (nrho, nrho_oppo, vxc, exc);
+        xclsda_spin_libxc (nrho, nrho_oppo, vxc, exc);
         break;
 
     case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */
-        xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        //xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        xcgga_spin_libxc (nrho, nrho_oppo, vxc, exc, ct.xctype);
 
         break;
 
     case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
-        xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        //xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        xcgga_spin_libxc (nrho, nrho_oppo, vxc, exc, ct.xctype);
 	
         break;
 
     case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
-        xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        //xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        xcgga_spin_libxc (nrho, nrho_oppo, vxc, exc, ct.xctype);
 
         break;
 
     case GGA_PBE:              /* GGA Perdew, Burke, Ernzerhof */
-	xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+	//xcgga_spin (nrho, nrho_oppo, vxc, exc, ct.xctype);
+        xcgga_spin_libxc (nrho, nrho_oppo, vxc, exc, ct.xctype);
         
 	break;
 

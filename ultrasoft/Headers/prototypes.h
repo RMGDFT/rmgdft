@@ -100,11 +100,13 @@ void exclda_pz81 (REAL *rho, REAL *exc);
 
 /* new lda function incorporating both  1981 and 1994 monte carlo data */
 void xclda(REAL *rho, REAL *vxc, REAL *exc);
+void xclda_libxc (REAL * rho, REAL * vxc, REAL * exc);
 void slater(REAL rs, REAL *ex, REAL *vx);
 void pz(REAL rs, int iflag, REAL *ec, REAL *vc); 
 
 /* lsda exchange correlation functional */
 void xclsda_spin(REAL *rho, REAL *rho_oppo, REAL *vxc, REAL *exc);
+void xclsda_spin_libxc (REAL * rho, REAL * rho_oppo, REAL * vxc, REAL * exc);
 void slater_spin(REAL arhox, REAL zeta, REAL *ex, REAL *vx, REAL *vx_oppo);
 void pz_spin(REAL rs, REAL zeta, REAL *ec, REAL *vc, REAL *vc_oppo);
 void pz_polarized(REAL rs, REAL *ec, REAL *vc);
@@ -115,7 +117,9 @@ void pw (REAL rs, int iflag, REAL *ec, REAL *vc) ;
 double mu_pz (double rho);
 double e_pz (double rho);
 void xcgga (REAL *rho, REAL *vxc, REAL *exc, int flag);
+void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode);
 void xcgga_spin (REAL *rho, REAL *rho_oppo, REAL *vxc, REAL *exc, int flag);
+void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mode); 
 
 
 /* exchange correlation functional for PBE */

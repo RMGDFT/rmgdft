@@ -24,7 +24,7 @@ OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
 #LIBS = -L /apps/FFTW/prod/jaguar/lib -L /usr/local/usp/fftw/fftw-2.1.5/lib -lfftw 
-LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -ldfftw
+LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../Common/libxc/lib -lxc -lm
 LDFLAGS = -pgf90libs
 
 

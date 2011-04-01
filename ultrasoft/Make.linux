@@ -28,7 +28,7 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
-LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran
+LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran  -L ../Common/libxc/lib -lxc -lm
 LDFLAGS =
 
 

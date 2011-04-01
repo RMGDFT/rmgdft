@@ -74,27 +74,32 @@ void get_vxc_spin (REAL * rho_f, REAL * rho_oppo,  REAL * rhocore_f, REAL * vxc_
     case LDA_PZ81:       /* Perdew Wang Physical Review B, Volume 45, Number 23, 1992 */
         
 
-        xclsda_spin (nrho_up, nrho_dn, vxc_f, exc);
+        //xclsda_spin (nrho_up, nrho_dn, vxc_f, exc);
+        xclsda_spin_libxc (nrho_up, nrho_dn, vxc_f, exc);
         break;
 
     case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */
 
-        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        //xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        xcgga_spin_libxc (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
 
-        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        //xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        xcgga_spin_libxc (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
 
-        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        //xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        xcgga_spin_libxc (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     case GGA_PBE:              /* GGA Perdew, Burke, Ernzerhof */
 
-        xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        //xcgga_spin (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
+        xcgga_spin_libxc (nrho_up, nrho_dn, vxc_f, exc, ct.xctype);
         break;
 
     default:
