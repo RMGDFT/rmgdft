@@ -47,7 +47,7 @@ FFLAGS = $(ARCH) -O3
 CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
 
 
-rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg: ../Common/libxc/lib/libxc.a Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 
@@ -68,3 +68,7 @@ $(OBJECTS): $(HFILES) $(MFILES)
 
 #write_header needs to be recompiled everytime svnrev.h changes
 Common/write_header.o: Headers/svnrev.h
+
+#Compilation of libxc
+../Common/libxc/lib/libxc.a: 
+	cd ../Common/libxc/; $(MAKE) -f Make.rmg
