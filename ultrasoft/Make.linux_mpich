@@ -30,7 +30,7 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
-LIBS = -lblas -lm -llapack -lfftw -lblacs-mpich -lscalapack-mpich
+LIBS = -lblas -lm -llapack -lfftw -lblacs-mpich -lscalapack-mpich  -L ../lib/libxc/lib -lxc
 LDFLAGS =
 
 

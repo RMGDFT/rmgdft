@@ -1,4 +1,0 @@
-libxc: 
-	./configure --prefix=${PWD} --exec-prefix=${PWD}
-	make
-	make install

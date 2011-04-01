@@ -1,0 +1,8 @@
+LIBXC_FILES := $(wildcard *) $(filter-out lib/libxc.a, $(wildcard */*))
+
+lib/libxc.a: $(LIBXC_FILES)
+	./configure --prefix=${PWD} --exec-prefix=${PWD}
+	make
+	make install
+	touch lib/libxc.a
+
