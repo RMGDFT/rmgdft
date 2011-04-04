@@ -578,11 +578,20 @@ static void read_orbitals ()
     int i, ist, st1;
     int num_lines;
     double crds[3], radius;
+    double bohr;
     int num_tem, movable, frozen;
     char tbuf [MAX_PATH];
 
 
     get_data("orbitals", &num_lines, INIT | LIST, NULL);
+
+
+    
+    bohr = 1.0;
+    if (verify ("length_units", "Angstrom"))
+    {
+        bohr= A_a0;
+    }
 
     /* read and count coordinates for each ion */
     ni = 0;
@@ -604,9 +613,9 @@ static void read_orbitals ()
 
         for(i = 0; i < num_tem; i++)
         {
-            states[ni + i].crds[0] = crds[0];
-            states[ni + i].crds[1] = crds[1];
-            states[ni + i].crds[2] = crds[2];
+            states[ni + i].crds[0] = crds[0] * bohr;
+            states[ni + i].crds[1] = crds[1] * bohr;
+            states[ni + i].crds[2] = crds[2] * bohr;
             states[ni + i].radius = radius;
             states[ni + i].movable = movable;
             states[ni + i].frozen = frozen;
