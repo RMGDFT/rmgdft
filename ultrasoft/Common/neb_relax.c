@@ -67,7 +67,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* Loop NEB relaxations */
     while ( !DONE )
     {
-		printf ("\nNEBrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps/ct.max_rlx_steps, ct.max_rmg_steps);
+		printf ("\nNEBrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps/ct.max_md_steps, ct.max_rmg_steps);
         L_ptr = imgA;
         S_ptr = imgB;
         R_ptr = imgC;
@@ -182,7 +182,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 			ct.ions[count].velocity[2] = 0.0;
 		}
 
-        /* Call fastrelax for max_rlx_steps steps */
+        /* Call fastrelax for max_md_steps steps */
 		MPI_Barrier( MPI_COMM_WORLD );
 		printf("\tNEB call fast relax.\n");
 		fflush(NULL);fsync( fileno(ct.logfile) );

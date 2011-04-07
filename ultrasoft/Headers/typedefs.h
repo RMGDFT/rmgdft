@@ -896,9 +896,6 @@ typedef struct
     /* Maximum number of MD steps */
     int max_md_steps;
 
-    /* Maximum number of fast relax steps */
-    int max_rlx_steps;
-
     /* Maximum number of rmg meta loops (NEB, ARTS, etc.) */
     int max_rmg_steps;
 

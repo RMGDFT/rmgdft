@@ -67,7 +67,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
 
     /* open movie file and output initial frame */
-    if ((ct.rmvmovie) && (ct.max_rlx_steps > 1 && pct.imgpe == 0))
+    if ((ct.rmvmovie) && (ct.max_md_steps > 1 && pct.imgpe == 0))
     {
         my_fopen (mfp, "traj.rmv", "w");
         if (setvbuf (mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
@@ -77,7 +77,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
     /* open XBS movie file */
-    if ((ct.xbsmovie) && (ct.max_rlx_steps > 1 && pct.imgpe == 0))
+    if ((ct.xbsmovie) && (ct.max_md_steps > 1 && pct.imgpe == 0))
     {
 
         strcpy (xbs_filename, "traj");
@@ -90,7 +90,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     /* ---------- begin relax loop --------- */
 
-    DONE = (ct.max_rlx_steps < 1 );
+    DONE = (ct.max_md_steps < 1 );
 	/* save data to file for future restart */
 	if (DONE)
 		write_data_spin (ct.outfile, vh, rho, rho_buff, vxc, states);
@@ -101,7 +101,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		rlx_steps++;
 
         if (pct.imgpe == 0)
-            printf ("\nfastrlx: ---------- [rlx: %d/%d] ----------\n", rlx_steps, ct.max_rlx_steps);
+            printf ("\nfastrlx: ---------- [rlx: %d/%d] ----------\n", rlx_steps, ct.max_md_steps);
 
         /* not done yet ? => move atoms */
 		/* move the ions */
@@ -142,7 +142,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		}
 
 		/* check for max relax steps */
-		MAX_STEPS = (rlx_steps >= ct.max_rlx_steps) || ( ct.md_steps > ct.max_md_steps);
+		MAX_STEPS = (rlx_steps >= ct.max_md_steps) || ( ct.md_steps > ct.max_md_steps);
 
 		/* done if forces converged or reached limit of md steps */
 		DONE = (CONV_FORCE || MAX_STEPS);
@@ -150,7 +150,7 @@ void fastrlx_spin (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 	}
 	/* ---------- end relax loop --------- */
 
-	if (ct.max_rlx_steps > 0 && pct.gridpe == 0)
+	if (ct.max_md_steps > 0 && pct.gridpe == 0)
 	{
 
 		printf ("\n");

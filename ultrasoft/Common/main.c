@@ -200,7 +200,7 @@ void run (void)
     {
 
     case MD_QUENCH:            /* Quench the electrons */
-        ct.max_rlx_steps = 0;
+        ct.max_md_steps = 0;
 	if (pct.spin_flag)
 	{
 		fastrlx_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);

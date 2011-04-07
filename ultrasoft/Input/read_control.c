@@ -244,9 +244,6 @@ NEB Relax";
     /*maximum number of md steps */
     get_data ("max_md_steps", &ct.max_md_steps, INT, "100");
 
-    /*maximum number of fast relax steps */
-    get_data ("max_rlx_steps", &ct.max_rlx_steps, INT, "100");
-
     /* Retrieve number of rmg "restart like" (NEB/exchange/ARTs) steps to perform */
     get_data ("max_rmg_steps", &ct.max_rmg_steps, INT, "1" );
 
