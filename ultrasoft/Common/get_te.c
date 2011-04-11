@@ -20,19 +20,21 @@
  *               STATE *states)
  *   Gets total energy of the system. Stores result in control structure.
  * INPUTS
- *   rho:  total charge density
+ *   rho:  total charge density in spin-pairwised calculation; while in spin 
+ *         polarized calculation, it's the processor's own spin charge density
+ *   rho_oppo: the charge density for the opposite spin      
  *   rhocore: charge density of core electrons, only useful when we 
  *            include non-linear core correction for pseudopotential.
  *   rhoc:    compensating charge density
  *   vh:  Hartree potential
- *   vxc: exchange-correlation potential
+ *   vxc: exchange-correlation potential for the processor's own spin
  *   states: point to orbital structure
  * OUTPUT
  *   total energy is printed out
  * PARENTS
  *   cdfastrlx.c fastrlx.c moldyn.c quench.c
  * CHILDREN
- *   exclda_pz81.c xcgga.c
+ *   get_xc.c
  * SOURCE
  */
 
@@ -45,12 +47,12 @@
 #include "main.h"
 
 
-void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states)
+void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states)
 {
-    int state, kpt, idx, i, j, three = 3;
-    REAL r, esum[3], t1, eigsum, xcstate, xtal_r[3];
+    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (pct.spin_flag + 1);
+    REAL r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     REAL vel;
-    REAL *exc, *nrho;
+    REAL *exc, *nrho, *nrho_oppo;
     ION *iptr1, *iptr2;
     REAL time1, time2;
 
@@ -59,89 +61,109 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
     vel = ct.vel_f;
 
     /* Grab some memory */
-    my_malloc (exc, 2 * FP0_BASIS, REAL);
+    if (pct.spin_flag)
+    {
+    	my_malloc (exc, 3 * FP0_BASIS, REAL);
+    	nrho_oppo = exc + 2 * FP0_BASIS;
+    }
+    else
+    	my_malloc (exc, 2 * FP0_BASIS, REAL);
+    
     nrho = exc + FP0_BASIS;
 
 
     /* Loop over states and get sum of the eigenvalues */
     eigsum = 0.0;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+
+    for (idx = 0; idx < nspin; idx++)
     {
-        t1 = 0.0;
-        for (state = 0; state < ct.num_states; state++)
-        {
+    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    	{
+        	t1 = 0.0;
+        	for (state = 0; state < ct.num_states; state++)
+        	{
 
-            t1 += (states[state + kpt * ct.num_states].occupation *
-                   states[state + kpt * ct.num_states].eig);
+            		t1 += (states[state + kpt * ct.num_states].occupation[idx] *
+                   		states[state + kpt * ct.num_states].eig[idx]);
 
-        }
-        eigsum += t1 * ct.kp[kpt].kweight;
+        	}
+        	eigsum += t1 * ct.kp[kpt].kweight;
+    	}
     }
 
 
     /* Evaluate electrostatic energy correction terms */
     esum[0] = 0.0;
-    for (idx = 0; idx < FP0_BASIS; idx++)
-        esum[0] += (rho[idx] + rhoc[idx]) * vh[idx];
-
-
-    time2 = my_crtc ();
-    for (idx = 0; idx < FP0_BASIS; idx++)
-        nrho[idx] = rhocore[idx] + rho[idx];
-
-
-    /* Evaluate XC energy correction terms */
-    switch (ct.xctype)
+    if (pct.spin_flag)
     {
+	/* Add the compensating charge to total charge to calculation electrostatic energy */    
+    	for (idx = 0; idx < FP0_BASIS; idx++)
+	    	esum[0] += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
 
-    case LDA_PZ81:             /* LDA Perdew Zunger 81 */
-        /* exclda_pz81 (nrho, exc); */
+    }
+    else 
+    {
+    	for (idx = 0; idx < FP0_BASIS; idx++)
+        	esum[0] += (rho[idx] + rhoc[idx]) * vh[idx];
+    }
 
-	/* incoporate both the Perdew Zunger 1981 and Ortiz Ballone 1994, default is PZ 1981 */
-        //xclda (nrho, vxc, exc);
-        xclda_libxc (nrho, vxc, exc); 
-        break;
 
-    case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */
-        //xcgga (nrho, vxc, exc, ct.xctype);
-        xcgga_libxc (nrho, vxc, exc, ct.xctype);
-        break;
+    time2 = my_crtc (); 
 
-    case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
-        //xcgga (nrho, vxc, exc, ct.xctype);
-        xcgga_libxc (nrho, vxc, exc, ct.xctype);
-        break;
+    /* Add the nonlinear core correction charge if there is any */
+    if (pct.spin_flag)
+    {
+    	for (idx = 0; idx < FP0_BASIS; idx++)
+    	{    
+	    	nrho[idx] = rhocore[idx] * 0.5 + rho[idx];
+	    	nrho_oppo[idx] = rhocore[idx] * 0.5 + rho_oppo[idx];
+    	}
+    }
+    else
+    {
+    	for (idx = 0; idx < FP0_BASIS; idx++)
+        	nrho[idx] = rhocore[idx] + rho[idx];
+    }
 
-    case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
-        //xcgga (nrho, vxc, exc, ct.xctype);
-        xcgga_libxc (nrho, vxc, exc, ct.xctype);
-        break;
 
-    case GGA_PBE:              /* GGA Perdew, Burke, Ernzerhof */
-        //xcgga (nrho, vxc, exc, ct.xctype);
-        xcgga_libxc (nrho, vxc, exc, ct.xctype);
-        break;
-
-    default:
-        error_handler ("Unknown exchange-correlation functional");
-
-    }                           /* end switch */
+    /* Evaluate XC energy and potential */
+    get_xc(nrho, nrho_oppo, vxc, exc, ct.xctype);
 
 
     esum[1] = 0.0;
     esum[2] = 0.0;
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    if (pct.spin_flag)
     {
-        esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
-        esum[2] += rho[idx] * vxc[idx];
+	mag = 0.0;    
+    	for (idx = 0; idx < FP0_BASIS; idx++)
+	{
+        	esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
+		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
+        }
     }
+    else
+    {
+    	for (idx = 0; idx < FP0_BASIS; idx++)
+        	esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
+    }
+
+
+    for (idx = 0; idx < FP0_BASIS; idx++)
+        esum[2] += rho[idx] * vxc[idx];
 
     rmg_timings (GET_TE_XC_TIME, (my_crtc () - time2), 0);
 
 
     /*Sum emergies over all processors */
-    global_sums (esum, &three);
+    if (pct.spin_flag)
+    {
+    	global_sums (esum, &two, pct.grid_comm);
+    	global_sums (&esum[2], &one, pct.img_comm);  
+    	global_sums (&mag, &one, pct.grid_comm); 
+    }
+    else
+    	global_sums (esum, &three, pct.grid_comm);
 
 
     /*Electrostatic E */
@@ -153,6 +175,7 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
 
     /*XC potential energy */
     xcstate = vel * esum[2];
+    mag *= vel;
 
 
     time2 = my_crtc ();
@@ -188,23 +211,31 @@ void get_te (REAL * rho, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STA
 
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
-    if (pct.gridpe == 0)
+   
+    
+    /* Print contributions to total energies into output file */
+    printf ("\n\n");
+    progress_tag ();
+    printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
+    progress_tag ();
+    printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
+    progress_tag ();
+    printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
+    progress_tag ();
+    printf ("@@ XC                 = %16.9f Ha\n", ct.XC - xcstate);
+    progress_tag ();
+    printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
+        
+    if (pct.spin_flag)
     {
-        printf ("\n\n");
-
-        progress_tag ();
-        printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
-        progress_tag ();
-        printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
-        progress_tag ();
-        printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
-        progress_tag ();
-        printf ("@@ XC                 = %16.9f Ha\n", ct.XC - xcstate);
-        progress_tag ();
-        printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
-
+	/* Print the total magetization and absolute magnetization into output file */
+	progress_tag ();
+       	printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
+       	progress_tag ();
+       	printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", fabs(mag) );
     }
 
+   
 
     /* Release our memory */
     my_free (exc);

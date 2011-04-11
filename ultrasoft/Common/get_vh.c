@@ -168,7 +168,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += ct.vh_ext[idx];
 
-                vavgcor = real_sum_all (vavgcor);
+                vavgcor = real_sum_all (vavgcor, pct.grid_comm);
                 t1 = (REAL) ct.psi_fnbasis;
                 vavgcor = vavgcor / t1;
 

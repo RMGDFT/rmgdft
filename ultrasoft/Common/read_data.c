@@ -54,7 +54,7 @@ static void read_int (int fhand, int *ip, int count);
 
 /* Reads the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things from a file. */
-void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
+void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
 {
     char newname[MAX_PATH + 200];
     int fhand;
@@ -67,16 +67,27 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     int fgrid_size;
     int gamma;
     int nk, ik;
-    int ns, is;
+    int ns, is, idx, nspin = (pct.spin_flag + 1);
     int na, ia;
     int i;
 
     /* wait until everybody gets here */
-    my_barrier ();
+    /* my_barrier (); */
+    MPI_Barrier(pct.img_comm);	
 
 
     /* Make the new output file name */
-    sprintf (newname, "%s%d", name, pct.gridpe);
+    printf("\nspin flag =%d\n", pct.spin_flag);
+    if (pct.spin_flag)
+    {
+	    if (pct.spinpe == 0)
+		    sprintf(newname, "%s.up%d", name, pct.gridpe);
+	    else          /* if (pct.spinpe == 1)  */  
+		    sprintf(newname, "%s.dw%d", name, pct.gridpe);
+    }
+    else
+    	    sprintf (newname, "%s%d", name, pct.gridpe);
+
 
     my_open (fhand, newname, O_RDWR, S_IREAD | S_IWRITE);
 
@@ -114,15 +125,12 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
         error_handler ("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
-
-    if (pct.gridpe == 0)
-    {
-        printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-        printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-        printf ("read_data: grid_size  = %d\n", grid_size);
-        printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-        printf ("read_data: fgrid_size = %d\n", fgrid_size);
-    }
+    /* print out  */
+    printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    printf ("read_data: grid_size  = %d\n", grid_size);
+    printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    printf ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
 
@@ -137,61 +145,64 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     if (nk != ct.num_kpts && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
         error_handler ("Wrong number of k points");
 
+    printf ("read_data: gamma = %d\n", gamma);
+    printf ("read_data: nk = %d\n", ct.num_kpts); 
 
+    /* read number of states */  
     read_int (fhand, &ns, 1);
     if (ns != ct.num_states)
-        error_handler ("Wrong number of states");
-
-    if (pct.gridpe == 0)
-    {
-        printf ("read_data: gamma = %d\n", gamma);
-        printf ("read_data: nk = %d\n", ct.num_kpts);
-        printf ("read_data: ns = %d\n", ct.num_states);
-    }
-
+    	error_handler ("Wrong number of states");
+    
+    printf ("read_data: ns = %d\n", ns);
 
 
     /* read the hartree potential */
     read_double (fhand, vh, fgrid_size);
-    if (pct.gridpe == 0)
-        printf ("read_data: read 'vh'\n");
+    printf ("read_data: read 'vh'\n");
 
     /* read density */
     read_double (fhand, rho, fgrid_size);
-    if (pct.gridpe == 0)
-        printf ("read_data: read 'rho'\n");
+    if (pct.spin_flag)
+    {
+    	read_double (fhand, rho_oppo, fgrid_size);
+        printf ("read_data: read spin up 'rho'\n");
+        printf ("read_data: read spin down 'rho_oppo'\n");
+    }
+    else
+    	printf ("read_data: read 'rho'\n");
 
     /* read Vxc */
     read_double (fhand, vxc, fgrid_size);
-    if (pct.gridpe == 0)
-        printf ("read_data: read 'vxc'\n");
-
-
-
-
+    printf ("read_data: read 'vxc'\n");
 
 
     /* read state occupations */
     {
         STATE *sp;
         REAL *occ;
-        my_malloc (occ, nk * ns, REAL);
-        read_double (fhand, occ, nk * ns);
+        my_malloc (occ, nk * ns * nspin, REAL); 
+        read_double (fhand, occ, (nk * ns * nspin));
 
-        if (pct.gridpe == 0)
-            printf ("read_data: read 'occupations'\n");
+       	printf ("read_data: read 'occupations'\n"); 
+
 
         if (ct.override_occ != 1 && ct.forceflag != BAND_STRUCTURE)
         {
-            REAL occ_total = 0.0;
-            sp = states;
-            for (ik = 0; ik < nk; ik++)
-                for (is = 0; is < ns; is++)
-                {
+            REAL occ_total = 0.0; 
 
-                    occ_total += (sp->occupation = occ[ik * ns + is]);
-                    sp++;
-                }
+	    /* occupation */
+	    for (idx = 0; idx < nspin; idx++)
+	    {
+	    	sp = states;
+            	for (ik = 0; ik < nk; ik++)
+                	for (is = 0; is < ns; is++)
+                	{
+                    		occ_total += ( sp->occupation[idx] = occ[ik * ns + is + idx * nk * ns] );
+                    		sp++;
+			}
+
+	    }
+ 
 
             /* 
                since we are using floats on the data file the precision
@@ -204,20 +215,26 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
             {
                 REAL iocc_total = (REAL) (int) (occ_total + 0.5);
                 REAL fac = iocc_total / occ_total;
-
-                sp = states;
-                for (ik = 0; ik < nk; ik++)
-                    for (is = 0; is < ns; is++)
-                    {
-                        sp->occupation *= fac;
-                        sp++;
-                    }
+               
+		/* Normalize occupation */ 
+		for (idx = 0; idx < nspin; idx++)
+		{
+                	sp = states;
+                	for (ik = 0; ik < nk; ik++)
+                    		for (is = 0; is < ns; is++)
+                    		{
+                        		sp->occupation[idx] *= fac;
+                        		sp++;
+                    		}
+		}
+		/* end of normailization*/
             }
 
-        }
-        my_free (occ);
+        }             /* end if */
+        
+	my_free (occ);
 
-    }
+    }           /* end of read occupations */
 
 
 
@@ -225,22 +242,25 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     /* read state eigenvalues, not needed really */
     {
 
-
         STATE *sp;
 
-        sp = states;
-        for (ik = 0; ik < nk; ik++)
-            for (is = 0; is < ns; is++)
-            {
+	/* Read eigenvalue in pairwised case, while in polarized case, 
+	 * it's the eigenvalue for proceesor's own spin  */ 
+	for (idx = 0; idx < nspin; idx++)
+	{
+        	sp = states;
+        	for (ik = 0; ik < nk; ik++)
+            		for (is = 0; is < ns; is++)
+            		{
+                		read_double (fhand, &sp->eig[idx], 1);
+                		sp++;
+            		}
+	}
+       	
+	printf ("read_data: read 'eigenvalues'\n");
 
-                read_double (fhand, &sp->eig, 1);
-                sp++;
-            }
+    }      /* end of read eigenvalues */
 
-        if (pct.gridpe == 0)
-            printf ("read_data: read 'eigenvalues'\n");
-
-    }
 
 
     /* read wavefunctions */
@@ -280,8 +300,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
         /* Release memory */
         my_free (work1);
 #endif
-        if (pct.gridpe == 0)
-            printf ("read_data: read 'wfns'\n");
+        printf ("read_data: read 'wfns'\n");
 
     }
 

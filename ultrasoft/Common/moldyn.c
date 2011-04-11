@@ -61,7 +61,7 @@ void rms_disp (REAL *, REAL *);
 int stepcount = 0;
 
 void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-             REAL * rho, REAL * rhoc, REAL * rhocore)
+             REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * rhocore)
 {
 
     REAL target;
@@ -289,7 +289,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             get_qqq ();
 
             /* Do an scf step */
-            scf (states, vxc, vh, vnuc, rho, rhocore, rhoc, &CONVERGENCE);
+            scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, &CONVERGENCE);
             sortpsi (states);
 
         }                       /* end for */
@@ -346,7 +346,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
                     ct.scf_steps);
 #endif
 
-        quench (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+        quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
 
 
@@ -458,7 +458,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         if (ct.checkpoint)
             if ((ct.md_steps != 0) && (ct.md_steps % ct.checkpoint == 0))
             {
-                write_data (ct.outfile, vh, rho, vxc, states);
+                write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
                 if (pct.gridpe == 0)
                     printf ("\n Writing data to output file ...\n");
             }

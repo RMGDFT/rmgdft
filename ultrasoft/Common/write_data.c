@@ -60,7 +60,7 @@ static void write_int (int fh, int *ip, int count);
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
+void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
 {
     char newname[MAX_PATH + 20];
     int amode;
@@ -74,11 +74,12 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     int gamma;
     int nk, ik;
     int ns, is;
-    int ia;
+    int ia, idx, nspin = (pct.spin_flag + 1);
     REAL time0, write_time;
 
     /* Wait until everyone gets here */
-    my_barrier ();
+    /* my_barrier ();  */
+    MPI_Barrier(pct.img_comm);    
 
     time0 = my_crtc ();
 
@@ -107,8 +108,7 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     /*This opens file, creates a directory if needed */
     fhand = open_wave_file (name);
-        if (pct.gridpe == 0)
-            printf ("write_data: Wavefile %s opened...\n", name);
+    printf ("write_data: Wavefile %s opened...\n", name);
 
     /* write lattice information */
     write_double (fhand, ct.a0, 3);
@@ -141,10 +141,11 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     /* write wavefunction info */
     gamma = GAMMA_PT;
     nk = ct.num_kpts;
-    ns = ct.num_states;
     write_int (fhand, &gamma, 1);
-    write_int (fhand, &nk, 1);
-    write_int (fhand, &ns, 1);
+    write_int (fhand, &nk, 1); 
+
+    ns = ct.num_states;
+    write_int (fhand, &ns, 1); 
 
 
     /* write the hartree potential */
@@ -153,38 +154,50 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     /* write the total electronic density */
     write_double (fhand, rho, fgrid_size);
 
+    if (pct.spin_flag)
+    {
+    	/* write the electronic density for the opposite spin */
+   	 write_double (fhand, rho_oppo, fgrid_size); 
+    }
+
     /* write Vxc */
     write_double (fhand, vxc, fgrid_size);
 
 
 
 
-    /* write the state occupations */
+    /* write the state occupations, in spin-polarized calculation, 
+     * it's occupation for the processor's own spin */ 
     {
         STATE *sp;
-
         sp = states;
-        for (ik = 0; ik < nk; ik++)
-            for (is = 0; is < ns; is++)
-            {
-
-                write_double (fhand, &sp->occupation, 1);
-                sp++;
-            }
+	for (idx = 0; idx < nspin; idx++)
+	{
+            for (ik = 0; ik < nk; ik++)
+            	for (is = 0; is < ns; is++)
+            	{
+                	write_double (fhand, &sp->occupation[idx], 1);
+                	sp++;
+            	}
+	}
     }
+    
 
-    /* write the state eigenvalues */
+    /* write the state eigenvalues, while in spin-polarized case, 
+     * it's eigenvalues of processor's own spin */
     {
         STATE *sp;
+	for (idx = 0; idx < nspin; idx++)
+	{
+        	sp = states;
+                for (ik = 0; ik < nk; ik++)
+            		for (is = 0; is < ns; is++)
+            		{
+                		write_double (fhand, &sp->eig[idx], 1);
+                		sp++;
+            		}
+	}
 
-        sp = states;
-        for (ik = 0; ik < nk; ik++)
-            for (is = 0; is < ns; is++)
-            {
-
-                write_double (fhand, &sp->eig, 1);
-                sp++;
-            }
     }
 
 

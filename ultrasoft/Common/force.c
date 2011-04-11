@@ -45,14 +45,14 @@
 /*Set this to 1 to have forces written out part by part*/
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
  * nlforce1.c*/
-#define VERBOSE 0
+#define VERBOSE 1
 
 
 
-void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
+void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
 {
     int ion, st, kpt, idx;
-    REAL *vtot;
+    REAL *vtot, *rho_tot;
     STATE *sp;
     REAL time1, time2, time3;
 #if VERBOSE
@@ -146,7 +146,16 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE *
 
 
     /* Add in the local */
-    lforce (rho, vh);
+    if (pct.spin_flag)
+    {
+    	my_malloc (rho_tot, FP0_BASIS, REAL);
+	for (idx = 0; idx < FP0_BASIS; idx++)
+		rho_tot[idx] = rho[idx] + rho_oppo[idx];
+	lforce(rho_tot, vh);
+	my_free (rho_tot);
+    }
+    else
+    	lforce (rho, vh);
 
 #if VERBOSE
     if (pct.imgpe == 0)

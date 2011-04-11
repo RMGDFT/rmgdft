@@ -156,7 +156,7 @@ typedef struct
 {
 
     /** Number (rank in MPI terminology) of this processor in this image grid */
-    int gridpe, imgpe, thisimg, thisspin, thisgrid;
+    int gridpe, imgpe, thisimg, spinpe;
 
 	/** Number of grids (typically 1) per image to be run simultaneously **/
 	int images, grids;
@@ -285,7 +285,7 @@ typedef struct
     int firstflag;
 
     /** Current estimate of the eigenvalue for this orbital (state). */
-    REAL eig;
+    REAL eig[2];
 
     /** Wavefunction residual error computed by multigrid solver */
     REAL res;
@@ -337,7 +337,7 @@ typedef struct
 
 
     /** Occupation of the orbital */
-    REAL occupation;
+    REAL occupation[2];
     REAL oldeig;
 
     /* The offsets and the sizes of the grid that the orbital
@@ -351,11 +351,6 @@ typedef struct
     /** Index showing which k-point this orbital is associated with */
     int kidx;
 
-    /* eigenvalue of the opposite spin for the corresponding orbital (state)*/
-    REAL eig_oppo;
-
-    /* Hold occupation of the opposite spins orbital*/
-    REAL occupation_oppo;
 
 } STATE;
 
@@ -939,7 +934,7 @@ typedef struct
     int num_states;
 
     /* Number of states for the opposite spin*/
-    int num_states_oppo; 
+    //int num_states_oppo; 
 
     /*Number of states for spin up and down used for initialization*/
     int num_states_up, num_states_down;

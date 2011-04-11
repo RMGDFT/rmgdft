@@ -109,13 +109,13 @@ void init_pe ( int image )
         remains[0] = 0;
         remains[1] = 1;
         MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.spin_comm);
-    	/* set thisspin rank value to local spin rank value */
-    	MPI_Comm_rank (pct.spin_comm, &pct.thisspin);
+    	/* set spinpe rank value to local spin rank value */
+    	MPI_Comm_rank (pct.spin_comm, &pct.spinpe);
 
 	/* for debug usage*/
-	/* MPI_Comm_rank(pct.grid_comm, &pct.thisgrid); */
+	/* MPI_Comm_rank(pct.grid_comm, &pct.gridpe); */
 	
-	/*printf("My spin rank is %d and my image rank is %d\n", pct.thisspin, pct.imgpe);*/
+	/*printf("My spin rank is %d and my image rank is %d\n", pct.spinpe, pct.imgpe);*/
 	
 
     }
@@ -155,6 +155,5 @@ void init_pe ( int image )
 
 
     my_barrier ();
-	//dprintf("Finished init_pe, all MPI groups defined.\n");
 
 }                               /* end init_pe */

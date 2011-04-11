@@ -121,7 +121,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
 
 
     ct.crho = ct.crho * ct.vel_f;
-    ct.crho = real_sum_all (ct.crho);  /* sum over pct.grid_comm  */
+    ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
     
     if (pct.imgpe==0)
@@ -137,7 +137,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
     }
 
     t1 = t1 * ct.vel_f;
-    t1 = real_sum_all (t1);
+    t1 = real_sum_all (t1, pct.grid_comm);
 
 
     /* Release our memory */

@@ -41,7 +41,7 @@
 
 
 
-void global_sums (REAL * vect, int *length)
+void global_sums (REAL * vect, int *length, MPI_Comm comm)
 {
     int sizr, steps, blocks, newsize;
     REAL *rptr, *rptr1;
@@ -57,7 +57,7 @@ void global_sums (REAL * vect, int *length)
     {
         sizr = *length;
         QMD_scopy (sizr, vect, 1, rptr2, 1);
-       	MPI_Allreduce (rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+       	MPI_Allreduce (rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, comm);
 
 		
 #if MD_TIMERS
@@ -76,7 +76,7 @@ void global_sums (REAL * vect, int *length)
     for (steps = 0; steps < blocks; steps++)
     {
         QMD_scopy (newsize, rptr1, 1, rptr, 1);
-        MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, pct.grid_comm);  /* sum over all processors in a cpugrid*/
+        MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, comm);  
 
         rptr1 += newsize;
     }
@@ -84,7 +84,7 @@ void global_sums (REAL * vect, int *length)
     if (sizr)
     {
         QMD_scopy (sizr, rptr1, 1, rptr, 1);
-        MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, comm);
     }
 
     my_free (rptr);
@@ -100,7 +100,7 @@ void global_sums (REAL * vect, int *length)
 
 
 
-void global_sums (REAL * vect, int *length)
+void global_sums (REAL * vect, int *length, MPI_Comm comm)
 {
     return;
 }

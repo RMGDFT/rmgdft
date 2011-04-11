@@ -31,14 +31,14 @@ int open_wave_file (char *filename)
 
     if (pct.spin_flag)
     {   
-	if (pct.thisspin==0)
+	if (pct.spinpe==0)
     		sprintf (newname, "%s.up%d", filename, pct.gridpe);
-	else if(pct.thisspin==1) 
+	else if(pct.spinpe==1) 
     		sprintf (newname, "%s.dw%d", filename, pct.gridpe);
 		
     }
     else
-    sprintf (newname, "%s%d", filename, pct.gridpe);
+    	sprintf (newname, "%s%d", filename, pct.gridpe);
 
     amode = S_IREAD | S_IWRITE;
 
@@ -76,8 +76,7 @@ int open_wave_file (char *filename)
     }                           /*end if (pct.gridpe == 0) */
 
 
-    /*All processors should wait until 0 is done */
-    //my_barrier ();
+    /* All processors should wait until 0 is done */
     MPI_Barrier(pct.img_comm);
 
     /*Other processors can now try to open */

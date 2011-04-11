@@ -74,6 +74,7 @@ void init_IO (int argc, char **argv)
         if (quantity == endptr)
             pct.images = 1;
     }
+
     Dprintf ("RMG will run with %d images", pct.images);
     if ( pct.images > MAX_IMGS )
         error_handler ("Multi-image input file %s asks for more images (%d) than MAX_IMGS in params.h.", argv[1], pct.images);
@@ -88,13 +89,17 @@ void init_IO (int argc, char **argv)
     if (pct.images > 1)
         snprintf (ct.cfile, MAX_PATH, "%s.%02d.rmg", basename, pct.thisimg + 1);
 
+    //error_handler("message a"); 
     /* PE(MPI) initialization, need mpi groups defined before logfile is initialized */
     init_pe ( image );
+
+    //error_handler("message b");  
 
     if (pct.images > 1)
     {
         if (strcmp (extension, "rmg") != 0)
-            error_handler ("Multi-image input file %s does not end with proper \"rmg\" extension.", argv[1]);
+            error_handler 
+		    ("Multi-image input file %s does not end with proper \"rmg\" extension.", argv[1]);
 
         /* logfile name is based on input file and this images group number */
         /* if second command line argument exists, use it as a basename for output */
@@ -114,7 +119,8 @@ void init_IO (int argc, char **argv)
             if (status = stat ( workdir, &buffer ) == 0)
             {
                 if ( !S_ISDIR( buffer.st_mode))
-                    error_handler ("Found %s, that is not a directory as required for multi-instance run!", workdir);
+                    error_handler 
+			    ("Found %s, that is not a directory as required for multi-instance run!", workdir);
             }
             else
             {
@@ -166,7 +172,8 @@ void init_IO (int argc, char **argv)
         {
             strncpy (basename, logname, MAX_PATH);
             if (++lognum > 99)
-                error_handler("You have over 100 logfiles, you need to think of a better job scenario!\n");
+                error_handler
+			("You have over 100 logfiles, you need to think of a better job scenario!\n");
             if ((extension = rindex (basename, '.')) != NULL)
                 *extension = '\0';
             if ((quantity = rindex (basename, '.')) != NULL)
@@ -179,7 +186,7 @@ void init_IO (int argc, char **argv)
         my_fopen (ct.logfile, logname, "w");
     }
 
-    MPI_Comm_size (pct.grid_comm, &status);
+    MPI_Comm_size (pct.img_comm, &status);
     printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));
     printf ("\nRMG running in message passing mode with %d procs.\n", status);
 

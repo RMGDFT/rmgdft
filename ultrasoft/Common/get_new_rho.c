@@ -79,7 +79,7 @@ void get_new_rho (STATE * states, REAL * rho)
         for (istate = 0; istate < ct.num_states; istate++)
         {
 
-            t1 = sp->occupation * ct.kp[kpt].kweight;
+            t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
             for (idx = 0; idx < P0_BASIS; idx++)
             {
@@ -139,7 +139,7 @@ void get_new_rho (STATE * states, REAL * rho)
             /* Loop over states and accumulate charge */
             for (istate = 0; istate < ct.num_states; istate++)
             {
-                t1 = sp->occupation * ct.kp[kpt].kweight;
+                t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
                 for (i = 0; i < ct.max_nl; i++)
                 {
@@ -210,13 +210,17 @@ void get_new_rho (STATE * states, REAL * rho)
     for (idx = 0; idx < FP0_BASIS; idx++)
         ct.tcharge += rho[idx];
 
-    ct.tcharge = real_sum_all (ct.tcharge);
+    /* ct.tcharge = real_sum_all (ct.tcharge); */
+    if (pct.spin_flag)
+    	ct.tcharge = real_sum_all (ct.tcharge, pct.img_comm);  
+    else
+    	ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);  
     ct.tcharge = ct.tcharge * ct.vel_f;
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */
     t1 = ct.nel / ct.tcharge;
-    if (pct.gridpe == 0)
-        printf ("\n get_rho: Normalization constant for new charge is %f", t1);
+    if (pct.imgpe == 0)
+        printf ("\n get_new_rho: Normalization constant for new charge is %f", t1);
     QMD_sscal (n, t1, rho, incx);
 
     /*Update ct.tcharge, do not really recalculate it, just mutltiply it by normalization constant */

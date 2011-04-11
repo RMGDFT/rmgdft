@@ -160,9 +160,9 @@ void lforce (REAL * rho, REAL * vh)
 
         }                       /* end for */
 
-        iptr->force[ct.fpt[0]][0] -= ct.vel_f * real_sum_all (fx);
-        iptr->force[ct.fpt[0]][1] -= ct.vel_f * real_sum_all (fy);
-        iptr->force[ct.fpt[0]][2] -= ct.vel_f * real_sum_all (fz);
+        iptr->force[ct.fpt[0]][0] -= ct.vel_f * real_sum_all (fx, pct.grid_comm);
+        iptr->force[ct.fpt[0]][1] -= ct.vel_f * real_sum_all (fy, pct.grid_comm);
+        iptr->force[ct.fpt[0]][2] -= ct.vel_f * real_sum_all (fz, pct.grid_comm);
 
     }                           /* end for */
 

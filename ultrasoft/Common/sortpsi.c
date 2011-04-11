@@ -76,24 +76,24 @@ void sortpsi (STATE * states)
         sp = &states[state];
         sp1 = &states[state + 1];
 
-        if (sp->eig > sp1->eig)
+        if (sp->eig[0] > sp1->eig[0])
         {
 
-            if (((sp->occupation > 0.1) && (sp1->occupation > 0.1))
-                || ((sp->occupation < 0.1) && (sp1->occupation < 0.1)))
+            if (((sp->occupation[0] > 0.1) && (sp1->occupation[0] > 0.1))
+                || ((sp->occupation[0] < 0.1) && (sp1->occupation[0] < 0.1)))
             {
                 gather_psi (tmp_psi1R, tmp_psi1I, sp, 0);
                 gather_psi (tmp_psi2R, tmp_psi2I, sp1, 0);
                 scatter_psi (tmp_psi1R, tmp_psi1I, sp1, 0);
                 scatter_psi (tmp_psi2R, tmp_psi2I, sp, 0);
 
-                t1 = sp->eig;
-                sp->eig = sp1->eig;
-                sp1->eig = t1;
+                t1 = sp->eig[0];
+                sp->eig[0] = sp1->eig[0];
+                sp1->eig[0] = t1;
 
-                t1 = sp->occupation;
-                sp->occupation = sp1->occupation;
-                sp1->occupation = t1;
+                t1 = sp->occupation[0];
+                sp->occupation[0] = sp1->occupation[0];
+                sp1->occupation[0] = t1;
 
                 for (idx1 = 0; idx1 < ct.num_ions; idx1++)
                 {

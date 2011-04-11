@@ -87,7 +87,7 @@ void write_zstates (STATE * states)
         /* Now sum over all processors */
 
         iz = NZ_GRID;
-        global_sums (zvec, &iz);
+        global_sums (zvec, &iz, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -102,7 +102,7 @@ void write_zstates (STATE * states)
             }
             fprintf
                 (avg, "\n\n aaa%daaa Planar average of state %d with energy %7.2f eV\n",
-                 istate, istate, sp->eig * Ha_eV);
+                 istate, istate, sp->eig[0] * Ha_eV);
             fflush (NULL);
         }
         fclose (avg);

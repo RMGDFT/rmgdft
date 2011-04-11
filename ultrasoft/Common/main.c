@@ -59,8 +59,11 @@ STATE *states;
 
 
 
-/* Electronic Charge density */
-REAL rho[FP0_BASIS], rho_buff[FP0_BASIS];   /* buff used to hold opposite spin density*/
+/* Electronic charge density or charge density of own spin in polarized case */
+REAL rho[FP0_BASIS];
+
+/*  Electronic charge density of pposite spin density*/
+REAL *rho_oppo;  
 
 
 /* Core Charge density */
@@ -128,7 +131,7 @@ int main (int argc, char **argv)
 
 	initialize (argc, argv);
 
-    run ();
+        run ();
 
 	report ();
 
@@ -138,20 +141,28 @@ int main (int argc, char **argv)
 }
 
 
-void initialize(int argc, char **argv) {
+void initialize(int argc, char **argv) 
+{
 
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
     
+
+
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/
     init_IO (argc, argv);
 
+
+
+    /* for spin polarized calculation, allocate memory for density of the opposite spin */
+    if(pct.spin_flag)
+    	    my_malloc (rho_oppo, FP0_BASIS, REAL);
+
+
     /* initialize states */
-    if (pct.spin_flag)
-	    states=init_states_spin ();
-    else
-    states = init_states ();
+    states = init_states (); 
+
 
     my_barrier ();
 
@@ -159,34 +170,33 @@ void initialize(int argc, char **argv) {
     rmg_timings ( PREINIT_TIME, my_crtc () - ct.time0, 0);
 
     /* Perform any necessary initializations */
+    init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
+
+
+
+   /* Need if statement here, otherwise job output file 
+    * will also show information of control file ? */
+   if (pct.imgpe == 0)
+   {
     
-    if (pct.spin_flag)
-    	init_spin (vh, rho, rho_buff, rhocore, rhoc, states, vnuc, vxc);
-    else 
-    init (vh, rho, rhocore, rhoc, states, vnuc, vxc);
+    /* Write header to stdout */
+    write_header (); 
+
+   }
 
 
-  
+    /* Write state occupations to stdout */
+    write_occ (states); 
 
-    if (pct.imgpe == 0 )
-    {
-
-        /* Write header to stdout */
-        write_header ();
-
-
-        /* Write state occupations to stdout */
-        write_occ (states);
-
-    }
-
-
+    
     /* Flush the results immediately */
     fflush (NULL);
 
 
+
     /* Wait until everybody gets here */
-    MPI_Barrier(MPI_COMM_WORLD);
+    /* MPI_Barrier(MPI_COMM_WORLD); */
+    MPI_Barrier(pct.img_comm);
 
 }
 
@@ -201,32 +211,22 @@ void run (void)
 
     case MD_QUENCH:            /* Quench the electrons */
         ct.max_md_steps = 0;
-	if (pct.spin_flag)
-	{
-		fastrlx_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);
-	}
-	else
-        fastrlx (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+        fastrlx (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
-	if (pct.spin_flag)
-	{
-		fastrlx_spin (states, vxc, vh, vnuc, rho, rho_buff, rhocore, rhoc);
-	}
-	else
-        fastrlx (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+        fastrlx (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case NEB_RELAX:           /* nudged elastic band relax */
-        neb_relax (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+        neb_relax (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case MD_CVE:               /* molecular dynamics */
     case MD_CVT:
     case MD_CPT:
-        quench (states, vxc, vh, vnuc, rho, rhocore, rhoc);
-        moldyn (states, vxc, vh, vnuc, rho, rhoc, rhocore);
+        quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        moldyn (states, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
         break;
 
     case BAND_STRUCTURE:
@@ -278,11 +278,14 @@ void report ()
 
     }
 
+
+    /* Release the memory for density of opposite spin */
+    if (pct.spin_flag)
+    	my_free (rho_oppo);
+
     /* Write timing information */
-    if (pct.imgpe == 0)
-    {
-        write_timings ();
-    }
+    write_timings ();
+   
 }                               /* end report */
 
 

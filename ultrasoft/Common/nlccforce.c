@@ -229,7 +229,12 @@ void nlccforce (REAL * rho, REAL * vxc)
 
 
             idx = 12;
-            global_sums (locsum, &idx);
+            global_sums (locsum, &idx, pct.img_comm);
+	    if (pct.spin_flag)
+	    	for (ishift = 0; ishift < 12; ishift++)
+			locsum[ishift] *= 0.5;         
+	        /* factor 0.5 is because when calculating exchange correlation
+		half of nonlinear core corection charge is added to spin up and down density */
 
 
             sumxyc = ZERO;

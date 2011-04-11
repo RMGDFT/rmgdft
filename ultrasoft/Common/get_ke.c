@@ -73,7 +73,7 @@ REAL get_ke (STATE * sp, int tid)
     app6_del2 (tmp_psi, (P0_GRID *) work2);
 
     KE = -0.5 * ct.vel * QMD_sdot (pbasis, tmp_psi, 1, work2, 1);
-    KE = real_sum_all (KE);
+    KE = real_sum_all (KE, pct.grid_comm);
 
     /* Release our memory */
     my_free (tmp_psi);
@@ -132,7 +132,7 @@ REAL get_ke (STATE * sp, int tid)
 
     KE = -0.5 * ct.vel * QMD_sdot (pbasis, tmp_psiR, 1, work1, 1);
     KE += -0.5 * ct.vel * QMD_sdot (pbasis, tmp_psiI, 1, work2, 1);
-    KE = real_sum_all (KE);
+    KE = real_sum_all (KE, pct.grid_comm);
 
     /* Release our memory */
     my_free (tmp_psiR);

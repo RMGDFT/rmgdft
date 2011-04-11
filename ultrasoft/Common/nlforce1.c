@@ -10,7 +10,7 @@
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
-#define VERBOSE 0
+#define VERBOSE 1
 
 void nlforce1 (REAL * veff)
 {
@@ -118,18 +118,18 @@ void nlforce1 (REAL * veff)
 
 
 
-    global_sums (newsintR_x, &size1);
-    global_sums (newsintR_y, &size1);
-    global_sums (newsintR_z, &size1);
+    global_sums (newsintR_x, &size1, pct.grid_comm);
+    global_sums (newsintR_y, &size1, pct.grid_comm);
+    global_sums (newsintR_z, &size1, pct.grid_comm);
 
 #if !GAMMA_PT
-    global_sums (newsintI_x, &size1);
-    global_sums (newsintI_y, &size1);
-    global_sums (newsintI_z, &size1);
+    global_sums (newsintI_x, &size1, pct.grid_comm);
+    global_sums (newsintI_y, &size1, pct.grid_comm);
+    global_sums (newsintI_z, &size1, pct.grid_comm);
 #endif
 
     size1 = 3 * num_ions;
-    global_sums (qforce, &size1);
+    global_sums (qforce, &size1, pct.img_comm);
 
 #if VERBOSE
     sum1x = 0.0;

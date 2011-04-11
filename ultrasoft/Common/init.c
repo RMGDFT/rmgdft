@@ -51,7 +51,7 @@ static void init_alloc_nonloc_mem (void);
 
 
 
-void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
+void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
            STATE * states, REAL * vnuc, REAL * vxc)
 {
 
@@ -59,9 +59,9 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     int species, i;
     SPECIES *sp;
     int flag;
-    REAL *rptr = NULL, *vtot, t1, t2, scale;
+    REAL *rptr = NULL, *vtot, t1, t2, scale, *rho_tot;
     ION *iptr, *iptr0;
-    REAL time1, time2, v1, v2, v3;
+    REAL time1, time2, v1, v2, v3, fac;
     STATE *st;
 
 #ifdef SMP
@@ -257,7 +257,7 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     Dprintf ("If not an initial run read data from files");
     if (ct.runflag == 1)
     {
-        read_data (ct.infile, vh, rho, vxc, states);
+        read_data (ct.infile, vh, rho, rho_oppo, vxc, states);
     }
     else if ((ct.runflag == 0) || (ct.runflag == 2))    /* Initial run */
     {
@@ -384,9 +384,33 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     Dprintf ("Set the initial density to be equal to the compensating charges");
     if (!ct.runflag)
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            rho[idx] = rhoc[idx];
+    {
+	if (pct.spin_flag)
+        {   
+	       fac = (2.0 - pct.init_equal_density_flag) / (3.0 - pct.init_equal_density_flag);
+       	       for (idx = 0; idx < FP0_BASIS; idx++)
+	       {
 
+                    if (pct.spinpe == 0)
+   		    {				    
+		    	rho[idx] = rhoc[idx] * fac;
+		    	rho_oppo[idx] = rhoc[idx] -  rho[idx];
+		    }
+		    else         /* if pct.spinpe = 1  */
+		    {
+		    	rho_oppo[idx] = rhoc[idx] * fac;
+		    	rho[idx] = rhoc[idx] - rho_oppo[idx];
+		     }
+	       }
+
+	}
+
+	else
+	{
+  	    for (idx = 0; idx < FP0_BASIS; idx++)
+            	rho[idx] = rhoc[idx];
+	}
+    }
 
 
 #ifdef SMP
@@ -404,12 +428,26 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
+
+
     Dprintf ("Condition of run flag is %d", ct.runflag);
     if (ct.runflag != 1)
     {
-        get_vxc (rho, rhocore, vxc);
-        Dprintf ("get vxc completed");
-        get_vh (rho, rhoc, vh, 30, ct.poi_parm.levels);
+       	get_vxc (rho, rho_oppo, rhocore, vxc);
+       	Dprintf ("get vxc completed");
+
+	if (pct.spin_flag)
+	{
+    		my_malloc (rho_tot,  FP0_BASIS, REAL);
+  	    	for (idx = 0; idx < FP0_BASIS; idx++)
+            		rho_tot[idx] = rho[idx] + rho_oppo[idx];
+
+        	get_vh (rho_tot, rhoc, vh, 30, ct.poi_parm.levels);
+    		my_free (rho_tot);
+	}
+	else
+        	get_vh (rho, rhoc, vh, 30, ct.poi_parm.levels);
+
     }
 
     Dprintf ("If diagonalization is requested do a subspace diagonalization");

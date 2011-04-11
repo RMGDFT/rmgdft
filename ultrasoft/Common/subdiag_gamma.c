@@ -220,7 +220,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop);
+        global_sums (global_matrix, &stop, pct.grid_comm);
 
 
         time3 = my_crtc ();
@@ -259,7 +259,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop);
+        global_sums (global_matrix, &stop, pct.grid_comm);
 
         time3 = my_crtc ();
         rmg_timings (DIAG_GLOB_SUMS, time3 - time2, 0);
@@ -296,7 +296,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop);
+        global_sums (global_matrix, &stop, pct.grid_comm);
 
         time3 = my_crtc ();
         rmg_timings (DIAG_GLOB_SUMS, time3 - time2, 0);
@@ -508,7 +508,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
              * as the correct eigenvalues*/
             if (ct.diag == 1)
                 for (st1 = 0; st1 < ct.num_states; st1++)
-                    states[st1].eig = eigs[st1];
+                    states[st1].eig[0] = eigs[st1];
 
 
             my_free (ifail);
@@ -551,7 +551,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*Finally, sum global_matrix over all PEs */
     time3 = my_crtc ();
 
-    global_sums (global_matrix, &stop);
+    global_sums (global_matrix, &stop, pct.grid_comm);
 
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3, 0);
 
@@ -568,7 +568,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         /*Assign eigenvalues */
         for (st1 = 0; st1 < ct.num_states; st1++)
-            states[st1].eig = eigs[st1];
+            states[st1].eig[0] = eigs[st1];
 
         rmg_timings (DIAG_BCAST_EIGS, (my_crtc () - time2), 0);
     }
@@ -1141,7 +1141,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
 
 
     /*Sum Aij over all PEs */
-    global_sums (glob_matrix, &stop);
+    global_sums (glob_matrix, &stop, pct.grid_comm);
 
     if (!pct.gridpe)
         print_matrix2 (glob_matrix, global_size);

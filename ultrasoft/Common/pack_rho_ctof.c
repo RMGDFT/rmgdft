@@ -28,7 +28,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
     sum_rhof = 0.0;
     for (i = 0; i < pbasis; i++)
         sum_rho += rho[i];
-    sum_rho = real_sum_all (sum_rho);
+    sum_rho = real_sum_all (sum_rho, pct.grid_comm);
     sum_rho *= ct.vel;
 
     for (i = 0; i < FG_NX; i++)
@@ -186,7 +186,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
 
     for (i = 0; i < num; i++)
         sum_rhof += rho_f[i];
-    sum_rhof = real_sum_all (sum_rhof);
+    sum_rhof = real_sum_all (sum_rhof, pct.grid_comm);
     sum_rhof *= ct.vel_f;
     coef = sum_rho / sum_rhof;
     for (i = 0; i < num; i++)

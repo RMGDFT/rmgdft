@@ -88,7 +88,7 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
             states[st1].istate = st1;
             states[st1].firstflag = 0;
             states[st1].vel = ct.vel;
-            states[st1].eig = 0.00;
+            states[st1].eig[0] = 0.00;
             states[st1].res = 0.00;
         }
 
@@ -111,11 +111,8 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
                 sortpsi (ct.kp[0].kstate);
 
             /* Output the energies */
-            if (pct.gridpe == 0)
-            {
-                output_eigenvalues (states, ik, ct.scf_steps);
-                printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
-            }
+            output_eigenvalues (states, ik, ct.scf_steps);
+            printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
             wvfn_residual (states);
 
@@ -167,7 +164,7 @@ static void write_bs_eigenvalues (char *fn, STATE * states, int ik)
              ik, ct.kp[ik].kpt[0], ct.kp[ik].kpt[1], ct.kp[ik].kpt[2]);
 
     for (is = 0; is < ct.num_states; is++)
-        fprintf (bs_f, "  %8.4f", states[is].eig * Ha_eV);
+        fprintf (bs_f, "  %8.4f", states[is].eig[0] * Ha_eV);
 
     fprintf (bs_f, "\n");
 

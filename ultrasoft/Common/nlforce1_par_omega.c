@@ -10,7 +10,7 @@
 
 void nlforce1_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
 {
-    int idx, idx1, size, n, m;
+    int idx, idx1, size, n, m, three = 3;
     REAL forces[3];
     REAL *omega_x, *omega_y, *omega_z, *qqq;
 
@@ -47,6 +47,9 @@ void nlforce1_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
             ++idx;
         }
     }
+
+    if (pct.spin_flag)
+	    global_sums (forces, &three, pct.spin_comm);
 
     iptr->force[ct.fpt[0]][0] -= forces[0];
     iptr->force[ct.fpt[0]][1] -= forces[1];

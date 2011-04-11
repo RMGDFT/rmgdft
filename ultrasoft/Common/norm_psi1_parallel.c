@@ -76,7 +76,7 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
 
 
     /*Sum sumpsi and sumbeta */
-    sum = real_sum_all (ct.vel * sumpsi + sumbetaR);
+    sum = real_sum_all ( (ct.vel * sumpsi + sumbetaR), pct.grid_comm );
 
 
     sum = 1.0 / sum;

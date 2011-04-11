@@ -54,9 +54,9 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
     const int maxit = 50;
     const REAL charge_tol = 1.0e-10;
 
-    int iter, st, st1, kpt;
+    int iter, st, st1, kpt, idx, nks, nspin = (pct.spin_flag + 1);
     STATE *sp;
-    REAL mu, dmu, mu1, mu2, f, fmid;
+    REAL mu, dmu, mu1, mu2, f, fmid, eig;
     REAL (*func) () = NULL;
     REAL *occ;
 
@@ -90,8 +90,10 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
         error_handler ("unknown filling procedure");
 
     }                           /* end switch */
+    
+    nks = ct.num_kpts * ct.num_states;
+    my_malloc (occ, nspin * nks, REAL);
 
-    my_malloc (occ, ct.num_kpts * ct.num_states, REAL);
 
     /* find the root by bisection: this algorithm was adapted
        from numerical recipes, 2nd edition */
@@ -101,21 +103,25 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
     /* debug: doesn't handle the case of all energies being equal */
 
     mu1 = 1.0e30;
-    mu2 = -mu1;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    mu2 = -mu1; 
+
+    for(idx = 0; idx < nspin; idx++)
     {
-        for (st = 0; st < ct.num_states; st++)
-        {
-            sp = &ct.kp[kpt].kstate[st];
+    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    	{
+        	for (st = 0; st < ct.num_states; st++)
+    		{
+            		/* sp = &ct.kp[kpt].kstate[st]; */
+	    		eig = ct.kp[kpt].kstate[st].eig[idx]; 
+            		mu1 = min (eig, mu1);
+            		mu2 = max (eig, mu2); 
+		}
+    	}                           
+    } 
 
-            mu1 = (sp->eig < mu1) ? sp->eig : mu1;
-            mu2 = (sp->eig > mu2) ? sp->eig : mu2;
-
-        }
-    }                           /* st and kpt */
 
     fmid = func (mu2, occ, states, width, nel, num_st);
-    f = func (mu1, occ, states, width, nel, num_st);
+    f = func (mu1, occ, states, width, nel, num_st); 
 
     if (f * fmid >= 0.0)
         error_handler ("root must be bracketed");
@@ -154,33 +160,36 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
 
     if (fabs (fmid) > charge_tol)
     {
-        if (pct.gridpe == 0)
-            printf ("\nfill: \\sum f - n_el= %e", fmid);
+        printf ("\nfill: \\sum f - n_el= %e", fmid);
         error_handler ("did not converge");
     }                           /* end if */
 
     /* mix occupations */
 
-    fmid = 0.0;
-    st = -1;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    fmid = 0.0; 
+	
+    for (idx = 0; idx < nspin; idx++)
     {
-        for (st1 = 0; st1 < ct.num_states; st1++)
-        {
-            st += 1;
-            sp = &ct.kp[kpt].kstate[st1];
+    	st = -1;
+    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+   	{
+        	for (st1 = 0; st1 < ct.num_states; st1++)
+        	{
+            		st += 1;
+            		sp = &ct.kp[kpt].kstate[st1];
+	    
+           	 	sp->occupation[idx] = mix * occ[st + idx * nks] + (1.0 - mix) * sp->occupation[idx];
+            		fmid += sp->occupation[idx] * ct.kp[kpt].kweight;
+        	}
+    	}                           /* st and kpt */
+    }
 
-            sp->occupation = mix * occ[st] + (1.0 - mix) * sp->occupation;
-            fmid += sp->occupation * ct.kp[kpt].kweight;
 
-        }
-    }                           /* st and kpt */
     fmid -= nel;
 
     if (fabs (fmid) > charge_tol)
     {
-        if (pct.gridpe == 0)
-            printf ("\nfill: \\sum f - n_el= %e", fmid);
+        printf ("\nfill: \\sum f - n_el= %e", fmid);
         error_handler ("error in mixing occupations");
     }                           /* end if */
 
@@ -188,127 +197,147 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
 
     return (mu);
 
-}                               /* end fill */
+}                               /* end fill */ 
+
+
 
 static REAL fd (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
-    int st, kpt, st1;
+    int st, kpt, st1, idx, nks, nspin = (pct.spin_flag + 1);
     STATE *sp;
-    REAL t1, t2, sumf;
+    REAL t1, t2, sumf, eig, fac = (2.0 - pct.spin_flag);
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
 
-    sumf = 0.0;
-    st = -1;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    nks = ct.num_kpts * ct.num_states;
+    
+    sumf = 0.0; 
+    
+    for (idx = 0; idx < nspin; idx++)
     {
-        for (st1 = 0; st1 < ct.num_states; st1++)
-        {
-            st += 1;
-            sp = &ct.kp[kpt].kstate[st1];
+    	st = -1;
+    	for (kpt = 0; kpt < ct.num_kpts ; kpt++)
+    	{
+		for (st1 = 0; st1 < ct.num_states; st1++)
+    		{
+			st += 1;
+	    		eig = ct.kp[kpt].kstate[st1].eig[idx]; 
+        		t1 = (eig - mu) / width;
+        		if (t1 > 0.0)
+        		{
 
-            t1 = (sp->eig - mu) / width;
+        			t2 = exp (-t1);
+                		occ[st + idx * nks] = fac * t2 / (1.0 + t2);
+            
+       		 	}
+        		else
+        		{
+                		t2 = exp (t1);
+               		 	occ[st + idx * nks] = fac / (1.0 + t2);
+        		}                 
+       	        	sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
+        	}
+    	}                           /* st1 and kpt */
 
-            if (t1 > 0.0)
-            {
+    }    
 
-                t2 = exp (-t1);
-                occ[st] = 2.0 * t2 / (1.0 + t2);
-            }
-            else
-            {
-
-                t2 = exp (t1);
-                occ[st] = 2.0 / (1.0 + t2);
-
-            }                   /* end if */
-
-            sumf += occ[st] * ct.kp[kpt].kweight;
-
-        }
-    }                           /* st1 and kpt */
     return (sumf - nel);
 
 }                               /* fd */
 
+
 static REAL gs (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
-    int st, kpt, st1;
+    int st, kpt, st1, nks, idx, nspin = (pct.spin_flag + 1);
     STATE *sp;
-    REAL t1, sumf;
+    REAL t1, sumf, eig, fac;
+    
+    fac = (2.0 - pct.spin_flag) * 0.5;
 
     /* Gaussian occupations:
        f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
+    
+    nks = ct.num_kpts * ct.num_states;
 
-    sumf = 0.0;
-    st = -1;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    sumf = 0.0; 
+ 
+    for (idx = 0; idx < nspin; idx++)
     {
-        for (st1 = 0; st1 < ct.num_states; st1++)
-        {
-            st += 1;
-            sp = &ct.kp[kpt].kstate[st1];
+    	st = -1; 
+    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    	{
+        	for (st1 = 0; st1 < ct.num_states; st1++)
+        	{
+            	st += 1;
+            	eig = ct.kp[kpt].kstate[st1].eig[idx];
 
-            t1 = (sp->eig - mu) / (2.0 * width);
-            if (t1 > 0.0)
-            {
-                occ[st] = exp (-t1 * (1.0 + 0.5 * t1));
-            }
-            else
-            {
-                t1 = -t1;
-                occ[st] = 2.0 - exp (-t1 * (1.0 + 0.5 * t1));
+            	t1 = (eig - mu) / (2.0 * width);
+            	if (t1 > 0.0)
+            	{
+                	occ[st + idx * nks] = fac * exp (-t1 * (1.0 + 0.5 * t1));
+            	}
+            	else
+            	{
+                	t1 = -t1;
+                	occ[st + idx * nks] = fac * ( 2.0 - exp (-t1 * (1.0 + 0.5 * t1)) );
 
-            }                   /* end if */
-
-            sumf += occ[st] * ct.kp[kpt].kweight;
-
-        }
-    }                           /* st1 and kpt */
+            	}                   /* end if */
+            	sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
+		}
+    	}
+    }	
 
     return (sumf - nel);
 
 }                               /* gs */
 
+
 static REAL ef (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
-    int st, kpt, st1;
+    int st, kpt, st1, nks, idx, nspin = (pct.spin_flag + 1);
     STATE *sp;
-    REAL t1, t2, sumf;
+    REAL t1, t2, sumf, eig, fac;
+
+    fac = (2.0 - pct.spin_flag) * 0.5;
 
     t2 = 4.0 / sqrt (PI);
+    nks = ct.num_kpts * ct.num_states; 
 
     /* error-function occupations: f(x) = erfc(x/(aT))
        where a = 4/Sqrt[Pi] */
 
-    sumf = 0.0;
-    st = -1;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    sumf = 0.0; 
+
+    for (idx = 0; idx < nspin; idx++)
     {
-        for (st1 = 0; st1 < ct.num_states; st1++)
-        {
-            st += 1;
-            sp = &ct.kp[kpt].kstate[st1];
+    	st = -1;
+    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    	{
+        	for (st1 = 0; st1 < ct.num_states; st1++)
+        	{
+            		st += 1;
+            		eig = ct.kp[kpt].kstate[st1].eig[idx];
 
-            t1 = (sp->eig - mu) / (t2 * width);
+            		t1 = (eig - mu) / (t2 * width);
 
-            /* debug: this conditional mayn't be necessary */
+            		/* debug: this conditional mayn't be necessary */
 
-            if (t1 > 0.0)
-            {
-                occ[st] = erfc (t1);
-            }
-            else
-            {
-                t1 = -t1;       /* |t1| */
-                occ[st] = 1.0 + erf (t1);
-            }                   /* end if */
+            		if (t1 > 0.0)
+            		{
+                		occ[st + idx * nks] = fac * erfc (t1);
+            		}
+            		else
+            		{
+                		t1 = -t1;       
+                		occ[st + idx * nks] = fac * ( 1.0 + erf (t1) );
+            		}                   /* end if */
 
-            sumf += occ[st] * ct.kp[kpt].kweight;
+           	 	sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
+		}
+    	}
+    }	    
 
-        }
-    }                           /* st1 and kpt */
     return (sumf - nel);
 
 }                               /* ef */

@@ -54,7 +54,7 @@ void movie (FILE *);
 
 
 void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-              REAL * rho, REAL * rhocore, REAL * rhoc)
+              REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
 
     int iion;
@@ -67,7 +67,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
 
     /* open movie file and output initial frame */
-    if ((ct.rmvmovie) && (ct.max_md_steps > 1 && pct.gridpe == 0))
+    if ((ct.rmvmovie) && (ct.max_md_steps > 1 && pct.imgpe == 0))
     {
         my_fopen (mfp, "traj.rmv", "w");
         if (setvbuf (mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
@@ -77,7 +77,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
     /* open XBS movie file */
-    if ((ct.xbsmovie) && (ct.max_md_steps > 1 && pct.gridpe == 0))
+    if ((ct.xbsmovie) && (ct.max_md_steps > 1 && pct.imgpe == 0))
     {
 
         strcpy (xbs_filename, "traj");
@@ -85,8 +85,10 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
 
+
 	/* quench the electrons and calculate forces */
-	quench (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+    quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+    
 
     /* ---------- begin relax loop --------- */
 
@@ -97,7 +99,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 		rlx_steps++;
 
-        if (pct.gridpe == 0)
+        if (pct.imgpe == 0)
             printf ("\nfastrlx: ---------- [rlx: %d/%d] ----------\n", rlx_steps, ct.max_md_steps);
 
         /* not done yet ? => move atoms */
@@ -116,13 +118,13 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
 		/* quench the electrons and calculate forces */
-		quench (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+		quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
 
 		/* save data to file for future restart */
 		if (ct.checkpoint)
 			if ( ct.md_steps % ct.checkpoint == 0 )
-				write_data (ct.outfile, vh, rho, vxc, states);
+				write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
 
 
 		/* check force convergence */
@@ -163,7 +165,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
 	/*Write out final data */
-	write_data (ct.outfile, vh, rho, vxc, states);
+	write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
 
 
 }                               /* end fastrlx */

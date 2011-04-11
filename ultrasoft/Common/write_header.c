@@ -233,12 +233,12 @@ void write_header (void)
     {
     	printf ("    This is a spin polarized calculation \n");
     	printf ("    Number of spin up states   = %d\n", ct.num_states);
-    	printf ("    Number of spin down states   = %d\n", ct.num_states_oppo);
+    	printf ("    Number of spin down states   = %d\n", ct.num_states);
     }
     else
     {
     	printf ("    This is NOT a spin polarized calculation \n");
-    printf ("    Number of states   = %d\n", ct.num_states);
+    	printf ("    Number of states   = %d\n", ct.num_states);
     }	
     printf ("    Number of species  = %d\n", ct.num_species);
     printf ("    Number of ions     = %d\n", ct.num_ions);

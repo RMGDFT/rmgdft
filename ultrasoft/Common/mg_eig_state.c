@@ -203,18 +203,26 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             tarr[0] = t2;
             tarr[1] = eig;
             idx = 2;
-            global_sums (tarr, &idx);
+            global_sums (tarr, &idx, pct.grid_comm);
 
 
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
-            if ((ct.diag == 1)  && (ct.scf_steps > 0))
-                eig = sp->eig;
+            if (ct.diag == 1)
+	    {
+		if (ct.scf_steps == 0)
+		{
+                	eig = tarr[1] / (TWO * tarr[0]);
+                	sp->eig[0] = eig;
+		}
+		else
+                	eig = sp->eig[0];
+	    }
             else
             {
                 eig = tarr[1] / (TWO * tarr[0]);
-                sp->eig = eig;
+                sp->eig[0] = eig;
             }
 
         }
@@ -310,7 +318,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             if (cycles == 0)
             {
 
-                t2 = real_sum_all (t2);
+                t2 = real_sum_all (t2, pct.grid_comm);
                 t1 = (REAL) (ct.psi_nbasis);
                 sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
 
@@ -544,12 +552,12 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             }
 
 
-            eigR = real_sum_all (eigR);
-            t2R = real_sum_all (t2R);
-            eigI = real_sum_all (eigI);
-            t2I = real_sum_all (t2I);
-            sp->eig = (eigR + eigI) / (TWO * (t2R + t2I));
-            eig = sp->eig;
+            eigR = real_sum_all (eigR, pct.grid_comm);
+            t2R = real_sum_all (t2R, pct.grid_comm);
+            eigI = real_sum_all (eigI, pct.grid_comm);
+            t2I = real_sum_all (t2I, pct.grid_comm);
+            sp->eig[0] = (eigR + eigI) / (TWO * (t2R + t2I));
+            eig = sp->eig[0];
 
         }
 
@@ -573,7 +581,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
             t1 = snrm2 (&pbasis, resR, &ione);
             t1 = t1 * t1;
-            t1 = real_sum_all (t1);
+            t1 = real_sum_all (t1, pct.grid_comm);
             t2 = (REAL) (ct.psi_nbasis);
             sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t1 / t2) * 0.25;
 

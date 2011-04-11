@@ -40,7 +40,7 @@
 
 void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_x, int length_y, int length_z)
 {
-    REAL t1, min, min2;
+    REAL t1, min, min2, nspin = (pct.spin_flag + 1.0);
     int step, idx, inc = 1;
     static REAL **rhohist=NULL, **residhist=NULL;
 
@@ -80,15 +80,27 @@ void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_
             min = rho[idx];
         
 	/*Here we check charge density with rhocore added*/
-	if ((rho[idx] + rhocore[idx]) < min2)
-            min2 = rho[idx] + rhocore[idx];
+	if ((rho[idx] + rhocore[idx] / nspin) < min2)
+         	min2 = rho[idx] + rhocore[idx] / nspin;
     }
 
-    /*Find absolute minimum from all PEs */
-    min = real_min_all (min);
-    min2 = real_min_all (min2);
 
-    if ((pct.gridpe == 0) && (min < ZERO)){
+
+
+    /*Find absolute minimum from all PEs */
+    if (pct.spin_flag)
+    {
+    	min = real_min_all (min, pct.img_comm);
+    	min2 = real_min_all (min2, pct.img_comm);
+    }
+    else
+    {
+    	min = real_min_all (min, pct.grid_comm);
+    	min2 = real_min_all (min2, pct.grid_comm);
+    }
+
+    if (min < ZERO)
+    {
         printf ("\n\n Charge density is NEGATIVE after interpolation, minimum is %e", min);
         printf ("\n Minimum charge density with core charge added is %e", min2);
     }

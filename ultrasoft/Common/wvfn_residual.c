@@ -44,7 +44,7 @@ void wvfn_residual (STATE * states)
     REAL eigmean = 0.0;
 
     for (is = 0; is < ct.num_states; is++)
-        if (states[is].occupation > 0.1)
+        if (states[is].occupation[0] > 0.1)
             eigmean += states[is].res;
 
     eigmean = eigmean / ((REAL) ct.num_states);

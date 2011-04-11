@@ -137,7 +137,7 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 	if (special_metric) my_free(trade_space);
         
 	/*  Sum A over all processors*/
-        global_sums(A, &s2);
+        global_sums(A, &s2, pct.grid_comm);
 
         b[size] = 1.0;
         for (i = 0; i < size; i++)

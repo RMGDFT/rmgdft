@@ -324,6 +324,16 @@ Anderson Rescaling";
 
 
     /* Number of states */
+    if(pct.spin_flag)
+    {
+    	get_data ("states_per_kpoint_up", &ct.num_states_up, INT, "0");
+    	get_data ("states_per_kpoint_down", &ct.num_states_down, INT, "0");
+    } 
+    else
+    {
+    	get_data ("states_per_kpoint", &ct.num_states, INT, "0");
+
+    }
     get_data ("states_per_kpoint", &ct.num_states, INT, "0");
 
     /* check whether do spin polarized calculation or not*/

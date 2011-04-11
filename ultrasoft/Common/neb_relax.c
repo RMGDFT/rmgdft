@@ -45,7 +45,7 @@
 #define Z 2
 
 void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-              REAL * rho, REAL * rhocore, REAL * rhoc)
+              REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
     /* This may need to be malloced if we start using large ion counts */
     int count, neb_steps = 0, img_rank_map[3];
@@ -187,7 +187,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		printf("\tNEB call fast relax.\n");
 		fflush(NULL);fsync( fileno(ct.logfile) );
 		MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-        fastrlx (states, vxc, vh, vnuc, rho, rhocore, rhoc);
+        fastrlx (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
         /* Check for NEB convergence */
         /* Are we force converged? */

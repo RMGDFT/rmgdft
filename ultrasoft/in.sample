@@ -32,14 +32,13 @@ occupations_type=
 # Format: Number of states with certain occupancy followed by the occupancy
 #         repeat for all occupancies
 
-# For spin unpolarized calculation using the following line to set the fixed occupations for states
-#states_count_and_occupation="6 2.0  4 0.0"  
+# For spin pairwised calculation using the following line to set the fixed occupations for states
+states_count_and_occupation="6 2.0  4 0.0"  
 
 
 # For spin polarized calculation using the following line to set the fixed occupations 
-#                      for spin up states and spin down states respectively
-states_count_and_occupation_spin_up="3 1.0  4 0.0"
-states_count_and_occupation_spin_down="3 1.0  4 0.0 "
+states_count_and_occupation_spin_up="3 1.0  4 0.0"      # specified occupations for spin up
+states_count_and_occupation_spin_down="3 1.0  4 0.0 "   # specified occupations for spin down 
 
 
 # If states_count_and_occupation is not given  
@@ -346,8 +345,13 @@ md_steps_per_movie_frame="1"
 number_of_kpoints="1"
 number_of_atoms="3"
 number_of_species="2"
-# Number of states
+
+# Number of states in spin pairwised calculation
 states_per_kpoint="10"
+
+# Number of states in spin polarized calculation
+#states_per_kpoint_up ="10"
+#states_per_kpoint_down ="10"
 
 # Restart control
 

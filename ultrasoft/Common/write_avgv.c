@@ -83,7 +83,7 @@ void write_avgv (REAL * vh, REAL * vnuc)
 
     /* Now sum over all processors */
     iz = NZ_GRID;
-    global_sums (zvec, &iz);
+    global_sums (zvec, &iz, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {

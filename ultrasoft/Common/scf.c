@@ -49,15 +49,27 @@
 int static firststep = TRUE;
 
 void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-          REAL * rho, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
+          REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
 {
 
-    int kpt, st1, idx, ik, st, sttemp;
+    int kpt, st1, idx, ik, st, nspin = (pct.spin_flag + 1);
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
     REAL t[3];                  /* SCF checks and average potential */
+    MPI_Status status, stat[2]; 
+    MPI_Request req[2];   
+    /* to hold the send data and receive data of eigenvalues */
+    REAL *eigval_sd, *eigval_rv, *rho_tot;   
 
+    /* allocate memory for eigenvalue send array and receive array */
+    if (pct.spin_flag)
+    {
+    	my_malloc (eigval_sd, 2 * ct.num_kpts * ct.num_states, REAL);
+    	eigval_rv = eigval_sd + ct.num_kpts * ct.num_states;
+
+    	my_malloc (rho_tot, FP0_BASIS, REAL);
+    }
 
     time3 = my_crtc ();
 
@@ -70,14 +82,28 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
 
-    time1 = my_crtc ();
+    time1 = my_crtc (); 
+ 
     /* Generate exchange-correlation potential */
-    get_vxc (rho, rhocore, vxc);
+    get_vxc (rho, rho_oppo, rhocore, vxc);
     rmg_timings (SCF_XC_TIME, (my_crtc () - time1), 0);
 
+    if (pct.spin_flag)        
+    {
+	/*calculate the total charge density in order to calculate hartree potential*/
+	for (idx = 0; idx < FP0_BASIS; idx++)
+		rho_tot[idx] = rho[idx] + rho_oppo[idx];
+	
+	/* Generate hartree potential */
+        get_vh (rho_tot, rhoc, vh, 15, ct.poi_parm.levels);
+     }  	
+    else
+    {
+    	/* Generate hartree potential */
+    	get_vh (rho, rhoc, vh, 15, ct.poi_parm.levels);
+    }
 
-    /* Generate hartree potential */
-    get_vh (rho, rhoc, vh, 15, ct.poi_parm.levels);
+
 
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
@@ -94,13 +120,18 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }                           /* idx */
 
 
+    
+    
     idx = 3;
-    global_sums (t, &idx);
+    global_sums (t, &idx, pct.img_comm);
     t[0] *= ct.vel_f;
-    t[1] = sqrt (t[1] / ((REAL) (ct.psi_fnbasis)));
-    t[2] /= ((REAL) (ct.psi_fnbasis));
+    
+    /* get the averaged value over each spin and each fine grid */
+    t[1] = sqrt (t[1] / ((REAL) (nspin * ct.psi_fnbasis)));  
+    t[2] /= ((REAL) (nspin * ct.psi_fnbasis));   
+    
 
-    if (pct.imgpe == 0 && !firststep)
+    if (!firststep)
     {
         printf ("\n");
         progress_tag ();
@@ -155,15 +186,51 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
 #endif
 
+    if (pct.spin_flag) 
+    {   
+        /*Prepare the sending buffer of eigenvalues */
+	st = 0;
+        for (kpt =0; kpt < ct.num_kpts; kpt++)
+	{
+		for (st1 = 0; st1 < ct.num_states; st1++)
+		{	
+			eigval_sd[st] = ct.kp[kpt].kstate[st1].eig[0];
+			st += 1;
+		}	
+	}
 
-    /* Take care of occupation filling */
-    if (!firststep)
-        ct.efermi = fill (states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+ 
+        /*Communicate for spin up and spin down energy eigenvalues*/    
+    	MPI_Send(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm);
+    	MPI_Recv(eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
+	
+	/* Unpack the received eigenvalue to state structure */
+	st = 0;
+        for (kpt =0; kpt < ct.num_kpts; kpt++)
+	{
+		for (st1 = 0; st1 < ct.num_states; st1++)
+		{	
+			ct.kp[kpt].kstate[st1].eig[1] = eigval_rv[st];
+			st += 1;
+			
+		}	
+	} 
+    }
+	
+
+
+    if (!firststep)	
+    {
+    	/* Take care of occupation filling */
+       	ct.efermi = fill (states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+    }	
 
 #endif
 
-    if (pct.thisimg == 0 && ct.occ_flag == 1 && !firststep)
+
+
+    if (ct.occ_flag == 1 && !firststep)
     {
         printf ("\n");
         progress_tag ();
@@ -180,6 +247,13 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /*Takes care of mixing and checks whether the charge density is negative*/
     mix_rho(new_rho, rho, rhocore, FP0_BASIS, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
+    if (pct.spin_flag)
+    {
+    	/*  Communite for spin up and spin down density,  blocked communication like MPI_Send and MPI_Recv not work ? */
+    	MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[0]);
+    	MPI_Irecv(rho_oppo,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[1]);
+    }
+    
     time2 = my_crtc ();
     rmg_timings (RHO_TIME, (time2 - time1), 0);
 
@@ -198,6 +272,14 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     my_free (new_rho);
     my_free (vtot);
     my_free (vtot_psi);
+
+    /* free the memory */
+    if (pct.spin_flag)
+    {
+    	MPI_Waitall (2, req, stat);
+    	my_free (eigval_sd);
+    	my_free (rho_tot);
+    }
 
     rmg_timings (SCF_TIME, (my_crtc () - time3), 0);
 

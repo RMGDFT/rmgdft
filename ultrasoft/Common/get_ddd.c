@@ -73,7 +73,7 @@ void get_ddd (REAL * veff)
     if (sum_idx != sum_dim)
         error_handler ("Problem with sum index");
 
-    global_sums (sum, &sum_dim);
+    global_sums (sum, &sum_dim, pct.grid_comm);
 
     sum_idx = 0;
 

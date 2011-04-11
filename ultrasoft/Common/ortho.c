@@ -61,9 +61,9 @@ void ortho (STATE * states, int kpt)
         /*Sum coefficients over all processors */
         if (length)
         {
-            global_sums (&cR[ist1 + 1], &length);
+            global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
 #if !GAMMA_PT
-            global_sums (&cI[ist1 + 1], &length);
+            global_sums (&cI[ist1 + 1], &length, pct.grid_comm);
 #endif
         }
 

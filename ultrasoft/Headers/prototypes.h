@@ -72,7 +72,6 @@ void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
                 REAL gridhy, REAL gridhz, REAL step);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix,
            int num_st, int occ_flag);
-REAL fill_spin(STATE *states_up, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
 
 void find_phase (int nldim, REAL *nlcdrs, REAL *phase_sin,
                  REAL *phase_cos);
@@ -85,14 +84,12 @@ void get_phase (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
 void get_nlop_smp (int tid);
 void get_eig (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc);
 char *get_num (char *str);
-void get_te (REAL *rho, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
-             STATE *states);
-void get_te_spin (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
+void get_te (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
              STATE *states);
 
-void get_vxc (REAL *rho, REAL *rhocore, REAL *vxc);
-void get_vxc_spin (REAL *rho, REAL * rho_oppo, REAL *rhocore, REAL *vxc);
+void get_vxc (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *vxc);
 
+void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype);
 
 void get_zdens (STATE *states, int state, REAL *zvec);
 void xclda_pz81 (REAL *rho, REAL *vxc);
@@ -182,11 +179,8 @@ int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
 REAL get_ke (STATE *sp, int tid);
 void get_vh (REAL *rho, REAL *rhoc, REAL *vh, int cycles, int maxlevel);
 char *get_symbol (int atomic_number);
-void global_sums (REAL *vect, int *length);
-void global_sums_spin (REAL *vect, int *length);
-void init (REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
-           REAL *vnuc, REAL *vxc);
-void init_spin (REAL *vh, REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, STATE *states,
+void global_sums (REAL *vect, int *length, MPI_Comm comm);
+void init (REAL *vh, REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, STATE *states,
            REAL *vnuc, REAL *vxc);
 void init_derweight (void);
 void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
@@ -205,7 +199,6 @@ void init_pe ( int image );
 void init_img_topo ( int dimensionality );
 void init_pegrid (void);
 STATE *init_states (void);
-STATE *init_states_spin(void);
 void init_weight (void);
 void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
                     fftwnd_plan p1);
@@ -250,16 +243,12 @@ void read_control(void);
 void write_pdb (void);
 int read_atom_line(char *species, REAL *crds, int *movable, FILE *fhand, char *tbuf, int index);
 int assign_species (CONTROL * c, char *buf);
-void read_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
-                STATE *states);
-void read_data_spin (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
+void read_data (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
                 STATE *states);
 
 void read_pseudo (void);
-REAL real_sum_all (REAL x);
-REAL real_sum_all_spin (REAL x);
-REAL real_min_all (REAL x);
-REAL real_min_all_spin (REAL x);
+REAL real_sum_all (REAL x, MPI_Comm comm);
+REAL real_min_all (REAL x, MPI_Comm comm);
 
 
 void reset_timers (void);
@@ -279,11 +268,9 @@ void vol_wf (STATE *states, int state, int step);
 void write_avgd (REAL *rho);
 void write_avgv (REAL *vh, REAL *vnuc);
 void write_zstates (STATE *states);
-void write_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
+void write_data (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
                  STATE *states);
 
-void write_data_spin (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
-                 STATE *states);
 void write_header (void);
 void write_occ (STATE *states);
 void write_force (void);
@@ -348,19 +335,15 @@ REAL metric (REAL *crystal);
 
 /* Md run types */
 void quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
-             REAL *rhocore, REAL *rhoc);
-void quench_spin (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
              REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void fastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
-              REAL *rho, REAL *rhocore, REAL *rhoc);
-void fastrlx_spin (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
-              REAL *rho, REAL *rhocore, REAL *rhoc);
+              REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void cdfastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
                 REAL *rho, REAL *rhocore, REAL *rhoc);
 void moldyn (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
-             REAL *rho, REAL *rhoc, REAL *rhocore);
+             REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *rhocore);
 void dx (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc,
          P0_GRID *rho, P0_GRID *rhoc);
 void psidx (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc,
@@ -407,9 +390,7 @@ REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
            int *nhtom, int *indv, REAL *ylm, REAL ap[][9][9], int lpx[][9],
            int lpl[][9][9], SPECIES *sp);
 void scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
-          REAL *rho, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
-void scf_spin (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
-          REAL *rho,REAL *rho_oppo, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
+          REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
 
 #if GAMMA_PT
 void subdiag_gamma (STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
@@ -426,11 +407,9 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL cR, REAL cI);
 REAL get_QnmL (int idx, int ltot, REAL r, SPECIES *sp);
 
-void force (REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
+void force (REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
             STATE *states);
 
-void force_spin (REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
-            STATE *states);
 
 void iiforce (void);
 void lforce (REAL *rho, REAL *vh);

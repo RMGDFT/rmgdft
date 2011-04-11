@@ -162,18 +162,18 @@ void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
 
 
     /* Sum these up over all processors */
-    q = real_sum_all (q);
-    px = real_sum_all (px);
-    py = real_sum_all (py);
-    pz = real_sum_all (pz);
+    q = real_sum_all (q, pct.grid_comm);
+    px = real_sum_all (px, pct.grid_comm);
+    py = real_sum_all (py, pct.grid_comm);
+    pz = real_sum_all (pz, pct.grid_comm);
 
-    sxx = real_sum_all (sxx);
-    syy = real_sum_all (syy);
-    szz = real_sum_all (szz);
+    sxx = real_sum_all (sxx, pct.grid_comm);
+    syy = real_sum_all (syy, pct.grid_comm);
+    szz = real_sum_all (szz, pct.grid_comm);
 
-    sxy = real_sum_all (sxy);
-    syz = real_sum_all (syz);
-    szx = real_sum_all (szx);
+    sxy = real_sum_all (sxy, pct.grid_comm);
+    syz = real_sum_all (syz, pct.grid_comm);
+    szx = real_sum_all (szx, pct.grid_comm);
     printf ("QQ = %12.6f\n", q);
     printf ("PX = %12.6f\n", px);
     printf ("PY = %12.6f\n", py);

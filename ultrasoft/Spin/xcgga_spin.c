@@ -53,7 +53,6 @@
 void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mode)
 
 {
-#if 1
     int idx;
     FP0_GRID *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
     FP0_GRID *gx_up, *gy_up, *gz_up, *agg_up;
@@ -212,13 +211,11 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
 
         if (mode == GGA_PBE)
         {
-#if 1		
 		gcxcpbe_spin (rho_up[idx], rho_dw[idx], grad_up, grad_dw, grad, &enxc, 
 				&vxc1_up, &vxc1_dw, &vxc2_upup[idx], &vxc2_dwdw, &vxc2_updw[idx], &vxc2_dwup);
 
 		exc[idx] += enxc;
 		vxc_up[idx] += vxc1_up;
-#endif		
         }                      
 	else if (mode == GGA_XB_CP)
         {
@@ -261,7 +258,6 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
      * vxcup += vxc1up - div( vxc2upup * grad(rhoup) + vxc2updw * grad(rhodw) ) 
      * vxcdw += vxc1dw - div( vxc2dwdw * grad(rhodw) + vxc2dwup * grad(rhoup) )*/ 
 
-#if 1
     /* Generate the gradient of the second term exchange-correlation potential vxc2*/
     app_gradf (vxc2_upup, gx_vuu, gy_vuu, gz_vuu);    
     app_gradf (vxc2_updw, gx_vud, gy_vud, gz_vud);   
@@ -280,7 +276,6 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
 	    vxc_up[idx] -= vxc2_updw[idx] * d2rho_dw->s2[idx];
     }
 
-#endif    
 
     /* Release our memory */  
     my_free (gx_up);
@@ -310,5 +305,4 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
     	my_free (agg_updw2);
     
 
-#endif
 }                               /* end xcgga */

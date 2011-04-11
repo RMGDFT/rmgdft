@@ -78,7 +78,7 @@ void write_avgd (REAL * rho)
 
     /* Now sum over all processors */
     iz = FNZ_GRID;
-    global_sums (zvec, &iz);
+    global_sums (zvec, &iz, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {

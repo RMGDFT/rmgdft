@@ -39,7 +39,7 @@
 
 void output_eigenvalues (STATE * states, int ikbs, int iscf)
 {
-    int ik, jk, nk, is, il;
+    int ik, jk, nk, is, il, idx, nspin = (pct.spin_flag + 1);
 
     int bs = verify ("calculation_mode", "Band Structure Only");
 
@@ -70,45 +70,20 @@ void output_eigenvalues (STATE * states, int ikbs, int iscf)
         printf ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
                 jk, kpt->kpt[0], kpt->kpt[1], kpt->kpt[2]);
 
-	if (pct.spin_flag)
-        {
-		/* Spin up*/
-		printf("Spin up eigenvalues:\n");
-        il = 0;
-        for (is = 0; is < ct.num_states; is++)
-        {
-            if (is % 4 == 0)
-                printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
-
-            printf ("   %9.4f [%5.3f]%s",
-                    st[is].eig * Ha_eV, st[is].occupation, ((is % 4 == 3) ? "\n" : ""));
-        }
-        printf ("\n");
-
-		/* Spin down*/
-		printf("Spin down eigenvalues:\n");
-		il = 0;
-        	for (is = 0; is < ct.num_states_oppo; is++)
+	for (idx = 0; idx < nspin; idx++)
+	{
+		if ( (nspin == 2) && (idx == 0))	
+			printf("\n------------- SPIN UP ---------------\n\n");
+		else if ( (nspin == 2) && (idx == 1))	
+			printf("\n------------ SPIN DOWN --------------\n\n"); 
+        	il = 0;
+        	for (is = 0; is < ct.num_states; is++)
         	{
             		if (is % 4 == 0)
                 		printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
 
             		printf ("   %9.4f [%5.3f]%s",
-                    		st[is].eig_oppo * Ha_eV, st[is].occupation_oppo, ((is % 4 == 3) ? "\n" : ""));
-        	}
-        	printf ("\n");
-
-	}
-	else
-	{
-		il = 0;
-        	for (is = 0; is < ct.num_states; is++)
-        	{
-            		if (is % 4 == 0)
-               			 printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
-
-            		printf ("   %9.4f [%5.3f]%s",
-                    		st[is].eig * Ha_eV, st[is].occupation, ((is % 4 == 3) ? "\n" : ""));
+                    		st[is].eig[idx] * Ha_eV, st[is].occupation[idx], ((is % 4 == 3) ? "\n" : ""));
         	}
         	printf ("\n");
 	}

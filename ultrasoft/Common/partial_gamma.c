@@ -49,7 +49,7 @@ void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, ION * iptr, i
         sta = ct.kp[kidx].kstate;
         for (istate = 0; istate < ct.num_states; istate++)
         {
-            t1 = sta->occupation * ct.kp[kidx].kweight;
+            t1 = sta->occupation[0] * ct.kp[kidx].kweight;
 
 
             index =
@@ -86,11 +86,11 @@ void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, ION * iptr, i
                     gamma_z[idx] +=
                         t1 * (psixbetaR_z[i] * betaxpsiMR + betaxpsiNR * psixbetaR_z[j]);
                     omega_x[idx] +=
-                        t1 * sta->eig * (psixbetaR_x[i] * betaxpsiMR + betaxpsiNR * psixbetaR_x[j]);
+                        t1 * sta->eig[0] * (psixbetaR_x[i] * betaxpsiMR + betaxpsiNR * psixbetaR_x[j]);
                     omega_y[idx] +=
-                        t1 * sta->eig * (psixbetaR_y[i] * betaxpsiMR + betaxpsiNR * psixbetaR_y[j]);
+                        t1 * sta->eig[0] * (psixbetaR_y[i] * betaxpsiMR + betaxpsiNR * psixbetaR_y[j]);
                     omega_z[idx] +=
-                        t1 * sta->eig * (psixbetaR_z[i] * betaxpsiMR + betaxpsiNR * psixbetaR_z[j]);
+                        t1 * sta->eig[0] * (psixbetaR_z[i] * betaxpsiMR + betaxpsiNR * psixbetaR_z[j]);
 #else
                     betaxpsiNI = iptr->newsintI[kidx * ct.num_ions * ct.num_states * ct.max_nl +
                                                 istate * ct.max_nl + i];
@@ -110,13 +110,13 @@ void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, ION * iptr, i
                               betaxpsiNR * psixbetaR_z[j] + betaxpsiNI * psixbetaI_z[j]);
 
                     omega_x[idx] +=
-                        t1 * sta->eig * (psixbetaR_x[i] * betaxpsiMR + psixbetaI_x[i] * betaxpsiMI +
+                        t1 * sta->eig[0] * (psixbetaR_x[i] * betaxpsiMR + psixbetaI_x[i] * betaxpsiMI +
                                          betaxpsiNR * psixbetaR_x[j] + betaxpsiNI * psixbetaI_x[j]);
                     omega_y[idx] +=
-                        t1 * sta->eig * (psixbetaR_y[i] * betaxpsiMR + psixbetaI_y[i] * betaxpsiMI +
+                        t1 * sta->eig[0] * (psixbetaR_y[i] * betaxpsiMR + psixbetaI_y[i] * betaxpsiMI +
                                          betaxpsiNR * psixbetaR_y[j] + betaxpsiNI * psixbetaI_y[j]);
                     omega_z[idx] +=
-                        t1 * sta->eig * (psixbetaR_z[i] * betaxpsiMR + psixbetaI_z[i] * betaxpsiMI +
+                        t1 * sta->eig[0] * (psixbetaR_z[i] * betaxpsiMR + psixbetaI_z[i] * betaxpsiMI +
                                          betaxpsiNR * psixbetaR_z[j] + betaxpsiNI * psixbetaI_z[j]);
 #endif
                     ++idx;

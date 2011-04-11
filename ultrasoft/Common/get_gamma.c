@@ -29,7 +29,7 @@ void get_gamma (REAL * gammaR, ION * iptr, int nh)
                 sta = ct.kp[kidx].kstate;
                 for (istate = 0; istate < ct.num_states; istate++)
                 {
-                    t1 = sta->occupation * ct.kp[kidx].kweight;
+                    t1 = sta->occupation[0] * ct.kp[kidx].kweight;
                     sintNR = iptr->newsintR[kidx * ct.num_ions * ct.num_states * ct.max_nl +
                                             istate * ct.max_nl + i];
                     sintMR = iptr->newsintR[kidx * ct.num_ions * ct.num_states * ct.max_nl +

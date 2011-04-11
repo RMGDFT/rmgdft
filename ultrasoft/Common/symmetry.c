@@ -165,7 +165,7 @@ void symmetrize_rho (FP0_GRID * rho)
 
     /* Call global sums to give everyone the full array */
     idx = ct.psi_fnxgrid * ct.psi_fnygrid * ct.psi_fnzgrid;
-    global_sums (&da->s[0][0][0], &idx);
+    global_sums (&da->s[0][0][0], &idx, pct.grid_comm);
 
 
     /* Do the symmetrization on this processor */

@@ -37,7 +37,7 @@
 
 
 
-REAL real_sum_all (REAL x)
+REAL real_sum_all (REAL x, MPI_Comm comm)
 {
 
     REAL inreg;
@@ -52,7 +52,7 @@ REAL real_sum_all (REAL x)
 
     inreg = x;
 
-    MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_SUM, comm);
 
 #if MD_TIMERS
     rmg_timings (REAL_SUM_ALL_TIME, my_crtc () - time0, 0);
@@ -66,33 +66,6 @@ REAL real_sum_all (REAL x)
 }                               /* end real_sum_all */
 
 
-
-
-REAL real_sum_all_spin (REAL x)
-{
-
-    REAL inreg;
-    REAL outreg;
-#if MD_TIMERS
-    REAL time0;
-
-    time0 = my_crtc ();
-#endif
-	
-
-
-    inreg = x; 
-    
-    MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-#if MD_TIMERS
-    rmg_timings (REAL_SUM_ALL_TIME, my_crtc () - time0, 0);
-#endif
-
-
-    return outreg;
-
-}                               /* end real_sum_all_spin */
 
 
 

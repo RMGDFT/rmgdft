@@ -131,9 +131,9 @@ void betaxpsi1 (STATE * states, int kpt)
 
     /* Sum the sint array over all processors */
     id1 = ct.num_states * ct.num_ions * ct.max_nl;
-    global_sums (sintR, &id1);
+    global_sums (sintR, &id1, pct.grid_comm);
 #if !GAMMA_PT
-    global_sums (sintI, &id1);
+    global_sums (sintI, &id1, pct.grid_comm);
 #endif
 
 

@@ -142,8 +142,8 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /* Sum A and B overlap matrices over all processors */
     time3 = my_crtc ();
 
-    global_sums (Bij, &stop);
-    global_sums (Aij, &stop);
+    global_sums (Bij, &stop, pct.grid_comm);
+    global_sums (Aij, &stop, pct.grid_comm);
 
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3, 0);
 
@@ -381,7 +381,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*Finally, sum Aij over all PEs */
     time3 = my_crtc ();
 
-    global_sums (Aij, &stop);
+    global_sums (Aij, &stop, pct.grid_comm);
 
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3, 0);
 
@@ -709,7 +709,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
 
 
     /*Sum Aij over all PEs */
-    global_sums (glob_matrix, &stop);
+    global_sums (glob_matrix, &stop, pct.grid_comm);
 
     if (!pct.gridpe)
         print_matrix2 (glob_matrix, global_size);

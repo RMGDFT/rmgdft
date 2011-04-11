@@ -10,7 +10,7 @@
 
 void nlforce1_par_gamma (REAL * par_gamma, int ion, int nh)
 {
-    int idx, idx1, size, n, m;
+    int idx, idx1, size, n, m, three = 3;
     REAL forces[3];
     REAL *gamma_x, *gamma_y, *gamma_z, *dnmI;
     ION *iptr;
@@ -49,6 +49,8 @@ void nlforce1_par_gamma (REAL * par_gamma, int ion, int nh)
             ++idx;
         }
     }
+    if (pct.spin_flag)
+	global_sums (forces, &three, pct.spin_comm);
 
     iptr->force[ct.fpt[0]][0] += forces[0];
     iptr->force[ct.fpt[0]][1] += forces[1];

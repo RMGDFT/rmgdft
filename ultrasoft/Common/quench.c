@@ -46,7 +46,7 @@
 #include "main.h"
 
 void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
-             REAL * rhocore, REAL * rhoc)
+             REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
 
     static int CONVERGENCE;
@@ -55,7 +55,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
        REAL KE; */
 
     /* ---------- begin scf loop ---------- */
-
+    
 
     for (ct.scf_steps = 0, CONVERGENCE = FALSE;
          ct.scf_steps < ct.max_scf_steps && !CONVERGENCE; ct.scf_steps++, ct.total_scf_steps++)
@@ -67,7 +67,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
 
         /* perform a single self-consistent step */
-        scf (states, vxc, vh, vnuc, rho, rhocore, rhoc, &CONVERGENCE);
+        scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, &CONVERGENCE);
 
 
 
@@ -80,7 +80,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
         if (ct.outcount == 0 || (ct.scf_steps % ct.outcount) == 0)
         {
             /* get the total energy */
-            get_te (rho, rhocore, rhoc, vh, vxc, states);
+            get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, states);
         }
 
 
@@ -89,7 +89,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
         {
             if (ct.scf_steps % ct.write_eigvals_period == 0)
             {
-                if (pct.gridpe == 0)
+                if (pct.imgpe == 0)
                 {
                     output_eigenvalues (states, 0, ct.scf_steps);
                     printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
@@ -117,28 +117,23 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
     /* ---------- end scf loop ---------- */
 
-    if (pct.gridpe == 0)
+    if (CONVERGENCE)
     {
-        if (CONVERGENCE)
-        {
-            printf ("\n");
-            progress_tag ();
-            printf ("potential convergence has been achieved. stopping ...\n");
-        }
-
-        printf ("\n");
-        progress_tag ();
-        printf ("final total energy = %14.7f Ha\n", ct.TOTAL);
+         printf ("\n");
+         progress_tag ();
+         printf ("potential convergence has been achieved. stopping ...\n");
     }
+
+    printf ("\n");
+    progress_tag ();
+    printf ("final total energy = %14.7f Ha\n", ct.TOTAL);
 
 
 
     /* output final eigenvalues with occupations */
-    if (pct.gridpe == 0)
-    {
-        output_eigenvalues (states, 0, ct.scf_steps);
-        printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
-    }
+   
+    output_eigenvalues (states, 0, ct.scf_steps);
+    printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
     wvfn_residual (states);
 
@@ -176,10 +171,10 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
     if ((CONVERGENCE) || (ct.forceflag != MD_QUENCH))
-        force (rho, rhoc, vh, vxc, vnuc, states);
+        force (rho, rho_oppo, rhoc, vh, vxc, vnuc, states);
 
     /* output the forces */
-    if (pct.gridpe == 0)
+    if (pct.imgpe == 0)
         write_force ();
 
 

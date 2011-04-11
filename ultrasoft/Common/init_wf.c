@@ -45,7 +45,7 @@
 void init_wf (STATE * states)
 {
 
-    int idx, state, ix, iy, iz, pbasis;
+    int idx, state, ix, iy, iz, pbasis, nspin=(pct.spin_flag+1);
     int xoff, yoff, zoff;
     REAL *tmp_psiR, *tmp_psiI;
     STATE *sp;
@@ -70,19 +70,17 @@ void init_wf (STATE * states)
     scatter_psi (NULL, tmp_psiR, sp, 0);
 #endif
 
+    
     /* If random start and Fermi occupation, start with
        each state equally occupied  */
 
     if (ct.occ_flag && (ct.runflag == 0))
-    {
-        if (pct.spin_flag)
-        {
-            sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
-            sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
-        }
-        else
-        sp->occupation = ct.nel / ct.num_states;
+    {  
+	/* Set occupation for the first state */    
+	for (idx = 0; idx < nspin; idx++)
+	    sp->occupation[idx] = ct.nel / (nspin * ct.num_states);	
     }
+
 
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
     xoff = ix * PX0_GRID;
@@ -115,19 +113,18 @@ void init_wf (STATE * states)
 #endif
 
         sp = &states[state];
-        /* If random start and Fermi occupation, start with
+        
+	/* If random start and Fermi occupation, start with
            each state equally occupied  */
+    	
+	if (ct.occ_flag && (ct.runflag == 0))
+    	{  
+		for (idx = 0; idx < nspin; idx++)
+	    		sp->occupation[idx] = ct.nel / ( nspin * ct.num_states );	
+    	}
 
-        if (ct.occ_flag && (ct.runflag == 0))
-        {
-            if (pct.spin_flag)
-            {
-                sp->occupation=ct.nel/(ct.num_states+ct.num_states_oppo);
-                sp->occupation_oppo=ct.nel/(ct.num_states+ct.num_states_oppo);
-            }
-            else
-            sp->occupation = ct.nel / ct.num_states;
-        }
+
+
         idx = 0;
         for (ix = 0; ix < PX0_GRID; ix++)
         {

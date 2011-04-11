@@ -38,7 +38,7 @@
 /* Writes occupations */
 void write_occ (STATE * states)
 {
-    int i;
+    int i, idx, nspin = (pct.spin_flag + 1);
 
     switch (ct.occ_flag)
     {
@@ -61,31 +61,24 @@ void write_occ (STATE * states)
         break;
     default:
         error_handler ("unknown filling procedure");
-    }
+    } 
 
-    if (pct.spin_flag)
+
+    for (idx = 0; idx < nspin; idx++)
     {
-	printf ("\n\n  STATE OCCUPATIONS for spin up:\n");
+	if (nspin == 1)
+		printf ("\n\n  STATE OCCUPATIONS :\n");
+	else if ((nspin == 2) && (idx == 0))
+		printf ("\n\n  STATE OCCUPATIONS FOR SPIN UP:\n");
+	else if ((nspin == 2) && (idx == 1))
+		printf ("\n\n  STATE OCCUPATIONS FOR SPIN DOWN:\n"); 
+    	
+	for (i = 0; i < ct.num_states; i++)
+        	printf (" %7.2f%s", states[i].occupation[idx], ((i % 10 == 9) ? "\n" : ""));
 
-    for (i = 0; i < ct.num_states; i++)
-        printf (" %7.2f%s", states[i].occupation, ((i % 10 == 9) ? "\n" : ""));
-
-	printf ("\n\n  STATE OCCUPATIONS for spin down:\n");
-
-    	for (i = 0; i < ct.num_states_oppo; i++)
-        	printf (" %7.2f%s", states[i].occupation_oppo, ((i % 10 == 9) ? "\n" : ""));
-	printf ("\n");
-    }  
-    else 
-    {
-	printf ("\n\n  STATE OCCUPATIONS :\n");
-
-    	for (i = 0; i < ct.num_states; i++)
-        	printf (" %7.2f%s", states[i].occupation, ((i % 10 == 9) ? "\n" : ""));
-    printf ("\n");
+    	printf ("\n");
 
     }
-
 
 }                               /* end write_occ */
 
