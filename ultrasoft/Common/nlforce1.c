@@ -10,7 +10,7 @@
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
-#define VERBOSE 1
+#define VERBOSE 0
 
 void nlforce1 (REAL * veff)
 {

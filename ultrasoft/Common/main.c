@@ -156,7 +156,7 @@ void initialize(int argc, char **argv)
 
 
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
-    if(pct.spin_flag)
+    if(ct.spin_flag)
     	    my_malloc (rho_oppo, FP0_BASIS, REAL);
 
 
@@ -280,7 +280,7 @@ void report ()
 
 
     /* Release the memory for density of opposite spin */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     	my_free (rho_oppo);
 
     /* Write timing information */

@@ -38,7 +38,7 @@ STATE *init_states ()
 {
     int ii, is, ns, ik, nk, max_num_states, idx, i, j;
     STATE *states;
-    int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin = (pct.spin_flag + 1);
+    int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin = (ct.spin_flag + 1);
     char *tbuf[2];
 
     struct
@@ -57,7 +57,7 @@ STATE *init_states ()
         ct.ionic_charge += ct.sp[ct.ions[ii].species].zvalence; 
 
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	repeat_occ =( (strcmp(ct.occupation_str_spin_up, "") != 0) && (strcmp(ct.occupation_str_spin_down, "")!= 0) );
     	if( (strcmp(ct.occupation_str_spin_up, "") != 0) + (strcmp(ct.occupation_str_spin_down, "")!= 0) == 1 )

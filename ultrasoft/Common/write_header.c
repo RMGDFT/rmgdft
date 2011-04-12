@@ -229,7 +229,7 @@ void write_header (void)
 
     printf ("\n");
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	printf ("    This is a spin polarized calculation \n");
     	printf ("    Number of spin up states   = %d\n", ct.num_states);

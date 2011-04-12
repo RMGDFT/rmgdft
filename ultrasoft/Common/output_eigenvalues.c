@@ -39,7 +39,7 @@
 
 void output_eigenvalues (STATE * states, int ikbs, int iscf)
 {
-    int ik, jk, nk, is, il, idx, nspin = (pct.spin_flag + 1);
+    int ik, jk, nk, is, il, idx, nspin = (ct.spin_flag + 1);
 
     int bs = verify ("calculation_mode", "Band Structure Only");
 

@@ -45,14 +45,14 @@
 /*Set this to 1 to have forces written out part by part*/
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
  * nlforce1.c*/
-#define VERBOSE 1
+#define VERBOSE 0
 
 
 
 void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
 {
-    int ion, st, kpt, idx;
-    REAL *vtot, *rho_tot;
+    int ion, st, kpt, idx, nspin = (ct.spin_flag + 1);
+    REAL *vtot, *rho_tot, meanres;
     STATE *sp;
     REAL time1, time2, time3;
 #if VERBOSE
@@ -78,28 +78,28 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     /* Compute residual information */
-    ct.meanres = 0.0;
+    meanres = 0.0;
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
         sp = ct.kp[kpt].kstate;
         for (st = 0; st < ct.num_states; st++)
         {
-            ct.meanres += sp->res;
+            meanres += sp->res;
             sp++;
         }
     }
 
-    ct.meanres /= ((REAL) (ct.num_kpts * ct.num_states));
+    if (ct.spin_flag)
+	    meanres = real_sum_all (meanres, pct.spin_comm);
+
+    ct.meanres = meanres / ((REAL) (ct.num_kpts * ct.num_states * nspin));
 
     /* Print out residual information */
-    if (pct.imgpe == 0)
-    {
 
-        printf ("\n@@Force Mean Occ Subspace Res = %15.8e", ct.meanres);
-        printf ("\n@@Force Max Occ Subspace Res   = %15.8e", ct.maxres);
-        printf ("\n@@Force Min Occ Subspace Res   = %15.8e", ct.minres);
+    printf ("\n@@Force Mean Occ Subspace Res = %15.8e", ct.meanres);
+    printf ("\n@@Force Max Occ Subspace Res   = %15.8e", ct.maxres);
+    printf ("\n@@Force Min Occ Subspace Res   = %15.8e", ct.minres);
 
-    }
 
 
     /* Zero out forces */
@@ -146,7 +146,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
 
 
     /* Add in the local */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	my_malloc (rho_tot, FP0_BASIS, REAL);
 	for (idx = 0; idx < FP0_BASIS; idx++)

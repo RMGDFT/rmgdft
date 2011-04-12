@@ -236,9 +236,9 @@ NEB Relax";
     }
 
     /* do spin polarized calculation? */
-    get_data ("enable_spin_polarized_calculation", &pct.spin_flag, BOOL, "false");
+    get_data ("enable_spin_polarized_calculation", &ct.spin_flag, BOOL, "false");
 
-    get_data ("equal_initial_density", &pct.init_equal_density_flag, BOOL, "false");
+    get_data ("equal_initial_density", &ct.init_equal_density_flag, BOOL, "false");
     /* Initialized spin up and down charge density equally? */
 
     /*maximum number of md steps */
@@ -324,7 +324,7 @@ Anderson Rescaling";
 
 
     /* Number of states */
-    if(pct.spin_flag)
+    if(ct.spin_flag)
     {
     	get_data ("states_per_kpoint_up", &ct.num_states_up, INT, "0");
     	get_data ("states_per_kpoint_down", &ct.num_states_down, INT, "0");
@@ -337,7 +337,7 @@ Anderson Rescaling";
     get_data ("states_per_kpoint", &ct.num_states, INT, "0");
 
     /* check whether do spin polarized calculation or not*/
-    if(pct.spin_flag)
+    if(ct.spin_flag)
     {
         get_data ("states_count_and_occupation_spin_up", ct.occupation_str_spin_up, STR, NULL);
         get_data ("states_count_and_occupation_spin_down", ct.occupation_str_spin_down, STR, NULL);

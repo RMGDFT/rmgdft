@@ -49,7 +49,7 @@
 
 void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states)
 {
-    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (pct.spin_flag + 1);
+    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1);
     REAL r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     REAL vel;
     REAL *exc, *nrho, *nrho_oppo;
@@ -61,7 +61,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
     vel = ct.vel_f;
 
     /* Grab some memory */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	my_malloc (exc, 3 * FP0_BASIS, REAL);
     	nrho_oppo = exc + 2 * FP0_BASIS;
@@ -94,7 +94,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
 
     /* Evaluate electrostatic energy correction terms */
     esum[0] = 0.0;
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
 	/* Add the compensating charge to total charge to calculation electrostatic energy */    
     	for (idx = 0; idx < FP0_BASIS; idx++)
@@ -111,7 +111,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
     time2 = my_crtc (); 
 
     /* Add the nonlinear core correction charge if there is any */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	for (idx = 0; idx < FP0_BASIS; idx++)
     	{    
@@ -133,7 +133,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
     esum[1] = 0.0;
     esum[2] = 0.0;
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
 	mag = 0.0;    
     	for (idx = 0; idx < FP0_BASIS; idx++)
@@ -156,7 +156,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
 
 
     /*Sum emergies over all processors */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	global_sums (esum, &two, pct.grid_comm);
     	global_sums (&esum[2], &one, pct.img_comm);  
@@ -226,7 +226,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
     progress_tag ();
     printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
         
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
 	/* Print the total magetization and absolute magnetization into output file */
 	progress_tag ();

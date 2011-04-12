@@ -40,16 +40,17 @@
 
 void wvfn_residual (STATE * states)
 {
-    int is;
+    int is, nspin = (ct.spin_flag + 1);
     REAL eigmean = 0.0;
 
     for (is = 0; is < ct.num_states; is++)
         if (states[is].occupation[0] > 0.1)
             eigmean += states[is].res;
 
-    eigmean = eigmean / ((REAL) ct.num_states);
-    ct.meanres = eigmean;
-    if (pct.gridpe == 0)
-        printf ("Mean occupied wavefunction residual = %14.6e\n", eigmean);
+    if (ct.spin_flag)
+	    eigmean = real_sum_all (eigmean, pct.spin_comm);
+
+    eigmean = eigmean / ((REAL) (ct.num_states * nspin));
+    printf ("Mean occupied wavefunction residual = %14.6e\n", eigmean);
 
 }

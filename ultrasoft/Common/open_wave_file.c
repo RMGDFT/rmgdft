@@ -29,7 +29,7 @@ int open_wave_file (char *filename)
 
     /* Make the new output file name */
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {   
 	if (pct.spinpe==0)
     		sprintf (newname, "%s.up%d", filename, pct.gridpe);

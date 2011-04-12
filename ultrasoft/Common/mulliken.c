@@ -501,7 +501,7 @@ void mulliken (STATE * states)
         {
 
             /*First state number and its occupancy */
-            printf ("\n% 4d [% 3.2f]     ", st, ct.kp[0].kstate[st].occupation);
+            printf ("\n% 4d [% 3.2f]     ", st, ct.kp[0].kstate[st].occupation[0]);
 
             max1 = 0.0;
             max2 = 0.0;
@@ -563,7 +563,7 @@ void mulliken (STATE * states)
         {
 
             /*First state number and its occupancy */
-            printf ("\n% 4d [% 3.2f]     ", st, ct.kp[0].kstate[st].occupation);
+            printf ("\n% 4d [% 3.2f]     ", st, ct.kp[0].kstate[st].occupation[0]);
 
             for (i = 0; i < tot_atomic_states; i++)
             {

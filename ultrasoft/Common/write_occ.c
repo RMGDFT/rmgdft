@@ -38,7 +38,7 @@
 /* Writes occupations */
 void write_occ (STATE * states)
 {
-    int i, idx, nspin = (pct.spin_flag + 1);
+    int i, idx, nspin = (ct.spin_flag + 1);
 
     switch (ct.occ_flag)
     {

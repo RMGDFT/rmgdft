@@ -45,7 +45,7 @@
 void init_wf (STATE * states)
 {
 
-    int idx, state, ix, iy, iz, pbasis, nspin=(pct.spin_flag+1);
+    int idx, state, ix, iy, iz, pbasis, nspin=(ct.spin_flag+1);
     int xoff, yoff, zoff;
     REAL *tmp_psiR, *tmp_psiI;
     STATE *sp;

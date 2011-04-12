@@ -211,10 +211,7 @@ void get_new_rho (STATE * states, REAL * rho)
         ct.tcharge += rho[idx];
 
     /* ct.tcharge = real_sum_all (ct.tcharge); */
-    if (pct.spin_flag)
-    	ct.tcharge = real_sum_all (ct.tcharge, pct.img_comm);  
-    else
-    	ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);  
+    ct.tcharge = real_sum_all (ct.tcharge, pct.img_comm);  
     ct.tcharge = ct.tcharge * ct.vel_f;
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */

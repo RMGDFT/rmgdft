@@ -40,7 +40,7 @@
 
 void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_x, int length_y, int length_z)
 {
-    REAL t1, min, min2, nspin = (pct.spin_flag + 1.0);
+    REAL t1, min, min2, nspin = (ct.spin_flag + 1.0);
     int step, idx, inc = 1;
     static REAL **rhohist=NULL, **residhist=NULL;
 
@@ -88,16 +88,8 @@ void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_
 
 
     /*Find absolute minimum from all PEs */
-    if (pct.spin_flag)
-    {
-    	min = real_min_all (min, pct.img_comm);
-    	min2 = real_min_all (min2, pct.img_comm);
-    }
-    else
-    {
-    	min = real_min_all (min, pct.grid_comm);
-    	min2 = real_min_all (min2, pct.grid_comm);
-    }
+    min = real_min_all (min, pct.img_comm);
+    min2 = real_min_all (min2, pct.img_comm);
 
     if (min < ZERO)
     {

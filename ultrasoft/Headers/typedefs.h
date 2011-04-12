@@ -166,11 +166,7 @@ typedef struct
 	 * unless you really need all-to-all, even across grids, communication. */
 	MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm;
 
-    /* determine if this image is processing spin up or spin down. */
-    int spin_flag;
 
-    /* determine whether to initialize up and down density equally or not */
-    int init_equal_density_flag;
 
 	/* scalapack variables */
 	int desca[DLEN];
@@ -849,6 +845,14 @@ typedef struct
 
     /* time at which run started */
     REAL time0;
+    
+    /* determine if this image is processing spin up or spin down. */
+    int spin_flag;
+
+
+    /* determine whether to initialize up and down density equally or not */
+    int init_equal_density_flag; 
+
 
     /** Name of the input control file. Passed as a command line argument
      *
@@ -933,8 +937,6 @@ typedef struct
     /** Number of states */
     int num_states;
 
-    /* Number of states for the opposite spin*/
-    //int num_states_oppo; 
 
     /*Number of states for spin up and down used for initialization*/
     int num_states_up, num_states_down;

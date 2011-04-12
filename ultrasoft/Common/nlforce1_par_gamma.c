@@ -49,7 +49,7 @@ void nlforce1_par_gamma (REAL * par_gamma, int ion, int nh)
             ++idx;
         }
     }
-    if (pct.spin_flag)
+    if (ct.spin_flag)
 	global_sums (forces, &three, pct.spin_comm);
 
     iptr->force[ct.fpt[0]][0] += forces[0];

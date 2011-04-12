@@ -55,7 +55,7 @@ void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype)
 	libflag = 1;
 
    	/* Evaluate the XC potential and energy*/
-	if (pct.spin_flag && libflag)
+	if (ct.spin_flag && libflag)
 	{
                 /* XC calculation for spin polarized case*/
     		if (xctype == LDA_PZ81)
@@ -67,7 +67,7 @@ void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype)
         		error_handler ("Unknown exchange-correlation functional");
 
 	}
-	else if ( (!pct.spin_flag) && libflag)
+	else if ( (!ct.spin_flag) && libflag)
 	{
 
                 /* XC calculation for spin unpolarized case*/
@@ -78,7 +78,7 @@ void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype)
 		else
         		error_handler ("Unknown exchange-correlation functional");
 	}
-	else if (pct.spin_flag && (!libflag))
+	else if (ct.spin_flag && (!libflag))
 	{
                 /* XC calculation for spin polarized case*/
     		if (xctype == LDA_PZ81)
@@ -89,7 +89,7 @@ void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype)
         		error_handler ("Unknown exchange-correlation functional");
 
 	}
-	else if ( (!pct.spin_flag) && (!libflag))
+	else if ( (!ct.spin_flag) && (!libflag))
 	{
 
                 /* XC calculation for spin unpolarized case*/

@@ -87,14 +87,14 @@ void init_pe ( int image )
     /* this will need to be extnded if we want to parallelize over k_points */
     if (pct.grids == 1)
     {
-        if (pct.spin_flag)
+        if (ct.spin_flag)
             error_handler
                 ("Spin calculations require 2 grids, please rerun with twice as many PEs.");
         MPI_Comm_dup (pct.img_comm, &pct.grid_comm);
     }
     else if (pct.grids == 2)
     {
-        if (!pct.spin_flag)
+        if (!ct.spin_flag)
             error_handler
                 ("2 grids allocated but spin disabled, please rerun with half as many PEs or enable spin.");
         int ndims = 2;

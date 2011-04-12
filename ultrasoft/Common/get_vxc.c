@@ -48,7 +48,7 @@ void get_vxc (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * vxc)
     REAL *exc, *nrho, *nrho_oppo;
 
     
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	my_malloc (exc, 3 * FP0_BASIS, REAL);
 	nrho_oppo = exc + 2 * FP0_BASIS;
@@ -60,7 +60,7 @@ void get_vxc (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * vxc)
 
 
     /* Add in the nonlinear core charges correction from pseudopotential file */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
         /*In spin polarized calculation,  add half of the nonlinear core charge for both 
 	 * processor's own spin density and opposite spin density */

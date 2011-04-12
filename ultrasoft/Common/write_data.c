@@ -74,7 +74,7 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
     int gamma;
     int nk, ik;
     int ns, is;
-    int ia, idx, nspin = (pct.spin_flag + 1);
+    int ia, idx, nspin = (ct.spin_flag + 1);
     REAL time0, write_time;
 
     /* Wait until everyone gets here */
@@ -154,7 +154,7 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
     /* write the total electronic density */
     write_double (fhand, rho, fgrid_size);
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	/* write the electronic density for the opposite spin */
    	 write_double (fhand, rho_oppo, fgrid_size); 

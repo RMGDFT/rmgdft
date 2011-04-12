@@ -54,7 +54,7 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
     const int maxit = 50;
     const REAL charge_tol = 1.0e-10;
 
-    int iter, st, st1, kpt, idx, nks, nspin = (pct.spin_flag + 1);
+    int iter, st, st1, kpt, idx, nks, nspin = (ct.spin_flag + 1);
     STATE *sp;
     REAL mu, dmu, mu1, mu2, f, fmid, eig;
     REAL (*func) () = NULL;
@@ -203,9 +203,9 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
 
 static REAL fd (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
-    int st, kpt, st1, idx, nks, nspin = (pct.spin_flag + 1);
+    int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
     STATE *sp;
-    REAL t1, t2, sumf, eig, fac = (2.0 - pct.spin_flag);
+    REAL t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
@@ -249,11 +249,11 @@ static REAL fd (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int n
 
 static REAL gs (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
-    int st, kpt, st1, nks, idx, nspin = (pct.spin_flag + 1);
+    int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
     STATE *sp;
     REAL t1, sumf, eig, fac;
     
-    fac = (2.0 - pct.spin_flag) * 0.5;
+    fac = (2.0 - ct.spin_flag) * 0.5;
 
     /* Gaussian occupations:
        f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
@@ -295,11 +295,11 @@ static REAL gs (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int n
 
 static REAL ef (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
-    int st, kpt, st1, nks, idx, nspin = (pct.spin_flag + 1);
+    int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
     STATE *sp;
     REAL t1, t2, sumf, eig, fac;
 
-    fac = (2.0 - pct.spin_flag) * 0.5;
+    fac = (2.0 - ct.spin_flag) * 0.5;
 
     t2 = 4.0 / sqrt (PI);
     nks = ct.num_kpts * ct.num_states; 

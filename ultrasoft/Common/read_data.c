@@ -67,7 +67,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     int fgrid_size;
     int gamma;
     int nk, ik;
-    int ns, is, idx, nspin = (pct.spin_flag + 1);
+    int ns, is, idx, nspin = (ct.spin_flag + 1);
     int na, ia;
     int i;
 
@@ -77,8 +77,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
 
     /* Make the new output file name */
-    printf("\nspin flag =%d\n", pct.spin_flag);
-    if (pct.spin_flag)
+    printf("\nspin flag =%d\n", ct.spin_flag);
+    if (ct.spin_flag)
     {
 	    if (pct.spinpe == 0)
 		    sprintf(newname, "%s.up%d", name, pct.gridpe);
@@ -162,7 +162,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
     /* read density */
     read_double (fhand, rho, fgrid_size);
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	read_double (fhand, rho_oppo, fgrid_size);
         printf ("read_data: read spin up 'rho'\n");

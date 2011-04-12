@@ -48,7 +48,7 @@ void nlforce1_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
         }
     }
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
 	    global_sums (forces, &three, pct.spin_comm);
 
     iptr->force[ct.fpt[0]][0] -= forces[0];

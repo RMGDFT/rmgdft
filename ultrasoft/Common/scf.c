@@ -52,7 +52,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
           REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
 {
 
-    int kpt, st1, idx, ik, st, nspin = (pct.spin_flag + 1);
+    int kpt, st1, idx, ik, st, nspin = (ct.spin_flag + 1);
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
@@ -63,7 +63,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     REAL *eigval_sd, *eigval_rv, *rho_tot;   
 
     /* allocate memory for eigenvalue send array and receive array */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	my_malloc (eigval_sd, 2 * ct.num_kpts * ct.num_states, REAL);
     	eigval_rv = eigval_sd + ct.num_kpts * ct.num_states;
@@ -88,7 +88,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     get_vxc (rho, rho_oppo, rhocore, vxc);
     rmg_timings (SCF_XC_TIME, (my_crtc () - time1), 0);
 
-    if (pct.spin_flag)        
+    if (ct.spin_flag)        
     {
 	/*calculate the total charge density in order to calculate hartree potential*/
 	for (idx = 0; idx < FP0_BASIS; idx++)
@@ -186,7 +186,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
 #endif
 
-    if (pct.spin_flag) 
+    if (ct.spin_flag) 
     {   
         /*Prepare the sending buffer of eigenvalues */
 	st = 0;
@@ -247,7 +247,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /*Takes care of mixing and checks whether the charge density is negative*/
     mix_rho(new_rho, rho, rhocore, FP0_BASIS, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	/*  Communite for spin up and spin down density,  blocked communication like MPI_Send and MPI_Recv not work ? */
     	MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[0]);
@@ -274,7 +274,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     my_free (vtot_psi);
 
     /* free the memory */
-    if (pct.spin_flag)
+    if (ct.spin_flag)
     {
     	MPI_Waitall (2, req, stat);
     	my_free (eigval_sd);

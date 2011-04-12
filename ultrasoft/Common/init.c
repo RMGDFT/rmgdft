@@ -385,9 +385,9 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     Dprintf ("Set the initial density to be equal to the compensating charges");
     if (!ct.runflag)
     {
-	if (pct.spin_flag)
+	if (ct.spin_flag)
         {   
-	       fac = (2.0 - pct.init_equal_density_flag) / (3.0 - pct.init_equal_density_flag);
+	       fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
        	       for (idx = 0; idx < FP0_BASIS; idx++)
 	       {
 
@@ -436,7 +436,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
        	get_vxc (rho, rho_oppo, rhocore, vxc);
        	Dprintf ("get vxc completed");
 
-	if (pct.spin_flag)
+	if (ct.spin_flag)
 	{
     		my_malloc (rho_tot,  FP0_BASIS, REAL);
   	    	for (idx = 0; idx < FP0_BASIS; idx++)
