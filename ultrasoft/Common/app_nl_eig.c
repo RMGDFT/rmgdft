@@ -47,8 +47,8 @@
 #include "main.h"
 
 
-void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state, int flag,
-                 int kidx, int tid)
+void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sintR, REAL *sintI, int state,
+                 int kidx)
 {
 
     int idx, ion, stop, ip, sindex, index2;
@@ -56,11 +56,11 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state
     int i, j, nh;
     int incx = 1, alloc, step, count;
     REAL *weiptr, *mptr, *dnmI, coeffR, coeffI;
-    REAL *nworkR, *nworkI, *pR, *pI, *sintR;
+    REAL *nworkR, *nworkI, *pR, *pI, *psintR;
     ION *iptr;
 
     #if !GAMMA_PT
-      REAL *sintI;
+      REAL *psintI;
     #endif
 
 
@@ -86,56 +86,6 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state
 
 
 
-    /*get <KB|psi> */
-
-    /*Mix non-local projectors, if requested */
-    if (flag)
-    {
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-
-            iptr = &ct.ions[ion];
-            for (ip = 0; ip < ct.max_nl; ip++)
-            {
-                index2 = sindex + ip;
-
-                iptr->oldsintR[index2] =
-                    ct.prjmix * iptr->newsintR[index2] + (1.0 - ct.prjmix) * iptr->oldsintR[index2];
-
-#if !GAMMA_PT
-                iptr->oldsintI[index2] =
-                    ct.prjmix * iptr->newsintI[index2] + (1.0 - ct.prjmix) * iptr->oldsintI[index2];
-#endif
-            }
-        }
-    }
-
-    else
-    {
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-
-            iptr = &ct.ions[ion];
-            for (ip = 0; ip < ct.max_nl; ip++)
-            {
-                index2 = sindex + ip;
-
-                iptr->oldsintR[index2] = iptr->newsintR[index2];
-
-#if !GAMMA_PT
-                iptr->oldsintI[index2] = iptr->newsintI[index2];
-#endif
-            }
-        }
-    }
-
-
-
-
-
-
-
-
     /*Simplified version of the loop below */
 #if 0
     /* Loop over ions once again */
@@ -146,10 +96,9 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state
         if (!stop)
             continue;
 
-        iptr = &ct.ions[ion];
-        sintR = &iptr->oldsintR[sindex];
+        psintR = &sintR[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
-        sintI = &iptr->oldsintI[sindex];
+        psintI = &sintI[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
 #endif
 
         weiptr = pct.weight[ion];
@@ -170,9 +119,9 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state
             inh = i * nh;
             for (j = 0; j < nh; j++)
             {
-                coeffR += dnmI[inh + j] * sintR[j];
+                coeffR += dnmI[inh + j] * psintR[j];
 #if !GAMMA_PT
-                coeffI += dnmI[inh + j] * sintI[j];
+                coeffI += dnmI[inh + j] * psintI[j];
 #endif
             }                   /* end for j */
             saxpy (&stop, &coeffR, mptr, &incx, nworkR, &incx);
@@ -226,9 +175,9 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state
         nh = pct.prj_per_ion[ion];
         dnmI = pct.dnmI[ion];
 
-        sintR = &iptr->oldsintR[sindex];
+        psintR = &sintR[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
-        sintI = &iptr->oldsintI[sindex];
+        psintI = &sintI[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
 #endif
 
         pR = pct.phaseptr[ion];
@@ -261,9 +210,9 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state
                     coeffI = 0.0;
                     for (j = 0; j < nh; j++)
                     {
-                        coeffR += dnmI[i * nh + j] * sintR[j];
+                        coeffR += dnmI[i * nh + j] * psintR[j];
 #if !GAMMA_PT
-                        coeffI += dnmI[i * nh + j] * sintI[j];
+                        coeffI += dnmI[i * nh + j] * psintI[j];
 #endif
                     }           /* end for j */
                     QMD_saxpy (step, coeffR, &mptr[count], incx, nworkR, incx);

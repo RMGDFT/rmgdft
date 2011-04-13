@@ -659,7 +659,7 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * vtot_eig)
         time1 = my_crtc ();
 #    endif
         /* Apply non-local operator to psi and store in work2 */
-        app_nl_eig (tmp_psi, NULL, work2, NULL, sp->istate, FALSE, kidx, 0);
+        app_nl_eig (tmp_psi, NULL, work2, NULL, ct.ions[0].oldsintR, NULL, sp->istate, kidx);
 #    if MD_TIMERS
         rmg_timings (DIAG_NL_TIME, (my_crtc () - time1), 0);
 #    endif
@@ -863,7 +863,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * vtot_ei
         time1 = my_crtc ();
 #    endif
         /* Apply non-local operator to psi and store in work2 */
-        app_nl_eig (tmp_psiR, tmp_psiI, work2R, work2I, sp->istate, FALSE, kidx, 0);
+        app_nl_eig (tmp_psiR, tmp_psiI, work2R, work2I, ct.ions[0].oldsintR, ct.ions[0].oldsintI, FALSE, kidx);
 #    if MD_TIMERS
         rmg_timings (DIAG_NL_TIME, (my_crtc () - time1), 0);
 #    endif

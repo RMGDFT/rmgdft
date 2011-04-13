@@ -104,7 +104,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     time1 = my_crtc ();
 #endif
     /* Get the non-local operator acting on psi and store in nvtot */
-    app_nl_eig (tmp_psi, NULL, nv, NULL, sp->istate, sp->firstflag, sp->kidx, tid);
+    app_nl_eig (tmp_psi, NULL, nv, NULL, ct.ions[0].oldsintR, NULL, sp->istate, sp->kidx);
 
     /*Get the S operator acting on psi and store in nstot */
     app_ns_eig (tmp_psi, NULL, ns, NULL, sp->istate, sp->kidx, tid);
@@ -409,7 +409,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     time1 = my_crtc ();
 #endif
     /* Get the non-local operator acting on psi and store in nvtot */
-    app_nl_eig (tmp_psiR, tmp_psiI, nvR, nvI, sp->istate, sp->firstflag, sp->kidx, tid);
+    app_nl_eig (tmp_psiR, tmp_psiI, nvR, nvI, ct.ions[0].oldsintR, ct.ions[0].oldsintI, sp->istate, sp->kidx);
 
     /* Get the S operator acting on psi and store in nstot */
     app_ns_eig (tmp_psiR, tmp_psiI, nsR, nsI, sp->istate, sp->kidx, tid);
@@ -714,10 +714,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
     sp->firstflag++;
 
-    /*This should be done in subdiag_mpi.c */
-    /*if( (ct.scf_steps!=0) && (ct.diag!=0) && ((ct.scf_steps % ct.diag) == 0) && (ct.end_diag>ct.scf_steps) ) {
-       sp->firstflag=0;
-       } */
 
 
     /* Release our memory */

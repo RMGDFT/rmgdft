@@ -487,7 +487,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
 #    endif
 
     /* Apply non-local operator to psi and store in work2 */
-    app_nl_eig (tmp_psiR, tmp_psiI, work2R, work2I, sp->istate, FALSE, sp->kidx, 0);
+    app_nl_eig (tmp_psiR, tmp_psiI, work2R, work2I,ct.ions[0].oldsintR, ct.ions[0].oldsintI, sp->istate, sp->kidx);
 
 
     /*Apply the S operator acting on psi and store in work3 */
