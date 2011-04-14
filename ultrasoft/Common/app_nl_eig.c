@@ -96,9 +96,9 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
         if (!stop)
             continue;
 
-        psintR = &sintR[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
+        psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
-        psintI = &sintI[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
+        psintI = &sintI[ion * ct.num_states * ct.max_nl + sindex];
 #endif
 
         weiptr = pct.weight[ion];
@@ -175,9 +175,9 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
         nh = pct.prj_per_ion[ion];
         dnmI = pct.dnmI[ion];
 
-        psintR = &sintR[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
+        psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
-        psintI = &sintI[ion * ct.num_kpts * ct.num_states * ct.max_nl + sindex];
+        psintI = &sintI[ion * ct.num_states * ct.max_nl + sindex];
 #endif
 
         pR = pct.phaseptr[ion];
