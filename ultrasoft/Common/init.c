@@ -381,6 +381,9 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         }
     }
 
+    /*Setup initial values for mixed <beta|psi> stored in oldsint*/
+    mix_betaxpsi (0);
+
     Dprintf ("Set the initial density to be equal to the compensating charges");
     if (!ct.runflag)
     {

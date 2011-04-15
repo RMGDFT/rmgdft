@@ -153,7 +153,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 #if MPI
 
     /*Get oldsintR*/
-    if ((ct.total_scf_steps == 0) || ((ct.scf_steps -1) % ct.diag == 0 && (ct.scf_steps -1) < ct.end_diag))
+    if ( ((ct.scf_steps -1) % ct.diag == 0 && (ct.scf_steps -1) < ct.end_diag))
 	mix_betaxpsi(0);
     else 
 	mix_betaxpsi(1);
