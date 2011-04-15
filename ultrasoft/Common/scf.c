@@ -183,7 +183,6 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         ortho_full (states);
 #else
     ortho_full (states);
-    mix_betaxpsi(0);
     if (ct.diag && ct.scf_steps > 0 && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
         for (ik = 0; ik < ct.num_kpts; ik++)
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
