@@ -103,11 +103,9 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
     time1 = my_crtc ();
 #endif
-    /* Get the non-local operator acting on psi and store in nvtot */
-    app_nl_eig (tmp_psi, NULL, nv, NULL, ct.ions[0].oldsintR, NULL, sp->istate, sp->kidx);
+    /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
+    app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, ct.ions[0].oldsintR, NULL, sp->istate, sp->kidx);
 
-    /*Get the S operator acting on psi and store in nstot */
-    app_ns_eig (tmp_psi, NULL, ns, NULL, sp->istate, sp->kidx, tid);
 
 #if MD_TIMERS
     rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1), 0);
@@ -403,11 +401,9 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
     time1 = my_crtc ();
 #endif
-    /* Get the non-local operator acting on psi and store in nvtot */
-    app_nl_eig (tmp_psiR, tmp_psiI, nvR, nvI, ct.ions[0].oldsintR, ct.ions[0].oldsintI, sp->istate, sp->kidx);
+    /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
+    app_nls (tmp_psiR, tmp_psiI, nvR, nvI, nsR, nsI, ct.ions[0].oldsintR, ct.ions[0].oldsintI, sp->istate, sp->kidx);
 
-    /* Get the S operator acting on psi and store in nstot */
-    app_ns_eig (tmp_psiR, tmp_psiI, nsR, nsI, sp->istate, sp->kidx, tid);
 
 #if MD_TIMERS
     rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1), 0);

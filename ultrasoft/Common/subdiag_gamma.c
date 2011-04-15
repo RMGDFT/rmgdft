@@ -67,12 +67,10 @@
 
 
 #if GAMMA_PT
-static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * vtot_eig);
-static void subdiag_app_S (STATE * states, REAL * s_psi);
+static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
 static void subdiag_app_B (STATE * states, REAL * b_psi);
 #else
-static void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * vtot_eig);
-static void subdiag_app_S (STATE * states, REAL * s_psiR, REAL * s_psiI);
+void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig);
 static void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI);
 #endif
 #if GAMMA_PT
@@ -100,6 +98,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     REAL time1, time2, time3;
     REAL *global_matrix;
     REAL *tmp_arrayR;
+    REAL *tmp_array2R;
 #if !GAMMA_PT
     REAL *tmp_arrayI;
 #endif
@@ -147,6 +146,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
     my_malloc (tmp_arrayR, pbasis * ct.num_states, REAL);
+    my_malloc (tmp_array2R, pbasis * ct.num_states, REAL);
 #if !GAMMA_PT
     my_malloc (tmp_arrayI, pbasis * ct.num_states, REAL);
 #endif
@@ -203,8 +203,9 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         time2 = my_crtc ();
 
-        /*Apply A operator on each wavefunction */
-        subdiag_app_A (states, tmp_arrayR, vtot_eig);
+        /*Apply A operator on each wavefunction 
+	 * S operator is also applied, the result is returned in tmp_array2R*/
+        subdiag_app_A (states, tmp_arrayR, tmp_array2R, vtot_eig);
 
         time3 = my_crtc ();
         rmg_timings (DIAG_APP_A, time3 - time2, 0);
@@ -242,8 +243,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 
-        /* Apply S operator on each wavefunction */
-        subdiag_app_S (states, tmp_arrayR);
+        /* Now deal with S operator */
 
 
 
@@ -252,7 +252,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         alpha = ct.vel;
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
-               tmp_arrayR, &pbasis, &beta, global_matrix, &num_states);
+               tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
 
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3, 0);
@@ -281,13 +281,13 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /* Apply B operator on each wavefunction */
-        subdiag_app_B (states, tmp_arrayR);
+        subdiag_app_B (states, tmp_array2R);
 
         time3 = my_crtc ();
         rmg_timings (DIAG_APP_B, time3 - time2, 0);
 
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
-               tmp_arrayR, &pbasis, &beta, global_matrix, &num_states);
+               tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
 
 
         time2 = my_crtc ();
@@ -600,6 +600,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     my_free (tmp_arrayI);
 #endif
     my_free (tmp_arrayR);
+    my_free (tmp_array2R);
     my_free (global_matrix);
     my_free (vtot_eig);
     my_free (eigs);
@@ -626,7 +627,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 #  if GAMMA_PT
 /*Applies A operator to all wavefunctions*/
-static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * vtot_eig)
+static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 {
     int kidx, idx, istate, sbasis;
     REAL *sg_twovpsi, *tmp_psi, *work2, *work1;
@@ -656,7 +657,7 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * vtot_eig)
         time1 = my_crtc ();
 #    endif
         /* Apply non-local operator to psi and store in work2 */
-        app_nl_eig (tmp_psi, NULL, work2, NULL, ct.ions[0].oldsintR, NULL, sp->istate, kidx);
+        app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, ct.ions[0].oldsintR, NULL, sp->istate, kidx);
 #    if MD_TIMERS
         rmg_timings (DIAG_NL_TIME, (my_crtc () - time1), 0);
 #    endif
@@ -705,36 +706,13 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * vtot_eig)
 
 
         work1 += P0_BASIS;
+        s_psi += P0_BASIS;
     }
 
     my_free (work2);
 
 }                               /* subdiag_app_A */
 
-
-
-
-static void subdiag_app_S (STATE * states, REAL * s_psi)
-{
-    int istate;
-    REAL *work1, *tmp_psi;
-    STATE *sp;
-
-    work1 = s_psi;
-
-
-    for (istate = 0; istate < ct.num_states; istate++)
-    {
-
-        sp = &states[istate];
-        tmp_psi = sp->psiR;
-
-        /* Apply the S operator acting on psi and store in work3 */
-        app_ns_eig (tmp_psi, NULL, work1, NULL, sp->istate, sp->kidx, 0);
-        work1 += P0_BASIS;
-    }
-
-}                               /* subdiag_app_S */
 
 
 
@@ -815,7 +793,7 @@ static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi)
 
 
 /*Applies A operator to all wavefunctions*/
-void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * vtot_eig)
+void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig)
 {
     int kidx, idx, istate, sbasis;
     REAL *sg_twovpsiR, *sg_twovpsiI, *tmp_psiR, *tmp_psiI, *work2R, *work2I,
@@ -860,7 +838,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * vtot_ei
         time1 = my_crtc ();
 #    endif
         /* Apply non-local operator to psi and store in work2 */
-        app_nl_eig (tmp_psiR, tmp_psiI, work2R, work2I, ct.ions[0].oldsintR, ct.ions[0].oldsintI, FALSE, kidx);
+        app_nls (tmp_psiR, tmp_psiI, work2R, work2I, s_psiR, s_psiI, ct.ions[0].oldsintR, ct.ions[0].oldsintI, FALSE, kidx);
 #    if MD_TIMERS
         rmg_timings (DIAG_NL_TIME, (my_crtc () - time1), 0);
 #    endif
@@ -948,6 +926,8 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * vtot_ei
 
         work1R += P0_BASIS;
         work1I += P0_BASIS;
+	s_psiR += P0_BASIS;
+	s_psiI += P0_BASIS;
     }
 
     my_free (work2R);
@@ -957,31 +937,6 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * vtot_ei
 
 
 
-void subdiag_app_S (STATE * states, REAL * s_psiR, REAL * s_psiI)
-{
-    int istate;
-    REAL *work1R, *work1I, *tmp_psiR, *tmp_psiI;
-    STATE *sp;
-
-    work1R = s_psiR;
-    work1I = s_psiI;
-
-
-    for (istate = 0; istate < ct.num_states; istate++)
-    {
-
-        sp = &states[istate];
-        tmp_psiR = sp->psiR;
-        tmp_psiI = sp->psiI;
-
-        /* Apply the S operator acting on psi and store in work3 */
-        app_ns_eig (tmp_psiR, tmp_psiI, work1R, work1I, sp->istate, sp->kidx, 0);
-
-        work1R += P0_BASIS;
-        work1I += P0_BASIS;
-    }
-
-}                               /* subdiag_app_S */
 
 
 

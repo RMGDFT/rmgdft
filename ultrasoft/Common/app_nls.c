@@ -47,29 +47,30 @@
 #include "main.h"
 
 
-void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sintR, REAL *sintI, int state,
+void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R, REAL *work2I, REAL *sintR, REAL *sintI, int state,
                  int kidx)
 {
 
     int idx, ion, stop, ip, sindex, index2;
     int *pidx;
-    int i, j, nh;
+    int i, j, nh, inh;
     int incx = 1, alloc, step, count;
-    REAL *weiptr, *mptr, *dnmI, coeffR, coeffI;
-    REAL *nworkR, *nworkI, *pR, *pI, *psintR;
+    REAL *weiptr, *mptr, *dnmI, coeffR, coeffI, coeff2R, coeff2I;
+    REAL *nworkR, *nworkI, *nwork2R, *nwork2I, *pR, *pI, *psintR, *qqq;
     ION *iptr;
 
     #if !GAMMA_PT
       REAL *psintI;
     #endif
 
-
-
+  
     alloc = P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
-    my_calloc (nworkR, 2 * alloc, REAL);
+    my_calloc (nworkR, 4 * alloc, REAL);
     nworkI = nworkR + alloc;
+    nwork2R = nworkI + alloc;
+    nwork2I = nwork2R + alloc;
 
     /*Base index for sintR and sintI */
     sindex = kidx * ct.num_ions * ct.num_states * ct.max_nl + state * ct.max_nl;
@@ -79,11 +80,15 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
     /* Zero out the work array */
     for (idx = 0; idx < P0_BASIS; idx++)
         workR[idx] = 0.0;
+    
+    my_copy(psiR, work2R, P0_BASIS);
+
 #if !GAMMA_PT
     for (idx = 0; idx < P0_BASIS; idx++)
         workI[idx] = 0.0;
+    
+    my_copy(psiI, work2I, P0_BASIS);
 #endif
-
 
 
     /*Simplified version of the loop below */
@@ -104,6 +109,7 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
         weiptr = pct.weight[ion];
         nh = pct.prj_per_ion[ion];
         dnmI = pct.dnmI[ion];
+        qqq = pct.qqq[ion];
 
         pR = pct.phaseptr[ion];
         pR += 2 * kidx * stop;
@@ -116,17 +122,23 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
             mptr = weiptr + i * stop;
             coeffR = 0.0;
             coeffI = 0.0;
+            coeff2R = 0.0;
+            coeff2I = 0.0;
             inh = i * nh;
             for (j = 0; j < nh; j++)
             {
                 coeffR += dnmI[inh + j] * psintR[j];
+                coeff2R += qqq[inh + j] * psintR[j];
 #if !GAMMA_PT
                 coeffI += dnmI[inh + j] * psintI[j];
+                coeff2I += qqq[inh + j] * psintI[j];
 #endif
             }                   /* end for j */
             saxpy (&stop, &coeffR, mptr, &incx, nworkR, &incx);
+            saxpy (&stop, &coeff2R, mptr, &incx, nwork2R, &incx);
 #if !GAMMA_PT
             saxpy (&stop, &coeffI, mptr, &incx, nworkI, &incx);
+            saxpy (&stop, &coeff2I, mptr, &incx, nwork2I, &incx);
 #endif
         }                       /*end for i */
 
@@ -135,19 +147,26 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
         for (idx = 0; idx < stop; idx++)
         {
             workR[pidx[idx]] += nworkR[idx];
+            work2R[pidx[idx]] += nwork2R[idx];
             nworkR[idx] = 0.0;
+            nwork2R[idx] = 0.0;
 
         }                       /* end for */
 #else
 
         /* Write back the results */
         for (idx = 0; idx < stop; idx++)
+	{
             workR[pidx[idx]] += (nworkR[idx] * pR[idx] + nworkI[idx] * pI[idx]);
+            work2R[pidx[idx]] += (nwork2R[idx] * pR[idx] + nwork2I[idx] * pI[idx]);
+	}
 
         for (idx = 0; idx < stop; idx++)
         {
             workI[pidx[idx]] += (-nworkR[idx] * pI[idx] + nworkI[idx] * pR[idx]);
+            work2I[pidx[idx]] += (-nwork2R[idx] * pI[idx] + nwork2I[idx] * pR[idx]);
             nworkR[idx] = nworkI[idx] = 0.0;
+            nwork2R[idx] = nwork2I[idx] = 0.0;
 
         }                       /* end for */
 #endif
@@ -174,6 +193,7 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
         weiptr = pct.weight[ion];
         nh = pct.prj_per_ion[ion];
         dnmI = pct.dnmI[ion];
+        qqq = pct.qqq[ion];
 
         psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
@@ -195,10 +215,10 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
                 step = stop - count;
             /* Now apply the non-local operator to the wavefunctions */
             for (idx = 0; idx < step; idx++)
-                nworkR[idx] = ZERO;
+                nworkR[idx] = nwork2R[idx] = ZERO;
 #if !GAMMA_PT
             for (idx = 0; idx < step; idx++)
-                nworkI[idx] = ZERO;
+                nworkI[idx] = nwork2I[idx]  = ZERO;
 #endif
 
             if (step)
@@ -207,17 +227,23 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
                 {
                     mptr = weiptr + i * stop;
                     coeffR = 0.0;
+                    coeff2R = 0.0;
                     coeffI = 0.0;
+                    coeff2I = 0.0;
                     for (j = 0; j < nh; j++)
                     {
                         coeffR += dnmI[i * nh + j] * psintR[j];
+                        coeff2R += qqq[i * nh + j] * psintR[j];
 #if !GAMMA_PT
                         coeffI += dnmI[i * nh + j] * psintI[j];
+                        coeff2I += qqq[i * nh + j] * psintI[j];
 #endif
                     }           /* end for j */
                     QMD_saxpy (step, coeffR, &mptr[count], incx, nworkR, incx);
+                    QMD_saxpy (step, coeff2R, &mptr[count], incx, nwork2R, incx);
 #if !GAMMA_PT
                     QMD_saxpy (step, coeffI, &mptr[count], incx, nworkI, incx);
+                    QMD_saxpy (step, coeff2I, &mptr[count], incx, nwork2I, incx);
 #endif
                 }               /*end for i */
             }
@@ -225,17 +251,28 @@ void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sin
 #if GAMMA_PT
             /* Write back the results */
             for (idx = 0; idx < step; idx++)
+	    {
                 workR[pidx[idx + count]] += nworkR[idx];
+                work2R[pidx[idx + count]] += nwork2R[idx];
+	    }
 #else
 
             /* Write back the results */
             for (idx = 0; idx < step; idx++)
+	    {
                 workR[pidx[idx + count]] += (nworkR[idx] * pR[idx + count] +
                                              nworkI[idx] * pI[idx + count]);
+                work2R[pidx[idx + count]] += (nwork2R[idx] * pR[idx + count] +
+                                             nwork2I[idx] * pI[idx + count]);
+	    }
 
             for (idx = 0; idx < step; idx++)
+	    {
                 workI[pidx[idx + count]] += (-nworkR[idx] * pI[idx + count] +
                                              nworkI[idx] * pR[idx + count]);
+                work2I[pidx[idx + count]] += (-nwork2R[idx] * pI[idx + count] +
+                                             nwork2I[idx] * pR[idx + count]);
+	    }
 #endif
 
 

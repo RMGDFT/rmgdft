@@ -364,10 +364,8 @@ REAL app_cil1_hex (REAL *a, REAL *b, int dimx, int dimy, int dimz,
                    REAL gridhx, REAL gridhy, REAL gridhz);
 REAL app_cil1_ortho (REAL *a, REAL *b, int dimx, int dimy, int dimz,
                      REAL gridhx, REAL gridhy, REAL gridhz);
-void app_nl_eig (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *sintR, REAL *sintI, int state,
+void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R, REAL *work2I, REAL *sintR, REAL *sintI, int state,
                  int kidx);
-void app_ns_eig (REAL *psiR, REAL *psiI, REAL *workR, REAL *workI,
-                 int state, int kidx, int tid);
 void get_ddd (REAL *veff);
 void get_nlop_d (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
 void get_nlop_p (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
