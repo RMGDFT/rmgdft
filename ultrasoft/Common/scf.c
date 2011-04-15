@@ -217,8 +217,8 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
  
         /*Communicate for spin up and spin down energy eigenvalues*/    
-    	MPI_Send(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm);
-    	MPI_Recv(eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    	MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+		     eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
 	
 	/* Unpack the received eigenvalue to state structure */
