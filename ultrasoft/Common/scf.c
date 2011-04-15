@@ -152,12 +152,6 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 #if MPI
 
-    /*Get oldsintR*/
-    if ( ((ct.scf_steps -1) % ct.diag == 0 && (ct.scf_steps -1) < ct.end_diag))
-	mix_betaxpsi(0);
-    else 
-	mix_betaxpsi(1);
-
     time1 = my_crtc ();
     /* Update the wavefunctions */
     for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++)
@@ -183,7 +177,6 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* do diagonalizations if requested, if not orthogonalize */
     if (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
     {
-	mix_betaxpsi(0);
         subdiag_gamma (ct.kp[0].kstate, vh, vnuc, vxc);
     }
     else
@@ -195,6 +188,13 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         for (ik = 0; ik < ct.num_kpts; ik++)
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
 #endif
+    
+    /*Get oldsintR*/
+    if (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
+	mix_betaxpsi(0);
+    else 
+	mix_betaxpsi(1);
+
 
     if (ct.spin_flag) 
     {   
