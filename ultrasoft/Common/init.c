@@ -240,7 +240,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
             states[kst1].pbasis = P0_BASIS;
             states[kst1].sbasis = (PX0_GRID + 2) * (PY0_GRID + 2) * (PZ0_GRID + 2);
             states[kst1].istate = st1;
-            states[kst1].firstflag = 0;
             states[kst1].vel = ct.vel;
 #if MPI
 #if GAMMA_PT

@@ -426,10 +426,6 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     rmg_timings (DIAG_BETAXPSI, (my_crtc () - time2), 0);
 
-    /*Set firstflag to zero so that non-local projectors will be recalculated and not mixed */
-    for (st1 = 0; st1 < ct.num_states; st1++)
-        states[st1].firstflag = 0;
-
 
     rmg_timings (DIAG_TIME, (my_crtc () - time1), 0);
 

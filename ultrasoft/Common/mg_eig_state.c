@@ -329,12 +329,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     }                           /* end for */
 
 
-    sp->firstflag++;
 
-    /*This should be done in subdiag_mpi.c */
-    /*if( (ct.scf_steps!=0) && (ct.diag!=0) && ((ct.scf_steps % ct.diag) == 0) && (ct.end_diag>ct.scf_steps) ) {
-       sp->firstflag=0;
-       } */
 
     /* Release our memory */
     my_free (sg_psi);
@@ -711,8 +706,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
     }                           /* end for */
 
-
-    sp->firstflag++;
 
 
 
