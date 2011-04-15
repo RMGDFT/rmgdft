@@ -78,16 +78,6 @@ void ortho_full (STATE * states)
     }                           /*end for kpt */
 
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-#endif
-    /*newsintR should be recalculated, since new_psi and norm_psi1_parallel do not fully
-     * update newsintR so that they are efficient*/
-    betaxpsi (states);
-#if MD_TIMERS
-    rmg_timings (ORTHO_BETAXPSI, (my_crtc () - time2), 0);
-#endif
-
     my_free (cR);
     my_free (cI);
 

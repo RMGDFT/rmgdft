@@ -184,9 +184,17 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 #else
     ortho_full (states);
     if (ct.diag && ct.scf_steps > 0 && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
+    {
+	/*Projectores need to be updated prior to subspace diagonalization*/
+	betaxpsi (states);
         for (ik = 0; ik < ct.num_kpts; ik++)
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
+    }
 #endif
+    
+    
+    /*wavefunctions have changed, projectors have to be recalculated */
+    betaxpsi (states);
     
     /*Get oldsintR*/
     if (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
