@@ -418,15 +418,6 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     my_free (vtot_eig);
 
 
-    /*We do this when memory is released since betaxpsi1 requires quite a lot of memory,
-     * although, not nearly as much as this function*/
-    time2 = my_crtc ();
-
-    betaxpsi1 (states, kidx);
-
-    rmg_timings (DIAG_BETAXPSI, (my_crtc () - time2), 0);
-
-
     rmg_timings (DIAG_TIME, (my_crtc () - time1), 0);
 
 
