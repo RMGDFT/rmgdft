@@ -52,7 +52,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
           REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
 {
 
-    int kpt, st1, idx, ik, st, nspin = (ct.spin_flag + 1);
+    int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1);
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
@@ -61,6 +61,8 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     MPI_Request req[2];   
     /* to hold the send data and receive data of eigenvalues */
     REAL *eigval_sd, *eigval_rv, *rho_tot;   
+    
+    time3 = my_crtc ();
 
     /* allocate memory for eigenvalue send array and receive array */
     if (ct.spin_flag)
@@ -70,8 +72,6 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     	my_malloc (rho_tot, FP0_BASIS, REAL);
     }
-
-    time3 = my_crtc ();
 
     my_malloc (new_rho, FP0_BASIS, REAL);
     my_malloc (vtot, FP0_BASIS, REAL);
@@ -173,17 +173,16 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
      * For non-gamma point we have to do first orthogonalization and then, optionally subspace diagonalization
      * the reason is for non-gamma subdiag is not coded to solve generalized eigenvalue problem, it can
      * only solve the regular eigenvalue problem and that requires that wavefunctions are orthogonal to start with.*/
+    diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
 #if GAMMA_PT
     /* do diagonalizations if requested, if not orthogonalize */
-    if (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
-    {
+    if (diag_this_step)
         subdiag_gamma (ct.kp[0].kstate, vh, vnuc, vxc);
-    }
     else
         ortho_full (states);
 #else
     ortho_full (states);
-    if (ct.diag && ct.scf_steps > 0 && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
+    if (diag_this_step)
     {
 	/*Projectores need to be updated prior to subspace diagonalization*/
 	betaxpsi (states);
@@ -197,7 +196,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     betaxpsi (states);
     
     /*Get oldsintR*/
-    if (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag)
+    if (diag_this_step)
 	mix_betaxpsi(0);
     else 
 	mix_betaxpsi(1);
