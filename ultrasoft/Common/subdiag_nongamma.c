@@ -78,7 +78,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
 void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
     int idx, st1;
-	int num_states = pct.size;
+	int num_states;
     int stop;
     int kidx;
     REAL *work1;

@@ -248,7 +248,7 @@ void get_nlop (void)
 #if !GAMMA_PT
     if (pct.newsintI_local) my_free (pct.newsintI_local);
     if (pct.oldsintI_local) my_free (pct.oldsintI_local);
-    my_calloc (pct.newsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL)
+    my_calloc (pct.newsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL);
     my_calloc (pct.oldsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl, REAL);
 #endif
     
