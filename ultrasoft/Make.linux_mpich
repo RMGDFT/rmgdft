@@ -49,8 +49,7 @@ FFLAGS = $(ARCH) -O3
 CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
 
 
-rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
-	echo $LIBXC_FILES
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 

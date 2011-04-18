@@ -44,7 +44,7 @@ FFLAGS = $(ARCH)  -O3 -fast -Mflushz -c -Mipa=fast,inline
 CFLAGS = $(ARCH)  -O3 -fast -Mflushz -B -Mipa=fast,inline -IHeaders
 
 
-rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 
