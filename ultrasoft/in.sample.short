@@ -115,7 +115,7 @@ charge_pulay_order="5"
 max_scf_steps="100"
 
 # Number of MD steps (if running MD) or max number of steps when doing "Fast Relax"
-max_rmg_steps="2"
+max_md_steps="100"
 
 
 # Subspace diagonalization options

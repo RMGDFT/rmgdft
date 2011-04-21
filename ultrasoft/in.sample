@@ -273,7 +273,11 @@ fast_relax_max_force="0.0025"
 
 # Number of MD steps (if running MD) or max number of steps when doing "Fast Relax"
 # Default: "100"
-max_rmg_steps="2"
+max_md_steps="100"
+
+# Number of rmg "restart like" (NEB/exchange/ARTs) steps to perform */
+# Default: "1"
+max_rmg_steps="1"
 
 # MD options
 
