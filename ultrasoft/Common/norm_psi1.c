@@ -12,7 +12,7 @@
 void norm_psi1 (STATE * sp, int istate, int kidx)
 {
 
-    int idx, ion, nh, i, j, size, incx = 1, inh, sidx;
+    int idx, ion, nh, i, j, size, incx = 1, inh, sidx, sidx_local;
     REAL sumbetaR, sumpsi, sum, t1;
     REAL *tmp_psiR, *tmp_psiI, *qqq, *sintR, *sintI, *ptr;
     ION *iptr;
@@ -110,6 +110,24 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
         QMD_sscal (ct.max_nl, t1, ptr, incx);
 #if !GAMMA_PT
         ptr = &iptr->newsintI[sidx];
+        QMD_sscal (ct.max_nl, t1, ptr, incx);
+#endif
+    }
+    
+    
+    /* update <beta|psi> - Local version*/
+    sidx_local = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
+    
+    for (ion = 0; ion < pct.num_nonloc_ions; ion++)
+    {
+
+	ptr = &pct.oldsintR_local[ion * ct.num_states * ct.max_nl];
+        ptr += sidx_local;
+        
+	QMD_sscal (ct.max_nl, t1, ptr, incx);
+#if !GAMMA_PT
+	ptr = pct.oldsintI_local[ion * ct.num_states * ct.max_nl];
+        ptr += sidx_local;
         QMD_sscal (ct.max_nl, t1, ptr, incx);
 #endif
     }
