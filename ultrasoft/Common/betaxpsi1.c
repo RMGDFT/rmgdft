@@ -13,7 +13,7 @@ void betaxpsi1 (STATE * states, int kpt)
 {
 
     int idx, ion, stop, ip, ipindex, alloc, index_global, index_local;
-    int istate;
+    int istate, goffset, loffset;
     int id1, incx = 1, *pidx;
     REAL *nlarrayR, *nlarrayI, *sintR;
     REAL *weiptr, *psiR;
@@ -139,15 +139,22 @@ void betaxpsi1 (STATE * states, int kpt)
 
 
     /*Pick up only the data relevant for this processor*/
+
+    /*Offset due to a kpoint*/
+    goffset = kpt * ct.num_ions * ct.num_states * ct.max_nl;
+    loffset = kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
-	index_global = kpt * pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl;
-	index_local = kpt * ion *  ct.num_states * ct.max_nl;
+	index_global = goffset + pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl;
+	index_local = loffset + ion *  ct.num_states * ct.max_nl;
 
-	my_copy(&sintR[index_global], &pct.newsintR_local[index_local], ct.num_states * ct.max_nl);
+	my_copy(&ct.ions[0].newsintR[index_global], &pct.newsintR_local[index_local], ct.num_states * ct.max_nl);
+#if !GAMMA_PT
+	my_copy(&ct.ions[0].newsintI[index_global], &pct.newsintI_local[index_local], ct.num_states * ct.max_nl);
+#endif
 
     }
-
 
     my_free (nlarrayR);
 
