@@ -120,6 +120,7 @@
 #define       GGA_PBE         4
 
 #define INIT_FIREBALL  2
+#define INIT_GAUSSIAN  3
 
 /* Neighbor list indices */
 #define NB_N 0

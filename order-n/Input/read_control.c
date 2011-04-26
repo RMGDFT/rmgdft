@@ -76,7 +76,8 @@ void read_control (void)
    char start_mode_opts[] = "\
 Random Start\n\
 Restart From File\n\
-LCAO Start";
+LCAO Start\n\
+Gaussian Start";
     get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
 
 
@@ -619,6 +620,8 @@ static void read_orbitals ()
             states[ni + i].radius = radius;
             states[ni + i].movable = movable;
             states[ni + i].frozen = frozen;
+            states[ni + i].n_orbital_same_center = num_tem;
+            states[ni + i].gaussian_orbital_index = i;
         }
 
 

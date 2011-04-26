@@ -4,7 +4,7 @@
  
 #include <stdio.h>
 
-#define MAX_COL		6
+#define MAX_COL		10
 
 
 /************************************************************/
@@ -22,7 +22,7 @@ void print_matrix(double *b, int n, int ldb)
         {
             for (j = 0; j < MAX_COL; j++)
             {
-                printf("%e \t", b[i * ldb + j + idx * MAX_COL]);
+                printf("%5.2f \t", b[i * ldb + j + idx * MAX_COL]);
             }
             if (idx + 1 < rows || cols > 0)
                 printf("\n");

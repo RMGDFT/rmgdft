@@ -276,6 +276,11 @@ typedef struct
 
     int atomic_orbital_index;
 
+
+    int n_orbital_same_center;
+    int gaussian_orbital_index;
+
+
 } STATE;
 
 

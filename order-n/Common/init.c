@@ -161,6 +161,19 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if(gridpe == 0) printf("\n init_wf done %f sec",my_crtc()-time1 );
     }
 
+    if (ct.runflag == INIT_GAUSSIAN)
+    {
+
+        /* Set initial states to random start */
+        for (ispin = 0; ispin <= ct.spin; ispin++)
+            for (kpt = pct.kstart; kpt < pct.kend; kpt++)
+            {
+                kpt1 = kpt + ispin * ct.num_kpts;
+                init_wf_gaussian(&states[kpt1 * ct.num_states]);
+            }
+
+    if(gridpe == 0) printf("\n init_wf_gaussian done %f sec",my_crtc()-time1 );
+    }
 
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
@@ -218,7 +231,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     }
 
-    if (ct.runflag == 0)
+    if (ct.runflag == 0 | ct.runflag == INIT_GAUSSIAN)
     {
         /* Set the initial hartree potential to a constant */
         for (idx = 0; idx < FP0_BASIS; idx++)
