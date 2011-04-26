@@ -379,6 +379,12 @@ Triclinic Primitive";
         error_handler("bad decomposion of processor grid");
     }
 
+    if(pct.nprow > pct.npcol ) 
+    {
+        printf("\n pct.nprow, pct.npcol = %d %d ", pct.nprow, pct.npcol);
+        error_handler("pct.nprow should be smaller than pct.npcol");
+    }
+
 
     MPI_Comm_size (MPI_COMM_WORLD, &mpi_nprocs);
     if(NPES != mpi_nprocs) 
@@ -448,7 +454,7 @@ Triclinic Primitive";
     ct.qcparm = ct.cparm / (REAL) RHO_NX;
     ct.betacparm = ct.cparm / (REAL) ct.nxfgrid;
     ct.cparm /= (REAL) RHO_NX;
-    
+
     /* Output some information for GW calculation. */
     get_data ("output_information_for_GW", &ct.flag_gw, INT, "0");
 
@@ -462,11 +468,11 @@ Triclinic Primitive";
     {
 
         if (sscanf (tbuf, "%s %s", ct.sp[is].pseudo_symbol,
-ct.sp[is].pseudo_filename) != 2)
+                    ct.sp[is].pseudo_filename) != 2)
         {
 
             printf ("pseudo_symbol: %s pseudo_filename: %s",
-ct.sp[is].pseudo_symbol,
+                    ct.sp[is].pseudo_symbol,
                     ct.sp[is].pseudo_filename);
 
             printf ("\n pseudopotential data: %s is malformed", tbuf);
@@ -479,8 +485,8 @@ ct.sp[is].pseudo_symbol,
 
 
     /* read info about atomic orbital filenames for each species for
- * LCAO start */
-        char s[32], fn[MAX_PATH];
+     * LCAO start */
+    char s[32], fn[MAX_PATH];
     require (get_data ("atomic_orbital_files", &ns, INIT | LIST, NULL));
     if(ns != ct.num_species) printf(" \n number of species %d is not equal to number of atomic orbital filesi %d", ct.num_species, ns);
 
@@ -501,8 +507,8 @@ ct.sp[is].pseudo_symbol,
 
     /* Set up and validate input options */
     char atomic_coordinate_type_opts[] = "\
-Cell Relative\n\
-Absolute";
+                                          Cell Relative\n\
+                                          Absolute";
     get_data ("atomic_coordinate_type", NULL, INIT | OPT, atomic_coordinate_type_opts);
 
     /* Absolute or cell relative coordinates */
@@ -518,6 +524,8 @@ Absolute";
     /* Close input file */
     my_free (tptr);
 
+    get_data (NULL, NULL, END, NULL);
+
 
 }                               /* end read_control */
 
@@ -532,7 +540,7 @@ static void read_kpoints ()
     nk = 0;
 
 
- require (get_data ("kpoints", &nk, INIT | LIST, NULL));
+    require (get_data ("kpoints", &nk, INIT | LIST, NULL));
     my_malloc (ct.kp, nk, KPOINT);
 
     /* now we can read the kpoint data */
@@ -587,7 +595,7 @@ static void read_orbitals ()
     get_data("orbitals", &num_lines, INIT | LIST, NULL);
 
 
-    
+
     bohr = 1.0;
     if (verify ("length_units", "Angstrom"))
     {
