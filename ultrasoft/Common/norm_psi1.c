@@ -126,7 +126,7 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
         
 	QMD_sscal (ct.max_nl, t1, ptr, incx);
 #if !GAMMA_PT
-	ptr = pct.oldsintI_local[ion * ct.num_states * ct.max_nl];
+	ptr = &pct.oldsintI_local[ion * ct.num_states * ct.max_nl];
         ptr += sidx_local;
         QMD_sscal (ct.max_nl, t1, ptr, incx);
 #endif
