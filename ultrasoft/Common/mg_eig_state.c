@@ -445,7 +445,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         diag = -1.0 / diag;
 
         /* Apply the gradient operator to psi */
-        app_grad (tmp_psiR, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
+        app_grad (tmp_psiI, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
 
         for (idx = 0; idx < P0_BASIS; idx++)
         {
@@ -455,7 +455,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
         }
 
-        app_grad (tmp_psiI, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
+        app_grad (tmp_psiR, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
         for (idx = 0; idx < P0_BASIS; idx++)
         {
 
