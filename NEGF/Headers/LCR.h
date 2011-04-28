@@ -222,8 +222,6 @@ void    get_inverse_block(doublecomplex *Hii, doublecomplex *Gii, int *ipiv, int
 
 void read_data_conductor(char *name, double *vh, double *vxc, double *rho);
 
-void Sgreen_semi_infinite (doublecomplex * green, double *H00, double *H01,
-        double *S00, double *S01, double eneR, double eneI, int nmax, int jprobe);
 
 //void PZGESV(int*, int*, complex double *, int*, int*, int*, int*,
 //                doublecomplex*, int*, int*, int*, int*);

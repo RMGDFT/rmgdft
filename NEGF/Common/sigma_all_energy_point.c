@@ -100,9 +100,7 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
 
                 if (eneI > 0.5 )
                 {
-                    Sgreen_semi_infinite_p (g, lcr[jprobe].H00, lcr[jprobe].H01,
-                            lcr[jprobe].S00, lcr[jprobe].S01, eneR, eneI,
-                            jprobe);
+                    Sgreen_semi_infinite_p (g, ch0, ch1, jprobe);
                 }
                 else
                 {

@@ -79,9 +79,8 @@ void tri_to_whole_complex_p (doublecomplex * A_tri, doublecomplex * Aii, int N, 
 void global_to_distribute (REAL * global_array, REAL * distr_array);
 void global_to_distribute2 (double *global_array, double *distr_array);
 void global_to_distribute3 (double *global_array, double *distr_array);
-void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
-        double *S00, double *S01, double eneR, double eneI,
-        int jprobe);
+void Sgreen_semi_infinite_p (doublecomplex * green, complex double
+        *ch00, complex double *ch01, int jprobe);
 void find_fermi (doublecomplex * sigma_all);
 void charge_density_matrix_p (doublecomplex * sigma_all);
 void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,

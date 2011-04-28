@@ -18,13 +18,11 @@
 #define 	MAX_STEP 	40
 
 
-void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
-                           double *S00, double *S01, double eneR, double eneI,
-                           int jprobe)
+void Sgreen_semi_infinite_p (doublecomplex * green, complex double
+        *ch00, complex double *ch01, int jprobe)
 {
 
     double converge1, converge2, tem;
-    doublecomplex *ch00, *ch01;
     doublecomplex *chnn, *chtem;
     doublecomplex alpha, beta, mone;
     int info;
@@ -55,19 +53,10 @@ void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
     mone.r = -1.0;
     mone.i = 0.0;
 
-    my_malloc_init( ch00, n1, doublecomplex );
-    my_malloc_init( ch01, n1, doublecomplex );
     my_malloc_init( chnn, n1, doublecomplex );
     my_malloc_init( chtem, n1, doublecomplex );
     my_malloc_init( ipiv, maxrow + pmo.mblock, int );
 
-    for(i = 0; i < n1; i++)
-    {
-        ch00[i].r = eneR * S00[i] - Ha_eV * H00[i];
-        ch00[i].i = eneI * S00[i];
-        ch01[i].r = eneR * S01[i] - Ha_eV * H01[i];
-        ch01[i].i = eneI * S01[i];
-    }
 
     /*  green = (e S00- H00)^-1  */
 
@@ -92,7 +81,7 @@ void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
 
         ZCOPY (&n1, ch00, &ione, chnn, &ione);
         PZGEMM (&fcd1, "N", &nmax, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
-               green, &ione, &ione, desca,  &beta, chtem, &ione, &ione, desca);
+                green, &ione, &ione, desca,  &beta, chtem, &ione, &ione, desca);
         PZGEMM ("N", &fcd2, &nmax, &nmax, &nmax, &mone, chtem, &ione, &ione, desca,
                 ch01, &ione, &ione, desca, &alpha, chnn, &ione, &ione, desca);
 
@@ -103,7 +92,7 @@ void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
         {
             converge2 += green[i].r * green[i].r + green[i].i * green[i].i;
         }
-    comm_sums(&converge2, &ione, COMM_EN2);
+        comm_sums(&converge2, &ione, COMM_EN2);
 
         converge2 = sqrt (converge2);
         /* printf("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
@@ -123,8 +112,6 @@ void Sgreen_semi_infinite_p (doublecomplex * green, double *H00, double *H01,
     }
     /*    printf("\n %d %f %f converge\n", step, eneR, eneI); */
 
-    my_free( ch00 );
-    my_free( ch01 );
     my_free( chnn );
     my_free( chtem );
     my_free( ipiv );
