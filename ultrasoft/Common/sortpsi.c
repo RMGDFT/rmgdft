@@ -46,7 +46,7 @@
 void sortpsi (STATE * states)
 {
 
-    int state, n, incx, idx1, idx2;
+    int state, n, incx, idx1, koffset;
     REAL t1;
     STATE *sp, *sp1;
     REAL *tmp_psi1R, *tmp_psi2R;
@@ -75,6 +75,8 @@ void sortpsi (STATE * states)
 
         sp = &states[state];
         sp1 = &states[state + 1];
+    
+	koffset = sp->kidx * ct.num_ions * ct.num_states * ct.max_nl;
 
         if (sp->eig[0] > sp1->eig[0])
         {
@@ -99,48 +101,21 @@ void sortpsi (STATE * states)
                 {
                     iptr = &ct.ions[idx1];
 
-                    for (idx2 = 0; idx2 < ct.max_nl; idx2++)
-                    {
 
-                        t1 = iptr->newsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                            state * ct.max_nl + idx2];
-                        iptr->newsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       state * ct.max_nl + idx2] =
-                            iptr->newsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                           (state + 1) * ct.max_nl + idx2];
-                        iptr->newsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       (state + 1) * ct.max_nl + idx2] = t1;
-
-                        t1 = iptr->oldsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                            state * ct.max_nl + idx2];
-                        iptr->oldsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       state * ct.max_nl + idx2] =
-                            iptr->oldsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                           (state + 1) * ct.max_nl + idx2];
-                        iptr->oldsintR[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       (state + 1) * ct.max_nl + idx2] = t1;
-
+		    my_swap(&iptr->newsintR[koffset + state * ct.max_nl], 
+			    &iptr->newsintR[koffset + (state + 1) * ct.max_nl], ct.max_nl);
+			
+		    my_swap(&iptr->oldsintR[koffset + state * ct.max_nl], 
+			    &iptr->oldsintR[koffset + (state + 1) * ct.max_nl], ct.max_nl);
+                        
 #if !GAMMA_PT
-                        t1 = iptr->newsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                            state * ct.max_nl + idx2];
-                        iptr->newsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       state * ct.max_nl + idx2] =
-                            iptr->newsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                           (state + 1) * ct.max_nl + idx2];
-                        iptr->newsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       (state + 1) * ct.max_nl + idx2] = t1;
-
-                        t1 = iptr->oldsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                            state * ct.max_nl + idx2];
-                        iptr->oldsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       state * ct.max_nl + idx2] =
-                            iptr->oldsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                           (state + 1) * ct.max_nl + idx2];
-                        iptr->oldsintI[sp->kidx * ct.num_ions * ct.num_states * ct.max_nl +
-                                       (state + 1) * ct.max_nl + idx2] = t1;
+		    my_swap(&iptr->newsintI[koffset + state * ct.max_nl], 
+			    &iptr->newsintI[koffset + (state + 1) * ct.max_nl], ct.max_nl);
+			
+		    my_swap(&iptr->oldsintI[koffset + state * ct.max_nl], 
+			    &iptr->oldsintI[koffset + (state + 1) * ct.max_nl], ct.max_nl);
 
 #endif
-                    }           /* end for idx2 */
                 }               /* end for  idx1 */
 
 
@@ -156,54 +131,4 @@ void sortpsi (STATE * states)
 
 }                               /* end sort_psi */
 
-
-
-
-
-
-
-/* This doesn't work yet */
-#if SMP
-
-void sort_psi_smp (SCF_THREAD_CONTROL * s)
-{
-
-    int idx, state, n, incx;
-    REAL t1;
-    REAL *rptr1, *rptr2;
-
-    n = s->numpt;
-    incx = 1;
-
-    for (state = 0; state < ct.num_states - 1; state++)
-    {
-
-        if (s->eigs[state] > s->eigs[state + 1])
-        {
-
-            if (((s->occs[state] > 0.1) && (s->occs[state + 1] > 0.1))
-                || ((s->occs[state] < 0.1) && (s->occs[state + 1] < 0.1)))
-            {
-
-                t1 = s->eigs[state];
-                s->eigs[state] = s->eigs[state + 1];
-                s->eigs[state + 1] = t1;
-
-                t1 = s->occs[state];
-                s->occs[state] = s->occs[state + 1];
-                s->occs[state + 1] = t1;
-
-                rptr1 = &s->base_mem[state * s->lda];
-                rptr2 = &s->base_mem[(state + 1) * s->lda];
-                sswap (&n, rptr1, &incx, rptr2, &incx);
-
-            }                   /* end if */
-
-        }                       /* end if */
-
-    }                           /* end for */
-
-}                               /* end sort_psi_smp */
-
-#endif
 /******/
