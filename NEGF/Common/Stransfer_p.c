@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "md.h"
 #include "pmo.h"
@@ -22,13 +23,12 @@
 
 static void my_print_sum (doublecomplex *matrix, int nmax, int index);
 
-void Stransfer_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL * H01,
-        REAL * S00, REAL * S01, REAL eneR, REAL eneI, int iprobe)
+void Stransfer_p (doublecomplex * tot, doublecomplex * tott, 
+        complex double *ch0, complex double *ch1, int iprobe)
 {
 
     REAL converge1, converge2;
     doublecomplex *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1, *s2;
-    doublecomplex *ch0, *ch1;
     doublecomplex alpha, beta;
     int info;
     int *ipiv;
@@ -58,28 +58,15 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL * 
     my_malloc_init( taut,  nrow * ncol * 2, doublecomplex );
     my_malloc_init( t11,  nrow * ncol, doublecomplex );
     my_malloc_init( t12,  nrow * ncol, doublecomplex );
-    my_malloc_init( ch0,  nrow * ncol, doublecomplex );
-    my_malloc_init( ch1,  nrow * ncol, doublecomplex );
 
     my_malloc_init( ipiv, nrow + pmo.mblock, int );
 
-    for (i = 0; i < nrow * ncol; i++)
-    {
-        ch0[i].r = Ha_eV * H00[i] - eneR * S00[i];
-        ch0[i].i = -eneI * S00[i];
-        ch1[i].r = Ha_eV * H01[i] - eneR * S01[i];
-        ch1[i].i = -eneI * S01[i];
-    }
-
-
-    my_print_sum (ch0, n1, 1);
-    my_print_sum (ch1, n1, 2);
 
     /* contruct the transfer matrix         */
     for (i = 0; i <  nrow * ncol; i++)
     {
-        t12[i].r = -ch0[i].r;
-        t12[i].i = -ch0[i].i;
+        t12[i].r = -creal(ch0[i]);
+        t12[i].i = -cimag(ch0[i]);
 
     }
 
@@ -112,8 +99,6 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL * 
 
     my_print_sum (taut, n1, 5);
 
-    my_free(ch0);
-    my_free(ch1);
 
     my_malloc_init( tsum, n1, doublecomplex );
     my_malloc_init( tsumt, n1, doublecomplex );

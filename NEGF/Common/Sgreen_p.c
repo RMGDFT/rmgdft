@@ -11,17 +11,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "md.h"
 #include "pmo.h"
 
 
-void Sgreen_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL *H01,
-             REAL * S00, REAL * S01, REAL eneR, REAL eneI, doublecomplex *g, 
-             int iprobe)
+void Sgreen_p (doublecomplex * tot, doublecomplex * tott, complex double *ch0, 
+             complex double *ch1, doublecomplex *g, int iprobe)
 {
 
-    doublecomplex *ch0, *ch1 ;
     doublecomplex alpha, beta;
     int info;
     int *ipiv;
@@ -29,7 +28,6 @@ void Sgreen_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL *H01,
     char fcd_n = 'N', fcd_t = 'T';
     int nrow, ncol, *desca, nmax, n1;
     int ione = 1;
-
 
 
     /* allocate matrix and initialization  */
@@ -45,18 +43,7 @@ void Sgreen_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL *H01,
     desca = &pmo.desc_lead[ (iprobe-1) * DLEN];
 
 
-    my_malloc_init( ch0,  n1, doublecomplex);
-    my_malloc_init( ch1,  n1, doublecomplex);
-
     my_malloc_init( ipiv, nrow + pmo.mblock, int );
-
-    for (i = 0; i < n1; i++)
-    {
-        ch0[i].r = eneR * S00[i] - H00[i] * Ha_eV;
-        ch0[i].i = eneI * S00[i];
-        ch1[i].r = eneR * S01[i] - H01[i] * Ha_eV;
-        ch1[i].i = eneI * S01[i];
-    }
 
 
     PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, ch1, &ione, &ione, desca,
@@ -75,8 +62,6 @@ void Sgreen_p (doublecomplex * tot, doublecomplex * tott, REAL * H00, REAL *H01,
     }
 
 
-    my_free(ch0);
-    my_free(ch1);
     my_free( ipiv );
 
 }

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "md.h"
 #include "pmo.h"
@@ -21,22 +22,24 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
     REAL eneI;
     doublecomplex *sigma, *tot, *tott, *g;          
 
+    complex double *ch0, *ch1;
+    complex double ene, ctem;
+
     int idx_sigma, idx_C;
     double time1, time2;
-    int nmax, maxrow, maxcol, maxrow2, maxcol2;
+    int  maxrow, maxcol, maxrow2, maxcol2;
     int max_sigma_col, max_sigma_row;
     int t1, t2;
 
     time1 = my_crtc ();
 
 
-    nmax = 0;
     maxrow =0;
     maxcol =0;
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
-        nmax = max (nmax, lcr[iprobe].num_states);
-        maxrow = max( maxrow, pmo.mxllda_lead[iprobe-1]);
+        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+        maxrow = max( maxrow, pmo.mxllda_cond[idx_C]);
         maxcol = max( maxcol, pmo.mxlocc_lead[iprobe-1]);
     }
 
@@ -44,6 +47,8 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
     my_malloc_init( tot, maxrow * maxcol, doublecomplex);
     my_malloc_init( tott, maxrow * maxcol, doublecomplex);
     my_malloc_init( g, maxrow * maxcol, doublecomplex);
+    my_malloc_init( ch0, maxrow * maxcol, double complex);
+    my_malloc_init( ch1, maxrow * maxcol, double complex);
 
     max_sigma_col = 0;
     max_sigma_row = 0;
@@ -72,6 +77,7 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
 
             eneR = lcr[iprobe].eneR[iene];
             eneI = lcr[iprobe].eneI[iene];
+            ene = lcr[iprobe].eneR[iene] + I * lcr[iprobe].eneI[iene];
 
 
             /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -84,6 +90,14 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
             for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
             {
 
+
+                idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
+                for (i = 0; i < idx; i++)
+                {
+                    ch0[i] = ene * lcr[jprobe].S00[i] - Ha_eV * lcr[jprobe].H00[i];
+                    ch1[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
+                }
+
                 if (eneI > 0.5 )
                 {
                     Sgreen_semi_infinite_p (g, lcr[jprobe].H00, lcr[jprobe].H01,
@@ -93,15 +107,20 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
                 else
                 {
 
-                    Stransfer_p (tot, tott, lcr[jprobe].H00, lcr[jprobe].H01,
-                            lcr[jprobe].S00, lcr[jprobe].S01, eneR, eneI,
-                            jprobe);
-                    Sgreen_p (tot, tott, lcr[jprobe].H00, lcr[jprobe].H01, lcr[jprobe].S00,
-                            lcr[jprobe].S01, eneR, eneI, g, jprobe);
+                    Stransfer_p (tot, tott, ch0, ch1, jprobe);
+                    Sgreen_p (tot, tott, ch0, ch1, g, jprobe);
 
                 }
 
-                Sigma_p (sigma, lcr[jprobe].HCL, lcr[jprobe].SCL, eneR, eneI, g, jprobe);
+                
+                idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
+                idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
+                for (i = 0; i < idx; i++)
+                {
+                    ch0[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+                }
+
+                Sigma_p (sigma, ch0, ch1, g, jprobe);
 
                 /*-------------------------------------------------------------------*/
 
@@ -137,6 +156,7 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
 
                     eneR = lcr[iprobe].lcr_ne[j].eneR_ne[iene];
                     eneI = lcr[iprobe].lcr_ne[j].eneI_ne[iene];
+                    ene = lcr[iprobe].eneR[iene] + I * lcr[iprobe].eneI[iene];
 
 
                     /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -149,24 +169,26 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
                     for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
                     {
 
-                        if (eneI > 0.5 )
+                        idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
+                        for (i = 0; i < idx; i++)
                         {
-                            Sgreen_semi_infinite_p (g, lcr[jprobe].H00, lcr[jprobe].H01,
-                                    lcr[jprobe].S00, lcr[jprobe].S01, eneR, eneI,
-                                    jprobe);
-                        }
-                        else
-                        {
-
-                            Stransfer_p (tot, tott, lcr[jprobe].H00, lcr[jprobe].H01,
-                                    lcr[jprobe].S00, lcr[jprobe].S01, eneR, eneI, jprobe);
-
-                            Sgreen_p (tot, tott, lcr[jprobe].H00, lcr[jprobe].H01, lcr[jprobe].S00,
-                                    lcr[jprobe].S01, eneR, eneI, g, jprobe);
-
+                            ch0[i] = ene * lcr[jprobe].S00[i] - Ha_eV * lcr[jprobe].H00[i];
+                            ch1[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
                         }
 
-                        Sigma_p (sigma, lcr[jprobe].HCL, lcr[jprobe].SCL, eneR, eneI, g, jprobe);
+                        Stransfer_p (tot, tott, ch0, ch1, jprobe);
+                        Sgreen_p (tot, tott, ch0, ch1, g, jprobe);
+
+
+
+                        idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
+                        idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
+                        for (i = 0; i < idx; i++)
+                        {
+                            ch0[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+                        }
+
+                        Sigma_p (sigma, ch0, ch1, g, jprobe);
 
 
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -196,6 +218,8 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
     my_free(tott);
     my_free(g);
     my_free(sigma);
+    my_free(ch0);
+    my_free(ch1);
 
     time2 = my_crtc ();
     md_timings (SIGMA_ALL_TIME, (time2 - time1));

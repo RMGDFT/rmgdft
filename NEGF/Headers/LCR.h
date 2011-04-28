@@ -2,6 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
  
+#include <complex.h>
 
 #define 	TOLSCF 		1.0E-9
 
@@ -94,16 +95,10 @@ struct NON_LINEAR_THREE_PART
 
  int nenergy;
 
- REAL *S00_L;
- REAL *H00_L;
- REAL *S01_L;
- REAL *H01_L;
  REAL *S00;
  REAL *H00;
  REAL *S01;
  REAL *H01;
- REAL *HLC;
- REAL *SLC;
 
  REAL *HCL;
  REAL *SCL;
@@ -117,6 +112,51 @@ struct NON_LINEAR_THREE_PART
 
  REAL 	x_shift; 
  REAL 	y_shift; 
+
+ REAL *S00_y;
+ REAL *H00_y;
+ REAL *S01_y;
+ REAL *H01_y;
+
+ REAL *HCL_y;
+ REAL *SCL_y;
+
+ REAL *Htri_y;
+ REAL *Stri_y;
+
+ REAL *S00_z;
+ REAL *H00_z;
+ REAL *S01_z;
+ REAL *H01_z;
+
+ REAL *HCL_z;
+ REAL *SCL_z;
+
+ REAL *Htri_z;
+ REAL *Stri_z;
+
+ REAL *S00_yz;
+ REAL *H00_yz;
+ REAL *S01_yz;
+ REAL *H01_yz;
+
+ REAL *HCL_yz;
+ REAL *SCL_yz;
+ 
+ REAL *Htri_yz;
+ REAL *Stri_yz;
+
+ REAL *S00_yz1;
+ REAL *H00_yz1;
+ REAL *S01_yz1;
+ REAL *H01_yz1;
+
+ REAL *HCL_yz1;
+ REAL *SCL_yz1;
+
+ REAL *Htri_yz1;
+ REAL *Stri_yz1;
+
 
 NON_LINEAR_THREE_PART2 lcr_ne[NUM_PROBE_MAX];
 };
@@ -185,6 +225,6 @@ void read_data_conductor(char *name, double *vh, double *vxc, double *rho);
 void Sgreen_semi_infinite (doublecomplex * green, double *H00, double *H01,
         double *S00, double *S01, double eneR, double eneI, int nmax, int jprobe);
 
-void PZGESV(int*, int*, doublecomplex*, int*, int*, int*, int*,
-                doublecomplex*, int*, int*, int*, int*);
+//void PZGESV(int*, int*, complex double *, int*, int*, int*, int*,
+//                doublecomplex*, int*, int*, int*, int*);
 

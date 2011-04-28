@@ -22,10 +22,10 @@
 
 
 
-void Sigma_p (doublecomplex *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, doublecomplex *green, int iprobe)
+void Sigma_p (doublecomplex *sigma, complex double *ch, complex double *ch1,
+     doublecomplex *green, int iprobe)
 {
 
-    doublecomplex *ch, *ch1;
     int i;
     char fcd_n = 'N', fcd_t = 'T';
     doublecomplex alpha, beta;
@@ -53,16 +53,6 @@ void Sigma_p (doublecomplex *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, 
     descc = &pmo.desc_cond[ ( n0 + n0 * ct.num_blocks) * DLEN ];               /* (C,C) */
     
 
-    my_malloc_init( ch, n1, doublecomplex);
-    my_malloc_init( ch1, n1, doublecomplex);
-
-
-
-    for (i = 0; i < n1; i++)
-    {
-        ch[i].r = eneR * SLC[i] - HLC[i] * Ha_eV;
-        ch[i].i = eneI * SLC[i];
-    }
 
 	/*    ch1(C,L) = ch(C,L) * green(L,L)  */
     /*    sigma(C,C) = ch1(C,L) * ch(L,C)  */ 
@@ -75,8 +65,5 @@ void Sigma_p (doublecomplex *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, 
             ch, &ione, &ione, desca, &beta, sigma, &ione, &ione, descc);
 
 
-
-    my_free(ch);
-    my_free(ch1);
 
 }

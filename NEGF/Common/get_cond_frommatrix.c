@@ -1,4 +1,4 @@
-/************************** SVN Revision Information **************************
+/*
  **    $Id$    **
 ******************************************************************************/
  
@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "md.h"
 #include "pmo.h"
@@ -23,8 +24,7 @@ void get_cond_frommatrix ()
 {
     int iprobe, iprobe1, iprobe2;
     int iene, icond;
-    REAL eneR, eneI;
-    doublecomplex *tot, *tott, *g;
+    doublecomplex * H_tri,*tot, *tott, *g;
     doublecomplex *green_C;
     doublecomplex *temp_matrix1, *temp_matrix2;
     doublecomplex *Gamma1, *Gamma2, *sigma, *sigma_all;
@@ -33,6 +33,8 @@ void get_cond_frommatrix ()
     int ntot, ndim, nC, idx_C, *sigma_idx;
     REAL cons, EF1, EF2, f1, f2;
 
+    double complex *ch0, *ch1;
+    double complex ene, ctem;
 
     doublecomplex alpha, beta;
     int i, j, idx, E_POINTS, kpoint;
@@ -93,6 +95,7 @@ void get_cond_frommatrix ()
     }
 
 
+    my_malloc_init( H_tri, ntot, doublecomplex );
     my_malloc_init( lcr[0].Htri, ntot, REAL );
     my_malloc_init( lcr[0].Stri, ntot, REAL );
 
@@ -144,12 +147,15 @@ void get_cond_frommatrix ()
     idx = 0;
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
-        idx = max(idx, pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1]);
+        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+        idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
  
     my_malloc_init( tot,  idx, doublecomplex );
     my_malloc_init( tott, idx, doublecomplex );
     my_malloc_init( g,    idx, doublecomplex );
+    my_malloc_init( ch0,  idx, double complex );
+    my_malloc_init( ch1,  idx, double complex );
 
 /*===================================================================*/
 
@@ -200,21 +206,38 @@ void get_cond_frommatrix ()
         for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
         {
 
-            eneR = emin + iene * de;
-            eneI = E_imag;
+            
+            ene = emin + iene * de + I * E_imag;
 
 
             for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
             {
-                Stransfer_p (tot, tott, lcr[iprobe].H00, lcr[iprobe].H01, 
-                        lcr[iprobe].S00, lcr[iprobe].S01, eneR, eneI, iprobe);
-    
-                Sgreen_p (tot, tott, lcr[iprobe].H00, lcr[iprobe].H01, lcr[iprobe].S00,
-                        lcr[iprobe].S01, eneR, eneI, g, iprobe);
 
-                Sigma_p (sigma, lcr[iprobe].HCL, lcr[iprobe].SCL, eneR, eneI, g, iprobe);
+
+
+
+                idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
+                for (i = 0; i < idx; i++)
+                {
+                    ch0[i] = ene * lcr[iprobe].S00[i] - Ha_eV * lcr[iprobe].H00[i];
+                    ch1[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
+                }
+
+
+                Stransfer_p (tot, tott, ch0, ch1,iprobe);
+
+                Sgreen_p (tot, tott, ch0, ch1, g, iprobe);
+
 
                 idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+                idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
+                for (i = 0; i < idx; i++)
+                {
+                    ch0[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
+                }
+
+                Sigma_p (sigma, ch0, ch1, g, iprobe);
+
                 for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                 {
                     sigma_all[sigma_idx[iprobe - 1] + i].r = sigma[i].r;
@@ -241,11 +264,17 @@ void get_cond_frommatrix ()
 
             }  /*  end for iprobe */
 
+    /* Construct H = ES - H */
+    for (i = 0; i < ntot; i++)
+    {
+        ctem = ene * lcr[0].Stri[i] - lcr[0].Htri[i] * Ha_eV;
+        H_tri[i].r = creal(ctem);
+        H_tri[i].i = cimag(ctem);
+    }
 
 
 
-            Sgreen_cond_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, eneR, eneI, 
-                           green_C, nC, iprobe1, iprobe2);
+            Sgreen_cond_p (H_tri, sigma_all, sigma_idx, green_C, nC, iprobe1, iprobe2);
 
 
 
@@ -271,7 +300,7 @@ void get_cond_frommatrix ()
             /* desca= &pmo.desc_lead[0]; */
             cond[iene] = pmo_trace(temp_matrix1, desca);
 
-            ener1[iene] = eneR;
+            ener1[iene] = creal(ene);
 
 
             /* printf (" condcond eneR, G= %f %f \n ", eneR, cond[iene]); */
@@ -336,15 +365,17 @@ void get_cond_frommatrix ()
     my_free(lcr[0].Htri);
     my_free(lcr[0].Stri);
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	{	
-		my_free(lcr[iprobe].H00);
-		my_free(lcr[iprobe].S00);
-		my_free(lcr[iprobe].H01);
-		my_free(lcr[iprobe].S01);
-		my_free(lcr[iprobe].HCL);
-		my_free(lcr[iprobe].SCL);
+    {	
+        my_free(lcr[iprobe].H00);
+        my_free(lcr[iprobe].S00);
+        my_free(lcr[iprobe].H01);
+        my_free(lcr[iprobe].S01);
+        my_free(lcr[iprobe].HCL);
+        my_free(lcr[iprobe].SCL);
     }
 
     my_barrier ();
 
 }
+
+

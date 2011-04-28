@@ -1,5 +1,5 @@
 #************************** SVN Revision Information **************************
-#**    $Id: Makefile 1242 2011-02-02 18:55:23Z luw $    **
+#**    $Id: Makefile 1286 2011-03-10 16:42:39Z luw $    **
 #*****************************************************************************/
  
 #
@@ -37,7 +37,7 @@ sunfire: Headers/make_conf.h
 linux: 
 	@echo '#define LINUX 1' > Headers/arch.h
 	@echo "#define MPI 1" >> Headers/arch.h
-	$(MAKE) -f Make.linux
+	$(MAKE) -j 8 -f Make.linux
 
 linux_mpich:
 	@echo '#define LINUX 1' > Headers/arch.h

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "md.h"
 #include "pmo.h"
@@ -28,6 +29,8 @@ void get_dos (STATE * states)
     REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
     REAL de, emin, emax;
 
+    complex double *ch0, *ch1;
+    complex double ene, ctem;
     int nC;
     int i, j, *sigma_idx, idx_C;
     char fcd_n = 'N', fcd_c = 'C';
@@ -128,12 +131,15 @@ void get_dos (STATE * states)
     idx = 0;
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
-        idx = max(idx, pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1]);
+        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+        idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
                                                                                 
     my_malloc_init( tot,  idx, doublecomplex );
     my_malloc_init( tott, idx, doublecomplex );
     my_malloc_init( g,    idx, doublecomplex );
+    my_malloc_init( ch0,  idx, double complex );
+    my_malloc_init( ch1,  idx, double complex );
 
 
     my_malloc_init( green_tem, 2 * idx, REAL );
@@ -176,8 +182,9 @@ void get_dos (STATE * states)
     for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
     {
         eneR = emin + iene * de;
-        eneI = 0.0005;
-        printf ("\n energy point %d %f\n", iene, eneR);
+        eneI = E_imag;
+        ene = emin + iene * de + I * E_imag;
+        printf ("\n energy point %d %f +i %f\n", iene, creal(ene), cimag(ene));
 
 
         /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -188,20 +195,34 @@ void get_dos (STATE * states)
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
 
-            Stransfer_p (tot, tott, lcr[iprobe].H00, lcr[iprobe].H01,
-                    lcr[iprobe].S00, lcr[iprobe].S01, eneR, eneI, iprobe);
-                                                                                      
-            Sgreen_p (tot, tott, lcr[iprobe].H00, lcr[iprobe].H01, lcr[iprobe].S00,
-                    lcr[iprobe].S01, eneR, eneI, g, iprobe);
+            idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
+            for (i = 0; i < idx; i++)
+            {
+                ch0[i] = ene * lcr[iprobe].S00[i] - Ha_eV * lcr[iprobe].H00[i];
+                ch1[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
+            }
 
-            Sigma_p (sigma, lcr[iprobe].HCL, lcr[iprobe].SCL, eneR, eneI, g, iprobe);
+
+            Stransfer_p (tot, tott, ch0, ch1,iprobe);
+
+            Sgreen_p (tot, tott, ch0, ch1, g, iprobe);
 
 
-            idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+            idx_C = cei.probe_in_block[iprobe - 1];  /* block index
+                                                      */
+            idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
+            for (i = 0; i < idx; i++)
+            {
+                ch0[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
+            }
+
+            Sigma_p (sigma, ch0, ch1, g, iprobe);
+
+
             for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
             {
-                    sigma_all[sigma_idx[iprobe - 1] + i].r = sigma[i].r;
-                    sigma_all[sigma_idx[iprobe - 1] + i].i = sigma[i].i;
+                sigma_all[sigma_idx[iprobe - 1] + i].r = sigma[i].r;
+                sigma_all[sigma_idx[iprobe - 1] + i].i = sigma[i].i;
             }
 
 
@@ -211,9 +232,9 @@ void get_dos (STATE * states)
 
 
         /*Sgreen_c_wang (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                      eneR, eneI, (doublecomplex *) green_C, nC);*/
+          eneR, eneI, (doublecomplex *) green_C, nC);*/
         Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                      eneR, eneI, (doublecomplex *) green_C); 
+                eneR, eneI, (doublecomplex *) green_C); 
 
 
         for (st1 = 0; st1 < ntot; st1++)
@@ -228,14 +249,14 @@ void get_dos (STATE * states)
 
 
 
-/*===================================================================*/
+    /*===================================================================*/
 
 
     /*for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)*/
     for (iene = 0; iene < E_POINTS; iene++)
     {
-            printf ("hello .... %d\n", iene);
-                                                                                                                  
+        printf ("hello .... %d\n", iene);
+
         root_pe = iene % pmo.npe_energy;
         idx = iene / pmo.npe_energy;
 
@@ -244,14 +265,14 @@ void get_dos (STATE * states)
         {
             lcr[0].density_matrix_tri[st1] = Green_store[idx * ntot + st1];
         }
-    
-                                                                                                             
+
+
         idx = ntot;
         MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe,
-COMM_EN1);
-                                                                                                                
+                COMM_EN1);
+
         get_new_rho_soft (states, rho);
-                                                                                                                  
+
 
         for (ix = 0; ix < FPX0_GRID; ix++)
         {
@@ -270,8 +291,8 @@ COMM_EN1);
                 }
             }
         }
-                                                                                                                  
-                                                                                                                  
+
+
         if (cei.num_probe > 2)
         {
             for (iy = 0; iy < FPY0_GRID; iy++)
@@ -292,7 +313,7 @@ COMM_EN1);
                 }
             }
         }
-                                                                                                                  
+
         my_barrier ();
     }
 
@@ -304,28 +325,28 @@ COMM_EN1);
     {
         double dx = ct.celldm[0] / NX_GRID;
         double x0 = 0.5 * ct.celldm[0];
-                                                                                                                  
+
         file = fopen ("dos.dat", "w");
         fprintf (file, "#     x[a0]      E[eV]          dos\n\n");
         for (iene = 0; iene < E_POINTS; iene++)
         {
             eneR = emin + iene * de;
-                                                                                                                  
+
             for (ix = 0; ix < NX_GRID; ix++)
             {
-                                                                                                                  
+
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                         ix * dx - x0, eneR, rho_energy[iene * FNX_GRID + ix * RHO_NX]);
+                        ix * dx - x0, eneR, rho_energy[iene * FNX_GRID + ix * RHO_NX]);
             }
             fprintf (file, "\n");
         }
-                                                                                                                  
+
         fclose (file);
     }
 
     if (cei.num_probe > 2)
     {
-                                                                                                                  
+
         iene = E_POINTS * FNY_GRID;
         global_sums (rho_energy2, &iene);
         if (pct.gridpe == 0)
@@ -333,32 +354,32 @@ COMM_EN1);
             double y = ct.celldm[1] * ct.celldm[0];
             double dy = y / NY_GRID;
             double y0 = 0.5 * y;
-                                                                                                                  
+
             file = fopen ("dos2.dat", "w");
             fprintf (file, "#     y[b0]      E[eV]          dos\n\n");
             for (iene = 0; iene < E_POINTS; iene++)
             {
                 eneR = emin + iene * de;
-                                                                                                                  
+
                 for (iy = 0; iy < NY_GRID; iy++)
                 {
-                                                                                                                  
+
                     fprintf (file, " %10.6f %10.6f %12.6e\n",
                             iy * dy - y0, eneR, rho_energy2[iene * FNY_GRID + iy * RHO_NY]);
                 }
                 fprintf (file, "\n");
             }
-                                                                                                                  
+
             fclose (file);
         }
         my_free(rho_energy2);
     }
-                                                                                                                  
-                                                                                                                  
+
+
     my_barrier ();
     fflush (NULL);
 
-/*===============================*/
+    /*===============================*/
     my_free(tot);
     my_free(tott);
     my_free(g);
@@ -377,10 +398,12 @@ COMM_EN1);
         my_free(lcr[iprobe].S01);
     }
 
-/*===============================*/
+    /*===============================*/
 
     my_free(rho_energy); 
     my_free(Green_store);
+    my_free(ch0);
+    my_free(ch1);
 
 
 

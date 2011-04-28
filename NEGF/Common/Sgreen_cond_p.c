@@ -11,13 +11,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "md.h"
 #include "pmo.h"
 
 
-void Sgreen_cond_p (REAL *Htri, REAL *Stri, doublecomplex *sigma_all, int *sigma_idx,
-                    REAL eneR, REAL eneI, doublecomplex *green_C, int nC, int iprobe1, int iprobe2)
+void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_idx,
+                    doublecomplex *green_C, int nC, int iprobe1, int iprobe2)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -25,7 +26,7 @@ void Sgreen_cond_p (REAL *Htri, REAL *Stri, doublecomplex *sigma_all, int *sigma
  *   nC: number of states in conductor region
  */
 
-    doublecomplex *H_tri, *green_all;
+    doublecomplex *green_all;
     /*doublecomplex *H_whole, *H_inv;*/
 
     int info;
@@ -47,15 +48,7 @@ void Sgreen_cond_p (REAL *Htri, REAL *Stri, doublecomplex *sigma_all, int *sigma
 
 
     /* allocate matrix and initialization  */
-    my_malloc_init( H_tri, ntot, doublecomplex );
     my_malloc_init( ipiv, nC, int );
-
-    /* Construct H = ES - H */
-    for (i = 0; i < ntot; i++)
-    {
-        H_tri[i].r = eneR * Stri[i] - Htri[i] * Ha_eV;
-        H_tri[i].i = eneI * Stri[i];
-    }
 
 
 /* --------------------------------------------------- */
@@ -116,8 +109,8 @@ void Sgreen_cond_p (REAL *Htri, REAL *Stri, doublecomplex *sigma_all, int *sigma
     md_timings (matrix_inverse_cond_TIME, (time2 - time1));
 
 
-    my_free( H_tri );
     my_free(ipiv);
+    my_free(green_all);
 
 
 }

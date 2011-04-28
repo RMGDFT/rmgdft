@@ -33,6 +33,8 @@
 
 #define NEGF1 1
 
+#define     REAL    double
+
 /* Version information */
 #include    "version.h"
 #include    "input.h"
@@ -104,7 +106,6 @@
 
 /******/
 
-#define     REAL    double
 typedef struct { double r, i; } doublecomplex;
 
 
@@ -1504,7 +1505,7 @@ void   	write_global_data_lead(int file_handle, double *data, int NX, int NY, in
 #include "salloc.h"
 
 #include "macros.h"
-#include "force.h"
+#include    "prototypes.h"
 
 struct b_list
 {
