@@ -13,7 +13,7 @@
 
 #define 	LDEBUG 	0
 
-void charge_density_matrix_p (doublecomplex * sigma_all)
+void charge_density_matrix_p (complex double * sigma_all)
 {
     int iprobe, jprobe, nprobe;
     int iene;
@@ -22,11 +22,11 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
     REAL eneI;
     REAL weightR;
     REAL weightI;
-    doublecomplex *green_C, *rho_mn;
-    doublecomplex *sigma;
+    complex double *green_C, *rho_mn;
+    complex double *sigma;
 	REAL denominator, numerator, dum, sum, *wmn;
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
-    doublecomplex *green_C_non;
+    complex double *green_C_non;
     int maxrow, maxcol;
     double time1, time2, time3, time4, time5, time6;
 
@@ -47,7 +47,7 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
 
 /*  allocate memory for green_C, grenn_C is tri-diagonal */
     ntot = pmo.ntot;
-    my_malloc_init( green_C, ntot, doublecomplex );
+    my_malloc_init( green_C, ntot, complex double );
     my_malloc_init( sigma_idx, cei.num_probe, int );
 
 /*   Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
@@ -96,7 +96,7 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
 
             for (st1 = 0; st1 < ntot; st1++)
                 lcr[iprobe].density_matrix_tri[st1] +=
-                    weightR * green_C[st1].i + weightI * green_C[st1].r;
+                    weightR * cimag(green_C[st1]) + weightI * creal(green_C[st1]);
 
         }                       /* end for energy points */
 
@@ -130,7 +130,7 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
             maxcol = max(maxcol, pmo.mxlocc_cond[idx_C]);
         }
 
-        my_malloc_init( sigma, maxrow * maxcol, doublecomplex ); 
+        my_malloc_init( sigma, maxrow * maxcol, complex double ); 
 
 
         maxrow = 0;
@@ -143,8 +143,8 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
             totrow += pmo.mxllda_cond[i];
         }
 
-        my_malloc_init( green_C_non, maxcol * totrow, doublecomplex ); 
-        my_malloc_init( rho_mn, ntot, doublecomplex );
+        my_malloc_init( green_C_non, maxcol * totrow, complex double ); 
+        my_malloc_init( rho_mn, ntot, complex double );
 
         /*   Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
@@ -180,8 +180,7 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
                         idx_C = cei.probe_in_block[idx_delta - 1];
                         for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
                         {
-                            sigma[st1].r = sigma_all[sigma_idx[idx_delta - 1] + st1].r;
-                            sigma[st1].i = sigma_all[sigma_idx[idx_delta - 1] + st1].i;
+                            sigma[st1] = sigma_all[sigma_idx[idx_delta - 1] + st1];
                         }
 
                         Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, eneR, eneI,
@@ -202,7 +201,7 @@ void charge_density_matrix_p (doublecomplex * sigma_all)
                         {
 
                             lcr[iprobe].lcr_ne[j].density_matrix_ne_tri[st1] +=
-                                weightR * rho_mn[st1].r - weightI * rho_mn[st1].i;   /* check -ve sign ??? */
+                                weightR * creal(rho_mn[st1]) - weightI * cimag(rho_mn[st1]);   /* check -ve sign ??? */
 
                         }
 

@@ -23,9 +23,9 @@ void get_dos (STATE * states)
     int iprobe;
     int iene, st1;
     REAL eneR, eneI;
-    doublecomplex *tot, *tott, *g;
+    complex double *tot, *tott, *g;
     REAL *green_tem, *green_C;
-    doublecomplex *sigma, *sigma_all;
+    complex double *sigma, *sigma_all;
     REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
     REAL de, emin, emax;
 
@@ -110,7 +110,7 @@ void get_dos (STATE * states)
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
-    my_malloc_init( sigma, idx, doublecomplex );
+    my_malloc_init( sigma, idx, complex double );
 
 
     my_malloc_init( sigma_idx, cei.num_probe, int );
@@ -123,7 +123,7 @@ void get_dos (STATE * states)
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
                                                                                        
-    my_malloc_init( sigma_all, idx, doublecomplex );
+    my_malloc_init( sigma_all, idx, complex double );
                                                                                                 
 
 /*============== Allocate memory for tot, tott, g ====================*/
@@ -135,9 +135,9 @@ void get_dos (STATE * states)
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
                                                                                 
-    my_malloc_init( tot,  idx, doublecomplex );
-    my_malloc_init( tott, idx, doublecomplex );
-    my_malloc_init( g,    idx, doublecomplex );
+    my_malloc_init( tot,  idx, complex double );
+    my_malloc_init( tott, idx, complex double );
+    my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, double complex );
     my_malloc_init( ch1,  idx, double complex );
 
@@ -221,8 +221,7 @@ void get_dos (STATE * states)
 
             for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
             {
-                sigma_all[sigma_idx[iprobe - 1] + i].r = sigma[i].r;
-                sigma_all[sigma_idx[iprobe - 1] + i].i = sigma[i].i;
+                sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
             }
 
 
@@ -232,9 +231,9 @@ void get_dos (STATE * states)
 
 
         /*Sgreen_c_wang (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-          eneR, eneI, (doublecomplex *) green_C, nC);*/
+          eneR, eneI, (complex double *) green_C, nC);*/
         Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                eneR, eneI, (doublecomplex *) green_C); 
+                eneR, eneI, (complex double *) green_C); 
 
 
         for (st1 = 0; st1 < ntot; st1++)

@@ -16,7 +16,7 @@
  *
  */
 
-void pmo_unitary_matrix(doublecomplex *a_local, int *desca)
+void pmo_unitary_matrix(complex double *a_local, int *desca)
 {
     int i, j, ii, jj, iii, jjj, li, lj, maxli;
     int iistart, jjstart, limb, ljnb;
@@ -64,9 +64,8 @@ void pmo_unitary_matrix(doublecomplex *a_local, int *desca)
 
                         if ( jj < n )
                         {
-                            a_local[iii + jjj * mxllda].r = 0.0;
-                            a_local[iii + jjj * mxllda].i = 0.0;
-                            if(ii == jj) a_local[iii + jjj * mxllda].r = 1.0;
+                            a_local[iii + jjj * mxllda] = 0.0;
+                            if(ii == jj) a_local[iii + jjj * mxllda] = 1.0;
                         }
                     }
                 }

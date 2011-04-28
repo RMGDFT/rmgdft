@@ -5,20 +5,20 @@
 
 
 void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
-            STATE *states, STATE *states1, doublecomplex *sigma_all);
+            STATE *states, STATE *states1, complex double *sigma_all);
 void lforce(REAL *rho, REAL *vh);
 void nlccforce(REAL *rho, REAL *vxc);
-void nlforce(double *, STATE *states, STATE *states1, doublecomplex *);
-void nlforce_par_D (doublecomplex * sigma_all, STATE *states, STATE *states1, REAL *forces);
+void nlforce(double *, STATE *states, STATE *states1, complex double *);
+void nlforce_par_D (complex double * sigma_all, STATE *states, STATE *states1, REAL *forces);
 
 REAL *vnuc_x, *vnuc_y, *vnuc_z;
 short int vloc_state_overlap_or_not[MAX_IONS * MAX_STATES];
 
-void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri);
+void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri);
 double trace_AB_tri(REAL * H_tri, REAL * par_D_tri, int N, int *ni);
 
-void tri_to_whole_complex (doublecomplex * H_tri, doublecomplex * Hii, int N, int * ni);
-void whole_to_tri_complex (doublecomplex * H_tri, doublecomplex * Hii, int N, int * ni);
+void tri_to_whole_complex (complex double * H_tri, complex double * Hii, int N, int * ni);
+void whole_to_tri_complex (complex double * H_tri, complex double * Hii, int N, int * ni);
 void partial_vlocpsi (STATE st1, int ion2, REAL * psi, REAL * prjptr, REAL *vlpsi);
 void ylmr2_x(double *r, double *ylm_x);
 void ylmr2_y(double *r, double *ylm_x);
@@ -42,22 +42,22 @@ void get_ion_orbit_overlap_loc (STATE * states);
 void read_trans (complex_energy_integral * cei);
 void get_dos (STATE * states); 
 
-//void Stransfer_p (doublecomplex * tot, doublecomplex * tott, complex
+//void Stransfer_p (complex double * tot, complex double * tott, complex
 //double *ch0, complex double *ch1, int iprobe);
-//void Sigma_p (doublecomplex *sigma, complex double *ch0, complex double *ch1, doublecomplex *green, int iprobe);
-void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_idx,
-                    doublecomplex *Green_C_leftdown, int nC, int iprobe1, int iprobe2);
+//void Sigma_p (complex double *sigma, complex double *ch0, complex double *ch1, complex double *green, int iprobe);
+void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma_idx,
+                    complex double *Green_C_leftdown, int nC, int iprobe1, int iprobe2);
 
 void   comm_sums(double *, int*, MPI_Comm);
-//void Sgreen_p (doublecomplex * tot, doublecomplex * tott, complex double
-//        *ch0, complex double *ch1, doublecomplex *g, int iprobe);
+//void Sgreen_p (complex double * tot, complex double * tott, complex double
+//        *ch0, complex double *ch1, complex double *g, int iprobe);
 void gauleg (double x1, double x2, double *x, double *w, int n);
 void fill_orbit_borders (REAL * sg, int dimx, int dimy, int dimz);
 void get_distributed_mat (double *bigmat, double *dismat);
 void whole_to_tri_p (REAL * A_tri, REAL * Aii, int N, int *ni);
-void pmo_unitary_matrix(doublecomplex *a_local, int *desca);
-/*void matrix_inverse_cond_p (doublecomplex * H_tri, int N, int * ni,
-  doublecomplex * Green_C_leftdown);*/
+void pmo_unitary_matrix(complex double *a_local, int *desca);
+/*void matrix_inverse_cond_p (complex double * H_tri, int N, int * ni,
+  complex double * Green_C_leftdown);*/
 int int_max_all (int x);
 /*void read_potrho(char *name, double *potrho, int NX, int NY, int NZ, 
   int PNX0, int PNY0, int PNZ0, int PNX1, int PNY1, int PNZ1, 
@@ -65,7 +65,7 @@ int int_max_all (int x);
 void read_potrho (double *vh, int iflag, int data_indicator);
 void spline(double *x, double *y, int n, double yp1, double ypn, double *y2);
 void splint(double *xa, double *ya, double *y2a, int n, double x, double *y);
-void sigma_all_energy_point (doublecomplex * sigma_all);
+void sigma_all_energy_point (complex double * sigma_all);
 void diff_hx_interpolation (double *xi, double *xi_old, int NX,
         double hx, double hx_old, double x0, double x0_old);
 void find_phase (int nldim, REAL * nlcdrs, REAL * phase_sin, REAL * phase_cos);
@@ -75,17 +75,17 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho);
 void write_rho_x (REAL * rho, char *ab);
 void interpolation_orbit (STATE * states);
 void tri_to_whole_p (REAL * A_tri, REAL * Aii, int N, int *ni);
-void tri_to_whole_complex_p (doublecomplex * A_tri, doublecomplex * Aii, int N, int *ni);
+void tri_to_whole_complex_p (complex double * A_tri, complex double * Aii, int N, int *ni);
 void global_to_distribute (REAL * global_array, REAL * distr_array);
 void global_to_distribute2 (double *global_array, double *distr_array);
 void global_to_distribute3 (double *global_array, double *distr_array);
-void Sgreen_semi_infinite_p (doublecomplex * green, complex double
+void Sgreen_semi_infinite_p (complex double * green, complex double
         *ch00, complex double *ch01, int jprobe);
-void find_fermi (doublecomplex * sigma_all);
-void charge_density_matrix_p (doublecomplex * sigma_all);
+void find_fermi (complex double * sigma_all);
+void charge_density_matrix_p (complex double * sigma_all);
 void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
         int Nrefresh, double scale, int preconditioning);
-void get_inverse_block_p (doublecomplex *Hii, doublecomplex *Gii, int *ipiv, int *desca );
+void get_inverse_block_p (complex double *Hii, complex double *Gii, int *ipiv, int *desca );
 void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip, fftwnd_plan p1);
 void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip, fftwnd_plan p1);
 void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip, fftwnd_plan p1);
@@ -96,12 +96,12 @@ void distribute_to_X_soft (REAL * distr_array, REAL * global_array);
 void distribute_to_Y_soft (REAL * distr_array, REAL * global_array);
 void X_to_distribute_soft (REAL * global_array, REAL * distr_array);
 void Y_to_distribute_soft (REAL * global_array, REAL * distr_array);
-void Sgreen_c_p (REAL * Htri, REAL * Stri, doublecomplex * sigma_L, int *sigma_idx,
-        REAL eneR, REAL eneI, doublecomplex * Green_C);
-void Sgreen_c_noneq_p (double *H00, double *S00, doublecomplex * sigma_L,
-        int *sigma_idx, REAL eneR, REAL eneI, doublecomplex * Green_C, int nC,
+void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma_L, int *sigma_idx,
+        REAL eneR, REAL eneI, complex double * Green_C);
+void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma_L,
+        int *sigma_idx, REAL eneR, REAL eneI, complex double * Green_C, int nC,
         int iprobe);
-void rho_munu_p (doublecomplex * rho_mn, doublecomplex * green_C, doublecomplex * sigma_L, int iprobe);
+void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double * sigma_L, int iprobe);
 void init_derweight_s (SPECIES *sp, 
         fftw_complex *rtptr_x, 
         fftw_complex *rtptr_y,
@@ -117,12 +117,12 @@ void init_derweight_d (SPECIES *sp,
         fftw_complex *rtptr_y,
         fftw_complex *rtptr_z, 
         int ip, fftwnd_plan p1);
-void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri);
+void matrix_inverse_p (complex double * H_tri, complex double * G_tri);
 
 
-void matrix_inverse_anyprobe_p (doublecomplex *H_tri, int N, int *ni, int iprobe, doublecomplex *Green_C);
-void matrix_inverse_left_p (doublecomplex * H_tri, int N, int * ni, doublecomplex * Green_C);
-void matrix_inverse_right_p (doublecomplex * H_tri, int N, int * ni, doublecomplex * Green_C);
+void matrix_inverse_anyprobe_p (complex double *H_tri, int N, int *ni, int iprobe, complex double *Green_C);
+void matrix_inverse_left_p (complex double * H_tri, int N, int * ni, complex double * Green_C);
+void matrix_inverse_right_p (complex double * H_tri, int N, int * ni, complex double * Green_C);
 
 
 void global_sums_X (REAL * vect, int *length);

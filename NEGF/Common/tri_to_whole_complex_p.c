@@ -10,7 +10,7 @@
 #include "pmo.h"
 
 
-void tri_to_whole_complex_p (doublecomplex * A_tri, doublecomplex * Aii, int N, int *ni)
+void tri_to_whole_complex_p (complex double * A_tri, complex double * Aii, int N, int *ni)
 {
     /* Semi_tridiagonal matrix  
      *
@@ -53,8 +53,7 @@ void tri_to_whole_complex_p (doublecomplex * A_tri, doublecomplex * Aii, int N, 
 
     for(i=0; i<ndim * ndim; i++)
     {
-        Aii[i].r = 0.0;
-        Aii[i].i = 0.0;
+        Aii[i] = 0.0;
     }
 
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
@@ -79,10 +78,8 @@ void tri_to_whole_complex_p (doublecomplex * A_tri, doublecomplex * Aii, int N, 
 
                 jjj = jj + istart;
                 kkk = kk + istart;
-                Aii[kkk * ndim + jjj].r =
-                A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j].r;
-                Aii[kkk * ndim + jjj].i =
-                A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j].i;
+                Aii[kkk * ndim + jjj] =
+                A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j];
 
             }
         }
@@ -112,13 +109,10 @@ void tri_to_whole_complex_p (doublecomplex * A_tri, doublecomplex * Aii, int N, 
 
                 jjj = jj + istart;
                 kkk = kk + istart + ct.block_dim[i-1];
-                Aii[kkk * ndim + jjj].r =
-                    A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j].r;
-                Aii[kkk * ndim + jjj].i =
-                    A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j].i;
+                Aii[kkk * ndim + jjj] =
+                    A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j];
                 
-                Aii[jjj * ndim + kkk].r = Aii[kkk * ndim + jjj].r ;
-                Aii[jjj * ndim + kkk].i = Aii[kkk * ndim + jjj].i ;
+                Aii[jjj * ndim + kkk] = Aii[kkk * ndim + jjj] ;
 
             }
         }

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "md.h"
 
-void get_inverse_block (doublecomplex *Hii, doublecomplex *Gii, int *ipiv, int nn)
+void get_inverse_block (complex double *Hii, complex double *Gii, int *ipiv, int nn)
 {
 /*  direct inverse of a small matrix  Hii  */
 
@@ -17,13 +17,12 @@ void get_inverse_block (doublecomplex *Hii, doublecomplex *Gii, int *ipiv, int n
 
     for (i = 0; i < nn * nn; i++)
     {
-        Gii[i].r = 0.0;
-        Gii[i].i = 0.0;
+        Gii[i] = 0.0;
     }
 
     for (i = 0; i < nn; i++)
     {
-        Gii[i + i * nn].r = 1.0;
+        Gii[i + i * nn] = 1.0;
     }
 
     ZGESV (&nn, &nn, Hii, &nn, ipiv, Gii, &nn, &info);

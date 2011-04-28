@@ -11,8 +11,8 @@
 #include "md.h"
 
 
-void Sgreen_c (REAL * Htri, REAL * Stri, doublecomplex * sigma1, doublecomplex * sigma2,
-                    REAL eneR, REAL eneI, doublecomplex * Green_C, int nC)
+void Sgreen_c (REAL * Htri, REAL * Stri, complex double * sigma1, complex double * sigma2,
+                    REAL eneR, REAL eneI, complex double * Green_C, int nC)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -20,7 +20,7 @@ void Sgreen_c (REAL * Htri, REAL * Stri, doublecomplex * sigma1, doublecomplex *
  *   nC: number of states in conductor region
  */
 
-    doublecomplex *H_tri, *ch00;
+    complex double *H_tri, *ch00;
 
     int info;
     int i, j;
@@ -29,6 +29,9 @@ void Sgreen_c (REAL * Htri, REAL * Stri, doublecomplex * sigma1, doublecomplex *
     int N;
     REAL tem;
 
+    complex double ene;
+
+    ene = eneR + I * eneI;
     nmax = nC;
 
 
@@ -60,27 +63,24 @@ void Sgreen_c (REAL * Htri, REAL * Stri, doublecomplex * sigma1, doublecomplex *
 
 
     /* allocate matrix and initialization  */
-    my_malloc_init( H_tri, ntot, doublecomplex );
-    my_malloc_init( ch00, nmax * nmax, doublecomplex );
+    my_malloc_init( H_tri, ntot, complex double );
+    my_malloc_init( ch00, nmax * nmax, complex double );
     my_malloc_init( ipiv, nmax, int );
 
     for (i = 0; i < ni[0] * ni[0]; i++)
     {
-        H_tri[i].r = eneR * Stri[i] - Htri[i] * Ha_eV - sigma1[i].r;
-        H_tri[i].i = eneI * Stri[i] - sigma1[i].i;
+        H_tri[i] = ene * Stri[i] - Htri[i] * Ha_eV - sigma1[i];
     }
 
     for (i = ni[0] * ni[0]; i < ntot - ni[N - 1] * ni[N - 1]; i++)
     {
-        H_tri[i].r = eneR * Stri[i] - Htri[i] * Ha_eV;
-        H_tri[i].i = eneI * Stri[i];
+        H_tri[i] = ene * Stri[i] - Htri[i] * Ha_eV;
     }
 
     j = 0;
     for (i = ntot - ni[N - 1] * ni[N - 1]; i < ntot; i++)
     {
-        H_tri[i].r = eneR * Stri[i] - Htri[i] * Ha_eV - sigma2[j].r;
-        H_tri[i].i = eneI * Stri[i] - sigma2[j].i;
+        H_tri[i] = ene * Stri[i] - Htri[i] * Ha_eV - sigma2[j];
         j++;
     }
 

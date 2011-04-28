@@ -16,8 +16,8 @@
 #include "pmo.h"
 
 
-void Sgreen_c_p (REAL * Htri, REAL * Stri, doublecomplex * sigma, int * sigma_idx,
-                       REAL eneR, REAL eneI, doublecomplex * Green_C)
+void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_idx,
+                       REAL eneR, REAL eneI, complex double * Green_C)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -25,7 +25,7 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, doublecomplex * sigma, int * sigma_id
  *   nC: number of states in conductor region
  */
 
-    doublecomplex *H_tri;
+    complex double *H_tri;
 
 
     int info;
@@ -33,19 +33,21 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, doublecomplex * sigma, int * sigma_id
     REAL time1, time2;
     int ntot, N1, N2; 
     int idx, idx2, ioff, joff;
+    
+    complex double ene;
 
+    ene = eneR + I * eneI;
     ntot = pmo.ntot;
 
 
     /* allocate matrix and initialization  */
-    my_malloc_init( H_tri, ntot, doublecomplex );
+    my_malloc_init( H_tri, ntot, complex double );
  
 
     /* Construct H = ES - H */
     for (i = 0; i < ntot; i++)
     {
-        H_tri[i].r = eneR * Stri[i] - Htri[i] * Ha_eV;
-        H_tri[i].i = eneI * Stri[i];
+        H_tri[i] = ene * Stri[i] - Htri[i] * Ha_eV;
     }
 
 	
@@ -59,8 +61,7 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, doublecomplex * sigma, int * sigma_id
 
         for (i = 0; i < pmo.mxllda_cond[N1] * pmo.mxlocc_cond[N1]; i++)
         {
-            H_tri[pmo.diag_begin[N1] + i].r -= sigma[N2 + i].r;
-            H_tri[pmo.diag_begin[N1] + i].i -= sigma[N2 + i].i;
+            H_tri[pmo.diag_begin[N1] + i] -= sigma[N2 + i];
         }
 
 

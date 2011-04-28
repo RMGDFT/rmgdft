@@ -15,7 +15,7 @@
 
 
 
-void nlforce (REAL * veff, STATE * states, STATE * states1, doublecomplex * sigma_all)
+void nlforce (REAL * veff, STATE * states, STATE * states1, complex double * sigma_all)
 {
     int ion, i, isp, count;
     int nh, size, n2, idx;

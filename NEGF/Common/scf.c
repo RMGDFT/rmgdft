@@ -32,7 +32,7 @@ extern int it_scf;
 
 
 
-void scf (doublecomplex * sigma_all, STATE * states, STATE * states1, double *vxc,
+void scf (complex double * sigma_all, STATE * states, STATE * states1, double *vxc,
           double *vh, double *vnuc, double *rho, double *rhoc, double *rhocore,
           REAL * vxc_old, REAL * vh_old, REAL * vbias, int *CONVERGENCE)
 {

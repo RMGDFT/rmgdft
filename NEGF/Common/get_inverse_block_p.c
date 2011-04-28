@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "md.h"
 
-void get_inverse_block_p (doublecomplex *Hii, doublecomplex *Gii, int *ipiv, int *desca )
+void get_inverse_block_p (complex double *Hii, complex double *Gii, int *ipiv, int *desca )
 {
 /*  direct inverse of a small matrix  Hii  */
 

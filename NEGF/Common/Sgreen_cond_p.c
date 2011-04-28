@@ -17,8 +17,8 @@
 #include "pmo.h"
 
 
-void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_idx,
-                    doublecomplex *green_C, int nC, int iprobe1, int iprobe2)
+void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma_idx,
+                    complex double *green_C, int nC, int iprobe1, int iprobe2)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -26,8 +26,8 @@ void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_i
  *   nC: number of states in conductor region
  */
 
-    doublecomplex *green_all;
-    /*doublecomplex *H_whole, *H_inv;*/
+    complex double *green_all;
+    /*complex double *H_whole, *H_inv;*/
 
     int info;
     int i, nprobe;
@@ -62,8 +62,7 @@ void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_i
         N2 = sigma_idx[nprobe];
         for (i = 0; i < pmo.mxllda_cond[N1] * pmo.mxlocc_cond[N1]; i++)
         {
-            H_tri[pmo.diag_begin[N1] + i].r -= sigma_all[N2 + i].r;
-            H_tri[pmo.diag_begin[N1] + i].i -= sigma_all[N2 + i].i;
+            H_tri[pmo.diag_begin[N1] + i] -= sigma_all[N2 + i];
         }
     }
     
@@ -79,7 +78,7 @@ void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_i
         totrow += pmo.mxllda_cond[i];
     }
 
-    my_malloc_init( green_all, maxcol * totrow, doublecomplex );
+    my_malloc_init( green_all, maxcol * totrow, complex double );
 
     my_malloc( n_begin1, ct.num_blocks, int );
     n_begin1[0] = 0;
@@ -98,8 +97,7 @@ void Sgreen_cond_p (doublecomplex *H_tri, doublecomplex *sigma_all, int *sigma_i
         for(j =0; j < pmo.mxllda_cond[n1]; j++)
         {
             idx = j + i * pmo.mxllda_cond[n1];
-            green_C[idx].r = green_all[n_begin1[n1] + idx].r;       
-            green_C[idx].i = green_all[n_begin1[n1] + idx].i;       
+            green_C[idx] = green_all[n_begin1[n1] + idx];       
 
         }
     }

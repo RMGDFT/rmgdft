@@ -30,6 +30,7 @@
  * SOURCE
  */
 
+#include <complex.h>
 
 #define NEGF1 1
 
@@ -105,8 +106,6 @@
 #define MAX_SYMMETRY	48
 
 /******/
-
-typedef struct { double r, i; } doublecomplex;
 
 
 
@@ -1167,7 +1166,7 @@ void solv_pois( REAL *vmat, REAL *fmat, REAL *work,
         REAL gridhy,REAL gridhz);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
 void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
-        STATE *states, STATE *states1, doublecomplex *sigma_all);
+        STATE *states, STATE *states1, complex double *sigma_all);
 void genvpsi(REAL *psi, REAL *twovpsi, REAL *pvtot, REAL *pvnl, REAL *kd, 
         REAL kmag, int dimx, int dimy, int dimz);
 void get_index_loc(STATE *);
@@ -1239,7 +1238,7 @@ REAL real_sum_all(REAL x);
 REAL real_max_all(REAL x);
 void rft(REAL *f, REAL *r, REAL *ffil, REAL al, int rg_points, int lval,
         REAL dr, REAL width, int lrg_points);
-void scf(doublecomplex *sigma_all, STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc,
+void scf(complex double *sigma_all, STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc,
         REAL *rho, REAL *rhocore, REAL *rhoc,REAL *vxc_old, REAL *vh_old, REAL *vbias, int *CONVERGENCE);
 void apply_potential_drop(REAL *vbias);
 void sortpsi(STATE *states);

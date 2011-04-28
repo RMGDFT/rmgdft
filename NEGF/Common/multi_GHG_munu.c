@@ -12,7 +12,7 @@
 
 #define 	LDEBUG 	0
 
-void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
+void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
 {
     int iprobe, jprobe, iene;
     int st1, st2, idx_sigma;
@@ -20,21 +20,19 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
     int idx1, idx2, nmax, size;
     REAL eneR, eneI, weightR, weightI;
     REAL wmn, wmn1, wmn2;
-    doublecomplex *green_C, *complex_H, *temp_matrix_tri, *temp_matrix1;
-    doublecomplex *sigma_sum1, *sigma_sum2, *sigma_L;
-    doublecomplex one, zero;
+    complex double *green_C, *complex_H, *temp_matrix_tri, *temp_matrix1;
+    complex double *sigma_sum1, *sigma_sum2, *sigma_L;
+    complex double one, zero;
     double time1, time2, time3, time4;
 
     time1 = my_crtc ();
 
-    one.r = 1.0;
-    one.i = 0.0;
-    zero.r = 0.0;
-    zero.i = 0.0;
+    one = 1.0;
+    zero = 0.0;
 
     /*  allocate memory for sigma_sum1, only the first block. others's value is zero, don't need to save it*/
     nL = lcr[1].num_states;
-    my_malloc_init( sigma_sum1, nL * nL, doublecomplex );
+    my_malloc_init( sigma_sum1, nL * nL, complex double );
     if (nL != ct.block_dim[0])
     {
         printf (" lcr[1].num_states & ct.block_dim[0] are unequal \n");
@@ -42,7 +40,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
 
     /*  allocate memory for sigma_sum2, only the last block. others's value is zero, don't need to save it*/
     nL = lcr[2].num_states;
-    my_malloc_init( sigma_sum2, nL * nL, doublecomplex );
+    my_malloc_init( sigma_sum2, nL * nL, complex double );
     if (nL != ct.block_dim[ct.num_blocks - 1])
     {
         printf (" lcr[2].num_states & ct.block_dim[%d] are unequal \n", ct.num_blocks - 1);
@@ -60,12 +58,12 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
             nmax = ct.block_dim[i];
     }
 
-    my_malloc_init( temp_matrix_tri, ntot, doublecomplex );
+    my_malloc_init( temp_matrix_tri, ntot, complex double );
 
     size = ct.num_states * ct.num_states;
-    my_malloc_init( green_C, size, doublecomplex );
-    my_malloc_init( complex_H, size, doublecomplex );
-    my_malloc_init( temp_matrix1, size, doublecomplex );
+    my_malloc_init( green_C, size, complex double );
+    my_malloc_init( complex_H, size, complex double );
+    my_malloc_init( temp_matrix1, size, complex double );
 
     idx_sigma = 0;
 
@@ -105,8 +103,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                         {
                             idx1 = st1 * nL + st2;
                             idx2 = st1 * nL + st2;
-                            sigma_sum1[idx1].r = sigma_all[idx_sigma + idx2].r;
-                            sigma_sum1[idx1].i = sigma_all[idx_sigma + idx2].i;
+                            sigma_sum1[idx1] = sigma_all[idx_sigma + idx2];
                         }
 
                     idx_sigma += nL * nL;
@@ -118,8 +115,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                         {
                             idx1 = st1 * nL + st2;
                             idx2 = st1 * nL + st2;
-                            sigma_sum2[idx1].r = sigma_all[idx_sigma + idx2].r;
-                            sigma_sum2[idx1].i = sigma_all[idx_sigma + idx2].i;
+                            sigma_sum2[idx1] = sigma_all[idx_sigma + idx2];
                         }
                     idx_sigma +=  nL * nL;
                 }
@@ -153,14 +149,12 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                     if (wmn1 + wmn2 < 0.0000001)
                     wmn = 0.5;
 
-                    if (iprobe == 1) temp_matrix_tri[idx1].r = wmn * lcr[0].Htri[idx1];
-                    else temp_matrix_tri[idx1].r = (1.0 - wmn) * lcr[0].Htri[idx1];
-                    temp_matrix_tri[idx1].i = 0.0;
+                    if (iprobe == 1) temp_matrix_tri[idx1] = wmn * lcr[0].Htri[idx1];
+                    else temp_matrix_tri[idx1] = (1.0 - wmn) * lcr[0].Htri[idx1];
                 }
                 else
                 {
-                    temp_matrix_tri[idx1].r = lcr[0].Htri[idx1];
-                    temp_matrix_tri[idx1].i = 0.0;
+                    temp_matrix_tri[idx1] = lcr[0].Htri[idx1];
                 }
             }
 
@@ -176,9 +170,11 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
             /* Now performing the integration */
             for(idx1 = 0; idx1 < ntot; idx1++)
             {
-                GHG_tri[idx1] += weightR * temp_matrix_tri[idx1].i + weightI * temp_matrix_tri[idx1].r;
-                GHG_en_tri[idx1] += weightR * (temp_matrix_tri[idx1].i * eneR + temp_matrix_tri[idx1].r * eneI) 
-                                  + weightI * (temp_matrix_tri[idx1].r * eneR - temp_matrix_tri[idx1].i * eneI);
+                GHG_tri[idx1] += weightR * cimag(temp_matrix_tri[idx1]) + weightI * creal(temp_matrix_tri[idx1]);
+                GHG_en_tri[idx1] += weightR *
+                    (cimag(temp_matrix_tri[idx1]) * eneR + creal(temp_matrix_tri[idx1]) * eneI) 
+                    + weightI *
+                    (creal(temp_matrix_tri[idx1]) * eneR - cimag(temp_matrix_tri[idx1]) * eneI);
             }
 
 
@@ -194,7 +190,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
      */
     if (ct.runflag == 113)
     {
-        my_malloc_init( sigma_L, size, doublecomplex );
+        my_malloc_init( sigma_L, size, complex double );
 
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
@@ -228,8 +224,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                             {
                                 idx1 = st1 * nL + st2;
                                 idx2 = st1 * nL + st2;
-                                sigma_sum1[idx1].r = sigma_all[idx_sigma + idx2].r;
-                                sigma_sum1[idx1].i = sigma_all[idx_sigma + idx2].i;
+                                sigma_sum1[idx1] = sigma_all[idx_sigma + idx2];
                             }
 
                         idx_sigma +=  nL * nL;
@@ -241,8 +236,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                             {
                                 idx1 = st1 * nL + st2;
                                 idx2 = st1 * nL + st2;
-                                sigma_sum2[idx1].r = sigma_all[idx_sigma + idx2].r;
-                                sigma_sum2[idx1].i = sigma_all[idx_sigma + idx2].i;
+                                sigma_sum2[idx1] = sigma_all[idx_sigma + idx2];
                             }
                         idx_sigma +=  nL * nL;
                     }
@@ -257,8 +251,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
 
                 for (st1 = 0; st1 < size; st1++) 
                 {
-                    sigma_L[st1].r = 0.0;
-                    sigma_L[st1].i = 0.0;
+                    sigma_L[st1] = 0.0;
                 }
 
                 nL = lcr[iprobe].num_states;
@@ -271,8 +264,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                         {
                             idx1 = st1 * nC + st2;
                             idx2 = st1 * nL + st2;
-                            sigma_L[idx1].r = sigma_sum1[idx2].r;
-                            sigma_L[idx1].i = sigma_sum1[idx2].i;
+                            sigma_L[idx1] = sigma_sum1[idx2];
                         }
 
                 }
@@ -283,8 +275,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                         {
                             idx1 = (nC - nL + st1) * nC + (nC - nL + st2);
                             idx2 = st1 * nL + st2;
-                            sigma_L[idx1].r = sigma_sum2[idx2].r;
-                            sigma_L[idx1].i = sigma_sum2[idx2].i;
+                            sigma_L[idx1] = sigma_sum2[idx2];
                         }
                 }
 
@@ -303,11 +294,10 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
 
                     wmn = wmn2 / (wmn1 + wmn2);
                     if (wmn1 + wmn2 < 0.0000001)
-                    wmn = 0.5;
+                        wmn = 0.5;
 
-                    if ( iprobe == 2) temp_matrix_tri[idx1].r = wmn * lcr[0].Htri[idx1];
-                    else temp_matrix_tri[idx1].r = (1.0 - wmn) * lcr[0].Htri[idx1];
-                    temp_matrix_tri[idx1].i = 0.0;
+                    if ( iprobe == 2) temp_matrix_tri[idx1] = wmn * lcr[0].Htri[idx1];
+                    else temp_matrix_tri[idx1] = (1.0 - wmn) * lcr[0].Htri[idx1];
                 }
 
                 tri_to_whole_complex( temp_matrix_tri, complex_H, ct.num_blocks, ct.block_dim);
@@ -326,12 +316,13 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                 /* Now performing the integration */
                 for(idx1 = 0; idx1 < ntot; idx1++)
                 {
-                    GHG_tri[idx1] -= 2.0 /PI * (weightR * temp_matrix_tri[idx1].r - 
-                                                weightI * temp_matrix_tri[idx1].i);
-                    GHG_en_tri[idx1] -= 2.0 /PI * (weightR * (temp_matrix_tri[idx1].r * eneR - 
-                                                                temp_matrix_tri[idx1].i * eneI) - 
-                                                     weightI * (temp_matrix_tri[idx1].i * eneR + 
-                                                                temp_matrix_tri[idx1].r * eneI)); 
+                    GHG_tri[idx1] -= 2.0 /PI * (weightR * creal(temp_matrix_tri[idx1]) - 
+                            weightI * cimag(temp_matrix_tri[idx1]));
+                    GHG_en_tri[idx1] -= 2.0 /PI * 
+                        (weightR * (creal(temp_matrix_tri[idx1]) * eneR - 
+                                    cimag(temp_matrix_tri[idx1]) * eneI) - 
+                         weightI * (cimag(temp_matrix_tri[idx1]) * eneR + 
+                             creal(temp_matrix_tri[idx1]) * eneI) ); 
                 }
 
 
@@ -346,7 +337,7 @@ void multi_GHG_munu (doublecomplex *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
     global_sums (GHG_tri, &ntot);
     global_sums (GHG_en_tri, &ntot);
 
-    
+
     for (idx1 = 0; idx1 < ntot; idx1++)
     {
         GHG_tri[idx1] /= PI;

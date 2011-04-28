@@ -10,7 +10,7 @@
 #include "pmo.h"
 
 
-void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int iprobe, doublecomplex * Green_C)
+void matrix_inverse_anyprobe_p (complex double * H_tri, int N, int * ni, int iprobe, complex double * Green_C)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -36,15 +36,15 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 
     int nmax, i, j, n1, n2, n3, n4, m;
     int *ipiv, *n_begin1;
-    doublecomplex *Hii, *Gii, *temp, *Hii1;
-    doublecomplex *Hmm1, *temp2, *temp3, *identity;
-    doublecomplex mone, one, zero;
+    complex double *Hii, *Gii, *temp, *Hii1;
+    complex double *Hmm1, *temp2, *temp3, *identity;
+    complex double mone, one, zero;
     int ione = 1, ntot, k, maxrow, maxcol; 
 	int *desca, *descb, *descc, *descd;
 
-    mone.r = -1.0, mone.i = 0.0;
-    one.r = 1.0, one.i = 0.0;
-    zero.r = 0.0, zero.i = 0.0;
+    mone = -1.0;
+    one = 1.0;
+    zero = 0.0;
 
 /*  find the maximum dimension of the blocks  */
 
@@ -61,9 +61,9 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
     my_malloc( n_begin1, N, int );
     my_malloc( ipiv, maxrow + pmo.mblock, int ); 
 
-    my_malloc_init( Hii, maxrow * maxcol, doublecomplex );
-    my_malloc_init( Gii, maxrow * maxcol, doublecomplex );
-    my_malloc_init( temp, maxrow * maxcol, doublecomplex );
+    my_malloc_init( Hii, maxrow * maxcol, complex double );
+    my_malloc_init( Gii, maxrow * maxcol, complex double );
+    my_malloc_init( temp, maxrow * maxcol, complex double );
 
 
 /*  n_begin: starting address of each diagonal block in H_tri and G_tri
@@ -88,8 +88,7 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 
     for (i = 0; i < pmo.mxllda_cond[0] * pmo.mxlocc_cond[0]; i++)
     {
-        Hii[i].r = H_tri[ i].r;
-        Hii[i].i = H_tri[ i].i;
+        Hii[i] = H_tri[ i];
     }
 
     desca = &pmo.desc_cond[0];
@@ -117,8 +116,7 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
         /* Hii now has the matrix Hi+1,i+1  */
         for (j = 0; j < pmo.mxllda_cond[i + 1] * pmo.mxlocc_cond[i + 1]; j++)
         {
-            Hii[j].r = H_tri[j + pmo.diag_begin[i + 1]].r;
-            Hii[j].i = H_tri[j + pmo.diag_begin[i + 1]].i;
+            Hii[j] = H_tri[j + pmo.diag_begin[i + 1]];
         }
 
 
@@ -190,8 +188,7 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 
     for (i = 0; i < pmo.mxllda_cond[N - 1] * pmo.mxlocc_cond[N - 1]; i++)
     {
-        Hii[i].r = H_tri[pmo.diag_begin[N - 1] + i].r;
-        Hii[i].i = H_tri[pmo.diag_begin[N - 1] + i].i;
+        Hii[i] = H_tri[pmo.diag_begin[N - 1] + i];
     }
 
     desca = &pmo.desc_cond[ (N-1 + (N-1) * N) * DLEN];
@@ -215,8 +212,7 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 
         for (j = 0; j < pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i - 1]; j++)
         {
-            Hii[j].r = H_tri[j + pmo.diag_begin[i - 1]].r;
-            Hii[j].i = H_tri[j + pmo.diag_begin[i - 1]].i;
+            Hii[j] = H_tri[j + pmo.diag_begin[i - 1]];
         }
 
 
@@ -287,14 +283,14 @@ void matrix_inverse_anyprobe_p (doublecomplex * H_tri, int N, int * ni, int ipro
 
 		/* call the identity matrix and allocate its memory */
 
-		my_malloc_init( identity, maxrow * maxcol, doublecomplex );  
+		my_malloc_init( identity, maxrow * maxcol, complex double );  
 		desca = &pmo.desc_cond[ (m + m * N) * DLEN]; 
 		pmo_unitary_matrix(identity, desca); 
 
 
 		/* allocate memory for temp2 and temp3 */
-		my_malloc_init( temp2, maxrow * maxcol, doublecomplex );
-		my_malloc_init( temp3, maxrow * maxcol, doublecomplex );
+		my_malloc_init( temp2, maxrow * maxcol, complex double );
+		my_malloc_init( temp3, maxrow * maxcol, complex double );
 
 		/* get the interaction Hm,m+1 from input H_tri */
 		Hmm1 = &H_tri[pmo.offdiag_begin[m] ];

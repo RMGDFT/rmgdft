@@ -13,14 +13,14 @@
 #include "pmo.h"
 
 
-void sigma_all_energy_point (doublecomplex * sigma_all)
+void sigma_all_energy_point (complex double * sigma_all)
 {
     int iprobe, jprobe, idx_delta, j;
     int iene;
     int st1, n2;
     REAL eneR;
     REAL eneI;
-    doublecomplex *sigma, *tot, *tott, *g;          
+    complex double *sigma, *tot, *tott, *g;          
 
     complex double *ch0, *ch1;
     complex double ene, ctem;
@@ -44,11 +44,11 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
     }
 
 
-    my_malloc_init( tot, maxrow * maxcol, doublecomplex);
-    my_malloc_init( tott, maxrow * maxcol, doublecomplex);
-    my_malloc_init( g, maxrow * maxcol, doublecomplex);
-    my_malloc_init( ch0, maxrow * maxcol, double complex);
-    my_malloc_init( ch1, maxrow * maxcol, double complex);
+    my_malloc_init( tot, maxrow * maxcol, complex double);
+    my_malloc_init( tott, maxrow * maxcol, complex double);
+    my_malloc_init( g, maxrow * maxcol, complex double);
+    my_malloc_init( ch0, maxrow * maxcol, complex double);
+    my_malloc_init( ch1, maxrow * maxcol, complex double);
 
     max_sigma_col = 0;
     max_sigma_row = 0;
@@ -57,7 +57,7 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         max_sigma_row = pmo.mxllda_cond[idx_C];
         max_sigma_col = pmo.mxlocc_cond[idx_C];
-        my_malloc_init( sigma, max_sigma_row * max_sigma_col, doublecomplex);
+        my_malloc_init( sigma, max_sigma_row * max_sigma_col, complex double);
     }
 
     /************************/
@@ -125,8 +125,7 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
                 idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
                 for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
                 {
-                    sigma_all[idx_sigma + st1].r = sigma[st1].r;
-                    sigma_all[idx_sigma + st1].i = sigma[st1].i;
+                    sigma_all[idx_sigma + st1] = sigma[st1];
                 }
                 idx_sigma += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
 
@@ -192,8 +191,7 @@ void sigma_all_energy_point (doublecomplex * sigma_all)
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
                         for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
                         {
-                            sigma_all[idx_sigma + st1].r = sigma[st1].r;
-                            sigma_all[idx_sigma + st1].i = sigma[st1].i;
+                            sigma_all[idx_sigma + st1] = sigma[st1];
                         }
                         idx_sigma += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
 

@@ -12,7 +12,7 @@
 
 #define         LDEBUG  0
 
-void nlforce_par_D (doublecomplex *sigma_all, STATE *states, STATE *states1, REAL *forces)
+void nlforce_par_D (complex double *sigma_all, STATE *states, STATE *states1, REAL *forces)
 {
     int st1, st2, ixyz;
     int nC, nL, i, ntot, ion;

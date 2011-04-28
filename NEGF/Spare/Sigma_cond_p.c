@@ -22,13 +22,13 @@
 
 
 
-void Sigma_cond_p (doublecomplex *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, doublecomplex *green, int iprobe)
+void Sigma_cond_p (complex double *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, complex double *green, int iprobe)
 {
 
-    doublecomplex *ch, *ch1;
+    complex double *ch, *ch1;
     int i;
     char fcd_n = 'N', fcd_t = 'T';
-    doublecomplex alpha, beta;
+    complex double alpha, beta;
     int nmax, ndim, ione =1, nrow, ncol, n0, n1; 
 	int *desca, *descb, *descc, *descd;
 
@@ -53,8 +53,8 @@ void Sigma_cond_p (doublecomplex *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL e
     descc = &pmo.desc_cond[ ( n0 + n0 * ct.num_blocks) * DLEN ];               /* (C,C) */
     
 
-    my_malloc_init( ch, n1, doublecomplex);
-    my_malloc_init( ch1, n1, doublecomplex);
+    my_malloc_init( ch, n1, complex double);
+    my_malloc_init( ch1, n1, complex double);
 
     for (i = 0; i < n1; i++)
     {

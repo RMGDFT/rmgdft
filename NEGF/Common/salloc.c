@@ -180,11 +180,11 @@ static void initialize( void *ptr, size_t n,
     }
 #endif
 #if NEGF1  
-    else if ( strcmp( type, "doublecomplex" ) == 0 ) 
+    else if ( strcmp( type, "_Complex double" ) == 0 ) 
     {
-        doublecomplex *p = (doublecomplex *) ptr;
+        complex double *p = (complex double *) ptr;
         for ( i = 0; i < n; i ++ ) 
-            p[i].r = p[i].i = 0.0;
+            p[i] = 0.0;
     }
 #endif
 

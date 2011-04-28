@@ -18,13 +18,13 @@
 #define 	MAX_STEP 	40
 
 
-void Sgreen_semi_infinite_p (doublecomplex * green, complex double
+void Sgreen_semi_infinite_p (complex double * green, complex double
         *ch00, complex double *ch01, int jprobe)
 {
 
     double converge1, converge2, tem;
-    doublecomplex *chnn, *chtem;
-    doublecomplex alpha, beta, mone;
+    complex double *chnn, *chtem;
+    complex double alpha, beta, mone;
     int info;
     int *ipiv;
     int i, j, step;
@@ -46,15 +46,12 @@ void Sgreen_semi_infinite_p (doublecomplex * green, complex double
     n1 = maxrow * maxcol;
 
     /* allocate matrix and initialization  */
-    alpha.r = 1.0;
-    alpha.i = 0.0;
-    beta.r = 0.0;
-    beta.i = 0.0;
-    mone.r = -1.0;
-    mone.i = 0.0;
+    alpha = 1.0;
+    beta = 0.0;
+    mone = -1.0;
 
-    my_malloc_init( chnn, n1, doublecomplex );
-    my_malloc_init( chtem, n1, doublecomplex );
+    my_malloc_init( chnn, n1, complex double );
+    my_malloc_init( chtem, n1, complex double );
     my_malloc_init( ipiv, maxrow + pmo.mblock, int );
 
 
@@ -66,7 +63,7 @@ void Sgreen_semi_infinite_p (doublecomplex * green, complex double
     converge1 = 0.0;
     for (i = 0; i < n1; i++)
     {
-        converge1 += green[i].r * green[i].r + green[i].i * green[i].i;
+        converge1 += cabs(green[i]) * cabs(green[i]);
     }
 
     comm_sums(&converge1, &ione, COMM_EN2);
@@ -90,7 +87,8 @@ void Sgreen_semi_infinite_p (doublecomplex * green, complex double
         converge2 = 0.0;
         for (i = 0; i < n1; i++)
         {
-            converge2 += green[i].r * green[i].r + green[i].i * green[i].i;
+            converge2 += cabs(green[i]) * cabs(green[i]) ;
+            /* don't know what is the call to get norm */
         }
         comm_sums(&converge2, &ione, COMM_EN2);
 

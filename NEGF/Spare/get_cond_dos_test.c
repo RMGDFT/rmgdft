@@ -29,7 +29,7 @@ void get_cond_dos_test (STATE * states)
     REAL *green_tem;
     REAL *g;
     REAL *sigma, *green_C;
-    doublecomplex *sigma_all;
+    complex double *sigma_all;
     REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
     REAL de, emin, emax;
 
@@ -134,7 +134,7 @@ void get_cond_dos_test (STATE * states)
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
                                                                                                
-    my_malloc_init( sigma_all, idx, doublecomplex );
+    my_malloc_init( sigma_all, idx, complex double );
 
 
 /*============== Allocate memory for tot, tott, g ====================*/
@@ -210,7 +210,7 @@ void get_cond_dos_test (STATE * states)
 
 
         Sgreen_c_wang (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                      eneR, eneI, (doublecomplex *) green_C, nC);
+                      eneR, eneI, (complex double *) green_C, nC);
 
         ener1[iene] = eneR;
 

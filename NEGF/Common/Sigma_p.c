@@ -22,21 +22,19 @@
 
 
 
-void Sigma_p (doublecomplex *sigma, complex double *ch, complex double *ch1,
-     doublecomplex *green, int iprobe)
+void Sigma_p (complex double *sigma, complex double *ch, complex double *ch1,
+     complex double *green, int iprobe)
 {
 
     int i;
     char fcd_n = 'N', fcd_t = 'T';
-    doublecomplex alpha, beta;
+    complex double alpha, beta;
     int nmax, ndim, ione =1, nrow, ncol, n0, n1; 
 	int *desca, *descb, *descc, *descd;
 
 
-    alpha.r = 1.0;
-    alpha.i = 0.0;
-    beta.r = 0.0;
-    beta.i = 0.0;
+    alpha = 1.0;
+    beta = 0.0;
 
     n0 = cei.probe_in_block[iprobe - 1];  /* n0 => block index */
 

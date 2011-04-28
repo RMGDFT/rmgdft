@@ -16,8 +16,8 @@
 #include "pmo.h"
 
 
-void Sgreen_c_noneq_p (double *H00, double *S00, doublecomplex * sigma,
-                     int *sigma_idx, REAL eneR, REAL eneI, doublecomplex * Green_C, int nC,
+void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
+                     int *sigma_idx, REAL eneR, REAL eneI, complex double * Green_C, int nC,
                      int iprobe)
 {
 /*   H00, S00: nC * nC real matrix
@@ -26,7 +26,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, doublecomplex * sigma,
  *   nC: number of states in conductor region
  */
 
-    doublecomplex *H_tri, *H_whole, *H_inv;
+    complex double *H_tri, *H_whole, *H_inv;
 
     int *ipiv, idx, idx1;
     int i, j, nprobe; 
@@ -34,7 +34,10 @@ void Sgreen_c_noneq_p (double *H00, double *S00, doublecomplex * sigma,
     int ni[MAX_BLOCKS], ntot, ndim;
     int N, N1, N2;
     REAL tem;
+    
+    complex double ene;
 
+    ene = eneR + I * eneI;
 
     N = ct.num_blocks;
     for (i = 0; i < N; i++)
@@ -58,14 +61,13 @@ void Sgreen_c_noneq_p (double *H00, double *S00, doublecomplex * sigma,
 
     ntot = pmo.ntot;
     /* allocate matrix and initialization  */
-    my_malloc_init( H_tri, ntot, doublecomplex );
+    my_malloc_init( H_tri, ntot, complex double );
 
     
  	/* Construct: H = ES - H */
     for (i = 0; i < ntot; i++)
     {
-        H_tri[i].r = eneR * S00[i] - H00[i] * Ha_eV;
-        H_tri[i].i = eneI * S00[i];
+        H_tri[i] = ene * S00[i] - H00[i] * Ha_eV;
     }
     /* put the sigma for a probe in the corresponding block
 	   of the Green's matrices  */
@@ -78,8 +80,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, doublecomplex * sigma,
 
         for (i = 0; i < pmo.mxllda_cond[N1] * pmo.mxlocc_cond[N1]; i++)
         {
-            H_tri[pmo.diag_begin[N1] + i].r -= sigma[N2 + i].r;
-            H_tri[pmo.diag_begin[N1] + i].i -= sigma[N2 + i].i;
+            H_tri[pmo.diag_begin[N1] + i] -= sigma[N2 + i];
         }
     }
 

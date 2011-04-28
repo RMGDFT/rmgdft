@@ -17,11 +17,11 @@
 #include "pmo.h"
 
 
-void Sgreen_p (doublecomplex * tot, doublecomplex * tott, complex double *ch0, 
-             complex double *ch1, doublecomplex *g, int iprobe)
+void Sgreen_p (complex double * tot, complex double * tott, complex double *ch0, 
+             complex double *ch1, complex double *g, int iprobe)
 {
 
-    doublecomplex alpha, beta;
+    complex double alpha, beta;
     int info;
     int *ipiv;
     int i;
@@ -31,10 +31,8 @@ void Sgreen_p (doublecomplex * tot, doublecomplex * tott, complex double *ch0,
 
 
     /* allocate matrix and initialization  */
-    alpha.r = 1.0;
-    alpha.i = 0.0;
-    beta.r = 1.0;
-    beta.i = 0.0;
+    alpha = 1.0;
+    beta = 1.0;
 
     nmax = lcr[iprobe].num_states;
     nrow = pmo.mxllda_lead[iprobe-1];

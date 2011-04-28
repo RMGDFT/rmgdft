@@ -21,15 +21,14 @@
 
 #define 	MAX_STEP 	100
 
-static void my_print_sum (doublecomplex *matrix, int nmax, int index);
 
-void Stransfer_p (doublecomplex * tot, doublecomplex * tott, 
+void Stransfer_p (complex double * tot, complex double * tott, 
         complex double *ch0, complex double *ch1, int iprobe)
 {
 
     REAL converge1, converge2;
-    doublecomplex *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1, *s2;
-    doublecomplex alpha, beta;
+    complex double *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1, *s2;
+    complex double alpha, beta;
     int info;
     int *ipiv;
     int i, j, step;
@@ -50,14 +49,12 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
     n1 = nrow * ncol;
 
     /* allocate matrix and initialization  */
-    alpha.r = 1.0;
-    alpha.i = 0.0;
-    beta.r = 0.0;
-    beta.i = 0.0;
-    my_malloc_init( tau,  nrow * ncol * 2, doublecomplex );
-    my_malloc_init( taut,  nrow * ncol * 2, doublecomplex );
-    my_malloc_init( t11,  nrow * ncol, doublecomplex );
-    my_malloc_init( t12,  nrow * ncol, doublecomplex );
+    alpha = 1.0;
+    beta = 0.0;
+    my_malloc_init( tau,  nrow * ncol * 2, complex double );
+    my_malloc_init( taut,  nrow * ncol * 2, complex double );
+    my_malloc_init( t11,  nrow * ncol, complex double );
+    my_malloc_init( t12,  nrow * ncol, complex double );
 
     my_malloc_init( ipiv, nrow + pmo.mblock, int );
 
@@ -65,8 +62,7 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
     /* contruct the transfer matrix         */
     for (i = 0; i <  nrow * ncol; i++)
     {
-        t12[i].r = -creal(ch0[i]);
-        t12[i].i = -cimag(ch0[i]);
+        t12[i] = -ch0[i];
 
     }
 
@@ -85,25 +81,22 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
         MPI_Finalize ();
         exit (0);
     }
-    my_print_sum (t11, n1, 3);
     fflush(NULL);
 
     /* initialize intermediate t-matrices  */
 
     PZGEMM (&fcd_n, &fcd_t, &nmax, &nmax, &nmax, &alpha, t11, &IA, &JA, desca,
             ch1, &IA, &JA,  desca,  &beta, tau, &IA, &JA, desca);
-    my_print_sum (tau, n1, 4);
 
     PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, t11, &IA, &JA, desca,
             ch1, &IA, &JA,  desca,  &beta, taut, &IA, &JA, desca);
 
-    my_print_sum (taut, n1, 5);
 
 
-    my_malloc_init( tsum, n1, doublecomplex );
-    my_malloc_init( tsumt, n1, doublecomplex );
-    my_malloc_init( s1, n1, doublecomplex );
-    my_malloc_init( s2, n1, doublecomplex );
+    my_malloc_init( tsum, n1, complex double );
+    my_malloc_init( tsumt, n1, complex double );
+    my_malloc_init( s1, n1, complex double );
+    my_malloc_init( s2, n1, complex double );
 
     ZCOPY (&n1, tau, &ione, tot, &ione);
     ZCOPY (&n1, taut, &ione, tott, &ione);
@@ -119,20 +112,16 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
         PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, taut, &IA, &JA, desca,
                 tau, &IA, &JA,  desca,  &beta, t12, &IA, &JA, desca);
 
-        my_print_sum (t11, n1, 6);
-        my_print_sum (t12, n1, 7);
 
         pmo_unitary_matrix(s1, desca);
         pmo_unitary_matrix(s2, desca);
 
         for (i = 0; i < n1; i++)
         {
-            s1[i].r += -t11[i].r - t12[i].r;
-            s1[i].i += -t11[i].i - t12[i].i;
+            s1[i] += -t11[i] - t12[i];
         }
 
         PZGESV (&nmax, &nmax, s1, &IA, &JA, desca, ipiv, s2, &IA, &JA, desca, &info);
-        my_print_sum (s2, n1, 8);
         if (info != 0)
         {
             printf ("Stransfer.c: error in ZGESV with INFO = %d \n", info);
@@ -151,23 +140,16 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
                 t12, &IA, &JA,  desca,  &beta, &taut[n1], &IA, &JA, desca);
 
 
-        my_print_sum (t11, n1, 9);
-        my_print_sum (t12, n1, 10);
-        my_print_sum (&tau[n1], n1, 11);
-        my_print_sum (&taut[n1], n1, 12);
 
         PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, tsum, &IA, &JA, desca,
                 &tau[n1], &IA, &JA,  desca,  &beta, t11, &IA, &JA, desca);
         PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, tsum, &IA, &JA, desca,
                 &taut[n1], &IA, &JA,  desca,  &beta, s1, &IA, &JA, desca);
 
-        my_print_sum (t11, n1, 301);
-        my_print_sum (s1, n1, 302);
 
         ZCOPY (&n1, t11, &ione, s2, &ione);
         ZAXPY (&n1, &alpha, tot, &ione, s2, &ione);
 
-        my_print_sum (s2, n1, 303);
 
         ZCOPY (&n1, s2, &ione, tot, &ione);
         ZCOPY (&n1, s1, &ione, tsum, &ione);
@@ -177,30 +159,23 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
         PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, tsumt, &IA, &JA, desca,
                 &tau[n1], &IA, &JA,  desca,  &beta, s1, &IA, &JA, desca);
 
-        my_print_sum (t11, n1, 304);
-        my_print_sum (s1, n1, 305);
 
         ZCOPY (&n1, t11, &ione, s2, &ione);
         ZAXPY (&n1, &alpha, tott, &ione, s2, &ione);
 
-        my_print_sum (s2, n1, 306);
 
         ZCOPY (&n1, s2, &ione, tott, &ione);
         ZCOPY (&n1, s1, &ione, tsumt, &ione);
         ZCOPY (&n1, &tau[n1], &ione, tau, &ione);
         ZCOPY (&n1, &taut[n1], &ione, taut, &ione);
 
-        my_print_sum (tot, n1, 201);
-        my_print_sum (tott, n1, 202);
         converge1 = 0.0;
         converge2 = 0.0;
 
         for (i = 0; i < n1; i++)
         {
-            converge1 += sqrt (tau[ n1 + i].r * tau[n1 +i].r +
-                    tau[ n1 + i].i * tau[n1 +i].i);
-            converge2 += sqrt (taut[ n1 + i].r * taut[n1 +i].r +
-                    taut[ n1 + i].i * taut[n1 +i].i);
+            converge1 += cabs(tau[ n1 + i]);
+            converge2 += cabs (taut[ n1 + i]);
         }
 
        comm_sums(&converge1, &ione, COMM_EN2);
@@ -229,14 +204,3 @@ void Stransfer_p (doublecomplex * tot, doublecomplex * tott,
 
 }
 
-
-static void my_print_sum (doublecomplex * matrix, int nmax, int index)
-{
-    int i;
-    REAL a;
-    a = 0.0;
-    for (i = 0; i < nmax; i++)
-        a += matrix[i].r + matrix[i].i;
-
-    /*if(pct.gridpe == 0) printf("\n sum of %f %d\n", a, index);  */
-}

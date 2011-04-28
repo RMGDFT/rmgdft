@@ -217,7 +217,7 @@
   void ssyev(char *jobz, char *uplo, int *numm, REAL *ss, int *numn, REAL *work1,
 		  REAL *work2, int *lwork, int *info);
   void spotri(char*,int*,REAL*,int*,int*);
-  void zgesv(int*, int*, doublecomplex *, int*, int*, doublecomplex*, int*, int*);
+  void zgesv(int*, int*, complex double *, int*, int*, complex double*, int*, int*);
 #if !(CRAY_YMP || CRAY_C90 || CRAY_T3E)   
   void cpotrf(char *uplo, int *n, REAL *a, int *lda, int *info); 
 #endif

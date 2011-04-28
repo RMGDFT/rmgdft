@@ -48,8 +48,8 @@ REAL QMD_sdot (int n, REAL * x, int incx, REAL * y, int incy)
 void QMD_ZGEMM(char *a, char *b, int *i, int *j, int *k, double *h, double *h1, int *l, 
         double *h2, int *m, double *h3, double *h4, int *n)
 {
-   zgemm(a, b, i, j, k, (doublecomplex *)h, (doublecomplex *)h1, l,
-          (doublecomplex *)h2, m, (doublecomplex *)h3, (doublecomplex *)h4, n); 
+   zgemm(a, b, i, j, k, (complex double *)h, (complex double *)h1, l,
+          (complex double *)h2, m, (complex double *)h3, (complex double *)h4, n); 
 
 }
 /******/

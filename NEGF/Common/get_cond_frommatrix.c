@@ -17,17 +17,17 @@
 #include "md.h"
 #include "pmo.h"
 
-double pmo_trace(doublecomplex*, int*);
+double pmo_trace(complex double*, int*);
 
 
 void get_cond_frommatrix ()
 {
     int iprobe, iprobe1, iprobe2;
     int iene, icond;
-    doublecomplex * H_tri,*tot, *tott, *g;
-    doublecomplex *green_C;
-    doublecomplex *temp_matrix1, *temp_matrix2;
-    doublecomplex *Gamma1, *Gamma2, *sigma, *sigma_all;
+    complex double * H_tri,*tot, *tott, *g;
+    complex double *green_C;
+    complex double *temp_matrix1, *temp_matrix2;
+    complex double *Gamma1, *Gamma2, *sigma, *sigma_all;
     REAL de, emin, emax, E_imag, KT, current;
     REAL *ener1, *cond;
     int ntot, ndim, nC, idx_C, *sigma_idx;
@@ -36,7 +36,7 @@ void get_cond_frommatrix ()
     double complex *ch0, *ch1;
     double complex ene, ctem;
 
-    doublecomplex alpha, beta;
+    complex double alpha, beta;
     int i, j, idx, E_POINTS, kpoint;
     char fcd_n = 'N', fcd_c = 'C', newname[100];
     FILE *file;
@@ -95,7 +95,7 @@ void get_cond_frommatrix ()
     }
 
 
-    my_malloc_init( H_tri, ntot, doublecomplex );
+    my_malloc_init( H_tri, ntot, complex double );
     my_malloc_init( lcr[0].Htri, ntot, REAL );
     my_malloc_init( lcr[0].Stri, ntot, REAL );
 
@@ -126,7 +126,7 @@ void get_cond_frommatrix ()
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
-    my_malloc_init( sigma, idx, doublecomplex );
+    my_malloc_init( sigma, idx, complex double );
 
 
     my_malloc_init( sigma_idx, cei.num_probe, int ); 
@@ -139,7 +139,7 @@ void get_cond_frommatrix ()
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
 
-    my_malloc_init( sigma_all, idx, doublecomplex );
+    my_malloc_init( sigma_all, idx, complex double );
 
 
 /*============== Allocate memory for tot, tott, g ====================*/
@@ -151,9 +151,9 @@ void get_cond_frommatrix ()
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
  
-    my_malloc_init( tot,  idx, doublecomplex );
-    my_malloc_init( tott, idx, doublecomplex );
-    my_malloc_init( g,    idx, doublecomplex );
+    my_malloc_init( tot,  idx, complex double );
+    my_malloc_init( tott, idx, complex double );
+    my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, double complex );
     my_malloc_init( ch1,  idx, double complex );
 
@@ -162,10 +162,8 @@ void get_cond_frommatrix ()
     my_malloc_init( ener1, E_POINTS, REAL );
     my_malloc_init( cond, E_POINTS, REAL );
 
-    alpha.r = 1.0;
-    alpha.i = 0.0;
-    beta.r = 0.0;
-    beta.i = 0.0;
+    alpha = 1.0;
+    beta = 0.0;
 
     nC = ct.num_states;
 
@@ -184,14 +182,14 @@ void get_cond_frommatrix ()
         nC_2 = ct.block_dim[n2];
         nC_22 = pmo.mxllda_cond[n2] * pmo.mxlocc_cond[n2];
 
-        my_malloc_init( Gamma1, nC_11, doublecomplex ); 
-        my_malloc_init( Gamma2, nC_22, doublecomplex ); 
+        my_malloc_init( Gamma1, nC_11, complex double ); 
+        my_malloc_init( Gamma2, nC_22, complex double ); 
 
         nC_max = max(nC_11, nC_22);
 
-        my_malloc_init( green_C, nC_max, doublecomplex); 
-        my_malloc_init( temp_matrix1, nC_max, doublecomplex );
-        my_malloc_init( temp_matrix2, nC_max, doublecomplex );
+        my_malloc_init( green_C, nC_max, complex double); 
+        my_malloc_init( temp_matrix1, nC_max, complex double );
+        my_malloc_init( temp_matrix2, nC_max, complex double );
 
 /*===================================================================*/
 
@@ -240,16 +238,14 @@ void get_cond_frommatrix ()
 
                 for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                 {
-                    sigma_all[sigma_idx[iprobe - 1] + i].r = sigma[i].r;
-                    sigma_all[sigma_idx[iprobe - 1] + i].i = sigma[i].i;
+                    sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
                 }
 
                 if(iprobe == iprobe1)
                 {
                     for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                     {
-                        Gamma1[i].r = -2.0 * sigma[i].i;
-                        Gamma1[i].i =  0.0;
+                        Gamma1[i] = -2.0 * cimag(sigma[i]);
                     }
                 }
 
@@ -257,20 +253,17 @@ void get_cond_frommatrix ()
                 {
                     for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                     {
-                        Gamma2[i].r = -2.0 * sigma[i].i;
-                        Gamma2[i].i =  0.0;
+                        Gamma2[i] = -2.0 * cimag(sigma[i]);
                     }
                 }
 
             }  /*  end for iprobe */
 
-    /* Construct H = ES - H */
-    for (i = 0; i < ntot; i++)
-    {
-        ctem = ene * lcr[0].Stri[i] - lcr[0].Htri[i] * Ha_eV;
-        H_tri[i].r = creal(ctem);
-        H_tri[i].i = cimag(ctem);
-    }
+            /* Construct H = ES - H */
+            for (i = 0; i < ntot; i++)
+            {
+                H_tri[i] = ene * lcr[0].Stri[i] - lcr[0].Htri[i] * Ha_eV;
+            }
 
 
 

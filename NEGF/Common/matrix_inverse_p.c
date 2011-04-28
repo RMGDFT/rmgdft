@@ -10,7 +10,7 @@
 #include "pmo.h"
 
 
-void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri)
+void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -34,8 +34,8 @@ void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri)
 
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
     int *ipiv;
-    doublecomplex *Hii, *Gii, *G_tem, *temp, *Hii1, *Gii0;
-    doublecomplex mone, one, zero;
+    complex double *Hii, *Gii, *G_tem, *temp, *Hii1, *Gii0;
+    complex double mone, one, zero;
     int ione = 1, *ntem_begin;
     int ntot_row;
     int maxrow, maxcol;
@@ -44,9 +44,9 @@ void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri)
 
         ni = ct.block_dim;
         N = ct.num_blocks;
-    mone.r = -1.0, mone.i = 0.0;
-    one.r = 1.0, one.i = 0.0;
-    zero.r = 0.0, zero.i = 0.0;
+    mone = -1.0;
+    one = 1.0;
+    zero = 0.0;
 
 /*  find the maximum dimension of the blocks  */
 
@@ -66,10 +66,10 @@ void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri)
 
 
     my_malloc_init( ntem_begin, ct.num_blocks, int);
-    my_malloc_init( Hii, maxrow * maxcol, doublecomplex );
-    my_malloc_init( Gii, maxrow * maxcol, doublecomplex );
-    my_malloc_init( temp, maxrow * maxcol, doublecomplex );
-    my_malloc_init( G_tem, ntot_row * maxcol, doublecomplex );
+    my_malloc_init( Hii, maxrow * maxcol, complex double );
+    my_malloc_init( Gii, maxrow * maxcol, complex double );
+    my_malloc_init( temp, maxrow * maxcol, complex double );
+    my_malloc_init( G_tem, ntot_row * maxcol, complex double );
 
 
     /*
@@ -86,8 +86,7 @@ void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri)
 
     for (i = 0; i < pmo.mxllda_cond[0] * pmo.mxlocc_cond[0]; i++)
     {
-        Hii[i].r = H_tri[i].r;
-        Hii[i].i = H_tri[i].i;
+        Hii[i] = H_tri[i];
     }
 
     desca = &pmo.desc_cond[0];
@@ -110,8 +109,7 @@ void matrix_inverse_p (doublecomplex * H_tri, doublecomplex * G_tri)
 
         for (j = 0; j < pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; j++)
         {
-            Hii[j].r = H_tri[j + pmo.diag_begin[i+ 1]].r;
-            Hii[j].i = H_tri[j + pmo.diag_begin[i+ 1]].i;
+            Hii[j] = H_tri[j + pmo.diag_begin[i+ 1]];
         }
 
 

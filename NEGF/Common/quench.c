@@ -56,7 +56,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 
     int st1, st2, st11, st22;
     int idx, idx1, nL, iprobe, jprobe;
-    doublecomplex *sigma_all;
+    complex double *sigma_all;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j, k, jj, kk, idx_delta, idx_C;
     int j1, k1, jdiff, kdiff;
@@ -102,7 +102,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     }
 
 
-    my_malloc_init( sigma_all, idx1, doublecomplex );
+    my_malloc_init( sigma_all, idx1, complex double );
 
     if (ct.runflag != 111)
         sigma_all_energy_point (sigma_all);

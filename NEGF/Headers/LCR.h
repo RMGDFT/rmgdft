@@ -183,15 +183,15 @@ void set_energy_weight_ne(REAL *eneR, REAL *eneI,  REAL *weightR, REAL *weightI,
 
 /* do we need these declarations? I think not... 
  * */
-void zgemm(char*, char*, int*, int*, int*, doublecomplex*, doublecomplex*, int*, doublecomplex*, int*, doublecomplex*, doublecomplex*, int*); 
+void zgemm(char*, char*, int*, int*, int*, complex double*, complex double*, int*, complex double*, int*, complex double*, complex double*, int*); 
 /* void zgemm(char*, char*, int*, int*, int*, REAL*, REAL*, int*, REAL*, int*, REAL*, REAL*, int*);
  */
-void ZCOPY(int*, doublecomplex*, int*, doublecomplex*, int*);
-void ZAXPY(int*, doublecomplex*, doublecomplex*, int*, doublecomplex*, int*);
-void pzgemm(_fcd, _fcd, int*, int*, int*, doublecomplex*,
-        doublecomplex*, int*, int*, int*,
-        doublecomplex*, int*, int*, int*,
-        doublecomplex*, doublecomplex*, int*, int*, int*);
+void ZCOPY(int*, complex double*, int*, complex double*, int*);
+void ZAXPY(int*, complex double*, complex double*, int*, complex double*, int*);
+void pzgemm(_fcd, _fcd, int*, int*, int*, complex double*,
+        complex double*, int*, int*, int*,
+        complex double*, int*, int*, int*,
+        complex double*, complex double*, int*, int*, int*);
 
 
 
@@ -205,12 +205,12 @@ void read_data_part(char *name, double *vh, double *vxc, double *rho, int which_
 
 void Sigma(REAL *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, REAL *Green, int iprobe);
 
-void Sgreen_c_wang(REAL *Htri, REAL *Stri, doublecomplex *sigma_all, int *sigma_idx, REAL eneR, REAL eneI, doublecomplex *Green_C, int nC);
+void Sgreen_c_wang(REAL *Htri, REAL *Stri, complex double *sigma_all, int *sigma_idx, REAL eneR, REAL eneI, complex double *Green_C, int nC);
 
-void Sgreen_cond_wang(REAL *Htri, REAL *Stri, doublecomplex *sigma_L, doublecomplex *sigma_R, REAL eneR, REAL eneI, doublecomplex *Green_C_ld, int nC);
-void Sgreen_c(REAL *H00, REAL *S00, doublecomplex *sigma, doublecomplex *, REAL eneR, REAL eneI, doublecomplex *Green_C, int nC);
+void Sgreen_cond_wang(REAL *Htri, REAL *Stri, complex double *sigma_L, complex double *sigma_R, REAL eneR, REAL eneI, complex double *Green_C_ld, int nC);
+void Sgreen_c(REAL *H00, REAL *S00, complex double *sigma, complex double *, REAL eneR, REAL eneI, complex double *Green_C, int nC);
 void distri_fermi(REAL eneR, REAL eneI, REAL EF, REAL *distriR, REAL *distriI);
-void rho_munu(doublecomplex *rho_mn, doublecomplex *green_C, doublecomplex *sigma_L, int nL, int N, int *ni, int iprobe);
+void rho_munu(complex double *rho_mn, complex double *green_C, complex double *sigma_L, int nL, int N, int *ni, int iprobe);
 void modify_rho(REAL *rho, REAL *rho_old);
 void modify_rho_y(REAL *rho, REAL *rho_old);
 void read_data_lead(double *vh, double *vxc, double *vh_old, double *vxc_old, double *rho);
@@ -218,11 +218,11 @@ void write_data_lead(char *name, double *vh, double *vxc, double *vh_old, double
 void get_cond_lead();
 void whole_to_tri_real(REAL *A_tri, REAL *Aii, int N, int *ni);
 
-void    get_inverse_block(doublecomplex *Hii, doublecomplex *Gii, int *ipiv, int nn);
+void    get_inverse_block(complex double *Hii, complex double *Gii, int *ipiv, int nn);
 
 void read_data_conductor(char *name, double *vh, double *vxc, double *rho);
 
 
 //void PZGESV(int*, int*, complex double *, int*, int*, int*, int*,
-//                doublecomplex*, int*, int*, int*, int*);
+//                complex double*, int*, int*, int*, int*);
 

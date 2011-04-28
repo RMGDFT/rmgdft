@@ -13,7 +13,7 @@
 
 
 void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, 
-            STATE * states, STATE * states1, doublecomplex * sigma_all)
+            STATE * states, STATE * states1, complex double * sigma_all)
 {
     int ion, st, kpt, idx;
     STATE *sp;

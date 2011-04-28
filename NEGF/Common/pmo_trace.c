@@ -16,7 +16,7 @@
  *
  */
 
-double pmo_trace(doublecomplex *matrix, int *desca)
+double pmo_trace(complex double *matrix, int *desca)
 {
 
     int mycol, myrow, nprow, npcol;
@@ -54,7 +54,7 @@ double pmo_trace(doublecomplex *matrix, int *desca)
 
             idx = jj *mxllda + ii;
 
-            tem += matrix[idx].r;
+            tem +=creal( matrix[idx]);
         }
 
     }

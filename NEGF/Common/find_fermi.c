@@ -20,7 +20,7 @@
 
 
 
-void find_fermi (doublecomplex * sigma_all)
+void find_fermi (complex double * sigma_all)
 {
 
     int fermi_step, st1, st2;

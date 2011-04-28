@@ -22,10 +22,10 @@ char *get_line (char *buf, FILE * fh);
 
 void  pmo_unitary_matrix_double(double *, int *);
 
-void PZHEGVX (int *, char *, char *, char *, int*, doublecomplex *, int*, int*,
-        int *, doublecomplex *, int*, int*, int*, double *, double*, int*, int*,
-        double *, int*, int*, double*,double*, doublecomplex *, int*,int*, int*,
-        doublecomplex *, int*, double*, int*, int*, int*, 
+void PZHEGVX (int *, char *, char *, char *, int*, complex double *, int*, int*,
+        int *, complex double *, int*, int*, int*, double *, double*, int*, int*,
+        double *, int*, int*, double*,double*, complex double *, int*,int*, int*,
+        complex double *, int*, double*, int*, int*, int*, 
         int*, int*, double*, int*);
 
 void lead_bandstructure ()
@@ -40,7 +40,7 @@ void lead_bandstructure ()
     int *desca, mxllda, mxlocc, ndim;
     char tbuf[200], *tptr;
 
-    doublecomplex *matH, *matS, *work, *z_vec;
+    complex double *matH, *matS, *work, *z_vec;
     double *ener_band, *rwork, *eig_val;
     double kvec, coskvec, sinkvec, kmin, kmax, dk;
     double *temp, one = 1.0, zero = 0.0, *unitary_matrix;
@@ -52,7 +52,7 @@ void lead_bandstructure ()
     int IL = 1,izero = 0;
     int IU, nL1, nL2 ;       
     double tol = 1.0e-15, orfac = -1.0;
-    doublecomplex *WORK, WORK_tmp ;
+    complex double *WORK, WORK_tmp ;
     int LWORK, LRWORK, *IWORK, IWORK_tmp, LIWORK, *IFAIL, *ICLUSTR;
     double *RWORK, RWORK_tmp, *GAP;
     int NB = pmo.mblock, NP0;
@@ -60,6 +60,8 @@ void lead_bandstructure ()
     int st1, st2, ik, kpoints, info;
 
     int ntot, iprobe;
+
+    complex double ctem1, ctem2;
     /* Open the input file for reading */
 
     read_cond_input (&emin, &emax, &E_POINTS, &E_image, &kbt, &kpoints);
@@ -120,9 +122,9 @@ void lead_bandstructure ()
     my_malloc_init( GAP, pmo.nrow * pmo.ncol, REAL );
     my_malloc_init( ICLUSTR, 2* pmo.nrow * pmo.ncol, int );
     my_malloc_init( IFAIL, nL, int );
-    my_malloc_init( matH, mxllda * mxlocc, doublecomplex );
-    my_malloc_init( matS, mxllda * mxlocc, doublecomplex );
-    my_malloc_init( z_vec, mxllda * mxlocc, doublecomplex );
+    my_malloc_init( matH, mxllda * mxlocc, complex double );
+    my_malloc_init( matS, mxllda * mxlocc, complex double );
+    my_malloc_init( z_vec, mxllda * mxlocc, complex double );
     my_malloc_init( unitary_matrix, mxllda * mxlocc, REAL );
     my_malloc_init( temp, mxllda * mxlocc, REAL );
 
@@ -144,7 +146,7 @@ void lead_bandstructure ()
     LIWORK = 6 * nL;
 
 
-    my_malloc_init( WORK, LWORK, doublecomplex );
+    my_malloc_init( WORK, LWORK, complex double );
     my_malloc_init( RWORK, LRWORK, double );
     my_malloc_init( IWORK, LIWORK, int );
 
@@ -154,8 +156,8 @@ void lead_bandstructure ()
     {
         kvec = kmin + ik * dk;
 
-        sinkvec = sin (kvec);
-        coskvec = cos (kvec);
+        ctem1 = cexp(I*kvec);
+        ctem2 = cexp(-I*kvec);
 
         /*  temp = trans (lcr[1].H01) */ 
         PDGEMM ("T", "N", &nL, &nL, &nL, &one, lcr[1].H01, &ione, &ione, desca,
@@ -164,8 +166,7 @@ void lead_bandstructure ()
         for (st1 = 0; st1 < ndim; st1++)
         {
 
-            matH[st1].r = lcr[1].H00[st1] + coskvec * (lcr[1].H01[st1] + temp[st1]);
-            matH[st1].i = sinkvec * (lcr[1].H01[st1] - temp[st1]);
+            matH[st1] = lcr[1].H00[st1] + ctem1 * lcr[1].H01[st1] + ctem2 *temp[st1];
 
         }
 
@@ -176,8 +177,7 @@ void lead_bandstructure ()
         for (st1 = 0; st1 < ndim; st1++)
         {
 
-            matS[st1].r = lcr[1].S00[st1] + coskvec * (lcr[1].S01[st1] + temp[st1]);
-            matS[st1].i = sinkvec * (lcr[1].S01[st1] - temp[st1]);
+            matS[st1] = lcr[1].S00[st1] + ctem1 * lcr[1].S01[st1] + ctem2 * temp[st1];
 
         }
 

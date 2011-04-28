@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "md.h"
 
-void tri_to_whole_complex (doublecomplex * H_tri, doublecomplex * Hii, int N, int * ni)
+void tri_to_whole_complex (complex double * H_tri, complex double * Hii, int N, int * ni)
 {
 /* Semi_tridiagonal matrix  
  *
@@ -62,7 +62,7 @@ void tri_to_whole_complex (doublecomplex * H_tri, doublecomplex * Hii, int N, in
 
     for (i = 0; i < ntot * ntot; i++)
     {
-        Hii[i].r = 0.0, Hii[i].i = 0.0;
+        Hii[i] = 0.0;
     }
 
     ntem = 0;
@@ -72,8 +72,7 @@ void tri_to_whole_complex (doublecomplex * H_tri, doublecomplex * Hii, int N, in
         for (j = 0; j < ni[i]; j++)
             for (k = 0; k < ni[i]; k++)
             {
-                Hii[(j + ntem) * ntot + k + ntem].r = H_tri[n_begin[i] + j * ni[i] + k].r;
-                Hii[(j + ntem) * ntot + k + ntem].i = H_tri[n_begin[i] + j * ni[i] + k].i;
+                Hii[(j + ntem) * ntot + k + ntem] = H_tri[n_begin[i] + j * ni[i] + k];
 
             }
 
@@ -88,15 +87,11 @@ void tri_to_whole_complex (doublecomplex * H_tri, doublecomplex * Hii, int N, in
         for (j = 0; j < ni[i]; j++)
             for (k = 0; k < ni[i + 1]; k++)
             {
-                Hii[j + ntem + (k + ntem + ni[i]) * ntot].r =
-                    H_tri[n_begin[i] + ni[i] * ni[i] + k * ni[i] + j].r;
-                Hii[(j + ntem) * ntot + k + ntem + ni[i]].r =
-                    H_tri[n_begin[i] + ni[i] * ni[i] + k * ni[i] + j].r;
+                Hii[j + ntem + (k + ntem + ni[i]) * ntot] =
+                    H_tri[n_begin[i] + ni[i] * ni[i] + k * ni[i] + j];
+                Hii[(j + ntem) * ntot + k + ntem + ni[i]] =
+                    H_tri[n_begin[i] + ni[i] * ni[i] + k * ni[i] + j];
 
-                Hii[j + ntem + (k + ntem + ni[i]) * ntot].i =
-                    H_tri[n_begin[i] + ni[i] * ni[i] + k * ni[i] + j].i;
-                Hii[(j + ntem) * ntot + k + ntem + ni[i]].i =
-                    H_tri[n_begin[i] + ni[i] * ni[i] + k * ni[i] + j].i;
 
 
             }

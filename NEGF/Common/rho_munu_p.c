@@ -14,11 +14,11 @@
 
 
 
-void rho_munu_p (doublecomplex * rho_mn, doublecomplex * green_C, doublecomplex * sigma_L, int iprobe)
+void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double * sigma_L, int iprobe)
 {
 
-    doublecomplex *temp;
-    doublecomplex one, zero;
+    complex double *temp;
+    complex double one, zero;
     int i, j, n_green, n1, n2;
     char fcd_n = 'N', fcd_c = 'C';
 
@@ -39,10 +39,8 @@ void rho_munu_p (doublecomplex * rho_mn, doublecomplex * green_C, doublecomplex 
     desc_col= &pmo.desc_cond[ (N1 * ct.num_blocks) * DLEN ];
 
 
-	one.r = 1.0;
-    one.i = 0.0;
-    zero.r = 0.0;
-    zero.i = 0.0;
+	one = 1.0;
+    zero = 0.0;
 
     maxrow = 0;
     maxcol = 0;
@@ -55,14 +53,13 @@ void rho_munu_p (doublecomplex * rho_mn, doublecomplex * green_C, doublecomplex 
     /*  Gamma = i*(sigma - simga^+)  */
     for (i = 0; i < nrow * ncol; i++)
     {
-        sigma_L[i].r = -sigma_L[i].i;
-        sigma_L[i].i = 0.0;
+        sigma_L[i] = -cimag(sigma_L[i]);
     }
 
     n_green = 0;
 
     n1 = maxrow * maxcol;
-    my_malloc_init( temp, n1, doublecomplex );
+    my_malloc_init( temp, n1, complex double );
 
     for (i = 0; i < N - 1; i++)
     {
