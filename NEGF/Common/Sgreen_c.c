@@ -12,7 +12,7 @@
 
 
 void Sgreen_c (REAL * Htri, REAL * Stri, complex double * sigma1, complex double * sigma2,
-                    REAL eneR, REAL eneI, complex double * Green_C, int nC)
+                    complex double ene, complex double * Green_C, int nC)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -29,9 +29,7 @@ void Sgreen_c (REAL * Htri, REAL * Stri, complex double * sigma1, complex double
     int N;
     REAL tem;
 
-    complex double ene;
 
-    ene = eneR + I * eneI;
     nmax = nC;
 
 

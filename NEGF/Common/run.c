@@ -124,10 +124,8 @@ void run (STATE * states, STATE * states1)
 
 			for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
 			{	
-                my_malloc(lcr[iprobe].eneR, size, double);
-                my_malloc(lcr[iprobe].eneI, size, double);
-                my_malloc(lcr[iprobe].weightR, size, double);
-                my_malloc(lcr[iprobe].weightI, size, double);
+                my_malloc(lcr[iprobe].ene, size, complex double);
+                my_malloc(lcr[iprobe].weight, size, complex double);
             }
 			
             size = cei.nmax_gq2 + 10;
@@ -135,18 +133,15 @@ void run (STATE * states, STATE * states1)
 			{	
                 for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
                 {	  
-                    my_malloc(lcr[iprobe].lcr_ne[idx_delta - 1].eneR_ne, size, double);
-                    my_malloc(lcr[iprobe].lcr_ne[idx_delta - 1].eneI_ne, size, double);
-                    my_malloc(lcr[iprobe].lcr_ne[idx_delta - 1].weightR_ne, size, double);
-                    my_malloc(lcr[iprobe].lcr_ne[idx_delta - 1].weightI_ne, size, double);
+                    my_malloc(lcr[iprobe].lcr_ne[idx_delta - 1].ene_ne, size, complex double);
+                    my_malloc(lcr[iprobe].lcr_ne[idx_delta - 1].weight_ne, size, complex double);
                 }
             }
 		   	
 			
 			for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
 			{	
-                set_energy_weight (lcr[iprobe].eneR, lcr[iprobe].eneI, 
-                    lcr[iprobe].weightR, lcr[iprobe].weightI,
+                set_energy_weight (lcr[iprobe].ene, lcr[iprobe].weight,
                     lcr[iprobe].bias + lcr[iprobe].EF_new, &lcr[iprobe].nenergy);
 			}
 
@@ -161,9 +156,8 @@ void run (STATE * states, STATE * states1)
                     if(idx_delta != iprobe)
                     {
 
-                        set_energy_weight_ne (lcr[iprobe].lcr_ne[j].eneR_ne, 
-                               lcr[iprobe].lcr_ne[j].eneI_ne, lcr[iprobe].lcr_ne[j].weightR_ne, 
-                               lcr[iprobe].lcr_ne[j].weightI_ne, lcr[idx_delta].bias + lcr[idx_delta].EF_new, 
+                        set_energy_weight_ne (lcr[iprobe].lcr_ne[j].ene_ne, lcr[iprobe].lcr_ne[j].weight_ne, 
+                               lcr[idx_delta].bias + lcr[idx_delta].EF_new, 
                                lcr[iprobe].bias + lcr[iprobe].EF_new, &lcr[iprobe].lcr_ne[j].nenergy_ne);
 
                         j++;

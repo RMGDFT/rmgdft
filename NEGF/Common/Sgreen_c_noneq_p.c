@@ -17,7 +17,7 @@
 
 
 void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
-                     int *sigma_idx, REAL eneR, REAL eneI, complex double * Green_C, int nC,
+                     int *sigma_idx, complex double ene, complex double * Green_C, int nC,
                      int iprobe)
 {
 /*   H00, S00: nC * nC real matrix
@@ -35,11 +35,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
     int N, N1, N2;
     REAL tem;
     
-    complex double ene;
 
-    ene = eneR + I * eneI;
-
-    N = ct.num_blocks;
     for (i = 0; i < N; i++)
     {
         ni[i] = ct.block_dim[i];

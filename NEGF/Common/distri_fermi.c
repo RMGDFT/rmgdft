@@ -31,19 +31,16 @@
 
 
 /* This function returns a pointer to a block of memory of size nelem. */
-void distri_fermi (REAL eneR, REAL eneI, REAL EF, REAL * distriR, REAL * distriI)
+void distri_fermi (complex double ene,  REAL EF, complex double *distri)
 {
 
     REAL temR, temI, tem1, tem2;
-
+    
+    double complex ctem;
     REAL KT;
 
     KT = cei.KT;
-    temR = (eneR - EF) / KT;
-    temI = eneI / KT;
-    tem1 = 1.0 + exp (temR) * cos (temI);
-    tem2 = exp (temR) * sin (temI);
+    ctem = (ene - EF) / KT;
+    *distri = 1.0/( 1.0 + cexp (ctem));
 
-    *distriR = tem1 / (tem1 * tem1 + tem2 * tem2);
-    *distriI = -tem2 / (tem1 * tem1 + tem2 * tem2);
 }

@@ -57,14 +57,14 @@ void lead_bandstructure ()
     double *RWORK, RWORK_tmp, *GAP;
     int NB = pmo.mblock, NP0;
 
-    int st1, st2, ik, kpoints, info;
+    int st1, st2, ik, kpoints[3], info;
 
     int ntot, iprobe;
 
     complex double ctem1, ctem2;
     /* Open the input file for reading */
 
-    read_cond_input (&emin, &emax, &E_POINTS, &E_image, &kbt, &kpoints);
+    read_cond_input (&emin, &emax, &E_POINTS, &E_image, &kbt, kpoints);
 
 
     if (pct.gridpe == 0)
@@ -72,7 +72,7 @@ void lead_bandstructure ()
         printf ("\n band struture calculations for left lead\n\n ");
         printf ("lcr[1].num_states = %d \n", lcr[1].num_states);
         printf ("lcr[2].num_states = %d \n", lcr[2].num_states);
-        printf (" kpoints= %d \n", kpoints);
+        printf (" kpoints= %d %d %d\n", kpoints[0], kpoints[1], kpoints[2]);
 
     }
 
@@ -128,7 +128,7 @@ void lead_bandstructure ()
     my_malloc_init( unitary_matrix, mxllda * mxlocc, REAL );
     my_malloc_init( temp, mxllda * mxlocc, REAL );
 
-    my_malloc_init( ener_band, kpoints * nL, REAL );
+    my_malloc_init( ener_band, kpoints[0] * nL, REAL );
 
     my_malloc_init( eig_val, nL, REAL );
 
@@ -138,7 +138,7 @@ void lead_bandstructure ()
 
     kmin = 0.0;
     kmax = 4.0 * atan (1.0);
-    dk = (kmax - kmin) / (kpoints - 1);
+    dk = (kmax - kmin) / (kpoints[0] - 1);
 
     NP0 = NUMROC( &nL, &NB, &izero, &izero, &pmo.nrow );
     LWORK = nL + max( NB * ( NP0 + 1 ), 3 );
@@ -152,7 +152,7 @@ void lead_bandstructure ()
 
 
 
-    for (ik = pmo.myblacs; ik < kpoints; ik += pmo.npe_energy)
+    for (ik = pmo.myblacs; ik < kpoints[0]; ik += pmo.npe_energy)
     {
         kvec = kmin + ik * dk;
 
@@ -204,7 +204,7 @@ void lead_bandstructure ()
     }
 
     my_barrier ();
-    idx = kpoints * nL;
+    idx = kpoints[0] * nL;
     comm_sums (ener_band, &idx, COMM_EN1);
 
     my_barrier ();
@@ -214,9 +214,9 @@ void lead_bandstructure ()
         for (st1 = 0; st1 < nL; st1++)
         {
 
-            for (ik = 0; ik < kpoints; ik++)
+            for (ik = 0; ik < kpoints[0]; ik++)
             {
-                kvec = 1.0 * ik / (kpoints - 1);
+                kvec = 1.0 * ik / (kpoints[0] - 1);
                 fprintf (file, " %15.8f,  %15.8f  \n", kvec, ener_band[ik * nL + st1]);
             }
 

@@ -97,9 +97,9 @@ void distribute_to_Y_soft (REAL * distr_array, REAL * global_array);
 void X_to_distribute_soft (REAL * global_array, REAL * distr_array);
 void Y_to_distribute_soft (REAL * global_array, REAL * distr_array);
 void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma_L, int *sigma_idx,
-        REAL eneR, REAL eneI, complex double * Green_C);
+        complex double  ene, complex double * Green_C);
 void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma_L,
-        int *sigma_idx, REAL eneR, REAL eneI, complex double * Green_C, int nC,
+        int *sigma_idx, complex double ene, complex double * Green_C, int nC,
         int iprobe);
 void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double * sigma_L, int iprobe);
 void init_derweight_s (SPECIES *sp, 

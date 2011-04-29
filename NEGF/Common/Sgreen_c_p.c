@@ -17,7 +17,7 @@
 
 
 void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_idx,
-                       REAL eneR, REAL eneI, complex double * Green_C)
+                       complex double ene, complex double * Green_C)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -34,9 +34,7 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_i
     int ntot, N1, N2; 
     int idx, idx2, ioff, joff;
     
-    complex double ene;
 
-    ene = eneR + I * eneI;
     ntot = pmo.ntot;
 
 

@@ -52,7 +52,9 @@ void read_cond_input (double *emin, double *emax, int *E_POINTS, double *E_imag,
 
     *E_imag = atof (get_line (tbuf, fhand));
     *KT = atof (get_line (tbuf, fhand));
-    *kpoint = atoi (get_line (tbuf, fhand));
+    kpoint[0] = atoi (get_line (tbuf, fhand));
+    kpoint[1] = atoi (tptr = get_num (tbuf));
+    kpoint[2] = atoi (tptr = get_num (tptr));
 
     ct.num_cond_curve = atoi (get_line (tbuf, fhand));
     my_malloc_init( ct.cond_probe1, ct.num_cond_curve, int ); 

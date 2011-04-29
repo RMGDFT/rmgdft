@@ -18,7 +18,7 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
     int st1, st2, idx_sigma;
     int nC, nL, i, ntot, ion;
     int idx1, idx2, nmax, size;
-    REAL eneR, eneI, weightR, weightI;
+    complex double ene, weight;
     REAL wmn, wmn1, wmn2;
     complex double *green_C, *complex_H, *temp_matrix_tri, *temp_matrix1;
     complex double *sigma_sum1, *sigma_sum2, *sigma_L;
@@ -76,10 +76,8 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
         for (iene = pct.gridpe; iene < lcr[iprobe].nenergy; iene += NPES)
         {
 
-            eneR = lcr[iprobe].eneR[iene];
-            eneI = lcr[iprobe].eneI[iene];
-            weightR = lcr[iprobe].weightR[iene];
-            weightI = lcr[iprobe].weightI[iene];
+            ene = lcr[iprobe].ene[iene];
+            weight = lcr[iprobe].weight[iene];
 
 
             /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -130,7 +128,7 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
     	    time3 = my_crtc ();
 
             /* Calculating the Green function */
-            Sgreen_c (lcr[0].Htri, lcr[0].Stri, sigma_sum1, sigma_sum2, eneR, eneI, green_C, nC);
+            Sgreen_c (lcr[0].Htri, lcr[0].Stri, sigma_sum1, sigma_sum2, ene, green_C, nC);
 
     	    time4 = my_crtc ();
     	    md_timings (NLFORCE_GREE_F, (time4 - time3));
@@ -170,11 +168,8 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
             /* Now performing the integration */
             for(idx1 = 0; idx1 < ntot; idx1++)
             {
-                GHG_tri[idx1] += weightR * cimag(temp_matrix_tri[idx1]) + weightI * creal(temp_matrix_tri[idx1]);
-                GHG_en_tri[idx1] += weightR *
-                    (cimag(temp_matrix_tri[idx1]) * eneR + creal(temp_matrix_tri[idx1]) * eneI) 
-                    + weightI *
-                    (creal(temp_matrix_tri[idx1]) * eneR - cimag(temp_matrix_tri[idx1]) * eneI);
+                GHG_tri[idx1] +=  cimag(weight * temp_matrix_tri[idx1]) ;
+                GHG_en_tri[idx1] += cimag ( weight * temp_matrix_tri[idx1] * ene);
             }
 
 
@@ -199,10 +194,8 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
             for (iene = pct.gridpe; iene < lcr[iprobe].lcr_ne[0].nenergy_ne; iene += NPES)
             {
 
-                eneR = lcr[iprobe].lcr_ne[0].eneR_ne[iene];
-                eneI = lcr[iprobe].lcr_ne[0].eneI_ne[iene];
-                weightR = lcr[iprobe].lcr_ne[0].weightR_ne[iene];
-                weightI = lcr[iprobe].lcr_ne[0].weightI_ne[iene];
+                ene = lcr[iprobe].lcr_ne[0].ene_ne[iene];
+                weight = lcr[iprobe].lcr_ne[0].weight_ne[iene];
 
 
                 /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -282,7 +275,7 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
 
 
                 /* Calculating the Green function */
-                Sgreen_c (lcr[0].Htri, lcr[0].Stri, sigma_sum1, sigma_sum2, eneR, eneI, green_C, nC);
+                Sgreen_c (lcr[0].Htri, lcr[0].Stri, sigma_sum1, sigma_sum2, ene, green_C, nC);
 
                 /* Expanding Htri to complex space and temporarily stored in temp_matrix_tri*/
                 for (idx1 = 0; idx1 < ntot; idx1++)
@@ -316,13 +309,8 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
                 /* Now performing the integration */
                 for(idx1 = 0; idx1 < ntot; idx1++)
                 {
-                    GHG_tri[idx1] -= 2.0 /PI * (weightR * creal(temp_matrix_tri[idx1]) - 
-                            weightI * cimag(temp_matrix_tri[idx1]));
-                    GHG_en_tri[idx1] -= 2.0 /PI * 
-                        (weightR * (creal(temp_matrix_tri[idx1]) * eneR - 
-                                    cimag(temp_matrix_tri[idx1]) * eneI) - 
-                         weightI * (cimag(temp_matrix_tri[idx1]) * eneR + 
-                             creal(temp_matrix_tri[idx1]) * eneI) ); 
+                    GHG_tri[idx1] -= 2.0 /PI * creal(weight * temp_matrix_tri[idx1]);
+                    GHG_en_tri[idx1] -= 2.0 /PI * creal(weight * temp_matrix_tri[idx1] * ene); 
                 }
 
 

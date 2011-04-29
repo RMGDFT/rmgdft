@@ -18,10 +18,8 @@ void charge_density_matrix_p (complex double * sigma_all)
     int iprobe, jprobe, nprobe;
     int iene;
     int st1, idx_sigma, idx_C;
-    REAL eneR;
-    REAL eneI;
-    REAL weightR;
-    REAL weightI;
+    complex double ene;
+    complex double weight;
     complex double *green_C, *rho_mn;
     complex double *sigma;
 	REAL denominator, numerator, dum, sum, *wmn;
@@ -70,10 +68,8 @@ void charge_density_matrix_p (complex double * sigma_all)
         for (iene = pmo.myblacs; iene < lcr[iprobe].nenergy; iene += pmo.npe_energy)
         {
 
-            eneR = lcr[iprobe].eneR[iene];
-            eneI = lcr[iprobe].eneI[iene];
-            weightR = lcr[iprobe].weightR[iene];
-            weightI = lcr[iprobe].weightI[iene];
+            ene = lcr[iprobe].ene[iene];
+            weight = lcr[iprobe].weight[iene];
 
 
             /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -92,11 +88,10 @@ void charge_density_matrix_p (complex double * sigma_all)
             }
 
 
-            Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, eneR, eneI, green_C);
+            Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene, green_C);
 
             for (st1 = 0; st1 < ntot; st1++)
-                lcr[iprobe].density_matrix_tri[st1] +=
-                    weightR * cimag(green_C[st1]) + weightI * creal(green_C[st1]);
+                lcr[iprobe].density_matrix_tri[st1] += cimag( weight * green_C[st1]);
 
         }                       /* end for energy points */
 
@@ -162,10 +157,8 @@ void charge_density_matrix_p (complex double * sigma_all)
                     for (iene = pmo.myblacs; iene < lcr[iprobe].lcr_ne[j].nenergy_ne; iene += pmo.npe_energy)
                     {
 
-                        eneR = lcr[iprobe].lcr_ne[j].eneR_ne[iene];
-                        eneI = lcr[iprobe].lcr_ne[j].eneI_ne[iene];
-                        weightR = lcr[iprobe].lcr_ne[j].weightR_ne[iene];
-                        weightI = lcr[iprobe].lcr_ne[j].weightI_ne[iene];
+                        ene = lcr[iprobe].lcr_ne[j].ene_ne[iene];
+                        weight = lcr[iprobe].lcr_ne[j].weight_ne[iene];
 
                         for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
                         {
@@ -183,7 +176,7 @@ void charge_density_matrix_p (complex double * sigma_all)
                             sigma[st1] = sigma_all[sigma_idx[idx_delta - 1] + st1];
                         }
 
-                        Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, eneR, eneI,
+                        Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene,
                                 green_C_non, nC, idx_delta);
 
 
@@ -201,7 +194,7 @@ void charge_density_matrix_p (complex double * sigma_all)
                         {
 
                             lcr[iprobe].lcr_ne[j].density_matrix_ne_tri[st1] +=
-                                weightR * creal(rho_mn[st1]) - weightI * cimag(rho_mn[st1]);   /* check -ve sign ??? */
+                                creal(weight *rho_mn[st1]);   /* check -ve sign ??? */
 
                         }
 

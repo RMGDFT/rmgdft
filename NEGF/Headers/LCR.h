@@ -44,10 +44,8 @@ struct NON_LINEAR_THREE_PART2
 {
  int nenergy_ne;
 
- REAL *eneR_ne;
- REAL *eneI_ne;
- REAL *weightR_ne;
- REAL *weightI_ne;
+ complex double *ene_ne;
+ complex double *weight_ne;
 
  REAL *density_matrix_ne;
  REAL *density_matrix_ne_tri;
@@ -83,10 +81,8 @@ struct NON_LINEAR_THREE_PART
 
  REAL *density_matrix;
 
- REAL *eneR;
- REAL *eneI;
- REAL *weightR;
- REAL *weightI;
+ complex double *ene;
+ complex double *weight;
 
 
  REAL bias;
@@ -113,49 +109,14 @@ struct NON_LINEAR_THREE_PART
  REAL 	x_shift; 
  REAL 	y_shift; 
 
- REAL *S00_y;
- REAL *H00_y;
- REAL *S01_y;
- REAL *H01_y;
-
- REAL *HCL_y;
- REAL *SCL_y;
-
- REAL *Htri_y;
- REAL *Stri_y;
-
- REAL *S00_z;
- REAL *H00_z;
- REAL *S01_z;
- REAL *H01_z;
-
- REAL *HCL_z;
- REAL *SCL_z;
-
- REAL *Htri_z;
- REAL *Stri_z;
-
- REAL *S00_yz;
- REAL *H00_yz;
- REAL *S01_yz;
- REAL *H01_yz;
-
- REAL *HCL_yz;
- REAL *SCL_yz;
- 
+ REAL  *S00_yz;
+ REAL  *H00_yz;
+ REAL  *S01_yz;
+ REAL  *H01_yz;
+ REAL  *HCL_yz;
+ REAL  *SCL_yz;
  REAL *Htri_yz;
  REAL *Stri_yz;
-
- REAL *S00_yz1;
- REAL *H00_yz1;
- REAL *S01_yz1;
- REAL *H01_yz1;
-
- REAL *HCL_yz1;
- REAL *SCL_yz1;
-
- REAL *Htri_yz1;
- REAL *Stri_yz1;
 
 
 NON_LINEAR_THREE_PART2 lcr_ne[NUM_PROBE_MAX];
@@ -169,16 +130,8 @@ NON_LINEAR_THREE_PART lcr[NUM_PROBE_MAX + 1];
 
 
 
-void Sgreen(REAL *tot,REAL *tott, REAL *H00, REAL *H01, REAL *S00, REAL *S01, 
-	REAL eneR, REAL eneI, REAL *green_tem, REAL *gAr, int nmax, int flag); 
-
-void Stransfer(REAL *tot, REAL *tott, REAL *H00, REAL *H01,
-                REAL *S00, REAL *S01, REAL eneR, REAL eneI, int nmax); 
-
-void get_conductance(); 
-void charge_density_matrix();
-void set_energy_weight(REAL *eneR, REAL *eneI,  REAL *weightR, REAL *weightI, REAL EF, int *nenergy);
-void set_energy_weight_ne(REAL *eneR, REAL *eneI,  REAL *weightR, REAL *weightI, REAL EF1, REAL EF2, int *nenergy);
+void set_energy_weight(complex double *ene, complex double *weight, REAL EF, int *nenergy);
+void set_energy_weight_ne(complex double *eneR, complex double *weight, REAL EF1, REAL EF2, int *nenergy);
 
 
 /* do we need these declarations? I think not... 
@@ -207,9 +160,9 @@ void Sigma(REAL *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, REAL *Green,
 
 void Sgreen_c_wang(REAL *Htri, REAL *Stri, complex double *sigma_all, int *sigma_idx, REAL eneR, REAL eneI, complex double *Green_C, int nC);
 
-void Sgreen_cond_wang(REAL *Htri, REAL *Stri, complex double *sigma_L, complex double *sigma_R, REAL eneR, REAL eneI, complex double *Green_C_ld, int nC);
-void Sgreen_c(REAL *H00, REAL *S00, complex double *sigma, complex double *, REAL eneR, REAL eneI, complex double *Green_C, int nC);
-void distri_fermi(REAL eneR, REAL eneI, REAL EF, REAL *distriR, REAL *distriI);
+void Sgreen_c(REAL *H00, REAL *S00, complex double *sigma, complex
+        double *, complex double ene, complex double *Green_C, int nC);
+void distri_fermi(complex double ene, REAL EF, complex double *distri);
 void rho_munu(complex double *rho_mn, complex double *green_C, complex double *sigma_L, int nL, int N, int *ni, int iprobe);
 void modify_rho(REAL *rho, REAL *rho_old);
 void modify_rho_y(REAL *rho, REAL *rho_old);

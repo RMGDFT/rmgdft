@@ -22,7 +22,6 @@ void get_dos (STATE * states)
 {
     int iprobe;
     int iene, st1;
-    REAL eneR, eneI;
     complex double *tot, *tott, *g;
     REAL *green_tem, *green_C;
     complex double *sigma, *sigma_all;
@@ -41,12 +40,12 @@ void get_dos (STATE * states)
     REAL *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
-    int E_POINTS, kpoint;
+    int E_POINTS, kpoint[3];
     double E_imag, KT;
     int FPYZ = FPY0_GRID * FPZ0_GRID;
     int nx1, nx2, ny1, ny2, nz1, nz2; 
 
-    read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, &kpoint);
+    read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, kpoint);
     de = (emax - emin) / (E_POINTS - 1);
 
 
@@ -181,8 +180,6 @@ void get_dos (STATE * states)
     /*for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)*/
     for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
     {
-        eneR = emin + iene * de;
-        eneI = E_imag;
         ene = emin + iene * de + I * E_imag;
         printf ("\n energy point %d %f +i %f\n", iene, creal(ene), cimag(ene));
 
@@ -233,7 +230,7 @@ void get_dos (STATE * states)
         /*Sgreen_c_wang (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
           eneR, eneI, (complex double *) green_C, nC);*/
         Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                eneR, eneI, (complex double *) green_C); 
+                ene, (complex double *) green_C); 
 
 
         for (st1 = 0; st1 < ntot; st1++)
@@ -329,13 +326,12 @@ void get_dos (STATE * states)
         fprintf (file, "#     x[a0]      E[eV]          dos\n\n");
         for (iene = 0; iene < E_POINTS; iene++)
         {
-            eneR = emin + iene * de;
 
             for (ix = 0; ix < NX_GRID; ix++)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                        ix * dx - x0, eneR, rho_energy[iene * FNX_GRID + ix * RHO_NX]);
+                        ix * dx - x0, emin+iene*de, rho_energy[iene * FNX_GRID + ix * RHO_NX]);
             }
             fprintf (file, "\n");
         }
@@ -358,13 +354,12 @@ void get_dos (STATE * states)
             fprintf (file, "#     y[b0]      E[eV]          dos\n\n");
             for (iene = 0; iene < E_POINTS; iene++)
             {
-                eneR = emin + iene * de;
 
                 for (iy = 0; iy < NY_GRID; iy++)
                 {
 
                     fprintf (file, " %10.6f %10.6f %12.6e\n",
-                            iy * dy - y0, eneR, rho_energy2[iene * FNY_GRID + iy * RHO_NY]);
+                            iy * dy - y0, emin+iene*de, rho_energy2[iene * FNY_GRID + iy * RHO_NY]);
                 }
                 fprintf (file, "\n");
             }

@@ -31,11 +31,12 @@
 
 
 /* This function returns a pointer to a block of memory of size nelem. */
-void set_energy_weight_ne (REAL * eneR, REAL * eneI, REAL * weightR, REAL * weightI, REAL EF1,
+void set_energy_weight_ne (complex double * ene, complex double * weight, REAL EF1,
                            REAL EF2, int *nenergy)
 {
 
-    REAL a, b, distriR1, distriI1, distriR2, distriI2, tem;
+    REAL a, b, tem;
+    complex double  distri1, distri2, ctem;
     int i, nen;
     int nmax_gq2;
     REAL KT, DELTA;
@@ -71,19 +72,16 @@ void set_energy_weight_ne (REAL * eneR, REAL * eneI, REAL * weightR, REAL * weig
     nen = 0;
     for (i = 0; i < nmax_gq2; i++)
     {
-        distri_fermi (xc[i], DELTA, EF1, &distriR1, &distriI1);
-        distri_fermi (xc[i], DELTA, EF2, &distriR2, &distriI2);
-        tem = (distriR1 - distriR2) * (distriR1 - distriR2);
-        tem += (distriI1 - distriI2) * (distriI1 - distriI2);
-        tem = sqrt (tem);
+        ctem = xc[i] + I * DELTA;
+        distri_fermi (ctem, EF1, &distri1);
+        distri_fermi (ctem, EF2, &distri2);
+        tem = cabs(distri1 - distri2) ;
         if (tem > 0.000001)
         {
 
-            eneR[nen] = xc[i];
-            eneI[nen] = DELTA;
+            ene[nen] = xc[i] + I * DELTA;
 
-            weightR[nen] = (distriR2 - distriR1) * wc[i];
-            weightI[nen] = (distriI2 - distriI1) * wc[i];
+            weight[nen] = (distri2 - distri1) * wc[i];
             nen++;
         }
     }
@@ -97,7 +95,8 @@ void set_energy_weight_ne (REAL * eneR, REAL * eneI, REAL * weightR, REAL * weig
         printf ("\n set_energy_weigh_ne done %d", *nenergy);
         printf ("\n eneR   eneI   weightR   weightI ");
         for (nen = 0; nen < *nenergy; nen++)
-            printf ("\n  %f %f %f %f ", eneR[nen], eneI[nen], weightR[nen], weightI[nen]);
+            printf ("\n  %f %f %f %f ", creal(ene[nen]), cimag(ene[nen]),
+                    creal(weight[nen]), cimag(weight[nen]));
     }
 
 }

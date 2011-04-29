@@ -37,7 +37,7 @@ void get_cond_frommatrix ()
     double complex ene, ctem;
 
     complex double alpha, beta;
-    int i, j, idx, E_POINTS, kpoint;
+    int i, j, idx, E_POINTS, kpoint[3];
     char fcd_n = 'N', fcd_c = 'C', newname[100];
     FILE *file;
     int ione =1, *desca, *descb, *descc, *descd;
@@ -47,7 +47,7 @@ void get_cond_frommatrix ()
 
 /*=============== Reading input and then print them ==============*/ 
 
-    read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, &kpoint);
+    read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, kpoint);
     de = (emax - emin) / (E_POINTS - 1);
 
 

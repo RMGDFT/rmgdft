@@ -18,8 +18,6 @@ void sigma_all_energy_point (complex double * sigma_all)
     int iprobe, jprobe, idx_delta, j;
     int iene;
     int st1, n2;
-    REAL eneR;
-    REAL eneI;
     complex double *sigma, *tot, *tott, *g;          
 
     complex double *ch0, *ch1;
@@ -75,9 +73,7 @@ void sigma_all_energy_point (complex double * sigma_all)
         for (iene = pmo.myblacs; iene < lcr[iprobe].nenergy; iene += pmo.npe_energy)
         {
 
-            eneR = lcr[iprobe].eneR[iene];
-            eneI = lcr[iprobe].eneI[iene];
-            ene = lcr[iprobe].eneR[iene] + I * lcr[iprobe].eneI[iene];
+            ene = lcr[iprobe].ene[iene];
 
 
             /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
@@ -98,7 +94,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                     ch1[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
                 }
 
-                if (eneI > 0.5 )
+                if (cimag(ene) > 0.5 )
                 {
                     Sgreen_semi_infinite_p (g, ch0, ch1, jprobe);
                 }
@@ -151,9 +147,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                 for (iene = pmo.myblacs; iene < lcr[iprobe].lcr_ne[j].nenergy_ne; iene += pmo.npe_energy)
                 {
 
-                    eneR = lcr[iprobe].lcr_ne[j].eneR_ne[iene];
-                    eneI = lcr[iprobe].lcr_ne[j].eneI_ne[iene];
-                    ene = lcr[iprobe].eneR[iene] + I * lcr[iprobe].eneI[iene];
+                    ene = lcr[iprobe].ene[iene];
 
 
                     /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
