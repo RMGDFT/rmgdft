@@ -83,14 +83,25 @@ void sl_init (int *ictxt, int size)
     if (size % nb)
         num_blocks++;
 
+    /*More processors than 1 per block is a waste */
+    if (num_blocks * num_blocks < npes)
+        npes = num_blocks * num_blocks;
+
+
 
     /*Distribute processors into 2D grid */
     proc_gridsetup (npes, &nprow, &npcol);
 
+    /*Number of processor in any given direction cannot be more than number of blocks*/
     if(num_blocks < nprow) nprow = num_blocks;
     if(num_blocks < npcol) npcol = num_blocks;
 
 
+#if GAMMA_PT
+    /*Do not write this info in non-gamma point calculations, the same information is repeated over and over */
+    printf ("\n Scalapack processor distribution is nprow:%d and npcol:%d, total processors %d",
+	    nprow, npcol, nprow*npcol);
+#endif
 
     Cblacs_get (0, 0, ictxt);
 
@@ -169,14 +180,6 @@ void proc_gridsetup (int nproc, int *nprow, int *npcol)
             *nprow = i;
 
     *npcol = nproc / *nprow;
-
-
-#if !GAMMA_PT
-    /*Do not write this info in non-gamma point calculations, the same information is repeated over and over */
-    if (!pct.gridpe)
-        printf ("\n Scalapack processor distribution is nprow:%d and npcol:%d, total processors %d",
-                *nprow, *npcol, nproc);
-#endif
 
     if (*npcol * *nprow > nproc)
         error_handler ("\n Wrong processor distribution");
