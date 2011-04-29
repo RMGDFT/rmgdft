@@ -83,14 +83,14 @@ void sl_init (int *ictxt, int size)
     if (size % nb)
         num_blocks++;
 
-    /*More processors than 1 per block is a waste */
-    if (num_blocks * num_blocks < npes)
-        npes = num_blocks * num_blocks;
-
-
 
     /*Distribute processors into 2D grid */
     proc_gridsetup (npes, &nprow, &npcol);
+
+    if(num_blocks < nprow) nprow = num_blocks;
+    if(num_blocks < npcol) npcol = num_blocks;
+
+
 
     Cblacs_get (0, 0, ictxt);
 
