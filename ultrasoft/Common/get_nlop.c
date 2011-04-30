@@ -254,6 +254,7 @@ void get_nlop (void)
     
 
 
+#if 0
     /* Loop over all nonlocal ions to obtain the lists necessary for communication*/
     for (i = 0; i < pct.num_nonloc_ions; i++)
     {
@@ -397,6 +398,7 @@ void get_nlop (void)
 	}
 
     }
+#endif
 
 #if 0
     printf("\n PE %d: Number of nonloc ions %d, number of PEs to communicate with is %d", pct.gridpe, pct.num_nonloc_ions, pct.num_nonloc_pes);
