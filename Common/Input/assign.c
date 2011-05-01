@@ -7,7 +7,6 @@
 
 bool assign (flags_t flags, void *dest)
 {
-    char *string = (char *) dest;
 
     Dprintf ("Reached assign for %s of type %d requested as %d", this->name, this->is->as, flags);
     if (this->is->as & END)

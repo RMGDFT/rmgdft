@@ -7,7 +7,6 @@
 
 node_t *newNode (char *name, item_t * item)
 {
-    node_t tmpNode;
 
     Dprintf ("Make sure no node of the name %s exists", name);
 
