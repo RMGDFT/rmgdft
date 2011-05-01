@@ -12,7 +12,7 @@ void gcxcblyp_spin (REAL rho_up, REAL rho_dw,
   REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
   REAL *vxc2_updw, REAL *vxc2_dwup)
 {
-	REAL rhotot, lim, zeta;	
+	REAL rhotot;	
         REAL sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw;
 	REAL sc, v1cup, v1cdw, v2cup, v2cdw, v2cupdw;
 

@@ -29,14 +29,13 @@ Documentation:
 #include <stdlib.h>
 #include <math.h>
 #include "main.h"
-#include "my_scalapack.h"
 
 
 
 
 
 /*Blocking parameter*/
-int nb = 32;
+int NB = 32;
 
 
 /*
@@ -69,18 +68,17 @@ int nb = 32;
 void sl_init (int *ictxt, int size)
 {
     int i, npes;
-    int *pmap, *wgmap, *tgmap;
+    int *pmap, *tgmap;
     int myrow, mycol;
     int nprow, npcol, num_blocks;
-    int grp_loop, tmp_ictxt;
     MPI_Group grp_world, grp_this;
 
 
     npes = NPES;
     /*First, determine if we want all processors to be involved in scalapack operations
      * We do not want to have too many processors*/
-    num_blocks = size / nb;
-    if (size % nb)
+    num_blocks = size / NB;
+    if (size % NB)
         num_blocks++;
 
     /*More processors than 1 per block is a waste */
@@ -197,14 +195,14 @@ void set_desca (int *desca, int *ictxt, int size)
     int rsrc = 0, csrc = 0, info, izero = 0;
     int mxllda;
 
-    mxllda = NUMROC (&size, &nb, &pct.scalapack_myrow, &izero, &pct.scalapack_nprow);
+    mxllda = NUMROC (&size, &NB, &pct.scalapack_myrow, &izero, &pct.scalapack_nprow);
     mxllda = max (1, mxllda);
 
 
     if (pct.scalapack_pe)
     {
         /* Initialize the array descriptors for the matrices */
-        DESCINIT (desca, &size, &size, &nb, &nb, &rsrc, &csrc, ictxt, &mxllda, &info);
+        DESCINIT (desca, &size, &size, &NB, &NB, &rsrc, &csrc, ictxt, &mxllda, &info);
         if (info)
         {
             printf (" distribute_mat: DESCINIT, info=%d\n", info);

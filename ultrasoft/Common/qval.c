@@ -12,7 +12,7 @@ REAL qval (int ih, int jh, REAL r, REAL invdr, REAL * ptpr, int *nhtol, int *nht
            int *indv, REAL * ylm, REAL ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES * sp)
 {
     int ivl, jvl;
-    int nb, mb, nmb, lm, lp, l, temp;
+    int nb, mb, nmb, lm, lp, l;
     REAL qrad, sum, *ptpr1;
 
     nb = indv[ih];

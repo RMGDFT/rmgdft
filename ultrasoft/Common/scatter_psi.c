@@ -37,59 +37,6 @@
 #include "main.h"
 
 
-#if SMP
-
-/**
-
-  This function is used to gather an orbital that is distributed across
-  remote memory into a local memory array.
-*/
-
-void scatter_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid)
-{
-
-    int thread, offset, offset1;
-    int stop, ione = 1;
-    int koffset;
-    REAL *rptr;
-#if MD_TIMERS
-    REAL time1, time2;
-    time1 = my_crtc ();
-#endif
-
-
-    for (thread = 0; thread < ct.num_threads; thread++)
-    {
-
-        koffset = 2 * sp->kidx * ct.num_states * thread_control[thread].lda;
-        stop = thread_control[thread].numpt;
-        offset1 = sp->istate * thread_control[thread].lda;
-#if !GAMMA_PT
-        offset1 *= 2;
-#endif
-        offset = thread_control[thread].offset;
-        rptr = thread_control[thread].base_mem;
-
-        if (tmp_psiR != NULL)
-            QMD_scopy (stop, &tmp_psiR[offset], ione, &rptr[offset1 + koffset], ione);
-
-        if (tmp_psiI != NULL)
-            QMD_scopy (stop, &tmp_psiI[offset], ione,
-                       &rptr[offset1 + koffset + thread_control[thread].lda], ione);
-
-    }                           /* end for */
-
-
-#if MD_TIMERS
-    time2 = my_crtc ();
-    rmg_timings (GATHER_TIME, (time2 - time1), 0);
-#endif
-
-}                               /* end scatter_psi */
-
-
-
-#else
 
 void scatter_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid)
 {
@@ -109,6 +56,5 @@ void scatter_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid)
 
 }                               /* end scatter_psi */
 
-#endif
 
 /******/

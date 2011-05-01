@@ -48,7 +48,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
-#include "my_scalapack.h"
 
 /* This subspace diagonalization function uses Scalapack libraries  */
 

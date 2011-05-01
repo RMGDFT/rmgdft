@@ -10,7 +10,7 @@
 
 void xclsda_spin(REAL * rho, REAL * rho_oppo, REAL * vxc, REAL * exc)
 {
-    int ix, iy, iz, idx;
+    int idx;
 
     REAL pisq3, ex, ec, vx, vx_oppo, vc, vc_oppo;
     REAL zeta, rs, kf;
@@ -126,7 +126,6 @@ void pz_polarized(REAL rs, REAL * ec, REAL * vc)
 	REAL a = 0.01555, b = -0.0269, c = 0.0007, d = -0.0048;
         REAL gc = -0.0843, b1 = 1.3981, b2 = 0.2611;
 	REAL lnrs, rs12, ox, dox;
-	REAL xcprefact = 0.022575584, pi34 = 0.6203504908994;
 
 	if (rs < 1.0)   /* high density formula */
 	{

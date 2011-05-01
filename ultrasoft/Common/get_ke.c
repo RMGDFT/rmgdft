@@ -44,7 +44,7 @@ REAL get_ke (STATE * sp, int tid)
 {
 
     int pbasis, sbasis;
-    REAL *work1, *work2;
+    REAL *work2;
     REAL *tmp_psi, KE;
     int dimx, dimy, dimz;
 

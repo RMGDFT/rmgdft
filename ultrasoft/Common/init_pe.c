@@ -37,9 +37,8 @@ void init_pe ( int image )
 {
 
     int ii, jj, kk;
-    char tmpstring[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH];
-    int image_grp_map[MAX_IMGS], grid_grp_map[MAX_GRIDS], range[1][3];
-    MPI_Group group, world_grp, image_grp, img_masters;
+    int image_grp_map[MAX_IMGS], range[1][3];
+    MPI_Group group, world_grp, img_masters;
 
 
     /* Setup MPI */

@@ -298,7 +298,7 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
 
 static void write_double (int fh, double * rp, int count)
 {
-    int i, size;
+    int size;
 
     size = count * sizeof (double);
     if (size != write (fh, rp, size))

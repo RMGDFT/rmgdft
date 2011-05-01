@@ -102,16 +102,13 @@ void pw_spin (REAL rs, REAL zeta, REAL * ec, REAL * vcup, REAL * vcdw)
 	/* J.P.Perdew and Y. Wang, PRB 45, 13244 (1992) */
 
 	/* xc parameter, unpolarized */
-	 REAL a=0.031091, a1=0.21370, b1=7.5957, b2=3.5876, b3=1.6382, b4=0.49294, c0=a, c1=0.046644,
-	     c2= 0.00664, c3=0.01043, d0=0.4335, d1=1.4408;
+	 REAL a=0.031091, a1=0.21370, b1=7.5957, b2=3.5876, b3=1.6382, b4=0.49294;
 
 	/* xc parameter, polarized */
-	REAL ap=0.015545, a1p=0.20548, b1p=14.1189, b2p=6.1977, b3p=3.3662, b4p=0.62517, c0p=ap, c1p=0.025599,
-	    c2p=0.00319, c3p=0.00384, d0p=0.3287, d1p=1.7697;
+	REAL ap=0.015545, a1p=0.20548, b1p=14.1189, b2p=6.1977, b3p=3.3662, b4p=0.62517;
 
 	/* xc parameter, antiferro */
-	REAL aa=0.016887, a1a=0.11125, b1a=10.357, b2a=3.6231, b3a=0.88026, b4a=0.49671, c0a=aa, c1a=0.035475,
-	     c2a=0.00188, c3a=0.00521, d0a=0.224, d1a=0.3969;
+	REAL aa=0.016887, a1a=0.11125, b1a=10.357, b2a=3.6231, b3a=0.88026, b4a=0.49671;
 
 	REAL fz0=1.709921;
 

@@ -46,7 +46,7 @@
 #include "main.h"
 
 
-int static firststep = TRUE;
+static int firststep = TRUE;
 
 void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
           REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)

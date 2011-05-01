@@ -44,7 +44,7 @@ void write_zstates (STATE * states)
     int idx, incix, inciy;
     char newname[MAX_PATH + 20];
     STATE *sp;
-    REAL t1, t2;
+    REAL t1;
     REAL zvec[NZ_GRID];
     REAL *tmp_psi;
     FILE *avg;

@@ -49,7 +49,7 @@
 
 void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 {
-    int ix, iy, iz, idx, iflag;
+    int idx, iflag;
     FP0_GRID *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
     REAL d, grad, vxc1, *vxc2, enxc;
     REAL kf, pisq3, ex, vx, ec, vc, rs;

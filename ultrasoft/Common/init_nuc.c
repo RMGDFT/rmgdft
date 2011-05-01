@@ -58,6 +58,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
                          &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
 
+	icount = 0;
         /* If there is any overlap then we have to generate the mapping */
         if (map)
         {

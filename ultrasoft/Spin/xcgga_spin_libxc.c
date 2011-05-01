@@ -59,7 +59,6 @@ void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, i
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
     REAL *ec, *vsigma_upup, *vsigma_updw;
-    REAL d, fac;
 
     
     /* get the correct functional id for each type */

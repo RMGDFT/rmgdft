@@ -31,9 +31,8 @@
 #include "main.h"
 
 
-int read_parse_pdb_line (ION * iptr, int ion_index)
+void read_parse_pdb_line (ION * iptr, int ion_index)
 {
-    int rvalue;
     char temp_str[10];
     char *tbuf;
     char *temp_ptr;
@@ -50,7 +49,7 @@ int read_parse_pdb_line (ION * iptr, int ion_index)
     {
         printf
             ("\n Line %d  in PDB input only has %d characters, but minimum of 78 is required",
-             ion_index, strlen (tbuf));
+             ion_index, (int) strlen (tbuf));
         error_handler ("Not enough characters in PDB line");
     }
 
@@ -147,7 +146,6 @@ int read_parse_pdb_line (ION * iptr, int ion_index)
 
 #endif
 
-    return;
 
 }
 
@@ -158,8 +156,7 @@ int read_parse_pdb_line (ION * iptr, int ion_index)
 void read_pdb (void)
 {
     int ion;
-    char s[32];
-    int tmp = 0;
+    /*char s[32];*/
 
 
 #if 0

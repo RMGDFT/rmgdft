@@ -37,6 +37,7 @@ REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz);
 void app6_del2 (REAL *rho, P0_GRID * work);
 void app6_del2f (REAL *rho, FP0_GRID * work);
+void app10_del2f (FS0_GRID * f, FP0_GRID * work);
 void app_smooth (S0_GRID *f, S0_GRID *work, REAL sfac);
 void app_cir_sixth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir (REAL *a, REAL *b, int dimx, int dimy, int dimz);
@@ -60,6 +61,7 @@ REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz);
 void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz);
 void app_gradf (REAL * rho, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
+void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain();
 void corlyp (REAL *dp, REAL *dm, REAL *dp1, REAL *dm1, REAL *dp2, REAL *dm2, REAL *ec,
              REAL *vcp0, REAL *vcm0, int *ndm);

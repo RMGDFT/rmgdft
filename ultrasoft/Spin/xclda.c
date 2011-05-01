@@ -13,7 +13,7 @@ void xclda(REAL * rho, REAL * vxc, REAL * exc)
     REAL d, kf;
     
     REAL pisq3, ex, vx, ec, vc;
-    REAL zet, rs;
+    REAL rs;
    
     pisq3 = THREE * PI * PI;
 

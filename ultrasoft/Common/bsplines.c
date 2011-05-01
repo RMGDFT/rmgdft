@@ -11,15 +11,38 @@ static void bsplvb (double *t, int jhigh, int index, double x, int left, double 
 static void banfac (double *w, int nroww, int nrow, int nbandl, int nbandu, int *iflag);
 static void banslv (double *w, int nroww, int nrow, int nbandl, int nbandu, double *b);
 static void huntn (double *xx, int n, int kord, double x, int *jlo);
+static void dbsnak (int nx, double *xvec, int kxord, double *xknot);
+static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx);
 
 
-void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
+static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
              double *xyzdata, double *xyzknot, int n, int k,
              int m, int l, double *work2, double *work3, double *bcoef, int nxmax, int nymax);
-void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n, int k, int m,
+static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n, int k, int m,
              double *work2, double *work3, double *bcoef);
-
-
+static int dbs2in (int nx, double *xvec, int ny,
+                             double *yvec, double *xydata, int ldf, int kx,
+                             int ky, double *xknot, double *yknot, double *bcoef);
+static double dbs2vl (double x, double y, int kx, int ky,
+               double *xknot, double *yknot, int nx, int ny, double *bcoef);
+static void dbs3in (int nx, double *xvec, int ny,
+             double *yvec, int nz, double *zvec, double *xyzdata,
+             int ldf, int mdf, int zdf,
+             int kx, int ky, int kz, double *xknot, double *yknot, double *zknot, double *bcoef);
+static double dbs3vl (double x, double y, double z__, int kx,
+               int ky, int kz, double *xknot, double *yknot,
+               double *zknot, int nx, int ny, int nz, double *bcoef);
+static void get_biats (int nxvec, double *xvec, int nyvec, double *yvec,
+                int nzvec, double *zvec, int kx, int ky, int kz,
+                double *xknot, double *yknot, double *zknot,
+                int nx, int ny, int nz,
+                double *biatx, double *biaty, double *biatz, int *leftx, int *lefty, int *leftz);
+static void dbs3gd2 (int nxvec, int nyvec, int nzvec,
+              int kx, int ky, int kz,
+              int nx, int ny, int nz,
+              double *bcoef, double *value,
+              int ldvalue, int mdvalue, int zdvalue,
+              double *biatx, double *biaty, double *biatz, int *leftx, int *lefty, int *leftz);
 
 
 /* Table of constant values */
@@ -117,7 +140,7 @@ static int c__0 = 0;
 
 
 
-void dbsnak (int nx, double *xvec, int kxord, double *xknot)
+static void dbsnak (int nx, double *xvec, int kxord, double *xknot)
 {
 
     /*These two variables should be known all the time, therefore they are
@@ -424,7 +447,6 @@ double dbsval (double x, int kx, double *xknot, int nx, double *bcoef)
 }                               /* dbsval_ */
 
 
-static void bsplvb (double *t, int jhigh, int index, double x, int left, double *biatx);
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 /* Subroutine */ static void bsplvb (double *t, int jhigh,
                                      int index, double x, int left, double *biatx)
@@ -693,9 +715,8 @@ static void bsplvb (double *t, int jhigh, int index, double x, int left, double 
 
 
 
-double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx);
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx)
+static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx)
 {
     /* System generated locals */
     int i1, i2;
@@ -821,7 +842,7 @@ double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int le
 }                               /* dbsdca */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-/* Subroutine */ int dbs2in (int nx, double *xvec, int ny,
+/* Subroutine */ static int dbs2in (int nx, double *xvec, int ny,
                              double *yvec, double *xydata, int ldf, int kx,
                              int ky, double *xknot, double *yknot, double *bcoef)
 {
@@ -909,7 +930,7 @@ double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int le
 }                               /* dbs2in */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n, int k, int m,
+static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n, int k, int m,
              double *work2, double *work3, double *bcoef)
 {
     /* System generated locals */
@@ -1033,7 +1054,7 @@ void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n, int k
 }                               /* spli2d */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-double dbs2vl (double x, double y, int kx, int ky,
+static double dbs2vl (double x, double y, int kx, int ky,
                double *xknot, double *yknot, int nx, int ny, double *bcoef)
 {
     /* System generated locals */
@@ -1166,7 +1187,7 @@ double dbs2vl (double x, double y, int kx, int ky,
 
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-void dbs3in (int nx, double *xvec, int ny,
+static void dbs3in (int nx, double *xvec, int ny,
              double *yvec, int nz, double *zvec, double *xyzdata,
              int ldf, int mdf, int zdf,
              int kx, int ky, int kz, double *xknot, double *yknot, double *zknot, double *bcoef)
@@ -1304,7 +1325,7 @@ void dbs3in (int nx, double *xvec, int ny,
 }                               /* dbs3in */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
+static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
              double *xyzdata, double *xyzknot, int n, int k,
              int m, int l, double *work2, double *work3, double *bcoef, int nxmax, int nymax)
 {
@@ -1450,7 +1471,7 @@ void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
 }                               /* spli3d */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-double dbs3vl (double x, double y, double z__, int kx,
+static double dbs3vl (double x, double y, double z__, int kx,
                int ky, int kz, double *xknot, double *yknot,
                double *zknot, int nx, int ny, int nz, double *bcoef)
 {
@@ -1596,7 +1617,7 @@ double dbs3vl (double x, double y, double z__, int kx,
 *Output: leftx, lefty, leftz, - int arrays with lengths nxvec, nyvec, nzvec*/
 
 
-void get_biats (int nxvec, double *xvec, int nyvec, double *yvec,
+static void get_biats (int nxvec, double *xvec, int nyvec, double *yvec,
                 int nzvec, double *zvec, int kx, int ky, int kz,
                 double *xknot, double *yknot, double *zknot,
                 int nx, int ny, int nz,
@@ -1926,7 +1947,7 @@ void get_biats (int nxvec, double *xvec, int nyvec, double *yvec,
 
 }                               /* dbs3gd_ */
 
-void dbs3gd2 (int nxvec, int nyvec, int nzvec,
+static void dbs3gd2 (int nxvec, int nyvec, int nzvec,
               int kx, int ky, int kz,
               int nx, int ny, int nz,
               double *bcoef, double *value,

@@ -47,7 +47,7 @@
 void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
 {
 
-    int ix, iy, iz, idx;
+    int idx;
     FP0_GRID *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;

@@ -35,7 +35,7 @@
 #include <math.h>
 #include "main.h"
 
-void constrain ()
+void constrain (void)
 {
 
 	switch (ct.constrainforces)

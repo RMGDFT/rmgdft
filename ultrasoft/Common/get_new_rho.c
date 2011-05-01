@@ -48,8 +48,8 @@ void get_new_rho (STATE * states, REAL * rho)
     int *ivec;
     int nh, icount, ncount, i, j, ion;
     REAL *qnmI, *sintR, *qtpr;
-    REAL t1, *work, *product, *sg_work;
-    REAL time1, min, min2;
+    REAL t1, *work, *product;
+    REAL time1;
 #if !GAMMA_PT
     REAL *sintI;
 #endif

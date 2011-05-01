@@ -204,7 +204,6 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
 static REAL fd (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
     int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
-    STATE *sp;
     REAL t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
 
     /* fermi-dirac occupations:
@@ -250,7 +249,6 @@ static REAL fd (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int n
 static REAL gs (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
     int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
-    STATE *sp;
     REAL t1, sumf, eig, fac;
     
     fac = (2.0 - ct.spin_flag) * 0.5;
@@ -296,7 +294,6 @@ static REAL gs (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int n
 static REAL ef (REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
 {
     int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
-    STATE *sp;
     REAL t1, t2, sumf, eig, fac;
 
     fac = (2.0 - ct.spin_flag) * 0.5;

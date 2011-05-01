@@ -74,6 +74,7 @@ plus some statistics
 #endif
 
 
+static void salloc_debug_level (int d);
 
 
 
@@ -85,6 +86,7 @@ plus some statistics
 */
 
 typedef struct salloc_node_st *salloc_nodep_t;
+static void initialize (void *ptr, size_t n, char *vn, char *type, char *fn, int ln);
 
 
 typedef struct salloc_node_st
@@ -130,7 +132,7 @@ static double sfree_time = 0.0;
  print out a message every time something is allocated or deallocated.
 */
 static int debug = 0;
-void salloc_debug_level (int d)
+static void salloc_debug_level (int d)
 {
     debug = d;
 }

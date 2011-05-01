@@ -51,7 +51,7 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
                  int kidx)
 {
 
-    int idx, ion, stop, ip, sindex, index2;
+    int idx, ion, stop, sindex;
     int *pidx;
     int i, j, nh, inh;
     int incx = 1, alloc, step, count;

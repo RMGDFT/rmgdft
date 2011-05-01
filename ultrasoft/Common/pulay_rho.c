@@ -34,17 +34,13 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
     double  *residual, *trade_space;
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
-    double c[MAX_STEPS];
     int ipvt[MAX_STEPS];
     int i, j;
     int ione = 1;
     int info;
     int size;
     int s2;
-    char trans = 'N';
-    double one = 1.0;
     double alpha;
-    double beta;
     double t1;
     double *fi, *fj, *tptr1, *tptr2;
     int A_size;

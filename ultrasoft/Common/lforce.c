@@ -18,7 +18,7 @@ void lforce (REAL * rho, REAL * vh)
     int ion, idx;
     int *pvec, docount, size;
     int ilow, jlow, klow, ihi, jhi, khi, map;
-    int icut, itmp, icenter;
+    int icut, icenter;
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
     REAL r, xc, yc, zc, Zv, rc, rcnorm, t1;
     REAL ax[3], bx[3], x_hat, y_hat, z_hat, rc2, invdr, norm1;
