@@ -861,6 +861,9 @@ typedef struct
      */
     char cfile[MAX_PATH];
 
+    /* Basename for control file and other related files (beta and q function plots, etc.) */
+    char basename[MAX_PATH];
+
     /** HAndle of the output log file. Constructed from command line argument */
     FILE *logfile;
 
