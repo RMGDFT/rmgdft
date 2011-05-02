@@ -11,12 +11,11 @@ int countItems ()
     item_t *item;
     if (this == NULL)
     {
-        Dprintf ("No nodes");
+        error_handler ("No nodes");
     }
-    else
-    {
-        item = this->is;
-    }
+
+    item = this->is;
+
     while (item != NULL)
     {
         i++;
