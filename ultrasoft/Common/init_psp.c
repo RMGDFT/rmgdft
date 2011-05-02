@@ -48,17 +48,9 @@ void init_psp (void)
     SPECIES *sp;
     REAL *work, *workr, Zv, rc, rfil;
     REAL t1, t2, rcut, scale;
-    char name[] = "projectors";
-    char newname[20];
+    char newname[MAX_PATH];
     FILE *psp = NULL;
 
-    if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
-    {
-
-        printf ("QMD status message: Opening projectors.xmgr\n");
-        fflush (NULL);
-
-    }                           /* end if */
 
 
     my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, REAL);
@@ -79,9 +71,11 @@ void init_psp (void)
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        sprintf (newname, "%s%d.xmgr", name, isp);
         if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
-            my_fopen (psp, newname, "w+");
+	{
+	    snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename,isp);
+	    my_fopen (psp, newname, "w+");
+	}
         sp = &ct.sp[isp];
 
         t1 = 2.0 * scale * (REAL) FG_NX *sp->lradius / ct.hmingrid;
@@ -389,15 +383,6 @@ void init_psp (void)
 
 
     my_free (work);
-
-    if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
-    {
-
-        printf ("QMD status message: Closing projectors.xmgr\n");
-        fflush (NULL);
-
-    }                           /* end if */
-
 
 }                               /* end init_kbr.c */
 

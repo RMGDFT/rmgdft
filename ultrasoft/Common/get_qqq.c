@@ -16,9 +16,13 @@ void get_qqq ()
     ION *iptr;
     SPECIES *sp;
     FILE *ftpr;
+    char filename[MAX_PATH];
 
     if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
-        my_fopen (ftpr, "check_q.txt", "w+");
+    {
+	snprintf (filename, MAX_PATH, "%s.q.txt", ct.basename);
+        my_fopen (ftpr, filename, "w+");
+    }
 
 
     for (ion = 0; ion < ct.num_ions; ion++)

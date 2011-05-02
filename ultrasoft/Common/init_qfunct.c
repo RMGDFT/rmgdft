@@ -16,8 +16,7 @@ void init_qfunct (void)
     REAL work[MAX_RGRID];
     REAL *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr, *workr;
     SPECIES *sp;
-    char name1[] = "qfunction", name2[] = "drqfunction";
-    char newname1[20], newname2[20];
+    char newname1[MAX_PATH], newname2[MAX_PATH];
     FILE *fqq = NULL;
     FILE *fdq = NULL;
 
@@ -33,8 +32,8 @@ void init_qfunct (void)
 
         if (verify ("do_write_pseudopotential_plots", &SET))
         {
-            sprintf (newname1, "%s%d.xmgr", name1, isp);
-            sprintf (newname2, "%s%d.xmgr", name2, isp);
+	    snprintf (newname1, MAX_PATH, "%s.q%d.xmgr", ct.basename,isp);
+	    snprintf (newname2, MAX_PATH, "%s.drq%d.xmgr", ct.basename,isp);
             if (pct.gridpe == 0)
             {
                 my_fopen (fqq, newname1, "w+");

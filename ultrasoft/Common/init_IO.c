@@ -105,11 +105,11 @@ void init_IO (int argc, char **argv)
         /* if second command line argument exists, use it as a basename for output */
         if (argc == 3)
         {
-            snprintf (logname, MAX_PATH, "%s.%02d.log", argv[2], pct.thisimg + 1);
+            snprintf (ct.basename, MAX_PATH, "%s.%02d", argv[2], pct.thisimg + 1);
         }
         else
         {
-            snprintf (logname, MAX_PATH, "%s.%02d.log", basename, pct.thisimg + 1);
+            snprintf (ct.basename, MAX_PATH, "%s.%02d", basename, pct.thisimg + 1);
         }
 
         /* every image has it own output/working directory */
@@ -144,7 +144,7 @@ void init_IO (int argc, char **argv)
         /* if second command line argument exists, use it as a basename for output */
         if (argc == 3)
         {
-            snprintf (logname, MAX_PATH, "%s.log", argv[2]);
+            snprintf (ct.basename, MAX_PATH, "%s", argv[2]);
         }
         else
         {
@@ -154,13 +154,13 @@ void init_IO (int argc, char **argv)
             {
                     *extension++ = '\0';
                 if (strcmp (extension, "rmg") == 0)
-                    snprintf (logname, MAX_PATH, "%s.log", basename);
+                    snprintf (ct.basename, MAX_PATH, "%s", basename);
                 else
-                    snprintf (logname, MAX_PATH, "%s.%s.log", basename, extension);
+                    snprintf (ct.basename, MAX_PATH, "%s.%s", basename, extension);
             }
             else
             {
-                snprintf (logname, MAX_PATH, "%s.log", basename);
+                snprintf (ct.basename, MAX_PATH, "%s", basename);
             }
         }
     }
@@ -168,6 +168,7 @@ void init_IO (int argc, char **argv)
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
+	snprintf (logname, MAX_PATH, "%s.log", ct.basename);
         while ((status = stat (logname, &buffer)) != -1)
         {
             strncpy (basename, logname, MAX_PATH);
@@ -179,7 +180,8 @@ void init_IO (int argc, char **argv)
             if ((quantity = rindex (basename, '.')) != NULL)
                 if ( quantity[1] == 'r' )
                     *quantity = '\0';
-            snprintf (logname, MAX_PATH, "%s.r%02d.log", basename, lognum );
+            snprintf (ct.basename, MAX_PATH, "%s.r%02d", basename, lognum );
+	    snprintf (logname, MAX_PATH, "%s.log", ct.basename);
         }
 
         /* open and save logfile handle, printf is stdout before here */
