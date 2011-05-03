@@ -266,8 +266,8 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (ct.spin_flag)
     {
     	/*  Communite for spin up and spin down density,  blocked communication like MPI_Send and MPI_Recv not work ? */
-    	MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[0]);
     	MPI_Irecv(rho_oppo,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[1]);
+    	MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[0]);
     }
     
     time2 = my_crtc ();

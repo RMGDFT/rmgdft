@@ -170,13 +170,13 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
      * it's occupation for the processor's own spin */ 
     {
         STATE *sp;
-        sp = states;
 	for (idx = 0; idx < nspin; idx++)
 	{
+            sp = states;
             for (ik = 0; ik < nk; ik++)
             	for (is = 0; is < ns; is++)
             	{
-                	write_double (fhand, &sp->occupation[idx], 1);
+                	write_double (fhand, &sp->occupation[idx], 1); 
                 	sp++;
             	}
 	}
