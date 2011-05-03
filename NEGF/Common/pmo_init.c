@@ -276,6 +276,27 @@ void pmo_init ()
                 fflush (NULL);
                 exit (0);
             }
+
+
+            idx = i * cei.num_probe  + (iprobe - 1) ;
+                                                                                                                                            
+            numst = lcr[iprobe].num_states;
+            mxllda = NUMROC(&numst, &pmo.mblock, &myrow, &izero, &nprow);
+                                                                                                                                            
+            desca = &pmo.desc_cond_lead[ idx * DLEN];
+                                                                                                                                            
+            DESCINIT (desca, &numst, &ct.block_dim[i], &nb, &nb, &rsrc, &csrc,
+                    &pmo.ictxt[pmo.myblacs], &mxllda, &info);
+            if (info != 0)
+            {
+                printf (" distribute_mat: DESCINIT, info=%d\n", info);
+                fflush (NULL);
+                exit (0);
+            }
+
+
+
+
         }
                                                                                                                                             
     }

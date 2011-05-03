@@ -23,7 +23,7 @@
 
 
 void Stransfer_p (complex double * tot, complex double * tott, 
-        complex double *ch0, complex double *ch1, int iprobe)
+        complex double *ch0, complex double *ch01, complex double *ch10, int iprobe)
 {
 
     REAL converge1, converge2;
@@ -33,7 +33,7 @@ void Stransfer_p (complex double * tot, complex double * tott,
     int *ipiv;
     int i, j, step;
     char fcd_n = 'N';
-    char fcd_t = 'T';
+    char fcd_c = 'C';
     int ione = 1, n1;
     int nrow, ncol, nmax;
     int IA=1 , JA=1;
@@ -85,11 +85,11 @@ void Stransfer_p (complex double * tot, complex double * tott,
 
     /* initialize intermediate t-matrices  */
 
-    PZGEMM (&fcd_n, &fcd_t, &nmax, &nmax, &nmax, &alpha, t11, &IA, &JA, desca,
-            ch1, &IA, &JA,  desca,  &beta, tau, &IA, &JA, desca);
+    PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, t11, &IA, &JA, desca,
+            ch10, &IA, &JA,  desca,  &beta, tau, &IA, &JA, desca);
 
     PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, t11, &IA, &JA, desca,
-            ch1, &IA, &JA,  desca,  &beta, taut, &IA, &JA, desca);
+            ch01, &IA, &JA,  desca,  &beta, taut, &IA, &JA, desca);
 
 
 

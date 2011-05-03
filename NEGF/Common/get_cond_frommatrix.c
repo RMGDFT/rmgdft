@@ -33,16 +33,19 @@ void get_cond_frommatrix ()
     int ntot, ndim, nC, idx_C, *sigma_idx;
     REAL cons, EF1, EF2, f1, f2;
 
-    double complex *ch0, *ch1;
+    double complex *ch0, *ch01, *ch10;
+    double *H10, *S10;
     double complex ene, ctem;
 
     complex double alpha, beta;
+    double one, zero;
     int i, j, idx, E_POINTS, kpoint[3];
     char fcd_n = 'N', fcd_c = 'C', newname[100];
     FILE *file;
     int ione =1, *desca, *descb, *descc, *descd;
     int n1, n2, nC_1, nC_2, nC_11, nC_22, nC_max;
     int idx1, idx2;
+    int numst, numstC;
 
 
 /*=============== Reading input and then print them ==============*/ 
@@ -155,8 +158,11 @@ void get_cond_frommatrix ()
     my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, double complex );
-    my_malloc_init( ch1,  idx, double complex );
+    my_malloc_init( ch01,  idx, double complex );
+    my_malloc_init( ch10,  idx, double complex );
 
+    my_malloc_init( H10,    idx, double );
+    my_malloc_init( S10,    idx, double );
 /*===================================================================*/
 
     my_malloc_init( ener1, E_POINTS, REAL );
@@ -164,6 +170,8 @@ void get_cond_frommatrix ()
 
     alpha = 1.0;
     beta = 0.0;
+    one = 1.0; 
+    zero = 0.0;
 
     nC = ct.num_states;
 
@@ -211,30 +219,53 @@ void get_cond_frommatrix ()
             for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
             {
 
+                desca = &pmo.desc_lead[ (iprobe-1) * DLEN];
 
+                numst = lcr[iprobe].num_states;
 
+                PDTRAN(&numst, &numst, &one, lcr[iprobe].S01, &ione, &ione, desca, 
+                        &zero, S10, &ione, &ione, desca); 
+                PDTRAN(&numst, &numst, &one, lcr[iprobe].H01, &ione, &ione, desca, 
+                        &zero, H10, &ione, &ione, desca); 
 
                 idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
                 for (i = 0; i < idx; i++)
                 {
                     ch0[i] = ene * lcr[iprobe].S00[i] - Ha_eV * lcr[iprobe].H00[i];
-                    ch1[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
+                    ch01[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
+                    ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
 
-                Stransfer_p (tot, tott, ch0, ch1,iprobe);
+                Stransfer_p (tot, tott, ch0, ch01, ch10, iprobe);
 
-                Sgreen_p (tot, tott, ch0, ch1, g, iprobe);
+                Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
 
 
                 idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
                 idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
                 for (i = 0; i < idx; i++)
                 {
-                    ch0[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
+                    ch01[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
                 }
 
-                Sigma_p (sigma, ch0, ch1, g, iprobe);
+                desca = &pmo.desc_cond_lead[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN]; 
+                descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (iprobe-1) ) * DLEN]; 
+                numst = lcr[iprobe].num_states;
+                numstC = ct.block_dim[idx_C];
+
+
+                PDTRAN(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca, 
+                        &zero, S10, &ione, &ione, descb); 
+                PDTRAN(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca, 
+                        &zero, H10, &ione, &ione, descb); 
+                idx = pmo.mxllda_lead[iprobe -1] * pmo.mxlocc_cond[idx_C];
+                for (i = 0; i < idx; i++)
+                {
+                    ch10[i] = ene * S10[i] - Ha_eV * H10[i];
+                }
+
+                Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
 
                 for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                 {

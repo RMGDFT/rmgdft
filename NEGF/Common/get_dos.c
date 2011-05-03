@@ -28,12 +28,15 @@ void get_dos (STATE * states)
     REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
     REAL de, emin, emax;
 
-    complex double *ch0, *ch1;
+    complex double *ch0, *ch01, *ch10;
     complex double ene, ctem;
     int nC;
     int i, j, *sigma_idx, idx_C;
     char fcd_n = 'N', fcd_c = 'C';
     FILE *file;
+    double *H10, *S10;
+    double one = 1.0, zero = 0.0;
+    int ione = 1;
 
     int ntot, ndim;
     int ii, jj, kk, xoff, yoff, zoff;
@@ -44,6 +47,7 @@ void get_dos (STATE * states)
     double E_imag, KT;
     int FPYZ = FPY0_GRID * FPZ0_GRID;
     int nx1, nx2, ny1, ny2, nz1, nz2; 
+    int *desca, *descb, numst, numstC;
 
     read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, kpoint);
     de = (emax - emin) / (E_POINTS - 1);
@@ -138,7 +142,8 @@ void get_dos (STATE * states)
     my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, double complex );
-    my_malloc_init( ch1,  idx, double complex );
+    my_malloc_init( ch01,  idx, double complex );
+    my_malloc_init( ch10,  idx, double complex );
 
 
     my_malloc_init( green_tem, 2 * idx, REAL );
@@ -192,17 +197,31 @@ void get_dos (STATE * states)
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
 
+
+
+            desca = &pmo.desc_lead[ (iprobe-1) * DLEN];
+
+            numst = lcr[iprobe].num_states;
+
+            PDTRAN(&numst, &numst, &one, lcr[iprobe].S01, &ione,
+                    &ione, desca,
+                    &zero, S10, &ione, &ione, desca);
+            PDTRAN(&numst, &numst, &one, lcr[iprobe].H01, &ione,
+                    &ione, desca,
+                    &zero, H10, &ione, &ione, desca);
+
             idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
             for (i = 0; i < idx; i++)
             {
                 ch0[i] = ene * lcr[iprobe].S00[i] - Ha_eV * lcr[iprobe].H00[i];
-                ch1[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
+                ch01[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
+                ch10[i] = ene * S10[i] - Ha_eV * H10[i];
             }
 
 
-            Stransfer_p (tot, tott, ch0, ch1,iprobe);
+            Stransfer_p (tot, tott, ch0, ch01, ch10,iprobe);
 
-            Sgreen_p (tot, tott, ch0, ch1, g, iprobe);
+            Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
 
 
             idx_C = cei.probe_in_block[iprobe - 1];  /* block index
@@ -210,10 +229,28 @@ void get_dos (STATE * states)
             idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
             for (i = 0; i < idx; i++)
             {
-                ch0[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
+                ch01[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
             }
 
-            Sigma_p (sigma, ch0, ch1, g, iprobe);
+            desca = &pmo.desc_cond_lead[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
+            descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (iprobe-1) ) * DLEN];
+            numst = lcr[iprobe].num_states;
+            numstC = ct.block_dim[idx_C];
+
+
+            PDTRAN(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca,
+                    &zero, S10, &ione, &ione, descb);
+            PDTRAN(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca,
+                    &zero, H10, &ione, &ione, descb);
+            idx = pmo.mxllda_lead[iprobe -1] *
+                pmo.mxlocc_cond[idx_C];
+            for (i = 0; i < idx; i++)
+            {
+                ch10[i] = ene * S10[i] - Ha_eV * H10[i];
+            }
+
+            Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
+
 
 
             for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
@@ -397,7 +434,8 @@ void get_dos (STATE * states)
     my_free(rho_energy); 
     my_free(Green_store);
     my_free(ch0);
-    my_free(ch1);
+    my_free(ch01);
+    my_free(ch10);
 
 
 

@@ -22,8 +22,8 @@
 
 
 
-void Sigma_p (complex double *sigma, complex double *ch, complex double *ch1,
-     complex double *green, int iprobe)
+void Sigma_p (complex double *sigma, complex double *ch, complex double
+        *ch01, complex double *ch10, complex double *green, int iprobe)
 {
 
     int i;
@@ -50,17 +50,18 @@ void Sigma_p (complex double *sigma, complex double *ch, complex double *ch1,
     descb = &pmo.desc_lead[ ( iprobe-1)       * DLEN ];                        /* (L,L) */
     descc = &pmo.desc_cond[ ( n0 + n0 * ct.num_blocks) * DLEN ];               /* (C,C) */
     
+    descd = &pmo.desc_cond_lead[ (n0*cei.num_probe + (iprobe - 1) ) * DLEN ]; /* (L,C) */
 
 
-	/*    ch1(C,L) = ch(C,L) * green(L,L)  */
+	/*    ch(C,L) = ch01(C,L) * green(L,L)  */
     /*    sigma(C,C) = ch1(C,L) * ch(L,C)  */ 
 		  
 
-    PZGEMM (&fcd_n, &fcd_n, &ndim, &nmax, &nmax, &alpha, ch, &ione, &ione, desca,
-            green, &ione, &ione, descb, &beta, ch1, &ione, &ione, desca);
+    PZGEMM (&fcd_n, &fcd_n, &ndim, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
+            green, &ione, &ione, descb, &beta, ch, &ione, &ione, desca);
 
-    PZGEMM (&fcd_n, &fcd_t, &ndim, &ndim, &nmax, &alpha, ch1, &ione, &ione, desca,
-            ch, &ione, &ione, desca, &beta, sigma, &ione, &ione, descc);
+    PZGEMM (&fcd_n, &fcd_n, &ndim, &ndim, &nmax, &alpha, ch, &ione, &ione, desca,
+            ch10, &ione, &ione, descd, &beta, sigma, &ione, &ione, descc);
 
 
 

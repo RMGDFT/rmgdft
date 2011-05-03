@@ -42,11 +42,12 @@ void get_ion_orbit_overlap_loc (STATE * states);
 void read_trans (complex_energy_integral * cei);
 void get_dos (STATE * states); 
 
-//void Stransfer_p (complex double * tot, complex double * tott, complex
-//double *ch0, complex double *ch1, int iprobe);
-//void Sigma_p (complex double *sigma, complex double *ch0, complex double *ch1, complex double *green, int iprobe);
+void Stransfer_p (complex double * tot, complex double * tott, complex
+        double *ch0, complex double *ch01, complex double *ch10, int iprobe);
+void Sigma_p (complex double *sigma, complex double *ch0, complex double
+        *ch01, complex double *ch10, complex double *green, int iprobe);
 void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma_idx,
-                    complex double *Green_C_leftdown, int nC, int iprobe1, int iprobe2);
+        complex double *Green_C_leftdown, int nC, int iprobe1, int iprobe2);
 
 void   comm_sums(double *, int*, MPI_Comm);
 //void Sgreen_p (complex double * tot, complex double * tott, complex double
@@ -167,3 +168,7 @@ void allocate_matrix_LCR (void);
 void read_lead_matrix (void);
 void get_qqq (void);
 #endif
+
+
+
+int min_distance_index(double *distance, int n );

@@ -20,7 +20,8 @@ void sigma_all_energy_point (complex double * sigma_all)
     int st1, n2;
     complex double *sigma, *tot, *tott, *g;          
 
-    complex double *ch0, *ch1;
+    complex double *ch0, *ch01, *ch10;
+    double *H10, *S10;
     complex double ene, ctem;
 
     int idx_sigma, idx_C;
@@ -28,6 +29,9 @@ void sigma_all_energy_point (complex double * sigma_all)
     int  maxrow, maxcol, maxrow2, maxcol2;
     int max_sigma_col, max_sigma_row;
     int t1, t2;
+    double one = 1.0, zero = 0.0;
+    int ione = 1;
+    int *desca, *descb, numst, numstC;
 
     time1 = my_crtc ();
 
@@ -46,7 +50,10 @@ void sigma_all_energy_point (complex double * sigma_all)
     my_malloc_init( tott, maxrow * maxcol, complex double);
     my_malloc_init( g, maxrow * maxcol, complex double);
     my_malloc_init( ch0, maxrow * maxcol, complex double);
-    my_malloc_init( ch1, maxrow * maxcol, complex double);
+    my_malloc_init( ch01, maxrow * maxcol, complex double);
+    my_malloc_init( ch10, maxrow * maxcol, complex double);
+    my_malloc_init( S10, maxrow * maxcol,  double);
+    my_malloc_init( H10, maxrow * maxcol,  double);
 
     max_sigma_col = 0;
     max_sigma_row = 0;
@@ -86,23 +93,33 @@ void sigma_all_energy_point (complex double * sigma_all)
             for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
             {
 
+                desca = &pmo.desc_lead[ (jprobe-1) * DLEN];
+
+                numst = lcr[jprobe].num_states;
+
+                PDTRAN(&numst, &numst, &one, lcr[jprobe].S01, &ione, &ione, desca,
+                        &zero, S10, &ione, &ione, desca);
+                PDTRAN(&numst, &numst, &one, lcr[jprobe].H01, &ione, &ione, desca,
+                        &zero, H10, &ione, &ione, desca);
+
 
                 idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
                 for (i = 0; i < idx; i++)
                 {
                     ch0[i] = ene * lcr[jprobe].S00[i] - Ha_eV * lcr[jprobe].H00[i];
-                    ch1[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
+                    ch01[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
+                    ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
                 if (cimag(ene) > 0.5 )
                 {
-                    Sgreen_semi_infinite_p (g, ch0, ch1, jprobe);
+                    Sgreen_semi_infinite_p (g, ch0, ch01, jprobe);
                 }
                 else
                 {
 
-                    Stransfer_p (tot, tott, ch0, ch1, jprobe);
-                    Sgreen_p (tot, tott, ch0, ch1, g, jprobe);
+                    Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
+                    Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
 
                 }
 
@@ -111,10 +128,26 @@ void sigma_all_energy_point (complex double * sigma_all)
                 idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
                 for (i = 0; i < idx; i++)
                 {
-                    ch0[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+
+                    ch01[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+                }
+                desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
+                descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (jprobe-1) ) * DLEN];
+                numst = lcr[jprobe].num_states;
+                numstC = ct.block_dim[idx_C];
+
+
+                PDTRAN(&numst, &numstC, &one, lcr[jprobe].SCL, &ione, &ione, desca,
+                        &zero, S10, &ione, &ione, descb);
+                PDTRAN(&numst, &numstC, &one, lcr[jprobe].HCL, &ione, &ione, desca,
+                        &zero, H10, &ione, &ione, descb);
+                idx = pmo.mxllda_lead[jprobe -1] * pmo.mxlocc_cond[idx_C];
+                for (i = 0; i < idx; i++)
+                {
+                    ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
-                Sigma_p (sigma, ch0, ch1, g, jprobe);
+                Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
 
                 /*-------------------------------------------------------------------*/
 
@@ -160,15 +193,26 @@ void sigma_all_energy_point (complex double * sigma_all)
                     for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
                     {
 
+                        desca = &pmo.desc_lead[ (jprobe-1) * DLEN];
+
+                        numst = lcr[jprobe].num_states;
+
+                        PDTRAN(&numst, &numst, &one, lcr[jprobe].S01, &ione, &ione, desca,
+                                &zero, S10, &ione, &ione, desca);
+                        PDTRAN(&numst, &numst, &one, lcr[jprobe].H01, &ione, &ione, desca,
+                                &zero, H10, &ione, &ione, desca);
+
+
                         idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
                         for (i = 0; i < idx; i++)
                         {
                             ch0[i] = ene * lcr[jprobe].S00[i] - Ha_eV * lcr[jprobe].H00[i];
-                            ch1[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
+                            ch01[i] = ene * lcr[jprobe].S01[i] - Ha_eV * lcr[jprobe].H01[i];
+                            ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
-                        Stransfer_p (tot, tott, ch0, ch1, jprobe);
-                        Sgreen_p (tot, tott, ch0, ch1, g, jprobe);
+                        Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
+                        Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
 
 
 
@@ -176,10 +220,25 @@ void sigma_all_energy_point (complex double * sigma_all)
                         idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
                         for (i = 0; i < idx; i++)
                         {
-                            ch0[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+                            ch01[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+                        }
+                        desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
+                        descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (jprobe-1) ) * DLEN];
+                        numst = lcr[jprobe].num_states;
+                        numstC = ct.block_dim[idx_C];
+
+
+                        PDTRAN(&numst, &numstC, &one, lcr[jprobe].SCL, &ione, &ione, desca,
+                                &zero, S10, &ione, &ione, descb);
+                        PDTRAN(&numst, &numstC, &one, lcr[jprobe].HCL, &ione, &ione, desca,
+                                &zero, H10, &ione, &ione, descb);
+                        idx = pmo.mxllda_lead[jprobe -1] * pmo.mxlocc_cond[idx_C];
+                        for (i = 0; i < idx; i++)
+                        {
+                            ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
-                        Sigma_p (sigma, ch0, ch1, g, jprobe);
+                        Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
 
 
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -209,7 +268,8 @@ void sigma_all_energy_point (complex double * sigma_all)
     my_free(g);
     my_free(sigma);
     my_free(ch0);
-    my_free(ch1);
+    my_free(ch01);
+    my_free(ch10);
 
     time2 = my_crtc ();
     md_timings (SIGMA_ALL_TIME, (time2 - time1));

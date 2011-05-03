@@ -34,6 +34,7 @@ char *_cptofcd(char*, int);
 #define PZGESV pzgesv
 #define PZGEMM pzgemm
 #define PDGEMM pdgemm
+#define PDTRAN pdtran
 #define PZHEGVX pzhegvx
 
 
@@ -56,6 +57,7 @@ char *_cptofcd(char*, int);
 #define 	PSSYMM 		pdsymm_
 #define 	PZGEMM 		pzgemm_
 #define 	PDGEMM 		pdgemm_
+#define 	PDTRAN 		pdtran_
 #define 	PZGESV 		pzgesv_
 #define PZHEGVX pzhegvx_
 
