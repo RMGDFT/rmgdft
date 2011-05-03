@@ -166,9 +166,10 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
                     &pct.scalapack_nprow) * NUMROC (&num_states, &pct.desca[4], &pct.scalapack_mycol,
                                                     &izero, &pct.scalapack_npcol);
 
-        /* Make sure that we do not ask for memory of size 0 or thing like that */
+        /* Every processor for which pct.scalapack_pe should have some data and so dist_length cannot be 0*/
         if (dist_length == 0)
-            dist_length = 1;
+	    error_handler(" function NUMROC returned 0, that should not happen");
+            
 
         /*This holds number of doubles on each PE */
         dist_stop = dist_length;
