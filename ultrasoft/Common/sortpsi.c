@@ -46,7 +46,7 @@
 void sortpsi (STATE * states)
 {
 
-    int state, n, incx, idx1, koffset;
+    int state, n, incx, idx1, koffset, koffset2;
     REAL t1;
     STATE *sp, *sp1;
     REAL *tmp_psi1R, *tmp_psi2R;
@@ -77,6 +77,7 @@ void sortpsi (STATE * states)
         sp1 = &states[state + 1];
     
 	koffset = sp->kidx * ct.num_ions * ct.num_states * ct.max_nl;
+	koffset2 = sp->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
 
         if (sp->eig[0] > sp1->eig[0])
         {
@@ -114,6 +115,28 @@ void sortpsi (STATE * states)
 			
 		    my_swap(&iptr->oldsintI[koffset + state * ct.max_nl], 
 			    &iptr->oldsintI[koffset + (state + 1) * ct.max_nl], ct.max_nl);
+
+#endif
+                }               /* end for  idx1 */
+                
+		for (idx1 = 0; idx1 < pct.num_nonloc_ions; idx1++)
+                {
+
+		    /*Add offset due to ion*/
+		    koffset2 += idx1 * ct.num_states * ct.max_nl;
+		    
+		    my_swap(&pct.newsintR_local[koffset2 + state * ct.max_nl], 
+			    &pct.newsintR_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+			
+		    my_swap(&pct.oldsintR_local[koffset2 + state * ct.max_nl], 
+			    &pct.oldsintR_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+                        
+#if !GAMMA_PT
+		    my_swap(&pct.newsintI_local[koffset2 + state * ct.max_nl], 
+			    &pct.newsintI_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+			
+		    my_swap(&pct.oldsintI_local[koffset2 + state * ct.max_nl], 
+			    &pct.oldsintI_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
 
 #endif
                 }               /* end for  idx1 */
