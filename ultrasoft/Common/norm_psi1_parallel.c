@@ -113,12 +113,12 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
 
-	ptr = &pct.oldsintR_local[ion * ct.num_states * ct.max_nl];
+	ptr = &pct.newsintR_local[ion * ct.num_states * ct.max_nl];
         ptr += sidx_local;
         
 	QMD_sscal (ct.max_nl, t1, ptr, incx);
 #if !GAMMA_PT
-	ptr = &pct.oldsintI_local[ion * ct.num_states * ct.max_nl];
+	ptr = &pct.newsintI_local[ion * ct.num_states * ct.max_nl];
         ptr += sidx_local;
         QMD_sscal (ct.max_nl, t1, ptr, incx);
 #endif
