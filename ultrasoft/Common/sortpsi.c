@@ -46,7 +46,7 @@
 void sortpsi (STATE * states)
 {
 
-    int state, n, incx, idx1, koffset, koffset2;
+    int state, n, incx, idx1, koffset, koffset2, loffset;
     REAL t1;
     STATE *sp, *sp1;
     REAL *tmp_psi1R, *tmp_psi2R;
@@ -72,12 +72,13 @@ void sortpsi (STATE * states)
 
     for (state = 0; state < ct.num_states - 1; state++)
     {
+    
+	koffset = sp->kidx * ct.num_ions * ct.num_states * ct.max_nl;
+	koffset2 = sp->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
 
         sp = &states[state];
         sp1 = &states[state + 1];
     
-	koffset = sp->kidx * ct.num_ions * ct.num_states * ct.max_nl;
-	koffset2 = sp->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
 
         if (sp->eig[0] > sp1->eig[0])
         {
@@ -122,21 +123,21 @@ void sortpsi (STATE * states)
 		for (idx1 = 0; idx1 < pct.num_nonloc_ions; idx1++)
                 {
 
-		    /*Add offset due to ion*/
-		    koffset2 += idx1 * ct.num_states * ct.max_nl;
+		    /* For localized <beta|psi>, there is offset due to both k-point and ion*/
+		    loffset = koffset2 + idx1 * ct.num_states * ct.max_nl;
 		    
-		    my_swap(&pct.newsintR_local[koffset2 + state * ct.max_nl], 
-			    &pct.newsintR_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+		    my_swap(&pct.newsintR_local[loffset + state * ct.max_nl], 
+			    &pct.newsintR_local[loffset + (state + 1) * ct.max_nl], ct.max_nl);
 			
-		    my_swap(&pct.oldsintR_local[koffset2 + state * ct.max_nl], 
-			    &pct.oldsintR_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+		    my_swap(&pct.oldsintR_local[loffset + state * ct.max_nl], 
+			    &pct.oldsintR_local[loffset + (state + 1) * ct.max_nl], ct.max_nl);
                         
 #if !GAMMA_PT
-		    my_swap(&pct.newsintI_local[koffset2 + state * ct.max_nl], 
-			    &pct.newsintI_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+		    my_swap(&pct.newsintI_local[loffset + state * ct.max_nl], 
+			    &pct.newsintI_local[loffset + (state + 1) * ct.max_nl], ct.max_nl);
 			
-		    my_swap(&pct.oldsintI_local[koffset2 + state * ct.max_nl], 
-			    &pct.oldsintI_local[koffset2 + (state + 1) * ct.max_nl], ct.max_nl);
+		    my_swap(&pct.oldsintI_local[loffset + state * ct.max_nl], 
+			    &pct.oldsintI_local[loffset + (state + 1) * ct.max_nl], ct.max_nl);
 
 #endif
                 }               /* end for  idx1 */
