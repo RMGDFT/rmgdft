@@ -40,6 +40,7 @@ bool validate (char *optlist)
                 return true;
             }
         }
+        error_handler("Fatal unmatched input %s=\"%s\",\nCheck for (in)valid %s options in read_control.c", here->name, here->is->the.string, here->name);
         return false;
     }
     else

@@ -74,10 +74,9 @@ void read_control (void)
     /* Read in the output wavefunction file name */
     get_data ("output_wave_function_file", &ct.outfile, STR, "wave.out");
 
-   char start_mode_opts[] = "\
-Random Start\n\
-Restart From File\n\
-LCAO Start";
+   char start_mode_opts[] = "Random Start\n"
+                            "Restart From File\n"
+                            "LCAO Start";
     get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
 
 
@@ -86,10 +85,9 @@ LCAO Start";
 
 
     /* Set up and validate input options */
-    char boundary_condition_type_opts[] = "\
-Periodic\n\
-Cluster\n\
-Surface";
+    char boundary_condition_type_opts[] = "Periodic\n"
+                                          "Cluster\n"
+                                          "Surface";
     get_data ("boundary_condition_type", NULL, INIT | OPT, boundary_condition_type_opts);
 
     /* Read in the boundary condition flag */
@@ -100,12 +98,11 @@ Surface";
 
 
   /* Set up and validate input options */
-    char exchange_correlation_type_opts[] = "\
-LDA\n\
-GGA BLYP\n\
-GGA XB CP\n\
-GGA XP CP\n\
-GGA PBE";
+    char exchange_correlation_type_opts[] = "LDA\n"
+                                            "GGA BLYP\n"
+                                            "GGA XB CP\n"
+                                            "GGA XP CP\n"
+                                            "GGA PBE";
     get_data ("exchange_correlation_type", NULL, INIT | OPT, exchange_correlation_type_opts);
 
 
@@ -168,18 +165,16 @@ Error Function";
 
 
    /* Set up and validate input options */
-    char calculation_mode_opts[] = "\
-Quench Electrons\n\
-Fast Relax\n\
-Constant Volume And Energy\n\
-Constant Temperature And Energy\n\
-Constant Pressure And Energy\n\
-Plot\n\
-Psi Plot\n\
-Band Structure Only\n\
-NEB Relax";
-    get_data ("calculation_mode", NULL, INIT | OPT,
-calculation_mode_opts);
+    char calculation_mode_opts[] = "Quench Electrons\n"
+                                   "Fast Relax\n"
+                                   "Constant Volume And Energy\n"
+                                   "Constant Temperature And Energy\n"
+                                   "Constant Pressure And Energy\n"
+                                   "Plot\n"
+                                   "Psi Plot\n"
+                                   "Band Structure Only\n"
+                                   "NEB Relax";
+    get_data ("calculation_mode", NULL, INIT | OPT, calculation_mode_opts);
 
     /* Force flag */
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
@@ -199,10 +194,9 @@ calculation_mode_opts);
     /* -------------------------------- */
 
     /* Set up and validate input options */
-    char mixing_opts[] = "\
-Steepest Descent\n\
-Pulay\n\
-KAIN";
+    char mixing_opts[] = "Steepest Descent\n"
+                         "Pulay\n"
+                         "KAIN";
     get_data ("mg_method", NULL, INIT | OPT, mixing_opts);
     /* read mg_eig method */
     get_data("mg_method", &ct.mg_method, OPT, "Pulay");
@@ -241,9 +235,8 @@ KAIN";
     read_kpoints ();
 
     /* Set up and validate input options */
-    char length_units_opts[] = "\
-Bohr\n\
-Angstrom";
+    char length_units_opts[] = "Bohr\n"
+                               "Angstrom";
     get_data ("length_units", NULL, INIT | OPT, length_units_opts);
 
     /*This is not read into any variable */
@@ -253,22 +246,21 @@ Angstrom";
     /* Bravais lattice type */
 
     /* Set up and validate input options */
-    char bravais_lattice_type_opts[] = "\
-None\n\
-Cubic Primitive\n\
-Cubic Face Centered\n\
-Cubic Body Centered\n\
-Hexagonal Primitive\n\
-Hexagonal Rhombohedral (Trigonal)\n\
-Tetragonal Primitive\n\
-Tetragonal Body Centered\n\
-Orthorhombic Primitive\n\
-Orthorhombic Base Centered\n\
-Orthorhombic Body Centered\n\
-Orthorhombic Face Centered\n\
-Monoclinic Primitive\n\
-Monoclinic Base Centered\n\
-Triclinic Primitive";
+    char bravais_lattice_type_opts[] = "None\n"
+                                       "Cubic Primitive\n"
+                                       "Cubic Face Centered\n"
+                                       "Cubic Body Centered\n"
+                                       "Hexagonal Primitive\n"
+                                       "Hexagonal Rhombohedral (Trigonal)\n"
+                                       "Tetragonal Primitive\n"
+                                       "Tetragonal Body Centered\n"
+                                       "Orthorhombic Primitive\n"
+                                       "Orthorhombic Base Centered\n"
+                                       "Orthorhombic Body Centered\n"
+                                       "Orthorhombic Face Centered\n"
+                                       "Monoclinic Primitive\n"
+                                       "Monoclinic Base Centered\n"
+                                       "Triclinic Primitive";
     get_data ("bravais_lattice_type", NULL, INIT | OPT, bravais_lattice_type_opts);
 
     /* lattice type */
@@ -462,9 +454,8 @@ ct.sp[is].pseudo_symbol,
 
 
     /* Set up and validate input options */
-    char atomic_coordinate_type_opts[] = "\
-Cell Relative\n\
-Absolute";
+    char atomic_coordinate_type_opts[] = "Cell Relative\n"
+                                         "Absolute";
     get_data ("atomic_coordinate_type", NULL, INIT | OPT, atomic_coordinate_type_opts);
 
     /* Absolute or cell relative coordinates */

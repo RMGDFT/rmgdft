@@ -56,20 +56,18 @@ void read_control (void)
     get_data ("output_wave_function_file", &ct.outfile, STR, "wave.out");
 
     /* Set up and validate input options */
-    char start_mode_opts[] = "\
-Random Start\n\
-Restart From File\n\
-LCAO Start";
+    char start_mode_opts[] = "Random Start\n"
+                             "Restart From File\n"
+                             "LCAO Start";
     get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
 
     /* Read in the initial run flag */
     get_data ("start_mode", &ct.runflag, OPT, "Random Start");
 
     /* Set up and validate input options */
-    char z_average_output_mode_opts[] = "\
-None\n\
-potential and charge density\n\
-wave functions";
+    char z_average_output_mode_opts[] = "None\n"
+                                        "potential and charge density\n"
+                                        "wave functions";
     get_data ("z_average_output_mode", NULL, INIT | OPT, z_average_output_mode_opts);
 
     /* Read in zaverage output toggle */
@@ -81,10 +79,9 @@ wave functions";
         get_data ("wait_flag_count", &ct.wait_flag, INT, "15");
 
     /* Set up and validate input options */
-    char boundary_condition_type_opts[] = "\
-Periodic\n\
-Cluster\n\
-Surface";
+    char boundary_condition_type_opts[] = "Periodic\n"
+                                          "Cluster\n"
+                                          "Surface";
     get_data ("boundary_condition_type", NULL, INIT | OPT, boundary_condition_type_opts);
 
     /* Read in the boundary condition flag */
@@ -92,9 +89,8 @@ Surface";
     
     
     /* Set up and validate input options */
-    char charge_mixing_type_opts[] = "\
-Linear\n\
-Pulay";
+    char charge_mixing_type_opts[] = "Linear\n"
+                                     "Pulay";
     get_data ("charge_mixing_type", NULL, INIT | OPT, charge_mixing_type_opts);
     
     /* Read type of charge density mixing */
@@ -122,12 +118,11 @@ Pulay";
     get_data ("projector_mixing", &ct.prjmix, DBL, "0.5");
 
     /* Set up and validate input options */
-    char exchange_correlation_type_opts[] = "\
-LDA\n\
-GGA BLYP\n\
-GGA XB CP\n\
-GGA XP CP\n\
-GGA PBE";
+    char exchange_correlation_type_opts[] = "LDA\n"
+                                            "GGA BLYP\n"
+                                            "GGA XB CP\n"
+                                            "GGA XP CP\n"
+                                            "GGA PBE";
     get_data ("exchange_correlation_type", NULL, INIT | OPT, exchange_correlation_type_opts);
 
     /* Exchange correlation potential type flag */
@@ -142,9 +137,8 @@ GGA PBE";
     /* force convergence criterion */
     get_data ("fast_relax_max_force", &ct.thr_frc, DBL, "2.5E-3");
     
-    char fastrelax_mass_opts[] = "\
-Atomic\n\
-Equal";
+    char fastrelax_mass_opts[] = "Atomic\n"
+                                 "Equal";
     get_data ("fastrelax_mass", NULL, INIT | OPT, fastrelax_mass_opts);
 
     /* Exchange correlation potential type flag */
@@ -181,11 +175,10 @@ Equal";
     
 
     /* Set up and validate input options */
-    char occupations_type_opts[] = "\
-Fixed\n\
-Fermi Dirac\n\
-Gaussian\n\
-Error Function";
+    char occupations_type_opts[] = "Fixed\n"
+                                   "Fermi Dirac\n"
+                                   "Gaussian\n"
+                                   "Error Function";
     get_data ("occupations_type", NULL, INIT | OPT, occupations_type_opts);
 
     /* Fermi occupation flag */
@@ -211,16 +204,15 @@ Error Function";
     get_data ("write_eigvals_period", &ct.write_eigvals_period, INT, "10");
 
     /* Set up and validate input options */
-    char calculation_mode_opts[] = "\
-Quench Electrons\n\
-Fast Relax\n\
-Constant Volume And Energy\n\
-Constant Temperature And Energy\n\
-Constant Pressure And Energy\n\
-Plot\n\
-Psi Plot\n\
-Band Structure Only\n\
-NEB Relax";
+    char calculation_mode_opts[] = "Quench Electrons\n"
+                                   "Fast Relax\n"
+                                   "Constant Volume And Energy\n"
+                                   "Constant Temperature And Energy\n"
+                                   "Constant Pressure And Energy\n"
+                                   "Plot\n"
+                                   "Psi Plot\n"
+                                   "Band Structure Only\n"
+                                   "NEB Relax";
     get_data ("calculation_mode", NULL, INIT | OPT, calculation_mode_opts);
 
     /* Force flag */
@@ -257,9 +249,8 @@ NEB Relax";
     tbuf = tptr;
 
     /* Set up and validate input options */
-    char rmg_temperature_control_opts[] = "\
-Nose Hoover Chains\n\
-Anderson Rescaling";
+    char rmg_temperature_control_opts[] = "Nose Hoover Chains\n"
+                                          "Anderson Rescaling";
     get_data ("rmg_temperature_control", NULL, INIT | OPT, rmg_temperature_control_opts);
 
     /* Set up and validate input options */
@@ -287,10 +278,9 @@ Anderson Rescaling";
 
 
     /* Set up and validate input options */
-    char rmg_integration_order_opts[] = "\
-2nd Velocity Verlet\n\
-3rd Beeman-Velocity Verlet\n\
-5th Beeman-Velocity Verlet";
+    char rmg_integration_order_opts[] = "2nd Velocity Verlet\n"
+                                        "3rd Beeman-Velocity Verlet\n"
+                                        "5th Beeman-Velocity Verlet";
     get_data ("rmg_integration_order", NULL, INIT | OPT, rmg_integration_order_opts);
     /* MD Integration flag */
     get_data ("rmg_integration_order", &ct.mdorder, OPT, "2nd Velocity Verlet");
@@ -368,10 +358,9 @@ Anderson Rescaling";
 
 
     /* Set up and validate input options */
-    char interpolation_type_opts[] = "\
-Cubic Polynomial\n\
-B-spline\n\
-prolong";
+    char interpolation_type_opts[] = "Cubic Polynomial\n"
+                                     "B-spline\n"
+                                     "prolong";
     get_data ("interpolation_type", NULL, INIT | OPT, interpolation_type_opts);
 
     /*Interpolation type */
@@ -429,31 +418,29 @@ prolong";
 
 
     /* Set up and validate input options */
-    char length_units_opts[] = "\
-Bohr\n\
-Angstrom";
+    char length_units_opts[] = "Bohr\n"
+                               "Angstrom";
     get_data ("length_units", NULL, INIT | OPT, length_units_opts);
 
     /*This is not read into any variable */
     get_data ("length_units", &tmp, OPT, "Bohr");
 
     /* Set up and validate input options */
-    char bravais_lattice_type_opts[] = "\
-None\n\
-Cubic Primitive\n\
-Cubic Face Centered\n\
-Cubic Body Centered\n\
-Hexagonal Primitive\n\
-Hexagonal Rhombohedral (Trigonal)\n\
-Tetragonal Primitive\n\
-Tetragonal Body Centered\n\
-Orthorhombic Primitive\n\
-Orthorhombic Base Centered\n\
-Orthorhombic Body Centered\n\
-Orthorhombic Face Centered\n\
-Monoclinic Primitive\n\
-Monoclinic Base Centered\n\
-Triclinic Primitive";
+    char bravais_lattice_type_opts[] = "None\n"
+                                       "Cubic Primitive\n"
+                                       "Cubic Face Centered\n"
+                                       "Cubic Body Centered\n"
+                                       "Hexagonal Primitive\n"
+                                       "Hexagonal Rhombohedral (Trigonal)\n"
+                                       "Tetragonal Primitive\n"
+                                       "Tetragonal Body Centered\n"
+                                       "Orthorhombic Primitive\n"
+                                       "Orthorhombic Base Centered\n"
+                                       "Orthorhombic Body Centered\n"
+                                       "Orthorhombic Face Centered\n"
+                                       "Monoclinic Primitive\n"
+                                       "Monoclinic Base Centered\n"
+                                       "Triclinic Primitive";
     get_data ("bravais_lattice_type", NULL, INIT | OPT, bravais_lattice_type_opts);
 
     /* lattice type */
@@ -549,9 +536,8 @@ Triclinic Primitive";
               "false");
 
     /* Set up and validate input options */
-    char restart_coordinates_from_opts[] = "\
-Control File\n\
-Wave File";
+    char restart_coordinates_from_opts[] = "Control File\n"
+                                           "Wave File";
     get_data ("restart_coordinates_from", NULL, INIT | OPT, restart_coordinates_from_opts);
     get_data ("restart_coordinates_from", &ct.override_current, OPT, "Wave File");
 
@@ -581,9 +567,8 @@ Wave File";
 
 
     /* Set up and validate input options */
-    char atomic_coordinate_type_opts[] = "\
-Cell Relative\n\
-Absolute";
+    char atomic_coordinate_type_opts[] = "Cell Relative\n"
+                                         "Absolute";
     get_data ("atomic_coordinate_type", NULL, INIT | OPT, atomic_coordinate_type_opts);
 
     /* Absolute or cell relative coordinates */

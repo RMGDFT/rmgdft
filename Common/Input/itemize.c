@@ -9,7 +9,7 @@
 set the ITEM flag for counting */
 int itemize (char delimiter)
 {
-    int i,k, j = 0;
+    int i, j = 0;
     item_t *tmp = pop ();
     char *string = tmp->the.string;
 
@@ -21,23 +21,15 @@ int itemize (char delimiter)
             /* don't itemize for empty strings */
             if (string[i + 1] != '\0')
             {
-                for(k =0; k<strlen (&string[i+1]); k++)
-                {
-                    if(string[i+1+k] != ' ') break;
-                }
-                Dprintf ("Found bounded string \n%s", &string[i + 1 + k]);
-                push (newItem (STR | ITEM, &string[i + 1 + k]));
+                Dprintf ("Found bounded string \n%s", &string[i + 1]);
+                push (newItem (STR | ITEM, &string[i + 1]));
                 j++;
             }
         }
     }
     if (strlen (string))
     {
-        for(k =0; k<strlen (string); k++)
-        {
-            if(string[k] != ' ') break;
-        }
-        Dprintf ("Found bounded string \n%s", &string[k]);
+        Dprintf ("Found bounded string \n%s", string);
         tmp->as |= ITEM;
         push (tmp);
     }
