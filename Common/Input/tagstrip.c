@@ -52,9 +52,12 @@ int tagstrip (void)
         {                       /* Single space meta-structure region. */
             if (isspace (string[i]) || string[i] == '=')
             {
-                string[j] = ' ';
-                if (string[j - 1] != ' ')
-                    j++;
+                if(j)/* the first char should always be non-space */
+                {
+                    string[j] = ' ';
+                    if (string[j - 1] != ' ')
+                        j++;
+                }
             }
             else
             {
