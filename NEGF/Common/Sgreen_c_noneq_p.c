@@ -63,7 +63,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
  	/* Construct: H = ES - H */
     for (i = 0; i < ntot; i++)
     {
-        H_tri[i] = ene * S00[i] - H00[i] * Ha_eV;
+        H_tri[i] = creal(ene) * S00[i] - H00[i] * Ha_eV;
     }
     /* put the sigma for a probe in the corresponding block
 	   of the Green's matrices  */

@@ -293,7 +293,7 @@ void get_cond_frommatrix ()
             /* Construct H = ES - H */
             for (i = 0; i < ntot; i++)
             {
-                H_tri[i] = ene * lcr[0].Stri[i] - lcr[0].Htri[i] * Ha_eV;
+                H_tri[i] = creal(ene) * lcr[0].Stri[i] - lcr[0].Htri[i] * Ha_eV;
             }
 
 
