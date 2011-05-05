@@ -72,12 +72,12 @@ void sortpsi (STATE * states)
 
     for (state = 0; state < ct.num_states - 1; state++)
     {
-    
-	koffset = sp->kidx * ct.num_ions * ct.num_states * ct.max_nl;
-	koffset2 = sp->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
 
         sp = &states[state];
         sp1 = &states[state + 1];
+    
+	koffset = sp->kidx * ct.num_ions * ct.num_states * ct.max_nl;
+	koffset2 = sp->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
     
 
         if (sp->eig[0] > sp1->eig[0])
