@@ -36,7 +36,7 @@ void distri_fermi (complex double ene,  REAL EF, complex double *distri)
 
     REAL temR, temI, tem1, tem2;
     
-    double complex ctem;
+    complex double ctem;
     REAL KT;
 
     KT = cei.KT;

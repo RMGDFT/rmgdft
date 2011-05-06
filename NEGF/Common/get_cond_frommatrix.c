@@ -33,9 +33,9 @@ void get_cond_frommatrix ()
     int ntot, ndim, nC, idx_C, *sigma_idx;
     REAL cons, EF1, EF2, f1, f2;
 
-    double complex *ch0, *ch01, *ch10;
+    complex double *ch0, *ch01, *ch10;
     double *H10, *S10;
-    double complex ene, ctem;
+    complex double ene, ctem;
 
     complex double alpha, beta;
     double one, zero;
@@ -157,9 +157,9 @@ void get_cond_frommatrix ()
     my_malloc_init( tot,  idx, complex double );
     my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
-    my_malloc_init( ch0,  idx, double complex );
-    my_malloc_init( ch01,  idx, double complex );
-    my_malloc_init( ch10,  idx, double complex );
+    my_malloc_init( ch0,  idx, complex double );
+    my_malloc_init( ch01,  idx, complex double );
+    my_malloc_init( ch10,  idx, complex double );
 
     my_malloc_init( H10,    idx, double );
     my_malloc_init( S10,    idx, double );

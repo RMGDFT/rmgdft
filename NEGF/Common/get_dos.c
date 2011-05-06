@@ -141,9 +141,9 @@ void get_dos (STATE * states)
     my_malloc_init( tot,  idx, complex double );
     my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
-    my_malloc_init( ch0,  idx, double complex );
-    my_malloc_init( ch01,  idx, double complex );
-    my_malloc_init( ch10,  idx, double complex );
+    my_malloc_init( ch0,  idx, complex double );
+    my_malloc_init( ch01,  idx, complex double );
+    my_malloc_init( ch10,  idx, complex double );
 
 
     my_malloc_init( green_tem, 2 * idx, REAL );
