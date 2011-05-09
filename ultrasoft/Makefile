@@ -45,7 +45,7 @@ linux_mpich: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h
 	@echo '#define LINUX 1' >> Headers/arch.h
 	cd ../lib/libxc/; $(MAKE) -f Make.rmg
-	$(MAKE) -f Make.linux_mpich
+	$(MAKE) -j 8 -f Make.linux_mpich
 
 xt: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h
