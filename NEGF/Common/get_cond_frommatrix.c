@@ -300,7 +300,7 @@ void get_cond_frommatrix ()
 
             Sgreen_cond_p (H_tri, sigma_all, sigma_idx, green_C, nC, iprobe1, iprobe2);
 
-
+/*   green_C store the Green function block (n2,n1)  */
 
             desca = &pmo.desc_cond[( n1 + n1 * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
             descb = &pmo.desc_cond[( n2 + n2 * ct.num_blocks) * DLEN];   /* nC_2 * nC_2 matrix */
@@ -310,19 +310,19 @@ void get_cond_frommatrix ()
 
 
             /* Gamma(C_1, C_1) * G(C_1, C_2) = temp(C_1, C_2) */
-            PZGEMM (&fcd_n, &fcd_n, &nC_1, &nC_2, &nC_1, &alpha, Gamma1, &ione, &ione, desca,
-                    green_C, &ione, &ione, descd, &beta, temp_matrix1, &ione, &ione, descd);
+            PZGEMM (&fcd_n, &fcd_n, &nC_2, &nC_1, &nC_1, &alpha, green_C, &ione, &ione, descc,
+                    Gamma1, &ione, &ione, desca, &beta, temp_matrix1, &ione, &ione, descc);
 
             /* temp(C_1, C_2) * Gamma(C_2, C_2) = temp2(C_1, C_2) */
-            PZGEMM (&fcd_n, &fcd_n, &nC_1, &nC_2, &nC_2, &alpha, temp_matrix1, &ione, &ione, descd,
-                    Gamma2, &ione, &ione, descb, &beta, temp_matrix2, &ione, &ione, descd);
+            PZGEMM (&fcd_n, &fcd_c, &nC_2, &nC_2, &nC_1, &alpha, temp_matrix1, &ione, &ione, descc,
+                    green_C, &ione, &ione, descc, &beta, temp_matrix2, &ione, &ione, descb);
 
             /* temp2(C_1, C_2) * G(C_2, C_1) = temp(C_1, C_1) */
-            PZGEMM (&fcd_n, &fcd_c, &nC_1, &nC_1, &nC_2, &alpha, temp_matrix2, &ione, &ione, descd,
-                    green_C, &ione, &ione, descd, &beta, temp_matrix1, &ione, &ione, desca);
+            PZGEMM (&fcd_n, &fcd_n, &nC_2, &nC_2, &nC_2, &alpha, temp_matrix2, &ione, &ione, descb,
+                    Gamma2, &ione, &ione, descb, &beta, temp_matrix1, &ione, &ione, descb);
 
             /* desca= &pmo.desc_lead[0]; */
-            cond[iene] = pmo_trace(temp_matrix1, desca);
+            cond[iene] = pmo_trace(temp_matrix1, descb);
 
             ener1[iene] = creal(ene);
 
