@@ -85,7 +85,7 @@ void init_qfunct (void)
                     for (k = 0; k < MAX_RGRID; k++)
                         work[k] = 0.0;
 
-                    for (k = 0; k < MAX_RGRID; k++)
+                    for (k = 0; k < sp->rg_points; k++)
                     {
                         if (sp->r[k] >= sp->rinner[ll])
                             work[k] = qnm_tpr[k];
