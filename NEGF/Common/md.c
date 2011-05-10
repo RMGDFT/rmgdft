@@ -73,38 +73,23 @@ int main (int argc, char **argv)
     char *timeptr;
     time_t tt;
 
-    /* initialize the MPI */
-    MPI_Init (&argc, &argv);
-    MPI_Comm_size (MPI_COMM_WORLD, &mpi_nprocs);
-    MPI_Comm_rank (MPI_COMM_WORLD, &mpi_myrank);
-    pct.gridpe = mpi_myrank;
 
-    /* Read in the name of the control file from the command line */
-    strcpy (ct.cfile, argv[1]);
 
     time (&tt);
     timeptr = ctime (&tt);
 
-    if (pct.gridpe == 0)
-    {
-        printf ("\n  Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE); 
-        printf ("\n  Run started at %s", timeptr);
-        printf ("\n  Total procs: %d \n", mpi_nprocs);
 
-    }
-
-
-    init_IO();
+    init_IO(argc, argv);
 
     /* Read in our control information */
-    read_control ();
+//    read_control ();
 
     read_trans (&cei);
 
     read_LCR ();
 
     /* Read in our pseudopotential information */
-    read_pseudo ();
+//    read_pseudo ();
 
     my_barrier ();
 

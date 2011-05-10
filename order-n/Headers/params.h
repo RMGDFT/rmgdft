@@ -52,10 +52,17 @@
  *************************************************************/
 #include "arch.h"
 
+int PE_X, PE_Y, PE_Z;
 #define  GAMMA_PT    1
 
 /* This is the maximum number of non-local projectors for any species
  * just an upper limit on dynamically allocated data structures. */
+#define         MAX_IMGS        99
+
+/* Maximum cpu grids, now spin enabled -> 2.
+ *  * This will need to be dynamic if we parallelize over k-points */
+#define         MAX_GRIDS        2
+
 #define         MAX_NL  20
 #define         MAX_NB  6
 #define         MAX_OPTS  16

@@ -61,41 +61,29 @@ int main(int argc, char **argv)
     time_t tt;
     char *timeptr;
 
-    /* initialize the MPI */
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &mpi_nprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_myrank);
-    pct.gridpe = mpi_myrank;
 
     time(&tt);
     timeptr = ctime(&tt);
-    if(pct.gridpe == 0)
-    {
-        printf ("\n  Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
-        printf ("\n  Run started at %s\n", timeptr);
-        printf ("\n  Total procs: %d \n", mpi_nprocs);
-    }
-
     ct.time0 = my_crtc();
 
-    init_IO();
+    init_IO(argc, argv);
 
 
     /* Read in the name of the control file from the command line */
-    strcpy(ct.cfile, argv[1]);
+//    strcpy(ct.cfile, argv[1]);
 
     /* Read in our control information */
-    read_control();
+ //   read_control();
 
     /* Read in our pseudopotential information */
-    read_pseudo();
+//    read_pseudo();
 
     my_barrier();
 
     /*  Begin to do the real calculations */
     run(states, states1);
 
-    my_alloc_report( "order-n" );
+    //my_alloc_report( "order-n" );
 
     write_timings();
     MPI_Finalize();

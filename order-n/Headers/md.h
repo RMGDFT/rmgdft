@@ -123,10 +123,23 @@ int array_both_not_zero[MAX_IONS][MAX_IONS];
 typedef struct
 {
 
-    /** Number (rank in MPI terminology) of this processor */
-    int gridpe, thisgrp, imgpe,images;
 
-    MPI_Comm thisgrp_comm, img_comm, grid_comm;
+   /** Number (rank in MPI terminology) of this processor in this image
+ * grid */
+    int gridpe, imgpe, thisimg, spinpe;
+
+    /** Number of grids (typically 1) per image to be run simultaneously
+ * **/
+    int images, grids;
+
+    /* MPI communicators for each code grid (grid_comm) and one
+ * (rmg_comm)
+ *      * for all group rank 0 pe's. The later effectively replaces
+ *      MPI_COMM_WORLD
+ *           * unless you really need all-to-all, even across grids,
+ *           communication. */
+    MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm;
+
 
     int instances;
     /** Neighboring processors in three-dimensional space */
@@ -208,6 +221,7 @@ typedef struct
     int myrow;
     int nprow;
     int npcol;
+
 
 } PE_CONTROL;
 
@@ -721,12 +735,14 @@ typedef struct
     /** time at which run started */
     REAL time0;
 
+    int spin_flag;
     /** Name of the input control file. Passed as a command line argument
      *
      *  Example:
      *  bash$  md in.diamond8
      */
     char cfile[MAX_PATH];
+    char basename[MAX_PATH];
 
     FILE *logfile;
 
@@ -1203,7 +1219,7 @@ void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc, STATE * states,
         STATE * states1, REAL * vnuc, REAL * vxc, REAL * vh_old,
         REAL * vxc_old);
 void init_kbr (void);
-void init_pe (void);
+void init_pe_on (void);
 void init_pegrid (void);
 void init_wf (STATE * states);
 void init_wflcao (STATE * states);

@@ -54,7 +54,7 @@ void run (STATE * states, STATE * states1)
      * pct.pe_kpoint * ( pct.pe_column , pct.pe_row)
      */
 
-    init_pe ();
+    init_pe_on ();
 
 
     init_dimension ();

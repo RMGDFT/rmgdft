@@ -36,16 +36,16 @@ extern int mpi_nprocs;
 extern int mpi_myrank;
 
 
-void init_pe (void)
+void init_pe_on (void)
 {
 
     int npes, ii, jj, kk;
     int ndims, dims[3], periods[3], reorder, kpdelta, remains[3];
     int coords[3], item, rank, PE_X, PE_Y, PE_Z;
-    npes = mpi_nprocs;
 
-    /* This pe number or rank of this pe */
-    pct.gridpe = mpi_myrank;
+
+ /* get total mpi core count  */
+    MPI_Comm_size (pct.grid_comm, &npes);
 
     /* Create a Cartisian topology for parallel in kpoint */
     ndims = 2;

@@ -23,6 +23,10 @@
 
 #define DEBUG 0
 
+#define printf( message... ) \
+     ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
+
+
 #if DEBUG
 #define Dprintf( format, args...) fprintf (stderr, "\n#DEBUG from PE %d in %s line %d:    \t"format"\n", pct.gridpe, __FILE__, __LINE__, ##args), fflush(NULL)
 #else
@@ -46,8 +50,8 @@
 
 /* variadic error_handler, use is the same as printf. Calls MPI_Abort, since MPI_Finalize hangs if called on single PE. */
 #define error_handler( message... ) \
-    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisgrp+1, __FILE__, __LINE__, pct.gridpe), \
-    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisgrp+1, __FILE__, __LINE__, pct.gridpe), \
+    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
+    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
 	fprintf (stderr,  message ), \
 	fprintf (stderr,  "\n\n" ), \
 	printf ( message ), \

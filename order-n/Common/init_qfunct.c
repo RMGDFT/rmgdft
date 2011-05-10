@@ -143,8 +143,8 @@ void init_qfunct(void)
 
                     if (pct.gridpe == 0)
                     {
-                        fprintf(fqq, "&&\n");
-                        fprintf(fdq, "&&\n");
+                        fprintf (fqq, "&&\n");
+                        fprintf (fdq, "&&\n");
                     }
                 }               /*end for ll */
             }                   /*end for j */
