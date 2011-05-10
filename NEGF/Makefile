@@ -42,7 +42,7 @@ linux:
 linux_mpich:
 	@echo '#define LINUX 1' > Headers/arch.h
 	@echo "#define MPI 1" >> Headers/arch.h
-	$(MAKE) -f Make.linux_mpich
+	$(MAKE) -j 8 -f Make.linux_mpich
 
 xt: 
 	@echo '#define LINUX 1' > Headers/arch.h
