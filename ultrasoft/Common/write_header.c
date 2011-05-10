@@ -62,7 +62,7 @@ char *lattice_type[] = {
 void write_header (void)
 {
 
-    int kpt, idx;
+    int kpt, idx, j;
     time_t tt;
     REAL t1;
 
@@ -388,10 +388,15 @@ void write_header (void)
         printf ("        L potentials    = %d\n", sp->num_potentials);
         printf ("        L local         = %d\n", sp->local);
         printf ("        lrcut           = %12.6f\n", sp->lrcut);
-        printf ("        nlrcut          = %12.6f  %12.6f  %12.6f\n", sp->nlrcut[0], sp->nlrcut[1],
-                sp->nlrcut[2]);
-        printf ("        rwidth          = %12.6f\n", sp->rwidth);
-        printf ("        gwidth          = %12.6f\n", sp->gwidth);
+	for (j = 0; j < sp->num_potentials; j++)
+	{
+	    if (sp->lval[j] != sp->local)
+	    {
+		printf ("        nlrcut state %d = %12.6f\n", j, sp->nlrcut[sp->lval[j]]);
+	    }
+	}
+	printf ("        rwidth          = %12.6f\n", sp->rwidth);
+	printf ("        gwidth          = %12.6f\n", sp->gwidth);
 
 
     }                           /* end for(idx = 0;idx < ct.num_species;idx++) */
