@@ -155,12 +155,12 @@ void get_dos (STATE * states)
 
 /*===================================================================*/
 
-    nx1 = cei.dos_window_start[0] * RHO_NX;
-    nx2 = cei.dos_window_end[0] * RHO_NX;
-    ny1 = cei.dos_window_start[1] * RHO_NY;
-    ny2 = cei.dos_window_end[1] * RHO_NY;
-    nz1 = cei.dos_window_start[2] * RHO_NZ;
-    nz2 = cei.dos_window_end[2] * RHO_NZ;
+    nx1 = cei.dos_window_start[0] * FG_NX;
+    nx2 = cei.dos_window_end[0] * FG_NX;
+    ny1 = cei.dos_window_start[1] * FG_NY;
+    ny2 = cei.dos_window_end[1] * FG_NY;
+    nz1 = cei.dos_window_start[2] * FG_NZ;
+    nz2 = cei.dos_window_end[2] * FG_NZ;
                                                                                               
                                                                                               
                                                                                               
@@ -368,7 +368,7 @@ void get_dos (STATE * states)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                        ix * dx - x0, emin+iene*de, rho_energy[iene * FNX_GRID + ix * RHO_NX]);
+                        ix * dx - x0, emin+iene*de, rho_energy[iene * FNX_GRID + ix * FG_NX]);
             }
             fprintf (file, "\n");
         }
@@ -396,7 +396,7 @@ void get_dos (STATE * states)
                 {
 
                     fprintf (file, " %10.6f %10.6f %12.6e\n",
-                            iy * dy - y0, emin+iene*de, rho_energy2[iene * FNY_GRID + iy * RHO_NY]);
+                            iy * dy - y0, emin+iene*de, rho_energy2[iene * FNY_GRID + iy * FG_NY]);
                 }
                 fprintf (file, "\n");
             }

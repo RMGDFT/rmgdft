@@ -69,16 +69,16 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 	if (lcr[1].NZ_GRID != NZ_GRID)
 		error_handler ("not a lead calculation z");
 
-	write_global_data_lead (fhand, vh, lcr[1].NX_GRID * RHO_NX * 3, lcr[1].NY_GRID * RHO_NY,
-			lcr[1].NZ_GRID * RHO_NZ);
-	write_global_data_lead (fhand, vxc, lcr[1].NX_GRID * RHO_NX * 3, lcr[1].NY_GRID * RHO_NY,
-			lcr[1].NZ_GRID * RHO_NZ);
-	write_global_data_lead (fhand, rho, lcr[1].NX_GRID * RHO_NX * 3, lcr[1].NY_GRID * RHO_NY,
-			lcr[1].NZ_GRID * RHO_NZ);
-	write_global_data_lead (fhand, vh_old, lcr[1].NX_GRID * RHO_NX * 3, lcr[1].NY_GRID * RHO_NY,
-			lcr[1].NZ_GRID * RHO_NZ);
-	write_global_data_lead (fhand, vxc_old, lcr[1].NX_GRID * RHO_NX * 3, lcr[1].NY_GRID * RHO_NY,
-			lcr[1].NZ_GRID * RHO_NZ);
+	write_global_data_lead (fhand, vh, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
+			lcr[1].NZ_GRID * FG_NZ);
+	write_global_data_lead (fhand, vxc, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
+			lcr[1].NZ_GRID * FG_NZ);
+	write_global_data_lead (fhand, rho, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
+			lcr[1].NZ_GRID * FG_NZ);
+	write_global_data_lead (fhand, vh_old, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
+			lcr[1].NZ_GRID * FG_NZ);
+	write_global_data_lead (fhand, vxc_old, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
+			lcr[1].NZ_GRID * FG_NZ);
 
 
 	if (pct.gridpe == 0) close(fhand);

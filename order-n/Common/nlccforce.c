@@ -50,7 +50,7 @@ void nlccforce(REAL * rho, REAL * vxc)
 
 
 
-    deltac = ct.hmaxgrid / 200.0 / (REAL) RHO_NX;
+    deltac = ct.hmaxgrid / 200.0 / (REAL) FG_NX;
     shift[0] = -2.0 * deltac;
     shift[1] = 2.0 * deltac;
     shift[2] = -deltac;

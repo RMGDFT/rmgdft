@@ -955,6 +955,9 @@ typedef struct
     int psi_nygrid;
     int psi_nzgrid;
 
+    int psi_fnxgrid;
+    int psi_fnygrid;
+    int psi_fnzgrid;
     /* Total points for wavefunctions */
     int psi_nbasis;
 

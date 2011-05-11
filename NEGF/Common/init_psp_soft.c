@@ -91,7 +91,7 @@ void init_psp_soft (void)
         if (ct.max_lpoints < (sp->ldim_coar * sp->ldim_coar * sp->ldim_coar))
             ct.max_lpoints = sp->ldim_coar * sp->ldim_coar * sp->ldim_coar;
 
-        t1 = 2.0 * scale * (REAL) RHO_NX *sp->lradius / ct.hmingrid;
+        t1 = 2.0 * scale * (REAL) FG_NX *sp->lradius / ct.hmingrid;
         t1 = modf (t1, &t2);
         it1 = (int) t2;
         if (t1 > 0.5)
@@ -150,8 +150,8 @@ void init_psp_soft (void)
 
 
 
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)RHO_NX; */
-        t1 = sp->ldim / RHO_NX + 1;
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)FG_NX; */
+        t1 = sp->ldim / FG_NX + 1;
         sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
         if (ct.ibrav == HEXAGONAL)
             sp->drlig *= 2.0;

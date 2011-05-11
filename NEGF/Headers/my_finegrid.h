@@ -2,7 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
  
-int RHO_NX, RHO_NY, RHO_NZ;
+int FG_NX, FG_NY, FG_NZ;
 int BETA_NX, BETA_NY, BETA_NZ;
 
 int FNX_GRID, FNY_GRID, FNZ_GRID;

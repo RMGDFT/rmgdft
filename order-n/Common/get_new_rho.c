@@ -275,7 +275,7 @@ void get_new_rho(STATE * states, double *rho)
 
    global_to_distribute(rho_global, rho_temp);
 
-   mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, RHO_NX, 6);
+   mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
 
    my_free(rho_temp);
 

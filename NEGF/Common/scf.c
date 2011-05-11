@@ -83,7 +83,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
         printf ("\n  vxccch");
 #endif
 
-    get_vtot_psi(vtot_c, vtot, RHO_NX);
+    get_vtot_psi(vtot_c, vtot, FG_NX);
 
     get_ddd (vtot);
 

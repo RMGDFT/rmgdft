@@ -294,7 +294,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
             for (idx = 0; idx < FP0_BASIS; idx++)
                 vtot[idx] = vh_old[idx] + vxc_old[idx] + vnuc[idx];
 
-            get_vtot_psi(vtot_c, vtot, RHO_NX);
+            get_vtot_psi(vtot_c, vtot, FG_NX);
             get_ddd(vtot);
 
             flag = 0;

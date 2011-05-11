@@ -118,6 +118,10 @@ void read_control (void)
     /* force convergence criterion */
     get_data ("fast_relax_max_force", &ct.thr_frc, DBL, "2.5E-3");
 
+  /* Write pseudopotential plots */
+    get_data ("do_write_pseudopotential_plots", NULL, BOOL, "false");
+
+
     /* Write wavefunctions into output file, every md count of steps */
     get_data ("do_write_waves_to_file", &ct.checkpoint, BOOL, "true");
     if (ct.checkpoint)
@@ -311,15 +315,18 @@ Error Function";
     NY_GRID = strtol(tbuf, &tbuf, 10);
     NZ_GRID = strtol(tbuf, &tbuf, 10);
 
-    get_data("potential_grid_refinement",  &RHO_NX, INT, NULL);
+    get_data("potential_grid_refinement",  &FG_NX, INT, NULL);
 
-    RHO_NY = RHO_NX;
-    RHO_NZ = RHO_NX; 
+    FG_NY = FG_NX;
+    FG_NZ = FG_NX; 
 
-    FNX_GRID = NX_GRID * RHO_NX;
-    FNY_GRID = NY_GRID * RHO_NY;
-    FNZ_GRID = NZ_GRID * RHO_NZ;
+    FNX_GRID = NX_GRID * FG_NX;
+    FNY_GRID = NY_GRID * FG_NY;
+    FNZ_GRID = NZ_GRID * FG_NZ;
 
+    ct.psi_fnxgrid = NX_GRID * FG_NX;
+    ct.psi_fnygrid = NY_GRID * FG_NY;
+    ct.psi_fnzgrid = NZ_GRID * FG_NZ;
 
     /*Currently, fine grid has to be the same in each direction */
     get_data("beta_grid_refinement",  &ct.nxfgrid, INT, "4");
@@ -391,9 +398,9 @@ Error Function";
     S0_BASIS = (PX0_GRID+2) * (PY0_GRID+2) * (PZ0_GRID+2);
 
 
-    FPX0_GRID = PX0_GRID * RHO_NX;
-    FPY0_GRID = PY0_GRID * RHO_NY;
-    FPZ0_GRID = PZ0_GRID * RHO_NZ;
+    FPX0_GRID = PX0_GRID * FG_NX;
+    FPY0_GRID = PY0_GRID * FG_NY;
+    FPZ0_GRID = PZ0_GRID * FG_NZ;
     FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
 
     if ((PX0_GRID / (1 << ct.eig_parm.levels)) < 3)
@@ -426,9 +433,9 @@ Error Function";
 
     /* Cutoff parameter */
     get_data ("energy_cutoff_parameter", &ct.cparm, DBL, "1.75");
-    ct.qcparm = ct.cparm / (REAL) RHO_NX;
+    ct.qcparm = ct.cparm / (REAL) FG_NX;
     ct.betacparm = ct.cparm / (REAL) ct.nxfgrid;
-    ct.cparm /= (REAL) RHO_NX;
+    ct.cparm /= (REAL) FG_NX;
     
     /*Count number of species */
     require (get_data ("pseudopotential", &ct.num_species, INIT | LIST, NULL));
@@ -524,19 +531,19 @@ ct.sp[is].pseudo_symbol,
 
 
 
-    potentialCompass.box1.x1 *= RHO_NX;
-    potentialCompass.box1.x2 *= RHO_NX;
-    potentialCompass.box1.y1 *= RHO_NY;
-    potentialCompass.box1.y2 *= RHO_NY;
-    potentialCompass.box1.z1 *= RHO_NZ;
-    potentialCompass.box1.z2 *= RHO_NZ;
+    potentialCompass.box1.x1 *= FG_NX;
+    potentialCompass.box1.x2 *= FG_NX;
+    potentialCompass.box1.y1 *= FG_NY;
+    potentialCompass.box1.y2 *= FG_NY;
+    potentialCompass.box1.z1 *= FG_NZ;
+    potentialCompass.box1.z2 *= FG_NZ;
 
-    chargeDensityCompass.box1.x1 *= RHO_NX;
-    chargeDensityCompass.box1.x2 *= RHO_NX;
-    chargeDensityCompass.box1.y1 *= RHO_NY;
-    chargeDensityCompass.box1.y2 *= RHO_NY;
-    chargeDensityCompass.box1.z1 *= RHO_NZ;
-    chargeDensityCompass.box1.z2 *= RHO_NZ;
+    chargeDensityCompass.box1.x1 *= FG_NX;
+    chargeDensityCompass.box1.x2 *= FG_NX;
+    chargeDensityCompass.box1.y1 *= FG_NY;
+    chargeDensityCompass.box1.y2 *= FG_NY;
+    chargeDensityCompass.box1.z1 *= FG_NZ;
+    chargeDensityCompass.box1.z2 *= FG_NZ;
 
 
 

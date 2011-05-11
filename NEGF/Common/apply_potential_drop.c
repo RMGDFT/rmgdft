@@ -86,14 +86,14 @@ void apply_potential_drop (REAL *vbias)
         int nx1, nx2, nx3, nx4, ny1, ny2, ny3, ny4;
 
 
-        ny1 = cei.probe_window_start[0] * RHO_NY;
-        ny2 = cei.probe_window_end[0] * RHO_NY;
-        ny3 = cei.probe_window_start[1] * RHO_NY;
-        ny4 = cei.probe_window_end[1] * RHO_NY;
-        nx1 = cei.probe_window_start[2] * RHO_NX;
-        nx2 = cei.probe_window_end[2] * RHO_NX;
-        nx3 = cei.probe_window_start[3] * RHO_NX;
-        nx4 = cei.probe_window_end[3] * RHO_NX;
+        ny1 = cei.probe_window_start[0] * FG_NY;
+        ny2 = cei.probe_window_end[0] * FG_NY;
+        ny3 = cei.probe_window_start[1] * FG_NY;
+        ny4 = cei.probe_window_end[1] * FG_NY;
+        nx1 = cei.probe_window_start[2] * FG_NX;
+        nx2 = cei.probe_window_end[2] * FG_NX;
+        nx3 = cei.probe_window_start[3] * FG_NX;
+        nx4 = cei.probe_window_end[3] * FG_NX;
 
 
         V3 = (lcr[3].bias) * eV_Ha;

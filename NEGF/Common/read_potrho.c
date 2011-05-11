@@ -87,9 +87,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     for(subsystem = 0; subsystem < cei.num_subsystem; subsystem++)
     {
 
-        NX0 = lcr[subsystem].NX_GRID *RHO_NX;
-        NY0 = lcr[subsystem].NY_GRID *RHO_NY;
-        NZ0 = lcr[subsystem].NZ_GRID *RHO_NZ;
+        NX0 = lcr[subsystem].NX_GRID *FG_NX;
+        NY0 = lcr[subsystem].NY_GRID *FG_NY;
+        NZ0 = lcr[subsystem].NZ_GRID *FG_NZ;
 
         idx = NX0 * NY0 * NZ0;
         /*if(pct.gridpe ==0) printf (" idx +++++  =   %d \n", idx );*/
@@ -116,21 +116,21 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-        x0 = lcr[subsystem].x0 * RHO_NX;
-        y0 = lcr[subsystem].y0 * RHO_NY;
-        z0 = lcr[subsystem].z0 * RHO_NZ;
+        x0 = lcr[subsystem].x0 * FG_NX;
+        y0 = lcr[subsystem].y0 * FG_NY;
+        z0 = lcr[subsystem].z0 * FG_NZ;
         /*if(pct.gridpe ==0) printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
 
 
-        x1 = lcr[subsystem].x1 * RHO_NX;
-        y1 = lcr[subsystem].y1 * RHO_NY;
-        /*z1 = lcr[subsystem].z1 * RHO_NZ;
+        x1 = lcr[subsystem].x1 * FG_NX;
+        y1 = lcr[subsystem].y1 * FG_NY;
+        /*z1 = lcr[subsystem].z1 * FG_NZ;
         if(pct.gridpe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
 
 
-        x2 = lcr[subsystem].x2 * RHO_NX;
-        y2 = lcr[subsystem].y2 * RHO_NY;
-        z2 = lcr[subsystem].z2 * RHO_NZ;
+        x2 = lcr[subsystem].x2 * FG_NX;
+        y2 = lcr[subsystem].y2 * FG_NY;
+        z2 = lcr[subsystem].z2 * FG_NZ;
         /*if(pct.gridpe ==0) printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
 
         x3 = x2 + x1 - x0;
@@ -143,11 +143,11 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         NXZ0 = NX0 * NZ0;
 
         x0_old = lcr[subsystem].x_shift;
-        hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/RHO_NX;
+        hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/FG_NX;
         /*if(pct.gridpe ==0) printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
 
         y0_old = lcr[subsystem].y_shift;
-        hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/RHO_NY;
+        hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/FG_NY;
         /*if(pct.gridpe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
  
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
@@ -221,9 +221,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
        
         x2 = 0;
-        x3 = lcr[3].x2 * RHO_NX;
+        x3 = lcr[3].x2 * FG_NX;
         y2 = 0;
-        y3 = lcr[1].y2 * RHO_NY;
+        y3 = lcr[1].y2 * FG_NY;
 
 
         for (iy = y2; iy < y3; iy++)
@@ -259,10 +259,10 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * RHO_NX;
+        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * FG_NX;
         x3 = FNX_GRID; 
         y2 = 0;
-        y3 = lcr[2].y2 * RHO_NY;
+        y3 = lcr[2].y2 * FG_NY;
 
 
         for (iy = y2; iy < y3; iy++)
@@ -295,8 +295,8 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
         x2 = 0;
-        x3 = lcr[4].x2 * RHO_NX;
-        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * RHO_NY;
+        x3 = lcr[4].x2 * FG_NX;
+        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * FG_NY;
         y3 = FNY_GRID; 
 
 
@@ -329,9 +329,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
  
 
-        x2 = (lcr[4].x2 + lcr[4].x1 - lcr[4].x0) * RHO_NX;
+        x2 = (lcr[4].x2 + lcr[4].x1 - lcr[4].x0) * FG_NX;
         x3 = FNX_GRID; 
-        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * RHO_NY;
+        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * FG_NY;
         y3 = FNY_GRID; 
 
         

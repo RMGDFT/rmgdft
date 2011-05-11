@@ -275,7 +275,7 @@ void get_cond_dos_test (STATE * states)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                         ix * dx - x0, eneR, rho_energy[iene * FNX_GRID + ix * RHO_NX]);
+                         ix * dx - x0, eneR, rho_energy[iene * FNX_GRID + ix * FG_NX]);
             }
             fprintf (file, "\n");
         }
