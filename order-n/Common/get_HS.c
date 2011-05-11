@@ -80,7 +80,7 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
 
     my_barrier();
 
-    get_all_kbpsi(states, states, 0);
+    get_all_kbpsi(states, states);
 
     get_Hvnlij(Hij_00);
 

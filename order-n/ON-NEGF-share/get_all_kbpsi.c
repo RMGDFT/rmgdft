@@ -16,17 +16,17 @@
 #include "md.h"
 
 
-void get_local_kbpsi(STATE *st1, double *psi, double *kbpsi);
+void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi);
 
 
-void get_all_kbpsi(STATE * states1, STATE * states, int firstflag)
+void get_all_kbpsi (STATE *states1, STATE * states)
 {
     int st1, idx;
     int size;
     int ion, ion1, ip;
     double time1, time2;
 
-    time1 = my_crtc();
+    time1 = my_crtc ();
 
     /* size of the <psi|kb> in each processor */
     size = ct.state_per_proc * pct.n_ion_center * ct.max_nl;
@@ -40,7 +40,7 @@ void get_all_kbpsi(STATE * states1, STATE * states, int firstflag)
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         idx = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
-        get_kbpsi(&states1[st1], &kbpsi[idx], 0);
+        get_kbpsi (&states1[st1], &kbpsi[idx]);
     }
 
 /*  print_sum(size, kbpsi, "kbpsi sum get_all_kbpsi "); 
@@ -62,8 +62,8 @@ void get_all_kbpsi(STATE * states1, STATE * states, int firstflag)
 *	} 
 */
 
-    time2 = my_crtc();
-    rmg_timings(NL_TIME, (time2 - time1));
+    time2 = my_crtc ();
+    rmg_timings (NL_TIME, (time2 - time1));
 
 }
 
@@ -76,36 +76,20 @@ void get_all_kbpsi(STATE * states1, STATE * states, int firstflag)
        Store the result in the right element of the array kbpsi.
     
 */
-void get_kbpsi(STATE *sp1, double *kbpsi_one_state, unsigned int flag)
+void get_kbpsi (STATE *sp1, double *kbpsi_one_state)
 {
     int ixx, iyy, izz;
     double time1, time2;
     double *psi;
 
-    psi = orbit_tem;
-    time1 = my_crtc();
+    time1 = my_crtc ();
 
-    if (flag)
-    {
-        /* Pack psi into smoothing array */
-        ixx = sp1->ixmax - sp1->ixmin + 1;
-        iyy = sp1->iymax - sp1->iymin + 1;
-        izz = sp1->izmax - sp1->izmin + 1;
+    psi = sp1->psiR;
 
-        pack_ptos(sg_orbit, sp1->psiR, ixx, iyy, izz);
-        fill_orbit_borders(sg_orbit, ixx, iyy, izz);
-        app_cir(sg_orbit, psi, ixx, iyy, izz);
+    get_local_kbpsi (sp1, psi, kbpsi_one_state);
 
-    }
-    else
-    {
-        psi = sp1->psiR;
-    }
-
-    get_local_kbpsi(sp1, psi, kbpsi_one_state);
-
-    time2 = my_crtc();
-    rmg_timings(NL_TIME, (time2 - time1));
+    time2 = my_crtc ();
+    rmg_timings (NL_TIME, (time2 - time1));
 
 }
 
@@ -113,7 +97,7 @@ void get_kbpsi(STATE *sp1, double *kbpsi_one_state, unsigned int flag)
 /*
     Get <KB|psi> for one ion and one function psi 
 */
-void get_local_kbpsi(STATE *st1, double *psi, double *kbpsi_one_state)
+void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state)
 {
 
     int incx = 1, stop, ip, idx;
@@ -132,7 +116,7 @@ void get_local_kbpsi(STATE *st1, double *psi, double *kbpsi_one_state)
         for (ip = 0; ip < pct.prj_per_ion[ion]; ip++)
         {
             kbpsi_one_state[ion2 * ct.max_nl + ip]
-                = ct.vel * dot_product_orbit_nl(st1, ion, psi, prjptr);
+                = ct.vel * dot_product_orbit_nl (st1, ion, psi, prjptr);
             prjptr += ct.max_nlpoints;
         }
     }

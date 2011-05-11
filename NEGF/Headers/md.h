@@ -1360,7 +1360,7 @@ void global_sums_int (int *vect, int *length);
 void my_barrier(void);
 int int_sum_all(int isum);
 void matrix_and_diag(STATE *states, STATE *states1, REAL *vxc);
-void get_kbpsi(STATE *sp1, double *kbpsi, unsigned int flag);
+void get_kbpsi(STATE *sp1, double *kbpsi);
 void precond_mg(double *res, double *work1, double *work2, int istate);
 
 void matS_cholesky_real(STATE *states);

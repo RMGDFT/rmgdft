@@ -1364,7 +1364,7 @@ void global_sums_int (int *vect, int *length);
 void my_barrier (void);
 int int_sum_all (int isum);
 void matrix_and_diag (STATE * states, STATE * states1, REAL * vxc, int flag);
-void get_kbpsi (STATE *sp1, double *kbpsi, unsigned int flag);
+void get_kbpsi (STATE *sp1, double *kbpsi);
 void precond_mg (double *res, double *work1, double *work2, int istate);
 
 void matS_cholesky_real (STATE * states);
@@ -1373,7 +1373,7 @@ void print_matrix (double *b, int n, int ldb);
 void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
-void get_all_kbpsi (STATE * states1, STATE * states, int firstflag);
+void get_all_kbpsi (STATE * states1, STATE * states);
 void get_Hvnlij (double *Aij);
 void genvlocpsi (REAL * psi, int st1, REAL * work1, REAL * vtot_global,
         STATE * states);

@@ -69,7 +69,7 @@ void run(STATE * states, STATE * states1)
     init(vh, rho, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 
     if (ct.runflag == 1)
-        get_all_kbpsi(states, states, FALSE);
+        get_all_kbpsi(states, states);
 
     my_barrier();
 
