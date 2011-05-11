@@ -36,14 +36,12 @@ void get_all_kbpsi (STATE *states1, STATE * states)
     for (idx = 0; idx < size; idx++)
     {
         kbpsi[idx] = 0.;
-        kbBpsi[idx] = 0.;
     }
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         idx = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
         get_kbpsi (&states1[st1], &kbpsi[idx], 0);
-        get_kbpsi (&states[st1], &kbBpsi[idx], 1);
     }
 
 /*  print_sum(size, kbpsi, "kbpsi sum get_all_kbpsi "); 

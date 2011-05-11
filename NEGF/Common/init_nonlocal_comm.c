@@ -68,8 +68,7 @@ void init_nonlocal_comm (void)
     /* allocate mem for kbpsi <psi|kb>  */
 
     my_malloc_init( kbpsi, 6 * size, REAL );
-    kbBpsi = kbpsi + size;
-    kbBpsi_comm = kbBpsi + size;
+    kbBpsi_comm = kbpsi + size;
     partial_kbpsi_x = kbBpsi_comm + size;
     partial_kbpsi_y = partial_kbpsi_x + size;
     partial_kbpsi_z = partial_kbpsi_y + size;

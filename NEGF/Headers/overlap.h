@@ -63,7 +63,7 @@ ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_nl;
 ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc; 
 
 REAL *rho_global;
-REAL *kbpsi, *kbBpsi, *kbBpsi_comm;
+REAL *kbpsi, *kbBpsi_comm;
 REAL *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z; 
 int num_nonlocal_ion[1024];
 int *ionidx_allproc;
