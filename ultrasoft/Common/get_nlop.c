@@ -29,6 +29,7 @@ void get_nlop (void)
 
     /*Reset number of nonlocal ions */
     pct.num_nonloc_ions = 0;
+    pct.num_owned_ions = 0;
     pct.num_nonloc_pes = 0;
 
 
@@ -226,13 +227,34 @@ void get_nlop (void)
 	/*Add ion into list of nonlocal ions if it has overlap with given processor */
 	if (icount)
 	{
-	    if (pct.num_nonloc_ions >= MAX_NONLOC_IONS) error_handler ("Too many nonlocal ions, pct.nonloc_ions_list will overflow");
+	    if (pct.num_nonloc_ions >= MAX_NONLOC_IONS) 
+		error_handler ("Too many nonlocal ions, pct.nonloc_ions_list will overflow");
+	    
 	    pct.nonloc_ions_list[pct.num_nonloc_ions] = ion;
 	    pct.num_nonloc_ions++;
+
+	    /*See if this processor owns current ion*/
+	    if (claim_ion(pct.gridpe, iptr, PX0_GRID, PY0_GRID, PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid))
+	    {
+		if (pct.num_owned_ions >= MAX_NONLOC_IONS) 
+		    error_handler ("Too many owned ions, pct.owned_ions_list will overflow");
+		
+		pct.owned_ions_list[pct.num_owned_ions] = ion;
+		pct.num_owned_ions++;
+		//dprintf("I own ion %d", ion);
+	    }
+	    
+
+
 	}
 #endif
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
+
+    /*Make sure that ownership of ions is properly established
+     * This conditional can be removed if it is found that claim_ions works reliably*/
+    if (real_sum_all(pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
+	error_handler("Problem with claimimg ions, %d ions claimed, but num_ions is %d", real_sum_all(pct.num_owned_ions, pct.grid_comm), ct.num_ions);
 
     printf("\n PE %d: Number of nonlocal ions is %d", pct.gridpe, pct.num_nonloc_ions);
 
