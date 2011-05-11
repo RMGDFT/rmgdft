@@ -115,7 +115,7 @@ void iiforce (void)
     }                           /* end for */
 
     time2 = my_crtc();
-    md_timings(IIFORCE_TIME, time2 - time1);
+    rmg_timings(IIFORCE_TIME, time2 - time1);
 
 }                               /* end iiforce */
 

@@ -73,7 +73,7 @@ void app_cir_0(REAL * a, REAL * b, int dimx, int dimy, int dimz)
 
 #if MD_TIMERS
     time2 = my_crtc();
-    rmg_timings(APPCIR_TIME, (time2 - time1), 0);
+    rmg_timings(APPCIR_TIME, (time2 - time1));
 #endif
 
 }                               /* end app_cir */

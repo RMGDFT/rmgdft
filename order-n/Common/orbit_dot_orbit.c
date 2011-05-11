@@ -145,7 +145,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, REAL *Aij, REAL *Bij)
     }
 
     time1 = my_crtc() - time1;
-    rmg_timings(ORBIT_DOT_ORBIT, time1, 0);
+    rmg_timings(ORBIT_DOT_ORBIT, time1);
 
     my_free(psi3);
     my_free(mr_recv);

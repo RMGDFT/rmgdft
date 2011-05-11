@@ -51,6 +51,6 @@ void nlforce_par_rho(REAL * par_gamma_x, REAL * par_gamma_y, REAL * par_gamma_z,
     }
 
     time2 = my_crtc();
-    md_timings(NLFORCE_PAR_RHO, time2 - time1);
+    rmg_timings(NLFORCE_PAR_RHO, time2 - time1);
 
 }

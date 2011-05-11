@@ -224,7 +224,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
      */
 
     time2 = my_crtc ();
-    md_timings (SCF_TIME, time2 - time1);
+    rmg_timings (SCF_TIME, time2 - time1);
 
 
 

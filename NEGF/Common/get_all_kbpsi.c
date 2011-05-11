@@ -66,7 +66,7 @@ void get_all_kbpsi (STATE *states1, STATE * states)
 */
 
     time2 = my_crtc ();
-    md_timings (NL_TIME, (time2 - time1));
+    rmg_timings (NL_TIME, (time2 - time1));
 
 }
 
@@ -108,7 +108,7 @@ void get_kbpsi (STATE *sp1, double *kbpsi_one_state, unsigned int flag)
     get_local_kbpsi (sp1, psi, kbpsi_one_state);
 
     time2 = my_crtc ();
-    md_timings (NL_TIME, (time2 - time1));
+    rmg_timings (NL_TIME, (time2 - time1));
 
 }
 

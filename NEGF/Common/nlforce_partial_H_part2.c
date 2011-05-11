@@ -86,7 +86,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, REAL *GHG, REAL *
      }/* end for st1 */ 
 
     time2 = my_crtc();
-    md_timings(PAR_D_VNUC_LOC, (time2-time1));
+    rmg_timings(PAR_D_VNUC_LOC, (time2-time1));
 
     time3 = my_crtc();
     psi2 = orbit_tem;
@@ -240,6 +240,6 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, REAL *GHG, REAL *
     }
 
     time4 = my_crtc();
-    md_timings(PAR_D_VNUC_COMM, (time4-time3));
+    rmg_timings(PAR_D_VNUC_COMM, (time4-time3));
 
 }

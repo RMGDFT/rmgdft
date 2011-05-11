@@ -123,7 +123,7 @@ void orbit_dot_orbit (STATE * states, STATE * states1, REAL * work_matrix)
     }
 
     time1 = my_crtc () - time1;
-    md_timings (ORBIT_DOT_ORBIT, time1);
+    rmg_timings (ORBIT_DOT_ORBIT, time1);
 
 
 #if     DEBUG

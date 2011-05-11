@@ -70,7 +70,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
     }                           /* end for st1 = .. */
 
     time4 = my_crtc ();
-    md_timings (H_psi_TIME, (time4 - time3));
+    rmg_timings (H_psi_TIME, (time4 - time3));
 
     /* calculate the < states.psiR | states1.psiR>  */
 
@@ -81,7 +81,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
     orbit_dot_orbit (states, states1, work_matrix);
     my_barrier ();
     time4 = my_crtc ();
-    md_timings (ORBIT_DOT_ORBIT_H, (time4 - time3));
+    rmg_timings (ORBIT_DOT_ORBIT_H, (time4 - time3));
 
     time3 = my_crtc ();
 
@@ -89,7 +89,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
     get_Hvnlij (Aij);
 
     time4 = my_crtc ();
-    md_timings (get_Hnl_TIME, (time4 - time3));
+    rmg_timings (get_Hnl_TIME, (time4 - time3));
 
 
     /* symmetrize the Aij */
@@ -115,7 +115,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
 
     time2 = my_crtc ();
 
-    md_timings (GET_Hij_TIME, (time2 - time1));
+    rmg_timings (GET_Hij_TIME, (time2 - time1));
 
     my_free(vtot_global);
 

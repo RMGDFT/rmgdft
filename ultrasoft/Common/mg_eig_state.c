@@ -108,7 +108,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 
 #if MD_TIMERS
-    rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1), 0);
+    rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
 #endif
 
     /* Smoothing cycles */
@@ -122,7 +122,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         //pack_ptos (sg_psi, tmp_psi, dimx, dimy, dimz);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -133,7 +133,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         diag = app_cil_sixth (tmp_psi, work2, dimx, dimy, dimz, hxgrid, hygrid, hzgrid);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIL_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_APPCIL_TIME, (my_crtc () - time1));
 #endif
 
         diag = -1.0 / diag;
@@ -144,7 +144,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /*Apply Mehrstellen right hand operators */
         //pack_ptos (sg_psi, ns, dimx, dimy, dimz);
 #if MD_TIMERS
-        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -153,7 +153,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         app_cir_sixth (ns, res, dimx, dimy, dimz);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -163,7 +163,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         genvpsi (tmp_psi, sg_twovpsi, vtot_psi, nv, NULL, 0.0, dimx, dimy, dimz);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_GENVPSI_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_GENVPSI_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -173,7 +173,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         app_cir_sixth (sg_twovpsi, work1, dimx, dimy, dimz);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
 
         t1 = -ONE;
@@ -226,7 +226,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         }
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_EIGVALUE_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_EIGVALUE_TIME, (my_crtc () - time1));
 #endif
 
         /* Now either smooth the wavefunction or do a multigrid cycle */
@@ -251,7 +251,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors);
 
 #if MD_TIMERS
-            rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 #endif
 
             /* Smooth it once and store the smoothed residual in work1 */
@@ -262,7 +262,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
             app_smooth ((S0_GRID *) sg_psi, (S0_GRID *) work1, t1);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -274,7 +274,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -289,7 +289,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             pack_stop_axpy (sg_twovpsi, tmp_psi, t1, dimx, dimy, dimz);
 
 #if MD_TIMERS
-            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
         }
@@ -406,7 +406,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 
 #if MD_TIMERS
-    rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1), 0);
+    rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -421,7 +421,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /*pack_ptos (sg_psiR, tmp_psiR, dimx, dimy, dimz);
         pack_ptos (sg_psiI, tmp_psiI, dimx, dimy, dimz);*/
 #if MD_TIMERS
-        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -439,7 +439,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
                               hxgrid, hygrid, hzgrid);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIL_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_APPCIL_TIME, (my_crtc () - time1));
 #endif
 
         diag = -1.0 / diag;
@@ -471,7 +471,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /*pack_ptos (sg_psiR, nsR, dimx, dimy, dimz);
         pack_ptos (sg_psiI, nsI, dimx, dimy, dimz);*/
 #if MD_TIMERS
-        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -483,7 +483,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         app_cir_sixth (nsI, resI, dimx, dimy, dimz);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -493,7 +493,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         genvpsi (tmp_psiR, sg_twovpsiR, vtot_psi, nvR, kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
         genvpsi (tmp_psiI, sg_twovpsiI, vtot_psi, nvI, kdi, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
 #if MD_TIMERS
-        rmg_timings (MG_EIG_GENVPSI_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_GENVPSI_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -506,7 +506,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         app_cir_sixth (sg_twovpsiI, work1I, dimx, dimy, dimz);
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -553,7 +553,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         }
 
 #if MD_TIMERS
-        rmg_timings (MG_EIG_EIGVALUE_TIME, (my_crtc () - time1), 0);
+        rmg_timings (MG_EIG_EIGVALUE_TIME, (my_crtc () - time1));
 #endif
 
         /* Next we have to generate the residual vector for smoothing */
@@ -590,12 +590,12 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
             pack_ptos (sg_psiR, resR, dimx, dimy, dimz);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
             time1 = my_crtc ();
             trade_images (sg_psiR, dimx, dimy, dimz, pct.neighbors);
-            rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 
             /* Smooth it once and store the smoothed residual in work1 */
             t1 = 145.0;
@@ -605,7 +605,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             app_smooth ((S0_GRID *) sg_psiR, (S0_GRID *) work1R, t1);
 
 #if MD_TIMERS
-            rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -617,7 +617,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -635,7 +635,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
             pack_ptos (sg_psiI, resI, dimx, dimy, dimz);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
 #if MD_TIMERS
@@ -643,7 +643,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
             trade_images (sg_psiI, dimx, dimy, dimz, pct.neighbors);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 #endif
 
             /* Smooth it once and store the smoothed residual in work1 */
@@ -654,7 +654,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
             app_smooth ((S0_GRID *) sg_psiI, (S0_GRID *) work1I, t1);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -666,7 +666,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif
 
 
@@ -679,7 +679,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
             pack_stop_axpy (sg_twovpsiI, tmp_psiI, t1, dimx, dimy, dimz);
 #if MD_TIMERS
-            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1), 0);
+            rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
 #endif
 
 

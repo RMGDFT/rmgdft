@@ -228,6 +228,6 @@ REAL dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2)
     }                           /* end zlength2 */
 
     time1 = my_crtc () - time1;
-    md_timings (DOT_PRODUCT, time1);
+    rmg_timings (DOT_PRODUCT, time1);
     return result;
 }

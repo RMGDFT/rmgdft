@@ -62,7 +62,7 @@ void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc,
 
 
     time2 = my_crtc();
-    rmg_timings(GET_TE_TIME, (time2 - time1), 0);
+    rmg_timings(GET_TE_TIME, (time2 - time1));
 
 
 }                               /* end get_te */

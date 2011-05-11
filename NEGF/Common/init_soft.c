@@ -252,7 +252,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 
     time2 = my_crtc ();
-    md_timings (INIT_SOFT_TIME, time2 - time1);
+    rmg_timings (INIT_SOFT_TIME, time2 - time1);
 
 
 

@@ -238,7 +238,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 
 
     time2 = my_crtc ();
-    md_timings (QUENCH_TIME, time2 - time1);
+    rmg_timings (QUENCH_TIME, time2 - time1);
 
 }                               /* end quench */
 

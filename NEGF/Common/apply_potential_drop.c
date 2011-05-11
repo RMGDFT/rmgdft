@@ -413,7 +413,7 @@ void apply_potential_drop (REAL *vbias)
     my_barrier ();
 
     time2 = my_crtc ();
-    md_timings (SCF_TIME, time2 - time1);
+    rmg_timings (SCF_TIME, time2 - time1);
 
 }                              
 

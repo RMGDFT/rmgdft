@@ -123,7 +123,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
             /* Transfer vh into smoothing grid */
             pack_ptos(sg_rho, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-            trade_images(sg_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, &pct.neighbors[0]);
             /* Apply operator */
             diag =
                 app_cil(sg_rho, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid,
@@ -231,7 +230,7 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     my_free(mgrhsarr);
 
     time2 = my_crtc();
-    rmg_timings(HARTREE_TIME, (time2 - time1), 0);
+    rmg_timings(HARTREE_TIME, (time2 - time1));
 
 }                               /* end get_vh */
 

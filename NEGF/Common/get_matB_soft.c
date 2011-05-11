@@ -72,14 +72,14 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
 
 
     time4 = my_crtc ();
-    md_timings (ORBIT_DOT_ORBIT_O, (time4 - time3));
+    rmg_timings (ORBIT_DOT_ORBIT_O, (time4 - time3));
 
 
         /** Add sum_n,m,I(q_n,m * <phi|beta_n,I> * <beta_m,I|phi>) **/
     get_matB_qnm (mat);         /* shuchun wang */
 
     time3 = my_crtc ();
-    md_timings (matB_qnm_TIME, (time3 - time4));
+    rmg_timings (matB_qnm_TIME, (time3 - time4));
 
 
     /* Sum over all processors */
@@ -106,7 +106,7 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
     }
 
     time2 = my_crtc ();
-    md_timings (GET_MATB_SOFT_TIME, (time2 - time1));
+    rmg_timings (GET_MATB_SOFT_TIME, (time2 - time1));
 
 
 }

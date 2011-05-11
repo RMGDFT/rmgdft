@@ -83,7 +83,7 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc,
 #endif
 
     time2 = my_crtc ();
-    md_timings (FORCE_TIME, time2 - time1);
+    rmg_timings (FORCE_TIME, time2 - time1);
 
 } 
 

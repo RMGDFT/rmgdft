@@ -126,8 +126,8 @@ void get_cholesky_real(double *matS)
     if (pct.gridpe == 0)
     {
         time2 = my_crtc();
-        rmg_timings(COND_S_TIME, (time2 - time1), 0);
-        rmg_timings(CHOLESKY_TIME, (time2 - time3), 0);
+        rmg_timings(COND_S_TIME, (time2 - time1));
+        rmg_timings(CHOLESKY_TIME, (time2 - time3));
     }
 
 }

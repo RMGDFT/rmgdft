@@ -371,7 +371,7 @@ REAL app_cil (REAL * a, REAL * b, int dimx, int dimy, int dimz,
 
 #if MD_TIMERS
     time2 = my_crtc ();
-    md_timings (APPCIL_TIME, (time2 - time1));
+    rmg_timings (APPCIL_TIME, (time2 - time1));
 #endif
 
     return cc;

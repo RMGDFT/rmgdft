@@ -67,7 +67,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
     }
     time4 = my_crtc();
-    rmg_timings(MG_TIME, time4 - time3, 0);
+    rmg_timings(MG_TIME, time4 - time3);
 
 
 
@@ -80,7 +80,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
             time3 = my_crtc();
             matrix_and_diag(ct.kp[kpt1].kstate, states1, vtot_c, flag);
             time4 = my_crtc();
-            rmg_timings(MATDIAG_TIME, time4 - time3, 0);
+            rmg_timings(MATDIAG_TIME, time4 - time3);
         }
     }
 
@@ -111,14 +111,14 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     time3 = my_crtc();
     update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, CONVERGENCE, states);
     time4 = my_crtc();
-    rmg_timings(UPDATEPOT_TIME, time4 - time3, 0);
+    rmg_timings(UPDATEPOT_TIME, time4 - time3);
 
 
     get_te(rho, rhoc, rhocore, vh, vxc, states);
 
 
     time2 = my_crtc();
-    rmg_timings(SCF_TIME, time2 - time1, 0);
+    rmg_timings(SCF_TIME, time2 - time1);
 
 }                               /* end scf */
 

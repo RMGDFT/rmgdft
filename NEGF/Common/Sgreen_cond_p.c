@@ -72,7 +72,7 @@ void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma
 
 
     time2 = my_crtc ();
-    md_timings (matrix_inverse_cond_TIME, (time2 - time1));
+    rmg_timings (matrix_inverse_cond_TIME, (time2 - time1));
 
 
 

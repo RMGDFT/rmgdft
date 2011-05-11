@@ -59,6 +59,6 @@ void nlforce_par_rho(REAL * par_gamma_x, REAL * par_gamma_y, REAL * par_gamma_z,
     iptr->force[ct.fpt[0]][2] += forces[2];
 
     time2 = my_crtc();
-    rmg_timings(NLFORCE_PAR_RHO, time2 - time1, 0);
+    rmg_timings(NLFORCE_PAR_RHO, time2 - time1);
 
 }

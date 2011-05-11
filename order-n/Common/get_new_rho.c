@@ -266,12 +266,12 @@ void get_new_rho(STATE * states, double *rho)
    my_free(mr_recv);
    my_barrier();
    time3 = my_crtc();
-   rmg_timings(RHO_PHI_TIME, time3 - time2, 0);
+   rmg_timings(RHO_PHI_TIME, time3 - time2);
 
    idx = NX_GRID * NY_GRID * NZ_GRID;
    global_sums(rho_global, &idx);
    time2 = my_crtc();
-   rmg_timings(RHO_SUM_TIME, time2 - time3, 0);
+   rmg_timings(RHO_SUM_TIME, time2 - time3);
 
    global_to_distribute(rho_global, rho_temp);
 
@@ -280,12 +280,12 @@ void get_new_rho(STATE * states, double *rho)
    my_free(rho_temp);
 
    time3 = my_crtc();
-   rmg_timings(RHO_CTOF_TIME, time3 - time2, 0);
+   rmg_timings(RHO_CTOF_TIME, time3 - time2);
 
    rho_augmented(rho, work_matrix_row);
 
    time2 = my_crtc();
-   rmg_timings(RHO_AUG_TIME, time2 - time3, 0);
+   rmg_timings(RHO_AUG_TIME, time2 - time3);
 
    tcharge = 0.0;
    for (idx = 0; idx < FP0_BASIS; idx++)
@@ -302,7 +302,7 @@ void get_new_rho(STATE * states, double *rho)
 
 
    time1 = my_crtc() - time1;
-   rmg_timings(GET_NEW_RHO, time1, 0);
+   rmg_timings(GET_NEW_RHO, time1);
 
 #if  	DEBUG
    print_sum_square(P0_BASIS, rho, "rho_sum_sqare in the end of get_new_rho  ");

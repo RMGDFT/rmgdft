@@ -298,7 +298,7 @@ void nlccforce (REAL * rho, REAL * vxc)
     my_free (Aiz);
 
     time2 = my_crtc ();
-    md_timings (NLCCFORCE_TIME, time2 - time1);
+    rmg_timings (NLCCFORCE_TIME, time2 - time1);
 
 }
 

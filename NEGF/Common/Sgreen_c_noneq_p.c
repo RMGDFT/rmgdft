@@ -88,7 +88,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
 
 
     time2 = my_crtc ();
-    md_timings (matrix_inverse_lr_TIME, (time2 - time1));
+    rmg_timings (matrix_inverse_lr_TIME, (time2 - time1));
 
 
     my_free( H_tri );

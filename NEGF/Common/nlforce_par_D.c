@@ -101,7 +101,7 @@ void nlforce_par_D (complex double *sigma_all, STATE *states, STATE *states1, RE
     nlforce_partial_H_part2 (states, states1, work_matrix, forces);
 
     time4 = my_crtc ();
-    md_timings (PAR_D_VNUC, (time4 - time3));
+    rmg_timings (PAR_D_VNUC, (time4 - time3));
 
     my_free(par_Hij_tri);
     my_free(par_Sij_tri);
@@ -109,6 +109,6 @@ void nlforce_par_D (complex double *sigma_all, STATE *states, STATE *states1, RE
     my_free(GHG_en_tri);
 
     time2 = my_crtc ();
-    md_timings (NLFORCE_PAR_D, (time2 - time1));
+    rmg_timings (NLFORCE_PAR_D, (time2 - time1));
 
 }

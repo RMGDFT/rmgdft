@@ -150,7 +150,7 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
     my_free(kbpsi_comm_x);
 
     time2 = my_crtc ();
-    md_timings (PARTIAL_MAT_NM, time2 - time1);
+    rmg_timings (PARTIAL_MAT_NM, time2 - time1);
 
 
 }

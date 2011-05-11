@@ -185,7 +185,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         my_calloc (distCij, dist_stop, REAL);
         my_calloc (distIij, dist_stop, REAL);
     }
-    rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2, 0);
+    rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
 
 
@@ -209,7 +209,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         subdiag_app_A (states, tmp_arrayR, tmp_array2R, vtot_eig);
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_APP_A, time3 - time2, 0);
+        rmg_timings (DIAG_APP_A, time3 - time2);
 
 
         /*Global matrix will hold global A matrix */
@@ -218,7 +218,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DGEMM, time2 - time3, 0);
+        rmg_timings (DIAG_DGEMM, time2 - time3);
 
 
         /*Sum matrix over all processors */
@@ -226,7 +226,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time3 - time2, 0);
+        rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
 
 
         /*Distribute global matrix A */
@@ -234,7 +234,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             distribute_mat (pct.desca, global_matrix, distAij, &num_states);
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time3, 0);
+        rmg_timings (DIAG_DISTMAT, time2 - time3);
 
 
 
@@ -249,21 +249,21 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_APP_S, time3 - time2, 0);
+        rmg_timings (DIAG_APP_S, time3 - time2);
 
         alpha = ct.vel;
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DGEMM, time2 - time3, 0);
+        rmg_timings (DIAG_DGEMM, time2 - time3);
 
 
         /*Sum matrix over all processors */
         global_sums (global_matrix, &stop, pct.grid_comm);
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time3 - time2, 0);
+        rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
 
 
         /*Distribute global matrix A */
@@ -271,7 +271,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             distribute_mat (pct.desca, global_matrix, distSij, &num_states);
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time3, 0);
+        rmg_timings (DIAG_DISTMAT, time2 - time3);
 
 
 
@@ -285,14 +285,14 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         subdiag_app_B (states, tmp_array2R);
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_APP_B, time3 - time2, 0);
+        rmg_timings (DIAG_APP_B, time3 - time2);
 
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
 
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DGEMM, time2 - time3, 0);
+        rmg_timings (DIAG_DGEMM, time2 - time3);
 
 
 
@@ -300,7 +300,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         global_sums (global_matrix, &stop, pct.grid_comm);
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time3 - time2, 0);
+        rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
 
 
         /*Distribute global matrix A */
@@ -308,7 +308,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             distribute_mat (pct.desca, global_matrix, distBij, &num_states);
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time3, 0);
+        rmg_timings (DIAG_DISTMAT, time2 - time3);
 
     }
 
@@ -337,7 +337,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     if (pct.scalapack_pe)
         distribute_mat (pct.desca, global_matrix, distCij, &num_states);
 
-    rmg_timings (DIAG_DISTMAT, my_crtc () - time2, 0);
+    rmg_timings (DIAG_DISTMAT, my_crtc () - time2);
 
 
 
@@ -544,7 +544,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             global_matrix[idx] = 0.0;
 
 
-    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2), 0);
+    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
 
 
@@ -554,7 +554,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     global_sums (global_matrix, &stop, pct.grid_comm);
 
-    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3, 0);
+    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
 
 
@@ -571,7 +571,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         for (st1 = 0; st1 < ct.num_states; st1++)
             states[st1].eig[0] = eigs[st1];
 
-        rmg_timings (DIAG_BCAST_EIGS, (my_crtc () - time2), 0);
+        rmg_timings (DIAG_BCAST_EIGS, (my_crtc () - time2));
     }
 
 
@@ -587,7 +587,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #endif
 
 
-    rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2), 0);
+    rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
 
 
 
@@ -608,7 +608,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 
-    rmg_timings (DIAG_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 }
 
@@ -651,7 +651,7 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vt
         /* Apply non-local operator to psi and store in work2 */
         app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, ct.ions[0].newsintR, NULL, sp->istate, kidx);
 #    if MD_TIMERS
-        rmg_timings (DIAG_NL_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -662,7 +662,7 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vt
         /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
         genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -672,7 +672,7 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vt
         /* B operating on 2*V*psi stored in work1 */
         app_cir_sixth (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -688,7 +688,7 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vt
                        sp->hygrid, sp->hzgrid);
 
 #    if MD_TIMERS
-        rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
         for (idx = 0; idx < P0_BASIS; idx++)
@@ -741,7 +741,7 @@ static void subdiag_app_B (STATE * states, REAL * b_psi)
         /*B operating on S|psi> and store in work3 */
         app_cir_sixth (work2, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #    endif
 
 
@@ -832,7 +832,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         /* Apply non-local operator to psi and store in work2 */
         app_nls (tmp_psiR, tmp_psiI, work2R, work2I, s_psiR, s_psiI, ct.ions[0].newsintR, ct.ions[0].newsintI, FALSE, kidx);
 #    if MD_TIMERS
-        rmg_timings (DIAG_NL_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -858,7 +858,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         genvpsi (tmp_psiR, sg_twovpsiR, vtot_eig, work2R, kdr, ct.kp[sp->kidx].kmag, PX0_GRID,
                  PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -876,7 +876,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         genvpsi (tmp_psiI, sg_twovpsiI, vtot_eig, work2I, kdr, ct.kp[sp->kidx].kmag, PX0_GRID,
                  PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -889,7 +889,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         app_cir_sixth (sg_twovpsiR, work1R, PX0_GRID, PY0_GRID, PZ0_GRID);
         app_cir_sixth (sg_twovpsiI, work1I, PX0_GRID, PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -904,7 +904,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
                        sp->hygrid, sp->hzgrid);
 
 #    if MD_TIMERS
-        rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
         for (idx = 0; idx < P0_BASIS; idx++)
@@ -969,7 +969,7 @@ void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI)
         app_cir_sixth (work2R, work1R, PX0_GRID, PY0_GRID, PZ0_GRID);
         app_cir_sixth (work2I, work1I, PX0_GRID, PY0_GRID, PZ0_GRID);
 #    if MD_TIMERS
-        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1), 0);
+        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #    endif
 
 

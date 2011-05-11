@@ -86,7 +86,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
  
     /* Generate exchange-correlation potential */
     get_vxc (rho, rho_oppo, rhocore, vxc);
-    rmg_timings (SCF_XC_TIME, (my_crtc () - time1), 0);
+    rmg_timings (SCF_XC_TIME, (my_crtc () - time1));
 
     if (ct.spin_flag)        
     {
@@ -158,7 +158,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         mg_eig_state (&states[st1], 0, vtot_psi);
 
     time2 = my_crtc ();
-    rmg_timings (EIG_TIME, (time2 - time1), 0);
+    rmg_timings (EIG_TIME, (time2 - time1));
 
     /*wavefunctions have changed, projectors have to be recalculated */
     betaxpsi (states);
@@ -271,7 +271,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
     
     time2 = my_crtc ();
-    rmg_timings (RHO_TIME, (time2 - time1), 0);
+    rmg_timings (RHO_TIME, (time2 - time1));
 
 
     /* If sorting is requested then sort the states. */
@@ -297,7 +297,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     	my_free (rho_tot);
     }
 
-    rmg_timings (SCF_TIME, (my_crtc () - time3), 0);
+    rmg_timings (SCF_TIME, (my_crtc () - time3));
 
 }                               /* end scf */
 

@@ -55,7 +55,7 @@ REAL real_sum_all (REAL x, MPI_Comm comm)
     MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_SUM, comm);
 
 #if MD_TIMERS
-    rmg_timings (REAL_SUM_ALL_TIME, my_crtc () - time0, 0);
+    rmg_timings (REAL_SUM_ALL_TIME, my_crtc () - time0);
 #endif
 
 

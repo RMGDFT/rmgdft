@@ -167,7 +167,7 @@ void initialize(int argc, char **argv)
     my_barrier ();
 
     /* Record the rime it took from the start of run until we hit init */
-    rmg_timings ( PREINIT_TIME, my_crtc () - ct.time0, 0);
+    rmg_timings ( PREINIT_TIME, my_crtc () - ct.time0);
 
     /* Perform any necessary initializations */
     init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
@@ -239,7 +239,7 @@ void run (void)
 
     time2 = my_crtc ();
 
-    rmg_timings (FINISH_TIME, (my_crtc () - time2), 0);
+    rmg_timings (FINISH_TIME, (my_crtc () - time2));
 
 }                               /* end run */
 

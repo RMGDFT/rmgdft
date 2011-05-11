@@ -168,7 +168,7 @@ void app_grad(REAL * f, REAL * wx, REAL * wy, REAL * wz, int dimx, int dimy, int
     my_free(rptr);
 
     time2 = my_crtc();
-    rmg_timings(APPGRAD_TIME, (time2 - time1), 0);
+    rmg_timings(APPGRAD_TIME, (time2 - time1));
 
 
 

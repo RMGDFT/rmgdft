@@ -132,7 +132,7 @@ void app10_del2 (REAL * f, REAL * work, int dimx, int dimy, int dimz, REAL hxgri
 
 #if MD_TIMERS
     time2 = my_crtc ();
-    md_timings (APPCIL_TIME, (time2 - time1));
+    rmg_timings (APPCIL_TIME, (time2 - time1));
 #endif
 
     my_free(dum2);

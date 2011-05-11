@@ -39,7 +39,7 @@
 REAL timings[LAST_TIME];
 
 
-void rmg_timings(int what, REAL time, int tid)
+void rmg_timings(int what, REAL time)
 {
 
     timings[what] += time;

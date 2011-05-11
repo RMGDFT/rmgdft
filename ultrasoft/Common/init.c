@@ -563,7 +563,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     }                           /*end if (ct.domilliken) */
 
 
-    rmg_timings (INIT_TIME, (my_crtc () - time1), 0);
+    rmg_timings (INIT_TIME, (my_crtc () - time1));
 
 
 }                               /* end init */

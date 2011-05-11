@@ -2,7 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
  
-/****f* QMD-MGDFT/md_timings.c *****
+/****f* QMD-MGDFT/rmg_timings.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
  *   Quantum molecular dynamics package.
@@ -37,39 +37,16 @@
 
 REAL timings[LAST_TIME];
 
-void rmg_timings (int what, REAL time, int tid)
+
+void rmg_timings (int what, REAL time)
 {
 
     timings[what] += time;
 
-}                               /* end md_timings */
-
-void md_timings (int what, REAL time)
-{
-
-    timings[what] += time;
-
-}                               /* end md_timings */
+}                               /* end rmg_timings */
 
 
-#if (CRAY_C90)
 
-#include <time.h>
-clock_t clock (void);
-
-REAL my_crtc (void)
-{
-    clock_t i;
-    REAL r;
-
-    i = clock ();
-    r = i * 1.0;
-    return r;
-}
-#endif
-
-
-#if (SGI_ORIGIN || SGI_ORIGIN_MPI || LINUX || LINUX_MPI || CRAY_T3E || AIX || AIX_MPI || SOLARIS || 1)
 
 #include <sys/time.h>
 
@@ -85,7 +62,6 @@ REAL my_crtc (void)
     return val;
 }
 
-#endif
 
 
 

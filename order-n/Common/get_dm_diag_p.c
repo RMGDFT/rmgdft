@@ -117,7 +117,7 @@ void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
         if (myrow == 0 && mycol == 0)
         {
             time2 = my_crtc();
-            rmg_timings(PSSYGST_TIME, (time2 - time1), 0);
+            rmg_timings(PSSYGST_TIME, (time2 - time1));
         }
 
 
@@ -139,7 +139,7 @@ void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
         if (myrow == 0 && mycol == 0)
         {
             time2 = my_crtc();
-            rmg_timings(PSSYEV_TIME, (time2 - time1), 0);
+            rmg_timings(PSSYEV_TIME, (time2 - time1));
         }
 
 
@@ -172,7 +172,7 @@ void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
         if (myrow == 0 && mycol == 0)
         {
             time2 = my_crtc();
-            rmg_timings(PSTRTRS_TIME, (time2 - time1), 0);
+            rmg_timings(PSTRTRS_TIME, (time2 - time1));
         }
 
 
@@ -218,7 +218,7 @@ void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
     if (pct.gridpe == 0)
     {
         time2 = my_crtc();
-        rmg_timings(DIAG_TIME, time2 - time3, 0);
+        rmg_timings(DIAG_TIME, time2 - time3);
     }
 
 

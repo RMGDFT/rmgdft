@@ -397,7 +397,7 @@ void read_pseudo (void)
     /* Set the maximum number of non-local projecters needed */
     ct.max_nl = max_nlprojectors;
 
-    rmg_timings (READ_PSEUDO_TIME, (my_crtc () - time1), 0);
+    rmg_timings (READ_PSEUDO_TIME, (my_crtc () - time1));
 
 }                               /* end read_pseudo */
 

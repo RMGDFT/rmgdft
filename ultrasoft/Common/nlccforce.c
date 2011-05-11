@@ -273,7 +273,7 @@ void nlccforce (REAL * rho, REAL * vxc)
 
 #if MD_TIMERS
     time2 = my_crtc ();
-    rmg_timings (NLCCFORCE_TIME, (time2 - time1), 0);
+    rmg_timings (NLCCFORCE_TIME, (time2 - time1));
 #endif
 
 }                               /* end nlccforce */

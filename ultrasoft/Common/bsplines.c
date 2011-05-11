@@ -2354,7 +2354,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
 
 #if MD_TIMERS
     time1 = my_crtc ();
-    rmg_timings (INTERP_SETUP_TIME, time1 - time, 0);
+    rmg_timings (INTERP_SETUP_TIME, time1 - time);
 #endif
 
     dbs3gd2 (FPX0_GRID, FPY0_GRID, FPZ0_GRID,
@@ -2364,7 +2364,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
 
 
 #if MD_TIMERS
-    rmg_timings (INTERP_EVAL_TIME, my_crtc () - time1, 0);
+    rmg_timings (INTERP_EVAL_TIME, my_crtc () - time1);
 #endif
 
 

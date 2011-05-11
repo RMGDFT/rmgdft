@@ -118,7 +118,7 @@ void get_new_rho (STATE * states, REAL * rho)
 
     } 
 
-    rmg_timings (INTERPOLATION_TIME, my_crtc () - time1, 0);
+    rmg_timings (INTERPOLATION_TIME, my_crtc () - time1);
 
 
     

@@ -135,7 +135,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     for (st1 = 0; st1 < num_states; st1++)
         subdiag1_mpi (st1, states, Aij, Bij, vtot_eig);
 
-    rmg_timings (DIAG_SUBDIAG1_TIME, (my_crtc () - time2), 0);
+    rmg_timings (DIAG_SUBDIAG1_TIME, (my_crtc () - time2));
 
 
     /* Sum A and B overlap matrices over all processors */
@@ -144,7 +144,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     global_sums (Bij, &stop, pct.grid_comm);
     global_sums (Aij, &stop, pct.grid_comm);
 
-    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3, 0);
+    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
 
 
@@ -382,7 +382,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     global_sums (Aij, &stop, pct.grid_comm);
 
-    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3, 0);
+    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
 
 #if 0
@@ -395,7 +395,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #endif
 
 
-    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2), 0);
+    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
     time2 = my_crtc ();
 
 
@@ -403,7 +403,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     subdiag2_mpi (Aij, states->psiR);
 
 
-    rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2), 0);
+    rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
 
 
 
@@ -417,7 +417,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     my_free (vtot_eig);
 
 
-    rmg_timings (DIAG_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 
     /*fflush(NULL);
@@ -477,7 +477,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
 
 
 #    if MD_TIMERS
-    rmg_timings (DIAG_NLS_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_NLS_TIME, (my_crtc () - time1));
 #    endif
 
     /*Pack work3 into smoothing array */
@@ -492,7 +492,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
     app_cir_sixth (work3I, work4I, dimx, dimy, dimz);
 
 #    if MD_TIMERS
-    rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
 
 
@@ -530,7 +530,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
     app_cir_sixth (sg_twovpsiI, work1I, dimx, dimy, dimz);
 
 #    if MD_TIMERS
-    rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
 
 #    if MD_TIMERS
@@ -544,7 +544,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
                    sp->hxgrid, sp->hygrid, sp->hzgrid);
 
 #    if MD_TIMERS
-    rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
     for (idx = 0; idx < sp->pbasis; idx++)
@@ -591,7 +591,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
     /*Bij should be hermitian matrix, this will be enforced later */
 
 #    if MD_TIMERS
-    rmg_timings (DIAG_SUBDIAG1_LOOP_TIME, (my_crtc () - time1), 0);
+    rmg_timings (DIAG_SUBDIAG1_LOOP_TIME, (my_crtc () - time1));
 #    endif
 
     my_free (work4R);

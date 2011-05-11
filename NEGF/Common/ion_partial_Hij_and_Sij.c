@@ -212,7 +212,7 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
     my_free(partial_kbpsi_comm);
 
     time2 = my_crtc ();
-    md_timings (PAR_D_H_AND_S, time2 - time1);
+    rmg_timings (PAR_D_H_AND_S, time2 - time1);
 
 
 }

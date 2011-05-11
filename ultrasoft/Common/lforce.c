@@ -173,7 +173,7 @@ void lforce (REAL * rho, REAL * vh)
 
 #if MD_TIMERS
     time2 = my_crtc ();
-    rmg_timings (LFORCE_TIME, (time2 - time1), 0);
+    rmg_timings (LFORCE_TIME, (time2 - time1));
 #endif
 
 }                               /* end lforce */

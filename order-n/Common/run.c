@@ -100,6 +100,6 @@ void run(STATE * states, STATE * states1)
     my_barrier();
 
     time1 = my_crtc() - time1;
-    rmg_timings(TOTAL_TIME, time1, 0);
+    rmg_timings(TOTAL_TIME, time1);
 
 }

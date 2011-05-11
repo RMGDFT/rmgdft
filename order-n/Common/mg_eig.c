@@ -65,7 +65,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     distribute_to_global(vtot_c, vtot_global);
     time2 = my_crtc();
-    rmg_timings(POTFC_TIME, time2 - time1, 0);
+    rmg_timings(POTFC_TIME, time2 - time1);
 
 
     gamma = get_gamma(vtot_c, states[0].eig);
@@ -90,7 +90,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
     time2 = my_crtc();
-    rmg_timings(THETA_TIME, time2 - time1, 0);
+    rmg_timings(THETA_TIME, time2 - time1);
 
 
     /* calculate  Theta * S * |states[].psiR > and stored in  states1[].psiR 
@@ -117,13 +117,13 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     time2 = my_crtc();
-    rmg_timings(QNMPSI_TIME, time2 - time1, 0);
+    rmg_timings(QNMPSI_TIME, time2 - time1);
 
 
     get_nonortho_res(states_tem, work_matrix_row, states1);
     my_barrier();
     time1 = my_crtc();
-    rmg_timings(NONRES_TIME, time1 - time2, 0);
+    rmg_timings(NONRES_TIME, time1 - time2);
     /* end shuchun wang */
 
 
@@ -206,7 +206,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
     }                           /* end for st1 = .. */
     time2 = my_crtc();
-    rmg_timings(HPSI_TIME, time2 - time1, 0);
+    rmg_timings(HPSI_TIME, time2 - time1);
 
     /*  print_sum(pct.psi_size, states1[ct.state_begin].psiR, "states1 sum "); 
      */
@@ -258,7 +258,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     time2 = my_crtc();
-    rmg_timings(MIXPSI_TIME, time2 - time1, 0);
+    rmg_timings(MIXPSI_TIME, time2 - time1);
 
     mix_steps++;
 
@@ -271,7 +271,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     time2 = my_crtc();
     d1 = time2 - time1;
-    rmg_timings(MG_TIME, d1, 0);
+    rmg_timings(MG_TIME, d1);
 
     firstflag++;
 

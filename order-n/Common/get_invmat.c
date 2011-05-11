@@ -64,5 +64,5 @@ void get_invmat(double *matB)
 
 
     time2 = my_crtc();
-    rmg_timings(INVMATB_TIME, (time2 - time1), 0);
+    rmg_timings(INVMATB_TIME, (time2 - time1));
 }

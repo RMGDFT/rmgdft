@@ -36,34 +36,15 @@
 
 
 
-#ifdef SMP
 
-#  include <pthread.h>
-pthread_mutex_t timer_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-#endif
+REAL timings[LAST_TIME];
 
 
-
-REAL timings[LAST_TIME][MAX_THREADS];
-
-
-void rmg_timings (int what, REAL time, int tid)
+void rmg_timings (int what, REAL time)
 {
 
-#ifdef SMP
 
-    pthread_mutex_lock (&timer_mutex);
-    timings[what][tid] += time;
-    pthread_mutex_unlock (&timer_mutex);
-
-#else
-
-    timings[what][0] += time;
-
-#endif
-
-
+    timings[what] += time;
 }                               /* end rmg_timings */
 
 
@@ -81,21 +62,21 @@ REAL my_crtc (void)
 
 
 #define printf_timing_line1( _title_, _index_ ) printf(_title_ "%12.2f (%5.1f%%)\n", \
-                                                       timings[_index_][0],\
-                                                       timings[_index_][0] / total_time *100.0 );
+                                                       timings[_index_],\
+                                                       timings[_index_] / total_time *100.0 );
 
 
 #define printf_timing_line2( _title_, _index_ ) printf(_title_ "%12.2f (%5.1f%%)    %12.2f\n", \
-                                                       timings[_index_][0],\
-                                                       timings[_index_][0] / total_time *100.0, \
-                                                       timings[_index_][0] / md_steps)
+                                                       timings[_index_],\
+                                                       timings[_index_] / total_time *100.0, \
+                                                       timings[_index_] / md_steps)
 
 
 #define printf_timing_line3( _title_, _index_ ) printf(_title_ "%12.2f (%5.1f%%)    %12.2f     %12.2f\n", \
-                                                       timings[_index_][0],\
-                                                       timings[_index_][0] / total_time *100.0, \
-                                                       timings[_index_][0] / md_steps, \
-                                                       timings[_index_][0] / total_scf_steps)
+                                                       timings[_index_],\
+                                                       timings[_index_] / total_time *100.0, \
+                                                       timings[_index_] / md_steps, \
+                                                       timings[_index_] / total_scf_steps)
 
 
 
@@ -113,7 +94,7 @@ void write_timings (void)
     /*Total time will be time from the start until now */
     total_time = my_crtc () - ct.time0;
 
-    timings[TOTAL_TIME][0] = total_time;
+    timings[TOTAL_TIME] = total_time;
 
 
 
@@ -275,7 +256,7 @@ void reset_timers (void)
     {
         if ((i == TOTAL_TIME) || (i == INIT_TIME))
             continue;
-        timings[i][0] = 0.0;
+        timings[i] = 0.0;
     }
 
 }                               /*end reset_timers */

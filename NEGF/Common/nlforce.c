@@ -106,6 +106,6 @@ void nlforce (REAL * veff, STATE * states, STATE * states1, complex double * sig
     my_free (force);
 
     time2 = my_crtc();
-    md_timings(NLFORCE_TIME, time2 - time1);
+    rmg_timings(NLFORCE_TIME, time2 - time1);
 
 }

@@ -200,7 +200,7 @@ void run (STATE * states, STATE * states1)
 
 
             time1 = my_crtc () - time1;
-            md_timings (TOTAL_TIME, time1);
+            rmg_timings (TOTAL_TIME, time1);
 
 
             if(pct.psi1 != NULL ) my_free( pct.psi1 );

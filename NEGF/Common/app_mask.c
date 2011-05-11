@@ -28,6 +28,6 @@ void app_mask (int istate, double *u, int level)
             u[idx] = 0.;
 
     time2 = my_crtc ();
-    md_timings (MASK_TIME, (time2 - time1));
+    rmg_timings (MASK_TIME, (time2 - time1));
 
 }

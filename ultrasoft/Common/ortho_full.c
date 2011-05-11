@@ -38,7 +38,7 @@ void ortho_full (STATE * states)
 #endif
             norm_psi1_parallel (st1, ist1, kpt);
 #if MD_TIMERS
-            rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2), 0);
+            rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2));
             time2 = my_crtc ();
 #endif
 
@@ -47,7 +47,7 @@ void ortho_full (STATE * states)
                 ortho_get_coeff (st1, &st[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2]);
 
 #if MD_TIMERS
-            rmg_timings (ORTHO_GET_COEFF, (my_crtc () - time2), 0);
+            rmg_timings (ORTHO_GET_COEFF, (my_crtc () - time2));
             time2 = my_crtc ();
 #endif
 
@@ -63,7 +63,7 @@ void ortho_full (STATE * states)
             }
 
 #if MD_TIMERS
-            rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time2), 0);
+            rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time2));
             time2 = my_crtc ();
 #endif
 
@@ -72,7 +72,7 @@ void ortho_full (STATE * states)
                 update_waves (st1, &st[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
 
 #if MD_TIMERS
-            rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2), 0);
+            rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));
 #endif
         }                       /*end for ist1 */
     }                           /*end for kpt */
@@ -81,6 +81,6 @@ void ortho_full (STATE * states)
     my_free (cR);
     my_free (cI);
 
-    rmg_timings (ORTHO_TIME, (my_crtc () - time1), 0);
+    rmg_timings (ORTHO_TIME, (my_crtc () - time1));
 
 }                               /*end ortho_full */

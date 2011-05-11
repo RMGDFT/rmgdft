@@ -62,7 +62,7 @@ void ortho_norm_local (STATE *states)
     }
 
     time2 = my_crtc ();
-    md_timings (ORTHONORM_TIME, (time2 - time1));
+    rmg_timings (ORTHONORM_TIME, (time2 - time1));
 }
 
 

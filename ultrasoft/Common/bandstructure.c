@@ -107,7 +107,7 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
                 mg_eig_state (&states[st1], 0, vtot_psi);
 
             time2 = my_crtc ();
-            rmg_timings (EIG_TIME, (time2 - time1), 0);
+            rmg_timings (EIG_TIME, (time2 - time1));
 
             ortho (states, ik);
 

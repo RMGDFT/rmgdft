@@ -219,7 +219,7 @@ void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
                  int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy,
                  REAL gridhz, int level, int *nb_ids, int max_levels,
                  int *pre_cyc, int *post_cyc, int mu_cyc, REAL step);
-void rmg_timings (int what, REAL time, int tid);
+void rmg_timings (int what, REAL time);
 REAL minimage (ION *ip1, ION *ip2, REAL *xtal_r);
 REAL my_crtc (void);
 FILE *open_xbs_movie (char *filename);

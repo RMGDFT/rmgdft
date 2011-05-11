@@ -149,7 +149,7 @@ void get_Hvnlij(double *Aij)
 
 
     time2 = my_crtc();
-    rmg_timings(NL_TIME, (time2 - time1), 0);
+    rmg_timings(NL_TIME, (time2 - time1));
 
 
 }

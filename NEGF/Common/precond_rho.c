@@ -102,7 +102,7 @@ void precond_rho (double *res)
     my_free(work2);
     time2 = my_crtc ();
     d1 = time2 - time1;
-    md_timings (PRECOND_TIME, d1);
+    rmg_timings (PRECOND_TIME, d1);
 
 
 }

@@ -61,7 +61,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
 
 		
 #if MD_TIMERS
-        rmg_timings (GLOBAL_SUMS_TIME, my_crtc () - time0, 0);
+        rmg_timings (GLOBAL_SUMS_TIME, my_crtc () - time0);
 #endif
         return;
     }
@@ -90,7 +90,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
     my_free (rptr);
 
 #if MD_TIMERS
-    rmg_timings (GLOBAL_SUMS_TIME, my_crtc () - time0, 0);
+    rmg_timings (GLOBAL_SUMS_TIME, my_crtc () - time0);
 #endif
 }                               /* end global_sums */
 

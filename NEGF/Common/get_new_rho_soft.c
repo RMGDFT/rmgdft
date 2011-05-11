@@ -155,7 +155,7 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     my_barrier ();
     time1 = my_crtc () - time1;
-    md_timings (GET_NEW_RHO, time1);
+    rmg_timings (GET_NEW_RHO, time1);
 
 #if  	DEBUG
     print_sum_square (P0_BASIS, rho, "rho_sum_sqare in the end of get_new_rho  ");

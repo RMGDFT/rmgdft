@@ -184,7 +184,7 @@ void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz)
     my_free (rptr);
 
     time2 = my_crtc ();
-    rmg_timings (APPGRAD_TIME, (time2 - time1), 0);
+    rmg_timings (APPGRAD_TIME, (time2 - time1));
 
 
 

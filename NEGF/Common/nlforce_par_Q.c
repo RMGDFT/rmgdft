@@ -51,6 +51,6 @@ void nlforce_par_Q(REAL * rho_nm, int ion, int nh, REAL *forces)
     }
 
     time2 = my_crtc();
-    md_timings(NLFORCE_PAR_Q, time2 - time1);
+    rmg_timings(NLFORCE_PAR_Q, time2 - time1);
 
 }

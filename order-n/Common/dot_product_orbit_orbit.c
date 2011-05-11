@@ -374,6 +374,6 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
     }
 
     time1 = my_crtc() - time1;
-    rmg_timings(DOT_PRODUCT, time1, 0);
+    rmg_timings(DOT_PRODUCT, time1);
 }
 

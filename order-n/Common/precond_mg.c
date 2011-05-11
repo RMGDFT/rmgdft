@@ -104,7 +104,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
     time2 = my_crtc();
     d1 = time2 - time1;
-    rmg_timings(PRECOND_TIME, d1, 0);
+    rmg_timings(PRECOND_TIME, d1);
 
 
 }

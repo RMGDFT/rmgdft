@@ -76,6 +76,6 @@ void get_all_partial_kbpsi(STATE * states)
     }
 
     time2 = my_crtc();
-    rmg_timings(PARTIAL_KBPSI, time2 - time1, 0);
+    rmg_timings(PARTIAL_KBPSI, time2 - time1);
 
 }

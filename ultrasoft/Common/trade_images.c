@@ -166,7 +166,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
 #  if MD_TIMERS
     time2 = my_crtc ();
-    rmg_timings (IMAGE_TIME, (time2 - time1), 0);
+    rmg_timings (IMAGE_TIME, (time2 - time1));
 #  endif
 
 }
@@ -244,7 +244,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
 #  if MD_TIMERS
     time2 = my_crtc ();
-    rmg_timings (IMAGE_TIME, (time2 - time1), 0);
+    rmg_timings (IMAGE_TIME, (time2 - time1));
 #  endif
 
 }                               /* end trade_images */

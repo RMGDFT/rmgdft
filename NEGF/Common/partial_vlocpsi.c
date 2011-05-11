@@ -168,6 +168,6 @@ void partial_vlocpsi (STATE st1, int ion2, REAL * psi, REAL * prjptr, REAL *vlps
     }                           /* end for ix = xlow2 */
 
     time2 = my_crtc ();
-    md_timings (PAR_VLOCPSI, (time2 - time1));
+    rmg_timings (PAR_VLOCPSI, (time2 - time1));
 
 }

@@ -676,6 +676,6 @@ void read_control (void)
     /* Clean up malloc'ed memory */
     my_free (tptr);
     
-    rmg_timings (READ_CONTROL_TIME, (my_crtc () - time1), 0);
+    rmg_timings (READ_CONTROL_TIME, (my_crtc () - time1));
 
 }                               /* end read_control */

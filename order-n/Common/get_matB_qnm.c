@@ -142,7 +142,7 @@ void get_matB_qnm(double *Aij)
 
 
     time2 = my_crtc();
-    rmg_timings(matB_QNM, (time2 - time1), 0);
+    rmg_timings(matB_QNM, (time2 - time1));
 
 
 }

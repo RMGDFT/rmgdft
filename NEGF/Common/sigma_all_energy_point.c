@@ -272,7 +272,7 @@ void sigma_all_energy_point (complex double * sigma_all)
     my_free(ch10);
 
     time2 = my_crtc ();
-    md_timings (SIGMA_ALL_TIME, (time2 - time1));
+    rmg_timings (SIGMA_ALL_TIME, (time2 - time1));
 
 
 }

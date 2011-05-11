@@ -1228,7 +1228,7 @@ void symforce(void);
 void lforce(REAL *rho, REAL *vh);
 void nlccforce(REAL *rho, REAL *vxc);
 void cforce(REAL *rho, REAL *vh);
-void md_timings(int what, REAL time);
+void rmg_timings(int what, REAL time);
 void mg_eig_state(STATE *states, int tid, REAL *vtot);
 REAL minimage(ION *ip1, ION *ip2, REAL *xtal_r);
 REAL my_crtc(void);

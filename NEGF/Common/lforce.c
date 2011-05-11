@@ -210,7 +210,7 @@ void lforce (REAL * rho, REAL * vh)
     my_free (Aiz);
 
     time2 = my_crtc ();
-    md_timings (LFORCE_TIME, time2 - time1);
+    rmg_timings (LFORCE_TIME, time2 - time1);
 
 }
 

@@ -307,7 +307,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     }
 
     time2 = my_crtc();
-    rmg_timings(INIT_TIME, (time2 - time1), 0);
+    rmg_timings(INIT_TIME, (time2 - time1));
     my_barrier();
     if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
 

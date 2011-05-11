@@ -55,7 +55,7 @@ void matrix_and_diag(STATE * states, STATE * states1, REAL * vtot_c, int flag)
     get_HS(states, states1, vtot_c, Hij, matB);
 
     time2 = my_crtc();
-    rmg_timings(HIJ_TIME, time2 - time1, 0);
+    rmg_timings(HIJ_TIME, time2 - time1);
 
 
     get_cholesky_real(matB);

@@ -121,7 +121,7 @@ void iiforce (void)
 
 #if MD_TIMERS
     time2 = my_crtc ();
-    rmg_timings (IIFORCE_TIME, (time2 - time1), 0);
+    rmg_timings (IIFORCE_TIME, (time2 - time1));
 #endif
 
 }                               /* end iiforce */

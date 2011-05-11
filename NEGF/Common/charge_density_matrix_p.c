@@ -98,7 +98,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         time5 = my_crtc ();
         comm_sums (lcr[iprobe].density_matrix_tri, &ntot, COMM_EN1);
         time6 = my_crtc ();
-        md_timings (MPISUM_EQ_TIME, (time6 - time5));
+        rmg_timings (MPISUM_EQ_TIME, (time6 - time5));
 
 
         if (ct.runflag == 111 | ct.runflag == 112 |ct.runflag ==1121)
@@ -109,7 +109,7 @@ void charge_density_matrix_p (complex double * sigma_all)
     my_free( green_C );
 
     time4 = my_crtc ();
-    md_timings (EQ_PART_TIME, (time4 - time3));
+    rmg_timings (EQ_PART_TIME, (time4 - time3));
 
     /* ======================= Non-equilibrium part ===================== */
 
@@ -187,7 +187,7 @@ void charge_density_matrix_p (complex double * sigma_all)
                         rho_munu_p (rho_mn, green_C_non, sigma, idx_delta); 
 
                         time6 = my_crtc ();
-                        md_timings (RHO_MUNU_TIME, (time6 - time5));
+                        rmg_timings (RHO_MUNU_TIME, (time6 - time5));
 
 
                         for (st1 = 0; st1 < ntot; st1++)
@@ -215,7 +215,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         my_free( sigma );
 
         time3 = my_crtc ();
-        md_timings (NONEQ_PART_TIME, (time3 - time4));
+        rmg_timings (NONEQ_PART_TIME, (time3 - time4));
 
         /* ========== Calculation of the density matrix ============= */		
 
@@ -312,6 +312,6 @@ void charge_density_matrix_p (complex double * sigma_all)
         error_handler ("probe > 4");
 
     time2 = my_crtc ();
-    md_timings (CHARGE_DEN_MAT_TIME, (time2 - time1));
+    rmg_timings (CHARGE_DEN_MAT_TIME, (time2 - time1));
 
 }

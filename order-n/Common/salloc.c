@@ -332,11 +332,7 @@ void *salloc( size_t nobj, size_t size1,
     salloc_ncalls ++;
     salloc_time += time;
 
-#  if NEGF1    
     rmg_timings( ALLOC_TIME, time);
-#  elif REAL_SPACE || ORDER_N
-    rmg_timings( ALLOC_TIME, time, 0);
-#  endif     
 
     return node->ptr;
 
@@ -412,11 +408,7 @@ void sfree( void *ptr, char *vn, char *fn, int ln )
     sfree_ncalls ++;
     sfree_time += time;
 
-#  if NEGF1    
     rmg_timings( ALLOC_TIME, time);
-#  elif REAL_SPACE || ORDER_N
-    rmg_timings( ALLOC_TIME, time, 0);
-#  endif     
 
 #endif
 }

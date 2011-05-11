@@ -190,7 +190,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     nlforce1 (vtot);
 
     time2 = my_crtc ();
-    rmg_timings (NLFORCE_TIME, (time2 - time1), 0);
+    rmg_timings (NLFORCE_TIME, (time2 - time1));
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -263,7 +263,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     my_free (old_force);
 #endif
 
-    rmg_timings (FORCE_TIME, (my_crtc () - time3), 0);
+    rmg_timings (FORCE_TIME, (my_crtc () - time3));
 
 }                               /* end force */
 
