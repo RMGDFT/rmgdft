@@ -76,7 +76,7 @@
 #define         MAX_IONS        512
 
 /* Maximum number of atoms whose projectors have overlap with current processor */
-#define MAX_NONLOC_IONS         64 
+#define MAX_NONLOC_IONS         1024
 
 /* Maximum number of processors with which the current processor will communicate to calculate <beta|psi> */
 #define MAX_NONLOC_PROCS        128

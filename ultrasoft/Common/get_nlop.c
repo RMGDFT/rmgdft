@@ -229,8 +229,7 @@ void get_nlop (void)
         {
             if (pct.num_nonloc_ions >= MAX_NONLOC_IONS) 
             {
-                dprintf("\n pct.num_nonloc_ions = %d MAX = %d \n ", pct.num_nonloc_ions, MAX_NONLOC_IONS);
-                error_handler ("Too many nonlocal ions, pct.nonloc_ions_list will overflow");
+                error_handler ("Too many nonlocal ions (pct.num_nonloc_ions = %d MAX = %d ), pct.nonloc_ions_list will overflow",pct.num_nonloc_ions, MAX_NONLOC_IONS);
             }
 
             pct.nonloc_ions_list[pct.num_nonloc_ions] = ion;
