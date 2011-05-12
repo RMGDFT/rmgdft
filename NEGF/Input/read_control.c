@@ -51,13 +51,6 @@ void read_control (void)
     int is,ns;
     int i;
 
-    if(pct.gridpe == 0) 
-    {
-        printf("\n ********************************");
-        printf("\n  control file read informations");
-        printf("\n ********************************\n");
-    }
-
     /* Open the input file for reading */
 
     get_data (ct.cfile, NULL, INIT | TAGS, NULL);
@@ -184,6 +177,8 @@ Error Function";
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
 
 
+    /* do spin polarized calculation? */
+    get_data ("enable_spin_polarized_calculation", &ct.spin_flag, BOOL, "false");
     /*maximum number of md steps */
     get_data ("max_md_steps", &ct.max_md_steps, INT, "10");
 
