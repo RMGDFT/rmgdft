@@ -54,7 +54,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
         pack_ptos(sg_orbit, work1, ixx, iyy, izz);
-        fill_orbit_borders(sg_orbit, ixx, iyy, izz);
 
         app_cil(sg_orbit, work2, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
 
@@ -68,10 +67,8 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
             /* Pack the residual data into multigrid array */
             pack_ptos(sg_orbit_res, work2, ixx, iyy, izz);
 
-            fill_orbit_borders(sg_orbit_res, ixx, iyy, izz);
 
             /* Do multigrid step with solution in sg_twovpsi */
-
 
 
             mgrid_solv(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,

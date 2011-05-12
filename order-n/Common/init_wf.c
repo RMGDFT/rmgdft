@@ -115,7 +115,6 @@ static void init_wf_gamma(STATE * states)
         sp = &states[state];
         app_mask(state, sp->psiR, 0);
         pack_ptos(sg_orbit, sp->psiR, ixx, iyy, izz);
-        fill_orbit_borders(sg_orbit, ixx, iyy, izz);
         app_cir(sg_orbit, sp->psiR, ixx, iyy, izz);
         app_mask(state, sp->psiR, 0);
 

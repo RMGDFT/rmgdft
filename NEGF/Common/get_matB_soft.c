@@ -41,25 +41,7 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
         mat[istate] = 0.;
 
 
-    /* get the lower part of the matrix <psi|B|psi> */
-
-    for (istate = ct.state_begin; istate < ct.state_end; istate++)
-    {
-        state1 = states[istate];
-        ixx = state1.ixmax - state1.ixmin + 1;
-        iyy = state1.iymax - state1.iymin + 1;
-        izz = state1.izmax - state1.izmin + 1;
-
-        /* get B|psi> */
-        /* Pack psi into smoothing array */
-        pack_ptos (sg_orbit, state1.psiR, ixx, iyy, izz);
-        fill_orbit_borders (sg_orbit, ixx, iyy, izz);
-
-        /* B operating on orbit stored in states1[istate].psiR  */
-        app_cir_0 (sg_orbit, states1[istate].psiR, ixx, iyy, izz);
-    }
-
-    /* calculate the < states.psiR | states1.psiR>  */
+    /* calculate the < states.psiR | states.psiR>  */
 
     my_barrier ();
 

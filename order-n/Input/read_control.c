@@ -50,12 +50,6 @@ void read_control (void)
     FILE *fhand;
     int is,ns;
 
-    if(pct.gridpe == 0) 
-    {
-        printf("\n ********************************");
-        printf("\n  control file read informations");
-        printf("\n ********************************\n");
-    }
 
     /* Open the input file for reading */
 

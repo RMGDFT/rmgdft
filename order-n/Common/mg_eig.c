@@ -155,7 +155,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
         /* Pack psi into smoothing array */
         /*		pack_ptos(sg_orbit, states[st1].psiR, ixx, iyy, izz); 
-         *		fill_orbit_borders(sg_orbit, ixx, iyy, izz); 
          */
         /* A operating on psi stored in work2 */
         /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid); 
