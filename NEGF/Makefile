@@ -53,6 +53,7 @@ xt:
 clean:
 	find . \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 	find ../Common \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
+	find ../order-n/ON-NEGF-share \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 	rm -f SvnRev/svnrev Headers/svnrev.h Headers/arch.h Headers/grid.h Make.vars loadmap core mppcore rmg-on
 
 tar:

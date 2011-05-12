@@ -158,19 +158,6 @@ void print_sum_idx (int size, double *data, char *msg)
 
 }
 
-void print_orbit_centers (STATE * states)
-{
-    REAL x, y, z;
-    int st;
-
-    for (st = ct.state_begin; st < ct.state_end; st++)
-    {
-        get_orbit_center (&states[st], &x, &y, &z);
-        printf (" STATE: %d--center: %f, %f, %f; centroid: %f, %f, %f; difference: %f, %f, %f \n",
-                st, states[st].crds[0], states[st].crds[1], states[st].crds[2],
-                x, y, z, x - states[st].crds[0], y - states[st].crds[1], z - states[st].crds[2]);
-    }
-}
 
 
 void print_data_to_file (int size, double *data, char *filename)
