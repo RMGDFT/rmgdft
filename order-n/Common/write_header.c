@@ -34,6 +34,7 @@
 #include <time.h>
 #include <math.h>
 #include "md.h"
+#include "svnrev.h"
 
 
 char *lattice_type[] = {
@@ -91,12 +92,18 @@ void write_header(void)
 
     }                           /* end switch */
 
+    printf ("    Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
     printf("\n\n    %s", ct.description);
 
     printf("\n\n    FILES USED");
     printf("\n       Control input file       %s", ct.cfile);
     printf("\n       Data input file          %s", ct.infile);
     printf("\n       Data output file         %s", ct.outfile);
+
+
+    printf ("\n#######Control input file parameters#####\n\n");
+    findNode ("description");
+    get_data (NULL, NULL, END, NULL);
 
     printf("\n\n    Number of steps = %d", ct.max_md_steps);
     printf("\n    Output every %d steps", ct.outcount);
@@ -155,8 +162,8 @@ void write_header(void)
         for (j = i; j < ct.num_species; j++)
         {
             printf("\n            %2d %2d    %13.7e", i, j,
-                   ct.sp[i].zvalence * ct.sp[i].zvalence *
-                   erfc(t1 / sqrt(ct.sp[i].rc * ct.sp[i].rc + ct.sp[j].rc * ct.sp[i].rc)) / t1);
+                    ct.sp[i].zvalence * ct.sp[i].zvalence *
+                    erfc(t1 / sqrt(ct.sp[i].rc * ct.sp[i].rc + ct.sp[j].rc * ct.sp[i].rc)) / t1);
         }                       /* j */
     }                           /* i */
 #endif
@@ -180,28 +187,28 @@ void write_header(void)
 
     switch (ct.xctype)
     {
-    case LDA_PZ81:             /* LDA Perdew Zunger 81 */
-        printf("\n    XC USING LDA WITH PERDEW-ZUNGER 81");
-        break;
+        case LDA_PZ81:             /* LDA Perdew Zunger 81 */
+            printf("\n    XC USING LDA WITH PERDEW-ZUNGER 81");
+            break;
 
-    case GGA_BLYP:
-        printf("\n    XC USING GGA WITH BLYP");
-        break;
+        case GGA_BLYP:
+            printf("\n    XC USING GGA WITH BLYP");
+            break;
 
-    case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
-        printf("\n    XC USING GGA WITH X-BECKE AND C-PERDEW");
-        break;
+        case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
+            printf("\n    XC USING GGA WITH X-BECKE AND C-PERDEW");
+            break;
 
-    case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
-        printf("\n    XC USING GGA WITH X-PERDEW AND C-PERDEW");
-        break;
+        case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
+            printf("\n    XC USING GGA WITH X-PERDEW AND C-PERDEW");
+            break;
 
-    case GGA_PBE:
-        printf("\n    XC USING GGA WITH PBE");
-        break;
+        case GGA_PBE:
+            printf("\n    XC USING GGA WITH PBE");
+            break;
 
-    default:
-        error_handler("Unknown exchange-correlation functional");
+        default:
+            error_handler("Unknown exchange-correlation functional");
 
     }                           /* end switch */
 
@@ -221,7 +228,7 @@ void write_header(void)
     {
 
         printf("\n    %12.6f   %12.6f   %12.6f   %12.6f",
-               ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+                ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
 
     }                           /* end for */
 
@@ -231,43 +238,43 @@ void write_header(void)
         switch (ct.forceflag)
         {
 
-        case MD_FASTRLX:
-            printf("\n\n    MOLECULAR DYNAMICS USING FAST RELAX");
-            break;
+            case MD_FASTRLX:
+                printf("\n\n    MOLECULAR DYNAMICS USING FAST RELAX");
+                break;
 
-        case CD_FASTRLX:
-            printf("\n\n    CONSTRAINED DYNAMICS USING FAST RELAX");
-            printf("\n      constraint vector: %10.4f %10.4f %10.4f",
-                   ct.cd_vector[0], ct.cd_vector[1], ct.cd_vector[2]);
-            printf("\n      constraint velocity: %10.4f", ct.cd_velocity);
-            break;
+            case CD_FASTRLX:
+                printf("\n\n    CONSTRAINED DYNAMICS USING FAST RELAX");
+                printf("\n      constraint vector: %10.4f %10.4f %10.4f",
+                        ct.cd_vector[0], ct.cd_vector[1], ct.cd_vector[2]);
+                printf("\n      constraint velocity: %10.4f", ct.cd_velocity);
+                break;
 
-        case BAND_STRUCTURE:
-            printf("\n\n    BAND STRUCTURE CALCULATION");
-            break;
+            case BAND_STRUCTURE:
+                printf("\n\n    BAND STRUCTURE CALCULATION");
+                break;
 
-        case MD_CVE:
-            printf("\n\n    MOLECULAR DYNAMICS - CVE");
-            break;
+            case MD_CVE:
+                printf("\n\n    MOLECULAR DYNAMICS - CVE");
+                break;
 
-        case MD_CVT:
-            printf("\n\n    MOLECULAR DYNAMICS - CVT");
-            break;
+            case MD_CVT:
+                printf("\n\n    MOLECULAR DYNAMICS - CVT");
+                break;
 
-        case MD_CPT:
-            printf("\n\n    MOLECULAR DYNAMICS - CPT");
-            break;
+            case MD_CPT:
+                printf("\n\n    MOLECULAR DYNAMICS - CPT");
+                break;
 
-        case PLOT:
-            printf("\n\n    PLOTTING DENSITY IN DX FORM");
-            break;
+            case PLOT:
+                printf("\n\n    PLOTTING DENSITY IN DX FORM");
+                break;
 
-        case PSIPLOT:
-            printf("\n\n    PLOTTING PSI^2 IN DX FORM");
-            break;
+            case PSIPLOT:
+                printf("\n\n    PLOTTING PSI^2 IN DX FORM");
+                break;
 
-        default:
-            error_handler("UNKNOWN MOLECULAR DYNAMICS METHOD");
+            default:
+                error_handler("UNKNOWN MOLECULAR DYNAMICS METHOD");
 
         }                       /* end switch */
 
@@ -331,6 +338,7 @@ void write_header(void)
 
     /* Write out the ionic postions and displacements */
     write_pos();
+
 
 
 

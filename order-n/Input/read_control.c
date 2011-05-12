@@ -197,6 +197,9 @@ void read_control (void)
     /* Force flag */
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
 
+    /* do spin polarized calculation? */
+    get_data ("enable_spin_polarized_calculation", &ct.spin_flag, BOOL, "false");
+
 
     /*maximum number of md steps */
     get_data ("max_md_steps", &ct.max_md_steps, INT, "10");
@@ -525,7 +528,6 @@ void read_control (void)
     /* Close input file */
     my_free (tptr);
 
-    get_data (NULL, NULL, END, NULL);
 
 
 }                               /* end read_control */

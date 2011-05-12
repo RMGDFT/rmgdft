@@ -133,21 +133,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
-        ixx = states[istate].ixmax - states[istate].ixmin + 1;
-        iyy = states[istate].iymax - states[istate].iymin + 1;
-        izz = states[istate].izmax - states[istate].izmin + 1;
-
-        app_mask(istate, states1[istate].psiR, 0);
-        pack_ptos(sg_orbit, states1[istate].psiR, ixx, iyy, izz);
-        fill_orbit_borders(sg_orbit, ixx, iyy, izz);
-
-        /* res = B*sg_res */
-        app_cir_0(sg_orbit, orbit_tem, ixx, iyy, izz);
-        app_mask(istate, orbit_tem, 0);
-
-        for (idx = 0; idx < ixx * iyy * izz; idx++)
-            states1[istate].psiR[idx] = orbit_tem[idx];
-
         app_mask(istate, states1[istate].psiR, 0);
     }
 
@@ -165,11 +150,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(states[st1].psiR, st1, orbit_tem, vtot_global, states);
-        pack_ptos(sg_orbit, orbit_tem, ixx, iyy, izz);
-        fill_orbit_borders(sg_orbit, ixx, iyy, izz);
-
-        /* B operating on 2*V*psi stored in work1 */
-        app_cir_0(sg_orbit, orbit_tem, ixx, iyy, izz);
         t1 = -1.0;
         saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
 
@@ -195,11 +175,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         item = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
         get_dnmpsi(&states[st1], &kbpsi[item], orbit_tem);       /*shuchun wang */
 
-        pack_ptos(sg_orbit, orbit_tem, ixx, iyy, izz);
-        fill_orbit_borders(sg_orbit, ixx, iyy, izz);
-
-        /* B operating on 2*VNL*psi stored in orbit_tem */
-        app_cir_0(sg_orbit, orbit_tem, ixx, iyy, izz);
         app_mask(st1, orbit_tem, 0);
 
         t1 = -2.0;
