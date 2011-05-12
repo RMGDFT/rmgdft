@@ -34,15 +34,17 @@
 #define XC_GGA_C_XPBE         136 /* xPBE reparametrization by Xu & Goddard         */
 #define XC_GGA_C_PBE_JRGX     138 /* JRGX reparametrization by Pedroza, Silva & Capelle */
 #define XC_GGA_C_RGE2         143 /* Regularized PBE */
+#define XC_GGA_C_APBE         186 /* mu fixed from the semiclassical neutral atom   */
 
-static const FLOAT beta[5]  = {
-  0.06672455060314922,       /* original PBE */
-  0.046,                     /* PBE sol      */
-  0.089809,                  /* xPBE */
-  3.0*10.0/(81.0*M_PI*M_PI), /* PBE_JRGX */
-  0.053,                     /* RGE2 */
+static const FLOAT beta[6]  = {
+  0.06672455060314922,                /* original PBE */
+  0.046,                              /* PBE sol      */
+  0.089809,                           /* xPBE         */
+  3.0*10.0/(81.0*M_PI*M_PI),          /* PBE_JRGX     */
+  0.053,                              /* RGE2         */
+  3.0*0.260/(M_PI*M_PI)               /* APBE (C)     */
 };
-static FLOAT gamm[5];
+static FLOAT gamm[6];
 
 
 static void gga_c_pbe_init(void *p_)
@@ -56,11 +58,19 @@ static void gga_c_pbe_init(void *p_)
 
   XC(func_init)(p->func_aux[0], XC_LDA_C_PW_MOD, p->nspin);
 
-  for(ii=0; ii<5; ii++)
+  for(ii=0; ii<6; ii++)
     gamm[ii] = (1.0 - log(2.0))/(M_PI*M_PI);
   gamm[2] = beta[2]*beta[2]/(2.0*0.197363);
 }
 
+static void gga_c_pbe_end(void *p_)
+{
+  XC(gga_type) *p = (XC(gga_type) *)p_;
+
+  XC(func_end)(p->func_aux[0]);
+  free(p->func_aux[0]);
+  free(p->func_aux);
+}
 
 static inline void 
 pbe_eq8(int func, int order, FLOAT ecunif, FLOAT phi, 
@@ -157,11 +167,15 @@ my_gga_c_pbe(const void *p_, const FLOAT *rho, const FLOAT *sigma,
   FLOAT H, dHdphi, dHdt, dHdA, d2Hdphi2, d2Hdphit, d2HdphiA, d2Hdt2, d2HdtA, d2HdA2;
 
   switch(p->info->number){
+  case XC_GGA_C_PBE:      func = 0; break;    
   case XC_GGA_C_PBE_SOL:  func = 1; break;
   case XC_GGA_C_XPBE:     func = 2; break;
   case XC_GGA_C_PBE_JRGX: func = 3; break;
   case XC_GGA_C_RGE2:     func = 4; break;
-  default:                func = 0; /* original PBE */
+  case XC_GGA_C_APBE:     func = 5; break;
+  default:
+    fprintf(stderr, "Internal error in gga_c_pbe\n");
+    exit(1);
   }
 
   order = 0;
@@ -241,7 +255,7 @@ const XC(func_info_type) XC(func_info_gga_c_pbe) = {
   "JP Perdew, K Burke, and M Ernzerhof, Phys. Rev. Lett. 78, 1396(E) (1997)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_c_pbe_init,
-  NULL,
+  gga_c_pbe_end,
   NULL,            /* this is not an LDA                   */
   gga_c_pbe,
 };
@@ -254,7 +268,7 @@ const XC(func_info_type) XC(func_info_gga_c_pbe_sol) = {
   "JP Perdew, et al, Phys. Rev. Lett. 100, 136406 (2008)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_c_pbe_init,
-  NULL,
+  gga_c_pbe_end,
   NULL,            /* this is not an LDA                   */
   gga_c_pbe,
 };
@@ -267,7 +281,7 @@ const XC(func_info_type) XC(func_info_gga_c_xpbe) = {
   "X Xu and WA Goddard III, J. Chem. Phys. 121, 4068 (2004)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_c_pbe_init,
-  NULL,
+  gga_c_pbe_end,
   NULL,            /* this is not an LDA                   */
   gga_c_pbe,
 };
@@ -280,7 +294,7 @@ const XC(func_info_type) XC(func_info_gga_c_pbe_jrgx) = {
   "LS Pedroza, AJR da Silva, and K. Capelle, Phys. Rev. B 79, 201106(R) (2009)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_c_pbe_init,
-  NULL,
+  gga_c_pbe_end,
   NULL,            /* this is not an LDA                   */
   gga_c_pbe,
 };
@@ -293,6 +307,20 @@ const XC(func_info_type) XC(func_info_gga_c_rge2) = {
   "A Ruzsinszky, GI Csonka, and G Scuseria, J. Chem. Theory Comput. 5, 763 (2009)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_c_pbe_init,
-  NULL, NULL,
+  gga_c_pbe_end, 
+  NULL,            /* this is not an LDA                   */ 
+  gga_c_pbe
+};
+
+const XC(func_info_type) XC(func_info_gga_c_apbe) = {
+  XC_GGA_C_APBE,
+  XC_EXCHANGE,
+  "mu fixed from the semiclassical neutral atom",
+  XC_FAMILY_GGA,
+  "LA Constantin, E Fabiano, S Laricchia, and F Della Sala, Phys. Rev. Lett. 106, 186406 (2011)",
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  gga_c_pbe_init,
+  gga_c_pbe_end, 
+  NULL,            /* this is not an LDA                   */ 
   gga_c_pbe
 };
