@@ -1272,7 +1272,7 @@ void subdiag(STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
 void trade_images( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids );
 void trade_images_mpi( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids );
 void trade_images_smp( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids );
-void set_bc( REAL *mat, int dimx, int dimy, int dimz, REAL val );
+void set_bc( REAL *mat, int dimx, int dimy, int dimz, int images, REAL val );
 void getpoi_bc(REAL *rho, REAL *vh_bc, int dimx, int dimy, int dimz);
 void trade_images2(REAL *f, REAL *w, int dimx, int dimy, int dimz);
 void trade_images3(REAL *f, REAL *w);

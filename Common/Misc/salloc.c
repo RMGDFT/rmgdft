@@ -172,7 +172,7 @@ static void initialize (void *ptr, size_t n, char *vn, char *type, char *fn, int
     else if (strcmp (type, "REAL") == 0)
     {
         REAL *p = (REAL *) ptr;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; i ++ )
             p[i] = 0.0;
     }
 #endif
@@ -184,12 +184,12 @@ static void initialize (void *ptr, size_t n, char *vn, char *type, char *fn, int
             p[i].re = p[i].im = 0.0;
     }
 #endif
-#if NEGF1
-    else if (strcmp (type, "doublecomplex") == 0)
+#if NEGF1  
+    else if ( strcmp( type, "_Complex double" ) == 0 ) 
     {
-        doublecomplex *p = (doublecomplex *) ptr;
-        for (i = 0; i < n; i++)
-            p[i].r = p[i].i = 0.0;
+        complex double *p = (complex double *) ptr;
+        for ( i = 0; i < n; i ++ ) 
+            p[i] = 0.0;
     }
 #endif
 
