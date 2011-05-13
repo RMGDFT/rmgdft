@@ -113,10 +113,6 @@ void iiforce (void)
 
         }                       /* end for */
 
-        iptr1->force[ct.fpt[0]][0] += ct.e_field * ct.x_field_0 * Zi;
-        iptr1->force[ct.fpt[0]][1] += ct.e_field * ct.y_field_0 * Zi;
-        iptr1->force[ct.fpt[0]][2] += ct.e_field * ct.z_field_0 * Zi;
-
     }                           /* end for */
 
 #if MD_TIMERS

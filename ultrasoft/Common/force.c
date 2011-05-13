@@ -106,9 +106,12 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        ct.ions[ion].force[ct.fpt[0]][0] = ZERO;
-        ct.ions[ion].force[ct.fpt[0]][1] = ZERO;
-        ct.ions[ion].force[ct.fpt[0]][2] = ZERO;
+      Zi = ct.sp[ct.ions[ion].species].zvalence;
+
+
+        ct.ions[ion].force[ct.fpt[0]][0] = ct.e_field * ct.x_field_0 * Zi;
+        ct.ions[ion].force[ct.fpt[0]][1] = ct.e_field * ct.y_field_0 * Zi;
+        ct.ions[ion].force[ct.fpt[0]][2] = ct.e_field * ct.z_field_0 * Zi;
 
     }
 
