@@ -133,17 +133,17 @@ void get_nlop (void)
                                 (ix - icenter) * (ix - icenter) +
                                 (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
 
-                            /*   if(icut >= itmp) { */
+                            if (icut >= itmp) { 
 
-                            pvec[icount] =
-                                PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
-                                PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
+                                pvec[icount] =
+                                    PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
+                                    PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
 
-                            dvec[idx] = TRUE;
+                                dvec[idx] = TRUE;
 
-                            icount++;
+                                icount++;
 
-                            /*  } */
+                            } 
 
                         }
                         idx++;
