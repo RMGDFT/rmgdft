@@ -20,7 +20,7 @@
 #if GAMMA_PT
 void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL cR, REAL cI)
 {
-    int ion, sidx1, sidx2;
+    int ion, sidx1, sidx2, lsidx1, lsidx2;
     int size, incx = 1;
     REAL *tmp_psi2, *tmp_psi1, *ptr1, *ptr2;
     REAL t1;
@@ -30,6 +30,9 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
     sidx1 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
     sidx2 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
+    
+    lsidx1 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
+    lsidx2 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
 
 
     tmp_psi1 = sp1->psiR;
@@ -54,6 +57,15 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
         ptr2 = &iptr->newsintR[sidx2];
         QMD_saxpy (ct.max_nl, t1, ptr1, incx, ptr2, incx);
     }
+    
+    /* update localized  <beta|psi2> */
+    for (ion = 0; ion < pct.num_nonloc_ions; ion ++)
+    {
+
+        ptr1 = &pct.newsintR_local[lsidx1 + ion * ct.num_states * ct.max_nl];
+        ptr2 = &pct.newsintR_local[lsidx2 + ion * ct.num_states * ct.max_nl];
+        QMD_saxpy (ct.max_nl, t1, ptr1, incx, ptr2, incx);
+    }
 
 }
 #else
@@ -61,7 +73,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 {
     int ion;
     int incx = 1;
-    int sidx1, sidx2, idx;
+    int sidx1, sidx2, lsidx1, lsidx2, idx;
     REAL *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I, *ptr1R, *ptr1I, *ptr2R, *ptr2I;
     REAL sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
     ION *iptr;
@@ -69,6 +81,9 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
     sidx1 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
     sidx2 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
+    
+    lsidx1 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
+    lsidx2 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
 
 
     tmp_psi1R = sp1->psiR;
@@ -97,6 +112,24 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
         ptr1I = &iptr->newsintI[sidx1];
         ptr2R = &iptr->newsintR[sidx2];
         ptr2I = &iptr->newsintI[sidx2];
+
+        QMD_saxpy (ct.max_nl, -cR, ptr1R, incx, ptr2R, incx);
+        QMD_saxpy (ct.max_nl, cI, ptr1I, incx, ptr2R, incx);
+
+        QMD_saxpy (ct.max_nl, -cR, ptr1I, incx, ptr2I, incx);
+        QMD_saxpy (ct.max_nl, -cI, ptr1R, incx, ptr2I, incx);
+    }
+    
+    
+    /* update localized <beta|psi2> */
+    for (ion = 0; ion < pct.num_nonloc_ions; ion++)
+    {
+
+
+        ptr1R = &pct.newsintR_local[lsidx1 + ion * ct.num_states * ct.max_nl];
+        ptr1I = &pct.newsintI_local[lsidx1 + ion * ct.num_states * ct.max_nl];
+        ptr2R = &pct.newsintR_local[lsidx2 + ion * ct.num_states * ct.max_nl];
+        ptr2I = &pct.newsintI_local[lsidx2 + ion * ct.num_states * ct.max_nl];
 
         QMD_saxpy (ct.max_nl, -cR, ptr1R, incx, ptr2R, incx);
         QMD_saxpy (ct.max_nl, cI, ptr1I, incx, ptr2R, incx);
