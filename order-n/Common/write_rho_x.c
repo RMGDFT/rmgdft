@@ -47,7 +47,7 @@ void write_rho_x(REAL * rho, char *ab)
 
     /* Now sum over all processors */
     ix = FNX_GRID;
-    global_sums(zvec, &ix);
+    global_sums(zvec, &ix, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {

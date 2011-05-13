@@ -93,7 +93,7 @@ void nlforce (REAL * veff, STATE * states, STATE * states1, complex double * sig
     nlforce_par_D (sigma_all, states, states1, force);
 
     size = ct.num_ions * 3;
-    global_sums (force, &size);
+    global_sums (force, &size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {

@@ -141,7 +141,7 @@ void get_new_rho_soft (STATE * states, double *rho)
     }                           /* end of loop  */
 
     idx = NX_GRID * NY_GRID * NZ_GRID;
-    global_sums (rho_global, &idx);
+    global_sums (rho_global, &idx, pct.grid_comm);
     global_to_distribute (rho_global, rho_temp);
 
     my_free(rho_global);

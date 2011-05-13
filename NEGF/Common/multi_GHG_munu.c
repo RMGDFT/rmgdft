@@ -322,8 +322,8 @@ void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
 
     }
 
-    global_sums (GHG_tri, &ntot);
-    global_sums (GHG_en_tri, &ntot);
+    global_sums (GHG_tri, &ntot, pct.grid_comm);
+    global_sums (GHG_en_tri, &ntot, pct.grid_comm);
 
 
     for (idx1 = 0; idx1 < ntot; idx1++)

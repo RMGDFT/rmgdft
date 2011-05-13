@@ -1217,7 +1217,7 @@ void gram (KPOINT * kpoint, REAL h, int numst, int maxst, int numpt,
         int maxpt);
 REAL get_ke (STATE * sp, int tid);
 void get_vh (REAL * rho, REAL * rhoc, REAL * vh, int cycles, int maxlevel);
-void global_sums (REAL * vect, int *length);
+void global_sums (REAL * vect, int *length, MPI_Comm comm);
 void iiforce (void);
 void init (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc, STATE * states,
         STATE * states1, REAL * vnuc, REAL * vxc, REAL * vh_old,
@@ -1277,7 +1277,7 @@ void subdiag (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
 void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_mpi (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_smp (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids);
-void set_bc (REAL * mat, int dimx, int dimy, int dimz, REAL val, int *nb_ids);
+void set_bc (REAL * mat, int dimx, int dimy, int dimz, int images, REAL val);
 void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz);
 void vol_rho (REAL * rho, int step);
 void vol_wf (STATE * states, int state, int step);

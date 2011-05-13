@@ -49,6 +49,6 @@ void distribute_to_global(REAL * distr_array, REAL * global_array)
             }
 
     idx1 = NX_GRID * NY_GRID * NZ_GRID;
-    global_sums(global_array, &idx1);
+    global_sums(global_array, &idx1, pct.grid_comm);
 
 }

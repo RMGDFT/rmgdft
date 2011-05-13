@@ -49,27 +49,25 @@
 #include <stdlib.h>
 #include "md.h"
 
-#define SMALL 1.0e-8
 
 
 /* G-vector cutoff function */
-static REAL gcutoff(REAL g1, REAL gcut, REAL width)
+REAL gcutoff (REAL g1, REAL gcut, REAL width)
 {
-
     REAL t1;
 
     if (g1 < gcut)
-        return ONE;
+        return 1.0;
 
     t1 = (g1 - gcut) / gcut;
-    return exp(-width * (t1 * t1));
-
-
+    return exp (-width * (t1 * t1));
 }
 
 
-void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
-          int rg_points, int lval, REAL dr, REAL width, int lrg_points)
+
+
+void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_points,
+           int lval, REAL dr, REAL width, int lrg_points)
 {
 
     int idx, ift, gnum, istep, alloc;
@@ -81,10 +79,10 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
     alloc = rg_points;
     if (alloc < lrg_points)
         alloc = lrg_points;
-    my_malloc_init( work1, alloc, REAL );
-    my_malloc_init( work2, alloc, REAL );
-    my_malloc_init( gcof, alloc, REAL );
-    my_malloc_init( gvec, alloc, REAL );
+    my_malloc_init( work1, 4 * alloc, REAL );
+    work2 = work1 + alloc;
+    gcof = work2 + alloc;
+    gvec = gcof + alloc;
 
     for (idx = 0; idx < alloc; idx++)
     {
@@ -104,17 +102,13 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
     gcut = PI / (cparm * ct.hmaxgrid);
     gmax = PI / r[0];
 
-    gmesh = (log(gmax) - log(gvec[0])) / gnum;
-    t1 = exp(gmesh);
+    gmesh = (log (gmax) - log (gvec[0])) / gnum;
+    t1 = exp (gmesh);
 
 
     /* Generate g-vectors */
     for (idx = 1; idx < gnum; idx++)
-    {
-
-        gvec[idx] = gvec[0] * pow(t1, (REAL) idx);
-
-    }                           /* end for */
+        gvec[idx] = gvec[0] * pow (t1, (REAL) idx);
 
 
 
@@ -133,13 +127,13 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = r[idx] * gvec[ift];
+                work1[idx] = f[idx] * sin (t1) / t1;
+                t2 = sin (t1) / t1;
+                if (t1 < 1.0e-8)
+                    t2 = 1.0;
+                work1[idx] = f[idx] * t2;
 
-                if (t1 > SMALL)
-                    work1[idx] = f[idx] * sin(t1) / t1;
-                else
-                    work1[idx] = f[idx];
-
-            }                   /* end for */
+            }
 
             break;
 
@@ -149,13 +143,12 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
-                    t2 = cos(t1) / t1 - sin(t1) / (t1 * t1);
-                else
+                t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
                 work1[idx] = f[idx] * t2;
 
-            }                   /* end for */
+            }
 
             break;
 
@@ -165,16 +158,13 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (THREE / (t1 * t1) - ONE) * sin(t1) / t1;
-                    t2 -= THREE * cos(t1) / (t1 * t1);
-                }
-                else
+                t2 = (3.0 / (t1 * t1) - 1.0) * sin (t1) / t1;
+                t2 -= 3.0 * cos (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
                 work1[idx] = f[idx] * t2;
 
-            }                   /* end for */
+            }
 
             break;
 
@@ -183,15 +173,12 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             for (idx = 0; idx < rg_points; idx++)
             {
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (15.0 / (t1 * t1) - 6.0) * sin(t1) / (t1 * t1);
-                    t2 += (1.0 - 15.0 / (t1 * t1)) * cos(t1) / t1;
-                }
-                else
+                t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
+                t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
                 work1[idx] = f[idx] * t2;
-            }                   /* end for */
+            }
 
             break;
 
@@ -200,47 +187,37 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             for (idx = 0; idx < rg_points; idx++)
             {
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin(t1) / t1;
-                    t2 += (10.0 - 105.0 / (t1 * t1)) * cos(t1) / (t1 * t1);
-                }
-                else
+                t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
+                t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
                 work1[idx] = f[idx] * t2;
-            }                   /*end for */
+            }
 
             break;
 
         default:
 
-            error_handler("angular momentum state not programmed");
+            error_handler ("angular momentum state not programmed");
 
 
         }                       /* end switch */
 
 
         /* Get coefficients */
-        gcof[ift] = radint1(work1, r, rab, rg_points);
+        gcof[ift] = radint1 (work1, r, rab, rg_points);
 
-    }
+    }                           /* end for */
 
     /* Fouerier Filter the transform and store in work2 */
     for (idx = 0; idx < gnum; idx++)
-    {
+        work2[idx] = gcof[idx] * gcutoff (gvec[idx], gcut, width);
 
-        work2[idx] = gcof[idx] * gcutoff(gvec[idx], gcut, width);
-
-    }
 
 
     /* Zero out the array in which the filtered function is to be returned */
     for (idx = 0; idx < lrg_points; idx++)
-    {
-
-        ffil[idx] = ZERO;
-
-    }
+        ffil[idx] = 0.0;
 
 
 
@@ -264,9 +241,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                    t2 = sin(t1) / t1;
-                else
+                t2 = sin (t1) / t1;
+                if (t1 < 1.0e-8)
                     t2 = 1.0;
 
                 /* G-space cutoff */
@@ -276,8 +252,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
 
             rfil += dr;
 
@@ -285,7 +261,7 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
         istep = NPES * istep;
-        global_sums(ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1.0e-10;
@@ -298,9 +274,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                    t2 = sin(t1) / t1;
-                else
+                t2 = sin (t1) / t1;
+                if (t1 < 1.0e-8)
                     t2 = 1.0;
 
                 /* G-space cutoff */
@@ -310,8 +285,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
 
             rfil += dr;
 
@@ -332,9 +307,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                    t2 = cos(t1) / t1 - sin(t1) / (t1 * t1);
-                else
+                t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -344,8 +318,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
 
             rfil += dr;
 
@@ -353,7 +327,7 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
         istep = NPES * istep;
-        global_sums(ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1.0e-10;
@@ -365,9 +339,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                    t2 = cos(t1) / t1 - sin(t1) / (t1 * t1);
-                else
+                t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -377,8 +350,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
             rfil += dr;
 
         }
@@ -395,12 +368,9 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (THREE / (t1 * t1) - ONE) * sin(t1) / t1;
-                    t2 -= THREE * cos(t1) / (t1 * t1);
-                }
-                else
+                t2 = (3.0 / (t1 * t1) - 1.0) * sin (t1) / t1;
+                t2 -= 3.0 * cos (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -410,8 +380,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
 
             rfil += dr;
 
@@ -419,7 +389,7 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
 
         istep = NPES * istep;
-        global_sums(ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1.0e-10;
@@ -431,12 +401,9 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (THREE / (t1 * t1) - ONE) * sin(t1) / t1;
-                    t2 -= THREE * cos(t1) / (t1 * t1);
-                }
-                else
+                t2 = (3.0 / (t1 * t1) - 1.0) * sin (t1) / t1;
+                t2 -= 3.0 * cos (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -445,8 +412,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             }
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
             rfil += dr;
 
         }
@@ -462,12 +429,9 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (15.0 / (t1 * t1) - 6.0) * sin(t1) / (t1 * t1);
-                    t2 += (1.0 - 15.0 / (t1 * t1)) * cos(t1) / t1;
-                }
-                else
+                t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
+                t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -476,18 +440,18 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             }
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
 
             rfil += dr;
 
         }
 
         istep = NPES * istep;
-        global_sums(ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
-        rfil = t1 * rstep + 1.0e-10;
+        rfil = t1 * rstep + 1e-10;
 
         for (idx = istep; idx < lrg_points; idx++)
         {
@@ -496,12 +460,9 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (15.0 / (t1 * t1) - 6.0) * sin(t1) / (t1 * t1);
-                    t2 += (1.0 - 15.0 / (t1 * t1)) * cos(t1) / t1;
-                }
-                else
+                t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
+                t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -510,8 +471,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             }
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
             rfil += dr;
 
         }
@@ -527,12 +488,9 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin(t1) / t1;
-                    t2 += (10.0 - 105.0 / (t1 * t1)) * cos(t1) / (t1 * t1);
-                }
-                else
+                t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
+                t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -541,18 +499,18 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             }
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
 
             rfil += dr;
 
         }
 
         istep = NPES * istep;
-        global_sums(ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
-        rfil = t1 * rstep + 1.0e-10;
+        rfil = t1 * rstep + 1e-10;
 
         for (idx = istep; idx < lrg_points; idx++)
         {
@@ -561,12 +519,9 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             {
 
                 t1 = rfil * gvec[ift];
-                if (t1 > SMALL)
-                {
-                    t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin(t1) / t1;
-                    t2 += (10.0 - 105.0 / (t1 * t1)) * cos(t1) / (t1 * t1);
-                }
-                else
+                t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
+                t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
+                if (t1 < 1.0e-8)
                     t2 = 0.0;
 
                 /* G-space cutoff */
@@ -575,8 +530,8 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
             }
 
             /* Integrate it */
-            t1 = radint(work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+            t1 = radint (work1, gvec, gnum, gmesh);
+            ffil[idx] = t1 * 2.0 / PI;
             rfil += dr;
 
         }
@@ -585,16 +540,13 @@ void rft1(REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab,
 
     default:
 
-        error_handler("angular momentum state not programmed");
+        error_handler ("angular momentum state not programmed");
 
 
     }                           /* end switch */
 
 
     /* Release memory */
-    my_free(gvec);
-    my_free(gcof);
-    my_free(work2);
     my_free(work1);
 
 }                               /* end rft1 */

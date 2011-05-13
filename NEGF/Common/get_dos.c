@@ -353,7 +353,7 @@ void get_dos (STATE * states)
 
 
     iene = E_POINTS * FNX_GRID;
-    global_sums (rho_energy, &iene);
+    global_sums (rho_energy, &iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
         double dx = ct.celldm[0] / NX_GRID;
@@ -380,7 +380,7 @@ void get_dos (STATE * states)
     {
 
         iene = E_POINTS * FNY_GRID;
-        global_sums (rho_energy2, &iene);
+        global_sums (rho_energy2, &iene, pct.grid_comm);
         if (pct.gridpe == 0)
         {
             double y = ct.celldm[1] * ct.celldm[0];

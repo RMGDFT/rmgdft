@@ -76,7 +76,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = FNY_GRID * FNZ_GRID;
-        global_sums (zvec, &ix);
+        global_sums (zvec, &ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -119,7 +119,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = FNX_GRID * FNZ_GRID;
-        global_sums (zvec, &ix);
+        global_sums (zvec, &ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {
@@ -163,7 +163,7 @@ void plane_average_rho (double *rho)
 
         /* Now sum over all processors */
         ix = FNX_GRID * FNY_GRID;
-        global_sums (zvec, &ix);
+        global_sums (zvec, &ix, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {

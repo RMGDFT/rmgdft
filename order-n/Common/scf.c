@@ -166,7 +166,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
         t[1] += vtot[idx] * vtot[idx];
     }
     idx = 2;
-    global_sums(t, &idx);
+    global_sums(t, &idx, pct.grid_comm);
     t[0] *= ct.vel_f;
     t[0] /= (double) ct.num_ions;
     t[1] = sqrt(t[1] / ((double) (ct.vh_nbasis)));

@@ -179,7 +179,7 @@ void symmetrize_rho(REAL * rho)
 
     /* Call global sums to give everyone the full array */
     idx = ct.psi_nxgrid * ct.psi_nygrid * ct.psi_nzgrid;
-    global_sums(da, &idx);
+    global_sums(da, &idx, pct.grid_comm);
 
 
     /* Do the symmetrization on this processor */

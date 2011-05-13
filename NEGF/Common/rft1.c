@@ -261,7 +261,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
 
         istep = NPES * istep;
-        global_sums (ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1.0e-10;
@@ -327,7 +327,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
 
         istep = NPES * istep;
-        global_sums (ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1.0e-10;
@@ -389,7 +389,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
 
         istep = NPES * istep;
-        global_sums (ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1.0e-10;
@@ -448,7 +448,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         }
 
         istep = NPES * istep;
-        global_sums (ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1e-10;
@@ -507,7 +507,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         }
 
         istep = NPES * istep;
-        global_sums (ffil, &istep);
+        global_sums (ffil, &istep, pct.grid_comm);
 
         t1 = (REAL) NPES;
         rfil = t1 * rstep + 1e-10;

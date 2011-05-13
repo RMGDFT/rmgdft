@@ -33,7 +33,7 @@ void rho_augmented(REAL * rho, REAL * global_mat_X)
     rho_Qnm_mat(product, global_mat_X);
     for (idx = 0; idx < size; idx++)
         product[idx] *= alfa;
-    global_sums(product, &size);
+    global_sums(product, &size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {

@@ -73,9 +73,9 @@ void get_partial_ddd (REAL * QnmI_R, REAL * veff, int ion, int nh)
     }
 
     size = nh * nh;
-    global_sums (dnmI_x, &size);
-    global_sums (dnmI_y, &size);
-    global_sums (dnmI_z, &size);
+    global_sums (dnmI_x, &size, pct.grid_comm);
+    global_sums (dnmI_y, &size, pct.grid_comm);
+    global_sums (dnmI_z, &size, pct.grid_comm);
 
     for (idx = 0; idx < size; idx++) 
     {

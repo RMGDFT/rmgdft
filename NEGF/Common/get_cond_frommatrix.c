@@ -334,7 +334,7 @@ void get_cond_frommatrix ()
 
         my_barrier ();
         iene = E_POINTS;
-        global_sums (cond, &iene);
+        global_sums (cond, &iene, pct.grid_comm);
 
         if (pct.gridpe == 0)
         {

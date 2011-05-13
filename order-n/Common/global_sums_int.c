@@ -21,25 +21,21 @@
 #include "md.h"
 
 
-#if MPI
 
 
-void global_sums(REAL * vect, int *length)
+void comm_sums (REAL * vect, int *length, MPI_Comm COMM_TEM)
 {
     int sizr, steps, blocks, newsize;
     REAL *rptr, *rptr1;
     REAL rptr2[100];
-    int ione = 1;
 
     /* Check for small vector case and handle on stack */
     if (*length < 100)
     {
-
         sizr = *length;
-        dcopy(&sizr, vect, &ione, rptr2, &ione);
-        MPI_Allreduce(rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        QMD_scopy (sizr, vect, 1, rptr2, 1);
+        MPI_Allreduce (rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, COMM_TEM);
         return;
-
     }
 
 
@@ -52,22 +48,18 @@ void global_sums(REAL * vect, int *length)
 
     for (steps = 0; steps < blocks; steps++)
     {
-
-        dcopy(&newsize, rptr1, &ione, rptr, &ione);
-        MPI_Allreduce(rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        QMD_scopy (newsize, rptr1, 1, rptr, 1);
+        MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, COMM_TEM);
 
         rptr1 += newsize;
-
-    }                           /* end for */
+    }
 
 
     if (sizr)
     {
-
-        dcopy(&sizr, rptr1, &ione, rptr, &ione);
-        MPI_Allreduce(rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-    }                           /* end if */
+        QMD_scopy (sizr, rptr1, 1, rptr, 1);
+        MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, COMM_TEM);
+    }
 
 
     my_free(rptr);
@@ -75,30 +67,71 @@ void global_sums(REAL * vect, int *length)
 }                               /* end global_sums */
 
 
-void global_sums_int(int *vect, int *length)
+void global_sums_X (REAL * vect, int *length)
+{
+    int sizr, steps, blocks, newsize;
+    REAL *rptr, *rptr1;
+    REAL rptr2[100];
+
+    /* Check for small vector case and handle on stack */
+    if (*length < 100)
+    {
+        sizr = *length;
+        QMD_scopy (sizr, vect, 1, rptr2, 1);
+        MPI_Allreduce (rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, COMM_PEX);
+        return;
+    }
+
+
+    my_malloc_init( rptr, MAX_PWRK, REAL );
+    newsize = MAX_PWRK;
+    blocks = *length / newsize;
+    sizr = (*length % newsize);
+
+    rptr1 = vect;
+
+    for (steps = 0; steps < blocks; steps++)
+    {
+        QMD_scopy (newsize, rptr1, 1, rptr, 1);
+        MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, COMM_PEX);
+
+        rptr1 += newsize;
+    }
+
+
+    if (sizr)
+    {
+        QMD_scopy (sizr, rptr1, 1, rptr, 1);
+        MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, COMM_PEX);
+    }
+
+
+    my_free(rptr);
+
+}                               /* end global_sums */
+
+
+void global_sums_int (int *vect, int *length)
 {
 
     int sizr, steps, blocks, newsize;
     int idx;
     int *rptr, *rptr1;
-    int rptr2[100];
 
-    my_barrier();
+    my_barrier ();
     /* Check for small vector case and handle on stack */
     if (*length < 100)
     {
 
         sizr = *length;
-        my_malloc_init( rptr, sizr, int );
+        my_malloc( rptr, sizr, int );
         for (idx = 0; idx < sizr; idx++)
             rptr[idx] = vect[idx];
 
-        MPI_Allreduce(rptr, vect, sizr, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
-
+        MPI_Allreduce (rptr, vect, sizr, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
         my_free(rptr);
         return;
-
-    }                           /* end if */
+    }
 
 
     my_malloc_init( rptr, MAX_PWRK, int );
@@ -113,11 +146,10 @@ void global_sums_int(int *vect, int *length)
 
         for (idx = 0; idx < newsize; idx++)
             rptr[idx] = rptr1[idx];
-        MPI_Allreduce(rptr, rptr1, newsize, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce (rptr, rptr1, newsize, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
 
         rptr1 += newsize;
-
-    }                           /* end for */
+    }
 
 
     if (sizr)
@@ -125,9 +157,8 @@ void global_sums_int(int *vect, int *length)
         for (idx = 0; idx < sizr; idx++)
             rptr[idx] = rptr1[idx];
 
-        MPI_Allreduce(rptr, rptr1, sizr, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
-
-    }                           /* end if */
+        MPI_Allreduce (rptr, rptr1, sizr, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
+    }
 
 
     my_free(rptr);
@@ -136,21 +167,4 @@ void global_sums_int(int *vect, int *length)
 }                               /* end global_sums_int */
 
 
-#endif /*  endif MPI  */
 
-
-#if SERIAL
-
-void global_sums(double *vect, int *length)
-{
-
-    return;
-
-}                               /* end global_sums */
-
-void global_sums_int(int *vect, int *length)
-{
-    return;
-}
-
-#endif

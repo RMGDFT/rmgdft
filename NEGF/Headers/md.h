@@ -1215,7 +1215,7 @@ void xcgga(REAL *rho, REAL *vxc, REAL *exc, int flag);
 void gram(KPOINT *kpoint, REAL h, int numst, int maxst, int numpt, int maxpt);
 REAL get_ke(STATE *sp, int tid);
 void get_vh(REAL *rho, REAL *rhoc, REAL *vh, int cycles, int maxlevel);
-void global_sums (REAL *vect, int *length);
+void global_sums (REAL *vect, int *length, MPI_Comm comm);
 void iiforce(void);
 void init(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
         STATE *states1, REAL *vnuc, REAL *vxc, REAL *vh_old, REAL *vxc_old);

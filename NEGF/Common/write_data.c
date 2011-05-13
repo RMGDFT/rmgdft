@@ -148,12 +148,12 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 
 	idx = ct.num_states * ct.num_states;
 	get_distributed_mat (work_matrix, matB);
-	global_sums (work_matrix, &idx);
+	global_sums (work_matrix, &idx, pct.grid_comm);
 	if (pct.gridpe == 0)
 		write (fhand, work_matrix, idx * sizeof (double));
 
 	get_distributed_mat (work_matrix, Hij);
-	global_sums (work_matrix, &idx);
+	global_sums (work_matrix, &idx, pct.grid_comm);
 	if (pct.gridpe == 0)
 		write (fhand, work_matrix, idx * sizeof (double));
 
@@ -243,8 +243,8 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
         }
     }
 
-    global_sums (vtot_global, &FNXY);
-    global_sums (rho_global, &FNXY);
+    global_sums (vtot_global, &FNXY, pct.grid_comm);
+    global_sums (rho_global, &FNXY, pct.grid_comm);
 
 
     if (pct.gridpe == 0)

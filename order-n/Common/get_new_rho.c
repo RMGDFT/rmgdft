@@ -269,7 +269,7 @@ void get_new_rho(STATE * states, double *rho)
    rmg_timings(RHO_PHI_TIME, time3 - time2);
 
    idx = NX_GRID * NY_GRID * NZ_GRID;
-   global_sums(rho_global, &idx);
+   global_sums(rho_global, &idx, pct.grid_comm);
    time2 = my_crtc();
    rmg_timings(RHO_SUM_TIME, time2 - time3);
 

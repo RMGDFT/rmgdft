@@ -332,7 +332,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 
 	idx = ixdim * iydim * izdim ;
-	global_sums(rho_tem, &idx);
+	global_sums(rho_tem, &idx, pct.grid_comm);
 	idx = ixdim * iydim * izdim * sizeof(double);
 	if (pct.gridpe == 0)
 	{

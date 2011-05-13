@@ -102,7 +102,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
             Aij[idx2] = Aij[idx1];
         }
 
-    global_sums (Aij, &n2);     /* sum up Aij contributions */
+    global_sums (Aij, &n2, pct.grid_comm);     /* sum up Aij contributions */
 
     dscal (&n2, &ct.vel, Aij, &ione);
 

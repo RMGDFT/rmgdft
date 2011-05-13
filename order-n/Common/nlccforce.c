@@ -243,7 +243,7 @@ void nlccforce(REAL * rho, REAL * vxc)
 
 
             idx = 12;
-            global_sums(locsum, &idx);
+            global_sums(locsum, &idx, pct.grid_comm);
 
 
             sumxyc = ZERO;

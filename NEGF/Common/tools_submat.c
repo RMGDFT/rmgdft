@@ -357,7 +357,7 @@ void print_distribute_mat (double *dismat)
         work_matrix[idx] = 0.;
     if (myrow != -1)
         matgather (dismat, desca, work_matrix, numst);
-    global_sums (work_matrix, &n2);
+    global_sums (work_matrix, &n2, pct.grid_comm);
     if (pct.gridpe == 0)
     {
         printf (" Distributed matrix\n");

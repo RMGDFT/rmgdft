@@ -49,6 +49,6 @@ void distribute_to_global_soft(REAL * distr_array, REAL * global_array)
             }
 
     idx1 = FNX_GRID * FNY_GRID * FNZ_GRID;
-    global_sums(global_array, &idx1);
+    global_sums(global_array, &idx1, pct.grid_comm);
 
 }
