@@ -60,6 +60,18 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     /* initialize the lattice basis vectors */
     flag = 0;
 
+    ct.psi_nbasis = NX_GRID * NY_GRID * NZ_GRID;
+    ct.psi_nxgrid = NX_GRID;
+    ct.psi_nygrid = NY_GRID;
+    ct.psi_nzgrid = NZ_GRID;
+
+    ct.psi_fnbasis = FNX_GRID * FNY_GRID * FNZ_GRID;
+    ct.psi_fnxgrid = FNX_GRID;
+    ct.psi_fnygrid = FNY_GRID;
+    ct.psi_fnzgrid = FNZ_GRID;
+
+
+
     my_malloc_init( ct.energies, ct.max_scf_steps, REAL );
 
     ct.states = states;

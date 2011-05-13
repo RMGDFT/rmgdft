@@ -335,10 +335,6 @@ void read_control (void)
     FNY_GRID = NY_GRID * FG_NY;
     FNZ_GRID = NZ_GRID * FG_NZ;
 
-    ct.psi_fnxgrid = NX_GRID * FG_NX;
-    ct.psi_fnygrid = NY_GRID * FG_NY;
-    ct.psi_fnzgrid = NZ_GRID * FG_NZ;
-
     /*Currently, fine grid has to be the same in each direction */
     get_data("beta_grid_refinement",  &ct.nxfgrid, INT, "4");
 

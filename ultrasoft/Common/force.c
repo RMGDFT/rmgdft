@@ -60,6 +60,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     REAL sumx, sumy, sumz;
 #endif
 
+    int Zi;
     time3 = my_crtc ();
 
 #if VERBOSE

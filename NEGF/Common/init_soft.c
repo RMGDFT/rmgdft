@@ -62,6 +62,17 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     time1 = my_crtc ();
 
+    ct.psi_nbasis = NX_GRID * NY_GRID * NZ_GRID;
+    ct.psi_nxgrid = NX_GRID;
+    ct.psi_nygrid = NY_GRID;
+    ct.psi_nzgrid = NZ_GRID;
+
+    ct.psi_fnbasis = FNX_GRID * FNY_GRID * FNZ_GRID;
+    ct.psi_fnxgrid = FNX_GRID;
+    ct.psi_fnygrid = FNY_GRID;
+    ct.psi_fnzgrid = FNZ_GRID;
+
+
 
     flag = 0;
 

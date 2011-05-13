@@ -968,6 +968,7 @@ typedef struct
 
     /* Total points for wavefunctions */
     int psi_nbasis;
+    int psi_fnbasis;
 
     /* Total points for potential */
     int vh_nbasis;
