@@ -19,7 +19,7 @@ void lforce (REAL * rho, REAL * vh)
     int *pvec, docount, size;
     int ilow, jlow, klow, ihi, jhi, khi, map;
     int icut, icenter;
-    int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
+    int *Aix, *Aiy, *Aiz;
     REAL r, xc, yc, zc, Zv, rc, rcnorm, t1;
     REAL ax[3], bx[3], x_hat, y_hat, z_hat, rc2, invdr, norm1;
     REAL fx, fy, fz;
@@ -31,6 +31,11 @@ void lforce (REAL * rho, REAL * vh)
     REAL time1, time2;
     time1 = my_crtc ();
 #endif
+
+
+    my_calloc( Aix, FNX_GRID, int );
+    my_calloc( Aiy, FNY_GRID, int );
+    my_calloc( Aiz, FNZ_GRID, int );
 
     size = FP0_BASIS;
     my_malloc (rx, 6 * size, REAL);

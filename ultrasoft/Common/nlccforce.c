@@ -49,7 +49,7 @@ void nlccforce (REAL * rho, REAL * vxc)
     int ix, iy, iz, ion, idx;
     int *pvec, docount, ishift;
     int ilow, jlow, klow, ihi, jhi, khi, map;
-    int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
+    int *Aix, *Aiy, *Aiz;
     REAL r, xc, yc, zc, invdr;
     REAL ax[3], axs[3], bx[3];
     REAL shift[4];
@@ -63,6 +63,11 @@ void nlccforce (REAL * rho, REAL * vxc)
     REAL time1, time2;
     time1 = my_crtc ();
 #endif
+
+
+    my_calloc( Aix, FNX_GRID, int );
+    my_calloc( Aiy, FNY_GRID, int );
+    my_calloc( Aiz, FNZ_GRID, int );
 
     my_malloc (locsum, 12, REAL);
     my_malloc (prjptr, 12 * FP0_BASIS, REAL);

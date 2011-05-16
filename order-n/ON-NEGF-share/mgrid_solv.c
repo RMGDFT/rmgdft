@@ -72,8 +72,9 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
 
     REAL tem1, tem;
 
+    double step;
 
-
+    step = 1.0;
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     incx = (dimy + 2) * (dimz + 2);
@@ -125,7 +126,7 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
     {
 
         /* solve once */
-        solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
 
 
         /* trade boundary info */
