@@ -83,7 +83,7 @@ void rho_Qnm_mat(double *Aij, REAL * global_mat_X)
             proc2 += NPES;
 
 
-        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbBpsi_comm, size,
+        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
                 MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
 
 
@@ -109,7 +109,7 @@ void rho_Qnm_mat(double *Aij, REAL * global_mat_X)
 
                                 iip2 = (st2 - state_begin[proc2]) * num_nonlocal_ion[proc2] * ct.max_nl;
                                 iip2a = iip2 + ion2 * ct.max_nl + ip2;
-                                tem += global_mat_X[st1 * ct.num_states + st2] * kbBpsi_comm[iip2a];
+                                tem += global_mat_X[st1 * ct.num_states + st2] * kbpsi_comm[iip2a];
                             }
 
                             for (ip1 = 0; ip1 < ct.max_nl; ip1++)

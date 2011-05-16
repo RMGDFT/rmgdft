@@ -86,7 +86,7 @@ void rho_nm_mat (double *Aij, REAL * global_mat_X)
             proc2 += NPES;
 
 
-        MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbBpsi_comm, size,
+        MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
                       MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
 
 
@@ -120,7 +120,7 @@ void rho_nm_mat (double *Aij, REAL * global_mat_X)
                                             ct.max_nl + ip1 * ct.max_nl + ip2;
                                         Aij[ist] +=
                                             2.0 * alfa * global_mat_X[st1 * ct.num_states + st2] *
-                                            kbpsi[iip1a] * kbBpsi_comm[iip2a];
+                                            kbpsi[iip1a] * kbpsi_comm[iip2a];
                                     }
                                 }
                             }   /* end shuchun wang */

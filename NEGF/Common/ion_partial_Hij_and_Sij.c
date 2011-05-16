@@ -127,7 +127,7 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
             proc2 += NPES;
 
 
-        MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbBpsi_comm, size,
+        MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
                       MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
 
         MPI_Sendrecv(partial_kbpsi, size, MPI_DOUBLE, proc1, idx, partial_kbpsi_comm, size, 
@@ -179,12 +179,12 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
 
                                     /* from sum_nm ( par_Dnm/par_R * <phi|beta_n><beta_m|phi> ) */
                                     if (fabs (kbpsi[iip1a]) > 0.)
-                                        Hij[ist] += alpha * dnmI_R[ip2 * nh + ip1] * kbpsi[iip1a] * kbBpsi_comm[iip2a];
+                                        Hij[ist] += alpha * dnmI_R[ip2 * nh + ip1] * kbpsi[iip1a] * kbpsi_comm[iip2a];
 
                                     /* from sum_nm[Dnm*(<phi|par_beta_n><beta_m|phi> + <phi|beta_n><par_beta_m|phi>)] */
                                     if ((fabs (kbpsi[iip1a]) > 0.) || (fabs(partial_kbpsi[iip1a]) > 0.))
                                     {
-                                        temp = partial_kbpsi[iip1a] * kbBpsi_comm[iip2a] 
+                                        temp = partial_kbpsi[iip1a] * kbpsi_comm[iip2a] 
                                                     + kbpsi[iip1a] * partial_kbpsi_comm[iip2a];
                                         Hij[ist] += alpha * dnmI[ip1 * nh + ip2] * temp;
                                         Sij[ist] += alpha * qqq[ip1 * nh + ip2] * temp;

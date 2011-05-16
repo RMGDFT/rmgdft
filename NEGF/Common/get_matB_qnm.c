@@ -91,7 +91,7 @@ void get_matB_qnm(double *Aij)
             proc2 += NPES;
 
 
-        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbBpsi_comm, size,
+        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
                 MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
 
 
@@ -131,7 +131,7 @@ void get_matB_qnm(double *Aij)
                                 iip2 = (st2 - state_begin[proc2]) * num_nonlocal_ion[proc2] * ct.max_nl;
 
                                 iip2a = iip2 + ion2 * ct.max_nl + ip2;
-                                Aij[ist] += tem * kbBpsi_comm[iip2a];
+                                Aij[ist] += tem * kbpsi_comm[iip2a];
                             }
                         }   /* end shuchun wang */
                     }       /* end if (ion1_glo... */

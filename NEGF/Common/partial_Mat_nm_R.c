@@ -96,7 +96,7 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
 
 
         MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx,
-                      kbBpsi_comm, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                      kbpsi_comm, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
         MPI_Sendrecv (partial_kbpsi_x, size, MPI_DOUBLE, proc1, idx,
                       kbpsi_comm_x, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
         MPI_Sendrecv (partial_kbpsi_y, size, MPI_DOUBLE, proc1, idx,
@@ -128,17 +128,17 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
                                 for (ip2 = 0; ip2 < ct.max_nl; ip2++)
                                 {
                                     iip2a = iip2 + ion2 * ct.max_nl + ip2;
-                                    if ((fabs (kbpsi[iip1a]) > 0.) || (fabs(kbBpsi_comm[iip2a]) > 0.))
+                                    if ((fabs (kbpsi[iip1a]) > 0.) || (fabs(kbpsi_comm[iip2a]) > 0.))
                                     {
                                         ist = ion1_global * ct.max_nl * ct.max_nl + ip1 * ct.max_nl + ip2;
                                         partial_x[ist] += 2.0 * alfa * global_mat_X[st1 * ct.num_states + st2] *
-                                            (kbpsi[iip1a] * kbpsi_comm_x[iip2a] + partial_kbpsi_x[iip1a] * kbBpsi_comm[iip2a]);
+                                            (kbpsi[iip1a] * kbpsi_comm_x[iip2a] + partial_kbpsi_x[iip1a] * kbpsi_comm[iip2a]);
 
                                         partial_y[ist] += 2.0 * alfa * global_mat_X[st1 * ct.num_states + st2] *
-                                            (kbpsi[iip1a] * kbpsi_comm_y[iip2a] + partial_kbpsi_y[iip1a] * kbBpsi_comm[iip2a]);
+                                            (kbpsi[iip1a] * kbpsi_comm_y[iip2a] + partial_kbpsi_y[iip1a] * kbpsi_comm[iip2a]);
 
                                         partial_z[ist] += 2.0 * alfa * global_mat_X[st1 * ct.num_states + st2] *
-                                            (kbpsi[iip1a] * kbpsi_comm_z[iip2a] + partial_kbpsi_z[iip1a] * kbBpsi_comm[iip2a]);
+                                            (kbpsi[iip1a] * kbpsi_comm_z[iip2a] + partial_kbpsi_z[iip1a] * kbpsi_comm[iip2a]);
                                     }
                                 }
                             }/* end shuchun wang */
