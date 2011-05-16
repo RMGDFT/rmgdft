@@ -190,7 +190,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
         tem += (rho[idx] - rho_old[idx]) * (rho[idx] - rho_old[idx]);
     }
 
-    tem = real_sum_all (tem);
+    tem = real_sum_all (tem, pct.grid_comm);
     tem = sqrt (tem);
 
     if (pct.gridpe == 0)

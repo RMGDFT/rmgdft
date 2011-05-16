@@ -51,7 +51,7 @@ void get_qqq()
                         sum += qnmI[icount];
                     }
                 }
-                sum = real_sum_all(sum);
+                sum = real_sum_all(sum, pct.grid_comm);
                 sum = sum * ct.vel_f;
                 if (fabs(sum) < 1.0e-8)
                     sum = 0.0;

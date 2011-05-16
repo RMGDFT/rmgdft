@@ -48,7 +48,7 @@ void get_vxc(REAL * rho, REAL * rhocore, REAL * vxc)
 
     nn = ct.vh_pbasis;          /*shuchun wang */
     esum = ddot(&nn, vxc, &ione, rho, &ione);
-    ct.Evxcold_rho = ct.vel_f * real_sum_all(esum);
+    ct.Evxcold_rho = ct.vel_f * real_sum_all(esum, pct.grid_comm);
 
 
     /*begin shuchun wang */

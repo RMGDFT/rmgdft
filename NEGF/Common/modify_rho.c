@@ -64,7 +64,7 @@ void modify_rho (REAL * rho, REAL * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < FP0_BASIS; idx++)
             tcharge += rho[idx];
-        ct.tcharge = real_sum_all (tcharge);
+        ct.tcharge = real_sum_all (tcharge, pct.grid_comm);
         for (idx = 0; idx < FP0_BASIS; idx++)
             rho[idx] = rho_old[idx];
 
@@ -79,7 +79,7 @@ void modify_rho (REAL * rho, REAL * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < FP0_BASIS; idx++)
             tcharge += rho[idx];
-        ct.tcharge = real_sum_all (tcharge) * ct.vel_f;
+        ct.tcharge = real_sum_all (tcharge, pct.grid_comm) * ct.vel_f;
         if (pct.gridpe == 0)
             printf ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
@@ -131,8 +131,8 @@ void modify_rho (REAL * rho, REAL * rho_old)
             }
         }
 
-        t2 = real_sum_all (total_charge) * ct.vel_f;
-        t_fixed = real_sum_all (tcharge_fixed) * ct.vel_f;
+        t2 = real_sum_all (total_charge, pct.grid_comm) * ct.vel_f;
+        t_fixed = real_sum_all (tcharge_fixed, pct.grid_comm) * ct.vel_f;
 
         if (pct.gridpe == 0)
             printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",

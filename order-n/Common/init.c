@@ -224,8 +224,8 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
             tem += rho[idx];
             tem1 += rhoc[idx];
         }
-        tem = real_sum_all(tem);
-        tem1 = real_sum_all(tem1);
+        tem = real_sum_all(tem, pct.grid_comm);
+        tem1 = real_sum_all(tem1, pct.grid_comm);
         if (pct.gridpe == 0)
             printf("\n %f %f initial rho sum ", tem, tem1);
         write_rho_x(rho, "rhoooo");

@@ -290,7 +290,7 @@ void get_new_rho(STATE * states, double *rho)
    tcharge = 0.0;
    for (idx = 0; idx < FP0_BASIS; idx++)
        tcharge += rho[idx];
-   ct.tcharge = real_sum_all(tcharge);
+   ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
 
 
    ct.tcharge *= ct.vel_f;

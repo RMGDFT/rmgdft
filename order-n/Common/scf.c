@@ -103,7 +103,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         tem1 += rho_old[idx] * rho_old[idx];
     }
 
-    tem1 = sqrt(real_sum_all (tem1) ) /(double) FP0_BASIS;
+    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) FP0_BASIS;
     pulay_rho (steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 

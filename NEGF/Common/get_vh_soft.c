@@ -68,7 +68,7 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
 
     /* Keep in memory vh*rho_new before updating vh */
     scale = ddot (&stop, rho, &ione, vh, &ione);
-    ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all (scale);
+    ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all (scale, pct.grid_comm);
 
     nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst + 1;
     sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
@@ -188,7 +188,7 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += ct.vh_ext[idx];
 
-                vavgcor = real_sum_all (vavgcor);
+                vavgcor = real_sum_all (vavgcor, pct.grid_comm);
                 t1 = (REAL) (ct.vh_nxgrid * ct.vh_nygrid * ct.vh_nzgrid);
                 vavgcor = vavgcor / t1;
 
@@ -212,10 +212,10 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
 
     /* Compute quantities function of rho only */
     scale = ddot (&stop, rho, &ione, vh, &ione);
-    ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all (scale);
+    ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all (scale, pct.grid_comm);
 
     scale = ddot (&stop, rhoc, &ione, vh, &ione);
-    ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all (scale);
+    ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all (scale, pct.grid_comm);
 
 
 

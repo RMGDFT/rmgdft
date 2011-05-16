@@ -1260,7 +1260,7 @@ void read_rho_and_pot(char *name, double *vh, double *vxc, double *vh_old, doubl
 void read_pseudo(void);
 void read_LCR(void);
 void read_cond_input(double *emin, double *emax, int *E_POINTS, double *E_imag, double *KT, int *kpoint );
-REAL real_sum_all(REAL x);
+REAL real_sum_all(REAL x, MPI_Comm comm);
 REAL real_max_all(REAL x);
 void rft(REAL *f, REAL *r, REAL *ffil, REAL al, int rg_points, int lval,
         REAL dr, REAL width, int lrg_points);

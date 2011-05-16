@@ -46,7 +46,7 @@ void get_ddd(REAL * veff)
                         sum += qnmI[icount] * veff[ivec[icount]];
                     }
                 }
-                sum = real_sum_all(sum);
+                sum = real_sum_all(sum, pct.grid_comm);
                 sum = sum * ct.vel_f;
 
                 if (fabs(sum) < 1.0e-10)

@@ -1265,7 +1265,7 @@ void read_control (void);
 void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, REAL * vh_old,
         REAL * vxc_old, STATE * states);
 void read_pseudo (void);
-REAL real_sum_all (REAL x);
+REAL real_sum_all (REAL x, MPI_Comm comm);
 REAL real_max_all (REAL x);
 void rft (REAL * f, REAL * r, REAL * ffil, REAL al, int rg_points, int lval,
         REAL dr, REAL width, int lrg_points);

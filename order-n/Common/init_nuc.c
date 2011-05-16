@@ -376,7 +376,7 @@ static double get_charge(double *rho1)
         charge += rho1[idx];
 
     }                           /* end for */
-    charge = real_sum_all(charge);
+    charge = real_sum_all(charge, pct.grid_comm);
     charge *= ct.vel_f;
 
     return charge;
