@@ -1309,7 +1309,7 @@ REAL QMD_sdot(int n, REAL *x, int incx, REAL *y, int incy);
 
 
 
-int get_index(ION *iptr, int *Aix, int *Aiy, int *Aiz,
+int get_index(int gridpe, ION *iptr, int *Aix, int *Aiy, int *Aiz,
         int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
         int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
         int nxgrid, int nygrid, int nzgrid,
@@ -1445,11 +1445,6 @@ void aainit(int lli, int mix, int lx, int mx, int nlx, REAL ap[][9][9], int lpx[
 void ylmr2(double *r, double *ylm);
 REAL qval(int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol, int *nhtom,
         int *indv, REAL *ylm, REAL ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES *sp);
-int get_index(ION *iptr, int *Aix, int *Aiy, int *Aiz,
-        int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
-        int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-        int nxgrid, int nygrid, int nzgrid,
-        REAL *xcstart, REAL *ycstart, REAL *zcstart);
 REAL get_QnmL(int idx, int ltot, REAL r, SPECIES *sp);
 void assign_weight(SPECIES *sp, fftw_complex *weptr, REAL *rtptr);
 void pack_gftoc(SPECIES *sp, fftw_complex *gwptr, fftw_complex *gbptr);
