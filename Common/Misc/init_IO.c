@@ -165,6 +165,7 @@ void init_IO (int argc, char **argv)
         }
     }
 
+    printf("Basename set to :%s:", ct.basename);
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
@@ -179,9 +180,16 @@ void init_IO (int argc, char **argv)
                 *extension = '\0';
             if ((quantity = rindex (basename, '.')) != NULL)
                 if ( quantity[1] == 'r' )
-                    *quantity = '\0';
+                {
+                    /* throw away image number, just satisfies function return */
+                     image = (int) strtol (&quantity[2], &endptr, 10);
+
+                    /*Check if this is a log rename number, additionally it should only be 2 digits long*/
+                    if (extension == endptr)
+                        *quantity = '\0';
+                }
             snprintf (ct.basename, MAX_PATH, "%s.r%02d", basename, lognum );
-	    snprintf (logname, MAX_PATH, "%s.log", ct.basename);
+            snprintf (logname, MAX_PATH, "%s.log", ct.basename);
         }
 
         /* open and save logfile handle, printf is stdout before here */
