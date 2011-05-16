@@ -98,8 +98,6 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
     /* Transfer rho into smoothing grid */
     pack_ptos (sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-    trade_images (sg_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, &pct.neighbors[0]);
-
     /* Apply CI right hand side to rho and store result in work array */
     app_cir (sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
@@ -121,7 +119,6 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
             /* Transfer vh into smoothing grid */
             pack_ptos (sg_rho, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-            trade_images (sg_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, &pct.neighbors[0]);
             /* Apply operator */
             diag = app_cil (sg_rho, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             ct.hxxgrid, ct.hyygrid, ct.hzzgrid);

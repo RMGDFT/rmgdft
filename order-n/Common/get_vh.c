@@ -100,7 +100,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     /* Transfer rho into smoothing grid */
     pack_ptos(sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-    trade_images(sg_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, &pct.neighbors[0]);
 
     /* Apply CI right hand side to rho and store result in work array */
     app_cir(sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
@@ -122,7 +121,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
             /* Transfer vh into smoothing grid */
             pack_ptos(sg_rho, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-            trade_images(sg_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, &pct.neighbors[0]);
 
             /* Apply operator */
             diag =
