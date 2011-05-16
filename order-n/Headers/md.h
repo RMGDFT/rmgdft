@@ -1312,13 +1312,6 @@ REAL QMD_sdot (int n, REAL * x, int incx, REAL * y, int incy);
 
 
 
-int get_index (ION * iptr, int *Aix, int *Aiy, int *Aiz,
-        int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
-        int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-        int nxgrid, int nygrid, int nzgrid,
-        REAL * lxcstart, REAL * lycstart, REAL * lzcstart);
-
-
 /* Conversion between crystal and cartesian coordinate prototypes */
 void latgen (int *ibrav, REAL * celldm, REAL * A0I, REAL * A1I, REAL * A2I,
         REAL * OMEGAI, int *flag);
@@ -1468,7 +1461,7 @@ void ylmr2 (double *r, double *ylm);
 REAL qval (int ih, int jh, REAL r, REAL invdr, REAL * ptpr, int *nhtol,
         int *nhtom, int *indv, REAL * ylm, REAL ap[][9][9], int lpx[][9],
         int lpl[][9][9], SPECIES * sp);
-int get_index (ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, int *ihi,
+int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, int *ihi,
         int *jlow, int *jhi, int *klow, int *khi, int cdim, int pxgrid,
         int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid,
         REAL * xcstart, REAL * ycstart, REAL * zcstart);

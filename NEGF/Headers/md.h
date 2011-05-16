@@ -1189,7 +1189,7 @@ void eval_residual( REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz,
         REAL gridhx, REAL gridhy, REAL gridhz, REAL *res );
 void solv_pois( REAL *vmat, REAL *fmat, REAL *work, 
         int dimx, int dimy, int dimz, REAL gridhx, 
-        REAL gridhy,REAL gridhz);
+        REAL gridhy,REAL gridhz, double step);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
 void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
         STATE *states, STATE *states1, complex double *sigma_all);

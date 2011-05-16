@@ -253,7 +253,7 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
         {
 
             /* solve once */
-            solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
 
 
             /* trade boundary info */
