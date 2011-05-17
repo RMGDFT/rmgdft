@@ -4,7 +4,7 @@
 
 
 
-void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
+void force(REAL *rho, REAL *rho_opps,REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
             STATE *states);
 void lforce(REAL *rho, REAL *vh);
 void nlccforce(REAL *rho, REAL *vxc);

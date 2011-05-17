@@ -38,7 +38,7 @@ Documentation:
 
 
 
-void get_dm_diag_p(STATE * states, double l_s[], double X[], double hb[])
+void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
 {
     int i, ione = 1, info, numst = ct.num_states;
     double zero = 0., one = 1.;

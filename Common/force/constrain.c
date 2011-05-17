@@ -38,6 +38,7 @@
 void constrain (void)
 {
 
+#if 0
 	switch (ct.constrainforces)
 	{
 		case 3:                    /* NEB tangent to normalized adjacent images */
@@ -223,6 +224,7 @@ void constrain (void)
 	}
 
 	return;
+#endif
 }
 
 #if 0	

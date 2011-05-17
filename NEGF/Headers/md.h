@@ -678,6 +678,16 @@ typedef struct
 
     int first_state_index;
 
+
+
+ /* Force modifier parameters */
+     struct {
+         REAL setA_weight;
+         REAL setA_coord[3];
+         REAL setB_weight;
+         REAL setB_coord[3];
+     } constraint;
+
 } ION;
 
 
@@ -1145,6 +1155,11 @@ typedef struct
 
     REAL z_field_0;
 
+    /* Should we process constraints on forces flag */
+    int constrainforces;
+ 
+    REAL neb_spring_constant;
+
 } CONTROL;
 
 
@@ -1202,8 +1217,6 @@ void solv_pois( REAL *vmat, REAL *fmat, REAL *work,
         int dimx, int dimy, int dimz, REAL gridhx, 
         REAL gridhy,REAL gridhz, double step);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
-void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
-        STATE *states);
 void genvpsi(REAL *psi, REAL *twovpsi, REAL *pvtot, REAL *pvnl, REAL *kd, 
         REAL kmag, int dimx, int dimy, int dimz);
 void get_index_loc(STATE *);
@@ -1390,7 +1403,6 @@ void get_matB(STATE *states, STATE *states1, double *mat);
 void get_all_kbpsi(STATE *states1, STATE *states);
 void get_Hvnlij( double *Aij);
 void genvlocpsi(REAL *psi, int st1, REAL *work1, REAL *vtot_global, STATE *states);
-void get_dm_diag(STATE *states, double l_s[], double X[], double hb[]);
 void get_vnlpsi(STATE *sp1, double *kbpsi, double *work);
 void genvnlpsi(double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);

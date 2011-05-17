@@ -634,6 +634,16 @@ typedef struct
     double *fftw_phase_sin;
     double *fftw_phase_cos;
 
+ /* Force modifier parameters */
+    struct {
+        REAL setA_weight;
+        REAL setA_coord[3];
+        REAL setB_weight;
+        REAL setB_coord[3];
+    } constraint;
+
+
+
 } ION;
 
 
@@ -1144,6 +1154,10 @@ typedef struct
 
     REAL z_field_0;
 
+     /* Should we process constraints on forces flag */
+    int constrainforces;
+
+    REAL neb_spring_constant;
 
 } CONTROL;
 
@@ -1204,8 +1218,7 @@ void solv_pois (REAL * vmat, REAL * fmat, REAL * work,
         REAL gridhy, REAL gridhz, double step);
 REAL fill (STATE * states, REAL width, REAL nel, REAL mix,
         int num_st, int occ_flag);
-void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc,
-        STATE * states);
+void force (REAL * rho, REAL * rho_opps, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states);
 void genvpsi (REAL * psi, REAL * twovpsi, REAL * pvtot, REAL * pvnl,
         REAL * kd, REAL kmag, int dimx, int dimy, int dimz);
 void get_index_loc (STATE *);
@@ -1382,9 +1395,7 @@ void get_overlap_real (double *aa, int numst, int numpt,
 void get_cholesky_real (double *matS);
 void get_all_kbpsi (STATE * states1, STATE * states);
 void get_Hvnlij (double *Aij);
-void genvlocpsi (REAL * psi, int st1, REAL * work1, REAL * vtot_global,
-        STATE * states);
-void get_dm_diag (STATE * states, double l_s[], double X[], double hb[]);
+void genvlocpsi (REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
 void get_new_rho (STATE * states, double *rho);

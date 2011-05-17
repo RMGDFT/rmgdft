@@ -52,7 +52,7 @@
 void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
 {
     int ion, st, kpt, idx, nspin = (ct.spin_flag + 1);
-    REAL *vtot, *rho_tot, meanres;
+    REAL *vtott, *rho_tot, meanres;
     STATE *sp;
     REAL time1, time2, time3;
 #if VERBOSE
@@ -74,33 +74,9 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     }
 #endif
 
-    my_malloc (vtot, FP0_BASIS, REAL);
+    my_malloc (vtott, FP0_BASIS, REAL);
     for (idx = 0; idx < FP0_BASIS; idx++)
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
-
-    /* Compute residual information */
-    meanres = 0.0;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
-    {
-        sp = ct.kp[kpt].kstate;
-        for (st = 0; st < ct.num_states; st++)
-        {
-            meanres += sp->res;
-            sp++;
-        }
-    }
-
-    if (ct.spin_flag)
-	    meanres = real_sum_all (meanres, pct.spin_comm);
-
-    ct.meanres = meanres / ((REAL) (ct.num_kpts * ct.num_states * nspin));
-
-    /* Print out residual information */
-
-    printf ("\n@@Force Mean Occ Subspace Res = %15.8e", ct.meanres);
-    printf ("\n@@Force Max Occ Subspace Res   = %15.8e", ct.maxres);
-    printf ("\n@@Force Min Occ Subspace Res   = %15.8e", ct.minres);
-
+        vtott[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
 
     /* Zero out forces */
@@ -115,6 +91,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
         ct.ions[ion].force[ct.fpt[0]][2] = ct.e_field * ct.z_field_0 * Zi;
 
     }
+
 
     /* Get the ion-ion component and store. */
     iiforce ();
@@ -161,6 +138,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     else
     	lforce (rho, vh);
 
+    dprintf("\n cccc \n");
 #if VERBOSE
     if (pct.imgpe == 0)
     {
@@ -191,7 +169,9 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     time1 = my_crtc ();
 
     /* Add in the non-local stuff */
-    nlforce1 (vtot);
+    nlforce1 (vtott);
+
+    dprintf("\n bbbb \n");
 
     time2 = my_crtc ();
     rmg_timings (NLFORCE_TIME, (time2 - time1));
@@ -227,6 +207,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
 
     /* The non-linear core correction part if any */
     nlccforce (rho, vxc);
+    dprintf("\n aaaa \n");
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -257,7 +238,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     if (!(ct.kp[0].kpt[0] == 0.0 && ct.kp[0].kpt[1] == 0.0 && ct.kp[0].kpt[2] == 0.0))
         symforce ();
 #endif
-    my_free (vtot);
+    my_free (vtott);
 
     /* Impose force constraints, if any */
     if( ct.constrainforces )

@@ -207,6 +207,7 @@ void read_control (void)
     ct.y_field_0 = strtod (tbuf, &tbuf);
     ct.z_field_0 = strtod (tbuf, &tbuf);
     get_data ("electric_field_magnitude", &ct.e_field, DBL, "0.0");
+    ct.constrainforces = 0;
 
 
     /* -------------------------------- */

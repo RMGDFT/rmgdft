@@ -220,7 +220,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     if (ct.forceflag !=0 )
     {
         /* Calculate the force */
-        force (rho, rhoc, vh, vxc, vnuc, states);
+        force (rho, rho, rhoc, vh, vxc, vnuc, states);
         /* write out the force */
         if (pct.gridpe == 0)
             write_force ();
