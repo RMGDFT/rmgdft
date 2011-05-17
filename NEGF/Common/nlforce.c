@@ -57,7 +57,7 @@ void nlforce (REAL * veff)
             size = 3 * (nh * (nh + 1) / 2) * count;
             my_malloc_init( QnmI_R, size, REAL );
 
-            partial_QI(ion, QnmI_R);
+            partial_QI(ion, QnmI_R, iptr);
         }
 
         get_partial_ddd (QnmI_R, veff, ion, nh);

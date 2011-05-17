@@ -33,7 +33,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, REAL *GHG, REAL *
 void get_all_partial_kbpsi (STATE * states);
 void rho_nm_mat (double *Aij, REAL * global_mat_X);
 void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, REAL * global_mat_X);
-void partial_QI(int ion, REAL * QI_R);
+void partial_QI(int ion, REAL * QI_R, ION *iptr);
 void get_partial_ddd (REAL * QnmI_R, REAL * veff, int ion, int nh);
 void nlforce_par_Q(REAL * rho_nm, int ion, int nh, REAL *forces);
 void nlforce_par_rho(REAL * par_gamma_x, REAL * par_gamma_y, REAL * par_gamma_z, int ion, int nh, REAL *forces);

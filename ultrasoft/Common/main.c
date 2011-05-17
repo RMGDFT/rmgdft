@@ -147,7 +147,9 @@ void initialize(int argc, char **argv)
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
     
-
+    pct.pe_x = PE_X;
+    pct.pe_y = PE_Y;
+    pct.pe_z = PE_Z;
 
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/

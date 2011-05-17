@@ -1497,7 +1497,7 @@ void nlforce_par_Q(REAL *veff, REAL *rho_nm, int ion, int nh, double
 *force_tem);
 void nlforce_par_rho(REAL *par_gamma_x, REAL *par_gamma_y, REAL *par_gamma_z, int ion, int nh);
 void nlforce_par_omega(REAL *par_omega_x, REAL *par_omega_y, REAL *par_omega_z, int ion, int nh);
-void partial_QI (int ion, REAL * QI_R);
+void partial_QI (int ion, REAL * QI_R, ION *iptr);
 void partial_nlop_s (ION * iptr, REAL * betax, REAL * betay, REAL * betaz,
         int ip, fftwnd_plan p1, fftwnd_plan p2);
 void partial_nlop_p (ION * iptr, REAL * betax, REAL * betay, REAL * betaz,

@@ -42,7 +42,7 @@ void nlforce_par_Q(REAL * veff, REAL * rho_nm, int ion, int nh, double *forces)
         for (idx1 = 0; idx1 < 3 * size; idx1++)
             QnmI_R[idx1] = 0.0;
 
-        partial_QI(ion, QnmI_R);
+        partial_QI(ion, QnmI_R, iptr);
 
         for (icount = 0; icount < count; icount++)
         {
