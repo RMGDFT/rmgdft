@@ -12,7 +12,7 @@
 
 #define         LDEBUG  0
 
-void nlforce_par_D (complex double *sigma_all, STATE *states, STATE *states1, REAL *forces)
+void nlforce_par_D (STATE *states, REAL *forces)
 {
     int st1, st2, ixyz;
     int nC, nL, i, ntot, ion;
@@ -34,7 +34,7 @@ void nlforce_par_D (complex double *sigma_all, STATE *states, STATE *states1, RE
     my_malloc_init( GHG_en_tri, ntot, REAL );
 
     /* get the integration of multipliation of GHG and GHG*epslion over energy points */
-    multi_GHG_munu (sigma_all, GHG_tri, GHG_en_tri);
+    multi_GHG_munu (GHG_tri, GHG_en_tri);
     my_free (sigma_all);
 
     my_malloc_init( par_Hij_tri, ntot, REAL );

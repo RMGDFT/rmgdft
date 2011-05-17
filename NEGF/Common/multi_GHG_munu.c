@@ -12,7 +12,7 @@
 
 #define 	LDEBUG 	0
 
-void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri)
+void multi_GHG_munu (REAL *GHG_tri, REAL *GHG_en_tri)
 {
     int iprobe, jprobe, iene;
     int st1, st2, idx_sigma;

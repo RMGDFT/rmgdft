@@ -13,7 +13,7 @@
 
 
 void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, 
-            STATE * states, STATE * states1, complex double * sigma_all)
+            STATE * states)
 {
     int ion, st, kpt, idx;
     STATE *sp;
@@ -60,7 +60,7 @@ void force (REAL * rho, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc,
 
 
     /* Add in the non-local stuff */
-    nlforce (vtot, states, states1, sigma_all);
+    nlforce (vtot, states);
 
     if (pct.gridpe == 0)
     {

@@ -123,6 +123,7 @@ REAL *sg_orbit;
 REAL *sg_orbit_res;
 REAL *orbit_tem;
 REAL *vtot_global;
+complex double *sigma_all;
 
 
 int NPES;
@@ -1192,7 +1193,7 @@ void solv_pois( REAL *vmat, REAL *fmat, REAL *work,
         REAL gridhy,REAL gridhz, double step);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
 void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
-        STATE *states, STATE *states1, complex double *sigma_all);
+        STATE *states);
 void genvpsi(REAL *psi, REAL *twovpsi, REAL *pvtot, REAL *pvnl, REAL *kd, 
         REAL kmag, int dimx, int dimy, int dimz);
 void get_index_loc(STATE *);

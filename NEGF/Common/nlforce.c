@@ -15,7 +15,7 @@
 
 
 
-void nlforce (REAL * veff, STATE * states, STATE * states1, complex double * sigma_all)
+void nlforce (REAL * veff, STATE * states)
 {
     int ion, i, isp, count;
     int nh, size, n2, idx;
@@ -90,7 +90,7 @@ void nlforce (REAL * veff, STATE * states, STATE * states1, complex double * sig
     get_ion_orbit_overlap_loc (states);
     partial_vloc ();
 
-    nlforce_par_D (sigma_all, states, states1, force);
+    nlforce_par_D (states, force);
 
     size = ct.num_ions * 3;
     global_sums (force, &size, pct.grid_comm);

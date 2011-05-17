@@ -24,7 +24,7 @@ void get_dos (STATE * states)
     int iene, st1;
     complex double *tot, *tott, *g;
     REAL *green_tem, *green_C;
-    complex double *sigma, *sigma_all;
+    complex double *sigma;
     REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
     REAL de, emin, emax;
 

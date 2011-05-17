@@ -56,7 +56,6 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 
     int st1, st2, st11, st22;
     int idx, idx1, nL, iprobe, jprobe;
-    complex double *sigma_all;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j, k, jj, kk, idx_delta, idx_C;
     int j1, k1, jdiff, kdiff;
@@ -221,7 +220,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     if (ct.forceflag !=0 )
     {
         /* Calculate the force */
-        force (rho, rhoc, vh, vxc, vnuc, states, states1, sigma_all);
+        force (rho, rhoc, vh, vxc, vnuc, states);
         /* write out the force */
         if (pct.gridpe == 0)
             write_force ();

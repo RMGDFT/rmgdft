@@ -27,7 +27,7 @@ void get_cond_frommatrix ()
     complex double * H_tri,*tot, *tott, *g;
     complex double *green_C;
     complex double *temp_matrix1, *temp_matrix2;
-    complex double *Gamma1, *Gamma2, *sigma, *sigma_all;
+    complex double *Gamma1, *Gamma2, *sigma;
     REAL de, emin, emax, E_imag, KT, current;
     REAL *ener1, *cond;
     int ntot, ndim, nC, idx_C, *sigma_idx;

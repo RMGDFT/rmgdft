@@ -5,16 +5,16 @@
 
 
 void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc,
-            STATE *states, STATE *states1, complex double *sigma_all);
+            STATE *states);
 void lforce(REAL *rho, REAL *vh);
 void nlccforce(REAL *rho, REAL *vxc);
-void nlforce(double *, STATE *states, STATE *states1, complex double *);
-void nlforce_par_D (complex double * sigma_all, STATE *states, STATE *states1, REAL *forces);
+void nlforce(double *, STATE *states);
+void nlforce_par_D (STATE *states, REAL *forces);
 
 REAL *vnuc_x, *vnuc_y, *vnuc_z;
 short int vloc_state_overlap_or_not[MAX_IONS * MAX_STATES];
 
-void multi_GHG_munu (complex double *sigma_all, REAL *GHG_tri, REAL *GHG_en_tri);
+void multi_GHG_munu (REAL *GHG_tri, REAL *GHG_en_tri);
 double trace_AB_tri(REAL * H_tri, REAL * par_D_tri, int N, int *ni);
 
 void tri_to_whole_complex (complex double * H_tri, complex double * Hii, int N, int * ni);
