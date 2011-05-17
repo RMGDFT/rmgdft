@@ -32,20 +32,6 @@ void get_QI (void)
 
 
 
-    for (k = 0; k < 9; k++)
-    {
-        for (j = 0; j < 9; j++)
-        {
-            for (i = 0; i < 25; i++)
-            {
-                ap[i][j][k] = 0.0;
-                if (i < 9)
-                    lpl[i][j][k] = 0;
-            }
-            lpx[k][j] = 0;
-        }
-    }
-
     for (is = 0; is < ct.num_species; is++)
     {
         for (j = 0; j < 18; j++)
@@ -82,6 +68,7 @@ void get_QI (void)
 
     }
 
+    /* Initialize some coefficients (not sure what exactly)*/
     aainit (lmax + 1, 2 * lmax + 1, 2 * lmax + 1, 4 * lmax + 1, (lmax + 1) * (lmax + 1), ap, lpx,
             lpl);
 

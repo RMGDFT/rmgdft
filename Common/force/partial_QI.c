@@ -23,19 +23,6 @@ void partial_QI (int ion, REAL * QI_R, ION * iptr)
     SPECIES *sp;
 
 
-    for (k = 0; k < 9; k++)
-    {
-        for (j = 0; j < 9; j++)
-        {
-            for (i = 0; i < 25; i++)
-            {
-                ap[i][j][k] = 0.0;
-                if (i < 9)
-                    lpl[i][j][k] = 0;
-            }
-            lpx[k][j] = 0;
-        }
-    }
 
     for (j = 0; j < 18; j++)
     {

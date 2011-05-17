@@ -11,13 +11,27 @@
 void aainit (int lli, int mix, int lx, int mx, int nlx, REAL ap[][9][9], int lpx[][9],
              int lpl[][9][9])
 {
-    int ll, lp, mp, np, l, m, k, n, p, il, ik, mpp, li, lj, mi, mj, ilp;
+    int ll, lp, mp, np, l, m, k, n, p, il, ik, mpp, li, lj, mi, mj, ilp, j, i;
     REAL y = 0.0, f, t, s, fs, ss, fts, ts;
     REAL cc[3][5][3][5][5];
     REAL aaR[5][9][3][5][3][5], aaI[5][9][3][5][3][5];
     REAL uR[5][9][9], uI[5][9][9];
     REAL sumR, sumI;
 
+
+    for (k = 0; k < 9; k++)
+    {
+        for (j = 0; j < 9; j++)
+        {
+            for (i = 0; i < 25; i++)
+            {
+                ap[i][j][k] = 0.0;
+                if (i < 9)
+                    lpl[i][j][k] = 0;
+            }
+            lpx[k][j] = 0;
+        }
+    }
 
     ll = 2 * lli - 1;
     if (ll > lx)
