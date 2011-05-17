@@ -156,7 +156,7 @@ void write_force (void)
         progress_tag ();
         printf (" max F[x,y,z] = %12.8f Ha/a0\n", max_all_f);
         progress_tag ();
-        printf (" max |F|      = %12.8f Ha/a0  (ion %d)\n", maxf, maxf_ion + 1);
+        printf (" max |F|      = %12.8f Ha/a0   (ion %d)\n", maxf, maxf_ion + 1);
         if (ct.forceflag == MD_FASTRLX)
         {
             progress_tag ();
