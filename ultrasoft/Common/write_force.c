@@ -46,7 +46,7 @@ void write_force (void)
 {
     int ion;
     ION *iptr;
-    int num_movable = 0;
+    int num_movable = 0, maxfx_ion, maxfy_ion, maxfz_ion, maxf_ion;
     REAL avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
     REAL sumx = 0.0, sumy = 0.0, sumz = 0.0;
     REAL avf = 0.0;
@@ -91,13 +91,35 @@ void write_force (void)
             sumy += fp[1];
             sumz += fp[2];
 
-            maxfx = max (maxfx, fabs (fp[0]));
-            maxfy = max (maxfy, fabs (fp[1]));
-            maxfz = max (maxfz, fabs (fp[2]));
-
+            if (fabs (fp[0]) > maxfx)
+            {
+                maxfx = fabs (fp[0]);
+                maxfx_ion = ion;
+            }
+            
+            if (fabs (fp[1]) > maxfy)
+            {
+                maxfy = fabs(fp[1]);
+                maxfy_ion = ion;
+            }
+            
+            if (fabs (fp[2]) > maxfz)
+            {
+                maxfz = fabs(fp[2]);
+                maxfz_ion = ion;
+            }
+            
+            
+            
 
             f2 = fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2];
-            maxf = max (maxf, f2);
+
+            if (f2 > maxf)
+            {
+                maxf = f2;
+                maxf_ion = ion;
+            } 
+
             avf += f2;
         }
     }
@@ -126,15 +148,15 @@ void write_force (void)
 
         printf ("\n");
         progress_tag ();
-        printf (" max FX       = %12.8f Ha/a0\n", maxfx);
+        printf (" max FX       = %12.8f Ha/a0   (ion %d)\n", maxfx, maxfx_ion + 1);
         progress_tag ();
-        printf (" max FY       = %12.8f Ha/a0\n", maxfy);
+        printf (" max FY       = %12.8f Ha/a0   (ion %d)\n", maxfy, maxfy_ion + 1);
         progress_tag ();
-        printf (" max FZ       = %12.8f Ha/a0\n", maxfz);
+        printf (" max FZ       = %12.8f Ha/a0   (ion %d)\n", maxfz, maxfz_ion + 1);
         progress_tag ();
         printf (" max F[x,y,z] = %12.8f Ha/a0\n", max_all_f);
         progress_tag ();
-        printf (" max |F|      = %12.8f Ha/a0\n", maxf);
+        printf (" max |F|      = %12.8f Ha/a0  (ion %d)\n", maxf, maxf_ion + 1);
         if (ct.forceflag == MD_FASTRLX)
         {
             progress_tag ();
