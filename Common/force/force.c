@@ -138,7 +138,6 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     else
     	lforce (rho, vh);
 
-    dprintf("\n cccc \n");
 #if VERBOSE
     if (pct.imgpe == 0)
     {
@@ -171,7 +170,6 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     /* Add in the non-local stuff */
     nlforce (vtott);
 
-    dprintf("\n bbbb \n");
 
     time2 = my_crtc ();
     rmg_timings (NLFORCE_TIME, (time2 - time1));
@@ -207,7 +205,6 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
 
     /* The non-linear core correction part if any */
     nlccforce (rho, vxc);
-    dprintf("\n aaaa \n");
 
 #if VERBOSE
     if (pct.imgpe == 0)
