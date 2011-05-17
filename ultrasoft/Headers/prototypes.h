@@ -62,7 +62,7 @@ REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,
 void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz);
 void app_gradf (REAL * rho, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
-void constrain();
+void constrain( void );
 void corlyp (REAL *dp, REAL *dm, REAL *dp1, REAL *dm1, REAL *dp2, REAL *dm2, REAL *ec,
              REAL *vcp0, REAL *vcm0, int *ndm);
 void cross_product (REAL *a, REAL *b, REAL *c);
