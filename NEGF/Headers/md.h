@@ -1135,6 +1135,16 @@ typedef struct
     char file_atomic_orbit[MAX_SPECIES][MAX_PATH];
 
     int plane[5];
+
+    /* the external electric field */
+    REAL e_field;
+
+    REAL x_field_0;
+
+    REAL y_field_0;
+
+    REAL z_field_0;
+
 } CONTROL;
 
 

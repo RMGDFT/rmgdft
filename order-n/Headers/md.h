@@ -1135,6 +1135,16 @@ typedef struct
     /* output information for GW calculations.  --Xiaohong */
     int flag_gw;
 
+        /* the external electric field */
+    REAL e_field;
+
+    REAL x_field_0;
+
+    REAL y_field_0;
+
+    REAL z_field_0;
+
+
 } CONTROL;
 
 

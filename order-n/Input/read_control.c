@@ -201,6 +201,13 @@ void read_control (void)
     /* Ionic timestep */
     get_data ("ionic_time_step", &ct.iondt, DBL, "50");
 
+   /* read the electric field vector */
+    get_data ("electric_field_vector", tbuf, STR, "0.0 0.0 1.0");
+    ct.x_field_0 = strtod (tbuf, &tbuf);
+    ct.y_field_0 = strtod (tbuf, &tbuf);
+    ct.z_field_0 = strtod (tbuf, &tbuf);
+    get_data ("electric_field_magnitude", &ct.e_field, DBL, "0.0");
+
 
     /* -------------------------------- */
     /*                                  */
