@@ -165,7 +165,6 @@ void init_IO (int argc, char **argv)
         }
     }
 
-    printf("Basename set to :%s:", ct.basename);
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
