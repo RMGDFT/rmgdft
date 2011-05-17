@@ -8,7 +8,7 @@
 #include <math.h>
 #include "main.h"
 
-void nlforce1_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
+void nlforce_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
 {
     int idx, idx1, size, n, m, three = 3;
     REAL forces[3];

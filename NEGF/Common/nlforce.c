@@ -15,7 +15,7 @@
 
 
 
-void nlforce1 (REAL * veff)
+void nlforce (REAL * veff)
 {
     int ion, i, isp, count;
     int nh, size, n2, idx;

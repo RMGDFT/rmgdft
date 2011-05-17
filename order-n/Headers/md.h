@@ -1262,7 +1262,7 @@ void rmg_timings (int what, REAL time);
 void mg_eig_state (STATE * states, int tid, REAL * vtot);
 REAL minimage (ION * ip1, ION * ip2, REAL * xtal_r);
 REAL my_crtc (void);
-void nlforce (REAL *veff, STATE * states);
+void nlforce (REAL *veff);
 /* Local function prototypes */
 void nlforce_s (int ion, int ip, STATE * states, STATE * states1);
 void nlforce_p (int ion, int ip, STATE * states, STATE * states1);

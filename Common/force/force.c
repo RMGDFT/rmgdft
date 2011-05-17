@@ -169,7 +169,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     time1 = my_crtc ();
 
     /* Add in the non-local stuff */
-    nlforce1 (vtott);
+    nlforce (vtott);
 
     dprintf("\n bbbb \n");
 

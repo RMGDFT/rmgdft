@@ -8,7 +8,7 @@
 #include <float.h>
 #include "main.h"
 
-void nlforce1_par_Q (REAL * veff, REAL * gamma, int ion, ION * iptr, int nh, REAL * forces)
+void nlforce_par_Q (REAL * veff, REAL * gamma, int ion, ION * iptr, int nh, REAL * forces)
 {
     int idx1, idx2, n, m, count, icount, size;
     int *pidx;

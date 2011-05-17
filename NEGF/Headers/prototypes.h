@@ -8,7 +8,7 @@ void force(REAL *rho, REAL *rho_opps,REAL *rhoc, REAL *vh, REAL *vxc, REAL *vnuc
             STATE *states);
 void lforce(REAL *rho, REAL *vh);
 void nlccforce(REAL *rho, REAL *vxc);
-void nlforce(double *, STATE *states);
+void nlforce(double *);
 void nlforce_par_D (STATE *states, REAL *forces);
 
 REAL *vnuc_x, *vnuc_y, *vnuc_z;

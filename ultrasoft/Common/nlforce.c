@@ -12,7 +12,7 @@
  * that comes from eigenvalues*/
 #define VERBOSE 0
 
-void nlforce1 (REAL * veff)
+void nlforce (REAL * veff)
 {
     int ion, isp, index;
     int nh, size, size1;
@@ -109,7 +109,7 @@ void nlforce1 (REAL * veff)
         my_malloc (gamma, size, REAL);
 
         get_gamma (gamma, iptr, nh);
-        nlforce1_par_Q (veff, gamma, ion, iptr, nh, &qforce[3 * ion]);
+        nlforce_par_Q (veff, gamma, ion, iptr, nh, &qforce[3 * ion]);
 
         my_free (gamma);
 
@@ -164,7 +164,7 @@ void nlforce1 (REAL * veff)
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
         partial_gamma (ion, par_gamma, par_omega, iptr, nh, newsintR_x, newsintR_y, newsintR_z,
                        newsintI_x, newsintI_y, newsintI_z);
-        nlforce1_par_gamma (par_gamma, ion, nh);
+        nlforce_par_gamma (par_gamma, ion, nh);
 
         /*Add force calculated in nlforce1_par_Q */
         index = 3 * (ion);
@@ -192,7 +192,7 @@ void nlforce1 (REAL * veff)
 #endif
 
 
-        nlforce1_par_omega (par_omega, ion, iptr, nh);
+        nlforce_par_omega (par_omega, ion, iptr, nh);
 
         my_free (par_gamma);
     }                           /*end for(ion=0; ion<num_ions; ion++) */
