@@ -761,6 +761,7 @@ typedef struct
      *  Example:
      *  bash$  md in.diamond8
      */
+    double time0;
     int spin_flag;
 
     char cfile[MAX_PATH];

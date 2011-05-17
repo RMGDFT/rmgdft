@@ -77,6 +77,7 @@ int main (int argc, char **argv)
 
     time (&tt);
     timeptr = ctime (&tt);
+    ct.time0 = my_crtc();
 
 
     init_IO(argc, argv);
