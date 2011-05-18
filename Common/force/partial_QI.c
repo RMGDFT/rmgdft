@@ -12,9 +12,9 @@
 void partial_QI (int ion, REAL * QI_R, ION * iptr)
 {
     int idx, idx1, i, j, k, l, num;
-    int ix, iy, iz, ih, lmax, size, *dvec;
-    int lpx[9][9], lpl[9][9][9], nhtol[18];
-    int nhtom[18], indv[18], nh, icount;
+    int ix, iy, iz, ih, size, *dvec;
+    int lpx[9][9], lpl[9][9][9];
+    int  nh, icount;
     REAL x[3], cx[3], r, invdr, ap[25][9][9];
     REAL ylm[25], ylm_x[25], ylm_y[25], ylm_z[25];
     REAL xc, yc, zc;
@@ -22,35 +22,11 @@ void partial_QI (int ion, REAL * QI_R, ION * iptr)
     REAL *qnmlig_tpr, *drqnmlig_tpr;
     SPECIES *sp;
 
-
-
-    for (j = 0; j < 18; j++)
-    {
-        nhtol[j] = 0;
-        nhtom[j] = 0;
-        indv[j] = 0;
-    }
-    nh = 0;
-
-    sp = &ct.sp[iptr->species];
-    lmax = sp->llbeta[sp->nbeta - 1];
-
-    ih = 0;
-    for (i = 0; i < sp->nbeta; i++)
-    {
-        l = sp->llbeta[i];
-        for (j = 0; j < 2 * l + 1; j++)
-        {
-            nhtol[ih] = l;
-            nhtom[ih] = j;
-            indv[ih] = i;
-            ih = ih + 1;
-        }
-    }
-    nh = ih;
-
-    aainit (lmax + 1, 2 * lmax + 1, 2 * lmax + 1, 4 * lmax + 1, (lmax + 1) * (lmax + 1), ap, lpx,
+    aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
             lpl);
+    
+    sp = &ct.sp[iptr->species];
+    nh = sp->nh;
 
     size = nh * (nh + 1) / 2;
     QI_x = QI_R;
@@ -99,8 +75,8 @@ void partial_QI (int ion, REAL * QI_R, ION * iptr)
                         {
 
                             idx1 = num * pct.Qidxptrlen[ion] + icount;
-                            qval_R (i, j, r, cx, qnmlig_tpr, drqnmlig_tpr, invdr, nhtol,
-                                    nhtom, indv, ylm, ylm_x, ylm_y, ylm_z, ap, lpx, lpl,
+                            qval_R (i, j, r, cx, qnmlig_tpr, drqnmlig_tpr, invdr, sp->nhtol,
+                                    sp->nhtom, sp->indv, ylm, ylm_x, ylm_y, ylm_z, ap, lpx, lpl,
                                     &QI_x[idx1], &QI_y[idx1], &QI_z[idx1], sp);
                             ++num;
 

@@ -16,13 +16,10 @@ void get_QI (void)
     int is, idx, idx1, i, j, k, l, ion, size;
     int ix, iy, iz, species, ih, num;
     int lpx[9][9], lpl[9][9][9];
-    int nhtol[MAX_SPECIES][18];
-    int nhtom[MAX_SPECIES][18];
-    int indv[MAX_SPECIES][18];
-    int nh[MAX_SPECIES];
+    int nh;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
-    int icut, itmp, icenter, lmax, alloc;
+    int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
     REAL x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
     REAL xc, yc, zc;
@@ -31,45 +28,8 @@ void get_QI (void)
     SPECIES *sp;
 
 
-
-    for (is = 0; is < ct.num_species; is++)
-    {
-        for (j = 0; j < 18; j++)
-        {
-            nhtol[is][j] = 0;
-            nhtom[is][j] = 0;
-            indv[is][j] = 0;
-        }
-        nh[is] = 0;
-    }
-
-    lmax = 0;
-
-    for (is = 0; is < ct.num_species; is++)
-    {
-
-        sp = &ct.sp[is];
-        if (sp->llbeta[sp->nbeta - 1] > lmax)
-            lmax = sp->llbeta[sp->nbeta - 1];
-
-        ih = 0;
-        for (i = 0; i < sp->nbeta; i++)
-        {
-            l = sp->llbeta[i];
-            for (j = 0; j < 2 * l + 1; j++)
-            {
-                nhtol[is][ih] = l;
-                nhtom[is][ih] = j;
-                indv[is][ih] = i;
-                ih = ih + 1;
-            }
-        }
-        nh[is] = ih;
-
-    }
-
     /* Initialize some coefficients (not sure what exactly)*/
-    aainit (lmax + 1, 2 * lmax + 1, 2 * lmax + 1, 4 * lmax + 1, (lmax + 1) * (lmax + 1), ap, lpx,
+    aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
             lpl);
 
     alloc = ct.max_Qpoints;
@@ -107,6 +67,7 @@ void get_QI (void)
         iptr = &ct.ions[ion];
         species = iptr->species;
         sp = &ct.sp[species];
+        nh = sp->nh;
 
         icenter = sp->qdim / 2;
         icut = (icenter + 1) * (icenter + 1);
@@ -176,7 +137,7 @@ void get_QI (void)
                     ivec[idx1] = (int) pvec[idx1];
 
 
-                size = nh[species] * (nh[species] + 1) / 2;
+                size = nh * (nh + 1) / 2;
                 my_calloc (pct.augfunc[ion], size * icount + 128, REAL);
 
             }
@@ -214,15 +175,15 @@ void get_QI (void)
                             ylmr2 (cx, ylm);
 
                             num = 0;
-                            for (i = 0; i < nh[species]; i++)
+                            for (i = 0; i < nh; i++)
                             {
 
-                                for (j = i; j < nh[species]; j++)
+                                for (j = i; j < nh; j++)
                                 {
 
                                     idx1 = num * pct.Qidxptrlen[ion] + icount;
-                                    QI_tpr[idx1] = qval (i, j, r, invdr, qnmlig, &nhtol[species][0],
-                                                         &nhtom[species][0], &indv[species][0], ylm, ap,
+                                    QI_tpr[idx1] = qval (i, j, r, invdr, qnmlig,sp->nhtol,
+                                                         sp->nhtom, sp->indv, ylm, ap,
                                                          lpx, lpl, sp);
 
                                     num++;
