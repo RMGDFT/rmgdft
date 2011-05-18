@@ -242,7 +242,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     init_sym ();
 
     /* Initialize the nuclear local potential and the compensating charges */
-    init_nuc_soft (vnuc, rhoc, rhocore);
+    init_nuc (vnuc, rhoc, rhocore);
 
 
     write_rho_x (rho, "rho_init1");

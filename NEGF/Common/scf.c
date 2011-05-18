@@ -260,7 +260,7 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
     }                           /* idx */
 
     /* Generate exchange-correlation potential */
-    get_vxc_soft (rho, rhocore, vxc);
+    get_vxc(rho, rhocore, vxc);
 
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
