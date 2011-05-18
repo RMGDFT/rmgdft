@@ -341,7 +341,7 @@ void get_cond_frommatrix ()
             sprintf(newname, "%s%d%d%s", "cond_", iprobe1, iprobe2, ".dat");
             file = fopen (newname, "w");
             for (iene = 0; iene < E_POINTS; iene++)
-                fprintf (file, " %f %22.12f\n", ener1[iene], cond[iene]);
+                fprintf (file, " %f %22.12e\n", ener1[iene], cond[iene]);
             fclose (file);
         }
 
