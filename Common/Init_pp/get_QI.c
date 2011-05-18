@@ -14,7 +14,7 @@
 void get_QI (void)
 {
     int is, idx, idx1, i, j, k, l, ion, size;
-    int ix, iy, iz, nty, ih, num;
+    int ix, iy, iz, species, ih, num;
     int lpx[9][9], lpl[9][9][9];
     int nhtol[MAX_SPECIES][18];
     int nhtom[MAX_SPECIES][18];
@@ -27,7 +27,7 @@ void get_QI (void)
     REAL x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
     REAL xc, yc, zc;
     ION *iptr;
-    REAL *qnmlig_tpr, *QI_tpr;
+    REAL *qnmlig, *QI_tpr;
     SPECIES *sp;
 
 
@@ -94,12 +94,19 @@ void get_QI (void)
 
         /*Initialize this */
         pct.Qidxptrlen[ion] = 0;
+        
+        for (idx = 0; idx < alloc; idx++)
+        {
+            pvec[idx] = 0;
+            dvec[idx] = 0;
+        }
 
+        icount = 0;
 
 
         iptr = &ct.ions[ion];
-        nty = iptr->species;
-        sp = &ct.sp[nty];
+        species = iptr->species;
+        sp = &ct.sp[species];
 
         icenter = sp->qdim / 2;
         icut = (icenter + 1) * (icenter + 1);
@@ -108,20 +115,6 @@ void get_QI (void)
                          sp->qdim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);
-
-        /*
-           if(pct.gridpe==0) printf("qdim=%d  Qxcstart=%f  Qycstart=%f  Qzcstart=%f\n",sp->qdim,iptr->Qxcstart,iptr->Qycstart,iptr->Qzcstart);
-         */
-        /* If there is a mapping for this ion then we have to generate */
-        /* the projector.                                              */
-
-        for (idx = 0; idx < alloc; idx++)
-        {
-            pvec[idx] = 0;
-            dvec[idx] = 0;
-        }
-
-        icount = 0;
 
         if (map)
         {
@@ -183,7 +176,7 @@ void get_QI (void)
                     ivec[idx1] = (int) pvec[idx1];
 
 
-                size = nh[nty] * (nh[nty] + 1) / 2;
+                size = nh[species] * (nh[species] + 1) / 2;
                 my_calloc (pct.augfunc[ion], size * icount + 128, REAL);
 
             }
@@ -193,7 +186,7 @@ void get_QI (void)
 
             invdr = 1.0 / sp->drqlig;
             QI_tpr = pct.augfunc[ion];
-            qnmlig_tpr = sp->qnmlig;
+            qnmlig = sp->qnmlig;
 
             idx = 0;
             icount = 0;
@@ -221,15 +214,15 @@ void get_QI (void)
                             ylmr2 (cx, ylm);
 
                             num = 0;
-                            for (i = 0; i < nh[nty]; i++)
+                            for (i = 0; i < nh[species]; i++)
                             {
 
-                                for (j = i; j < nh[nty]; j++)
+                                for (j = i; j < nh[species]; j++)
                                 {
 
                                     idx1 = num * pct.Qidxptrlen[ion] + icount;
-                                    QI_tpr[idx1] = qval (i, j, r, invdr, qnmlig_tpr, &nhtol[nty][0],
-                                                         &nhtom[nty][0], &indv[nty][0], ylm, ap,
+                                    QI_tpr[idx1] = qval (i, j, r, invdr, qnmlig, &nhtol[species][0],
+                                                         &nhtom[species][0], &indv[species][0], ylm, ap,
                                                          lpx, lpl, sp);
 
                                     num++;

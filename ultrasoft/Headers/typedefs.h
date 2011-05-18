@@ -550,6 +550,12 @@ typedef struct
     /*Backwards wisdom for fftw */
     char *backward_wisdom;
 
+    /*Some parameters for Q function*/
+    int indv[18];
+    int nhtol[18];
+    int nhtom[18];
+    int nh;
+
 
 } SPECIES;
 
@@ -1225,6 +1231,9 @@ typedef struct
 
     /** The maximum number of projectors for any species */
     int max_nl;
+    
+    /** The maximum l quantum number for any species */
+    int max_l;
 
     /*Maximum value of nldim for any species */
     int max_nldim;

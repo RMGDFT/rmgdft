@@ -580,6 +580,11 @@ typedef struct
 
     char *backward_wisdom;
 
+    /*Some parameters for Q function*/
+    int indv[18];
+    int nhtol[18];
+    int nhtom[18];
+    int nh;
 
 } SPECIES;
 
@@ -1095,6 +1100,9 @@ typedef struct
 
     /** The maximum number of projectors for any species */
     int max_nl;
+    
+    /** The maximum l quantum number for any species */
+    int max_l;
 
     REAL cut_radius;
     int num_storage_st;

@@ -42,7 +42,7 @@ void read_pseudo (void)
 {
 
     int i, j, k, idx, indx, idx1, idx2, idx3, idx4, nmb;
-    int l, ih, indv[18], nhtol[18], nhtom[18];
+    int l, ih;
     REAL  ddd0[6][6], qqq[6][6];
     /*REAL ddd[6][6]; */
     int max_nlprojectors = 0, nlc;
@@ -51,6 +51,7 @@ void read_pseudo (void)
     REAL time1;
 
     time1 = my_crtc ();
+    ct.max_l = 0;
 
 
     for (i = 0; i < ct.num_species; i++)
@@ -243,6 +244,8 @@ void read_pseudo (void)
         for (j = 0; j < sp->nbeta; j++)
         {
             get_data (sp->pseudo_filename, &sp->llbeta[j], ITEM | INT, NULL); 
+            if (sp->llbeta[j] > ct.max_l)
+                ct.max_l = sp->llbeta[j];
             for (k = 0; k < MAX_RGRID; k++)
                 sp->beta[j][k] = 0.0;
             for ( k = 0; k < sp->kkbeta; k+=4 )
@@ -309,6 +312,12 @@ void read_pseudo (void)
             }
         }
 
+        for (j = 0; j < 18; j++)
+        {
+            sp->nhtol[j] = 0;
+            sp->nhtom[j] = 0;
+            sp->indv[j] = 0;
+        }
 
         ih = 0;
         for (j = 0; j < sp->nbeta; j++)
@@ -316,12 +325,13 @@ void read_pseudo (void)
             l = sp->llbeta[j];
             for (k = 0; k < 2 * l + 1; k++)
             {
-                nhtol[ih] = l;
-                nhtom[ih] = k;
-                indv[ih] = j;
+                sp->nhtol[ih] = l;
+                sp->nhtom[ih] = k;
+                sp->indv[ih] = j;
                 ++ih;
             }
         }
+        sp->nh = ih;
 
         if (ih > max_nlprojectors)
             max_nlprojectors = ih;
@@ -333,10 +343,10 @@ void read_pseudo (void)
         {
             for (k = 0; k < ih; k++)
             {
-                if ((nhtol[j] == nhtol[k]) && (nhtom[j] == nhtom[k]))
+                if ((sp->nhtol[j] == sp->nhtol[k]) && (sp->nhtom[j] == sp->nhtom[k]))
                 {
-                    sp->ddd0[j][k] = ddd0[indv[j]][indv[k]];
-                    sp->qqq[j][k] = qqq[indv[j]][indv[k]];
+                    sp->ddd0[j][k] = ddd0[sp->indv[j]][sp->indv[k]];
+                    sp->qqq[j][k] = qqq[sp->indv[j]][sp->indv[k]];
                     /*                          sp->ddd[j][k]=ddd[indv[j]][indv[k]]; */
                 }
                 else
