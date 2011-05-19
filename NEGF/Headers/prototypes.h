@@ -127,7 +127,6 @@ void matrix_inverse_right_p (complex double * H_tri, int N, int * ni, complex do
 
 
 void global_sums_X (REAL * vect, int *length);
-void projection (double *data, int x, int y, int z, char direction, char *tag);
 void corlyp (REAL *dp, REAL *dm, REAL *dp1, REAL *dm1, REAL *dp2,
         REAL *dm2, REAL *ec, REAL *vcp0, REAL *vcm0, int *ndm);
 

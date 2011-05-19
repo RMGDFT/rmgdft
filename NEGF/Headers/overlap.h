@@ -87,7 +87,6 @@ void theta_phi_new(int st1, int st2, REAL theta_ion, REAL *st2_psi,
 		                REAL *state1_psi, int mode, STATE *states); 
 
 void    print_status( STATE *, REAL *, REAL *, REAL *, REAL *, char *);
-void    print_state_projections(STATE *, char);
 void    print_global_function(REAL *, char, char *);
 void    print_state_sum(STATE *states);
 void    print_state(STATE *state);

@@ -52,22 +52,6 @@ void print_status (STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh
 
 }
 
-void print_state_projections (STATE * states, char direction)
-{
-
-    char newname[100];
-    int st;
-
-
-    for (st = ct.state_begin; st < ct.state_end; st++)
-    {
-        sprintf (newname, "PE%d.STATE%d:", pct.gridpe, st);
-        projection (states[st].psiR, states[st].orbit_nx, states[st].orbit_ny,
-                    states[st].orbit_nz, direction, newname);
-    }
-    fflush (NULL);
-
-}
 
 void print_state_sum (STATE * states)
 {
