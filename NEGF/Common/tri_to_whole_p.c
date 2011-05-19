@@ -40,6 +40,10 @@ void tri_to_whole_p (REAL * A_tri, REAL * Aii, int N, int *ni)
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int istart, jj, kk, jjj, kkk;
 
+    double spin_degenerate;
+    
+    // the density matrix multiply by 2.0 to count for spin degeneracy
+    spin_degenerate = 2.0;
 
     ictxt = pmo.ictxt[pmo.myblacs];
     mb = pmo.mblock;
@@ -78,7 +82,7 @@ void tri_to_whole_p (REAL * A_tri, REAL * Aii, int N, int *ni)
 
                 jjj = jj + istart;
                 kkk = kk + istart;
-                Aii[kkk * ndim + jjj] =
+                Aii[kkk * ndim + jjj] = spin_degenerate *
                 A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j];
 
             }
@@ -109,7 +113,7 @@ void tri_to_whole_p (REAL * A_tri, REAL * Aii, int N, int *ni)
 
                 jjj = jj + istart;
                 kkk = kk + istart + ct.block_dim[i-1];
-                Aii[kkk * ndim + jjj] =
+                Aii[kkk * ndim + jjj] = spin_degenerate *
                     A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j];
                 
                 Aii[jjj * ndim + kkk] = Aii[kkk * ndim + jjj] ;

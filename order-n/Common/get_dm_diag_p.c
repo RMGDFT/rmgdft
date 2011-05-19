@@ -146,7 +146,7 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
         /* generalize the gamma for charge density matrix X */
         for (st1 = 0; st1 < numst; st1++)
         {
-            work_matrix_row[st1] = 0.5 * states[st1].occupation;
+            work_matrix_row[st1] = states[st1].occupation;
         }
 
         diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);

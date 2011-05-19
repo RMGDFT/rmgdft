@@ -61,8 +61,8 @@ void get_new_rho(STATE * states, double *rho)
        {
            st11 = st1 - ct.state_begin;
            if (st1 == st2)
-               scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-           if (st1 != st2) scale = 4.0 * work_matrix_row[st11 * ct.num_states + st2];
+               scale =  work_matrix_row[st11 * ct.num_states + st2];
+           if (st1 != st2) scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
            psi1 = states[st1].psiR;
            psi2 = states[st2].psiR;
 
@@ -144,7 +144,7 @@ void get_new_rho(STATE * states, double *rho)
                {
                    st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
-                   scale = 4.0 * work_matrix_row[st11 * ct.num_states + st2];
+                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                    density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
                }
        }
@@ -188,7 +188,7 @@ void get_new_rho(STATE * states, double *rho)
                {
                    st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
-                   scale = 4.0 * work_matrix_row[st11 * ct.num_states + st2];
+                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                    density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
                }
 
@@ -222,7 +222,7 @@ void get_new_rho(STATE * states, double *rho)
                    {
                        st11 = st1 - ct.state_begin;
                        psi1 = states[st1].psiR;
-                       scale = 4.0 * work_matrix_row[st11 * ct.num_states + st2];
+                       scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                        density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
                    }
            }
@@ -238,7 +238,7 @@ void get_new_rho(STATE * states, double *rho)
                {
                    st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
-                   scale = 4.0 * work_matrix_row[st11 * ct.num_states + st2];
+                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                    density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
                }
 

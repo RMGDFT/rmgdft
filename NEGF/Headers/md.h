@@ -110,7 +110,7 @@
 
 
 int MXLLDA, MXLCOL;
-REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vcomp, *vxc, *rhocore, *vtot, *vtot_old;
+REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *vtot, *vtot_old;
 REAL *vh_old, *vxc_old; 
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 REAL *work_dis2, *zz_dis, *gamma_dis, *uu_dis; 

@@ -23,7 +23,6 @@ void rho_augmented(REAL * rho, REAL * global_mat_X)
     double alfa;
 
 
-    alfa = 2.0;
 
     size = ct.num_ions * ct.max_nl * ct.max_nl;
     my_malloc_init( product, size, REAL );
@@ -31,8 +30,6 @@ void rho_augmented(REAL * rho, REAL * global_mat_X)
         product[idx] = 0.0;
 
     rho_Qnm_mat(product, global_mat_X);
-    for (idx = 0; idx < size; idx++)
-        product[idx] *= alfa;
     global_sums(product, &size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)

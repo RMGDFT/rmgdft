@@ -233,8 +233,6 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     }                           /* end for */
 
 
-    init_vcomp(vcomp);
-
 
     /* Check compensating charges */
     ct.crho = get_charge(rhoc);

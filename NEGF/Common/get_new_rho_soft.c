@@ -22,13 +22,7 @@ void get_new_rho_soft (STATE * states, double *rho)
     REAL t2;
     register double tcharge;
 
-#if NONORTHO
-#if USE_DIS_MAT
     /* for parallel libraries */
-    int n2 = ct.num_states * ct.num_states;
-    int mxllda;
-#endif
-#endif
 
     REAL *psi1, *psi2, scale;
     int i, st1, st2, proc1, proc2;
@@ -47,16 +41,7 @@ void get_new_rho_soft (STATE * states, double *rho)
     my_malloc_init( rho_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
     my_malloc_init( rho_temp, P0_BASIS, REAL );
 
-#if  	DEBUG
-    print_sum_square (P0_BASIS, rho, "rho_sum_square before get_new_rho  ");
-#endif
 
-/* #if USE_DIS_MAT && NONORTHO
- *   	mxllda = MXLLDA;
- *   	get_distributed_mat(work_matrix, mat_X);
- *   	global_sums(work_matrix, &n2);
- * #endif
- */
 
     tri_to_whole_p (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
 
@@ -70,9 +55,9 @@ void get_new_rho_soft (STATE * states, double *rho)
         for (st2 = st1; st2 < ct.state_end; st2++)
         {
             if (st1 == st2)
-                scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
+                scale = 1.0 * work_matrix[st1 * ct.num_states + st2];
             if (st1 != st2)
-                scale = 4.0 * work_matrix[st1 * ct.num_states + st2];
+                scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
             psi1 = states[st1].psiR;
             psi2 = states[st2].psiR;
 
@@ -107,7 +92,7 @@ void get_new_rho_soft (STATE * states, double *rho)
                 if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
                 {
                     psi1 = states[st1].psiR;
-                    scale = 4.0 * work_matrix[st1 * ct.num_states + st2];
+                    scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
                     density_orbit_X_orbit (st1, st2, scale, psi1, psi2, rho_global, 0, states);
                 }
         }
@@ -122,7 +107,7 @@ void get_new_rho_soft (STATE * states, double *rho)
                     if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
                     {
                         psi1 = states[st1].psiR;
-                        scale = 4.0 * work_matrix[st1 * ct.num_states + st2];
+                        scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
                         density_orbit_X_orbit (st1, st2, scale, psi1, psi2, rho_global, 0, states);
                     }
             }
