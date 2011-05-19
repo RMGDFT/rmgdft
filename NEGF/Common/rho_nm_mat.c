@@ -28,13 +28,11 @@ void rho_nm_mat (double *Aij, REAL * global_mat_X)
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
     int nh;
-    REAL alfa;
 
 
     double time1, time2;
     time1 = my_crtc ();
 
-    alfa = 1.0/ct.vel;
 
     /* Loop over states on this proce onle 
        (distribution of work AND Aij contributions) */
@@ -59,7 +57,7 @@ void rho_nm_mat (double *Aij, REAL * global_mat_X)
                         {
                             ist = ion1 * ct.max_nl * ct.max_nl + ip1 * ct.max_nl + ip2;
                             Aij[ist] +=
-                                2.0 * alfa * global_mat_X[st1 * ct.num_states + st2] *
+                                2.0 * global_mat_X[st1 * ct.num_states + st2] *
                                 kbpsi[iip1 + ip1] * kbpsi[iip2 + ip2];
                         }
                     }
@@ -119,7 +117,7 @@ void rho_nm_mat (double *Aij, REAL * global_mat_X)
                                             ion1_global * ct.max_nl *
                                             ct.max_nl + ip1 * ct.max_nl + ip2;
                                         Aij[ist] +=
-                                            2.0 * alfa * global_mat_X[st1 * ct.num_states + st2] *
+                                            2.0 * global_mat_X[st1 * ct.num_states + st2] *
                                             kbpsi[iip1a] * kbpsi_comm[iip2a];
                                     }
                                 }
