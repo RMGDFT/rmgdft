@@ -55,7 +55,7 @@ void nlforce(REAL * veff)
             IB, JB, pct.descb, pct.descb[1]);
 
 
-    rho_nm_mat(rho_nm, work_matrix_row);
+    rho_Qnm_mat(rho_nm, work_matrix_row);
     partial_Mat_nm_R(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, work_matrix_row);
 
     Cpdgemr2d(numst, numst, mat_Omega, IA, JA, pct.desca, work_matrix_row,
