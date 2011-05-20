@@ -19,7 +19,7 @@ void nlforce (REAL * veff)
 {
     int ion, i, isp, count;
     int nh, size, n2, idx;
-    REAL *rho_nm, *QnmI_R, *force;
+    REAL *rho_nm, *QnmI_R, *forces_tem;
     REAL *part_rho_nm_x, *part_rho_nm_y, *part_rho_nm_z;
     ION *iptr;
     SPECIES *sp;
@@ -27,10 +27,10 @@ void nlforce (REAL * veff)
     REAL time1, time2;
     time1 = my_crtc();
 
-    my_malloc_init( force, 3 * ct.num_ions, REAL);
-
+ 
     size = ct.num_ions * ct.max_nl * ct.max_nl;
     my_malloc_init( rho_nm, 4 * size, REAL );
+    my_malloc_init( forces_tem, ct.num_ions*3, REAL );
     part_rho_nm_x = rho_nm + size;
     part_rho_nm_y = part_rho_nm_x + size;
     part_rho_nm_z = part_rho_nm_y + size;
@@ -50,38 +50,38 @@ void nlforce (REAL * veff)
         sp = &ct.sp[iptr->species];
         nh = sp->num_projectors;
 
-        count = pct.Qidxptrlen[ion];
+        nlforce_par_Q(veff, rho_nm, ion, nh, &forces_tem[ion*3]);
 
-        if (count)
-        {
-            size = 3 * (nh * (nh + 1) / 2) * count;
-            my_malloc_init( QnmI_R, size, REAL );
-
-            partial_QI(ion, QnmI_R, iptr);
+        /*
+           if(pct.gridpe == 0) {
+           printf("\nafter nlforce_par_Q \n");
+           write_force();
         }
 
-        get_partial_ddd (QnmI_R, veff, ion, nh);
-
-        if (count) my_free(QnmI_R);
-
+        nlforce_par_rho(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, ion, nh);
         /*
-        ********** 1. calculate -int{dr Veff(r) * sum {partial_Qnm^I(r) * rho_nm^I} }*************
-        */ 
-        nlforce_par_Q (rho_nm, ion, nh, force);
-
-        /*
-        ********** 2. calculate -sum {Dnm^I * partial_rho_nm^I} *************************
-        */ 
-        nlforce_par_rho (part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, ion, nh, force);
-
+           if(pct.gridpe == 0) {
+           printf("after nlforce_par_rho \n");
+           write_force();
+           }
+         */
+      
+      
+       
     } /* end for ion loop */
 
+    size = 3 * ct.num_ions;
+    global_sums(forces_tem, &size, pct.grid_comm);
 
-    my_free (rho_nm);
+   
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
 
-    /*
-    ************** 3. calculate -sum_{munu}( H_{munu} * partial_D_{munu}/partial_R )**********
-    */
+        iptr = &ct.ions[ion];
+        iptr->force[ct.fpt[0]][0] += ct.vel_f * forces_tem[ion*3];
+        iptr->force[ct.fpt[0]][1] += ct.vel_f * forces_tem[ion*3+1];
+        iptr->force[ct.fpt[0]][2] += ct.vel_f * forces_tem[ion*3+2];
+    }
 
     /* Initialize Non-local operators */
     is_vloc_state_overlap (states);
@@ -90,20 +90,20 @@ void nlforce (REAL * veff)
     get_ion_orbit_overlap_loc (states);
     partial_vloc ();
 
-    nlforce_par_D (states, force);
+    nlforce_par_D (states, forces_tem);
 
     size = ct.num_ions * 3;
-    global_sums (force, &size, pct.grid_comm);
+    global_sums (forces_tem, &size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];
-        iptr->force[ct.fpt[0]][0] += force[3*ion];
-        iptr->force[ct.fpt[0]][1] += force[3*ion+1];
-        iptr->force[ct.fpt[0]][2] += force[3*ion+2];
+        iptr->force[ct.fpt[0]][0] += forces_tem[3*ion];
+        iptr->force[ct.fpt[0]][1] += forces_tem[3*ion+1];
+        iptr->force[ct.fpt[0]][2] += forces_tem[3*ion+2];
     }
-
-    my_free (force);
+	my_free (rho_nm);
+    my_free (forces_tem);
 
     time2 = my_crtc();
     rmg_timings(NLFORCE_TIME, time2 - time1);
