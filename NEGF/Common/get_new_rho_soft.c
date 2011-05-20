@@ -1,7 +1,7 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@ void get_new_rho_soft (STATE * states, double *rho)
     /* for parallel libraries */
 
     REAL *psi1, *psi2, scale;
-    int i, st1, st2, proc1, proc2;
+    int i, st1, st2, proc1, proc2, st11;
     REAL time1;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
@@ -35,15 +35,15 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     state_per_proc = ct.state_per_proc + 2;
     time1 = my_crtc ();
-/*    if (pct.gridpe == 0)
-        printf (" Compute new density\n");*/
+    /*    if (pct.gridpe == 0)
+          printf (" Compute new density\n");*/
 
     my_malloc_init( rho_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
     my_malloc_init( rho_temp, P0_BASIS, REAL );
 
 
 
-    tri_to_whole_p (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
+    tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
 
 
     for (idx = 0; idx < NX_GRID * NY_GRID * NZ_GRID; idx++)
@@ -52,12 +52,15 @@ void get_new_rho_soft (STATE * states, double *rho)
     }
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+
+        st11 = st1 - ct.state_begin;
         for (st2 = st1; st2 < ct.state_end; st2++)
         {
             if (st1 == st2)
-                scale = 1.0 * work_matrix[st1 * ct.num_states + st2];
+                scale = 1.0 * work_matrix[st11 * ct.num_states + st2];
             if (st1 != st2)
-                scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
+                scale = 2.0 * work_matrix[st11 * ct.num_states + st2];
             psi1 = states[st1].psiR;
             psi2 = states[st2].psiR;
 
@@ -65,6 +68,7 @@ void get_new_rho_soft (STATE * states, double *rho)
                 density_orbit_X_orbit (st1, st2, scale, psi1, psi2, rho_global, 0, states);
 
         }
+    }
 
     my_barrier ();
     psi2 = orbit_tem;
@@ -86,15 +90,19 @@ void get_new_rho_soft (STATE * states, double *rho)
             size2 = states[st2].size;
 
             MPI_Sendrecv (psi1, size1, MPI_DOUBLE, proc1, i, psi2, size2,
-                          MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
+                    MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
 
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+            {
+
+                st11 = st1 - ct.state_begin;
                 if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
                 {
                     psi1 = states[st1].psiR;
-                    scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
+                    scale = 2.0 * work_matrix[st11 * ct.num_states + st2];
                     density_orbit_X_orbit (st1, st2, scale, psi1, psi2, rho_global, 0, states);
                 }
+            }
         }
 
         if (num_send < num_recv)
@@ -104,12 +112,16 @@ void get_new_rho_soft (STATE * states, double *rho)
                 size2 = states[st2].size;
                 MPI_Recv (psi2, size2, MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
                 for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+                {
+
+                    st11 = st1 - ct.state_begin;
                     if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
                     {
                         psi1 = states[st1].psiR;
-                        scale = 2.0 * work_matrix[st1 * ct.num_states + st2];
+                        scale = 2.0 * work_matrix[st11 * ct.num_states + st2];
                         density_orbit_X_orbit (st1, st2, scale, psi1, psi2, rho_global, 0, states);
                     }
+                }
             }
 
         if (num_send > num_recv)

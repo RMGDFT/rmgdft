@@ -39,8 +39,8 @@ void nlforce (REAL * veff)
 
     n2 = ct.num_states * ct.num_states;
 
-    tri_to_whole_real (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
-    rho_nm_mat (rho_nm, work_matrix);
+    tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
+    rho_Qnm_mat (rho_nm, work_matrix);
     partial_Mat_nm_R (part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, work_matrix);
 
     for (ion = 0; ion < ct.num_ions; ion++)

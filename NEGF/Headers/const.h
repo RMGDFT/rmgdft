@@ -199,7 +199,7 @@
 #define NLFORCE_TIME (74)
 #define NLCCFORCE_TIME (75)
 #define PARTIAL_KBPSI (76)
-#define RHO_NM_MAT (77)
+#define RHO_QNM_MAT (77)
 #define PARTIAL_MAT_NM (78)
 #define NLFORCE_PAR_Q (79)
 #define NLFORCE_PAR_RHO (80)

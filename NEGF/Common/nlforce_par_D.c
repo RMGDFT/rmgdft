@@ -97,7 +97,7 @@ void nlforce_par_D (STATE *states, REAL *forces)
     time3 = my_crtc ();
 
     /* Calculating the force due to another part of partial Halmitonian (partial_Vnuc/partial_R) */
-    tri_to_whole_real (GHG_tri, work_matrix, ct.num_blocks, ct.block_dim);
+    tri_to_row(GHG_tri, work_matrix, ct.num_blocks, ct.block_dim);
     nlforce_partial_H_part2 (states, states1, work_matrix, forces);
 
     time4 = my_crtc ();

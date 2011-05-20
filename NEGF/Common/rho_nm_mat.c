@@ -131,7 +131,7 @@ void rho_nm_mat (double *Aij, REAL * global_mat_X)
 
 
     time2 = my_crtc ();
-    rmg_timings (RHO_NM_MAT, time2 - time1);
+    rmg_timings (RHO_QNM_MAT, time2 - time1);
 
 
 }

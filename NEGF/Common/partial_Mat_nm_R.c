@@ -22,7 +22,7 @@
 
 void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, REAL * global_mat_X)
 {
-    int ion, ip1, ip2, st1, st2, ist;
+    int st11,ion, ip1, ip2, st1, st2, ist;
     MPI_Status mstatus;
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
@@ -42,8 +42,11 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
 
     /* Loop over states on this proce onle */
     proc = pct.gridpe;
-    for (st1 = state_begin[proc]; st1 < state_end[proc]; st1++)
-        for (st2 = state_begin[proc]; st2 < state_end[proc]; st2++)
+    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+
+        st11 = st1 - ct.state_begin;
+        for (st2 = ct.state_begin; st2 < ct.state_end; st2++)
         {
 
             iip1 = (st1 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
@@ -61,13 +64,13 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
                         if ((fabs (kbpsi[iip1 + ip1]) > 0.) || (fabs(kbpsi[iip2 + ip2]) > 0.))
                         {
                             ist = ion1 * ct.max_nl * ct.max_nl + ip1 * ct.max_nl + ip2;
-                            partial_x[ist] += 2.0 * global_mat_X[st1 * ct.num_states + st2] * 
+                            partial_x[ist] += 2.0 * global_mat_X[st11 * ct.num_states + st2] * 
                                 (kbpsi[iip1 + ip1] * partial_kbpsi_x[iip2 + ip2] +
                                  partial_kbpsi_x[iip1 + ip1] * kbpsi[iip2 + ip2]);
-                            partial_y[ist] += 2.0 * global_mat_X[st1 * ct.num_states + st2] * 
+                            partial_y[ist] += 2.0 * global_mat_X[st11 * ct.num_states + st2] * 
                                 (kbpsi[iip1 + ip1] * partial_kbpsi_y[iip2 + ip2] +
                                  partial_kbpsi_y[iip1 + ip1] * kbpsi[iip2 + ip2]);
-                            partial_z[ist] += 2.0 * global_mat_X[st1 * ct.num_states + st2] * 
+                            partial_z[ist] += 2.0 * global_mat_X[st11 * ct.num_states + st2] * 
                                 (kbpsi[iip1 + ip1] * partial_kbpsi_z[iip2 + ip2] +
                                  partial_kbpsi_z[iip1 + ip1] * kbpsi[iip2 + ip2]);
                         }
@@ -79,6 +82,7 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
             }                   /* end for ion */
         }                       /* end for st1 and st2 */
 
+    }
 
     /* Now calculate the part that kbpsi is stored in other processors */
 
@@ -104,7 +108,10 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
                       kbpsi_comm_z, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
 
 
-        for (st1 = state_begin[proc]; st1 < state_end[proc]; st1++)
+        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+        {
+
+            st11 = st1 - ct.state_begin;
             for (st2 = state_begin[proc2]; st2 < state_end[proc2]; st2++)
             {
 
@@ -130,13 +137,13 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
                                     if ((fabs (kbpsi[iip1a]) > 0.) || (fabs(kbpsi_comm[iip2a]) > 0.))
                                     {
                                         ist = ion1_global * ct.max_nl * ct.max_nl + ip1 * ct.max_nl + ip2;
-                                        partial_x[ist] += 2.0 * global_mat_X[st1 * ct.num_states + st2] *
+                                        partial_x[ist] += 2.0 * global_mat_X[st11 * ct.num_states + st2] *
                                             (kbpsi[iip1a] * kbpsi_comm_x[iip2a] + partial_kbpsi_x[iip1a] * kbpsi_comm[iip2a]);
 
-                                        partial_y[ist] += 2.0 * global_mat_X[st1 * ct.num_states + st2] *
+                                        partial_y[ist] += 2.0 * global_mat_X[st11 * ct.num_states + st2] *
                                             (kbpsi[iip1a] * kbpsi_comm_y[iip2a] + partial_kbpsi_y[iip1a] * kbpsi_comm[iip2a]);
 
-                                        partial_z[ist] += 2.0 * global_mat_X[st1 * ct.num_states + st2] *
+                                        partial_z[ist] += 2.0 * global_mat_X[st11 * ct.num_states + st2] *
                                             (kbpsi[iip1a] * kbpsi_comm_z[iip2a] + partial_kbpsi_z[iip1a] * kbpsi_comm[iip2a]);
                                     }
                                 }
@@ -144,6 +151,7 @@ void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, 
                         }
                     }
             }
+        }
     }
 
     my_free(kbpsi_comm_x);
