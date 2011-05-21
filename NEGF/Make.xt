@@ -9,7 +9,7 @@
 
 
 # Modules(directories) that contain the necessary source files
-MODULES = Common Input ../Common/* ../order-n/ON-NEGF-share
+MODULES = Common Input ../ON/ON-NEGF-share ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP ../XC
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
 HFILES := $(wildcard Headers/*.h)

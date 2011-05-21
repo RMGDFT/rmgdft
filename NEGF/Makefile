@@ -29,20 +29,10 @@ aix:
 	@echo "#define PARALLEL_MESSAGE 1" >> Headers/arch.h
 	gmake -f Make.aix
 
-sunfire: Headers/make_conf.h
-	@echo '#define LINUX 1' > Headers/arch.h
-	@echo "#define MPI 1" >> Headers/arch.h
-	$(MAKE) -f Make.sunfire
-
 linux: 
 	@echo '#define LINUX 1' > Headers/arch.h
 	@echo "#define MPI 1" >> Headers/arch.h
 	$(MAKE) -j 8 -f Make.linux
-
-linux_mpich:
-	@echo '#define LINUX 1' > Headers/arch.h
-	@echo "#define MPI 1" >> Headers/arch.h
-	$(MAKE) -j 8 -f Make.linux_mpich
 
 xt: 
 	@echo '#define LINUX 1' > Headers/arch.h

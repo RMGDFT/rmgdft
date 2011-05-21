@@ -27,25 +27,14 @@ default:
 aix: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h
 	@echo '#define AIX 1' >> Headers/arch.h
+	cd ../lib/libxc/; $(MAKE) -j 8 -f Make.rmg
 	gmake -f Make.aix
-
-sunfire: Headers/make_conf.h
-	@echo "#define MPI 1" > Headers/arch.h
-	@echo '#define LINUX 1' >> Headers/arch.h
-	cd ../lib/libxc/; $(MAKE) -f Make.rmg
-	$(MAKE) -f Make.sunfire
 
 linux: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h
 	@echo '#define LINUX 1' >> Headers/arch.h
 	cd ../lib/libxc/; $(MAKE) -j 8 -f Make.rmg
 	$(MAKE) -j 8 -f Make.linux
-
-linux_mpich: Headers/make_conf.h
-	@echo "#define MPI 1" > Headers/arch.h
-	@echo '#define LINUX 1' >> Headers/arch.h
-	cd ../lib/libxc/; $(MAKE) -f Make.rmg
-	$(MAKE) -j 8 -f Make.linux_mpich
 
 xt: Headers/make_conf.h
 	@echo "#define MPI 1" > Headers/arch.h

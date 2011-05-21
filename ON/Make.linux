@@ -16,7 +16,7 @@ DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
 
 
 # Modules(directories) that contain the necessary source files
-MODULES = Common Input ../Common/* ../order-n/ON-NEGF-share
+MODULES = Common Input ON-NEGF-share ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP ../XC
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
@@ -30,7 +30,10 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
+#The line below works for MPICH, used on ox
 LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
+#For OpenMPI (Ubuntu, etc.) use LIBS below
+#LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran
 LDFLAGS =
 
 
@@ -49,7 +52,7 @@ FFLAGS = $(ARCH) -O3
 CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
 
 
-rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
+rmg-on: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 
@@ -70,6 +73,3 @@ $(OBJECTS): $(HFILES) $(MFILES)
 
 #write_header needs to be recompiled everytime svnrev.h changes
 Common/write_header.o: Headers/svnrev.h
-
-#get input has to be recompiled when inputs.h changes
-Common/get_input.o: Headers/inputs.h

@@ -1,5 +1,5 @@
 #************************** SVN Revision Information **************************
-#**    $Id: Make.linux 1117 2010-04-19 16:13:54Z froze $    **
+#**    $Id$    **
 #*****************************************************************************/
  
 #
@@ -16,7 +16,7 @@ DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
 
 
 # Modules(directories) that contain the necessary source files
-MODULES = Common Input ON-NEGF-share ../Common/*
+MODULES = Common Input Spin Spin/XC ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP ../XC
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
 HFILES := $(wildcard Headers/*.h)
@@ -28,7 +28,10 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
-LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran
+#The options below work on Linux with MPICH. This works on Fedora 14. 
+LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
+#For OpenMPI, use the following options instead of those above. This works on debian-based systems including Ubuntu.
+#LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran  -L ../lib/libxc/lib -lxc
 LDFLAGS =
 
 
@@ -47,7 +50,7 @@ FFLAGS = $(ARCH) -O3
 CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
 
 
-rmg-on: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 
@@ -68,3 +71,4 @@ $(OBJECTS): $(HFILES) $(MFILES)
 
 #write_header needs to be recompiled everytime svnrev.h changes
 Common/write_header.o: Headers/svnrev.h
+
