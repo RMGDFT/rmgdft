@@ -15,50 +15,90 @@
 
 SHELL = /bin/sh
 
-default:
-	@echo "Type one of the following:"
-	@echo "  make aix                  for 64 bit AIX using MPI"
-	@echo "  make sunfire              for sunfire opteron using MPI"
-	@echo "  make linux                for linux using MPI"
-	@echo "  make xt                   for CRAY XT using MPI"
-	@echo " "
+
+#This is a list of shared directories. The paths are relative to the directories in which the codes reside
+#If new shared directories are created they should be added here
+export GLOBAL_MODULES = ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP ../XC
+export ON_NEGF_MODULES = ../ON/ON-NEGF-share
 
 
-aix: 
+# This shell script will remove object files in shared directories, if they were created after the code was last compiled
+# This normally means that the objects were compiled for a different code, so it is the best to force their recompile
+define clean-global
+	if [ -e .build.log ];\
+	then for module in $(GLOBAL_MODULES);\
+		do for file in $$module/*.o;\
+			do if [ $$file -nt .build.log ] ;\
+			   then echo "Removing $$file"; rm $$file;\
+		       fi;\
+			done;\
+	 	 done;\
+	else for module in $(GLOBAL_MODULES);\
+		do for file in $$module/*.o; \
+			 do echo "Removing $$file";\
+				if [ -e $$file ]; \
+				then rm $$file;\
+				else echo "$$file not exist";\
+				fi;\
+			 done; \
+		done; \
+	fi
+endef
+
+define clean-on-negf-share
+	if [ -e .build.log ];\
+	then for module in $(ON_NEGF_MODULES);\
+		do for file in $$module/*.o;\
+			do if [ $$file -nt .build.log ] ;\
+			   then echo "Removing $$file"; rm $$file;\
+		       fi;\
+			done;\
+	 	 done;\
+	else for module in $(ON_NEGF_MODULES);\
+		do for file in $$module/*.o; \
+			 do echo "Removing $$file";\
+				if [ -e $$file ]; \
+				then rm $$file;\
+				else echo "$$file not exist";\
+				fi;\
+			 done; \
+		done; \
+	fi
+endef
+
+
+# Order-N targets go here
+on-linux: 
+	@echo "#define LINUX 1" > Headers/arch.h
+	@echo "#define MPI 1" >> Headers/arch.h
+	@$(clean-global); $(clean-on-negf-share)
+	$(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
+
+on-xt: 
+	@echo "#define LINUX 1" > Headers/arch.h
+	@echo "#define MPI 1" >> Headers/arch.h
+	@$(clean-global); $(clean-on-negf-share)
+	$(MAKE) -f Make.xt 2>&1 | tee .build.log
+
+on-aix: 
 	@echo '#define AIX_MPI 1' > Headers/arch.h
 	@echo "#define PARALLEL_MESSAGE 1" >> Headers/arch.h
-	gmake -f Make.aix
-
-linux: 
-	@echo '#define LINUX 1' > Headers/arch.h
-	@echo "#define MPI 1" >> Headers/arch.h
-	$(MAKE) -j 8 -f Make.linux
-
-xt: 
-	@echo '#define LINUX 1' > Headers/arch.h
-	@echo "#define MPI 1" >> Headers/arch.h
-	$(MAKE) -f Make.xt
+	@$(clean-global); $(clean-on-negf-share)
+	gmake -f Make.aix 2>&1 | tee .build.log
 
 
-clean:
-	find . \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
-	find ../Common \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
-	find ../order-n/ON-NEGF-share \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
-	rm -f SvnRev/svnrev Headers/svnrev.h Headers/arch.h Headers/grid.h Make.vars loadmap core mppcore rmg-on
+#Clean targets
 
-tar:
-	rm -f mg.tar.*
-	tar -cf mg.tar CHANGELOG README* LICENSE *.h *.c *.f Make.* *.dxx doc/*
-	gzip mg.tar
+.PHONY: clean-common
+clean-common:
+	find $(GLOBAL_MODULES)  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 
-alltar:
-	rm -f mg.tar.*
-	tar -cf mg.tar CHANGELOG README* LICENSE *.h *.c *.f Makefile Make.* pseudo.* in.* *.dxx doc/*
-	gzip mg.tar                                                                                               
+clean: clean-common
+	find .  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 
-htmldoc:
-	@echo "#define M_LINUX_MPI 1" > arch.h
-	@echo "#define NPES "$(NPES) >> arch.h
-	doc++ -v -eo 12pt --header docheader.dxx --footer docfooter.dxx -a -S -m -j --dir doc doc.dxx
-DOC:
-	doc.bat
+clean-lib:
+	find ../lib \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
+
+clean-libxc:
+	find ../lib/libxc \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
+
