@@ -19,6 +19,7 @@ SHELL = /bin/sh
 #This is a list of shared directories. The paths are relative to the directories in which the codes reside
 #If new shared directories are created they should be added here
 export GLOBAL_MODULES = ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP ../XC
+export ON_NEGF_MODULES = ../ON/ON-NEGF-share
 
 
 # This shell script will remove object files in shared directories, if they were created after the code was last compiled
@@ -44,6 +45,26 @@ define clean-global
 	fi
 endef
 
+define clean-on-negf-share
+	if [ -e .build.log ];\
+	then for module in $(ON_NEGF_MODULES);\
+		do for file in $$module/*.o;\
+			do if [ $$file -nt .build.log ] ;\
+			   then echo "Removing $$file"; rm $$file;\
+		       fi;\
+			done;\
+	 	 done;\
+	else for module in $(ON_NEGF_MODULES);\
+		do for file in $$module/*.o; \
+			 do echo "Removing $$file";\
+				if [ -e $$file ]; \
+				then rm $$file;\
+				else echo "$$file not exist";\
+				fi;\
+			 done; \
+		done; \
+	fi
+endef
 
 all:  rmg-linux on-linux NEGF-linux
 
@@ -79,19 +100,19 @@ rmg-aix: RMG/Headers/make_conf.h
 on-linux: 
 	@echo "#define LINUX 1" > ON/Headers/arch.h
 	@echo "#define MPI 1" >> ON/Headers/arch.h
-	@cd ON; $(clean-global)
+	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
 on-xt: 
 	@echo "#define LINUX 1" > ON/Headers/arch.h
 	@echo "#define MPI 1" >> ON/Headers/arch.h
-	@cd ON; $(clean-global)
+	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 on-aix: 
 	@echo '#define AIX_MPI 1' > ON/Headers/arch.h
 	@echo "#define PARALLEL_MESSAGE 1" >> ON/Headers/arch.h
-	@cd ON; $(clean-global)
+	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; gmake -f Make.aix 2>&1 | tee .build.log
 
 
@@ -99,19 +120,19 @@ on-aix:
 NEGF-linux: 
 	@echo '#define LINUX 1' > NEGF/Headers/arch.h
 	@echo "#define MPI 1" >> NEGF/Headers/arch.h
-	@cd NEGF; $(clean-global)
+	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
 NEGF-xt: 
 	@echo '#define LINUX 1' > NEGF/Headers/arch.h
 	@echo "#define MPI 1" >> NEGF/Headers/arch.h
-	@cd NEGF; $(clean-global)
+	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 NEGF-aix: 
 	@echo '#define AIX_MPI 1' > NEGF/Headers/arch.h
 	@echo "#define PARALLEL_MESSAGE 1" >> NEGF/Headers/arch.h
-	@cd NEGF; $(clean-global)
+	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; gmake -f Make.aix 2>&1 | tee .build.log
 
 #Clean targets
