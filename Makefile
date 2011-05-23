@@ -24,7 +24,24 @@ export GLOBAL_MODULES = ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP 
 # This shell script will remove object files in shared directories, if they were created after the code was last compiled
 # This normally means that the objects were compiled for a different code, so it is the best to force their recompile
 define clean-global
-	if [ -e .build.log ]; then for module in $(GLOBAL_MODULES); do for file in $$module/*.o; do if [ $$file -nt .build.log ] ; then echo "Removing $$file"; rm $$file; fi; done; done; else for module in $(GLOBAL_MODULES); do for file in $$module/*.o; do echo "Removing $$file"; rm $$file; done; done; fi
+	if [ -e .build.log ];\
+	then for module in $(GLOBAL_MODULES);\
+		do for file in $$module/*.o;\
+			do if [ $$file -nt .build.log ] ;\
+			   then echo "Removing $$file"; rm $$file;\
+		       fi;\
+			done;\
+	 	 done;\
+	else for module in $(GLOBAL_MODULES);\
+		do for file in $$module/*.o; \
+			 do echo "Removing $$file";\
+				if [ -e $$file ]; \
+				then rm $$file;\
+				else echo "$$file not exist";\
+				fi;\
+			 done; \
+		done; \
+	fi
 endef
 
 
