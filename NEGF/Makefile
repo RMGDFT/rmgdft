@@ -96,9 +96,6 @@ clean-common:
 clean: clean-common
 	find .  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 
-clean-lib:
-	find ../lib \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
-
 clean-libxc:
-	find ../lib/libxc \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
+	cd ../lib/libxc; make clean 
 
