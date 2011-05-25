@@ -410,7 +410,7 @@ void force (REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vn
 void iiforce (void);
 void lforce (REAL *rho, REAL *vh);
 void nlforce (REAL *veff);
-void get_gamma (REAL * gammaR, int ion, int nh);
+void get_gamma (REAL * gammaR, ION * iptr, int nh);
 void partial_gamma (int ion, REAL *par_gammaR, REAL *par_omegaR, ION *iptr,
                     int nh, REAL *newsintR_x, REAL *newsintR_y,
                     REAL *newsintR_z, REAL *newsintI_x, REAL *newsintI_y,
