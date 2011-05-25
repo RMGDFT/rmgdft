@@ -104,7 +104,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     time1 = my_crtc ();
 #endif
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
-    app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, ct.ions[0].oldsintR, NULL, sp->istate, sp->kidx);
+    app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
 
 
 #if MD_TIMERS
@@ -402,7 +402,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     time1 = my_crtc ();
 #endif
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
-    app_nls (tmp_psiR, tmp_psiI, nvR, nvI, nsR, nsI, ct.ions[0].oldsintR, ct.ions[0].oldsintI, sp->istate, sp->kidx);
+    app_nls (tmp_psiR, tmp_psiI, nvR, nvI, nsR, nsI, pct.oldsintR_local, pct.oldsintI_local, sp->istate, sp->kidx);
 
 
 #if MD_TIMERS

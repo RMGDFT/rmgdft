@@ -193,6 +193,15 @@ void finish_release_mem (STATE * states)
         my_free (iptr->oldsintI);
 #endif
 
+    
+    if (pct.newsintR_local) my_free (pct.newsintR_local);
+    if (pct.oldsintR_local) my_free (pct.oldsintR_local);
+
+#if !GAMMA_PT
+    if (pct.newsintI_local) my_free (pct.newsintI_local);
+    if (pct.oldsintI_local) my_free (pct.oldsintI_local);
+#endif
+
 
     if (states)
         my_free (states);

@@ -16,12 +16,13 @@
 void norm_psi1_parallel (STATE * sp, int istate, int kidx)
 {
 
-    int idx, ion, nh, i, j, size, incx = 1, inh, sidx, sidx_local;
-    REAL sumbetaR, sumpsi, sum, t1;
+    int idx, ion, nh, i, j, size, incx = 1, inh, sidx, sidx_local, nidx, oion;
+    REAL sumbeta, sumpsi, sum, t1;
     REAL *tmp_psiR, *tmp_psiI, *qqq, *sintR, *sintI, *ptr;
     ION *iptr;
 
     sidx = kidx * ct.num_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
+    sidx_local = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
 
     size = sp->pbasis;
 
@@ -31,19 +32,31 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
 #endif
 
     sumpsi = 0.0;
-    sumbetaR = 0.0;
+    sumbeta = 0.0;
 
-    /*Ion parallelization */
-    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
+    nidx = -1;
+    for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
-        qqq = pct.qqq[ion];
-        nh = pct.prj_per_ion[ion];
-        iptr = &ct.ions[ion];
+
+	oion = pct.owned_ions_list[ion];
+	
+	/* Figure out index of owned ion in nonloc_ions_list array*/
+	do {
+	    
+	    nidx++;
+	    if (nidx >= pct.num_nonloc_ions)
+		error_handler("Could not find matching entry in pct.nonloc_ions_list for owned ion %d", oion);
+	
+	} while (pct.nonloc_ions_list[nidx] != oion);
+
+        qqq = pct.qqq[oion];
+        nh = pct.prj_per_ion[oion];
 
 
-        sintR = &iptr->newsintR[sidx];
+	/*nidx adds offset due to current ion*/
+        sintR = &pct.newsintR_local[sidx_local + nidx * ct.num_states * ct.max_nl];
 #if !GAMMA_PT
-        sintI = &iptr->newsintI[sidx];
+        sintI = &pct.newsintI_local[sidx_local+ nidx * ct.num_states * ct.max_nl];
 #endif
 
 
@@ -55,9 +68,10 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
                 if (qqq[inh + j] != 0.0)
                 {
 #if GAMMA_PT
-                    sumbetaR += qqq[inh + j] * sintR[i] * sintR[j];
+                    sumbeta += qqq[inh + j] * sintR[i] * sintR[j];
 #else
-                    sumbetaR += qqq[inh + j] * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
+                    sumbeta += qqq[inh + j] * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
+                    sumbeta += qqq[inh + j] * (sintR[i] * sintI[j] - sintI[i] * sintR[j]);
 #endif
 
                 }
@@ -74,11 +88,8 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
 #endif
     }
 
-
-    /*Sum sumpsi and sumbeta */
-    sum = real_sum_all ( (ct.vel * sumpsi + sumbetaR), pct.grid_comm );
-
-
+    sum = real_sum_all (ct.vel * sumpsi + sumbeta, pct.grid_comm);
+    
     sum = 1.0 / sum;
     if (sum < 0.0)
     {
@@ -108,7 +119,6 @@ void norm_psi1_parallel (STATE * sp, int istate, int kidx)
     }
     
     /* update <beta|psi> - Local version*/
-    sidx_local = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
     
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {

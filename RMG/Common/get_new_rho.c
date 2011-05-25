@@ -1,6 +1,6 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
+ ******************************************************************************/
 
 /***** QMD-MGDFT/get_rho.c *****
  * NAME
@@ -46,7 +46,7 @@ void get_new_rho (STATE * states, REAL * rho)
 
     int istate, kpt, n, incx, idx;
     int *ivec;
-    int nh, icount, ncount, i, j, ion;
+    int nh, icount, ncount, i, j, ion, gion;
     REAL *qnmI, *sintR, *qtpr;
     REAL t1, *work, *product;
     REAL time1;
@@ -54,7 +54,6 @@ void get_new_rho (STATE * states, REAL * rho)
     REAL *sintI;
 #endif
     STATE *sp;
-    ION *iptr;
 
     my_calloc (work, P0_BASIS, REAL);
 
@@ -88,32 +87,32 @@ void get_new_rho (STATE * states, REAL * rho)
                 work[idx] += t1 * sp->psiI[idx] * sp->psiI[idx];
 #endif
             }                   /* end for */
-            
-	    sp++;
+
+            sp++;
         }                       /*end for istate */
 
     }                           /*end for kpt */
-    
-    
+
+
     /* Interpolate onto fine grid, result will be stored in rho*/
     time1 = my_crtc ();
 
     switch (ct.interp_flag)
     {
-    case 0:
-        pack_rho_ctof (work, rho);
-	break;
-    case 1:
-        bspline_interp_full (work, rho);
-	break;
-    case 2:
-	mg_prolong_MAX10 (rho, work, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
-	break;
+        case 0:
+            pack_rho_ctof (work, rho);
+            break;
+        case 1:
+            bspline_interp_full (work, rho);
+            break;
+        case 2:
+            mg_prolong_MAX10 (rho, work, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
+            break;
 
-    default:
+        default:
 
-	Dprintf ("charge interpolation is set to %d", ct.interp_flag);
-	error_handler ("ct.interp_flag is set to %d. The valid values are 0, 1, 2", ct.interp_flag);
+            Dprintf ("charge interpolation is set to %d", ct.interp_flag);
+            error_handler ("ct.interp_flag is set to %d. The valid values are 0, 1, 2", ct.interp_flag);
 
 
     } 
@@ -121,63 +120,64 @@ void get_new_rho (STATE * states, REAL * rho)
     rmg_timings (INTERPOLATION_TIME, my_crtc () - time1);
 
 
-    
-    for (ion = 0; ion < ct.num_ions; ion++)
+
+    for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
-        ivec = pct.Qindex[ion];
-        nh = pct.prj_per_ion[ion];
-        ncount = pct.Qidxptrlen[ion];
-        qnmI = pct.augfunc[ion];
-        iptr = &ct.ions[ion];
-
-        my_calloc (product, (nh + 1) * nh / 2, REAL);
-
-        for (kpt = 0; kpt < ct.num_kpts; kpt++)
+        gion = pct.nonloc_ions_list[ion];
+        
+        if (pct.Qidxptrlen[gion])
         {
+            ivec = pct.Qindex[gion];
+            nh = pct.prj_per_ion[gion];
+            ncount = pct.Qidxptrlen[gion];
+            qnmI = pct.augfunc[gion];
 
-            sp = ct.kp[kpt].kstate;
-            /* Loop over states and accumulate charge */
-            for (istate = 0; istate < ct.num_states; istate++)
+            my_calloc (product, (nh + 1) * nh / 2, REAL);
+
+            for (kpt = 0; kpt < ct.num_kpts; kpt++)
             {
-                t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-                for (i = 0; i < ct.max_nl; i++)
+                sp = ct.kp[kpt].kstate;
+                /* Loop over states and accumulate charge */
+                for (istate = 0; istate < ct.num_states; istate++)
                 {
-                    sintR[i] =
-                        iptr->newsintR[kpt * ct.num_ions * ct.num_states * ct.max_nl +
-                                       istate * ct.max_nl + i];
-#if !GAMMA_PT
-                    sintI[i] =
-                        iptr->newsintI[kpt * ct.num_ions * ct.num_states * ct.max_nl +
-                                       istate * ct.max_nl + i];
-#endif
-                }               /*end for i */
+                    t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-                idx = 0;
-                for (i = 0; i < nh; i++)
-                {
-                    for (j = i; j < nh; j++)
+                    for (i = 0; i < ct.max_nl; i++)
                     {
-#if GAMMA_PT
-                        if (i == j)
-                            product[idx] += t1 * sintR[i] * sintR[j];
-                        else
-                            product[idx] += 2 * t1 * sintR[i] * sintR[j];
-#else
-                        if (i == j)
-                            product[idx] += t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
-                        else
-                            product[idx] += 2 * t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
+                        sintR[i] =
+                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
+                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+#if !GAMMA_PT
+                        sintI[i] =
+                            pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
+                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
 #endif
-                        idx++;
-                    }           /*end for j */
-                }               /*end for i */
-                sp++;
-            }                   /*end for istate */
-        }                       /*end for kpt */
+                    }               /*end for i */
 
-        if (pct.Qidxptrlen[ion])
-        {
+                    idx = 0;
+                    for (i = 0; i < nh; i++)
+                    {
+                        for (j = i; j < nh; j++)
+                        {
+#if GAMMA_PT
+                            if (i == j)
+                                product[idx] += t1 * sintR[i] * sintR[j];
+                            else
+                                product[idx] += 2 * t1 * sintR[i] * sintR[j];
+#else
+                            if (i == j)
+                                product[idx] += t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
+                            else
+                                product[idx] += 2 * t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
+#endif
+                            idx++;
+                        }           /*end for j */
+                    }               /*end for i */
+                    sp++;
+                }                   /*end for istate */
+            }                       /*end for kpt */
+
 
             idx = 0;
             for (i = 0; i < nh; i++)
@@ -193,8 +193,9 @@ void get_new_rho (STATE * states, REAL * rho)
                 }               /*end for j */
             }                   /*end for i */
 
+            my_free (product);
+
         }                       /*end if */
-        my_free (product);
 
     }                           /*end for ion */
 

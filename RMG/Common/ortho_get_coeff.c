@@ -17,16 +17,15 @@
 #if GAMMA_PT
 void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI)
 {
-    int ion, i, j, inh, sidx1, sidx2;
+    int ion, i, j, inh, sidx1, sidx2, nidx, oion;
     int idx, nh;
     REAL *tmp_psi2, *tmp_psi1;
     REAL *sint1R, *sint2R, *qqq;
     REAL sumpsi, sumbeta, sri;
-    ION *iptr;
 
 
-    sidx1 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
-    sidx2 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
+    sidx1 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
+    sidx2 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
 
 
     tmp_psi1 = sp1->psiR;
@@ -38,15 +37,26 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     /*This loop should be the same for all ions - qqq and newsintR should have 
      * the same values everywhere*/
     /*This is parallelized over ions */
-    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
+    nidx = -1;
+    for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
-        qqq = pct.qqq[ion];
-        nh = pct.prj_per_ion[ion];
-        iptr = &ct.ions[ion];
+	oion = pct.owned_ions_list[ion];
+	
+	/* Figure out index of owned ion in nonloc_ions_list array*/
+	do {
+	    
+	    nidx++;
+	    if (nidx >= pct.num_nonloc_ions)
+		error_handler("Could not find matching entry in pct.nonloc_ions_list for owned ion %d", oion);
+	
+	} while (pct.nonloc_ions_list[nidx] != oion);
+        
+        qqq = pct.qqq[oion];
+        nh = pct.prj_per_ion[oion];
 
         /* get<beta|psi1> and <beta|psi2> */
-        sint1R = &iptr->newsintR[sidx1];
-        sint2R = &iptr->newsintR[sidx2];
+        sint1R = &pct.newsintR_local[sidx1 + nidx * ct.num_states * ct.max_nl];
+        sint2R = &pct.newsintR_local[sidx2 + nidx * ct.num_states * ct.max_nl];
 
         for (i = 0; i < nh; i++)
         {
@@ -83,8 +93,8 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     ION *iptr;
 
 
-    sidx1 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
-    sidx2 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
+    sidx1 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
+    sidx2 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
 
 
     tmp_psi1R = sp1->psiR;
@@ -98,17 +108,28 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     sumbetaI = 0.0;
 
     /*This is parallelized over ions */
-    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
+    nidx = -1;
+    for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
-        qqq = pct.qqq[ion];
-        nh = pct.prj_per_ion[ion];
-        iptr = &ct.ions[ion];
+	oion = pct.owned_ions_list[ion];
+	
+	/* Figure out index of owned ion in nonloc_ions_list array*/
+	do {
+	    
+	    nidx++;
+	    if (nidx >= pct.num_nonloc_ions)
+		error_handler("Could not find matching entry in pct.nonloc_ions_list for owned ion %d", oion);
+	
+	} while (pct.nonloc_ions_list[nidx] != oion);
+        
+        qqq = pct.qqq[oion];
+        nh = pct.prj_per_ion[oion];
 
         /* get<beta|psi1> and <beta|psi2> */
-        sint1R = &iptr->newsintR[sidx1];
-        sint1I = &iptr->newsintI[sidx1];
-        sint2R = &iptr->newsintR[sidx2];
-        sint2I = &iptr->newsintI[sidx2];
+        sint1R = &pct.newsintR_local[sidx1 + nidx * ct.num_states * ct.max_nl];
+        sint1I = &pct.newsintI_local[sidx1 + nidx * ct.num_states * ct.max_nl];
+        sint2R = &pct.newsintR_local[sidx2 + nidx * ct.num_states * ct.max_nl];
+        sint2I = &pct.newsintI_local[sidx2 + nidx * ct.num_states * ct.max_nl];
 
 
         for (i = 0; i < nh; i++)

@@ -349,16 +349,16 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     fflush (NULL);
 
 
-
-    /* Initialize Non-local operators */
-    get_nlop ();
-    get_weight ();
-
     /* Initialize the qfunction stuff */
     init_qfunct ();
 
     /*get the augument function QnmI(r) */
     get_QI ();
+
+    /* Initialize Non-local operators */
+    get_nlop ();
+    get_weight ();
+
 
     /*get the qqq coefficient */
     get_qqq ();

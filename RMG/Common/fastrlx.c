@@ -111,9 +111,9 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 		/* update items that change when the ionic coordinates change */
 		init_nuc (vnuc, rhoc, rhocore);
+		get_QI ();
 		get_nlop ();
 		get_weight ();
-		get_QI ();
 		get_qqq ();
 
 

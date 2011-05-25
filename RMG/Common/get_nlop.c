@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include "main.h"
 
+/*Call to this function needs to be preceeded by get_QI, since we use pct.Qidxptrlen,
+ * which is setup in that function*/
 
 static void reset_pct_arrays (int ion);
 
@@ -225,7 +227,7 @@ void get_nlop (void)
 
 #if 1
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
-        if (icount)
+        if (icount || pct.Qidxptrlen[ion])
         {
             if (pct.num_nonloc_ions >= MAX_NONLOC_IONS) 
             {
