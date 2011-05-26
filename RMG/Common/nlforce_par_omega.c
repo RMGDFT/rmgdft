@@ -8,7 +8,7 @@
 #include <math.h>
 #include "main.h"
 
-void nlforce_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
+void nlforce_par_omega (REAL * par_omega, int ion, int nh, REAL *force)
 {
     int idx, idx1, size, n, m, three = 3;
     REAL forces[3];
@@ -51,8 +51,8 @@ void nlforce_par_omega (REAL * par_omega, int ion, ION * iptr, int nh)
     if (ct.spin_flag)
 	    global_sums (forces, &three, pct.spin_comm);
 
-    iptr->force[ct.fpt[0]][0] -= forces[0];
-    iptr->force[ct.fpt[0]][1] -= forces[1];
-    iptr->force[ct.fpt[0]][2] -= forces[2];
+    force[0] -= forces[0];
+    force[1] -= forces[1];
+    force[2] -= forces[2];
 
 }

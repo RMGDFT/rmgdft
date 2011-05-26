@@ -8,7 +8,7 @@
 #include <math.h>
 #include "main.h"
 
-void get_gamma (REAL * gammaR, ION * iptr, int nh)
+void get_gamma (REAL * gammaR, int ion, int nh)
 {
     int i, j, idx, kidx, istate;
     REAL t1, sintNR, sintMR;
@@ -30,16 +30,16 @@ void get_gamma (REAL * gammaR, ION * iptr, int nh)
                 for (istate = 0; istate < ct.num_states; istate++)
                 {
                     t1 = sta->occupation[0] * ct.kp[kidx].kweight;
-                    sintNR = iptr->newsintR[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    sintNR = pct.newsintR_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ion *  ct.num_states * ct.max_nl +
                                             istate * ct.max_nl + i];
-                    sintMR = iptr->newsintR[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    sintMR = pct.newsintR_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ion *  ct.num_states * ct.max_nl +
                                             istate * ct.max_nl + j];
 #if GAMMA_PT
                     gammaR[idx] += t1 * sintNR * sintMR;
 #else
-                    sintNI = iptr->newsintI[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    sintNI = pct.newsintI_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ion *  ct.num_states * ct.max_nl +
                                             istate * ct.max_nl + i];
-                    sintMI = iptr->newsintI[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    sintMI = pct.newsintI_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ion *  ct.num_states * ct.max_nl +
                                             istate * ct.max_nl + j];
                     gammaR[idx] += t1 * (sintNR * sintMR + sintNI * sintMI);
 #endif

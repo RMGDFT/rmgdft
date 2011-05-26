@@ -410,19 +410,18 @@ void force (REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *vh, REAL *vxc, REAL *vn
 void iiforce (void);
 void lforce (REAL *rho, REAL *vh);
 void nlforce (REAL *veff);
-void get_gamma (REAL * gammaR, ION * iptr, int nh);
-void partial_gamma (int ion, REAL *par_gammaR, REAL *par_omegaR, ION *iptr,
-                    int nh, REAL *newsintR_x, REAL *newsintR_y,
-                    REAL *newsintR_z, REAL *newsintI_x, REAL *newsintI_y,
-                    REAL *newsintI_z);
+void get_gamma (REAL * gammaR, int ion, int nh);
+void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, int nion, int nh,
+                    REAL * newsintR_x, REAL * newsintR_y, REAL * newsintR_z,
+                    REAL * newsintI_x, REAL * newsintI_y, REAL * newsintI_z);
 void partial_betaxpsi (int ion, fftwnd_plan p2, REAL *newsintR_x,
                        REAL *newsintR_y, REAL *newsintR_z,
                        REAL *newsintI_x, REAL *newsintI_y,
                        REAL *newsintI_z, ION *iptr);
 void nlforce_par_Q (REAL *veff, REAL *gamma, int ion, ION *iptr, int nh,
                      REAL *forces);
-void nlforce_par_gamma (REAL *par_gamma, int ion, int nh);
-void nlforce_par_omega (REAL *par_omega, int ion, ION *iptr, int nh);
+void nlforce_par_gamma (REAL * par_gamma, int ion, int nh, REAL *force);
+void nlforce_par_omega (REAL * par_omega, int ion, int nh, REAL *force);
 void partial_QI (int ion, REAL *QI_R, ION *iptr);
 void qval_R (int ih, int jh, REAL r, REAL *x, REAL *qlig, REAL *drqlig,
              REAL invdr, int *nhtol, int *nhtom, int *indv, REAL *ylm,

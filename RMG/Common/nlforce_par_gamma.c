@@ -8,12 +8,11 @@
 #include <math.h>
 #include "main.h"
 
-void nlforce_par_gamma (REAL * par_gamma, int ion, int nh)
+void nlforce_par_gamma (REAL * par_gamma, int ion, int nh, REAL *force)
 {
     int idx, idx1, size, n, m, three = 3;
     REAL forces[3];
     REAL *gamma_x, *gamma_y, *gamma_z, *dnmI;
-    ION *iptr;
 
     size = nh * (nh + 1) / 2;
 
@@ -22,7 +21,6 @@ void nlforce_par_gamma (REAL * par_gamma, int ion, int nh)
     gamma_z = gamma_y + size;
 
     dnmI = pct.dnmI[ion];
-    iptr = &ct.ions[ion];
 
     for (idx = 0; idx < 3; idx++)
         forces[idx] = 0.0;
@@ -52,8 +50,8 @@ void nlforce_par_gamma (REAL * par_gamma, int ion, int nh)
     if (ct.spin_flag)
 	global_sums (forces, &three, pct.spin_comm);
 
-    iptr->force[ct.fpt[0]][0] += forces[0];
-    iptr->force[ct.fpt[0]][1] += forces[1];
-    iptr->force[ct.fpt[0]][2] += forces[2];
+    force[0] += forces[0];
+    force[1] += forces[1];
+    force[2] += forces[2];
 
 }

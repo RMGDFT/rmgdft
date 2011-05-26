@@ -14,7 +14,7 @@
 
 void nlforce (REAL * veff)
 {
-    int ion, isp, index;
+    int ion, isp, index, gion, nion;
     int nh, size, size1;
     REAL *gamma, *par_gamma, *par_omega;
     SPECIES *sp;
@@ -22,7 +22,7 @@ void nlforce (REAL * veff)
     int num_ions;
     fftwnd_plan p2;
     REAL *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
-    REAL *newsintI_x, *newsintI_y, *newsintI_z;
+    REAL *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force;
     int fpt0;
 #if VERBOSE
     REAL *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
@@ -50,6 +50,7 @@ void nlforce (REAL * veff)
     newsintI_z = NULL;
 #endif
 
+
     /*Initialize */
     for (isp = 0; isp < 3 * size1; isp++)
         newsintR_x[isp] = 0.0;
@@ -61,9 +62,13 @@ void nlforce (REAL * veff)
 
     /*Array for q-force */
     my_malloc (qforce, 3 * num_ions, REAL);
+    my_malloc (tmp_force, 3 * num_ions, REAL);
 
     for (isp = 0; isp < 3 * num_ions; isp++)
+    {
         qforce[isp] = 0.0;
+        tmp_force[isp] = 0.0;
+    }
 
 
 
@@ -71,12 +76,15 @@ void nlforce (REAL * veff)
 
     /*Loop over ions to setup newsintR_*, this loop is done separately to 
      * insure proper paralelization*/
-    for (ion = 0; ion < num_ions; ion++)
+    for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
-        iptr = &ct.ions[ion];
+        /*Actual index of the ion under consideration*/
+        gion = pct.nonloc_ions_list[ion];
+        
+        iptr = &ct.ions[gion];
 
 
-        if (pct.idxptrlen[ion])
+        if (pct.idxptrlen[gion])
         {
             sp = &ct.sp[iptr->species];
 
@@ -90,7 +98,7 @@ void nlforce (REAL * veff)
 #endif
 
 
-            partial_betaxpsi (ion, p2, newsintR_x, newsintR_y, newsintR_z, newsintI_x, newsintI_y,
+            partial_betaxpsi (gion, p2, newsintR_x, newsintR_y, newsintR_z, newsintI_x, newsintI_y,
                               newsintI_z, iptr);
 
             /*Release memery for plans */
@@ -103,13 +111,13 @@ void nlforce (REAL * veff)
 
         }                       /*end if (pct.idxptrlen[ion]) */
 
-        nh = pct.prj_per_ion[ion];
+        nh = pct.prj_per_ion[gion];
         size = nh * (nh + 1) / 2;
 
         my_malloc (gamma, size, REAL);
 
-        get_gamma (gamma, iptr, nh);
-        nlforce_par_Q (veff, gamma, ion, iptr, nh, &qforce[3 * ion]);
+        get_gamma (gamma, ion, nh);
+        nlforce_par_Q (veff, gamma, gion, iptr, nh, &qforce[3 * gion]);
 
         my_free (gamma);
 
@@ -130,6 +138,18 @@ void nlforce (REAL * veff)
 
     size1 = 3 * num_ions;
     global_sums (qforce, &size1, pct.img_comm);
+        
+    
+    /*Add force calculated in nlforce1_par_Q */
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        iptr = &ct.ions[ion];
+
+        index = 3 * (ion);
+        iptr->force[fpt0][0] += ct.vel_f * qforce[index];
+        iptr->force[fpt0][1] += ct.vel_f * qforce[index + 1];
+        iptr->force[fpt0][2] += ct.vel_f * qforce[index + 2];
+    }
 
 #if VERBOSE
     sum1x = 0.0;
@@ -144,33 +164,41 @@ void nlforce (REAL * veff)
 #endif
 
     /*Loop over ions again */
-    for (ion = 0; ion < num_ions; ion++)
+    nion = -1;
+    for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
-        iptr = &ct.ions[ion];
+        /*Global index of owned ion*/
+	gion = pct.owned_ions_list[ion];
+	
+        /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
+	do {
+	    
+	    nion++;
+	    if (nion >= pct.num_nonloc_ions)
+		error_handler("Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
+	
+	} while (pct.nonloc_ions_list[nion] != gion);
+        
+        iptr = &ct.ions[gion];
 
 #if VERBOSE
-        old_force[3 * ion] = iptr->force[fpt0][0];
-        old_force[3 * ion + 1] = iptr->force[fpt0][1];
-        old_force[3 * ion + 2] = iptr->force[fpt0][2];
+        old_force[3 * gion] = iptr->force[fpt0][0];
+        old_force[3 * gion + 1] = iptr->force[fpt0][1];
+        old_force[3 * gion + 2] = iptr->force[fpt0][2];
 #endif
 
 
-        nh = pct.prj_per_ion[ion];
+        nh = pct.prj_per_ion[gion];
 
         size = nh * (nh + 1) / 2;
         my_malloc (par_gamma, 6 * size, REAL);
         par_omega = par_gamma + 3 * size;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
-        partial_gamma (ion, par_gamma, par_omega, iptr, nh, newsintR_x, newsintR_y, newsintR_z,
+        partial_gamma (gion, par_gamma, par_omega, nion, nh, newsintR_x, newsintR_y, newsintR_z,
                        newsintI_x, newsintI_y, newsintI_z);
-        nlforce_par_gamma (par_gamma, ion, nh);
+        nlforce_par_gamma (par_gamma, gion, nh, &tmp_force[3*gion]);
 
-        /*Add force calculated in nlforce1_par_Q */
-        index = 3 * (ion);
-        iptr->force[fpt0][0] += ct.vel_f * qforce[index];
-        iptr->force[fpt0][1] += ct.vel_f * qforce[index + 1];
-        iptr->force[fpt0][2] += ct.vel_f * qforce[index + 2];
 
 #if VERBOSE
         /*Print out true NL force */
@@ -192,10 +220,23 @@ void nlforce (REAL * veff)
 #endif
 
 
-        nlforce_par_omega (par_omega, ion, iptr, nh);
+        nlforce_par_omega (par_omega, gion, nh, &tmp_force[3*gion]);
 
         my_free (par_gamma);
     }                           /*end for(ion=0; ion<num_ions; ion++) */
+    
+    size1 = 3 * num_ions;
+    global_sums (tmp_force, &size1, pct.img_comm);
+    
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        iptr = &ct.ions[ion];
+
+        index = 3 * (ion);
+        iptr->force[fpt0][0] += tmp_force[index];
+        iptr->force[fpt0][1] += tmp_force[index + 1];
+        iptr->force[fpt0][2] += tmp_force[index + 2];
+    }
 
 
 #if VERBOSE
@@ -220,6 +261,7 @@ void nlforce (REAL * veff)
     }
 #endif
 
+    my_free (tmp_force);
     my_free (qforce);
     my_free (newsintR_x);
 #if !GAMMA_PT

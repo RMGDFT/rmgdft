@@ -8,7 +8,7 @@
 #include <float.h>
 #include "main.h"
 
-void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, ION * iptr, int nh,
+void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, int nion, int nh,
                     REAL * newsintR_x, REAL * newsintR_y, REAL * newsintR_z,
                     REAL * newsintI_x, REAL * newsintI_y, REAL * newsintI_z)
 {
@@ -72,9 +72,9 @@ void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, ION * iptr, i
             {
                 for (j = i; j < nh; j++)
                 {
-                    betaxpsiNR = iptr->newsintR[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    betaxpsiNR = pct.newsintR_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
                                                 istate * ct.max_nl + i];
-                    betaxpsiMR = iptr->newsintR[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    betaxpsiMR = pct.newsintR_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
                                                 istate * ct.max_nl + j];
 
 
@@ -92,9 +92,9 @@ void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, ION * iptr, i
                     omega_z[idx] +=
                         t1 * sta->eig[0] * (psixbetaR_z[i] * betaxpsiMR + betaxpsiNR * psixbetaR_z[j]);
 #else
-                    betaxpsiNI = iptr->newsintI[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    betaxpsiNI = pct.newsintI_local[kidx * ct.num_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
                                                 istate * ct.max_nl + i];
-                    betaxpsiMI = iptr->newsintI[kidx * ct.num_ions * ct.num_states * ct.max_nl +
+                    betaxpsiMI = pct.newsintI_local[kidx * ct.num_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
                                                 istate * ct.max_nl + j];
 
 
