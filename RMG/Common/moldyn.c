@@ -287,6 +287,9 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             /*Other things that need to be recalculated when ionic positions change */
             get_weight ();
             get_qqq ();
+                
+            betaxpsi (states);
+            mix_betaxpsi(0);
 
             /* Do an scf step */
             scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, &CONVERGENCE);

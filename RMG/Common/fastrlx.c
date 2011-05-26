@@ -115,6 +115,9 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		get_nlop ();
 		get_weight ();
 		get_qqq ();
+    
+                betaxpsi (states);
+                mix_betaxpsi(0);
 
 
 		/* quench the electrons and calculate forces */
