@@ -238,10 +238,6 @@ typedef struct
     //REAL *phaseptr[MAX_IONS];
     REAL **phaseptr;
 
-    /** Number of projectors associated with each ion. */
-    //int prj_per_ion[MAX_IONS];
-    int *prj_per_ion;
-
     /** Points to start of storage for theaugument function*/
     //REAL *augfunc[MAX_IONS];
     REAL **augfunc;

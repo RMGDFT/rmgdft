@@ -592,7 +592,6 @@ static void init_alloc_nonloc_mem (void)
     my_malloc (pct.idxptrlen, ct.num_ions, int);
     my_malloc (pct.Qidxptrlen, ct.num_ions, int);
     my_malloc (pct.lptrlen, ct.num_ions, int);
-    my_malloc (pct.prj_per_ion, ct.num_ions, int);
 
 
     my_malloc (pct.phaseptr, ct.num_ions, REAL *);
@@ -618,7 +617,6 @@ static void init_alloc_nonloc_mem (void)
         pct.idxptrlen[ion] = 0;
         pct.Qidxptrlen[ion] = 0;
         pct.lptrlen[ion] = 0;
-        pct.prj_per_ion[ion] = 0;
 
         pct.nlindex[ion] = NULL;
         pct.Qindex[ion] = NULL;

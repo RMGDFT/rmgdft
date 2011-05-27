@@ -54,6 +54,7 @@ void get_new_rho (STATE * states, REAL * rho)
     REAL *sintI;
 #endif
     STATE *sp;
+    ION *iptr;
 
     my_calloc (work, P0_BASIS, REAL);
 
@@ -127,8 +128,12 @@ void get_new_rho (STATE * states, REAL * rho)
         
         if (pct.Qidxptrlen[gion])
         {
+            
+            iptr = &ct.ions[gion];
+       
+            nh = ct.sp[iptr->species].nh;
+            
             ivec = pct.Qindex[gion];
-            nh = pct.prj_per_ion[gion];
             ncount = pct.Qidxptrlen[gion];
             qnmI = pct.augfunc[gion];
 

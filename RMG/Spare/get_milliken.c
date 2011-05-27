@@ -88,7 +88,7 @@ void get_milliken (STATE * states)
             /* Generate ion pointer */
             iptr = &ct.ions[ion];
 
-            for (ip = 0; ip < pct.prj_per_ion[ion]; ip++)
+            for (ip = 0; ip < ct.sp[iptr->species].nh; ip++)
             {
 
                 if (ip == 0)

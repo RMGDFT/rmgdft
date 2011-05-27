@@ -35,6 +35,10 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
     {
 
 	oion = pct.owned_ions_list[ion];
+        
+        iptr = &ct.ions[oion];
+       
+        nh = ct.sp[iptr->species].nh;
 	
 	/* Figure out index of owned ion in nonloc_ions_list array*/
 	do {
@@ -46,7 +50,6 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
 	} while (pct.nonloc_ions_list[nidx] != oion);
 
         qqq = pct.qqq[oion];
-        nh = pct.prj_per_ion[oion];
 
 
 	/*nidx adds offset due to current ion*/

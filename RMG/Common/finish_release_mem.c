@@ -100,9 +100,6 @@ void finish_release_mem (STATE * states)
     if (pct.lptrlen)
         my_free (pct.lptrlen);
 
-    if (pct.prj_per_ion)
-        my_free (pct.prj_per_ion);
-
     if (pct.phaseptr)
         my_free (pct.phaseptr);
 

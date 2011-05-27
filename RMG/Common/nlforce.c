@@ -111,7 +111,7 @@ void nlforce (REAL * veff)
 
         }                       /*end if (pct.idxptrlen[ion]) */
 
-        nh = pct.prj_per_ion[gion];
+        nh = ct.sp[iptr->species].nh;
         size = nh * (nh + 1) / 2;
 
         my_malloc (gamma, size, REAL);
@@ -188,7 +188,7 @@ void nlforce (REAL * veff)
 #endif
 
 
-        nh = pct.prj_per_ion[gion];
+        nh = ct.sp[iptr->species].nh;
 
         size = nh * (nh + 1) / 2;
         my_malloc (par_gamma, 6 * size, REAL);

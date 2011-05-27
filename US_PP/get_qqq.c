@@ -30,7 +30,7 @@ void get_qqq ()
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
 
-        nh = pct.prj_per_ion[ion];
+        nh = sp->nh;
         ncount = pct.Qidxptrlen[ion];
         qnmI = pct.augfunc[ion];
 

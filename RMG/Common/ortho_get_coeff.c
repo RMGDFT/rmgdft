@@ -22,6 +22,8 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     REAL *tmp_psi2, *tmp_psi1;
     REAL *sint1R, *sint2R, *qqq;
     REAL sumpsi, sumbeta, sri;
+    ION *iptr;
+    SPECIES *sp;
 
 
     sidx1 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
@@ -41,6 +43,11 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
 	oion = pct.owned_ions_list[ion];
+        
+        iptr = &ct.ions[oion];
+        sp = &ct.sp[iptr->species];
+       
+        nh = sp->nh;
 	
 	/* Figure out index of owned ion in nonloc_ions_list array*/
 	do {
@@ -52,7 +59,6 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 	} while (pct.nonloc_ions_list[nidx] != oion);
         
         qqq = pct.qqq[oion];
-        nh = pct.prj_per_ion[oion];
 
         /* get<beta|psi1> and <beta|psi2> */
         sint1R = &pct.newsintR_local[sidx1 + nidx * ct.num_states * ct.max_nl];
@@ -91,6 +97,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     REAL *sint1R, *sint1I, *sint2R, *sint2I, *qqq;
     REAL sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
     ION *iptr;
+    SPECIES *sp;
 
 
     sidx1 = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
@@ -112,6 +119,11 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
 	oion = pct.owned_ions_list[ion];
+        
+        iptr = &ct.ions[oion];
+        sp = &ct.sp[iptr->species];
+       
+        nh = sp->nh;
 	
 	/* Figure out index of owned ion in nonloc_ions_list array*/
 	do {
@@ -123,7 +135,6 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 	} while (pct.nonloc_ions_list[nidx] != oion);
         
         qqq = pct.qqq[oion];
-        nh = pct.prj_per_ion[oion];
 
         /* get<beta|psi1> and <beta|psi2> */
         sint1R = &pct.newsintR_local[sidx1 + nidx * ct.num_states * ct.max_nl];

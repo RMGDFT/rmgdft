@@ -17,7 +17,7 @@ void get_nlop (void)
 {
 
     int ion, idx, i, j, pe, pe_bin;
-    int ix, iy, iz, ip, pcount;
+    int ix, iy, iz, ip, prj_per_ion;
     int *pvec, *dvec, *ivec;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
     int alloc;
@@ -56,34 +56,11 @@ void get_nlop (void)
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
+        prj_per_ion = sp->nh;
+
 
         icenter = sp->nldim / 2;
         icut = (icenter + 1) * (icenter + 1);
-
-        /* Set up Kleinman-Bylander normalization coefficients */
-        pcount = 0;
-        for (ip = 0; ip < sp->nbeta; ip++)
-        {
-            switch (sp->llbeta[ip])
-            {
-                case S_STATE:
-                    pcount++;
-                    break;
-
-                case P_STATE:
-                    pcount += 3;
-                    break;
-
-                case D_STATE:
-                    pcount += 5;
-                    break;
-                default:
-                    error_handler ("Angular momentum state not programmed");
-            }
-
-        }
-
-        pct.prj_per_ion[ion] = pcount;
 
 
         /* Determine mapping indices or even if a mapping exists */
@@ -187,9 +164,9 @@ void get_nlop (void)
 
 
 
-            if ((icount * pct.prj_per_ion[ion]))
+            if ((icount * prj_per_ion))
             {
-                size_t weight_size = pct.prj_per_ion[ion] * icount + 128;
+                size_t weight_size = prj_per_ion * icount + 128;
 
                 my_calloc (pct.weight[ion], weight_size, REAL);
 
@@ -214,7 +191,7 @@ void get_nlop (void)
 #if !GAMMA_PT
 
             /* Allocate memory for the phase array */
-            if ((icount * pct.prj_per_ion[ion]))
+            if ((icount * prj_per_ion))
                 my_calloc (pct.phaseptr[ion], 2 * icount * ct.num_kpts + 128, REAL);
             else
                 pct.phaseptr[ion] = NULL;

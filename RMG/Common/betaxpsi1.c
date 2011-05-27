@@ -18,6 +18,7 @@ void betaxpsi1 (STATE * states, int kpt)
     REAL *nlarrayR, *nlarrayI, *sintR;
     REAL *weiptr, *psiR;
     ION *iptr;
+    SPECIES *sp;
     STATE *st;
 #if !GAMMA_PT
     REAL *pR, *pI, *sintI, *psiI;
@@ -54,6 +55,7 @@ void betaxpsi1 (STATE * states, int kpt)
     {
 
         iptr = &ct.ions[ion];
+        sp = &ct.sp[iptr->species];
         stop = pct.idxptrlen[ion];
 
         if (stop)
@@ -94,7 +96,7 @@ void betaxpsi1 (STATE * states, int kpt)
                 weiptr = pct.weight[ion];
                 ipindex = istate * ct.max_nl;
 
-                for (ip = 0; ip < pct.prj_per_ion[ion]; ip++)
+                for (ip = 0; ip < sp->nh; ip++)
                 {
 
                     sintR[ipindex] = ct.vel * sdot (&stop, nlarrayR, &incx, weiptr, &incx);

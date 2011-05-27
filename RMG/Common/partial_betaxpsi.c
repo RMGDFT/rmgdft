@@ -24,7 +24,7 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, REAL * newsintR_x, REAL * newsin
     REAL *workI, *pI, *temp_psiI, *pR;
 #endif
 
-    nh = pct.prj_per_ion[ion];
+    nh = ct.sp[ct.ions[ion].species].nh;
     alloc = P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
@@ -43,7 +43,7 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, REAL * newsintR_x, REAL * newsin
     }
 
 
-    size = pct.prj_per_ion[ion] * pct.idxptrlen[ion];
+    size = nh * pct.idxptrlen[ion];
     if (size)
     {
 #if !FDIFF_BETA

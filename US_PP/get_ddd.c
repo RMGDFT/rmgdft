@@ -22,7 +22,10 @@ void get_ddd (REAL * veff)
     sum_dim = 0;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        nh = pct.prj_per_ion[ion];
+        iptr = &ct.ions[ion];
+        sp = &ct.sp[iptr->species];
+        
+        nh = sp->nh;
 
         /*Number of elements is sum of 1+2+3+...+nh */
         sum_dim += nh * (nh + 1) / 2;
@@ -39,7 +42,7 @@ void get_ddd (REAL * veff)
         sp = &ct.sp[iptr->species];
 
         ivec = pct.Qindex[ion];
-        nh = pct.prj_per_ion[ion];
+        nh = sp->nh;
         ncount = pct.Qidxptrlen[ion];
 
         if (pct.dnmI[ion] == NULL)
@@ -82,7 +85,7 @@ void get_ddd (REAL * veff)
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
 
-        nh = pct.prj_per_ion[ion];
+        nh = sp->nh;
 
         dnmI = pct.dnmI[ion];
 

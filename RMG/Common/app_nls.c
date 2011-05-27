@@ -58,6 +58,7 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
     REAL *weiptr, *mptr, *dnmI, coeffR, coeffI, coeff2R, coeff2I;
     REAL *nworkR, *nworkI, *nwork2R, *nwork2I, *pR, *pI, *psintR, *qqq;
     ION *iptr;
+    SPECIES *sp;
 
 #if !GAMMA_PT
     REAL *psintI;
@@ -104,6 +105,10 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
          * or Q and here we only need those that overlap due to beta*/
         if (pct.idxptrlen[gion])
         {
+            iptr = &ct.ions[gion];
+            sp = &ct.sp[iptr->species];
+       
+            nh = sp->nh;
 
             stop = pct.idxptrlen[gion];
 
@@ -113,7 +118,6 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 #endif
 
             weiptr = pct.weight[gion];
-            nh = pct.prj_per_ion[gion];
             dnmI = pct.dnmI[gion];
             qqq = pct.qqq[gion];
 
@@ -194,17 +198,21 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 
         /*Actual index of the ion under consideration*/
         gion = pct.nonloc_ions_list[ion];
+        
 
         /*This needs to be here, since nonlocal ions include those that have overlap due to either beta
          * or Q and here we only need those that overlap due to beta*/
         if (pct.idxptrlen[gion])
         {
+        
+            iptr = &ct.ions[gion];
+            sp = &ct.sp[iptr->species];
+       
+            nh = sp->nh;
 
             stop = pct.idxptrlen[gion];
 
-            iptr = &ct.ions[gion];
             weiptr = pct.weight[gion];
-            nh = pct.prj_per_ion[gion];
             dnmI = pct.dnmI[gion];
             qqq = pct.qqq[gion];
 
