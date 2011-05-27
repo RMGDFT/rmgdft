@@ -44,7 +44,7 @@
 void get_new_rho (STATE * states, REAL * rho)
 {
 
-    int istate, kpt, n, incx, idx;
+    int istate, kpt, n, incx, idx, max_product;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion;
     REAL *qnmI, *sintR, *qtpr;
@@ -64,6 +64,9 @@ void get_new_rho (STATE * states, REAL * rho)
     my_malloc (sintR, 2 * ct.max_nl, REAL);
     sintI = sintR + ct.max_nl;
 #endif
+            
+    max_product = (ct.max_nl + 1) * ct.max_nl / 2;
+    my_calloc (product, max_product, REAL);
 
     /* scale charge accumulator */
     n = FP0_BASIS;
@@ -137,7 +140,8 @@ void get_new_rho (STATE * states, REAL * rho)
             ncount = pct.Qidxptrlen[gion];
             qnmI = pct.augfunc[gion];
 
-            my_calloc (product, (nh + 1) * nh / 2, REAL);
+            for (i=0; i < max_product; i++)
+                product[i] = 0.0;
 
             for (kpt = 0; kpt < ct.num_kpts; kpt++)
             {
@@ -198,7 +202,6 @@ void get_new_rho (STATE * states, REAL * rho)
                 }               /*end for j */
             }                   /*end for i */
 
-            my_free (product);
 
         }                       /*end if */
 
@@ -230,6 +233,7 @@ void get_new_rho (STATE * states, REAL * rho)
     ct.tcharge *= t1;
 
     /* release our memory */
+    my_free (product);
     my_free (work);
     my_free (sintR);
 
