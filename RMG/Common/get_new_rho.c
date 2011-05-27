@@ -66,7 +66,7 @@ void get_new_rho (STATE * states, REAL * rho)
 #endif
             
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    my_calloc (product, max_product, REAL);
+    my_malloc (product, max_product, REAL);
 
     /* scale charge accumulator */
     n = FP0_BASIS;

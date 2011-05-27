@@ -71,6 +71,12 @@ void nlforce (REAL * veff)
     }
 
 
+    /*max for nh * (nh + 1) / 2 */
+    size = (ct.max_nl + 1) * ct.max_nl / 2;
+    
+    my_malloc (gamma, size, REAL);
+    my_malloc (par_gamma, 6 * size, REAL);
+    par_omega = par_gamma + 3 * size;
 
 
 
@@ -112,15 +118,9 @@ void nlforce (REAL * veff)
         }                       /*end if (pct.idxptrlen[ion]) */
 
         nh = ct.sp[iptr->species].nh;
-        size = nh * (nh + 1) / 2;
-
-        my_malloc (gamma, size, REAL);
 
         get_gamma (gamma, ion, nh);
         nlforce_par_Q (veff, gamma, gion, iptr, nh, &qforce[3 * gion]);
-
-        my_free (gamma);
-
 
     }                           /*end for(ion=0; ion<ions_max; ion++) */
 
@@ -190,10 +190,6 @@ void nlforce (REAL * veff)
 
         nh = ct.sp[iptr->species].nh;
 
-        size = nh * (nh + 1) / 2;
-        my_malloc (par_gamma, 6 * size, REAL);
-        par_omega = par_gamma + 3 * size;
-
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
         partial_gamma (gion, par_gamma, par_omega, nion, nh, newsintR_x, newsintR_y, newsintR_z,
                        newsintI_x, newsintI_y, newsintI_z);
@@ -222,7 +218,6 @@ void nlforce (REAL * veff)
 
         nlforce_par_omega (par_omega, gion, nh, &tmp_force[3*gion]);
 
-        my_free (par_gamma);
     }                           /*end for(ion=0; ion<num_ions; ion++) */
     
     size1 = 3 * num_ions;
@@ -261,6 +256,8 @@ void nlforce (REAL * veff)
     }
 #endif
 
+    my_free (par_gamma);
+    my_free (gamma);
     my_free (tmp_force);
     my_free (qforce);
     my_free (newsintR_x);
