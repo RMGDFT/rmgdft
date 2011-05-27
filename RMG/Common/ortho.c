@@ -41,7 +41,7 @@ void ortho (STATE * states, int kpt)
 #if MD_TIMERS
         time2 = my_crtc ();
 #endif
-        norm_psi1_parallel (st1, ist1, kpt);
+        norm_psi1 (st1, ist1, kpt);
 #if MD_TIMERS
         rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2));
         time2 = my_crtc ();

@@ -455,7 +455,6 @@ void mulliken (STATE *states);
 REAL ylm(int l, REAL *r);
 int listlen (FILE * fh, char *id);
 int del_space (FILE * fh, int *tchr, int isdata);
-void norm_psi1_parallel (STATE * sp, int istate, int kidx);
 void print_matrix(double *b, int n, int ldb);
 void sl_init(int *ictxt, int size);
 void sl_exit(int ictxt);
