@@ -80,6 +80,7 @@
 #  define		dgesv 	        dgesv_
 #  define               sgesv           dgesv_
 #  define		zgesv 	        zgesv_
+#  define               dgemv           dgemv_
 
 #else
 #ifdef AIX
@@ -158,5 +159,7 @@ void dgetrf( int *, int *, REAL *, int *, int *, int *);
 void dgetri(int *, REAL *, int *, int *, REAL *, int *, int *);
 void dgesv (int *, int*, REAL *, int *, int *, REAL *, int *, int *);
 void zgesv (int *, int*, REAL *, int *, int *, REAL *, int *, int *);
+void dgemv ( char *, int *, int *, REAL *, REAL *, int *, REAL *, int *, REAL *, REAL *, int *);
+
 
 /******/

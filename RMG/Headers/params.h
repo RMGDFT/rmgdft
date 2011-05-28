@@ -59,6 +59,9 @@
  *************************************************************
  *************************************************************/
 
+#define HYBRID_MODEL 1
+#define THREADS_PER_NODE 8
+
 
 /* This is the maximum number of non-local projectors for any species
  * just an upper limit on dynamically allocated data structures. */
