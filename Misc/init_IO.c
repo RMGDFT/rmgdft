@@ -31,11 +31,10 @@
 #include <time.h>
 #include <sys/stat.h>
 
-
 void init_IO (int argc, char **argv)
 {
 
-    int npes, worldpe, image, status, lognum = 0;
+    int npes, worldpe, image, status, lognum = 0, provided;
     char workdir[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH], *quantity, *extension, *endptr;
     struct stat buffer;
     time_t timer;
@@ -43,8 +42,21 @@ void init_IO (int argc, char **argv)
     /* Set start of program time */
     timer = time (NULL);
 
+#if HYBRID_MODEL
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+  if(provided != MPI_THREAD_MULTIPLE) {
+
+      printf("Thread support requested = %d but only %d provided. Terminating.\n", MPI_THREAD_MULTIPLE, provided);
+      MPI_Finalize();
+      exit(0);
+
+  }
+#else
+
     /* Initialize MPI, we need it for error_handler, amongst others */
     MPI_Init (&argc, &argv);
+
+#endif
 
     /* get this cores mpi rank */
     MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);

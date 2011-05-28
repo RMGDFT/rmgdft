@@ -38,18 +38,79 @@
 
 #if MPI
 
+#if HYBRID_MODEL
+
+#include <hybrid.h>
+#include <pthread.h>
+volatile REAL *global_sums_vector, *tvector;
+volatile int global_sums_vector_state = 0;
+pthread_mutex_t global_sums_vector_lock = PTHREAD_MUTEX_INITIALIZER;
+
+
+void global_sums_threaded (REAL *vect, int *length, int tid)
+{
+
+  REAL *rptr, *rptr1;
+
+  scf_barrier_wait();
+  pthread_mutex_lock(&global_sums_vector_lock);
+      if(global_sums_vector_state == 0) {
+          my_malloc (global_sums_vector, *length * THREADS_PER_NODE, REAL);
+          my_malloc (tvector, *length * THREADS_PER_NODE, REAL);
+      }
+      global_sums_vector_state = 1;
+  pthread_mutex_unlock(&global_sums_vector_lock);
+
+  // Wait until everyone gets here
+  scf_barrier_wait();
+  QMD_scopy(*length, vect, 1, &global_sums_vector[*length * tid], 1);
+  scf_barrier_wait();
+
+  pthread_mutex_lock(&global_sums_vector_lock);
+      if(global_sums_vector_state == 1) {
+          MPI_Allreduce(global_sums_vector, tvector, *length * THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+          global_sums_vector_state = 0;
+      }
+  pthread_mutex_unlock(&global_sums_vector_lock);
+  QMD_scopy(*length,  &tvector[*length * tid], 1, vect, 1);
+
+  // Must wait until all threads have copied the data to vect before freeing memory
+  scf_barrier_wait();
+
+  pthread_mutex_lock(&global_sums_vector_lock);
+      // ensures that the memory is only freed once
+      if(tvector != NULL) {
+          my_free(tvector);
+          my_free(global_sums_vector);
+          tvector = NULL;
+          global_sums_vector = NULL;
+      }
+  pthread_mutex_unlock(&global_sums_vector_lock);
+
+}
+
+#endif
+
 
 
 
 void global_sums (REAL * vect, int *length, MPI_Comm comm)
 {
-    int sizr, steps, blocks, newsize;
+    int sizr, steps, blocks, newsize, tid;
     REAL *rptr, *rptr1;
     REAL rptr2[100];
 #if MD_TIMERS
     REAL time0;
 
     time0 = my_crtc ();
+#endif
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid >= 0) {
+        global_sums_threaded(vect, length, tid);
+        return;
+    }
 #endif
 
     /* Check for small vector case and handle on stack */

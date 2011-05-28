@@ -26,7 +26,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, c2;
     int xlen, ylen, zlen;
-    int *nb_ids;
+    int *nb_ids, basetag=0;
     MPI_Status mrstatus;
     REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
@@ -34,6 +34,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 #if MD_TIMERS
     REAL time1, time2;
     time1 = my_crtc ();
+#endif
+
+#if HYBRID_MODEL
+    basetag = get_thread_basetag();
 #endif
 
     tim = 2 * images;
@@ -108,11 +112,11 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], 1,
-                  frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], 1, pct.grid_comm, &mrstatus);
+    MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16),
+                  frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], 2,
-                  frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], 2, pct.grid_comm, &mrstatus);
+    MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
+                  frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), pct.grid_comm, &mrstatus);
 
 
     /* Unpack them */
@@ -169,11 +173,11 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], 1,
-                  frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], 1, pct.grid_comm, &mrstatus);
+    MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (3>>16),
+                  frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (3>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], 2,
-                  frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], 2, pct.grid_comm, &mrstatus);
+    MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
+                  frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (4>>16), pct.grid_comm, &mrstatus);
 
 
     /* Unpack them */
@@ -227,11 +231,11 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], 1,
-                  frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], 1, pct.grid_comm, &mrstatus);
+    MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16),
+                  frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], 2,
-                  frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], 2, pct.grid_comm, &mrstatus);
+    MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
+                  frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16), pct.grid_comm, &mrstatus);
 
 
     /* Unpack them */

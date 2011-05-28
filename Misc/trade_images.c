@@ -37,6 +37,7 @@
 
 
 #include "main.h"
+#include "hybrid.h"
 
 
 #if MPI
@@ -50,7 +51,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     int alen, alloc;
     MPI_Status mstatus;
     MPI_Datatype newtype;
-    int idx, stop;
+    int idx, stop, basetag=0;
     REAL *nmat1, *nmat2;
 
 #if MD_TIMERS
@@ -58,6 +59,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     time1 = my_crtc ();
 #endif
 
+#if HYBRID_MODEL
+    basetag = get_thread_basetag();
+#endif
 
     alloc = 4 * (dimx + 2) * (dimy + 2);
     my_malloc (nmat1, 2 * alloc, REAL);
@@ -89,8 +93,8 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
     }
 
-    MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], 1, nmat2, idx,
-                  MPI_DOUBLE, nb_ids[NB_D], 1, pct.grid_comm, &mstatus);
+    MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), nmat2, idx,
+                  MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16), pct.grid_comm, &mstatus);
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -115,8 +119,8 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     }
 
 
-    MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], 1, nmat2, idx,
-                  MPI_DOUBLE, nb_ids[NB_U], 1, pct.grid_comm, &mstatus);
+    MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), nmat2, idx,
+                  MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16), pct.grid_comm, &mstatus);
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -136,10 +140,10 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
     MPI_Type_vector (dimx, alen, incx, MPI_DOUBLE, &newtype);
     MPI_Type_commit (&newtype);
-    MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], 3, &mat[incx], 1,
-                  newtype, nb_ids[NB_S], 3, pct.grid_comm, &mstatus);
-    MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], 4, &mat[incx + ymax + incy], 1,
-                  newtype, nb_ids[NB_N], 4, pct.grid_comm, &mstatus);
+    MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], basetag + (3>>16), &mat[incx], 1,
+                  newtype, nb_ids[NB_S], basetag + (3>>16), pct.grid_comm, &mstatus);
+    MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], basetag + (4>>16), &mat[incx + ymax + incy], 1,
+                  newtype, nb_ids[NB_N], basetag + (4>>16), pct.grid_comm, &mstatus);
 
     MPI_Type_free (&newtype);
 
@@ -150,10 +154,10 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
 
     stop = (dimy + 2) * (dimz + 2);
-    MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], 5,
-                  mat, stop, MPI_DOUBLE, nb_ids[NB_W], 5, pct.grid_comm, &mstatus);
-    MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], 6,
-                  &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], 6, pct.grid_comm, &mstatus);
+    MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16),
+                  mat, stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16), pct.grid_comm, &mstatus);
+    MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16),
+                  &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16), pct.grid_comm, &mstatus);
 
 
     /* For clusters set the boundaries to zero -- this is wrong for the hartree
