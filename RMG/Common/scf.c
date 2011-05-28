@@ -45,6 +45,12 @@
 #include <stdio.h>
 #include "main.h"
 
+#if HYBRID_MODEL
+#include "hybrid.h"
+#include <pthread.h>
+static pthread_attr_t thread_attrs;
+#endif
+
 
 static int firststep = TRUE;
 
@@ -57,6 +63,13 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
     REAL t[3];                  /* SCF checks and average potential */
+
+#if HYBRID_MODEL
+    int ist;
+    pthread_t threads[THREADS_PER_NODE];
+    MG_THREAD_STRUCT mst[THREADS_PER_NODE];
+#endif
+
     MPI_Status status, stat[2]; 
     MPI_Request req[2];   
     /* to hold the send data and receive data of eigenvalues */
@@ -153,9 +166,33 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 #if MPI
 
     time1 = my_crtc ();
+#if HYBRID_MODEL
+    pthread_attr_init( &thread_attrs );
+    pthread_attr_setschedpolicy( &thread_attrs, SCHED_RR);
+    scf_tsd_init();
+    scf_barrier_init(THREADS_PER_NODE);
+
+    /* Update the wavefunctions */
+    for(st1=0;st1 < ct.num_kpts * ct.num_states;st1+=THREADS_PER_NODE) {
+      for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+          mst[ist].sp = &states[st1 + ist];
+          mst[ist].vtot = vtot_psi;
+          mst[ist].tid = ist;
+          pthread_create(&threads[ist], &thread_attrs, (void *)mg_eig_state_threaded, &mst[ist]);
+      }
+
+      for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+          pthread_join(threads[ist], NULL);
+      }
+    }
+    scf_barrier_destroy();
+    scf_tsd_delete();
+
+#else
     /* Update the wavefunctions */
     for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++)
         mg_eig_state (&states[st1], 0, vtot_psi);
+#endif
 
     time2 = my_crtc ();
     rmg_timings (EIG_TIME, (time2 - time1));
