@@ -87,7 +87,7 @@ void init_IO (int argc, char **argv)
             pct.images = 1;
     }
 
-    printf ("\nRunning with %d images", pct.images);
+    Dprintf ("\nRunning with %d images", pct.images);
     if ( pct.images > MAX_IMGS )
         error_handler ("Multi-image input file %s asks for more images (%d) than MAX_IMGS in params.h.", argv[1], pct.images);
 
@@ -209,7 +209,11 @@ void init_IO (int argc, char **argv)
 
     MPI_Comm_size (pct.img_comm, &status);
     printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));
-    printf ("\nRMG running in message passing mode with %d procs.\n", status);
+    printf ("\nRMG running in message passing mode with %d procs.", status);
+    if (pct.images == 1)
+        printf ("\nRMG running in a single-image mode\n");
+    else
+        printf ("\nRMG running in a multi-image mode with %d images\n", pct.images);
 
     /* Read in our pseudopotential information */
     read_pseudo ();
