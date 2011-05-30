@@ -87,7 +87,7 @@ void init_IO (int argc, char **argv)
             pct.images = 1;
     }
 
-    printf ("Running with %d images", pct.images);
+    printf ("\nRunning with %d images", pct.images);
     if ( pct.images > MAX_IMGS )
         error_handler ("Multi-image input file %s asks for more images (%d) than MAX_IMGS in params.h.", argv[1], pct.images);
 
