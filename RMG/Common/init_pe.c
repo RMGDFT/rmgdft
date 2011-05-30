@@ -48,10 +48,10 @@ void init_pe ( int image )
     /* Infer the number of cpu grids in each image. */
     pct.grids = image / NPES;
     if (NPES * pct.grids != image)
-        error_handler ("MPI processes per image must be a multiple of NPES (PE_X*PE_Y*PE_Z).");
+        error_handler ("MPI processes per image (%d) must be a multiple of NPES (%d).", image, NPES);
 
     if ( pct.grids > MAX_GRIDS )
-        error_handler ("CPU Grid multiplicity (%d) is more than MAX_GRIDS in params.h.", pct.grids);
+        error_handler ("CPU Grid multiplicity (%d) is more than MAX_GRIDS (%d) in params.h.", pct.grids, MAX_GRIDS);
 
 
     /* setup pct.img_comm to include all pe's in this image */

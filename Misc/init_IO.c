@@ -95,7 +95,7 @@ void init_IO (int argc, char **argv)
     /* Setup image number that this core belongs to */
     image = npes / pct.images;
     if (image * pct.images != npes)
-        error_handler ("Total MPI processes must be a multiple of the number of images in this run.");
+        error_handler ("Total MPI processes (%d) must be a multiple of the number of images (%d) in this run.", npes, pct.images);
     pct.thisimg = worldpe / image;
 
     if (pct.images > 1)
