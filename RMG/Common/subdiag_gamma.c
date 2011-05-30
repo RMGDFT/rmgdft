@@ -57,7 +57,6 @@ void subdiag_app_A_one_threaded(MG_THREAD_STRUCT *ss);
 void subdiag_app_B_one_threaded(MG_THREAD_STRUCT *ss);
 #endif
 
-
 /* This subspace diagonalization function uses Scalapack libraries  */
 
 #if GAMMA_PT
@@ -1082,7 +1081,7 @@ static void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vto
 #   endif
 
     /* Apply non-local operator to psi and store in work2 */
-    app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, ct.ions[0].newsintR, NULL, sp->istate, kidx);
+    app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
 #   if MD_TIMERS
     rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #   endif
