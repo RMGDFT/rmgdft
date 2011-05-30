@@ -44,6 +44,10 @@ void init_IO (int argc, char **argv)
 
 #if HYBRID_MODEL
   MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+  if(USE_SALLOC) {
+        error_handler ("USE_SALLOC must be set to 0 for hybrid mode.\n");
+        exit(0);
+  }
   if(provided != MPI_THREAD_MULTIPLE) {
 
       printf("Thread support requested = %d but only %d provided. Terminating.\n", MPI_THREAD_MULTIPLE, provided);
