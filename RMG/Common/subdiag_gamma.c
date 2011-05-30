@@ -57,6 +57,7 @@ void subdiag_app_A_one_threaded(MG_THREAD_STRUCT *ss);
 void subdiag_app_B_one_threaded(MG_THREAD_STRUCT *ss);
 #endif
 
+
 /* This subspace diagonalization function uses Scalapack libraries  */
 
 #if GAMMA_PT
@@ -76,9 +77,7 @@ void subdiag_app_B_one_threaded(MG_THREAD_STRUCT *ss);
 
 #if GAMMA_PT
 static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
-static void subdiag_app_A_one (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
 static void subdiag_app_B (STATE * states, REAL * b_psi);
-static void subdiag_app_B_one (STATE * states, REAL * b_psi);
 #else
 void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig);
 static void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI);
@@ -97,7 +96,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
 void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
     int idx, st1;
-    int num_states;
+	int num_states;
     int stop;
     int kidx;
     REAL *eigs;
@@ -623,193 +622,177 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 }
 
 
+
+
+
+
 #  if GAMMA_PT
 /*Applies A operator to all wavefunctions*/
 static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 {
-    int istate;
-    STATE *sp;
-
-#if HYBRID_MODEL
-    {
-        int st1, ist;
-        pthread_t threads[THREADS_PER_NODE];
-        MG_THREAD_STRUCT mst[THREADS_PER_NODE];
-   
-        pthread_attr_init( &diag_thread_attrs );
-        pthread_attr_setschedpolicy( &diag_thread_attrs, SCHED_RR);
-        scf_barrier_init(THREADS_PER_NODE);
-        scf_tsd_init();
- 
-        // Each thread applies the operator to one wavefunction
-        for(st1=0;st1 < ct.num_states;st1+=THREADS_PER_NODE) {
-            for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-                mst[ist].sp = &states[st1 + ist];
-                mst[ist].vtot = vtot_eig;
-                mst[ist].tid = ist;
-                mst[ist].p1 = &a_psi[(st1 + ist) * P0_BASIS];
-                mst[ist].p2 = &s_psi[(st1 + ist) * P0_BASIS];
-                pthread_create(&threads[ist], &diag_thread_attrs, (void *)subdiag_app_A_one_threaded, &mst[ist]);
-            }
-
-            for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-                pthread_join(threads[ist], NULL);
-            }
-        }
-
-        scf_barrier_destroy();
-        scf_tsd_delete();
-
-    }
-#else
-    for (istate = 0; istate < ct.num_states; istate++) {
-        sp = &states[istate];
-        subdiag_app_A_one(sp, &a_psi[istate * P0_BASIS], &s_psi[istate * P0_BASIS], vtot_eig);
-    }
-#endif
-
-}
-
-#if HYBRID_MODEL
-void subdiag_app_A_one_threaded(MG_THREAD_STRUCT *ss) {
-
-    set_cpu_affinity();
-    scf_tsd_set_value((void *)ss);
-    scf_barrier_wait();
-    subdiag_app_A_one(ss->sp, ss->p1, ss->p2, ss->vtot);
-
-}
-
-#endif
-
-
-// Applies A operator to one wavefunction
-static void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
-{
     int kidx, idx, istate, sbasis;
     REAL *sg_twovpsi, *tmp_psi, *work2, *work1;
+    STATE *sp;
 #    if MD_TIMERS
     REAL time1;
 #    endif
 
 
-    sbasis = sp->sbasis;
+
+    sbasis = states[0].sbasis;
     my_malloc (work2, 2 * sbasis, REAL);
     sg_twovpsi = work2 + sbasis;
     kidx = 0;
 
     work1 = a_psi;
 
-    tmp_psi = sp->psiR;
+
+    for (istate = 0; istate < ct.num_states; istate++)
+    {
+
+        sp = &states[istate];
+        tmp_psi = sp->psiR;
 
 
-#   if MD_TIMERS
+#    if MD_TIMERS
         time1 = my_crtc ();
-#   endif
-
-    /* Apply non-local operator to psi and store in work2 */
-    app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, ct.ions[0].newsintR, NULL, sp->istate, kidx);
-#   if MD_TIMERS
-    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
-#   endif
-
+#    endif
+        /* Apply non-local operator to psi and store in work2 */
+        app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
+#    if MD_TIMERS
+        rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
+#    endif
 
 
-#   if MD_TIMERS
+
+#    if MD_TIMERS
         time1 = my_crtc ();
-#   endif
-
-    /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
-    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
-
-#   if MD_TIMERS
+#    endif
+        /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
+        genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+#    if MD_TIMERS
         rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
-#   endif
+#    endif
 
-#   if MD_TIMERS
+
+#    if MD_TIMERS
         time1 = my_crtc ();
-#   endif
-
-    /* B operating on 2*V*psi stored in work1 */
-    app_cir_sixth (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
-#   if MD_TIMERS
-       rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
-#   endif
-
-    /* Pack psi into smoothing array */
-    //pack_ptos (sg_psi, tmp_psi, PX0_GRID, PY0_GRID, PZ0_GRID);
+#    endif
+        /* B operating on 2*V*psi stored in work1 */
+        app_cir_sixth (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+#    if MD_TIMERS
+        rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
+#    endif
 
 
-#   if MD_TIMERS
+        /* Pack psi into smoothing array */
+        //pack_ptos (sg_psi, tmp_psi, PX0_GRID, PY0_GRID, PZ0_GRID);
+
+
+#    if MD_TIMERS
         time1 = my_crtc ();
-#   endif
+#    endif
+        /* A operating on psi stored in work2 */
+        app_cil_sixth (tmp_psi, work2, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+                       sp->hygrid, sp->hzgrid);
 
-    /* A operating on psi stored in work2 */
-    app_cil_sixth (tmp_psi, work2, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
-                   sp->hygrid, sp->hzgrid);
-
-#   if MD_TIMERS
+#    if MD_TIMERS
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
-#   endif
+#    endif
 
-    for (idx = 0; idx < P0_BASIS; idx++)
-        work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
+        for (idx = 0; idx < P0_BASIS; idx++)
+            work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
+
+
+
+
+        work1 += P0_BASIS;
+        s_psi += P0_BASIS;
+    }
 
     my_free (work2);
 
-}                               /* subdiag_app_A_one */
+}                               /* subdiag_app_A */
 
 
 
 
-
+#if !HYBRID_MODEL
 /*Applies B operator to all wavefunctions*/
 /*On input b_psi contains s-operator applied to wavefunction*/
 static void subdiag_app_B (STATE * states, REAL * b_psi)
 {
-    int istate;
-    STATE *sp;
+    int istate, pbasis, ione=1;
+    REAL *work2, *work1;
+#    if MD_TIMERS
+    REAL time1;
+#    endif
 
-#if HYBRID_MODEL
+    pbasis = states[0].pbasis;
+
+
+    my_malloc (work2, pbasis, REAL);
+
+    work1 = b_psi;
+
+
+    for (istate = 0; istate < ct.num_states; istate++)
     {
-        int st1, ist, istate;
-        pthread_t threads[THREADS_PER_NODE];
-        MG_THREAD_STRUCT mst[THREADS_PER_NODE];
 
-        pthread_attr_init( &diag_thread_attrs );
+        /*Pack S|psi> into smoothing array */
+        //pack_ptos (sg_psi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+	scopy (&pbasis, work1, &ione, work2, &ione);
+
+
+#    if MD_TIMERS
+        time1 = my_crtc ();
+#    endif
+        /*B operating on S|psi> and store in work3 */
+        app_cir_sixth (work2, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+#    if MD_TIMERS
+        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
+#    endif
+
+
+        work1 += P0_BASIS;
+    }
+
+    my_free (work2);
+
+}                               /* subdiag_app_B */
+#else
+
+static void subdiag_app_B (STATE * states, REAL * b_psi)
+{
+    int st1, ist, istate;
+    STATE *sp;
+    pthread_t threads[THREADS_PER_NODE];
+    MG_THREAD_STRUCT mst[THREADS_PER_NODE];
+
+    pthread_attr_init( &diag_thread_attrs );
 //        pthread_attr_setschedpolicy( &diag_thread_attrs, SCHED_RR);
-        scf_barrier_init(THREADS_PER_NODE);
-        scf_tsd_init();
+    scf_barrier_init(THREADS_PER_NODE);
+    scf_tsd_init();
 
-        // Each thread applies the operator to one wavefunction
-        for(st1=0;st1 < ct.num_states;st1+=THREADS_PER_NODE) {
-            for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-                mst[ist].sp = &states[st1 + ist];
-                mst[ist].tid = ist;
-                mst[ist].p1 = &b_psi[(st1 + ist) * P0_BASIS];
-                pthread_create(&threads[ist], &diag_thread_attrs, (void *)subdiag_app_B_one_threaded, &mst[ist]);
-            }
-
-            for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-                pthread_join(threads[ist], NULL);
-            }
+    // Each thread applies the operator to one wavefunction
+    for(st1=0;st1 < ct.num_states;st1+=THREADS_PER_NODE) {
+        for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+            mst[ist].sp = &states[st1 + ist];
+            mst[ist].tid = ist;
+            mst[ist].p1 = &b_psi[(st1 + ist) * P0_BASIS];
+            pthread_create(&threads[ist], &diag_thread_attrs, (void *)subdiag_app_B_one_threaded, &mst[ist]);
         }
 
-        scf_barrier_destroy();
-        scf_tsd_delete();
+        for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+            pthread_join(threads[ist], NULL);
+        }
+    }
 
-    }
-#else
-    for (istate = 0; istate < ct.num_states; istate++) {
-        sp = &states[istate];
-        subdiag_app_B_one(sp, &b_psi[istate * P0_BASIS]);
-    }
-#endif
+    scf_barrier_destroy();
+    scf_tsd_delete();
 
 }
 
-
-// Applies B operator to one wavefunction
 static void subdiag_app_B_one (STATE *sp, REAL * b_psi)
 {
     int istate, pbasis, ione=1;
@@ -842,8 +825,6 @@ static void subdiag_app_B_one (STATE *sp, REAL * b_psi)
 
 }                               /* subdiag_app_B_one */
 
-
-#if HYBRID_MODEL
 void subdiag_app_B_one_threaded(MG_THREAD_STRUCT *ss) {
 
     set_cpu_affinity();
@@ -853,7 +834,11 @@ void subdiag_app_B_one_threaded(MG_THREAD_STRUCT *ss) {
 
 }
 
+
+
 #endif
+
+
 
 
 
@@ -884,7 +869,7 @@ static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi)
 
 
 
-
+#if !HYBRID_MODEL
 /*Applies A operator to all wavefunctions*/
 void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig)
 {
@@ -931,7 +916,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* Apply non-local operator to psi and store in work2 */
-        app_nls (tmp_psiR, tmp_psiI, work2R, work2I, s_psiR, s_psiI, ct.ions[0].newsintR, ct.ions[0].newsintI, FALSE, kidx);
+        app_nls (tmp_psiR, tmp_psiI, work2R, work2I, s_psiR, s_psiI, pct.newsintR_local, pct.newsintI_local, FALSE, kidx);
 #    if MD_TIMERS
         rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #    endif
@@ -1026,8 +1011,129 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
     my_free (work2R);
 
 }                               /* subdiag_app_A */
+#else
+
+/*Applies A operator to all wavefunctions*/
+static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
+{
+    int istate, st1, ist;
+    STATE *sp;
+
+    pthread_t threads[THREADS_PER_NODE];
+    MG_THREAD_STRUCT mst[THREADS_PER_NODE];
+
+    pthread_attr_init( &diag_thread_attrs );
+    pthread_attr_setschedpolicy( &diag_thread_attrs, SCHED_RR);
+    scf_barrier_init(THREADS_PER_NODE);
+    scf_tsd_init();
+
+    // Each thread applies the operator to one wavefunction
+    for(st1=0;st1 < ct.num_states;st1+=THREADS_PER_NODE) {
+        for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+            mst[ist].sp = &states[st1 + ist];
+            mst[ist].vtot = vtot_eig;
+            mst[ist].tid = ist;
+            mst[ist].p1 = &a_psi[(st1 + ist) * P0_BASIS];
+            mst[ist].p2 = &s_psi[(st1 + ist) * P0_BASIS];
+            pthread_create(&threads[ist], &diag_thread_attrs, (void *)subdiag_app_A_one_threaded, &mst[ist]);
+        }
+
+        for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+                pthread_join(threads[ist], NULL);
+        }
+    }
+
+    scf_barrier_destroy();
+    scf_tsd_delete();
+
+}
+
+void subdiag_app_A_one_threaded(MG_THREAD_STRUCT *ss) {
+
+    set_cpu_affinity();
+    scf_tsd_set_value((void *)ss);
+    scf_barrier_wait();
+    subdiag_app_A_one(ss->sp, ss->p1, ss->p2, ss->vtot);
+
+}
+
+// Applies A operator to one wavefunction
+static void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
+{
+    int kidx, idx, istate, sbasis;
+    REAL *sg_twovpsi, *tmp_psi, *work2, *work1;
+#    if MD_TIMERS
+    REAL time1;
+#    endif
 
 
+    sbasis = sp->sbasis;
+    my_malloc (work2, 2 * sbasis, REAL);
+    sg_twovpsi = work2 + sbasis;
+    kidx = 0;
+
+    work1 = a_psi;
+
+    tmp_psi = sp->psiR;
+
+
+#   if MD_TIMERS
+        time1 = my_crtc ();
+#   endif
+
+    /* Apply non-local operator to psi and store in work2 */
+    app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, ct.ions[0].newsintR, NULL, sp->istate, kidx);
+#   if MD_TIMERS
+    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
+#   endif
+
+
+
+#   if MD_TIMERS
+        time1 = my_crtc ();
+#   endif
+
+    /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
+    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+
+#   if MD_TIMERS
+        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
+#   endif
+
+#   if MD_TIMERS
+        time1 = my_crtc ();
+#   endif
+
+    /* B operating on 2*V*psi stored in work1 */
+    app_cir_sixth (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+#   if MD_TIMERS
+       rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
+#   endif
+
+    /* Pack psi into smoothing array */
+    //pack_ptos (sg_psi, tmp_psi, PX0_GRID, PY0_GRID, PZ0_GRID);
+
+
+#   if MD_TIMERS
+        time1 = my_crtc ();
+#   endif
+    /* A operating on psi stored in work2 */
+    app_cil_sixth (tmp_psi, work2, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+                   sp->hygrid, sp->hzgrid);
+
+#   if MD_TIMERS
+        rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
+#   endif
+
+    for (idx = 0; idx < P0_BASIS; idx++)
+        work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
+
+    my_free (work2);
+
+}                               /* subdiag_app_A_one */
+
+
+#endif
 
 
 
