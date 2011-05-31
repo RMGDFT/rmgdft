@@ -34,6 +34,7 @@
 #include "main.h"
 #include "hybrid.h"
 
+#if HYBRID_MODEL
 void ATL_assert(void)
 {
 }
@@ -125,3 +126,4 @@ void set_cpu_affinity(void)
     s = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
 
 }
+#endif
