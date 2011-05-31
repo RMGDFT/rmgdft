@@ -85,14 +85,14 @@ rmg-linux: RMG/Headers/make_conf.h
 rmg-xt: RMG/Headers/make_conf.h
 	@echo "#define MPI 1" > RMG/Headers/arch.h
 	@echo "#define LINUX 1" >> RMG/Headers/arch.h
-	cd ../lib/libxc/; $(MAKE) -f Make.rmg
+	cd lib/libxc/; $(MAKE) -f Make.rmg
 	@cd RMG; $(clean-global)
 	cd RMG; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 rmg-aix: RMG/Headers/make_conf.h
 	@echo "#define MPI 1" > RMG/Headers/arch.h
 	@echo '#define AIX 1' >> RMG/Headers/arch.h
-	cd ../lib/libxc/; $(MAKE) -j 8 -f Make.rmg
+	cd lib/libxc/; $(MAKE) -j 8 -f Make.rmg
 	@cd RMG; $(clean-global)
 	cd RMG;gmake -f Make.aix 2>&1 | tee .build.log
 
