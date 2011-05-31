@@ -16,16 +16,19 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init_pe(void)
- *   Initializes processor control structures.
+ *   void init_pe( image )
+ *   Initializes processor control structures. image variable
+ *   contains the number of cores assigned to an image for grid setup
+ *   and is reused to build the image master communicator mapping.
  *   Make each processor knows who are neighbors
  * INPUTS
- *   nothing
+ *   image
  * OUTPUT
  *   neighbor informations are stored in pct.neighbors
  * PARENTS
  *   main.c
  * CHILDREN
+ *   read_control.c
  *   pe2xyz.c  
  * SOURCE
  */
