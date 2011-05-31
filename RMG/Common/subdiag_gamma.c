@@ -55,6 +55,7 @@
 static pthread_attr_t diag_thread_attrs;
 void subdiag_app_A_one_threaded(MG_THREAD_STRUCT *ss);
 void subdiag_app_B_one_threaded(MG_THREAD_STRUCT *ss);
+static void subdiag_app_B_one (STATE *sp, REAL * b_psi);
 #endif
 
 /* This subspace diagonalization function uses Scalapack libraries  */
@@ -763,7 +764,7 @@ static void subdiag_app_B (STATE * states, REAL * b_psi)
 
 static void subdiag_app_B (STATE * states, REAL * b_psi)
 {
-    int st1, ist, istate;
+    int st1, ist, istate, istop;
     STATE *sp;
     pthread_t threads[THREADS_PER_NODE];
     MG_THREAD_STRUCT mst[THREADS_PER_NODE];
@@ -774,7 +775,9 @@ static void subdiag_app_B (STATE * states, REAL * b_psi)
     scf_tsd_init();
 
     // Each thread applies the operator to one wavefunction
-    for(st1=0;st1 < ct.num_states;st1+=THREADS_PER_NODE) {
+    istop = ct.num_states / THREADS_PER_NODE;
+    istop = istop * THREADS_PER_NODE;
+    for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
         for(ist = 0;ist < THREADS_PER_NODE;ist++) {
             mst[ist].sp = &states[st1 + ist];
             mst[ist].tid = ist;
@@ -789,6 +792,10 @@ static void subdiag_app_B (STATE * states, REAL * b_psi)
 
     scf_barrier_destroy();
     scf_tsd_delete();
+
+    // Process any remaining orbitals serially
+    for(st1 = istop;st1 < ct.num_states;st1++)
+        subdiag_app_B_one(&states[st1], &b_psi[st1 * P0_BASIS]);
 
 }
 
@@ -1015,7 +1022,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
 /*Applies A operator to all wavefunctions*/
 static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 {
-    int istate, st1, ist;
+    int istate, st1, ist, istop;
     STATE *sp;
 
     pthread_t threads[THREADS_PER_NODE];
@@ -1027,7 +1034,9 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vt
     scf_tsd_init();
 
     // Each thread applies the operator to one wavefunction
-    for(st1=0;st1 < ct.num_states;st1+=THREADS_PER_NODE) {
+    istop = ct.num_states / THREADS_PER_NODE;
+    istop = istop * THREADS_PER_NODE;     
+    for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
         for(ist = 0;ist < THREADS_PER_NODE;ist++) {
             mst[ist].sp = &states[st1 + ist];
             mst[ist].vtot = vtot_eig;
@@ -1038,13 +1047,16 @@ static void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vt
         }
 
         for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-                pthread_join(threads[ist], NULL);
+            pthread_join(threads[ist], NULL);
         }
     }
 
     scf_barrier_destroy();
     scf_tsd_delete();
 
+    // Process any remaining orbitals serially
+    for(st1 = istop;st1 < ct.num_states;st1++)
+        subdiag_app_A_one (&states[st1], &a_psi[st1 * P0_BASIS], &s_psi[st1 * P0_BASIS], vtot_eig);
 }
 
 void subdiag_app_A_one_threaded(MG_THREAD_STRUCT *ss) {

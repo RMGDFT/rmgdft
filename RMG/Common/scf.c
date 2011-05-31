@@ -58,7 +58,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
           REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
 {
 
-    int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1);
+    int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1), istop;
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
@@ -171,9 +171,10 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     pthread_attr_setschedpolicy( &thread_attrs, SCHED_RR);
     scf_tsd_init();
     scf_barrier_init(THREADS_PER_NODE);
-
     /* Update the wavefunctions */
-    for(st1=0;st1 < ct.num_kpts * ct.num_states;st1+=THREADS_PER_NODE) {
+    istop = ct.num_kpts * ct.num_states / THREADS_PER_NODE;
+    istop = istop * THREADS_PER_NODE;
+    for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
       for(ist = 0;ist < THREADS_PER_NODE;ist++) {
           mst[ist].sp = &states[st1 + ist];
           mst[ist].vtot = vtot_psi;
@@ -187,6 +188,10 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
     scf_barrier_destroy();
     scf_tsd_delete();
+
+    // Process any remaining states in serial fashion
+    for(st1 = istop;st1 < ct.num_kpts * ct.num_states;st1++)
+        mg_eig_state (&states[st1], 0, vtot_psi);
 
 #else
     /* Update the wavefunctions */
