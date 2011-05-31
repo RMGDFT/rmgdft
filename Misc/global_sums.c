@@ -45,9 +45,10 @@
 volatile REAL *global_sums_vector, *tvector;
 volatile int global_sums_vector_state = 0;
 pthread_mutex_t global_sums_vector_lock = PTHREAD_MUTEX_INITIALIZER;
+static void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm);
 
 
-void global_sums_threaded (REAL *vect, int *length, int tid)
+void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 {
 
   REAL *rptr, *rptr1;
@@ -68,7 +69,7 @@ void global_sums_threaded (REAL *vect, int *length, int tid)
 
   pthread_mutex_lock(&global_sums_vector_lock);
       if(global_sums_vector_state == 1) {
-          MPI_Allreduce(global_sums_vector, tvector, *length * THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+          MPI_Allreduce(global_sums_vector, tvector, *length * THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
           global_sums_vector_state = 0;
       }
   pthread_mutex_unlock(&global_sums_vector_lock);
@@ -108,7 +109,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
 #if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid >= 0) {
-        global_sums_threaded(vect, length, tid);
+        global_sums_threaded(vect, length, tid, comm);
         return;
     }
 #endif

@@ -13,7 +13,7 @@
  *  Jerzy Bernholc
  */
 
-
+#if HYBRID_MODEL
 typedef struct {
   STATE *sp;
   REAL *vtot;
@@ -33,6 +33,6 @@ void scf_tsd_set_value(void *s);
 void scf_tsd_delete(void);
 int get_thread_basetag(void);
 int get_thread_tid(void);
-void global_sums_threaded (REAL *vect, int *length, int tid);
 void mg_eig_state_threaded(MG_THREAD_STRUCT *ss);
 void set_cpu_affinity(void);
+#endif

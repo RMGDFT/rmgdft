@@ -43,10 +43,8 @@
     volatile  REAL recvbuf[THREADS_PER_NODE];
     volatile int real_sum_all_vector_state = 0;
     pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
-
-    static REAL real_sum_all_threaded(REAL x, int tid);
+    static REAL real_sum_all_threaded(REAL x, int tid, MPI_Comm comm);
 #endif
-
 
 
 
@@ -63,9 +61,11 @@ REAL real_sum_all (REAL x, MPI_Comm comm)
 #endif
 	
 #if HYBRID_MODEL
+    // If we are not in a pthreads parallel region get_thread_tid will return a negative
+    // value so in that case we just fall through to the regular routine.
     tid = get_thread_tid();
     if(tid >= 0) {
-        return real_sum_all_threaded(x, tid);
+        return real_sum_all_threaded(x, tid, comm);
     }
 #endif
 
@@ -87,8 +87,8 @@ REAL real_sum_all (REAL x, MPI_Comm comm)
 
 #if HYBRID_MODEL
 
-// Used to sum a block of data from threads
-REAL real_sum_all_threaded(REAL x, int tid) {
+// Used to sum a block of data from a set of threads operating in parallel
+REAL real_sum_all_threaded(REAL x, int tid,  MPI_Comm comm) {
 
 #if MD_TIMERS
   REAL time0;
@@ -97,19 +97,19 @@ REAL real_sum_all_threaded(REAL x, int tid) {
 
   // First load the data in the array. If real_sum_all_vector_state is 0 set it to 1
   pthread_mutex_lock(&real_sum_all_vector_lock);
-//      if(real_sum_all_vector_state == 0) real_sum_all_vector_state = 1;
       real_sum_all_vector_state = 1;
       real_sum_all_vector[tid] = x;
   pthread_mutex_unlock(&real_sum_all_vector_lock);
 
+
   // Wait until everyone gets here
   scf_barrier_wait();
 
-  // Data is all loaded now and we only want one thread to do the MPI call here
+  // Data is all loaded now and we only want one thread to do the MPI call
   // Might have some contention here for high core counts
   pthread_mutex_lock(&real_sum_all_vector_lock);
       if(real_sum_all_vector_state == 1) {
-          MPI_Allreduce(real_sum_all_vector, recvbuf, THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+          MPI_Allreduce(real_sum_all_vector, recvbuf, THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
           real_sum_all_vector_state = 0;
       }
   pthread_mutex_unlock(&real_sum_all_vector_lock);
