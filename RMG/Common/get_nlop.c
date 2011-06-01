@@ -19,9 +19,10 @@ void get_nlop (void)
     int ion, idx, i, j, pe, pe_bin;
     int ix, iy, iz, ip, prj_per_ion;
     int *pvec, *dvec, *ivec;
-    int ilow, jlow, klow, ihi, jhi, khi, map, icount;
-    int alloc;
+    int ilow, jlow, klow, ihi, jhi, khi, map, map2, flag, icount;
+    int alloc, pe_index;
     int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
+    int Aix2[FNX_GRID], Aiy2[FNY_GRID], Aiz2[FNZ_GRID];
     int icut, itmp, icenter;
     REAL vect[3];
     SPECIES *sp;
@@ -202,14 +203,12 @@ void get_nlop (void)
         }                       /* end if (map) */
 
 
-#if 1
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (icount || pct.Qidxptrlen[ion])
         {
+            
             if (pct.num_nonloc_ions >= MAX_NONLOC_IONS) 
-            {
                 error_handler ("Too many nonlocal ions (pct.num_nonloc_ions = %d MAX = %d ), pct.nonloc_ions_list will overflow",pct.num_nonloc_ions, MAX_NONLOC_IONS);
-            }
 
             pct.nonloc_ions_list[pct.num_nonloc_ions] = ion;
             pct.num_nonloc_ions++;
@@ -228,7 +227,6 @@ void get_nlop (void)
 
 
         }
-#endif
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
 
@@ -258,13 +256,13 @@ void get_nlop (void)
 
 
 #if 0
-    /* Loop over all nonlocal ions to obtain the lists necessary for communication*/
-    for (i = 0; i < pct.num_nonloc_ions; i++)
+    
+    /* Loop over all ions to obtain the lists necessary for communication*/
+    for (j = 0; j < pct.num_nonloc_ions; j++)
     {
-        ion = pct.nonloc_ions_list[i];
 
-        //printf("\n\n Considering %dth ion number %d", i, ion); 
-
+        ion = pct.nonloc_ions_list[j];
+        //printf("\n\n Considering ion number %d", ion); 
 
         /* Generate ion pointer */
         iptr = &ct.ions[ion];
@@ -272,135 +270,73 @@ void get_nlop (void)
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
-        icenter = sp->nldim / 2;
-        icut = (icenter + 1) * (icenter + 1);
 
         /*Loop over all processors in caculation to determine if it overlaps with current ion*/
+        /* This should only loop over processors in a grid */
         for (pe=0; pe < NPES; pe++)
         {
+            if (pe == pct.gridpe)
+                continue;
 
-            /* Skip current processor*/
-            if (pe == pct.gridpe) continue;
+            /* Determine if ion has overlap with a given PE becasue of beta functions */
+            map = test_overlap(pe, iptr, Aix, Aiy, Aiz, sp->nldim,
+                    PX0_GRID, PY0_GRID, PZ0_GRID,
+                    NX_GRID, NY_GRID, NZ_GRID);
+        
+            /* Determine if ion has overlap with a given PE becasue of Q function */
+            map2 = test_overlap(pe, iptr, Aix2, Aiy2, Aiz2,
+                         sp->qdim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
+                         FNX_GRID, FNY_GRID, FNZ_GRID);
 
+            printf("\n test_overlap returned %d and %d", map, map2);
+                         
 
-            /************* This is a copy of what is done above to find whether an ion has overlap with a given processor
-             ************ The idea is follow the same procedure (for any processor) and determine 
-             variable   icount. If it is non-zero, we have an ovelap*/
-
-            /* Determine mapping indices or even if a mapping exists */
-            map = get_index (pe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                    sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
-                    ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
-                    &nlxcstart, &nlycstart, &nlzcstart);
-
-            /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
-            /*xtal vector between ion and left bottom corner of the box */
-            vect[0] = iptr->xtal[0] - nlxcstart;
-            vect[1] = iptr->xtal[1] - nlycstart;
-            vect[2] = iptr->xtal[2] - nlzcstart;
-
-            /*Substract vector between left bottom corner of the box and center of the box */
-            vect[0] -= (sp->nldim / 2) / (REAL) ct.psi_nxgrid;
-            vect[1] -= (sp->nldim / 2) / (REAL) ct.psi_nygrid;
-            vect[2] -= (sp->nldim / 2) / (REAL) ct.psi_nzgrid;
-
-            /*The vector we are looking for should be */
-            to_cartesian (vect, iptr->nlcrds);
-
-
-
-            icount = 0;
-            if (map)
+            if (map || map2)
             {
-
-                /* Generate index arrays */
-                icount = idx = 0;
-                for (ix = 0; ix < sp->nldim; ix++)
+            
+                /*Loop over list of processors that we already have to see if "pe" has alredy been recorded*/
+                flag = 0;
+                for (i=0; i < pct.num_nonloc_pes; i++)
                 {
-                    for (iy = 0; iy < sp->nldim; iy++)
+                    if (pct.nonloc_pe_list[i] == pe)
                     {
-                        for (iz = 0; iz < sp->nldim; iz++)
-                        {
-                            dvec[idx] = FALSE;
-                            if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
-                                        ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
-                                        ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
-                            {
-                                /* Cut it off if required */
-                                itmp =
-                                    (ix - icenter) * (ix - icenter) +
-                                    (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
-
-                                /*   if(icut >= itmp) { */
-
-                                pvec[icount] =
-                                    PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
-                                    PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
-
-                                dvec[idx] = TRUE;
-
-                                icount++;
-
-                                /*  } */
-
-                            }
-                            idx++;
-                        }
+                          flag ++;
+                          pe_index = i;
+                          break;
                     }
                 }
 
-                /******* At this point variable icount is determined and what follows is jus recording the information
-                 * into the list */
-
-                /*If this condition is satisfied then processor "pe" has overlap with the current nonlocal ion*/
-                if (icount)
+                /*Record pe index, if not known yet*/ 
+                if (!flag)
                 {
-                    //printf("\n PE %d has overlap!", pe); 
+                    if (pct.num_nonloc_pes >= MAX_NONLOC_PROCS) 
+                        error_handler("pct.num_nonloc_pes (%d) is too large (max: %d)", pct.nonloc_pe_list_ions, MAX_NONLOC_PROCS);
 
-                    /*Loop over list of processors with overlap to see if this a processor that is already recorded*/
-                    pe_bin = -1;
-                    for (j=0; j< pct.num_nonloc_pes; j++)
-                        if (pe == pct.nonloc_pe_list[j]) pe_bin = j;
+                    pct.nonloc_pe_list[pct.num_nonloc_pes] = pe;
+                        
+                    pct.nonloc_pe_list_ions[pct.num_nonloc_pes][0] = ion;
 
-                    /* The case when this is a processor that has not been recorded yet*/
-                    if (pe_bin == -1)
-                    {
-                        //printf("\n PE %d has NOT been recorded yet!", pe); 
-                        if (pct.num_nonloc_pes >= MAX_NONLOC_PROCS) error_handler("Too many PEs to fit into pct.nonloc_pe_list, max is %d", MAX_NONLOC_PROCS);
-                        pct.nonloc_pe_list[pct.num_nonloc_pes] = pe;
-
-                        /*Record atom*/
-                        pct.nonloc_atom_list_per_pe[pct.num_nonloc_pes][0] = ion;
-                        //printf("\n Recording ion %d into pct.nonloc_atom_list_per_pe[%d][0]", ion, pct.num_nonloc_pes); 
-
-
-                        /*This keeps count for number of ions that need to be communicated for a given processor*/
-                        pct.nonloc_atom_count_per_pe[pct.num_nonloc_pes] = 1;
-
-                        /*This keeps count for number of processors to communicate with*/
-                        pct.num_nonloc_pes ++;
-
-                    }
-
-                    else
-                    {
-                        //printf("\n PE %d has been recorded yet!", pe); 
-                        /*if we are here, processor was already recorded, we need to additional ion to the proper list*/
-                        pct.nonloc_atom_list_per_pe[pe_bin][pct.nonloc_atom_count_per_pe[pe_bin]] = ion;
-
-                        //printf("\n Recording ion %d into pct.nonloc_atom_list_per_pe[%d][%d]", ion, pe_bin, pct.nonloc_atom_count_per_pe[pe_bin]); 
-                        pct.nonloc_atom_count_per_pe[pe_bin] ++;
-
-                    }
-
+                    pct.nonloc_pe_num_ions[pct.num_nonloc_pes] = 1;
+                    
+                    pct.num_nonloc_pes ++;
                 }
 
+                else
+                {
+                    if (pct.nonloc_pe_num_ions[pe_index] >= MAX_NONLOC_IONS) 
+                        error_handler ("pct.nonloc_pe_num_ions too large (%d, MAX = %d ), for ion %d and PE %d",pct.nonloc_pe_num_ions[pe_index], MAX_NONLOC_IONS, ion, pe);
+                        
+                    pct.nonloc_pe_list_ions[pe_index][pct.nonloc_pe_num_ions[pe_index]] = ion;
+                    pct.nonloc_pe_num_ions[pe_index] ++;
+                }
 
             }
+
 
         }
 
     }
+
 #endif
 
 #if 0
@@ -410,9 +346,15 @@ void get_nlop (void)
     {
         printf("\n Atoms to communicate about with PE %d:", pct.nonloc_pe_list[i]);
 
-        for (j=0; j < pct.nonloc_atom_count_per_pe[i]; j++)
-            printf("  %d", pct.nonloc_atom_list_per_pe[i][j]);
+        for (j=0; j < pct.nonloc_pe_num_ions[i]; j++)
+            printf("  %d",  pct.nonloc_pe_list_ions[i][j]);
 
+    }
+
+    dprintf("\n PE %d: Number of nonloc ions %d", pct.gridpe, pct.num_nonloc_ions);
+    for (i=0; i<pct.num_nonloc_ions; i++)
+    {
+        dprintf("\n PE %d, nonlocal ion %d: %d", pct.gridpe, i, pct.nonloc_ions_list[i]);
     }
 #endif
 

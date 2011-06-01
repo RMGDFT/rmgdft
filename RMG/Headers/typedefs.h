@@ -250,16 +250,17 @@ typedef struct
     //REAL *qqq[MAX_IONS];
     REAL **qqq;
 
-    int num_nonloc_ions;
-    int nonloc_ions_list[MAX_NONLOC_IONS];
 
     int num_owned_ions;
     int owned_ions_list[MAX_NONLOC_IONS];
+    
+    int num_nonloc_ions;
+    int nonloc_ions_list[MAX_NONLOC_IONS];
 
     int num_nonloc_pes;
     int nonloc_pe_list[MAX_NONLOC_PROCS];
-    int nonloc_atom_list_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
-    int nonloc_atom_count_per_pe[MAX_NONLOC_IONS];
+    int nonloc_pe_list_ions[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
+    int nonloc_pe_num_ions[MAX_NONLOC_PROCS];
     
     REAL *oldsintR_local;
     REAL *oldsintI_local;
