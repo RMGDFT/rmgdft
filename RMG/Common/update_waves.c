@@ -46,18 +46,6 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
     /*update the wavefunction psi2 */
     QMD_saxpy (size, t1, tmp_psi1, incx, tmp_psi2, incx);
 
-    /* update <beta|psi2> */
-    /*Parallelization over ions */
-    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
-    {
-
-        iptr = &ct.ions[ion];
-
-        ptr1 = &iptr->newsintR[sidx1];
-        ptr2 = &iptr->newsintR[sidx2];
-        QMD_saxpy (ct.max_nl, t1, ptr1, incx, ptr2, incx);
-    }
-    
     /* update localized  <beta|psi2> */
     for (ion = 0; ion < pct.num_nonloc_ions; ion ++)
     {
@@ -101,26 +89,6 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
     }
 
 
-    /* update <beta|psi2> */
-    /*Parallelization over ions */
-    for (ion = pct.gridpe; ion < ct.num_ions; ion += NPES)
-    {
-
-        iptr = &ct.ions[ion];
-
-        ptr1R = &iptr->newsintR[sidx1];
-        ptr1I = &iptr->newsintI[sidx1];
-        ptr2R = &iptr->newsintR[sidx2];
-        ptr2I = &iptr->newsintI[sidx2];
-
-        QMD_saxpy (ct.max_nl, -cR, ptr1R, incx, ptr2R, incx);
-        QMD_saxpy (ct.max_nl, cI, ptr1I, incx, ptr2R, incx);
-
-        QMD_saxpy (ct.max_nl, -cR, ptr1I, incx, ptr2I, incx);
-        QMD_saxpy (ct.max_nl, -cI, ptr1R, incx, ptr2I, incx);
-    }
-    
-    
     /* update localized <beta|psi2> */
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {

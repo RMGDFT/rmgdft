@@ -695,12 +695,6 @@ typedef struct
 	} constraint;
 		
 
-    /* Stored non-local projectors */
-    REAL *oldsintR;
-    REAL *oldsintI;
-    REAL *newsintR;
-    REAL *newsintI;
-    
 
     /* Stores sine and cosine of a phase factor for backwards fourier transform */
     REAL *fftw_phase_sin;

@@ -99,27 +99,6 @@ void sortpsi (STATE * states)
                 sp->occupation[0] = sp1->occupation[0];
                 sp1->occupation[0] = t1;
 
-                for (idx1 = 0; idx1 < ct.num_ions; idx1++)
-                {
-                    iptr = &ct.ions[idx1];
-
-
-		    my_swap(&iptr->newsintR[koffset + state * ct.max_nl], 
-			    &iptr->newsintR[koffset + (state + 1) * ct.max_nl], ct.max_nl);
-			
-		    my_swap(&iptr->oldsintR[koffset + state * ct.max_nl], 
-			    &iptr->oldsintR[koffset + (state + 1) * ct.max_nl], ct.max_nl);
-                        
-#if !GAMMA_PT
-		    my_swap(&iptr->newsintI[koffset + state * ct.max_nl], 
-			    &iptr->newsintI[koffset + (state + 1) * ct.max_nl], ct.max_nl);
-			
-		    my_swap(&iptr->oldsintI[koffset + state * ct.max_nl], 
-			    &iptr->oldsintI[koffset + (state + 1) * ct.max_nl], ct.max_nl);
-
-#endif
-                }               /* end for  idx1 */
-                
 		for (idx1 = 0; idx1 < pct.num_nonloc_ions; idx1++)
                 {
 

@@ -15,13 +15,13 @@ void betaxpsi1 (STATE * states, int kpt)
     int idx, ion, stop, ip, ipindex, alloc, index_global, index_local;
     int istate, goffset, loffset;
     int id1, incx = 1, *pidx;
-    REAL *nlarrayR, *nlarrayI, *sintR;
+    REAL *nlarrayR, *nlarrayI, *sintR, *sintR_global;
     REAL *weiptr, *psiR;
     ION *iptr;
     SPECIES *sp;
     STATE *st;
 #if !GAMMA_PT
-    REAL *pR, *pI, *sintI, *psiI;
+    REAL *pR, *pI, *sintI,  *sintI_global, *psiI;
 #endif
 
 
@@ -32,10 +32,15 @@ void betaxpsi1 (STATE * states, int kpt)
     my_calloc (nlarrayR, 2 * alloc, REAL);
     nlarrayI = nlarrayR + alloc;
 
-
-    sintR = &ct.ions[0].newsintR[kpt * ct.num_ions * ct.num_states * ct.max_nl];
+    my_calloc (sintR_global, ct.num_ions * ct.num_states * ct.max_nl, REAL);
 #if !GAMMA_PT
-    sintI = &ct.ions[0].newsintI[kpt * ct.num_ions * ct.num_states * ct.max_nl];
+    my_calloc (sintI_global, ct.num_ions * ct.num_states * ct.max_nl, REAL);
+#endif
+
+
+    sintR = sintR_global;
+#if !GAMMA_PT
+    sintI = sintI_global;
 #endif
 
     /*Zero whole array first */
@@ -126,9 +131,9 @@ void betaxpsi1 (STATE * states, int kpt)
 
 
     /*Reset pointers to the beginning */
-    sintR = &ct.ions[0].newsintR[kpt * ct.num_ions * ct.num_states * ct.max_nl];
+    sintR = sintR_global;
 #if !GAMMA_PT
-    sintI = &ct.ions[0].newsintI[kpt * ct.num_ions * ct.num_states * ct.max_nl];
+    sintI = sintI_global;
 #endif
 
     /* Sum the sint array over all processors */
@@ -151,13 +156,17 @@ void betaxpsi1 (STATE * states, int kpt)
 	index_global = goffset + pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl;
 	index_local = loffset + ion *  ct.num_states * ct.max_nl;
 
-	my_copy(&ct.ions[0].newsintR[index_global], &pct.newsintR_local[index_local], ct.num_states * ct.max_nl);
+	my_copy(&sintR_global[index_global], &pct.newsintR_local[index_local], ct.num_states * ct.max_nl);
 #if !GAMMA_PT
-	my_copy(&ct.ions[0].newsintI[index_global], &pct.newsintI_local[index_local], ct.num_states * ct.max_nl);
+	my_copy(&sintI_global[index_global], &pct.newsintI_local[index_local], ct.num_states * ct.max_nl);
 #endif
 
     }
 
     my_free (nlarrayR);
+    my_free (sintR_global);
+#if !GAMMA_PT
+    my_free (sintI_global);
+#endif
 
 }

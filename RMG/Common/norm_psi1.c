@@ -103,20 +103,6 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
 #endif
 
 
-    /* update <beta|psi> */
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-
-        iptr = &ct.ions[ion];
-
-        ptr = &iptr->newsintR[sidx];
-        QMD_sscal (ct.max_nl, t1, ptr, incx);
-#if !GAMMA_PT
-        ptr = &iptr->newsintI[sidx];
-        QMD_sscal (ct.max_nl, t1, ptr, incx);
-#endif
-    }
-    
     /* update <beta|psi> - Local version*/
     
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)

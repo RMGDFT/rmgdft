@@ -174,23 +174,6 @@ void finish_release_mem (STATE * states)
         my_free (ct.vh_ext);
 
 
-    iptr = &ct.ions[0];
-
-    if (iptr->newsintR)
-        my_free (iptr->newsintR);
-
-    if (iptr->oldsintR)
-        my_free (iptr->oldsintR);
-
-#if !GAMMA_PT
-    if (iptr->newsintI)
-        my_free (iptr->newsintI);
-
-    if (iptr->oldsintI)
-        my_free (iptr->oldsintI);
-#endif
-
-    
     if (pct.newsintR_local) my_free (pct.newsintR_local);
     if (pct.oldsintR_local) my_free (pct.oldsintR_local);
 

@@ -94,28 +94,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 
     /* Allocate storage for non-local projectors */
-    /*Ion 0 will hold all the memory, all others will be handled through pointers */
-
-    iptr0 = &ct.ions[0];
-    my_calloc (iptr0->newsintR, ct.num_kpts * ct.num_ions * ct.num_states * ct.max_nl, REAL);
-    my_calloc (iptr0->oldsintR, ct.num_kpts * ct.num_ions * ct.num_states * ct.max_nl, REAL);
-#if !GAMMA_PT
-    my_calloc (iptr0->newsintI, ct.num_kpts * ct.num_ions * ct.num_states * ct.max_nl, REAL);
-    my_calloc (iptr0->oldsintI, ct.num_kpts * ct.num_ions * ct.num_states * ct.max_nl, REAL);
-#endif
-
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        iptr = &ct.ions[ion];
-        iptr->newsintR = &iptr0->newsintR[ion * ct.num_states * ct.max_nl];
-        iptr->oldsintR = &iptr0->oldsintR[ion * ct.num_states * ct.max_nl];
-#if !GAMMA_PT
-        iptr->newsintI = &iptr0->newsintI[ion * ct.num_states * ct.max_nl];
-        iptr->oldsintI = &iptr0->oldsintI[ion * ct.num_states * ct.max_nl];
-#endif
-    }
-    
     pct.newsintR_local = NULL;
     pct.oldsintR_local = NULL;
 #if !GAMMA_PT
