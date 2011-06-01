@@ -37,7 +37,9 @@
 
 
 #include "main.h"
+#if HYBRID_MODEL
 #include "hybrid.h"
+#endif
 
 
 #if MPI
