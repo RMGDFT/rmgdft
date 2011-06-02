@@ -73,7 +73,9 @@ void run (STATE * states, STATE * states1)
     else if (ct.runflag == 110)
     {
         time1 = my_crtc ();
-        get_cond_frommatrix ();
+//        get_cond_frommatrix();
+        get_cond_frommatrix_kyz ();
+
         time2 = my_crtc ();
         if (pct.gridpe == 0)
             printf ("\nTIME for get_cond_dos %f\n", time2 - time1);
