@@ -56,6 +56,10 @@ void get_cond_frommatrix_kyz ()
     read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, nkp);
     de = (emax - emin) / (E_POINTS - 1);
 
+
+//  set number of kpoint in x direction be 1, 
+    nkp[0] = 1;
+
     ntot = nkp[0] * nkp[1] * nkp[2];
     printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
