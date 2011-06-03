@@ -12,7 +12,7 @@
 void betaxpsi1 (STATE * states, int kpt)
 {
 
-    int idx, ion, stop, ip, ipindex, alloc, index_global, index_local;
+    int idx, nion, ion, stop, ip, ipindex, alloc, index_global, index_local;
     int istate, goffset, loffset;
     int id1, incx = 1, *pidx;
     REAL *nlarrayR, *nlarrayI, *sintR, *sintR_global;
@@ -38,17 +38,12 @@ void betaxpsi1 (STATE * states, int kpt)
 #endif
 
 
-    sintR = sintR_global;
-#if !GAMMA_PT
-    sintI = sintI_global;
-#endif
-
     /*Zero whole array first */
     for (idx = 0; idx < ct.num_ions * ct.num_states * ct.max_nl; idx++)
     {
-        sintR[idx] = 0.0;
+        sintR_global[idx] = 0.0;
 #if !GAMMA_PT
-        sintI[idx] = 0.0;
+        sintI_global[idx] = 0.0;
 #endif
     }
 
@@ -56,8 +51,11 @@ void betaxpsi1 (STATE * states, int kpt)
 
 
     /* Loop over ions on this processor */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
+        
+        /*Actual index of the ion under consideration*/
+        ion = pct.nonloc_ions_list[nion];
 
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
@@ -65,6 +63,11 @@ void betaxpsi1 (STATE * states, int kpt)
 
         if (stop)
         {
+        
+            sintR = &sintR_global[ion * ct.num_states * ct.max_nl];
+#if !GAMMA_PT
+            sintI = &sintI_global[ion * ct.num_states * ct.max_nl];
+#endif
 
             pidx = pct.nlindex[ion];
 #if !GAMMA_PT
@@ -120,11 +123,6 @@ void betaxpsi1 (STATE * states, int kpt)
 
         }
 
-        /*Advance pointers to the next ion */
-        sintR += ct.num_states * ct.max_nl;
-#if !GAMMA_PT
-        sintI += ct.num_states * ct.max_nl;
-#endif
 
     }                           /*end for (istate = 0; istate < ct.num_states; istate++) */
 
