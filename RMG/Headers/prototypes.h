@@ -466,4 +466,4 @@ void init_efield (REAL * vnuc);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, REAL ***hist, REAL ***rhist, int special_metric, REAL weight);
 void mg_restrict_4th (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void mix_betaxpsi (int mix);
-int claim_ion (int gridpe, ION * iptr,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
+int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);

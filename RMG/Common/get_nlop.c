@@ -214,14 +214,13 @@ void get_nlop (void)
             pct.num_nonloc_ions++;
 
             /*See if this processor owns current ion*/
-            if (claim_ion(pct.gridpe, iptr, PX0_GRID, PY0_GRID, PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid))
+            if (pct.gridpe == claim_ion(iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid))
             {
                 if (pct.num_owned_ions >= MAX_NONLOC_IONS) 
                     error_handler ("Too many owned ions, pct.owned_ions_list will overflow");
 
                 pct.owned_ions_list[pct.num_owned_ions] = ion;
                 pct.num_owned_ions++;
-                //dprintf("I own ion %d", ion);
             }
 
 
@@ -239,6 +238,10 @@ void get_nlop (void)
 
     for (i=0; i<pct.num_nonloc_ions; i++)
         printf(" %d", pct.nonloc_ions_list[i]);
+    
+    printf("\n PE %d: Number of claimed ions is %d", pct.gridpe, pct.num_owned_ions);
+    for (i=0; i<pct.num_owned_ions; i++)
+        printf(" %d", pct.owned_ions_list[i]);
 
     /*Memory for nonlocal projectors*/
     if (pct.newsintR_local) my_free (pct.newsintR_local);
@@ -288,8 +291,6 @@ void get_nlop (void)
                          sp->qdim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
                          FNX_GRID, FNY_GRID, FNZ_GRID);
 
-            printf("\n test_overlap returned %d and %d", map, map2);
-                         
 
             if (map || map2)
             {
@@ -331,7 +332,6 @@ void get_nlop (void)
                 }
 
             }
-
 
         }
 
