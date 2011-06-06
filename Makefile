@@ -203,6 +203,8 @@ RMG/Headers/make_conf.h:
 	@echo "" >> RMG/Headers/make_conf.h;
 	@echo "/* Extra fine timers, may cause some slowdown, but they are generally useful */" >> RMG/Headers/make_conf.h;
 	@echo "#define MD_TIMERS 1" >> RMG/Headers/make_conf.h;
+	@echo "/* Experimental fast Mehrstellen operator. Disabled by default. */" >> RMG/Headers/make_conf.h;
+	@echo "#define FAST_MEHR 0" >> RMG/Headers/make_conf.h;
 	@echo "";
 	@echo "ERROR: File Headers/make_conf.h does not exist"; 
 	@echo "Headers/make_conf.h is set to default, configure it for your system before compiling !!! ";
