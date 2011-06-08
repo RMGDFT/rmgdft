@@ -9,30 +9,18 @@
 #include "main.h"
 
 
+static void betaxpsi1_calculate( REAL *sintR_global, REAL *sintI_global, STATE *states);
+static void betaxpsi1_communicate (REAL *sintR, REAL *sintI);
+static void betaxpsi1_write_back (REAL *sintR_global, REAL * sintI_global, int kpt);
+
 void betaxpsi1 (STATE * states, int kpt)
 {
+    REAL *sintR_global, *sintI_global;
 
-    int idx, nion, ion, stop, ip, ipindex, alloc, index_global, index_local;
-    int istate, goffset, loffset;
-    int id1, incx = 1, *pidx;
-    REAL *nlarrayR, *nlarrayI, *sintR, *sintR_global;
-    REAL *weiptr, *psiR;
-    ION *iptr;
-    SPECIES *sp;
-    STATE *st;
-#if !GAMMA_PT
-    REAL *pR, *pI, *sintI,  *sintI_global, *psiI;
-#endif
-
-
-    alloc = P0_BASIS;
-
-    if (alloc < ct.max_nlpoints)
-        alloc = ct.max_nlpoints;
-    my_calloc (nlarrayR, 2 * alloc, REAL);
-    nlarrayI = nlarrayR + alloc;
+    int idx;
 
     my_calloc (sintR_global, ct.num_ions * ct.num_states * ct.max_nl, REAL);
+    sintI_global = NULL;
 #if !GAMMA_PT
     my_calloc (sintI_global, ct.num_ions * ct.num_states * ct.max_nl, REAL);
 #endif
@@ -48,8 +36,44 @@ void betaxpsi1 (STATE * states, int kpt)
     }
 
 
+    /*Loop over ions and calculate local projection between beta functions and wave functions*/
+    betaxpsi1_calculate (sintR_global, sintR_global, states);
+
+    
+    /* Sum contributions to <beta|psi> from verious processors*/
+    betaxpsi1_communicate (sintR_global, sintI_global);
 
 
+    /*Write back the results into localized array newsint{R,I}_local*/
+    betaxpsi1_write_back (sintR_global, sintI_global, kpt);
+
+
+    my_free (sintR_global);
+#if !GAMMA_PT
+    my_free (sintI_global);
+#endif
+
+}
+    
+
+
+static void betaxpsi1_calculate(REAL *sintR_global, REAL *sintI_global, STATE *states)
+{
+    int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx =1;
+    REAL *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
+    REAL *weiptr, *psiR, psiI;
+    ION *iptr;
+    SPECIES *sp;
+    STATE *st;
+
+
+    alloc = P0_BASIS;
+    if (alloc < ct.max_nlpoints)
+        alloc = ct.max_nlpoints;
+    
+    my_calloc (nlarrayR, 2 * alloc, REAL);
+    nlarrayI = nlarrayR + alloc;
+    
     /* Loop over ions on this processor */
     for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
@@ -124,26 +148,31 @@ void betaxpsi1 (STATE * states, int kpt)
         }
 
 
-    }                           /*end for (istate = 0; istate < ct.num_states; istate++) */
+    }                           
+    my_free (nlarrayR);
+}
 
 
+static void betaxpsi1_communicate (REAL *sintR, REAL *sintI)
+{
+    int id1;
 
-    /*Reset pointers to the beginning */
-    sintR = sintR_global;
-#if !GAMMA_PT
-    sintI = sintI_global;
-#endif
-
-    /* Sum the sint array over all processors */
     id1 = ct.num_states * ct.num_ions * ct.max_nl;
+    
     global_sums (sintR, &id1, pct.grid_comm);
 #if !GAMMA_PT
     global_sums (sintI, &id1, pct.grid_comm);
 #endif
 
+}
+    
 
 
-    /*Pick up only the data relevant for this processor*/
+/*Pick up only the data relevant for this processor*/
+static void betaxpsi1_write_back (REAL *sintR_global, REAL * sintI_global, int kpt)
+{
+    int goffset, loffset, index_global, index_local, ion;
+
 
     /*Offset due to a kpoint*/
     goffset = kpt * ct.num_ions * ct.num_states * ct.max_nl;
@@ -160,11 +189,4 @@ void betaxpsi1 (STATE * states, int kpt)
 #endif
 
     }
-
-    my_free (nlarrayR);
-    my_free (sintR_global);
-#if !GAMMA_PT
-    my_free (sintI_global);
-#endif
-
 }
