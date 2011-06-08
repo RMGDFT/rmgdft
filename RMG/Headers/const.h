@@ -220,6 +220,7 @@
 #define DIAG_BCAST_EIGS (70)
 #define READ_PSEUDO_TIME 71
 #define READ_CONTROL_TIME 72
+#define ORTHO_GET_OVERLAPS 73
 
 #define LAST_TIME (80)
 
