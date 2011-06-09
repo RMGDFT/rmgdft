@@ -62,9 +62,9 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
       global_sums_vector_state = 1;
   pthread_mutex_unlock(&global_sums_vector_lock);
 
-  // Wait until everyone gets here
-  scf_barrier_wait();
   QMD_scopy(*length, vect, 1, &global_sums_vector[*length * tid], 1);
+  
+  // Wait until everyone gets here
   scf_barrier_wait();
 
   pthread_mutex_lock(&global_sums_vector_lock);

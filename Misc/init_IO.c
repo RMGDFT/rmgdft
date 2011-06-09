@@ -30,6 +30,9 @@
 #include <sys/types.h>
 #include <time.h>
 #include <sys/stat.h>
+#if HYBRID_MODEL
+#include "hybrid.h"
+#endif
 
 void init_IO (int argc, char **argv)
 {
@@ -41,7 +44,6 @@ void init_IO (int argc, char **argv)
 
     /* Set start of program time */
     timer = time (NULL);
-
 #if HYBRID_MODEL
   MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
   if(USE_SALLOC) {
@@ -222,5 +224,8 @@ void init_IO (int argc, char **argv)
     /* Read in our pseudopotential information */
     read_pseudo ();
 
+#if HYBRID_MODEL
+    init_HYBRID_MODEL();
+#endif
     return;
 }

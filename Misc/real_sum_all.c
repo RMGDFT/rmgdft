@@ -113,7 +113,6 @@ REAL real_sum_all_threaded(REAL x, int tid,  MPI_Comm comm) {
           real_sum_all_vector_state = 0;
       }
   pthread_mutex_unlock(&real_sum_all_vector_lock);
-  scf_barrier_wait();
 
 #if MD_TIMERS
    rmg_timings (REAL_SUM_ALL_TIME, my_crtc () - time0);
