@@ -44,6 +44,7 @@
 
 #ifdef LINUX 
 
+#define                 sger            dger_
 #  define		global_sums     global_sums_
 #  define		saxpy		daxpy_
 #  define		scopy   	dcopy_

@@ -118,23 +118,6 @@
 /* The number of possible point symmetries */
 #define MAX_SYMMETRY	48
 
-#ifdef SMP
-#define 	MAX_THREADS	1000
-#else
-#define 	MAX_THREADS	1
-#endif
-
-
-
-
-
-#ifdef SMP
-
-#  define  	PE_X  		1
-#  define  	PE_Y  		1
-#  define  	PE_Z  		1
-
-#elif MPI
 
 #  ifndef PE_X
     /* Processor topology */
@@ -184,8 +167,6 @@
 #      define		PE_Z            8
 #    endif
 #  endif
-
-#endif
 
 
 

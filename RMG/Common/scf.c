@@ -48,7 +48,6 @@
 #if HYBRID_MODEL
 #include "hybrid.h"
 #include <pthread.h>
-static pthread_attr_t thread_attrs;
 #endif
 
 
@@ -63,12 +62,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
     REAL t[3];                  /* SCF checks and average potential */
-
-#if HYBRID_MODEL
     int ist;
-    pthread_t threads[THREADS_PER_NODE];
-    MG_THREAD_STRUCT mst[THREADS_PER_NODE];
-#endif
 
     MPI_Status status, stat[2]; 
     MPI_Request req[2];   
@@ -167,27 +161,26 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     time1 = my_crtc ();
 #if HYBRID_MODEL
-    pthread_attr_init( &thread_attrs );
-    pthread_attr_setschedpolicy( &thread_attrs, SCHED_RR);
-    scf_tsd_init();
+    enter_threaded_region();
     scf_barrier_init(THREADS_PER_NODE);
     /* Update the wavefunctions */
     istop = ct.num_kpts * ct.num_states / THREADS_PER_NODE;
     istop = istop * THREADS_PER_NODE;
     for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
       for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-          mst[ist].sp = &states[st1 + ist];
-          mst[ist].vtot = vtot_psi;
-          mst[ist].tid = ist;
-          pthread_create(&threads[ist], &thread_attrs, (void *)mg_eig_state_threaded, &mst[ist]);
+          thread_control[ist].job = HYBRID_EIG;
+          thread_control[ist].vtot = vtot_psi;
+          thread_control[ist].sp = &states[st1 + ist];
       }
 
-      for(ist = 0;ist < THREADS_PER_NODE;ist++) {
-          pthread_join(threads[ist], NULL);
-      }
+      // Thread tasks are set up so wake them
+      wake_threads(THREADS_PER_NODE);
+
+      // Then wait for them to finish this task
+      wait_for_threads(THREADS_PER_NODE);
     }
     scf_barrier_destroy();
-    scf_tsd_delete();
+    leave_threaded_region();
 
     // Process any remaining states in serial fashion
     for(st1 = istop;st1 < ct.num_kpts * ct.num_states;st1++)

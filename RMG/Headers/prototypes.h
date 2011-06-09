@@ -96,6 +96,7 @@ void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype)
 void get_zdens (STATE *states, int state, REAL *zvec);
 void xclda_pz81 (REAL *rho, REAL *vxc);
 void exclda_pz81 (REAL *rho, REAL *exc);
+void get_psi_overlaps(REAL *psi_array, REAL *overlap, int numst, int maxst, int numpt, int maxpt);
 
 /* new lda function incorporating both  1981 and 1994 monte carlo data */
 void xclda(REAL *rho, REAL *vxc, REAL *exc);
@@ -390,16 +391,27 @@ void scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
 
 #if GAMMA_PT
 void subdiag_gamma (STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
+void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
+void subdiag_app_B (STATE * states, REAL * b_psi);
+void subdiag_app_B_one (STATE *sp, REAL * b_psi);
+void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
 #else
 void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
+void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig);
+void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI);
 #endif
+
 
 void ylmr2 (double *r, double *ylm);
 REAL gcutoff (REAL g1, REAL gcut, REAL width);
 void rft1 (REAL cparm, REAL *f, REAL *r, REAL *ffil, REAL *rab,
            int rg_points, int lval, REAL dr, REAL width, int lrg_points);
 void norm_psi1 (STATE *sp, int istate, int kpt);
+#if FAST_ORTHO
+void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL *cR, REAL *cI, REAL *Oij);
+#else
 void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL *cR, REAL *cI);
+#endif
 void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL cR, REAL cI);
 REAL get_QnmL (int idx, int ltot, REAL r, SPECIES *sp);
 

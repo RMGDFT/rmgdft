@@ -31,20 +31,138 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <semaphore.h>
+
 #include "main.h"
 #include "hybrid.h"
 
 #if HYBRID_MODEL
-void ATL_assert(void)
-{
-}
+
+// Main thread control structure
+SCF_THREAD_CONTROL thread_control[THREADS_PER_NODE];
+
+// Used to implement a local barrier for all threads inside of the run_threads function
+static pthread_barrier_t run_barrier;
 
 // Used to implement a local barrier inside of the scf loops
-pthread_barrier_t scf_barrier;
+static pthread_barrier_t scf_barrier;
+static pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// These are used to synchronize the main process and the worker threads
+sem_t thread_sem;
+int job_count=0;
+static pthread_mutex_t sync_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+static pthread_attr_t thread_attrs;
+static pthread_t threads[THREADS_PER_NODE];
 volatile int in_threaded_region = 0;
+static void run_threads(SCF_THREAD_CONTROL *s);
 
-// Initialization function
+
+// Used for accessing thread specific data
+pthread_key_t scf_thread_control_key;
+
+// Initialization function called by main process
+void init_HYBRID_MODEL(void) {
+
+    int thread, retval;
+
+    sem_init(&thread_sem, 0, 0);
+    ct.main_thread_pid = getpid();
+
+    pthread_attr_init( &thread_attrs );
+    pthread_attr_setschedpolicy( &thread_attrs, SCHED_RR);
+
+    // Create the thread specific data key
+    scf_tsd_init();
+
+    // Create the main sync barrier
+    pthread_barrier_init(&run_barrier, NULL, THREADS_PER_NODE);
+
+    // Here we create a set of long lived threads
+    for(thread = 0;thread < THREADS_PER_NODE;thread++) {
+
+        thread_control[thread].tid = thread;
+        sem_init(&thread_control[thread].sync, 0, 0);
+        retval = pthread_create(&threads[thread], &thread_attrs, (void *)run_threads, (void *)&thread_control[thread]);
+
+    }
+
+    
+}
+
+// Main thread function
+void run_threads(SCF_THREAD_CONTROL *s) {
+
+    s->pthread_tid = pthread_self();
+    pthread_setspecific(scf_thread_control_key, (void *)s);
+
+    // Wait until everyone gets here
+    pthread_barrier_wait(&run_barrier);
+
+    while(1) {
+
+        // We sleep forever or until we get a signal that wakes us up
+        sem_wait(&s->sync);
+
+        // Switch that controls what we do
+        switch(s->job) {
+            case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
+               mg_eig_state(s->sp, 0, s->vtot);
+               break;
+            case HYBRID_SKIP:
+               break;
+            case HYBRID_SUBDIAG_APP_A:
+               subdiag_app_A_one(s->sp, s->p1, s->p2, s->vtot);
+               break;
+            case HYBRID_SUBDIAG_APP_B:
+               subdiag_app_B_one(s->sp, s->p1);
+               break;
+            default:
+               break;
+        }
+
+        // Let the main thread know that we are done
+        sem_post(&thread_sem);
+
+    }
+}
+
+// Called when the main thread of execution is waiting for a set of threads to finish
+void wait_for_threads(int jobs) {
+    int idx;
+    for(idx = 0;idx < jobs;idx++) {
+        sem_wait(&thread_sem);
+    }
+}
+
+// Wakes jobs sleeping threads starting from tid=0 and counting up
+// jobs must be less than THREADS_PER_NODE
+void wake_threads(int jobs) {
+
+    int thread;
+    
+    if(jobs > THREADS_PER_NODE) {
+        // If this happens it is a bug
+        printf("More jobs than available threads scheduled\n");   
+        exit(0);
+    }
+
+    pthread_mutex_lock(&job_mutex);
+    job_count = jobs;
+    pthread_mutex_unlock(&job_mutex);
+
+    for(thread = 0;thread < jobs;thread++) {
+        sem_post(&thread_control[thread].sync);
+    }
+ 
+}
+
+// Initialization function for barriers
 void scf_barrier_init(int nthreads) {
     pthread_barrier_init(&scf_barrier, NULL, nthreads);
 }
@@ -61,13 +179,9 @@ void scf_barrier_destroy(void) {
 
 
 
-// Used for accessing thread specific data
-pthread_key_t scf_thread_control_key;
-
 // Initializes the key and sets a value into it
 void scf_tsd_init(void) {
  pthread_key_create(&scf_thread_control_key, NULL);
- in_threaded_region = 1;
 }
 
 // Sets a value into the key
@@ -78,7 +192,6 @@ void scf_tsd_set_value(void *s) {
 // Deletes the key
 void scf_tsd_delete(void) {
  pthread_key_delete(scf_thread_control_key);
- in_threaded_region = 0;
 }
 
 
@@ -86,9 +199,9 @@ void scf_tsd_delete(void) {
 // a parallel region
 int get_thread_basetag(void) {
 
-    MG_THREAD_STRUCT *ss;
+    SCF_THREAD_CONTROL *ss;
     if(!in_threaded_region) return 0;
-    ss = (MG_THREAD_STRUCT *)pthread_getspecific(scf_thread_control_key);
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
     if(!ss) return 0;
 
     return ss->sp->istate;
@@ -99,10 +212,10 @@ int get_thread_basetag(void) {
 // a parallel region
 int get_thread_tid(void) {
 
-    MG_THREAD_STRUCT *ss;
+    SCF_THREAD_CONTROL *ss;
 
     if(!in_threaded_region) return -1;
-    ss = (MG_THREAD_STRUCT *)pthread_getspecific(scf_thread_control_key);
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
     if(!ss) return -1;
 
     return ss->tid;
@@ -125,5 +238,12 @@ void set_cpu_affinity(void)
 
     s = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
 
+}
+
+void enter_threaded_region(void) {
+    in_threaded_region = 1;
+}
+void leave_threaded_region(void) {
+    in_threaded_region = 0;
 }
 #endif

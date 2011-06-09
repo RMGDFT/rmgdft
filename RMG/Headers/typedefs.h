@@ -814,6 +814,10 @@ typedef struct
 typedef struct
 {
 
+#if HYBRID_MODEL
+    pid_t main_thread_pid;
+#endif
+
 #ifdef SMP
     /* Number of threads to run concurrently. We always 
      * use one thread per eigenfunction but it's inefficient 
@@ -1257,14 +1261,23 @@ typedef struct
 } CONTROL;
 
 
-#ifdef SMP
+#if HYBRID_MODEL
 
 /* Thread control structures */
 typedef struct
 {
 
-    /* Thread ID number */
+    /* Thread ID number assigned by us */
     int tid;
+
+    /* Thread identifier from pthread_self. Needed to send signals */
+    pthread_t pthread_tid;
+
+    /* Assigned job */
+    int job;
+
+    /* Synchronization semaphore */
+    sem_t sync;
 
     /* These volatiles are used as synchronization variables for the threads */
     volatile int start;
@@ -1272,6 +1285,9 @@ typedef struct
     /* With the complex option this lets the threads know which k-point is
      * currently being worked on in ortho and subdiag. */
     int kidx;
+
+    /* Pointer to current state assigned to the thread when used in sections that process a single state */
+    STATE *sp;
 
     /* Pointer to state array used by each thread */
     STATE *my_states;
@@ -1323,6 +1339,9 @@ typedef struct
     int *nlindex;
     REAL *projectors;
 
+    // Pointers to special args
+    void *p1;
+    void *p2;
 
 } SCF_THREAD_CONTROL;
 #endif
@@ -1338,6 +1357,6 @@ extern PE_CONTROL pct;
 
 
 /* Extern declarations for thread control structures */
-#ifdef SMP
+#if HYBRID_MODEL
 extern SCF_THREAD_CONTROL thread_control[];
 #endif

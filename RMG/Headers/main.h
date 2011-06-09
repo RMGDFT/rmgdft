@@ -50,6 +50,9 @@
 /* Use predefined booleans */
 #include <stdbool.h>
 
+/* For semaphore type */
+#include <semaphore.h>
+
 /* Size of floating point variables used in QMD */
 #define     REAL    double
 

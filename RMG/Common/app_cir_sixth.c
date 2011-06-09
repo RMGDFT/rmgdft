@@ -30,11 +30,13 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     REAL *rptr;
     REAL c000, c100, c110, c200;
 
+#if FAST_MEHR
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) {
         app_cir_sixth_global (a, b);
         return;
     }
+#endif
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -228,15 +230,15 @@ void app_cir_sixth_global (REAL * a, REAL * b)
             {
 
                 // Forward set of edges
-                rzps = rptr[ixps + iys + (iz + 1)] +
-                       rptr[ixms + iys + (iz + 1)] +
-                       rptr[ixs + iyps + (iz + 1)] +
-                       rptr[ixs + iyms + (iz + 1)];
+                rzps = rptr[ixps + iys + iz + 1] +
+                       rptr[ixms + iys + iz + 1] +
+                       rptr[ixs + iyps + iz + 1] +
+                       rptr[ixs + iyms + iz + 1];
 
                 // First
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] =
-                    c100 * (rptr[ixs + iys + (iz - 1)] +
-                            rptr[ixs + iys + (iz + 1)] +
+                    c100 * (rptr[ixs + iys + iz - 1] +
+                            rptr[ixs + iys + iz + 1] +
                             rz) + c000 * rptr[ixs + iys + iz];
 
 
@@ -248,24 +250,25 @@ void app_cir_sixth_global (REAL * a, REAL * b)
                             rzms +
                             rzps);
 
+                // Compute another set of forward edges here
+                rzpps = rptr[ixps + iys + iz + 2] +
+                        rptr[ixms + iys + iz + 2] +
+                        rptr[ixs + iyps + iz + 2] +
+                        rptr[ixs + iyms + iz + 2];
+
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    c200 * (rptr[ixs + iys + (iz - 2)] +
-                            rptr[ixs + iys + (iz + 2)] +
-                            rptr[ixmms + iys + iz] +
+                    c200 * (rptr[ixs + iys + iz - 2] +
+                            rptr[ixs + iys + iz + 2]) +
+                    c200 * (rptr[ixmms + iys + iz] +
                             rptr[ixpps + iys + iz] +
                             rptr[ixs + iymms + iz] + 
                             rptr[ixs + iypps + iz]);
 
-                // Compute another set of forward edges here
-                rzpps = rptr[ixps + iys + (iz + 2)] +
-                        rptr[ixms + iys + (iz + 2)] +
-                        rptr[ixs + iyps + (iz + 2)] +
-                        rptr[ixs + iyms + (iz + 2)];
 
                 // Second
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 1)] =
                     c100 * (rptr[ixs + iys + (iz)] +
-                            rptr[ixs + iys + (iz + 2)] +
+                            rptr[ixs + iys + iz + 2] +
                             rzps) + 
                             c000 * rptr[ixs + iys + iz + 1];
 
@@ -277,28 +280,28 @@ void app_cir_sixth_global (REAL * a, REAL * b)
                             rzpps +
                             rz);
 
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 1)] +=
-                    c200 * (rptr[ixs + iys + (iz - 1)] +
-                            rptr[ixs + iys + (iz + 3)] +
-                            rptr[ixmms + iys + iz+1] +
-                            rptr[ixpps + iys + iz+1] +
-                            rptr[ixs + iymms + iz+1] + 
-                            rptr[ixs + iypps + iz+1]);
-
                 // Compute the forward set of edges here which becomes the trailing set at the top
                 rzms = rptr[ixms + iys + iz+3] +
                        rptr[ixps + iys + iz+3] +
                        rptr[ixs + iyms + iz+3] +
                        rptr[ixs + iyps + iz+3];
 
+                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 1)] +=
+                    c200 * (rptr[ixs + iys + iz - 1] +
+                            rptr[ixs + iys + iz + 3]) +
+                    c200 * (rptr[ixmms + iys + iz+1] +
+                            rptr[ixpps + iys + iz+1] +
+                            rptr[ixs + iymms + iz+1] + 
+                            rptr[ixs + iypps + iz+1]);
+
                 // Third
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz)] =
-                    c100 * (rptr[ixs + iys + (iz+1)] +
-                            rptr[ixs + iys + (iz + 3)] +
+                b[(ix - 2) * incxr + (iy - 2) * incyr + iz] =
+                    c100 * (rptr[ixs + iys + iz+1] +
+                            rptr[ixs + iys + iz + 3] +
                             rzpps) +
                             c000 * rptr[ixs + iys + iz + 2];
 
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz)] +=
+                b[(ix - 2) * incxr + (iy - 2) * incyr + iz] +=
                     c110 * (rptr[ixps + iyps + iz+2] +
                             rptr[ixps + iyms + iz+2] +
                             rptr[ixms + iyps + iz+2] +
@@ -306,25 +309,24 @@ void app_cir_sixth_global (REAL * a, REAL * b)
                             rzms +
                             rzps);
 
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz)] +=
+                // Compute the forward set of edges here which becomes the middle set at the top
+                rz = rptr[ixps + iys + iz + 4] +
+                     rptr[ixms + iys + iz + 4] +
+                     rptr[ixs + iyps + iz + 4] +
+                     rptr[ixs + iyms + iz + 4];
+
+                b[(ix - 2) * incxr + (iy - 2) * incyr + iz] +=
                     c200 * (rptr[ixs + iys + (iz)] +
-                            rptr[ixs + iys + (iz + 4)] +
-                            rptr[ixmms + iys + iz+2] +
+                            rptr[ixs + iys + (iz + 4)]) +
+                    c200 * (rptr[ixmms + iys + iz+2] +
                             rptr[ixpps + iys + iz+2] +
                             rptr[ixs + iymms + iz+2] + 
                             rptr[ixs + iypps + iz+2]);
 
-
-                // Compute the forward set of edges here which becomes the middle set at the top
-                rz = rptr[ixps + iys + (iz + 4)] +
-                     rptr[ixms + iys + (iz + 4)] +
-                     rptr[ixs + iyps + (iz + 4)] +
-                     rptr[ixs + iyms + (iz + 4)];
-
                 // Fourth
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz+1)] =
-                    c100 * (rptr[ixs + iys + (iz+2)] +
-                            rptr[ixs + iys + (iz + 4)] +
+                    c100 * (rptr[ixs + iys + iz+2] +
+                            rptr[ixs + iys + iz + 4] +
                             rzms) + 
                             c000 * rptr[ixs + iys + iz + 3];
 
@@ -337,9 +339,9 @@ void app_cir_sixth_global (REAL * a, REAL * b)
                             rz);
 
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz+1)] +=
-                    c200 * (rptr[ixs + iys + (iz+1)] +
-                            rptr[ixs + iys + (iz + 5)] +
-                            rptr[ixmms + iys + iz+3] +
+                    c200 * (rptr[ixs + iys + iz+1] +
+                            rptr[ixs + iys + iz + 5]) +
+                    c200 * (rptr[ixmms + iys + iz+3] +
                             rptr[ixpps + iys + iz+3] +
                             rptr[ixs + iymms + iz+3] + 
                             rptr[ixs + iypps + iz+3]);
