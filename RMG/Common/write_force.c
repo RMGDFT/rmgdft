@@ -46,7 +46,7 @@ void write_force (void)
 {
     int ion;
     ION *iptr;
-    int num_movable = 0, maxfx_ion, maxfy_ion, maxfz_ion, maxf_ion;
+    int num_movable = 0, maxfx_ion = 0, maxfy_ion = 0, maxfz_ion = 0, maxf_ion = 0;
     REAL avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
     REAL sumx = 0.0, sumy = 0.0, sumz = 0.0;
     REAL avf = 0.0;
