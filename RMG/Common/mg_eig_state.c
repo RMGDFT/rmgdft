@@ -60,16 +60,6 @@
 #if HYBRID_MODEL
     #include "hybrid.h"
     #include <pthread.h>
-
-    void mg_eig_state_threaded(MG_THREAD_STRUCT *ss) {
-
-        // Set any architecture specific scheduling stuff here
-
-        scf_tsd_set_value((void *)ss);
-        scf_barrier_wait();
-        mg_eig_state(ss->sp, 0, ss->vtot);
-    }
-
 #endif
 
 
