@@ -242,6 +242,8 @@ void init_IO (int argc, char **argv)
         MPI_Finalize();
         exit(0);
   }
+  printf("Running with thread level = %d\n", provided);
+  fflush(NULL);
   init_HYBRID_MODEL();
 #endif
     return;
