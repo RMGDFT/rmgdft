@@ -13,8 +13,8 @@
  * ortho is a similar function, except that it does orthogonalization for specified k-point*/
 void ortho_full (STATE * states)
 {
-    int kpt, ist1, ist2, length, size;
-    REAL time1, time2;
+    int kpt, ist1, ist2, length, size, ione=1, idx;
+    REAL time1, time2, rone=1.0;
     REAL *cR, *cI, *Oij;
     STATE *st, *st1;
 
@@ -81,14 +81,29 @@ void ortho_full (STATE * states)
             time2 = my_crtc ();
 #endif
 
+#if 0
             /*Update wavefunctions */
-            for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++)
+            for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++) {
+                /*update the wavefunction psi2 */
+                QMD_saxpy (size, cR[ist2], st1->psiR, ione, st[ist2].psiR, ione);
+            }
+#endif
+            idx = ct.num_states - ist1 - 1;
+            if(idx)
+               dger_(&size, &idx, &rone, st[ist1].psiR, &ione,
+                   &cR[ist1+1], &ione, st[ist1+1].psiR, &size);
+
+
+            for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++) {
                 update_waves (st1, &st[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
+
+            }
 
 #if MD_TIMERS
             rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));
 #endif
         }                       /*end for ist1 */
+
     }                           /*end for kpt */
 
 

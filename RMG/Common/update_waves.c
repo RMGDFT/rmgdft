@@ -42,9 +42,11 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
     t1 = cR;
 
 
-
+// For FAST_ORTHO we update in a block in the main loop
+#if !FAST_ORTHO
     /*update the wavefunction psi2 */
     QMD_saxpy (size, t1, tmp_psi1, incx, tmp_psi2, incx);
+#endif
 
     /* update localized  <beta|psi2> */
     for (ion = 0; ion < pct.num_nonloc_ions; ion ++)
@@ -88,7 +90,6 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
         tmp_psi2I[idx] += -cR * tmp_psi1I[idx] - cI * tmp_psi1R[idx];
     }
 
-
     /* update localized <beta|psi2> */
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
@@ -105,7 +106,6 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
         QMD_saxpy (ct.max_nl, -cR, ptr1I, incx, ptr2I, incx);
         QMD_saxpy (ct.max_nl, -cI, ptr1R, incx, ptr2I, incx);
     }
-
 
 }
 #endif
