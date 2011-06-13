@@ -173,7 +173,10 @@ RMG/Headers/make_conf.h:
 	@echo "#define PE_X 2" >> RMG/Headers/make_conf.h;
 	@echo "#define PE_Y 1" >> RMG/Headers/make_conf.h;
 	@echo "#define PE_Z 1" >> RMG/Headers/make_conf.h;
+	@echo "" >> RMG/Headers/make_conf.h;
+	@echo "/* To enable MPI/PThreads hybrid model, experimental for now */ " >> RMG/Headers/make_conf.h;
 	@echo "#define HYBRID_MODEL 0" >> RMG/Headers/make_conf.h;
+	@echo "/* Number of threads in MPI/PThreads mode */ " >> RMG/Headers/make_conf.h;
 	@echo "#define THREADS_PER_NODE 4" >> RMG/Headers/make_conf.h;
 	@echo "" >> RMG/Headers/make_conf.h;
 	@echo "/* Gamma point only set to 1, otherwise, 0 */" >> RMG/Headers/make_conf.h;
@@ -209,7 +212,7 @@ RMG/Headers/make_conf.h:
 	@echo "/* Experimental fast ortho. Disabled by default. */" >> RMG/Headers/make_conf.h;
 	@echo "#define FAST_ORTHO 0" >> RMG/Headers/make_conf.h;
 	@echo "";
-	@echo "ERROR: File Headers/make_conf.h does not exist"; 
+	@echo "ERROR: File RMG/Headers/make_conf.h does not exist"; 
 	@echo "Headers/make_conf.h is set to default, configure it for your system before compiling !!! ";
 	@echo "";
 	exit 1; 
