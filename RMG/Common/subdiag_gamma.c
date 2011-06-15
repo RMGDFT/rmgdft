@@ -320,10 +320,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         scopy (&dist_stop, distCij, &ione, distIij, &ione);
 
 
-        /*Make Bij Hermitian */
-        symmetrize_matrix (distBij, distIij, num_states, pct.desca, dist_length);
-
-
         /*Get matrix that is inverse to B */
         {
             int ipiv_size, *ipiv;
@@ -396,15 +392,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             /*Copy result into Bij */
             scopy (&dist_stop, distCij, &ione, distBij, &ione);
         }
-
-
-
-
-        /*Make result symmetric (Hermitian) */
-        symmetrize_matrix (distBij, distIij, num_states, pct.desca, dist_length);
-
-
-
 
 
 #if 1
