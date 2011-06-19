@@ -48,6 +48,7 @@ void allocate_matrix_soft ()
     my_malloc_init( rhoc, FP0_BASIS, REAL );
     my_malloc_init( vh, FP0_BASIS, REAL );
     my_malloc_init( vnuc, FP0_BASIS, REAL );
+    my_malloc_init( vext, FP0_BASIS, REAL );
     my_malloc_init( vxc, FP0_BASIS * ispin, REAL );
     my_malloc_init( vtot, FP0_BASIS, REAL );
     my_malloc_init( vtot_c, P0_BASIS, REAL );

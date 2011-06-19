@@ -47,7 +47,7 @@
 
 
 void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
-                STATE * states, STATE * states1, REAL * vnuc, REAL * vxc, REAL * vh_old,
+                STATE * states, STATE * states1, REAL * vnuc, REAL * vext, REAL * vxc, REAL * vh_old,
                 REAL * vxc_old)
 {
 
@@ -243,7 +243,8 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc (vnuc, rhoc, rhocore);
-
+    
+    init_ext (vext, lcr[0].x2, lcr[2].x2, 0);
 
     write_rho_x (rho, "rho_init1");
 

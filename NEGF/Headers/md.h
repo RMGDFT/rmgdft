@@ -110,7 +110,7 @@
 
 
 int MXLLDA, MXLCOL;
-REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *vtot, *vtot_old;
+REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *vext, *rhocore, *vtot, *vtot_old;
 REAL *vh_old, *vxc_old; 
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 REAL *work_dis2, *zz_dis, *gamma_dis, *uu_dis; 
@@ -1258,6 +1258,7 @@ void init_pegrid(void);
 void init_wf(STATE *states);
 void init_wflcao(STATE *states);
 void init_nuc(REAL *vnuc, REAL *rhoc, REAL *rhocore);
+void init_ext (double *vext, int x_begin, int x_end, double level_diff);
 void init_pos();
 void init_nonlocal_comm(void);
 void init_sym(void);
@@ -1297,7 +1298,7 @@ REAL real_sum_all(REAL x, MPI_Comm comm);
 REAL real_max_all(REAL x);
 void rft(REAL *f, REAL *r, REAL *ffil, REAL al, int rg_points, int lval,
         REAL dr, REAL width, int lrg_points);
-void scf(complex double *sigma_all, STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc,
+void scf(complex double *sigma_all, STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc, REAL *vext,
         REAL *rho, REAL *rhocore, REAL *rhoc,REAL *vxc_old, REAL *vh_old, REAL *vbias, int *CONVERGENCE);
 void apply_potential_drop(REAL *vbias);
 void sortpsi(STATE *states);
@@ -1358,7 +1359,7 @@ REAL metric(REAL *crystal);
 
 /* Md run types */
 void run(STATE *states, STATE *states1); 
-void quench(STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc, REAL *vh_old, REAL *vxc_old, REAL *rho, 
+void quench(STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc, REAL *vext, REAL *vh_old, REAL *vxc_old, REAL *rho, 
         REAL *rhocore, REAL *rhoc, REAL *vbias);
 void fastrlx(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
         REAL *rho, REAL *rhocore, REAL *rhoc);     
@@ -1492,7 +1493,7 @@ void get_vxc_soft(REAL *rho, REAL *rhocore, REAL *vxc);
 void init_nuc_soft(REAL *vnuc, REAL *rhoc, REAL *rhocore);
 void init_psp_soft(void);
 void init_soft(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
-        STATE *states1, REAL *vnuc, REAL *vxc, REAL *vh_old, REAL *vxc_old);
+        STATE *states1, REAL *vnuc, REAL *vext, REAL *vxc, REAL *vh_old, REAL *vxc_old);
 void read_pseudo_soft(void);
 REAL get_Exc_soft(REAL *rho, REAL *rhocore);
 void fill_orbit_borders4(REAL *sg, REAL *pg, int dimx, int dimy, int dimz);

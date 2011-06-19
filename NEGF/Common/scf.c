@@ -25,7 +25,7 @@
 
 static double t[2];
 
-void update_pot (double *, double *, double *, double *, double *, double *, double *, double *,
+void update_pot (double *, double *, double *, double *, double *, double *, double *, double *, double *,
                  int *);
 
 extern int it_scf;
@@ -33,7 +33,7 @@ extern int it_scf;
 
 
 void scf (complex double * sigma_all, STATE * states, STATE * states1, double *vxc,
-          double *vh, double *vnuc, double *rho, double *rhoc, double *rhocore,
+          double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore,
           REAL * vxc_old, REAL * vh_old, REAL * vbias, int *CONVERGENCE)
 {
     double time1, time2;
@@ -48,7 +48,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
 
 
     for (idx = 0; idx < FP0_BASIS; idx++)
-        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
+        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
 
 
 /*  apply_potential_drop( vtot ); */
@@ -214,7 +214,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
     my_barrier ();
 
 
-    update_pot (vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, CONVERGENCE);
+    update_pot (vxc, vh, vxc_old, vh_old, vnuc, vext, rho, rhoc, rhocore, CONVERGENCE);
 
 
 
@@ -239,7 +239,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
    of the old ones (input "vh" and "vxc") and the ones 
    corresponding to the input "rho".
  */
-void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double *vnuc,
+void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double *vnuc, double *vext,
         double *rho, double *rhoc, double *rhocore, int *CONVERGENCE)
 {
 
@@ -311,7 +311,7 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
 
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vext[idx];
     }
 
     /*   if ( t[1] < ct.thr_rms  ) 
