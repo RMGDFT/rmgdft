@@ -9,57 +9,196 @@
 #include "main.h"
 
 
-static void betaxpsi1_calculate( REAL *sintR_global, REAL *sintI_global, STATE *states);
-static void betaxpsi1_communicate (REAL *sintR, REAL *sintI);
-static void betaxpsi1_write_back (REAL *sintR_global, REAL * sintI_global, int kpt);
+static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states);
+
+static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
+                               int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+                               MPI_Request * req_recv, MPI_Request * req_recvI);
+
+static void betaxpsi1_send (REAL * send_buff, REAL * send_buffI, int num_pes,
+                            int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+                            MPI_Request * req_send, MPI_Request * req_sendI);
+
+static void betaxpsi1_pack (REAL * sintR, REAL * sintI, REAL * fill_buff, REAL * fill_buffI,
+                            int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+                            int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
+
+static void betaxpsi1_sum_onwed (REAL * recv_buff, REAL * recv_buffI, REAL * sintR, REAL * sintI,
+                                 int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+                                 int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
+
+static void betaxpsi1_write_non_owned (REAL * sintR, REAL * sintI, REAL * recv_buff,
+                                       REAL * recv_buffI, int num_pes,
+                                       int num_ions_per_pe[MAX_NONLOC_PROCS],
+                                       int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
+
+
+
 
 void betaxpsi1 (STATE * states, int kpt)
 {
-    REAL *sintR_global, *sintI_global;
+    REAL *own_buff = NULL, *own_buffI = NULL, *nown_buff = NULL, *nown_buffI = NULL, *sintR = NULL, *sintI = NULL;
+    REAL *send_buff, *send_buffI, *recv_buff, *recv_buffI;
+    MPI_Request *req_send, *req_sendI, *req_recv, *req_recvI;
+    MPI_Request *req_own = NULL, *req_ownI = NULL, *req_nown = NULL, *req_nownI = NULL;
+    int size_own, size_nown, pe, koffset, i, nlion, idx;
 
-    int idx;
+    /*Allocate memory for communication */
+    size_own = 0;
+    for (pe = 0; pe < pct.num_owned_pe; pe++)
+        size_own += pct.num_owned_ions_per_pe[pe];
+    size_own *= ct.num_states * ct.max_nl;
 
-    my_calloc (sintR_global, ct.num_ions * ct.num_states * ct.max_nl, REAL);
-    sintI_global = NULL;
+    size_nown = 0;
+    for (pe = 0; pe < pct.num_owners; pe++)
+        size_nown += pct.num_nonowned_ions_per_pe[pe];
+    size_nown *= ct.num_states * ct.max_nl;
+
+
+    if (size_own)
+        my_calloc (own_buff, size_own, REAL);
+    if (size_nown)
+        my_calloc (nown_buff, size_nown, REAL);
 #if !GAMMA_PT
-    my_calloc (sintI_global, ct.num_ions * ct.num_states * ct.max_nl, REAL);
+    if (size_own)
+        my_calloc (send_ownI, size_own, REAL);
+    if (size_nown)
+        my_calloc (recv_nownI, size_nown, REAL);
 #endif
 
-
-    /*Zero whole array first */
-    for (idx = 0; idx < ct.num_ions * ct.num_states * ct.max_nl; idx++)
-    {
-        sintR_global[idx] = 0.0;
+    if (pct.num_owned_pe)
+        my_malloc (req_own, pct.num_owned_pe, MPI_Request);
+    if (pct.num_owners)
+        my_malloc (req_nown, pct.num_owners, MPI_Request);
 #if !GAMMA_PT
-        sintI_global[idx] = 0.0;
+    if (pct.num_owned_pe)
+        my_malloc (req_ownI, pct.num_owned_pe, MPI_Request);
+    if (pct.num_owners)
+        my_malloc (req_nownI, pct.num_owners, MPI_Request);
+#endif
+
+    /*First owning cores will receive data from non-owners */
+    send_buff = nown_buff;
+    recv_buff = own_buff;
+    send_buffI = nown_buffI;
+    recv_buffI = own_buffI;
+
+    req_send = req_nown;
+    req_recv = req_own;
+    req_sendI = req_nownI;
+    req_recvI = req_ownI;
+
+    /*First post non-blocking receives for data about owned ions from cores who do not own the ions */
+    betaxpsi1_receive (recv_buff, recv_buffI, pct.num_owned_pe, pct.owned_pe_list,
+                       pct.num_owned_ions_per_pe, req_recv, req_recvI);
+
+
+    /*Offset due to a kpoint */
+    koffset = kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+    sintR = &pct.newsintR_local[koffset];
+#if !GAMMA_PT
+    sintI = &pct.newsintI_local[koffset];
+#endif
+
+    for (i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
+    {
+        sintR[i] = 0.0;
+#if !GAMMA_PT
+        sintI[i] = 0.0;
 #endif
     }
 
-
-    /*Loop over ions and calculate local projection between beta functions and wave functions*/
-    betaxpsi1_calculate (sintR_global, sintR_global, states);
-
-    
-    /* Sum contributions to <beta|psi> from verious processors*/
-    betaxpsi1_communicate (sintR_global, sintI_global);
+    /*Loop over ions and calculate local projection between beta functions and wave functions */
+    betaxpsi1_calculate (sintR, sintI, states);
 
 
-    /*Write back the results into localized array newsint{R,I}_local*/
-    betaxpsi1_write_back (sintR_global, sintI_global, kpt);
+    /*Pack data for sending */
+    betaxpsi1_pack (sintR, sintI, send_buff, send_buffI, pct.num_owners,
+                    pct.num_nonowned_ions_per_pe, pct.list_ions_per_owner);
 
+    /*Send <beta|psi> contributions  to the owning PE */
+    betaxpsi1_send (send_buff, send_buffI, pct.num_owners, pct.owners_list,
+                    pct.num_nonowned_ions_per_pe, req_send, req_sendI);
 
-    my_free (sintR_global);
+    /*Wait until all data is received */
+    MPI_Waitall (pct.num_owned_pe, req_recv, MPI_STATUSES_IGNORE);
+    MPI_Waitall (pct.num_owners, req_send, MPI_STATUSES_IGNORE);
+
 #if !GAMMA_PT
-    my_free (sintI_global);
+    MPI_Waitall (pct.num_owned_pe, req_recvI, MPI_STATUSES_IGNORE);
+    MPI_Waitall (pct.num_owners, req_sendI, MPI_STATUSES_IGNORE);
 #endif
 
-}
+    /*Unpack received data and sum contributions from all pes for owned ions */
+    betaxpsi1_sum_onwed (recv_buff, recv_buffI, sintR, sintI, pct.num_owned_pe,
+                         pct.num_owned_ions_per_pe, pct.list_owned_ions_per_pe);
+
+    /*In the second stage, owning cores will send summed data to non-owners */
+    send_buff = own_buff;
+    recv_buff = nown_buff;
+    send_buffI = own_buffI;
+    recv_buffI = nown_buffI;
+
+    req_send = req_own;
+    req_recv = req_nown;
+    req_sendI = req_ownI;
+    req_recvI = req_nownI;
     
+    
+    /*Receive summed data for non-owned ions from owners */
+    betaxpsi1_receive (recv_buff, recv_buffI, pct.num_owners, pct.owners_list,
+                       pct.num_nonowned_ions_per_pe, req_recv, req_recvI);
+
+    /*Pack summed data for owned ions to send to non-owners */
+    betaxpsi1_pack (sintR, sintI, send_buff, send_buffI, pct.num_owned_pe,
+                    pct.num_owned_ions_per_pe, pct.list_owned_ions_per_pe);
+
+    /*Send packed data for owned ions to non-owners */
+    betaxpsi1_send (send_buff, send_buffI, pct.num_owned_pe, pct.owned_pe_list,
+                    pct.num_owned_ions_per_pe, req_send, req_sendI);
+
+    /*Wait until all data is received */
+    MPI_Waitall (pct.num_owned_pe, req_send, MPI_STATUSES_IGNORE);
+    MPI_Waitall (pct.num_owners, req_recv, MPI_STATUSES_IGNORE);
+
+#if !GAMMA_PT
+    MPI_Waitall (pct.num_owned_pe, req_sendI, MPI_STATUSES_IGNORE);
+    MPI_Waitall (pct.num_owners, req_recvI, MPI_STATUSES_IGNORE);
+#endif
+
+    /*Finaly, write received data about non-owned ions into sintR array */
+    betaxpsi1_write_non_owned (sintR, sintI, recv_buff, recv_buffI, pct.num_owners,
+                               pct.num_nonowned_ions_per_pe, pct.list_ions_per_owner);
 
 
-static void betaxpsi1_calculate(REAL *sintR_global, REAL *sintI_global, STATE *states)
+    if (size_own)
+        my_free (own_buff);
+    if (size_nown)
+        my_free (nown_buff);
+    if (pct.num_owned_pe)
+        my_free (req_own);
+    if (pct.num_owners)
+        my_free (req_nown);
+
+#if !GAMMA_PT
+    if (size_own)
+        my_free (own_buffI);
+    if (size_nown)
+        my_free (nown_buffI);
+    if (pct.num_owned_pe)
+        my_free (req_ownI);
+    if (pct.num_owners)
+        my_free (req_nownI);
+#endif
+
+
+}
+
+
+
+static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states)
 {
-    int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx =1;
+    int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx = 1;
     REAL *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
     REAL *weiptr, *psiR, psiI;
     ION *iptr;
@@ -70,28 +209,27 @@ static void betaxpsi1_calculate(REAL *sintR_global, REAL *sintI_global, STATE *s
     alloc = P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
-    
+
     my_calloc (nlarrayR, 2 * alloc, REAL);
     nlarrayI = nlarrayR + alloc;
-    
+
+
+
     /* Loop over ions on this processor */
     for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
-        
-        /*Actual index of the ion under consideration*/
+
+        /*Actual index of the ion under consideration */
         ion = pct.nonloc_ions_list[nion];
+
 
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
         stop = pct.idxptrlen[ion];
 
+
         if (stop)
         {
-        
-            sintR = &sintR_global[ion * ct.num_states * ct.max_nl];
-#if !GAMMA_PT
-            sintI = &sintI_global[ion * ct.num_states * ct.max_nl];
-#endif
 
             pidx = pct.nlindex[ion];
 #if !GAMMA_PT
@@ -100,6 +238,10 @@ static void betaxpsi1_calculate(REAL *sintR_global, REAL *sintI_global, STATE *s
             pI = pR + stop;
 #endif
 
+            sintR = &sintR_ptr[nion * ct.num_states * ct.max_nl];
+#if !GAMMA_PT
+            sintI = &sintI_ptr[nion * ct.num_states * ct.max_nl];
+#endif
 
             for (istate = 0; istate < ct.num_states; istate++)
             {
@@ -148,45 +290,183 @@ static void betaxpsi1_calculate(REAL *sintR_global, REAL *sintI_global, STATE *s
         }
 
 
-    }                           
+    }
     my_free (nlarrayR);
 }
 
 
-static void betaxpsi1_communicate (REAL *sintR, REAL *sintI)
+/*This receives data from other PEs for ions owned by current PE*/
+static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
+                               int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+                               MPI_Request * req_recv, MPI_Request * req_recvI)
 {
-    int id1;
+    REAL *tpr, *tprI;
+    int tag, pe, source, size;
 
-    id1 = ct.num_states * ct.num_ions * ct.max_nl;
-    
-    global_sums (sintR, &id1, pct.grid_comm);
+    tpr = recv_buff;
+    tprI = recv_buffI;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        source = pe_list[pe];
+        /*Tag is sender_rank * NPES + receiver_rank */
+        tag = source * NPES + pct.gridpe;
+        size = num_ions_per_pe[pe] * ct.num_states * ct.max_nl;
+
+        MPI_Irecv (tpr, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recv[pe]);
 #if !GAMMA_PT
-    global_sums (sintI, &id1, pct.grid_comm);
+        tag += (NPES) * NPES + NPES;
+        MPI_Irecv (tprI, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recvI[pe]);
 #endif
+
+        tpr += size;
+        tprI += size;
+    }
 
 }
-    
 
-
-/*Pick up only the data relevant for this processor*/
-static void betaxpsi1_write_back (REAL *sintR_global, REAL * sintI_global, int kpt)
+static void betaxpsi1_send (REAL * send_buff, REAL * send_buffI, int num_pes,
+                            int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+                            MPI_Request * req_send, MPI_Request * req_sendI)
 {
-    int goffset, loffset, index_global, index_local, ion;
+    REAL *tpr, *tprI;
+    int target, num_ions, size, tag, pe;
 
+    tpr = send_buff;
+    tprI = send_buffI;
 
-    /*Offset due to a kpoint*/
-    goffset = kpt * ct.num_ions * ct.num_states * ct.max_nl;
-    loffset = kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
-
-    for (ion = 0; ion < pct.num_nonloc_ions; ion++)
+    for (pe = 0; pe < num_pes; pe++)
     {
-	index_global = goffset + pct.nonloc_ions_list[ion] * ct.num_states * ct.max_nl;
-	index_local = loffset + ion *  ct.num_states * ct.max_nl;
 
-	my_copy(&sintR_global[index_global], &pct.newsintR_local[index_local], ct.num_states * ct.max_nl);
+        target = pe_list[pe];
+        num_ions = num_ions_per_pe[pe];
+        size = num_ions * ct.num_states * ct.max_nl;
+
+        /*Tag is sender_rank * NPES + receiver_rank */
+        tag = pct.gridpe * NPES + target;
+
+        MPI_Isend (tpr, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_send[pe]);
+
 #if !GAMMA_PT
-	my_copy(&sintI_global[index_global], &pct.newsintI_local[index_local], ct.num_states * ct.max_nl);
+        tag += (NPES) * NPES + NPES;
+        MPI_Isend (tprI, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_sendI[pe]);
 #endif
 
+        tpr += size;
+        tprI += size;
     }
+
+}
+
+
+static void betaxpsi1_pack (REAL * sintR, REAL * sintI, REAL * fill_buff, REAL * fill_buffI,
+                            int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+                            int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS])
+{
+    REAL *tpr_buff, *tpr_buffI, *sintR_tpr, *sintI_tpr;
+    int size, num_ions, ion, nlion, pe;
+
+    tpr_buff = fill_buff;
+    tpr_buffI = fill_buffI;
+
+    size = ct.num_states * ct.max_nl;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        num_ions = num_ions_per_pe[pe];
+
+        /*Loop over ions that need to be sent to pe */
+        for (ion = 0; ion < num_ions; ion++)
+        {
+            nlion = list_ions_per_pe[pe][ion];
+
+            sintR_tpr = &sintR[nlion * ct.num_states * ct.max_nl];
+
+            /*Pack data into send array */
+            my_copy (sintR_tpr, tpr_buff, size);
+            tpr_buff += size;
+
+#if !GAMMA_PT
+            sintI_tpr = &sintI[nlion * ct.num_states * ct.max_nl];
+            my_copy (sintI_tpr, tpr_buffI, &size);
+            tpr_buffI += size;
+#endif
+        }
+
+    }
+
+}
+
+
+static void betaxpsi1_sum_onwed (REAL * recv_buff, REAL * recv_buffI, REAL * sintR, REAL * sintI,
+                                 int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+                                 int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS])
+{
+    REAL *tpr1, *tpr1I, *tpr2, *tpr2I;
+    int size, num_ions, ion_index, pe, ion;
+
+
+    size = ct.num_states * ct.max_nl;
+    tpr1 = recv_buff;
+    tpr1I = recv_buffI;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        num_ions = num_ions_per_pe[pe];
+
+        for (ion = 0; ion < num_ions; ion++)
+        {
+            ion_index = list_ions_per_pe[pe][ion];
+
+            tpr2 = &sintR[ion_index * ct.num_states * ct.max_nl];
+            my_axpy (1.0, tpr1, tpr2, size);
+
+#if !GAMMA_PT
+            tpr2I = &sintI[ion_index * ct.num_states * ct.max_nl];
+            my_axpy (1.0, tpr1I, tpr2I, size);
+#endif
+            tpr1 += size;
+            tpr1I += size;
+        }
+    }
+
+
+}
+
+
+
+static void betaxpsi1_write_non_owned (REAL * sintR, REAL * sintI, REAL * recv_buff,
+                                       REAL * recv_buffI, int num_pes,
+                                       int num_ions_per_pe[MAX_NONLOC_PROCS],
+                                       int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS])
+{
+    REAL *tpr1, *tpr1I, *tpr2, *tpr2I;
+    int size, num_ions, ion_index, pe, ion;
+
+
+    size = ct.num_states * ct.max_nl;
+    tpr1 = recv_buff;
+    tpr1I = recv_buffI;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        num_ions = num_ions_per_pe[pe];
+
+        for (ion = 0; ion < num_ions; ion++)
+        {
+            ion_index = list_ions_per_pe[pe][ion];
+
+            tpr2 = &sintR[ion_index * ct.num_states * ct.max_nl];
+            my_copy (tpr1, tpr2, size);
+
+#if !GAMMA_PT
+            tpr2I = &sintI[ion_index * ct.num_states * ct.max_nl];
+            my_copy (tpr1I, tpr2I, size);
+#endif
+            tpr1 += size;
+            tpr1I += size;
+        }
+    }
+
+
 }
