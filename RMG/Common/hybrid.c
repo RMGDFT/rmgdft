@@ -53,7 +53,7 @@ static pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // These are used to synchronize the main process and the worker threads
 sem_t thread_sem;
-int job_count=0;
+volatile int job_count=0;
 static pthread_mutex_t sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // This is used when running with MPI_THREAD_SERIALIZED to ensure 
@@ -66,7 +66,7 @@ volatile int in_threaded_region = 0;
 static void run_threads(SCF_THREAD_CONTROL *s);
 
 // These are used to ensure thread ordering
-int mpi_thread_order_counter = 0;
+volatile int mpi_thread_order_counter = 0;
 static pthread_mutex_t thread_order_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Used for accessing thread specific data
@@ -264,27 +264,34 @@ void RMG_MPI_unlock(void) {
 void RMG_MPI_thread_order_lock(void) {
    int tid, i1;
    tid = get_thread_tid(); 
-   if(tid < 0) return;
+   if(tid < 0) {
+       printf("\nError in RMG_MPI_thread_order_lock. Terminating.\n");
+       MPI_Finalize();
+       exit(0);
+   }
 
    while(1) {
 
        // Acquire the lock
        pthread_mutex_lock(&thread_order_mutex);
-//     printf("GOT LOCK %d  %d\n", mpi_thread_order_counter, tid);
-//     fflush(NULL);
-       // See if it's our turn
-       if((tid == 0) && (mpi_thread_order_counter == 0)) return;
 
+       // See if it's our turn
        i1 = mpi_thread_order_counter % THREADS_PER_NODE;
-       if(i1 == tid) return;
+       if(i1 == tid) {
+           return;
+       }
 
        pthread_mutex_unlock(&thread_order_mutex);
+       sched_yield();
 
    }
 
 }
 void RMG_MPI_thread_order_unlock(void) {
     
+  int tid;
+   tid = get_thread_tid();
+
    mpi_thread_order_counter++;
    pthread_mutex_unlock(&thread_order_mutex);
 }
