@@ -46,4 +46,9 @@ void wake_threads(int jobs);
 void init_HYBRID_MODEL(void);
 void enter_threaded_region(void);
 void leave_threaded_region(void);
+int is_loop_over_states(void);
+void RMG_MPI_lock(void);
+void RMG_MPI_unlock(void);
+void RMG_MPI_thread_order_lock(void);
+void RMG_MPI_thread_order_unlock(void);
 #endif

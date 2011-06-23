@@ -479,3 +479,4 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 void mg_restrict_4th (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void mix_betaxpsi (int mix);
 int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
+int is_loop_over_states(void);

@@ -98,6 +98,7 @@ void ortho_full (STATE * states)
                 update_waves (st1, &st[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
 
             }
+            norm_psi1 (st1, ist1, kpt);
 
 #if MD_TIMERS
             rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));

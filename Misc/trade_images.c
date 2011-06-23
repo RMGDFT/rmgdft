@@ -95,8 +95,20 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
     }
 
-    MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), nmat2, idx,
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), nmat2, idx,
                   MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16), pct.grid_comm, &mstatus);
+
+     }
+     else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), nmat2, idx,
+                  MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16), pct.grid_comm, &mstatus);
+        RMG_MPI_thread_order_unlock();
+
+     }
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -121,8 +133,20 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     }
 
 
-    MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), nmat2, idx,
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), nmat2, idx,
                   MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16), pct.grid_comm, &mstatus);
+
+    }
+    else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), nmat2, idx,
+                  MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16), pct.grid_comm, &mstatus);
+        RMG_MPI_thread_order_unlock();
+
+    }
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -139,15 +163,41 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
  *  (trading dimx * (dimz+2) array of data, twice)
  */
 
-
+#if HYBRID_MODEL
+    RMG_MPI_lock();
+#endif
     MPI_Type_vector (dimx, alen, incx, MPI_DOUBLE, &newtype);
     MPI_Type_commit (&newtype);
-    MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], basetag + (3>>16), &mat[incx], 1,
+#if HYBRID_MODEL
+    RMG_MPI_unlock();
+#endif
+
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], basetag + (3>>16), &mat[incx], 1,
                   newtype, nb_ids[NB_S], basetag + (3>>16), pct.grid_comm, &mstatus);
-    MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], basetag + (4>>16), &mat[incx + ymax + incy], 1,
+        MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], basetag + (4>>16), &mat[incx + ymax + incy], 1,
                   newtype, nb_ids[NB_N], basetag + (4>>16), pct.grid_comm, &mstatus);
 
+     }
+     else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], basetag + (3>>16), &mat[incx], 1,
+                  newtype, nb_ids[NB_S], basetag + (3>>16), pct.grid_comm, &mstatus);
+        MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], basetag + (4>>16), &mat[incx + ymax + incy], 1,
+                  newtype, nb_ids[NB_N], basetag + (4>>16), pct.grid_comm, &mstatus);
+        RMG_MPI_thread_order_unlock();
+
+     }
+
+#if HYBRID_MODEL
+    RMG_MPI_lock();
+#endif
     MPI_Type_free (&newtype);
+#if HYBRID_MODEL
+    RMG_MPI_unlock();
+#endif
 
 /*
  * Finally, do East - West Trade (+/- x)
@@ -156,10 +206,25 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
 
     stop = (dimy + 2) * (dimz + 2);
-    MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16),
+
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16),
                   mat, stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16), pct.grid_comm, &mstatus);
-    MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16),
+        MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16),
                   &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16), pct.grid_comm, &mstatus);
+
+    }
+    else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16),
+                  mat, stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16), pct.grid_comm, &mstatus);
+        MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16),
+                  &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16), pct.grid_comm, &mstatus);
+        RMG_MPI_thread_order_unlock();
+
+    }
 
 
     /* For clusters set the boundaries to zero -- this is wrong for the hartree

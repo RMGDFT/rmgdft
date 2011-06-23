@@ -45,12 +45,7 @@ void init_IO (int argc, char **argv)
     /* Set start of program time */
     timer = time (NULL);
 #if HYBRID_MODEL
-  if(THREADS_PER_NODE > 1) {
-      MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  }
-  else {
-      MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
-  }
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
 #else
 
     /* Initialize MPI, we need it for error_handler, amongst others */
@@ -219,23 +214,12 @@ void init_IO (int argc, char **argv)
     read_pseudo ();
 
 #if HYBRID_MODEL
-  if(THREADS_PER_NODE > 1) {
-      if(provided != MPI_THREAD_MULTIPLE) {
+  if(provided != MPI_THREAD_SERIALIZED) {
 
-          printf("Thread support requested = %d but only %d provided. Terminating.\n", MPI_THREAD_MULTIPLE, provided);
-          MPI_Finalize();
-          exit(0);
+      printf("Thread support requested = %d but only %d provided. Terminating.\n", MPI_THREAD_SERIALIZED, provided);
+      MPI_Finalize();
+      exit(0);
 
-      }
-  }
-  else {
-      if(provided != MPI_THREAD_SERIALIZED) {
-
-          printf("Thread support requested = %d but only %d provided. Terminating.\n", MPI_THREAD_SERIALIZED, provided);
-          MPI_Finalize();
-          exit(0);
-
-      }
   }
   if(USE_SALLOC) {
         error_handler ("USE_SALLOC must be set to 0 for hybrid mode.\n");

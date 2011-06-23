@@ -9,6 +9,10 @@
 
 #include "main.h"
 
+#if HYBRID_MODEL
+#include "hybrid.h"
+#endif
+
 /*
  * INPUTS
  * f[dimx*dimy*dimz] - raw array without images. pack_ptos should not be called, this is 
@@ -112,12 +116,27 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16),
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16),
                   frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
+        MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
                   frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), pct.grid_comm, &mrstatus);
 
+    }
+    else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16),
+                  frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), pct.grid_comm, &mrstatus);
+
+        MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
+                  frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), pct.grid_comm, &mrstatus);
+        RMG_MPI_thread_order_unlock();
+
+    }
+ 
 
     /* Unpack them */
     c1 = dimz + images;
@@ -173,11 +192,26 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (3>>16),
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (3>>16),
                   frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (3>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
+        MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
                   frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (4>>16), pct.grid_comm, &mrstatus);
+
+     }
+     else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (3>>16),
+                  frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (3>>16), pct.grid_comm, &mrstatus);
+
+        MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
+                  frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (4>>16), pct.grid_comm, &mrstatus);
+        RMG_MPI_thread_order_unlock();
+
+     }
 
 
     /* Unpack them */
@@ -231,12 +265,25 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16),
+    if(!is_loop_over_states() || !HYBRID_MODEL) {
+
+        MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16),
                   frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
+        MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
                   frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16), pct.grid_comm, &mrstatus);
 
+    }
+    else {
+
+        RMG_MPI_thread_order_lock();
+        MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16),
+                  frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16), pct.grid_comm, &mrstatus);
+
+        MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
+                  frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16), pct.grid_comm, &mrstatus);
+        RMG_MPI_thread_order_unlock();
+    }
 
     /* Unpack them */
     c1 = (dimx + images) * incx;

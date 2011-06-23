@@ -56,12 +56,18 @@ sem_t thread_sem;
 int job_count=0;
 static pthread_mutex_t sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// This is used when running with MPI_THREAD_SERIALIZED to ensure 
+// proper serialization
+static pthread_mutex_t mpi_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static pthread_attr_t thread_attrs;
 static pthread_t threads[THREADS_PER_NODE];
 volatile int in_threaded_region = 0;
 static void run_threads(SCF_THREAD_CONTROL *s);
 
+// These are used to ensure thread ordering
+int mpi_thread_order_counter = 0;
+static pthread_mutex_t thread_order_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Used for accessing thread specific data
 pthread_key_t scf_thread_control_key;
@@ -246,4 +252,59 @@ void enter_threaded_region(void) {
 void leave_threaded_region(void) {
     in_threaded_region = 0;
 }
+
+void RMG_MPI_lock(void) {
+    pthread_mutex_lock(&mpi_mutex);
+}
+
+void RMG_MPI_unlock(void) {
+    pthread_mutex_unlock(&mpi_mutex);
+}
+
+void RMG_MPI_thread_order_lock(void) {
+   int tid, i1;
+   tid = get_thread_tid(); 
+   if(tid < 0) return;
+
+   while(1) {
+
+       // Acquire the lock
+       pthread_mutex_lock(&thread_order_mutex);
+//     printf("GOT LOCK %d  %d\n", mpi_thread_order_counter, tid);
+//     fflush(NULL);
+       // See if it's our turn
+       if((tid == 0) && (mpi_thread_order_counter == 0)) return;
+
+       i1 = mpi_thread_order_counter % THREADS_PER_NODE;
+       if(i1 == tid) return;
+
+       pthread_mutex_unlock(&thread_order_mutex);
+
+   }
+
+}
+void RMG_MPI_thread_order_unlock(void) {
+    
+   mpi_thread_order_counter++;
+   pthread_mutex_unlock(&thread_order_mutex);
+}
 #endif
+
+// Tells us if we are executing a parallel region that is a loop over orbitals
+int is_loop_over_states(void)
+{
+
+#if !HYBRID_MODEL
+    return 1;
+#else
+    SCF_THREAD_CONTROL *ss;
+    if(!in_threaded_region) return 0;
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
+    if(!ss) return 0;
+    if((ss->job == HYBRID_EIG) || (ss->job == HYBRID_SUBDIAG_APP_A) || (ss->job == HYBRID_SUBDIAG_APP_B))
+        return 1;
+
+    return 0;
+#endif
+    
+}
