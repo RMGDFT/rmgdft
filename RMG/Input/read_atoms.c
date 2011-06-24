@@ -45,15 +45,15 @@ void read_atoms (void)
     else
     {
         ct.num_ions = ion;
+
+        /*Allocate memory for ions */
+        my_calloc (ct.ions, ct.num_ions, ION);
     }
 
 
 
     //    if (pct.gridpe == 0)
     //       printf ("\n Number of ions is %d", ct.num_ions);
-
-    /*Allocate memory for ions */
-    my_calloc (ct.ions, ct.num_ions, ION);
 
     /* read and count coordinates for each ion */
     ion = 0;
@@ -79,7 +79,9 @@ void read_atoms (void)
         if (verify ("pdb_atoms", NULL))
         {
             if (ct.ions[ion].species != assign_species (&ct, species))
-                error_handler ("Mismatch between species in RMG and PDB input");
+                error_handler ("Mismatch between species in RMG and PDB input,"\
+                               " expected %d - found %d for ion %d",\
+                               ct.ions[ion].species, assign_species (&ct, species), ion);
         }
         else
         {

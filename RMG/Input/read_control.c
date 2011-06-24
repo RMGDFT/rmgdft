@@ -586,9 +586,7 @@ void read_control (void)
         if (get_data ("pdb_atoms", &tmp, INIT | LIST, NULL))
         {
 
-            /* Disabled for the moment */
-            /* read_pdb (fhand, tbuf); */
-            error_handler ("Reading PDB atoms disabled ATM");
+            read_pdb ();
 
         }
         if (verify ("atoms", NULL))

@@ -33,12 +33,12 @@ occupations_type=
 #         repeat for all occupancies
 
 # For spin pairwised calculation using the following line to set the fixed occupations for states
-states_count_and_occupation="6 2.0  4 0.0"  
+#states_count_and_occupation="6 2.0  4 0.0"  
 
 
 # For spin polarized calculation using the following line to set the fixed occupations 
-states_count_and_occupation_spin_up="3 1.0  4 0.0"      # specified occupations for spin up
-states_count_and_occupation_spin_down="3 1.0  4 0.0 "   # specified occupations for spin down 
+#states_count_and_occupation_spin_up="3 1.0  4 0.0"      # specified occupations for spin up
+#states_count_and_occupation_spin_down="3 1.0  4 0.0 "   # specified occupations for spin down 
 
 
 # If states_count_and_occupation is not given  
@@ -102,9 +102,9 @@ atomic_coordinate_type=
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1
 atoms="
+	O 6.23  19.81  12.45 1
 	H 6.36  20.63  14.12 1
 	H 7.97  19.81  11.75 1
-	O 6.23  19.81  12.45 1
 "
 
 # List of constraints per atom.
@@ -120,12 +120,11 @@ atoms="
 # if both pdb_atoms and atoms tags are used PDB information is read from
 # pdb_atoms and coordintaes are taken form atoms. Species information have to 
 # match in both inputs.  
-#pdb_atoms = 
-#
-#ATOM      1  O                  10.324   4.887  11.264  0.00  0.00           O
-#ATOM      2  H                  10.130   5.117  12.192  0.00  0.00           H
-#ATOM      3  H                   9.504   4.468  10.938  0.00  0.00           H
-#"
+pdb_atoms = "
+ATOM      1  O                  10.324   4.887  11.264  0.00  0.00           O
+ATOM      2  H                  10.130   5.117  12.192  0.00  0.00           H
+ATOM      3  H                   9.504   4.468  10.938  0.00  0.00           H
+"
 
 
 # Pseudopotential file for each species, if not specified, 
@@ -213,7 +212,7 @@ charge_pulay_special_metrics_weight="100"
 projector_mixing="0.5"
 
 # Default: "250"
-max_scf_steps="100"
+max_scf_steps="5"
 
 # Do subspace diagonalization every (given number) of steps
 # Default: "10"

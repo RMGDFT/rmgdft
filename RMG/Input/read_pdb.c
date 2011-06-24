@@ -34,13 +34,12 @@
 void read_parse_pdb_line (ION * iptr, int ion_index)
 {
     char temp_str[10];
-    char *tbuf;
+    char tbuf[256];
     char *temp_ptr;
 
-    my_malloc (tbuf, 256, char);
 
+    get_data ("pdb_atoms", &tbuf, ITEM | STR, NULL);
 
-    get_data ("pdb_atoms", &tbuf, ITEM, NULL);
 
 
 #if 1
@@ -131,6 +130,7 @@ void read_parse_pdb_line (ION * iptr, int ion_index)
     /*Assign species number according to element symbol */
     iptr->species = assign_species (&ct, temp_str);
 
+    Dprintf("found pdb species %s, %d: from ion %d", temp_str, iptr->species, ion_index);
 
 
     /*79 - 80  Charge on the atom. */
@@ -159,17 +159,8 @@ void read_pdb (void)
     /*char s[32];*/
 
 
-#if 0
-    tmp = 0;
-    while (get_data ("pdb_atoms", tbuf, LIST | RAW, NULL))
-        tmp++;
-
-    ct.num_ions = tmp;
-#endif
-
     /* This sets number of ions */
     get_data ("pdb_atoms", &ct.num_ions, INFO, NULL);
-
 
 
     if (pct.gridpe == 0)
@@ -191,47 +182,5 @@ void read_pdb (void)
     {
         read_parse_pdb_line (&ct.ions[ion], ion);
     }
-
-
-
-
-#if 0
-    /*Check if regular input is present */
-    /*This is a hack, but we have no better way ATM */
-    tmp = 0;
-    while (get_data ("atoms", tbuf, LIST, "1234"))
-        tmp++;
-#endif
-
-#if 0
-    /*In case regular input is also present, just read and update coordinates */
-    if (tmp)
-    {
-
-        ion = 0;
-
-        while (read_atom_line (s, ct.ions[ion].crds, &ct.ions[ion].movable, fhand, tbuf, ion))
-        {
-            /*Make sure that pseudo_symbols match */
-
-            if (strcmp (s, ct.sp[ct.ions[ion].species].pseudo_symbol))
-            {
-                printf
-                    (" Read species symbol from atoms data (%s) does not match symbol read from pdb_atoms (%s) for ion %d",
-                     s, ct.sp[ct.ions[ion].species].pseudo_symbol, ion);
-                error_handler (" Mismatch between species in atoms and pdb_atoms data fields");
-            }
-
-            ion++;
-        }
-
-    }                           /*end if get_data("atoms", tbuf, STR, 1234) */
-#endif
-
-    /*if (pct.gridpe == 0)
-       {
-       printf("\n Read PDB file");
-       write_pdb();
-       } */
 
 }

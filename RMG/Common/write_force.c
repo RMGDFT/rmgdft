@@ -178,6 +178,9 @@ void write_force (void)
 
     }
 
+    if ((pct.imgpe == 0) && (verify ("pdb_atoms", NULL)))
+        write_pdb ();
+
 }                               /* end write_force */
 
 /******/
