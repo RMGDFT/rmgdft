@@ -207,7 +207,7 @@ RMG/Headers/make_conf.h:
 	@echo "/* Extra fine timers, may cause some slowdown, but they are generally useful */" >> RMG/Headers/make_conf.h;
 	@echo "#define MD_TIMERS 1" >> RMG/Headers/make_conf.h;
 	@echo "/* Experimental fast Mehrstellen operator. Disabled by default. */" >> RMG/Headers/make_conf.h;
-	@echo "#define FAST_MEHR 0" >> RMG/Headers/make_conf.h;
+	@echo "#define FAST_MEHR 1" >> RMG/Headers/make_conf.h;
 	@echo "";
 	@echo "/* Experimental fast ortho. Disabled by default. */" >> RMG/Headers/make_conf.h;
 	@echo "#define FAST_ORTHO 0" >> RMG/Headers/make_conf.h;
