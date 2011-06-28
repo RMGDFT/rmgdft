@@ -109,7 +109,11 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
             time2 = my_crtc ();
             rmg_timings (EIG_TIME, (time2 - time1));
 
+            betaxpsi1 (states, ik);
+
             ortho (states, ik);
+            
+            betaxpsi1 (states, ik);
 
             if (ct.sortflag)
                 sortpsi (ct.kp[0].kstate);

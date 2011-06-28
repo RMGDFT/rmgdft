@@ -381,7 +381,6 @@ void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_
 void init_psp (void);
 void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, REAL *vtot_psi);
-void ortho_full (STATE *states);
 void ortho (STATE *states, int kpt);
 REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
            int *nhtom, int *indv, REAL *ylm, REAL ap[][9][9], int lpx[][9],

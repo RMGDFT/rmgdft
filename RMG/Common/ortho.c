@@ -9,48 +9,55 @@
 
 
 #if FAST_ORTHO
-/* Does orthogonalization for given k-point states, 
- * ortho_full is simillar it does orthoginalization for all k-points*/
+/*Orthogonalizes states for ALL k-points
+ * ortho is a similar function, except that it does orthogonalization for specified k-point*/
 void ortho (STATE * states, int kpt)
 {
-    int ist1, ist2, length;
-    REAL time1, time2;
+    int ist1, ist2, length, size, ione=1, idx;
+    REAL time1, time2, rone=1.0;
     REAL *cR, *cI, *Oij;
-    STATE *st1;
+    STATE *st, *st1;
 
     time1 = my_crtc ();
 
     my_malloc (cR, ct.num_states, REAL);
     my_malloc (cI, ct.num_states, REAL);
+    my_malloc (Oij, ct.num_states * ct.num_states, REAL);
+
+
+    st = states;
 
 #if MD_TIMERS
     time2 = my_crtc ();
 #endif
-    betaxpsi1 (states, kpt);
+    for (ist1 = 0; ist1 < ct.num_states; ist1++) {
+        st1 = &st[ist1];
+        norm_psi1 (st1, ist1, kpt);
+    }
 #if MD_TIMERS
-    rmg_timings (ORTHO_BETAXPSI, (my_crtc () - time2));
+    rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2));
+    time2 = my_crtc ();
 #endif
 
+    size = P0_BASIS;
+    get_psi_overlaps(st->psiR, Oij, ct.num_states, ct.num_states, size, size);
+#if MD_TIMERS
+    rmg_timings (ORTHO_GET_OVERLAPS, (my_crtc () - time2));
+    time2 = my_crtc ();
+#endif
 
 
     for (ist1 = 0; ist1 < ct.num_states; ist1++)
     {
 
-        st1 = &states[ist1];
+        st1 = &st[ist1];
 
 #if MD_TIMERS
         time2 = my_crtc ();
 #endif
-        norm_psi1 (st1, ist1, kpt);
-#if MD_TIMERS
-        rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2));
-        time2 = my_crtc ();
-#endif
-
         /*This will calculate cR and cI coefficients */
         for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++)
-            ortho_get_coeff (st1, &states[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2], Oij);
-
+            ortho_get_coeff (st1, &st[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2], Oij);
 #if MD_TIMERS
         rmg_timings (ORTHO_GET_COEFF, (my_crtc () - time2));
         time2 = my_crtc ();
@@ -72,26 +79,33 @@ void ortho (STATE * states, int kpt)
         time2 = my_crtc ();
 #endif
 
+#if 0
         /*Update wavefunctions */
-        for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++)
-            update_waves (st1, &states[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
+        for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++) {
+            /*update the wavefunction psi2 */
+            QMD_saxpy (size, cR[ist2], st1->psiR, ione, st[ist2].psiR, ione);
+        }
+#endif
+        idx = ct.num_states - ist1 - 1;
+        if(idx)
+            dger_(&size, &idx, &rone, st[ist1].psiR, &ione,
+                    &cR[ist1+1], &ione, st[ist1+1].psiR, &size);
+
+
+        for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++) {
+            update_waves (st1, &st[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
+
+        }
+        norm_psi1 (st1, ist1, kpt);
 
 #if MD_TIMERS
         rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));
 #endif
-    }                           /*end for ist1 */
+    }                       /*end for ist1 */
 
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-#endif
-    /*newsintR should be recalculated, since new_psi and norm_psi1_parallel do not fully
-     * update newsintR so that they are efficient*/
-    betaxpsi1 (states, kpt);
-#if MD_TIMERS
-    rmg_timings (ORTHO_BETAXPSI, (my_crtc () - time2));
-#endif
 
+    my_free (Oij);
     my_free (cI);
     my_free (cR);
 
@@ -102,34 +116,28 @@ void ortho (STATE * states, int kpt)
 #else
 
 
-/* Does orthogonalization for given k-point states, 
- * ortho_full is simillar it does orthoginalization for all k-points*/
+/*Orthogonalizes states for ALL k-points
+ * ortho is a similar function, except that it does orthogonalization for specified k-point*/
 void ortho (STATE * states, int kpt)
 {
     int ist1, ist2, length;
     REAL time1, time2;
     REAL *cR, *cI;
-    STATE *st1;
+    STATE *st, *st1;
 
     time1 = my_crtc ();
 
     my_malloc (cR, ct.num_states, REAL);
     my_malloc (cI, ct.num_states, REAL);
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-#endif
-    betaxpsi1 (states, kpt);
-#if MD_TIMERS
-    rmg_timings (ORTHO_BETAXPSI, (my_crtc () - time2));
-#endif
 
 
 
+    st = &states[kpt * ct.num_states];
     for (ist1 = 0; ist1 < ct.num_states; ist1++)
     {
 
-        st1 = &states[ist1];
+        st1 = &st[ist1];
 
 #if MD_TIMERS
         time2 = my_crtc ();
@@ -142,7 +150,7 @@ void ortho (STATE * states, int kpt)
 
         /*This will calculate cR and cI coefficients */
         for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++)
-            ortho_get_coeff (st1, &states[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2]);
+            ortho_get_coeff (st1, &st[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2]);
 
 #if MD_TIMERS
         rmg_timings (ORTHO_GET_COEFF, (my_crtc () - time2));
@@ -167,26 +175,16 @@ void ortho (STATE * states, int kpt)
 
         /*Update wavefunctions */
         for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++)
-            update_waves (st1, &states[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
+            update_waves (st1, &st[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
 
 #if MD_TIMERS
         rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));
 #endif
-    }                           /*end for ist1 */
+    }                       /*end for ist1 */
 
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-#endif
-    /*newsintR should be recalculated, since new_psi and norm_psi1_parallel do not fully
-     * update newsintR so that they are efficient*/
-    betaxpsi1 (states, kpt);
-#if MD_TIMERS
-    rmg_timings (ORTHO_BETAXPSI, (my_crtc () - time2));
-#endif
-
-    my_free (cI);
     my_free (cR);
+    my_free (cI);
 
     rmg_timings (ORTHO_TIME, (my_crtc () - time1));
 

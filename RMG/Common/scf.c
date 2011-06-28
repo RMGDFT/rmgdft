@@ -214,9 +214,11 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (diag_this_step)
         subdiag_gamma (ct.kp[0].kstate, vh, vnuc, vxc);
     else
-        ortho_full (states);
+        ortho (states, 0);
 #else
-    ortho_full (states);
+    for (kpt =0; kpt < ct.num_kpts; kpt++)
+        ortho (&states[kpt *ct.num_states], kpt);
+    
     if (diag_this_step)
     {
 	/*Projectores need to be updated prior to subspace diagonalization*/
