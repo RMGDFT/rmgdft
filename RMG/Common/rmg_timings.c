@@ -125,6 +125,7 @@ void write_timings (void)
     printf_timing_line3 ("   Get vxc             ", SCF_XC_TIME);
     printf_timing_line3 ("   Get rho             ", RHO_TIME);
     printf_timing_line3 ("   Mg_eig              ", EIG_TIME);
+    printf_timing_line3 ("   Beta x psi          ", SCF_BETAXPSI);
 
 #if MD_TIMERS
     printf ("-----------------------------------------------------------------------------\n");
@@ -143,7 +144,6 @@ void write_timings (void)
 #if MD_TIMERS
     printf_timing_line3 ("   Orthogonalization   ", ORTHO_TIME);
     printf ("-----------------------------------------------------------------------------\n");
-    printf_timing_line3 ("     Beta x psi        ", ORTHO_BETAXPSI);
     printf_timing_line3 ("     Normalization     ", ORTHO_NORM_PSI);
     printf_timing_line3 ("     Psi overlaps      ", ORTHO_GET_OVERLAPS);
     printf_timing_line3 ("     Calculate coeffs  ", ORTHO_GET_COEFF);
@@ -185,7 +185,6 @@ void write_timings (void)
 #endif
     printf_timing_line3 ("   ScaLapack operations", DIAG_MATRIX_TIME);
     printf_timing_line3 ("   Wavefunc update     ", DIAG_WAVEUP_TIME);
-    printf_timing_line3 ("   Betaxpsi            ", DIAG_BETAXPSI);
 #if GAMMA_PT
     printf_timing_line3 ("   Apply A operator    ", DIAG_APP_A);
 #if MD_TIMERS

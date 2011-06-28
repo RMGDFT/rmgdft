@@ -196,7 +196,9 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     rmg_timings (EIG_TIME, (time2 - time1));
 
     /*wavefunctions have changed, projectors have to be recalculated */
+    time1 = my_crtc ();
     betaxpsi (states);
+    rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
 
 
 
@@ -222,7 +224,12 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (diag_this_step)
     {
 	/*Projectores need to be updated prior to subspace diagonalization*/
-	betaxpsi (states);
+        time1 = my_crtc ();
+	
+        betaxpsi (states);
+        
+        rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
+        
         for (ik = 0; ik < ct.num_kpts; ik++)
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
     }
@@ -230,6 +237,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     
     
     /*wavefunctions have changed, projectors have to be recalculated */
+    time1 = my_crtc ();
     betaxpsi (states);
     
     /*Get oldsintR*/
@@ -237,7 +245,8 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 	mix_betaxpsi(0);
     else 
 	mix_betaxpsi(1);
-
+    
+    rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
 
     if (ct.spin_flag) 
     {   
