@@ -10,7 +10,7 @@
 #include "pmo.h"
 
 
-void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
+void tri_to_row (REAL * A_tri, REAL * Aii_row, int N, int *ni)
 {
     /* Semi_tridiagonal matrix  
      *
@@ -40,14 +40,38 @@ void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
     int ndim;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int istart, jj, kk, jjj, kkk, jjjj, kkkk;
+    
+    int size, npe_en2, pe_start, pe_end, num_orbital_thisgroup;
+    int idx, idx1;
 
-    double spin_degenerate;
+    double spin_degenerate, *Aii;
     
     // the density matrix multiply by 2.0 to count for spin degeneracy
     spin_degenerate = 2.0;
 
     ictxt = pmo.ictxt[pmo.myblacs];
     mb = pmo.mblock;
+
+    Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
+
+    // in communictor COMM_EN2, there are nprow * npcol process, the
+    // matrix are distributed over these process. depending their rank
+    // in pct.grid_comm, each process have different orbitals, and
+    // returned Aii_row only storeis (ct.state_end-ct.state_begin) * ndim, 
+    // not the whole matrix ndim * ndim
+    
+    //determing the starting and ending ranks in pct.grid_comm for these
+    //nprow * npcol PE
+    
+    npe_en2 = nprow * npcol;
+    pe_start = pct.gridpe / npe_en2 * npe_en2;
+    pe_end = pe_start + npe_en2 -1 ;   
+
+
+    // total number of orbitals in these PE group
+
+    num_orbital_thisgroup = state_end[pe_end] - state_begin[pe_start];
+
 
     /* dimension of matrix Aii */
     ndim = 0;
@@ -56,12 +80,9 @@ void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
         ndim += ni[i];
     }
 
-    for(i=0; i< (ct.state_end - ct.state_begin ) * ndim; i++)
-    {
-        Aii[i] = 0.0;
-    }
+    size = num_orbital_thisgroup * ndim;
+    my_malloc_init( Aii, size, double );
 
-    Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
     /* for diagonal blocks */
 
@@ -74,10 +95,10 @@ void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
 
             kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
             kkk = kk + istart;
-            if(kkk >= ct.state_begin && kkk < ct.state_end)
+            if(kkk >= state_begin[pe_start] && kkk < state_end[pe_end])
             {
 
-                kkkk = kkk - ct.state_begin;
+                kkkk = kkk - state_begin[pe_start];
                 for(j =0; j < pmo.mxllda_cond[i]; j++)
                 {
 
@@ -109,10 +130,10 @@ void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
             {
                 kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
                 kkk = kk + istart + ct.block_dim[i-1];
-                if(kkk >= ct.state_begin && kkk < ct.state_end)
+                if(kkk >= state_begin[pe_start] && kkk < state_end[pe_end])
                 {
 
-                    kkkk = kkk - ct.state_begin;
+                    kkkk = kkk - state_begin[pe_start];
                     for(j =0; j < pmo.mxllda_cond[i-1]; j++)
                     {
 
@@ -147,10 +168,10 @@ void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
 
             jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
             jjj = jj + istart;
-            if(jjj >= ct.state_begin && jjj < ct.state_end)
+            if(jjj >= state_begin[pe_start] && jjj < state_end[pe_end])
             {
 
-                jjjj = jjj - ct.state_begin;
+                jjjj = jjj - state_begin[pe_start];
                 for(k=0; k < pmo.mxlocc_cond[i]; k++)
                 {
                     kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
@@ -170,8 +191,21 @@ void tri_to_row (REAL * A_tri, REAL * Aii, int N, int *ni)
         istart += ct.block_dim[i-1];
     }
 
-    i = (ct.state_end - ct.state_begin) * ndim;
-    comm_sums(Aii, &i, COMM_EN2);
+    comm_sums(Aii, &size, COMM_EN2);
+
+    //assign Aii to Aii_row, the (ct.state_end - ct.state_begin) * ndim
+    //
+
+    for( i = ct.state_begin; i < ct.state_end; i++)
+        for(j = 0; j < ndim; j++)
+        {
+
+            idx = (i - ct.state_begin ) * ndim +j;
+            idx1 = (i - state_begin[pe_start]) * ndim +j;
+            Aii_row [idx] = Aii [idx1];
+        }
+
+    my_free(Aii);
 
 }
 
