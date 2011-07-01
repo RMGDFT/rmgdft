@@ -41,7 +41,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
     int st11, st22;
     double tem;
     time1 = my_crtc ();
-    int i, j, k, jj, kk;
+    int i, j, k, jj, kk, iii, jjj, kkk;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j1, k1, jdiff, kdiff, iprobe, idx_C;
     int idx2, FPYZ0_GRID;
@@ -50,6 +50,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
     for (idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
 
+    pe2xyz(pct.gridpe, &iii, &jjj, &kkk);
 
 /*  apply_potential_drop( vtot ); */
 
@@ -67,6 +68,9 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
                 vtot[idx2] += vbias[idx];
             }
         }
+        if (jjj == 0 && kkk == 0)
+        printf("vtot[%d][%d][%d] = %10.5f \n", i+iii * FPX0_GRID, j, k, vtot[idx2]);
+        fflush(NULL);
     }
 
 

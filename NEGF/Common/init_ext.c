@@ -21,12 +21,13 @@
 #include "md.h"
 
 
-void init_ext (double *vext, int x_begin, int x_end, double level_diff)
+void init_ext (double *vext, int gbias_begin, int gbias_end, int reach_begin, int reach_end, double gate_bias)
 {
 
     int ii, jj, kk, ix, iy, iz;
-    int x_proc, x_locate;  
-    
+    int x_proc;  
+    double v_external;    
+    double x_locate;
 
     if (pct.gridpe == 0)
     {
@@ -48,27 +49,36 @@ void init_ext (double *vext, int x_begin, int x_end, double level_diff)
 
     pe2xyz(pct.gridpe, &ii, &jj, &kk);
     x_proc = ii * FPX0_GRID;
-    
+
+    //    printf("\n my ii = %d and FPX0_GRID = %d  gate_bias = %f \n", ii, FPX0_GRID, gate_bias);   
+    //    printf("\n gbias_begin = %d and gbias_end = %d \n", gbias_begin, gbias_end);   
+
     for (ix = 0; ix < FPX0_GRID; ix++)
     {
 
-	    for (iy = 0; iy < FPY0_GRID; iy++)
-	    {
+        x_locate = (ix + x_proc)/2.0; // everything is based on coarse grid now!
+        v_external = gate_bias * (  2 / (1 + exp( -2.5*abs(x_locate - gbias_begin)/abs(reach_begin - gbias_begin) ) ) + 2 / (1 + exp( -2.5*abs(gbias_end - x_locate)/abs(reach_end - gbias_end ) ) ) - 3 );
+
+        if (x_locate > gbias_begin && x_locate < gbias_end)  
+        {
+
+            for (iy = 0; iy < FPY0_GRID; iy++)
+            {
+
+                for (iz = 0; iz < FPZ0_GRID; iz++)
+                {
+
+                    vext[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = v_external;
 
 
-		    for (iz = 0; iz < FPZ0_GRID; iz++)
-		    {
+                }                   /* end for */
 
-			    x_locate = ix + x_proc;
-			    if (x_locate > x_begin && x_locate < x_end)  
-				    vext[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = level_diff * (2 / (1 + exp(-100*(x_locate-x_begin)) ) + 2 / (1 + exp(-100*(x_end-x_locate)) ) - 3 );
+            }                       /* end for */
 
+        }
 
-		    }                   /* end for */
-
-	    }                       /* end for */
-
-	    printf("x_locate = %5d      vext  = %6.3f \n ", x_locate, vext[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] );
+        if (jj == 0 && kk == 0)
+            printf("x_locate = %5f      vext  = %6.3f \n ", x_locate, v_external );
 
     }                           /* end for */
 
