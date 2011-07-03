@@ -262,8 +262,9 @@ void RMG_MPI_unlock(void) {
 }
 
 void RMG_MPI_thread_order_lock(void) {
-   int tid, i1;
-   tid = get_thread_tid(); 
+   int tid, i1, ntid;
+   tid = get_thread_tid();
+
    if(tid < 0) {
        printf("\nError in RMG_MPI_thread_order_lock. Terminating.\n");
        MPI_Finalize();
@@ -278,6 +279,11 @@ void RMG_MPI_thread_order_lock(void) {
        // See if it's our turn
        i1 = mpi_thread_order_counter % THREADS_PER_NODE;
        if(i1 == tid) {
+           // Raise priority of next thread
+           ntid = i1 + 1;
+           if(ntid < THREADS_PER_NODE) {
+               pthread_setschedprio(threads[ntid], -19);
+           }
            return;
        }
 
@@ -287,14 +293,35 @@ void RMG_MPI_thread_order_lock(void) {
    }
 
 }
+
 void RMG_MPI_thread_order_unlock(void) {
     
   int tid;
-   tid = get_thread_tid();
+  tid = get_thread_tid();
 
-   mpi_thread_order_counter++;
-   pthread_mutex_unlock(&thread_order_mutex);
+  mpi_thread_order_counter++;
+  pthread_setschedprio(threads[tid], -1);
+  pthread_mutex_unlock(&thread_order_mutex);
+
 }
+
+
+extern REAL timings[LAST_TIME];
+static pthread_mutex_t timings_mutex = PTHREAD_MUTEX_INITIALIZER;
+void rmg_timings (int what, REAL time)
+{
+    pthread_mutex_lock(&timings_mutex);
+    if(in_threaded_region) {
+        timings[what] += time / THREADS_PER_NODE;
+    }
+    else {
+        timings[what] += time;
+    }
+    pthread_mutex_unlock(&timings_mutex);
+}                               /* end rmg_timings */
+
+
+
 #endif
 
 // Tells us if we are executing a parallel region that is a loop over orbitals
