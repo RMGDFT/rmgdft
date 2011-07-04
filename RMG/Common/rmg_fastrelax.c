@@ -72,7 +72,7 @@ void rmg_fastrelax (void)
         dotfv = iptr->force[fpt][0] * iptr->velocity[0] +
             iptr->force[fpt][1] * iptr->velocity[1] + iptr->force[fpt][2] * iptr->velocity[2];
 
-        if (magf >= 1.0e-12)
+        if (dotfv >= 1.0e-12)
         {
 
             iptr->velocity[0] = dotfv * iptr->force[fpt][0] / magf +
@@ -88,11 +88,11 @@ void rmg_fastrelax (void)
         else
         {
 
-            iptr->velocity[0] += dotfv * iptr->force[fpt][0] / magf;
+            iptr->velocity[0] = step * iptr->force[fpt][0] / mass;
 
-            iptr->velocity[1] += dotfv * iptr->force[fpt][1] / magf;
+            iptr->velocity[1] = step * iptr->force[fpt][1] / mass;
 
-            iptr->velocity[2] += dotfv * iptr->force[fpt][2] / magf;
+            iptr->velocity[2] = step * iptr->force[fpt][2] / mass;
 
         }                       /* end if */
 
