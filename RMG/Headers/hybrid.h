@@ -19,6 +19,7 @@
 #define HYBRID_SKIP 2
 #define HYBRID_SUBDIAG_APP_A 3
 #define HYBRID_SUBDIAG_APP_B 4
+#define HYBRID_BETAX_PSI1_CALCULATE 5
 
 typedef struct {
   STATE *sp;

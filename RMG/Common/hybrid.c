@@ -128,6 +128,9 @@ void run_threads(SCF_THREAD_CONTROL *s) {
             case HYBRID_SUBDIAG_APP_B:
                subdiag_app_B_one(s->sp, s->p1);
                break;
+            case HYBRID_BETAX_PSI1_CALCULATE:
+               betaxpsi1_calculate_one(s->sp, s->ion, s->nion, s->sintR, s->sintI);
+               break;
             default:
                break;
         }
@@ -342,3 +345,14 @@ int is_loop_over_states(void)
 #endif
     
 }
+
+
+// Some dummy function stubs so we don't have to put in #if blocks all over the place
+#if !HYBRID_MODEL
+void RMG_MPI_thread_order_lock(void) {
+}
+void RMG_MPI_thread_order_unlock(void) {
+}
+void scf_barrier_wait(void) {
+}
+#endif

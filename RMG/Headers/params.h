@@ -189,6 +189,34 @@
 #define         FP0_BASIS        (FPX0_GRID * FPY0_GRID * FPZ0_GRID)
 
 
+/* These are used to determine the static storage sizes required by
+   trade_images.c and trade_imagesx.c when they are combining MPI calls
+   in hybrid mode.
+*/
+#if HYBRID_MODEL
+	#define GRID_XP (FPX0_GRID + 6)
+	#define GRID_YP (FPY0_GRID + 6)
+	#define GRID_ZP (FPZ0_GRID + 6)
+	#if GRID_XP > GRID_YP
+	  #define GRID_MAX1 GRID_XP
+	  #if GRID_YP > GRID_ZP
+	    #define GRID_MAX2 GRID_YP
+	  #else
+	    #define GRID_MAX2 GRID_ZP
+	  #endif
+	#else
+	  #define GRID_MAX1 GRID_YP
+	  #if GRID_XP > GRID_ZP
+	    #define GRID_MAX2 GRID_XP
+	  #else
+	    #define GRID_MAX2 GRID_ZP
+	  #endif
+	#endif
+#else
+	#define GRID_MAX1 1
+	#define GRID_MAX2 1
+#endif
+
 
 
 /******/
