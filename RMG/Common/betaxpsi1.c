@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include "main.h"
 
+#if HYBRID_MODEL
+#include "hybrid.h"
+#endif
 
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states);
 
@@ -198,7 +201,7 @@ void betaxpsi1 (STATE * states, int kpt)
 
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states)
 {
-    int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx = 1;
+    int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist;
     REAL *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
     REAL *weiptr, *psiR, psiI;
     ION *iptr;
@@ -210,7 +213,11 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
+#if HYBRID_MODEL
+    my_calloc (nlarrayR, 2 * alloc * THREADS_PER_NODE, REAL);
+#else
     my_calloc (nlarrayR, 2 * alloc, REAL);
+#endif
     nlarrayI = nlarrayR + alloc;
 
 
@@ -243,7 +250,38 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
             sintI = &sintI_ptr[nion * ct.num_states * ct.max_nl];
 #endif
 
-            for (istate = 0; istate < ct.num_states; istate++)
+// Parallelized over threads here.
+            start_state = 0;
+#if HYBRID_MODEL
+            enter_threaded_region();
+            scf_barrier_init(THREADS_PER_NODE);
+            istop = ct.num_states / THREADS_PER_NODE;
+            istop = istop * THREADS_PER_NODE;
+
+            for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+                  thread_control[ist].job = HYBRID_BETAX_PSI1_CALCULATE;
+                  thread_control[ist].sp = &states[ist];
+                  thread_control[ist].ion = ion;
+                  thread_control[ist].nion = nion;
+                  thread_control[ist].sintR = sintR;
+                  thread_control[ist].sintI = sintI;
+            }
+
+            // Thread tasks are set up so wake them
+            wake_threads(THREADS_PER_NODE);
+
+            // Then wait for them to finish this task
+            wait_for_threads(THREADS_PER_NODE);
+
+            scf_barrier_destroy();
+            leave_threaded_region();
+            start_state = istop;
+
+#endif
+
+            // Handle the remainder of the states in serial fashion. If
+            // not running in hybrid mode then start_state is 0.
+            for (istate = start_state; istate < ct.num_states; istate++)
             {
 
                 st = &states[istate];
@@ -283,8 +321,6 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
 
                 }
 
-
-
             }
 
         }
@@ -294,6 +330,72 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     my_free (nlarrayR);
 }
 
+void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI) {
+
+  int idx, stop, alloc, ip, incx=1, ipindex, istate, *pidx, ist, st_stop;
+  ION *iptr;
+  SPECIES *sp;
+  REAL *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
+
+  istate = st->istate;
+
+  alloc = P0_BASIS;
+  if (alloc < ct.max_nlpoints)
+      alloc = ct.max_nlpoints;
+
+  my_malloc (nlarrayR, 2 * alloc, REAL);
+  nlarrayI = nlarrayR + alloc;
+
+  iptr = &ct.ions[ion];
+  sp = &ct.sp[iptr->species];
+  stop = pct.idxptrlen[ion];
+  pidx = pct.nlindex[ion];
+
+  st_stop = ct.num_states / THREADS_PER_NODE;
+  st_stop = st_stop * THREADS_PER_NODE;
+
+  for(ist = istate;ist < st_stop;ist+=THREADS_PER_NODE) {
+      
+      psiR = st->psiR;
+#if !GAMMA_PT
+      psiI = st->psiI;
+#endif
+
+#if GAMMA_PT
+      /* Copy wavefunction into temporary array */
+      for (idx = 0; idx < stop; idx++)
+          nlarrayR[idx] = psiR[pidx[idx]];
+#else
+      for (idx = 0; idx < stop; idx++)
+          nlarrayR[idx] = psiR[pidx[idx]] * pR[idx] - psiI[pidx[idx]] * pI[idx];
+
+      for (idx = 0; idx < stop; idx++)
+          nlarrayI[idx] = psiI[pidx[idx]] * pR[idx] + psiR[pidx[idx]] * pI[idx];
+#endif
+
+  /* <Beta|psi>                                       */
+
+      weiptr = pct.weight[ion];
+      ipindex = st->istate * ct.max_nl;
+
+      for (ip = 0; ip < sp->nh; ip++)
+      {
+
+          sintR[ipindex] = ct.vel * sdot (&stop, nlarrayR, &incx, weiptr, &incx);
+#if !GAMMA_PT
+          sintI[ipindex] = ct.vel * sdot (&stop, nlarrayI, &incx, weiptr, &incx);
+#endif
+
+          weiptr += pct.idxptrlen[ion];
+          ipindex++;
+
+      }
+
+      st += THREADS_PER_NODE;
+  }
+  my_free (nlarrayR);
+
+}
 
 /*This receives data from other PEs for ions owned by current PE*/
 static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
