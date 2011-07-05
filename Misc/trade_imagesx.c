@@ -13,6 +13,15 @@
 #include "hybrid.h"
 #endif
 
+#include <pthread.h>
+
+static pthread_mutex_t images_lock = PTHREAD_MUTEX_INITIALIZER;
+static int first_trade_counter=THREADS_PER_NODE;
+static int second_trade_counter=THREADS_PER_NODE;
+static int third_trade_counter=THREADS_PER_NODE;
+REAL swbuf1x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
+REAL swbuf2x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
+
 /*
  * INPUTS
  * f[dimx*dimy*dimz] - raw array without images. pack_ptos should not be called, this is 
@@ -28,9 +37,9 @@
 void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
 {
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
-    int ixs, iys, ixs2, iys2, c1, c2;
-    int xlen, ylen, zlen;
-    int *nb_ids, basetag=0;
+    int ixs, iys, ixs2, iys2, c1, c2, alloc;
+    int xlen, ylen, zlen, stop;
+    int *nb_ids, basetag=0, tid, combine_trades=true;
     MPI_Status mrstatus;
     REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
@@ -42,6 +51,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 
 #if HYBRID_MODEL
     basetag = get_thread_basetag();
+    tid = get_thread_tid();
 #endif
 
     tim = 2 * images;
@@ -55,22 +65,35 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     ylen = dimx * images * (dimz + tim);
     xlen = images * (dimy + tim) * (dimz + tim);
 
+    alloc = 2 * (xlen + ylen + zlen);
+    // If we are not running in hybrid mode or we are not looping over states
+    // then we cannot combine MPI calls
+    if(!HYBRID_MODEL) {
+        combine_trades=false;
+    }
+    else {
+        // In order to combine the requested memory allocation must fit into the
+        // statically allocated storage
+        if((alloc > (6 * GRID_MAX1 * GRID_MAX2)) || !is_loop_over_states()) {
+            combine_trades=false;
+        }
+    }
 
+    if(!combine_trades) {
+        my_malloc (frdx1, alloc, REAL);
+        frdx2 = frdx1 + xlen;
+        frdy1 = frdx2 + xlen;
+        frdy2 = frdy1 + ylen;
+        frdz1 = frdy2 + ylen;
+        frdz2 = frdz1 + zlen;
 
-    my_malloc (frdx1, 2 * (xlen + ylen + zlen), REAL);
-    frdx2 = frdx1 + xlen;
-    frdy1 = frdx2 + xlen;
-    frdy2 = frdy1 + ylen;
-    frdz1 = frdy2 + ylen;
-    frdz2 = frdz1 + zlen;
-
-    my_malloc (frdx1n, 2 * (xlen + ylen + zlen), REAL);
-    frdx2n = frdx1n + xlen;
-    frdy1n = frdx2n + xlen;
-    frdy2n = frdy1n + ylen;
-    frdz1n = frdy2n + ylen;
-    frdz2n = frdz1n + zlen;
-
+        my_malloc (frdx1n, alloc, REAL);
+        frdx2n = frdx1n + xlen;
+        frdy1n = frdx2n + xlen;
+        frdy2n = frdy1n + ylen;
+        frdz1n = frdy2n + ylen;
+        frdz2n = frdz1n + zlen;
+    }
 
     nb_ids = &pct.neighbors[0];
 
@@ -93,6 +116,12 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 
 
     /* Collect the positive z-plane and negative z-planes */
+    if(combine_trades) {
+        frdz1 = &swbuf1x[tid * zlen];
+        frdz2 = &swbuf1x[tid * zlen + THREADS_PER_NODE * zlen];
+        frdz2n = &swbuf2x[tid * zlen];
+        frdz1n = &swbuf2x[tid * zlen + THREADS_PER_NODE * zlen];
+    }
     for (ix = 0; ix < dimx; ix++)
     {
         ixs = ix * dimy * images;
@@ -116,19 +145,29 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-#if HYBRID_MODEL
-    if(is_loop_over_states()) {
-        RMG_MPI_thread_order_lock();
+    if(combine_trades) {
+        stop = zlen * THREADS_PER_NODE;
+        scf_barrier_wait();
+        pthread_mutex_lock(&images_lock);
+        if(!(first_trade_counter % THREADS_PER_NODE)) {
+            MPI_Sendrecv (&swbuf1x[0], stop, MPI_DOUBLE, nb_ids[NB_D], (1>>16),
+                      &swbuf2x[0], stop, MPI_DOUBLE, nb_ids[NB_U], (1>>16), pct.grid_comm, &mrstatus);
+
+            MPI_Sendrecv (&swbuf1x[stop], stop, MPI_DOUBLE, nb_ids[NB_U], (2>>16),
+                      &swbuf2x[stop], stop, MPI_DOUBLE, nb_ids[NB_D], (2>>16), pct.grid_comm, &mrstatus);
+        }
+        first_trade_counter++;
+        pthread_mutex_unlock(&images_lock);
+
     }
-#endif
+    else {
+        MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16),
+                      frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16),
-                  frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), pct.grid_comm, &mrstatus);
+        MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
+                      frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), pct.grid_comm, &mrstatus);
+    }
 
-    MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
-                  frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), pct.grid_comm, &mrstatus);
-
- 
 
     /* Unpack them */
     c1 = dimz + images;
@@ -158,6 +197,12 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 
 
     /* Collect the north and south planes */
+    if(combine_trades) {
+        frdy1 = &swbuf1x[tid * ylen];
+        frdy2 = &swbuf1x[tid * ylen + THREADS_PER_NODE * ylen];
+        frdy2n = &swbuf2x[tid * ylen];
+        frdy1n = &swbuf2x[tid * ylen + THREADS_PER_NODE * ylen];
+    }
     c1 = images * incy;
     c2 = dimy * incy;
     for (ix = 0; ix < dimx; ix++)
@@ -184,12 +229,27 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (3>>16),
-                  frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (3>>16), pct.grid_comm, &mrstatus);
+    if(combine_trades) {
+        stop = ylen * THREADS_PER_NODE;
+        scf_barrier_wait();
+        pthread_mutex_lock(&images_lock);
+        if(!(second_trade_counter % THREADS_PER_NODE)) {
+            MPI_Sendrecv (&swbuf1x[0], stop, MPI_DOUBLE, nb_ids[NB_S], (3>>16),
+                      &swbuf2x[0], stop, MPI_DOUBLE, nb_ids[NB_N], (3>>16), pct.grid_comm, &mrstatus);
 
-    MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
-                  frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (4>>16), pct.grid_comm, &mrstatus);
+            MPI_Sendrecv (&swbuf1x[stop], stop, MPI_DOUBLE, nb_ids[NB_N], (4>>16),
+                      &swbuf2x[stop], stop, MPI_DOUBLE, nb_ids[NB_S], (4>>16), pct.grid_comm, &mrstatus);
+        }
+        second_trade_counter++;
+        pthread_mutex_unlock(&images_lock);
+    }
+    else {
+        MPI_Sendrecv (frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (3>>16),
+                      frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (3>>16), pct.grid_comm, &mrstatus);
 
+        MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
+                      frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (4>>16), pct.grid_comm, &mrstatus);
+    }
 
     /* Unpack them */
     c1 = (dimy + images) * incy;
@@ -217,6 +277,12 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 
 
     /* Collect the east and west planes */
+    if(combine_trades) {
+        frdx1 = &swbuf1x[tid * xlen];
+        frdx2 = &swbuf1x[tid * xlen + THREADS_PER_NODE * xlen];
+        frdx2n = &swbuf2x[tid * xlen];
+        frdx1n = &swbuf2x[tid * xlen + THREADS_PER_NODE * xlen];
+    }
     c1 = images * incx;
     c2 = dimx * incx;
     for (ix = 0; ix < images; ix++)
@@ -242,17 +308,31 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16),
-                  frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16), pct.grid_comm, &mrstatus);
+    if(combine_trades) {
+        stop = xlen * THREADS_PER_NODE;
+        scf_barrier_wait();
+        pthread_mutex_lock(&images_lock);
+        if(!(third_trade_counter % THREADS_PER_NODE)) {
 
-    MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
-                  frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16), pct.grid_comm, &mrstatus);
+            MPI_Sendrecv (&swbuf1x[0], stop, MPI_DOUBLE, nb_ids[NB_W], (5>>16),
+                       &swbuf2x[0], stop, MPI_DOUBLE, nb_ids[NB_E], (5>>16), pct.grid_comm, &mrstatus);
 
-#if HYBRID_MODEL    
-    if(is_loop_over_states()) {
-        RMG_MPI_thread_order_unlock();
+            MPI_Sendrecv (&swbuf1x[stop], stop, MPI_DOUBLE, nb_ids[NB_E], (6>>16),
+                      &swbuf2x[stop], stop, MPI_DOUBLE, nb_ids[NB_W], (6>>16), pct.grid_comm, &mrstatus);
+
+        }
+        third_trade_counter++;
+        pthread_mutex_unlock(&images_lock);
     }
-#endif
+    else {
+
+        MPI_Sendrecv (frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16),
+                      frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16), pct.grid_comm, &mrstatus);
+
+        MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
+                      frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16), pct.grid_comm, &mrstatus);
+    }
+
 
     /* Unpack them */
     c1 = (dimx + images) * incx;
@@ -279,8 +359,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
-    my_free (frdx1n);
-    my_free (frdx1);
+    if(!combine_trades) {
+        my_free (frdx1n);
+        my_free (frdx1);
+    }
 
 #if MD_TIMERS
     time2 = my_crtc ();
