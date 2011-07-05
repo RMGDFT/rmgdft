@@ -832,10 +832,9 @@ typedef struct
     int steps;
 
     /* parameter to define the gate bias */
-    int gbias_begin;
-    int gbias_end;
-    int reach_begin;
-    int reach_end;
+    double gbias_begin;
+    double gbias_end;
+    double BT;
     double gate_bias;
 
     /* override occupations */
@@ -1265,7 +1264,7 @@ void init_pegrid(void);
 void init_wf(STATE *states);
 void init_wflcao(STATE *states);
 void init_nuc(REAL *vnuc, REAL *rhoc, REAL *rhocore);
-void init_ext (double *vext, int gbias_begin, int gbias_end, int reach_begin, int reach_end, double gate_bias);
+void init_ext (double *vext, double gbias_begin, double gbias_end, double BT, double gate_bias);
 void init_pos();
 void init_nonlocal_comm(void);
 void init_sym(void);

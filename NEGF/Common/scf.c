@@ -69,8 +69,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
             }
         }
         if (jjj == 0 && kkk == 0)
-        printf("vtot[%d][%d][%d] = %10.5f \n", i+iii * FPX0_GRID, j, k, vtot[idx2]);
-        fflush(NULL);
+            printf("vtot[%d][%d][%d] = %10.7f \n", i+iii * FPX0_GRID, j, k, vtot[idx2]);
     }
 
 

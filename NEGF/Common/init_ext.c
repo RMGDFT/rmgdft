@@ -21,7 +21,7 @@
 #include "md.h"
 
 
-void init_ext (double *vext, int gbias_begin, int gbias_end, int reach_begin, int reach_end, double gate_bias)
+void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, double gate_bias)
 {
 
     int ii, jj, kk, ix, iy, iz;
@@ -43,24 +43,21 @@ void init_ext (double *vext, int gbias_begin, int gbias_end, int reach_begin, in
 
     /* Grab some memory for storage */
     /*Bikan Tan */
-    my_calloc( vext, FP0_BASIS, double );
 
 
 
     pe2xyz(pct.gridpe, &ii, &jj, &kk);
     x_proc = ii * FPX0_GRID;
 
-    //    printf("\n my ii = %d and FPX0_GRID = %d  gate_bias = %f \n", ii, FPX0_GRID, gate_bias);   
-    //    printf("\n gbias_begin = %d and gbias_end = %d \n", gbias_begin, gbias_end);   
+    printf("\n my ii = %d my jj= %d my kk= %d and FPX0_GRID = %d  gate_bias = %f \n", ii, jj, kk, FPX0_GRID, gate_bias);   
+    printf("\n gbias_begin = %f and gbias_end = %f  BT = %f \n", gbias_begin, gbias_end, BT);   
 
     for (ix = 0; ix < FPX0_GRID; ix++)
     {
 
         x_locate = (ix + x_proc)/2.0; // everything is based on coarse grid now!
-        v_external = gate_bias * (  2 / (1 + exp( -2.5*abs(x_locate - gbias_begin)/abs(reach_begin - gbias_begin) ) ) + 2 / (1 + exp( -2.5*abs(gbias_end - x_locate)/abs(reach_end - gbias_end ) ) ) - 3 );
+        v_external = gate_bias / (1.0 + exp((gbias_begin - x_locate)/BT)  + exp((x_locate - gbias_end)/BT) ); 
 
-        if (x_locate > gbias_begin && x_locate < gbias_end)  
-        {
 
             for (iy = 0; iy < FPY0_GRID; iy++)
             {
@@ -68,17 +65,16 @@ void init_ext (double *vext, int gbias_begin, int gbias_end, int reach_begin, in
                 for (iz = 0; iz < FPZ0_GRID; iz++)
                 {
 
-                    vext[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = v_external;
+                        vext[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = v_external;
 
 
                 }                   /* end for */
 
             }                       /* end for */
 
-        }
 
         if (jj == 0 && kk == 0)
-            printf("x_locate = %5f      vext  = %6.3f \n ", x_locate, v_external );
+            printf("x_locate = %5f      vext  = %10.7f \n ", x_locate, v_external );
 
     }                           /* end for */
 
