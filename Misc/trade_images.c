@@ -148,6 +148,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         pthread_mutex_unlock(&images_lock);
     }
     else {
+
+        if(is_loop_over_states()) {
+            RMG_MPI_thread_order_lock();
+        }
+
         MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), nmat2, idx,
                   MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16), pct.grid_comm, &mstatus);
     }
@@ -213,10 +218,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         toffset = tid*dimx*(dimz+2);
         idx = 0;
         for (ix = 0; ix < dimx; ix++) {
-            iys = ix * (dimz + 2);
             iys2 = (ix + 1) * incx;
             for (iz = 0; iz < dimz + 2; iz++) {
-                swbuf1[idx + toffset] = mat[iys2 + iz + incy];
+                swbuf1[idx + toffset] = mat[iys2 + ymax + iz];
                 idx++;
             }
         }
@@ -231,20 +235,18 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
         idx = 0;
         for (ix = 0; ix < dimx; ix++) {
-            iys = ix * (dimz + 2);
             iys2 = (ix + 1) * incx;
             for (iz = 0; iz < dimz + 2; iz++) {
-                mat[iys2 + iz + (dimy + 1) * incy] = swbuf2[idx + toffset];
+                mat[iys2 + iz] = swbuf2[idx + toffset];
                 idx++;
             }
         }
 
         idx = 0;
         for (ix = 0; ix < dimx; ix++) {
-            iys = ix * (dimz + 2);
             iys2 = (ix + 1) * incx;
             for (iz = 0; iz < dimz + 2; iz++) {
-                swbuf1[idx + toffset] = mat[iys2 + iz + dimy * incy];
+                swbuf1[idx + toffset] = mat[iys2 + incy + iz];
                 idx++;
             }
         }
@@ -259,21 +261,15 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 
         idx = 0;
         for (ix = 0; ix < dimx; ix++) {
-            iys = ix * (dimz + 2);
             iys2 = (ix + 1) * incx;
             for (iz = 0; iz < dimz + 2; iz++) {
-                mat[iys2 + iz] = swbuf2[idx + toffset];
+                mat[iys2 + ymax + incy + iz] = swbuf2[idx + toffset];
                 idx++;
             }
         }
 
-
-
     }
     else {
-        if(is_loop_over_states()) {
-            RMG_MPI_thread_order_lock();
-        }
 
         MPI_Type_vector (dimx, alen, incx, MPI_DOUBLE, &newtype);
         MPI_Type_commit (&newtype);
