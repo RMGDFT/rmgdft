@@ -74,6 +74,7 @@
 /* fourier transformation structure definitions*/
 #include    "fftw.h"
 
+#include "lbfgs.h"
 
 /* Header file for blas routines */
 #include "blas.h"

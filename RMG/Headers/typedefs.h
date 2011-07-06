@@ -1208,6 +1208,9 @@ typedef struct
     /** Force flag. 0=don't compute forces, 1=compute forces */
     int forceflag;
 
+    /*  relax_method: 0 = FIRE, fast relax, 1= LBFGS*/
+    int relax_method;
+
     /* Should we process constraints on forces flag */
     int constrainforces;
 

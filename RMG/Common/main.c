@@ -155,7 +155,9 @@ void initialize(int argc, char **argv)
     /* Also reads control and pseudopotential files*/
     init_IO (argc, argv);
 
-
+    int num_images = pct.images;
+    num_images = 1;
+    lbfgs_init(ct.num_ions, num_images);
 
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
     if(ct.spin_flag)

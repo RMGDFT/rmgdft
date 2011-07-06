@@ -218,6 +218,15 @@ void read_control (void)
     /* Force flag */
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
 
+    /* Set up and validate input options */
+    char relax_method_opts[] = "FIRE\n"
+                               "LBFGS";
+    get_data ("relax_method", NULL, INIT | OPT, relax_method_opts);
+
+    get_data ("relax_method", &ct.relax_method, OPT, "FIRE");
+
+
+
     if ( verify( "calculation_mode", "NEB Relax" ) )
     {
         /* set constraint type for switch in Common/constrain.c */

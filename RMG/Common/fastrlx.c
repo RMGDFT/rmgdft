@@ -104,71 +104,82 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
         /* not done yet ? => move atoms */
 		/* move the ions */
-		rmg_fastrelax ();
+        switch(ct.relax_method)
+        {
 
-		/* ct.md_steps measures the number of updates to the atomic positions */
-		ct.md_steps++;
+            case FIRE:
+                rmg_fastrelax ();
+                break;
+            case LBFGS:
+                rmg_lbfgs();
+                break;
+            default:
+                error_handler ("Undefined MD method");
+        }
 
-		/* update items that change when the ionic coordinates change */
-		init_nuc (vnuc, rhoc, rhocore);
-		get_QI ();
-		get_nlop ();
-		get_weight ();
-		get_qqq ();
-    
-                betaxpsi (states);
-                mix_betaxpsi(0);
+        /* ct.md_steps measures the number of updates to the atomic positions */
+        ct.md_steps++;
 
+        /* update items that change when the ionic coordinates change */
+        init_nuc (vnuc, rhoc, rhocore);
+        get_QI ();
+        get_nlop ();
+        get_weight ();
+        get_qqq ();
 
-		/* quench the electrons and calculate forces */
-		quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
-
-
-		/* save data to file for future restart */
-		if (ct.checkpoint)
-			if ( ct.md_steps % ct.checkpoint == 0 )
-				write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
-
-
-		/* check force convergence */
-		CONV_FORCE = TRUE;
-		for (iion = 0; iion < ct.num_ions; iion++)
-		{
-			if (ct.ions[iion].movable)
-			{
-				REAL *fp;
-				fp = ct.ions[iion].force[ct.fpt[0]];
-				CONV_FORCE &=
-					((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);
-			}
-		}
-
-		/* check for max relax steps */
-		MAX_STEPS = (rlx_steps >= ct.max_md_steps) || ( ct.md_steps > ct.max_md_steps);
-
-		/* done if forces converged or reached limit of md steps */
-		DONE = (CONV_FORCE || MAX_STEPS);
-
-	}
-	/* ---------- end relax loop --------- */
-
-	if (ct.max_md_steps > 0)
-	{
-
-		printf ("\n");
-		progress_tag ();
-
-		if (CONV_FORCE)
-			printf ("force convergence has been achieved. stopping ...\n");
-		else
-			printf ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
-
-	}
+        betaxpsi (states);
+        mix_betaxpsi(0);
 
 
+        /* quench the electrons and calculate forces */
+        quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
-	/*Write out final data */
-	write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
+
+        /* save data to file for future restart */
+        if (ct.checkpoint)
+            if ( ct.md_steps % ct.checkpoint == 0 )
+                write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
+
+
+        /* check force convergence */
+        CONV_FORCE = TRUE;
+        for (iion = 0; iion < ct.num_ions; iion++)
+        {
+            if (ct.ions[iion].movable)
+            {
+                REAL *fp;
+                fp = ct.ions[iion].force[ct.fpt[0]];
+                CONV_FORCE &=
+                    ((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);
+            }
+        }
+
+        /* check for max relax steps */
+        MAX_STEPS = (rlx_steps >= ct.max_md_steps) || ( ct.md_steps > ct.max_md_steps);
+
+        /* done if forces converged or reached limit of md steps */
+        DONE = (CONV_FORCE || MAX_STEPS);
+
+    }
+    /* ---------- end relax loop --------- */
+
+    if (ct.max_md_steps > 0)
+    {
+
+        printf ("\n");
+        progress_tag ();
+
+        if (CONV_FORCE)
+            printf ("force convergence has been achieved. stopping ...\n");
+        else
+            printf ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
+
+    }
+
+
+
+    /*Write out final data */
+    write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
 
 
 }                               /* end fastrlx */
