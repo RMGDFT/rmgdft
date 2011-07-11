@@ -473,7 +473,7 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
 #    endif
 
     /* Apply non-local operator to psi and store in work2 */
-    app_nls (tmp_psiR, tmp_psiI, work2R, work2I, work3R, work3I, ct.ions[0].newsintR, ct.ions[0].newsintI, sp->istate, sp->kidx);
+    app_nls (tmp_psiR, tmp_psiI, work2R, work2I, work3R, work3I, pct.newsintR_local, pct.newsintI_local, sp->istate, sp->kidx);
 
 
 #    if MD_TIMERS

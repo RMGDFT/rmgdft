@@ -87,7 +87,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 #else
 void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI)
 {
-    int ion, i, j;
+    int ion, i, j, nidx, oion;
     int idx, nh;
     int sidx1, sidx2, inh;
     REAL *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I;
@@ -254,7 +254,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 #else
 void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI)
 {
-    int ion, i, j;
+    int ion, i, j, nidx, oion;
     int idx, nh;
     int sidx1, sidx2, inh;
     REAL *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I;
