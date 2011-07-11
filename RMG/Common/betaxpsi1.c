@@ -424,7 +424,7 @@ static void betaxpsi1_pack (REAL * sintR, REAL * sintI, REAL * fill_buff, REAL *
 
 #if !GAMMA_PT
             sintI_tpr = &sintI[nlion * ct.num_states * ct.max_nl];
-            my_copy (sintI_tpr, tpr_buffI, &size);
+            my_copy (sintI_tpr, tpr_buffI, size);
             tpr_buffI += size;
 #endif
         }
