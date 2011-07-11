@@ -20,6 +20,9 @@
 #define HYBRID_SUBDIAG_APP_A 3
 #define HYBRID_SUBDIAG_APP_B 4
 #define HYBRID_BETAX_PSI1_CALCULATE 5
+#define HYBRID_FINALIZE_PAPI 6
+
+
 
 typedef struct {
   STATE *sp;
@@ -52,4 +55,5 @@ void RMG_MPI_lock(void);
 void RMG_MPI_unlock(void);
 void RMG_MPI_thread_order_lock(void);
 void RMG_MPI_thread_order_unlock(void);
+long long Papi_thread_flops(int tid);
 #endif

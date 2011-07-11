@@ -1284,7 +1284,25 @@ typedef struct
 
     REAL z_field_0;
 
-	REAL neb_spring_constant;
+    REAL neb_spring_constant;
+
+#if PAPI_PERFMON
+
+    // Global event set for serial portion of code
+    int EventSet;
+
+    // Event set for Open MP threads
+    int OpenMpEventSet[THREADS_PER_NODE];
+
+    // Flop counts for OpenMp threads
+    long long OpenMpFlopCount[THREADS_PER_NODE];
+
+    pthread_t OpenMpPthreadId[THREADS_PER_NODE];
+
+    // Flop counts for pthreads
+    long long PthreadFlopCount[THREADS_PER_NODE];
+    
+#endif
 
 } CONTROL;
 

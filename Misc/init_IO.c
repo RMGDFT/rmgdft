@@ -31,13 +31,20 @@
 #include <time.h>
 #include <sys/stat.h>
 #if HYBRID_MODEL
+#include <pthread.h>
 #include "hybrid.h"
+#endif
+
+#if PAPI_PERFMON
+#undef kill
+#include <papi.h>
+PAPI_option_t papi_opts;
 #endif
 
 void init_IO (int argc, char **argv)
 {
 
-    int npes, worldpe, image, status, lognum = 0, provided;
+    int i, npes, worldpe, image, status, lognum = 0, provided, retval;
     char workdir[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH], *quantity, *extension, *endptr;
     struct stat buffer;
     time_t timer;
@@ -212,6 +219,32 @@ void init_IO (int argc, char **argv)
 
     /* Read in our pseudopotential information */
     read_pseudo ();
+
+    // If papi performance monitoring is desired initialize the library
+#if PAPI_PERFMON
+    if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT) {
+        error_handler("Problem with papi support. Exiting.\n");
+    }
+    if (PAPI_thread_init(pthread_self) != PAPI_OK) {
+        error_handler("Problem with papi thread support. Exiting.\n");
+    }
+
+#if 0
+    ct.EventSet = PAPI_NULL;
+    if (PAPI_create_eventset(&ct.EventSet) != PAPI_OK) {
+         error_handler ("Cannot create PAPI event set.\n");
+    }
+    if (PAPI_add_event(ct.EventSet, PAPI_FP_OPS) != PAPI_OK) {
+         error_handler ("Cannot add PAPI event.\n");
+    }
+
+    PAPI_start(ct.EventSet);
+#endif
+
+#pragma omp parallel for
+    for(i = 0;i < THREADS_PER_NODE;i++) 
+        Papi_init_omp_threads(i);
+#endif
 
 #if HYBRID_MODEL
   if(provided != MPI_THREAD_SERIALIZED) {

@@ -480,3 +480,6 @@ void mg_restrict_4th (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void mix_betaxpsi (int mix);
 int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
 int is_loop_over_states(void);
+void Papi_init_omp_threads(int ithread);
+void Papi_finalize_omp_threads(int ithread);
+
