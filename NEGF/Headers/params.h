@@ -55,6 +55,9 @@
 int PE_X, PE_Y, PE_Z;
 #define  GAMMA_PT    1
 
+#define GRID_MAX1 1
+#define GRID_MAX2 1
+
 
 /* This is the maximum number of non-local projectors for any species
  *  * just an upper limit on dynamically allocated data structures. */

@@ -69,6 +69,9 @@ int PE_X, PE_Y, PE_Z;
 #define         MAX_CHAR  255
 
 
+#define GRID_MAX1 1
+#define GRID_MAX2 1
+
 
 /* Maximum number of states -- just an upper limit on 
  * dynamically allocated data structures. */
