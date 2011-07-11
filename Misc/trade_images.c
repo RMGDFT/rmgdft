@@ -70,7 +70,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     REAL *nmat1, *nmat2;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    REAL time1, time2, time3;
     time1 = my_crtc ();
 #endif
 
@@ -135,6 +135,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
     }
 
+#if MD_TIMERS
+    time3 = my_crtc ();
+#endif
     // We only want one thread to do the MPI call here.
     if(combine_trades) {
         stop = dimx * dimy * THREADS_PER_NODE;
@@ -156,6 +159,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_U], basetag + (1>>16), nmat2, idx,
                   MPI_DOUBLE, nb_ids[NB_D], basetag + (1>>16), pct.grid_comm, &mstatus);
     }
+#if MD_TIMERS
+    rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -180,6 +186,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     }
 
 
+#if MD_TIMERS
+    time3 = my_crtc ();
+#endif
     if(combine_trades) {
         stop = dimx * dimy * THREADS_PER_NODE;
         scf_barrier_wait();
@@ -195,6 +204,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), nmat2, idx,
                   MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16), pct.grid_comm, &mstatus);
     }
+#if MD_TIMERS
+    rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
 
     idx = 0;
@@ -224,6 +236,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
                 idx++;
             }
         }
+#if MD_TIMERS
+        time3 = my_crtc ();
+#endif
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
         if(!(fifth_trade_counter % THREADS_PER_NODE)) {
@@ -232,6 +247,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
         fifth_trade_counter++;
         pthread_mutex_unlock(&images_lock);
+#if MD_TIMERS
+        rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
         idx = 0;
         for (ix = 0; ix < dimx; ix++) {
@@ -250,6 +268,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
                 idx++;
             }
         }
+#if MD_TIMERS
+        time3 = my_crtc ();
+#endif
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
         if(!(sixth_trade_counter % THREADS_PER_NODE)) {
@@ -258,6 +279,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
         sixth_trade_counter++;
         pthread_mutex_unlock(&images_lock);
+#if MD_TIMERS
+        rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
         idx = 0;
         for (ix = 0; ix < dimx; ix++) {
@@ -271,6 +295,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     }
     else {
 
+#if MD_TIMERS
+        time3 = my_crtc ();
+#endif
         MPI_Type_vector (dimx, alen, incx, MPI_DOUBLE, &newtype);
         MPI_Type_commit (&newtype);
         MPI_Sendrecv (&mat[incx + ymax], 1, newtype, nb_ids[NB_N], basetag + (3>>16), &mat[incx], 1,
@@ -278,6 +305,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         MPI_Sendrecv (&mat[incx + incy], 1, newtype, nb_ids[NB_S], basetag + (4>>16), &mat[incx + ymax + incy], 1,
                       newtype, nb_ids[NB_N], basetag + (4>>16), pct.grid_comm, &mstatus);
         MPI_Type_free (&newtype);
+#if MD_TIMERS
+        rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
     }
 
 /*
@@ -289,6 +319,9 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     if(combine_trades) {
 
         QMD_scopy (stop, &mat[xmax], ione, &swbuf1[tid * stop], ione);
+#if MD_TIMERS
+        time3 = my_crtc ();
+#endif
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
         if(!(third_trade_counter % THREADS_PER_NODE)) {
@@ -297,9 +330,15 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
         third_trade_counter++;
         pthread_mutex_unlock(&images_lock);
+#if MD_TIMERS
+        rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
         QMD_scopy (stop, &swbuf2[tid * stop], ione, mat, ione);
 
         QMD_scopy (stop, &mat[incx], ione, &swbuf1[tid * stop], ione);
+#if MD_TIMERS
+        time3 = my_crtc ();
+#endif
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
         if(!(fourth_trade_counter % THREADS_PER_NODE)) {
@@ -308,16 +347,25 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         }
         fourth_trade_counter++;
         pthread_mutex_unlock(&images_lock);
+#if MD_TIMERS
+        rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
         QMD_scopy (stop, &swbuf2[tid * stop], ione, &mat[xmax + incx], ione);
 
     }
     else {
 
 
+#if MD_TIMERS
+        time3 = my_crtc ();
+#endif
         MPI_Sendrecv (&mat[xmax], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (5>>16),
                   mat, stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (5>>16), pct.grid_comm, &mstatus);
         MPI_Sendrecv (&mat[incx], stop, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16),
                   &mat[xmax + incx], stop, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16), pct.grid_comm, &mstatus);
+#if MD_TIMERS
+        rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
         if(is_loop_over_states()) {
             RMG_MPI_thread_order_unlock();

@@ -45,7 +45,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    REAL time1, time2, time3;
     time1 = my_crtc ();
 #endif
 
@@ -145,6 +145,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
+#if MD_TIMERS
+    time3 = my_crtc ();
+#endif
     if(combine_trades) {
         stop = zlen * THREADS_PER_NODE;
         scf_barrier_wait();
@@ -167,6 +170,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
         MPI_Sendrecv (frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], basetag + (2>>16),
                       frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), pct.grid_comm, &mrstatus);
     }
+#if MD_TIMERS
+    rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
 
     /* Unpack them */
@@ -229,6 +235,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
+#if MD_TIMERS
+    time3 = my_crtc ();
+#endif
     if(combine_trades) {
         stop = ylen * THREADS_PER_NODE;
         scf_barrier_wait();
@@ -250,6 +259,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
         MPI_Sendrecv (frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], basetag + (4>>16),
                       frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], basetag + (4>>16), pct.grid_comm, &mrstatus);
     }
+#if MD_TIMERS
+    rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
     /* Unpack them */
     c1 = (dimy + images) * incy;
@@ -308,6 +320,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     }                           /* end for */
 
 
+#if MD_TIMERS
+    time3 = my_crtc ();
+#endif
     if(combine_trades) {
         stop = xlen * THREADS_PER_NODE;
         scf_barrier_wait();
@@ -332,6 +347,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
         MPI_Sendrecv (frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], basetag + (6>>16),
                       frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], basetag + (6>>16), pct.grid_comm, &mrstatus);
     }
+#if MD_TIMERS
+    rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
+#endif
 
 
     /* Unpack them */
