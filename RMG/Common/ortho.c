@@ -133,7 +133,7 @@ void ortho (STATE * states, int kpt)
 
 
 
-    st = &states[kpt * ct.num_states];
+    st = states;
     for (ist1 = 0; ist1 < ct.num_states; ist1++)
     {
 
