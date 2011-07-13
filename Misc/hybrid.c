@@ -39,6 +39,13 @@
 #include "main.h"
 #include "hybrid.h"
 
+
+#if PAPI_PERFMON
+#undef kill
+#include <papi.h>
+volatile double PTHREAD_PAPI_COUNTERS[THREADS_PER_NODE];
+#endif
+
 #if HYBRID_MODEL
 
 // Main thread control structure
@@ -81,6 +88,7 @@ void init_HYBRID_MODEL(void) {
     ct.main_thread_pid = getpid();
 
     pthread_attr_init( &thread_attrs );
+    pthread_attr_setscope( &thread_attrs, PTHREAD_SCOPE_SYSTEM );
     pthread_attr_setschedpolicy( &thread_attrs, SCHED_RR);
 
     // Create the thread specific data key
@@ -104,8 +112,30 @@ void init_HYBRID_MODEL(void) {
 // Main thread function
 void run_threads(SCF_THREAD_CONTROL *s) {
 
+#if PAPI_PERFMON
+    int EventSet = PAPI_NULL;
+    int PAPI_event;
+    long long Papi_values[4];
+
+    Papi_values[0] = 0;
+    Papi_values[1] = 0;
+    Papi_values[2] = 0;
+    Papi_values[3] = 0;
+
+    if (PAPI_create_eventset(&EventSet) != PAPI_OK) {
+         error_handler ("Cannot create PAPI event set.\n");
+    }
+    if (PAPI_add_event(EventSet, PAPI_DP_OPS) != PAPI_OK) {
+         error_handler ("Cannot add PAPI event.\n");
+    }
+   
+    PAPI_start(EventSet); 
+
+#endif
+
     s->pthread_tid = pthread_self();
     pthread_setspecific(scf_thread_control_key, (void *)s);
+
 
     // Wait until everyone gets here
     pthread_barrier_wait(&run_barrier);
@@ -131,6 +161,12 @@ void run_threads(SCF_THREAD_CONTROL *s) {
             case HYBRID_BETAX_PSI1_CALCULATE:
                betaxpsi1_calculate_one(s->sp, s->ion, s->nion, s->sintR, s->sintI);
                break;
+#if PAPI_PERFMON
+            case HYBRID_FINALIZE_PAPI:
+               PAPI_stop(EventSet, Papi_values);
+               PTHREAD_PAPI_COUNTERS[s->tid] = Papi_values[0] + Papi_values[1];
+               break;
+#endif
             default:
                break;
         }
@@ -140,6 +176,56 @@ void run_threads(SCF_THREAD_CONTROL *s) {
 
     }
 }
+
+#if PAPI_PERFMON
+// Called at the end to retreive thread FLOP counts
+long long Papi_thread_flops(int tid) {
+    return PTHREAD_PAPI_COUNTERS[tid];
+}
+
+void Papi_init_omp_threads(int ithread) {
+
+  pthread_t tid;
+
+  ct.OpenMpEventSet[ithread] = PAPI_NULL;
+
+  ct.OpenMpPthreadId[ithread] = pthread_self(); 
+
+  if (PAPI_create_eventset(&ct.OpenMpEventSet[ithread]) != PAPI_OK) {
+     error_handler ("Cannot create OpenMP event set.\n");
+  }
+  if (PAPI_add_event(ct.OpenMpEventSet[ithread], PAPI_DP_OPS) != PAPI_OK) {
+     error_handler ("Cannot add OpenMP event.\n");
+  }
+
+  PAPI_start(ct.OpenMpEventSet[ithread]);
+
+}
+
+void Papi_finalize_omp_threads(int dummy) {
+
+    int ithread;
+    long long Papi_values[4];
+
+    Papi_values[0] = 0;
+    Papi_values[1] = 0;
+    Papi_values[2] = 0;
+    Papi_values[3] = 0;
+
+
+    for(ithread = 0;ithread < THREADS_PER_NODE;ithread++) {
+        if(pthread_equal(ct.OpenMpPthreadId[ithread], pthread_self())) {
+
+            PAPI_stop(ct.OpenMpEventSet[ithread], Papi_values);
+            ct.OpenMpFlopCount[ithread] = Papi_values[0] + Papi_values[1];
+            return;
+
+        }        
+    }
+
+}
+
+#endif
 
 // Called when the main thread of execution is waiting for a set of threads to finish
 void wait_for_threads(int jobs) {
