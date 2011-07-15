@@ -20,15 +20,14 @@
 
 void get_dos (STATE * states)
 {
-    int iprobe;
+    int iprobe, idx_e;
     int iene, st1;
     complex double *tot, *tott, *g;
-    REAL *green_tem, *green_C;
     complex double *sigma;
     REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
     REAL de, emin, emax;
 
-    complex double *ch0, *ch01, *ch10;
+    complex double *green_C, *ch0, *ch01, *ch10;
     complex double ene, ctem;
     int nC;
     int i, j, *sigma_idx, idx_C;
@@ -148,8 +147,7 @@ void get_dos (STATE * states)
     my_malloc_init( S10,  idx,  double );
 
 
-    my_malloc_init( green_tem, 2 * idx, REAL );
-    my_malloc_init( green_C, 2 * ntot, REAL );
+    my_malloc_init( green_C, ntot, complex double );
     /*st1 = (E_POINTS + NPES - 1) / NPES;*/
     st1 = (E_POINTS + pmo.npe_energy - 1) / pmo.npe_energy;
    
@@ -183,7 +181,7 @@ void get_dos (STATE * states)
 
 
 
-    idx = 0;
+    idx_e = 0;
     /*for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)*/
     for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
     {
@@ -269,15 +267,15 @@ void get_dos (STATE * states)
         /*Sgreen_c_wang (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
           eneR, eneI, (complex double *) green_C, nC);*/
         Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                ene, (complex double *) green_C); 
+                ene, green_C); 
 
 
         for (st1 = 0; st1 < ntot; st1++)
         {
-            Green_store[idx + st1] = -green_C[st1 * 2 + 1];
+            Green_store[idx_e + st1] = -cimag(green_C[st1]);
             /*printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
         }
-        idx += ntot;
+        idx_e += ntot;
 
     }                           /*  end for iene */
 
@@ -416,7 +414,6 @@ void get_dos (STATE * states)
     my_free(tot);
     my_free(tott);
     my_free(g);
-    my_free(green_tem);
     my_free(sigma_all);
     my_free(sigma_idx);
     my_free(green_C);
