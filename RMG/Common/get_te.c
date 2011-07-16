@@ -51,7 +51,7 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
 {
     int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1);
     REAL r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
-    REAL vel;
+    REAL vel, loc_sum;
     REAL *exc, *nrho, *nrho_oppo;
     ION *iptr1, *iptr2;
     REAL time1, time2;
@@ -191,19 +191,22 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
     {
 
         iptr1 = &ct.ions[i];
-        for (j = i + 1; j < ct.num_ions; j++)
-        {
+        loc_sum = 0.0;
+#pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
+	for (j = i + 1; j < ct.num_ions; j++)
+	{
 
-            iptr2 = &ct.ions[j];
+	    iptr2 = &ct.ions[j];
 
-            r = minimage (iptr1, iptr2, xtal_r);
+	    r = minimage (iptr1, iptr2, xtal_r);
 
-            t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
-                       ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
+	    t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
+		       ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
 
-            ct.II += (ct.sp[iptr1->species].zvalence *
-                      ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
-        }
+	    loc_sum += (ct.sp[iptr1->species].zvalence *
+		      ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
+	}
+	ct.II += loc_sum;
     }
 
     rmg_timings (GET_TE_II_TIME, (my_crtc () - time2));
