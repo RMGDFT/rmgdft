@@ -330,22 +330,9 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     /* Initialize the qfunction stuff */
     init_qfunct ();
 
-    /*get the augument function QnmI(r) */
-    get_QI ();
+    /* Update items that change when the ionic coordinates change */
+    reinit_ionic_pp (states, vnuc, rhocore, rhoc);
 
-    /* Initialize Non-local operators */
-    get_nlop ();
-    get_weight ();
-
-
-    /*get the qqq coefficient */
-    get_qqq ();
-
-    /* Initialize the nuclear local potential and the compensating charges */
-    init_nuc (vnuc, rhoc, rhocore);
-
-    if (!verify ("calculation_mode", "Band Structure Only"))
-        betaxpsi (states);
 
     if ((ct.runflag == 0) || (ct.runflag == 2)) /* Initial run */
     {
@@ -358,9 +345,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
             }
         }
     }
-
-    /*Setup initial values for mixed <beta|psi> stored in oldsint*/
-    mix_betaxpsi (0);
 
     Dprintf ("Set the initial density to be equal to the compensating charges");
     if (!ct.runflag)

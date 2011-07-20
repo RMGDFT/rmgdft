@@ -111,7 +111,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
                 rmg_fastrelax ();
                 break;
             case LBFGS:
-                rmg_lbfgs();
+                lbfgs();
                 break;
             default:
                 error_handler ("Undefined MD method");
@@ -120,16 +120,8 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         /* ct.md_steps measures the number of updates to the atomic positions */
         ct.md_steps++;
 
-        /* update items that change when the ionic coordinates change */
-        init_nuc (vnuc, rhoc, rhocore);
-        get_QI ();
-        get_nlop ();
-        get_weight ();
-        get_qqq ();
-
-        betaxpsi (states);
-        mix_betaxpsi(0);
-
+        /* Update items that change when the ionic coordinates change */
+        reinit_ionic_pp (states, vnuc, rhocore, rhoc);
 
         /* quench the electrons and calculate forces */
         quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);

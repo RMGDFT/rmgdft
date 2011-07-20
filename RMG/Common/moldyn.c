@@ -280,16 +280,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             }
 
             /* Update items that change when the ionic coordinates change */
-            init_nuc (vnuc, rhoc, rhocore);
-            get_QI ();
-            get_nlop ();
-
-            /*Other things that need to be recalculated when ionic positions change */
-            get_weight ();
-            get_qqq ();
-                
-            betaxpsi (states);
-            mix_betaxpsi(0);
+            reinit_ionic_pp (states, vnuc, rhocore, rhoc);
 
             /* Do an scf step */
             scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, &CONVERGENCE);

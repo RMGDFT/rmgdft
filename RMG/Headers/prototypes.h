@@ -387,6 +387,7 @@ REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
            int lpl[][9][9], SPECIES *sp);
 void scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
           REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
+void reinit_ionic_pp (STATE * states, REAL * vnuc, REAL * rhocore, REAL * rhoc);
 
 #if GAMMA_PT
 void subdiag_gamma (STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
