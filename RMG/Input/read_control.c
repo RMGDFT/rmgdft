@@ -135,14 +135,14 @@ void read_control (void)
     get_data ("rms_convergence_criterion", &ct.thr_rms, DBL, "1.0E-7");
 
     /* force convergence criterion */
-    get_data ("fast_relax_max_force", &ct.thr_frc, DBL, "2.5E-3");
+    get_data ("relax_max_force", &ct.thr_frc, DBL, "2.5E-3");
     
-    char fastrelax_mass_opts[] = "Atomic\n"
+    char relax_mass_opts[] = "Atomic\n"
                                  "Equal";
-    get_data ("fastrelax_mass", NULL, INIT | OPT, fastrelax_mass_opts);
+    get_data ("relax_mass", NULL, INIT | OPT, relax_mass_opts);
 
-    /* Exchange correlation potential type flag */
-    get_data ("fastrelax_mass", &ct.fastrelax_mass, OPT, "Atomic");
+    /* Mass to use for structural relaxation, either their atomic masses, or use the mass of carbon for all atoms*/
+    get_data ("relax_mass", &ct.relax_mass, OPT, "Atomic");
 
     /* Write pseudopotential plots */
     get_data ("do_write_pseudopotential_plots", NULL, BOOL, "false");
@@ -205,7 +205,7 @@ void read_control (void)
 
     /* Set up and validate input options */
     char calculation_mode_opts[] = "Quench Electrons\n"
-                                   "Fast Relax\n"
+                                   "Relax Structure\n"
                                    "Constant Volume And Energy\n"
                                    "Constant Temperature And Energy\n"
                                    "Constant Pressure And Energy\n"
@@ -219,11 +219,12 @@ void read_control (void)
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
 
     /* Set up and validate input options */
-    char relax_method_opts[] = "FIRE\n"
+    char relax_method_opts[] = "Fast Relax\n"
+				"FIRE\n"
                                "LBFGS";
     get_data ("relax_method", NULL, INIT | OPT, relax_method_opts);
 
-    get_data ("relax_method", &ct.relax_method, OPT, "FIRE");
+    get_data ("relax_method", &ct.relax_method, OPT, "Fast Relax");
 
 
 

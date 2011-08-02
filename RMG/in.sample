@@ -149,11 +149,17 @@ start_mode=
 # Default: "Quench Electrons"
 calculation_mode=
 "Quench Electrons"
-#"Fast Relax"
+#"Relax Structure"
 #"Constant Volume And Energy"
 #"Constant Temperature And Energy"
 #"Constant Pressure And Energy" #Not implemented yet
 #"Band Structure Only"
+
+#Method used for structural relaxation
+relax_method=
+"Fast Relax"  #Standard, well tested method that has been in use in RMG for a long time
+#"FIRE"  #Fast Inertial Relaxation Engine, PRL 97, 170201 (2006).
+#"LBGFS" #Limited-memory Broyden-Fletcher-Goldfarb-Shanno
 
 # Default: "LDA"
 exchange_correlation_type=
@@ -265,12 +271,12 @@ output_wave_function_file="Wave-soft/wave.out"
 # Default: "50"
 ionic_time_step="50"
 
-# Force criterion used for fast relax - 
-# when all forces are below given value, fast relax will be stopped
+# Force criterion used for structural relaxation - 
+# when all forces are below given value, relaxation will be stopped
 # Default: "2.5E-3"
-fast_relax_max_force="0.0025"
+relax_max_force="0.0025"
 
-# Number of MD steps (if running MD) or max number of steps when doing "Fast Relax"
+# Number of MD steps (if running MD) or max number of steps when doing structural relaxation
 # Default: "100"
 max_md_steps="100"
 
@@ -324,19 +330,19 @@ do_dx_movie=
 "false"
 #"true"
 
-# Whether or not to to output information for RMV (rotmovie) movie (MD or Fast Relax)
+# Whether or not to to output information for RMV (rotmovie) movie (MD or Structural Relax)
 # Default: "false"
 do_rm_movie=
 "false"
 #"true"
 
-# Whether or not to to output information for XBS movie (MD or Fast Relax)
+# Whether or not to to output information for XBS movie (MD or structural relaxation)
 # Default: "false"
 do_xbs_movie=
 "false"
 #"true"
 
-# Number of MD (or Fast Relax) steps after which to output frame into movie (any type)
+# Number of MD (or Structural Relaxation) steps after which to output frame into movie (any type)
 # Default: "1"
 md_steps_per_movie_frame="1"
 
@@ -488,6 +494,6 @@ wait_flag_count="15"
 # Whether the actual ionic masses or equal masses for all ions (set to that of carbon)
 # should be used for fastrelax. The ionic masses appear to work better and are better tested. 
 # Default: "Atomic"
-fastrelax_mass=
+relax_mass=
 "Atomic"
 #"Equal"

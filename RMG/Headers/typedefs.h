@@ -1079,7 +1079,7 @@ typedef struct
 
     /*Flag used to determine whether the actual ionic masses or equal masses set to 
      * that of carbon are to be used in fastrelax algorithm.*/
-    int fastrelax_mass;
+    int relax_mass;
 
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
     REAL mix;

@@ -88,7 +88,7 @@ start_mode=
 
 calculation_mode=
 "Quench Electrons"
-#"Fast Relax"
+#"Relax Structure"
 #"Constant Volume And Energy"
 #"Constant Temperature And Energy"
 #"Band Structure Only"
@@ -114,7 +114,7 @@ charge_pulay_order="5"
 
 max_scf_steps="100"
 
-# Number of MD steps (if running MD) or max number of steps when doing "Fast Relax"
+# Number of MD steps (if running MD) or max number of steps when doing structural relaxation
 max_md_steps="100"
 
 
@@ -122,10 +122,16 @@ max_md_steps="100"
 period_of_diagonalization="10"
 end_diagonalization_step="100"
 
+#Method used for structural relaxation
+relax_method=
+"Fast Relax"  
+#"FIRE"  
+#"LBGFS" 
+
 ionic_time_step="50"
 
 # Force criterion used for fast relax
-fast_relax_max_force="0.0025"
+relax_max_force="0.0025"
 
 input_wave_function_file="Wave-soft/wave.out"
 output_wave_function_file="Wave-soft/wave.out"

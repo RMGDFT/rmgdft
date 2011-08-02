@@ -56,7 +56,7 @@ void rmg_fastrelax (void)
 
 
         /* Use either actual ionic mass or equal mass for all atoms*/
-	if (ct.fastrelax_mass == 0)
+	if (ct.relax_mass == 0)
 	    mass = ct.sp[iptr->species].atomic_mass * mu_me;
 	else
 	    mass =  12.0 * mu_me;
