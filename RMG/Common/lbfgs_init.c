@@ -18,7 +18,7 @@ void lbfgs_init(int num_ions, int num_images)
 
     int item;
 
-    printf("\n num_ions =  %d num_images = %d in lbfgs_init", num_ions, num_images); 
+    //printf("\n num_ions =  %d num_images = %d in lbfgs_init", num_ions, num_images); 
     memory_steps = 20;
     finite_step = 0.005;
     maxmove = 0.2;
