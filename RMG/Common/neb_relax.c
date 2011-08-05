@@ -187,7 +187,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		printf("\tNEB call fast relax.\n");
 		fflush(NULL);fsync( fileno(ct.logfile) );
 		MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-        fastrlx (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        fastrlx (2, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
         /* Check for NEB convergence */
         /* Are we force converged? */

@@ -53,7 +53,7 @@ void movie (FILE *);
 
 
 
-void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
+void fastrlx (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
               REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
 
@@ -147,7 +147,7 @@ void fastrlx (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         }
 
         /* check for max relax steps */
-        MAX_STEPS = (rlx_steps >= ct.max_md_steps) || ( ct.md_steps > ct.max_md_steps);
+        MAX_STEPS = (rlx_steps >= steps) || ( ct.md_steps > ct.max_md_steps);
 
         /* done if forces converged or reached limit of md steps */
         DONE = (CONV_FORCE || MAX_STEPS);

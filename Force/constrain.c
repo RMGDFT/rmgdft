@@ -37,8 +37,6 @@
 
 void constrain (void)
 {
-
-#if 0
 	switch (ct.constrainforces)
 	{
 		case 3:                    /* NEB tangent to normalized adjacent images */
@@ -121,6 +119,7 @@ void constrain (void)
 				}
 			}
 			break;
+
 		case 2:                    /* NEB tangent to adjacent images */
 			{
 				int ion;
@@ -200,6 +199,7 @@ void constrain (void)
 				}
 			}
 			break;
+            
 		case 1:                    /* In plane, 2-D restriction (typical). */
 			{
 				int ion;
@@ -224,7 +224,6 @@ void constrain (void)
 	}
 
 	return;
-#endif
 }
 
 #if 0	

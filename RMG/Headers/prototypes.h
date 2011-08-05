@@ -339,7 +339,7 @@ REAL metric (REAL *crystal);
 /* Md run types */
 void quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
              REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
-void fastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+void fastrlx (int steps, STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
