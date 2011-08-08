@@ -48,7 +48,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
               REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
     /* This may need to be malloced if we start using large ion counts */
-    int count, neb_steps = 0, img_rank_map[3];
+    int constrain, count, neb_steps = 0, img_rank_map[3];
     REAL imgA[3*ct.num_ions], imgB[3*ct.num_ions], imgC[3*ct.num_ions];
     REAL tmp_mag, max_frc, *fp, *L_ptr, *S_ptr, *R_ptr;
 	REAL L_total, S_total, R_total;
@@ -155,12 +155,26 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
                 R_total = S_total;
             }
 
+            /* End images are allowed to relax without constraint */
+            if ( img_rank_map[RIGHT] == MPI_PROC_NULL || img_rank_map[LEFT] == MPI_PROC_NULL  ) 
+			{
+                constrain = 0;
+            }
+            else
+            {
+                constrain = ct.constrainforces;
+            }
+
         }
 		/* broadcast force constraint parameters to image procs */
 		MPI_Bcast( L_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.img_comm );
 		MPI_Bcast( R_ptr, 3*ct.num_ions, MPI_DOUBLE, 0, pct.img_comm );
 		MPI_Bcast( &L_total, 1, MPI_DOUBLE, 0, pct.img_comm );
 		MPI_Bcast( &R_total, 1, MPI_DOUBLE, 0, pct.img_comm );
+
+        dprintf(" %d: Do(n't) apply constraints to first/last images ", constrain);
+        MPI_Bcast( &constrain, 1, MPI_INT, 0, pct.img_comm );
+        ct.constrainforces = constrain;
 
 		/* capture force constraint parameters from right and left data*/
 		for ( count = 0; count < ct.num_ions; count++ )
