@@ -107,11 +107,14 @@ void fastrlx (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         switch(ct.relax_method)
         {
 
+            case FASTRELAX:
+                rmg_fastrelax ();
+                break;
             case FIRE:
                 rmg_fastrelax ();
                 break;
             case LBFGS:
-                lbfgs();
+                rmg_lbfgs();
                 break;
             default:
                 error_handler ("Undefined MD method");

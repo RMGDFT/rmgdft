@@ -113,8 +113,9 @@
 #define NB_SELF 7
 
 /* relax method flags */
-#define		FIRE       0
-#define		LBFGS       1
+#define		FASTRELAX  0
+#define		FIRE       1
+#define		LBFGS      2
 
 /* Molecular dynamics flags */
 #define		MD_QUENCH       0
