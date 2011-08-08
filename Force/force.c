@@ -44,7 +44,7 @@
 
 /*Set this to 1 to have forces written out part by part*/
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
- * nlforce1.c*/
+ * nlforce.c*/
 #define VERBOSE 0
 
 

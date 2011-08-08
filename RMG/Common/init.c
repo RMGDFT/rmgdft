@@ -360,12 +360,12 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
                     if (pct.spinpe == 0)
    		    {				    
 		    	rho[idx] = rhoc[idx] * fac;
-		    	rho_oppo[idx] = rhoc[idx] -  rho[idx];
+		    	rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
 		    }
 		    else         /* if pct.spinpe = 1  */
 		    {
 		    	rho_oppo[idx] = rhoc[idx] * fac;
-		    	rho[idx] = rhoc[idx] - rho_oppo[idx];
+		    	rho[idx] = rhoc[idx] * (1.0 - fac);
 		     }
 	       }
 

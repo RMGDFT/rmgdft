@@ -22,7 +22,7 @@ void nlforce (REAL * veff)
     int num_ions;
     fftwnd_plan p2;
     REAL *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
-    REAL *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force;
+    REAL *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
     int fpt0;
 #if VERBOSE
     REAL *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
@@ -62,12 +62,14 @@ void nlforce (REAL * veff)
 
     /*Array for q-force */
     my_malloc (qforce, 3 * num_ions, REAL);
-    my_malloc (tmp_force, 3 * num_ions, REAL);
+    my_malloc (tmp_force_gamma, 3 * num_ions, REAL);
+    my_malloc (tmp_force_omega, 3 * num_ions, REAL);
 
     for (isp = 0; isp < 3 * num_ions; isp++)
     {
         qforce[isp] = 0.0;
-        tmp_force[isp] = 0.0;
+        tmp_force_gamma[isp] = 0.0;
+        tmp_force_omega[isp] = 0.0;
     }
 
 
@@ -146,6 +148,12 @@ void nlforce (REAL * veff)
         iptr = &ct.ions[ion];
 
         index = 3 * (ion);
+
+#if VERBOSE
+        old_force[index] = iptr->force[fpt0][0];
+        old_force[index + 1] = iptr->force[fpt0][1];
+        old_force[index + 2] = iptr->force[fpt0][2];
+#endif
         iptr->force[fpt0][0] += ct.vel_f * qforce[index];
         iptr->force[fpt0][1] += ct.vel_f * qforce[index + 1];
         iptr->force[fpt0][2] += ct.vel_f * qforce[index + 2];
@@ -158,9 +166,6 @@ void nlforce (REAL * veff)
     sum2x = 0.0;
     sum2y = 0.0;
     sum2z = 0.0;
-
-    if (pct.imgpe == 0)
-        printf ("\n\n True Non-local forces");
 #endif
 
     /*Loop over ions again */
@@ -181,26 +186,46 @@ void nlforce (REAL * veff)
         
         iptr = &ct.ions[gion];
 
-#if VERBOSE
-        old_force[3 * gion] = iptr->force[fpt0][0];
-        old_force[3 * gion + 1] = iptr->force[fpt0][1];
-        old_force[3 * gion + 2] = iptr->force[fpt0][2];
-#endif
-
 
         nh = ct.sp[iptr->species].nh;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
         partial_gamma (gion, par_gamma, par_omega, nion, nh, newsintR_x, newsintR_y, newsintR_z,
                        newsintI_x, newsintI_y, newsintI_z);
-        nlforce_par_gamma (par_gamma, gion, nh, &tmp_force[3*gion]);
+        nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
 
+
+        nlforce_par_omega (par_omega, gion, nh, &tmp_force_omega[3*gion]);
+
+    }                           /*end for(ion=0; ion<num_ions; ion++) */
+    
+    size1 = 3 * num_ions;
+    global_sums (tmp_force_gamma, &size1, pct.img_comm);
+    global_sums (tmp_force_omega, &size1, pct.img_comm);
+    
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        iptr = &ct.ions[ion];
+
+        index = 3 * (ion);
+        iptr->force[fpt0][0] += tmp_force_gamma[index];
+        iptr->force[fpt0][1] += tmp_force_gamma[index + 1];
+        iptr->force[fpt0][2] += tmp_force_gamma[index + 2];
+    }
+
+    
 
 #if VERBOSE
-        /*Print out true NL force */
-        if (pct.imgpe == 0)
+    if (pct.imgpe == 0)
+    {
+        printf ("\n\n True Non-local forces:");
+
+        for (ion = 0; ion < ct.num_ions; ion++)
         {
-            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f", ion,
+
+            iptr = &ct.ions[ion];
+            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
+                    ion,
                     iptr->force[fpt0][0] - old_force[3 * ion],
                     iptr->force[fpt0][1] - old_force[3 * ion + 1],
                     iptr->force[fpt0][2] - old_force[3 * ion + 2]);
@@ -208,36 +233,35 @@ void nlforce (REAL * veff)
             sum1x += iptr->force[fpt0][0] - old_force[3 * ion];
             sum1y += iptr->force[fpt0][1] - old_force[3 * ion + 1];
             sum1z += iptr->force[fpt0][2] - old_force[3 * ion + 2];
-
-            old_force[3 * ion] = iptr->force[fpt0][0];
-            old_force[3 * ion + 1] = iptr->force[fpt0][1];
-            old_force[3 * ion + 2] = iptr->force[fpt0][2];
         }
+        printf ("\n True NL sum in x, y and z directions: %e %e %e", sum1x, sum1y, sum1z);
+    }
+
 #endif
 
 
-        nlforce_par_omega (par_omega, gion, nh, &tmp_force[3*gion]);
-
-    }                           /*end for(ion=0; ion<num_ions; ion++) */
-    
-    size1 = 3 * num_ions;
-    global_sums (tmp_force, &size1, pct.img_comm);
-    
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];
 
         index = 3 * (ion);
-        iptr->force[fpt0][0] += tmp_force[index];
-        iptr->force[fpt0][1] += tmp_force[index + 1];
-        iptr->force[fpt0][2] += tmp_force[index + 2];
+
+#if VERBOSE
+        old_force[index] = iptr->force[fpt0][0];
+        old_force[index + 1] = iptr->force[fpt0][1];
+        old_force[index + 2] = iptr->force[fpt0][2];
+#endif
+
+        iptr->force[fpt0][0] += tmp_force_omega[index];
+        iptr->force[fpt0][1] += tmp_force_omega[index + 1];
+        iptr->force[fpt0][2] += tmp_force_omega[index + 2];
     }
 
 
 #if VERBOSE
     if (pct.imgpe == 0)
     {
-        printf ("\n\n Eiegenvalue force:");
+        printf ("\n\n Eigenvalue force:");
 
         for (ion = 0; ion < ct.num_ions; ion++)
         {
@@ -253,12 +277,14 @@ void nlforce (REAL * veff)
             sum2y += iptr->force[fpt0][1] - old_force[3 * ion + 1];
             sum2z += iptr->force[fpt0][2] - old_force[3 * ion + 2];
         }
+        printf ("\n Eigenvalue force sum in x, y and z directions: %e %e %e", sum2x, sum2y, sum2z);
     }
 #endif
 
     my_free (par_gamma);
     my_free (gamma);
-    my_free (tmp_force);
+    my_free (tmp_force_gamma);
+    my_free (tmp_force_omega);
     my_free (qforce);
     my_free (newsintR_x);
 #if !GAMMA_PT
@@ -266,11 +292,6 @@ void nlforce (REAL * veff)
 #endif
 
 #if VERBOSE
-
-    if (pct.imgpe == 0)
-        printf ("\n True NL sum in x, y and z directions: %e %e %e", sum1x, sum1y, sum1z);
-    if (pct.imgpe == 0)
-        printf ("\n Eigenvalue force sum in x, y and z directions: %e %e %e", sum2x, sum2y, sum2z);
     my_free (old_force);
 #endif
 
