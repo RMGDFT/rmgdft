@@ -12,7 +12,7 @@
 #include "hybrid.h"
 #endif
 
-static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt);
+static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states);
 
 static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
                                int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
@@ -64,9 +64,9 @@ void betaxpsi1 (STATE * states, int kpt)
         my_calloc (nown_buff, size_nown, REAL);
 #if !GAMMA_PT
     if (size_own)
-        my_calloc (own_buffI, size_own, REAL);
+        my_calloc (send_ownI, size_own, REAL);
     if (size_nown)
-        my_calloc (nown_buffI, size_nown, REAL);
+        my_calloc (recv_nownI, size_nown, REAL);
 #endif
 
     if (pct.num_owned_pe)
@@ -112,7 +112,7 @@ void betaxpsi1 (STATE * states, int kpt)
     }
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi1_calculate (sintR, sintI, states, kpt);
+    betaxpsi1_calculate (sintR, sintI, states);
 
 
     /*Pack data for sending */
@@ -199,11 +199,11 @@ void betaxpsi1 (STATE * states, int kpt)
 
 
 
-static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt)
+static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states)
 {
     int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist;
     REAL *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
-    REAL *weiptr, *psiR, *psiI;
+    REAL *weiptr, *psiR, psiI;
     ION *iptr;
     SPECIES *sp;
     STATE *st;
@@ -330,6 +330,72 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     my_free (nlarrayR);
 }
 
+void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI) {
+
+  int idx, stop, alloc, ip, incx=1, ipindex, istate, *pidx, ist, st_stop;
+  ION *iptr;
+  SPECIES *sp;
+  REAL *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
+
+  istate = st->istate;
+
+  alloc = P0_BASIS;
+  if (alloc < ct.max_nlpoints)
+      alloc = ct.max_nlpoints;
+
+  my_malloc (nlarrayR, 2 * alloc, REAL);
+  nlarrayI = nlarrayR + alloc;
+
+  iptr = &ct.ions[ion];
+  sp = &ct.sp[iptr->species];
+  stop = pct.idxptrlen[ion];
+  pidx = pct.nlindex[ion];
+
+  st_stop = ct.num_states / THREADS_PER_NODE;
+  st_stop = st_stop * THREADS_PER_NODE;
+
+  for(ist = istate;ist < st_stop;ist+=THREADS_PER_NODE) {
+      
+      psiR = st->psiR;
+#if !GAMMA_PT
+      psiI = st->psiI;
+#endif
+
+#if GAMMA_PT
+      /* Copy wavefunction into temporary array */
+      for (idx = 0; idx < stop; idx++)
+          nlarrayR[idx] = psiR[pidx[idx]];
+#else
+      for (idx = 0; idx < stop; idx++)
+          nlarrayR[idx] = psiR[pidx[idx]] * pR[idx] - psiI[pidx[idx]] * pI[idx];
+
+      for (idx = 0; idx < stop; idx++)
+          nlarrayI[idx] = psiI[pidx[idx]] * pR[idx] + psiR[pidx[idx]] * pI[idx];
+#endif
+
+  /* <Beta|psi>                                       */
+
+      weiptr = pct.weight[ion];
+      ipindex = st->istate * ct.max_nl;
+
+      for (ip = 0; ip < sp->nh; ip++)
+      {
+
+          sintR[ipindex] = ct.vel * sdot (&stop, nlarrayR, &incx, weiptr, &incx);
+#if !GAMMA_PT
+          sintI[ipindex] = ct.vel * sdot (&stop, nlarrayI, &incx, weiptr, &incx);
+#endif
+
+          weiptr += pct.idxptrlen[ion];
+          ipindex++;
+
+      }
+
+      st += THREADS_PER_NODE;
+  }
+  my_free (nlarrayR);
+
+}
 
 /*This receives data from other PEs for ions owned by current PE*/
 static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
@@ -424,7 +490,7 @@ static void betaxpsi1_pack (REAL * sintR, REAL * sintI, REAL * fill_buff, REAL *
 
 #if !GAMMA_PT
             sintI_tpr = &sintI[nlion * ct.num_states * ct.max_nl];
-            my_copy (sintI_tpr, tpr_buffI, size);
+            my_copy (sintI_tpr, tpr_buffI, &size);
             tpr_buffI += size;
 #endif
         }
