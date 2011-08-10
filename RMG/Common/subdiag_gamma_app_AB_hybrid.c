@@ -6,6 +6,7 @@
 #include "main.h"
 
 #if HYBRID_MODEL
+#if GAMMA_PT
 #include "hybrid.h"
 #include <pthread.h>
 void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
@@ -195,4 +196,5 @@ void subdiag_app_B_one (STATE *sp, REAL * b_psi)
 
 }                               /* subdiag_app_B_one */
 
+#endif
 #endif
