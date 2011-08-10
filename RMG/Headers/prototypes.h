@@ -400,7 +400,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
 void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig);
 void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI);
 #endif
-void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI);
+void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI, int kpt);
 
 
 void ylmr2 (double *r, double *ylm);

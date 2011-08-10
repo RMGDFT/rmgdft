@@ -152,14 +152,16 @@ void run_threads(SCF_THREAD_CONTROL *s) {
                break;
             case HYBRID_SKIP:
                break;
+#if GAMMA_PT
             case HYBRID_SUBDIAG_APP_A:
                subdiag_app_A_one(s->sp, s->p1, s->p2, s->vtot);
                break;
             case HYBRID_SUBDIAG_APP_B:
                subdiag_app_B_one(s->sp, s->p1);
                break;
+#endif 
             case HYBRID_BETAX_PSI1_CALCULATE:
-               betaxpsi1_calculate_one(s->sp, s->ion, s->nion, s->sintR, s->sintI);
+               betaxpsi1_calculate_one(s->sp, s->ion, s->nion, s->sintR, s->sintI, s->kpt);
                break;
 #if PAPI_PERFMON
             case HYBRID_FINALIZE_PAPI:

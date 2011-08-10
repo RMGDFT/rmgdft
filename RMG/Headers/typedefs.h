@@ -1392,6 +1392,7 @@ typedef struct
     int nion;       // Used for threaded beta_xpsi
     REAL *sintR;    // Used for threaded beta_xpsi
     REAL *sintI;    // Used for threaded beta_xpsi
+    int kpt;    // Used for threaded beta_xpsi
 } SCF_THREAD_CONTROL;
 #endif
 
