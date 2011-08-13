@@ -33,8 +33,12 @@ OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 #The options below work on Linux with MPICH. This works on Fedora 14. 
 LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
+
 #For OpenMPI, use the following options instead of those above. This works on debian-based systems including Ubuntu.
 #LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran  -L ../lib/libxc/lib -lxc
+
+#For Scalapack compiled using python installer
+#LIBS = -lblas -lm -llapack -lfftw  -L/usr/lib64/ -lmpi_f77 /usr/local/scalapack/lib/libscalapack.a /usr/local/scalapack/lib/blacsF77.a /usr/local/scalapack/lib/blacs.a  /usr/local/scalapack/lib/libscalapack.a   -L ../lib/libxc/lib -lxc
 LDFLAGS =
 
 
