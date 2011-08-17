@@ -339,7 +339,7 @@ REAL metric (REAL *crystal);
 /* Md run types */
 void quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
              REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
-void fastrlx (int steps, STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+void relax (int steps, STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
@@ -483,4 +483,5 @@ int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int 
 int is_loop_over_states(void);
 void Papi_init_omp_threads(int ithread);
 void Papi_finalize_omp_threads(int ithread);
+void fastrelax (void);
 

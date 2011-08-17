@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include "main.h"
 
-void rmg_fastrelax (void)
+void fastrelax (void)
 {
     int ion, fpt;
     ION *iptr;

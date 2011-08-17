@@ -214,11 +214,11 @@ void run (void)
     {
 
     case MD_QUENCH:            /* Quench the electrons */
-        fastrlx (1, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        relax (1, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
-        fastrlx (ct.max_md_steps, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        relax (ct.max_md_steps, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case NEB_RELAX:           /* nudged elastic band relax */

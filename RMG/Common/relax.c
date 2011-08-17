@@ -53,7 +53,7 @@ void movie (FILE *);
 
 
 
-void fastrlx (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
+void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
               REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
 
@@ -108,10 +108,10 @@ void fastrlx (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         {
 
             case FASTRELAX:
-                rmg_fastrelax ();
+                fastrelax ();
                 break;
             case FIRE:
-                rmg_fastrelax ();
+                fastrelax ();
                 break;
             case LBFGS:
                 rmg_lbfgs();
