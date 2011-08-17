@@ -48,7 +48,6 @@
 
 
 /* Local function prototypes */
-void rmg_fastrelax (void);
 void movie (FILE *);
 
 
