@@ -77,19 +77,10 @@ void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
 
     /* initialization */
     if(xc_func_init(&func_x, func_id_x, XC_UNPOLARIZED) != 0)
-    {
-	if (pct.imgpe == 0)    
-    		printf( "Functional %d not found\n", func_id_x);
-    	exit(1);
-    }
+        error_handler("Functional %d not found\n", func_id_x);
     
     if(xc_func_init(&func_c, func_id_c, XC_UNPOLARIZED) != 0)
-    {
-	if (pct.imgpe == 0)    
-    		printf( "Functional %d not found\n", func_id_c);
-    	exit(1);
-    } 
-
+        error_handler("Functional %d not found\n", func_id_c);
 
     my_calloc (ec, 5 * FP0_BASIS, REAL);
     vc = ec + FP0_BASIS; 
