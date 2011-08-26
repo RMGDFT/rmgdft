@@ -484,4 +484,7 @@ int is_loop_over_states(void);
 void Papi_init_omp_threads(int ithread);
 void Papi_finalize_omp_threads(int ithread);
 void fastrelax (void);
+void fire (void);
+void quick_min (void);
+int int_sum_all (int x, MPI_Comm comm);
 

@@ -241,9 +241,9 @@ void get_nlop (void)
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-    if (real_sum_all (pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
+    if (int_sum_all (pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
         error_handler ("Problem with claimimg ions, %d ions claimed, but num_ions is %d",
-                       real_sum_all (pct.num_owned_ions, pct.grid_comm), ct.num_ions);
+                       int_sum_all (pct.num_owned_ions, pct.grid_comm), ct.num_ions);
 
     printf ("\n PE %d: Number of nonlocal ions is %d", pct.gridpe, pct.num_nonloc_ions);
 
@@ -360,7 +360,7 @@ void get_nlop (void)
                 {
                     if (pct.num_nonloc_pes >= MAX_NONLOC_PROCS)
                         error_handler ("pct.num_nonloc_pes (%d) is too large (max: %d)",
-                                       pct.nonloc_pe_list_ions, MAX_NONLOC_PROCS);
+                                       pct.num_nonloc_pes, MAX_NONLOC_PROCS);
 
                     pct.nonloc_pe_list[pct.num_nonloc_pes] = pe;
 
