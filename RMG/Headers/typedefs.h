@@ -1286,6 +1286,15 @@ typedef struct
 
     REAL neb_spring_constant;
 
+    /*Current RMS value*/
+    REAL rms;
+
+    /* Max number of sweeps in get_vh*/
+    int hartree_max_sweeps;
+
+    /*Ratio between target RMS for get_vh and RMS total potential*/
+    REAL hartree_rms_ratio;
+
 #if PAPI_PERFMON
 
     // Global event set for serial portion of code

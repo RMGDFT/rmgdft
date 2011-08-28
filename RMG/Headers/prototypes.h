@@ -180,7 +180,7 @@ void gram (KPOINT *kpoint, REAL h, int numst, int maxst, int numpt,
            int maxpt);
 int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
 REAL get_ke (STATE *sp, int tid);
-void get_vh (REAL *rho, REAL *rhoc, REAL *vh, int cycles, int maxlevel);
+void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxlevel, REAL rms_target);
 char *get_symbol (int atomic_number);
 void global_sums (REAL *vect, int *length, MPI_Comm comm);
 void init (REAL *vh, REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, STATE *states,

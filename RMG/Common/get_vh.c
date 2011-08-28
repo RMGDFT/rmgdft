@@ -50,13 +50,13 @@ static int poi_pre[5] = { 0, 3, 3, 3, 3 };
 static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
+void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxlevel, REAL rms_target)
 {
 
     int idx, its, nits, sbasis, pbasis;
     REAL t1, vavgcor, diag;
     REAL *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    REAL *sg_rho, *sg_vh, *sg_res, *nrho;
+    REAL *sg_rho, *sg_vh, *sg_res, *nrho, rms = 100.0, *old_vh_ext, diff;
     int incx = 1, cycles;
 
     REAL time1, time2;
@@ -77,6 +77,9 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     sg_vh = sg_rho + sbasis;
     sg_res = sg_vh + sbasis;
     nrho = sg_res + sbasis;
+    my_malloc(old_vh_ext, pbasis, REAL);
+
+    my_copy(ct.vh_ext, old_vh_ext, pbasis);
 
 
     /* Subtract off compensating charges from rho */
@@ -99,8 +102,9 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     t1 = -FOUR * PI;
     QMD_sscal (pbasis, t1, mgrhsarr, incx);
 
+    its = 0;
 
-    for (its = 0; its < sweeps; its++)
+    while ((its < max_sweeps) && (rms > rms_target))  
     {
 
 
@@ -125,11 +129,9 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
             }                   /* end for */
 
-
             /* Pre and Post smoothings and multigrid */
             if (cycles == ct.poi_parm.gl_pre)
             {
-
 
                 /* Transfer res into smoothing grid */
                 pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
@@ -181,7 +183,27 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
 
         }                       /* end for */
 
+        /*Calculate RMS of the potential*/
+	rms = 0;
+	
+        for (idx = 0; idx < pbasis; idx++)
+        {
+            diff = ct.vh_ext[idx] - old_vh_ext[idx];
+	    rms += diff * diff;
+        }
+
+        rms = sqrt (real_sum_all(rms, pct.grid_comm) / (REAL) pbasis);
+
+        //printf("\n get_vh RMS sweep %d, RMS is %10.5e", its, rms);
+	
+        my_copy(ct.vh_ext, old_vh_ext, pbasis);
+	    
+        its ++;
     }                           /* end for */
+
+    printf ("\n");
+    progress_tag ();
+    printf ("Executed %d sweeps, final rms %15.8e\n", its, rms);
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions

@@ -390,7 +390,8 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     }
 #endif
 
-
+    ct.rms = 0.0;
+    
     Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
@@ -408,11 +409,11 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
   	    	for (idx = 0; idx < FP0_BASIS; idx++)
             		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
-        	get_vh (rho_tot, rhoc, vh, 30, ct.poi_parm.levels);
+        	get_vh (rho_tot, rhoc, vh, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
     		my_free (rho_tot);
 	}
 	else
-        	get_vh (rho, rhoc, vh, 30, ct.poi_parm.levels);
+        	get_vh (rho, rhoc, vh, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
 
     }
 

@@ -260,6 +260,15 @@ input_wave_function_file="Wave-soft/wave.out"
 output_wave_function_file="Wave-soft/wave.out"
 
 
+# Maximum Number of sweeps in get_vh
+# Default: "100"
+hartree_max_sweeps="100"
+
+# Ratio between target RMS for get_vh and RMS total potential
+# This determines target RMS passed to get_vh, which becomes:  total potential RMS/ hartree_rms_ratio
+# Default: "50.0"
+hartree_rms_ratio="50.0"
+
 
 ######################################################################## 
 # Specialty options: These options are often customized, but they only #

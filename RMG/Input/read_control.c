@@ -322,6 +322,13 @@ void read_control (void)
     get_data ("do_restart_overwrite_occupation_numbers", &ct.override_occ, BOOL, "false");
 
 
+    /* Max number of sweeps in get_vh*/
+    get_data ("hartree_max_sweeps", &ct.hartree_max_sweeps, INT, "100");
+
+    /* Ratio between target RMS for get_vh and RMS total potential
+     * This determines target RMS passed to get_vh*/
+    get_data ("hartree_rms_ratio", &ct.hartree_rms_ratio, DBL, "50.0");
+
 
     /* Number of states */
     if(ct.spin_flag)
