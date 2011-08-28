@@ -74,7 +74,7 @@ void read_control (void)
     get_data ("z_average_output_mode", &ct.zaverage, OPT, "None");
 
     /* Read in wait flag toggle */
-    get_data ("do_wait_flag", &ct.wait_flag, BOOL, "false");
+    get_data ("wait_flag", &ct.wait_flag, BOOL, "false");
     if (ct.wait_flag)
         get_data ("wait_flag_count", &ct.wait_flag, INT, "15");
 
@@ -145,10 +145,10 @@ void read_control (void)
     get_data ("relax_mass", &ct.relax_mass, OPT, "Atomic");
 
     /* Write pseudopotential plots */
-    get_data ("do_write_pseudopotential_plots", NULL, BOOL, "false");
+    get_data ("write_pseudopotential_plots", NULL, BOOL, "false");
 
     /* Write wavefunctions into output file, every main.count of steps */
-    get_data ("do_write_waves_to_file", &ct.checkpoint, BOOL, "true");
+    get_data ("write_waves_to_file", &ct.checkpoint, BOOL, "true");
     if (ct.checkpoint)
     {
         get_data ("md_steps_til_write_waves", &ct.checkpoint, INT, "10");
@@ -160,7 +160,7 @@ void read_control (void)
 
 
     /* How often calculate energy, print out eigenvalues and occupancies  */
-    get_data ("do_print_energy_and_eigenvalues", &ct.outcount, BOOL, "true");
+    get_data ("print_energy_and_eigenvalues", &ct.outcount, BOOL, "true");
     if (ct.outcount)
     {
         get_data ("scf_steps_til_energy_and_eigenv_print", &ct.outcount, INT, "1");
@@ -171,7 +171,7 @@ void read_control (void)
     }
 
     /* sorting flag */
-    get_data ("do_sort_wavefunctions", &ct.sortflag, BOOL, "true");
+    get_data ("sort_wavefunctions", &ct.sortflag, BOOL, "true");
     
 
     /* Set up and validate input options */
@@ -192,7 +192,7 @@ void read_control (void)
     get_data ("occupation_number_mixing", &ct.occ_mix, DBL, "0.3");
 
     /* Diagonalization info: initial diagonalization flag */
-    get_data ("do_initial_diagnolization", &ct.initdiag, BOOL, "false");
+    get_data ("initial_diagnolization", &ct.initdiag, BOOL, "false");
 
     /* Diagonalization info: diagonalization period */
     get_data ("period_of_diagonalization", &ct.diag, INT, "10");
@@ -282,9 +282,9 @@ void read_control (void)
      * If restarting, default is false, velocities from previous run should be good enough
      * if not restarting, defualt value will be true*/
     if (verify ("start_mode", "Restart From File"))
-        get_data ("do_rmg_randomize_velocity", &ct.nose.randomvel, BOOL, "false");
+        get_data ("md_randomize_velocity", &ct.nose.randomvel, BOOL, "false");
     else
-        get_data ("do_rmg_randomize_velocity", &ct.nose.randomvel, BOOL, "true");
+        get_data ("md_randomize_velocity", &ct.nose.randomvel, BOOL, "true");
 
 
     /* Set up and validate input options */
@@ -299,27 +299,27 @@ void read_control (void)
     get_data ("ionic_time_step", &ct.iondt, DBL, "50");
 
     /* DX movie flag */
-    get_data ("do_dx_movie", &ct.chmovie, BOOL, "false");
+    get_data ("dx_movie", &ct.chmovie, BOOL, "false");
     if (ct.chmovie)
         get_data ("md_steps_per_movie_frame", &ct.chmovie, INT, "1");
 
 
     /* RMV movie flag */
-    get_data ("do_rm_movie", &ct.rmvmovie, BOOL, "false");
+    get_data ("rm_movie", &ct.rmvmovie, BOOL, "false");
     if (ct.rmvmovie)
         get_data ("md_steps_per_movie_frame", &ct.rmvmovie, INT, "1");
 
     /* XBS movie flag */
-    get_data ("do_xbs_movie", &ct.xbsmovie, BOOL, "false");
+    get_data ("xbs_movie", &ct.xbsmovie, BOOL, "false");
     if (ct.xbsmovie)
         get_data ("md_steps_per_movie_frame", &ct.xbsmovie, INT, "1");
 
 
     /* Milliken population flag */
-    get_data ("do_milliken_population", &ct.domilliken, BOOL, "false");
+    get_data ("milliken_population", &ct.domilliken, BOOL, "false");
 
     /* override occupations */
-    get_data ("do_restart_overwrite_occupation_numbers", &ct.override_occ, BOOL, "false");
+    get_data ("restart_overwrite_occupation_numbers", &ct.override_occ, BOOL, "false");
 
 
     /* Max number of sweeps in get_vh*/
@@ -549,7 +549,7 @@ void read_control (void)
 
     /* override type, positions and force control characters */
     /* 0=do not override and 1=override */
-    get_data ("do_restart_coordinates_with_current_as_initial", &ct.override_initial, BOOL,
+    get_data ("restart_coordinates_with_current_as_initial", &ct.override_initial, BOOL,
               "false");
 
     /* Set up and validate input options */

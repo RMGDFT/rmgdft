@@ -129,10 +129,10 @@ void read_control (void)
 
 
   /* Write pseudopotential plots */
-    get_data ("do_write_pseudopotential_plots", NULL, BOOL, "false");
+    get_data ("write_pseudopotential_plots", NULL, BOOL, "false");
 
     /* Write wavefunctions into output file, every md count of steps */
-    get_data ("do_write_waves_to_file", &ct.checkpoint, BOOL, "true");
+    get_data ("write_waves_to_file", &ct.checkpoint, BOOL, "true");
     if (ct.checkpoint)
     {
         get_data ("md_steps_til_write_waves", &ct.checkpoint, INT, "10");
@@ -144,7 +144,7 @@ void read_control (void)
 
 
     /* How often calculate energy, print out eigenvalues and occupancies  */
-    get_data ("do_print_energy_and_eigenvalues", &ct.outcount, BOOL, "true");
+    get_data ("print_energy_and_eigenvalues", &ct.outcount, BOOL, "true");
     if (ct.outcount)
     {
         get_data ("scf_steps_til_energy_and_eigenv_print", &ct.outcount, INT, "1");

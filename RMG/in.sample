@@ -136,7 +136,7 @@ O   pseudo.o
 
 # Determine if we should print out US files (projectors, etc)
 # Defaults to: false
-do_write_pseudopotential_plots="false"
+write_pseudopotential_plots="false"
 
 
 
@@ -245,7 +245,7 @@ b_spline_trade_order="3"
 
 # Sort wavefunctions by eigenvalue or not
 # Default: "true"
-do_sort_wavefunctions="true"
+sort_wavefunctions="true"
 
 # Fine grid for non-local pseudopotential
 # How many times finer the double grid around the ions is
@@ -314,7 +314,7 @@ md_nose_oscillation_frequency_THz="15.59"
 # this should be "true", unless doing a restart of MD simulation
 # Default: "true" if new run
 # Defualt "false" if restarting
-do_md_randomize_velocity=
+md_randomize_velocity=
 "true" 
 #"false"
 
@@ -326,7 +326,7 @@ md_integration_order=
 
 # Number of MD steps after which wave functions 
 # and other info are saved into the output file
-# Only used if do_write_waves_to_file is "true"
+# Only used if write_waves_to_file is "true"
 # Default: "10"
 md_steps_til_write_waves="10"
 
@@ -335,19 +335,19 @@ md_steps_til_write_waves="10"
 
 # Whether or not to to output information for DX charge movie (MD calculation only)
 # Default: "false"
-do_dx_movie=
+dx_movie=
 "false"
 #"true"
 
 # Whether or not to to output information for RMV (rotmovie) movie (MD or Structural Relax)
 # Default: "false"
-do_rm_movie=
+rm_movie=
 "false"
 #"true"
 
 # Whether or not to to output information for XBS movie (MD or structural relaxation)
 # Default: "false"
-do_xbs_movie=
+xbs_movie=
 "false"
 #"true"
 
@@ -375,7 +375,7 @@ states_per_kpoint="10"
 
 # Use occupations specified in this file rather than from input wave file
 # Default: "false" 
-do_restart_overwrite_occupation_numbers=
+restart_overwrite_occupation_numbers=
 "false"
 #"true"
 
@@ -389,7 +389,7 @@ restart_coordinates_from=
 # Whether to use coordinates listed in this file as initial coordinates
 # when doing restart and ignore those specified in the wave input file
 # Default:"false"
-do_restart_coordinates_with_current_as_initial=
+restart_coordinates_with_current_as_initial=
 "false"
 #"true"
 
@@ -442,18 +442,18 @@ boundary_condition_type=
 
 # Whether or not write wavefunctions into output file
 # Default: "true"
-do_write_waves_to_file=
+write_waves_to_file=
 "true"
 #"false"
 
 # Whether to calculate energy and print eigenvalues and occupancies while doing SCF steps
 # Default: "true"
-do_print_energy_and_eigenvalues=
+print_energy_and_eigenvalues=
 "true"
 #"false"
 
 # Number of SCF steps after which energy, eigenvalues and occupancies are written out
-# This is ignored if do_print_energy_and_eigenvalues is "false"
+# This is ignored if print_energy_and_eigenvalues is "false"
 # Default: "1" (meaning every step)
 scf_steps_til_energy_and_eigenv_print="1"
 
@@ -464,7 +464,7 @@ write_eigvals_period="10"
 
 # Whether to do subspace diagonalization before starting calculation
 # Default: "false"
-do_initial_diagnolization=
+initial_diagnolization=
 "false"
 #"true"
 # Default: "0.0 0.0 1.0"
@@ -478,7 +478,7 @@ electric_field_magnitude="0.0"
 write_memory_report="false"
 
 # Default: "false"
-do_milliken_population=
+milliken_population=
 "false"
 #"true"
 
@@ -492,11 +492,11 @@ z_average_output_mode=
 # Whether nodes should wait before writing data 
 # (Useful for NFS filesystem where simultaneous writing can cause network congestion and hangup).
 # Default: "false"
-do_wait_flag=
+wait_flag=
 "false"
 #"true"
 
-# The actual number of seconds to wait (integer) - See the do_wait_flag option above for more info.
+# The actual number of seconds to wait (integer) - See the wait_flag option above for more info.
 # Default : "15"
 wait_flag_count="15"
 

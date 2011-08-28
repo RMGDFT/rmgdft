@@ -30,7 +30,7 @@ void init_qfunct (void)
     for (isp = 0; isp < ct.num_species; isp++)
     {
 
-        if (verify ("do_write_pseudopotential_plots", &SET))
+        if (verify ("write_pseudopotential_plots", &SET))
         {
 	    snprintf (newname1, MAX_PATH, "%s.q%d.xmgr", ct.basename,isp);
 	    snprintf (newname2, MAX_PATH, "%s.drq%d.xmgr", ct.basename,isp);
@@ -95,7 +95,7 @@ void init_qfunct (void)
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_QLIG;
                     drqnmlig_tpr = sp->drqnmlig + (idx * sp->nlc + ll) * MAX_QLIG;
 
-                    if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+                    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
                     {
                         for (k = 0; k < sp->kkbeta; k++)
                             fprintf (fqq, "%e  %e\n", sp->r[k], work[k]);
@@ -135,7 +135,7 @@ void init_qfunct (void)
                                 drqnmlig_tpr[k] = 0.0;
                         }       /*end for if */
 
-                        if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+                        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
                         {
                             fprintf (fqq, "%e  %e\n", rfil, qnmlig_tpr[k]);
                             fprintf (fdq, "%e  %e\n", rfil, drqnmlig_tpr[k]);
@@ -144,7 +144,7 @@ void init_qfunct (void)
                         rfil += sp->drqlig;
                     }           /*end for k */
 
-                    if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+                    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
                     {
                         fprintf (fqq, "&\n");
                         fprintf (fdq, "&\n");
@@ -153,7 +153,7 @@ void init_qfunct (void)
             }                   /*end for j */
         }                       /*end for i */
 
-        if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
         {
             fclose (fqq);
             fclose (fdq);

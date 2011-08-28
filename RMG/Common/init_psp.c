@@ -71,7 +71,7 @@ void init_psp (void)
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
 	{
 	    snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename,isp);
 	    my_fopen (psp, newname, "w+");
@@ -129,7 +129,7 @@ void init_psp (void)
 
         }                       /* end for */
 
-        if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
         {
             for (idx = 0; idx < sp->rg_points; idx++)
             {
@@ -194,7 +194,7 @@ void init_psp (void)
             }                   /* end if */
 
             /* output local projector */
-            if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
             {
 
 		if (rfil < sp->lradius)
@@ -207,7 +207,7 @@ void init_psp (void)
         }                       /* end for idx */
 
         /* output xmgr data separator */
-        if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
         {
 
             fprintf (psp, "\n&&\n");
@@ -223,7 +223,7 @@ void init_psp (void)
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
-            if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
             {
                 for (idx = 0; idx < sp->kkbeta; idx++)
                     fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], sp->beta[ip][idx]);
@@ -277,7 +277,7 @@ void init_psp (void)
                 }               /* end if */
 
                 /* output non-local projector */
-                if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+                if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
                 {
 
 /*                        if(!(idx % 32))*/
@@ -290,7 +290,7 @@ void init_psp (void)
             }                   /* end for */
 
             /* output xmgr data separator */
-            if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
             {
 
                 fprintf (psp, "\n&&\n");
@@ -310,7 +310,7 @@ void init_psp (void)
 
             }                   /* end for */
 
-            if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
             {
                 for (idx = 0; idx < sp->rg_points; idx++)
                 {
@@ -352,7 +352,7 @@ void init_psp (void)
                 if (sp->rhocorelig[idx] < 0.0)
                     sp->rhocorelig[idx] = 0.0;
 
-                if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+                if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
                 {
 
                     if (rfil < rcut)
@@ -364,7 +364,7 @@ void init_psp (void)
 
             }                   /* end for */
 
-            if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
                 fprintf (psp, "\n&&\n");
 
 
@@ -376,7 +376,7 @@ void init_psp (void)
         if (sp->localidx < 0)
             error_handler ("No local potential defined");
 
-        if (pct.gridpe == 0 && verify ("do_write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
             fclose (psp);
 
     }                           /* end for */
