@@ -212,6 +212,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxleve
 
     /* Release our memory */
     my_free (mgrhsarr);
+    my_free (old_vh_ext);
 
     time2 = my_crtc ();
     rmg_timings (HARTREE_TIME, (time2 - time1));
