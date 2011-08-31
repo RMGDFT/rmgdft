@@ -172,7 +172,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		MPI_Bcast( &L_total, 1, MPI_DOUBLE, 0, pct.img_comm );
 		MPI_Bcast( &R_total, 1, MPI_DOUBLE, 0, pct.img_comm );
 
-        dprintf(" %d: Do(n't) apply constraints to first/last images ", constrain);
+        //dprintf(" %d: Do(n't) apply constraints to first/last images ", constrain);
         MPI_Bcast( &constrain, 1, MPI_INT, 0, pct.img_comm );
         ct.constrainforces = constrain;
 

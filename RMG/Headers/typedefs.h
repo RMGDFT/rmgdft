@@ -717,6 +717,7 @@ typedef struct
 		REAL setA_coord[3];
 		REAL setB_weight;
 		REAL setB_coord[3];
+        double forcemask[3];
 	} constraint;
 		
 

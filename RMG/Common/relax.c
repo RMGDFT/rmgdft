@@ -90,8 +90,7 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     
 
     /* ---------- begin relax loop --------- */
-
-    DONE = (ct.max_md_steps < 1 );
+    DONE = (ct.max_md_steps < 1 || steps < 1);
 
     while (!DONE)
     {
@@ -99,7 +98,7 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		rlx_steps++;
 
         if (pct.imgpe == 0)
-            printf ("\nfastrlx: ---------- [rlx: %d/%d] ----------\n", rlx_steps, ct.max_md_steps);
+            printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
         /* not done yet ? => move atoms */
 		/* move the ions */
@@ -157,7 +156,7 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
     /* ---------- end relax loop --------- */
 
-    if (ct.max_md_steps > 0)
+    if (ct.max_md_steps > 0 && steps > 0)
     {
 
         printf ("\n");

@@ -214,7 +214,7 @@ void run (void)
     {
 
     case MD_QUENCH:            /* Quench the electrons */
-        relax (1, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        relax (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
