@@ -1220,6 +1220,18 @@ typedef struct
     /** Ionic motion timestep */
     REAL iondt;
 
+    /*** Maximum ionic motion timestep */
+    REAL iondt_max;
+
+    /*** Factor by which iondt is increased */
+    REAL iondt_inc;
+
+    /*** Factor by which iondt is decreased */
+    REAL iondt_dec;
+
+    /*Number of steps after which iondt is increased */
+    int relax_steps_delay;
+
 
     /** Ionic motion energy */
     REAL ionke;
