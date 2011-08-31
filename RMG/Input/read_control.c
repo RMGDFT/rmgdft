@@ -100,7 +100,7 @@ void read_control (void)
     get_data ("charge_pulay_order", &ct.charge_pulay_order, INT, "5");
     
     /*Scale parameter for residuals in Pulay mixing*/
-    get_data ("charge_pulay_scale", &ct.charge_pulay_scale, DBL, "0.25");
+    get_data ("charge_pulay_scale", &ct.charge_pulay_scale, DBL, "0.50");
 
     /*How often to refresh Pulay history*/
     get_data ("charge_pulay_refresh", &ct.charge_pulay_refresh, INT, "0");
@@ -221,10 +221,15 @@ void read_control (void)
     /* Set up and validate input options */
     char relax_method_opts[] = "Fast Relax\n"
 				"FIRE\n"
+				"Quick Min\n"
+				"MD Min\n"
                                "LBFGS";
     get_data ("relax_method", NULL, INIT | OPT, relax_method_opts);
 
     get_data ("relax_method", &ct.relax_method, OPT, "Fast Relax");
+    
+    /*Whether or not to use dynamic timestep in relax mode*/
+    get_data ("relax_dynamic_timestep", NULL, BOOL, "false");
 
 
 
@@ -297,6 +302,34 @@ void read_control (void)
 
     /* Ionic timestep */
     get_data ("ionic_time_step", &ct.iondt, DBL, "50");
+    
+    /* Maximum ionic timestep */
+    get_data ("max_ionic_time_step", &ct.iondt_max, DBL, "150");
+
+    if (ct.iondt_max < ct.iondt)
+        error_handler("max_ionic_time_step (%f) has to be >= than ionic_time_step (%f)", ct.iondt_max, ct.iondt); 
+
+
+    /*** Factor by which iondt is increased */
+    get_data ("ionic_time_step_increase", &ct.iondt_inc, DBL, "1.1");
+    
+    /*Estimate default decrease factor, so that it takes about 3 decrease steps 
+     * to go from max to starting time step*/
+    {
+        REAL ttt;
+        char s_ttt[12] = { '\0' };
+
+        ttt = pow (ct.iondt_max / ct.iondt, 0.3);
+        ttt = 1.0/ ttt;
+
+        snprintf(s_ttt, sizeof(s_ttt) - 1, "%f", ttt);
+        /*** Factor by which iondt is decreased */
+        get_data ("ionic_time_step_decrease", &ct.iondt_dec, DBL, s_ttt);
+    }
+    
+    /*Number of steps after which iondt is increased */
+    get_data ("dynamic_time_delay", &ct.relax_steps_delay, INT, "5");
+
 
     /* DX movie flag */
     get_data ("dx_movie", &ct.chmovie, BOOL, "false");

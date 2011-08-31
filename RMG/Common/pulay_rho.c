@@ -44,7 +44,7 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
     double t1;
     double *fi, *fj, *tptr1, *tptr2;
     int A_size;
-    double scale;
+    double scale, first_mix;
 
     scale = -1.0 * ct.charge_pulay_scale;
 
@@ -76,9 +76,14 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 	}
     
 
+        /* For the first step, mixing quite a bit of new density is helpful, 
+         * proabably becasue initial guess can be pretty bad*/
+        first_mix = ct.mix;
+        if (first_mix < 0.5)
+            first_mix = 0.5;
     
 	/* For first step do linear mixing only*/
-        alpha = - ct.mix;
+        alpha = - first_mix;
 	for (i=0; i<N; i++)
 	    rho_old [i]  = rho_old[i] + alpha * residual [i];
         

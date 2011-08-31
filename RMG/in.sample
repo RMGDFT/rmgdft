@@ -198,8 +198,8 @@ charge_pulay_refresh="0"
 
 # Scale parameter for residual in Pulay charge density mixing
 # Reasonable values are around 0.5
-# Default: 0.25 (0.5) may give better results
-charge_pulay_scale="0.25"
+# Default: 0.5
+charge_pulay_scale="0.5"
 
 # Whether or not to use special metrics for calculating dot products in Pulay mixing
 # This should presumably help convergence for systems with many states close to Fermi level
