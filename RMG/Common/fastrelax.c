@@ -37,17 +37,61 @@
 #include <stdio.h>
 #include "main.h"
 
-void fastrelax (void)
+void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
 {
     int ion, fpt, which = 0, count = 0;
     ION *iptr;
-    REAL step, mass, magf, dotfv;
+    REAL mass, magf, dotfv;
     REAL max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    REAL move_x, move_y, move_z, move_sq, move;
+    REAL move_x, move_y, move_z, move_sq, move, p = 0.0;
+    static int n_count;
 
 
     fpt = ct.fpt[0];
-    step = ct.iondt;
+
+    if (verify("relax_dynamic_timestep",&SET))
+    {
+    
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+
+        /* Get ion pointer */
+        iptr = &ct.ions[ion];
+        
+        /* Dot product of f and v */
+        p += iptr->force[fpt][0] * iptr->velocity[0] +
+            iptr->force[fpt][1] * iptr->velocity[1] + iptr->force[fpt][2] * iptr->velocity[2];
+        }
+    
+        if (p < 0) 
+        {
+            *dt *= dt_dec;
+            n_count = 0;
+    
+            printf ("\n");
+            progress_tag ();
+            printf("p(%e) < 0, decreasing timestep to %f", p, *dt);  
+        }
+        else
+        {
+            if (n_count > n_min)
+            {   
+                *dt *= dt_inc;
+
+                if (*dt > dt_max)
+                    *dt = dt_max;
+            }   
+
+            n_count ++;
+            
+            printf ("\n");
+            progress_tag ();
+            printf("timestep:%f n_count:%d", *dt, n_count);  
+        }
+
+
+
+    }
 
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -73,40 +117,28 @@ void fastrelax (void)
         /* Dot product of f and v */
         dotfv = iptr->force[fpt][0] * iptr->velocity[0] +
             iptr->force[fpt][1] * iptr->velocity[1] + iptr->force[fpt][2] * iptr->velocity[2];
+            
+        iptr->velocity[0] = *dt * iptr->force[fpt][0] / mass;
+        iptr->velocity[1] = *dt * iptr->force[fpt][1] / mass;
+        iptr->velocity[2] = *dt * iptr->force[fpt][2] / mass;
 
+        
         if (dotfv >= 1.0e-12)
         {
 
-            iptr->velocity[0] = dotfv * iptr->force[fpt][0] / magf +
-                step * iptr->force[fpt][0] / mass;
-
-            iptr->velocity[1] = dotfv * iptr->force[fpt][1] / magf +
-                step * iptr->force[fpt][1] / mass;
-
-            iptr->velocity[2] = dotfv * iptr->force[fpt][2] / magf +
-                step * iptr->force[fpt][2] / mass;
+            iptr->velocity[0] += dotfv * iptr->force[fpt][0] / magf;
+            iptr->velocity[1] += dotfv * iptr->force[fpt][1] / magf;
+            iptr->velocity[2] += dotfv * iptr->force[fpt][2] / magf;
 
         }
-        else
-        {
-
-            iptr->velocity[0] = step * iptr->force[fpt][0] / mass;
-
-            iptr->velocity[1] = step * iptr->force[fpt][1] / mass;
-
-            iptr->velocity[2] = step * iptr->force[fpt][2] / mass;
-
-        }                       /* end if */
-
-
 
 
         /* Move the ion */
         if (iptr->movable)
         {
-	    move_x = step * iptr->velocity[0];
-	    move_y = step * iptr->velocity[1];
-	    move_z = step * iptr->velocity[2];
+	    move_x = *dt * iptr->velocity[0];
+	    move_y = *dt * iptr->velocity[1];
+	    move_z = *dt * iptr->velocity[2];
 
 	    /*Update coordinates*/
             iptr->crds[0] += move_x;

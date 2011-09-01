@@ -322,6 +322,9 @@ void read_control (void)
         ttt = pow (ct.iondt_max / ct.iondt, 0.3);
         ttt = 1.0/ ttt;
 
+        if (ttt > 0.75) ttt = 0.75;
+        if (ttt < 0.4) ttt = 0.4;
+
         snprintf(s_ttt, sizeof(s_ttt) - 1, "%f", ttt);
         /*** Factor by which iondt is decreased */
         get_data ("ionic_time_step_decrease", &ct.iondt_dec, DBL, s_ttt);

@@ -106,10 +106,19 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         {
 
             case FASTRELAX:
-                fastrelax ();
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay);
                 break;
             case FIRE:
-                fastrelax ();
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay);
+                //fire (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay);
+                break;
+            case QUICK_MIN:
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay);
+                //quick_min ();
+                break;
+            case MD_MIN:
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay);
+                //md_min ();
                 break;
             case LBFGS:
                 rmg_lbfgs();

@@ -115,7 +115,9 @@
 /* relax method flags */
 #define		FASTRELAX  0
 #define		FIRE       1
-#define		LBFGS      2
+#define		QUICK_MIN  2
+#define         MD_MIN     3
+#define		LBFGS      4
 
 /* Molecular dynamics flags */
 #define		MD_QUENCH       0
