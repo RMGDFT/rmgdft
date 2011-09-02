@@ -72,7 +72,7 @@ on-linux:
 	@echo "#define LINUX 1" > Headers/arch.h
 	@echo "#define MPI 1" >> Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> Headers/arch.h
-	@echo "#define TRREADS_PER_NODE 1" >> Headers/arch.h
+	@echo "#define THREADS_PER_NODE 1" >> Headers/arch.h
 	@$(clean-global); $(clean-on-negf-share)
 	$(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
@@ -80,7 +80,7 @@ on-xt:
 	@echo "#define LINUX 1" > Headers/arch.h
 	@echo "#define MPI 1" >> Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> Headers/arch.h
-	@echo "#define TRREADS_PER_NODE 1" >> Headers/arch.h
+	@echo "#define THREADS_PER_NODE 1" >> Headers/arch.h
 	@$(clean-global); $(clean-on-negf-share)
 	$(MAKE) -f Make.xt 2>&1 | tee .build.log
 
@@ -88,7 +88,7 @@ on-aix:
 	@echo '#define AIX_MPI 1' > Headers/arch.h
 	@echo "#define PARALLEL_MESSAGE 1" >> Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> Headers/arch.h
-	@echo "#define TRREADS_PER_NODE 1" >> Headers/arch.h
+	@echo "#define THREADS_PER_NODE 1" >> Headers/arch.h
 	@$(clean-global); $(clean-on-negf-share)
 	gmake -f Make.aix 2>&1 | tee .build.log
 
