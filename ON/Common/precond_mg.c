@@ -55,7 +55,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
         pack_ptos(sg_orbit, work1, ixx, iyy, izz);
 
-        app_cil(sg_orbit, work2, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
+        app_cil_orbital(sg_orbit, work2, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
 
         saxpy(&stopp0, &one, res, &ione, work2, &ione);
 

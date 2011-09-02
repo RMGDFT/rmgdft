@@ -37,6 +37,7 @@ static void init_wf_gamma(STATE * states)
     int ixx, iyy, izz;
     REAL temp;
     int i;
+    int idx1, idx2, idx3, idx4, idx5,idx6;
 
 
     my_malloc_init( xrand, NX_GRID + NY_GRID + NZ_GRID, REAL );
@@ -115,7 +116,22 @@ static void init_wf_gamma(STATE * states)
         sp = &states[state];
         app_mask(state, sp->psiR, 0);
         pack_ptos(sg_orbit, sp->psiR, ixx, iyy, izz);
-        app_cir(sg_orbit, sp->psiR, ixx, iyy, izz);
+        for(ix = 0; ix < ixx; ix++)
+        for(iy = 0; iy < iyy; iy++)
+        for(iz = 0; iz < izz; iz++)
+        {
+            idx = ix * iyy * izz + iy * izz + iz;
+            idx1 = (ix+0) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +1;
+            idx2 = (ix+2) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +1;
+            idx3 = (ix+1) *(iyy+2) * (izz+2) + (iy+0) * (izz+2) + iz +1;
+            idx4 = (ix+1) *(iyy+2) * (izz+2) + (iy+2) * (izz+2) + iz +1;
+            idx5 = (ix+1) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +0;
+            idx6 = (ix+1) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +2;
+
+            sp->psiR[idx] += (sg_orbit[idx1] +sg_orbit[idx2] +sg_orbit[idx3]
+                    +sg_orbit[idx4] +sg_orbit[idx5] +sg_orbit[idx6])/6.0 ;
+        }
+
         app_mask(state, sp->psiR, 0);
 
     }
@@ -124,9 +140,9 @@ static void init_wf_gamma(STATE * states)
     my_free(xrand);
 
     normalize_orbits(states);
-/*
- *	ortho_norm_local(states); 
-*/
+    /*
+     *	ortho_norm_local(states); 
+     */
 
 
 
