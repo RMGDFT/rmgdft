@@ -639,13 +639,15 @@ typedef struct
     double *fftw_phase_sin;
     double *fftw_phase_cos;
 
- /* Force modifier parameters */
+    /* Force modifier parameters */
     struct {
         REAL setA_weight;
         REAL setA_coord[3];
         REAL setB_weight;
         REAL setB_coord[3];
+        double forcemask[3];
     } constraint;
+
 
 
 
@@ -1390,7 +1392,6 @@ REAL linint (REAL * y, REAL r, REAL invdr);
 void ortho_norm_local (STATE * states);
 void global_sums_int (int *vect, int *length);
 void my_barrier (void);
-int int_sum_all (int isum);
 void matrix_and_diag (STATE * states, STATE * states1, REAL * vxc, int flag);
 void get_kbpsi (STATE *sp1, double *kbpsi);
 void precond_mg (double *res, double *work1, double *work2, int istate);
