@@ -49,6 +49,10 @@ void init_IO (int argc, char **argv)
     struct stat buffer;
     time_t timer;
 
+#if PAPI_PERFMON
+    PAPI_option_t options;
+#endif
+
     /* Set start of program time */
     timer = time (NULL);
 #if HYBRID_MODEL
@@ -229,7 +233,7 @@ void init_IO (int argc, char **argv)
         error_handler("Problem with papi thread support. Exiting.\n");
     }
 
-#if 0
+#if 1
     ct.EventSet = PAPI_NULL;
     if (PAPI_create_eventset(&ct.EventSet) != PAPI_OK) {
          error_handler ("Cannot create PAPI event set.\n");
@@ -239,6 +243,10 @@ void init_IO (int argc, char **argv)
     }
 
     PAPI_start(ct.EventSet);
+     if(PAPI_set_granularity(PAPI_GRN_PROC) != PAPI_OK) {
+         error_handler ("Cannot add PAPI granularity.\n");
+     }
+
 #endif
 
 #pragma omp parallel for
