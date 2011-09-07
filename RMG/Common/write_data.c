@@ -88,8 +88,8 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
         printf ("\nwrite_data: -------------- %s --------------\n\n", name);
 
 
-    /*If output file is specified as /dev/null, skip writing */
-    if (strcmp ("/dev/null", name) == 0)
+    /*If output file is specified as /dev/null or /dev/null/, skip writing */
+    if ((!strcmp ("/dev/null", name)) || (!strcmp ("/dev/null/", name)) )
     {
         if (pct.imgpe == 0)
             printf ("write_data: Output file given as /dev/null, no output written ...\n");
