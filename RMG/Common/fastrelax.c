@@ -131,55 +131,11 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
             iptr->velocity[2] += dotfv * iptr->force[fpt][2] / magf;
 
         }
-
-
-        /* Move the ion */
-        if (iptr->movable)
-        {
-	    move_x = *dt * iptr->velocity[0];
-	    move_y = *dt * iptr->velocity[1];
-	    move_z = *dt * iptr->velocity[2];
-
-	    /*Update coordinates*/
-            iptr->crds[0] += move_x;
-            iptr->crds[1] += move_y;
-            iptr->crds[2] += move_z;
-
-            /* enforce periodic boundary conditions on the ions */
-            to_crystal (iptr->xtal, iptr->crds);
-            to_cartesian (iptr->xtal, iptr->crds);
-
-	    /*Find maximum, average and RMS displacement*/
-	    move_sq = move_x*move_x + move_y*move_y + move_z*move_z;
-	    move = sqrt (move_sq);
-
-	    if (move > max_move)
-	    {
-		max_move = move;
-		which = ion;
-	    }
-
-	    avg_move += move;
-	    count ++;
-
-	    rms_move += move_sq;
-        }                       /* end if */
-
-	
     }                           /* end for */
+
+    /*Move ions by dt*velocity*/
+    move_ions(*dt);
 	
-    /*Write out displacement info*/
-    printf ("\n");
-    progress_tag ();
-    printf ("Max displacement: %8.5f a0  (ion %d)", max_move, which + 1);
-    printf ("\n");
-    progress_tag ();
-    printf ("Avg displacement: %8.5f a0", avg_move/count);
-    printf ("\n");
-    progress_tag ();
-    printf ("RMS displacement: %8.5f a0", sqrt(rms_move/count));
-
-
 }                               /* end rmg_fastrelax */
 
 /******/

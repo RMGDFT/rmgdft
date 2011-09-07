@@ -487,4 +487,5 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min);
 void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min );
 void quick_min (void);
 int int_sum_all (int x, MPI_Comm comm);
+void move_ions (REAL dt);
 
