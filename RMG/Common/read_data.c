@@ -389,6 +389,9 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
         read_double (fhand, &ct.nose.xv[0], 10);
         read_double (fhand, &ct.nose.xq[0], 10);
         read_double (fhand, &ct.nose.xf[0][0], 4 * 10);
+    
+        /* read ionic timestep*/
+        read_double (fhand, &ct.iondt, 1);
 
     }
 

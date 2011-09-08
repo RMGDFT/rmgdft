@@ -261,6 +261,8 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
     write_double (fhand, &ct.nose.xq[0], 10);
     write_double (fhand, &ct.nose.xf[0][0], 4 * 10);
 
+    /*Write ionic timestep*/
+    write_double (fhand, &ct.iondt, 1);
 
     /* done with writing */
     close (fhand);
