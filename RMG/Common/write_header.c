@@ -91,11 +91,11 @@ void write_header (void)
 
     }                           /* end switch */
 
-    printf ("\n");
     /*printf (" Code %s\n\n", QMD_VERSION); */
-    printf ("    Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
-    printf ("    %s\n", ct.description);
-    printf ("    Run started at %s\n", timeptr);
+    printf ("\n    Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
+    printf ("\n    Build Date:%s", BUILD_DATE);
+    printf ("\n    %s", ct.description);
+    printf ("\n    Run started at %s", timeptr);
 
     printf ("\n\n");
     printf ("    Files used\n");

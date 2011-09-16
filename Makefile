@@ -79,6 +79,7 @@ rmg-linux: RMG/Headers/make_conf.h
 	@echo "#define LINUX 1" >> RMG/Headers/arch.h
 	cd lib/libxc/; $(MAKE) -f Make.rmg
 	@cd RMG; $(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
 	cd RMG; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 	
 
@@ -87,6 +88,7 @@ rmg-xt: RMG/Headers/make_conf.h
 	@echo "#define LINUX 1" >> RMG/Headers/arch.h
 	cd lib/libxc/; $(MAKE) -f Make.rmg
 	@cd RMG; $(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
 	cd RMG; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 rmg-aix: RMG/Headers/make_conf.h
@@ -94,6 +96,7 @@ rmg-aix: RMG/Headers/make_conf.h
 	@echo '#define AIX 1' >> RMG/Headers/arch.h
 	cd lib/libxc/; $(MAKE) -j 8 -f Make.rmg
 	@cd RMG; $(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
 	cd RMG;gmake -f Make.aix 2>&1 | tee .build.log
 
 # Order-N targets go here
