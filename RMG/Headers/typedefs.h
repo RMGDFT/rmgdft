@@ -1304,6 +1304,9 @@ typedef struct
 
     /* Max number of sweeps in get_vh*/
     int hartree_max_sweeps;
+    
+    /* Min number of sweeps in get_vh*/
+    int hartree_min_sweeps;
 
     /*Ratio between target RMS for get_vh and RMS total potential*/
     REAL hartree_rms_ratio;

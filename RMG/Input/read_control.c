@@ -360,6 +360,9 @@ void read_control (void)
 
     /* Max number of sweeps in get_vh*/
     get_data ("hartree_max_sweeps", &ct.hartree_max_sweeps, INT, "100");
+    
+    /* Min number of sweeps in get_vh*/
+    get_data ("hartree_min_sweeps", &ct.hartree_min_sweeps, INT, "5");
 
     /* Ratio between target RMS for get_vh and RMS total potential
      * This determines target RMS passed to get_vh*/

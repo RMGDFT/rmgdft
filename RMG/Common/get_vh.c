@@ -50,17 +50,20 @@ static int poi_pre[5] = { 0, 3, 3, 3, 3 };
 static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxlevel, REAL rms_target)
+void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, REAL rms_target)
 {
 
     int idx, its, nits, sbasis, pbasis;
     REAL t1, vavgcor, diag;
     REAL *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    REAL *sg_rho, *sg_vh, *sg_res, *nrho, rms = 100.0, *old_vh_ext, diff;
+    REAL *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
     int incx = 1, cycles;
 
     REAL time1, time2;
     time1 = my_crtc ();
+
+    /*Taken from ON code, seems to help a lot with convergence*/
+    poi_pre[maxlevel] = 50;
 
 
     nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
@@ -77,9 +80,6 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxleve
     sg_vh = sg_rho + sbasis;
     sg_res = sg_vh + sbasis;
     nrho = sg_res + sbasis;
-    my_malloc(old_vh_ext, pbasis, REAL);
-
-    my_copy(ct.vh_ext, old_vh_ext, pbasis);
 
 
     /* Subtract off compensating charges from rho */
@@ -104,7 +104,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxleve
 
     its = 0;
 
-    while ((its < max_sweeps) && (rms > rms_target))  
+    while ( ((its < max_sweeps) && (residual > rms_target))  || (its < min_sweeps))
     {
 
 
@@ -113,21 +113,27 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxleve
         {
 
 
-            /* Transfer vh into smoothing grid */
-            pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
-            /* Apply operator */
-            diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
-            diag = -1.0 / diag;
-
-            /* Generate residual vector */
-            for (idx = 0; idx < pbasis; idx++)
+	    /*At the end of this force loop, laplacian operator is reapplied to evalute the residual. Therefore,
+	     * when there is no need to apply it, when this loop is called second, third, etc time. */
+            if ( (cycles) || (!its))
             {
+                /* Transfer vh into smoothing grid */
+                pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-                mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+                /* Apply operator */
+                diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+                diag = -1.0 / diag;
 
-            }                   /* end for */
+                /* Generate residual vector */
+                for (idx = 0; idx < pbasis; idx++)
+                {
+
+                    mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+
+                }                   /* end for */
+
+            }
 
             /* Pre and Post smoothings and multigrid */
             if (cycles == ct.poi_parm.gl_pre)
@@ -182,28 +188,36 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxleve
             }                   /* end if */
 
         }                       /* end for */
+            
+        /*Get residual*/
+        /* Transfer vh into smoothing grid */
+        pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-        /*Calculate RMS of the potential*/
-	rms = 0;
-	
+        /* Apply operator */
+        diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+        diag = -1.0 / diag;
+
+        residual = 0.0;
+        /* Generate residual vector */
         for (idx = 0; idx < pbasis; idx++)
         {
-            diff = ct.vh_ext[idx] - old_vh_ext[idx];
-	    rms += diff * diff;
-        }
 
-        rms = sqrt (real_sum_all(rms, pct.grid_comm) / (REAL) pbasis);
+            mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+            residual += mgresarr[idx] * mgresarr[idx];
 
-        //printf("\n get_vh RMS sweep %d, RMS is %10.5e", its, rms);
-	
-        my_copy(ct.vh_ext, old_vh_ext, pbasis);
+        }                   /* end for */
+        residual = sqrt (real_sum_all(residual, pct.grid_comm) / (REAL) pbasis);
+       
+	// printf("\n get_vh sweep %d, rms residual is %10.5e", its, residual);
+
 	    
         its ++;
     }                           /* end for */
 
     printf ("\n");
     progress_tag ();
-    printf ("Executed %d sweeps, final rms %15.8e\n", its, rms);
+    printf ("Executed %d sweeps, residual is %15.8e\n", its, residual);
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions
@@ -212,7 +226,6 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int max_sweeps, int maxleve
 
     /* Release our memory */
     my_free (mgrhsarr);
-    my_free (old_vh_ext);
 
     time2 = my_crtc ();
     rmg_timings (HARTREE_TIME, (time2 - time1));

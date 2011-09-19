@@ -102,12 +102,12 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 	
 	/* Generate hartree potential */
-        get_vh (rho_tot, rhoc, vh, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+        get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
      }  	
     else
     {
     	/* Generate hartree potential */
-    	get_vh (rho, rhoc, vh, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+    	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
     }
 
 

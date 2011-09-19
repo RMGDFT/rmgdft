@@ -67,7 +67,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 #ifdef SMP
     int thread, offset, stop;
 #endif
-
+        
     time1 = my_crtc ();
 
     ct.fftw_wisdom_setup = 0;
@@ -109,6 +109,12 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
     my_malloc (ct.vh_ext, ct.vh_pbasis, REAL);
+    
+    for (idx = 0; idx < FP0_BASIS; idx++)
+    {
+        vh[idx] = 0.0;
+        ct.vh_ext[idx] = 0.0;
+    }
 
 
     /* initialize the lattice basis vectors */
@@ -409,14 +415,14 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
   	    	for (idx = 0; idx < FP0_BASIS; idx++)
             		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
-        	get_vh (rho_tot, rhoc, vh, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
+        	get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
     		my_free (rho_tot);
 	}
 	else
-        	get_vh (rho, rhoc, vh, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
+        	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
 
     }
-
+    
     Dprintf ("If diagonalization is requested do a subspace diagonalization");
     if (ct.initdiag)
     {
