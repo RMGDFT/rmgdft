@@ -52,6 +52,10 @@ void move_ions (REAL dt)
         iptr = &ct.ions[ion];
 	    
 	/*Save previous coordinates, needed for wavefunction extrapolation*/
+	iptr->ocrds3[0] = iptr->ocrds2[0]; 
+	iptr->ocrds3[1] = iptr->ocrds2[1]; 
+	iptr->ocrds3[2] = iptr->ocrds2[2]; 
+	
 	iptr->ocrds2[0] = iptr->ocrds1[0]; 
 	iptr->ocrds2[1] = iptr->ocrds1[1]; 
 	iptr->ocrds2[2] = iptr->ocrds1[2]; 

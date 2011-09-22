@@ -488,4 +488,5 @@ void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min );
 void quick_min (void);
 int int_sum_all (int x, MPI_Comm comm);
 void move_ions (REAL dt);
+void get_extrapolation_constants (REAL *alpha, REAL *beta);
 

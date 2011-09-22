@@ -657,6 +657,9 @@ typedef struct
     
     /* Positions at  2dt back */
     REAL ocrds2[3];
+    
+    /* Positions at  3dt back */
+    REAL ocrds3[3];
 
     /* Initial crystal coordinates at start of run */
     REAL ixtal[3];
