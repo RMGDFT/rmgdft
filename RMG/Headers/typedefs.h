@@ -653,7 +653,10 @@ typedef struct
     REAL crds[3];
 
     /* Positions at the previous time step */
-    REAL ocrds[3];
+    REAL ocrds1[3];
+    
+    /* Positions at  2dt back */
+    REAL ocrds2[3];
 
     /* Initial crystal coordinates at start of run */
     REAL ixtal[3];

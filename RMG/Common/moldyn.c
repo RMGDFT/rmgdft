@@ -52,7 +52,7 @@ void nose_velup2 (void);
 void nose_energy (REAL *, REAL *);
 
 void velup1 (void);
-void posup (void);
+//void posup (void);
 void velup2 (void);
 
 void movie (FILE *);
@@ -304,7 +304,8 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
         /* Update the positions a full timestep */
-        posup ();
+        //posup ();
+	move_ions (ct.iondt);
 
 
 
@@ -741,6 +742,8 @@ void velup1 ()
 }                               /* end of velup1 */
 
 
+#if 0
+/* Function move_ions takes care of mving ions, it also keeps ionic history and other stuff*/
 void posup ()
 {
     int ion;
@@ -778,6 +781,7 @@ void posup ()
     }
 
 }                               /* end of posup */
+#endif
 
 
 void velup2 ()

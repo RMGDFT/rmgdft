@@ -50,6 +50,15 @@ void move_ions (REAL dt)
 
         /* Get ion pointer */
         iptr = &ct.ions[ion];
+	    
+	/*Save previous coordinates, needed for wavefunction extrapolation*/
+	iptr->ocrds2[0] = iptr->ocrds1[0]; 
+	iptr->ocrds2[1] = iptr->ocrds1[1]; 
+	iptr->ocrds2[2] = iptr->ocrds1[2]; 
+	    
+	iptr->ocrds1[0] = iptr->crds[0]; 
+	iptr->ocrds1[1] = iptr->crds[1]; 
+	iptr->ocrds1[2] = iptr->crds[2]; 
 
         /* Move the ion */
         if (iptr->movable)
@@ -57,6 +66,7 @@ void move_ions (REAL dt)
 	    move_x = dt * iptr->velocity[0];
 	    move_y = dt * iptr->velocity[1];
 	    move_z = dt * iptr->velocity[2];
+
 
 	    /*Update coordinates*/
             iptr->crds[0] += move_x;
