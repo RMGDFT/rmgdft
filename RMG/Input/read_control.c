@@ -128,6 +128,15 @@ void read_control (void)
     /* Exchange correlation potential type flag */
     get_data ("exchange_correlation_type", &ct.xctype, OPT, "LDA");
 
+    /* Emin when do get_dos */
+    get_data ("Emin", &ct.Emin, DBL, "-6.0");
+
+    /* Emax when do get_dos */
+    get_data ("Emax", &ct.Emax, DBL, "0.0");
+
+    /* Number Energy points when do get_dos */
+    get_data ("E_POINTS", &ct.E_POINTS, INT, "201");
+
     /* Number of scf steps */
     get_data ("max_scf_steps", &ct.max_scf_steps, INT, "500");
 
@@ -247,6 +256,9 @@ void read_control (void)
 
     get_data ("equal_initial_density", &ct.init_equal_density_flag, BOOL, "false");
     /* Initialized spin up and down charge density equally? */
+
+    get_data ("get_dos_flag", &ct.get_dos_flag, BOOL, "false");
+    /* Initialize get_dos_flag to be false */
 
     /*maximum number of md steps */
     get_data ("max_md_steps", &ct.max_md_steps, INT, "100");

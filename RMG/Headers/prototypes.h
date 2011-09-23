@@ -377,6 +377,7 @@ void get_QI (void);
 void get_qqq (void);
 void get_rho (STATE * states, REAL * rho, REAL * rhocore);
 void get_new_rho (STATE * states, REAL * rho);
+void get_dos (STATE * states, REAL * rho, REAL Emin, REAL Emax, int E_POINTS);
 void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_x, int length_y, int length_z);
 void init_psp (void);
 void init_qfunct (void);

@@ -280,6 +280,11 @@ hartree_rms_ratio="50.0"
 # Default: "50"
 ionic_time_step="50"
 
+#get_dos_flag="true"
+#Emin="-5"
+#Emax="-1"
+#E_POINTS="11"
+
 # Force criterion used for structural relaxation - 
 # when all forces are below given value, relaxation will be stopped
 # Default: "2.5E-3"

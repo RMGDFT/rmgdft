@@ -889,6 +889,9 @@ typedef struct
     /* determine whether to initialize up and down density equally or not */
     int init_equal_density_flag; 
 
+    /* determine whether to get_dos or not */
+    int get_dos_flag; 
+
 
     /** Name of the input control file. Passed as a command line argument
      *
@@ -939,6 +942,15 @@ typedef struct
 
     /* MD steps iterator */
     int md_steps;
+
+    /* Emin when get_dos */
+    REAL Emin;
+
+    /* Emax when get_dos */
+    REAL Emax;
+
+    /* number of energy points when get_dos */
+    int E_POINTS;
 
     /* Maximum number of SCF steps in a MD steps */
     int max_scf_steps;

@@ -151,7 +151,11 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
     if (!firststep && t[1] < ct.thr_rms)
-        *CONVERGENCE = TRUE;
+    {
+	    *CONVERGENCE = TRUE;
+	    if (ct.get_dos_flag)
+		    get_dos (states, new_rho, ct.Emin, ct.Emax, ct.E_POINTS);
+    }
 
     get_vtot_psi (vtot_psi, vtot, FG_NX);
 
