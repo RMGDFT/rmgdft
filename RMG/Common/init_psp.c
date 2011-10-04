@@ -40,21 +40,26 @@
 #include <stdio.h>
 #include "main.h"
 
+#define SMALL 1.e-35
+
 
 void init_psp (void)
 {
 
-    int isp, idx, ip, it1;
+    int isp, idx, ip, it1, write_flag;
     SPECIES *sp;
     REAL *work, *workr, Zv, rc, rfil;
-    REAL t1, t2, rcut, scale;
+    REAL t1, t2, rcut, scale, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
 
 
-
     my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, REAL);
     workr = work + MAX_RGRID;
+
+    write_flag = 0;
+    if (verify ("write_pseudopotential_plots", &SET))
+        write_flag = 1;
 
     /*Initialize max_nlpoints and max_nlfpoints */
     ct.max_nlpoints = 0;
@@ -71,13 +76,14 @@ void init_psp (void)
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-	{
-	    snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename,isp);
-	    my_fopen (psp, newname, "w+");
-	}
+        if (pct.gridpe == 0 && write_flag)
+        {
+            snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename, isp);
+            my_fopen (psp, newname, "w+");
+        }
         sp = &ct.sp[isp];
 
+        /*Get ldim */
         t1 = 2.0 * scale * (REAL) FG_NX *sp->lradius / ct.hmingrid;
         t1 = modf (t1, &t2);
         it1 = (int) t2;
@@ -91,6 +97,18 @@ void init_psp (void)
             || (sp->ldim >= ct.psi_fnzgrid))
             error_handler ("local potential radius exceeds global grid size");
 
+
+        /*Get drnlig */
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)FG_NX; */
+        t1 = sp->ldim / FG_NX + 1;
+        sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
+        if (ct.ibrav == HEXAGONAL)
+            sp->drlig *= 2.0;
+        t1 = (REAL) MAX_LOCAL_LIG;
+        sp->drlig /= t1;
+
+
+        /*Get nldim */
         t1 = 2.0 * scale * sp->nlradius / ct.hmingrid;
         t1 = modf (t1, &t2);
         it1 = (int) t2;
@@ -101,9 +119,18 @@ void init_psp (void)
         sp->nldim = it1;
         sp->nlfdim = ct.nxfgrid * it1;
 
+
+        /*Get drnlig */
+        sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
+        if (ct.ibrav == HEXAGONAL)
+            sp->drnlig *= 2.0;
+        t1 = (REAL) MAX_LOCAL_LIG;
+        sp->drnlig /= t1;
+
         if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
             || (sp->nldim >= ct.psi_nzgrid))
             error_handler ("local potential radius exceeds global grid size");
+
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
         if (ct.max_nlpoints < (sp->nldim * sp->nldim * sp->nldim))
@@ -112,24 +139,17 @@ void init_psp (void)
         if (ct.max_nlfpoints < (sp->nlfdim * sp->nlfdim * sp->nlfdim))
             ct.max_nlfpoints = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-        /* Check value to make sure a local potential is defined */
-        sp->localidx = -1;
 
+	/*Filter and interpolate local potential into fine linear grid*/
         Zv = sp->zvalence;
         rc = sp->rc;
-        sp->localidx = sp->local;       /*thinking */
 
-
-        /* Loop over radial grid points */
+        /* Generate the difference potential */
         for (idx = 0; idx < sp->rg_points; idx++)
-        {
-
-            /* Generate the difference potential */
             work[idx] = sp->vloc0[idx] + Zv * erf (sp->r[idx] / rc) / sp->r[idx];
 
-        }                       /* end for */
 
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && write_flag)
         {
             for (idx = 0; idx < sp->rg_points; idx++)
             {
@@ -141,15 +161,6 @@ void init_psp (void)
 
 
 
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)FG_NX; */
-        t1 = sp->ldim / FG_NX + 1;
-        sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
-            sp->drlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
-        sp->drlig = sp->drlig / t1;
-
-
         /* Transform to g-space and filter it */
         rft1 (ct.cparm, work, &sp->r[0], sp->localig, &sp->rab[0], sp->rg_points, 0, sp->drlig,
               sp->gwidth, MAX_LOCAL_LIG);
@@ -157,11 +168,8 @@ void init_psp (void)
 
         /* Evaluate it's radial derivative */
         for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-        {
-
             workr[idx] = sp->drlig * ((REAL) idx);
 
-        }                       /* end for */
         radiff (sp->localig, sp->drlocalig, workr, MAX_LOCAL_LIG, 0.0);
 
 
@@ -174,7 +182,6 @@ void init_psp (void)
         /* Now cut it off smoothly in real space */
         rcut = sp->lrcut;
 
-
         rfil = 0.0;
         for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
         {
@@ -183,47 +190,41 @@ void init_psp (void)
             {
 
                 t1 = (rfil - rcut) / rcut;
-                sp->localig[idx] = sp->localig[idx] * exp (-sp->rwidth * t1 * t1);
-                sp->drlocalig[idx] = sp->drlocalig[idx] * exp (-sp->rwidth * t1 * t1);
+		exp_fac = exp (-sp->rwidth * t1 * t1);
 
-                if (fabs (sp->localig[idx]) < 1.e-35)
+                sp->localig[idx] *= exp_fac;
+                sp->drlocalig[idx] *= exp_fac;
+
+                if (fabs (sp->localig[idx]) < SMALL)
                     sp->localig[idx] = 0.;
-                if (fabs (sp->drlocalig[idx]) < 1.e-35)
+                if (fabs (sp->drlocalig[idx]) < SMALL)
                     sp->drlocalig[idx] = 0.;
 
             }                   /* end if */
 
             /* output local projector */
-            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && write_flag)
             {
-
-		if (rfil < sp->lradius)
-                    fprintf (psp, "%15.8f  %15.8f  %15.8f\n", rfil, sp->localig[idx], sp->drlocalig[idx]);
-
+                if (rfil < sp->lradius)
+                    fprintf (psp, "%1.8f  %15.8f  %15.8f\n", rfil, sp->localig[idx],
+                             sp->drlocalig[idx]);
             }                   /* endif */
 
             rfil += sp->drlig;
-
         }                       /* end for idx */
 
-        /* output xmgr data separator */
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-        {
 
+        /* output xmgr data separator */
+        if (pct.gridpe == 0 && write_flag)
             fprintf (psp, "\n&&\n");
 
-        }                       /* endif */
 
-        sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
-            sp->drnlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
-        sp->drnlig = sp->drnlig / t1;
 
+	/*Filter and interpolate beta functions into fine linear grid*/
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
-            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && write_flag)
             {
                 for (idx = 0; idx < sp->kkbeta; idx++)
                     fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], sp->beta[ip][idx]);
@@ -238,11 +239,8 @@ void init_psp (void)
 
             /* Evaluate it's radial derivative */
             for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-            {
-
                 workr[idx] = sp->drnlig * ((REAL) idx);
 
-            }                   /* end for */
             radiff (&sp->betalig[ip][0], &sp->drbetalig[ip][0], workr, MAX_LOCAL_LIG, 0.0);
 
 
@@ -250,6 +248,7 @@ void init_psp (void)
             sp->betalig[ip][0] = 2.0 * sp->betalig[ip][1] - sp->betalig[ip][2];
             if (sp->llbeta[ip])
                 sp->betalig[ip][0] = 0.0;
+
             sp->drbetalig[ip][1] = 2.0 * sp->drbetalig[ip][2] - sp->drbetalig[ip][3];
             sp->drbetalig[ip][0] = 2.0 * sp->drbetalig[ip][1] - sp->drbetalig[ip][2];
 
@@ -265,37 +264,31 @@ void init_psp (void)
                 {
 
                     t1 = (rfil - rcut) / rcut;
-                    sp->betalig[ip][idx] = sp->betalig[ip][idx] * exp (-sp->rwidth * t1 * t1);
-                    sp->drbetalig[ip][idx] = sp->drbetalig[ip][idx] * exp (-sp->rwidth * t1 * t1);
+		    exp_fac = exp (-sp->rwidth * t1 * t1);
+		    
+                    sp->betalig[ip][idx] *= exp_fac;
+                    sp->drbetalig[ip][idx] *= exp_fac;
 
-                    if (fabs (sp->betalig[ip][idx]) < 1.e-35)
+                    if (fabs (sp->betalig[ip][idx]) < SMALL)
                         sp->betalig[ip][idx] = 0.;
-                    if (fabs (sp->drbetalig[ip][idx]) < 1.e-35)
+                    if (fabs (sp->drbetalig[ip][idx]) < SMALL)
                         sp->drbetalig[ip][idx] = 0.;
 
 
                 }               /* end if */
 
                 /* output non-local projector */
-                if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-                {
-
-/*                        if(!(idx % 32))*/
-                    fprintf (psp, "%15.8f  %15.8f %15.8f\n", rfil, sp->betalig[ip][idx], sp->drbetalig[ip][idx]);
-
-                }               /* endif */
+                if (pct.gridpe == 0 && write_flag)
+                    fprintf (psp, "%15.8f  %15.8f %15.8f\n", rfil, sp->betalig[ip][idx],
+                             sp->drbetalig[ip][idx]);
 
                 rfil += sp->drnlig;
 
             }                   /* end for */
 
             /* output xmgr data separator */
-            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-            {
-
+            if (pct.gridpe == 0 && write_flag)
                 fprintf (psp, "\n&&\n");
-
-            }                   /* endif */
 
         }                       /* end for ip */
 
@@ -304,13 +297,10 @@ void init_psp (void)
         {
 
             for (idx = 0; idx < sp->rg_points; idx++)
-            {
-
                 work[idx] = sp->rspsco[idx] / (4.0 * PI);
 
-            }                   /* end for */
 
-            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+            if (pct.gridpe == 0 && write_flag)
             {
                 for (idx = 0; idx < sp->rg_points; idx++)
                 {
@@ -333,7 +323,6 @@ void init_psp (void)
             /* Now cut it off smoothly in real space */
             rcut = sp->lrcut;
 
-
             rfil = 0.0;
             for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
             {
@@ -342,41 +331,35 @@ void init_psp (void)
                 {
 
                     t1 = (rfil - rcut) / rcut;
-                    sp->rhocorelig[idx] = sp->rhocorelig[idx] * exp (-sp->rwidth * t1 * t1);
+		    exp_fac = exp (-sp->rwidth * t1 * t1);
 
-                    if (fabs (sp->rhocorelig[idx]) < 1.e-35)
+                    sp->rhocorelig[idx] *= exp_fac;
+
+                    if (fabs (sp->rhocorelig[idx]) < SMALL)
                         sp->rhocorelig[idx] = 0.;
 
                 }               /* end if */
 
+		/*Can this happen ???*/
                 if (sp->rhocorelig[idx] < 0.0)
                     sp->rhocorelig[idx] = 0.0;
 
-                if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-                {
-
+                if (pct.gridpe == 0 && write_flag)
                     if (rfil < rcut)
                         fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->rhocorelig[idx]);
-
-                }               /* endif */
 
                 rfil += sp->drlig;
 
             }                   /* end for */
 
-            if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+            
+	    if (pct.gridpe == 0 && write_flag)
                 fprintf (psp, "\n&&\n");
-
 
         }                       /* end if */
 
 
-
-        /* Make sure that a local potential was specified */
-        if (sp->localidx < 0)
-            error_handler ("No local potential defined");
-
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && write_flag)
             fclose (psp);
 
     }                           /* end for */
