@@ -74,7 +74,7 @@ void init_wf (STATE * states)
     /* If random start and Fermi occupation, start with
        each state equally occupied  */
 
-    if (ct.occ_flag && (ct.runflag == 0))
+    if (ct.occ_flag && (ct.runflag != 1))
     {  
 	/* Set occupation for the first state */    
 	for (idx = 0; idx < nspin; idx++)
@@ -117,7 +117,7 @@ void init_wf (STATE * states)
 	/* If random start and Fermi occupation, start with
            each state equally occupied  */
     	
-	if (ct.occ_flag && (ct.runflag == 0))
+	if (ct.occ_flag && (ct.runflag != 1))
     	{  
 		for (idx = 0; idx < nspin; idx++)
 	    		sp->occupation[idx] = ct.nel / ( nspin * ct.num_states );	
