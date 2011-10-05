@@ -137,8 +137,9 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
         t1 += rhocore_f[idx];
     }
 
-    t1 = t1 * ct.vel_f;
-    t1 = real_sum_all (t1, pct.grid_comm);
+
+    /*t1 = t1 * ct.vel_f;
+    t1 = real_sum_all (t1, pct.grid_comm);*/
 
 
     /* Release our memory */
