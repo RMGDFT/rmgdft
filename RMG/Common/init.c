@@ -242,7 +242,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     {
         read_data (ct.infile, vh, rho, rho_oppo, vxc, states);
     }
-    else if ((ct.runflag == 0) || (ct.runflag == 2))    /* Initial run */
+    else 
     {
         /* Set the initial hartree potential to a constant */
         for (idx = 0; idx < FP0_BASIS; idx++)
@@ -340,7 +340,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     reinit_ionic_pp (states, vnuc, rhocore, rhoc);
 
 
-    if ((ct.runflag == 0) || (ct.runflag == 2)) /* Initial run */
+    if (ct.runflag != 1) /* Initial run */
     {
         for (kpt = 0; kpt < ct.num_kpts; kpt++)
         {
@@ -355,7 +355,9 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     mix_betaxpsi(0);
 
     Dprintf ("Set the initial density to be equal to the compensating charges");
-    if (!ct.runflag)
+	
+    /*For random start, use charge density equal to compensating charge */
+    if (ct.runflag == 0)
     {
 	if (ct.spin_flag)
         {   
@@ -404,6 +406,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 
     Dprintf ("Condition of run flag is %d", ct.runflag);
+    /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
     if (ct.runflag != 1)
     {
        	get_vxc (rho, rho_oppo, rhocore, vxc);
@@ -450,6 +453,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 
 
+#if 0
     /*Setup things for mulliken population analysis */
     if (ct.domilliken)
     {
@@ -532,6 +536,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         }                       /*end loop over species */
 
     }                           /*end if (ct.domilliken) */
+#endif
 
 
     rmg_timings (INIT_TIME, (my_crtc () - time1));
