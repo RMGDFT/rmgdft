@@ -42,14 +42,41 @@
 
 #define SMALL 1.e-35
 
+/*For a quantity localized around ionic positions, this function finds radius in number of grid points
+ * given a radius in a.u.*/
+int radius2grid (REAL radius, REAL mingrid_spacing)
+{
+
+    REAL scale, t1, t2;
+    int it1, dim;
+    
+    /* Set the scaling factor for determining the radius of the local grids */
+    scale = 1.0;
+    if (ct.ibrav == CUBIC_BC)
+	scale = 1.1;
+    if (ct.ibrav == CUBIC_FC)
+	scale = 1.3;
+        
+	t1 = 2.0 * scale * radius / mingrid_spacing;
+        t1 = modf (t1, &t2);
+        it1 = (int) t2;
+        if (t1 > 0.5)
+            it1++;
+        if (!(it1 % 2))
+            it1++;
+	dim = it1;
+
+	return dim;
+}
+
 
 void init_psp (void)
 {
 
-    int isp, idx, ip, it1, write_flag;
+    int isp, idx, ip, write_flag;
     SPECIES *sp;
-    REAL *work, *workr, Zv, rc, rfil;
-    REAL t1, t2, rcut, scale, exp_fac;
+    REAL *work, *workr, Zv, rc, rfil, t1;
+    REAL rcut, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
 
@@ -65,13 +92,6 @@ void init_psp (void)
     ct.max_nlpoints = 0;
     ct.max_nlfpoints = 0;
 
-    /* Set the scaling factor for determining the radius of the local grids */
-    scale = 1.0;
-    if (ct.ibrav == CUBIC_BC)
-        scale = 1.1;
-    if (ct.ibrav == CUBIC_FC)
-        scale = 1.3;
-
 
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
@@ -84,15 +104,7 @@ void init_psp (void)
         sp = &ct.sp[isp];
 
         /*Get ldim */
-        t1 = 2.0 * scale * (REAL) FG_NX *sp->lradius / ct.hmingrid;
-        t1 = modf (t1, &t2);
-        it1 = (int) t2;
-        if (t1 > 0.5)
-            it1++;
-        if (!(it1 % 2))
-            it1++;
-        sp->ldim = it1;
-
+	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (REAL) FG_NX);
         if ((sp->ldim >= ct.psi_fnxgrid) || (sp->ldim >= ct.psi_fnygrid)
             || (sp->ldim >= ct.psi_fnzgrid))
             error_handler ("local potential radius exceeds global grid size");
@@ -109,16 +121,12 @@ void init_psp (void)
 
 
         /*Get nldim */
-        t1 = 2.0 * scale * sp->nlradius / ct.hmingrid;
-        t1 = modf (t1, &t2);
-        it1 = (int) t2;
-        if (t1 > 0.5)
-            it1++;
-        if (!(it1 % 2))
-            it1++;
-        sp->nldim = it1;
-        sp->nlfdim = ct.nxfgrid * it1;
-
+	sp->nldim = radius2grid (sp->nlradius, ct.hmingrid/ (REAL) FG_NX);
+        sp->nlfdim = ct.nxfgrid * sp->nldim;
+        
+	if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
+            || (sp->nldim >= ct.psi_nzgrid))
+            error_handler ("Non-local potential radius exceeds global grid size");
 
         /*Get drnlig */
         sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
@@ -127,9 +135,6 @@ void init_psp (void)
         t1 = (REAL) MAX_LOCAL_LIG;
         sp->drnlig /= t1;
 
-        if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
-            || (sp->nldim >= ct.psi_nzgrid))
-            error_handler ("local potential radius exceeds global grid size");
 
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
