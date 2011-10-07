@@ -121,7 +121,7 @@ void init_psp (void)
 
 
         /*Get nldim */
-	sp->nldim = radius2grid (sp->nlradius, ct.hmingrid/ (REAL) FG_NX);
+	sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
         sp->nlfdim = ct.nxfgrid * sp->nldim;
         
 	if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
