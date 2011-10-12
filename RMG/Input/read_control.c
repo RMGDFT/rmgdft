@@ -543,15 +543,17 @@ void read_control (void)
 
 
 
-    /* Mehrstellen smoothings pre, post, step */
+    /* Mehrstellen smoothings pre, post, step, vcycles */
     get_data ("kohn_sham_pre_smoothing", &ct.eig_parm.gl_pre, INT, "2");
     get_data ("kohn_sham_post_smoothing", &ct.eig_parm.gl_pst, INT, "1");
     get_data ("kohn_sham_time_step", &ct.eig_parm.gl_step, DBL, "0.3");
+    get_data ("kohn_sham_vcycles", &ct.eig_parm.vcycles, INT, "1");
 
     /* Poisson smoothings pre, post, step */
     get_data ("poisson_pre_smoothing", &ct.poi_parm.gl_pre, INT, "2");
     get_data ("poisson_post_smoothing", &ct.poi_parm.gl_pst, INT, "1");
     get_data ("poisson_time_step", &ct.poi_parm.gl_step, DBL, "0.5");
+    get_data ("pois_vcycles", &ct.poi_parm.vcycles, INT, "1");
 
     /* Multigrid levels */
     get_data ("kohn_sham_mg_levels", &ct.eig_parm.levels, INT, "1");

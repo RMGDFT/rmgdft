@@ -759,6 +759,8 @@ typedef struct
     /* lowest MG level */
     int levels;
 
+    // Number of v-cycles to use
+    int vcycles;
 
 } MG_PARM;
 
