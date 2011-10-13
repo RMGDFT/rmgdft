@@ -432,6 +432,11 @@ poisson_pre_smoothing="2"
 poisson_post_smoothing="1"
 poisson_time_step="0.5"
 
+# Number of V-cycles for multigrid  Kohn-Sham and Poisson solvers
+# Default is 1, 2 gives a W cycle
+kohn_sham_vcycles="1"
+pois_vcycles="1"
+
 # Multigrid levels for solving K-S and Poisson equations
 # 0 = global grid only
 # Defaults: 1 2
