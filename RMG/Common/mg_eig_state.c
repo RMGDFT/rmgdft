@@ -109,6 +109,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
     time1 = my_crtc ();
 #endif
+
+    if(ct.eig_parm.vcycles > 1)
+        mix_betaxpsi1(sp);
+
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
 
@@ -307,9 +311,9 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             t2 = ZERO;
             t4 = ct.eig_parm.gl_step * diag;
 
-/*          if(cycles == 0)t4 = 2.0 * diag;
-*           if(cycles == 1)t4 = 1.0 * diag;
-*/
+//          if(cycles == 0)t4 = 2.0 * diag;
+//          if(cycles == 1)t4 = 1.0 * diag;
+
             for (idx = 0; idx < P0_BASIS; idx++)
             {
 
