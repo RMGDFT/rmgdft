@@ -48,7 +48,7 @@ FFLAGS = $(ARCH) -O4 -qnosave -qstrict -c
 CFLAGS = $(ARCH) -O4 -qcpluscmt $(DEFS) -qstrict  -IHeaders
 
 
-rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 

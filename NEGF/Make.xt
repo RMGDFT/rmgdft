@@ -25,7 +25,7 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
-LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -ldfftw 
+LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
 LDFLAGS = -pgf90libs
 
 
@@ -45,7 +45,7 @@ FFLAGS = $(ARCH)  -O3 -fast -Mflushz -c -Mipa=fast,inline
 CFLAGS = $(ARCH)  -O3 -fast -Mflushz -B -Mipa=fast,inline -IHeaders
 
 
-rmg-on: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 
