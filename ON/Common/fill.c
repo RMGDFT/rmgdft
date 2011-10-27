@@ -61,33 +61,45 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
     REAL *occ;
 
 
-    /* bracket the roots and bisect to find the mu */
+    if(nel == 1 && ct.num_kpts == 1)
+    {
+        sp = &ct.kp[0].kstate[0];
+        sp->occupation = 1.0;
+        mu = sp->eig;
+        for (st1 = 1; st1 < ct.num_states; st1++)
+        {
+            sp = &ct.kp[0].kstate[st1];
+            sp->occupation = 0.0;
+        }
+
+        return(mu);
+    }
 
     switch (occ_flag % 10)
     {
 
-    case OCC_NONE:
-        return 0.0;             /* early return */
+        case OCC_NONE:
+            return 0.0;             /* early return */
 
-    case OCC_FD:
-        /* fermi-dirac occupations: f(x) = 2 / (1 + Exp[x/T]) */
-        func = fd;
-        break;
+        case OCC_FD:
+            /* fermi-dirac occupations: f(x) = 2 / (1 + Exp[x/T]) */
+            func = fd;
+            break;
 
-    case OCC_GS:
-        /* Gaussian occupations:
-           f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
-        func = gs;
-        break;
+        case OCC_GS:
+            /* Gaussian occupations:
+               f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
+            func = gs;
+            break;
 
-    case OCC_EF:
-        /* error-function occupations: f(x) = erfc(x/(aT)),
-           where a = 4/Sqrt[Pi] */
-        func = ef;
-        break;
+        case OCC_EF:
+            /* error-function occupations: f(x) = erfc(x/(aT)),
+               where a = 4/Sqrt[Pi] */
+            func = ef;
+            break;
 
-    default:
-        error_handler("unknown filling procedure");
+        default:
+            error_handler("unknown filling procedure");
 
     }                           /* end switch */
 

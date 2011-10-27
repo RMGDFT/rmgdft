@@ -100,6 +100,8 @@ void find_fermi (complex double * sigma_all)
 
     }
 
+    if (pct.gridpe == 0)
+        printf("\nFERMI ENERGY = %15.8f\n", bias1);
 
     my_free(matrix_SxRHO);
     set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
