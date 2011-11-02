@@ -11,7 +11,7 @@
 description="Sample MD calculation"
 
 # Spin polarized calculation flag. Default: "True"
-enable_spin_polarized_calculaton=
+enable_spin_polarized_calculation=
 "false"
 #"true" 
 
@@ -263,6 +263,10 @@ output_wave_function_file="Wave-soft/wave.out"
 # Maximum Number of sweeps in get_vh
 # Default: "100"
 hartree_max_sweeps="100"
+
+# Minimum Number of sweeps in get_vh
+# Default: "5"
+hartree_min_sweeps="5"
 
 # Ratio between target RMS for get_vh and RMS total potential
 # This determines target RMS passed to get_vh, which becomes:  total potential RMS/ hartree_rms_ratio
