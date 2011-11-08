@@ -175,7 +175,7 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
             Dprintf ("Entering OPT|INIT for %s", meta);
             if (findNode (meta))
             {
-                Dprintf ("validate existing tag against string in data");
+                Dprintf ("validate existing tag %s, against string %s, in data", meta, data);
                 return validate (data);
             }
             else
@@ -285,7 +285,8 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
                 else
                 {
                     Dprintf ("We have to validate the default value");
-                    validate (data);
+                    if ( ! validate (data))
+                        return false;
                 }
             }
             if (this->is->as & STR)

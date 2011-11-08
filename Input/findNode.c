@@ -12,6 +12,7 @@ bool findNode (char *name)
     {
         return false;
     }
+    Dprintf("this is currently named %s", here->name);
     do
     {
         //Dprintf( "#Looking at %s for %s\n", here->name, name );

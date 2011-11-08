@@ -10,7 +10,7 @@ bool validate (char *optlist)
     int zero = 0;
     item_t *validation_count = newItem (INT | TAGS, &zero);
     item_t *tmpItem, *varItem;
-    if (this->is == NULL)
+    if (this->is == NULL || optlist == NULL)
     {
         printf ("Validation of NULL is nonsense\n");
         return false;

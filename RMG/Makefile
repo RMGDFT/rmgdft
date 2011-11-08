@@ -52,6 +52,7 @@ rmg-linux: Headers/make_conf.h
 	@echo "#define LINUX 1" >> Headers/arch.h
 	cd ../lib/libxc/; $(MAKE) -f Make.rmg
 	@$(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> Headers/arch.h
 	$(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 	
 
@@ -60,6 +61,7 @@ rmg-xt: Headers/make_conf.h
 	@echo "#define LINUX 1" >> Headers/arch.h
 	cd ../lib/libxc/; $(MAKE) -f Make.rmg
 	@$(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> Headers/arch.h
 	$(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 rmg-aix: Headers/make_conf.h
@@ -67,6 +69,7 @@ rmg-aix: Headers/make_conf.h
 	@echo "#define LINUX 1" >> Headers/arch.h
 	cd ../lib/libxc/; $(MAKE) -f Make.rmg
 	@$(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> Headers/arch.h
 	gmake -f Make.aix 2>&1 | tee .build.log
 
 
