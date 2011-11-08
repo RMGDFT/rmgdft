@@ -42,7 +42,7 @@ void read_pseudo (void)
 {
 
     int i, j, k, idx, indx, idx1, idx2, idx3, idx4, nmb;
-    int l, ih;
+    int l, ih, check;
     REAL  ddd0[6][6], qqq[6][6];
     /*REAL ddd[6][6]; */
     int max_nlprojectors = 0, nlc;
@@ -227,7 +227,7 @@ void read_pseudo (void)
         }
 
 
-        /* Next read in the radial grid,rab(r), Vloc(r), and Vloc_ion(r) for each specie */
+        /* Next read in the radial grid,rab(r), Vloc(r), and Vloc_ion(r) for each species */
         Dprintf( "Radial Grid Start\n", tbuf);
         for (j = 0; j < sp->rg_points; j++)
         {
@@ -244,6 +244,22 @@ void read_pseudo (void)
         for (j = 0; j < sp->nbeta; j++)
         {
             get_data (sp->pseudo_filename, &sp->llbeta[j], ITEM | INT, NULL); 
+	    
+	    /*Make sure that beta function has nlrcut defined*/ 
+	    check = 0;
+	    for (k = 0; k < sp->num_potentials; k++)
+	    {
+		if (sp->lval[k] != sp->local)
+		{
+
+		    if (sp->lval[k] == sp->llbeta[j])
+			check = 1;
+		}
+	    }
+
+	    if (!check)
+		error_handler("Beta function with l=%d has undefined nlrcut", sp->llbeta[j]);
+	   
             if (sp->llbeta[j] > ct.max_l)
                 ct.max_l = sp->llbeta[j];
             for (k = 0; k < MAX_RGRID; k++)
