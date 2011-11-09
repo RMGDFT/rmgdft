@@ -79,6 +79,7 @@ void init_psp (void)
     REAL rcut, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
+    FILE *psp2 = NULL;
 
 
     my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, REAL);
@@ -98,7 +99,7 @@ void init_psp (void)
     {
         if (pct.gridpe == 0 && write_flag)
         {
-            snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename, isp);
+            snprintf (newname, MAX_PATH, "%s.local%d.xmgr", ct.basename, isp);
             my_fopen (psp, newname, "w+");
         }
         sp = &ct.sp[isp];
@@ -207,24 +208,52 @@ void init_psp (void)
 
             }                   /* end if */
 
-            /* output local projector */
-            if (pct.gridpe == 0 && write_flag)
-            {
-                if (rfil < sp->lradius)
-                    fprintf (psp, "%1.8f  %15.8f  %15.8f\n", rfil, sp->localig[idx],
-                             sp->drlocalig[idx]);
-            }                   /* endif */
-
             rfil += sp->drlig;
         }                       /* end for idx */
 
+	
+	/*Write local projector into a file if requested*/
+	if ((pct.gridpe == 0) && write_flag)
+	{
+	    rfil = 0.0;
+	    idx = 0;
+	    while (rfil < sp->lradius)
+	    {
+                
+		fprintf (psp, "%1.8f  %15.8f \n", rfil, sp->localig[idx]);
+		
+		rfil += sp->drlig;
+		idx++;
+	    }
+            
+	    /* output xmgr data separator */
+	    fprintf (psp, "\n&&\n");
+	    
+	    rfil = 0.0;
+	    idx = 0;
+	    while (rfil < sp->lradius)
+	    {
+                
+		fprintf (psp, "%1.8f  %15.8f \n", rfil, sp->drlocalig[idx]);
+		
+		rfil += sp->drlig;
+		idx++;
+	    }
+            
+	    fclose (psp);
+	}
 
-        /* output xmgr data separator */
+
+	/*Open file for writing beta function*/
         if (pct.gridpe == 0 && write_flag)
-            fprintf (psp, "\n&&\n");
-
-
-
+	{
+            snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename, isp);
+            my_fopen (psp, newname, "w+");
+            
+	    snprintf (newname, MAX_PATH, "%s.drbeta%d.xmgr", ct.basename, isp);
+            my_fopen (psp2, newname, "w+");
+	}
+	
 	/*Filter and interpolate beta functions into fine linear grid*/
         for (ip = 0; ip < sp->nbeta; ip++)
         {
@@ -284,8 +313,10 @@ void init_psp (void)
 
                 /* output non-local projector */
                 if (pct.gridpe == 0 && write_flag)
-                    fprintf (psp, "%15.8f  %15.8f %15.8f\n", rfil, sp->betalig[ip][idx],
-                             sp->drbetalig[ip][idx]);
+		{
+                    fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->betalig[ip][idx]);
+                    fprintf (psp2, "%15.8f  %15.8f\n", rfil, sp->drbetalig[ip][idx]);
+		}
 
                 rfil += sp->drnlig;
 
@@ -293,7 +324,10 @@ void init_psp (void)
 
             /* output xmgr data separator */
             if (pct.gridpe == 0 && write_flag)
+	    {
                 fprintf (psp, "\n&&\n");
+                fprintf (psp2, "\n&&\n");
+	    }
 
         }                       /* end for ip */
 
@@ -365,7 +399,10 @@ void init_psp (void)
 
 
         if (pct.gridpe == 0 && write_flag)
+	{
             fclose (psp);
+            fclose (psp2);
+	}
 
     }                           /* end for */
 
