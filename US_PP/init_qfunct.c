@@ -135,20 +135,27 @@ void init_qfunct (void)
                                 drqnmlig_tpr[k] = 0.0;
                         }       /*end for if */
 
-                        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-                        {
-                            fprintf (fqq, "%e  %e\n", rfil, qnmlig_tpr[k]);
-                            fprintf (fdq, "%e  %e\n", rfil, drqnmlig_tpr[k]);
-                        }
 
                         rfil += sp->drqlig;
                     }           /*end for k */
 
-                    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
-                    {
-                        fprintf (fqq, "&\n");
-                        fprintf (fdq, "&\n");
-                    }
+                    
+		    /*Write Q function if requested*/
+		    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+		    {
+			
+			rfil = ZERO;
+			for (k = 0; k < MAX_QLIG; k++)
+                        {
+                            fprintf (fqq, "%e  %e\n", rfil, qnmlig_tpr[k]);
+                            fprintf (fdq, "%e  %e\n", rfil, drqnmlig_tpr[k]);
+			    
+			    rfil += sp->drqlig;
+                        }
+                        
+			fprintf (fqq, "&\n");
+			fprintf (fdq, "&\n");
+		    }
                 }               /*end for ll */
             }                   /*end for j */
         }                       /*end for i */

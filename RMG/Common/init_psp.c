@@ -158,11 +158,9 @@ void init_psp (void)
         if (pct.gridpe == 0 && write_flag)
         {
             for (idx = 0; idx < sp->rg_points; idx++)
-            {
-                if (sp->r[idx] < sp->lradius)
                     fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], work[idx]);
-            }
-            fprintf (psp, "\n&&\n");
+            
+	    fprintf (psp, "\n&&\n");
         }
 
 
@@ -216,28 +214,22 @@ void init_psp (void)
 	if ((pct.gridpe == 0) && write_flag)
 	{
 	    rfil = 0.0;
-	    idx = 0;
-	    while (rfil < sp->lradius)
+	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 	    {
                 
 		fprintf (psp, "%1.8f  %15.8f \n", rfil, sp->localig[idx]);
-		
 		rfil += sp->drlig;
-		idx++;
 	    }
             
 	    /* output xmgr data separator */
 	    fprintf (psp, "\n&&\n");
 	    
 	    rfil = 0.0;
-	    idx = 0;
-	    while (rfil < sp->lradius)
+	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 	    {
                 
 		fprintf (psp, "%1.8f  %15.8f \n", rfil, sp->drlocalig[idx]);
-		
 		rfil += sp->drlig;
-		idx++;
 	    }
             
 	    fclose (psp);
@@ -310,17 +302,28 @@ void init_psp (void)
 
 
                 }               /* end if */
+		
+		rfil += sp->drnlig;
+	    
+	    }
 
-                /* output non-local projector */
-                if (pct.gridpe == 0 && write_flag)
+
+	    /* output non-local projector if requested */
+	    if (pct.gridpe == 0 && write_flag)
+	    {
+		rfil = 0.0;
+		for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 		{
-                    fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->betalig[ip][idx]);
-                    fprintf (psp2, "%15.8f  %15.8f\n", rfil, sp->drbetalig[ip][idx]);
-		}
+		    {
+			fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->betalig[ip][idx]);
+			fprintf (psp2, "%15.8f  %15.8f\n", rfil, sp->drbetalig[ip][idx]);
+		    }
 
-                rfil += sp->drnlig;
+		    rfil += sp->drnlig;
 
-            }                   /* end for */
+		}                   /* end for */
+
+	    }
 
             /* output xmgr data separator */
             if (pct.gridpe == 0 && write_flag)
@@ -341,12 +344,10 @@ void init_psp (void)
 
             if (pct.gridpe == 0 && write_flag)
             {
-                for (idx = 0; idx < sp->rg_points; idx++)
-                {
-                    if (sp->r[idx] < sp->lrcut)
-                        fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], work[idx]);
-                }
-                fprintf (psp, "\n&&\n");
+		for (idx = 0; idx < sp->rg_points; idx++)
+		    fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], work[idx]);
+                
+		fprintf (psp, "\n&&\n");
             }
 
 
@@ -383,17 +384,24 @@ void init_psp (void)
                 if (sp->rhocorelig[idx] < 0.0)
                     sp->rhocorelig[idx] = 0.0;
 
-                if (pct.gridpe == 0 && write_flag)
-                    if (rfil < rcut)
-                        fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->rhocorelig[idx]);
-
                 rfil += sp->drlig;
 
             }                   /* end for */
 
-            
+	    
 	    if (pct.gridpe == 0 && write_flag)
-                fprintf (psp, "\n&&\n");
+	    {
+		rfil = 0.0;
+		
+		for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+		{
+		    fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->rhocorelig[idx]);
+		    rfil += sp->drlig;
+		}
+
+		fprintf (psp, "\n&&\n");
+	    }
+
 
         }                       /* end if */
 
