@@ -336,7 +336,7 @@ void get_cond_frommatrix_kyz ()
 
                     for (i = 0; i < idx; i++)
                     {
-                        ch01[i] = ene * S01[i] - Ha_eV * H01[i];
+                        ch01[i] = creal(ene) * S01[i] - Ha_eV * H01[i];
                     }
 
                     desca = &pmo.desc_cond_lead[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
@@ -352,7 +352,7 @@ void get_cond_frommatrix_kyz ()
                     idx = pmo.mxllda_lead[iprobe -1] * pmo.mxlocc_cond[idx_C];
                     for (i = 0; i < idx; i++)
                     {
-                        ch10[i] = ene * S10[i] - Ha_eV * H10[i];
+                        ch10[i] = creal(ene) * S10[i] - Ha_eV * H10[i];
                     }
 
                     Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
@@ -367,17 +367,25 @@ void get_cond_frommatrix_kyz ()
 
                     if(iprobe == iprobe1)
                     {
+
+                        
+                        desca = &pmo.desc_cond[( n1 + n1 * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
+                        PZTRANC(&nC_1, &nC_1, &one, sigma, &ione, &ione, desca,
+                            &zero, Gamma1, &ione, &ione, desca);
                         for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                         {
-                            Gamma1[i] = -2.0 * cimag(sigma[i]);
+                            Gamma1[i] = I * (sigma[i] - Gamma1[i]);
                         }
                     }
 
                     if(iprobe == iprobe2)
                     {
+                        desca = &pmo.desc_cond[( n2 + n2 * ct.num_blocks) * DLEN];   /* nC_2 * nC_2 matrix */
+                        PZTRANC(&nC_2, &nC_2, &one, sigma, &ione, &ione, desca,
+                            &zero, Gamma2, &ione, &ione, desca);
                         for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                         {
-                            Gamma2[i] = -2.0 * cimag(sigma[i]);
+                            Gamma2[i] = I * (sigma[i] - Gamma2[i]);
                         }
                     }
 
@@ -398,12 +406,15 @@ void get_cond_frommatrix_kyz ()
 
                 Sgreen_cond_p (H_tri, sigma_all, sigma_idx, green_C, nC, iprobe1, iprobe2);
 
+        
+            
 
 
                 desca = &pmo.desc_cond[( n1 + n1 * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
                 descb = &pmo.desc_cond[( n2 + n2 * ct.num_blocks) * DLEN];   /* nC_2 * nC_2 matrix */
                 descc = &pmo.desc_cond[( n2 + n1 * ct.num_blocks) * DLEN];   /* nC_2 * nC_1 matrix */
                 descd = &pmo.desc_cond[( n1 + n2 * ct.num_blocks) * DLEN];   /* nC_1 * nC_2 matrix */
+
 
 
 
@@ -437,7 +448,7 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%d%d%s", "cond_", iprobe1, iprobe2, ".dat1");
+            sprintf(newname, "%s%d%d%s", "cond_", iprobe1, iprobe2, ".dat");
             file = fopen (newname, "w");
             for (iene = 0; iene < E_POINTS; iene++)
                 fprintf (file, " %f %22.12e\n", ener1[iene], cond[iene]);
