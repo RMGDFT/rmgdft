@@ -398,17 +398,12 @@ typedef struct
     REAL mill_radius;
     /*Radius in number of grid points*/
     int mill_dim;
-    /*Number of radial atomic wave functions - these depend on l only, not on m*/
-    int num_atomic_waves;
     /*l-numbers for states for which we have atomic orbitals*/
     int lstate_atomic_wave[5];
     /*Sum of all atomic states (with different l or m numbers*/
     int sum_atomic_waves;
 
 
-    /* Pseudo atomic valence density */
-    /*REAL avdens[MAX_RGRID];*/
-    REAL **atomic_wave;
 
     /*This will store name of atomic wavefunctions, such as s, px, py, pz, dxx etc*/
     char atomic_wave_symbol[20][12];
@@ -585,6 +580,32 @@ typedef struct
     int nhtol[18];
     int nhtom[18];
     int nh;
+    
+    /*Filtering parameters for atomic wavefunctions and charge density*/
+    REAL acut; 
+    REAL aradius; 
+    REAL agwidth;
+    REAL arwidth;
+    
+    
+    /* radius of atomic wavefunctions and charge in terms of number of grid points*/
+    int adim_rho;
+    int adim_wave;
+
+    /*Number of radial atomic wave functions - these depend on l only, not on m*/
+    int num_atomic_waves;
+    /*l-numbers for states for which we have atomic orbitals*/
+    int atomic_wave_l[5];
+    REAL atomic_wave_oc[5];
+    
+    char atomic_wave_label[5][3];
+
+    REAL *atomic_rho;
+    
+    /* Pseudo atomic valence density read from PP file in log grid*/
+    REAL **atomic_wave;
+    /* Pseudo atomic valence density on linear grid*/
+    REAL **awave_lig;
 
 } SPECIES;
 

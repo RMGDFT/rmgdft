@@ -422,6 +422,8 @@ typedef struct
     int qdim;
 
 
+
+
     /* These are input parameters in the pseudopotential file. They represent the
      * real radii that are used in generating ldim and nldim.
      */
@@ -436,12 +438,24 @@ typedef struct
     /*Number of radial atomic wave functions - these depend on l only, not on m*/
     int num_atomic_waves;
     /*l-numbers for states for which we have atomic orbitals*/
-    int lstate_atomic_wave[5];
+    int atomic_wave_l[5];
+    REAL atomic_wave_oc[5];
+    
+    char atomic_wave_label[5][3];
+
+    REAL *atomic_rho;
+    
+    /* Pseudo atomic valence density read from PP file in log grid*/
+    REAL **atomic_wave;
+    /* Pseudo atomic valence density on linear grid*/
+    REAL **awave_lig;
+
+
     /*Sum of all atomic states (with different l or m numbers*/
-    int sum_atomic_waves;
+    //int sum_atomic_waves;
 
     /*This will store name of atomic wavefunctions, such as s, px, py, pz, dxx etc*/
-    char atomic_wave_symbol[20][12];
+    //char atomic_wave_symbol[20][12];
 
 
     /** Number of radial grid points in the pseudopotential file */
@@ -461,9 +475,6 @@ typedef struct
 
     /* L-value for local pseudopotential state */
     int local;
-
-    /* Index for local pseudopotential state */
-    int localidx;
 
     /*Number of grid points in the beta function */
     int kkbeta;
@@ -504,10 +515,6 @@ typedef struct
     REAL cr[MAX_RGRID];
 
 
-    /* Pseudo atomic valence density */
-    /*REAL avdens[MAX_RGRID];*/
-    REAL **atomic_wave;
-
 
     /* Pseudo atomic core density */
     REAL rspsco[MAX_RGRID];
@@ -547,12 +554,28 @@ typedef struct
     /* Qfunction linear interpolation grid spacing */
     REAL drqlig;
 
+    /*Grid spacing for atomic charge density on linear grid*/
+    REAL drlig_arho;
+    
+    /*Grid spacing for atomic wave functions on linear grid*/
+    REAL drlig_awave;
+
 
     /* Pseudopotential filtering parameters */
     REAL lrcut;                 /* Real space local cutoff */
     REAL nlrcut[4];             /*Real space nonlocal cutoff */
     REAL rwidth;                /* Real-space width parameter */
     REAL gwidth;                /* G-space width parameter */
+
+    /*Filtering parameters for atomic wavefunctions and charge density*/
+    REAL acut; 
+    REAL aradius; 
+    REAL agwidth;
+    REAL arwidth;
+
+    /* radius of atomic wavefunctions and charge in terms of number of grid points*/
+    int adim_rho;
+    int adim_wave;
 
 
     /*Total number (of what exactly ???) */
@@ -578,6 +601,8 @@ typedef struct
     int nhtom[18];
     int nh;
 
+    /*Atomic charge density on linear grid*/
+    REAL arho_lig[MAX_LOCAL_LIG];
 
 } SPECIES;
 

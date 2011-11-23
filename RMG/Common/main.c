@@ -263,8 +263,8 @@ void report ()
 
 
     /* If milliken population info is requested then compute and output it */
-    if (ct.domilliken)
-        mulliken (states);
+    /*if (ct.domilliken)
+        mulliken (states);*/
 
 
     /*Destroy wisdom that may have been allocated previously */

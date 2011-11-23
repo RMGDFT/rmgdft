@@ -112,7 +112,20 @@ void read_pseudo (void)
             error_handler ("Maximum l-value too large");
 
         /* Local potential radius */
-        get_data (sp->pseudo_filename, &sp->lradius, ITEM | DBL, NULL); 
+        //get_data (sp->pseudo_filename, &sp->lradius, ITEM | DBL, NULL); 
+        get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL);
+        idx = sscanf ( tbuf, " %lf %lf %lf %lf %lf ", &sp->lradius, &sp->aradius, &sp->acut, &sp->agwidth, &sp->arwidth ); 
+	if (idx == 1)
+	{
+	    sp->aradius = 5.0;
+	    sp->acut = 4.5;
+	    sp->agwidth = 2.5;
+	    sp->arwidth = 8.0;
+	}
+
+	if ((idx != 1) && (idx != 5))
+	    error_handler("Unexpected number of parameters (%d), only 1 or 5 are valid. The string was %s", idx, tbuf);
+
 
         /* Non-Local potential radius */
         get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
@@ -375,26 +388,33 @@ void read_pseudo (void)
         }
 
 
-        /*If milliken population analysis is requested read atomic wavefunctions */
-        if (ct.domilliken)
+        /*Read atomic wavefunctions */
+        if (verify ("start_mode","LCAO Start"))
         {
 
-            /*Make sure that a and b parameters of log grid are reasonable */
-            if ((sp->aa < 0.0) || (sp->bb < 0.0))
-                error_handler ("sp->aa or sp->bb is negative, this should not happen");
 
             /*Milliken radius */
             sp->mill_radius = 9.0;
 
             /* Number of wavefunctions (there should be one for s, p, d etc. states) */
             get_data (sp->pseudo_filename, &sp->num_atomic_waves, ITEM | INT, NULL); 
+                
+	    my_malloc(sp->atomic_wave, sp->num_atomic_waves, REAL *);
+	    my_malloc(sp->awave_lig, sp->num_atomic_waves, REAL *);
 
             for (j = 0; j < sp->num_atomic_waves; j++ )
             {
                 /*Allocate and zero memory for atomic wave functions */
                 my_malloc(sp->atomic_wave[j], sp->rg_points, REAL);
-                for (k = 0; k < sp->rg_points; k++)
-                    sp->atomic_wave[j][k] = 0.0;
+                my_malloc(sp->awave_lig[j], MAX_LOCAL_LIG, REAL);
+                
+                get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
+		
+		idx = sscanf (tbuf, " %s %d %lf",&sp->atomic_wave_label[j][0], &sp->atomic_wave_l[j], &sp->atomic_wave_oc[j]);
+		
+		/* IS THIS NECESSARY ?*/
+		/*for (k = 0; k < sp->rg_points; k++)
+                    sp->atomic_wave[j][k] = 0.0;*/
 
                 for (k = 0; k < sp->rg_points; k+=4)
                 {
@@ -406,11 +426,19 @@ void read_pseudo (void)
                             &sp->atomic_wave[j][k + 3]); 
                 }
             }
-            /* There may be some issues here, the US pseudo file contains what is 
-                read in above, however there are additional settings below that
-                are not available - namely sp->lstate_atomic_wave[k]
-                See SVN/pseudo-potentials/US_Create/RMG_format.c
-                BASICALLY, FIX THIS! - before doing milliken populations */
+    
+
+	    /*Read atomic charge density*/
+	    my_malloc(sp->atomic_rho, sp->rg_points, REAL);
+	    for (k = 0; k < sp->rg_points; k+=4)
+	    {
+		get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
+		idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
+			&sp->atomic_rho[k + 0], 
+			&sp->atomic_rho[k + 1], 
+			&sp->atomic_rho[k + 2], 
+			&sp->atomic_rho[k + 3]); 
+	    }
 
         }                       /*end if (ct.domilliken) */
 

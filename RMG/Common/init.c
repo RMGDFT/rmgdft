@@ -251,6 +251,13 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         /* Set initial states to random start */
         for (kpt = 0; kpt < ct.num_kpts; kpt++)
             init_wf (&states[kpt * ct.num_states]);
+    
+	if (ct.runflag == 2)
+	{
+	    init_atomic_rho_wf ();
+	    lcao_init_psi(states);
+
+	}
 
 
         /* Set initial ionic coordinates to the current ones. */
@@ -385,6 +392,9 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
             	rho[idx] = rhoc[idx];
 	}
     }
+    
+    if (ct.runflag == 2)
+	lcao_init_rho(rho);
 
 
 #ifdef SMP

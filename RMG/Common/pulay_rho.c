@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include "main.h"
 
-#define 	MAX_STEPS 	300
+#define 	MAX_STEPS 	500
 
 REAL special_dot_product(REAL *a, REAL *b, REAL *b_trade, REAL weight, int length_x, int length_y, int length_z);
 

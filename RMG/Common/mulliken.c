@@ -12,6 +12,7 @@
  * with spherical harmonics)*/
 
 
+#if 0
 void mulliken (STATE * states)
 {
 
@@ -625,3 +626,4 @@ void mulliken (STATE * states)
 
 
 }
+#endif
