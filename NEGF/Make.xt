@@ -10,7 +10,7 @@
 
 # Modules(directories) that contain the necessary source files
 #GLOBAL_MODULES are defined in the top level Makefile
-LOCAL_MODULES = Common Input ../ON/ON-NEGF-share 
+LOCAL_MODULES = Common Input Pois_for_negf ../ON/ON-NEGF-share 
 MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))

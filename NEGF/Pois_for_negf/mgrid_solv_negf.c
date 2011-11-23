@@ -1,4 +1,4 @@
-/************************** SVN Revision Information **************************
+/*************************** SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
  
@@ -52,11 +52,11 @@
 #include "md.h"
 
 
-void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
+void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
                 int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz,
                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                int *post_cyc, int mu_cyc, int istate, int *iion, int flag_local)
+                int *post_cyc, int mu_cyc)
 {
     int i;
     int cycl;
@@ -92,10 +92,7 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
 
 
 
-    if (flag_local == 0)
-    {
-        trade_images(f_mat, dimx, dimy, dimz, nb_ids);
-    }
+    trade_images(f_mat, dimx, dimy, dimz, nb_ids);
 
     for (idx = 0; idx < size; idx++)
     {
@@ -126,24 +123,17 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
     {
 
         /* solve once */
-        solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+        solv_pois_negf(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
 
+
+         pack_stop(v_mat, work, dimx, dimy, dimz);
+         
+         confine (work, dimx, dimy, dimz, potentialCompass, level);
+
+         pack_ptos(v_mat, work, dimx, dimy, dimz);
 
         /* trade boundary info */
-        if (flag_local == 1)
-        {
-            pack_stop(v_mat, work, dimx, dimy, dimz);
-
-            /* Localization the work array */
-            app_mask(istate, work, level);
-
-            pack_ptos(v_mat, work, dimx, dimy, dimz);
-
-        }
-        else
-        {
-            trade_images(v_mat, dimx, dimy, dimz, nb_ids);
-        }
+        trade_images(v_mat, dimx, dimy, dimz, nb_ids);
     }
 
 
@@ -163,28 +153,21 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
 /* evaluate residual */
     eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
-    if (flag_local == 1)
-    {
-        pack_stop(resid, work, dimx, dimy, dimz);
+    pack_stop(resid, work, dimx, dimy, dimz);
 
-        /* Localization the work array */
-        app_mask(istate, work, level);
+    confine (work, dimx, dimy, dimz, potentialCompass, level);
 
-        pack_ptos(resid, work, dimx, dimy, dimz);
+    pack_ptos(resid, work, dimx, dimy, dimz);
 
-    }
-    else
-    {
-        trade_images(resid, dimx, dimy, dimz, nb_ids);
-    }
+    trade_images(resid, dimx, dimy, dimz, nb_ids);
 
-/* size for next smaller grid */
+    /* size for next smaller grid */
     dx2 = dimx / 2;
     dy2 = dimy / 2;
     dz2 = dimz / 2;
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
 
-/* set storage pointers in the current workspace */
+    /* set storage pointers in the current workspace */
     newv = &work[0];
     newf = &work[siz2];
     newwork = &work[2 * siz2];
@@ -195,48 +178,15 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
 
         mg_restrict(resid, newf, dimx, dimy, dimz);
 
-        if (flag_local == 1)
-        {
-            pack_stop(newf, newwork, dx2, dy2, dz2);
-
-            /* Localization the work array */
-            app_mask(istate, newwork, level + 1);
-
-            pack_ptos(newf, newwork, dx2, dy2, dz2);
-        }                       /* end if flag_local */
 
         /* call mgrid solver on new level */
-        mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
-                   gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
-                   max_levels, pre_cyc, post_cyc, 1, istate, iion, flag_local);
+        mgrid_solv_negf(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
+                gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
+                max_levels, pre_cyc, post_cyc, 1);
 
-        if (flag_local == 1)
-        {
-            pack_stop(newv, newwork, dx2, dy2, dz2);
-
-            /* Localization the work array */
-            app_mask(istate, newwork, level + 1);
-
-            pack_ptos(newv, newwork, dx2, dy2, dz2);
-
-        }
-        else
-        {
-            trade_images(newv, dx2, dy2, dz2, nb_ids);
-        }
+        trade_images(newv, dx2, dy2, dz2, nb_ids);
 
         mg_prolong(resid, newv, dimx, dimy, dimz);
-
-        if (flag_local == 1)
-        {
-            pack_stop(resid, work, dimx, dimy, dimz);
-
-            /* Localization the work array */
-            app_mask(istate, work, level);
-
-            pack_ptos(resid, work, dimx, dimy, dimz);
-        }                       /* end if flag_local */
-
 
         scale = ONE;
 
@@ -244,33 +194,23 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
 
         /* re-solve on this grid level */
 
-        if (flag_local == 0)
-        {
-            trade_images(v_mat, dimx, dimy, dimz, nb_ids);
-        }
+        trade_images(v_mat, dimx, dimy, dimz, nb_ids);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
 
             /* solve once */
-            solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+            solv_pois_negf(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+
+            pack_stop(v_mat, work, dimx, dimy, dimz);
+
+            confine (work, dimx, dimy, dimz, potentialCompass, level);
+
+            pack_ptos(v_mat, work, dimx, dimy, dimz);
 
 
             /* trade boundary info */
-            if (flag_local == 1)
-            {
-                pack_stop(v_mat, work, dimx, dimy, dimz);
-
-                /* Localization the work array */
-                app_mask(istate, work, level);
-
-                pack_ptos(v_mat, work, dimx, dimy, dimz);
-
-            }
-            else
-            {
-                trade_images(v_mat, dimx, dimy, dimz, nb_ids);
-            }
+            trade_images(v_mat, dimx, dimy, dimz, nb_ids);
         }                       /* end for */
 
         /* evaluate max residual */
@@ -280,20 +220,7 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
             eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
 
-            if (flag_local == 1)
-            {
-                pack_stop(resid, work, dimx, dimy, dimz);
-
-                /* Localization the work array */
-                app_mask(istate, work, level);
-
-                pack_ptos(resid, work, dimx, dimy, dimz);
-
-            }
-            else
-            {
-                trade_images(resid, dimx, dimy, dimz, nb_ids);
-            }                   /* end if flag_local */
+            trade_images(resid, dimx, dimy, dimz, nb_ids);
 
         }                       /* end if */
 
@@ -301,7 +228,7 @@ void mgrid_solv(REAL * v_mat, REAL * f_mat, REAL * work,
     }                           /* for mu_cyc */
 
 
-/* my_free(resid); */
+    /* my_free(resid); */
 }
 
 /******/

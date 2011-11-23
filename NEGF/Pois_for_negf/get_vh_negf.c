@@ -50,7 +50,7 @@ static int poi_pre[5] = { 0, 2, 2, 2, 2 };
 static int poi_post[5] = { 0, 2, 2, 2, 2 };
 
 
-void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int sweeps, int maxlevel)
+void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int sweeps, int maxlevel)
 {
 
     int idx, its, nits, sbasis, pbasis;
@@ -58,7 +58,8 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
     REAL *mgrhsarr, *mglhsarr, *mgresarr, *work;
     REAL *sg_rho, *nrho;
     int stop = FP0_BASIS, ione = 1;
-    REAL scale;
+    int i, j, k;
+    double tem;
 
     int incx = 1, cycles;
 
@@ -67,8 +68,6 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
     time1 = my_crtc ();
 
     /* Keep in memory vh*rho_new before updating vh */
-    scale = ddot (&stop, rho, &ione, vh, &ione);
-    ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all (scale, pct.grid_comm);
 
     nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst + 1;
     sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
@@ -128,13 +127,12 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
             for (idx = 0; idx < pbasis; idx++)
             {
 
-                mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx]
-                    - 0.0 * (ct.vh_ext[idx] - vh_old[idx]);
+                mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
 
             }                   /* end for */
 
             /*  Fix Hartree in some region  */
-            confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 1);
+            confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
 
             /* Pre and Post smoothings and multigrid */
@@ -146,17 +144,18 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
                 pack_ptos (sg_rho, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
 
-                mgrid_solv (mglhsarr, sg_rho, work,
+                mgrid_solv_negf (mglhsarr, sg_rho, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
-                            0, pct.neighbors, ct.poi_parm.levels, poi_pre, poi_post, 1, 0, 0, 0);
+                            0, pct.neighbors, ct.poi_parm.levels, poi_pre, poi_post, 1);
 
 
                 /* Transfer solution back to mgresarr array */
                 pack_stop (mglhsarr, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                 /*  Fix Hartree in some region  */
-                confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 1);
+
+                confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
                 /* Update vh */
                 t1 = 1.0;
@@ -176,26 +175,6 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
             }                   /* end if */
 
 
-            if (ct.boundaryflag == PERIODIC && potentialCompass.type != 1)
-            {
-
-
-                /* Evaluate the average potential */
-                vavgcor = 0.0;
-                for (idx = 0; idx < pbasis; idx++)
-                    vavgcor += ct.vh_ext[idx];
-
-                vavgcor = real_sum_all (vavgcor, pct.grid_comm);
-                t1 = (REAL) (ct.vh_nxgrid * ct.vh_nygrid * ct.vh_nzgrid);
-                vavgcor = vavgcor / t1;
-
-
-                /* Make sure that the average value is zero */
-                for (idx = 0; idx < pbasis; idx++)
-                    ct.vh_ext[idx] -= vavgcor;
-
-            }                   /* end if */
-
         }                       /* end for */
 
     }                           /* end for */
@@ -204,17 +183,6 @@ void get_vh_soft (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
     pack_vhdtos (vh_eig, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-
-
-
-    /* Compute quantities function of rho only */
-    scale = ddot (&stop, rho, &ione, vh, &ione);
-    ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all (scale, pct.grid_comm);
-
-    scale = ddot (&stop, rhoc, &ione, vh, &ione);
-    ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all (scale, pct.grid_comm);
-
-
 
 
     /* Release our memory */
