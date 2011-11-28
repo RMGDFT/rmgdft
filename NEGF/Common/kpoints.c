@@ -20,11 +20,12 @@ void kpoints(int *nkp, double *kvecx, double *kvecy, double *kvecz, int *nkp_tot
 {
 
     int i, j, k, ncheck, kminus;
-    double kvec_tem[3], weight;
+    double kvec_tem[3], weight, pi;
     int nkp_tot;
 
     nkp_tot = 0;
     
+    pi = 4.0 * atan(1.0);
     for (i = 0; i < nkp[0]; i++)
         for (j = 0; j < nkp[1]; j++)
             for (k = 0; k < nkp[2]; k++)
@@ -32,9 +33,9 @@ void kpoints(int *nkp, double *kvecx, double *kvecy, double *kvecz, int *nkp_tot
             {
 
 
-                kvec_tem[0] =  0.5 - 0.5/nkp[0] - 1.0 /nkp[0] * i;
-                kvec_tem[1] =  0.5 - 0.5/nkp[1] - 1.0 /nkp[1] * j;
-                kvec_tem[2] =  0.5 - 0.5/nkp[2] - 1.0 /nkp[2] * k;
+                kvec_tem[0] =  pi*(1.0 - 1.0/nkp[0] - 2.0 /nkp[0] * i);
+                kvec_tem[1] =  pi*(1.0 - 1.0/nkp[1] - 2.0 /nkp[1] * j);
+                kvec_tem[2] =  pi*(1.0 - 1.0/nkp[2] - 2.0 /nkp[2] * k);
 
                 // check if this kpoint = -previous kpoint
                 
