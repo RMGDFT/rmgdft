@@ -249,14 +249,17 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
             vh[idx] = 0.0;
 
         /* Set initial states to random start */
-        for (kpt = 0; kpt < ct.num_kpts; kpt++)
-            init_wf (&states[kpt * ct.num_states]);
     
 	if (ct.runflag == 2)
 	{
 	    init_atomic_rho_wf ();
 	    lcao_init_psi(states);
-
+	}
+	
+	else
+	{
+	    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+		init_wf (&states[kpt * ct.num_states]);
 	}
 
 
