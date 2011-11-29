@@ -300,6 +300,11 @@ void read_pseudo (void)
                 }
 #endif
             }
+            
+	    /* Beta function is defined on only a subset of sp->rg_points, but filtering uses all sp->rg_points, so 
+	     * we initialize the remaining data to zero */
+	    for ( k = sp->kkbeta; k < sp->rg_points; k++)
+		sp->beta[j][k] = 0.0;
         }
 
         my_malloc (sp->qnm, nlc * MAX_RGRID, REAL);
