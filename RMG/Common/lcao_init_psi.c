@@ -34,6 +34,10 @@ void lcao_init_psi (STATE * states)
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
+
+	/*Make sure that the wavefunctions have been read*/
+	if (!sp->num_atomic_waves)
+	    error_handler("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
         
 	
 	/*Loop over atomic wavefunctions for given ion*/
