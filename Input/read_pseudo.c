@@ -307,7 +307,7 @@ void read_pseudo (void)
 		sp->beta[j][k] = 0.0;
         }
 
-        my_malloc (sp->qnm, nlc * MAX_RGRID, REAL);
+        my_calloc (sp->qnm, nlc * MAX_RGRID, REAL);
         for (idx = 0; idx < nlc; idx++)
         {
             for (idx1 = 0; idx1 < MAX_RGRID; idx1++)
