@@ -1356,6 +1356,9 @@ typedef struct
     /*Ratio between target RMS for get_vh and RMS total potential*/
     REAL hartree_rms_ratio;
 
+    /*Boolean flag for using mask function filtering*/
+    int mask_function;
+
 #if PAPI_PERFMON
 
     // Global event set for serial portion of code

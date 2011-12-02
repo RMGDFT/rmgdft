@@ -158,7 +158,7 @@ void init_psp (void)
         if (pct.gridpe == 0 && write_flag)
         {
             for (idx = 0; idx < sp->rg_points; idx++)
-                    fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], work[idx]);
+                    fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
             
 	    fprintf (psp, "\n&&\n");
         }
@@ -166,50 +166,13 @@ void init_psp (void)
 
 
         /* Transform to g-space and filter it */
-        rft1 (ct.cparm, work, &sp->r[0], sp->localig, &sp->rab[0], sp->rg_points, 0, sp->drlig,
-              sp->gwidth, MAX_LOCAL_LIG);
+        /*rft1 (ct.cparm, work, &sp->r[0], sp->localig, &sp->rab[0], sp->rg_points, 0, sp->drlig,
+              sp->gwidth, MAX_LOCAL_LIG);*/
+
+	filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, 
+		sp->localig, &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, sp->drlocalig);
 
 
-        /* Evaluate it's radial derivative */
-        for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-            workr[idx] = sp->drlig * ((REAL) idx);
-
-        radiff (sp->localig, sp->drlocalig, workr, MAX_LOCAL_LIG, 0.0);
-
-
-        /* Fix up the first point */
-        sp->localig[0] = 2.0 * sp->localig[1] - sp->localig[2];
-        sp->drlocalig[1] = 2.0 * sp->drlocalig[2] - sp->drlocalig[3];
-        sp->drlocalig[0] = 2.0 * sp->drlocalig[1] - sp->drlocalig[2];
-
-
-        /* Now cut it off smoothly in real space */
-        rcut = sp->lrcut;
-
-        rfil = 0.0;
-        for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-        {
-
-            if (rfil > rcut)
-            {
-
-                t1 = (rfil - rcut) / rcut;
-		exp_fac = exp (-sp->rwidth * t1 * t1);
-
-                sp->localig[idx] *= exp_fac;
-                sp->drlocalig[idx] *= exp_fac;
-
-                if (fabs (sp->localig[idx]) < SMALL)
-                    sp->localig[idx] = 0.;
-                if (fabs (sp->drlocalig[idx]) < SMALL)
-                    sp->drlocalig[idx] = 0.;
-
-            }                   /* end if */
-
-            rfil += sp->drlig;
-        }                       /* end for idx */
-
-	
 	/*Write local projector into a file if requested*/
 	if ((pct.gridpe == 0) && write_flag)
 	{
@@ -217,7 +180,7 @@ void init_psp (void)
 	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 	    {
                 
-		fprintf (psp, "%1.8f  %15.8f \n", rfil, sp->localig[idx]);
+		fprintf (psp, "%e  %e \n", rfil, sp->localig[idx]);
 		rfil += sp->drlig;
 	    }
             
@@ -228,7 +191,7 @@ void init_psp (void)
 	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 	    {
                 
-		fprintf (psp, "%1.8f  %15.8f \n", rfil, sp->drlocalig[idx]);
+		fprintf (psp, "%e  %e \n", rfil, sp->drlocalig[idx]);
 		rfil += sp->drlig;
 	    }
             
@@ -246,83 +209,39 @@ void init_psp (void)
             my_fopen (psp2, newname, "w+");
 	}
 	
-	/*Filter and interpolate beta functions into fine linear grid*/
+	/* Write raw beta function into file if requested*/
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
             if (pct.gridpe == 0 && write_flag)
             {
                 for (idx = 0; idx < sp->kkbeta; idx++)
-                    fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], sp->beta[ip][idx]);
+                    fprintf (psp, "%e  %e\n", sp->r[idx], sp->beta[ip][idx]);
                 fprintf (psp, "\n&&\n");
             }
 
-            /* Transform to g-space and filter it */
-            rft1 (ct.betacparm, &sp->beta[ip][0], &sp->r[0], &sp->betalig[ip][0],
-                  &sp->rab[0], sp->rg_points, sp->llbeta[ip], sp->drnlig, sp->gwidth,
-                  MAX_LOCAL_LIG);
+	    filter_potential(&sp->beta[ip][0], &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.betacparm, &sp->betalig[ip][0], 
+		    &sp->rab[0], sp->llbeta[ip], sp->drnlig, sp->gwidth, MAX_LOCAL_LIG, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
 
 
-            /* Evaluate it's radial derivative */
-            for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-                workr[idx] = sp->drnlig * ((REAL) idx);
-
-            radiff (&sp->betalig[ip][0], &sp->drbetalig[ip][0], workr, MAX_LOCAL_LIG, 0.0);
-
-
-            /* Fix up the first point */
-            sp->betalig[ip][0] = 2.0 * sp->betalig[ip][1] - sp->betalig[ip][2];
+	    /* Is this necessary ??? */
             if (sp->llbeta[ip])
                 sp->betalig[ip][0] = 0.0;
 
-            sp->drbetalig[ip][1] = 2.0 * sp->drbetalig[ip][2] - sp->drbetalig[ip][3];
-            sp->drbetalig[ip][0] = 2.0 * sp->drbetalig[ip][1] - sp->drbetalig[ip][2];
 
-
-            /* Now cut it off smoothly in real space */
-            rcut = sp->nlrcut[sp->llbeta[ip]];
-
-            rfil = 0.0;
-            for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-            {
-
-                if (rfil > rcut)
-                {
-
-                    t1 = (rfil - rcut) / rcut;
-		    exp_fac = exp (-sp->rwidth * t1 * t1);
-		    
-                    sp->betalig[ip][idx] *= exp_fac;
-                    sp->drbetalig[ip][idx] *= exp_fac;
-
-                    if (fabs (sp->betalig[ip][idx]) < SMALL)
-                        sp->betalig[ip][idx] = 0.;
-                    if (fabs (sp->drbetalig[ip][idx]) < SMALL)
-                        sp->drbetalig[ip][idx] = 0.;
-
-
-                }               /* end if */
-		
-		rfil += sp->drnlig;
-	    
-	    }
-
-
-	    /* output non-local projector if requested */
+	    /* output filtered non-local projector to a file  if requested */
 	    if (pct.gridpe == 0 && write_flag)
 	    {
 		rfil = 0.0;
 		for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 		{
 		    {
-			fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->betalig[ip][idx]);
-			fprintf (psp2, "%15.8f  %15.8f\n", rfil, sp->drbetalig[ip][idx]);
+			fprintf (psp, "%e  %e\n", rfil, sp->betalig[ip][idx]);
+			fprintf (psp2, "%e  %e\n", rfil, sp->drbetalig[ip][idx]);
 		    }
 
 		    rfil += sp->drnlig;
-
 		}                   /* end for */
-
 	    }
 
             /* output xmgr data separator */
@@ -342,66 +261,40 @@ void init_psp (void)
                 work[idx] = sp->rspsco[idx] / (4.0 * PI);
 
 
+	    /*Write raw (pre-filtered) data to a file if requested */
             if (pct.gridpe == 0 && write_flag)
             {
 		for (idx = 0; idx < sp->rg_points; idx++)
-		    fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], work[idx]);
-                
+		    fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
 		fprintf (psp, "\n&&\n");
             }
 
+	
+	    filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, &sp->rhocorelig[0], 
+		    &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, NULL);
 
-            /* Transform to g-space and filter it */
-            rft1 (ct.cparm, work, &sp->r[0], &sp->rhocorelig[0],
-                  &sp->rab[0], sp->rg_points, 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG);
+	    /*Oscilations at the tail end of filtered function may cause rhocore to be negative
+	     * but I am not sure if this is the right solution, it may be better to fix charge density
+	     * this rhocore less smooth*/
+	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+		if (sp->rhocorelig[idx] < 0.0)
+		    sp->rhocorelig[idx] = 0.0;
 
 
-            /* Fix up the first point */
-            sp->rhocorelig[0] = 2.0 * sp->rhocorelig[1] - sp->rhocorelig[2];
 
-
-            /* Now cut it off smoothly in real space */
-            rcut = sp->lrcut;
-
-            rfil = 0.0;
-            for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-            {
-
-                if (rfil > rcut)
-                {
-
-                    t1 = (rfil - rcut) / rcut;
-		    exp_fac = exp (-sp->rwidth * t1 * t1);
-
-                    sp->rhocorelig[idx] *= exp_fac;
-
-                    if (fabs (sp->rhocorelig[idx]) < SMALL)
-                        sp->rhocorelig[idx] = 0.;
-
-                }               /* end if */
-
-		/*Can this happen ???*/
-                if (sp->rhocorelig[idx] < 0.0)
-                    sp->rhocorelig[idx] = 0.0;
-
-                rfil += sp->drlig;
-
-            }                   /* end for */
-
-	    
+	    /*Write filtered data to a file if requested */
 	    if (pct.gridpe == 0 && write_flag)
 	    {
 		rfil = 0.0;
 		
 		for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
 		{
-		    fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->rhocorelig[idx]);
+		    fprintf (psp, "%e  %e\n", rfil, sp->rhocorelig[idx]);
 		    rfil += sp->drlig;
 		}
 
 		fprintf (psp, "\n&&\n");
 	    }
-
 
         }                       /* end if */
 

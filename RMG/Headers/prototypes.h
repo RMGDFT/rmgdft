@@ -495,4 +495,7 @@ void init_atomic_rho_wf (void);
 void lcao_init_rho (REAL * arho_f);
 void get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m);
 void lcao_init_psi (STATE * states);
-
+REAL mask_function (REAL x);
+void apply_mask_function (REAL *f, REAL * r, int rg_points, REAL rmax, REAL offset);
+void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL offset, REAL parm, REAL* potential_lgrid, 
+	REAL *rab, int l_value, REAL dr, REAL  gwidth, int lgrid_points, REAL rcut, REAL rwidth, REAL * drpotential_lgrid);

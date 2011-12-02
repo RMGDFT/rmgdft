@@ -196,6 +196,9 @@ Error Function";
     get_data ("gbias_end",   &ct.gbias_end, DBL, "10");
     get_data ("BT", &ct.BT, DBL, "4.0");
     get_data ("gate_bias", &ct.gate_bias, DBL, "0.0");
+    
+    /*Whether to use mask mask function for filtering PPs*/
+    get_data ("mask_function_filtering", &ct.mask_function, BOOL, "false");
 
     /* -------------------------------- */
     /*                                  */

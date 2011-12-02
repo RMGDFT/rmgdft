@@ -380,6 +380,9 @@ void read_control (void)
      * This determines target RMS passed to get_vh*/
     get_data ("hartree_rms_ratio", &ct.hartree_rms_ratio, DBL, "50.0");
 
+    /*Whether to use mask mask function for filtering PPs*/
+    get_data ("mask_function_filtering", &ct.mask_function, BOOL, "false");
+
 
     /* Number of states */
     if(ct.spin_flag)

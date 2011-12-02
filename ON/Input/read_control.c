@@ -209,6 +209,8 @@ void read_control (void)
     get_data ("electric_field_magnitude", &ct.e_field, DBL, "0.0");
     ct.constrainforces = 0;
 
+    /*Whether to use mask mask function for filtering PPs*/
+    get_data ("mask_function_filtering", &ct.mask_function, BOOL, "false");
 
     /* -------------------------------- */
     /*                                  */

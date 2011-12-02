@@ -1198,6 +1198,8 @@ typedef struct
  
     REAL neb_spring_constant;
 
+    int mask_function;
+
 } CONTROL;
 
 

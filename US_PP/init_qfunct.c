@@ -103,44 +103,15 @@ void init_qfunct (void)
 
                     }
 
-                    rft1 (ct.qcparm, &work[0], &sp->r[0], qnmlig_tpr, &sp->rab[0],
-                          sp->rg_points, ll, sp->drqlig, sp->gwidth, MAX_QLIG);
+		    filter_potential(work, &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.qcparm, qnmlig_tpr, 
+			    &sp->rab[0], ll, sp->drqlig, sp->gwidth, MAX_QLIG, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr);
 
-
-                    for (k = 0; k < MAX_QLIG; k++)
-                    {
-                        workr[k] = sp->drqlig * ((REAL) k);
-                    }
-
-                    radiff (qnmlig_tpr, drqnmlig_tpr, workr, MAX_QLIG, 0.0);
-
-                    qnmlig_tpr[0] = TWO * qnmlig_tpr[1] - qnmlig_tpr[2];
+		    /*Is this necessary ???*/
                     if (ll)
                         qnmlig_tpr[0] = 0.0;
-                    drqnmlig_tpr[1] = TWO * drqnmlig_tpr[2] - drqnmlig_tpr[3];
-                    drqnmlig_tpr[0] = TWO * drqnmlig_tpr[1] - drqnmlig_tpr[2];
-
-                    rcut = sp->nlrcut[sp->llbeta[i]];
-                    rfil = ZERO;
-                    for (k = 0; k < MAX_QLIG; k++)
-                    {
-                        if (rfil > rcut)
-                        {
-                            t1 = (rfil - rcut) / rcut;
-                            qnmlig_tpr[k] = qnmlig_tpr[k] * exp (-sp->rwidth * t1 * t1);
-                            drqnmlig_tpr[k] = drqnmlig_tpr[k] * exp (-sp->rwidth * t1 * t1);
-                            if (fabs (qnmlig_tpr[k]) < 1.e-35)
-                                qnmlig_tpr[k] = 0.0;
-                            if (fabs (drqnmlig_tpr[k]) < 1.e-35)
-                                drqnmlig_tpr[k] = 0.0;
-                        }       /*end for if */
-
-
-                        rfil += sp->drqlig;
-                    }           /*end for k */
 
                     
-		    /*Write Q function if requested*/
+		    /*Write final filtered Q function if requested*/
 		    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
 		    {
 			
