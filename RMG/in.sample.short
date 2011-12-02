@@ -140,6 +140,8 @@ output_wave_function_file="Wave-soft/wave.out"
 # Default: "10"
 write_eigvals_period="10"
 
+# Whether to use mask mask function for filtering PPs
+mask_function_filtering="false"
 
 
 # Multigrid levels for solving K-S and Poisson equations

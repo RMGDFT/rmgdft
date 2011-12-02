@@ -216,6 +216,11 @@ charge_pulay_special_metrics_weight="100"
 
 # Default: "0.5"
 projector_mixing="0.5"
+    
+# Whether to use mask mask function for filtering PPs
+# More info in JCP 124, 174102 (2006)
+mask_function_filtering="false"
+  
 
 # Default: "250"
 max_scf_steps="5"
