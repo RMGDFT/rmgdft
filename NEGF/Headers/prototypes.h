@@ -169,5 +169,7 @@ void get_qqq (void);
 #endif
 
 
+void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL offset, REAL parm, REAL* potential_lgrid, 
+	REAL *rab, int l_value, REAL dr, REAL  gwidth, int lgrid_points, REAL rcut, REAL rwidth, REAL * drpotential_lgrid);
 
 int min_distance_index(double *distance, int n );

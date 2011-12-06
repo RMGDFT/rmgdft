@@ -1636,6 +1636,8 @@ void init_state_size (STATE * states);
 
 
 
+void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL offset, REAL parm, REAL* potential_lgrid, 
+	REAL *rab, int l_value, REAL dr, REAL  gwidth, int lgrid_points, REAL rcut, REAL rwidth, REAL * drpotential_lgrid);
 
 
 #include "salloc.h"

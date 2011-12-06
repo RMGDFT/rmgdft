@@ -36,6 +36,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
     REAL tem;
     
 
+    N = ct.num_blocks;
     for (i = 0; i < N; i++)
     {
         ni[i] = ct.block_dim[i];
@@ -50,7 +51,7 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
 
     if (ndim != nC)
     {
-        printf ("\n %d %d ndim  not equaol to nC in Sgreen_c.c", ndim, nC);
+        printf ("\n %d %d ndim  not equaol to nC in Sgreen_c_noneq_p.c", ndim, nC);
         exit (0);
     }
 
