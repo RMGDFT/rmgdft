@@ -297,11 +297,9 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 	
 
 
-    if ( (!firststep) || (ct.runflag))	
-    {
-    	/* Take care of occupation filling */
-       	ct.efermi = fill (states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
-    }	
+    /* Take care of occupation filling */
+    if  (!firststep)
+	ct.efermi = fill (states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
 
 #endif
 
