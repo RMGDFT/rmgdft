@@ -98,7 +98,10 @@ void init_atomic_rho_wf (void)
             fprintf (psp, "\n&&\n");
         }
 
+	filter_potential(work, &sp->r[0], sp->rg_points, sp->aradius, 0.25, ct.cparm, &sp->arho_lig[0],
+		&sp->rab[0], 0, sp->drlig_awave, sp->agwidth, MAX_LOCAL_LIG, sp->acut, sp->arwidth, NULL);
 
+#if 0
         /* Transform to g-space and filter it */
         /*May need ct.qcparm here */
         rft1 (ct.cparm, work, &sp->r[0], sp->arho_lig, &sp->rab[0], sp->rg_points, 0, sp->drlig_arho,
@@ -138,6 +141,17 @@ void init_atomic_rho_wf (void)
 
             rfil += sp->drlig_arho;
         }                       /* end for idx */
+#endif
+            
+	if (pct.gridpe == 0 && write_flag)
+	{
+	    rfil = 0.0;
+	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+	    {
+		fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->arho_lig[idx]);
+		rfil += sp->drlig_arho;
+	    }
+	}
 
 
         /* output xmgr data separator */
@@ -157,7 +171,11 @@ void init_atomic_rho_wf (void)
                     fprintf (psp, "%15.8f  %15.8f\n", sp->r[idx], sp->atomic_wave[ip][idx]);
                 fprintf (psp, "\n&&\n");
             }
+	    
+	    filter_potential(&sp->atomic_wave[ip][0], &sp->r[0], sp->rg_points, sp->aradius, 0.25, ct.betacparm, &sp->awave_lig[ip][0],
+		    &sp->rab[0], sp->atomic_wave_l[ip], sp->drlig_awave, sp->agwidth, MAX_LOCAL_LIG, sp->acut, sp->arwidth, NULL);
 
+#if 0
             /* Transform to g-space and filter it */
             rft1 (ct.betacparm, &sp->atomic_wave[ip][0], &sp->r[0], &sp->awave_lig[ip][0],
                   &sp->rab[0], sp->rg_points, sp->atomic_wave_l[ip], sp->drlig_awave, sp->agwidth,
@@ -195,6 +213,17 @@ void init_atomic_rho_wf (void)
                 rfil += sp->drlig_awave;
 
             }                   /* end for */
+
+#endif
+	if (pct.gridpe == 0 && write_flag)
+	{
+	    rfil = 0.0;
+	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+	    {
+		fprintf (psp, "%15.8f  %15.8f\n", rfil, sp->awave_lig[ip][idx]);
+		rfil += sp->drlig_arho;
+	    }
+	}
 
             /* output xmgr data separator */
             if (pct.gridpe == 0 && write_flag)
