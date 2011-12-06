@@ -42,7 +42,7 @@
 
 #define SMALL 1.e-35
 
-void init_atomic_rho_wf (void)
+void lcao_init (void)
 {
 
     int isp, idx, ip, it1, write_flag;
@@ -72,10 +72,17 @@ void init_atomic_rho_wf (void)
 
         work = sp->atomic_rho;
 
-	/*Find adim, radius of atomic wavefunctions and charge in terms of number of grid points*/
-	sp->adim_wave = radius2grid (sp->aradius, ct.hmingrid);
+	/*Find radii of atomic wavefunctions and charge in terms of number of grid points*/
 	sp->adim_rho  = radius2grid (sp->aradius, ct.hmingrid/ (REAL) FG_NX);
-
+        if ((sp->adim_rho >= ct.psi_fnxgrid) || (sp->adim_rho >= ct.psi_fnygrid)
+            || (sp->adim_rho >= ct.psi_fnzgrid))
+            error_handler ("LCAO charge radius exceeds global grid size");
+	
+	sp->adim_wave = radius2grid (sp->aradius, ct.hmingrid);
+	if ((sp->adim_wave >= ct.psi_nxgrid) || (sp->adim_wave >= ct.psi_nygrid)
+            || (sp->adim_wave >= ct.psi_nzgrid))
+            error_handler ("LCAO wavefunctions radius exceeds global grid size");
+	
 
 	sp->drlig_awave = sqrt (3.0) * (sp->adim_wave + 1.0) * ct.hmaxgrid / 2.0;
 	if (ct.ibrav == HEXAGONAL)

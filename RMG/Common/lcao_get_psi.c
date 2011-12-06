@@ -9,7 +9,7 @@
 #include "main.h"
 
 
-void lcao_init_psi (STATE * states)
+void lcao_get_psi (STATE * states)
 {
 
     int ion, idx, ip, l, m, state_count, nspin, st;
@@ -58,7 +58,7 @@ void lcao_init_psi (STATE * states)
 		for (idx = 0; idx < P0_BASIS; idx++)
 		    psi[idx] = 0.0;
 
-		get_awave(psi, iptr, ip, l, m);
+		lcao_get_awave(psi, iptr, ip, l, m);
 
 		if (state_count == ct.num_states) 
 		    error_handler("Error too few states for LCAO start");

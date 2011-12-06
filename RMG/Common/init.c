@@ -252,8 +252,8 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     
 	if (ct.runflag == 2)
 	{
-	    init_atomic_rho_wf ();
-	    lcao_init_psi(states);
+	    lcao_init ();
+	    lcao_get_psi(states);
 	}
 	
 	else
@@ -397,7 +397,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     }
     
     if (ct.runflag == 2)
-	lcao_init_rho(rho);
+	lcao_get_rho(rho);
 
 
 #ifdef SMP

@@ -11,7 +11,7 @@
 /*This function calculates atomic wavefunctions using wavefunctions read from PP files
  * with angular part added. The result is in psi, which is assumed to be initialized to zero*/
 
-void get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m)
+void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m)
 {
 
     int ix, iy, iz;

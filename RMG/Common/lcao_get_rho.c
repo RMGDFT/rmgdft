@@ -9,7 +9,7 @@
 #include "main.h"
 
 
-void lcao_init_rho (REAL * arho_f)
+void lcao_get_rho (REAL * arho_f)
 {
 
     int ix, iy, iz;
