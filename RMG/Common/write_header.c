@@ -393,15 +393,27 @@ void write_header (void)
         printf ("        L potentials    = %d\n", sp->num_potentials);
         printf ("        L local         = %d\n", sp->local);
         printf ("        lrcut           = %12.6f\n", sp->lrcut);
+        printf ("        local radius    = %12.6f\n", sp->lradius);
+        printf ("    non-local radius    = %12.6f\n", sp->nlradius);
 	for (j = 0; j < sp->num_potentials; j++)
 	{
 	    if (sp->lval[j] != sp->local)
 	    {
-		printf ("        nlrcut state %d = %12.6f\n", j, sp->nlrcut[sp->lval[j]]);
+		printf ("        nlrcut  state %d = %12.6f\n", j, sp->nlrcut[sp->lval[j]]);
 	    }
 	}
 	printf ("        rwidth          = %12.6f\n", sp->rwidth);
 	printf ("        gwidth          = %12.6f\n", sp->gwidth);
+
+	if (verify ("start_mode","LCAO Start"))
+	{
+	    printf (" LCAO Parameters:             \n");
+	    printf ("        aradius         = %12.6f\n", sp->aradius);
+	    printf ("        acut            = %12.6f\n", sp->acut);
+	    printf ("        agwidth         = %12.6f\n", sp->agwidth);
+	    printf ("        arwidth         = %12.6f\n", sp->arwidth);
+	}
+
 
 
     }                           /* end for(idx = 0;idx < ct.num_species;idx++) */
