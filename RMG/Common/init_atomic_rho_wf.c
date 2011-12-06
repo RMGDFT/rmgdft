@@ -99,7 +99,7 @@ void init_atomic_rho_wf (void)
         }
 
 	filter_potential(work, &sp->r[0], sp->rg_points, sp->aradius, 0.25, ct.cparm, &sp->arho_lig[0],
-		&sp->rab[0], 0, sp->drlig_awave, sp->agwidth, MAX_LOCAL_LIG, sp->acut, sp->arwidth, NULL);
+		&sp->rab[0], 0, sp->drlig_arho, sp->agwidth, MAX_LOCAL_LIG, sp->acut, sp->arwidth, NULL);
 
 #if 0
         /* Transform to g-space and filter it */
