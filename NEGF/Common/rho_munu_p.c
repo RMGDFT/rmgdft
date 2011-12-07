@@ -14,7 +14,7 @@
 
 
 
-void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double * sigma_L, int iprobe)
+void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double * gamma, int iprobe)
 {
 
     complex double *temp;
@@ -50,12 +50,6 @@ void rho_munu_p (complex double * rho_mn, complex double * green_C, complex doub
         maxcol = max(maxcol, pmo.mxlocc_cond[i]);
     }
 
-    /*  Gamma = i*(sigma - simga^+)  */
-    for (i = 0; i < nrow * ncol; i++)
-    {
-        sigma_L[i] = -cimag(sigma_L[i]);
-    }
-
     n_green = 0;
 
     n1 = maxrow * maxcol;
@@ -72,7 +66,7 @@ void rho_munu_p (complex double * rho_mn, complex double * green_C, complex doub
         descc = &desc_col[ (i+1) * DLEN];
         descd = &pmo.desc_cond[ (i + (i+1) * ct.num_blocks ) * DLEN ];
         PZGEMM (&fcd_n, &fcd_n, &n1, &nL, &nL, &one, &green_C[n_green], &ione, &ione, desca,
-                sigma_L, &ione, &ione, desc_lead, &zero, temp, &ione, &ione, desca);
+                gamma, &ione, &ione, desc_lead, &zero, temp, &ione, &ione, desca);
 
         /* rho_mn (i,i) = temp * G_i0^, the block (i,i) */
 
@@ -94,7 +88,7 @@ void rho_munu_p (complex double * rho_mn, complex double * green_C, complex doub
     desca = &desc_col[ (N-1) * DLEN ];
     descb = &pmo.desc_cond[ (N-1 + (N-1) * ct.num_blocks ) * DLEN ];
     PZGEMM (&fcd_n, &fcd_n, &n1, &nL, &nL, &one, &green_C[n_green], &ione, &ione, desca,
-           sigma_L, &ione, &ione, desc_lead, &zero, temp, &ione, &ione, desca);
+           gamma, &ione, &ione, desc_lead, &zero, temp, &ione, &ione, desca);
 
     PZGEMM (&fcd_n, &fcd_c, &n1, &n1, &nL, &one, temp, &ione, &ione, desca, 
            &green_C[n_green], &ione, &ione, desca, &zero,

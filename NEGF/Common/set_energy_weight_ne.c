@@ -81,7 +81,7 @@ void set_energy_weight_ne (complex double * ene, complex double * weight, REAL E
 
             ene[nen] = xc[i] + I * DELTA;
 
-            weight[nen] = (distri2 - distri1) * wc[i];
+            weight[nen] = (distri2 - distri1) * wc[i]/2.0;
             nen++;
         }
     }

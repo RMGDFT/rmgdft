@@ -17,16 +17,20 @@ void charge_density_matrix_p (complex double * sigma_all)
 {
     int iprobe, jprobe, nprobe;
     int iene;
-    int st1, idx_sigma, idx_C;
+    int st1, idx_sigma, idx_C, nC_1, *desca;
     complex double ene;
     complex double weight;
     complex double *green_C, *rho_mn;
-    complex double *sigma;
+    complex double *sigma, *gamma;
 	REAL denominator, numerator, dum, sum, *wmn;
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
     complex double *green_C_non;
     int maxrow, maxcol;
     double time1, time2, time3, time4, time5, time6;
+    double one, zero;
+    int ione =1;
+    one =1.0;
+    zero =0.0;
 
     time1 = my_crtc ();
 
@@ -126,6 +130,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         }
 
         my_malloc_init( sigma, maxrow * maxcol, complex double ); 
+        my_malloc_init( gamma, maxrow * maxcol, complex double ); 
 
 
         maxrow = 0;
@@ -170,12 +175,6 @@ void charge_density_matrix_p (complex double * sigma_all)
 
                         nC = ct.num_states;
 
-                        idx_C = cei.probe_in_block[idx_delta - 1];
-                        for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
-                        {
-                            sigma[st1] = sigma_all[sigma_idx[idx_delta - 1] + st1];
-                        }
-
                         Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene,
                                 green_C_non, nC, idx_delta);
 
@@ -184,7 +183,22 @@ void charge_density_matrix_p (complex double * sigma_all)
                         /* sigma is the rhomn in output  */
                         time5 = my_crtc ();
 
-                        rho_munu_p (rho_mn, green_C_non, sigma, idx_delta); 
+                        idx_C = cei.probe_in_block[idx_delta - 1];
+                        for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
+                        {
+                            sigma[st1] = sigma_all[sigma_idx[idx_delta - 1] + st1];
+                        }
+
+
+                        desca = &pmo.desc_cond[( idx_C + idx_C * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
+                        nC_1 = ct.block_dim[idx_C];
+                        PZTRANC(&nC_1, &nC_1, &one, sigma, &ione, &ione, desca,
+                            &zero, gamma, &ione, &ione, desca);
+                        for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
+                        {
+                            gamma[i] = I * (sigma[i] - gamma[i]);
+                        }
+                        rho_munu_p (rho_mn, green_C_non, gamma, idx_delta); 
 
                         time6 = my_crtc ();
                         rmg_timings (RHO_MUNU_TIME, (time6 - time5));
@@ -213,6 +227,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         my_free( sigma_idx );
 
         my_free( sigma );
+        my_free( gamma );
 
         time3 = my_crtc ();
         rmg_timings (NONEQ_PART_TIME, (time3 - time4));
