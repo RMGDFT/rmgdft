@@ -40,640 +40,443 @@ void constrain (void)
     printf("Entering constrained forces for image %d", pct.thisimg+1);
     switch (ct.constrainforces)
     {
-	case 5:   /* NEB tangent to higher energy adjacent image with climbing/descending extrema */
-	    {
-		int ion;
-		ION *iptr;
-		REAL Mag_T = 0.0;
-		REAL Mag_L = 0.0;
-		REAL Mag_R = 0.0;
-		REAL FdotT = 0.0;
-		REAL Tau[3*ct.num_ions];
-		REAL Img_L[3*ct.num_ions];
-		REAL Img_R[3*ct.num_ions];
-
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr = &ct.ions[ion];
-
-		    /*Calculate displacement vectors from self to left and right image coords */
-		    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
-		    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
-		    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
-
-		    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
-		    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
-		    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
-
-		    /*Calculate vector magnitudes (squared) */
-		    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
-			+ Img_L[3*ion+Y]*Img_L[3*ion+Y]
-			+ Img_L[3*ion+Z]*Img_L[3*ion+Z];
-
-		    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
-			+ Img_R[3*ion+Y]*Img_R[3*ion+Y]
-			+ Img_R[3*ion+Z]*Img_R[3*ion+Z];
-
-		}
-
-		if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
-			( iptr->constraint.setA_weight <= ct.TOTAL && ct.TOTAL >= iptr->constraint.setB_weight) )
-		{   /* this image energy is an extrema along the band */
-		    /* Calculate tangent vector Tau */
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
-			Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
-			Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
-
-			Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
-			    + Tau[3*ion+Y]*Tau[3*ion+Y]
-			    + Tau[3*ion+Z]*Tau[3*ion+Z];
-		    }
-
-		    Mag_T = sqrt(Mag_T);
-		}
-		else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
-		{   /* this image energy is in a decreasing to the right section */
-		    /* Calculate tangent vector Tau */
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] = Img_L[3*ion+X];
-			Tau[3*ion+Y] = Img_L[3*ion+Y];
-			Tau[3*ion+Z] = Img_L[3*ion+Z];
-		    }
-
-		    Mag_T = Mag_L;
-		}
-		else if ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
-		{   /* this image energy is in a decreasing to the left section */
-		    /* Calculate tangent vector Tau */
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] = Img_R[3*ion+X];
-			Tau[3*ion+Y] = Img_R[3*ion+Y];
-			Tau[3*ion+Z] = Img_R[3*ion+Z];
-		    }
-
-		    Mag_T = Mag_R;
-		}
-
-
-		/* check tau tangent vector size */
-		if ( Mag_T == 0 ) {
-		    error_handler("Image collision this(%d) image.", pct.thisimg);
-		} else {
-		    Mag_T = sqrt(Mag_T);
-		}
-
-		/* Normalize tangent vector Tau */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    Tau[3*ion+X] /= Mag_T;
-		    Tau[3*ion+Y] /= Mag_T;
-		    Tau[3*ion+Z] /= Mag_T;
-		}
-
-		/* Find the amount of force along the Tau vector */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
-			+ iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
-			+ iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
-		}
-
-		/* determine image motion along band */
-		if  ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
-		{   /* this image energy is a maxima - climb image */
-		    Mag_T = -FdotT;
-		}
-		else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
-		{ /* this image energy is a minima - descend image */
-		    Mag_T = 2*FdotT;
-		}
-		else
-		{ /* not extrema - keep evenly spaced (RMSD) images */
-		    /*Calculate vector norms */
-		    Mag_L =  sqrt(Mag_L) ;
-		    Mag_R =  sqrt(Mag_R) ;
-		    Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
-		}
-
-		/* Remove physical force along Tau, replace it with the restoring force */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
-		    iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
-		    iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
-		}
-	    }
-	    break;
-	case 4:                    /* NEB tangent to higher energy adjacent image */
-	    {
-		int ion;
-		ION *iptr;
-		REAL Mag_T = 0.0;
-		REAL Mag_L = 0.0;
-		REAL Mag_R = 0.0;
-		REAL FdotT = 0.0;
-		REAL Tau[3*ct.num_ions];
-		REAL Img_L[3*ct.num_ions];
-		REAL Img_R[3*ct.num_ions];
-
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr = &ct.ions[ion];
-
-		    /*Calculate displacement vectors from self to left and right image coords */
-		    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
-		    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
-		    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
-
-		    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
-		    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
-		    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
-
-		    /*Calculate vector magnitudes (squared) */
-		    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
-			+ Img_L[3*ion+Y]*Img_L[3*ion+Y]
-			+ Img_L[3*ion+Z]*Img_L[3*ion+Z];
-
-		    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
-			+ Img_R[3*ion+Y]*Img_R[3*ion+Y]
-			+ Img_R[3*ion+Z]*Img_R[3*ion+Z];
-
-		}
-		/*Calculate vector norms, protect against zeros */
-		Mag_L = Mag_L > 0.0 ? sqrt(Mag_L) : error_handler("Left image(%d) collision in NEB", pct.thisimg);
-		Mag_R = Mag_R > 0.0 ? sqrt(Mag_R) : error_handler("Right image(%d) collision in NEB", pct.thisimg);
-
-		if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
-			( iptr->constraint.setA_weight <= ct.TOTAL && ct.TOTAL >= iptr->constraint.setB_weight) )
-		{   /* this image energy is an extrema along the band */
-		    /* Calculate tangent vector Tau */
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
-			Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
-			Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
-
-			Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
-			    + Tau[3*ion+Y]*Tau[3*ion+Y]
-			    + Tau[3*ion+Z]*Tau[3*ion+Z];
-		    }
-
-		    Mag_T = Mag_T > 0.0 ? sqrt(Mag_T) : error_handler("Left/Right image collision in NEB", pct.thisimg);
-		}
-		else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
-		{   /* this image energy is in a decreasing to the right section */
-		    /* Calculate tangent vector Tau */
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] = Img_L[3*ion+X];
-			Tau[3*ion+Y] = Img_L[3*ion+Y];
-			Tau[3*ion+Z] = Img_L[3*ion+Z];
-		    }
-
-		    Mag_T = Mag_L;
-		}
-		else if ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
-		{   /* this image energy is in a decreasing to the left section */
-		    /* Calculate tangent vector Tau */
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] = Img_R[3*ion+X];
-			Tau[3*ion+Y] = Img_R[3*ion+Y];
-			Tau[3*ion+Z] = Img_R[3*ion+Z];
-		    }
-
-		    Mag_T = Mag_R;
-		}
-
-
-		/* Normalize tangent vector Tau */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    Tau[3*ion+X] /= Mag_T;
-		    Tau[3*ion+Y] /= Mag_T;
-		    Tau[3*ion+Z] /= Mag_T;
-		}
-
-		/* Find the amount of force along the Tau vector */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
-			+ iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
-			+ iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
-		}
-
-		/* Calculate the necessary restoring force to keep images from instersecting */
-		Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
-
-		/* Remove physical force along Tau, replace it with the restoring force */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
-		    iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
-		    iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
-		}
-	    }
-	    break;
-
-	case 3:                    /* NEB tangent to normalized adjacent images */
-	    {
-		int ion;
-		ION *iptr;
-		REAL Mag_T = 0.0;
-		REAL Mag_L = 0.0;
-		REAL Mag_R = 0.0;
-		REAL FdotT = 0.0;
-		REAL Tau[3*ct.num_ions];
-		REAL Img_L[3*ct.num_ions];
-		REAL Img_R[3*ct.num_ions];
-
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr = &ct.ions[ion];
-
-		    /*Calculate displacement vectors from self to left and right image coords */
-		    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
-		    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
-		    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
-
-		    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
-		    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
-		    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
-
-		    /*Calculate vector magnitudes (squared) */
-		    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
-			+ Img_L[3*ion+Y]*Img_L[3*ion+Y]
-			+ Img_L[3*ion+Z]*Img_L[3*ion+Z];
-
-		    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
-			+ Img_R[3*ion+Y]*Img_R[3*ion+Y]
-			+ Img_R[3*ion+Z]*Img_R[3*ion+Z];
-
-		}
-		/*Calculate vector norms, protect against zeros */
-		Mag_L = Mag_L > 0.0 ? sqrt(Mag_L) : 1.0;
-		Mag_R = Mag_R > 0.0 ? sqrt(Mag_R) : 1.0;
-
-		/* Calculate tangent vector Tau */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
-		    Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
-		    Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
-
-		    Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
-			+ Tau[3*ion+Y]*Tau[3*ion+Y]
-			+ Tau[3*ion+Z]*Tau[3*ion+Z];
-
-		}
-
-		/* check tau tangent vector size */
-		if ( Mag_T == 0 ) {
-		    error_handler("Image collision in both left and right images.");
-		} else {
-		    Mag_T = sqrt(Mag_T);
-		}
-
-		/* Normalize tangent vector Tau */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    Tau[3*ion+X] /= Mag_T;
-		    Tau[3*ion+Y] /= Mag_T;
-		    Tau[3*ion+Z] /= Mag_T;
-		}
-
-		/* Find the amount of force along the Tau vector */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
-			+ iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
-			+ iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
-		}
-
-		/* Calculate the necessary restoring force to keep images from instersecting */
-		Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
-
-		/* Remove physical force along Tau, replace it with the restoring force */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr->force[ct.fpt[0]][X] += (Mag_T - FdotT) * Tau[3*ion+X];
-		    iptr->force[ct.fpt[0]][Y] += (Mag_T - FdotT) * Tau[3*ion+Y];
-		    iptr->force[ct.fpt[0]][Z] += (Mag_T - FdotT) * Tau[3*ion+Z];
-		}
-	    }
-	    break;
-
-	case 2:                    /* NEB tangent to adjacent images */
-	    {
-		int ion;
-		ION *iptr;
-		REAL Mag_T = 0.0;
-		REAL Mag_L = 0.0;
-		REAL Mag_R = 0.0;
-		REAL FdotT = 0.0;
-		REAL Tau[3*ct.num_ions];
-		REAL Img_L[3*ct.num_ions];
-		REAL Img_R[3*ct.num_ions];
-
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr = &ct.ions[ion];
-
-		    /*Calculate displacement vectors from self to left and right image coords */
-		    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
-		    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
-		    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
-
-		    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
-		    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
-		    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
-
-		    /*Calculate displacement vector between left and right image coords */
-		    Tau[3*ion+X] = Img_L[3*ion+X] + Img_R[3*ion+X];
-		    Tau[3*ion+Y] = Img_L[3*ion+Y] + Img_R[3*ion+Y];
-		    Tau[3*ion+Z] = Img_L[3*ion+Z] + Img_R[3*ion+Z];
-
-		    /*Calculate vector magnitudes (squared) */
-		    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
-			+ Img_L[3*ion+Y]*Img_L[3*ion+Y]
-			+ Img_L[3*ion+Z]*Img_L[3*ion+Z];
-
-		    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
-			+ Img_R[3*ion+Y]*Img_R[3*ion+Y]
-			+ Img_R[3*ion+Z]*Img_R[3*ion+Z];
-
-		    Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
-			+ Tau[3*ion+Y]*Tau[3*ion+Y]
-			+ Tau[3*ion+Z]*Tau[3*ion+Z];
-		}
-		/*Calculate vector magnitudes */
-		Mag_L = sqrt(Mag_L);
-		Mag_R = sqrt(Mag_R);
-
-		/* Normalize tangent vector Tau */
-		if (Mag_T != 0.0)
-		{
-		    Mag_T = sqrt(Mag_T);
-		    for (ion=0; ion < ct.num_ions; ion++)
-		    {
-			Tau[3*ion+X] /= Mag_T;
-			Tau[3*ion+Y] /= Mag_T;
-			Tau[3*ion+Z] /= Mag_T;
-		    }
-		}
-
-		/* Find the amount of force along the Tau vector */
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
-			+ iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
-			+ iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
-		}
-
-		/* Calculate the necessary restoring force to keep images from instersecting */
-		Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
-
-		/* Remove physical force along Tau, replace it with the restoring force */
-		printf("Applying NEB force constraints\n");
-
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    //    printf("ION %3d F_orig: %g, %g, %g\n",ion, iptr->force[ct.fpt[0]][X], iptr->force[ct.fpt[0]][Y] ,iptr->force[ct.fpt[0]][Z]);
-		    //    printf("ION %3d FdotT : %g, %g, %g\n",ion, FdotT*iptr->force[ct.fpt[0]][X], FdotT*iptr->force[ct.fpt[0]][Y] ,FdotT*iptr->force[ct.fpt[0]][Z]);
-		    //    printf("ION %3d F_rest: %g, %g, %g\n\n",ion, Mag_T*iptr->force[ct.fpt[0]][X], Mag_T*iptr->force[ct.fpt[0]][Y] ,Mag_T*iptr->force[ct.fpt[0]][Z]);
-
-
-		    iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
-		    iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
-		    iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
-		}
-	    }
-	    break;
-
-	case 1:                    /* In plane, 2-D restriction (typical). */
-	    {
-		int ion;
-		REAL FdotC;
-		ION *iptr;
-		for (ion=0; ion < ct.num_ions; ion++)
-		{
-		    iptr = &ct.ions[ion];
-
-		    FdotC = iptr->force[ct.fpt[0]][X] * iptr->constraint.setA_coord[X]
-			+ iptr->force[ct.fpt[0]][Y] * iptr->constraint.setA_coord[Y]
-			+ iptr->force[ct.fpt[0]][Z] * iptr->constraint.setA_coord[Z];
-
-		    iptr->force[ct.fpt[0]][X] -= FdotC * iptr->constraint.setA_coord[X];
-		    iptr->force[ct.fpt[0]][Y] -= FdotC * iptr->constraint.setA_coord[Y];
-		    iptr->force[ct.fpt[0]][Z] -= FdotC * iptr->constraint.setA_coord[Z];
-		}
-	    }
-	    break;
-	case 0:                    /* Constraint disabled, should not get here */
-	    break;
+        case 5:   /* NEB tangent to higher energy adjacent image with climbing/descending extrema */
+            {
+                int ion;
+                ION *iptr;
+                REAL Mag_T = 0.0;
+                REAL Mag_L = 0.0;
+                REAL Mag_R = 0.0;
+                REAL FdotT = 0.0;
+                REAL Tau[3*ct.num_ions];
+                REAL Img_L[3*ct.num_ions];
+                REAL Img_R[3*ct.num_ions];
+
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr = &ct.ions[ion];
+
+                    /*Calculate displacement vectors from self to left and right image coords */
+                    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
+                    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
+                    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
+
+                    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
+                    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
+                    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
+
+                    /*Calculate vector magnitudes (squared) */
+                    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
+                        + Img_L[3*ion+Y]*Img_L[3*ion+Y]
+                        + Img_L[3*ion+Z]*Img_L[3*ion+Z];
+
+                    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
+                        + Img_R[3*ion+Y]*Img_R[3*ion+Y]
+                        + Img_R[3*ion+Z]*Img_R[3*ion+Z];
+
+                }
+
+                if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
+                        ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight) )
+                {   /* this image energy is an extrema along the band */
+                    /* Calculate tangent vector Tau */
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
+                        Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
+                        Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
+
+                        Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
+                            + Tau[3*ion+Y]*Tau[3*ion+Y]
+                            + Tau[3*ion+Z]*Tau[3*ion+Z];
+                    }
+
+                }
+                else if ( iptr->constraint.setA_weight > iptr->constraint.setB_weight)
+                {   /* this image energy is in a decreasing to the right section */
+                    /* Calculate tangent vector Tau */
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] = Img_L[3*ion+X];
+                        Tau[3*ion+Y] = Img_L[3*ion+Y];
+                        Tau[3*ion+Z] = Img_L[3*ion+Z];
+                    }
+
+                    Mag_T = Mag_L;
+                }
+                else if ( iptr->constraint.setA_weight < iptr->constraint.setB_weight)
+                {   /* this image energy is in a decreasing to the left section */
+                    /* Calculate tangent vector Tau */
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] = Img_R[3*ion+X];
+                        Tau[3*ion+Y] = Img_R[3*ion+Y];
+                        Tau[3*ion+Z] = Img_R[3*ion+Z];
+                    }
+
+                    Mag_T = Mag_R;
+                }
+
+
+                /* check tau tangent vector size */
+                if ( Mag_T == 0 ) {
+                    error_handler("Image collision this(%d) image.", pct.thisimg);
+                } else {
+                    Mag_T = sqrt(Mag_T);
+                }
+
+                /* Normalize tangent vector Tau */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    Tau[3*ion+X] /= Mag_T;
+                    Tau[3*ion+Y] /= Mag_T;
+                    Tau[3*ion+Z] /= Mag_T;
+                }
+
+                /* Find the amount of force along the Tau vector */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
+                        + iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
+                        + iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
+                }
+
+                /* determine image motion along band */
+                if  ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
+                {   /* this image energy is a maxima - climb image */
+                    Mag_T = -FdotT;
+                }
+                else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
+                { /* this image energy is a minima - descend image */
+                    Mag_T = 2*FdotT;
+                }
+                else
+                { /* not extrema - keep evenly spaced (RMSD) images */
+                    /*Calculate vector norms */
+                    Mag_L =  sqrt(Mag_L) ;
+                    Mag_R =  sqrt(Mag_R) ;
+                    Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
+                }
+
+                /* Remove physical force along Tau, replace it with the restoring force */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
+                    iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
+                    iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
+                }
+            }
+            break;
+        case 4:                    /* NEB tangent to higher energy adjacent image */
+            {
+                int ion;
+                ION *iptr;
+                REAL Mag_T = 0.0;
+                REAL Mag_L = 0.0;
+                REAL Mag_R = 0.0;
+                REAL FdotT = 0.0;
+                REAL Tau[3*ct.num_ions];
+                REAL Img_L[3*ct.num_ions];
+                REAL Img_R[3*ct.num_ions];
+
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr = &ct.ions[ion];
+
+                    /*Calculate displacement vectors from self to left and right image coords */
+                    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
+                    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
+                    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
+
+                    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
+                    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
+                    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
+
+                    /*Calculate vector magnitudes (squared) */
+                    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
+                        + Img_L[3*ion+Y]*Img_L[3*ion+Y]
+                        + Img_L[3*ion+Z]*Img_L[3*ion+Z];
+
+                    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
+                        + Img_R[3*ion+Y]*Img_R[3*ion+Y]
+                        + Img_R[3*ion+Z]*Img_R[3*ion+Z];
+
+                }
+                /*Calculate vector norms, protect against zeros */
+                Mag_L = Mag_L > 0.0 ? sqrt(Mag_L) : error_handler("Left image(%d) collision in NEB", pct.thisimg);
+                Mag_R = Mag_R > 0.0 ? sqrt(Mag_R) : error_handler("Right image(%d) collision in NEB", pct.thisimg);
+
+                if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
+                        ( iptr->constraint.setA_weight <= ct.TOTAL && ct.TOTAL >= iptr->constraint.setB_weight) )
+                {   /* this image energy is an extrema along the band */
+                    /* Calculate tangent vector Tau */
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
+                        Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
+                        Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
+
+                        Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
+                            + Tau[3*ion+Y]*Tau[3*ion+Y]
+                            + Tau[3*ion+Z]*Tau[3*ion+Z];
+                    }
+
+                    Mag_T = Mag_T > 0.0 ? sqrt(Mag_T) : error_handler("Left/Right image collision in NEB", pct.thisimg);
+                }
+                else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
+                {   /* this image energy is in a decreasing to the right section */
+                    /* Calculate tangent vector Tau */
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] = Img_L[3*ion+X];
+                        Tau[3*ion+Y] = Img_L[3*ion+Y];
+                        Tau[3*ion+Z] = Img_L[3*ion+Z];
+                    }
+
+                    Mag_T = Mag_L;
+                }
+                else if ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
+                {   /* this image energy is in a decreasing to the left section */
+                    /* Calculate tangent vector Tau */
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] = Img_R[3*ion+X];
+                        Tau[3*ion+Y] = Img_R[3*ion+Y];
+                        Tau[3*ion+Z] = Img_R[3*ion+Z];
+                    }
+
+                    Mag_T = Mag_R;
+                }
+
+
+                /* Normalize tangent vector Tau */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    Tau[3*ion+X] /= Mag_T;
+                    Tau[3*ion+Y] /= Mag_T;
+                    Tau[3*ion+Z] /= Mag_T;
+                }
+
+                /* Find the amount of force along the Tau vector */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
+                        + iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
+                        + iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
+                }
+
+                /* Calculate the necessary restoring force to keep images from instersecting */
+                Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
+
+                /* Remove physical force along Tau, replace it with the restoring force */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
+                    iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
+                    iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
+                }
+            }
+            break;
+
+        case 3:                    /* NEB tangent to normalized adjacent images */
+            {
+                int ion;
+                ION *iptr;
+                REAL Mag_T = 0.0;
+                REAL Mag_L = 0.0;
+                REAL Mag_R = 0.0;
+                REAL FdotT = 0.0;
+                REAL Tau[3*ct.num_ions];
+                REAL Img_L[3*ct.num_ions];
+                REAL Img_R[3*ct.num_ions];
+
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr = &ct.ions[ion];
+
+                    /*Calculate displacement vectors from self to left and right image coords */
+                    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
+                    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
+                    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
+
+                    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
+                    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
+                    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
+
+                    /*Calculate vector magnitudes (squared) */
+                    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
+                        + Img_L[3*ion+Y]*Img_L[3*ion+Y]
+                        + Img_L[3*ion+Z]*Img_L[3*ion+Z];
+
+                    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
+                        + Img_R[3*ion+Y]*Img_R[3*ion+Y]
+                        + Img_R[3*ion+Z]*Img_R[3*ion+Z];
+
+                }
+                /*Calculate vector norms, protect against zeros */
+                Mag_L = Mag_L > 0.0 ? sqrt(Mag_L) : 1.0;
+                Mag_R = Mag_R > 0.0 ? sqrt(Mag_R) : 1.0;
+
+                /* Calculate tangent vector Tau */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
+                    Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
+                    Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
+
+                    Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
+                        + Tau[3*ion+Y]*Tau[3*ion+Y]
+                        + Tau[3*ion+Z]*Tau[3*ion+Z];
+
+                }
+
+                /* check tau tangent vector size */
+                if ( Mag_T == 0 ) {
+                    error_handler("Image collision in both left and right images.");
+                } else {
+                    Mag_T = sqrt(Mag_T);
+                }
+
+                /* Normalize tangent vector Tau */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    Tau[3*ion+X] /= Mag_T;
+                    Tau[3*ion+Y] /= Mag_T;
+                    Tau[3*ion+Z] /= Mag_T;
+                }
+
+                /* Find the amount of force along the Tau vector */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
+                        + iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
+                        + iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
+                }
+
+                /* Calculate the necessary restoring force to keep images from instersecting */
+                Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
+
+                /* Remove physical force along Tau, replace it with the restoring force */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr->force[ct.fpt[0]][X] += (Mag_T - FdotT) * Tau[3*ion+X];
+                    iptr->force[ct.fpt[0]][Y] += (Mag_T - FdotT) * Tau[3*ion+Y];
+                    iptr->force[ct.fpt[0]][Z] += (Mag_T - FdotT) * Tau[3*ion+Z];
+                }
+            }
+            break;
+
+        case 2:                    /* NEB tangent to adjacent images */
+            {
+                int ion;
+                ION *iptr;
+                REAL Mag_T = 0.0;
+                REAL Mag_L = 0.0;
+                REAL Mag_R = 0.0;
+                REAL FdotT = 0.0;
+                REAL Tau[3*ct.num_ions];
+                REAL Img_L[3*ct.num_ions];
+                REAL Img_R[3*ct.num_ions];
+
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr = &ct.ions[ion];
+
+                    /*Calculate displacement vectors from self to left and right image coords */
+                    Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
+                    Img_L[3*ion+Y] = iptr->crds[Y] - iptr->constraint.setA_coord[Y];
+                    Img_L[3*ion+Z] = iptr->crds[Z] - iptr->constraint.setA_coord[Z];
+
+                    Img_R[3*ion+X] = iptr->constraint.setB_coord[X] - iptr->crds[X];
+                    Img_R[3*ion+Y] = iptr->constraint.setB_coord[Y] - iptr->crds[Y];
+                    Img_R[3*ion+Z] = iptr->constraint.setB_coord[Z] - iptr->crds[Z];
+
+                    /*Calculate displacement vector between left and right image coords */
+                    Tau[3*ion+X] = Img_L[3*ion+X] + Img_R[3*ion+X];
+                    Tau[3*ion+Y] = Img_L[3*ion+Y] + Img_R[3*ion+Y];
+                    Tau[3*ion+Z] = Img_L[3*ion+Z] + Img_R[3*ion+Z];
+
+                    /*Calculate vector magnitudes (squared) */
+                    Mag_L += Img_L[3*ion+X]*Img_L[3*ion+X]
+                        + Img_L[3*ion+Y]*Img_L[3*ion+Y]
+                        + Img_L[3*ion+Z]*Img_L[3*ion+Z];
+
+                    Mag_R += Img_R[3*ion+X]*Img_R[3*ion+X]
+                        + Img_R[3*ion+Y]*Img_R[3*ion+Y]
+                        + Img_R[3*ion+Z]*Img_R[3*ion+Z];
+
+                    Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
+                        + Tau[3*ion+Y]*Tau[3*ion+Y]
+                        + Tau[3*ion+Z]*Tau[3*ion+Z];
+                }
+                /*Calculate vector magnitudes */
+                Mag_L = sqrt(Mag_L);
+                Mag_R = sqrt(Mag_R);
+
+                /* Normalize tangent vector Tau */
+                if (Mag_T != 0.0)
+                {
+                    Mag_T = sqrt(Mag_T);
+                    for (ion=0; ion < ct.num_ions; ion++)
+                    {
+                        Tau[3*ion+X] /= Mag_T;
+                        Tau[3*ion+Y] /= Mag_T;
+                        Tau[3*ion+Z] /= Mag_T;
+                    }
+                }
+
+                /* Find the amount of force along the Tau vector */
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
+                        + iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
+                        + iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
+                }
+
+                /* Calculate the necessary restoring force to keep images from instersecting */
+                Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
+
+                /* Remove physical force along Tau, replace it with the restoring force */
+                printf("Applying NEB force constraints\n");
+
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    //    printf("ION %3d F_orig: %g, %g, %g\n",ion, iptr->force[ct.fpt[0]][X], iptr->force[ct.fpt[0]][Y] ,iptr->force[ct.fpt[0]][Z]);
+                    //    printf("ION %3d FdotT : %g, %g, %g\n",ion, FdotT*iptr->force[ct.fpt[0]][X], FdotT*iptr->force[ct.fpt[0]][Y] ,FdotT*iptr->force[ct.fpt[0]][Z]);
+                    //    printf("ION %3d F_rest: %g, %g, %g\n\n",ion, Mag_T*iptr->force[ct.fpt[0]][X], Mag_T*iptr->force[ct.fpt[0]][Y] ,Mag_T*iptr->force[ct.fpt[0]][Z]);
+
+
+                    iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
+                    iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
+                    iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
+                }
+            }
+            break;
+
+        case 1:                    /* In plane, 2-D restriction (typical). */
+            {
+                int ion;
+                REAL FdotC;
+                ION *iptr;
+                for (ion=0; ion < ct.num_ions; ion++)
+                {
+                    iptr = &ct.ions[ion];
+
+                    FdotC = iptr->force[ct.fpt[0]][X] * iptr->constraint.setA_coord[X]
+                        + iptr->force[ct.fpt[0]][Y] * iptr->constraint.setA_coord[Y]
+                        + iptr->force[ct.fpt[0]][Z] * iptr->constraint.setA_coord[Z];
+
+                    iptr->force[ct.fpt[0]][X] -= FdotC * iptr->constraint.setA_coord[X];
+                    iptr->force[ct.fpt[0]][Y] -= FdotC * iptr->constraint.setA_coord[Y];
+                    iptr->force[ct.fpt[0]][Z] -= FdotC * iptr->constraint.setA_coord[Z];
+                }
+            }
+            break;
+        case 0:                    /* Constraint disabled, should not get here */
+            break;
     }
 
     return;
 }
 
-#if 0	
-
-switch (iptr->constraint.setA_type)
-{
-    case 4:    /* NEB (simple) tangent to adjacent images */
-    {   
-	REAL MagT, MagL, MagR, FdotT, Tau[3], PosL[3], PosR[3];
-
-	PosL[0] = iptr->crds[0] - iptr->constraint.setA_coord[0];
-	PosL[1] = iptr->crds[1] - iptr->constraint.setA_coord[1];
-	PosL[2] = iptr->crds[2] - iptr->constraint.setA_coord[2];
-
-	PosR[0] = iptr->constraint.setB_coord[0] - iptr->crds[0];
-	PosR[1] = iptr->constraint.setB_coord[1] - iptr->crds[1];
-	PosR[2] = iptr->constraint.setB_coord[2] - iptr->crds[2];
-
-	MagL = sqrt(PosL[0]*PosL[0] + PosL[1]*PosL[1] + PosL[2]*PosL[2]);
-	MagR = sqrt(PosR[0]*PosR[0] + PosR[1]*PosR[1] + PosR[2]*PosR[2]);
-
-	Tau[0] = PosL[0] + PosR[0];
-	Tau[1] = PosL[1] + PosR[1];
-	Tau[2] = PosL[2] + PosR[2];
-
-	MagT = sqrt(Tau[0]*Tau[0] + Tau[1]*Tau[1] + Tau[2]*Tau[2]);
-
-	if (MagT != 0.0)
-	{
-	    Tau[0] /= MagT;
-	    Tau[1] /= MagT;
-	    Tau[2] /= MagT;
-	}
-
-	FdotT = iptr->force[fpt][0] * Tau[0]
-	    + iptr->force[fpt][1] * Tau[1]
-	    + iptr->force[fpt][2] * Tau[2];
-
-	MagT = ct.neb_spring_constant*(MagL - MagR);
-
-	iptr->force[fpt][0] += (MagT - FdotT) * Tau[0];
-	iptr->force[fpt][1] += (MagT - FdotT) * Tau[1];
-	iptr->force[fpt][2] += (MagT - FdotT) * Tau[2];
-
-    }
-    break;
-    case 3:    /* NEB (enhanced) tangent to adjacent images */
-    {   
-	REAL MagT, MagL, MagR, FdotT, Tau[3], PosL[3], PosR[3];
-
-	PosL[0] = iptr->crds[0] - iptr->constraint.setA_coord[0];
-	PosL[1] = iptr->crds[1] - iptr->constraint.setA_coord[1];
-	PosL[2] = iptr->crds[2] - iptr->constraint.setA_coord[2];
-
-	PosR[0] = iptr->constraint.setB_coord[0] - iptr->crds[0];
-	PosR[1] = iptr->constraint.setB_coord[1] - iptr->crds[1];
-	PosR[2] = iptr->constraint.setB_coord[2] - iptr->crds[2];
-
-	MagL = sqrt(PosL[0]*PosL[0] + PosL[1]*PosL[1] + PosL[2]*PosL[2]);
-	MagR = sqrt(PosR[0]*PosR[0] + PosR[1]*PosR[1] + PosR[2]*PosR[2]);
-
-	if (MagL == 0.0) MagL = 1.0;
-	if (MagR == 0.0) MagR = 1.0;
-
-	Tau[0] = PosL[0]/MagL + PosR[0]/MagR;
-	Tau[1] = PosL[1]/MagL + PosR[1]/MagR;
-	Tau[2] = PosL[2]/MagL + PosR[2]/MagR;
-
-	MagT = sqrt(Tau[0]*Tau[0] + Tau[1]*Tau[1] + Tau[2]*Tau[2]);
-
-	if (MagT != 0.0)
-	{
-	    Tau[0] /= MagT;
-	    Tau[1] /= MagT;
-	    Tau[2] /= MagT;
-	}
-
-	FdotT = iptr->force[fpt][0] * Tau[0]
-	    + iptr->force[fpt][1] * Tau[1]
-	    + iptr->force[fpt][2] * Tau[2];
-
-	MagT = ct.neb_spring_constant*(MagL - MagR);
-	printf("\n\tNat force            is :%f\t%f\t%f", iptr->force[fpt][0], iptr->force[fpt][1], iptr->force[fpt][2]);
-	printf("\n\tNEB force correction is :%f\t%f\t%f", (MagT - FdotT) * Tau[0], (MagT - FdotT) * Tau[1], (MagT - FdotT) * Tau[2]);
-
-	iptr->force[fpt][0] += (MagT - FdotT) * Tau[0];
-	iptr->force[fpt][1] += (MagT - FdotT) * Tau[1];
-	iptr->force[fpt][2] += (MagT - FdotT) * Tau[2];
-
-    }
-    break;
-
-    case 2:                    /* NEB tangent to adjacent images */
-    {
-	REAL Mag, MagL, MagR, FdotT;
-	REAL Tau[3], TauL[3], TauR[3];
-	REAL Left_E = iptr->constraint.setA_weight;
-	REAL This_E = ct.TOTAL;
-	REAL Right_E = iptr->constraint.setB_weight;
-
-
-	/*Calculate displacement vectors to left and right image coords */
-	TauL[0] = iptr->crds[0] - iptr->constraint.setA_coord[0];
-	TauL[1] = iptr->crds[1] - iptr->constraint.setA_coord[1];
-	TauL[2] = iptr->crds[2] - iptr->constraint.setA_coord[2];
-
-	TauR[0] = iptr->constraint.setB_coord[0] - iptr->crds[0];
-	TauR[1] = iptr->constraint.setB_coord[1] - iptr->crds[1];
-	TauR[2] = iptr->constraint.setB_coord[2] - iptr->crds[2];
-
-	/*Calculate vector magnitudes to left and right image coords */
-	MagL = sqrt(TauL[0]*TauL[0] + TauL[1]*TauL[1] + TauL[2]*TauL[2]);
-	MagR = sqrt(TauR[0]*TauR[0] + TauR[1]*TauR[1] + TauR[2]*TauR[2]);
-
-	/* Calculate energy weighted tangent vector */
-	/* Is this image an extrema ? */
-	if ( (This_E > Left_E && This_E > Right_E)||(This_E < Left_E && This_E < Right_E) )	
-	{
-	    REAL dEmax = max( fabs(This_E - Left_E), fabs(This_E - Right_E) );
-	    REAL dEmin = min( fabs(This_E - Left_E), fabs(This_E - Right_E) );
-
-	    if ( Left_E > Right_E )
-	    {
-		Tau[0] = dEmax*TauL[0] + dEmin*TauR[0];
-		Tau[1] = dEmax*TauL[1] + dEmin*TauR[1];
-		Tau[2] = dEmax*TauL[2] + dEmin*TauR[2];
-	    }
-	    else
-	    {
-		Tau[0] = dEmax*TauR[0] + dEmin*TauL[0];
-		Tau[1] = dEmax*TauR[1] + dEmin*TauL[1];
-		Tau[2] = dEmax*TauR[2] + dEmin*TauL[2];
-	    }
-	}
-	else /* Image is in a monotonic region */
-	{
-	    if ( Left_E > Right_E )
-	    {
-		Tau[0] = TauL[0];
-		Tau[1] = TauL[1];
-		Tau[2] = TauL[2];
-	    }
-	    else
-	    {
-		Tau[0] = TauR[0];
-		Tau[1] = TauR[1];
-		Tau[2] = TauR[2];
-	    }
-	}
-
-	/* Normalize Tau */
-	Mag = sqrt(Tau[0]*Tau[0] + Tau[1]*Tau[1] + Tau[2]*Tau[2]);
-	if (Mag != 0.0)
-	{
-	    Tau[0] /= Mag;
-	    Tau[1] /= Mag;
-	    Tau[2] /= Mag;
-	}
-
-	/* Find amount of force along tangent */
-	FdotT = iptr->force[fpt][0] * Tau[0] +
-	    iptr->force[fpt][1] * Tau[1] +
-	    iptr->force[fpt][2] * Tau[2];
-
-	/* Find restoring force necessary to maintain image separation */
-	Mag = -( MagR - MagL )*(ct.neb_spring_constant);
-
-	/* Remove Tau parallel add restoring component of force */
-	iptr->force[fpt][0] += (Mag - FdotT) * Tau[0];
-	iptr->force[fpt][1] += (Mag - FdotT) * Tau[1];
-	iptr->force[fpt][2] += (Mag - FdotT) * Tau[2];
-
-	printf("\tNEB force correction is :%f\t%f\t%f\n", (Mag - FdotT) * Tau[0], (Mag - FdotT) * Tau[1], (Mag - FdotT) * Tau[2]);
-
-    }
-    break;
-    case 1:                    /* In plane, 2-D restriction (typical). */
-    {
-	REAL fdotc = iptr->force[fpt][0] * iptr->constraint.setA_coord[0] +
-	    iptr->force[fpt][1] * iptr->constraint.setA_coord[1] +
-	    iptr->force[fpt][2] * iptr->constraint.setA_coord[2];
-
-	iptr->force[fpt][0] -= fdotc * iptr->constraint.setA_coord[0];
-	iptr->force[fpt][1] -= fdotc * iptr->constraint.setA_coord[1];
-	iptr->force[fpt][2] -= fdotc * iptr->constraint.setA_coord[2];
-    }
-    break;
-    case 0:                    /* Disable constraint */
-    break;
-}
-}
-else
-{
-    /*constrained to position of ion number -(setA_type) */
-    ;
-}
-}
-#endif
 

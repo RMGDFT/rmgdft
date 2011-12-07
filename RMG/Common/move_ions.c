@@ -1,6 +1,6 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
+ ******************************************************************************/
 
 /****f* QMD-MGDFT/rmg_fastrelax.c *****
  * NAME
@@ -50,29 +50,29 @@ void move_ions (REAL dt)
 
         /* Get ion pointer */
         iptr = &ct.ions[ion];
-	    
-	/*Save previous coordinates, needed for wavefunction extrapolation*/
-	iptr->ocrds3[0] = iptr->ocrds2[0]; 
-	iptr->ocrds3[1] = iptr->ocrds2[1]; 
-	iptr->ocrds3[2] = iptr->ocrds2[2]; 
-	
-	iptr->ocrds2[0] = iptr->ocrds1[0]; 
-	iptr->ocrds2[1] = iptr->ocrds1[1]; 
-	iptr->ocrds2[2] = iptr->ocrds1[2]; 
-	    
-	iptr->ocrds1[0] = iptr->crds[0]; 
-	iptr->ocrds1[1] = iptr->crds[1]; 
-	iptr->ocrds1[2] = iptr->crds[2]; 
+
+        /*Save previous coordinates, needed for wavefunction extrapolation*/
+        iptr->ocrds3[0] = iptr->ocrds2[0]; 
+        iptr->ocrds3[1] = iptr->ocrds2[1]; 
+        iptr->ocrds3[2] = iptr->ocrds2[2]; 
+
+        iptr->ocrds2[0] = iptr->ocrds1[0]; 
+        iptr->ocrds2[1] = iptr->ocrds1[1]; 
+        iptr->ocrds2[2] = iptr->ocrds1[2]; 
+
+        iptr->ocrds1[0] = iptr->crds[0]; 
+        iptr->ocrds1[1] = iptr->crds[1]; 
+        iptr->ocrds1[2] = iptr->crds[2]; 
 
         /* Move the ion */
         if (iptr->movable)
         {
-	    move_x = dt * iptr->velocity[0];
-	    move_y = dt * iptr->velocity[1];
-	    move_z = dt * iptr->velocity[2];
+            move_x = dt * iptr->velocity[0];
+            move_y = dt * iptr->velocity[1];
+            move_z = dt * iptr->velocity[2];
 
 
-	    /*Update coordinates*/
+            /*Update coordinates*/
             iptr->crds[0] += move_x;
             iptr->crds[1] += move_y;
             iptr->crds[2] += move_z;
@@ -81,25 +81,25 @@ void move_ions (REAL dt)
             to_crystal (iptr->xtal, iptr->crds);
             to_cartesian (iptr->xtal, iptr->crds);
 
-	    /*Find maximum, average and RMS displacement*/
-	    move_sq = move_x*move_x + move_y*move_y + move_z*move_z;
-	    move = sqrt (move_sq);
+            /*Find maximum, average and RMS displacement*/
+            move_sq = move_x*move_x + move_y*move_y + move_z*move_z;
+            move = sqrt (move_sq);
 
-	    if (move > max_move)
-	    {
-		max_move = move;
-		which = ion;
-	    }
+            if (move > max_move)
+            {
+                max_move = move;
+                which = ion;
+            }
 
-	    avg_move += move;
-	    count ++;
+            avg_move += move;
+            count ++;
 
-	    rms_move += move_sq;
+            rms_move += move_sq;
         }                       /* end if */
 
-	
+
     }                           /* end for */
-	
+
     /*Write out displacement info*/
     printf ("\n");
     progress_tag ();

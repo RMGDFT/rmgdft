@@ -1,6 +1,6 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
+ ******************************************************************************/
 
 /****f* QMD-MGDFT/rmg_fastrelax.c *****
  * NAME
@@ -41,9 +41,9 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
 {
     int ion, fpt, which = 0, count = 0;
     ION *iptr;
-    REAL mass, magf, dotfv;
-    REAL max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    REAL move_x, move_y, move_z, move_sq, move, p = 0.0;
+    double mass, magf, dotfv, force[3];
+    double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
+    double move_x, move_y, move_z, move_sq, move, p = 0.0;
     static int n_count;
 
 
@@ -51,23 +51,35 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
 
     if (verify("relax_dynamic_timestep",&SET))
     {
-    
+
         for (ion = 0; ion < ct.num_ions; ion++)
         {
 
-        /* Get ion pointer */
-        iptr = &ct.ions[ion];
-        
-        /* Dot product of f and v */
-        p += iptr->force[fpt][0] * iptr->velocity[0] +
-            iptr->force[fpt][1] * iptr->velocity[1] + iptr->force[fpt][2] * iptr->velocity[2];
+            /* Get ion pointer */
+            iptr = &ct.ions[ion];
+
+            force[0] = iptr->force[fpt][0];
+            force[1] = iptr->force[fpt][1];
+            force[2] = iptr->force[fpt][2];
+
+            if (ct.constrainforces)
+            {
+                force[0] += iptr->constraint.forcemask[0];
+                force[1] += iptr->constraint.forcemask[1];
+                force[2] += iptr->constraint.forcemask[2];
+            }
+            
+            /* Dot product of f and v */
+            p += force[0] * iptr->velocity[0] +
+                 force[1] * iptr->velocity[1] +
+                 force[2] * iptr->velocity[2];
         }
-    
+
         if (p < 0) 
         {
             *dt *= dt_dec;
             n_count = 0;
-    
+
             printf ("\n");
             progress_tag ();
             printf("p(%e) < 0, decreasing timestep to %f", p, *dt);  
@@ -83,7 +95,7 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
             }   
 
             n_count ++;
-            
+
             printf ("\n");
             progress_tag ();
             printf("timestep:%f n_count:%d", *dt, n_count);  
@@ -100,42 +112,55 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
         /* Get ion pointer */
         iptr = &ct.ions[ion];
 
+        force[0] = iptr->force[fpt][0];
+        force[1] = iptr->force[fpt][1];
+        force[2] = iptr->force[fpt][2];
+
+        if (ct.constrainforces)
+        {
+            force[0] += iptr->constraint.forcemask[0];
+            force[1] += iptr->constraint.forcemask[1];
+            force[2] += iptr->constraint.forcemask[2];
+        }
+
 
         /* Use either actual ionic mass or equal mass for all atoms*/
-	if (ct.relax_mass == 0)
-	    mass = ct.sp[iptr->species].atomic_mass * mu_me;
-	else
-	    mass =  12.0 * mu_me;
-	
+        if (ct.relax_mass == 0)
+            mass = ct.sp[iptr->species].atomic_mass * mu_me;
+        else
+            mass =  12.0 * mu_me;
+
 
 
         /* Magnitudes of f and v */
-        magf = iptr->force[fpt][0] * iptr->force[fpt][0] +
-            iptr->force[fpt][1] * iptr->force[fpt][1] + iptr->force[fpt][2] * iptr->force[fpt][2];
+        magf = force[0] * force[0] +
+               force[1] * force[1] +
+               force[2] * force[2];
 
 
         /* Dot product of f and v */
-        dotfv = iptr->force[fpt][0] * iptr->velocity[0] +
-            iptr->force[fpt][1] * iptr->velocity[1] + iptr->force[fpt][2] * iptr->velocity[2];
-            
-        iptr->velocity[0] = *dt * iptr->force[fpt][0] / mass;
-        iptr->velocity[1] = *dt * iptr->force[fpt][1] / mass;
-        iptr->velocity[2] = *dt * iptr->force[fpt][2] / mass;
+        dotfv = force[0] * iptr->velocity[0] +
+                force[1] * iptr->velocity[1] +
+                force[2] * iptr->velocity[2];
 
-        
+        iptr->velocity[0] = *dt * force[0] / mass;
+        iptr->velocity[1] = *dt * force[1] / mass;
+        iptr->velocity[2] = *dt * force[2] / mass;
+
+
         if (dotfv >= 1.0e-12)
         {
 
-            iptr->velocity[0] += dotfv * iptr->force[fpt][0] / magf;
-            iptr->velocity[1] += dotfv * iptr->force[fpt][1] / magf;
-            iptr->velocity[2] += dotfv * iptr->force[fpt][2] / magf;
+            iptr->velocity[0] += dotfv * force[0] / magf;
+            iptr->velocity[1] += dotfv * force[1] / magf;
+            iptr->velocity[2] += dotfv * force[2] / magf;
 
         }
     }                           /* end for */
 
     /*Move ions by dt*velocity*/
     move_ions(*dt);
-	
+
 }                               /* end rmg_fastrelax */
 
 /******/

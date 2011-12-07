@@ -50,10 +50,10 @@ void read_control (void)
     get_data ("description", &ct.description, STR, "QMD run");
 
     /* Read in the starting wavefunction file name */
-    get_data ("input_wave_function_file", &ct.infile, STR, "wave.out");
+    get_data ("input_wave_function_file", &ct.infile, STR, "Waves/wave.out");
 
     /* Read in the output wavefunction file name */
-    get_data ("output_wave_function_file", &ct.outfile, STR, "wave.out");
+    get_data ("output_wave_function_file", &ct.outfile, STR, "Waves/wave.out");
 
     /* Set up and validate input options */
     char start_mode_opts[] = "Random Start\n"
@@ -221,7 +221,8 @@ void read_control (void)
                                    "Plot\n"
                                    "Psi Plot\n"
                                    "Band Structure Only\n"
-                                   "NEB Relax";
+                                   "NEB Relax\n"
+                                   "Dimer Relax";
     get_data ("calculation_mode", NULL, INIT | OPT, calculation_mode_opts);
 
     /* Force flag */
@@ -245,7 +246,7 @@ void read_control (void)
     if ( verify( "calculation_mode", "NEB Relax" ) )
     {
         /* set constraint type for switch in Common/constrain.c */
-        ct.constrainforces = 2;
+        ct.constrainforces = 5;
 
         /* NEB spring constant */
         get_data ("neb_spring_constant", &ct.neb_spring_constant, DBL, "0.5");
