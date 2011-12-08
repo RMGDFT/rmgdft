@@ -51,6 +51,8 @@ void lcao_get_psi (STATE * states)
 		occupancy = ct.nel - charge_count;
 
 	    occ_per_wave = occupancy / ((REAL) (2*l+1));
+	    /*Account for spin*/
+	    occ_per_wave /= nspin;
 
 	    /*Loop over all m values for given l and get wavefunctions */
 	    for (m=0; m < 2*l+1; m++)
