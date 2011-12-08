@@ -117,10 +117,10 @@ void read_pseudo (void)
         idx = sscanf ( tbuf, " %lf %lf %lf %lf %lf ", &sp->lradius, &sp->aradius, &sp->acut, &sp->agwidth, &sp->arwidth ); 
 	if (idx == 1)
 	{
-	    sp->aradius = 5.0;
-	    sp->acut = 4.5;
-	    sp->agwidth = 2.5;
-	    sp->arwidth = 8.0;
+	    sp->aradius = 9.0;
+	    sp->acut = 7.0;
+	    sp->agwidth = 10.0;
+	    sp->arwidth = 25.0;
 	}
 
 	if ((idx != 1) && (idx != 5))
