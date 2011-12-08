@@ -95,7 +95,7 @@ void lcao_get_psi (STATE * states)
 
 	occ_per_wave = (ct.nel - charge_count) / (ct.num_states - state_count);
 
-	printf("\n occ_per_wave for unoccupied states is %f, ct.nel %f, charge_count %f, ct.num_states %d, state_count %d", occ_per_wave, ct.nel, charge_count, ct.num_states, state_count); 
+	//printf("\n occ_per_wave for unoccupied states is %f, ct.nel %f, charge_count %f, ct.num_states %d, state_count %d", occ_per_wave, ct.nel, charge_count, ct.num_states, state_count); 
 	
 	for (st = state_count; st < ct.num_states; st++)
 	{
