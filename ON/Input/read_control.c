@@ -69,7 +69,7 @@ void read_control (void)
 
    char start_mode_opts[] = "Random Start\n"
                             "Restart From File\n"
-                            "LCAO Start\n"
+                            "FIREBALL Start\n"
                             "Gaussian Start";
     get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
 
