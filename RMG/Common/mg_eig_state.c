@@ -71,7 +71,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     int idx, cycles;
     int nits, pbasis, sbasis;
     REAL eig, diag, t1, t2, t3, t4;
-    REAL *work1, *work2, *nv, *ns;
+    REAL *work1, *work2, *nv, *ns, *res2;
     REAL *tmp_psi, *res, *sg_psi, *sg_twovpsi;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
@@ -96,13 +96,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     sbasis = sp->sbasis;
 
     /* Grab some memory */
-    my_malloc (sg_psi, 10 * (sbasis), REAL);
+    my_malloc (sg_psi, 11 * (sbasis), REAL);
     res = sg_psi + sbasis;
     work2 = res + sbasis;
     sg_twovpsi = work2 + 4 * sbasis;
     work1 = sg_twovpsi + sbasis;
     ns = work1 + sbasis;
     nv = ns + sbasis;
+    res2 = nv + sbasis;
 
     tmp_psi = sp->psiR;
 
@@ -116,10 +117,21 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
 
-
 #if MD_TIMERS
     rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
 #endif
+
+#if MD_TIMERS
+    time1 = my_crtc ();
+#endif
+    /*Apply Mehrstellen right hand operator to ns and save in res */
+    app_cir_sixth (ns, res2, dimx, dimy, dimz);
+
+#if MD_TIMERS
+    rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
+#endif
+
+
 
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)
@@ -151,20 +163,9 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
         time1 = my_crtc ();
 #endif
-        /*Apply Mehrstellen right hand operators */
-        //pack_ptos (sg_psi, ns, dimx, dimy, dimz);
-#if MD_TIMERS
-        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
-#endif
 
-#if MD_TIMERS
-        time1 = my_crtc ();
-#endif
-        app_cir_sixth (ns, res, dimx, dimy, dimz);
-
-#if MD_TIMERS
-        rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
-#endif
+        // Copy saved application to ns to res
+        QMD_scopy(sbasis, res2, 1, res, 1);
 
 #if MD_TIMERS
         time1 = my_crtc ();
