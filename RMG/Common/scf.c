@@ -53,11 +53,12 @@
 
 static int firststep = TRUE;
 
-void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-          REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, int *CONVERGENCE)
+bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
+          REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc )
 {
 
     int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1), istop, vcycle;
+    bool CONVERGED = false;
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
     REAL time1, time2, time3;
@@ -152,7 +153,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     if (!firststep && t[1] < ct.thr_rms)
     {
-	    *CONVERGENCE = TRUE;
+	    CONVERGED = true;
 	    if (ct.get_dos_flag)
 		    get_dos (states, new_rho, ct.Emin, ct.Emax, ct.E_POINTS);
     }
@@ -358,6 +359,7 @@ void scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     rmg_timings (SCF_TIME, (my_crtc () - time3));
 
+    return CONVERGED;
 }                               /* end scf */
 
 

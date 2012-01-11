@@ -337,7 +337,7 @@ void to_crystal (REAL crystal[], REAL cartesian[]);
 REAL metric (REAL *crystal);
 
 /* Md run types */
-void quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
+bool quench (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, REAL *rho,
              REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void relax (int steps, STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
               REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
@@ -386,8 +386,8 @@ void ortho (STATE *states, int kpt);
 REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
            int *nhtom, int *indv, REAL *ylm, REAL ap[][9][9], int lpx[][9],
            int lpl[][9][9], SPECIES *sp);
-void scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
-          REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, int *CONVERGENCE);
+bool scf (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
+          REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc);
 void reinit_ionic_pp (STATE * states, REAL * vnuc, REAL * rhocore, REAL * rhoc);
 
 #if GAMMA_PT

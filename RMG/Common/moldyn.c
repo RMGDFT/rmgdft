@@ -79,7 +79,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     char filename[60];
     char xbs_filename[60];
 
-    int CONVERGENCE = FALSE;
+    bool CONVERGED = false;
 
     target = 0.0;
 
@@ -283,7 +283,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
             reinit_ionic_pp (states, vnuc, rhocore, rhoc);
 
             /* Do an scf step */
-            scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, &CONVERGENCE);
+            CONVERGED = scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
             sortpsi (states);
 
         }                       /* end for */
@@ -316,12 +316,12 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
 #if 0
-        for (ct.scf_steps = 0, CONVERGENCE = FALSE;
-             ct.scf_steps < ct.max_scf_steps && !CONVERGENCE; ct.scf_steps++, ct.total_scf_steps++)
+        for (ct.scf_steps = 0, CONVERGED = false;
+             ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
         {
 
             /* Perform a single self-consistent step */
-            scf (states, vxc, vh, vnuc, rho, rhocore, rhoc, &CONVERGENCE);
+            scf (states, vxc, vh, vnuc, rho, rhocore, rhoc);
 
             if (pct.gridpe == 0)
                 printf ("\nThis is SCF step # %d", ct.scf_steps);
@@ -357,7 +357,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 #endif
             for (steps = 0; steps < 7; steps++)
             {
-                scf (states, vxc, vh, vnuc, rho, rhocore, rhoc, &CONVERGENCE);
+                scf (states, vxc, vh, vnuc, rho, rhocore, rhoc);
 
 
                 /* Get the total energy */

@@ -45,11 +45,11 @@
 #include <stdio.h>
 #include "main.h"
 
-void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
+bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
              REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
 {
 
-    static int CONVERGENCE;
+    bool CONVERGED;
     int numacc = 1, ic;
     /*int ist, ik;
        REAL KE; */
@@ -57,8 +57,8 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
     /* ---------- begin scf loop ---------- */
     
 
-    for (ct.scf_steps = 0, CONVERGENCE = FALSE;
-         ct.scf_steps < ct.max_scf_steps && !CONVERGENCE; ct.scf_steps++, ct.total_scf_steps++)
+    for (ct.scf_steps = 0, CONVERGED = false;
+         ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
     {
 
         if (pct.imgpe == 0)
@@ -67,13 +67,8 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
 
         /* perform a single self-consistent step */
-        scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, &CONVERGENCE);
+        CONVERGED = scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
-
-
-        /* ??? */
-        if (ct.scf_steps == 0)
-            CONVERGENCE = FALSE;        /* I guess just in case (?) */
 
 
         /* check if we need to output intermediate results */
@@ -102,7 +97,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 #if 0
         if (ct.diag &&
             ct.scf_steps > 0 &&
-            ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag && !CONVERGENCE)
+            ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag && !CONVERGED)
             for (ik = 0; ik < ct.num_kpts; ik++)
 #if GAMMA_PT
                 subdiag_gamma (ct.kp[ik].kstate, vh, vnuc, vxc);
@@ -117,7 +112,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
     /* ---------- end scf loop ---------- */
 
-    if (CONVERGENCE)
+    if (CONVERGED)
     {
          printf ("\n");
          progress_tag ();
@@ -170,7 +165,7 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
-    if ((CONVERGENCE) || (ct.forceflag != MD_QUENCH))
+    if (CONVERGED || (ct.forceflag != MD_QUENCH))
         force (rho, rho_oppo, rhoc, vh, vxc, vnuc, states);
 
     /* output the forces */
@@ -194,6 +189,8 @@ void quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
     }
 #endif
 
+
+    return CONVERGED;
 
 
 }                               /* end quench */
