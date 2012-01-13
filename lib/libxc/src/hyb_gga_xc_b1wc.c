@@ -28,14 +28,13 @@
 #define XC_HYB_GGA_XC_mPW1K  405 /* mixture of mPW91 and PW91 optimized for kinetics */
 
 void
-hyb_gga_xc_b1wc_init(void *p_)
+XC(hyb_gga_xc_b1wc_init)(void *p_)
 {
   static int   funcs_id  [2] = {XC_GGA_X_WC, XC_GGA_C_PBE};
   static FLOAT funcs_coef[2] = {1.0 - 0.16, 1.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 2, funcs_id, funcs_coef);
-  XC(lda_c_vwn_set_params)(p->func_aux[2], 1);
+  XC(gga_init_mix)(p, 2, funcs_id, funcs_coef);
   p->exx_coef = 0.16;
 }
 
@@ -45,21 +44,20 @@ const XC(func_info_type) XC(func_info_hyb_gga_xc_b1wc) = {
   "B1WC",
   XC_FAMILY_HYB_GGA,
   "DI Bilc, R Orlando, R Shaltaf, G-M Rignanese, J Iniguez, and Ph Ghosez, Phys. Rev. B 77, 165107 (2008)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
-  hyb_gga_xc_b1wc_init,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  XC(hyb_gga_xc_b1wc_init),
   NULL, NULL, NULL
 };
 
 
 void
-hyb_gga_xc_b1lyp_init(void *p_)
+XC(hyb_gga_xc_b1lyp_init)(void *p_)
 {
   static int   funcs_id  [2] = {XC_GGA_X_B88, XC_GGA_C_LYP};
   static FLOAT funcs_coef[2] = {1.0 - 0.25, 1.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 2, funcs_id, funcs_coef);
-  XC(lda_c_vwn_set_params)(p->func_aux[2], 1);
+  XC(gga_init_mix)(p, 2, funcs_id, funcs_coef);
   p->exx_coef = 0.25;
 }
 
@@ -69,21 +67,20 @@ const XC(func_info_type) XC(func_info_hyb_gga_xc_b1lyp) = {
   "B1LYP",
   XC_FAMILY_HYB_GGA,
   "C. Adamo, V. Barone, Chem. Phys. Lett. 274, 242 (1997)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
-  hyb_gga_xc_b1lyp_init,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  XC(hyb_gga_xc_b1lyp_init),
   NULL, NULL, NULL
 };
 
 
 void
-hyb_gga_xc_b1pw91_init(void *p_)
+XC(hyb_gga_xc_b1pw91_init)(void *p_)
 {
   static int   funcs_id  [2] = {XC_GGA_X_B88, XC_GGA_C_PW91};
   static FLOAT funcs_coef[2] = {1.0 - 0.25, 1.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 2, funcs_id, funcs_coef);
-  XC(lda_c_vwn_set_params)(p->func_aux[2], 1);
+  XC(gga_init_mix)(p, 2, funcs_id, funcs_coef);
   p->exx_coef = 0.25;
 }
 
@@ -93,21 +90,20 @@ const XC(func_info_type) XC(func_info_hyb_gga_xc_b1pw91) = {
   "B1PW91",
   XC_FAMILY_HYB_GGA,
   "C. Adamo, V. Barone, Chem. Phys. Lett. 274, 242 (1997)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
-  hyb_gga_xc_b1pw91_init,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  XC(hyb_gga_xc_b1pw91_init),
   NULL, NULL, NULL
 };
 
 
 void
-hyb_gga_xc_mpw1pw_init(void *p_)
+XC(hyb_gga_xc_mpw1pw_init)(void *p_)
 {
   static int   funcs_id  [2] = {XC_GGA_X_mPW91, XC_GGA_C_PW91};
   static FLOAT funcs_coef[2] = {1.0 - 0.25, 1.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 2, funcs_id, funcs_coef);
-  XC(lda_c_vwn_set_params)(p->func_aux[2], 1);
+  XC(gga_init_mix)(p, 2, funcs_id, funcs_coef);
   p->exx_coef = 0.25;
 }
 
@@ -117,21 +113,20 @@ const XC(func_info_type) XC(func_info_hyb_gga_xc_mpw1pw) = {
   "mPW1PW",
   XC_FAMILY_HYB_GGA,
   "C. Adamo, V. Barone, J. Chem. Phys. 108, 664 (1998)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
-  hyb_gga_xc_mpw1pw_init,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  XC(hyb_gga_xc_mpw1pw_init),
   NULL, NULL, NULL
 };
 
 
 void
-hyb_gga_xc_mpw1k_init(void *p_)
+XC(hyb_gga_xc_mpw1k_init)(void *p_)
 {
   static int   funcs_id  [2] = {XC_GGA_X_mPW91, XC_GGA_C_PW91};
   static FLOAT funcs_coef[2] = {1.0 - 0.428, 1.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 2, funcs_id, funcs_coef);
-  XC(lda_c_vwn_set_params)(p->func_aux[2], 1);
+  XC(gga_init_mix)(p, 2, funcs_id, funcs_coef);
   p->exx_coef = 0.428;
 }
 
@@ -141,7 +136,7 @@ const XC(func_info_type) XC(func_info_hyb_gga_xc_mpw1k) = {
   "mPW1K",
   XC_FAMILY_HYB_GGA,
   "BJ Lynch, PL Fast, M Harris, DGJ Truhlar, Phys. Chem. A 104, 4811 (2000)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
-  hyb_gga_xc_mpw1k_init,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  XC(hyb_gga_xc_mpw1k_init),
   NULL, NULL, NULL
 };

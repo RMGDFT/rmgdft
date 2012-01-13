@@ -101,12 +101,11 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
   static int spin_fact[2] = { 2,  1};
 
   int interaction, is;
-  FLOAT bb, bb2, R, int1[2], int2[2];
+  FLOAT bb, R, int1[2], int2[2];
 
   assert(p->params != NULL);
   interaction = ((lda_x_1d_params *)p->params)->interaction;
   bb  =         ((lda_x_1d_params *)p->params)->bb;
-  bb2 = bb*bb;
 
   r->zk = 0.0;
   for(is=0; is<p->nspin; is++){
@@ -167,7 +166,7 @@ const XC(func_info_type) XC(func_info_lda_x_1d) = {
   XC_EXCHANGE,
   "Exchange in 1D",
   XC_FAMILY_LDA,
-  "Unpublished",
+  "N. Helbig, J. I. Fuks, M. Casula, M. J. Verstraete, M. A. L. Marques, I. V. Tokatly and A. Rubio, Phys. Rev. A 83, 032503 (2011)",
   XC_FLAGS_1D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   lda_x_1d_init,    /* init */
   NULL,             /* end  */

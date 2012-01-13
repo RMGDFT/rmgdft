@@ -31,18 +31,18 @@ libxc_la_FUNC_SOURCES = \
 	lda_k_tf.c \
 	gga.c \
 	gga_x_lg93.c gga_x_pbe.c gga_x_rpbe.c gga_x_pbea.c gga_x_mpbe.c gga_x_herman.c gga_x_b86.c gga_x_b86_mgc.c \
-	gga_x_b88.c gga_x_g96.c gga_x_pw86.c gga_x_pw91.c gga_x_optx.c \
-	gga_x_dk87.c gga_x_ft97.c gga_x_wc.c gga_x_am05.c gga_x_bayesian.c gga_x_kt.c \
-	gga_perdew.c gga_c_pbe.c gga_c_lyp.c gga_c_p86.c gga_c_pw91.c gga_c_am05.c gga_c_lm.c gga_c_wl.c gga_c_wi.c \
+	gga_x_b88.c gga_x_g96.c gga_x_pw86.c gga_x_pw91.c gga_x_optx.c gga_x_airy.c gga_x_c09x.c \
+	gga_x_dk87.c gga_x_ft97.c gga_x_wc.c gga_x_am05.c gga_x_bayesian.c gga_x_kt.c gga_x_htbs.c \
+	gga_c_pbe.c gga_c_lyp.c gga_c_p86.c gga_c_pw91.c gga_c_am05.c gga_c_lm.c gga_c_wl.c gga_c_wi.c \
 	gga_x_lb.c gga_xc_b97.c gga_xc_edf1.c gga_xc_1w.c \
+	gga_x_sogga11.c gga_c_sogga11.c gga_xc_th.c \
 	gga_x_2d_b86.c gga_x_2d_b86_mgc.c gga_x_2d_b88.c gga_x_2d_pbe.c \
 	gga_k_tflw.c gga_k_pearson.c gga_k_ol1.c gga_k_ol2.c gga_k_dk.c \
 	hyb_gga_xc_b3lyp.c hyb_gga_xc_o3lyp.c hyb_gga_xc_pbeh.c hyb_gga_xc_b1wc.c \
 	hyb_gga_xc_b97.c \
 	mgga.c \
 	mgga_x_lta.c mgga_x_tpss.c mgga_x_br89.c mgga_xc_vsxc.c mgga_x_m06l.c mgga_x_tau_hcth.c \
-	mgga_c_tpss.c mgga_x_2d_prhg07.c \
-	lca.c lca_omc.c lca_lch.c
+	mgga_c_tpss.c mgga_x_2d_prhg07.c
 
 libxc_la_FUNC_SINGLE_SOURCES = $(libxc_la_FUNC_SOURCES:.c=_s.c)
 
@@ -128,13 +128,13 @@ xc_funcs.h libxc_funcs.f90: get_funcs.pl
 $(LIBFUNCMOD):
 	$(MAKE) libxc_funcs.o
 
-libxc.f90 $(XCLIBMODS): libxc_master.F90
+libxc.f90 $(XCLIBMODS): libxc_master.F90 libxc_funcs.o
 	@FCCPP@ @CPPFLAGS@ $(AM_CPPFLAGS) $(srcdir)/libxc_master.F90 > $(top_builddir)/src/libxc.f90
 	@if [ "@F90_ACCEPTS_LINE_NUMBERS@" = "no" ]; then \
 		grep -v "^#" $(top_builddir)/src/libxc.f90 > $(top_builddir)/src/libxc.f91; \
 		mv -f $(top_builddir)/src/libxc.f91 $(top_builddir)/src/libxc.f90; \
 	fi
-libxc_s.f90 $(XCLIBMODS_S): libxc_master.F90
+libxc_s.f90 $(XCLIBMODS_S): libxc_master.F90 libxc_funcs.o
 	@FCCPP@ -D SINGLE_PRECISION=1 @CPPFLAGS@ $(AM_CPPFLAGS) $(srcdir)/libxc_master.F90 > $(top_builddir)/src/libxc_s.f90
 	@if [ "@F90_ACCEPTS_LINE_NUMBERS@" = "no" ]; then \
 		grep -v "^#" $(top_builddir)/src/libxc_s.f90 > $(top_builddir)/src/libxc_s.f91; \

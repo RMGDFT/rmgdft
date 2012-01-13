@@ -61,12 +61,12 @@ gga_x_pbe_init(void *p_)
   };
 
   static const FLOAT mu[13] = {
-    0.066725*M_PI*M_PI/3.0, /* PBE: mu = beta*pi^2/3, beta = 0.066725 */
-    0.066725*M_PI*M_PI/3.0, /* PBE rev: as PBE */
+    0.2195149727645171,     /* PBE: mu = beta*pi^2/3, beta = 0.06672455060314922 */
+    0.2195149727645171,     /* PBE rev: as PBE */
     10.0/81.0,              /* PBE sol */
     0.23214,                /* xPBE */
     0.046*M_PI*M_PI/3.0,    /* PBE_JSJR */
-    0.066725*M_PI*M_PI/3.0, /* PBEK1_VDW: as PBE */
+    0.2195149727645171,     /* PBEK1_VDW: as PBE */
     10.0/81.0,              /* RGE2      */
     0.260,                  /* APBE (X)  */
     0.23889,                /* APBE (K)  */
@@ -125,9 +125,9 @@ XC(gga_x_pbe_set_params_)(XC(gga_type) *p, FLOAT kappa, FLOAT mu)
 }
 
 
-static inline void 
-func(const XC(gga_type) *p, int order, FLOAT x, 
-     FLOAT *f, FLOAT *dfdx, FLOAT *ldfdx, FLOAT *d2fdx2)
+void XC(gga_x_pbe_enhance) 
+  (const XC(gga_type) *p, int order, FLOAT x, 
+   FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   FLOAT kappa, mu, ss, ss2, f0, df0, d2f0;
 
@@ -151,7 +151,6 @@ func(const XC(gga_type) *p, int order, FLOAT x,
     df0 += 4.0*mu*mu*ss2*ss/kappa;
 
   *dfdx  = X2S*kappa*kappa*df0/(f0*f0);
-  *ldfdx = X2S*X2S*mu;
 
   if(order < 2) return;
 
@@ -163,15 +162,9 @@ func(const XC(gga_type) *p, int order, FLOAT x,
 }
 
 
-void 
-XC(gga_x_pbe_enhance)(const XC(gga_type) *p, int order, FLOAT x, 
-		      FLOAT *f, FLOAT *dfdx, FLOAT *ldfdx, FLOAT *d2fdx2)
-{
-  func(p, x, order, f, dfdx, ldfdx, d2fdx2);
-}
-
-
+#define func XC(gga_x_pbe_enhance)
 #include "work_gga_x.c"
+
 
 const XC(func_info_type) XC(func_info_gga_x_pbe) = {
   XC_GGA_X_PBE,

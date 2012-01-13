@@ -33,7 +33,7 @@ gga_xc_xlyp_init(void *p_)
   static FLOAT funcs_coef[4] = {1.0 - 0.722 - 0.347, 0.722, 0.347, 1.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 4, funcs_id, funcs_coef);
+  XC(gga_init_mix)(p, 4, funcs_id, funcs_coef);
 }
 
 const XC(func_info_type) XC(func_info_gga_xc_xlyp) = {
@@ -42,7 +42,7 @@ const XC(func_info_type) XC(func_info_gga_xc_xlyp) = {
   "XLYP",
   XC_FAMILY_GGA,
   "X Xu and WA Goddard, III, PNAS 101, 2673 (2004)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_xc_xlyp_init, 
   NULL, NULL, NULL
 };
@@ -55,7 +55,7 @@ gga_xc_pbe1w_init(void *p_)
   static FLOAT funcs_coef[3] = {1.0 - 74.0/100.0, 1.0, 74.0/100.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 3, funcs_id, funcs_coef);
+  XC(gga_init_mix)(p, 3, funcs_id, funcs_coef);
 }
 
 const XC(func_info_type) XC(func_info_gga_xc_pbe1w) = {
@@ -77,7 +77,7 @@ gga_xc_mpwlyp1w_init(void *p_)
   static FLOAT funcs_coef[3] = {1.0 - 88.0/100.0, 1.0, 88.0/100.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 3, funcs_id, funcs_coef);
+  XC(gga_init_mix)(p, 3, funcs_id, funcs_coef);
 }
 
 const XC(func_info_type) XC(func_info_gga_xc_mpwlyp1w) = {
@@ -86,7 +86,7 @@ const XC(func_info_type) XC(func_info_gga_xc_mpwlyp1w) = {
   "mPWLYP1w",
   XC_FAMILY_GGA,
   "EE Dahlke and DG Truhlar, J. Phys. Chem. B 109, 15677 (2005)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_xc_mpwlyp1w_init, 
   NULL, NULL, NULL
 };
@@ -99,7 +99,7 @@ gga_xc_pbelyp1w_init(void *p_)
   static FLOAT funcs_coef[3] = {1.0 - 74.0/100.0, 1.0, 74.0/100.0};
   XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  gga_init_mix(p, 3, funcs_id, funcs_coef);
+  XC(gga_init_mix)(p, 3, funcs_id, funcs_coef);
 }
 
 const XC(func_info_type) XC(func_info_gga_xc_pbelyp1w) = {
@@ -108,7 +108,7 @@ const XC(func_info_type) XC(func_info_gga_xc_pbelyp1w) = {
   "PBELYP1W",
   XC_FAMILY_GGA,
   "EE Dahlke and DG Truhlar, J. Phys. Chem. B 109, 15677 (2005)",
-  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
+  XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   gga_xc_pbelyp1w_init, 
   NULL, NULL, NULL
 };

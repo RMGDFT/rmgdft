@@ -37,7 +37,7 @@ work_mgga_x(const void *p_, int np,
 	    FLOAT *v2rhosigma, FLOAT *v2rholapl, FLOAT *v2rhotau, 
 	    FLOAT *v2sigmalapl, FLOAT *v2sigmatau, FLOAT *v2lapltau)
 {
-  const XC(mgga_type) *p = p_;
+  const XC(mgga_type) *p = (const XC(mgga_type) *) p_;
 
   FLOAT sfact, sfact2, dens, x_factor_c;
   int is, ip, order;
@@ -82,7 +82,7 @@ work_mgga_x(const void *p_, int np,
 
       if((!has_tail && (rho[is] < MIN_DENS || tau[is] < MIN_TAU)) || (rho[is] == 0.0)) continue;
 
-      lsigma= sigma[js]/sfact2;
+      lsigma= max(sigma[js]/sfact2, MIN_GRAD*MIN_GRAD);
       gdm   = SQRT(lsigma);
       lrho  = rho[is]/sfact;
       rho1D = POW(lrho, 1.0/XC_DIMENSIONS);

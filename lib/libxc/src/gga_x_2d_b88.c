@@ -32,12 +32,10 @@ void XC(gga_x_2d_b88_set_params_)(XC(gga_type) *p, FLOAT beta);
 static void gga_x_2d_b88_init(void *p_)
 {
   XC(gga_type) *p = (XC(gga_type) *)p_;
-  gga_x_2d_b88_params *params;
 
   assert(p->params == NULL);
 
   p->params = malloc(sizeof(gga_x_2d_b88_params));
-  params = (gga_x_2d_b88_params *) (p->params);
 
   /* value of beta in standard Becke 88 2D functional */
   XC(gga_x_2d_b88_set_params_)(p, 0.018641);
@@ -74,7 +72,7 @@ void XC(gga_x_2d_b88_set_params_)(XC(gga_type) *p, FLOAT beta)
 
 static inline void 
 func(const XC(gga_type) *p, int order, FLOAT x, 
-     FLOAT *f, FLOAT *dfdx, FLOAT *ldfdx, FLOAT *d2fdx2)
+     FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   FLOAT f1, f2, df1, df2, d2f1, d2f2;
   FLOAT beta, csi;
@@ -93,7 +91,6 @@ func(const XC(gga_type) *p, int order, FLOAT x,
   df2 = csi*beta*(asinh(x) + x/SQRT(1.0 + x*x));
 
   *dfdx = (df1*f2 - f1*df2)/(f2*f2);
-  *ldfdx= beta/X_FACTOR_2D_C;
 
   if(order < 2) return;
 

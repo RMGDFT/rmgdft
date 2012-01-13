@@ -41,7 +41,7 @@ work_gga_becke(const void *p_, int np, const FLOAT *rho, const FLOAT *sigma,
 	       FLOAT *zk, FLOAT *vrho, FLOAT *vsigma,
 	       FLOAT *v2rho2, FLOAT *v2rhosigma, FLOAT *v2sigma2)
 {
-  const XC(gga_type) *p = p_;
+  const XC(gga_type) *p = (const XC(gga_type) *) p_;
 
   FLOAT sfact, sfact2, dens;
   FLOAT ds[2], sigmas[2], x[2], x_avg;
@@ -90,7 +90,7 @@ work_gga_becke(const void *p_, int np, const FLOAT *rho, const FLOAT *sigma,
       FLOAT g_x, dg_x, d2g_x, g_ss, dg_ss, d2g_ss;
       int js = (is == 0) ? 0 : 2;
 
-      if(rho[is] < MIN_DENS) continue;
+      if(rho[is] < MIN_DENS) goto end_ip_loop;
       
       sigmas[is] = max(MIN_GRAD*MIN_GRAD, sigma[js]/sfact2);
       gdm    = SQRT(sigmas[is]);
@@ -232,6 +232,7 @@ work_gga_becke(const void *p_, int np, const FLOAT *rho, const FLOAT *sigma,
     if(zk != NULL)
       *zk /= dens; /* we want energy per particle */
 
+    end_ip_loop:
     /* increment pointers */
     rho   += p->n_rho;
     sigma += p->n_sigma;

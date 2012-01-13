@@ -31,9 +31,9 @@ gga_x_wc_init(void *p_)
   wc_c   = (146.0/2025.0)*(4.0/9.0) - (73.0/405.0)*(2.0/3.0) + (wc_mu - 10.0/81.0);
 }
 
-static inline void 
-func(const XC(gga_type) *p, int order, FLOAT x, 
-     FLOAT *f, FLOAT *dfdx, FLOAT *ldfdx, FLOAT *d2fdx2)
+void 
+XC(gga_x_wc_enhance) (const XC(gga_type) *p, int order, FLOAT x, 
+     FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   const FLOAT kappa = 0.8040;
 
@@ -54,7 +54,6 @@ func(const XC(gga_type) *p, int order, FLOAT x,
   df0 = 20.0/81.0*s + 2.0*s*aux1*aux2*(1.0 - s2) + 4.0*wc_c*s*s2/(1.0 + wc_c*s2*s2);
 
   *dfdx  = X2S*kappa*kappa*df0/(f0*f0);
-  *ldfdx = X2S*X2S*wc_mu;
 
   if(order < 2) return;
 
@@ -65,7 +64,7 @@ func(const XC(gga_type) *p, int order, FLOAT x,
   *d2fdx2 = X2S*X2S*kappa*kappa/(f0*f0)*(d2f0 - 2.0*df0*df0/f0);
 }
 
-
+#define func XC(gga_x_wc_enhance)
 #include "work_gga_x.c"
 
 

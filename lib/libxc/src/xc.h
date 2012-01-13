@@ -43,6 +43,7 @@ extern "C" {
 #define XC_FAMILY_LCA           8
 #define XC_FAMILY_OEP          16
 #define XC_FAMILY_HYB_GGA      32
+#define XC_FAMILY_HYB_MGGA     64
 
 /* flags that can be used in info.flags */
 #define XC_FLAGS_HAVE_EXC         (1 <<  0) /*    1 */
@@ -59,9 +60,13 @@ extern "C" {
 #define XC_TAU_EXPLICIT         0
 #define XC_TAU_EXPANSION        1
 
+  /* This value was redefined as XC_GGA_X_LB, we define it here to
+     keep compatibility. */
+#define XC_GGA_XC_LB          160
+
 typedef struct{
   int   number;   /* indentifier number */
-  int   kind;     /* XC_EXCHANGE or XC_CORRELATION */
+  int   kind;     /* XC_EXCHANGE, XC_CORRELATION, or XC_EXCHANGE_CORRELATION */
 
   char *name;     /* name of the functional, e.g. "PBE" */
   int   family;   /* type of the functional, e.g. XC_FAMILY_GGA */
@@ -99,9 +104,11 @@ typedef struct XC(struct_func_type){
 
 
 /* functionals */
-int  XC(family_from_id)(int id, int *family, int *number);
-int  XC(func_init)(XC(func_type) *p, int functional, int nspin);
-void XC(func_end)(XC(func_type) *p);
+int   XC(functional_get_number)(char *name);
+char *XC(functional_get_name)(int number);
+int   XC(family_from_id)(int id, int *family, int *number);
+int   XC(func_init)(XC(func_type) *p, int functional, int nspin);
+void  XC(func_end)(XC(func_type) *p);
 
 #include "xc_funcs.h"
 
@@ -169,11 +176,12 @@ void XC(gga_fxc)(const XC(func_type) *p, int np, const FLOAT *rho, const FLOAT *
 void XC(gga_lb_modified)  (const XC(gga_type) *p, int np, const FLOAT *rho, const FLOAT *sigma, 
 			   FLOAT r, FLOAT *vrho);
 
-void XC(gga_x_b88_set_params) (XC(func_type) *p, FLOAT beta, FLOAT gamma);
-void XC(gga_x_pbe_set_params) (XC(func_type) *p, FLOAT kappa, FLOAT mu);
-void XC(gga_x_rpbe_set_params)(XC(func_type) *p, FLOAT kappa, FLOAT mu);
-void XC(gga_c_lyp_set_params) (XC(func_type) *p, FLOAT A, FLOAT B, FLOAT c, FLOAT d);
-void XC(gga_lb_set_params)    (XC(func_type) *p, int modified, FLOAT threshold, FLOAT ip, FLOAT qtot);
+void XC(gga_x_b88_set_params)  (XC(func_type) *p, FLOAT beta, FLOAT gamma);
+void XC(gga_x_pbe_set_params)  (XC(func_type) *p, FLOAT kappa, FLOAT mu);
+void XC(gga_x_rpbe_set_params) (XC(func_type) *p, FLOAT kappa, FLOAT mu);
+void XC(gga_x_optx_set_params) (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT gamma);
+void XC(gga_c_lyp_set_params)  (XC(func_type) *p, FLOAT A, FLOAT B, FLOAT c, FLOAT d);
+void XC(gga_lb_set_params)     (XC(func_type) *p, int modified, FLOAT threshold, FLOAT ip, FLOAT qtot);
 void XC(gga_k_tflw_set_params)(XC(func_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N);
 
 FLOAT XC(hyb_gga_exx_coef)(const XC(gga_type) *p);
@@ -231,21 +239,6 @@ void XC(mix_func)(const XC(func_type) *dest_func, int n_func_aux, XC(func_type) 
 		  FLOAT *zk, FLOAT *vrho, FLOAT *vsigma,
 		  FLOAT *v2rho2, FLOAT *v2rhosigma, FLOAT *v2sigma2);
   
-/* the LCAs */
-
-#define XC_LCA_OMC            301 /* Orestes, Marcasso & Capelle */
-#define XC_LCA_LCH            302 /* Lee, Colwell & Handy        */
-
-
-typedef struct{
-  XC(func_info_type) *info;  /* which functional did we choose   */
-  int nspin;                 /* XC_UNPOLARIZED or XC_POLARIZED  */
-
-} XC(lca_type);
-
-void XC(lca_init)(XC(lca_type) *p, int functional, int nspin);
-void XC(lca)     (XC(lca_type) *p, FLOAT *rho, FLOAT *v, FLOAT *e, FLOAT *dedd, FLOAT *dedv);
-
 #ifdef __cplusplus
 }
 #endif

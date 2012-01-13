@@ -41,11 +41,13 @@ work_gga_x
  FLOAT *zk, FLOAT *vrho, FLOAT *vsigma,
  FLOAT *v2rho2, FLOAT *v2rhosigma, FLOAT *v2sigma2)
 {
-  const XC(gga_type) *p = p_;
+  const XC(gga_type) *p = (const XC(gga_type) *) p_;
 
-  FLOAT sfact, sfact2, x_factor_c, alpha, beta, dens;
+  FLOAT sfact, x_factor_c, alpha, beta, dens;
   int is, ip, order;
-
+#if HEADER == 2
+  FLOAT sfact2;
+#endif
   /* alpha is the power of rho in the corresponding LDA
      beta  is the power of rho in the expression for x */
 
@@ -71,7 +73,9 @@ work_gga_x
 #endif
 
   sfact = (p->nspin == XC_POLARIZED) ? 1.0 : 2.0;
+#if HEADER == 2
   sfact2 = sfact*sfact;
+#endif
 
   order = -1;
   if(zk     != NULL) order = 0;
@@ -85,26 +89,26 @@ work_gga_x
 
     for(is=0; is<p->nspin; is++){
       FLOAT gdm, ds, rhoLDA;
-      FLOAT x, f, dfdx, ldfdx, d2fdx2, lvsigma, lv2sigma2, lvsigmax, lvrho;
+      FLOAT x, f, dfdx, d2fdx2, lvsigma, lv2sigma2, lvsigmax, lvrho;
       int js = (is == 0) ? 0 : 2;
       int ks = (is == 0) ? 0 : 5;
 
       if(rho[is] < MIN_DENS) continue;
 
-      gdm    = SQRT(sigma[js])/sfact;
+      gdm    = max(SQRT(sigma[js])/sfact, MIN_GRAD);
       ds     = rho[is]/sfact;
       rhoLDA = POW(ds, alpha);
       x      = gdm/POW(ds, beta);
       
-      dfdx = ldfdx = d2fdx2 = 0.0;
+      dfdx = d2fdx2 = 0.0;
       lvsigma = lv2sigma2 = lvsigmax = lvrho = 0.0;
 
 #if   HEADER == 1
-      func(p, order, x, &f, &dfdx, &ldfdx, &d2fdx2);
+      func(p, order, x, &f, &dfdx, &d2fdx2);
 #elif HEADER == 2
       /* this second header is useful for functionals that depend
 	 explicitly both on x and on sigma */
-      func(p, order, x, gdm*gdm, &f, &dfdx, &ldfdx, &lvsigma, &d2fdx2, &lv2sigma2, &lvsigmax);
+      func(p, order, x, gdm*gdm, &f, &dfdx, &lvsigma, &d2fdx2, &lv2sigma2, &lvsigmax);
       
       lvsigma   /= sfact2;
       lvsigmax  /= sfact2;

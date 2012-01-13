@@ -51,7 +51,7 @@ func(const XC(gga_type) *p, int order, FLOAT rs, FLOAT zeta, FLOAT xt, FLOAT *xs
   if(order < 2) return;
 
   *d2fdrs2    = -2.0*(*dfdrs)/den;
-  *d2fdrsz    =  zeta/aux * num/(den*den);
+  *d2fdrsz    = zeta/aux * num/(den*den);
   *d2fdrsxt   = -b*aux/(den*den);
   d2fdrsxs[0] = -2.0*d*(*dfdrs)/den;
   d2fdrsxs[1] = d2fdrsxs[0];
