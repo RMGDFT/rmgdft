@@ -163,6 +163,13 @@ Linux|GNU/*)
 	;;
 esac
 
+# (Hopefully) temporary fix for Cray machines, where pgcc compiler produces output with extra spaces
+# that cannot be parsed
+if [ -z "$LIBC" ]
+then
+    LIBC=gnu
+fi
+
 # Note: order is significant - the case branches are not exclusive.
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
