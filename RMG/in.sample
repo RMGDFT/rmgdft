@@ -289,6 +289,11 @@ hartree_rms_ratio="50.0"
 # Default: "50"
 ionic_time_step="50"
 
+
+# Whether or not to use dynamic timestep in relax mode
+# Default: "false"
+relax_dynamic_timestep="false"
+
 #get_dos_flag="true"
 #Emin="-5"
 #Emax="-1"
