@@ -159,16 +159,9 @@ Linux|GNU/*)
 	# endif
 	#endif
 	EOF
-	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^LIBC'`
+	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^LIBC' | tr -d ' '`
 	;;
 esac
-
-# (Hopefully) temporary fix for Cray machines, where pgcc compiler produces output with extra spaces
-# that cannot be parsed
-if [ -z "$LIBC" ]
-then
-    LIBC=gnu
-fi
 
 # Note: order is significant - the case branches are not exclusive.
 
