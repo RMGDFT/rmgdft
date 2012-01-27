@@ -221,7 +221,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
         default:
 
-            error_handler ("angular momentum state not programmed");
+            error_handler ("angular momentum l=%d is not programmed", lval);
 
 
         }                       /* end switch */
@@ -602,7 +602,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     default:
 
-        error_handler ("angular momentum state not programmed");
+	error_handler ("angular momentum l=%d is not programmed", lval);
 
 
     }                           /* end switch */
