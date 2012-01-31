@@ -1,0 +1,79 @@
+#
+#  Make.xt3_mpi - Compiles the real-space code for CRAY XT# system with MPI
+#
+# For hybrid mode you need to comment/uncomment the indicated lines below and set the
+# following job submission environment variables for hybrid mode.
+#
+# export MPICH_MAX_THREAD_SAFETY=serialized
+# export OMP_NUM_THREADS=6   (replace 6 with whatever THREADS_PER_NODE is set to)
+# export OMP_WAIT_POLICY=passive
+#
+#
+#
+
+
+# Modules(directories) that contain the necessary source files
+#GLOBAL_MODULES are defined in the top level Makefile
+LOCAL_MODULES = Common Input Spin Spin/XC 
+MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
+
+CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
+FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+HFILES := $(wildcard Headers/*.h)
+H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
+HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
+
+
+COBJECTS = $(CFILES:.c=.o)
+FOBJECTS = $(FFILES:.f=.o)
+OBJECTS = $(COBJECTS) $(FOBJECTS)
+
+
+#LIBS = -L /apps/FFTW/prod/jaguar/lib -L /usr/local/usp/fftw/fftw-2.1.5/lib -lfftw 
+LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
+LDFLAGS = -pgf90libs
+# Comment out the preceding line and uncomment the following two lines for hybrid mode
+#LIBS = -lsci_istanbul_mp -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
+#LDFLAGS = -pgf90libs -mp
+
+
+CC = cc
+CF = ftn
+
+
+# Makefiles: if these change, whole code should be recompiled
+MFILES = Makefile Make.xt
+
+
+# Compile flags
+ARCH =
+# Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
+# Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
+FFLAGS = $(ARCH)  -O3   -c -Mipa=fast,inline -mp
+CFLAGS = $(ARCH)  -O3   -B -Mipa=fast,inline -IHeaders -mp
+# Comment out the preceding tw0 lines and uncomment the following two lines for hybrid mode
+#FFLAGS = $(ARCH)  -O3 -fast -Mflushz -c -Mipa=fast,inline -mp
+#CFLAGS = $(ARCH)  -O3 -fast -Mflushz -B -Mipa=fast,inline -IHeaders -mp
+
+
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+
+# Runs svnrev to create svnrev.h
+Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+	SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+
+
+# Compiles to get svnrev binary
+SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
+	pgcc $< -o $@
+	rm -f svnrev.o
+
+
+#dependencies
+$(OBJECTS): $(HFILES) $(MFILES)
+
+
+#write_header needs to be recompiled everytime svnrev.h changes
+Common/write_header.o: Headers/svnrev.h
