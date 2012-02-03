@@ -69,7 +69,6 @@ endef
 all:  rmg-linux on-linux NEGF-linux
 
 all-xt: rmg-xt  on-xt  NEGF-xt
-all-garnet: rmg-garnet on-garnet NEGF-garnet
 
 all-aix: rmg-aix  on-aix NEGF-aix
 
@@ -100,13 +99,6 @@ rmg-aix: RMG/Headers/make_conf.h
 	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
 	cd RMG;gmake -f Make.aix 2>&1 | tee .build.log
 
-rmg-garnet: RMG/Headers/make_conf.h
-	@echo "#define MPI 1" > RMG/Headers/arch.h
-	@echo "#define LINUX 1" >> RMG/Headers/arch.h
-	cd lib/libxc/; $(MAKE) -f Make.rmg
-	@cd RMG; $(clean-global)
-	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
-	cd RMG; $(MAKE) -f Make.garnet 2>&1 | tee .build.log
 
 # Order-N targets go here
 on-linux: 
@@ -125,13 +117,6 @@ on-xt:
 	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
-on-garnet: 
-	@echo "#define LINUX 1" > ON/Headers/arch.h
-	@echo "#define MPI 1" >> ON/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> ON/Headers/arch.h;
-	@cd ON; $(clean-global); $(clean-on-negf-share)
-	cd ON; $(MAKE) -f Make.garnet 2>&1 | tee .build.log
 
 on-aix: 
 	@echo '#define AIX_MPI 1' > ON/Headers/arch.h
@@ -158,13 +143,6 @@ NEGF-xt:
 	@echo "#define THREADS_PER_NODE 1" >> NEGF/Headers/arch.h;
 	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; $(MAKE) -f Make.xt 2>&1 | tee .build.log
-NEGF-garnet: 
-	@echo '#define LINUX 1' > NEGF/Headers/arch.h
-	@echo "#define MPI 1" >> NEGF/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> NEGF/Headers/arch.h;
-	@cd NEGF; $(clean-global); $(clean-on-negf-share)
-	cd NEGF; $(MAKE) -f Make.garnet 2>&1 | tee .build.log
 
 NEGF-aix: 
 	@echo '#define AIX_MPI 1' > NEGF/Headers/arch.h
