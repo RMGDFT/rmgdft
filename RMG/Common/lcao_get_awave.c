@@ -11,7 +11,7 @@
 /*This function calculates atomic wavefunctions using wavefunctions read from PP files
  * with angular part added. The result is in psi, which is assumed to be initialized to zero*/
 
-void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m)
+void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double coeff)
 {
 
     int ix, iy, iz;
@@ -73,7 +73,7 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m)
 			to_cartesian(x, vector);
 
 			if (r <= sp->aradius)
-			    psi[pvec[icount]] += linint (&sp->awave_lig[awave_idx][0], r, invdr) * ylm(yindex, vector);
+			    psi[pvec[icount]] += coeff * linint (&sp->awave_lig[awave_idx][0], r, invdr) * ylm(yindex, vector);
 			    
 
 			icount++;
@@ -92,15 +92,6 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m)
 	}                   /* end for */
 
     }                       /* end if */
-
-
-    /* Integrate to see the total "charge density" of wave function */
-    t2 = 0.0;
-
-    for (idx = 0; idx < P0_BASIS; idx++)
-	t2 += psi[idx] * psi[idx];
-
-    t2 = ct.vel *  real_sum_all (t2, pct.img_comm);
 
 
     /* Release our memory */

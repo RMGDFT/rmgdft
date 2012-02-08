@@ -463,6 +463,16 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 #endif
 
     }                           /*end if(ct.initdiag) */
+    else
+    {
+#if GAMMA_PT
+        ortho(states, 0);
+#else
+        for (kpt = 0; kpt < ct.num_kpts; kpt++)
+            ortho (&states[kpt *ct.num_states], kpt);
+        
+#endif
+    }
 
 
 

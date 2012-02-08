@@ -494,7 +494,7 @@ void get_extrapolation_constants (REAL *alpha, REAL *beta);
 void lcao_init (void);
 void init_atomic_rho_wf (void);
 void lcao_get_rho (REAL * arho_f);
-void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m);
+void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double coeff);
 void lcao_get_psi (STATE * states);
 REAL mask_function (REAL x);
 void apply_mask_function (REAL *f, REAL * r, int rg_points, REAL rmax, REAL offset);
