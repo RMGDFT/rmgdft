@@ -36,6 +36,7 @@ void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
     static double *f;
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
+    double b0[MAX_STEPS], bmin;
     double c[MAX_STEPS];
     int ipvt[MAX_STEPS];
     int i, j;
@@ -128,14 +129,37 @@ void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
         /*   b = A^(-1) * b     */
         sgesv (&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
 
+        for (i = 0; i < size; i++) b0[i] = b[i];
+
+        
+        
+        bmin = -1.5;
+        for (i = 0; i < size; i++) 
+        {
+            if(b[i] < bmin)
+            {
+               for(j = 0; j <size; j++)
+               {
+                   b[j] = b[j] * (1.0 + (b0[i]-bmin)/(1.0-b0[i]));
+               }
+               b[i] = bmin;
+               break;
+            }
+        }
+
+
         if (pct.gridpe == 0)
         {
             printf ("\n");
             for (i = 0; i < size; i++)
                 printf ("   pulay_b[%d]: %10.6f  ", i, b[i]);
             printf ("\n");
+            for (i = 0; i < size; i++)
+                printf ("   pulay_b[%d]: %10.6f  ", i, b0[i]);
+            printf ("\n");
         }
 
+        for (i = 0; i < size; i++) b[i] = b0[i];
 
         if (step <= (NsavedSteps - 2))
         {
