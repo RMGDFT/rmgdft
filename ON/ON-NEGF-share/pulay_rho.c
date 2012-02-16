@@ -159,7 +159,6 @@ void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
             printf ("\n");
         }
 
-        for (i = 0; i < size; i++) b[i] = b0[i];
 
         if (step <= (NsavedSteps - 2))
         {
