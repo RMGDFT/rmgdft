@@ -437,7 +437,7 @@ void local_current ()
 
                 for (i = 0; i < pmo.mxllda_cond[1] * pmo.mxlocc_cond[1]; i++)
                 {
-                    Gless[i] = I * f1 * rho_mn[pmo.diag_begin[1]+i];
+                    Gless[i] = I * (f1-f2) * rho_mn[pmo.diag_begin[1]+i];
                 }
 
                 Sgreen_onerow (H_tri, sigma_all, sigma_idx, green_C_non, nC, iprobe2);
@@ -445,7 +445,7 @@ void local_current ()
 
                 for (i = 0; i < pmo.mxllda_cond[1] * pmo.mxlocc_cond[1]; i++)
                 {
-                    Gless[i] += I * f2 * rho_mn[pmo.diag_begin[1]+i];
+//                    Gless[i] += I * f2 * rho_mn[pmo.diag_begin[1]+i];
                 }
 
                 desca = &pmo.desc_cond[( 1 + 1 * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
@@ -470,16 +470,19 @@ void local_current ()
 
 */
                 double tem;
+                double tem1;
                 tem = 0.0;
-                for (idx1 = 0; idx1 < 134; idx1++)
+                for (idx1 = 128; idx1 < 134; idx1++)
                 {
-                    for (idx2 = 134; idx2 < pmo.mxlocc_cond[1]; idx2++)
+                    for (idx2 = 0; idx2 < pmo.mxlocc_cond[1]; idx2++)
                     {
                         i = idx2 * pmo.mxllda_cond[1] + idx1;
                         j = idx1 * pmo.mxllda_cond[1] + idx2;
 
 
                         tem += creal( (Glesst[i]- Gless[i]) * H_tri[pmo.diag_begin[1] +i] );
+                        tem1 = creal( (Glesst[i]- Gless[i]) * H_tri[pmo.diag_begin[1] +i] );
+                        printf("\n %f  %e  %d ", creal(ene), tem1, idx2);
                         // tem += creal( (Gless[i]- Glesst[i]) * H[i] * Ha_eV);
                         // tem += creal( Gless[i] *temp_matrix2[i] - Gless[j] * temp_matrix1[j]) * Ha_eV;
                     }

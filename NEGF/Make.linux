@@ -17,7 +17,7 @@ DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
 
 # Modules(directories) that contain the necessary source files
 #GLOBAL_MODULES are defined in the top level Makefile
-LOCAL_MODULES = Common Input Pois_for_negf ../ON/ON-NEGF-share 
+LOCAL_MODULES = Local_current Common Input Pois_for_negf ../ON/ON-NEGF-share 
 MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))

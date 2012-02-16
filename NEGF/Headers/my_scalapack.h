@@ -35,7 +35,8 @@ char *_cptofcd(char*, int);
 #define PZGEMM pzgemm
 #define PDGEMM pdgemm
 #define PDTRAN pdtran
-#define PZTRANc pztranc
+#define PZTRANC pztranc
+#define PZTRANU pztranu
 #define PZHEGVX pzhegvx
 
 
@@ -60,6 +61,7 @@ char *_cptofcd(char*, int);
 #define 	PDGEMM 		pdgemm_
 #define 	PDTRAN 		pdtran_
 #define 	PZTRANC		pztranc_
+#define 	PZTRANU		pztranu_
 #define 	PZGESV 		pzgesv_
 #define PZHEGVX pzhegvx_
 
