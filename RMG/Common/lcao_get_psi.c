@@ -91,10 +91,10 @@ void lcao_get_psi (STATE * states)
                 for (m=0; m < 2*l+1; m++)
                 {
 
-                    st++;
                     psi = states[st].psiR;
                     coeff = 1.0;
                     lcao_get_awave(psi, iptr, ip, l, m, coeff);
+                    st++;
                 }
             }
         }
@@ -147,9 +147,6 @@ void lcao_get_psi (STATE * states)
         idum = 3356;
         rand0 (&idum);
 
-        occ_per_wave = (ct.nel - charge_count) / (ct.num_states - state_count);
-
-        //printf("\n occ_per_wave for unoccupied states is %f, ct.nel %f, charge_count %f, ct.num_states %d, state_count %d", occ_per_wave, ct.nel, charge_count, ct.num_states, state_count); 
 
         for (st = state_count; st < ct.num_states; st++)
         {
@@ -172,12 +169,6 @@ void lcao_get_psi (STATE * states)
 #endif
 
             state_p = &states[st];
-
-            /* If random start and Fermi occupation, start with
-               each state equally occupied  */
-
-            for (idx = 0; idx < nspin; idx++)
-                state_p->occupation[idx] = occ_per_wave / nspin ;	
 
 
             idx = 0;
