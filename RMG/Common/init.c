@@ -222,7 +222,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
             states[kst1].vh = vh;
             states[kst1].vnuc = vnuc;
             states[kst1].pbasis = P0_BASIS;
-            states[kst1].sbasis = (PX0_GRID + 2) * (PY0_GRID + 2) * (PZ0_GRID + 2);
+            states[kst1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
             states[kst1].istate = st1;
             states[kst1].vel = ct.vel;
 #if MPI

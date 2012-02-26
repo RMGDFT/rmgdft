@@ -10,7 +10,7 @@
 void pack_rho_ctof (REAL * rho, REAL * rho_f)
 {
     int i, j, k, ii, jj, kk, basis1, basis2, basis3;
-    int pbasis, sbasis, dimx, dimy, dimz, in, jn, kn;
+    int pbasis, dimx, dimy, dimz, in, jn, kn;
     REAL tmp1, tmp2, tmp3, frac, cc[10][4];
     REAL sum_rho, sum_rhof, coef;
     SS0_GRID rho_c;
@@ -22,7 +22,6 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
     dimy = PY0_GRID;
     dimz = PZ0_GRID;
     pbasis = P0_BASIS;
-    sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     sum_rho = 0.0;
     sum_rhof = 0.0;
