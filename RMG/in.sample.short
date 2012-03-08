@@ -35,10 +35,6 @@ kpoints=
 	0.0  0.0  0.0 1.0
 "
 
-# Units for bravais_lattice_type and atoms
-length_units=
-"Bohr"
-#"Angstrom"
 
 bravais_lattice_type=
 "Cubic Primitive"
@@ -60,9 +56,6 @@ alpha="0.0"
 beta="0.0"
 gamma="0.0"
 
-atomic_coordinate_type=
-"Absolute"
-#"Cell Relative"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1
@@ -84,7 +77,7 @@ pseudopotential="
 start_mode=
 "Random Start"
 #"Restart From File"
-#"LCAO Start" (not recommended)
+#"LCAO Start" 
 
 calculation_mode=
 "Quench Electrons"
@@ -140,18 +133,3 @@ output_wave_function_file="Wave-soft/wave.out"
 # Default: "10"
 write_eigvals_period="10"
 
-# Whether to use mask mask function for filtering PPs
-mask_function_filtering="false"
-
-
-# Multigrid levels for solving K-S and Poisson equations
-# 0 = global grid only
-# Defaults: 1 2
-kohn_sham_mg_levels="1"
-poisson_mg_levels="2"
-
-
-# Note: for small systems it may be better to use 1.0 as "mehrstellen_time_step"
-# and 1.35 for "poisson_time_step"
-kohn_sham_time_step="0.3"
-poisson_time_step="0.5"

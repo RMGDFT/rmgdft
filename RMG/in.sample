@@ -144,7 +144,7 @@ write_pseudopotential_plots="false"
 start_mode=
 "Random Start"
 #"Restart From File"
-#"LCAO Start" (not recommended)
+#"LCAO Start" 
 
 # Default: "Quench Electrons"
 calculation_mode=
