@@ -58,7 +58,7 @@ void get_mat_Omega(STATE * states, double Omega[])
             work_matrix_row[st1] = states[st1].occupation * states[st1].eig;
         }
 
-        diaginit(gamma_dis, pct.desca, work_matrix_row, ct.num_states);
+        diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);
 
 
         /* 

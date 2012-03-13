@@ -1633,6 +1633,7 @@ void read_states_info (char *outfile, STATE * states);
 
 double get_gamma (double *vtot, double small_eig);
 void init_state_size (STATE * states);
+void diag_eig_maitrix(double *, double *, int *);
 
 
 
