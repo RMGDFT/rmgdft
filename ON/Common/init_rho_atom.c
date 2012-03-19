@@ -238,6 +238,7 @@ void init_rho_atom(double *rho)
 
     my_barrier();
     my_free(rho_tem);
+    my_free(rho_out);
     my_free(map);
     if (pct.gridpe == 0)
         printf(" initial rho  done  \n");
