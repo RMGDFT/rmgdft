@@ -91,7 +91,7 @@ void interpolation_orbit (STATE * states)
                     if(cei.num_probe < 3)
                     {
                         hx_old = lcr[idx0].xside / lcr[idx0].NX_GRID;
-                        x1_old = lcr[idx0].x_shift + (ixmin_old - lcr[idx0].x0) * hx_old;
+                        x1_old = lcr[idx0].x_shift + ixmin_old  * hx_old;
 
                         /* ==== Interpolation along x-direction ==== */
                         for (iy = 0; iy < NY; iy++)
@@ -117,7 +117,7 @@ void interpolation_orbit (STATE * states)
                     else if(cei.num_probe < 5)
                     {
                         hx_old = lcr[idx0].xside / lcr[idx0].NX_GRID;
-                        x1_old = lcr[idx0].x_shift + (ixmin_old - lcr[idx0].x0) * hx_old;
+                        x1_old = lcr[idx0].x_shift + ixmin_old * hx_old;
 
                         /* ==== Interpolation along x-direction ==== */
                         for (iy = 0; iy < NY; iy++)
@@ -141,7 +141,7 @@ void interpolation_orbit (STATE * states)
 
 
                         hy_old = lcr[idx0].yside / lcr[idx0].NY_GRID;
-                        y1_old = lcr[idx0].y_shift + (iymin_old - lcr[idx0].y0) * hy_old;
+                        y1_old = lcr[idx0].y_shift + iymin_old  * hy_old;
 /*
                         y1_old = lcr[idx0].y_shift + iymin_old * hy_old;
                         y1_new = (iymin_new + lcr[idx0].y0) * hy_new;
