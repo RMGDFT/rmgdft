@@ -142,12 +142,12 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         NYZ0 = NY0 * NZ0;
         NXZ0 = NX0 * NZ0;
 
-        x0_old = lcr[subsystem].x_shift;
         hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/FG_NX;
+        x0_old = lcr[subsystem].x_shift + lcr[subsystem].x0 * FG_NX * hx_old ;
         /*if(pct.gridpe ==0) printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
 
-        y0_old = lcr[subsystem].y_shift;
         hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/FG_NY;
+        y0_old = lcr[subsystem].y_shift + lcr[subsystem].y0 * FG_NY * hy_old;
         /*if(pct.gridpe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
  
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
@@ -385,6 +385,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
                 vh_old[ix] = vh_global[idx1];
             }
+
 
 /* 
  *           diff_hx_interpolation2 (vh_new,  vh_old,  FNX_GRID, hx_new, xold, 0.0, 0.0); 
