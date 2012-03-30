@@ -65,7 +65,7 @@ void write_header (void)
     int kpt, idx, j;
     time_t tt;
     REAL t1;
-
+    REAL crho_int, crho_fract;
 
     char *timeptr;
     time (&tt);
@@ -249,7 +249,15 @@ void write_header (void)
     printf ("    Number of ions     = %d\n", ct.num_ions);
     printf ("    Density mixing     = %12.6f\n", ct.mix);
     printf ("    Projector mixing   = %12.6f\n", ct.prjmix);
-    printf ("    Comp charge        = %12.6f\n", ct.crho);
+    printf ("    Comp charge        = %15.9f\n", ct.crho);
+    crho_fract = modf(ct.crho, &crho_int);
+    if(fabs(crho_fract) > 1.0e-08) {
+        printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        printf ("    WARNING: FRACTIONAL PART OF COMPENSATING CHARGES IS LARGER THAN TOLERANCE!!!\n");
+        printf ("    THIS WILL SET A LIMIT ON THE CONVERGENCE OF THE HARTREE POTENTIAL!!!\n");
+        printf ("    THIS CAN USUALLY BE CORRECTED BY INCREASING THE RADII IN THE PSEUDOPOTENTIAL FILES.\n");
+        printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    }
     if (ct.background_charge)
     {
         printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
