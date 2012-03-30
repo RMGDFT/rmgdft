@@ -96,14 +96,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     sbasis = sp->sbasis;
 
     /* Grab some memory */
-    my_malloc (sg_psi, 11 * (sbasis), REAL);
-    res = sg_psi + sbasis;
-    work2 = res + sbasis;
-    sg_twovpsi = work2 + 4 * sbasis;
-    work1 = sg_twovpsi + sbasis;
-    ns = work1 + sbasis;
-    nv = ns + sbasis;
-    res2 = nv + sbasis;
+    my_malloc (sg_psi, sbasis, REAL);
+    my_malloc (res, sbasis, REAL);
+    my_malloc (work2, 4 * sbasis, REAL);
+    my_malloc (sg_twovpsi, sbasis, REAL);
+    my_malloc (work1, sbasis, REAL);
+    my_malloc (ns, sbasis, REAL);
+    my_malloc (nv, sbasis, REAL);
+    my_malloc (res2, sbasis, REAL);
 
     tmp_psi = sp->psiR;
 
@@ -341,7 +341,15 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 
     /* Release our memory */
+    my_free (res2);
+    my_free (nv);
+    my_free (ns);
+    my_free (work1);
+    my_free (sg_twovpsi);
+    my_free (work2);
+    my_free (res);
     my_free (sg_psi);
+
 
 
 }                               /* end mg_eig_state */
