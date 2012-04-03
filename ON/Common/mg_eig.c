@@ -86,7 +86,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     sscal(&mxllda2, &t1, theta, &ione);
 
     Cpdgemr2d(numst, numst, theta, IA, JA, pct.desca, work_matrix_row, IB, JB,
-            pct.descb, pct.descb[1]);
+            pct.descb, pct.desca[1]);
 
 
     time2 = my_crtc();

@@ -223,7 +223,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	if(pct.gridpe == 0) printf("\n    Write middle at %s\n", timeptr);
 	if(pct.gridpe == 0) fflush(NULL);
 
-	my_free(work_memory);
 
 
 	/* Force change mode of output file */

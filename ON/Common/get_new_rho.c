@@ -49,7 +49,7 @@ void get_new_rho(STATE * states, double *rho)
 
 
    Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, work_matrix_row, IB, JB,
-            pct.descb, pct.descb[1]);
+            pct.descb, pct.desca[1]);
 
 
    for (idx = 0; idx < NX_GRID * NY_GRID * NZ_GRID; idx++)

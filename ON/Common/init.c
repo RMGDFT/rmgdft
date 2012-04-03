@@ -146,13 +146,6 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     my_barrier();
     if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
 
-    /* If not an initial run read data from files */
-    if (ct.runflag == 1)
-    {
-        read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
-    if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-    }
 
     allocate_masks(states);
     if(gridpe == 0) printf("\n init_allocate mask done %f sec",my_crtc()-time1 );
@@ -272,6 +265,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
         }
     }
 
+
     /* Initialize Non-local operators */
     init_nl_xyz();
     if(gridpe == 0) printf("\n init_nl_xyz done %f sec",my_crtc()-time1 );
@@ -280,11 +274,20 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     get_nlop();
     if(pct.gridpe == 0) printf("\n pe %d init_get_lop done %f sec",pct.gridpe, my_crtc()-time1 );
+
+    /* If not an initial run read data from files */
+    if (ct.runflag == 1)
+    {
+        read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
+    if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
+        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    }
+
     my_barrier();
     if(pct.gridpe == 0) printf("\n pe %d my_barrier %f sec",pct.gridpe, my_crtc()-time1 );
+
     init_nonlocal_comm();
     if(pct.gridpe == 0) printf("\n pe %d init_nonlocal_comm done %f sec",pct.gridpe,my_crtc()-time1 );
-
 
     /* Initialize qfuction in Cartesin coordinates */
     init_qfunct();

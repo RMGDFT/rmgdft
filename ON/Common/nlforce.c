@@ -52,14 +52,14 @@ void nlforce(REAL * veff)
     n2 = ct.num_states * ct.num_states;
 
     Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, work_matrix_row,
-            IB, JB, pct.descb, pct.descb[1]);
+            IB, JB, pct.descb, pct.desca[1]);
 
 
     rho_Qnm_mat(rho_nm, work_matrix_row);
     partial_Mat_nm_R(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, work_matrix_row);
 
     Cpdgemr2d(numst, numst, mat_Omega, IA, JA, pct.desca, work_matrix_row,
-            IB, JB, pct.descb, pct.descb[1]);
+            IB, JB, pct.descb, pct.desca[1]);
     partial_Mat_nm_R(part_omega_nm_x, part_omega_nm_y, part_omega_nm_z, work_matrix_row);
 
     global_sums(rho_nm, &size, pct.grid_comm);

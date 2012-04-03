@@ -163,11 +163,12 @@ void init_pe_on(void)
         }
     }
 
-    sl_init(&ictxt, 1,NPES);
+    int numst1, npes_tem;
+    numst1 = (ct.num_states + NPES -1)/NPES;
+    npes_tem = (ct.num_states + numst1 -1) /numst1;
+    sl_init(&ictxt, 1,npes_tem);
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-    int numst1;
-    numst1 = (ct.num_states + NPES -1)/NPES;
     DESCINIT(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
             &ictxt, &numst, &info);
 
