@@ -143,6 +143,11 @@ void lcao_get_psi (STATE * states)
         REAL xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
         STATE *state_p;
 
+        pe2xyz (pct.gridpe, &ix, &iy, &iz);
+        xoff = ix * PX0_GRID;
+        yoff = iy * PY0_GRID;
+        zoff = iz * PZ0_GRID;
+
         /* Initialize the random number generator */
         idum = 3356;
         rand0 (&idum);
