@@ -49,6 +49,14 @@
 #include <stdio.h>
 #include "main.h"
 
+
+#if GPU_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#endif
+
+
 /* This subspace diagonalization function uses Scalapack libraries  */
 
 #if GAMMA_PT
@@ -79,19 +87,22 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
 
 void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
-    int idx, st1;
+    int idx, st1, st2, ion, nion, ip, pstop;
 	int num_states;
     int stop;
     int kidx;
-    REAL *eigs;
+    REAL *eigs, *work1R, *sintR;
     int ione = 1, izero = 0;    /* blas constants */
     char *uplo = "l", *jobz = "v";
+    ION *iptr;
+    SPECIES *sp;
 
     int info = 0;
     REAL time1, time2, time3;
     REAL *global_matrix;
     REAL *tmp_arrayR;
     REAL *tmp_array2R;
+    REAL tmp1;
 #if !GAMMA_PT
     REAL *tmp_arrayI;
 #endif
@@ -99,21 +110,31 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     REAL *vtot, *vtot_eig;
 	int dist_length, dist_stop, pbasis;
 
+#if GPU_ENABLED
+    cublasStatus_t custat;
+    cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
+#endif
+    REAL alpha1 = 1.0, beta1 = 0.0;
+
+    num_states = ct.num_states;
     pbasis = P0_BASIS;
+    stop = num_states * num_states;
 
+#if GPU_ENABLED
 
+    cublasSetVector( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
 
+#endif
+        
     time1 = my_crtc ();
 
     if (pct.gridpe == 0)
         printf ("\n SUBSPACE DIAGONALIZATION");
 
     kidx = states[0].kidx;
-    num_states = ct.num_states;
 
 
     /* Grab some temporary storage */
-    stop = num_states * num_states;
 #  if !GAMMA_PT
     stop = 2 * num_states * num_states;
 #  endif
@@ -121,9 +142,9 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*Get memory for global matrices */
 
     my_calloc (global_matrix, stop, REAL);
-
     my_malloc (vtot_eig, P0_BASIS, REAL);
     my_malloc (eigs, num_states, REAL);
+    my_malloc (work1R, ct.num_states * 16 , REAL);
 
 
     /*Get vtot on coarse grid */
@@ -198,10 +219,22 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time3 = my_crtc ();
         rmg_timings (DIAG_APP_A, time3 - time2);
 
+#if GPU_ENABLED
 
+        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_arrayR, ione, ct.gpu_temp, ione );
+
+        cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
+             &alpha, ct.gpu_states, pbasis,
+             ct.gpu_temp, pbasis,
+             &beta,  ct.gpu_global_matrix, num_states );
+        
+        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+
+#else
         /*Global matrix will hold global A matrix */
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_arrayR, &pbasis, &beta, global_matrix, &num_states);
+#endif
 
 
         time2 = my_crtc ();
@@ -231,8 +264,19 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_APP_S, time3 - time2);
 
         alpha = ct.vel;
+#if GPU_ENABLED
+        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+        cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
+             &alpha, ct.gpu_states, pbasis,
+             ct.gpu_temp, pbasis,
+             &beta,  ct.gpu_global_matrix, num_states );
+
+        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+
+#else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
+#endif
 
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
@@ -259,8 +303,20 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time3 = my_crtc ();
         rmg_timings (DIAG_APP_B, time3 - time2);
 
+#if GPU_ENABLED
+        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+
+        cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
+             &alpha, ct.gpu_states, pbasis,
+             ct.gpu_temp, pbasis,
+             &beta,  ct.gpu_global_matrix, num_states );
+
+        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+
+#else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
+#endif
 
 
         time2 = my_crtc ();
@@ -282,9 +338,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DISTMAT, time2 - time3);
 
     }
-
-
-
 
 
 
@@ -317,7 +370,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     {
 
         /*keep an extra copy of distributed unitary matrix */
-        scopy (&dist_stop, distCij, &ione, distIij, &ione);
+        QMD_scopy (dist_stop, distCij, ione, distIij, ione);
 
 
         /*Get matrix that is inverse to B */
@@ -390,7 +443,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #endif
 
             /*Copy result into Bij */
-            scopy (&dist_stop, distCij, &ione, distBij, &ione);
+            QMD_scopy (dist_stop, distCij, ione, distBij, ione);
         }
 
 
@@ -412,7 +465,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, REAL);
             lwork = -1;
             liwork = -1;
-
 
 
             PDSYGVX (&ione, jobz, range, uplo, &num_states, distBij, &ione, &ione, pct.desca,
@@ -465,7 +517,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         }
 #endif
-
 
 
         /*Gather result onto global_matrix */
@@ -526,18 +577,29 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     /* Do the orbital update in here */
 #if GAMMA_PT
+#if GPU_ENABLED
+
+    cublasSetVector( num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+
+    alpha1 = 1.0;
+    beta1 = 0.0;
+    custat = cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, pbasis, num_states, num_states,
+                &alpha1, 
+                ct.gpu_states, pbasis,
+                ct.gpu_global_matrix, num_states,
+                &beta1,  ct.gpu_temp, pbasis );
+
+    cublasGetVector( pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
+
+#else
     subdiag2_mpi (global_matrix, states->psiR, tmp_arrayR);
+#endif
 #else
     subdiag2_mpi (global_matrix, states->psiR);
 #endif
 
 
     rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
-
-
-
-
-
 
 
     /* release our temporary storage */
@@ -547,9 +609,10 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #endif
     my_free (tmp_arrayR);
     my_free (tmp_array2R);
-    my_free (global_matrix);
-    my_free (vtot_eig);
+    my_free (work1R);
     my_free (eigs);
+    my_free (vtot_eig);
+    my_free (global_matrix);
 
 
 
@@ -573,7 +636,6 @@ static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi)
     REAL beta = 0.0;
     int pbasis = P0_BASIS;
     int num_states = ct.num_states;
-
 
     dgemm (trans, trans, &pbasis, &num_states, &num_states, &alpha, base_mem, &pbasis, Aij,
            &num_states, &beta, tmp_psi, &pbasis);
@@ -721,10 +783,10 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
     my_calloc (temp_unity_matrix, stop, REAL);
 
     /*Copy matrix into temp_matrix */
-    scopy (&stop, matrix, &ione, temp_matrix, &ione);
+    QMD_scopy (stop, matrix, ione, temp_matrix, ione);
 
     /*Local copy of unity matrix, this is done so that the unitary matrix that was passed here does not change */
-    scopy (&stop, unity_matrix, &ione, temp_unity_matrix, &ione);
+    QMD_scopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
 
 
     /*Symmetric (or Hermitian) matrix will be obtained as

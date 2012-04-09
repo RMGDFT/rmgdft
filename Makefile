@@ -225,6 +225,9 @@ RMG/Headers/make_conf.h:
 	@echo "/* Experimental fast ortho. Disabled by default. */" >> RMG/Headers/make_conf.h;
 	@echo "#define FAST_ORTHO 0" >> RMG/Headers/make_conf.h;
 	@echo "";
+	@echo "/* Use GPU accelerations. */" >> RMG/Headers/make_conf.h;
+	@echo "#define GPU_ENABLED 0" >> RMG/Headers/make_conf.h;
+	@echo "";
 	@echo "ERROR: File RMG/Headers/make_conf.h does not exist"; 
 	@echo "Headers/make_conf.h is set to default, configure it for your system before compiling !!! ";
 	@echo "";

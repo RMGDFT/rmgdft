@@ -221,7 +221,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /*keep an extra copy of distributed unitary matrix */
-        scopy (&dist_stop, distCij, &ione, distIij, &ione);
+        QMD_scopy (dist_stop, distCij, ione, distIij, ione);
 
 
         /*Make Bij Hermitian */
@@ -730,10 +730,10 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
     my_calloc (temp_unity_matrix, stop, REAL);
 
     /*Copy matrix into temp_matrix */
-    scopy (&stop, matrix, &ione, temp_matrix, &ione);
+    QMD_scopy (stop, matrix, ione, temp_matrix, ione);
 
     /*Local copy of unity matrix, this is done so that the unitary matrix that was passed here does not change */
-    scopy (&stop, unity_matrix, &ione, temp_unity_matrix, &ione);
+    QMD_scopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
 
 
     /*Symmetric (or Hermitian) matrix will be obtained as

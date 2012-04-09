@@ -15,6 +15,17 @@ L1_CACHE_LINES = 128
 DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
 
 
+# If using gpuaccelerations set CUDADIR, CUDAINC and CUDALIB for your system
+CUDADIR   = /usr/local/cuda
+CUDALIB   = -L$(CUDADIR)/lib64 -lcudart -lcublas -lcuda
+CUDAINC   = -I$(CUDADIR)/include
+
+EXTRALIBS = -L/usr/local/lib/scalapack/
+
+# Local static library locations. Adjust for your system
+LOBJECTS = /usr/local/lib/libfftw.a /usr/local/lib/scalapack/libscalapack.a /usr/local/lib/scalapack/blacsC.a /usr/local/lib/scalapack/blacs.a /usr/local/lib/scalapack/blacsF77.a /usr/local/atlas/lib/liblapack.a /usr/local/atlas/lib/libptcblas.a /usr/local/atlas/lib/libptf77blas.a /usr/local/atlas/lib/libatlas.a
+
+
 # Modules(directories) that contain the necessary source files
 #GLOBAL_MODULES are defined in the top level Makefile
 LOCAL_MODULES = Common Input Spin Spin/XC 
@@ -28,22 +39,26 @@ HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
-OBJECTS = $(COBJECTS) $(FOBJECTS)
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
 
 #The options below work on Linux with MPICH. This works on Fedora 14. 
-LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
+#LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
+LIBS = -lgfortran -lm -lfftw -L ../lib/libxc/lib -lxc
 
 #For OpenMPI, use the following options instead of those above. This works on debian-based systems including Ubuntu.
 #LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran  -L ../lib/libxc/lib -lxc
 
 #For Scalapack compiled using python installer
 #LIBS = -lblas -lm -llapack -lfftw  -L/usr/lib64/ -lmpi_f77 /usr/local/scalapack/lib/libscalapack.a /usr/local/scalapack/lib/blacsF77.a /usr/local/scalapack/lib/blacs.a  /usr/local/scalapack/lib/libscalapack.a   -L ../lib/libxc/lib -lxc
-LDFLAGS =
+LDFLAGS = -pthread -fopenmp
 
 
-CC = mpicc
-FC = mpif77
+#CC = mpicc
+#FC = mpif77
+CC = /usr/local/bin/mpicc
+FC = /usr/local/bin/mpif77
+
 
 
 # Makefiles: if these change, whole code should be recompiled
@@ -53,8 +68,8 @@ MFILES = Makefile Make.linux
 # Compile flags
 ARCH =
 #CWARN = -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Wundef -Wshadow  -Wredundant-decls -lefence
-FFLAGS = $(ARCH) -O3 
-CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
+FFLAGS = $(ARCH) -O3 -fopenmp
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders $(CUDAINC) $(CUDALIB) -fopenmp
 
 
 rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a

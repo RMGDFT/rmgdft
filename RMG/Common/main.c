@@ -129,13 +129,33 @@ double alat;
 int main (int argc, char **argv)
 {
 
-	initialize (argc, argv);
+#if GPU_ENABLED
+//  Hack to force initialization of libsci on Cray before we create our own threads
+    char *trans = "n";
+    int asize = 32, i, j;
+    REAL alpha = 1.0;
+    REAL beta = 0.0;
+    REAL A[32*32], B[32*32], C[32*32];
 
-        run ();
+    for(i = 0;i < asize * asize;i++) {
+        A[i] = 1.0;
+        B[i] = 0.0;
+        C[i] = 1.0;
+    }
 
-	report ();
 
-	finish ();
+    dgemm (trans, trans, &asize, &asize, &asize, &alpha, A, &asize,
+               B, &asize, &beta, C, &asize);
+#endif
+
+
+    initialize (argc, argv);
+
+    run ();
+
+    report ();
+
+    finish ();
 
     return 0;
 }
@@ -301,6 +321,10 @@ void finish ()
 
 	/*Exit MPI */
     MPI_Finalize ();
+
+#if GPU_ENABLED
+    finalize_gpu();
+#endif
 
 }                               /* end finish */
 

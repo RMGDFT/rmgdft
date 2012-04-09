@@ -1377,6 +1377,32 @@ typedef struct
     
 #endif
 
+    // Some GPU information. Currently we use at most one device per MPI process
+#if GPU_ENABLED
+
+    // Integer device id
+    int gpu_device_id;
+
+    // Cuda device
+    CUdevice  cu_dev;
+
+    // Cuda device context
+    CUcontext cu_context;
+
+    // CUBLAS library handle
+    cublasHandle_t cublas_handle;
+
+    // GPU storage space for wavefunctions
+    REAL *gpu_states;
+
+    // GPU temporary storage space for wavefunctions
+    REAL *gpu_temp;
+
+    // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
+    REAL *gpu_global_matrix;
+
+#endif    
+
 } CONTROL;
 
 

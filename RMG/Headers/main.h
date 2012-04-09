@@ -90,11 +90,19 @@
 /* routines for input parsing */
 #include "input.h"
 
+/* GPU includes */
+#if GPU_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#endif
+
 /* Custom types used in the code*/
 #include "typedefs.h"
 
-/*Prototypes for function calls*/
+/* Prototypes for function calls*/
 #include "prototypes.h" 
+
 
 
 /* Include the  library of exchange and correlation (namely, Libxc) */

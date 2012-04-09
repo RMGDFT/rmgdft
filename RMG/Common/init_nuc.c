@@ -126,7 +126,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
 
     
     if (pct.imgpe==0)
-	    printf("\nCompensating charge is %.4e\n", ct.crho);
+	    printf("\nCompensating charge is %.8e\n", ct.crho);
     
 
     t1 = 0.0;

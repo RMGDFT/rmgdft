@@ -50,10 +50,10 @@ void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_
 	
 	/* Scale old charge density first*/
 	t1 = 1.0 - ct.mix;
-	sscal (&length, &t1, rho, &inc); 
+	QMD_sscal (length, t1, rho, inc); 
 
 	/*Add the new density*/
-	saxpy (&length, &ct.mix, new_rho, &inc, rho, &inc);
+	QMD_saxpy (length, ct.mix, new_rho, inc, rho, inc);
     }
     else {
 	if (verify("charge_mixing_type","Pulay"))

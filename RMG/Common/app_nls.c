@@ -174,11 +174,11 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
                     coeff2I += qqq[inh + j] * psintI[j];
 #endif
                 }                   /* end for j */
-                saxpy (&stop, &coeffR, mptr, &incx, nworkR, &incx);
-                saxpy (&stop, &coeff2R, mptr, &incx, nwork2R, &incx);
+                QMD_saxpy (stop, coeffR, mptr, incx, nworkR, incx);
+                QMD_saxpy (stop, coeff2R, mptr, incx, nwork2R, incx);
 #if !GAMMA_PT
-                saxpy (&stop, &coeffI, mptr, &incx, nworkI, &incx);
-                saxpy (&stop, &coeff2I, mptr, &incx, nwork2I, &incx);
+                QMD_saxpy (stop, coeffI, mptr, incx, nworkI, incx);
+                QMD_saxpy (stop, coeff2I, mptr, incx, nwork2I, incx);
 #endif
             }                       /*end for i */
 #endif

@@ -108,7 +108,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-            scopy (&dimz, &f[iys], &ione, &w[iys2 + images], &ione);
+            QMD_scopy (dimz, &f[iys], ione, &w[iys2 + images], ione);
 
         }                       /* end for */
 
