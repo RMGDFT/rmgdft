@@ -70,6 +70,8 @@ all:  rmg-linux on-linux NEGF-linux
 
 all-xt: rmg-xt  on-xt  NEGF-xt
 
+all-xk-gnu: rmg-xk-gnu
+
 all-aix: rmg-aix  on-aix NEGF-aix
 
 
@@ -90,6 +92,14 @@ rmg-xt: RMG/Headers/make_conf.h
 	@cd RMG; $(clean-global)
 	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
 	cd RMG; $(MAKE) -f Make.xt 2>&1 | tee .build.log
+
+rmg-xk-gnu: RMG/Headers/make_conf.h
+	@echo "#define MPI 1" > RMG/Headers/arch.h
+	@echo "#define LINUX 1" >> RMG/Headers/arch.h
+	cd lib/libxc/; $(MAKE) -f Make.rmg
+	@cd RMG; $(clean-global)
+	@echo "#define BUILD_DATE \"`date \"+%c\"`\"" >> RMG/Headers/arch.h
+	cd RMG; $(MAKE) -f Make.xk-gnu 2>&1 | tee .build.log
 
 rmg-aix: RMG/Headers/make_conf.h
 	@echo "#define MPI 1" > RMG/Headers/arch.h

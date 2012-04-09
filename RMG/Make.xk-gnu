@@ -21,14 +21,17 @@ H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 
+#LOBJECTS = /opt/gcc/4.6.2/snos/lib64/libgfortran.a /opt/gcc/4.6.2/snos/lib64/libquadmath.a
+#LOBJECTS = /ccs/home/elbriggs/extralibs/libscalapack.a /ccs/home/elbriggs/extralibs/blacsC.a /ccs/home/elbriggs/extralibs/blacs.a
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
-OBJECTS = $(COBJECTS) $(FOBJECTS)
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
 
-LIBS = -L /apps/FFTW/prod/jaguar/lib -L /opt/fftw/2.1.5.2/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm
+LIBS = -L /apps/FFTW/prod/jaguar/lib -L /opt/fftw/2.1.5.2/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm -lcublas -lcuda
 
 LDFLAGS = -pthread -openmp
+#LDFLAGS = -pthread
 
 
 CC = cc
@@ -44,7 +47,9 @@ ARCH =
 # Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
 FFLAGS = $(ARCH) -O3 -fopenmp
+#FFLAGS = $(ARCH) -O3
 CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
+#CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
 
 rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
