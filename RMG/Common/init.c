@@ -191,8 +191,12 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 #if MPI
     /* Set state pointers and initialize state data */
 #if GAMMA_PT
+  #if GPU_ENABLED
+      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(REAL));
+  #else
     /* Wavefunctions are actually stored here */
     my_malloc (rptr, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
+  #endif
 #else
     /* Wavefunctions are actually stored here */
     if (verify ("calculation_mode", "Band Structure Only"))
@@ -207,9 +211,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 #endif
 
-#if GPU_ENABLED
-    mlock(rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(REAL));
-#endif
     kpt1 = ct.num_kpts;
     if (verify ("calculation_mode", "Band Structure Only"))
         kpt1 = 1;
