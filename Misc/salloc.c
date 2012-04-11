@@ -57,7 +57,7 @@ plus some statistics
 
 /* 
  Include main.h because of the macro variables
- NEGF1, ORDER_N, ON2, REAL_SPACE, RS2, SMP
+ NEGF1, ORDER_N, ON2, REAL_SPACE, RS2
 */
 #include "main.h"
 

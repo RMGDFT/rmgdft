@@ -239,19 +239,6 @@
 #define OCC_EF 3
 
 
-/* SMP directives for the threads */
-#define     SMP_EIG       1
-#define     SMP_ORTHO1    2
-#define     SMP_ORTHO2    3
-#define     SMP_GET_RHO   4
-#define     SMP_SORT_PSI  5
-#define     SMP_SKIP      6
-#define     SMP_DIAG1     7
-#define     SMP_DIAG2     8
-#define     SMP_NLFORCE   9
-#define     SMP_GETNLOP  10
-
-
 /* Crystal lattice types */
 /** Simple cubic lattice type.
  *  @doc Set input file value = 1 */

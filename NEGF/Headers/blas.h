@@ -41,7 +41,7 @@
 
 */
 
-#if (LINUX || LINUX_SMP || LINUX_MPI || SGI_ORIGIN || M_SGI_ORIGIN_MPI || SOLARIS)
+#if (LINUX || LINUX_MPI || SGI_ORIGIN || M_SGI_ORIGIN_MPI || SOLARIS)
 
   #define               global_sums     global_sums_
   #define		app6_del2	app6_del2_

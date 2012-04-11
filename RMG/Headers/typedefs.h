@@ -877,32 +877,6 @@ typedef struct
     pid_t main_thread_pid;
 #endif
 
-#ifdef SMP
-    /* Number of threads to run concurrently. We always 
-     * use one thread per eigenfunction but it's inefficient 
-     * to have more threads than the number of CPU's available
-     * running concurrently. Defaults to compile time parameter 
-     * of 1 but can be overridden by setting the environment 
-     * variable QMD_NUM_THREADS to any value up to MAX_THREADS.
-     */
-    int thread_concurrency;
-    int num_threads;
-
-    /* When running on a cluster this is the total number of nodes
-     * in the cluster.
-     */
-    int num_nodes;
-
-    /* While this is the identity of this node */
-    int this_node;
-
-    /* And this is the space offset of this node */
-    int node_space_offset;
-
-    /* And this is the number of space points handled by this node */
-    int node_space_size;
-#endif
-
     /** Description of the run. */
     char description[MAX_CHAR];
 

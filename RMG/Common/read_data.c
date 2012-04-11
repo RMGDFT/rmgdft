@@ -268,27 +268,15 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
         STATE *sp;
 
-#ifdef SMP
-        /* get temporary buffers */
-        REAL *work1, *work2;
-        my_malloc (work1, wvfn_size, REAL);
-        work2 = (gamma) ? NULL : work1 + grid_size;
-#endif
-
         sp = states;
         for (ik = 0; ik < nk; ik++)
         {
             for (is = 0; is < ns; is++)
             {
 
-#ifdef SMP
-                read_double (fhand, work1, wvfn_size);
-                scatter_psi (work1, work2, sp, 0);
-#else
                 read_double (fhand, sp->psiR, wvfn_size);
-#endif
-
                 sp++;
+
             }
             /*  for calculating band structures, 
                only read-in one wave function (?) */
@@ -296,10 +284,6 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
                 return;
         }
 
-#ifdef SMP
-        /* Release memory */
-        my_free (work1);
-#endif
         printf ("read_data: read 'wfns'\n");
 
     }

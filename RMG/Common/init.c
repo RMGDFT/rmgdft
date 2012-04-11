@@ -65,10 +65,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     REAL time1, time2, v1, v2, v3, fac;
     STATE *st;
 
-#ifdef SMP
-    int thread, offset, stop;
-#endif
-        
 #if GPU_ENABLED
     init_gpu();
 #endif
@@ -409,17 +405,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     if (ct.runflag == 2)
 	lcao_get_rho(rho);
 
-
-#ifdef SMP
-    offset = 0;
-    for (thread = 0; thread < ct.num_threads; thread++)
-    {
-        stop = thread_control[thread].numpt;
-        rptr = thread_control[thread].rho;
-        QMD_scopy (stop, &rho[offset], 1, rptr, 1);
-        offset += stop;
-    }
-#endif
 
     ct.rms = 0.0;
     

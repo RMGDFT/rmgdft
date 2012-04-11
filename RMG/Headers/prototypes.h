@@ -290,21 +290,6 @@ void gather_psi (REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
 void scatter_psi (REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
 void get_milliken (STATE *states);
 
-#ifdef SMP
-void create_threads (STATE *states);
-void start_threads (int action);
-void wait_for_threads (void);
-void thread_spinlock (int *lockptr);
-void *thread_scheduler (void *);
-void thread_dispatch (SCF_THREAD_CONTROL *s, int job);
-void ortho1_smp (SCF_THREAD_CONTROL *s);
-void ortho2_smp (SCF_THREAD_CONTROL *s);
-void get_rho_smp (SCF_THREAD_CONTROL *s);
-void sort_psi_smp (SCF_THREAD_CONTROL *s);
-void subdiag1_smp (SCF_THREAD_CONTROL *s);
-void subdiag2_smp (SCF_THREAD_CONTROL *s);
-#endif
-
 void bandstructure( STATE *states, REAL *vxc, REAL *vh, REAL *vnuc );
 void output_wave( STATE *states, int kpt, int fhand );
 

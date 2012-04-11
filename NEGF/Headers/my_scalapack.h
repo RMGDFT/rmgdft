@@ -18,7 +18,7 @@ char *_cptofcd(char*, int);
 #endif
 
 
-#if (AIX || IBMSP || AIX_SMP || AIX_MPI )
+#if (AIX || IBMSP || AIX_MPI )
 
 #define NUMROC numroc
 #define INDXG2P indxg2p
@@ -43,7 +43,7 @@ char *_cptofcd(char*, int);
 
 #endif
 
-#if  ( LINUX || LINUX_MPI || LINUX_SMP ||M_SGI_ORIGIN_MPI ) 
+#if  ( LINUX || LINUX_MPI || M_SGI_ORIGIN_MPI ) 
 
 #define  	NUMROC  	numroc_ 
 #define		INDXG2P  	indxg2p_
