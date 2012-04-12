@@ -29,7 +29,7 @@
 #define Dprintf( format, args...) ;
 #endif
 
-#define dprintf( format, args...) fprintf (stderr, "\ngrid rank %d of spin %d:    \t"format"\n", pct.gridpe, pct.spinpe,  ##args), fflush(NULL)
+#define dprintf( format, args...) fprintf (stderr, "\ngrid rank %d of spin %d:    \t"format"\n", pct.gridpe, pct.spinpe,  ##args), fflush(NULL), fsync ( fileno (ct.logfile))
 //#define dprintf( format, args...) fprintf (stderr, "\nIMG %d/%d:PE %d, GRID %d/%d:PE %d,\t"format"\n", pct.thisimg, pct.images, pct.imgpe, pct.thisgrid+1, pct.grids, pct.gridpe,  ##args), fflush(NULL)
 //#define dprintf( format, args...) fprintf (stderr, "\n#WARNING from IMG PE %d in IMG %d  of grid rank %d of spin %d:    \t"format"\n", pct.imgpe, pct.thisimg, pct.gridpe, pct.thisspin,  ##args), fflush(NULL)
 

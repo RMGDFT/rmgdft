@@ -79,7 +79,7 @@
 #define MAX_NONLOC_IONS         1024
 
 /* Maximum number of processors with which the current processor will communicate to calculate <beta|psi> */
-#define MAX_NONLOC_PROCS        128
+#define MAX_NONLOC_PROCS        250
 
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4

@@ -73,7 +73,7 @@ void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         R_ptr = imgC;
 
         /* get adjacent image ion positions */
-        if ( pct.gridpe == 0 )
+        if ( pct.imgpe == 0 )
         {
 			printf("\tNEB adjacent image coords L:%d, S:%d, R:%d.\n", img_rank_map[LEFT], img_rank_map[SELF], img_rank_map[RIGHT]);
 			fflush (NULL); fsync( fileno(ct.logfile) );
