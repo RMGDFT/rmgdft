@@ -485,6 +485,9 @@ REAL mask_function (REAL x);
 void apply_mask_function (REAL *f, REAL * r, int rg_points, REAL rmax, REAL offset);
 void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL offset, REAL parm, REAL* potential_lgrid, 
 	REAL *rab, int l_value, REAL dr, REAL  gwidth, int lgrid_points, REAL rcut, REAL rwidth, REAL * drpotential_lgrid);
+int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
+               int cdim, int pxgrid, int pygrid, int pzgrid,
+               int nxgrid, int nygrid, int nzgrid);
 #if GPU_ENABLED
 void finalize_gpu (void);
 #endif
