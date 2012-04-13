@@ -258,10 +258,10 @@ typedef struct
     int nonloc_ions_list[MAX_NONLOC_IONS];
     int nonloc_ion_ownflag[MAX_NONLOC_IONS];
 
-    /*int num_nonloc_pes;
+    int num_nonloc_pes;
     int nonloc_pe_list[MAX_NONLOC_PROCS];
     int nonloc_pe_list_ions[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
-    int nonloc_pe_num_ions[MAX_NONLOC_PROCS];*/
+    int nonloc_pe_num_ions[MAX_NONLOC_PROCS];
     
     
     /*For ions owned by current PE*/
