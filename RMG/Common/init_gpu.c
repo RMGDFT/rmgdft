@@ -85,16 +85,25 @@ void init_gpu (void)
       exit(-1);
   }
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_states , ct.num_states * P0_BASIS * sizeof(REAL) )){
-      fprintf (stderr, "!!!! cublasAlloc failed for: gpu_states\n");
+      fprintf (stderr, "Error: cudaMalloc failed for: gpu_states\n");
       exit(-1);
   }
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp , ct.num_states * P0_BASIS * sizeof(REAL) )){
-      fprintf (stderr, "!!!! cublasAlloc failed for: gpu_temp\n");
+      fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");
       exit(-1);
   }
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp, THREADS_PER_NODE * (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) * sizeof(REAL) )){
+      fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+      exit(-1);
+  }
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work, THREADS_PER_NODE * (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) * sizeof(REAL) )){
+      fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
+      exit(-1);
+  }
+
   custat = cublasCreate(&ct.cublas_handle);
   if( custat != CUBLAS_STATUS_SUCCESS ) {
-      fprintf (stderr, "!!!! cublasCreate failed for: cublas_handle\n");
+      fprintf (stderr, "Error cublasCreate failed for: ct.cublas_handle\n");
       exit(-1);
   }
 
@@ -107,6 +116,7 @@ void finalize_gpu (void)
     cudaFree(ct.gpu_global_matrix);
     cudaFree(ct.gpu_temp);
     cudaFree(ct.gpu_states);
+    cudaFreeHost(ct.gpu_host_temp);
 
 //    cuCtxDetach( ct.cu_context ); 
  //   cublasShutdown();

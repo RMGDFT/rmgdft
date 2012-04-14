@@ -27,20 +27,63 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
     REAL ihx, ihy, ihz;
     REAL *rptr;
 
+    incx = (dimz + 4) * (dimy + 4);
+    incy = dimz + 4;
+    incxr = dimz * dimy;
+    incyr = dimz;
+
+#if GPU_ENABLED
+    REAL *gpu_psi, *gpu_b;
+    cudaStream_t cstream;
+    int ione = 1, tid;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+
+
+    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
+    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
+
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+    tid = get_thread_tid();
+    if(tid == -1) {         // Normal codepath with no threads
+        rptr = &ct.gpu_host_temp[0];
+        gpu_psi = &ct.gpu_temp[0];
+        gpu_b = &ct.gpu_work[0];
+    }
+    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
+        rptr = &ct.gpu_host_temp[tid * sbasis];
+        gpu_psi = &ct.gpu_temp[tid * sbasis];
+        gpu_b = &ct.gpu_work[tid * sbasis];
+    }
+
+
+    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2);
+    cudaStreamCreate(&cstream);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof( REAL ), cudaMemcpyHostToDevice, cstream);
+
+    app_cil_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, 
+                          gridhx, gridhy, gridhz,
+                          ct.xside, ct.yside, ct.zside, cstream);
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof( REAL ), cudaMemcpyDeviceToHost, cstream);
+    cudaStreamDestroy(cstream);
+
+    return cc;
+#endif
+
+
 #if FAST_MEHR
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) 
         return app_cil_sixth_global (psi, b, gridhx, gridhy, gridhz);
 #endif
 
-    incx = (dimz + 4) * (dimy + 4);
-    incy = dimz + 4;
-    incxr = dimz * dimy;
-    incyr = dimz;
 
     my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL);
 
     trade_imagesx (psi, rptr, dimx, dimy, dimz, 2);
+
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
@@ -552,3 +595,4 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
     return cc;
 
 }
+

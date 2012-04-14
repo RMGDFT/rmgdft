@@ -1372,8 +1372,15 @@ typedef struct
     // GPU temporary storage space for wavefunctions
     REAL *gpu_temp;
 
+    // GPU work space. Sized as sbasis*THREADS_PER_NODE
+    REAL *gpu_work;
+
     // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
     REAL *gpu_global_matrix;
+
+    // Pinned host memory for finite difference routines. Allocation is slow so it
+    // needs to be done once at initializatio time for each thread.
+    REAL *gpu_host_temp;
 
 #endif    
 
