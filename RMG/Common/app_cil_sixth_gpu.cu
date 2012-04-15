@@ -13,38 +13,38 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
                                                 const double tcx)
 {
 
-    __shared__ double slice[PY0_GRID/2 + 4][PX0_GRID/2 + 4];
+    __shared__ double slice[PY0_GRID/2 + 4][PZ0_GRID/2 + 4];
     double accp_b2, accp_b1, accp, accp_a1, accp_a2;
     double accm_b2, accm_b1, accm, accm_a1;
     double acc, acc_a1, acc_a2;
 
-    int ix = blockIdx.x * blockDim.x + threadIdx.x + 2;
+    // iz and iy map to the x and y coordinates of the thread
+    // withing a block
+    int iz = blockIdx.x * blockDim.x + threadIdx.x + 2;
     int iy = blockIdx.y * blockDim.y + threadIdx.y + 2;
 
-    // thread x-index into shared memory tile
-    int tx = threadIdx.x + 2;
+    // thread z-index into shared memory tile
+    int tz = threadIdx.x + 2;
     // thread y-index into shared memory tile
     int ty = threadIdx.y + 2;
 
-    int iz;
+    int ix=2;
     int incx = (dimz + 4) * (dimy + 4);
     int incy = dimz + 4;
     int incxr = dimz * dimy;
     int incyr = dimz;
-    int incx_slice = (PY0_GRID/2 + 4);
-    int incy_slice = 1;
     
-    int ixs, ixms, ixps, ixmms, ixpps;
+    int ixs, ixms, ixps, ixmms;
     int iys, iyms, iyps, iymms, iypps;
+    int izs, izms, izps, izmms, izpps;
 
-    int tixs, tixms, tixps, tixmms, tixpps;
+    int tizs, tizms, tizps, tizmms, tizpps;
     int tiys, tiyms, tiyps, tiymms, tiypps;
 
     ixs = ix * incx;
     ixms = (ix - 1) * incx;
     ixps = (ix + 1) * incx;
     ixmms = (ix - 2) * incx;
-    ixpps = (ix + 2) * incx;
 
     iys = iy * incy;
     iyms = (iy - 1) * incy;
@@ -52,11 +52,17 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
     iymms = (iy - 2) * incy;
     iypps = (iy + 2) * incy;
 
-    tixs = tx;
-    tixms = (tx - 1);
-    tixps = (tx + 1);
-    tixmms = (tx - 2);
-    tixpps = (tx + 2);
+    izs = iz;
+    izms = (iz - 1);
+    izps = (iz + 1);
+    izmms = (iz - 2);
+    izpps = (iz + 2);
+
+    tizs = tz;
+    tizms = (tz - 1);
+    tizps = (tz + 1);
+    tizmms = (tz - 2);
+    tizpps = (tz + 2);
 
     tiys = ty;
     tiyms = (ty - 1);
@@ -65,126 +71,126 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
     tiypps = (ty + 2);
 
     accp_b1 =
-            fc2x * psi[ixs + iys] +
-            tcx * psi[ixms + iys] +
-            tcx * psi[ixps + iys] +
-            tcx * psi[ixs + iyps] +
-            tcx * psi[ixs + iyms];
+            fc2x * psi[izs + iys + ixmms] +
+            tcx * psi[izms + iys + ixmms] +
+            tcx * psi[izps + iys + ixmms] +
+            tcx * psi[izs + iyps + ixmms] +
+            tcx * psi[izs + iyms + ixmms];
 
     accp =
-            fc2x * psi[ixs + iys + 1] +
-            tcx * psi[ixms + iys + 1] +
-            tcx * psi[ixps + iys + 1] +
-            tcx * psi[ixs + iyps + 1] +
-            tcx * psi[ixs + iyms + 1];
-
-    accm_b1 =
-            fcx * psi[ixs + iys + 1] +
-            ecxz * psi[ixms + iys + 1] +
-            ecxz * psi[ixps + iys + 1] +
-            ecxz * psi[ixs + iyms + 1] +
-            ecxz * psi[ixs + iyps + 1] +
-            cor * psi[ixms + iyms + 1] +
-            cor * psi[ixps + iyms + 1] +
-            cor * psi[ixms + iyps + 1] +
-            cor * psi[ixps + iyps + 1] +
-            tcx * psi[ixpps + iys + 1] +
-            tcx * psi[ixmms + iys + 1] +
-            tcx * psi[ixs + iypps + 1] +
-            tcx * psi[ixs + iymms + 1];
+            fc2x * psi[izs + iys + ixms] +
+            tcx * psi[izms + iys + ixms] +
+            tcx * psi[izps + iys + ixms] +
+            tcx * psi[izs + iyps + ixms] +
+            tcx * psi[izs + iyms + ixms];
 
     accp_a1 =
-            fc2x * psi[ixs + iys + 2] +
-            tcx * psi[ixms + iys + 2] +
-            tcx * psi[ixps + iys + 2] +
-            tcx * psi[ixs + iyps + 2] +
-            tcx * psi[ixs + iyms + 2];
-
-    accm =
-            fcx * psi[ixs + iys + 2] +
-            ecxz * psi[ixms + iys + 2] +
-            ecxz * psi[ixps + iys + 2] +
-            ecxz * psi[ixs + iyms + 2] +
-            ecxz * psi[ixs + iyps + 2] +
-            cor * psi[ixms + iyms + 2] +
-            cor * psi[ixps + iyms + 2] +
-            cor * psi[ixms + iyps + 2] +
-            cor * psi[ixps + iyps + 2] +
-            tcx * psi[ixpps + iys + 2] +
-            tcx * psi[ixmms + iys + 2] +
-            tcx * psi[ixs + iypps + 2] +
-            tcx * psi[ixs + iymms + 2];
-
-    acc_a1 = cc * psi[ixs + iys + 2] +
-            fcx * psi[ixms + iys + 2] +
-            fcx * psi[ixps + iys + 2] +
-            fcx * psi[ixs + iyms + 2] +
-            fcx * psi[ixs + iyps + 2] +
-            ecxz * psi[ixms + iyms + 2] +
-            ecxz * psi[ixms + iyps + 2] +
-            ecxz * psi[ixps + iyms + 2] +
-            ecxz * psi[ixps + iyps + 2] +
-            fc2x * psi[ixmms + iys + 2] +
-            fc2x * psi[ixpps + iys + 2] +
-            fc2x * psi[ixs + iymms + 2] +
-            fc2x * psi[ixs + iypps + 2] +
-            tcx * psi[ixps + iypps + 2] +
-            tcx * psi[ixps + iymms + 2] +
-            tcx * psi[ixms + iypps + 2] +
-            tcx * psi[ixms + iymms + 2] +
-            tcx * psi[ixpps + iyps + 2] +
-            tcx * psi[ixmms + iyps + 2] +
-            tcx * psi[ixpps + iyms + 2] +
-            tcx * psi[ixmms + iyms + 2];
+            fc2x * psi[izs + iys + ixs] +
+            tcx * psi[izms + iys + ixs] +
+            tcx * psi[izps + iys + ixs] +
+            tcx * psi[izs + iyps + ixs] +
+            tcx * psi[izs + iyms + ixs];
 
     accp_a2 =
-            fc2x * psi[ixs + iys + 3] +
-            tcx * psi[ixms + iys + 3] +
-            tcx * psi[ixps + iys + 3] +
-            tcx * psi[ixs + iyps + 3] +
-            tcx * psi[ixs + iyms + 3];
+            fc2x * psi[izs + iys + ixps] +
+            tcx * psi[izms + iys + ixps] +
+            tcx * psi[izps + iys + ixps] +
+            tcx * psi[izs + iyps + ixps] +
+            tcx * psi[izs + iyms + ixps];
+
+    accm_b1 =
+            fcx * psi[izs + iys + ixms] +
+            ecxz * psi[izms + iys + ixms] +
+            ecxz * psi[izps + iys + ixms] +
+            ecxz * psi[izs + iyms + ixms] +
+            ecxz * psi[izs + iyps + ixms] +
+            cor * psi[izms + iyms + ixms] +
+            cor * psi[izps + iyms + ixms] +
+            cor * psi[izms + iyps + ixms] +
+            cor * psi[izps + iyps + ixms] +
+            tcx * psi[izpps + iys + ixms] +
+            tcx * psi[izmms + iys + ixms] +
+            tcx * psi[izs + iypps + ixms] +
+            tcx * psi[izs + iymms + ixms];
+
+    accm =
+            fcx * psi[izs + iys + ixs] +
+            ecxz * psi[izms + iys + ixs] +
+            ecxz * psi[izps + iys + ixs] +
+            ecxz * psi[izs + iyms + ixs] +
+            ecxz * psi[izs + iyps + ixs] +
+            cor * psi[izms + iyms + ixs] +
+            cor * psi[izps + iyms + ixs] +
+            cor * psi[izms + iyps + ixs] +
+            cor * psi[izps + iyps + ixs] +
+            tcx * psi[izpps + iys + ixs] +
+            tcx * psi[izmms + iys + ixs] +
+            tcx * psi[izs + iypps + ixs] +
+            tcx * psi[izs + iymms + ixs];
 
     accm_a1 =
-            fcx * psi[ixs + iys + 3] +
-            ecxz * psi[ixms + iys + 3] +
-            ecxz * psi[ixps + iys + 3] +
-            ecxz * psi[ixs + iyms + 3] +
-            ecxz * psi[ixs + iyps + 3] +
-            cor * psi[ixms + iyms + 3] +
-            cor * psi[ixps + iyms + 3] +
-            cor * psi[ixms + iyps + 3] +
-            cor * psi[ixps + iyps + 3] +
-            tcx * psi[ixpps + iys + 3] +
-            tcx * psi[ixmms + iys + 3] +
-            tcx * psi[ixs + iypps + 3] +
-            tcx * psi[ixs + iymms + 3];
+            fcx * psi[izs + iys + ixps] +
+            ecxz * psi[izms + iys + ixps] +
+            ecxz * psi[izps + iys + ixps] +
+            ecxz * psi[izs + iyms + ixps] +
+            ecxz * psi[izs + iyps + ixps] +
+            cor * psi[izms + iyms + ixps] +
+            cor * psi[izps + iyms + ixps] +
+            cor * psi[izms + iyps + ixps] +
+            cor * psi[izps + iyps + ixps] +
+            tcx * psi[izpps + iys + ixps] +
+            tcx * psi[izmms + iys + ixps] +
+            tcx * psi[izs + iypps + ixps] +
+            tcx * psi[izs + iymms + ixps];
 
-    acc_a2 = cc * psi[ixs + iys + 3] +
-            fcx * psi[ixms + iys + 3] + 
-            fcx * psi[ixps + iys + 3] + 
-            fcx * psi[ixs + iyms + 3] + 
-            fcx * psi[ixs + iyps + 3] + 
-            ecxz * psi[ixms + iyms + 3] + 
-            ecxz * psi[ixms + iyps + 3] + 
-            ecxz * psi[ixps + iyms + 3] + 
-            ecxz * psi[ixps + iyps + 3] + 
-            fc2x * psi[ixmms + iys + 3] + 
-            fc2x * psi[ixpps + iys + 3] + 
-            fc2x * psi[ixs + iymms + 3] + 
-            fc2x * psi[ixs + iypps + 3] + 
-            tcx * psi[ixps + iypps + 3] + 
-            tcx * psi[ixps + iymms + 3] + 
-            tcx * psi[ixms + iypps + 3] + 
-            tcx * psi[ixms + iymms + 3] + 
-            tcx * psi[ixpps + iyps + 3] + 
-            tcx * psi[ixmms + iyps + 3] + 
-            tcx * psi[ixpps + iyms + 3] + 
-            tcx * psi[ixmms + iyms + 3];
+    acc_a1 = cc * psi[izs + iys + ixs] +
+            fcx * psi[izms + iys + ixs] +
+            fcx * psi[izps + iys + ixs] +
+            fcx * psi[izs + iyms + ixs] +
+            fcx * psi[izs + iyps + ixs] +
+            ecxz * psi[izms + iyms + ixs] +
+            ecxz * psi[izms + iyps + ixs] +
+            ecxz * psi[izps + iyms + ixs] +
+            ecxz * psi[izps + iyps + ixs] +
+            fc2x * psi[izmms + iys + ixs] +
+            fc2x * psi[izpps + iys + ixs] +
+            fc2x * psi[izs + iymms + ixs] +
+            fc2x * psi[izs + iypps + ixs] +
+            tcx * psi[izps + iypps + ixs] +
+            tcx * psi[izps + iymms + ixs] +
+            tcx * psi[izms + iypps + ixs] +
+            tcx * psi[izms + iymms + ixs] +
+            tcx * psi[izpps + iyps + ixs] +
+            tcx * psi[izmms + iyps + ixs] +
+            tcx * psi[izpps + iyms + ixs] +
+            tcx * psi[izmms + iyms + ixs];
+
+    acc_a2 = cc * psi[izs + iys + ixps] +
+            fcx * psi[izms + iys + ixps] + 
+            fcx * psi[izps + iys + ixps] + 
+            fcx * psi[izs + iyms + ixps] + 
+            fcx * psi[izs + iyps + ixps] + 
+            ecxz * psi[izms + iyms + ixps] + 
+            ecxz * psi[izms + iyps + ixps] + 
+            ecxz * psi[izps + iyms + ixps] + 
+            ecxz * psi[izps + iyps + ixps] + 
+            fc2x * psi[izmms + iys + ixps] + 
+            fc2x * psi[izpps + iys + ixps] + 
+            fc2x * psi[izs + iymms + ixps] + 
+            fc2x * psi[izs + iypps + ixps] + 
+            tcx * psi[izps + iypps + ixps] + 
+            tcx * psi[izps + iymms + ixps] + 
+            tcx * psi[izms + iypps + ixps] + 
+            tcx * psi[izms + iymms + ixps] + 
+            tcx * psi[izpps + iyps + ixps] + 
+            tcx * psi[izmms + iyps + ixps] + 
+            tcx * psi[izpps + iyms + ixps] + 
+            tcx * psi[izmms + iyms + ixps];
 
 
-    // Get acc for initial z
+    // Get acc for initial x
 
-    for (iz = 2; iz < dimz + 2; iz++)
+    for (ix = 2; ix < dimx + 2; ix++)
     {
 
         // Advance the slice partial sums
@@ -204,108 +210,108 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
         // Update the data slice in shared memory
         if(threadIdx.x < 2) {
             slice[ty][threadIdx.x] = 
-                            psi[(threadIdx.x + blockIdx.x*blockDim.x)*incx + iy*incy + iz + 2];
+                            psi[(ix + 2)*incx + iy*incy + (threadIdx.x + blockIdx.x*blockDim.x)];
             slice[ty][threadIdx.x + blockDim.x + 2] = 
-                            psi[(threadIdx.x + blockDim.x + 2 + blockIdx.x*blockDim.x)*incx + iy*incy + iz + 2];
+                            psi[(ix + 2)*incx + iy*incy + (threadIdx.x + blockDim.x + 2 + blockIdx.x*blockDim.x)];
         }
         if(threadIdx.y < 2) {
-            slice[threadIdx.y][tx] = 
-                            psi[ix*incx + (threadIdx.y + blockIdx.y*blockDim.y)*incy + iz + 2];
-            slice[threadIdx.y + blockDim.y + 2][tx] = 
-                            psi[ix*incx + (threadIdx.y + blockDim.y + 2 + blockIdx.y*blockDim.y)*incy + iz + 2];
+            slice[threadIdx.y][tz] = 
+                            psi[(ix + 2)*incx + (threadIdx.y + blockIdx.y*blockDim.y)*incy + iz];
+            slice[threadIdx.y + blockDim.y + 2][tz] = 
+                            psi[(ix + 2)*incx + (threadIdx.y + blockDim.y + 2 + blockIdx.y*blockDim.y)*incy + iz];
         }
 
         if((threadIdx.x == 0) && (threadIdx.y == 0)) {
             slice[0][0] =
-                            psi[(blockIdx.x*blockDim.x)*incx + (blockIdx.y*blockDim.y)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x];
             slice[1][0] =
-                            psi[(blockIdx.x*blockDim.x)*incx + (blockIdx.y*blockDim.y + 1)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x];
             slice[0][1] = 
-                            psi[(blockIdx.x*blockDim.x + 1)*incx + (blockIdx.y*blockDim.y)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + 1];
             slice[1][1] =
-                            psi[(blockIdx.x*blockDim.x + 1)*incx + (blockIdx.y*blockDim.y + 1)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x + 1];
         }
         if((threadIdx.x == (blockDim.x-1)) && (threadIdx.y == 0)) {
             slice[0][blockDim.x + 2] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 2)*incx + (blockIdx.y*blockDim.y)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
             slice[1][blockDim.x + 3] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 3)*incx + (blockIdx.y*blockDim.y + 1)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
             slice[1][blockDim.x + 2] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
             slice[0][blockDim.x + 3] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 3)*incx + (blockIdx.y*blockDim.y)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
         }
 
         if((threadIdx.x == 0) && (threadIdx.y == (blockDim.y-1))) {
             slice[blockDim.y + 2][0] =
-                            psi[(blockIdx.x*blockDim.x)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x];
             slice[blockDim.y + 3][0] =
-                            psi[(blockIdx.x*blockDim.x)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x];
             slice[blockDim.y + 2][1] =
-                            psi[(blockIdx.x*blockDim.x + 1)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x + 1];
             slice[blockDim.y + 3][1] =
-                            psi[(blockIdx.x*blockDim.x + 1)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x + 1];
         }
 
         if((threadIdx.x == (blockDim.x-1)) && (threadIdx.y == (blockDim.y-1))) {
             slice[blockDim.y + 2][blockDim.x + 2] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
             slice[blockDim.y + 2][blockDim.x + 3] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 3)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
             slice[blockDim.y + 3][blockDim.x + 2] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
             slice[blockDim.y + 3][blockDim.x + 3] = 
-                            psi[(blockIdx.x*blockDim.x + blockDim.x + 3)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + iz + 2];
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
         }
 
-        // Put the xy tile for the leading z (+2) index into shared memory
-        slice[ty][tx] = psi[ix*incx + iy*incy + iz + 2];
+        // Put the xy tile for the leading x (+2) index into shared memory
+        slice[ty][tz] = psi[(ix + 2)*incx + iy*incy + iz];
 
         __syncthreads();
 
-        acc_a2 = cc * slice[tiys][tixs] +
-            fcx *  (slice[tiys][tixms] + 
-                    slice[tiys][tixps] +
-                    slice[tiyms][tixs] + 
-                    slice[tiyps][tixs]) +
-            ecxz * (slice[tiyms][tixms] + 
-                    slice[tiyps][tixms] +
-                    slice[tiyms][tixps] + 
-                    slice[tiyps][tixps]) + 
-            fc2x * (slice[tiys][tixmms] + 
-                    slice[tiys][tixpps] +
-                    slice[tiymms][tixs] + 
-                    slice[tiypps][tixs]) +
-            tcx *  (slice[tiypps][tixps] + 
-                    slice[tiymms][tixps] +
-                    slice[tiypps][tixms] + 
-                    slice[tiymms][tixms] +
-                    slice[tiyps][tixpps] + 
-                    slice[tiyps][tixmms] +
-                    slice[tiyms][tixpps] + 
-                    slice[tiyms][tixmms]);
+        acc_a2 = cc * slice[tiys][tizs] +
+            fcx *  (slice[tiys][tizms] + 
+                    slice[tiys][tizps] +
+                    slice[tiyms][tizs] + 
+                    slice[tiyps][tizs]) +
+            ecxz * (slice[tiyms][tizms] + 
+                    slice[tiyps][tizms] +
+                    slice[tiyms][tizps] + 
+                    slice[tiyps][tizps]) + 
+            fc2x * (slice[tiys][tizmms] + 
+                    slice[tiys][tizpps] +
+                    slice[tiymms][tizs] + 
+                    slice[tiypps][tizs]) +
+            tcx *  (slice[tiypps][tizps] + 
+                    slice[tiymms][tizps] +
+                    slice[tiypps][tizms] + 
+                    slice[tiymms][tizms] +
+                    slice[tiyps][tizpps] + 
+                    slice[tiyps][tizmms] +
+                    slice[tiyms][tizpps] + 
+                    slice[tiyms][tizmms]);
 
         accm_a1 =
-            fcx * slice[tiys][tixs] +
-            ecxz * (slice[tiys][tixms] + 
-                    slice[tiys][tixps] +
-                    slice[tiyms][tixs] + 
-                    slice[tiyps][tixs]) +
-            cor *  (slice[tiyms][tixms] + 
-                    slice[tiyms][tixps] +
-                    slice[tiyps][tixms] + 
-                    slice[tiyps][tixps]) +
-            tcx *  (slice[tiys][tixpps] + 
-                    slice[tiys][tixmms] +
-                    slice[tiypps][tixs] + 
-                    slice[tiymms][tixs]);
+            fcx * slice[tiys][tizs] +
+            ecxz * (slice[tiys][tizms] + 
+                    slice[tiys][tizps] +
+                    slice[tiyms][tizs] + 
+                    slice[tiyps][tizs]) +
+            cor *  (slice[tiyms][tizms] + 
+                    slice[tiyms][tizps] +
+                    slice[tiyps][tizms] + 
+                    slice[tiyps][tizps]) +
+            tcx *  (slice[tiys][tizpps] + 
+                    slice[tiys][tizmms] +
+                    slice[tiypps][tizs] + 
+                    slice[tiymms][tizs]);
 
         accp_a2 = 
-            fc2x * slice[tiys][tixs] +
-            tcx *  (slice[tiys][tixms] + 
-                    slice[tiys][tixps] + 
-                    slice[tiyps][tixs] + 
-                    slice[tiyms][tixs]);
+            fc2x * slice[tiys][tizs] +
+            tcx *  (slice[tiys][tizms] + 
+                    slice[tiys][tizps] + 
+                    slice[tiyps][tizs] + 
+                    slice[tiyms][tizs]);
 
         b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = acc +
 
@@ -321,6 +327,7 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
 }
 
 
+// This is the C wrapper function that calls the cuda kernel above
 extern "C" void app_cil_sixth_gpu(const double *psi, 
                                                 double *b, 
                                                 const int dimx,
@@ -338,8 +345,8 @@ extern "C" void app_cil_sixth_gpu(const double *psi,
   dim3 Grid, Block;
   Grid.x = 2;
   Grid.y = 2;
-  Block.x = dimx / 2;
-  Block.y = dimy / 2;
+  Block.x = dimz/2;
+  Block.y = dimy/2;
   double ihx = 1.0 / (gridhx * gridhx * xside * xside);
   double ihy = 1.0 / (gridhy * gridhy * yside * yside);
   double ihz = 1.0 / (gridhz * gridhz * zside * zside);

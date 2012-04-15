@@ -59,8 +59,8 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
     }
 
 
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2);
     cudaStreamCreate(&cstream);
+    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2);
     cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof( REAL ), cudaMemcpyHostToDevice, cstream);
 
     app_cil_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, 

@@ -183,6 +183,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /* B operating on 2*V*psi stored in work1 */
         app_cir_sixth (sg_twovpsi, work1, dimx, dimy, dimz);
 
+#if GPU_ENABLED
+        cudaDeviceSynchronize();
+#endif
+
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
