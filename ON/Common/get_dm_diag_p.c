@@ -68,7 +68,7 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
 
 
     mxllda = MXLLDA;
-    mxllda2 = MXLLDA * MXLLDA;
+    mxllda2 = MXLLDA * MXLCOL;
     npcol = pct.npcol;
     nprow = pct.nprow;
 
