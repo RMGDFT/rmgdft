@@ -37,6 +37,7 @@
  *   post_cyc: number of post-smoothing
  *   mu_cyc:   number of iteration on the same level
  *   step:  time step
+ *   k: When zero the call to solv_pois solves poissons equation. When non-zero helmholtz type
  * OUTPUT
  *   v_mat[(xdim+2)*(dimy+2)*(dimz+2)]: array to contain the solution
  * PARENTS
@@ -60,7 +61,7 @@ void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work,
                  int dimx, int dimy, int dimz,
                  REAL gridhx, REAL gridhy, REAL gridhz,
                  int level, int *nb_ids, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, REAL step)
+                 int *post_cyc, int mu_cyc, REAL step, REAL k)
 {
     int i;
     int cycl;
@@ -103,7 +104,7 @@ void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work,
     {
 
         /* solve once */
-        solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+        solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
 
         /* trade boundary info */
@@ -149,7 +150,7 @@ void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work,
         /* call mgrid solver on new level */
         mgrid_solv (newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                     gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
-                    max_levels, pre_cyc, post_cyc, 1, step);
+                    max_levels, pre_cyc, post_cyc, 1, step, k);
 
 
         mg_prolong (resid, newv, dimx, dimy, dimz);
@@ -165,7 +166,7 @@ void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work,
         {
 
             /* solve once */
-            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
             /* trade boundary info */
             trade_images (v_mat, dimx, dimy, dimz, nb_ids);

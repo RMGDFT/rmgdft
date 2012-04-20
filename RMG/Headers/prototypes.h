@@ -71,7 +71,7 @@ void eval_residual (REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz, REAL *res);
 void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
                 int dimx, int dimy, int dimz, REAL gridhx,
-                REAL gridhy, REAL gridhz, REAL step);
+                REAL gridhy, REAL gridhz, REAL step, REAL k);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix,
            int num_st, int occ_flag);
 
@@ -219,7 +219,7 @@ void cforce (P0_GRID *rho, P0_GRID *vh);
 void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
                  int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy,
                  REAL gridhz, int level, int *nb_ids, int max_levels,
-                 int *pre_cyc, int *post_cyc, int mu_cyc, REAL step);
+                 int *pre_cyc, int *post_cyc, int mu_cyc, REAL step, REAL k);
 void rmg_timings (int what, REAL time);
 REAL minimage (ION *ip1, ION *ip2, REAL *xtal_r);
 REAL my_crtc (void);

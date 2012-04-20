@@ -63,12 +63,13 @@
 #endif
 
 
+extern STATE *states;
 
 #if GAMMA_PT
 void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 {
 
-    int idx, cycles;
+    int idx, cycles, ntid;
     int nits, pbasis, sbasis;
     REAL eig, diag, t1, t2, t3, t4;
     REAL *work1, *work2, *nv, *ns, *res2;
@@ -80,7 +81,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     REAL hxgrid, hygrid, hzgrid, sb_step;
     REAL tarr[8];
     REAL time1;
-
 
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
@@ -98,7 +98,18 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     /* Grab some memory */
     my_malloc (sg_psi, sbasis, REAL);
     my_malloc (res, sbasis, REAL);
+#if GPU_ENABLED
+    ntid = get_thread_tid();
+    if(ntid == -1) {         // Normal codepath with no threads
+        work2 = &ct.gpu_host_temp2[0];
+    }
+    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
+        work2 = &ct.gpu_host_temp2[ntid * 4 * sbasis];
+    }
+
+#else
     my_malloc (work2, 4 * sbasis, REAL);
+#endif
     my_malloc (sg_twovpsi, sbasis, REAL);
     my_malloc (work1, sbasis, REAL);
     my_malloc (ns, sbasis, REAL);
@@ -223,14 +234,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
             if (ct.diag == 1)
-	    {
-		if (ct.scf_steps == 0)
-		{
-                	eig = tarr[1] / (TWO * tarr[0]);
-                	sp->eig[0] = eig;
-		}
+            {
+                if (ct.scf_steps == 0)
+                {
+                    eig = tarr[1] / (TWO * tarr[0]);
+                    sp->eig[0] = eig;
+                }
 		else
-                	eig = sp->eig[0];
+                    eig = sp->eig[0];
 	    }
             else
             {
@@ -280,14 +291,15 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
 
-
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
+
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsi, work1, work2,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step);
+                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, 0.0);
+
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif
@@ -350,7 +362,9 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_free (ns);
     my_free (work1);
     my_free (sg_twovpsi);
+#if !GPU_ENABLED
     my_free (work2);
+#endif
     my_free (res);
     my_free (sg_psi);
 

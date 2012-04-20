@@ -147,7 +147,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
-                            poi_post, 1, ct.poi_parm.sb_step);
+                            poi_post, 1, ct.poi_parm.sb_step, 0);
 
 
                 /* Transfer solution back to mgresarr array */

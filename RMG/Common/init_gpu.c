@@ -92,7 +92,11 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp, THREADS_PER_NODE * (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, THREADS_PER_NODE * (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) * sizeof(REAL) )){
+      fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+      exit(-1);
+  }
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, 4 * THREADS_PER_NODE * (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
@@ -116,7 +120,8 @@ void finalize_gpu (void)
     cudaFree(ct.gpu_global_matrix);
     cudaFree(ct.gpu_temp);
     cudaFree(ct.gpu_states);
-    cudaFreeHost(ct.gpu_host_temp);
+    cudaFreeHost(ct.gpu_host_temp2);
+    cudaFreeHost(ct.gpu_host_temp1);
 
 //    cuCtxDetach( ct.cu_context ); 
  //   cublasShutdown();

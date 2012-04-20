@@ -31,6 +31,7 @@
  *   gridhy:  grid spacing in y plane
  *   gridhz:  grid spacing in z plane
  *   step: iteration step
+ *   k: converts equation from poisson type to helmholtz
  * OUTPUT
  *   vmat is updated
  * PARENTS
@@ -44,7 +45,7 @@
 #include "main.h"
 
 void solv_pois (REAL * vmat, REAL * fmat, REAL * work,
-                int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, REAL step)
+                int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, REAL step, REAL k)
 {
     int size, idx;
     REAL scale;
@@ -57,12 +58,28 @@ void solv_pois (REAL * vmat, REAL * fmat, REAL * work,
     diag = -app_del2c (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     scale = step / diag;
-    for (idx = 0; idx < size; idx++)
-    {
+    
+    // Non-zero k effectively means we are solving the Helmholtz rather than Poissons equation
+    if(k != 0.0) {
 
-        vmat[idx] += scale * (work[idx] - fmat[idx]);
+        for (idx = 0; idx < size; idx++)
+        {
 
-    }                           /* end for */
+            vmat[idx] += scale * (work[idx] - k*vmat[idx] - fmat[idx]);
+
+        }                           /* end for */
+
+     }
+     else {
+
+        for (idx = 0; idx < size; idx++)
+        {
+
+            vmat[idx] += scale * (work[idx] - fmat[idx]);
+
+        }                           /* end for */
+
+     }
 
 }                               /* end solv_pois */
 
