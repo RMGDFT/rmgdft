@@ -150,7 +150,7 @@ void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work,
         /* call mgrid solver on new level */
         mgrid_solv (newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                     gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
-                    max_levels, pre_cyc, post_cyc, 1, step, k);
+                    max_levels, pre_cyc, post_cyc, mu_cyc, step, k);
 
 
         mg_prolong (resid, newv, dimx, dimy, dimz);

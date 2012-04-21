@@ -63,7 +63,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
     time1 = my_crtc ();
 
     /*Taken from ON code, seems to help a lot with convergence*/
-    poi_pre[maxlevel] = 50;
+    poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
 
     nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
@@ -147,7 +147,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
-                            poi_post, 1, ct.poi_parm.sb_step, 0);
+                            poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, 0);
 
 
                 /* Transfer solution back to mgresarr array */
@@ -209,7 +209,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
         }                   /* end for */
         residual = sqrt (real_sum_all(residual, pct.grid_comm) / (REAL) pbasis);
        
-	// printf("\n get_vh sweep %d, rms residual is %10.5e", its, residual);
+	printf("\n get_vh sweep %d, rms residual is %10.5e", its, residual);
 
 	    
         its ++;
@@ -217,7 +217,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
     printf ("\n");
     progress_tag ();
-    printf ("Executed %d sweeps, residual is %15.8e\n", its, residual);
+    printf ("Executed %3d sweeps, residual is %15.8e, rms_target is %15.8e, rms is %15.8e\n", its, residual, rms_target, ct.rms);
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions

@@ -181,7 +181,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 
     /* Some multigrid parameters */
-    ct.poi_parm.sb_step = 1.0;
+    // ct.poi_parm.sb_step = 1.0;
     ct.eig_parm.sb_step = 1.0;
 
 #if MPI

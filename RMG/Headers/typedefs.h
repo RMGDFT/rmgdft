@@ -786,6 +786,8 @@ typedef struct
 
     // Number of v-cycles to use
     int vcycles;
+    int mucycles;
+    int coarsest_steps;
 
 } MG_PARM;
 
