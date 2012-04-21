@@ -99,7 +99,11 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (sg_psi, sbasis, REAL);
     my_malloc (res, sbasis, REAL);
 #if GPU_ENABLED
+#if HYBRID_MODEL
     ntid = get_thread_tid();
+#else
+    ntid = 0;
+#endif
     if(ntid == -1) {         // Normal codepath with no threads
         work2 = &ct.gpu_host_temp2[0];
     }
