@@ -46,7 +46,11 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 
     // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+#if HYBRID_MODEL
     tid = get_thread_tid();
+#else
+    tid = 0;
+#endif
     if(tid == -1) {         // Normal codepath with no threads
         rptr = &ct.gpu_host_temp1[0];
         gpu_psi = &ct.gpu_temp[0];

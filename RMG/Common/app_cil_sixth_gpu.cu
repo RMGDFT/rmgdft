@@ -27,14 +27,14 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
     int tz = threadIdx.x + 2;
     // thread y-index into shared memory tile
     int ty = threadIdx.y + 2;
+    int ix=0;
 
-    int ix=2;
     int incx = (dimz + 4) * (dimy + 4);
     int incy = dimz + 4;
     int incxr = dimz * dimy;
     int incyr = dimz;
     
-    int ixs, ixms, ixps, ixmms;
+    int ixs, ixps;
     int iys, iyms, iyps, iymms, iypps;
     int izs, izms, izps, izmms, izpps;
 
@@ -42,9 +42,7 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
     int tiys, tiyms, tiyps, tiymms, tiypps;
 
     ixs = ix * incx;
-    ixms = (ix - 1) * incx;
     ixps = (ix + 1) * incx;
-    ixmms = (ix - 2) * incx;
 
     iys = iy * incy;
     iyms = (iy - 1) * incy;
@@ -70,19 +68,7 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
     tiymms = (ty - 2);
     tiypps = (ty + 2);
 
-    accp_b1 =
-            fc2x * psi[izs + iys + ixmms] +
-            tcx * psi[izms + iys + ixmms] +
-            tcx * psi[izps + iys + ixmms] +
-            tcx * psi[izs + iyps + ixmms] +
-            tcx * psi[izs + iyms + ixmms];
-
-    accp =
-            fc2x * psi[izs + iys + ixms] +
-            tcx * psi[izms + iys + ixms] +
-            tcx * psi[izps + iys + ixms] +
-            tcx * psi[izs + iyps + ixms] +
-            tcx * psi[izs + iyms + ixms];
+    accp_b1 = 0.0;
 
     accp_a1 =
             fc2x * psi[izs + iys + ixs] +
@@ -91,27 +77,6 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
             tcx * psi[izs + iyps + ixs] +
             tcx * psi[izs + iyms + ixs];
 
-    accp_a2 =
-            fc2x * psi[izs + iys + ixps] +
-            tcx * psi[izms + iys + ixps] +
-            tcx * psi[izps + iys + ixps] +
-            tcx * psi[izs + iyps + ixps] +
-            tcx * psi[izs + iyms + ixps];
-
-    accm_b1 =
-            fcx * psi[izs + iys + ixms] +
-            ecxz * psi[izms + iys + ixms] +
-            ecxz * psi[izps + iys + ixms] +
-            ecxz * psi[izs + iyms + ixms] +
-            ecxz * psi[izs + iyps + ixms] +
-            cor * psi[izms + iyms + ixms] +
-            cor * psi[izps + iyms + ixms] +
-            cor * psi[izms + iyps + ixms] +
-            cor * psi[izps + iyps + ixms] +
-            tcx * psi[izpps + iys + ixms] +
-            tcx * psi[izmms + iys + ixms] +
-            tcx * psi[izs + iypps + ixms] +
-            tcx * psi[izs + iymms + ixms];
 
     accm =
             fcx * psi[izs + iys + ixs] +
@@ -128,20 +93,6 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
             tcx * psi[izs + iypps + ixs] +
             tcx * psi[izs + iymms + ixs];
 
-    accm_a1 =
-            fcx * psi[izs + iys + ixps] +
-            ecxz * psi[izms + iys + ixps] +
-            ecxz * psi[izps + iys + ixps] +
-            ecxz * psi[izs + iyms + ixps] +
-            ecxz * psi[izs + iyps + ixps] +
-            cor * psi[izms + iyms + ixps] +
-            cor * psi[izps + iyms + ixps] +
-            cor * psi[izms + iyps + ixps] +
-            cor * psi[izps + iyps + ixps] +
-            tcx * psi[izpps + iys + ixps] +
-            tcx * psi[izmms + iys + ixps] +
-            tcx * psi[izs + iypps + ixps] +
-            tcx * psi[izs + iymms + ixps];
 
     acc_a1 = cc * psi[izs + iys + ixs] +
             fcx * psi[izms + iys + ixs] +
@@ -164,6 +115,28 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
             tcx * psi[izmms + iyps + ixs] +
             tcx * psi[izpps + iyms + ixs] +
             tcx * psi[izmms + iyms + ixs];
+
+    accp_a2 =
+            fc2x * psi[izs + iys + ixps] +
+            tcx * psi[izms + iys + ixps] +
+            tcx * psi[izps + iys + ixps] +
+            tcx * psi[izs + iyps + ixps] +
+            tcx * psi[izs + iyms + ixps];
+
+    accm_a1 =
+            fcx * psi[izs + iys + ixps] +
+            ecxz * psi[izms + iys + ixps] +
+            ecxz * psi[izps + iys + ixps] +
+            ecxz * psi[izs + iyms + ixps] +
+            ecxz * psi[izs + iyps + ixps] +
+            cor * psi[izms + iyms + ixps] +
+            cor * psi[izps + iyms + ixps] +
+            cor * psi[izms + iyps + ixps] +
+            cor * psi[izps + iyps + ixps] +
+            tcx * psi[izpps + iys + ixps] +
+            tcx * psi[izmms + iys + ixps] +
+            tcx * psi[izs + iypps + ixps] +
+            tcx * psi[izs + iymms + ixps];
 
     acc_a2 = cc * psi[izs + iys + ixps] +
             fcx * psi[izms + iys + ixps] + 
@@ -188,9 +161,7 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
             tcx * psi[izmms + iyms + ixps];
 
 
-    // Get acc for initial x
-
-    for (ix = 2; ix < dimx + 2; ix++)
+    for (ix = 0; ix < dimx + 2; ix++)
     {
 
         // Advance the slice partial sums
@@ -313,13 +284,16 @@ __global__ void app_cil_sixth_cuda_kernel(const double *psi,
                     slice[tiyps][tizs] + 
                     slice[tiyms][tizs]);
 
-        b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = acc +
+        // Write back the results
+        if(ix >= 2) {
+            b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = acc +
 
                                                             accm_b2 + 
                                                             accm + 
 
                                                             accp_b2 + 
                                                             accp_a2;
+        }
         
     }                   /* end for */
 
