@@ -785,7 +785,6 @@ typedef struct
     int levels;
 
     // Number of v-cycles to use
-    int vcycles;
     int mucycles;
     int coarsest_steps;
 

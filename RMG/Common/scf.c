@@ -167,7 +167,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     time1 = my_crtc ();
 #if HYBRID_MODEL
-    for(vcycle = 0;vcycle < ct.eig_parm.vcycles;vcycle++) {
+    for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
 
         enter_threaded_region();
@@ -200,7 +200,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 #else
     /* Update the wavefunctions */
-    for(vcycle = 0;vcycle < ct.eig_parm.vcycles;vcycle++) {
+    for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
         for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++) {
             mg_eig_state (&states[st1], 0, vtot_psi);

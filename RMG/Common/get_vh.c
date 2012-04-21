@@ -209,7 +209,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
         }                   /* end for */
         residual = sqrt (real_sum_all(residual, pct.grid_comm) / (REAL) pbasis);
        
-	printf("\n get_vh sweep %d, rms residual is %10.5e", its, residual);
+	// printf("\n get_vh sweep %d, rms residual is %10.5e", its, residual);
 
 	    
         its ++;

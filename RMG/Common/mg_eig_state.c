@@ -126,7 +126,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     time1 = my_crtc ();
 #endif
 
-    if(ct.eig_parm.vcycles > 1)
+    if(ct.eig_parm.mucycles > 1)
         mix_betaxpsi1(sp);
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
