@@ -551,7 +551,7 @@ void read_control (void)
     get_data ("kohn_sham_pre_smoothing", &ct.eig_parm.gl_pre, INT, "2");
     get_data ("kohn_sham_post_smoothing", &ct.eig_parm.gl_pst, INT, "1");
     get_data ("kohn_sham_time_step", &ct.eig_parm.gl_step, DBL, "0.3");
-    get_data ("kohn_sham_vcycles", &ct.eig_parm.mucycles, INT, "1");
+    get_data ("kohn_sham_mucycles", &ct.eig_parm.mucycles, INT, "1");
 
     /* Poisson smoothings pre, post, step */
     get_data ("poisson_pre_smoothing", &ct.poi_parm.gl_pre, INT, "3");

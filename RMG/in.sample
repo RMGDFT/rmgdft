@@ -448,9 +448,9 @@ poisson_finest_time_step="0.5"
 poisson_coarse_time_step="0.5"
 poisson_coarsest_steps="50"
 
-# Number of V-cycles for multigrid  Kohn-Sham and Poisson solvers
+# Number of Mu-cycles for multigrid  Kohn-Sham and Poisson solvers
 # Default is 1 (V-cycle), 2 gives a W cycle
-kohn_sham_vcycles="1"
+kohn_sham_mucycles="1"
 poisson_mucycles="1"
 
 # Multigrid levels for solving K-S and Poisson equations

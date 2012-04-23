@@ -784,9 +784,10 @@ typedef struct
     /* lowest MG level */
     int levels;
 
-    // Number of v-cycles to use
+    /* Number of Mu-cycles to use */
     int mucycles;
-    int vcycles;
+
+    /* Number of Smoother iterations on the coarsest level */
     int coarsest_steps;
 
 } MG_PARM;
