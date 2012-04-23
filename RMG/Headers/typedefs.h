@@ -786,6 +786,7 @@ typedef struct
 
     // Number of v-cycles to use
     int mucycles;
+    int vcycles;
     int coarsest_steps;
 
 } MG_PARM;
@@ -1374,7 +1375,16 @@ typedef struct
     REAL *gpu_temp;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    REAL *gpu_work;
+    REAL *gpu_work1;
+
+    // GPU work space. Sized as sbasis*THREADS_PER_NODE
+    REAL *gpu_work2;
+
+    // GPU work space. Sized as sbasis*THREADS_PER_NODE
+    REAL *gpu_work3;
+
+    // GPU work space. Sized as sbasis*THREADS_PER_NODE
+    REAL *gpu_work4;
 
     // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
     REAL *gpu_global_matrix;
@@ -1383,6 +1393,8 @@ typedef struct
     // needs to be done once at initializatio time for each thread.
     REAL *gpu_host_temp1;
     REAL *gpu_host_temp2;
+    REAL *gpu_host_temp3;
+    REAL *gpu_host_temp4;
 
 #endif    
 

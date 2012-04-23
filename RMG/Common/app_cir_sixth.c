@@ -29,6 +29,43 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     int incyr, incxr;
     REAL *rptr;
     REAL c000, c100, c110, c200;
+#if 0
+#if GPU_ENABLED
+    REAL *gpu_psi, *gpu_b;
+    cudaStream_t cstream;
+    int ione = 1, tid;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+#else
+    tid = 0;
+#endif
+    if(tid == -1) {         // Normal codepath with no threads
+        rptr = &ct.gpu_host_temp4[0];
+        gpu_psi = &ct.gpu_work3[0];
+        gpu_b = &ct.gpu_work4[0];
+    }
+    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
+        rptr = &ct.gpu_host_temp4[tid * sbasis];
+        gpu_psi = &ct.gpu_work3[tid * sbasis];
+        gpu_b = &ct.gpu_work4[tid * sbasis];
+    }
+
+
+    cudaStreamCreate(&cstream);
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 2);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof( REAL ), cudaMemcpyHostToDevice, cstream);
+
+    app_cir_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, cstream);
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof( REAL ), cudaMemcpyDeviceToHost, cstream);
+    cudaStreamDestroy(cstream);
+
+    return;
+#endif
+#endif
 
 #if FAST_MEHR
     numgrid = dimx * dimy * dimz;

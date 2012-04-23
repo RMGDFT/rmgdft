@@ -503,4 +503,11 @@ void app_cil_sixth_gpu(const double *psi,
                                                 const double yside,
                                                 const double zside,
                                                 cudaStream_t cstream);
+void app_cir_sixth_gpu(const double *psi,
+                                                double *b,
+                                                const int dimx,
+                                                const int dimy,
+                                                const int dimz,
+                                                cudaStream_t cstream);
+
 #endif

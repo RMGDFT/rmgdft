@@ -28,6 +28,15 @@ void QMD_saxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy)
 {
 //    saxpy (&n, &alpha, x, &incx, y, &incy);
     int i, iy=0, ix=0;
+
+    if((incx == 1) && (incy == 1)) {
+
+       for(i = 0;i < n;i++) {
+           y[i] = alpha * x[i] + y[i];
+       }
+       return;
+    }
+
     for(i = 0;i < n;i++) {
         y[iy] = alpha * x[ix] + y[iy];
         ix += incx;
@@ -50,6 +59,13 @@ void QMD_scopy (int n, REAL * x, int incx, REAL * y, int incy)
 {
 //    scopy (&n, x, &incx, y, &incy);
       int i, ix=0, iy=0;
+      if((incx == 1) && (incy == 1)) {
+         for(i = 0;i < n;i++) {
+             y[i] = x[i];
+         }
+         return;
+      }
+
       for(i = 0;i < n;i++) {
           y[iy] = x[ix];
           ix += incx;

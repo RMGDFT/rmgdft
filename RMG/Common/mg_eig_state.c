@@ -106,16 +106,20 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
     if(ntid == -1) {         // Normal codepath with no threads
         work2 = &ct.gpu_host_temp2[0];
+        sg_twovpsi = &ct.gpu_host_temp1[0];
+        work1 = &ct.gpu_host_temp4[0];
     }
     else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
         work2 = &ct.gpu_host_temp2[ntid * 4 * sbasis];
+        sg_twovpsi = &ct.gpu_host_temp1[ntid * sbasis];
+        work1 = &ct.gpu_host_temp4[ntid * sbasis];
     }
 
 #else
     my_malloc (work2, 4 * sbasis, REAL);
-#endif
     my_malloc (sg_twovpsi, sbasis, REAL);
     my_malloc (work1, sbasis, REAL);
+#endif
     my_malloc (ns, sbasis, REAL);
     my_malloc (nv, sbasis, REAL);
     my_malloc (res2, sbasis, REAL);
@@ -142,6 +146,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     /*Apply Mehrstellen right hand operator to ns and save in res */
     app_cir_sixth (ns, res2, dimx, dimy, dimz);
 
+
 #if MD_TIMERS
     rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
@@ -151,16 +156,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)
     {
-
-#if MD_TIMERS
-        time1 = my_crtc ();
-#endif
-        /* Pack psi into smoothing array */
-        //pack_ptos (sg_psi, tmp_psi, dimx, dimy, dimz);
-
-#if MD_TIMERS
-        rmg_timings (MG_EIG_PACK_TIME, (my_crtc () - time1));
-#endif
 
 #if MD_TIMERS
         time1 = my_crtc ();
@@ -194,6 +189,9 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 #if MD_TIMERS
         time1 = my_crtc ();
+#endif
+#if GPU_ENABLED
+//        cudaDeviceSynchronize();
 #endif
         /* B operating on 2*V*psi stored in work1 */
         app_cir_sixth (sg_twovpsi, work1, dimx, dimy, dimz);
@@ -364,10 +362,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_free (res2);
     my_free (nv);
     my_free (ns);
-    my_free (work1);
-    my_free (sg_twovpsi);
 #if !GPU_ENABLED
     my_free (work2);
+    my_free (sg_twovpsi);
+    my_free (work1);
 #endif
     my_free (res);
     my_free (sg_psi);
