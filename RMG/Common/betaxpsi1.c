@@ -421,9 +421,11 @@ static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
         size = num_ions_per_pe[pe] * ct.num_states * ct.max_nl;
 
         MPI_Irecv (tpr, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recv[pe]);
+	Dprintf("Posting nonblock receive from PE %d tag is %d size is %d", source, tag, size);
 #if !GAMMA_PT
         tag += (NPES) * NPES + NPES;
         MPI_Irecv (tprI, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recvI[pe]);
+	Dprintf("Posting nonblock receive for imaginary part from PE %d tag is %d size is %d", source, tag, size);
 #endif
 
         tpr += size;
@@ -453,10 +455,12 @@ static void betaxpsi1_send (REAL * send_buff, REAL * send_buffI, int num_pes,
         tag = pct.gridpe * NPES + target;
 
         MPI_Isend (tpr, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_send[pe]);
+	Dprintf("Sending data to PE %d, tag is %d and size is %d", target, tag, size);
 
 #if !GAMMA_PT
         tag += (NPES) * NPES + NPES;
         MPI_Isend (tprI, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_sendI[pe]);
+	Dprintf("Sending imaginary part of data to PE %d, tag is %d and size is %d", target, tag, size);
 #endif
 
         tpr += size;
