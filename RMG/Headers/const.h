@@ -275,6 +275,11 @@
 #define PSI_REAL     0
 #define PSI_IMAG     1
 
+/* Type of async request passed to the mpi trade_images manager */
+#define RMG_MPI_ISEND 1
+#define RMG_MPI_IRECV 2
+
+
 
 
 

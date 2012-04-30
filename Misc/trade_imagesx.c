@@ -44,6 +44,13 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
 
+#if ASYNC_TRADES
+    if(is_loop_over_states()) {
+        trade_imagesx_async (f, w, dimx, dimy, dimz, images);
+        return;
+    }
+#endif
+
 #if MD_TIMERS
     REAL time1, time2, time3;
     time1 = my_crtc ();

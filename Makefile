@@ -238,6 +238,9 @@ RMG/Headers/make_conf.h:
 	@echo "/* Use GPU accelerations. */" >> RMG/Headers/make_conf.h;
 	@echo "#define GPU_ENABLED 0" >> RMG/Headers/make_conf.h;
 	@echo "";
+	@echo "/* Use Async trade_images. */" >> RMG/Headers/make_conf.h;
+	@echo "#define ASYNC_TRADES 0" >> RMG/Headers/make_conf.h;
+	@echo "";
 	@echo "ERROR: File RMG/Headers/make_conf.h does not exist"; 
 	@echo "Headers/make_conf.h is set to default, configure it for your system before compiling !!! ";
 	@echo "";

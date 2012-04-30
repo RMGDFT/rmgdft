@@ -55,5 +55,6 @@ void RMG_MPI_lock(void);
 void RMG_MPI_unlock(void);
 void RMG_MPI_thread_order_lock(void);
 void RMG_MPI_thread_order_unlock(void);
+void trade_images_manager(void *s);
 long long Papi_thread_flops(int tid);
 #endif

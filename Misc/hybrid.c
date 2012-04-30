@@ -51,6 +51,9 @@ volatile double PTHREAD_PAPI_COUNTERS[THREADS_PER_NODE];
 // Main thread control structure
 SCF_THREAD_CONTROL thread_control[THREADS_PER_NODE];
 
+// MPI manager thread
+pthread_t mpi_manager_thread;
+
 // Used to implement a local barrier for all threads inside of the run_threads function
 static pthread_barrier_t run_barrier;
 
@@ -97,6 +100,12 @@ void init_HYBRID_MODEL(void) {
     // Create the main sync barrier
     pthread_barrier_init(&run_barrier, NULL, THREADS_PER_NODE);
 
+#if ASYNC_TRADES
+    // Create the mpi manager thread
+    pthread_create(&mpi_manager_thread, &thread_attrs, (void *)trade_images_manager, NULL);
+    printf("Using Async trade_images.\n");
+#endif
+
     // Here we create a set of long lived threads
     for(thread = 0;thread < THREADS_PER_NODE;thread++) {
 
@@ -111,6 +120,8 @@ void init_HYBRID_MODEL(void) {
 
 // Main thread function
 void run_threads(SCF_THREAD_CONTROL *s) {
+
+    int retval, block;
 
 #if PAPI_PERFMON
     int EventSet = PAPI_NULL;
@@ -136,6 +147,14 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     s->pthread_tid = pthread_self();
     pthread_setspecific(scf_thread_control_key, (void *)s);
 
+    for(block = 0;block < 12;block ++){
+
+        retval = MPI_Alloc_mem(sizeof(REAL) * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &s->trade_buf[block]);
+        if(retval != MPI_SUCCESS) {
+             error_handler("Error in MPI_Alloc_mem.\n");
+        }
+
+    }
 
     // Wait until everyone gets here
     pthread_barrier_wait(&run_barrier);
@@ -414,6 +433,37 @@ void rmg_timings (int what, REAL time)
 
 
 #endif
+
+// Returns address of the thread specific block of memory allocated via MPI_Alloc_mem 
+// if running in hybrid mode
+REAL *get_trade_mem(int size, int block) {
+    REAL *p;
+#if HYBRID_MODEL
+    SCF_THREAD_CONTROL *ss;
+    if(is_loop_over_states()) {
+        ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
+        return ss->trade_buf[block];
+    }
+    my_malloc(p, size, REAL);
+    return p;
+#else
+    my_malloc(p, size, REAL);
+    return p;
+#endif
+}
+
+void free_trade_mem(REAL *p)
+{
+#if HYBRID_MODEL
+    if(is_loop_over_states()) {
+        return;
+    }
+    my_free(p);
+#else
+    my_free(p);
+#endif
+}
+
 
 // Tells us if we are executing a parallel region that is a loop over orbitals
 int is_loop_over_states(void)

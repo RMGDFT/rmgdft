@@ -488,6 +488,13 @@ void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL 
 int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int cdim, int pxgrid, int pygrid, int pzgrid,
                int nxgrid, int nygrid, int nzgrid);
+void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag);
+void RMG_MPI_trade_recvwait(void);
+void RMG_MPI_trade_waitall(void);
+void RMG_MPI_wake_manager(void);
+REAL *get_trade_mem(int size, int block);
+void free_trade_mem(REAL *p);
+
 #if GPU_ENABLED
 void init_gpu (void);
 void finalize_gpu (void);

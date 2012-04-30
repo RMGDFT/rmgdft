@@ -1483,6 +1483,7 @@ typedef struct
     // Pointers to special args
     void *p1;
     void *p2;
+    REAL *trade_buf[12]; // Used by trade_images
     int ion;        // Used for threaded beta_xpsi
     int nion;       // Used for threaded beta_xpsi
     REAL *sintR;    // Used for threaded beta_xpsi
