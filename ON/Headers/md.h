@@ -1245,9 +1245,9 @@ void cholesky (REAL * a, int n);
 void cross_product (REAL * a, REAL * b, REAL * c);
 void eval_residual (REAL * mat, REAL * f_mat, int dimx, int dimy, int dimz,
         REAL gridhx, REAL gridhy, REAL gridhz, REAL * res);
-void solv_pois (REAL * vmat, REAL * fmat, REAL * work,
-        int dimx, int dimy, int dimz, REAL gridhx,
-        REAL gridhy, REAL gridhz, double step);
+void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
+                int dimx, int dimy, int dimz, REAL gridhx,
+                REAL gridhy, REAL gridhz, REAL step, REAL k);
 REAL fill (STATE * states, REAL width, REAL nel, REAL mix,
         int num_st, int occ_flag);
 void force (REAL * rho, REAL * rho_opps, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states);
