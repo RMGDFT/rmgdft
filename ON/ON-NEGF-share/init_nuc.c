@@ -85,7 +85,7 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
     /* Initialize the compensating charge array and the core charge
        array */
-    t1 = ct.background_charge / (double) FP0_BASIS / ct.vel_f;
+    t1 = ct.background_charge / (double) FP0_BASIS / ct.vel_f / NPES;
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
 
