@@ -1255,7 +1255,7 @@ void eval_residual( REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz,
         REAL gridhx, REAL gridhy, REAL gridhz, REAL *res );
 void solv_pois( REAL *vmat, REAL *fmat, REAL *work, 
         int dimx, int dimy, int dimz, REAL gridhx, 
-        REAL gridhy,REAL gridhz, double step);
+        REAL gridhy,REAL gridhz, double step, double k);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix, int num_st, int occ_flag);
 void genvpsi(REAL *psi, REAL *twovpsi, REAL *pvtot, REAL *pvnl, REAL *kd, 
         REAL kmag, int dimx, int dimy, int dimz);

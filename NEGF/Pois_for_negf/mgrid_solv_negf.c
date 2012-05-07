@@ -72,7 +72,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
     REAL tem1, tem;
 
-    double step;
+    double step, kg= 0.0;
 
     step = 1.0;
 /* precalc some boundaries */
@@ -123,7 +123,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     {
 
         /* solve once */
-        solv_pois_negf(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+        solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, kg);
 
 
          pack_stop(v_mat, work, dimx, dimy, dimz);
@@ -200,7 +200,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
         {
 
             /* solve once */
-            solv_pois_negf(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step);
+            solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, kg);
 
             pack_stop(v_mat, work, dimx, dimy, dimz);
 
