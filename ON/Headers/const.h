@@ -319,4 +319,9 @@
 #define       	GGA_XP_CP       3
 #define       	GGA_PBE         4
 
+/* Types of finite differencing */
+#define FULL_FD 1
+#define CENTRAL_FD 2
+
+
 /******/

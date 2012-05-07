@@ -231,7 +231,7 @@ REAL special_dot_product(REAL *a, REAL *b, REAL *b_trade, REAL weight, int lengt
     REAL rvalue = 0.0, a_value;
     int incx, incy;
    
-    trade_imagesx (b, b_trade, length_x, length_y, length_z, 1);
+    trade_imagesx (b, b_trade, length_x, length_y, length_z, 1, FULL_FD);
 
     incy = length_z + 2;
     incx = incy * (length_y + 2);

@@ -2292,7 +2292,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
      * In short, do everything that depends on ct.interp_trade*/
 
     my_malloc (rho_c, cmax_x * cmax_y * cmax_z, REAL);
-    trade_imagesx (rho, rho_c, PX0_GRID, PY0_GRID, PZ0_GRID, ct.interp_trade);
+    trade_imagesx (rho, rho_c, PX0_GRID, PY0_GRID, PZ0_GRID, ct.interp_trade, FULL_FD);
     /*Find B-spline coeffients */
     dbs3in (cmax_x, crdsx, cmax_y, crdsy, cmax_z, crdsz, rho_c,
             cmax_x, cmax_y, cmax_z, xorder, yorder, zorder, knots_x, knots_y, knots_z, bscoef);

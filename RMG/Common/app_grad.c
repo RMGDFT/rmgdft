@@ -62,7 +62,7 @@ void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz)
 
     time1 = my_crtc ();
     /*trade_images2(f, SSSptr); */
-    trade_imagesx (rho, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2);
+    trade_imagesx (rho, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2, CENTRAL_FD);
 
     switch (ct.ibrav)
     {

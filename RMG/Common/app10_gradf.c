@@ -61,8 +61,7 @@ void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz)
 
 
     time1 = my_crtc ();
-    /*trade_images2f(f, SSSptr); */
-    trade_imagesx (f->s2, rptr, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 4);
+    trade_imagesx (f->s2, rptr, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 4, CENTRAL_FD);
 
     switch (ct.ibrav)
     {

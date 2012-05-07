@@ -34,7 +34,7 @@ REAL swbuf2x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
 
 
 
-void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
+void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images, int type)
 {
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1, retval;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
@@ -45,8 +45,14 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
 
 #if ASYNC_TRADES
-    trade_imagesx_async (f, w, dimx, dimy, dimz, images);
-    return;
+    if(type == CENTRAL_FD) {
+        trade_imagesx_central_async (f, w, dimx, dimy, dimz, images);
+        return;
+    }
+    else {
+        trade_imagesx_async (f, w, dimx, dimy, dimz, images);
+        return;
+    }
 #endif
 
 

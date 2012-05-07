@@ -49,7 +49,7 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     double fraction;
 
     my_malloc (sg_half, (half_dimx + 10) * (half_dimy + 10) * (half_dimz + 10), double);
-    trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5);
+    trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_FD);
 
 
     incz = 1;

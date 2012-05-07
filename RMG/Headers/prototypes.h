@@ -258,7 +258,7 @@ void reset_timers (void);
 void sortpsi (STATE *states);
 void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz,
-                    int images);
+                    int images, int type);
 void trade_imagesx_async (REAL *f, REAL *w, int dimx, int dimy, int dimz,
                     int images);
 void set_bc (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);

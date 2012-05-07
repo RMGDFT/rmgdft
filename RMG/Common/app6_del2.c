@@ -51,7 +51,7 @@ void app6_del2 (REAL *rho, P0_GRID * work)
 
     my_malloc (f, 1, SS0_GRID);
 
-    trade_imagesx (rho, &f->b[0][0][0], PX0_GRID, PY0_GRID, PZ0_GRID, 2);
+    trade_imagesx (rho, &f->b[0][0][0], PX0_GRID, PY0_GRID, PZ0_GRID, 2, CENTRAL_FD);
 
     //trade_imagesx (f->s2, &f->b[0][0][0], PX0_GRID, PY0_GRID, PZ0_GRID, 2);
 

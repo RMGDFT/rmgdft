@@ -280,6 +280,9 @@
 #define RMG_MPI_IRECV 2
 
 
+/* Types of finite differencing */
+#define FULL_FD 1
+#define CENTRAL_FD 2
 
 
 

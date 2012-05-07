@@ -56,7 +56,7 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 
 
     cudaStreamCreate(&cstream);
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 2);
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
     cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof( REAL ), cudaMemcpyHostToDevice, cstream);
 
     app_cir_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, cstream);
@@ -82,8 +82,7 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 
     my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL);
 
-    /*trade_images2(a, SSptr); */
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 2);
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
@@ -163,8 +162,7 @@ void app_cir_sixth_global (REAL * a, REAL * b)
 
     my_malloc (rptr, (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4), REAL);
 
-    /*trade_images2(a, SSptr); */
-    trade_imagesx (a, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2);
+    trade_imagesx (a, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2, FULL_FD);
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;

@@ -39,7 +39,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
         cc[i][3] = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
     }
 
-    trade_imagesx (rho, &rho_c.b[0][0][0], dimx, dimy, dimz, 2);
+    trade_imagesx (rho, &rho_c.b[0][0][0], dimx, dimy, dimz, 2, FULL_FD);
 
     tpr_rho_f = (FP0_GRID *) rho_f;
 

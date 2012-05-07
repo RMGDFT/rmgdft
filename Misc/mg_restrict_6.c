@@ -52,7 +52,7 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
     REAL *sg_full;
 
     my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), REAL);
-    trade_imagesx (full, sg_full, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 5);
+    trade_imagesx (full, sg_full, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 5, FULL_FD);
 
     incz = 1;
     incy = dimz + 10;
