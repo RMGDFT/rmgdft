@@ -259,6 +259,8 @@ void sortpsi (STATE *states);
 void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz,
                     int images);
+void trade_imagesx_async (REAL *f, REAL *w, int dimx, int dimy, int dimz,
+                    int images);
 void set_bc (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
 void set_bcx (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
 void getpoi_bc (REAL *rho, REAL *vh_bc, int dimx, int dimy, int dimz);
@@ -488,12 +490,8 @@ void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL 
 int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int cdim, int pxgrid, int pygrid, int pzgrid,
                int nxgrid, int nygrid, int nzgrid);
-void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag);
-void RMG_MPI_trade_recvwait(void);
-void RMG_MPI_trade_waitall(void);
-void RMG_MPI_wake_manager(void);
-REAL *get_trade_mem(int size, int block);
-void free_trade_mem(REAL *p);
+void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
+void init_trade_imagesx_async(void);
 
 #if GPU_ENABLED
 void init_gpu (void);

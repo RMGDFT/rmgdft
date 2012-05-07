@@ -26,7 +26,7 @@ REAL swbuf2x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
  * INPUTS
  * f[dimx*dimy*dimz] - raw array without images. pack_ptos should not be called, this is 
  *                     handled inside the function now
- * OUTPUT
+ 
  * w[(dimx+2*images) * (dimy+2*images) * (dimz+2*images)]
  *    This array is completely filled, i.e. the original data is filled in and then 
  *    the image data are added*/
@@ -36,7 +36,7 @@ REAL swbuf2x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
 
 void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
 {
-    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
+    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1, retval;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
     int xlen, ylen, zlen, stop;
     int *nb_ids, basetag=0, tid, combine_trades=true;
@@ -45,11 +45,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
 
 #if ASYNC_TRADES
-    if(is_loop_over_states()) {
-        trade_imagesx_async (f, w, dimx, dimy, dimz, images);
-        return;
-    }
+    trade_imagesx_async (f, w, dimx, dimy, dimz, images);
+    return;
 #endif
+
 
 #if MD_TIMERS
     REAL time1, time2, time3;

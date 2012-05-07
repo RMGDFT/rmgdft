@@ -254,6 +254,11 @@ void init_IO (int argc, char **argv)
         Papi_init_omp_threads(i);
 #endif
 
+#if ASYNC_TRADES
+  // set up memory sections for async trade images
+  init_trade_imagesx_async();
+#endif
+
 #if HYBRID_MODEL
   if(provided != MPI_THREAD_SERIALIZED) {
 

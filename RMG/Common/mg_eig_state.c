@@ -161,6 +161,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         time1 = my_crtc ();
 #endif
 
+        scf_barrier_wait();
         /* Apply Mehrstellen left hand operators */
         diag = app_cil_sixth (tmp_psi, work2, dimx, dimy, dimz, hxgrid, hygrid, hzgrid);
 
@@ -193,6 +194,8 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if GPU_ENABLED
 //        cudaDeviceSynchronize();
 #endif
+
+        scf_barrier_wait();
         /* B operating on 2*V*psi stored in work1 */
         app_cir_sixth (sg_twovpsi, work1, dimx, dimy, dimz);
 

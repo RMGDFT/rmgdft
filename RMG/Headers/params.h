@@ -118,6 +118,9 @@
 /* The number of possible point symmetries */
 #define MAX_SYMMETRY	48
 
+/* Maximum number of images for finite difference routines */
+#define MAX_TRADE_IMAGES 5
+
 
 #  ifndef PE_X
     /* Processor topology */
@@ -193,30 +196,22 @@
    trade_images.c and trade_imagesx.c when they are combining MPI calls
    in hybrid mode.
 */
-#if HYBRID_MODEL
-	#define GRID_XP (FPX0_GRID + 6)
-	#define GRID_YP (FPY0_GRID + 6)
-	#define GRID_ZP (FPZ0_GRID + 6)
-	#if GRID_XP > GRID_YP
-	  #define GRID_MAX1 GRID_XP
-	  #if GRID_YP > GRID_ZP
-	    #define GRID_MAX2 GRID_YP
-	  #else
-	    #define GRID_MAX2 GRID_ZP
-	  #endif
-	#else
-	  #define GRID_MAX1 GRID_YP
-	  #if GRID_XP > GRID_ZP
-	    #define GRID_MAX2 GRID_XP
-	  #else
-	    #define GRID_MAX2 GRID_ZP
-	  #endif
-	#endif
+#define GRID_XP (FPX0_GRID + 2*MAX_TRADE_IMAGES)
+#define GRID_YP (FPY0_GRID + 2*MAX_TRADE_IMAGES)
+#define GRID_ZP (FPZ0_GRID + 2*MAX_TRADE_IMAGES)
+#if GRID_XP > GRID_YP
+  #define GRID_MAX1 GRID_XP
+  #if GRID_YP > GRID_ZP
+    #define GRID_MAX2 GRID_YP
+  #else
+    #define GRID_MAX2 GRID_ZP
+  #endif
 #else
-	#define GRID_MAX1 1
-	#define GRID_MAX2 1
+  #define GRID_MAX1 GRID_YP
+  #if GRID_XP > GRID_ZP
+    #define GRID_MAX2 GRID_XP
+  #else
+    #define GRID_MAX2 GRID_ZP
+  #endif
 #endif
 
-
-
-/******/
