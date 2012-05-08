@@ -60,11 +60,10 @@ static void write_int (int fh, int *ip, int count);
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
+void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
 {
     char newname[MAX_PATH + 20];
     int amode;
-    int fhand;
     int fine[3];
     int grid[3];
     int pe[3];
@@ -77,38 +76,9 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
     int ia, idx, nspin = (ct.spin_flag + 1);
     REAL time0, write_time;
 
-    /* Wait until everyone gets here */
-    /* my_barrier ();  */
-    MPI_Barrier(pct.img_comm);    
-
     time0 = my_crtc ();
-
-
-    if (pct.imgpe == 0)
-        printf ("\nwrite_data: -------------- %s --------------\n\n", name);
-
-
-    /*If output file is specified as /dev/null or /dev/null/, skip writing */
-    if ((!strcmp ("/dev/null", name)) || (!strcmp ("/dev/null/", name)) )
-    {
-        if (pct.imgpe == 0)
-            printf ("write_data: Output file given as /dev/null, no output written ...\n");
-        return;
-    }
-
     totalsize = 0;
 
-    /* On clusters with NFS mounted filesystems having all nodes
-     * dump there data at the same time can cause network congestion
-     * and hangups so if wait_flag is set in the input file the
-     * total bandwidth going to disk is throttled */
-    if (ct.wait_flag)
-        sleep (ct.wait_flag * pct.gridpe);
-
-
-    /*This opens file, creates a directory if needed */
-    fhand = open_wave_file (name);
-    printf ("write_data: Wavefile %s opened...\n", name);
 
     /* write lattice information */
     write_double (fhand, ct.a0, 3);
@@ -263,12 +233,9 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
 
     /*Write ionic timestep*/
     write_double (fhand, &ct.iondt, 1);
-
-    /* done with writing */
-    close (fhand);
-
+    
     write_time = my_crtc () - time0;
-
+    
     if (pct.imgpe == 0)
     {
         /*Things like grids and number of precessors should be written in the beginning of the file */
@@ -285,9 +252,6 @@ void write_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc,
     }
 
 
-    /* force change mode of output file */
-    amode = S_IREAD | S_IWRITE;
-    chmod (newname, amode);
 
 
 }                               /* end write_data */

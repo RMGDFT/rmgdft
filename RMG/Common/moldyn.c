@@ -453,7 +453,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         if (ct.checkpoint)
             if ((ct.md_steps != 0) && (ct.md_steps % ct.checkpoint == 0))
             {
-                write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
+                write_restart (ct.outfile, vh, rho, rho_oppo, vxc, states);
                 if (pct.gridpe == 0)
                     printf ("\n Writing data to output file ...\n");
             }

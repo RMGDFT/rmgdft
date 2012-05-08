@@ -139,7 +139,7 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         /* save data to file for future restart */
         if (ct.checkpoint)
             if ( ct.md_steps % ct.checkpoint == 0 )
-                write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
+                write_restart (ct.outfile, vh, rho, rho_oppo, vxc, states);
 
 
         /* check force convergence */
@@ -180,7 +180,7 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
     /*Write out final data */
-    write_data (ct.outfile, vh, rho, rho_oppo, vxc, states);
+    write_restart (ct.outfile, vh, rho, rho_oppo, vxc, states);
 
 
 }                               /* end fastrlx */

@@ -224,7 +224,7 @@ void rmg_timings (int what, REAL time);
 REAL minimage (ION *ip1, ION *ip2, REAL *xtal_r);
 REAL my_crtc (void);
 FILE *open_xbs_movie (char *filename);
-int open_wave_file (char *filename);
+FILE *open_restart_file (char *filename);
 void xbsmovie (FILE *movie);
 void ortho_half (STATE *states);
 void ortho_bcc (STATE *states);
@@ -273,7 +273,7 @@ void vol_wf (STATE *states, int state, int step);
 void write_avgd (REAL *rho);
 void write_avgv (REAL *vh, REAL *vnuc);
 void write_zstates (STATE *states);
-void write_data (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
+void write_data (int fhand, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
                  STATE *states);
 
 void write_header (void);
