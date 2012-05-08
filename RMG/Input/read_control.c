@@ -343,8 +343,12 @@ void read_control (void)
         get_data ("ionic_time_step_decrease", &ct.iondt_dec, DBL, s_ttt);
     }
     
-    /*Number of steps after which iondt is increased */
+    /*Number of steps after which iondt is increased (if F * v is positive for all those steps) */
     get_data ("dynamic_time_delay", &ct.relax_steps_delay, INT, "5");
+    
+    /*Current value of step counter, when this value reaches ct.relax_steps_delay timestep can be increased
+     * This normally starts from zero and is increased if F *v > 0 or set to 0 otherwise*/
+    get_data ("dynamic_time_counter", &ct.relax_steps_counter, INT, "0");
 
 
     /* DX movie flag */

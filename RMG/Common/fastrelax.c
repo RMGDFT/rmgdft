@@ -37,14 +37,13 @@
 #include <stdio.h>
 #include "main.h"
 
-void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
+void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min, int *n_count)
 {
     int ion, fpt, which = 0, count = 0;
     ION *iptr;
     double mass, magf, dotfv, force[3];
     double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
     double move_x, move_y, move_z, move_sq, move, p = 0.0;
-    static int n_count;
 
 
     fpt = ct.fpt[0];
@@ -78,7 +77,7 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
         if (p < 0) 
         {
             *dt *= dt_dec;
-            n_count = 0;
+            *n_count = 0;
 
             printf ("\n");
             progress_tag ();
@@ -86,7 +85,7 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
         }
         else
         {
-            if (n_count > n_min)
+            if (*n_count > n_min)
             {   
                 *dt *= dt_inc;
 
@@ -94,11 +93,11 @@ void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min)
                     *dt = dt_max;
             }   
 
-            n_count ++;
+            *n_count ++;
 
             printf ("\n");
             progress_tag ();
-            printf("timestep:%f n_count:%d", *dt, n_count);  
+            printf("timestep:%f n_count:%d", *dt, *n_count);  
         }
 
 

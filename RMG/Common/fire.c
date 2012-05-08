@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include "main.h"
 
-void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min )
+void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min, int *n_count )
 {
     int ion, fpt, which = -1, count = 0;
     ION *iptr;
@@ -49,11 +49,9 @@ void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min )
     REAL alpha_start = 0.1;
     REAL f_alpha = 0.99;
     static REAL alpha = 0.1;
-    static int n_count = 0;
 
     fpt = ct.fpt[0];
 	
-    //printf ("\n Starting FIRE relax: parameters are step:%f, alpha:%f, n_count is %d", *step, alpha,  n_count);
 
     /* Loop over ions, calculate p, total magnitude of F and v vectors*/ 
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -85,7 +83,7 @@ void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min )
     if ((p <= 0.0) && (ct.md_steps > 0))
     {
 	*step *= f_dec;
-	n_count = 0;
+	*n_count = 0;
 	alpha = alpha_start;
 
         printf ("\n");
@@ -134,7 +132,7 @@ void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min )
     move_ions(*step);
     
 
-    if ((p > 0.0) && (n_count > n_min))
+    if ((p > 0.0) && (*n_count > n_min))
     {
 	*step *= f_inc;
 	if (*step > step_max) *step = step_max;
@@ -145,11 +143,11 @@ void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min )
 
     if (p > 0.0) 
     {
-	n_count ++;
+	*n_count ++;
 
         printf ("\n");
         progress_tag ();
-	printf ("alpha:%7.5f, n_count %d, timestep:%10.5f", alpha,  n_count, *step);
+	printf ("alpha:%7.5f, n_count %d, timestep:%10.5f", alpha,  *n_count, *step);
     }
 
 }

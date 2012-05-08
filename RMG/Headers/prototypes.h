@@ -472,8 +472,8 @@ int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int 
 int is_loop_over_states(void);
 void Papi_init_omp_threads(int ithread);
 void Papi_finalize_omp_threads(int ithread);
-void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min);
-void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min );
+void fastrelax (REAL *dt, REAL dt_max, REAL dt_inc, REAL dt_dec, int n_min, int *n_count);
+void fire (REAL *step, REAL step_max, REAL f_inc, REAL f_dec, int n_min, int *n_count );
 void quick_min (void);
 int int_sum_all (int x, MPI_Comm comm);
 void move_ions (REAL dt);

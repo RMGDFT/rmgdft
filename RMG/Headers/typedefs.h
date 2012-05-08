@@ -965,6 +965,7 @@ typedef struct
     /* SCF steps iterator */
     int scf_steps;
 
+
     /* override occupations */
     int override_occ;
 
@@ -1254,6 +1255,9 @@ typedef struct
 
     /*Number of steps after which iondt is increased */
     int relax_steps_delay;
+    
+    /*Number of steps since F * v was negative, used for dynamic timestep in structure optimization*/
+    int relax_steps_counter;
 
 
     /** Ionic motion energy */
