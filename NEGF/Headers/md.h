@@ -859,6 +859,8 @@ typedef struct
     double gbias_end;
     double BT;
     double gate_bias;
+    double bg_begin;
+    double bg_end;
 
     /* override occupations */
     int override_occ;

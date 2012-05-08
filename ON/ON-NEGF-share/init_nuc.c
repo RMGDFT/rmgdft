@@ -47,8 +47,10 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     int *Aix, *Aiy, *Aiz;
     int icount;
     int *pvec;
+    int number = FP0_BASIS;
+    int storage_spacing = 1;
     double r, r2, xc, yc, zc, Zv, rc, rcnorm, t1;
-    double x, y, z, rc2, invdr;
+    double x, y, z, rc2, invdr, charge_bg, x_locate;
     SPECIES *sp;
     ION *iptr;
 
@@ -82,15 +84,85 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
     }                           /* end for */
 
+        pe2xyz(pct.gridpe, &ii, &jj, &kk);
+        ilow = ii * FPX0_GRID;
+        jlow = jj * FPY0_GRID;
+        klow = kk * FPZ0_GRID;
+        ihi = ilow + FPX0_GRID - 1;
+        jhi = jlow + FPY0_GRID - 1;
+        khi = klow + FPZ0_GRID - 1;
+
 
     /* Initialize the compensating charge array and the core charge
        array */
     t1 = ct.background_charge / (double) FP0_BASIS / ct.vel_f / NPES;
+    
+    printf("\n bg_begin = %f and bg_end = %f  BT = %f  t1=%f \n", ct.bg_begin, ct.bg_end, ct.BT, t1);   
+
+
+    if (ct.background_charge == 0)
+    {
+	    for (idx = 0; idx < FP0_BASIS; idx++)
+	    {
+
+		    rhoc[idx] = t1;
+
+	    } 
+    }
+    else
+    {
+	    for (ix = 0; ix < FPX0_GRID; ix++)
+	    {
+
+		    x_locate = (ix + ilow)/2.0; // everything is based on coarse grid now!
+		    charge_bg = t1 / (1.0 + exp((ct.bg_begin - x_locate)/ct.BT)  + exp((x_locate - ct.bg_end)/ct.BT) ); 
+
+
+		    for (iy = 0; iy < FPY0_GRID; iy++)
+		    {
+
+			    for (iz = 0; iz < FPZ0_GRID; iz++)
+			    {
+
+				    rhoc[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = charge_bg;
+
+
+			    }                   /* end for */
+
+		    }                       /* end for */
+
+
+		    if (jj == 0 && kk == 0)
+			    printf("x_locate = %5f charge_bg  = %15.12f \n ", x_locate, charge_bg );
+
+	    }                           /* end for */
+
+	    /* Check background charges */
+	    ct.crho = get_charge(rhoc);
+
+
+
+	    if (pct.gridpe == 0)
+	    {
+		    printf("\n background charges: %e \n", ct.crho);
+		    printf(" Rescaling background charges\n");
+	    }
+	    t1 = ct.background_charge / ct.crho;
+	    sscal(&number, &t1, rhoc, &storage_spacing);
+
+	    ct.crho = get_charge(rhoc);
+
+	    if (pct.gridpe == 0)
+		    printf(" Rescaled compensating charges: %e \n", ct.crho);
+    }
+
+
+
+
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
 
-        rhoc[idx] = t1;
-        rhocore[idx] = 0.;
+	    rhocore[idx] = 0.;
 
     }                           /* end for */
 
@@ -135,18 +207,10 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
         get_Ai(L0_LDIM, Aiz, FNZ_GRID, izstart);
 
 
+        ii = jj = kk = FALSE;
         /* Now we need to determine if any of this ions local short */
         /* ranged difference potential maps onto this particular    */
         /* processors space.                                        */
-        pe2xyz(pct.gridpe, &ii, &jj, &kk);
-        ilow = ii * FPX0_GRID;
-        jlow = jj * FPY0_GRID;
-        klow = kk * FPZ0_GRID;
-        ihi = ilow + FPX0_GRID - 1;
-        jhi = jlow + FPY0_GRID - 1;
-        khi = klow + FPZ0_GRID - 1;
-
-        ii = jj = kk = FALSE;
         for (idx = 0; idx < L0_LDIM; idx++)
         {
 
@@ -242,13 +306,11 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     /* Rescale compensating charges */
     if (pct.gridpe == 0)
     {
-        printf("\n compensating charges: %e \n", ct.crho);
+        printf("\n compensating charges(background_charge + ionic charge): %e \n", ct.crho);
         printf(" Rescaling compensating charges\n");
     }
-    ii = FP0_BASIS;
-    jj = 1;
     t1 = ct.nel / ct.crho;
-    sscal(&ii, &t1, rhoc, &jj);
+    sscal(&number, &t1, rhoc, &storage_spacing);
 
     /* Check new compensating charges */
     ct.crho = get_charge(rhoc);

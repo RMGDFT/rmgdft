@@ -192,6 +192,9 @@ Error Function";
     ct.z_field_0 = strtod (tbuf, &tbuf);
     get_data ("electric_field_magnitude", &ct.e_field, DBL, "0.0");
 
+    get_data ("bg_begin", &ct.bg_begin, DBL, "0");
+    get_data ("bg_end",   &ct.bg_end, DBL, "10");
+
     get_data ("gbias_begin", &ct.gbias_begin, DBL, "0");
     get_data ("gbias_end",   &ct.gbias_end, DBL, "10");
     get_data ("BT", &ct.BT, DBL, "4.0");

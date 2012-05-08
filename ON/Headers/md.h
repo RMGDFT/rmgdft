@@ -1025,6 +1025,9 @@ typedef struct
 
     /** total background smearing charge -- for charged supercells */
     REAL background_charge;
+    REAL bg_begin;
+    REAL bg_end;
+    REAL BT;
 
 
     /** Multigrid parameters for the eigenvalue solver */

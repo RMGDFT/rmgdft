@@ -174,6 +174,9 @@ void read_control (void)
 
     /* states occupancy count; overrides background charge */
     get_data("states_count_and_occupation", ct.occupation_str, STR, "");
+    get_data("bg_begin", &ct.bg_begin, DBL, "0.0");
+    get_data("bg_end", &ct.bg_end, DBL, "10.0");
+    get_data("BT", &ct.BT, DBL, "4.0");
 
 
    /* Set up and validate input options */
