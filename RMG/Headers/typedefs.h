@@ -894,7 +894,7 @@ typedef struct
     int init_equal_density_flag; 
 
     /* determine whether to get_dos or not */
-    int get_dos_flag; 
+    int pdos_flag; 
 
 
     /** Name of the input control file. Passed as a command line argument
@@ -966,15 +966,6 @@ typedef struct
     int scf_steps;
 
 
-    /* override occupations */
-    int override_occ;
-
-    /* Override current ionic positions (in control file) with positions from wave file (during restart) */
-    int override_current;
-
-    /* Override initial ionic positions (in control file) with positions from wave file (during restart) */
-    int override_initial;
-
     /* convergence criterion */
     REAL thr_rms;
 
@@ -983,9 +974,6 @@ typedef struct
 
     /* Number of steps after which to perform checkpointing */
     int checkpoint;
-
-    /* Number of steps after which to output results */
-    int outcount;
 
     /** Sorting flag for wavefunctions. Read from input file. 0=no sort, 1=sort */
     int sortflag;
@@ -1210,8 +1198,6 @@ typedef struct
     /* md integrate level */
     int mdorder;
 
-    /* movie flags */
-    int rmvmovie, chmovie, xbsmovie;
 
     /* Milliken population flags. */
     int domilliken;
@@ -1282,14 +1268,6 @@ typedef struct
 
     /** K-point control structure */
     KPOINT *kp;
-
-    /** Throttles data transfer rates when writing wavefunctions to disk
-     *
-     * On clusters with NFS mounted filesystems having all nodes
-     * dump there data at the same time can cause network congestion
-     * and hangups so wait_flag can be set in the input file to throttle
-     * the total bandwidth being written. */
-    int wait_flag;
 
     /** The maximum number of projectors for any species */
     int max_nl;

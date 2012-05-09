@@ -47,9 +47,6 @@
 
 
 
-/* Local function prototypes */
-void movie (FILE *);
-
 
 
 void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
@@ -59,30 +56,8 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     int iion;
     int CONV_FORCE, MAX_STEPS;
     int DONE, rlx_steps = 0;
-    FILE *mfp = NULL;
-    FILE *xbsfp1 = NULL;
-    char xbs_filename[60];
 
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
-
-    /* open movie file and output initial frame */
-    if ((ct.rmvmovie) && (ct.max_md_steps > 1 && pct.imgpe == 0))
-    {
-        my_fopen (mfp, "traj.rmv", "w");
-        if (setvbuf (mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
-            printf ("\n Warning: cant allocate movie io buffer size\n");
-
-        movie (mfp);
-    }
-
-    /* open XBS movie file */
-    if ((ct.xbsmovie) && (ct.max_md_steps > 1 && pct.imgpe == 0))
-    {
-
-        strcpy (xbs_filename, "traj");
-        xbsfp1 = open_xbs_movie (xbs_filename);
-    }
-
 
 
 	/* quench the electrons and calculate forces */

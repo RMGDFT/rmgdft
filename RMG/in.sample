@@ -11,7 +11,7 @@
 description="Sample MD calculation"
 
 # Spin polarized calculation flag. Default: "True"
-enable_spin_polarized_calculation=
+spin_polarization=
 "false"
 #"true" 
 
@@ -64,7 +64,7 @@ kpoints=
 
 # Units for bravais_lattice_type and atoms
 # Optional option, default "Bohr"
-length_units=
+crds_units=
 "Bohr"
 #"Angstrom"
 
@@ -294,7 +294,10 @@ ionic_time_step="50"
 # Default: "false"
 relax_dynamic_timestep="false"
 
-#get_dos_flag="true"
+#Whether to write pdos at convergence
+# Default: "false"
+write_pdos="false"
+
 #Emin="-5"
 #Emax="-1"
 #E_POINTS="11"
@@ -315,7 +318,7 @@ max_rmg_steps="1"
 # MD options
 
 # Default: "300"
-md_temperature_K="300"
+md_temperature="300"
 
 #  Default: "Nose Hoover Chains"
 md_temperature_control=
@@ -345,43 +348,12 @@ md_integration_order=
 
 # Number of MD steps after which wave functions 
 # and other info are saved into the output file
-# Only used if write_waves_to_file is "true"
-# Default: "10"
-md_steps_til_write_waves="10"
+# Default: "5"
+# Value of 0 means that no restart file will not be written
+write_data_period="5"
 
 
-# Movie options
 
-# Whether or not to to output information for DX charge movie (MD calculation only)
-# Default: "false"
-dx_movie=
-"false"
-#"true"
-
-# Whether or not to to output information for RMV (rotmovie) movie (MD or Structural Relax)
-# Default: "false"
-rm_movie=
-"false"
-#"true"
-
-# Whether or not to to output information for XBS movie (MD or structural relaxation)
-# Default: "false"
-xbs_movie=
-"false"
-#"true"
-
-# Number of MD (or Structural Relaxation) steps after which to output frame into movie (any type)
-# Default: "1"
-md_steps_per_movie_frame="1"
-
-
-# Checks
-# These options only perform consistency checks, such as checking if
-# expected number of ions was read
-
-number_of_kpoints="1"
-number_of_atoms="3"
-number_of_species="2"
 
 # Number of states in spin pairwised calculation
 states_per_kpoint="10"
@@ -391,26 +363,6 @@ states_per_kpoint="10"
 #states_per_kpoint_down ="10"
 
 # Restart control
-
-# Use occupations specified in this file rather than from input wave file
-# Default: "false" 
-restart_overwrite_occupation_numbers=
-"false"
-#"true"
-
-# Whether to use coordinates listed in this file when doing restart
-# and ignore those specified in the wave input file
-# Default:"Wave File"
-restart_coordinates_from=
-"Wave File"
-#"Control File"
-
-# Whether to use coordinates listed in this file as initial coordinates
-# when doing restart and ignore those specified in the wave input file
-# Default:"false"
-restart_coordinates_with_current_as_initial=
-"false"
-#"true"
 
 # Setup the communicator topology for a multi-grid run. For details 
 # on possibilities, see MPI_Cart_create documentation.
@@ -466,26 +418,10 @@ boundary_condition_type=
 #"Cluster"
 #"Surface"
 
-# Whether or not write wavefunctions into output file
-# Default: "true"
-write_waves_to_file=
-"true"
-#"false"
-
-# Whether to calculate energy and print eigenvalues and occupancies while doing SCF steps
-# Default: "true"
-print_energy_and_eigenvalues=
-"true"
-#"false"
-
-# Number of SCF steps after which energy, eigenvalues and occupancies are written out
-# This is ignored if print_energy_and_eigenvalues is "false"
-# Default: "1" (meaning every step)
-scf_steps_til_energy_and_eigenv_print="1"
 
 # Number of SCF steps between writeout of eigenvalues
-# Default: "10"
-write_eigvals_period="10"
+# Default: "5"
+write_eigvals_period="5"
 
 
 # Whether to do subspace diagonalization before starting calculation
@@ -514,17 +450,6 @@ z_average_output_mode=
 "None"
 #"potential and charge density"
 #"wave functions"
-
-# Whether nodes should wait before writing data 
-# (Useful for NFS filesystem where simultaneous writing can cause network congestion and hangup).
-# Default: "false"
-wait_flag=
-"false"
-#"true"
-
-# The actual number of seconds to wait (integer) - See the wait_flag option above for more info.
-# Default : "15"
-wait_flag_count="15"
 
 # Whether the actual ionic masses or equal masses for all ions (set to that of carbon)
 # should be used for fastrelax. The ionic masses appear to work better and are better tested. 

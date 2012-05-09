@@ -70,42 +70,20 @@ bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
         CONVERGED = scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
 
+	get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, states);
 
-        /* check if we need to output intermediate results */
-        if (ct.outcount == 0 || (ct.scf_steps % ct.outcount) == 0)
-        {
-            /* get the total energy */
-            get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, states);
-        }
-
-
-        /* output the eigenvalues with occupations */
-        if (ct.write_eigvals_period)
-        {
-            if (ct.scf_steps % ct.write_eigvals_period == 0)
-            {
-                if (pct.imgpe == 0)
-                {
-                    output_eigenvalues (states, 0, ct.scf_steps);
-                    printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
-                }
-            }
-        }
-
-        /* do diagonalizations if requested */
-        /*This is now done in scf.c */
-#if 0
-        if (ct.diag &&
-            ct.scf_steps > 0 &&
-            ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag && !CONVERGED)
-            for (ik = 0; ik < ct.num_kpts; ik++)
-#if GAMMA_PT
-                subdiag_gamma (ct.kp[ik].kstate, vh, vnuc, vxc);
-#else
-                subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
-#endif
-#endif
-
+	/* output the eigenvalues with occupations */
+	if (ct.write_eigvals_period)
+	{
+	    if (ct.scf_steps % ct.write_eigvals_period == 0)
+	    {
+		if (pct.imgpe == 0)
+		{
+		    output_eigenvalues (states, 0, ct.scf_steps);
+		    printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+		}
+	    }
+	}
 
 
     }
@@ -114,9 +92,13 @@ bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
     if (CONVERGED)
     {
-         printf ("\n");
-         progress_tag ();
-         printf ("potential convergence has been achieved. stopping ...\n");
+	printf ("\n");
+	progress_tag ();
+	printf ("potential convergence has been achieved. stopping ...\n");
+	    
+	/*Write PDOS if converged*/
+	if (ct.pdos_flag)
+	    get_pdos (states, ct.Emin, ct.Emax, ct.E_POINTS);
     }
 
     printf ("\n");
@@ -126,7 +108,7 @@ bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
 
 
     /* output final eigenvalues with occupations */
-   
+
     output_eigenvalues (states, 0, ct.scf_steps);
     printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
@@ -139,26 +121,26 @@ bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
     if ((ct.forceflag == MD_CVE) || (ct.forceflag == MD_CVT) || (ct.forceflag == MD_CPT))
     {
 
-        /* rotate the force pointers */
-        switch (ct.mdorder)
-        {
-        case ORDER_2:
-            numacc = 1;
-            break;
-        case ORDER_3:
-            numacc = 2;
-            break;
-        case ORDER_5:
-            numacc = 4;
-            break;
-        }
-        for (ic = (numacc - 1); ic > 0; ic--)
-        {
-            ct.fpt[ic] = ct.fpt[ic - 1];
-        }
-        ct.fpt[0] = ct.fpt[numacc - 1] + 1;
-        if (ct.fpt[0] > (numacc - 1) || numacc == 1)
-            ct.fpt[0] = 0;
+	/* rotate the force pointers */
+	switch (ct.mdorder)
+	{
+	    case ORDER_2:
+		numacc = 1;
+		break;
+	    case ORDER_3:
+		numacc = 2;
+		break;
+	    case ORDER_5:
+		numacc = 4;
+		break;
+	}
+	for (ic = (numacc - 1); ic > 0; ic--)
+	{
+	    ct.fpt[ic] = ct.fpt[ic - 1];
+	}
+	ct.fpt[0] = ct.fpt[numacc - 1] + 1;
+	if (ct.fpt[0] > (numacc - 1) || numacc == 1)
+	    ct.fpt[0] = 0;
 
     }
 
@@ -166,29 +148,11 @@ bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
     if (CONVERGED || (ct.forceflag != MD_QUENCH))
-        force (rho, rho_oppo, rhoc, vh, vxc, vnuc, states);
+	force (rho, rho_oppo, rhoc, vh, vxc, vnuc, states);
 
     /* output the forces */
     if (pct.imgpe == 0)
-        write_force ();
-
-
-
-#if 0
-    /* compute kinetic energy of all states */
-    if (pct.gridpe == 0)
-        printf ("\n");
-    for (ist = 0; ist < ct.num_states; ist++)
-    {
-        KE = get_ke (&states[ist], 0);
-        if (pct.gridpe == 0)
-        {
-            progress_tag ();
-            printf ("kinetic energy for state %3d = %14.6f\n", ist, KE);
-        }
-    }
-#endif
-
+	write_force ();
 
     return CONVERGED;
 

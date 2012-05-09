@@ -186,7 +186,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
        	printf ("read_data: read 'occupations'\n"); 
 
 
-        if (ct.override_occ != 1 && ct.forceflag != BAND_STRUCTURE)
+        if (ct.forceflag != BAND_STRUCTURE)
         {
             REAL occ_total = 0.0; 
 
@@ -306,9 +306,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
         {
             read_double (fhand, r, 3);
 
-            if (ct.override_current)
-                for (i = 0; i < 3; i++)
-                    ct.ions[ia].crds[i] = r[i];
+	    for (i = 0; i < 3; i++)
+		ct.ions[ia].crds[i] = r[i];
 
         }
 
@@ -318,14 +317,11 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
         {
             read_double (fhand, r, 3);
 
-            if (ct.override_current)
-            {
-                for (i = 0; i < 3; i++)
-                    ct.ions[ia].xtal[i] =
-                        (r[i] < 0) ? (r[i] + 1.0) : ((r[i] > 1.0) ? (r[i] - 1.0) : r[i]);
+	    for (i = 0; i < 3; i++)
+		ct.ions[ia].xtal[i] =
+		    (r[i] < 0) ? (r[i] + 1.0) : ((r[i] > 1.0) ? (r[i] - 1.0) : r[i]);
 
-                to_cartesian (ct.ions[ia].xtal, ct.ions[ia].crds);
-            }
+	    to_cartesian (ct.ions[ia].xtal, ct.ions[ia].crds);
 
         }
 
@@ -337,9 +333,6 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
         {
             read_double (fhand, &ct.ions[ia].icrds[0], 3);
 
-            if (ct.override_initial)
-                for (i = 0; i < 3; i++)
-                    ct.ions[ia].icrds[i] = ct.ions[ia].crds[i];
         }
 
 
@@ -348,9 +341,6 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
         {
             read_double (fhand, &ct.ions[ia].ixtal[0], 3);
 
-            if (ct.override_initial)
-                for (i = 0; i < 3; i++)
-                    ct.ions[ia].ixtal[i] = ct.ions[ia].xtal[i];
         }
 
 

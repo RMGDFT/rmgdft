@@ -113,28 +113,8 @@ void write_header (void)
 
     printf ("    Maximum number of md steps = %d\n", ct.max_md_steps);
     printf ("    Maximum number of scf steps = %d\n", ct.max_scf_steps);
-    printf ("    Output every %d steps\n", ct.outcount);
     printf ("    Checkpoint every %d steps\n", ct.checkpoint);
     printf ("    RMS criterion %14.10f\n", ct.thr_rms);
-
-    printf ("\n");
-    if (ct.rmvmovie == 0)
-    {
-        printf ("    Rotmovie not outputted\n");
-    }
-    else
-    {
-        printf ("    Rotmovie outputted every %d steps\n", ct.rmvmovie);
-    }
-    if (ct.chmovie == 0)
-    {
-        printf ("    DX charge movie not outputted\n");
-    }
-    else
-    {
-        printf ("    DX charge movie outputted every %d steps\n", ct.chmovie);
-    }
-
 
     printf ("\n");
     if (ct.runflag == 1)

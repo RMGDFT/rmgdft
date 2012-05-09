@@ -41,7 +41,7 @@
 
 
 
-void get_dos (STATE * states, REAL * rho, REAL Emin, REAL Emax, int E_POINTS)
+void get_pdos (STATE * states, REAL Emin, REAL Emax, int E_POINTS)
 {
 
     int istate, kpt, n, incx, idx, max_product, iene;

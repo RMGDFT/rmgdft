@@ -73,10 +73,6 @@ void read_control (void)
     /* Read in zaverage output toggle */
     get_data ("z_average_output_mode", &ct.zaverage, OPT, "None");
 
-    /* Read in wait flag toggle */
-    get_data ("wait_flag", &ct.wait_flag, BOOL, "false");
-    if (ct.wait_flag)
-        get_data ("wait_flag_count", &ct.wait_flag, INT, "15");
 
     /* Set up and validate input options */
     char boundary_condition_type_opts[] = "Periodic\n"
@@ -94,7 +90,7 @@ void read_control (void)
     get_data ("charge_mixing_type", NULL, INIT | OPT, charge_mixing_type_opts);
     
     /* Read type of charge density mixing */
-    get_data ("charge_mixing_type", NULL, OPT, "Linear");
+    get_data ("charge_mixing_type", NULL, OPT, "Pulay");
 
     /*Order of Pulay mixing for charge density*/
     get_data ("charge_pulay_order", &ct.charge_pulay_order, INT, "5");
@@ -157,27 +153,8 @@ void read_control (void)
     get_data ("write_pseudopotential_plots", NULL, BOOL, "false");
 
     /* Write wavefunctions into output file, every main.count of steps */
-    get_data ("write_waves_to_file", &ct.checkpoint, BOOL, "true");
-    if (ct.checkpoint)
-    {
-        get_data ("md_steps_til_write_waves", &ct.checkpoint, INT, "10");
-        /*If steps_til_write_waves is 0 this is most likely an error
-         * 1 was probably intended (i.e.) writing out every step*/
-        if (ct.checkpoint == 0)
-            ct.checkpoint = 1;
-    }
+    get_data ("write_data_period", &ct.checkpoint, INT, "5");
 
-
-    /* How often calculate energy, print out eigenvalues and occupancies  */
-    get_data ("print_energy_and_eigenvalues", &ct.outcount, BOOL, "true");
-    if (ct.outcount)
-    {
-        get_data ("scf_steps_til_energy_and_eigenv_print", &ct.outcount, INT, "1");
-        /*If steps_til_energy_and_eigenv_print is 0 this is most likely an error
-         * 1 was probably intended (i.e.) writing out every step*/
-        if (ct.outcount == 0)
-            ct.outcount = 1;
-    }
 
     /* sorting flag */
     get_data ("sort_wavefunctions", &ct.sortflag, BOOL, "true");
@@ -210,7 +187,7 @@ void read_control (void)
     get_data ("end_diagonalization_step", &ct.end_diag, INT, "100");
 
     /*How many steps between writeout of eigenvalues */
-    get_data ("write_eigvals_period", &ct.write_eigvals_period, INT, "10");
+    get_data ("write_eigvals_period", &ct.write_eigvals_period, INT, "5");
 
     /* Set up and validate input options */
     char calculation_mode_opts[] = "Quench Electrons\n"
@@ -247,19 +224,19 @@ void read_control (void)
     {
         /* set constraint type for switch in Common/constrain.c */
         ct.constrainforces = 5;
-
-        /* NEB spring constant */
-        get_data ("neb_spring_constant", &ct.neb_spring_constant, DBL, "0.5");
     }
 
+    /* NEB spring constant */
+    get_data ("neb_spring_constant", &ct.neb_spring_constant, DBL, "0.5");
+
     /* do spin polarized calculation? */
-    get_data ("enable_spin_polarized_calculation", &ct.spin_flag, BOOL, "false");
+    get_data ("spin_polarization", &ct.spin_flag, BOOL, "false");
 
     get_data ("equal_initial_density", &ct.init_equal_density_flag, BOOL, "false");
     /* Initialized spin up and down charge density equally? */
 
-    get_data ("get_dos_flag", &ct.get_dos_flag, BOOL, "false");
-    /* Initialize get_dos_flag to be false */
+    /*Flag to write partial density of states*/
+    get_data ("write_pdos", &ct.pdos_flag, BOOL, "false");
 
     /*maximum number of md steps */
     get_data ("max_md_steps", &ct.max_md_steps, INT, "100");
@@ -277,22 +254,22 @@ void read_control (void)
     tbuf = tptr;
 
     /* Set up and validate input options */
-    char rmg_temperature_control_opts[] = "Nose Hoover Chains\n"
+    char md_temperature_control_opts[] = "Nose Hoover Chains\n"
                                           "Anderson Rescaling";
-    get_data ("rmg_temperature_control", NULL, INIT | OPT, rmg_temperature_control_opts);
+    get_data ("md_temperature_control", NULL, INIT | OPT, md_temperature_control_opts);
 
     /* Set up and validate input options */
     /* Temperature Control Info */
-    get_data ("rmg_temperature_control", &ct.tcontrol, OPT, "Nose Hoover Chains");
+    get_data ("md_temperature_control", &ct.tcontrol, OPT, "Nose Hoover Chains");
 
     /* Target MD Temperature */
-    get_data ("rmg_temperature_K", &ct.nose.temp, DBL, "300");
+    get_data ("md_temperature", &ct.nose.temp, DBL, "300");
 
     /* Nose Thermostats */
-    get_data ("rmg_number_of_nose_thermostats", &ct.nose.m, INT, "5");
+    get_data ("md_number_of_nose_thermostats", &ct.nose.m, INT, "5");
 
     /* Nose oscillation frequency */
-    get_data ("rmg_nose_oscillation_frequency_THz", &ct.nose.fNose, DBL, "15.59");
+    get_data ("md_nose_oscillation_frequency_THz", &ct.nose.fNose, DBL, "15.59");
 
 
     /* Nose randomize velocity flag */
@@ -306,12 +283,12 @@ void read_control (void)
 
 
     /* Set up and validate input options */
-    char rmg_integration_order_opts[] = "2nd Velocity Verlet\n"
+    char md_integration_order_opts[] = "2nd Velocity Verlet\n"
                                         "3rd Beeman-Velocity Verlet\n"
                                         "5th Beeman-Velocity Verlet";
-    get_data ("rmg_integration_order", NULL, INIT | OPT, rmg_integration_order_opts);
+    get_data ("md_integration_order", NULL, INIT | OPT, md_integration_order_opts);
     /* MD Integration flag */
-    get_data ("rmg_integration_order", &ct.mdorder, OPT, "2nd Velocity Verlet");
+    get_data ("md_integration_order", &ct.mdorder, OPT, "2nd Velocity Verlet");
 
     /* Ionic timestep */
     get_data ("ionic_time_step", &ct.iondt, DBL, "50");
@@ -351,29 +328,9 @@ void read_control (void)
     get_data ("dynamic_time_counter", &ct.relax_steps_counter, INT, "0");
 
 
-    /* DX movie flag */
-    get_data ("dx_movie", &ct.chmovie, BOOL, "false");
-    if (ct.chmovie)
-        get_data ("md_steps_per_movie_frame", &ct.chmovie, INT, "1");
-
-
-    /* RMV movie flag */
-    get_data ("rm_movie", &ct.rmvmovie, BOOL, "false");
-    if (ct.rmvmovie)
-        get_data ("md_steps_per_movie_frame", &ct.rmvmovie, INT, "1");
-
-    /* XBS movie flag */
-    get_data ("xbs_movie", &ct.xbsmovie, BOOL, "false");
-    if (ct.xbsmovie)
-        get_data ("md_steps_per_movie_frame", &ct.xbsmovie, INT, "1");
-
 
     /* Milliken population flag */
     get_data ("milliken_population", &ct.domilliken, BOOL, "false");
-
-    /* override occupations */
-    get_data ("restart_overwrite_occupation_numbers", &ct.override_occ, BOOL, "false");
-
 
     /* Max number of sweeps in get_vh*/
     get_data ("hartree_max_sweeps", &ct.hartree_max_sweeps, INT, "100");
@@ -443,20 +400,16 @@ void read_control (void)
     get_data ("interpolation_type", &ct.interp_flag, OPT, "Cubic Polynomial");
 
     /*B-spline interpolation order */
-    if (verify ("interpolation_type", "B-spline"))
-    {
+    get_data ("b_spline_order", &ct.interp_order, INT, "5");
 
-        get_data ("b_spline_order", &ct.interp_order, INT, "5");
+    /*B-spline order must be 8 or less */
+    Dprintf ("Interpolation order was set to %d", ct.interp_order);
+    if (ct.interp_order > 8)
+	error_handler ("Interpolation order too high");
+    if (ct.interp_order <= 0)
+	error_handler ("Invalid interpolation order");
 
-        /*B-spline order must be 8 or less */
-        Dprintf ("Interpolation order was set to %d", ct.interp_order);
-        if (ct.interp_order > 8)
-            error_handler ("Interpolation order too high");
-        if (ct.interp_order <= 0)
-            error_handler ("Invalid interpolation order");
-
-        get_data ("b_spline_trade_order", &ct.interp_trade, INT, "3");
-    }
+    get_data ("b_spline_trade_order", &ct.interp_trade, INT, "3");
 
 
     /* Get k-points and weights */
@@ -484,22 +437,14 @@ void read_control (void)
         for (tmp = 0; tmp < ct.num_kpts; tmp++)
             ct.kp[tmp].kweight /= ftmp;
 
-    /* optional kpoints consistency check */
-    if (get_data ("number_of_kpoints", &tmp, INT, NULL))
-        if (tmp != ct.num_kpts)
-        {
-            printf ("number_of_kpoints = %d != %d = kpoint count\n", tmp, ct.num_kpts);
-            error_handler ("Mismatch between number_of_kpoints and kpoint count\n");
-        }
-
 
     /* Set up and validate input options */
-    char length_units_opts[] = "Bohr\n"
+    char crds_units_opts[] = "Bohr\n"
                                "Angstrom";
-    get_data ("length_units", NULL, INIT | OPT, length_units_opts);
+    get_data ("crds_units", NULL, INIT | OPT, crds_units_opts);
 
     /*This is not read into any variable */
-    get_data ("length_units", &tmp, OPT, "Bohr");
+    get_data ("crds_units", &tmp, OPT, "Bohr");
 
     /* Set up and validate input options */
     char bravais_lattice_type_opts[] = "None\n"
@@ -532,7 +477,7 @@ void read_control (void)
     require (get_data ("gamma", &ct.celldm[5], DBL, NULL));
 
     /*Transform to atomic units, which are used internally if input is in angstrom */
-    if (verify ("length_units", "Angstrom"))
+    if (verify ("crds_units", "Angstrom"))
     {
         ct.celldm[0] *= A_a0;
         ct.celldm[1] *= A_a0;
@@ -610,17 +555,6 @@ void read_control (void)
 
     /* Whether to write full memory usage report at the end of calculation */
     get_data ("write_memory_report", &ct.write_memory_report, BOOL, "false");
-
-    /* override type, positions and force control characters */
-    /* 0=do not override and 1=override */
-    get_data ("restart_coordinates_with_current_as_initial", &ct.override_initial, BOOL,
-              "false");
-
-    /* Set up and validate input options */
-    char restart_coordinates_from_opts[] = "Control File\n"
-                                           "Wave File";
-    get_data ("restart_coordinates_from", NULL, INIT | OPT, restart_coordinates_from_opts);
-    get_data ("restart_coordinates_from", &ct.override_current, OPT, "Wave File");
 
     /*Count number of species */
     require (get_data ("pseudopotential", &ct.num_species, INIT | LIST, NULL));
@@ -734,23 +668,6 @@ void read_control (void)
             error_handler ("Mismatch in number of ions and number of read constraints");
         }
     }
-
-    /* optional number of atoms consistency check */
-    if (get_data ("number_of_atoms", &tmp, INT, NULL))
-        if (tmp != ct.num_ions)
-        {
-            printf ("number_of_atoms = %d != %d = atoms count\n", tmp, ct.num_ions);
-            error_handler ("Mismatch between number_of_atoms and atoms count");
-        }
-
-    /* optional number of species consistency check */
-    if (get_data ("number_of_species", &tmp, INT, NULL))
-        if (tmp != ct.num_species)
-        {
-            printf ("number_of_species = %d != %d = species count\n", tmp, ct.num_species);
-            error_handler ("Mismatch between number_of_species and species count");
-        }
-
 
     /* Clean up malloc'ed memory */
     my_free (tptr);

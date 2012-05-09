@@ -130,6 +130,6 @@ input_wave_function_file="Wave-soft/wave.out"
 output_wave_function_file="Wave-soft/wave.out"
 
 # Number of SCF steps between writeout of eigenvalues
-# Default: "10"
-write_eigvals_period="10"
+# Default: "5"
+write_eigvals_period="5"
 

@@ -55,7 +55,6 @@ void velup1 (void);
 //void posup (void);
 void velup2 (void);
 
-void movie (FILE *);
 void rms_disp (REAL *, REAL *);
 
 int stepcount = 0;
@@ -132,21 +131,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }                           /* end of if pe */
 
 
-    /* open movie file */
-    if (ct.rmvmovie != 0 && pct.gridpe == 0)
-    {
-        my_fopen (mfp, "traj.rmv", "w");
-        if (setvbuf (mfp, (char *) NULL, _IOFBF, 4096 * 16) != 0)
-            printf ("\n Warning: cant allocate movie io buffer size\n");
-    }
 
-    /* open XBS movie file */
-    if (ct.xbsmovie && pct.gridpe == 0)
-    {
-
-        strcpy (xbs_filename, "traj");
-        xbsfp1 = open_xbs_movie (xbs_filename);
-    }
 
     /* number of substeps used to move charge density */
     isteps = 8;
@@ -415,43 +400,10 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         /* get the total T of the system */
         iontemp = ct.ionke * 2.0 / (3.0 * (REAL) N * kB);
 
-        /* output a frame to the rotmovie file */
-        if ((ct.rmvmovie) && ((ct.md_steps % ct.rmvmovie) == 0))
-        {
-            if (pct.gridpe == 0)
-            {
-                movie (mfp);
-            }
-        }
-
-        /* output xbs frame */
-        if ((pct.gridpe == 0) && (ct.xbsmovie))
-        {
-            if ((ct.md_steps % ct.xbsmovie) == 0)
-                xbsmovie (xbsfp1);
-
-            /*Flush the file from time to time */
-            if ((ct.md_steps) && (ct.md_steps % 10 == 0))
-                fflush (xbsfp1);
-        }
-
-        /* output a charge density file and rmv file for dx */
-        if (ct.chmovie != 0 && (ct.md_steps % ct.chmovie == 0))
-        {
-            /*vol_rho((P0_GRID *)rho,ct.md_steps); */
-            if (pct.gridpe == 0)
-            {
-                strcpy (filename, "rmv");
-                sprintf (filename, "%s.%d", filename, ct.md_steps);
-                my_fopen (dxmfp, filename, "w");
-                movie (dxmfp);
-                fclose (dxmfp);
-            }
-        }
 
         /*write data to output file */
         if (ct.checkpoint)
-            if ((ct.md_steps != 0) && (ct.md_steps % ct.checkpoint == 0))
+            if ( ct.md_steps % ct.checkpoint == 0 )
             {
                 write_restart (ct.outfile, vh, rho, rho_oppo, vxc, states);
                 if (pct.gridpe == 0)
@@ -502,11 +454,6 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (pct.gridpe == 0)
         printf ("\n Total number of SCF steps %d", ct.total_scf_steps);
 
-    if (ct.rmvmovie && pct.gridpe == 0)
-        fclose (mfp);
-
-    if (ct.xbsmovie && pct.gridpe == 0)
-        fclose (xbsfp1);
 
 
     /*Get some memory */
@@ -897,26 +844,6 @@ void velup2 ()
 
 
 
-void movie (FILE * mfp)
-{
-
-    int ion;
-    ION *iptr;
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-
-        /* Get ion pointer */
-        iptr = &ct.ions[ion];
-        fprintf (mfp, " %d %f %f %f %14.10f %14.10f %14.10f\n", iptr->species,
-                 iptr->crds[0],
-                 iptr->crds[1],
-                 iptr->crds[2], iptr->velocity[0], iptr->velocity[1], iptr->velocity[2]);
-
-    }
-    fprintf (mfp, "/end\n");
-
-}                               /* end of movie */
 
 
 void rms_disp (REAL * rms, REAL * trms)
