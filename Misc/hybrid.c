@@ -426,7 +426,17 @@ void rmg_timings (int what, REAL time)
 
 #endif
 
+// Tells us if it's safe to use OMP in a region
+int rmg_is_open_mp_safe(void)
+{
 
+#if !HYBRID_MODEL
+    return 1;
+#else
+    if(in_threaded_region) return 0;
+    return 1;
+#endif
+}
 
 // Tells us if we are executing a parallel region that is a loop over orbitals
 int is_loop_over_states(void)
@@ -461,3 +471,22 @@ void scf_barrier_init(int nthreads) {
 void scf_barrier_destroy(void) {
 }
 #endif
+
+
+// Some of our routines can be called from serial or parallel regions. To avoid
+// oversubscription of resources when using OMP in these routines use the following
+// set of functions.
+void RMG_set_omp_parallel(void)
+{
+    if(rmg_is_open_mp_safe()) {
+        omp_set_num_threads(RMG_OMP_THREADS);
+    }
+    else {
+        omp_set_num_threads(1);
+    }
+}
+
+void RMG_set_omp_single(void)
+{
+
+}
