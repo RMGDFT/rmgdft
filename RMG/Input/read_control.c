@@ -613,6 +613,124 @@ void read_control (void)
         error_handler ("No ion coordinates available");
     }
 
+
+    /*Read or initialize ionic velocities*/
+    if (verify("ionic_velocities", NULL))
+    {
+	tmp = 0;
+	while (get_data ("ionic_velocities", tbuf, ITEM | STR, NULL))
+	{
+	    sscanf (tbuf, "%lf %lf %lf",
+		    &ct.ions[tmp].velocity[0], &ct.ions[tmp].velocity[1], &ct.ions[tmp].velocity[2]);
+	    tmp++;
+
+	    if (tmp >= ct.num_ions) error_handler("Velocities specified for too many atoms");
+	}
+
+	if (tmp !=  ct.num_ions) 
+	    error_handler("Mismatch between number of velocities (%d) and number of ions (%d)", tmp, ct.num_ions); 
+    }
+
+    else
+    {
+    
+	for (tmp = 0; tmp < ct.num_ions; tmp++)
+	{
+	    ct.ions[tmp].velocity[0] = 0.0;
+	    ct.ions[tmp].velocity[1] = 0.0;
+	    ct.ions[tmp].velocity[2] = 0.0;
+	}
+
+    }
+    
+    
+    /*Read or initialize ionic forces*/
+    if (verify("ionic_forces", NULL))
+    {
+	tmp = 0;
+	while (get_data ("ionic_forces", tbuf, ITEM | STR, NULL))
+	{
+	    sscanf (tbuf, "%lf %lf %lf",
+		    &ct.ions[tmp].force[0][0], &ct.ions[tmp].force[0][1], &ct.ions[tmp].force[0][2]);
+	    tmp++;
+
+	    if (tmp >= ct.num_ions) error_handler("Forces specified for too many atoms");
+	}
+
+	if (tmp !=  ct.num_ions) 
+	    error_handler("Mismatch between number of forces (%d) and number of ions (%d)", tmp, ct.num_ions); 
+    }
+
+    else
+    {
+    
+	for (tmp = 0; tmp < ct.num_ions; tmp++)
+	{
+	    ct.ions[tmp].force[0][0] = 0.0;
+	    ct.ions[tmp].force[0][1] = 0.0;
+	    ct.ions[tmp].force[0][2] = 0.0;
+	}
+
+    }
+
+    /*Read or intialize ionic force pointer*/
+    if (verify("ionic_force_pointer", NULL))
+    {
+	get_data ("ionic_force_pointer", tbuf, ITEM | STR, NULL);
+	sscanf (tbuf, "%d %d %d", &ct.fpt[0], &ct.fpt[1], &ct.fpt[2], &ct.fpt[3]);
+    }
+    else
+    {
+        ct.fpt[0] = 0;
+        ct.fpt[1] = 1;
+        ct.fpt[2] = 2;
+        ct.fpt[3] = 3;
+    }
+
+    get_data ("nose_positions", tbuf, ITEM | STR, "0 0 0 0 0 0 0 0 0 0");
+    sscanf (tbuf, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+	    &ct.nose.xx[0], &ct.nose.xx[1], &ct.nose.xx[2], &ct.nose.xx[3], &ct.nose.xx[4], 
+	    &ct.nose.xx[5], &ct.nose.xx[6], &ct.nose.xx[7], &ct.nose.xx[8], &ct.nose.xx[9]);
+    
+    get_data ("nose_velocities", tbuf, ITEM | STR, "0 0 0 0 0 0 0 0 0 0");
+    sscanf (tbuf, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+	    &ct.nose.xv[0], &ct.nose.xv[1], &ct.nose.xv[2], &ct.nose.xv[3], &ct.nose.xv[4], 
+	    &ct.nose.xv[5], &ct.nose.xv[6], &ct.nose.xv[7], &ct.nose.xv[8], &ct.nose.xx[9]);
+    
+    get_data ("nose_masses", tbuf, ITEM | STR, "0 0 0 0 0 0 0 0 0 0");
+    sscanf (tbuf, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+	    &ct.nose.xq[0], &ct.nose.xq[1], &ct.nose.xq[2], &ct.nose.xq[3], &ct.nose.xq[4], 
+	    &ct.nose.xq[5], &ct.nose.xq[6], &ct.nose.xq[7], &ct.nose.xq[8], &ct.nose.xq[9]);
+
+	
+    tmp = 0;
+    while (get_data ("nose_forces", tbuf, ITEM | STR, NULL))
+    {
+	sscanf (tbuf, " %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+		&ct.nose.xf[tmp][0], &ct.nose.xf[tmp][1], &ct.nose.xf[tmp][2], &ct.nose.xf[tmp][3], &ct.nose.xf[tmp][4], 
+		&ct.nose.xf[tmp][5], &ct.nose.xf[tmp][6], &ct.nose.xf[tmp][7], &ct.nose.xf[tmp][8], &ct.nose.xf[tmp][9]);
+	tmp++;
+
+	if (tmp >= 4) error_handler("Too many nose_forces, only 4 expected");
+    }
+
+    if ((tmp > 0) && (tmp !=  4)) 
+	error_handler("Wrong number of Nose force (%d), 4 are expected", tmp); 
+
+
+
+
+
+    /* get? multi-image topology if present in input */
+    if (get_data( "image_communicator_topology", &tmp, INIT|LIST, NULL))
+
+
+
+    /* get? multi-image topology if present in input */
+    if (get_data( "image_communicator_topology", &tmp, INIT|LIST, NULL))
+
+
+
     /* get? multi-image topology if present in input */
     if (get_data( "image_communicator_topology", &tmp, INIT|LIST, NULL))
     {

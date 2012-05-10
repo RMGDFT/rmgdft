@@ -288,18 +288,6 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         }
 
 
-        /* set the initial force pointer array up */
-        ct.fpt[0] = 0;
-        ct.fpt[1] = 1;
-        ct.fpt[2] = 2;
-        ct.fpt[3] = 3;
-
-
-        /*Initialize velocities */
-        for (ion = 0; ion < ct.num_ions; ion++)
-            for (ic = 0; ic < 3; ic++)
-                ct.ions[ion].velocity[ic] = 0.0;
-
     }                           /* end if */
 
 
