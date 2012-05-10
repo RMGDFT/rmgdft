@@ -57,6 +57,8 @@ REAL app_cilr_ortho (REAL *a, REAL *b, REAL *c, int dimx, int dimy,
                      int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
 REAL app_cil (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
               REAL gridhy, REAL gridhz);
+REAL app_cil_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
+              REAL gridhy, REAL gridhz);
 REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz);
 void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz);
@@ -389,6 +391,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
 void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI);
 #endif
 void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI, int kpt);
+void init_subdiag(void);
 
 
 void ylmr2 (double *r, double *ylm);

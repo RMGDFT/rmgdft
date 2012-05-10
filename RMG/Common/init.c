@@ -429,7 +429,12 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
 
     }
+
     
+    // Set up some data structures used in subdiag */
+    init_subdiag();
+
+
     Dprintf ("If diagonalization is requested do a subspace diagonalization");
     if (ct.initdiag)
     {
