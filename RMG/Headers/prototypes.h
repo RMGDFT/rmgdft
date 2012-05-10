@@ -246,7 +246,7 @@ void read_control(void);
 void write_pdb (void);
 int read_atom_line(char *species, REAL *crds, int *movable, FILE *fhand, char *tbuf, int index);
 int assign_species (CONTROL * c, char *buf);
-void read_data (char *name, REAL *vh, REAL *rho, REAL *rho_oppo, REAL *vxc,
+void read_data (char *name, REAL *vh, REAL *rho, REAL *vxc,
                 STATE *states);
 
 void read_pseudo (void);
@@ -496,6 +496,8 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
 void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
 void init_trade_imagesx_async(void);
 void  get_rho_oppo (REAL * rho, REAL * rho_oppo);
+void get_opposite_eigvals (STATE * states);
+void get_opposite_occupancies (STATE * states);
 
 #if GPU_ENABLED
 void init_gpu (void);

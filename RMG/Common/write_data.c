@@ -73,7 +73,7 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     int gamma;
     int nk, ik;
     int ns, is;
-    int ia, idx, nspin = (ct.spin_flag + 1);
+    int ia;
     REAL time0, write_time;
 
     time0 = my_crtc ();
@@ -124,12 +124,6 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* write the total electronic density */
     write_double (fhand, rho, fgrid_size);
 
-    if (ct.spin_flag)
-    {
-    	/* write the electronic density for the opposite spin */
-   	 write_double (fhand, rho_oppo, fgrid_size); 
-    }
-
     /* write Vxc */
     write_double (fhand, vxc, fgrid_size);
 
@@ -139,34 +133,28 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* write the state occupations, in spin-polarized calculation, 
      * it's occupation for the processor's own spin */ 
     {
-        STATE *sp;
-	for (idx = 0; idx < nspin; idx++)
-	{
-            sp = states;
-            for (ik = 0; ik < nk; ik++)
-            	for (is = 0; is < ns; is++)
-            	{
-                	write_double (fhand, &sp->occupation[idx], 1); 
-                	sp++;
-            	}
-	}
+	STATE *sp;
+	sp = states;
+	for (ik = 0; ik < nk; ik++)
+	    for (is = 0; is < ns; is++)
+	    {
+		write_double (fhand, &sp->occupation[0], 1); 
+		sp++;
+	    }
     }
     
 
     /* write the state eigenvalues, while in spin-polarized case, 
      * it's eigenvalues of processor's own spin */
     {
-        STATE *sp;
-	for (idx = 0; idx < nspin; idx++)
-	{
-        	sp = states;
-                for (ik = 0; ik < nk; ik++)
-            		for (is = 0; is < ns; is++)
-            		{
-                		write_double (fhand, &sp->eig[idx], 1);
-                		sp++;
-            		}
-	}
+	STATE *sp;
+	sp = states;
+	for (ik = 0; ik < nk; ik++)
+	    for (is = 0; is < ns; is++)
+	    {
+		write_double (fhand, &sp->eig[0], 1);
+		sp++;
+	    }
 
     }
 

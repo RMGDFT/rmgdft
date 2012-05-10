@@ -54,7 +54,7 @@ static void read_int (int fhand, int *ip, int count);
 
 /* Reads the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things from a file. */
-void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
+void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 {
     char newname[MAX_PATH + 200];
     int fhand;
@@ -67,7 +67,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     int fgrid_size;
     int gamma;
     int nk, ik;
-    int ns, is, idx, nspin = (ct.spin_flag + 1);
+    int ns, is;
     int na, ia;
     int i;
 
@@ -80,13 +80,13 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     printf("\nspin flag =%d\n", ct.spin_flag);
     if (ct.spin_flag)
     {
-	    if (pct.spinpe == 0)
-		    sprintf(newname, "%s.up%d", name, pct.gridpe);
-	    else          /* if (pct.spinpe == 1)  */  
-		    sprintf(newname, "%s.dw%d", name, pct.gridpe);
+	if (pct.spinpe == 0)
+	    sprintf(newname, "%s.up%d", name, pct.gridpe);
+	else          /* if (pct.spinpe == 1)  */  
+	    sprintf(newname, "%s.dw%d", name, pct.gridpe);
     }
     else
-    	    sprintf (newname, "%s%d", name, pct.gridpe);
+	sprintf (newname, "%s%d", name, pct.gridpe);
 
 
     my_open (fhand, newname, O_RDWR, S_IREAD | S_IWRITE);
@@ -97,20 +97,20 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != NX_GRID)
-        error_handler ("Wrong NX_GRID");
+	error_handler ("Wrong NX_GRID");
     if (grid[1] != NY_GRID)
-        error_handler ("Wrong NY_GRID");
+	error_handler ("Wrong NY_GRID");
     if (grid[2] != NZ_GRID)
-        error_handler ("Wrong NZ_GRID");
+	error_handler ("Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != PE_X)
-        error_handler ("Wrong PE_X");
+	error_handler ("Wrong PE_X");
     if (pe[1] != PE_Y)
-        error_handler ("Wrong PE_Y");
+	error_handler ("Wrong PE_Y");
     if (pe[2] != PE_Z)
-        error_handler ("Wrong PE_Z");
+	error_handler ("Wrong PE_Z");
 
     npe = (pe[0] * pe[1] * pe[2]);
     grid_size = (grid[0] * grid[1] * grid[2]) / npe;
@@ -118,11 +118,11 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != FPX0_GRID / PX0_GRID)
-        error_handler ("Wrong fine grid info");
+	error_handler ("Wrong fine grid info");
     if (fine[1] != FPY0_GRID / PY0_GRID)
-        error_handler ("Wrong fine grid info");
+	error_handler ("Wrong fine grid info");
     if (fine[2] != FPZ0_GRID / PZ0_GRID)
-        error_handler ("Wrong fine grid info");
+	error_handler ("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
@@ -138,12 +138,12 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     if (gamma != GAMMA_PT)
-        error_handler ("Wrong gamma data");
+	error_handler ("Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
     if (nk != ct.num_kpts && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
-        error_handler ("Wrong number of k points");
+	error_handler ("Wrong number of k points");
 
     printf ("read_data: gamma = %d\n", gamma);
     printf ("read_data: nk = %d\n", ct.num_kpts); 
@@ -151,8 +151,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* read number of states */  
     read_int (fhand, &ns, 1);
     if (ns != ct.num_states)
-    	error_handler ("Wrong number of states");
-    
+	error_handler ("Wrong number of states");
+
     printf ("read_data: ns = %d\n", ns);
 
 
@@ -162,14 +162,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
     /* read density */
     read_double (fhand, rho, fgrid_size);
-    if (ct.spin_flag)
-    {
-    	read_double (fhand, rho_oppo, fgrid_size);
-        printf ("read_data: read spin up 'rho'\n");
-        printf ("read_data: read spin down 'rho_oppo'\n");
-    }
-    else
-    	printf ("read_data: read 'rho'\n");
+    printf ("read_data: read 'rho'\n");
 
     /* read Vxc */
     read_double (fhand, vxc, fgrid_size);
@@ -178,60 +171,52 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
     /* read state occupations */
     {
-        STATE *sp;
-        REAL *occ;
-        my_malloc (occ, nk * ns * nspin, REAL); 
-        read_double (fhand, occ, (nk * ns * nspin));
+	STATE *sp;
+	REAL *occ;
+	my_malloc (occ, nk * ns, REAL); 
+	read_double (fhand, occ, (nk * ns));
 
-       	printf ("read_data: read 'occupations'\n"); 
+	printf ("read_data: read 'occupations'\n"); 
 
 
-        if (ct.forceflag != BAND_STRUCTURE)
-        {
-            REAL occ_total = 0.0; 
+	if (ct.forceflag != BAND_STRUCTURE)
+	{
+	    REAL occ_total = 0.0; 
 
-	    /* occupation */
-	    for (idx = 0; idx < nspin; idx++)
-	    {
-	    	sp = states;
-            	for (ik = 0; ik < nk; ik++)
-                	for (is = 0; is < ns; is++)
-                	{
-                    		occ_total += ( sp->occupation[idx] = occ[ik * ns + is + idx * nk * ns] );
-                    		sp++;
-			}
-
-	    }
- 
-
-            /* 
-               since we are using floats on the data file the precision
-               of the occupations is worse than 1e-10 required by the fill() routine
-               therefore we need to 'renormalize' the occupations so
-               that they add up to an integer
-               it's a hack I know, but whatever... not a biggie
-             */
-
-            {
-                REAL iocc_total = (REAL) (int) (occ_total + 0.5);
-                REAL fac = iocc_total / occ_total;
-               
-		/* Normalize occupation */ 
-		for (idx = 0; idx < nspin; idx++)
+	    sp = states;
+	    for (ik = 0; ik < nk; ik++)
+		for (is = 0; is < ns; is++)
 		{
-                	sp = states;
-                	for (ik = 0; ik < nk; ik++)
-                    		for (is = 0; is < ns; is++)
-                    		{
-                        		sp->occupation[idx] *= fac;
-                        		sp++;
-                    		}
+		    occ_total += ( sp->occupation[0] = occ[ik * ns + is] );
+		    sp++;
 		}
-		/* end of normailization*/
-            }
 
-        }             /* end if */
-        
+
+
+	    /* 
+	       since we are using floats on the data file the precision
+	       of the occupations is worse than 1e-10 required by the fill() routine
+	       therefore we need to 'renormalize' the occupations so
+	       that they add up to an integer
+	       it's a hack I know, but whatever... not a biggie
+	     */
+
+	    {
+		REAL iocc_total = (REAL) (int) (occ_total + 0.5);
+		REAL fac = iocc_total / occ_total;
+
+		    sp = states;
+		    for (ik = 0; ik < nk; ik++)
+			for (is = 0; is < ns; is++)
+			{
+			    sp->occupation[0] *= fac;
+			    sp++;
+			}
+		/* end of normailization*/
+	    }
+
+	}             /* end if */
+
 	my_free (occ);
 
     }           /* end of read occupations */
@@ -242,21 +227,18 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     /* read state eigenvalues, not needed really */
     {
 
-        STATE *sp;
+	STATE *sp;
 
 	/* Read eigenvalue in pairwised case, while in polarized case, 
 	 * it's the eigenvalue for proceesor's own spin  */ 
-	for (idx = 0; idx < nspin; idx++)
-	{
-        	sp = states;
-        	for (ik = 0; ik < nk; ik++)
-            		for (is = 0; is < ns; is++)
-            		{
-                		read_double (fhand, &sp->eig[idx], 1);
-                		sp++;
-            		}
-	}
-       	
+	sp = states;
+	for (ik = 0; ik < nk; ik++)
+	    for (is = 0; is < ns; is++)
+	    {
+		read_double (fhand, &sp->eig[0], 1);
+		sp++;
+	    }
+
 	printf ("read_data: read 'eigenvalues'\n");
 
     }      /* end of read eigenvalues */
@@ -265,57 +247,53 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
     /* read wavefunctions */
     {
-        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
-        STATE *sp;
+	int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
+	STATE *sp;
 
-        sp = states;
-        for (ik = 0; ik < nk; ik++)
-        {
-            for (is = 0; is < ns; is++)
-            {
+	sp = states;
+	for (ik = 0; ik < nk; ik++)
+	{
+	    for (is = 0; is < ns; is++)
+	    {
 
-                read_double (fhand, sp->psiR, wvfn_size);
-                sp++;
+		read_double (fhand, sp->psiR, wvfn_size);
+		sp++;
 
-            }
-            /*  for calculating band structures, 
-               only read-in one wave function (?) */
-            if (ct.forceflag == BAND_STRUCTURE)
-                return;
-        }
+	    }
+	    /*  for calculating band structures, 
+		only read-in one wave function (?) */
+	    if (ct.forceflag == BAND_STRUCTURE)
+		return;
+	}
 
-        printf ("read_data: read 'wfns'\n");
+	printf ("read_data: read 'wfns'\n");
 
     }
-
-
-
-
 
 
     /* read number of ions */
     read_int (fhand, &na, 1);
     if (na != ct.num_ions)
-        error_handler ("Wrong number of ions");
+	error_handler ("Wrong number of ions");
 
 
     /* read current ionic cartesian positions */
     {
-        REAL r[3];
-        for (ia = 0; ia < na; ia++)
-        {
-            read_double (fhand, r, 3);
+	REAL r[3];
+	for (ia = 0; ia < na; ia++)
+	{
+	    read_double (fhand, r, 3);
 
 	    for (i = 0; i < 3; i++)
 		ct.ions[ia].crds[i] = r[i];
 
-        }
+	}
 
 
-        /* read current ionic crystal positions */
-        for (ia = 0; ia < na; ia++)
-        {
-            read_double (fhand, r, 3);
+	/* read current ionic crystal positions */
+	for (ia = 0; ia < na; ia++)
+	{
+	    read_double (fhand, r, 3);
 
 	    for (i = 0; i < 3; i++)
 		ct.ions[ia].xtal[i] =
@@ -323,49 +301,49 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
 	    to_cartesian (ct.ions[ia].xtal, ct.ions[ia].crds);
 
-        }
+	}
 
-        /* Overwrite the initial positions with current positions, 
-         * may be useful for constraint dynamics  */
+	/* Overwrite the initial positions with current positions, 
+	 * may be useful for constraint dynamics  */
 
-        /* read original ionic cartesian positions */
-        for (ia = 0; ia < na; ia++)
-        {
-            read_double (fhand, &ct.ions[ia].icrds[0], 3);
+	/* read original ionic cartesian positions */
+	for (ia = 0; ia < na; ia++)
+	{
+	    read_double (fhand, &ct.ions[ia].icrds[0], 3);
 
-        }
-
-
-        /* read original ionic crystal positions */
-        for (ia = 0; ia < na; ia++)
-        {
-            read_double (fhand, &ct.ions[ia].ixtal[0], 3);
-
-        }
+	}
 
 
-        /* read ionic velocities */
-        for (ia = 0; ia < na; ia++)
-        {
-            read_double (fhand, &ct.ions[ia].velocity[0], 3);
-        }
+	/* read original ionic crystal positions */
+	for (ia = 0; ia < na; ia++)
+	{
+	    read_double (fhand, &ct.ions[ia].ixtal[0], 3);
 
-        /* read forces pointer */
-        read_int (fhand, &ct.fpt[0], 4);
-
-        /* read ionic forces */
-        for (ia = 0; ia < na; ia++)
-            read_double (fhand, &ct.ions[ia].force[0][0], 3 * 4);
+	}
 
 
-        /* read Nose positions,velocities, masses and forces from the file */
-        read_double (fhand, &ct.nose.xx[0], 10);
-        read_double (fhand, &ct.nose.xv[0], 10);
-        read_double (fhand, &ct.nose.xq[0], 10);
-        read_double (fhand, &ct.nose.xf[0][0], 4 * 10);
-    
-        /* read ionic timestep*/
-        read_double (fhand, &ct.iondt, 1);
+	/* read ionic velocities */
+	for (ia = 0; ia < na; ia++)
+	{
+	    read_double (fhand, &ct.ions[ia].velocity[0], 3);
+	}
+
+	/* read forces pointer */
+	read_int (fhand, &ct.fpt[0], 4);
+
+	/* read ionic forces */
+	for (ia = 0; ia < na; ia++)
+	    read_double (fhand, &ct.ions[ia].force[0][0], 3 * 4);
+
+
+	/* read Nose positions,velocities, masses and forces from the file */
+	read_double (fhand, &ct.nose.xx[0], 10);
+	read_double (fhand, &ct.nose.xv[0], 10);
+	read_double (fhand, &ct.nose.xq[0], 10);
+	read_double (fhand, &ct.nose.xf[0][0], 4 * 10);
+
+	/* read ionic timestep*/
+	read_double (fhand, &ct.iondt, 1);
 
     }
 
@@ -387,7 +365,7 @@ static void read_double (int fhand, double * rp, int count)
     size = count * sizeof (double);
 
     if (size != read (fhand, rp, size))
-        error_handler ("error reading");
+	error_handler ("error reading");
 
 }
 static void read_float (int fhand, REAL * rp, int count)
@@ -400,10 +378,10 @@ static void read_float (int fhand, REAL * rp, int count)
     size = count * sizeof (float);
 
     if (size != read (fhand, buf, size))
-        error_handler ("error reading");
+	error_handler ("error reading");
 
     for (i = 0; i < count; i++)
-        rp[i] = (REAL) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
+	rp[i] = (REAL) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
 
     my_free (buf);
 }
@@ -416,7 +394,7 @@ static void read_int (int fhand, int *ip, int count)
     size = count * sizeof (int);
 
     if (size != read (fhand, ip, size))
-        error_handler ("error reading");
+	error_handler ("error reading");
 
 }
 

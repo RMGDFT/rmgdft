@@ -246,7 +246,15 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     Dprintf ("If not an initial run read data from files");
     if (ct.runflag == 1)
     {
-        read_data (ct.infile, vh, rho, rho_oppo, vxc, states);
+        read_data (ct.infile, vh, rho, vxc, states);
+    
+	/*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
+	if (ct.spin_flag)
+	{
+	    get_rho_oppo (rho, rho_oppo);
+	    get_opposite_eigvals (states);
+	    get_opposite_occupancies (states);
+	}
     }
     else 
     {
