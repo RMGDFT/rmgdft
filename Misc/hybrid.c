@@ -473,6 +473,7 @@ void scf_barrier_destroy(void) {
 #endif
 
 
+#if RMG_OMP_THREADS
 // Some of our routines can be called from serial or parallel regions. To avoid
 // oversubscription of resources when using OMP in these routines use the following
 // set of functions.
@@ -490,3 +491,4 @@ void RMG_set_omp_single(void)
 {
 
 }
+#endif
