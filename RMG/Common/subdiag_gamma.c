@@ -85,6 +85,79 @@ static void print_matrix2 (REAL * matrix, int size);
 static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
 
 
+
+// MPI operations are faster on some systems when the memory is allocated by MPI_Alloc_mem
+// instead of the normal system malloc.
+static REAL *distAij, *distBij, *distCij, *distIij, *distSij;
+static REAL *global_matrix;
+void init_subdiag(void)
+{
+
+    int dist_length, dist_stop, pbasis, num_states, retval, stop;
+    int ione = 1, izero = 0;    /* blas constants */
+    REAL time2;
+
+    /*************************** ScaLapack initialization *************************************/
+
+    time2 = my_crtc ();
+
+    num_states = ct.num_states;
+    if (pct.scalapack_pe)
+    {
+
+        /*Length of distributed matrices (different on each processor) */
+        dist_length =
+            NUMROC (&num_states, &pct.desca[4], &pct.scalapack_myrow, &izero,
+                    &pct.scalapack_nprow) * NUMROC (&num_states, &pct.desca[4], &pct.scalapack_mycol,
+                                                    &izero, &pct.scalapack_npcol);
+
+        /* Every processor for which pct.scalapack_pe should have some data and so dist_length cannot be 0*/
+        if (dist_length == 0)
+	    error_handler(" function NUMROC returned 0, that should not happen");
+            
+
+        /*This holds number of doubles on each PE */
+        dist_stop = dist_length;
+        stop = num_states * num_states;
+#if !GAMMA_PT
+        dist_stop *= 2;
+        stop *= 2;
+#endif
+
+
+        /*Get memory for distributed matrices */
+        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distAij);
+        if(retval != MPI_SUCCESS) {
+            error_handler("Error in MPI_Alloc_mem.\n");
+        }
+        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distBij);
+        if(retval != MPI_SUCCESS) {
+            error_handler("Error in MPI_Alloc_mem.\n");
+        }
+        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distSij);
+        if(retval != MPI_SUCCESS) {
+            error_handler("Error in MPI_Alloc_mem.\n");
+        }
+        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distCij);
+        if(retval != MPI_SUCCESS) {
+            error_handler("Error in MPI_Alloc_mem.\n");
+        }
+        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distIij);
+        if(retval != MPI_SUCCESS) {
+            error_handler("Error in MPI_Alloc_mem.\n");
+        }
+        retval = MPI_Alloc_mem(sizeof(REAL) * stop , MPI_INFO_NULL, &global_matrix);
+        if(retval != MPI_SUCCESS) {
+            error_handler("Error in MPI_Alloc_mem.\n");
+        }
+
+    }
+    rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
+    /********************* Scalapack should be initialized ******************************/
+
+}
+
+
 void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
     int idx, st1, st2, ion, nion, ip, pstop;
@@ -99,16 +172,15 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     int info = 0;
     REAL time1, time2, time3;
-    REAL *global_matrix;
     REAL *tmp_arrayR;
     REAL *tmp_array2R;
     REAL tmp1;
 #if !GAMMA_PT
     REAL *tmp_arrayI;
 #endif
-    REAL *distAij, *distBij, *distCij, *distIij, *distSij;
+//    REAL *distAij, *distBij, *distCij, *distIij, *distSij;
     REAL *vtot, *vtot_eig;
-	int dist_length, dist_stop, pbasis;
+    int dist_length, dist_stop, pbasis;
 
 #if GPU_ENABLED
     cublasStatus_t custat;
@@ -166,7 +238,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #endif
 
 
-
     /*************************** ScaLapack initialization *************************************/
 
     time2 = my_crtc ();
@@ -182,25 +253,35 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         /* Every processor for which pct.scalapack_pe should have some data and so dist_length cannot be 0*/
         if (dist_length == 0)
-	    error_handler(" function NUMROC returned 0, that should not happen");
-            
+        error_handler(" function NUMROC returned 0, that should not happen");
+
 
         /*This holds number of doubles on each PE */
         dist_stop = dist_length;
 #if !GAMMA_PT
         dist_stop *= 2;
 #endif
+        /* Clear distributed matrices */
+        for(idx = 0;idx < dist_stop;idx++) {
+            distAij[idx] = 0.0; 
+        }
+        for(idx = 0;idx < dist_stop;idx++) {
+            distBij[idx] = 0.0; 
+        }
+        for(idx = 0;idx < dist_stop;idx++) {
+            distSij[idx] = 0.0; 
+        }
+        for(idx = 0;idx < dist_stop;idx++) {
+            distCij[idx] = 0.0; 
+        }
+        for(idx = 0;idx < dist_stop;idx++) {
+            distIij[idx] = 0.0; 
+        }
 
-
-        /*Get memory for distributed matrices */
-        my_calloc (distAij, dist_stop, REAL);
-        my_calloc (distBij, dist_stop, REAL);
-        my_calloc (distSij, dist_stop, REAL);
-        my_calloc (distCij, dist_stop, REAL);
-        my_calloc (distIij, dist_stop, REAL);
     }
     rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
+
 
 
     /*Get matrix Aij */
@@ -523,15 +604,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         matgather (distAij, pct.desca, global_matrix, num_states);
 
 
-
-        /*Free memory for distributed matrices */
-        my_free (distSij);
-        my_free (distIij);
-        my_free (distCij);
-        my_free (distBij);
-        my_free (distAij);
-
-
     }                           /*end if (pct.scalapack_pe) */
 
     /*Other processors should have global_matrix set to 0 */
@@ -612,9 +684,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     my_free (work1R);
     my_free (eigs);
     my_free (vtot_eig);
-    my_free (global_matrix);
-
-
 
     rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
