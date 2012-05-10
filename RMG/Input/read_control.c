@@ -617,6 +617,8 @@ void read_control (void)
     /*Read or initialize ionic velocities*/
     if (verify("ionic_velocities", NULL))
     {
+	get_data ("ionic_velocities", NULL, INIT | LIST, NULL);
+	
 	tmp = 0;
 	while (get_data ("ionic_velocities", tbuf, ITEM | STR, NULL))
 	{
@@ -647,6 +649,7 @@ void read_control (void)
     /*Read or initialize ionic forces*/
     if (verify("ionic_forces", NULL))
     {
+	get_data ("ionic_forces", NULL, INIT | LIST, NULL);
 	tmp = 0;
 	while (get_data ("ionic_forces", tbuf, ITEM | STR, NULL))
 	{
