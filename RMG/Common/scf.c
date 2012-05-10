@@ -75,9 +75,6 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* allocate memory for eigenvalue send array and receive array */
     if (ct.spin_flag)
     {
-    	my_malloc (eigval_sd, 2 * ct.num_kpts * ct.num_states, REAL);
-    	eigval_rv = eigval_sd + ct.num_kpts * ct.num_states;
-
     	my_malloc (rho_tot, FP0_BASIS, REAL);
     }
 
@@ -262,37 +259,10 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     
     rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
 
-    if (ct.spin_flag) 
-    {   
-        /*Prepare the sending buffer of eigenvalues */
-	st = 0;
-        for (kpt =0; kpt < ct.num_kpts; kpt++)
-	{
-		for (st1 = 0; st1 < ct.num_states; st1++)
-		{	
-			eigval_sd[st] = ct.kp[kpt].kstate[st1].eig[0];
-			st += 1;
-		}	
-	}
 
- 
-        /*Communicate for spin up and spin down energy eigenvalues*/    
-    	MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
-		     eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    if (ct.spin_flag)
+	get_opposite_eigvals (states);
 
-	
-	/* Unpack the received eigenvalue to state structure */
-	st = 0;
-        for (kpt =0; kpt < ct.num_kpts; kpt++)
-	{
-		for (st1 = 0; st1 < ct.num_states; st1++)
-		{	
-			ct.kp[kpt].kstate[st1].eig[1] = eigval_rv[st];
-			st += 1;
-			
-		}	
-	} 
-    }
 	
 
 
@@ -322,11 +292,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     mix_rho(new_rho, rho, rhocore, FP0_BASIS, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
     if (ct.spin_flag)
-    {
-    	/*  Communite for spin up and spin down density,  blocked communication like MPI_Send and MPI_Recv not work ? */
-    	MPI_Irecv(rho_oppo,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[1]);
-    	MPI_Isend(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &req[0]);
-    }
+	get_rho_oppo (rho,  rho_oppo);
     
     time2 = my_crtc ();
     rmg_timings (RHO_TIME, (time2 - time1));
@@ -350,8 +316,6 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* free the memory */
     if (ct.spin_flag)
     {
-    	MPI_Waitall (2, req, stat);
-    	my_free (eigval_sd);
     	my_free (rho_tot);
     }
 

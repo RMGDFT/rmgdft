@@ -495,6 +495,7 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int nxgrid, int nygrid, int nzgrid);
 void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
 void init_trade_imagesx_async(void);
+void  get_rho_oppo (REAL * rho, REAL * rho_oppo);
 
 #if GPU_ENABLED
 void init_gpu (void);
