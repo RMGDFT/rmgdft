@@ -689,24 +689,33 @@ void read_control (void)
         ct.fpt[2] = 2;
         ct.fpt[3] = 3;
     }
-
-    get_data ("nose_positions", tbuf, ITEM | STR, "0 0 0 0 0 0 0 0 0 0");
-    sscanf (tbuf, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-	    &ct.nose.xx[0], &ct.nose.xx[1], &ct.nose.xx[2], &ct.nose.xx[3], &ct.nose.xx[4], 
-	    &ct.nose.xx[5], &ct.nose.xx[6], &ct.nose.xx[7], &ct.nose.xx[8], &ct.nose.xx[9]);
     
-    get_data ("nose_velocities", tbuf, ITEM | STR, "0 0 0 0 0 0 0 0 0 0");
-    sscanf (tbuf, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-	    &ct.nose.xv[0], &ct.nose.xv[1], &ct.nose.xv[2], &ct.nose.xv[3], &ct.nose.xv[4], 
-	    &ct.nose.xv[5], &ct.nose.xv[6], &ct.nose.xv[7], &ct.nose.xv[8], &ct.nose.xx[9]);
-    
-    get_data ("nose_masses", tbuf, ITEM | STR, "0 0 0 0 0 0 0 0 0 0");
-    sscanf (tbuf, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-	    &ct.nose.xq[0], &ct.nose.xq[1], &ct.nose.xq[2], &ct.nose.xq[3], &ct.nose.xq[4], 
-	    &ct.nose.xq[5], &ct.nose.xq[6], &ct.nose.xq[7], &ct.nose.xq[8], &ct.nose.xq[9]);
+    get_data ("ionic_force_pointer", tbuf, STR, "0 1 2 3");
+    ct.fpt[0] = strtol (tbuf, &tbuf, 10);
+    ct.fpt[1] = strtol (tbuf, &tbuf, 10);
+    ct.fpt[2] = strtol (tbuf, &tbuf, 10);
+    ct.fpt[3] = strtol (tbuf, &tbuf, 10);
+    tbuf = tptr;
 
+    get_data ("nose_positions", tbuf, STR, "0 0 0 0 0 0 0 0 0 0");
+    for (tmp = 0; tmp < 10; tmp++)
+	ct.nose.xx[tmp] = strtol (tbuf, &tbuf, 10);
+    tbuf = tptr;
+    
+    get_data ("nose_velocities", tbuf, STR, "0 0 0 0 0 0 0 0 0 0");
+    for (tmp = 0; tmp < 10; tmp++)
+	ct.nose.xv[tmp] = strtol (tbuf, &tbuf, 10);
+    tbuf = tptr;
+    
+    get_data ("nose_masses", tbuf, STR, "0 0 0 0 0 0 0 0 0 0");
+    for (tmp = 0; tmp < 10; tmp++)
+	ct.nose.xq[tmp] = strtol (tbuf, &tbuf, 10);
+    tbuf = tptr;
+    
+    
 	
     tmp = 0;
+    get_data ("nose_forces", tbuf, INIT | LIST, NULL);
     while (get_data ("nose_forces", tbuf, ITEM | STR, NULL))
     {
 	sscanf (tbuf, " %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
