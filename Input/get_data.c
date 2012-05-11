@@ -165,8 +165,20 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
             }
             else
             {
-                Dprintf ("Attempted to itemize non-existent named list.");
-                return false;
+                if (data != NULL)
+                {
+                    newNode (meta, newItem (STR, data));
+                    Dprintf("Creating LIST from default input in data.");
+                    size = itemize ('\n');
+                    if( dest != NULL )
+                        *(int *) dest = size;
+                    return (size > 0)? true: false;
+                }
+                else
+                {
+                    Dprintf ("Attempted to itemize non-existent named list.");
+                    return false;
+                }
             }
 
         }
