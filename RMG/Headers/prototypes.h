@@ -244,7 +244,7 @@ REAL radint1 (REAL *f, REAL *r, REAL *dr_di, int n);
 void radiff (double *f, double *df, double *r, int n, double al);
 void ra2diff (double *f, double *df, double *r, int n, double al);
 void ranv (void);
-void read_control(void);
+void read_control (char *file);
 void write_pdb (void);
 int read_atom_line(char *species, REAL *crds, int *movable, FILE *fhand, char *tbuf, int index);
 int assign_species (CONTROL * c, char *buf);

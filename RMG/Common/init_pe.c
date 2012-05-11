@@ -83,7 +83,7 @@ void init_pe ( int image )
     MPI_Comm_rank (pct.img_comm, &pct.imgpe);
 
     /* Read in our control information, depends on pct.img_comm for dissemination */
-    read_control ();
+    read_control (ct.cfile);
 
 
     /* this will need to be extnded if we want to parallelize over k_points */

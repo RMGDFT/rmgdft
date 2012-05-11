@@ -31,7 +31,7 @@
 #include <math.h>
 #include "main.h"
 
-void read_control (void)
+void read_control (char *file)
 {
     int tmp, is;
     char *tbuf, *tptr;
