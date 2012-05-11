@@ -40,7 +40,7 @@ void read_control (char *file)
 
     time1 = my_crtc ();
     
-    get_data (ct.cfile, NULL, INIT | TAGS, NULL);
+    get_data (file, NULL, INIT | TAGS, NULL);
 
 
     my_malloc (tptr, MAX_PATH, char);
