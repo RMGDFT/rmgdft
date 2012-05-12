@@ -337,21 +337,25 @@ int get_thread_tid(void) {
 
 
 // Used for positioning and setting processor affinity. For now assumes that
-// THREADS_PER_NODE is an even multiple of ct.ncpus
+// THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
+// does not attemp to schedule
 void set_cpu_affinity(void)
 {
     int s, j;
     cpu_set_t cpuset;
     pthread_t thread;
 
-    thread = pthread_self();
-
-    // Set affinity mask
-    CPU_ZERO(&cpuset);
+    if(THREADS_PER_NODE % ct.ncpus) return;
 
     s = get_thread_tid();
     s = s % THREADS_PER_NODE;
+
+    
+    // Set affinity mask
+    CPU_ZERO(&cpuset);
     CPU_SET(s, &cpuset);
+
+    thread = pthread_self();
     pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
 
 }
