@@ -323,5 +323,10 @@
 #define FULL_FD 1
 #define CENTRAL_FD 2
 
+/* Order of finite differencing for driver routines */
+#define APP_CI_FOURTH 4
+#define APP_CI_SIXTH 6
+
+
 
 /******/
