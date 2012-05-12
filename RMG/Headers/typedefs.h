@@ -1045,6 +1045,9 @@ typedef struct
     /** The fine uniform grid spacing in z */
     REAL hzzgrid;
 
+    /* Kohn-sham finite difference order */
+    int kohn_sham_fd_order;
+
     /** bravais lattice type */
     int ibrav;
 
@@ -1317,6 +1320,9 @@ typedef struct
 
     /*Boolean flag for using mask function filtering*/
     int mask_function;
+
+    /* Number of CPU's in system */
+    int ncpus;
 
 #if PAPI_PERFMON
 

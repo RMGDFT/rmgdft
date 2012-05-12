@@ -60,7 +60,7 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         time1 = my_crtc ();
 #    endif
         /* B operating on 2*V*psi stored in work1 */
-        app_cir_sixth (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+        app_cir_driver (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
@@ -74,8 +74,8 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         time1 = my_crtc ();
 #    endif
         /* A operating on psi stored in work2 */
-        app_cil_sixth (tmp_psi, work2, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
-                       sp->hygrid, sp->hzgrid);
+        app_cil_driver (tmp_psi, work2, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+                       sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
@@ -126,7 +126,7 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
         time1 = my_crtc ();
 #    endif
         /*B operating on S|psi> and store in work3 */
-        app_cir_sixth (work2, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+        app_cir_driver (work2, work1, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #    endif
@@ -244,8 +244,8 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* B operating on 2*V*psi stored in work1 */
-        app_cir_sixth (sg_twovpsiR, work1R, PX0_GRID, PY0_GRID, PZ0_GRID);
-        app_cir_sixth (sg_twovpsiI, work1I, PX0_GRID, PY0_GRID, PZ0_GRID);
+        app_cir_driver (sg_twovpsiR, work1R, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (sg_twovpsiI, work1I, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
@@ -256,10 +256,10 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* A operating on psi stored in work2 */
-        app_cil_sixth (tmp_psiR, work2R, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
-                       sp->hygrid, sp->hzgrid);
-        app_cil_sixth (tmp_psiI, work2I, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
-                       sp->hygrid, sp->hzgrid);
+        app_cil_driver (tmp_psiR, work2R, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+                       sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
+        app_cil_driver (tmp_psiI, work2I, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+                       sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
@@ -322,8 +322,8 @@ void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI)
         time1 = my_crtc ();
 #    endif
         /*B operating on S|psi> and store in work3 */
-        app_cir_sixth (work2R, work1R, PX0_GRID, PY0_GRID, PZ0_GRID);
-        app_cir_sixth (work2I, work1I, PX0_GRID, PY0_GRID, PZ0_GRID);
+        app_cir_driver (work2R, work1R, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (work2I, work1I, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #    endif

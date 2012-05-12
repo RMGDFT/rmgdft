@@ -39,6 +39,8 @@ void app6_del2 (REAL *rho, P0_GRID * work);
 void app6_del2f (REAL *rho, FP0_GRID * work);
 void app10_del2f (FS0_GRID * f, FP0_GRID * work);
 void app_smooth (S0_GRID *f, S0_GRID *work, REAL sfac);
+void app_cir_driver (REAL *a, REAL *b, int dimx, int dimy, int dimz, int order);
+void app_cir_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir_sixth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir_ortho (REAL *a, REAL *b, int dimx, int dimy, int dimz);
@@ -57,6 +59,7 @@ REAL app_cilr_ortho (REAL *a, REAL *b, REAL *c, int dimx, int dimy,
                      int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
 REAL app_cil (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
               REAL gridhy, REAL gridhz);
+REAL app_cil_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int order);
 REAL app_cil_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
               REAL gridhy, REAL gridhz);
 REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,

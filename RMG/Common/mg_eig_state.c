@@ -144,7 +144,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     time1 = my_crtc ();
 #endif
     /*Apply Mehrstellen right hand operator to ns and save in res */
-    app_cir_sixth (ns, res2, dimx, dimy, dimz);
+    app_cir_driver (ns, res2, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 
 #if MD_TIMERS
@@ -163,7 +163,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
         scf_barrier_wait();
         /* Apply Mehrstellen left hand operators */
-        diag = app_cil_sixth (tmp_psi, work2, dimx, dimy, dimz, hxgrid, hygrid, hzgrid);
+        diag = app_cil_driver (tmp_psi, work2, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIL_TIME, (my_crtc () - time1));
@@ -197,7 +197,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
         scf_barrier_wait();
         /* B operating on 2*V*psi stored in work1 */
-        app_cir_sixth (sg_twovpsi, work1, dimx, dimy, dimz);
+        app_cir_driver (sg_twovpsi, work1, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 #if GPU_ENABLED
         cudaDeviceSynchronize();
@@ -472,13 +472,13 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
         /* Apply Mehrstellen left hand operators */
-        diag = app_cil_sixth (tmp_psiR, work2R, dimx, dimy, dimz,
-                              hxgrid, hygrid, hzgrid);
+        diag = app_cil_driver (tmp_psiR, work2R, dimx, dimy, dimz,
+                              hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
 
         /* Apply Mehrstellen left and right hand operators */
-        diag = app_cil_sixth (tmp_psiI, work2I, dimx, dimy, dimz,
-                              hxgrid, hygrid, hzgrid);
+        diag = app_cil_driver (tmp_psiI, work2I, dimx, dimy, dimz,
+                              hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIL_TIME, (my_crtc () - time1));
@@ -519,10 +519,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
         time1 = my_crtc ();
 #endif
-        app_cir_sixth (nsR, resR, dimx, dimy, dimz);
+        app_cir_driver (nsR, resR, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
         /* Apply Mehrstellen right hand operator on imaginary part of S*psi */
-        app_cir_sixth (nsI, resI, dimx, dimy, dimz);
+        app_cir_driver (nsI, resI, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
@@ -544,8 +544,8 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
         /* B operating on 2*V*psi stored in work1 */
-        app_cir_sixth (sg_twovpsiR, work1R, dimx, dimy, dimz);
-        app_cir_sixth (sg_twovpsiI, work1I, dimx, dimy, dimz);
+        app_cir_driver (sg_twovpsiR, work1R, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        app_cir_driver (sg_twovpsiI, work1I, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
