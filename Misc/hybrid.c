@@ -84,6 +84,10 @@ void init_HYBRID_MODEL(void) {
 
     int thread, retval;
 
+    // Should work on linux and AIX
+    ct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
+    printf("Hybrid mode with %d threads and %d cores per node.\n", THREADS_PER_NODE, ct.ncpus);
+
     sem_init(&thread_sem, 0, 0);
     ct.main_thread_pid = getpid();
 
@@ -113,6 +117,8 @@ void init_HYBRID_MODEL(void) {
 void run_threads(SCF_THREAD_CONTROL *s) {
 
     int retval, block;
+
+    set_cpu_affinity();
 
 #if PAPI_PERFMON
     int EventSet = PAPI_NULL;
@@ -330,7 +336,8 @@ int get_thread_tid(void) {
 }
 
 
-// Used for positioning and setting processor affinity
+// Used for positioning and setting processor affinity. For now assumes that
+// THREADS_PER_NODE is an even multiple of ct.ncpus
 void set_cpu_affinity(void)
 {
     int s, j;
@@ -339,12 +346,13 @@ void set_cpu_affinity(void)
 
     thread = pthread_self();
 
-    // Set affinity mask to include CPUs 0 up to 12 which is good for dual Istanbul
-
+    // Set affinity mask
     CPU_ZERO(&cpuset);
-    for(j=0;j<12;j++) CPU_SET(j, &cpuset);
 
-    s = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+    s = get_thread_tid();
+    s = s % THREADS_PER_NODE;
+    CPU_SET(s, &cpuset);
+    pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
 
 }
 
