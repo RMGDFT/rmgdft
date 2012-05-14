@@ -96,7 +96,7 @@ void read_atoms (void)
             ct.ions[ion].xtal[1] = ct.ions[ion].crds[1];
             ct.ions[ion].xtal[2] = ct.ions[ion].crds[2];
         }
-        else if (verify ("length_units", "Angstrom"))
+        else if (verify ("crds_units", "Angstrom"))
         {
             ct.ions[ion].crds[0] *= A_a0;
             ct.ions[ion].crds[1] *= A_a0;

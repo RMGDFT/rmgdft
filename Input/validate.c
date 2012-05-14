@@ -17,6 +17,11 @@ bool validate (char *optlist)
     }
     if (countItems () == 1)
     {
+        if (this->is->as & TAGS)
+        {
+            Dprintf ("Already validated tag, must be a duplicate call");
+            return true;
+        }
         Dprintf ("Validating from input generated node against validation list in optlist");
         node_t *here = this;
         newNode ("#tmp", newItem (STR, optlist));
