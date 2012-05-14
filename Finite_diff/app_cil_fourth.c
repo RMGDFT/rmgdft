@@ -97,6 +97,7 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
     }                           /* end for */
 
     my_free (rptr);
+    return c000;
 }
 
 
