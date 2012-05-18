@@ -115,16 +115,16 @@ void read_pseudo (void)
         //get_data (sp->pseudo_filename, &sp->lradius, ITEM | DBL, NULL); 
         get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL);
         idx = sscanf ( tbuf, " %lf %lf %lf %lf %lf ", &sp->lradius, &sp->aradius, &sp->acut, &sp->agwidth, &sp->arwidth ); 
-	if (idx == 1)
-	{
-	    sp->aradius = 9.0;
-	    sp->acut = 7.0;
-	    sp->agwidth = 10.0;
-	    sp->arwidth = 25.0;
-	}
+        if (idx == 1)
+        {
+            sp->aradius = 9.0;
+            sp->acut = 7.0;
+            sp->agwidth = 10.0;
+            sp->arwidth = 25.0;
+        }
 
-	if ((idx != 1) && (idx != 5))
-	    error_handler("Unexpected number of parameters (%d), only 1 or 5 are valid. The string was %s", idx, tbuf);
+        if ((idx != 1) && (idx != 5))
+            error_handler("Unexpected number of parameters (%d), only 1 or 5 are valid. The string was %s", idx, tbuf);
 
 
         /* Non-Local potential radius */
@@ -178,7 +178,6 @@ void read_pseudo (void)
             else 
                 tptr = endptr;
         }
-
         /*read in the Matrix ddd0(nbeta,nbeta) */
         for (j = 0; j < sp->nbeta; j++)
         {
@@ -224,7 +223,6 @@ void read_pseudo (void)
                     for (idx4 = 0; idx4 < sp->nqf; idx4++)
                     {
                         indx = nmb * sp->nlc * sp->nqf + idx3 * sp->nqf + idx4;
-
                         if ( idx%4 == 0 )
                         {
                             get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
@@ -257,22 +255,20 @@ void read_pseudo (void)
         for (j = 0; j < sp->nbeta; j++)
         {
             get_data (sp->pseudo_filename, &sp->llbeta[j], ITEM | INT, NULL); 
-	    
-	    /*Make sure that beta function has nlrcut defined*/ 
-	    check = 0;
-	    for (k = 0; k < sp->num_potentials; k++)
-	    {
-		if (sp->lval[k] != sp->local)
-		{
+            
+            /*Make sure that beta function has nlrcut defined*/ 
+            check = 0;
+            for (k = 0; k < sp->num_potentials; k++)
+            {
+                if (sp->lval[k] != sp->local)
+                {
+                    if (sp->lval[k] == sp->llbeta[j])
+                        check = 1;
+                }
+            }
 
-		    if (sp->lval[k] == sp->llbeta[j])
-			check = 1;
-		}
-	    }
-
-	    if (!check)
-		error_handler("Beta function with l=%d has undefined nlrcut", sp->llbeta[j]);
-	   
+            if (!check)
+                error_handler("Beta function with l=%d has undefined nlrcut", sp->llbeta[j]);
             if (sp->llbeta[j] > ct.max_l)
                 ct.max_l = sp->llbeta[j];
             for (k = 0; k < MAX_RGRID; k++)
@@ -300,36 +296,36 @@ void read_pseudo (void)
                 }
 #endif
             }
-            
-	    /* Beta function is defined on only a subset of sp->rg_points, but filtering uses all sp->rg_points, so 
-	     * we initialize the remaining data to zero */
-	    for ( k = sp->kkbeta; k < sp->rg_points; k++)
-		sp->beta[j][k] = 0.0;
-        }
 
+            /* Beta function is defined on only a subset of sp->rg_points, but filtering uses all sp->rg_points, so 
+             * we initialize the remaining data to zero */
+            for ( k = sp->kkbeta; k < sp->rg_points; k++)
+                sp->beta[j][k] = 0.0;
+        }
         my_calloc (sp->qnm, nlc * MAX_RGRID, REAL);
         for (idx = 0; idx < nlc; idx++)
         {
             for (idx1 = 0; idx1 < MAX_RGRID; idx1++)
                 sp->qnm[idx * MAX_RGRID + idx1] = 0.0;
         }
-        for (idx1 = 0; idx1 < sp->nbeta; idx1++)
-        {
-            for (idx2 = idx1; idx2 < sp->nbeta; idx2++)
+        if(sp->nqf != 0) {
+            for (idx1 = 0; idx1 < sp->nbeta; idx1++)
             {
-                nmb = idx2 * (idx2 + 1) / 2 + idx1;
-                for ( idx3 = 0; idx3 < sp->kkbeta; idx3+=4 )
+                for (idx2 = idx1; idx2 < sp->nbeta; idx2++)
                 {
-                    get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
-                    idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
-                            &sp->qnm[nmb * MAX_RGRID + idx3 + 0],
-                            &sp->qnm[nmb * MAX_RGRID + idx3 + 1],
-                            &sp->qnm[nmb * MAX_RGRID + idx3 + 2],
-                            &sp->qnm[nmb * MAX_RGRID + idx3 + 3]);
+                    nmb = idx2 * (idx2 + 1) / 2 + idx1;
+                    for ( idx3 = 0; idx3 < sp->kkbeta; idx3+=4 )
+                    {
+                        get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
+                        idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
+                                &sp->qnm[nmb * MAX_RGRID + idx3 + 0],
+                                &sp->qnm[nmb * MAX_RGRID + idx3 + 1],
+                                &sp->qnm[nmb * MAX_RGRID + idx3 + 2],
+                                &sp->qnm[nmb * MAX_RGRID + idx3 + 3]);
+                    }
                 }
             }
         }
-
 
         if (sp->nlccflag)
         {
@@ -366,7 +362,6 @@ void read_pseudo (void)
             }
         }
         sp->nh = ih;
-
         if (ih > max_nlprojectors)
             max_nlprojectors = ih;
         if (max_nlprojectors > MAX_NL)
@@ -394,69 +389,69 @@ void read_pseudo (void)
 
 
         /*Read atomic wavefunctions */
-	if (verify ("start_mode","LCAO Start"))
+        if (verify ("start_mode","LCAO Start"))
         {
 
 
             /*Milliken radius */
             sp->mill_radius = 9.0;
 
-	    sp->num_atomic_waves = 0;
+            sp->num_atomic_waves = 0;
 
             /* Number of wavefunctions (there should be one for s, p, d etc. states) 
-	     * We do conditional reading so that ON LCAO start, which does not use wavefunction from PP file
-	     * can go on */
+             * We do conditional reading so that ON LCAO start, which does not use wavefunction from PP file
+             * can go on */
             if (get_data (sp->pseudo_filename, &sp->num_atomic_waves, ITEM | INT, NULL)) 
-	    {
+            {
                 
-		my_malloc(sp->atomic_wave, sp->num_atomic_waves, REAL *);
-		my_malloc(sp->awave_lig, sp->num_atomic_waves, REAL *);
+                my_malloc(sp->atomic_wave, sp->num_atomic_waves, REAL *);
+                my_malloc(sp->awave_lig, sp->num_atomic_waves, REAL *);
 
-		for (j = 0; j < sp->num_atomic_waves; j++ )
-		{
-		    /*Allocate and zero memory for atomic wave functions */
-		    my_malloc(sp->atomic_wave[j], sp->rg_points, REAL);
-		    my_malloc(sp->awave_lig[j], MAX_LOCAL_LIG, REAL);
+                for (j = 0; j < sp->num_atomic_waves; j++ )
+                {
+                    /*Allocate and zero memory for atomic wave functions */
+                    my_malloc(sp->atomic_wave[j], sp->rg_points, REAL);
+                    my_malloc(sp->awave_lig[j], MAX_LOCAL_LIG, REAL);
 
-		    get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
+                    get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
 
-		    idx = sscanf (tbuf, " %s %d %lf",&sp->atomic_wave_label[j][0], &sp->atomic_wave_l[j], &sp->atomic_wave_oc[j]);
+                    idx = sscanf (tbuf, " %s %d %lf",&sp->atomic_wave_label[j][0], &sp->atomic_wave_l[j], &sp->atomic_wave_oc[j]);
 
-		    /* IS THIS NECESSARY ?*/
-		    /*for (k = 0; k < sp->rg_points; k++)
-		      sp->atomic_wave[j][k] = 0.0;*/
+                    /* IS THIS NECESSARY ?*/
+                    /*for (k = 0; k < sp->rg_points; k++)
+                      sp->atomic_wave[j][k] = 0.0;*/
 
-		    for (k = 0; k < sp->rg_points; k+=4)
-		    {
-			get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
-			idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
-				&sp->atomic_wave[j][k + 0], 
-				&sp->atomic_wave[j][k + 1], 
-				&sp->atomic_wave[j][k + 2], 
-				&sp->atomic_wave[j][k + 3]); 
-		    }
-		}
-
-
-		/*Read atomic charge density*/
-		my_malloc(sp->atomic_rho, sp->rg_points, REAL);
-		for (k = 0; k < sp->rg_points; k+=4)
-		{
-		    get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
-		    idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
-			    &sp->atomic_rho[k + 0], 
-			    &sp->atomic_rho[k + 1], 
-			    &sp->atomic_rho[k + 2], 
-			    &sp->atomic_rho[k + 3]); 
-		}
-
-	    }
-
-	}                       /*end if (ct.domilliken) */
+                    for (k = 0; k < sp->rg_points; k+=4)
+                    {
+                        get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
+                        idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
+                                &sp->atomic_wave[j][k + 0], 
+                                &sp->atomic_wave[j][k + 1], 
+                                &sp->atomic_wave[j][k + 2], 
+                                &sp->atomic_wave[j][k + 3]); 
+                    }
+                }
 
 
-	/* Remove data node, it is not needed anymore. */
-	get_data (sp->pseudo_filename, NULL, END|INIT, NULL);
+                /*Read atomic charge density*/
+                my_malloc(sp->atomic_rho, sp->rg_points, REAL);
+                for (k = 0; k < sp->rg_points; k+=4)
+                {
+                    get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
+                    idx = sscanf ( tbuf, " %lf %lf %lf %lf ",
+                            &sp->atomic_rho[k + 0], 
+                            &sp->atomic_rho[k + 1], 
+                            &sp->atomic_rho[k + 2], 
+                            &sp->atomic_rho[k + 3]); 
+                }
+
+            }
+
+        }                       /*end if (ct.domilliken) */
+
+
+        /* Remove data node, it is not needed anymore. */
+        get_data (sp->pseudo_filename, NULL, END|INIT, NULL);
     }                           /* end for(i = 0;i < ct.num_species;i++) */
 
 
