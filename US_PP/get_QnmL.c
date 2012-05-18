@@ -12,6 +12,7 @@ REAL get_QnmL (int idx, int ltot, REAL r, SPECIES * sp)
     REAL return_value, r2, power_r;
     REAL *coeff;
 
+    if(ct.norm_conserving_pp) return 0.0;
 
     coeff = sp->qfcoef + idx * sp->nlc * sp->nqf + ltot * sp->nqf;
 

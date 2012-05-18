@@ -1018,6 +1018,9 @@ typedef struct
     /** Total charge in supercell */
     REAL tcharge;
 
+    /** Norm conserving pseudo potential flag */
+    int norm_conserving_pp;
+
     /** Species structure 
      * @see SPECIES */
     SPECIES *sp;

@@ -549,6 +549,9 @@ void read_control (char *file)
     /*Fine grid for non-local pseudopotential */
     get_data ("fine_grid_non_local_pp", &ct.nxfgrid, INT, "4");
 
+    // Norm conserving pseudo potential flag
+    get_data ("norm_conserving_pp", &ct.norm_conserving_pp, BOOL, "false");
+
     /*Currently, fine grid has to be the same in each direction */
     ct.nzfgrid = ct.nyfgrid = ct.nxfgrid;
 

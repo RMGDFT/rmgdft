@@ -20,6 +20,8 @@ void init_qfunct (void)
     FILE *fqq = NULL;
     FILE *fdq = NULL;
 
+    if(ct.norm_conserving_pp) return;
+
     my_malloc (workr, MAX_QLIG, REAL);
 
     scale = 1.0;

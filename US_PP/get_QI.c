@@ -27,6 +27,8 @@ void get_QI (void)
     REAL *qnmlig, *QI_tpr;
     SPECIES *sp;
 
+    // If norm conserving pp just return
+    if(ct.norm_conserving_pp) return;
 
     /* Initialize some coefficients (not sure what exactly)*/
     aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
@@ -67,6 +69,7 @@ void get_QI (void)
         iptr = &ct.ions[ion];
         species = iptr->species;
         sp = &ct.sp[species];
+
         nh = sp->nh;
 
         icenter = sp->qdim / 2;
