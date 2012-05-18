@@ -176,7 +176,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
         // Copy saved application to ns to res
-        QMD_scopy(sbasis, res2, 1, res, 1);
+        QMD_scopy(pbasis, res2, 1, res, 1);
 
 #if MD_TIMERS
         time1 = my_crtc ();
