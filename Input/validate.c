@@ -15,13 +15,16 @@ bool validate (char *optlist)
         printf ("Validation of NULL is nonsense\n");
         return false;
     }
+
+    Dprintf("flagged as %d\n", this->is->as);
+    if (this->is->as & TAGS)
+    {
+        Dprintf ("Already INIT validated tag, must be a duplicate call");
+        return true;
+    }
+
     if (countItems () == 1)
     {
-        if (this->is->as & TAGS)
-        {
-            Dprintf ("Already validated tag, must be a duplicate call");
-            return true;
-        }
         Dprintf ("Validating from input generated node against validation list in optlist");
         node_t *here = this;
         newNode ("#tmp", newItem (STR, optlist));

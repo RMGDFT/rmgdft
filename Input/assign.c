@@ -11,8 +11,14 @@ bool assign (flags_t flags, void *dest)
     Dprintf ("Reached assign for %s of type %d requested as %d", this->name, this->is->as, flags);
     if (this->is->as & END)
     {
-        /* here is where to reset END on all items
-           so that reread of list can be performed. */
+        Dprintf(" here is where to reset END on all items so that reread of list can be performed.");
+        item_t *item = this->is;
+        while (item != NULL)
+        {
+            item->as &= ~END;
+            item = item->next;
+        }
+
         Dprintf ("Reached the end of unread items in %s, returning false", this->name);
         dest = NULL;
         return false;
