@@ -70,9 +70,12 @@ void sl_init (int *ictxt, int size)
     int i, npes;
     int *pmap, *tgmap;
     int myrow, mycol;
-    int nprow, npcol, num_blocks;
+    int nprow, npcol, num_blocks, izero=0;
+
     MPI_Group grp_world, grp_this;
 
+    // Reset NB to input value
+    NB = ct.scalapack_block_factor;
 
     npes = NPES;
     /*First, determine if we want all processors to be involved in scalapack operations
@@ -146,6 +149,17 @@ void sl_init (int *ictxt, int size)
     pct.scalapack_nprow = nprow;
     pct.scalapack_npcol = npcol;
 
+
+    if(pct.scalapack_pe) {
+        pct.scalapack_mpi_rank[myrow*npcol + mycol] = pct.gridpe;
+    }
+    MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_mpi_rank, NPES, MPI_INT, MPI_SUM, pct.grid_comm);
+
+    pct.scalapack_max_dist_size = NUMROC (&ct.num_states, &NB, &myrow, &izero, &nprow) *
+                                  NUMROC (&ct.num_states, &NB, &mycol, &izero, &npcol);
+
+    MPI_Allreduce(MPI_IN_PLACE, &pct.scalapack_max_dist_size, 1, MPI_INT, MPI_MAX, pct.grid_comm);
+
     my_free (pmap);
     my_free (tgmap);
 
@@ -192,8 +206,8 @@ void proc_gridsetup (int nproc, int *nprow, int *npcol)
 /*Desca should be declared as      int desca[DLEN]*/
 void set_desca (int *desca, int *ictxt, int size)
 {
-    int rsrc = 0, csrc = 0, info, izero = 0;
-    int mxllda;
+    int rsrc = 0, csrc = 0, info, izero = 0, idx;
+    int mxllda, myindex;
 
     mxllda = NUMROC (&size, &NB, &pct.scalapack_myrow, &izero, &pct.scalapack_nprow);
     mxllda = max (1, mxllda);
@@ -209,8 +223,14 @@ void set_desca (int *desca, int *ictxt, int size)
             error_handler ("DESCINIT failed");
         }
 
+        myindex = pct.scalapack_myrow * pct.scalapack_npcol + pct.scalapack_mycol;
+        for(idx = 0;idx < DLEN;idx++) {
+            pct.scalapack_desca[myindex][idx] = desca[idx];
+        }
+
     }
 
+    MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_desca, NPES*DLEN, MPI_INT, MPI_SUM, pct.grid_comm);
 }
 
 
@@ -387,3 +407,135 @@ void matgather (double *dismat, int *desca, double *globmat, int size)
 
 }
 
+
+// Used to sum a distributed matrix over all nodes and store the results
+// to the scalapack PE's.
+//
+void matsum (double *tmat, double *dismat, double *globmat, int size)
+{
+    int idx, jdx;
+    int istop, len;
+    int col, row, nprow, npcol, dist_length[THREADS_PER_NODE];
+
+    nprow = pct.scalapack_nprow;
+    npcol = pct.scalapack_npcol;
+
+    istop = (nprow*npcol) / THREADS_PER_NODE;
+    istop = istop * THREADS_PER_NODE;
+    for(idx = 0;idx < istop;idx+=THREADS_PER_NODE) {
+
+// Use OpenMP for the packing within a node
+#pragma omp parallel for private(row,col)
+        for(jdx = 0;jdx < THREADS_PER_NODE;jdx++) {
+            row = (idx + jdx) / npcol;
+            col = (idx + jdx) % npcol;
+            dist_length[jdx] = matsum_packbuffer(row, col, &tmat[jdx * pct.scalapack_max_dist_size], globmat, size);
+        }
+
+        for(jdx = 0;jdx < THREADS_PER_NODE;jdx++) {
+            row = (idx + jdx) / npcol;
+            col = (idx + jdx) % npcol;
+            // Reduce to the target
+            MPI_Reduce(&tmat[jdx * pct.scalapack_max_dist_size], dismat, dist_length[jdx], MPI_DOUBLE, 
+                       MPI_SUM, pct.scalapack_mpi_rank[row*npcol + col], pct.grid_comm);
+        }
+
+    }
+
+    // Finish up the remainder
+    for(idx = istop;idx < nprow*npcol;idx++) {
+        row = idx / npcol;
+        col = idx % npcol;
+        len = matsum_packbuffer(row, col, tmat, globmat, size);
+        MPI_Reduce(tmat, dismat, len, MPI_DOUBLE, MPI_SUM, pct.scalapack_mpi_rank[row*npcol + col], pct.grid_comm);
+    }
+
+#if 0
+    for(row =0;row < nprow;row++) {
+
+        for(col =0;col < npcol;col++) {
+
+            len = matsum_packbuffer(row, col, tmat, globmat, size);
+
+            // Reduce to the target node
+            MPI_Reduce(tmat, dismat, len, MPI_DOUBLE, MPI_SUM, pct.scalapack_mpi_rank[row*npcol + col], pct.grid_comm);
+
+        }
+
+    }
+#endif
+
+}
+
+int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int size)
+{
+
+    int i, j, ii, jj, iii, jjj, li, lj, maxrow, maxcol,idx;
+    int iistart, jjstart, limb, ljnb, izero = 0;
+    int nprow, npcol, dist_length;
+    int mb, nb, mxllda, mxlloc;
+
+    nprow = pct.scalapack_nprow;
+    npcol = pct.scalapack_npcol;
+    mb = pct.scalapack_desca[row*npcol + col][4];
+    nb = pct.scalapack_desca[row*npcol + col][5];
+    maxrow = (size / (nprow * mb)) + 1;
+    maxcol = (size / (npcol * mb)) + 1;
+    mxllda = pct.scalapack_desca[row*npcol + col][8];
+    mxlloc = NUMROC (&size, &nb, &col, &izero, &pct.scalapack_npcol);
+    dist_length = NUMROC (&ct.num_states, &mb, &row, &izero, &pct.scalapack_nprow) * 
+                  NUMROC (&ct.num_states, &mb, &col, &izero, &pct.scalapack_npcol);
+#if !GAMMA_PT
+    dist_length *= 2;
+#endif
+
+    for (li = 0; li < maxrow; li++)
+    {
+
+        iistart = (li * nprow + row) * mb;
+        limb = li * mb;
+
+        for (lj = 0; lj < maxcol; lj++)
+        {
+
+            jjstart = (lj * npcol + col) * nb;
+            ljnb = lj * nb;
+
+            for (i = 0; i < mb; i++)
+            {
+
+                ii = iistart + i;
+                iii = i + limb;
+
+                if (iii < mxllda && ii < size)
+                {
+
+                    for (j = 0; j < nb; j++)
+                    {
+
+                        jj = jjstart + j;
+                        jjj = j + ljnb;
+
+                        if (jjj < mxlloc && jj < size)
+                        {
+
+
+#if GAMMA_PT
+                            buffer[iii + jjj * mxllda] = globmat[ii + jj * size];
+#else
+                            buffer[2 * (iii + jjj * mxllda)] = globmat[2 * (ii + jj * size)];
+                            buffer[2 * (iii + jjj * mxllda) + 1] =
+                                globmat[2 * (ii + jj * size) + 1];
+#endif
+
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    return dist_length;
+
+}

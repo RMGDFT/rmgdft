@@ -183,6 +183,14 @@ typedef struct
     int scalapack_nprow;
     int scalapack_npcol;
 
+    /* scalapack mpi rank for all nodes that participate */
+    int scalapack_mpi_rank[NPES];
+
+    /* desca for all nodes that participate */
+    int scalapack_desca[NPES][DLEN];
+
+    /* Max dist matrix size for any scalapack PE */
+    int scalapack_max_dist_size;
 
     /** Neighboring processors in three-dimensional space */
     int neighbors[6];
@@ -1213,6 +1221,12 @@ typedef struct
     int initdiag;
     int diag;
     int end_diag;
+
+    /* Flag indicating whether to use MPI_Allreduce operations or point to point in subdiag */
+    int scalapack_global_sums;
+
+    /* scalapack block size */
+    int scalapack_block_factor;
 
     /* How many steps between writeout of eigenvalues*/
     int write_eigvals_period;

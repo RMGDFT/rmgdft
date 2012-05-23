@@ -88,7 +88,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
 
 // MPI operations are faster on some systems when the memory is allocated by MPI_Alloc_mem
 // instead of the normal system malloc.
-static REAL *distAij, *distBij, *distCij, *distIij, *distSij;
+static REAL *distAij, *distBij, *distCij, *distIij, *distSij, *distTij;
 static REAL *global_matrix;
 void init_subdiag(void)
 {
@@ -102,56 +102,44 @@ void init_subdiag(void)
     time2 = my_crtc ();
 
     num_states = ct.num_states;
-    if (pct.scalapack_pe)
-    {
+    dist_stop = pct.scalapack_max_dist_size;
+    stop = num_states * num_states;
 
-        /*Length of distributed matrices (different on each processor) */
-        dist_length =
-            NUMROC (&num_states, &pct.desca[4], &pct.scalapack_myrow, &izero,
-                    &pct.scalapack_nprow) * NUMROC (&num_states, &pct.desca[4], &pct.scalapack_mycol,
-                                                    &izero, &pct.scalapack_npcol);
-
-        /* Every processor for which pct.scalapack_pe should have some data and so dist_length cannot be 0*/
-        if (dist_length == 0)
-	    error_handler(" function NUMROC returned 0, that should not happen");
-            
-
-        /*This holds number of doubles on each PE */
-        dist_stop = dist_length;
-        stop = num_states * num_states;
 #if !GAMMA_PT
-        dist_stop *= 2;
-        stop *= 2;
+    dist_stop *= 2;
+    stop *= 2;
 #endif
 
-
-        /*Get memory for distributed matrices */
-        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distAij);
-        if(retval != MPI_SUCCESS) {
-            error_handler("Error in MPI_Alloc_mem.\n");
-        }
-        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distBij);
-        if(retval != MPI_SUCCESS) {
-            error_handler("Error in MPI_Alloc_mem.\n");
-        }
-        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distSij);
-        if(retval != MPI_SUCCESS) {
-            error_handler("Error in MPI_Alloc_mem.\n");
-        }
-        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distCij);
-        if(retval != MPI_SUCCESS) {
-            error_handler("Error in MPI_Alloc_mem.\n");
-        }
-        retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distIij);
-        if(retval != MPI_SUCCESS) {
-            error_handler("Error in MPI_Alloc_mem.\n");
-        }
-        retval = MPI_Alloc_mem(sizeof(REAL) * stop , MPI_INFO_NULL, &global_matrix);
-        if(retval != MPI_SUCCESS) {
-            error_handler("Error in MPI_Alloc_mem.\n");
-        }
-
+    /*Get memory for distributed matrices */
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distAij);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
     }
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distBij);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distSij);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distCij);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distIij);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop * THREADS_PER_NODE, MPI_INFO_NULL, &distTij);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    retval = MPI_Alloc_mem(sizeof(REAL) * stop , MPI_INFO_NULL, &global_matrix);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+
     rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
 
@@ -321,29 +309,33 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
+        if(ct.scalapack_global_sums) { 
 
-        /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop, pct.grid_comm);
+            /*Sum matrix over all processors */
+            global_sums (global_matrix, &stop, pct.grid_comm);
 
+            time3 = my_crtc ();
+            rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
+
+            /*Distribute global matrix A */
+            if (pct.scalapack_pe)
+                distribute_mat (pct.desca, global_matrix, distAij, &num_states);
+
+            time2 = my_crtc ();
+            rmg_timings (DIAG_DISTMAT, time2 - time3);
+
+        }
+        else {
+
+            matsum (distTij, distAij, global_matrix, num_states);
+            time3 = my_crtc ();
+            rmg_timings (DIAG_DISTMAT, time3 - time2);
+
+        }
 
         time3 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
 
-
-        /*Distribute global matrix A */
-        if (pct.scalapack_pe)
-            distribute_mat (pct.desca, global_matrix, distAij, &num_states);
-
-        time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time3);
-
-
-        /* Now deal with S operator */
-
-
-        time3 = my_crtc ();
-        rmg_timings (DIAG_APP_S, time3 - time2);
-
+        // Now deal with the S operator
         alpha = ct.vel;
 #if GPU_ENABLED
         cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
@@ -362,21 +354,31 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
+        if(ct.scalapack_global_sums) {
 
-        /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop, pct.grid_comm);
+            /*Sum matrix over all processors */
+            global_sums (global_matrix, &stop, pct.grid_comm);
 
-        time3 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
+            time3 = my_crtc ();
+            rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
 
+            /*Distribute global matrix A */
+            if (pct.scalapack_pe)
+                distribute_mat (pct.desca, global_matrix, distSij, &num_states);
 
-        /*Distribute global matrix A */
-        if (pct.scalapack_pe)
-            distribute_mat (pct.desca, global_matrix, distSij, &num_states);
+            time2 = my_crtc ();
+            rmg_timings (DIAG_DISTMAT, time2 - time3);
+
+        }
+        else {
+
+            matsum (distTij, distSij, global_matrix, num_states);
+            time3 = my_crtc ();
+            rmg_timings (DIAG_DISTMAT, time3 - time2);
+
+        }
 
         time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time3);
-
 
         /* Apply B operator on each wavefunction */
         subdiag_app_B (states, tmp_array2R);
@@ -403,24 +405,31 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
+        if(ct.scalapack_global_sums) {
 
-        /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop, pct.grid_comm);
+            /*Sum matrix over all processors */
+            global_sums (global_matrix, &stop, pct.grid_comm);
 
-        time3 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
+            time3 = my_crtc ();
+            rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
 
+            /*Distribute global matrix A */
+            if (pct.scalapack_pe)
+                distribute_mat (pct.desca, global_matrix, distBij, &num_states);
 
-        /*Distribute global matrix A */
-        if (pct.scalapack_pe)
-            distribute_mat (pct.desca, global_matrix, distBij, &num_states);
+            time2 = my_crtc ();
+            rmg_timings (DIAG_DISTMAT, time2 - time3);
 
-        time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time3);
+        }
+        else {
+
+            matsum (distTij, distBij, global_matrix, num_states);
+            time3 = my_crtc ();
+            rmg_timings (DIAG_DISTMAT, time3 - time2);
+
+        }
 
     }
-
-
 
     /*Create distributed unitary matrix */
     for (st1 = 0; st1 < stop; st1++)
