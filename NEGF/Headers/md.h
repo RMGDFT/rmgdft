@@ -1201,6 +1201,7 @@ typedef struct
     REAL neb_spring_constant;
 
     int mask_function;
+    int norm_conserving_pp;
 
 } CONTROL;
 
