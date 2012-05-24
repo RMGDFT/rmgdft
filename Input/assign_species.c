@@ -31,7 +31,7 @@ int assign_species (CONTROL * c, char *buf)
         for (i = 0; i < c->num_species; i++)
             printf ("\n \"%s\"", c->sp[i].pseudo_symbol);
 
-        error_handler ("Wrong specification of pseudo_symbol");
+        error_handler ("Wrong specification of pseudo_symbol (%s)", buf);
     }
 
     return sp_number;
