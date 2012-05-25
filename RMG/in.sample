@@ -458,3 +458,11 @@ z_average_output_mode=
 relax_mass=
 "Atomic"
 #"Equal"
+
+# Whether to use norm_conserving PP
+# Default: "false"
+norm_conserving_pp="false"
+
+# Blocking factor for scalapack
+# Default: "32"
+scalapack_block_factor="32"
