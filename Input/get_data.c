@@ -158,10 +158,13 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
             if (findNode (meta))
             {
                 Dprintf ("Itemizing node %s", this->name);
-				size = itemize ('\n');
-				if( dest != NULL )
-					*(int *) dest = size;
-				return (size > 0)? true: false;
+		if (this->is->as & ITEM)
+		    size = countItems();
+		else
+		    size = itemize ('\n');
+		if( dest != NULL )
+		    *(int *) dest = size;
+		return (size > 0)? true: false;
             }
             else
             {
