@@ -18,6 +18,11 @@ void ortho (STATE * states, int kpt)
     REAL *cR, *cI, *Oij;
     STATE *st, *st1;
 
+    if(ct.norm_conserving_pp) {
+        ortho_ncpp (states);
+        return;
+    }
+
     time1 = my_crtc ();
 
     my_malloc (cR, ct.num_states, REAL);
@@ -124,6 +129,11 @@ void ortho (STATE * states, int kpt)
     REAL time1, time2;
     REAL *cR, *cI;
     STATE *st, *st1;
+
+    if(ct.norm_conserving_pp) {
+        ortho_ncpp (states);
+        return;
+    }
 
     time1 = my_crtc ();
 

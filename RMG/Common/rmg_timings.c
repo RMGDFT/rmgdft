@@ -202,6 +202,7 @@ void write_timings (void)
     printf_timing_line3 ("     Normalization     ", ORTHO_NORM_PSI);
     printf_timing_line3 ("     Psi overlaps      ", ORTHO_GET_OVERLAPS);
     printf_timing_line3 ("     Calculate coeffs  ", ORTHO_GET_COEFF);
+    printf_timing_line3 ("     Cholesky          ", ORTHO_CHOLESKY);
     printf_timing_line3 ("     Global sums       ", ORTHO_GLOB_SUM);
     printf_timing_line3 ("     Update psi        ", ORTHO_UPDATE_WAVES);
 #endif

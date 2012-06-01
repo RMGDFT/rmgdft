@@ -56,6 +56,7 @@
 #  define		dscal   	dscal_
 #  define		ssyrk   	dsyrk_
 #  define		spotrf  	dpotrf_
+#  define		dpotrf  	dpotrf_
 #  define		spotri  	dpotri_
 #  define		cpotrf  	zpotrf_
 #  define		cpotri  	zpotri_

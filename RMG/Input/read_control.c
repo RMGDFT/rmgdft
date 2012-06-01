@@ -561,6 +561,9 @@ void read_control (char *file)
     // Norm conserving pseudo potential flag
     get_data ("norm_conserving_pp", &ct.norm_conserving_pp, BOOL, "false");
     
+    /* scalapack allreduce or point to point for dist matrices */
+    get_data ("scalapack_global_sums", &ct.scalapack_global_sums, BOOL, "true");
+
     /*Blocking factor for scalapack*/
     get_data ("scalapack_block_factor", &ct.scalapack_block_factor, INT, "32");
 

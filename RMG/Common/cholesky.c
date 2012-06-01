@@ -36,7 +36,20 @@
 #include "main.h"
 #include <math.h>
 
+#if 1
+void cholesky(REAL * a, int n) {
 
+    int info;
+    char *uplo = "l";
+
+    dpotrf(uplo, &n, a, &n, &info);
+
+    if (info != 0)
+        error_handler ("Matrix not positive definite or argument error.");
+
+}
+
+#else
 void cholesky (REAL * a, int n)
 {
 
@@ -75,5 +88,6 @@ void cholesky (REAL * a, int n)
     my_free (diagonal);
 
 }                               /* end cholesky */
+#endif
 
 /******/
