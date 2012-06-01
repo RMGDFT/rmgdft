@@ -68,9 +68,9 @@ static inline FLOAT FT_inter(FLOAT x, int interaction)
 
   if(interaction == 0){
     FLOAT x2 = x*x;
-    return expint(x2)*exp(x2);
+    return expint_e1(x2)*exp(x2);
   }else
-    return 2.0*bessk0(x); 
+    return 2.0*bessel_K0(x); 
 }
 
 
@@ -168,6 +168,7 @@ const XC(func_info_type) XC(func_info_lda_x_1d) = {
   XC_FAMILY_LDA,
   "N. Helbig, J. I. Fuks, M. Casula, M. J. Verstraete, M. A. L. Marques, I. V. Tokatly and A. Rubio, Phys. Rev. A 83, 032503 (2011)",
   XC_FLAGS_1D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
+  1e-32, 0.0, 0.0, 1e-32,
   lda_x_1d_init,    /* init */
   NULL,             /* end  */
   work_lda,         /* lda  */

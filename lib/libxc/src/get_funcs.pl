@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Copyright (C) 2006-2007 M.A.L. Marques
 #
@@ -21,7 +21,7 @@ $top_builddir = shift;
 
 $builddir = "$top_builddir/src";
 
-my @funcs = ("lda", "gga", "hyb_gga", "mgga");
+my @funcs = ("lda", "gga", "hyb_gga", "mgga", "hyb_mgga");
 
 $s0 = ""; $s3 = ""; $s4 = ""; $s5 = "";
 foreach $func (@funcs){
@@ -98,9 +98,12 @@ sub read_file() {
   my $TYPE = $type;
   $TYPE =~ s/(.*)/\U$1/;
 
+  # we remove the hyb from the filenames
+  $type =~ s/^hyb_//;
+
   opendir(DIR, "$dir/") || die "cannot opendir '$dir': $!";
   while($_ = readdir(DIR)){
-    next if(!/^${type}_.*\.c$/);
+    next if(!/^${type}_.*\.c$/ && !/^hyb_${type}_.*\.c$/ );
 
     open(IN, "<$dir/$_");
     while($_=<IN>){

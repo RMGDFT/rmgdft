@@ -64,7 +64,7 @@ gga_lb_init(void *p_)
   XC(func_init)(p->func_aux[0], XC_LDA_X, p->nspin);
 
   p->params = malloc(sizeof(XC(gga_x_lb_params)));
-  XC(gga_lb_set_params_)(p, 0, 0.0, 0.0, 0.0);
+  XC(gga_lb_set_params_)(p, 0, 0.0, 1e-32, 0.0);
 
   params = (XC(gga_x_lb_params) *) (p->params);
   switch(p->info->number){
@@ -135,7 +135,7 @@ XC(gga_lb_modified)(const XC(gga_type) *func, int np, const FLOAT *rho, const FL
 	 (rho[is] > params->threshold && gdm > params->threshold)){
 	FLOAT f;
       
-	if(rho[is] <= MIN_DENS) continue;
+	if(rho[is] <= func->info->min_dens) continue;
 	
 	x =  gdm/POW(rho[is], 4.0/3.0);
 	
@@ -183,6 +183,7 @@ XC(func_info_type) XC(func_info_gga_x_lb) = {
   XC_FAMILY_GGA,
   "R van Leeuwen and EJ Baerends, Phys. Rev. A. 49, 2421 (1994)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_VXC,
+  1e-32, 1e-32, 0.0, 1e-32,
   gga_lb_init,
   NULL,
   NULL,
@@ -197,6 +198,7 @@ XC(func_info_type) XC(func_info_gga_x_lbm) = {
   "PRT Schipper, OV Gritsenko, SJA van Gisbergen, and EJ Baerends, J. Chem. Phys. 112, 1344 (2000)\n"
   "R van Leeuwen and EJ Baerends, Phys. Rev. A. 49, 2421 (1994)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_VXC,
+  1e-32, 1e-32, 0.0, 1e-32,
   gga_lb_init,
   NULL,
   NULL,

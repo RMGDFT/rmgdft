@@ -83,61 +83,65 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libxc_la_LIBADD =
-am__libxc_la_SOURCES_DIST = special_functions.c integrate.c util.c \
-	mix_func.c functionals.c lda.c lda_x.c lda_x_1d.c lda_x_2d.c \
-	lda_c_wigner.c lda_c_gombas.c lda_c_rpa.c lda_c_hl.c \
-	lda_c_vwn.c lda_c_pz.c lda_c_pw.c lda_c_ml1.c lda_xc_teter93.c \
-	lda_c_1d_csc.c lda_c_2d_amgb.c lda_c_2d_prm.c lda_k_tf.c gga.c \
-	gga_x_lg93.c gga_x_pbe.c gga_x_rpbe.c gga_x_pbea.c \
-	gga_x_mpbe.c gga_x_herman.c gga_x_b86.c gga_x_b86_mgc.c \
-	gga_x_b88.c gga_x_g96.c gga_x_pw86.c gga_x_pw91.c gga_x_optx.c \
-	gga_x_airy.c gga_x_c09x.c gga_x_dk87.c gga_x_ft97.c gga_x_wc.c \
-	gga_x_am05.c gga_x_bayesian.c gga_x_kt.c gga_x_htbs.c \
-	gga_c_pbe.c gga_c_lyp.c gga_c_p86.c gga_c_pw91.c gga_c_am05.c \
-	gga_c_lm.c gga_c_wl.c gga_c_wi.c gga_x_lb.c gga_xc_b97.c \
-	gga_xc_edf1.c gga_xc_1w.c gga_x_sogga11.c gga_c_sogga11.c \
-	gga_xc_th.c gga_x_2d_b86.c gga_x_2d_b86_mgc.c gga_x_2d_b88.c \
-	gga_x_2d_pbe.c gga_k_tflw.c gga_k_pearson.c gga_k_ol1.c \
-	gga_k_ol2.c gga_k_dk.c hyb_gga_xc_b3lyp.c hyb_gga_xc_o3lyp.c \
-	hyb_gga_xc_pbeh.c hyb_gga_xc_b1wc.c hyb_gga_xc_b97.c mgga.c \
-	mgga_x_lta.c mgga_x_tpss.c mgga_x_br89.c mgga_xc_vsxc.c \
-	mgga_x_m06l.c mgga_x_tau_hcth.c mgga_c_tpss.c \
-	mgga_x_2d_prhg07.c xc_f.c libxc_funcs.f90 libxc.f90
-am__objects_1 = libxc_la-special_functions.lo libxc_la-integrate.lo \
-	libxc_la-util.lo libxc_la-mix_func.lo libxc_la-functionals.lo \
-	libxc_la-lda.lo libxc_la-lda_x.lo libxc_la-lda_x_1d.lo \
-	libxc_la-lda_x_2d.lo libxc_la-lda_c_wigner.lo \
-	libxc_la-lda_c_gombas.lo libxc_la-lda_c_rpa.lo \
-	libxc_la-lda_c_hl.lo libxc_la-lda_c_vwn.lo \
-	libxc_la-lda_c_pz.lo libxc_la-lda_c_pw.lo \
-	libxc_la-lda_c_ml1.lo libxc_la-lda_xc_teter93.lo \
-	libxc_la-lda_c_1d_csc.lo libxc_la-lda_c_2d_amgb.lo \
-	libxc_la-lda_c_2d_prm.lo libxc_la-lda_k_tf.lo libxc_la-gga.lo \
-	libxc_la-gga_x_lg93.lo libxc_la-gga_x_pbe.lo \
-	libxc_la-gga_x_rpbe.lo libxc_la-gga_x_pbea.lo \
-	libxc_la-gga_x_mpbe.lo libxc_la-gga_x_herman.lo \
-	libxc_la-gga_x_b86.lo libxc_la-gga_x_b86_mgc.lo \
-	libxc_la-gga_x_b88.lo libxc_la-gga_x_g96.lo \
-	libxc_la-gga_x_pw86.lo libxc_la-gga_x_pw91.lo \
-	libxc_la-gga_x_optx.lo libxc_la-gga_x_airy.lo \
-	libxc_la-gga_x_c09x.lo libxc_la-gga_x_dk87.lo \
-	libxc_la-gga_x_ft97.lo libxc_la-gga_x_wc.lo \
-	libxc_la-gga_x_am05.lo libxc_la-gga_x_bayesian.lo \
-	libxc_la-gga_x_kt.lo libxc_la-gga_x_htbs.lo \
-	libxc_la-gga_c_pbe.lo libxc_la-gga_c_lyp.lo \
-	libxc_la-gga_c_p86.lo libxc_la-gga_c_pw91.lo \
-	libxc_la-gga_c_am05.lo libxc_la-gga_c_lm.lo \
-	libxc_la-gga_c_wl.lo libxc_la-gga_c_wi.lo libxc_la-gga_x_lb.lo \
-	libxc_la-gga_xc_b97.lo libxc_la-gga_xc_edf1.lo \
-	libxc_la-gga_xc_1w.lo libxc_la-gga_x_sogga11.lo \
-	libxc_la-gga_c_sogga11.lo libxc_la-gga_xc_th.lo \
-	libxc_la-gga_x_2d_b86.lo libxc_la-gga_x_2d_b86_mgc.lo \
-	libxc_la-gga_x_2d_b88.lo libxc_la-gga_x_2d_pbe.lo \
-	libxc_la-gga_k_tflw.lo libxc_la-gga_k_pearson.lo \
-	libxc_la-gga_k_ol1.lo libxc_la-gga_k_ol2.lo \
-	libxc_la-gga_k_dk.lo libxc_la-hyb_gga_xc_b3lyp.lo \
-	libxc_la-hyb_gga_xc_o3lyp.lo libxc_la-hyb_gga_xc_pbeh.lo \
-	libxc_la-hyb_gga_xc_b1wc.lo libxc_la-hyb_gga_xc_b97.lo \
+am__libxc_la_SOURCES_DIST = special_functions.c bessel.c expint_e1.c \
+	integrate.c util.c mix_func.c functionals.c lda.c lda_x.c \
+	lda_x_1d.c lda_x_2d.c lda_c_wigner.c lda_c_gombas.c \
+	lda_c_rpa.c lda_c_hl.c lda_c_vwn.c lda_c_pz.c lda_c_pw.c \
+	lda_c_ml1.c lda_xc_teter93.c lda_c_1d_csc.c lda_c_2d_amgb.c \
+	lda_c_2d_prm.c lda_k_tf.c gga.c gga_x_lg93.c gga_x_pbe.c \
+	gga_x_rpbe.c gga_x_pbea.c gga_x_mpbe.c gga_x_herman.c \
+	gga_x_b86.c gga_x_b86_mgc.c gga_x_b88.c gga_x_g96.c \
+	gga_x_pw86.c gga_x_pw91.c gga_x_optx.c gga_x_airy.c \
+	gga_x_c09x.c gga_x_dk87.c gga_x_ft97.c gga_x_wc.c gga_x_am05.c \
+	gga_x_bayesian.c gga_x_kt.c gga_x_htbs.c gga_c_pbe.c \
+	gga_c_lyp.c gga_c_p86.c gga_c_pw91.c gga_c_am05.c gga_c_lm.c \
+	gga_c_wl.c gga_c_wi.c gga_x_lb.c gga_xc_b97.c gga_xc_edf1.c \
+	gga_xc_1w.c gga_x_sogga11.c gga_c_sogga11.c gga_xc_th.c \
+	gga_x_wpbeh.c gga_x_hjs.c gga_x_2d_b86.c gga_x_2d_b86_mgc.c \
+	gga_x_2d_b88.c gga_x_2d_pbe.c gga_k_tflw.c gga_k_pearson.c \
+	gga_k_ol1.c gga_k_ol2.c gga_k_dk.c hyb_gga_xc_b3lyp.c \
+	hyb_gga_xc_o3lyp.c hyb_gga_xc_pbeh.c hyb_gga_xc_b1wc.c \
+	hyb_gga_xc_b97.c hyb_gga_xc_hse.c mgga.c mgga_x_lta.c \
+	mgga_x_tpss.c mgga_x_br89.c mgga_xc_vsxc.c mgga_x_m06l.c \
+	mgga_x_tau_hcth.c mgga_c_tpss.c mgga_x_2d_prhg07.c xc_f.c \
+	libxc_funcs.f90 libxc.f90
+am__objects_1 = libxc_la-special_functions.lo libxc_la-bessel.lo \
+	libxc_la-expint_e1.lo libxc_la-integrate.lo libxc_la-util.lo \
+	libxc_la-mix_func.lo libxc_la-functionals.lo libxc_la-lda.lo \
+	libxc_la-lda_x.lo libxc_la-lda_x_1d.lo libxc_la-lda_x_2d.lo \
+	libxc_la-lda_c_wigner.lo libxc_la-lda_c_gombas.lo \
+	libxc_la-lda_c_rpa.lo libxc_la-lda_c_hl.lo \
+	libxc_la-lda_c_vwn.lo libxc_la-lda_c_pz.lo \
+	libxc_la-lda_c_pw.lo libxc_la-lda_c_ml1.lo \
+	libxc_la-lda_xc_teter93.lo libxc_la-lda_c_1d_csc.lo \
+	libxc_la-lda_c_2d_amgb.lo libxc_la-lda_c_2d_prm.lo \
+	libxc_la-lda_k_tf.lo libxc_la-gga.lo libxc_la-gga_x_lg93.lo \
+	libxc_la-gga_x_pbe.lo libxc_la-gga_x_rpbe.lo \
+	libxc_la-gga_x_pbea.lo libxc_la-gga_x_mpbe.lo \
+	libxc_la-gga_x_herman.lo libxc_la-gga_x_b86.lo \
+	libxc_la-gga_x_b86_mgc.lo libxc_la-gga_x_b88.lo \
+	libxc_la-gga_x_g96.lo libxc_la-gga_x_pw86.lo \
+	libxc_la-gga_x_pw91.lo libxc_la-gga_x_optx.lo \
+	libxc_la-gga_x_airy.lo libxc_la-gga_x_c09x.lo \
+	libxc_la-gga_x_dk87.lo libxc_la-gga_x_ft97.lo \
+	libxc_la-gga_x_wc.lo libxc_la-gga_x_am05.lo \
+	libxc_la-gga_x_bayesian.lo libxc_la-gga_x_kt.lo \
+	libxc_la-gga_x_htbs.lo libxc_la-gga_c_pbe.lo \
+	libxc_la-gga_c_lyp.lo libxc_la-gga_c_p86.lo \
+	libxc_la-gga_c_pw91.lo libxc_la-gga_c_am05.lo \
+	libxc_la-gga_c_lm.lo libxc_la-gga_c_wl.lo libxc_la-gga_c_wi.lo \
+	libxc_la-gga_x_lb.lo libxc_la-gga_xc_b97.lo \
+	libxc_la-gga_xc_edf1.lo libxc_la-gga_xc_1w.lo \
+	libxc_la-gga_x_sogga11.lo libxc_la-gga_c_sogga11.lo \
+	libxc_la-gga_xc_th.lo libxc_la-gga_x_wpbeh.lo \
+	libxc_la-gga_x_hjs.lo libxc_la-gga_x_2d_b86.lo \
+	libxc_la-gga_x_2d_b86_mgc.lo libxc_la-gga_x_2d_b88.lo \
+	libxc_la-gga_x_2d_pbe.lo libxc_la-gga_k_tflw.lo \
+	libxc_la-gga_k_pearson.lo libxc_la-gga_k_ol1.lo \
+	libxc_la-gga_k_ol2.lo libxc_la-gga_k_dk.lo \
+	libxc_la-hyb_gga_xc_b3lyp.lo libxc_la-hyb_gga_xc_o3lyp.lo \
+	libxc_la-hyb_gga_xc_pbeh.lo libxc_la-hyb_gga_xc_b1wc.lo \
+	libxc_la-hyb_gga_xc_b97.lo libxc_la-hyb_gga_xc_hse.lo \
 	libxc_la-mgga.lo libxc_la-mgga_x_lta.lo \
 	libxc_la-mgga_x_tpss.lo libxc_la-mgga_x_br89.lo \
 	libxc_la-mgga_xc_vsxc.lo libxc_la-mgga_x_m06l.lo \
@@ -147,10 +151,11 @@ am__objects_1 = libxc_la-special_functions.lo libxc_la-integrate.lo \
 @COMPILE_FORTRAN_TRUE@	libxc_la-libxc_funcs.lo \
 @COMPILE_FORTRAN_TRUE@	libxc_la-libxc.lo
 am_libxc_la_OBJECTS = $(am__objects_1) $(am__objects_2)
-am__objects_3 = libxc_la-special_functions_s.lo \
-	libxc_la-integrate_s.lo libxc_la-util_s.lo \
-	libxc_la-mix_func_s.lo libxc_la-functionals_s.lo \
-	libxc_la-lda_s.lo libxc_la-lda_x_s.lo libxc_la-lda_x_1d_s.lo \
+am__objects_3 = libxc_la-special_functions_s.lo libxc_la-bessel_s.lo \
+	libxc_la-expint_e1_s.lo libxc_la-integrate_s.lo \
+	libxc_la-util_s.lo libxc_la-mix_func_s.lo \
+	libxc_la-functionals_s.lo libxc_la-lda_s.lo \
+	libxc_la-lda_x_s.lo libxc_la-lda_x_1d_s.lo \
 	libxc_la-lda_x_2d_s.lo libxc_la-lda_c_wigner_s.lo \
 	libxc_la-lda_c_gombas_s.lo libxc_la-lda_c_rpa_s.lo \
 	libxc_la-lda_c_hl_s.lo libxc_la-lda_c_vwn_s.lo \
@@ -177,6 +182,7 @@ am__objects_3 = libxc_la-special_functions_s.lo \
 	libxc_la-gga_xc_b97_s.lo libxc_la-gga_xc_edf1_s.lo \
 	libxc_la-gga_xc_1w_s.lo libxc_la-gga_x_sogga11_s.lo \
 	libxc_la-gga_c_sogga11_s.lo libxc_la-gga_xc_th_s.lo \
+	libxc_la-gga_x_wpbeh_s.lo libxc_la-gga_x_hjs_s.lo \
 	libxc_la-gga_x_2d_b86_s.lo libxc_la-gga_x_2d_b86_mgc_s.lo \
 	libxc_la-gga_x_2d_b88_s.lo libxc_la-gga_x_2d_pbe_s.lo \
 	libxc_la-gga_k_tflw_s.lo libxc_la-gga_k_pearson_s.lo \
@@ -184,11 +190,11 @@ am__objects_3 = libxc_la-special_functions_s.lo \
 	libxc_la-gga_k_dk_s.lo libxc_la-hyb_gga_xc_b3lyp_s.lo \
 	libxc_la-hyb_gga_xc_o3lyp_s.lo libxc_la-hyb_gga_xc_pbeh_s.lo \
 	libxc_la-hyb_gga_xc_b1wc_s.lo libxc_la-hyb_gga_xc_b97_s.lo \
-	libxc_la-mgga_s.lo libxc_la-mgga_x_lta_s.lo \
-	libxc_la-mgga_x_tpss_s.lo libxc_la-mgga_x_br89_s.lo \
-	libxc_la-mgga_xc_vsxc_s.lo libxc_la-mgga_x_m06l_s.lo \
-	libxc_la-mgga_x_tau_hcth_s.lo libxc_la-mgga_c_tpss_s.lo \
-	libxc_la-mgga_x_2d_prhg07_s.lo
+	libxc_la-hyb_gga_xc_hse_s.lo libxc_la-mgga_s.lo \
+	libxc_la-mgga_x_lta_s.lo libxc_la-mgga_x_tpss_s.lo \
+	libxc_la-mgga_x_br89_s.lo libxc_la-mgga_xc_vsxc_s.lo \
+	libxc_la-mgga_x_m06l_s.lo libxc_la-mgga_x_tau_hcth_s.lo \
+	libxc_la-mgga_c_tpss_s.lo libxc_la-mgga_x_2d_prhg07_s.lo
 am__objects_4 = $(am__objects_3)
 @COMPILE_FORTRAN_TRUE@@COMPILE_SINGLE_TRUE@am__objects_5 =  \
 @COMPILE_FORTRAN_TRUE@@COMPILE_SINGLE_TRUE@	libxc_la-xc_f_s.lo \
@@ -348,7 +354,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libxc.la
 libxc_la_FUNC_SOURCES = \
-	special_functions.c integrate.c util.c mix_func.c functionals.c \
+	special_functions.c bessel.c expint_e1.c integrate.c util.c mix_func.c functionals.c \
 	lda.c lda_x.c lda_x_1d.c lda_x_2d.c \
 	lda_c_wigner.c lda_c_gombas.c lda_c_rpa.c lda_c_hl.c \
 	lda_c_vwn.c lda_c_pz.c lda_c_pw.c lda_c_ml1.c lda_xc_teter93.c \
@@ -361,11 +367,11 @@ libxc_la_FUNC_SOURCES = \
 	gga_x_dk87.c gga_x_ft97.c gga_x_wc.c gga_x_am05.c gga_x_bayesian.c gga_x_kt.c gga_x_htbs.c \
 	gga_c_pbe.c gga_c_lyp.c gga_c_p86.c gga_c_pw91.c gga_c_am05.c gga_c_lm.c gga_c_wl.c gga_c_wi.c \
 	gga_x_lb.c gga_xc_b97.c gga_xc_edf1.c gga_xc_1w.c \
-	gga_x_sogga11.c gga_c_sogga11.c gga_xc_th.c \
+	gga_x_sogga11.c gga_c_sogga11.c gga_xc_th.c gga_x_wpbeh.c gga_x_hjs.c \
 	gga_x_2d_b86.c gga_x_2d_b86_mgc.c gga_x_2d_b88.c gga_x_2d_pbe.c \
 	gga_k_tflw.c gga_k_pearson.c gga_k_ol1.c gga_k_ol2.c gga_k_dk.c \
 	hyb_gga_xc_b3lyp.c hyb_gga_xc_o3lyp.c hyb_gga_xc_pbeh.c hyb_gga_xc_b1wc.c \
-	hyb_gga_xc_b97.c \
+	hyb_gga_xc_b97.c hyb_gga_xc_hse.c \
 	mgga.c \
 	mgga_x_lta.c mgga_x_tpss.c mgga_x_br89.c mgga_xc_vsxc.c mgga_x_m06l.c mgga_x_tau_hcth.c \
 	mgga_c_tpss.c mgga_x_2d_prhg07.c
@@ -480,6 +486,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-bessel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-bessel_s.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-expint_e1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-expint_e1_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-functionals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-functionals_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga.Plo@am__quote@
@@ -542,6 +552,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_g96_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_herman.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_herman_s.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_hjs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_hjs_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_htbs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_htbs_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_kt.Plo@am__quote@
@@ -568,6 +580,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_sogga11_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_wc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_wc_s.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_wpbeh.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_x_wpbeh_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_xc_1w.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_xc_1w_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-gga_xc_b97.Plo@am__quote@
@@ -582,6 +596,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_b3lyp_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_b97.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_b97_s.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_hse.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_hse_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_o3lyp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_o3lyp_s.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libxc_la-hyb_gga_xc_pbeh.Plo@am__quote@
@@ -676,6 +692,20 @@ libxc_la-special_functions.lo: special_functions.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='special_functions.c' object='libxc_la-special_functions.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-special_functions.lo `test -f 'special_functions.c' || echo '$(srcdir)/'`special_functions.c
+
+libxc_la-bessel.lo: bessel.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-bessel.lo -MD -MP -MF $(DEPDIR)/libxc_la-bessel.Tpo -c -o libxc_la-bessel.lo `test -f 'bessel.c' || echo '$(srcdir)/'`bessel.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-bessel.Tpo $(DEPDIR)/libxc_la-bessel.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bessel.c' object='libxc_la-bessel.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-bessel.lo `test -f 'bessel.c' || echo '$(srcdir)/'`bessel.c
+
+libxc_la-expint_e1.lo: expint_e1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-expint_e1.lo -MD -MP -MF $(DEPDIR)/libxc_la-expint_e1.Tpo -c -o libxc_la-expint_e1.lo `test -f 'expint_e1.c' || echo '$(srcdir)/'`expint_e1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-expint_e1.Tpo $(DEPDIR)/libxc_la-expint_e1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='expint_e1.c' object='libxc_la-expint_e1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-expint_e1.lo `test -f 'expint_e1.c' || echo '$(srcdir)/'`expint_e1.c
 
 libxc_la-integrate.lo: integrate.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-integrate.lo -MD -MP -MF $(DEPDIR)/libxc_la-integrate.Tpo -c -o libxc_la-integrate.lo `test -f 'integrate.c' || echo '$(srcdir)/'`integrate.c
@@ -1090,6 +1120,20 @@ libxc_la-gga_xc_th.lo: gga_xc_th.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-gga_xc_th.lo `test -f 'gga_xc_th.c' || echo '$(srcdir)/'`gga_xc_th.c
 
+libxc_la-gga_x_wpbeh.lo: gga_x_wpbeh.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-gga_x_wpbeh.lo -MD -MP -MF $(DEPDIR)/libxc_la-gga_x_wpbeh.Tpo -c -o libxc_la-gga_x_wpbeh.lo `test -f 'gga_x_wpbeh.c' || echo '$(srcdir)/'`gga_x_wpbeh.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-gga_x_wpbeh.Tpo $(DEPDIR)/libxc_la-gga_x_wpbeh.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gga_x_wpbeh.c' object='libxc_la-gga_x_wpbeh.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-gga_x_wpbeh.lo `test -f 'gga_x_wpbeh.c' || echo '$(srcdir)/'`gga_x_wpbeh.c
+
+libxc_la-gga_x_hjs.lo: gga_x_hjs.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-gga_x_hjs.lo -MD -MP -MF $(DEPDIR)/libxc_la-gga_x_hjs.Tpo -c -o libxc_la-gga_x_hjs.lo `test -f 'gga_x_hjs.c' || echo '$(srcdir)/'`gga_x_hjs.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-gga_x_hjs.Tpo $(DEPDIR)/libxc_la-gga_x_hjs.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gga_x_hjs.c' object='libxc_la-gga_x_hjs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-gga_x_hjs.lo `test -f 'gga_x_hjs.c' || echo '$(srcdir)/'`gga_x_hjs.c
+
 libxc_la-gga_x_2d_b86.lo: gga_x_2d_b86.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-gga_x_2d_b86.lo -MD -MP -MF $(DEPDIR)/libxc_la-gga_x_2d_b86.Tpo -c -o libxc_la-gga_x_2d_b86.lo `test -f 'gga_x_2d_b86.c' || echo '$(srcdir)/'`gga_x_2d_b86.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-gga_x_2d_b86.Tpo $(DEPDIR)/libxc_la-gga_x_2d_b86.Plo
@@ -1188,6 +1232,13 @@ libxc_la-hyb_gga_xc_b97.lo: hyb_gga_xc_b97.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-hyb_gga_xc_b97.lo `test -f 'hyb_gga_xc_b97.c' || echo '$(srcdir)/'`hyb_gga_xc_b97.c
 
+libxc_la-hyb_gga_xc_hse.lo: hyb_gga_xc_hse.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-hyb_gga_xc_hse.lo -MD -MP -MF $(DEPDIR)/libxc_la-hyb_gga_xc_hse.Tpo -c -o libxc_la-hyb_gga_xc_hse.lo `test -f 'hyb_gga_xc_hse.c' || echo '$(srcdir)/'`hyb_gga_xc_hse.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-hyb_gga_xc_hse.Tpo $(DEPDIR)/libxc_la-hyb_gga_xc_hse.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hyb_gga_xc_hse.c' object='libxc_la-hyb_gga_xc_hse.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-hyb_gga_xc_hse.lo `test -f 'hyb_gga_xc_hse.c' || echo '$(srcdir)/'`hyb_gga_xc_hse.c
+
 libxc_la-mgga.lo: mgga.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-mgga.lo -MD -MP -MF $(DEPDIR)/libxc_la-mgga.Tpo -c -o libxc_la-mgga.lo `test -f 'mgga.c' || echo '$(srcdir)/'`mgga.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-mgga.Tpo $(DEPDIR)/libxc_la-mgga.Plo
@@ -1264,6 +1315,20 @@ libxc_la-special_functions_s.lo: special_functions_s.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='special_functions_s.c' object='libxc_la-special_functions_s.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-special_functions_s.lo `test -f 'special_functions_s.c' || echo '$(srcdir)/'`special_functions_s.c
+
+libxc_la-bessel_s.lo: bessel_s.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-bessel_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-bessel_s.Tpo -c -o libxc_la-bessel_s.lo `test -f 'bessel_s.c' || echo '$(srcdir)/'`bessel_s.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-bessel_s.Tpo $(DEPDIR)/libxc_la-bessel_s.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bessel_s.c' object='libxc_la-bessel_s.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-bessel_s.lo `test -f 'bessel_s.c' || echo '$(srcdir)/'`bessel_s.c
+
+libxc_la-expint_e1_s.lo: expint_e1_s.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-expint_e1_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-expint_e1_s.Tpo -c -o libxc_la-expint_e1_s.lo `test -f 'expint_e1_s.c' || echo '$(srcdir)/'`expint_e1_s.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-expint_e1_s.Tpo $(DEPDIR)/libxc_la-expint_e1_s.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='expint_e1_s.c' object='libxc_la-expint_e1_s.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-expint_e1_s.lo `test -f 'expint_e1_s.c' || echo '$(srcdir)/'`expint_e1_s.c
 
 libxc_la-integrate_s.lo: integrate_s.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-integrate_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-integrate_s.Tpo -c -o libxc_la-integrate_s.lo `test -f 'integrate_s.c' || echo '$(srcdir)/'`integrate_s.c
@@ -1678,6 +1743,20 @@ libxc_la-gga_xc_th_s.lo: gga_xc_th_s.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-gga_xc_th_s.lo `test -f 'gga_xc_th_s.c' || echo '$(srcdir)/'`gga_xc_th_s.c
 
+libxc_la-gga_x_wpbeh_s.lo: gga_x_wpbeh_s.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-gga_x_wpbeh_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-gga_x_wpbeh_s.Tpo -c -o libxc_la-gga_x_wpbeh_s.lo `test -f 'gga_x_wpbeh_s.c' || echo '$(srcdir)/'`gga_x_wpbeh_s.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-gga_x_wpbeh_s.Tpo $(DEPDIR)/libxc_la-gga_x_wpbeh_s.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gga_x_wpbeh_s.c' object='libxc_la-gga_x_wpbeh_s.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-gga_x_wpbeh_s.lo `test -f 'gga_x_wpbeh_s.c' || echo '$(srcdir)/'`gga_x_wpbeh_s.c
+
+libxc_la-gga_x_hjs_s.lo: gga_x_hjs_s.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-gga_x_hjs_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-gga_x_hjs_s.Tpo -c -o libxc_la-gga_x_hjs_s.lo `test -f 'gga_x_hjs_s.c' || echo '$(srcdir)/'`gga_x_hjs_s.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-gga_x_hjs_s.Tpo $(DEPDIR)/libxc_la-gga_x_hjs_s.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gga_x_hjs_s.c' object='libxc_la-gga_x_hjs_s.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-gga_x_hjs_s.lo `test -f 'gga_x_hjs_s.c' || echo '$(srcdir)/'`gga_x_hjs_s.c
+
 libxc_la-gga_x_2d_b86_s.lo: gga_x_2d_b86_s.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-gga_x_2d_b86_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-gga_x_2d_b86_s.Tpo -c -o libxc_la-gga_x_2d_b86_s.lo `test -f 'gga_x_2d_b86_s.c' || echo '$(srcdir)/'`gga_x_2d_b86_s.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-gga_x_2d_b86_s.Tpo $(DEPDIR)/libxc_la-gga_x_2d_b86_s.Plo
@@ -1775,6 +1854,13 @@ libxc_la-hyb_gga_xc_b97_s.lo: hyb_gga_xc_b97_s.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hyb_gga_xc_b97_s.c' object='libxc_la-hyb_gga_xc_b97_s.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-hyb_gga_xc_b97_s.lo `test -f 'hyb_gga_xc_b97_s.c' || echo '$(srcdir)/'`hyb_gga_xc_b97_s.c
+
+libxc_la-hyb_gga_xc_hse_s.lo: hyb_gga_xc_hse_s.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-hyb_gga_xc_hse_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-hyb_gga_xc_hse_s.Tpo -c -o libxc_la-hyb_gga_xc_hse_s.lo `test -f 'hyb_gga_xc_hse_s.c' || echo '$(srcdir)/'`hyb_gga_xc_hse_s.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libxc_la-hyb_gga_xc_hse_s.Tpo $(DEPDIR)/libxc_la-hyb_gga_xc_hse_s.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hyb_gga_xc_hse_s.c' object='libxc_la-hyb_gga_xc_hse_s.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libxc_la-hyb_gga_xc_hse_s.lo `test -f 'hyb_gga_xc_hse_s.c' || echo '$(srcdir)/'`hyb_gga_xc_hse_s.c
 
 libxc_la-mgga_s.lo: mgga_s.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libxc_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libxc_la-mgga_s.lo -MD -MP -MF $(DEPDIR)/libxc_la-mgga_s.Tpo -c -o libxc_la-mgga_s.lo `test -f 'mgga_s.c' || echo '$(srcdir)/'`mgga_s.c

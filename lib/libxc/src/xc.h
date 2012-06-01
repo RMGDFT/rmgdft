@@ -74,6 +74,11 @@ typedef struct{
 
   int   flags;    /* see above for a list of possible flags */
 
+  FLOAT min_dens;
+  FLOAT min_grad;
+  FLOAT min_tau;
+  FLOAT min_zeta;
+
   void (*init)(void *p);
   void (*end) (void *p);
   void (*lda) (const void *p, int np, const FLOAT *rho, 
@@ -133,10 +138,10 @@ void XC(lda_vxc)    (const XC(func_type) *p, int np, const FLOAT *rho, FLOAT *vr
 void XC(lda_fxc)    (const XC(func_type) *p, int np, const FLOAT *rho, FLOAT *v2rho2);
 void XC(lda_kxc)    (const XC(func_type) *p, int np, const FLOAT *rho, FLOAT *v3rho3);
 
+void XC(lda_x_set_params)        (XC(func_type) *p, int relativistic, FLOAT omega);
 void XC(lda_x_1d_set_params)     (XC(func_type) *p, int interaction, FLOAT bb);
 void XC(lda_c_1d_csc_set_params) (XC(func_type) *p, int interaction, FLOAT bb);
 void XC(lda_c_xalpha_set_params) (XC(func_type) *p, FLOAT alpha);
-void XC(lda_x_set_params)        (XC(func_type) *p, int relativistic);
 void XC(lda_c_2d_prm_set_params) (XC(func_type) *p, FLOAT N);
 void XC(lda_c_vwn_set_params)    (XC(func_type) *p, int spin_interpolation);
 
@@ -182,7 +187,10 @@ void XC(gga_x_rpbe_set_params) (XC(func_type) *p, FLOAT kappa, FLOAT mu);
 void XC(gga_x_optx_set_params) (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT gamma);
 void XC(gga_c_lyp_set_params)  (XC(func_type) *p, FLOAT A, FLOAT B, FLOAT c, FLOAT d);
 void XC(gga_lb_set_params)     (XC(func_type) *p, int modified, FLOAT threshold, FLOAT ip, FLOAT qtot);
-void XC(gga_k_tflw_set_params)(XC(func_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N);
+void XC(gga_k_tflw_set_params) (XC(func_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N);
+void XC(gga_x_wpbeh_set_params)(XC(func_type) *p, FLOAT omega);
+void XC(gga_x_hjs_set_params)  (XC(func_type) *p, FLOAT omega);
+void XC(hyb_gga_xc_hse_set_params)(XC(func_type) *p, FLOAT omega);
 
 FLOAT XC(hyb_gga_exx_coef)(const XC(gga_type) *p);
 
@@ -196,8 +204,9 @@ typedef struct XC(struct_mgga_type){
   XC(func_type) **func_aux;             /* most GGAs are based on a LDA or other GGAs  */
   FLOAT *mix_coef;                      /* coefficients for the mixing */
 
-  int func;                             /* Shortcut in case of several functionals sharing the same interface */
+  FLOAT exx_coef;                       /* the Hartree-Fock mixing parameter for the hybrids */
 
+  int func;                             /* Shortcut in case of several functionals sharing the same interface */
   int n_rho, n_sigma, n_tau, n_lapl,    /* spin dimensions of the arrays */
     n_zk, n_vrho, n_vsigma, n_vtau, n_vlapl,
     n_v2rho2, n_v2sigma2, n_v2tau2, n_v2lapl2,
@@ -232,6 +241,8 @@ void XC(mgga_fxc)    (const XC(func_type) *p, int np,
 
 void XC(mgga_set_handle_tau)(XC(func_type) *p, int handle_tau);
 void XC(mgga_x_tb09_set_params)(XC(func_type) *p, FLOAT c);
+
+FLOAT XC(hyb_mgga_exx_coef)(const XC(mgga_type) *p);
 
 /* Functionals that are defined as mixtures of others */
 void XC(mix_func)(const XC(func_type) *dest_func, int n_func_aux, XC(func_type) **func_aux, FLOAT *mix_coef,

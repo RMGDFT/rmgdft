@@ -125,7 +125,7 @@ static void eq_12(const XC(mgga_type) *p, int order, const FLOAT *rho, const FLO
       XC(gga_exc_vxc)(p->func_aux[1], 1, r1, sigma1, &f1, vrho1, vsigma1);
 
       if(f1 > f_PBE){
-	if(rho[is] > MIN_DENS){
+	if(rho[is] > p->info->min_dens){
 	  vrho_til[is][is]   = f1 + (vrho1[0] - f1)*dens/rho[is];
 	  vsigma_til[is][js] = vsigma1[0]*dens/rho[is];
 	}else{
@@ -171,7 +171,7 @@ static void eq_12(const XC(mgga_type) *p, int order, const FLOAT *rho, const FLO
       - 2.0*sigma[1]*(1.0 + zeta)*(1.0 - zeta)
       +     sigma[2]*(1.0 + zeta)*(1.0 + zeta);
 
-    gzeta2 = max(gzeta2, MIN_GRAD*MIN_GRAD);
+    gzeta2 = max(gzeta2, p->info->min_grad*p->info->min_grad);
     gzeta  = SQRT(gzeta2);
 
     aa  = 2.0*CBRT(3.0*M_PI*M_PI*dens);
@@ -271,9 +271,11 @@ my_mgga_c_tpss(const void *p_,
     taut   += tau[1];
     sigmat += 2.0*sigma[1] + sigma[2];
   }
+  
+  if(dens < p->info->min_dens) return;
 
   /* sometimes numerical errors create problems */
-  sigmat = max(MIN_GRAD*MIN_GRAD, sigmat);
+  sigmat = max(p->info->min_grad*p->info->min_grad, sigmat);
 
   tauw   = max(sigmat/(8.0*dens), 1.0e-12);
   taut   = max(taut, tauw);
@@ -287,7 +289,8 @@ my_mgga_c_tpss(const void *p_,
 	&f_PKZB, vrho_PKZB, vsigma_PKZB, &vz_PKZB);
   
   /* Equation (11) */
-  *zk  = f_PKZB*(1.0 + param_d*f_PKZB*z3);
+  if(zk != NULL)
+    *zk  = f_PKZB*(1.0 + param_d*f_PKZB*z3);
 
   if(order < 1) return;
 
@@ -375,6 +378,7 @@ XC(func_info_type) XC(func_info_mgga_c_tpss) = {
   "J Tao, JP Perdew, VN Staroverov, and G Scuseria, Phys. Rev. Lett. 91, 146401 (2003)\n"
   "JP Perdew, J Tao, VN Staroverov, and G Scuseria, J. Chem. Phys. 120, 6898 (2004)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
+  MIN_DENS, MIN_GRAD, MIN_TAU, MIN_ZETA,
   mgga_c_tpss_init,
   NULL,
   NULL, NULL,        /* this is not an LDA                   */
