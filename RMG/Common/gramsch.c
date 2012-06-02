@@ -39,20 +39,22 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
+#include <omp.h>
 
 
-
+// Also used by subdiag but never at the same time.
+extern REAL *global_matrix;
 
 
 void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 {
 
-   int st, st1, info, length, idx, idj;
-   int ione = 1;
+   int st, st1, info, length, idx, idj, omp_tid;
+   int ione = 1, block, num_blocks, block_pts;
    REAL alpha = -1.0;
    REAL zero = 0.0;
    REAL one = 1.0;
-   REAL tmp, *darr, *c, *tarr;
+   REAL tmp, *c, *tarr, *darr, *sarr;
    REAL time1;
    STATE *sp;
    char *transn = "n";
@@ -65,13 +67,13 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
    sp = kpt->kstate;
    c = sp->psiR;
 
-   my_malloc(darr, ct.num_states * ct.num_states, REAL);
+   my_malloc(tarr, numst , REAL);
 
 #if MD_TIMERS
    time1 = my_crtc();
 #endif
    ssyrk( uplo, transt, &numst, &numpt, &one, c, &numpt, 
-               &zero, darr, &numst);
+               &zero, global_matrix, &numst);
 #if MD_TIMERS
    rmg_timings (ORTHO_GET_OVERLAPS, (my_crtc () - time1));
    time1 = my_crtc();
@@ -79,7 +81,7 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    /* get the global part */
    length = maxst * maxst;
-   global_sums(darr, &length, pct.grid_comm);
+   global_sums(global_matrix, &length, pct.grid_comm);
 
 #if MD_TIMERS
    rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time1));
@@ -87,27 +89,50 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 #endif
 
    /* compute the cholesky factor of the overlap matrix */
-   cholesky(darr, maxst);
+   cholesky(global_matrix, maxst);
 
 #if MD_TIMERS
    rmg_timings (ORTHO_CHOLESKY, (my_crtc () - time1));
    time1 = my_crtc();
 #endif
 
-   /* apply inverse of cholesky factor to states */
-   for (st = 0; st < numst; st++) {
 
-      /* normalize c[st] */
-      tmp = 1.0 / darr[st + maxst * st];
-      QMD_sscal( numpt, tmp, &c[st * maxpt], ione);
+   // Get inverse of diagonal elements
+   for(st = 0;st < numst;st++) tarr[st] = 1.0 / global_matrix[st + maxst * st];
 
-      /* subtract the projection along c[st] from the remaining vectors */
-      idx = numst - st - 1;
-      if(idx)
-          sger(&numpt, &idx, &alpha, &c[st * maxpt], &ione, 
-               &darr[(st+1) + maxst*st], &ione, &c[(st+1) * maxpt], &maxpt);
- 
-   } /* end of for */
+// This code may look crazy but there is a method to the madness. We copy a slice
+// of the wavefunction array consisting of the values for all orbitals of a given
+// basis point into a temporary array. Then we do the updates on each slice and
+// parallelize over slices with OpenMP. This produces good cache behavior
+// and excellent parformance on the XK6.
+
+#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+{
+       omp_tid = omp_get_thread_num();
+       if(omp_tid == 0) my_malloc(darr, numst * omp_get_num_threads(), REAL);
+#pragma omp barrier
+       
+#pragma omp for schedule(static, 1) nowait
+   for(idx = 0;idx < P0_BASIS;idx++) {
+
+       sarr = &darr[omp_tid*numst];
+
+       for (st = 0; st < numst; st++) sarr[st] = c[st*maxpt + idx];
+
+       for (st = 0; st < numst; st++) {
+
+           sarr[st] *= tarr[st];
+
+           for (st1 = st+1; st1 < numst; st1++) {
+               sarr[st1] -= global_matrix[st1 + maxst*st] * sarr[st];
+           }
+
+       }
+
+       for (st = 0; st < numst; st++) c[st*maxpt + idx] = sarr[st];
+
+   }
+}
 
 #if MD_TIMERS
    rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time1));
@@ -123,7 +148,9 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
    time1 = my_crtc();
 #endif
 
+
    my_free(darr);
+   my_free(tarr);
 
 } /* end of gram */
 
