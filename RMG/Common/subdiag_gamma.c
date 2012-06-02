@@ -89,7 +89,7 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
 // MPI operations are faster on some systems when the memory is allocated by MPI_Alloc_mem
 // instead of the normal system malloc.
 static REAL *distAij, *distBij, *distCij, *distIij, *distSij, *distTij;
-static REAL *global_matrix;
+REAL *global_matrix;
 void init_subdiag(void)
 {
 
