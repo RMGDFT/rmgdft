@@ -34,26 +34,6 @@ void read_atoms (void)
     char tbuf[MAX_PATH];
     char species[32];
 
-    /*Count number of ions in input file */
-    get_data ("atoms", &ion, INIT | LIST, NULL);
-
-    if (verify ("pdb_atoms", NULL))
-    {
-        if (ion != ct.num_ions)
-            error_handler ("Mismatch between PDB and regular atons");
-    }
-    else
-    {
-        ct.num_ions = ion;
-
-        /*Allocate memory for ions */
-        my_calloc (ct.ions, ct.num_ions, ION);
-    }
-
-
-
-    //    if (pct.gridpe == 0)
-    //       printf ("\n Number of ions is %d", ct.num_ions);
 
     /* read and count coordinates for each ion */
     ion = 0;

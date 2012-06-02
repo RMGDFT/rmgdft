@@ -64,13 +64,13 @@ STATE *init_states ()
 		error_handler ("Fixed occupation for both spin up and down must be specified !!!");
 	tbuf[0] = ct.occupation_str_spin_up;
 	tbuf[1] = ct.occupation_str_spin_down;
-	num_states_spf[0] = ct.num_states_up;
-	num_states_spf[1] = ct.num_states_down;
+	num_states_spf[0] = 0;
+	num_states_spf[1] = 0;
     }	
     else
     { 
         repeat_occ = (strcmp (ct.occupation_str, "") != 0);
-	num_states_spf[0] = ct.num_states;
+	num_states_spf[0] = 0;
 	tbuf[0] = ct.occupation_str;
     }
 
@@ -96,13 +96,7 @@ STATE *init_states ()
             		nocc[idx]++;
         	}
 	       
-		if ((num_states_spf[idx]) && (num_states_spf[idx] != count_states[idx]))
-		{
-			printf("\nct.num_states[%d]: %d count_states[%d]: %d\n", idx, num_states_spf[idx], idx, count_states[idx]);
-                	error_handler("states_count_and_occupation does not match specified number of states");
-		}
-		else
-	    		num_states_spf[idx] = count_states[idx]; 
+		num_states_spf[idx] = count_states[idx]; 
 	} 
     	
         if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )

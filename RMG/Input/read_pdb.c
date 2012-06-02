@@ -156,24 +156,11 @@ void read_parse_pdb_line (ION * iptr, int ion_index)
 void read_pdb (void)
 {
     int ion;
-    /*char s[32];*/
-
-
-    /* This sets number of ions */
-    get_data ("pdb_atoms", &ct.num_ions, INFO, NULL);
-
-
-    if (pct.gridpe == 0)
-        printf ("\n Number of lines in PDB input is %d", ct.num_ions);
 
 
     /*Absolute coordinates have to be used with PDB input */
     if (!verify ("atomic_coordinate_type", "Absolute"))
         error_handler ("atomic_coordinate_type has to be set to absolute when PDB input is used");
-
-
-    /*Allocate memory for ions */
-    my_calloc (ct.ions, ct.num_ions, ION);
 
 
 

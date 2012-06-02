@@ -70,11 +70,15 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     int ns, is;
     int na, ia;
     int i;
+    REAL r[40];
+    int tmp_int[4];
 
     /* wait until everybody gets here */
     /* my_barrier (); */
     MPI_Barrier(pct.img_comm);	
 
+    sprintf(newname, "%s.restart", name);
+    read_control(newname);
 
     /* Make the new output file name */
     printf("\nspin flag =%d\n", ct.spin_flag);
@@ -151,7 +155,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     /* read number of states */  
     read_int (fhand, &ns, 1);
     if (ns != ct.num_states)
-	error_handler ("Wrong number of states");
+	error_handler ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
 
     printf ("read_data: ns = %d\n", ns);
 
@@ -273,19 +277,18 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     /* read number of ions */
     read_int (fhand, &na, 1);
-    if (na != ct.num_ions)
-	error_handler ("Wrong number of ions");
+    /*if (na != ct.num_ions)
+	error_handler ("Wrong number of ions");*/
 
 
     /* read current ionic cartesian positions */
     {
-	REAL r[3];
 	for (ia = 0; ia < na; ia++)
 	{
 	    read_double (fhand, r, 3);
 
-	    for (i = 0; i < 3; i++)
-		ct.ions[ia].crds[i] = r[i];
+	    /*for (i = 0; i < 3; i++)
+		ct.ions[ia].crds[i] = r[i];*/
 
 	}
 
@@ -295,11 +298,11 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 	{
 	    read_double (fhand, r, 3);
 
-	    for (i = 0; i < 3; i++)
+	    /*for (i = 0; i < 3; i++)
 		ct.ions[ia].xtal[i] =
-		    (r[i] < 0) ? (r[i] + 1.0) : ((r[i] > 1.0) ? (r[i] - 1.0) : r[i]);
+		    (r[i] < 0) ? (r[i] + 1.0) : ((r[i] > 1.0) ? (r[i] - 1.0) : r[i]);*/
 
-	    to_cartesian (ct.ions[ia].xtal, ct.ions[ia].crds);
+	    /*to_cartesian (ct.ions[ia].xtal, ct.ions[ia].crds);*/
 
 	}
 
@@ -309,7 +312,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 	/* read original ionic cartesian positions */
 	for (ia = 0; ia < na; ia++)
 	{
-	    read_double (fhand, &ct.ions[ia].icrds[0], 3);
+	    //read_double (fhand, &ct.ions[ia].icrds[0], 3);
+	    read_double (fhand, r, 3);
 
 	}
 
@@ -317,7 +321,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 	/* read original ionic crystal positions */
 	for (ia = 0; ia < na; ia++)
 	{
-	    read_double (fhand, &ct.ions[ia].ixtal[0], 3);
+	    //read_double (fhand, &ct.ions[ia].ixtal[0], 3);
+	    read_double (fhand, r, 3);
 
 	}
 
@@ -325,25 +330,29 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 	/* read ionic velocities */
 	for (ia = 0; ia < na; ia++)
 	{
-	    read_double (fhand, &ct.ions[ia].velocity[0], 3);
+	    //read_double (fhand, &ct.ions[ia].velocity[0], 3);
+	    read_double (fhand, r, 3);
 	}
 
 	/* read forces pointer */
-	read_int (fhand, &ct.fpt[0], 4);
+	//read_int (fhand, &ct.fpt[0], 4);
+	read_int (fhand, tmp_int, 4);
 
 	/* read ionic forces */
-	for (ia = 0; ia < na; ia++)
-	    read_double (fhand, &ct.ions[ia].force[0][0], 3 * 4);
+	/*for (ia = 0; ia < na; ia++)
+	    read_double (fhand, &ct.ions[ia].force[0][0], 3 * 4);*/
+	for (ia = 0; ia < 4*na; ia++)
+	    read_double (fhand, r, 3);
 
 
 	/* read Nose positions,velocities, masses and forces from the file */
-	read_double (fhand, &ct.nose.xx[0], 10);
-	read_double (fhand, &ct.nose.xv[0], 10);
-	read_double (fhand, &ct.nose.xq[0], 10);
-	read_double (fhand, &ct.nose.xf[0][0], 4 * 10);
+	read_double (fhand, r, 10);
+	read_double (fhand, r, 10);
+	read_double (fhand, r, 10);
+	read_double (fhand, r, 4 * 10);
 
 	/* read ionic timestep*/
-	read_double (fhand, &ct.iondt, 1);
+	read_double (fhand, r, 1);
 
     }
 

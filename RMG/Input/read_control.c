@@ -31,13 +31,18 @@
 #include <math.h>
 #include "main.h"
 
+#define init_opt(tagname, opt_list) (!run_count) ? (get_data(tagname, NULL, INIT | OPT, opt_list)): ({})
+    
+
 void read_control (char *file)
 {
     int tmp, is;
     char *tbuf, *tptr;
     float ftmp;
     REAL time1;
+    static int run_count = - 1;
 
+    run_count ++;
     time1 = my_crtc ();
     
     get_data (file, NULL, INIT | TAGS, NULL);
@@ -59,7 +64,7 @@ void read_control (char *file)
     char start_mode_opts[] = "Random Start\n"
                              "Restart From File\n"
                              "LCAO Start";
-    get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
+    init_opt("start_mode", start_mode_opts);
 
     /* Read in the initial run flag */
     get_data ("start_mode", &ct.runflag, OPT, "Random Start");
@@ -68,7 +73,7 @@ void read_control (char *file)
     char z_average_output_mode_opts[] = "None\n"
                                         "potential and charge density\n"
                                         "wave functions";
-    get_data ("z_average_output_mode", NULL, INIT | OPT, z_average_output_mode_opts);
+    init_opt("z_average_output_mode", z_average_output_mode_opts);
 
     /* Read in zaverage output toggle */
     get_data ("z_average_output_mode", &ct.zaverage, OPT, "None");
@@ -78,7 +83,7 @@ void read_control (char *file)
     char boundary_condition_type_opts[] = "Periodic\n"
                                           "Cluster\n"
                                           "Surface";
-    get_data ("boundary_condition_type", NULL, INIT | OPT, boundary_condition_type_opts);
+    init_opt("boundary_condition_type", boundary_condition_type_opts);
 
     /* Read in the boundary condition flag */
     get_data ("boundary_condition_type", &ct.boundaryflag, OPT, "Periodic");
@@ -87,7 +92,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char charge_mixing_type_opts[] = "Linear\n"
                                      "Pulay";
-    get_data ("charge_mixing_type", NULL, INIT | OPT, charge_mixing_type_opts);
+    init_opt ("charge_mixing_type", charge_mixing_type_opts);
     
     /* Read type of charge density mixing */
     get_data ("charge_mixing_type", NULL, OPT, "Pulay");
@@ -119,7 +124,7 @@ void read_control (char *file)
                                             "GGA XB CP\n"
                                             "GGA XP CP\n"
                                             "GGA PBE";
-    get_data ("exchange_correlation_type", NULL, INIT | OPT, exchange_correlation_type_opts);
+    init_opt ("exchange_correlation_type", exchange_correlation_type_opts);
 
     /* Exchange correlation potential type flag */
     get_data ("exchange_correlation_type", &ct.xctype, OPT, "LDA");
@@ -144,7 +149,7 @@ void read_control (char *file)
     
     char relax_mass_opts[] = "Atomic\n"
                                  "Equal";
-    get_data ("relax_mass", NULL, INIT | OPT, relax_mass_opts);
+    init_opt ("relax_mass", relax_mass_opts);
 
     /* Mass to use for structural relaxation, either their atomic masses, or use the mass of carbon for all atoms*/
     get_data ("relax_mass", &ct.relax_mass, OPT, "Atomic");
@@ -165,7 +170,7 @@ void read_control (char *file)
                                    "Fermi Dirac\n"
                                    "Gaussian\n"
                                    "Error Function";
-    get_data ("occupations_type", NULL, INIT | OPT, occupations_type_opts);
+    init_opt ("occupations_type", occupations_type_opts);
 
     /* Fermi occupation flag */
     require (get_data ("occupations_type", &ct.occ_flag, OPT, NULL));
@@ -200,7 +205,7 @@ void read_control (char *file)
                                    "Band Structure Only\n"
                                    "NEB Relax\n"
                                    "Dimer Relax";
-    get_data ("calculation_mode", NULL, INIT | OPT, calculation_mode_opts);
+    init_opt ("calculation_mode", calculation_mode_opts);
 
     /* Force flag */
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
@@ -211,7 +216,7 @@ void read_control (char *file)
 				"Quick Min\n"
 				"MD Min\n"
                                "LBFGS";
-    get_data ("relax_method", NULL, INIT | OPT, relax_method_opts);
+    init_opt ("relax_method", relax_method_opts);
 
     get_data ("relax_method", &ct.relax_method, OPT, "Fast Relax");
     
@@ -256,7 +261,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char md_temperature_control_opts[] = "Nose Hoover Chains\n"
                                           "Anderson Rescaling";
-    get_data ("md_temperature_control", NULL, INIT | OPT, md_temperature_control_opts);
+    init_opt ("md_temperature_control", md_temperature_control_opts);
 
     /* Set up and validate input options */
     /* Temperature Control Info */
@@ -286,7 +291,7 @@ void read_control (char *file)
     char md_integration_order_opts[] = "2nd Velocity Verlet\n"
                                         "3rd Beeman-Velocity Verlet\n"
                                         "5th Beeman-Velocity Verlet";
-    get_data ("md_integration_order", NULL, INIT | OPT, md_integration_order_opts);
+    init_opt ("md_integration_order", md_integration_order_opts);
     /* MD Integration flag */
     get_data ("md_integration_order", &ct.mdorder, OPT, "2nd Velocity Verlet");
 
@@ -298,6 +303,7 @@ void read_control (char *file)
 
     if (ct.iondt_max < ct.iondt)
         error_handler("max_ionic_time_step (%f) has to be >= than ionic_time_step (%f)", ct.iondt_max, ct.iondt); 
+
 
 
     /*** Factor by which iondt is increased */
@@ -346,19 +352,6 @@ void read_control (char *file)
     get_data ("mask_function_filtering", &ct.mask_function, BOOL, "false");
 
 
-    /* Number of states */
-    if(ct.spin_flag)
-    {
-    	get_data ("states_per_kpoint_up", &ct.num_states_up, INT, "0");
-    	get_data ("states_per_kpoint_down", &ct.num_states_down, INT, "0");
-    } 
-    else
-    {
-    	get_data ("states_per_kpoint", &ct.num_states, INT, "0");
-
-    }
-    get_data ("states_per_kpoint", &ct.num_states, INT, "0");
-
     /* check whether do spin polarized calculation or not*/
     if(ct.spin_flag)
     {
@@ -394,7 +387,7 @@ void read_control (char *file)
     char interpolation_type_opts[] = "Cubic Polynomial\n"
                                      "B-spline\n"
                                      "prolong";
-    get_data ("interpolation_type", NULL, INIT | OPT, interpolation_type_opts);
+    init_opt ("interpolation_type", interpolation_type_opts);
 
     /*Interpolation type */
     get_data ("interpolation_type", &ct.interp_flag, OPT, "Cubic Polynomial");
@@ -413,8 +406,17 @@ void read_control (char *file)
 
 
     /* Get k-points and weights */
-    require (get_data ("kpoints", &ct.num_kpts, INIT | LIST, NULL));
-    my_malloc (ct.kp, ct.num_kpts, KPOINT);
+    require (get_data ("kpoints", &tmp, INIT | LIST, NULL));
+    if (!run_count)
+    {
+	ct.num_kpts = tmp;
+	my_malloc (ct.kp, ct.num_kpts, KPOINT);
+    }
+    else
+    {
+	if (tmp != ct.num_kpts)
+	    error_handler("Inconsistency in number of kpoints: %d was specified initially, but %d is given now", ct.num_kpts, tmp);
+    }
 
     /* now we can read the kpoint data */
     tmp = 0;
@@ -436,12 +438,13 @@ void read_control (char *file)
     if (ftmp > 0.0)
         for (tmp = 0; tmp < ct.num_kpts; tmp++)
             ct.kp[tmp].kweight /= ftmp;
+    
 
 
     /* Set up and validate input options */
     char crds_units_opts[] = "Bohr\n"
                                "Angstrom";
-    get_data ("crds_units", NULL, INIT | OPT, crds_units_opts);
+    init_opt ("crds_units", crds_units_opts);
 
     /*This is not read into any variable */
     get_data ("crds_units", &tmp, OPT, "Bohr");
@@ -462,7 +465,7 @@ void read_control (char *file)
                                        "Monoclinic Primitive\n"
                                        "Monoclinic Base Centered\n"
                                        "Triclinic Primitive";
-    get_data ("bravais_lattice_type", NULL, INIT | OPT, bravais_lattice_type_opts);
+    init_opt ("bravais_lattice_type", bravais_lattice_type_opts);
 
     /* lattice type */
     require (get_data ("bravais_lattice_type", &ct.ibrav, OPT, NULL));
@@ -493,6 +496,7 @@ void read_control (char *file)
         ct.celldm[1] /= ct.celldm[0];
         ct.celldm[2] /= ct.celldm[0];
     }
+    
 
 
 
@@ -571,9 +575,18 @@ void read_control (char *file)
     get_data ("write_memory_report", &ct.write_memory_report, BOOL, "false");
 
     /*Count number of species */
-    require (get_data ("pseudopotential", &ct.num_species, INIT | LIST, NULL));
+    require (get_data ("pseudopotential", &tmp, INIT | LIST, NULL));
 
-    my_malloc (ct.sp, ct.num_species, SPECIES);
+    if (!run_count)
+    {
+	ct.num_species = tmp; 
+	my_malloc (ct.sp, ct.num_species, SPECIES);
+    }
+    else 
+    {
+	if (tmp != ct.num_species)
+	    error_handler("Inconsistency in number of species: %d was specified initially, but %d is given now", ct.num_species, tmp);
+    }
 
     tbuf = tptr;
     is = 0;
@@ -598,7 +611,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char atomic_coordinate_type_opts[] = "Cell Relative\n"
                                          "Absolute";
-    get_data ("atomic_coordinate_type", NULL, INIT | OPT, atomic_coordinate_type_opts);
+    init_opt ("atomic_coordinate_type", atomic_coordinate_type_opts);
 
     /* Absolute or cell relative coordinates */
     get_data ("atomic_coordinate_type", &ct.crd_flag, OPT, "Absolute");
@@ -611,13 +624,39 @@ void read_control (char *file)
      * if none, error_handler*/
     if (verify ("pdb_atoms", NULL) || verify ("atoms", NULL))
     {
-        /* Test for presence of pdb_atom tag */
+	int num_ions = 0;
+	
+	get_data ("atoms", &num_ions, INIT | LIST, NULL);
+	tmp = 0;
+	get_data ("pdb_atoms", &tmp, INIT | LIST, NULL);
+
+	/*Figure out number of atoms, number of pdb_atoms should equal to number of "atoms" unless one of them is zero*/
+	if (num_ions)
+	{
+	    if (tmp) 
+		if (tmp != num_ions)
+		    error_handler("pdb_atoms and atoms specify different numbers of atoms: %d and %d, respectively", tmp, num_ions);
+	}
+	else
+	{
+	    if (!tmp) error_handler("Both pdb_atoms and atoms specify zero ions");
+	    num_ions = tmp;
+	}
+
+	
+	if (!run_count)
+	{
+	    ct.num_ions = num_ions;
+	    my_calloc (ct.ions, ct.num_ions, ION);
+	}
+	else
+	    if (num_ions != ct.num_ions)
+		error_handler("Inconsistency in number of ions: %d was specified initially, but %d is given now", ct.num_ions, num_ions);
+
+	/* Test for presence of pdb_atom tag */
         if (get_data ("pdb_atoms", &tmp, INIT | LIST, NULL))
-        {
+	    read_pdb ();
 
-            read_pdb ();
-
-        }
         if (verify ("atoms", NULL))
             read_atoms ();
 
@@ -636,11 +675,12 @@ void read_control (char *file)
 	tmp = 0;
 	while (get_data ("ionic_velocities", tbuf, ITEM | STR, NULL))
 	{
+	    if (tmp >= ct.num_ions) error_handler("# of velocities(%d) >= # of atoms(%d)", tmp, ct.num_ions);
+	    
 	    sscanf (tbuf, "%lf %lf %lf",
 		    &ct.ions[tmp].velocity[0], &ct.ions[tmp].velocity[1], &ct.ions[tmp].velocity[2]);
 	    tmp++;
 
-	    if (tmp >= ct.num_ions) error_handler("Velocities specified for too many atoms");
 	}
 
 	if (tmp !=  ct.num_ions) 
@@ -667,11 +707,12 @@ void read_control (char *file)
 	tmp = 0;
 	while (get_data ("ionic_forces", tbuf, ITEM | STR, NULL))
 	{
+	    if (tmp >= ct.num_ions) error_handler("Forces specified for too many atoms");
+	    
 	    sscanf (tbuf, "%lf %lf %lf",
 		    &ct.ions[tmp].force[0][0], &ct.ions[tmp].force[0][1], &ct.ions[tmp].force[0][2]);
 	    tmp++;
 
-	    if (tmp >= ct.num_ions) error_handler("Forces specified for too many atoms");
 	}
 
 	if (tmp !=  ct.num_ions) 
@@ -732,12 +773,13 @@ void read_control (char *file)
     get_data ("nose_forces", tbuf, INIT | LIST, NULL);
     while (get_data ("nose_forces", tbuf, ITEM | STR, NULL))
     {
+	if (tmp >= 4) error_handler("Too many nose_forces, only 4 expected");
+	
 	sscanf (tbuf, " %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
 		&ct.nose.xf[tmp][0], &ct.nose.xf[tmp][1], &ct.nose.xf[tmp][2], &ct.nose.xf[tmp][3], &ct.nose.xf[tmp][4], 
 		&ct.nose.xf[tmp][5], &ct.nose.xf[tmp][6], &ct.nose.xf[tmp][7], &ct.nose.xf[tmp][8], &ct.nose.xf[tmp][9]);
 	tmp++;
 
-	if (tmp >= 4) error_handler("Too many nose_forces, only 4 expected");
     }
 
     if ((tmp > 0) && (tmp !=  4)) 

@@ -107,7 +107,7 @@ void write_restart (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * v
 	fprintf(fhandle,"\n\"\n");
 
 	/* write current ionic forces pointer array */
-	fprintf(fhandle,"\nionic_force_pointer = \" %d %d %d %d\"\n", ct.fpt[0], ct.fpt[1], ct.fpt[2], ct.fpt[3]);
+	fprintf(fhandle,"\nionic_force_pointer = \"%d %d %d %d\"\n", ct.fpt[0], ct.fpt[1], ct.fpt[2], ct.fpt[3]);
 
 	/* write current ionic forces */
 	fprintf(fhandle,"\nionic_forces = \"");
@@ -140,6 +140,7 @@ void write_restart (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * v
 
 	fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
 	fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
+	fprintf(fhandle,"\n");
 
 
 	/* done with writing */

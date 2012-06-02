@@ -353,15 +353,6 @@ md_integration_order=
 write_data_period="5"
 
 
-
-
-# Number of states in spin pairwised calculation
-states_per_kpoint="10"
-
-# Number of states in spin polarized calculation
-#states_per_kpoint_up ="10"
-#states_per_kpoint_down ="10"
-
 # Restart control
 
 # Setup the communicator topology for a multi-grid run. For details 
