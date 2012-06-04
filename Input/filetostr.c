@@ -26,13 +26,13 @@ char *filetostr (char *fname)
     {
         size = (int) statbuf.st_size;
 
-        my_malloc (dstr, size, char);
+        my_malloc (dstr, size+1, char);
         fp = fopen (fname, "r");
-        tsize = fread (dstr, 1, size - 1, fp);
+        tsize = fread (dstr, 1, size, fp);
         fclose (fp);
-        if (tsize == size - 1)
+        if (tsize == size)
         {
-            dstr[size - 1] = '\0';
+            dstr[size + 1] = '\0';
         }
     }
     else

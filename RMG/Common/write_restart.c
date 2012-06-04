@@ -140,7 +140,7 @@ void write_restart (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * v
 
 	fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
 	fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
-	fprintf(fhandle,"\n");
+//	fprintf(fhandle,"\n");
 
 
 	/* done with writing */
