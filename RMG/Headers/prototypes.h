@@ -469,6 +469,7 @@ void set_desca(int *desca, int *ictxt, int size);
 void distribute_mat(int *desca, double *bigmat, double *dismat, int *size);
 void matinit(int *desca, double *dismat, double *globmat, int size);
 int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int size);
+void reduce_and_dist_matrix(int n, REAL *global_matrix, REAL *dist_matrix, REAL *work);
 void print_distribute_mat(double *dismat, int *desca, int size);
 void init_efield (REAL * vnuc);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, REAL ***hist, REAL ***rhist, int special_metric, REAL weight);

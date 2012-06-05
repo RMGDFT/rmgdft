@@ -309,33 +309,12 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        if(ct.scalapack_global_sums) { 
+        // Reduce and distribute Aij
+        reduce_and_dist_matrix(num_states, global_matrix, distAij, distTij);
 
-            /*Sum matrix over all processors */
-            global_sums (global_matrix, &stop, pct.grid_comm);
-
-            time3 = my_crtc ();
-            rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
-
-            /*Distribute global matrix A */
-            if (pct.scalapack_pe)
-                distribute_mat (pct.desca, global_matrix, distAij, &num_states);
-
-            time2 = my_crtc ();
-            rmg_timings (DIAG_DISTMAT, time2 - time3);
-
-        }
-        else {
-
-            matsum (distTij, distAij, global_matrix, num_states);
-            time3 = my_crtc ();
-            rmg_timings (DIAG_DISTMAT, time3 - time2);
-
-        }
-
-        time3 = my_crtc ();
 
         // Now deal with the S operator
+        time3 = my_crtc ();
         alpha = ct.vel;
 #if GPU_ENABLED
         cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
@@ -354,36 +333,15 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        if(ct.scalapack_global_sums) {
-
-            /*Sum matrix over all processors */
-            global_sums (global_matrix, &stop, pct.grid_comm);
-
-            time3 = my_crtc ();
-            rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
-
-            /*Distribute global matrix A */
-            if (pct.scalapack_pe)
-                distribute_mat (pct.desca, global_matrix, distSij, &num_states);
-
-            time2 = my_crtc ();
-            rmg_timings (DIAG_DISTMAT, time2 - time3);
-
-        }
-        else {
-
-            matsum (distTij, distSij, global_matrix, num_states);
-            time3 = my_crtc ();
-            rmg_timings (DIAG_DISTMAT, time3 - time2);
-
-        }
-
-        time2 = my_crtc ();
+        // Reduce and distribute Sij
+        reduce_and_dist_matrix(num_states, global_matrix, distSij, distTij);
 
         /* Apply B operator on each wavefunction */
+        time2 = my_crtc ();
         subdiag_app_B (states, tmp_array2R);
 
         time3 = my_crtc ();
+        alpha = ct.vel;
         rmg_timings (DIAG_APP_B, time3 - time2);
 
 #if GPU_ENABLED
@@ -405,29 +363,10 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        if(ct.scalapack_global_sums) {
+        // Reduce and distribute Bij
+        reduce_and_dist_matrix(num_states, global_matrix, distBij, distTij);
 
-            /*Sum matrix over all processors */
-            global_sums (global_matrix, &stop, pct.grid_comm);
 
-            time3 = my_crtc ();
-            rmg_timings (DIAG_GLOB_SUMS, time3 - time2);
-
-            /*Distribute global matrix A */
-            if (pct.scalapack_pe)
-                distribute_mat (pct.desca, global_matrix, distBij, &num_states);
-
-            time2 = my_crtc ();
-            rmg_timings (DIAG_DISTMAT, time2 - time3);
-
-        }
-        else {
-
-            matsum (distTij, distBij, global_matrix, num_states);
-            time3 = my_crtc ();
-            rmg_timings (DIAG_DISTMAT, time3 - time2);
-
-        }
 
     }
 
@@ -461,7 +400,6 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         /*keep an extra copy of distributed unitary matrix */
         QMD_scopy (dist_stop, distCij, ione, distIij, ione);
-
 
         /*Get matrix that is inverse to B */
         {

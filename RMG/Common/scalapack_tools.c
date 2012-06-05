@@ -539,3 +539,45 @@ int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int siz
     return dist_length;
 
 }
+
+
+// Performs a reduce and distribute operation to the scalapack PE's
+// global_matrix  contains the data to be reduced while dist_matrix
+// is the target distributed matrix and work is temporary space that
+// should be sized at least as large as dist_matrix
+void reduce_and_dist_matrix(int n, REAL *global_matrix, REAL *dist_matrix, REAL *work)
+{
+
+    int stop;
+
+    REAL time1, time2;
+
+    stop = n * n;
+    time1 = my_crtc();
+
+    if(ct.scalapack_global_sums) {
+
+        /*Sum matrix over all processors */
+        global_sums (global_matrix, &stop, pct.grid_comm);
+
+        time2 = my_crtc ();
+        rmg_timings (DIAG_GLOB_SUMS, time2 - time1);
+
+        /*Distribute global matrix A */
+        if (pct.scalapack_pe)
+            distribute_mat (pct.desca, global_matrix, dist_matrix, &n);
+
+        time1 = my_crtc ();
+        rmg_timings (DIAG_DISTMAT, time1 - time2);
+
+    }
+    else {
+
+        matsum (work, dist_matrix, global_matrix, n);
+        time2 = my_crtc ();
+        rmg_timings (DIAG_DISTMAT, time2 - time1);
+
+    }
+
+}
+
