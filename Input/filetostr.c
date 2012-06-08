@@ -32,7 +32,7 @@ char *filetostr (char *fname)
         fclose (fp);
         if (tsize == size)
         {
-            dstr[size + 1] = '\0';
+            dstr[size] = '\0';
         }
     }
     else
