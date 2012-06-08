@@ -95,8 +95,6 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     my_open (fhand, newname, O_RDWR, S_IREAD | S_IWRITE);
 
-    /* read lattice info */
-    read_double (fhand, a, 9);
 
     /* read grid info */
     read_int (fhand, grid, 3);
@@ -274,87 +272,6 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     }
 
-
-    /* read number of ions */
-    read_int (fhand, &na, 1);
-    /*if (na != ct.num_ions)
-	error_handler ("Wrong number of ions");*/
-
-
-    /* read current ionic cartesian positions */
-    {
-	for (ia = 0; ia < na; ia++)
-	{
-	    read_double (fhand, r, 3);
-
-	    /*for (i = 0; i < 3; i++)
-		ct.ions[ia].crds[i] = r[i];*/
-
-	}
-
-
-	/* read current ionic crystal positions */
-	for (ia = 0; ia < na; ia++)
-	{
-	    read_double (fhand, r, 3);
-
-	    /*for (i = 0; i < 3; i++)
-		ct.ions[ia].xtal[i] =
-		    (r[i] < 0) ? (r[i] + 1.0) : ((r[i] > 1.0) ? (r[i] - 1.0) : r[i]);*/
-
-	    /*to_cartesian (ct.ions[ia].xtal, ct.ions[ia].crds);*/
-
-	}
-
-	/* Overwrite the initial positions with current positions, 
-	 * may be useful for constraint dynamics  */
-
-	/* read original ionic cartesian positions */
-	for (ia = 0; ia < na; ia++)
-	{
-	    //read_double (fhand, &ct.ions[ia].icrds[0], 3);
-	    read_double (fhand, r, 3);
-
-	}
-
-
-	/* read original ionic crystal positions */
-	for (ia = 0; ia < na; ia++)
-	{
-	    //read_double (fhand, &ct.ions[ia].ixtal[0], 3);
-	    read_double (fhand, r, 3);
-
-	}
-
-
-	/* read ionic velocities */
-	for (ia = 0; ia < na; ia++)
-	{
-	    //read_double (fhand, &ct.ions[ia].velocity[0], 3);
-	    read_double (fhand, r, 3);
-	}
-
-	/* read forces pointer */
-	//read_int (fhand, &ct.fpt[0], 4);
-	read_int (fhand, tmp_int, 4);
-
-	/* read ionic forces */
-	/*for (ia = 0; ia < na; ia++)
-	    read_double (fhand, &ct.ions[ia].force[0][0], 3 * 4);*/
-	for (ia = 0; ia < 4*na; ia++)
-	    read_double (fhand, r, 3);
-
-
-	/* read Nose positions,velocities, masses and forces from the file */
-	read_double (fhand, r, 10);
-	read_double (fhand, r, 10);
-	read_double (fhand, r, 10);
-	read_double (fhand, r, 4 * 10);
-
-	/* read ionic timestep*/
-	read_double (fhand, r, 1);
-
-    }
 
     close (fhand);
 

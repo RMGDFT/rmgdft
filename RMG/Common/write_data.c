@@ -80,10 +80,6 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     totalsize = 0;
 
 
-    /* write lattice information */
-    write_double (fhand, ct.a0, 3);
-    write_double (fhand, ct.a1, 3);
-    write_double (fhand, ct.a2, 3);
 
     /* write grid info */
     grid[0] = NX_GRID;
@@ -178,61 +174,10 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     }
 
 
-
-
-
-    /* write number of ions */
-    write_int (fhand, &ct.num_ions, 1);
-
-    /* write current ionic cartesian positions */
-    for (ia = 0; ia < ct.num_ions; ia++)
-        write_double (fhand, ct.ions[ia].crds, 3);
-
-
-    /* write current ionic crystal positions */
-    for (ia = 0; ia < ct.num_ions; ia++)
-        write_double (fhand, ct.ions[ia].xtal, 3);
-
-    /* write original ionic cartesian positions */
-    for (ia = 0; ia < ct.num_ions; ia++)
-        write_double (fhand, ct.ions[ia].icrds, 3);
-
-    /* write original ionic crystal positions */
-    for (ia = 0; ia < ct.num_ions; ia++)
-        write_double (fhand, ct.ions[ia].ixtal, 3);
-
-
-    /* write current ionic velocities */
-    for (ia = 0; ia < ct.num_ions; ia++)
-        write_double (fhand, ct.ions[ia].velocity, 3);
-
-    /* write current ionic forces pointer array */
-    write_int (fhand, ct.fpt, 4);
-
-    /* write current ionic forces */
-    for (ia = 0; ia < ct.num_ions; ia++)
-        write_double (fhand, &ct.ions[ia].force[0][0], 3 * 4);
-
-    /* write Nose positions,velocities, masses and forces */
-    write_double (fhand, &ct.nose.xx[0], 10);
-    write_double (fhand, &ct.nose.xv[0], 10);
-    write_double (fhand, &ct.nose.xq[0], 10);
-    write_double (fhand, &ct.nose.xf[0][0], 4 * 10);
-
-    /*Write ionic timestep*/
-    write_double (fhand, &ct.iondt, 1);
-    
     write_time = my_crtc () - time0;
     
     if (pct.imgpe == 0)
     {
-        /*Things like grids and number of precessors should be written in the beginning of the file */
-        /*printf( "write_data: psi grid = %d %d %d\n", ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid);
-           printf( "write_data: pe grid = %d %d %d\n", PE_X, PE_Y, PE_Z);
-           printf( "write_data: grid_size = %d\n", grid_size);
-           printf( "write_data: gamma = %d\n", gamma);
-           printf( "write_data: nk = %d\n", nk);
-           printf( "write_data: ns = %d\n", ns); */
         printf ("write_data: total size of each of the %d files = %.1f Mb\n", npe,
                 ((REAL) totalsize) / (1024 * 1024));
         printf ("write_data: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
