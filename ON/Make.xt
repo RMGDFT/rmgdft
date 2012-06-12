@@ -30,7 +30,7 @@ LDFLAGS = -pgf90libs
 
 
 CC = cc
-CF = ftn
+FC = ftn
 
 
 # Makefiles: if these change, whole code should be recompiled

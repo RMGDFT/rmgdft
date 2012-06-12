@@ -35,7 +35,7 @@ LDFLAGS = -pthread -openmp
 
 
 CC = cc
-CF = gfortran
+FC = gfortran
 
 
 # Makefiles: if these change, whole code should be recompiled
