@@ -177,7 +177,7 @@ clean-on: clean-common
 clean-NEGF: clean-common
 	find NEGF ON/ON-NEGF-share  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 
-clean-all: clean-common clean-rmg clean-on clean-NEGF 
+clean-all: clean-common clean-rmg clean-on clean-NEGF clean-libxc
 
 clean-libxc:
 	cd lib/libxc; make clean 

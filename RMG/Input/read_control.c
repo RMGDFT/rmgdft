@@ -31,8 +31,6 @@
 #include <math.h>
 #include "main.h"
 
-#define init_opt(tagname, opt_list) (!run_count) ? (get_data(tagname, NULL, INIT | OPT, opt_list)): ({})
-    
 
 void read_control (char *file)
 {
@@ -64,7 +62,7 @@ void read_control (char *file)
     char start_mode_opts[] = "Random Start\n"
                              "Restart From File\n"
                              "LCAO Start";
-    init_opt("start_mode", start_mode_opts);
+    get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
 
     /* Read in the initial run flag */
     get_data ("start_mode", &ct.runflag, OPT, "Random Start");
@@ -73,7 +71,7 @@ void read_control (char *file)
     char z_average_output_mode_opts[] = "None\n"
                                         "potential and charge density\n"
                                         "wave functions";
-    init_opt("z_average_output_mode", z_average_output_mode_opts);
+    get_data ("z_average_output_mode", NULL, INIT | OPT, z_average_output_mode_opts);
 
     /* Read in zaverage output toggle */
     get_data ("z_average_output_mode", &ct.zaverage, OPT, "None");
@@ -83,7 +81,7 @@ void read_control (char *file)
     char boundary_condition_type_opts[] = "Periodic\n"
                                           "Cluster\n"
                                           "Surface";
-    init_opt("boundary_condition_type", boundary_condition_type_opts);
+    get_data ("boundary_condition_type", NULL, INIT | OPT, boundary_condition_type_opts);
 
     /* Read in the boundary condition flag */
     get_data ("boundary_condition_type", &ct.boundaryflag, OPT, "Periodic");
@@ -92,7 +90,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char charge_mixing_type_opts[] = "Linear\n"
                                      "Pulay";
-    init_opt ("charge_mixing_type", charge_mixing_type_opts);
+    get_data ("charge_mixing_type", NULL, INIT | OPT, charge_mixing_type_opts);
     
     /* Read type of charge density mixing */
     get_data ("charge_mixing_type", NULL, OPT, "Pulay");
@@ -124,7 +122,7 @@ void read_control (char *file)
                                             "GGA XB CP\n"
                                             "GGA XP CP\n"
                                             "GGA PBE";
-    init_opt ("exchange_correlation_type", exchange_correlation_type_opts);
+    get_data ("exchange_correlation_type", NULL, INIT | OPT, exchange_correlation_type_opts);
 
     /* Exchange correlation potential type flag */
     get_data ("exchange_correlation_type", &ct.xctype, OPT, "LDA");
@@ -149,7 +147,7 @@ void read_control (char *file)
     
     char relax_mass_opts[] = "Atomic\n"
                                  "Equal";
-    init_opt ("relax_mass", relax_mass_opts);
+    get_data ("relax_mass", NULL, INIT | OPT, relax_mass_opts);
 
     /* Mass to use for structural relaxation, either their atomic masses, or use the mass of carbon for all atoms*/
     get_data ("relax_mass", &ct.relax_mass, OPT, "Atomic");
@@ -170,7 +168,7 @@ void read_control (char *file)
                                    "Fermi Dirac\n"
                                    "Gaussian\n"
                                    "Error Function";
-    init_opt ("occupations_type", occupations_type_opts);
+    get_data ("occupations_type", NULL, INIT | OPT, occupations_type_opts);
 
     /* Fermi occupation flag */
     require (get_data ("occupations_type", &ct.occ_flag, OPT, NULL));
@@ -205,7 +203,7 @@ void read_control (char *file)
                                    "Band Structure Only\n"
                                    "NEB Relax\n"
                                    "Dimer Relax";
-    init_opt ("calculation_mode", calculation_mode_opts);
+    get_data ("calculation_mode", NULL, INIT | OPT, calculation_mode_opts);
 
     /* Force flag */
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
@@ -216,7 +214,7 @@ void read_control (char *file)
 				"Quick Min\n"
 				"MD Min\n"
                                "LBFGS";
-    init_opt ("relax_method", relax_method_opts);
+    get_data ("relax_method", NULL, INIT | OPT, relax_method_opts);
 
     get_data ("relax_method", &ct.relax_method, OPT, "Fast Relax");
     
@@ -261,7 +259,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char md_temperature_control_opts[] = "Nose Hoover Chains\n"
                                           "Anderson Rescaling";
-    init_opt ("md_temperature_control", md_temperature_control_opts);
+    get_data ("md_temperature_control", NULL, INIT | OPT, md_temperature_control_opts);
 
     /* Set up and validate input options */
     /* Temperature Control Info */
@@ -291,7 +289,7 @@ void read_control (char *file)
     char md_integration_order_opts[] = "2nd Velocity Verlet\n"
                                         "3rd Beeman-Velocity Verlet\n"
                                         "5th Beeman-Velocity Verlet";
-    init_opt ("md_integration_order", md_integration_order_opts);
+    get_data ("md_integration_order", NULL, INIT | OPT, md_integration_order_opts);
     /* MD Integration flag */
     get_data ("md_integration_order", &ct.mdorder, OPT, "2nd Velocity Verlet");
 
@@ -396,7 +394,7 @@ void read_control (char *file)
     char interpolation_type_opts[] = "Cubic Polynomial\n"
                                      "B-spline\n"
                                      "prolong";
-    init_opt ("interpolation_type", interpolation_type_opts);
+    get_data ("interpolation_type", NULL, INIT | OPT, interpolation_type_opts);
 
     /*Interpolation type */
     get_data ("interpolation_type", &ct.interp_flag, OPT, "Cubic Polynomial");
@@ -453,7 +451,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char crds_units_opts[] = "Bohr\n"
                                "Angstrom";
-    init_opt ("crds_units", crds_units_opts);
+    get_data ("crds_units", NULL, INIT | OPT, crds_units_opts);
 
     /*This is not read into any variable */
     get_data ("crds_units", &tmp, OPT, "Bohr");
@@ -474,7 +472,7 @@ void read_control (char *file)
                                        "Monoclinic Primitive\n"
                                        "Monoclinic Base Centered\n"
                                        "Triclinic Primitive";
-    init_opt ("bravais_lattice_type", bravais_lattice_type_opts);
+    get_data ("bravais_lattice_type", NULL, INIT | OPT, bravais_lattice_type_opts);
 
     /* lattice type */
     require (get_data ("bravais_lattice_type", &ct.ibrav, OPT, NULL));
@@ -620,7 +618,7 @@ void read_control (char *file)
     /* Set up and validate input options */
     char atomic_coordinate_type_opts[] = "Cell Relative\n"
                                          "Absolute";
-    init_opt ("atomic_coordinate_type", atomic_coordinate_type_opts);
+    get_data ("atomic_coordinate_type", NULL, INIT | OPT, atomic_coordinate_type_opts);
 
     /* Absolute or cell relative coordinates */
     get_data ("atomic_coordinate_type", &ct.crd_flag, OPT, "Absolute");
@@ -793,19 +791,6 @@ void read_control (char *file)
 
     if ((tmp > 0) && (tmp !=  4)) 
 	error_handler("Wrong number of Nose force (%d), 4 are expected", tmp); 
-
-
-
-
-
-    /* get? multi-image topology if present in input */
-    if (get_data( "image_communicator_topology", &tmp, INIT|LIST, NULL))
-
-
-
-    /* get? multi-image topology if present in input */
-    if (get_data( "image_communicator_topology", &tmp, INIT|LIST, NULL))
-
 
 
     /* get? multi-image topology if present in input */
