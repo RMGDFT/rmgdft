@@ -333,6 +333,15 @@ void read_control (char *file)
      * This normally starts from zero and is increased if F *v > 0 or set to 0 otherwise*/
     get_data ("dynamic_time_counter", &ct.relax_steps_counter, INT, "0");
 
+    get_data("scf_steps_offset", &tmp, INT, "0"); 
+    ct.scf_steps = tmp;
+    
+    get_data("total_scf_steps_offset", &tmp, INT, "0"); 
+    ct.total_scf_steps = tmp;
+    
+    get_data("md_steps_offset", &tmp, INT, "0"); 
+    ct.md_steps = tmp;
+
 
 
     /* Milliken population flag */
@@ -735,7 +744,7 @@ void read_control (char *file)
     if (verify("ionic_force_pointer", NULL))
     {
 	get_data ("ionic_force_pointer", tbuf, ITEM | STR, NULL);
-	sscanf (tbuf, "%d %d %d", &ct.fpt[0], &ct.fpt[1], &ct.fpt[2], &ct.fpt[3]);
+	sscanf (tbuf, "%d %d %d %d", &ct.fpt[0], &ct.fpt[1], &ct.fpt[2], &ct.fpt[3]);
     }
     else
     {
