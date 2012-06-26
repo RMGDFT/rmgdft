@@ -110,6 +110,7 @@ void run (STATE * states, STATE * states1)
         {
             time1 = my_crtc ();
             get_dos (states);
+            get_3Ddos (states);
             time2 = my_crtc ();
             if (pct.gridpe == 0)
                 printf ("\n TIME for get_cond_dos %f", time2 - time1);
