@@ -141,7 +141,7 @@ c******************************************************************************
  
       integer npk, nrot, nrotot,  nat, nks, nsym, nr1, nr2, nr3
       integer natp, nksp, wflag
-      parameter(natp=1000,nksp=2000)
+      parameter(natp=2000,nksp=2000)
 
       integer s(3,3,48), irt(48,natp), irg(48),krg(48),ityp(natp),
      & ftau(3,48), nks0, na,nb, i,j,k,ncos,ik,jk,ic,jc, is,ir,jr,
@@ -1071,8 +1071,8 @@ cEmil      intrinsic my_pe
       real*8 rnsym, vect(3,nat), work(3,00)
 *
       if(nsym.eq.1) return
-      if(nat .ge. 1000)then
-        print *, 'Error in symvect NAT .ge. 1000'
+      if(nat .ge. 2000)then
+        print *, 'Error in symvect NAT .ge. 2000'
         stop
       endif
 *

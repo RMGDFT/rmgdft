@@ -118,9 +118,10 @@ void read_atoms (void)
 
     }                           /* end while (get_data( "atoms", tbuf, ITEM | STR, NULL) != NULL) */
 
-    if (ion != ct.num_ions)
+    if (ion != ct.num_ions | ct.num_ions > MAX_IONS)
     {
         printf ("ion = %d != %d = ct.num_ions", ion, ct.num_ions);
+        printf ("MAX_IONS = %d ", MAX_IONS);
         error_handler ("Mismatch in number of ions");
     }
 

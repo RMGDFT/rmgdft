@@ -90,7 +90,7 @@ int PE_X, PE_Y, PE_Z;
 
 /* Maximum number of ions -- just an upper limit on
  * dynamically allocated data structures. */
-#define         MAX_IONS        1400
+#define         MAX_IONS        2400
 #define         IONS_PER_PE     MAX_IONS
 
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
