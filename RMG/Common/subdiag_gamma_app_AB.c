@@ -49,8 +49,19 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 #    if MD_TIMERS
         time1 = my_crtc ();
 #    endif
+
         /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
+#if EXPERIMENTAL_ACCEL
+        if(ct.scf_steps == 0) {
+                genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+        }
+        else {
+                genvpsi (tmp_psi, sg_twovpsi, sp->dvhxc, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+        }
+#else
         genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+#endif
+
 #    if MD_TIMERS
         rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #    endif

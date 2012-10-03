@@ -73,7 +73,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     int nits, pbasis, sbasis;
     REAL eig, diag, t1, t2, t3, t4;
     REAL *work1, *work2, *nv, *ns, *res2;
-    REAL *tmp_psi, *res, *sg_psi, *sg_twovpsi;
+    REAL *tmp_psi, *res, *sg_psi, *sg_twovpsi, *saved_psi;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
@@ -123,8 +123,13 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (ns, sbasis, REAL);
     my_malloc (nv, sbasis, REAL);
     my_malloc (res2, sbasis, REAL);
+    my_malloc (saved_psi, sbasis, REAL);
 
     tmp_psi = sp->psiR;
+
+#if EXPERIMENTAL_ACCEL
+    for(idx = 0;idx < P0_BASIS;idx++) saved_psi[idx] = tmp_psi[idx];
+#endif
 
 #if MD_TIMERS
     time1 = my_crtc ();
@@ -150,7 +155,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
     rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
-
 
 
     /* Smoothing cycles */
@@ -215,7 +219,11 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         time1 = my_crtc ();
 #endif
         /* If this is the first time through compute the eigenvalue */
+#if EXPERIMENTAL_ACCEL
+        if (1)
+#else
         if (cycles == 0)
+#endif
         {
 
             eig = 0.0;
@@ -238,12 +246,13 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
-            if (ct.diag == 1)
+            if ((ct.diag == 1) && (EXPERIMENTAL_ACCEL == 0))
             {
                 if (ct.scf_steps == 0)
                 {
                     eig = tarr[1] / (TWO * tarr[0]);
                     sp->eig[0] = eig;
+                    sp->oldeig[0] = eig;
                 }
 		else
                     eig = sp->eig[0];
@@ -252,9 +261,18 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             {
                 eig = tarr[1] / (TWO * tarr[0]);
                 sp->eig[0] = eig;
+                if(ct.scf_steps == 0) {
+                    sp->oldeig[0] = eig;
+                }
             }
+#if EXPERIMENTAL_ACCEL
+            t1 = eig;
+            eig = 0.3 * eig + 0.7 * sp->oldeig[0];
+            sp->oldeig[0] = t1;
+#endif
 
         }
+
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_EIGVALUE_TIME, (my_crtc () - time1));
@@ -300,10 +318,16 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             time1 = my_crtc ();
 #endif
 
+#if EXPERIMENTAL_ACCEL
+            t1 = eig - states[0].eig[0];
+            t1 = -t1*t1 / 10.0;
+#else
+            t1 = 0.0;
+#endif
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsi, work1, work2,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, 0.0);
+                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, t1);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
@@ -333,9 +357,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             t2 = ZERO;
             t4 = ct.eig_parm.gl_step * diag;
 
-//          if(cycles == 0)t4 = 2.0 * diag;
-//          if(cycles == 1)t4 = 1.0 * diag;
-
             for (idx = 0; idx < P0_BASIS; idx++)
             {
 
@@ -359,9 +380,24 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     }                           /* end for */
 
 
+#if EXPERIMENTAL_ACCEL
+    // Now compute the change in psi
+    for(idx = 0;idx < P0_BASIS;idx++) {
+        saved_psi[idx] = tmp_psi[idx] - saved_psi[idx];
+    }
 
+    t1 = 1.8;
+    // 1.8 for c60 cell
+    if(sp->occupation[0] < 1.9) t1 = 0.0;
+    // Save potential used for this orbital and update potential for future orbitals
+    for(idx = 0;idx < P0_BASIS;idx++) {
+        sp->dvhxc[idx] = vtot_psi[idx];
+       vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi[idx] * saved_psi[idx];
+    }
+#endif
 
     /* Release our memory */
+    my_free (saved_psi);
     my_free (res2);
     my_free (nv);
     my_free (ns);
@@ -372,7 +408,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
     my_free (res);
     my_free (sg_psi);
-
 
 
 }                               /* end mg_eig_state */
@@ -743,7 +778,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         }
 
     }                           /* end for */
-
 
 
 

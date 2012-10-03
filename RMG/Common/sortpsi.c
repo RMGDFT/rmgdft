@@ -95,6 +95,10 @@ void sortpsi (STATE * states)
                 sp->eig[0] = sp1->eig[0];
                 sp1->eig[0] = t1;
 
+                t1 = sp->oldeig[0];
+                sp->oldeig[0] = sp1->oldeig[0];
+                sp1->oldeig[0] = t1;
+
                 t1 = sp->occupation[0];
                 sp->occupation[0] = sp1->occupation[0];
                 sp1->occupation[0] = t1;

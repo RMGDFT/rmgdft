@@ -60,7 +60,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     int species, i;
     SPECIES *sp;
     int flag;
-    REAL *rptr = NULL, *vtot, t1, t2, scale, *rho_tot;
+    REAL *rptr = NULL, *rptr1 = NULL, *vtot, t1, t2, scale, *rho_tot;
     ION *iptr, *iptr0;
     REAL time1, time2, v1, v2, v3, fac;
     STATE *st;
@@ -193,6 +193,9 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     /* Wavefunctions are actually stored here */
     my_malloc (rptr, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
   #endif
+#if EXPERIMENTAL_ACCEL
+  my_malloc (rptr1, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
+#endif
 #else
     /* Wavefunctions are actually stored here */
     if (verify ("calculation_mode", "Band Structure Only"))
@@ -218,6 +221,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
             states[kst1].kidx = kpt;
             states[kst1].psiR = rptr;
             states[kst1].psiI = rptr + P0_BASIS;
+            states[kst1].dvhxc = rptr1;
             states[kst1].hxgrid = ct.hxgrid;
             states[kst1].hygrid = ct.hygrid;
             states[kst1].hzgrid = ct.hzgrid;
@@ -234,6 +238,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 #if MPI
 #if GAMMA_PT
             rptr += P0_BASIS;
+            rptr1 += P0_BASIS;
 #else
             rptr += 2 * P0_BASIS;
 #endif

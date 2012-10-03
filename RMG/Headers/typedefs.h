@@ -316,6 +316,9 @@ typedef struct
     /** Current estimate of the eigenvalue for this orbital (state). */
     REAL eig[2];
 
+    /** Previous estimate */
+    REAL oldeig[2];
+
     /** Wavefunction residual error computed by multigrid solver */
     REAL res;
 
@@ -333,6 +336,9 @@ typedef struct
     REAL *vxc;
     /** Total potential */
     REAL *vtot;
+
+    /** dvhxc */
+    REAL *dvhxc;
 
     /** Core charge for non-linear core corrections */
     REAL *rhocore;
@@ -367,7 +373,7 @@ typedef struct
 
     /** Occupation of the orbital */
     REAL occupation[2];
-    REAL oldeig;
+//    REAL oldeig;
 
     /* The offsets and the sizes of the grid that the orbital
      * is defined on relative to the global grid. These will
