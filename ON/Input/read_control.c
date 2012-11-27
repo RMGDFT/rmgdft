@@ -212,6 +212,18 @@ void read_control (void)
     get_data ("electric_field_magnitude", &ct.e_field, DBL, "0.0");
     ct.constrainforces = 0;
 
+
+    /* Max number of sweeps in get_vh*/
+    get_data ("hartree_max_sweeps", &ct.hartree_max_sweeps, INT, "100");
+
+    /* Min number of sweeps in get_vh*/
+    get_data ("hartree_min_sweeps", &ct.hartree_min_sweeps, INT, "5");
+
+    /* Ratio between target RMS for get_vh and RMS total potential
+ *      * This determines target RMS passed to get_vh*/
+    get_data ("hartree_rms_ratio", &ct.hartree_rms_ratio, DBL, "50.0");
+
+
     /*Whether to use mask mask function for filtering PPs*/
     get_data ("mask_function_filtering", &ct.mask_function, BOOL, "false");
 
@@ -409,9 +421,13 @@ void read_control (void)
     get_data ("kohn_sham_time_step", &ct.eig_parm.gl_step, DBL, "0.3");
 
     /* Poisson smoothings pre, post, step */
-    get_data ("poisson_pre_smoothing", &ct.poi_parm.gl_pre, INT, "2");
-    get_data ("poisson_post_smoothing", &ct.poi_parm.gl_pst, INT, "1");
-    get_data ("poisson_time_step", &ct.poi_parm.gl_step, DBL, "0.5");
+    get_data ("poisson_pre_smoothing", &ct.poi_parm.gl_pre, INT, "3");
+    get_data ("poisson_post_smoothing", &ct.poi_parm.gl_pst, INT, "3");
+    get_data ("poisson_finest_time_step", &ct.poi_parm.gl_step, DBL, "0.6");
+    get_data ("poisson_coarse_time_step", &ct.poi_parm.sb_step, DBL, "0.6");
+    get_data ("poisson_mucycles", &ct.poi_parm.mucycles, INT, "1");
+    get_data ("poisson_coarsest_steps", &ct.poi_parm.coarsest_steps, INT, "80");
+
 
     /* Multigrid levels */
     get_data ("kohn_sham_mg_levels", &ct.eig_parm.levels, INT, "1");

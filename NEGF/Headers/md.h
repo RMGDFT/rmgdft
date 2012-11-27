@@ -39,6 +39,7 @@
 /* Version information */
 #include    "version.h"
 #include    "input.h"
+#include    "typedefs.h"
 
 
 
@@ -720,23 +721,6 @@ typedef struct
 
 
 
-/* multigrid-parameter structure */
-typedef struct 
-{
-    /* number of global-grid pre/post smoothings and timestep */
-    REAL gl_step;
-    int gl_pre;
-    int gl_pst;
-
-    /* timestep for the subiteration */
-    REAL sb_step;
-
-    /* timestep for the Richardson-Iteration */
-    REAL ri_step;
-
-    /* lowest MG level */
-    int levels;
-} MG_PARM;
 
 
 
@@ -1200,6 +1184,21 @@ typedef struct
  
     REAL neb_spring_constant;
 
+  /*Current RMS value*/
+    REAL rms;
+
+    /* Max number of sweeps in get_vh*/
+    int hartree_max_sweeps;
+
+    /* Min number of sweeps in get_vh*/
+    int hartree_min_sweeps;
+
+    /*Ratio between target RMS for get_vh and RMS total potential*/
+    REAL hartree_rms_ratio;
+
+
+
+
     int mask_function;
     int norm_conserving_pp;
 
@@ -1281,7 +1280,6 @@ void exclda_pz81(REAL *rho, REAL *exc);
 void xcgga(REAL *rho, REAL *vxc, REAL *exc, int flag);
 void gram(KPOINT *kpoint, REAL h, int numst, int maxst, int numpt, int maxpt);
 REAL get_ke(STATE *sp, int tid);
-void get_vh(REAL *rho, REAL *rhoc, REAL *vh, int cycles, int maxlevel);
 void global_sums (REAL *vect, int *length, MPI_Comm comm);
 void iiforce(void);
 void init(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
@@ -1472,10 +1470,6 @@ char *get_symbol(int atomic_number);
 REAL  	dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2);
 void 	orbit_dot_orbit(STATE *states, STATE *states1, REAL *work_matrix);
 void   	allocate_masks(STATE *states);
-void 	mgrid_solv(REAL *v_mat, REAL *f_mat, REAL *work, int dimx, int dimy, int dimz,
-        REAL gridhx, REAL gridhy, REAL gridhz, int level, int *nb_ids,
-        int max_levels, int *pre_cyc, int *post_cyc, int mu_cyc,
-        int istate, int *iion, int flag_local);
 void 	state_corner_xyz(STATE *states);
 void 	density_orbit_X_orbit(int st1, int st2, REAL scale,  REAL *psi1, REAL *psi2,
         REAL *rho_global, int mode, STATE *states);

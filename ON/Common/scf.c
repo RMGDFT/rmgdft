@@ -156,7 +156,9 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
 
 
     /* Generate hartree potential */
-    get_vh(rho, rhoc, vh, 15, ct.poi_parm.levels);
+//    get_vh1(rho, rhoc, vh, 15, ct.poi_parm.levels);
+   get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+
 
 
     /* Compute quantities function of rho only */
@@ -186,6 +188,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
     t[0] /= (double) ct.num_ions;
     t[1] = sqrt(t[1] / ((double) (ct.vh_nbasis)));
 
+    ct.rms = t[1];
     if (pct.gridpe == 0)
         printf(" SCF CHECKS: RMS[dv] = %15.10e RMS[drho] = %15.10e \n", t[1], tem1);
 

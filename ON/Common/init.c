@@ -234,7 +234,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
         get_vxc(rho, rhocore, vxc);
         pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-        get_vh(rho, rhoc, vh, 30, ct.poi_parm.levels);
+        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
         for (idx = 0; idx < FP0_BASIS; idx++)
             vh_old[idx] = vh[idx];
         for (idx = 0; idx < FP0_BASIS; idx++)
@@ -255,7 +255,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
         get_vxc(rho, rhocore, vxc);
         pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-        get_vh(rho, rhoc, vh, 3, ct.poi_parm.levels);
+        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
         for (idx = 0; idx < FP0_BASIS; idx++)
             vh_old[idx] = vh[idx];
         for (idx = 0; idx < FP0_BASIS; idx++)

@@ -174,3 +174,6 @@ void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL 
 	REAL *rab, int l_value, REAL dr, REAL  gwidth, int lgrid_points, REAL rcut, REAL rwidth, REAL * drpotential_lgrid);
 
 int min_distance_index(double *distance, int n );
+
+
+void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target);
