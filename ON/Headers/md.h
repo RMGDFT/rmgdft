@@ -1463,7 +1463,7 @@ void orbit_dot_orbit (STATE * states, STATE * states1, REAL *Hij_row, REAL * Bij
 void app_mask (int istate, double *u, int level);
 void allocate_masks (STATE * states);
 
-void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work, int dimx, int dimy,
+void mgrid_solv_local (REAL * v_mat, REAL * f_mat, REAL * work, int dimx, int dimy,
         int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int level,
         int *nb_ids, int max_levels, int *pre_cyc, int *post_cyc,
         int mu_cyc, int istate, int *iion, int flag_local);

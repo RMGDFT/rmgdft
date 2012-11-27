@@ -71,7 +71,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
             /* Do multigrid step with solution in sg_twovpsi */
 
 
-            mgrid_solv(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
+            mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
                        ct.hxgrid, ct.hygrid, ct.hzgrid, 0, pct.neighbors,
                        ct.eig_parm.levels, eig_pre, eig_post, 1, istate, &sp->inum, 1);
 

@@ -68,10 +68,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     REAL time1, time2;
     time1 = my_crtc();
 
-    /* Keep in memory vh*rho_new before updating vh */
-    scale = ddot(&stop, rho, &ione, vh, &ione);
-    ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all(scale, pct.grid_comm);
-
     nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst + 1;
     sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
     pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
@@ -155,7 +151,7 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
                 pack_ptos(sg_rho, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
 
-                mgrid_solv(mglhsarr, sg_rho, work,
+                mgrid_solv_local(mglhsarr, sg_rho, work,
                            ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid, 0,
                            pct.neighbors, ct.poi_parm.levels, poi_pre, poi_post, 1, 0, 0, 0);
@@ -212,16 +208,6 @@ void get_vh(REAL * rho, REAL * rhoc, REAL * vh_eig, int sweeps, int maxlevel)
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
     pack_vhdtos(vh_eig, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-
-
-
-    /* Compute quantities function of rho only */
-    scale = ddot(&stop, rho, &ione, vh_eig, &ione);
-    ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all(scale, pct.grid_comm);
-
-    scale = ddot(&stop, rhoc, &ione, vh_eig, &ione);
-    ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all(scale, pct.grid_comm);
-
 
 
 

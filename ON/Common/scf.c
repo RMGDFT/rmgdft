@@ -136,6 +136,7 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
         int *CONVERGENCE, STATE * states)
 {
     int n = FP0_BASIS, idx, ione = 1;
+    double tem;
 
     /* save old vtot, vxc, vh */
     scopy(&n, vxc, &ione, vxc_old, &ione);
@@ -149,8 +150,22 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
 
     pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
+    /* Keep in memory vh*rho_new before updating vh */
+    tem = ddot(&FP0_BASIS, rho, &ione, vh, &ione);
+    ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
+
+
     /* Generate hartree potential */
     get_vh(rho, rhoc, vh, 15, ct.poi_parm.levels);
+
+
+    /* Compute quantities function of rho only */
+    tem = ddot(&FP0_BASIS, rho, &ione, vh, &ione);
+    ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
+
+    tem = ddot(&FP0_BASIS, rhoc, &ione, vh, &ione);
+    ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
+
 
 
     /* evaluate correction vh+vxc */
