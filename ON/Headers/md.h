@@ -36,8 +36,6 @@
 /* Version information */
 #include    "version.h"
 #include    "input.h"
-#include    "typedefs.h"
-#include    "prototypes.h"
 
 
 /* Compile time parameters */
@@ -62,6 +60,8 @@
 /** Size of floating point variables used in QMD */
 #define     REAL    double
 
+#include    "typedefs.h"
+#include    "prototypes.h"
 
 int MXLLDA, MXLCOL;
 REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *vtot,
