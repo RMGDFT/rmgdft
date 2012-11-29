@@ -581,6 +581,12 @@ void read_control (char *file)
     /* Whether to write full memory usage report at the end of calculation */
     get_data ("write_memory_report", &ct.write_memory_report, BOOL, "false");
 
+    /* Potential acceleration constant step, default=1.0 */
+    get_data ("potential_acceleration_constant_step", &ct.potential_acceleration_constant_step, DBL, "0.0");
+
+    /* Potential acceleration poisson step, default=0.0 */
+    get_data ("potential_acceleration_poisson_step", &ct.potential_acceleration_poisson_step, DBL, "0.0");
+
     /*Count number of species */
     require (get_data ("pseudopotential", &tmp, INIT | LIST, NULL));
 

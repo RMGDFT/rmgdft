@@ -88,7 +88,18 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 #   endif
 
     /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
-    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+        if(ct.potential_acceleration) {
+            if(ct.scf_steps == 0) {
+                    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+            }
+            else {
+                    genvpsi (tmp_psi, sg_twovpsi, sp->dvhxc, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+            }
+        }
+        else {
+            genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+        }
+
 
 #   if MD_TIMERS
         rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));

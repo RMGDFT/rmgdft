@@ -244,9 +244,6 @@ RMG/Headers/make_conf.h:
 	@echo "/* Number of OMP threads to use (internal only). If 0 then none will be used. */" >> RMG/Headers/make_conf.h;
 	@echo "#define RMG_OMP_THREADS 0" >> RMG/Headers/make_conf.h;
 	@echo "";
-	@echo "/* Experimental acceleration techniques */" >> RMG/Headers/make_conf.h;
-	@echo "#define EXPERIMENTAL_ACCEL 0" >> RMG/Headers/make_conf.h;
-	@echo "";
 	@echo "ERROR: File RMG/Headers/make_conf.h does not exist"; 
 	@echo "Headers/make_conf.h is set to default, configure it for your system before compiling !!! ";
 	@echo "";

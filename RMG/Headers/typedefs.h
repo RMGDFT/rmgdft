@@ -1347,6 +1347,12 @@ typedef struct
     /* Number of CPU's in system */
     int ncpus;
 
+    /* Potential acceleration constant step factor */
+    REAL potential_acceleration_constant_step;
+
+    /* Potential acceleration constant step factor */
+    REAL potential_acceleration_poisson_step;
+
 #if PAPI_PERFMON
 
     // Global event set for serial portion of code

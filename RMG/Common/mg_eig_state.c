@@ -60,6 +60,7 @@
 #if HYBRID_MODEL
     #include "hybrid.h"
     #include <pthread.h>
+static pthread_mutex_t vtot_sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 
@@ -74,10 +75,11 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     REAL eig, diag, t1, t2, t3, t4;
     REAL *work1, *work2, *nv, *ns, *res2;
     REAL *tmp_psi, *res, *sg_psi, *sg_twovpsi, *saved_psi;
+    REAL *nvtot_psi;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
-    int dimx, dimy, dimz, levels;
+    int dimx, dimy, dimz, levels, potential_acceleration;
     REAL hxgrid, hygrid, hzgrid, sb_step;
     REAL tarr[8];
     REAL time1;
@@ -124,12 +126,18 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (nv, sbasis, REAL);
     my_malloc (res2, sbasis, REAL);
     my_malloc (saved_psi, sbasis, REAL);
+    my_malloc (nvtot_psi, sbasis, REAL);
 
     tmp_psi = sp->psiR;
 
-#if EXPERIMENTAL_ACCEL
-    for(idx = 0;idx < P0_BASIS;idx++) saved_psi[idx] = tmp_psi[idx];
-#endif
+    potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    if(potential_acceleration) {
+        for(idx = 0;idx < P0_BASIS;idx++) {
+            nvtot_psi[idx] = vtot_psi[idx];
+            saved_psi[idx] = tmp_psi[idx];
+        }
+
+    }
 
 #if MD_TIMERS
     time1 = my_crtc ();
@@ -185,8 +193,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
         time1 = my_crtc ();
 #endif
-        /* Generate 2 * V * psi */
-        genvpsi (tmp_psi, sg_twovpsi, vtot_psi, nv, NULL, 0.0, dimx, dimy, dimz);
+
+        if(potential_acceleration) {
+            /* Generate 2 * V * psi */
+            genvpsi (tmp_psi, sg_twovpsi, nvtot_psi, nv, NULL, 0.0, dimx, dimy, dimz);
+        }
+        else { 
+            genvpsi (tmp_psi, sg_twovpsi, vtot_psi, nv, NULL, 0.0, dimx, dimy, dimz);
+        }
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_GENVPSI_TIME, (my_crtc () - time1));
@@ -219,11 +233,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         time1 = my_crtc ();
 #endif
         /* If this is the first time through compute the eigenvalue */
-#if EXPERIMENTAL_ACCEL
-        if (1)
-#else
-        if (cycles == 0)
-#endif
+        if ((cycles == 0) || (potential_acceleration != 0)) 
         {
 
             eig = 0.0;
@@ -246,7 +256,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
-            if ((ct.diag == 1) && (EXPERIMENTAL_ACCEL == 0))
+            if ((ct.diag == 1) && (potential_acceleration == 0))
             {
                 if (ct.scf_steps == 0)
                 {
@@ -265,11 +275,12 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
                     sp->oldeig[0] = eig;
                 }
             }
-#if EXPERIMENTAL_ACCEL
-            t1 = eig;
-            eig = 0.3 * eig + 0.7 * sp->oldeig[0];
-            sp->oldeig[0] = t1;
-#endif
+            
+            if(potential_acceleration) {
+                t1 = eig;
+                eig = 0.3 * eig + 0.7 * sp->oldeig[0];
+                sp->oldeig[0] = t1;
+            }
 
         }
 
@@ -318,12 +329,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             time1 = my_crtc ();
 #endif
 
-#if EXPERIMENTAL_ACCEL
-            t1 = eig - states[0].eig[0];
-            t1 = -t1*t1 / 10.0;
-#else
-            t1 = 0.0;
-#endif
+            if(potential_acceleration) {
+                t1 = eig - states[0].eig[0];
+                t1 = -t1*t1 / 10.0;
+            }
+            else {
+                t1 = 0.0;
+            }
+
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsi, work1, work2,
                         dimx, dimy, dimz, hxgrid,
@@ -380,23 +393,84 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     }                           /* end for */
 
 
-#if EXPERIMENTAL_ACCEL
-    // Now compute the change in psi
-    for(idx = 0;idx < P0_BASIS;idx++) {
-        saved_psi[idx] = tmp_psi[idx] - saved_psi[idx];
-    }
 
-    t1 = 1.8;
-    // 1.8 for c60 cell
-    if(sp->occupation[0] < 1.9) t1 = 0.0;
-    // Save potential used for this orbital and update potential for future orbitals
-    for(idx = 0;idx < P0_BASIS;idx++) {
-        sp->dvhxc[idx] = vtot_psi[idx];
-       vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi[idx] * saved_psi[idx];
-    }
+    if(potential_acceleration) {
+
+        // Save potential used for this orbital and update potential for future orbitals
+        for(idx = 0;idx < P0_BASIS;idx++) {
+            sp->dvhxc[idx] = nvtot_psi[idx];
+        }
+
+#if HYBRID_MODEL
+        pthread_mutex_lock(&vtot_sync_mutex);
 #endif
 
+        if(ct.potential_acceleration_constant_step > 0.0) {
+
+            t1 = 1.8 * ct.potential_acceleration_constant_step;
+            if(sp->occupation[0] < 0.5) t1 = 0.0;
+
+            for(idx = 0;idx < P0_BASIS;idx++) {
+               vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi[idx] * (tmp_psi[idx] - saved_psi[idx]);
+            }
+
+        }
+
+        if(ct.potential_acceleration_poisson_step > 0.0) {
+
+            // construct delta_rho
+            for(idx = 0;idx < P0_BASIS;idx++) {
+                res[idx] = -4.0 * PI * sp->occupation[0] *
+                           (tmp_psi[idx] - saved_psi[idx]) * (2.0*saved_psi[idx] + (tmp_psi[idx] - saved_psi[idx]));
+            }
+
+            // zero out solution vector
+            for(idx = 0;idx < P0_BASIS;idx++) {
+                sg_twovpsi[idx] = 0.0;
+            }
+
+            /* Pack delta_rho into multigrid array */
+            pack_ptos (sg_psi, res, dimx, dimy, dimz);
+            trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors);
+            /* Smooth it once and store the smoothed charge in res */
+            app_smooth1 ((S0_GRID *) sg_psi, (S0_GRID *) res, 145.0);
+
+            // neutralize cell with a constant background charge
+            t2 = 0.0;
+            for(idx = 0;idx < P0_BASIS;idx++) {
+                t2 += res[idx];
+            }
+            t2 = real_sum_all(t2, pct.grid_comm) / (NX_GRID * NY_GRID * NZ_GRID);
+            for(idx = 0;idx < P0_BASIS;idx++) {
+                res[idx] -= t2;
+            }
+
+            /* Do multigrid step with solution returned in sg_twovpsi */
+            eig_pre[0] = 3;
+            eig_post[0] = 1;
+            levels=1;
+            mgrid_solv (sg_twovpsi, res, work2,
+                        dimx, dimy, dimz, hxgrid,
+                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, 1.0, 0.0);
+            for(idx = 0;idx < P0_BASIS;idx++) {
+                res[idx] = 0.0;
+            }
+            pack_stop_axpy (sg_twovpsi, res, 1.0, dimx, dimy, dimz);
+            t1 = ct.potential_acceleration_poisson_step;
+            if(sp->occupation[0] < 0.5) t1 = 0.0;
+            for(idx = 0;idx < P0_BASIS;idx++) {
+               vtot_psi[idx] = vtot_psi[idx] + t1 * res[idx];
+            }
+        }
+
+#if HYBRID_MODEL
+        pthread_mutex_unlock(&vtot_sync_mutex);
+#endif
+
+    } // end if
+
     /* Release our memory */
+    my_free (nvtot_psi);
     my_free (saved_psi);
     my_free (res2);
     my_free (nv);
