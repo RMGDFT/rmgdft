@@ -401,18 +401,21 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             sp->dvhxc[idx] = nvtot_psi[idx];
         }
 
-#if HYBRID_MODEL
-        pthread_mutex_lock(&vtot_sync_mutex);
-#endif
 
         if(ct.potential_acceleration_constant_step > 0.0) {
 
             t1 = 1.8 * ct.potential_acceleration_constant_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
 
+#if HYBRID_MODEL
+            pthread_mutex_lock(&vtot_sync_mutex);
+#endif
             for(idx = 0;idx < P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi[idx] * (tmp_psi[idx] - saved_psi[idx]);
             }
+#if HYBRID_MODEL
+            pthread_mutex_unlock(&vtot_sync_mutex);
+#endif
 
         }
 
@@ -446,8 +449,8 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             }
 
             /* Do multigrid step with solution returned in sg_twovpsi */
-            eig_pre[0] = 3;
-            eig_post[0] = 1;
+            eig_pre[0] = 2;
+            eig_post[0] = 2;
             levels=1;
             mgrid_solv (sg_twovpsi, res, work2,
                         dimx, dimy, dimz, hxgrid,
@@ -458,14 +461,17 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             pack_stop_axpy (sg_twovpsi, res, 1.0, dimx, dimy, dimz);
             t1 = ct.potential_acceleration_poisson_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
+#if HYBRID_MODEL
+            pthread_mutex_lock(&vtot_sync_mutex);
+#endif
             for(idx = 0;idx < P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * res[idx];
             }
+#if HYBRID_MODEL
+            pthread_mutex_unlock(&vtot_sync_mutex);
+#endif
         }
 
-#if HYBRID_MODEL
-        pthread_mutex_unlock(&vtot_sync_mutex);
-#endif
 
     } // end if
 
