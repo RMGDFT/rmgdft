@@ -192,7 +192,9 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
 
         iptr1 = &ct.ions[i];
         loc_sum = 0.0;
+#if HYBRID_MODEL
 #pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
+#endif
 	for (j = i + 1; j < ct.num_ions; j++)
 	{
 
