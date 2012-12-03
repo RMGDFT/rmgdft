@@ -88,7 +88,7 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 #   endif
 
     /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
-        if(ct.potential_acceleration) {
+        if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
             if(ct.scf_steps == 0) {
                     genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
             }
