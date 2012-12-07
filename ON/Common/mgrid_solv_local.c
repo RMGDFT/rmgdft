@@ -74,7 +74,7 @@ void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,
 
     double step;
 
-    step = 1.0;
+    step = 0.3;
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     incx = (dimy + 2) * (dimz + 2);
@@ -88,7 +88,7 @@ void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,
     scale = 2.0 / (gridhx * gridhx * ct.xside * ct.xside);
     scale = scale + (2.0 / (gridhy * gridhy * ct.yside * ct.yside));
     scale = scale + (2.0 / (gridhz * gridhz * ct.zside * ct.zside));
-    scale = 1.0 / scale;
+    scale = step / scale;
 
 
 

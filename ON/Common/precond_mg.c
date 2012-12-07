@@ -23,10 +23,12 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     /* Pre and post smoothings on each level */
 
 
-    int eig_pre[6] = { 0, 2, 2, 2, 2, 2 };
-    int eig_post[6] = { 0, 2, 2, 2, 2, 2 };
+    int eig_pre[6] = { 0, 3, 3, 3, 3, 3 };
+    int eig_post[6] = { 0, 3, 3, 3, 3, 3 };
 
+    double *work3;
 
+    eig_pre[ct.eig_parm.levels] = 50;
     time1 = my_crtc();
 
     diag = -1. / ct.Ac;
@@ -48,18 +50,25 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
 
+    idx = (ixx + 4) * (iyy +4) * (izz+4);
+    my_malloc (work3, idx, REAL);
+
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)
     {
 
 
         pack_ptos(sg_orbit, work1, ixx, iyy, izz);
+        pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
 
-        app_cil_orbital(sg_orbit, work2, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
+        diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
 
+        diag = -1.0/diag;
         saxpy(&stopp0, &one, res, &ione, work2, &ione);
 
+
         /*app_mask(istate, work2, 0); */
+
         /* Now either smooth the wavefunction or do a multigrid cycle */
         if (cycles == ct.eig_parm.gl_pre)
         {
@@ -98,6 +107,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
 
+    my_free(work3);
 
     time2 = my_crtc();
     d1 = time2 - time1;
