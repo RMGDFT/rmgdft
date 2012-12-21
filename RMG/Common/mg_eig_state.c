@@ -256,7 +256,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
-            if ((ct.diag == 1) && (potential_acceleration == 0))
+            if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
             {
                 if (ct.scf_steps == 0)
                 {
