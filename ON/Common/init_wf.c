@@ -31,7 +31,6 @@ static void init_wf_gamma(STATE * states)
 
     int idx, state, ix, iy, iz;
     STATE *sp;
-    REAL *xrand, *yrand, *zrand;
     long idum;
     int ix1, iy1, iz1;
     int ixx, iyy, izz;
@@ -39,10 +38,6 @@ static void init_wf_gamma(STATE * states)
     int i;
     int idx1, idx2, idx3, idx4, idx5,idx6;
 
-
-    my_malloc_init( xrand, NX_GRID + NY_GRID + NZ_GRID, REAL );
-    yrand = xrand + NX_GRID;
-    zrand = yrand + NY_GRID;
 
     if (pct.gridpe == 0)
         printf(" Begin init_wf ...\n");
@@ -52,92 +47,52 @@ static void init_wf_gamma(STATE * states)
         printf(" Initialize random functions\n");
 
     /* Initialize the random number generator */
-    idum = 3356;
-    rand0(&idum);
-
-
-    for (state = 0; state < ct.num_states; state++)
-    {
-        ixx = states[state].ixmax - states[state].ixmin + 1;
-        iyy = states[state].iymax - states[state].iymin + 1;
-        izz = states[state].izmax - states[state].izmin + 1;
-
-        assert(ixx <= states[state].orbit_nx);
-        assert(iyy <= states[state].orbit_ny);
-        assert(izz <= states[state].orbit_nz);
-
-        /* Generate x, y, z random number sequences */
-        for (idx = 0; idx < NX_GRID; idx++)
-            xrand[idx] = rand0(&idum) - 0.5;
-        for (idx = 0; idx < NY_GRID; idx++)
-            yrand[idx] = rand0(&idum) - 0.5;
-        for (idx = 0; idx < NZ_GRID; idx++)
-            zrand[idx] = rand0(&idum) - 0.5;
-
-        sp = &states[state];
-        if (state >= ct.state_begin && state < ct.state_end)
-            for (ix = 0; ix < ixx; ix++)
-                for (iy = 0; iy < iyy; iy++)
-                    for (iz = 0; iz < izz; iz++)
-                    {
-                        ix1 = states[state].ixmin + ix;
-                        if (ix1 < 0)
-                            ix1 += NX_GRID;
-                        if (ix1 >= NX_GRID)
-                            ix1 -= NX_GRID;
-
-                        iy1 = states[state].iymin + iy;
-                        if (iy1 < 0)
-                            iy1 += NY_GRID;
-                        if (iy1 >= NY_GRID)
-                            iy1 -= NY_GRID;
-
-                        iz1 = states[state].izmin + iz;
-                        if (iz1 < 0)
-                            iz1 += NZ_GRID;
-                        if (iz1 >= NZ_GRID)
-                            iz1 -= NZ_GRID;
-
-                        idx = ix * iyy * izz + iy * izz + iz;
-                        sp->psiR[idx] = xrand[ix1] * yrand[iy1] * zrand[iz1];
-                        sp->psiR[idx] = sp->psiR[idx] * sp->psiR[idx];
-                    }
-    }                           /* end for */
-
-
-    my_barrier();
 
     /*  fill the borders of the orbit and smooth it */
     for (state = ct.state_begin; state < ct.state_end; state++)
     {
-        ixx = states[state].ixmax - states[state].ixmin + 1;
-        iyy = states[state].iymax - states[state].iymin + 1;
-        izz = states[state].izmax - states[state].izmin + 1;
+        idum = 3356 + state;  /*  seeds are different for different orbitals  */
+        rand0(&idum);
+        ixx = states[state].orbit_nx;
+        iyy = states[state].orbit_ny;
+        izz = states[state].orbit_nz;
         sp = &states[state];
-        app_mask(state, sp->psiR, 0);
-        pack_ptos(sg_orbit, sp->psiR, ixx, iyy, izz);
         for(ix = 0; ix < ixx; ix++)
         for(iy = 0; iy < iyy; iy++)
         for(iz = 0; iz < izz; iz++)
         {
             idx = ix * iyy * izz + iy * izz + iz;
-            idx1 = (ix+0) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +1;
-            idx2 = (ix+2) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +1;
-            idx3 = (ix+1) *(iyy+2) * (izz+2) + (iy+0) * (izz+2) + iz +1;
-            idx4 = (ix+1) *(iyy+2) * (izz+2) + (iy+2) * (izz+2) + iz +1;
-            idx5 = (ix+1) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +0;
-            idx6 = (ix+1) *(iyy+2) * (izz+2) + (iy+1) * (izz+2) + iz +2;
+            sp->psiR[idx] = 0.0;
+        }
+
+        for(ix = ixx/2 -3; ix < ixx/2+3; ix++)
+        for(iy = iyy/2 -3; iy < iyy/2+3; iy++)
+        for(iz = izz/2 -3; iz < izz/2+3; iz++)
+        {
+            idx = ix * iyy * izz + iy * izz + iz;
+            sp->psiR[idx] = rand0(&idum);
+        }
+
+        for(ix = ixx/2 -4; ix < ixx/2+4; ix++)
+        for(iy = iyy/2 -4; iy < iyy/2+4; iy++)
+        for(iz = izz/2 -4; iz < izz/2+4; iz++)
+        {
+            idx = ix * iyy * izz + iy * izz + iz;
+            idx1 = (ix-1) *iyy * izz + (iy+0) * izz + iz +0;
+            idx2 = (ix+1) *iyy * izz + (iy+0) * izz + iz +0;
+            idx3 = (ix+0) *iyy * izz + (iy-1) * izz + iz +0;
+            idx4 = (ix+0) *iyy * izz + (iy+0) * izz + iz +0;
+            idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz -1;
+            idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz +1;
 
             sp->psiR[idx] += (sg_orbit[idx1] +sg_orbit[idx2] +sg_orbit[idx3]
                     +sg_orbit[idx4] +sg_orbit[idx5] +sg_orbit[idx6])/6.0 ;
         }
 
-        app_mask(state, sp->psiR, 0);
 
     }
 
 
-    my_free(xrand);
 
     normalize_orbits(states);
     /*

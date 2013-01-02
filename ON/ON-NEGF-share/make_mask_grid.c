@@ -23,6 +23,7 @@ void make_mask_grid(REAL rcut, int level, STATE * states)
     int dim[3], incx, incy;
     char myMask;
     int state;
+    double r1,r2,r3;
 
 
     hgrid[0] = ct.hxgrid * ct.xside * (REAL) (1 << level);
@@ -70,8 +71,8 @@ void make_mask_grid(REAL rcut, int level, STATE * states)
                 xc[2] = offset[2];
                 for (iz = 0; iz < dim[2]; iz++)
                 {
-                    r = minimage1(xc, states[state].crds);
-                    if (r > rcut)
+
+                    if(ix <1|iy<1|iz<1|ix > dim[0]-2|iy >dim[1]-2|iz>dim[2]-2)           
                         myMask = 0;
                     else
                         myMask = 1;

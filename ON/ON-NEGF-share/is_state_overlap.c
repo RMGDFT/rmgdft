@@ -23,7 +23,14 @@ void is_state_overlap(STATE * states)
     REAL r;
     REAL r1, r2;
 
-    double hx4;
+    double hx4, ax, ay, az, rmin, x, y, z;
+
+
+    /* Get lattice vectors */
+    ax = NX_GRID * ct.hxgrid * ct.xside;
+    ay = NY_GRID * ct.hygrid * ct.yside;
+    az = NZ_GRID * ct.hzgrid * ct.zside;
+
 /*  add hx4 to account derivative */
     hx4 = 4.0* ct.hxgrid * ct.xside;
     
@@ -32,11 +39,18 @@ void is_state_overlap(STATE * states)
     {
         for (state2 = state1; state2 < ct.num_states; state2++)
         {
-            r = minimage1(states[state1].crds, states[state2].crds);
+            x = fabs(states[state1].crds[0] - states[state2].crds[0]);
+            y = fabs(states[state1].crds[1] - states[state2].crds[1]);
+            z = fabs(states[state1].crds[2] - states[state2].crds[2]);
+
             r1 = states[state1].radius;
             r2 = states[state2].radius;
 
-            if (r < (r1 + r2 + hx4))
+            if( x > ax/2.0 ) x -= ax;
+            if( y > ay/2.0 ) y -= ay;
+            if( z > az/2.0 ) z -= az;
+
+            if (x < (r1+r2+hx4) && y < (r1+r2+hx4) && z < (r1+r2+hx4))
                 state_overlap_or_not[state1 * ct.num_states + state2] = 1;
             else
                 state_overlap_or_not[state1 * ct.num_states + state2] = 0;

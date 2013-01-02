@@ -445,18 +445,6 @@ void read_control (void)
     FPZ0_GRID = PZ0_GRID * FG_NZ;
     FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
 
-    if ((PX0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PX0_GRID: too many eigenvalue MG levels");
-    if ((PY0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PY0_GRID: too many eigenvalue MG levels");
-    if ((PZ0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PZ0_GRID: too many eigenvalue MG levels");
-    if ((PX0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PX0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((PY0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PY0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((PZ0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PZ0_GRID not evenly divisible by 2^(eig_parm.levels)");
     if ((FPX0_GRID / (1 << ct.poi_parm.levels)) < 3)
         error_handler ("PX0_GRID: too many hartree MG levels");
     if ((FPY0_GRID / (1 << ct.poi_parm.levels)) < 3)
