@@ -61,7 +61,6 @@
 #define     REAL    double
 
 #include    "typedefs.h"
-#include    "prototypes.h"
 
 int MXLLDA, MXLCOL;
 REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *vtot,
@@ -1641,3 +1640,4 @@ void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL 
 #include "salloc.h"
 
 #include "macros.h"
+#include    "prototypes.h"

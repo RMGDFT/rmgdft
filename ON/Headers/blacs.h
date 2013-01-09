@@ -9,6 +9,7 @@ void Cblacs_get (int, int, int *);
 void Cblacs_set (int, int, int *);
 void Cblacs_gridinit (int *, char *, int, int);
 void Cblacs_gridmap (int *, int *, int, int, int);
+void Cblacs_gridinfo (int, int *, int *, int *, int *);
 /* desctruction */
 void Cblacs_freebuff (int, int);
 void Cblacs_gridexit (int);

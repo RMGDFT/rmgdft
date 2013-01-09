@@ -31,10 +31,11 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
     wyr = (REAL *) wy;
     wzr = (REAL *) wz;
 
+    time1 = my_crtc();
     my_malloc_init( rptr, (dimx + 6) * (dimy + 6) * (dimz + 6), double );
 
 
-    trade_imagesx (f, rptr, dimx, dimy, dimz, 3);
+    trade_imagesx (f, rptr, dimx, dimy, dimz, 3, CENTRAL_FD);
 
     switch (ct.ibrav)
     {

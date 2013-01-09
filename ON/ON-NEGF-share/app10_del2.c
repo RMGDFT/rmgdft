@@ -59,7 +59,6 @@ void app10_del2(REAL * f, REAL * work, int dimx, int dimy, int dimz,
     iy1 = dimz;
 
     my_malloc_init( dum2, (dimx + 8) * (dimy + 8) * (dimz + 8), REAL );
-/*    trade_images3(f, dum2, dimx, dimy, dimz);*/
     fill_orbit_borders4(dum2, f, dimx, dimy, dimz);
 
     h2 = hxgrid * hxgrid * ct.xside * ct.xside;

@@ -60,7 +60,7 @@ void app6_del2(REAL * f, REAL * work, int dimx, int dimy, int dimz,
     iy1 = dimz;
 
     my_malloc_init( dum2, (dimx + 6) * (dimy + 6) * (dimz + 6), REAL );
-    trade_imagesx(f, dum2, dimx, dimy, dimz, 3);
+    trade_imagesx(f, dum2, dimx, dimy, dimz, 3, CENTRAL_FD);
 
     h2 = hxgrid * hxgrid * ct.xside * ct.xside;
     t0 = -49.0 / (18.0 * h2);

@@ -32,6 +32,10 @@ char *_cptofcd(char*, int);
 #define PSGEMM  pdgemm
 #define PSSYMM pdsymm
 
+void Cpdgemr2d(int m, int n,
+                double* a, int ia, int ja, int* desca,
+                double* b, int ib, int jb, int* descb,
+                int gcontext);
 
 void pdsyev (_fcd, _fcd, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, int *);
@@ -85,6 +89,11 @@ int indxg2p (int *, int *, int *, int *, int *);
 #define 	PSSYMM 		pdsymm_
 
 #define 	PSUBDIAG 	psubdiag_
+
+void Cpdgemr2d(int m, int n,
+                double* a, int ia, int ja, int* desca,
+                double* b, int ib, int jb, int* descb,
+                int gcontext);
 
 
 int NUMROC (int *, int *, int *, int *, int *);
