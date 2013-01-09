@@ -196,7 +196,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if(gridpe == 0) printf("\n init_kbr done %f sec",my_crtc()-time1 );
 
     /* Initialize symmetry stuff */
-    init_sym();
+   //  init_sym();
     if(gridpe == 0) printf("\n init_sys done %f sec",my_crtc()-time1 );
 
     /* Initialize the nuclear local potential and the compensating charges */
@@ -282,22 +282,28 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     get_nlop();
     if(pct.gridpe == 0) printf("\n pe %d init_get_lop done %f sec",pct.gridpe, my_crtc()-time1 );
 
+	fflush(NULL);
 
     my_barrier();
     if(pct.gridpe == 0) printf("\n pe %d my_barrier %f sec",pct.gridpe, my_crtc()-time1 );
+	fflush(NULL);
 
     init_nonlocal_comm();
     if(pct.gridpe == 0) printf("\n pe %d init_nonlocal_comm done %f sec",pct.gridpe,my_crtc()-time1 );
+	fflush(NULL);
 
     /* Initialize qfuction in Cartesin coordinates */
     init_qfunct();
     if(gridpe == 0) printf("\n init_qfunct done %f sec",my_crtc()-time1 );
+	fflush(NULL);
     get_QI();
     if(gridpe == 0) printf("\n init_get_QI done %f sec",my_crtc()-time1 );
+	fflush(NULL);
 
     /* Get the qqq */
     get_qqq();
     if(gridpe == 0) printf("\n init_get_qqq done %f sec",my_crtc()-time1 );
+	fflush(NULL);
 
 
     /* If diagonalization is requested do a subspace diagonalization */
@@ -325,6 +331,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     rmg_timings(INIT_TIME, (time2 - time1));
     my_barrier();
     if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
+	fflush(NULL);
 
 
 #if	DEBUG

@@ -312,6 +312,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
+	my_barrier();
 
         proc1 = send_to1[loop * state_per_proc];
         proc2 = recv_from1[loop * state_per_proc];

@@ -75,7 +75,7 @@ int PE_X, PE_Y, PE_Z;
 
 /* Maximum number of states -- just an upper limit on 
  * dynamically allocated data structures. */
-#define         MAX_STATES   6400
+#define         MAX_STATES  30000
 
 /* Maximum  Number of processors    	*/
 #define 	MAX_PES 	512
@@ -87,7 +87,7 @@ int PE_X, PE_Y, PE_Z;
 
 /* Maximum number of ions -- just an upper limit on
  * dynamically allocated data structures. */
-#define         MAX_IONS        2400
+#define         MAX_IONS        5000
 #define         IONS_PER_PE     MAX_IONS/4
 
 /* Maximum l-value (Angular momentum channel for pseudotentials) */

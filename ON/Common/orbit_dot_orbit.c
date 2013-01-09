@@ -39,6 +39,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, REAL *Aij, REAL *Bij)
     MPI_Request mr_send, *mr_recv;
     int st11;
     double H, S;
+	double time0;
 
 
     my_barrier();
@@ -75,9 +76,11 @@ void orbit_dot_orbit(STATE * states, STATE * states1, REAL *Aij, REAL *Bij)
     psi2 = orbit_tem;
     my_malloc_init(psi3, ct.max_orbit_size, REAL );
 
+
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
 
+	my_barrier();
         proc1 = send_to1[loop * state_per_proc];
         proc2 = recv_from1[loop * state_per_proc];
         num_send = send_to1[loop * state_per_proc + 1];

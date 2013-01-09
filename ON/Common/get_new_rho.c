@@ -91,6 +91,7 @@ void get_new_rho(STATE * states, double *rho)
 
    for (loop = 0; loop < num_sendrecv_loop; loop++)
    {
+       my_barrier();
        ii = loop * max_ii +1;
        proc1 = send_to[loop * state_per_proc];
        proc2 = recv_from[loop * state_per_proc];

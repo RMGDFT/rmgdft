@@ -83,11 +83,11 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
         outcount++;
     }
 
-    get_mat_Omega(states, mat_Omega);
+//    get_mat_Omega(states, mat_Omega);
     /* Calculate the force */
-    force(rho, rho, rhoc, vh, vxc, vnuc, states); 
+//    force(rho, rho, rhoc, vh, vxc, vnuc, states); 
     /* write out the force */
-   if (pct.gridpe == 0) write_force();
+//  if (pct.gridpe == 0) write_force();
 
 
     time2 = my_crtc();

@@ -37,7 +37,7 @@ void init_dimension()
 
     int NNBB, NNBBR, NNBBRB;
 
-    NB = 8;
+    NB = 64;
     if (ct.num_states < NB)
         NB = ct.num_states;
     NNBB = (ct.num_states + NB - 1) / NB;
