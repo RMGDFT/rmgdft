@@ -46,14 +46,14 @@ void is_state_overlap(STATE * states)
             r1 = states[state1].radius;
             r2 = states[state2].radius;
 
-            if( x > ax/2.0 ) x -= ax;
-            if( y > ay/2.0 ) y -= ay;
-            if( z > az/2.0 ) z -= az;
+            if( x > ax/2.0 ) x = ax -x;
+            if( y > ay/2.0 ) y = ay -y;
+            if( z > az/2.0 ) z = az -z;
 
             if (x < (r1+r2+hx4) && y < (r1+r2+hx4) && z < (r1+r2+hx4))
                 state_overlap_or_not[state1 * ct.num_states + state2] = 1;
             else
-                state_overlap_or_not[state1 * ct.num_states + state2] = 0;
+                state_overlap_or_not[state1 * ct.num_states + state2] = 0;	
 
             state_overlap_or_not[state1 + state2 * ct.num_states]
                 = state_overlap_or_not[state1 * ct.num_states + state2];
