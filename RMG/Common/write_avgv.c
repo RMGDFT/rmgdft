@@ -48,7 +48,7 @@ void write_avgv (REAL * vh, REAL * vnuc)
 
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
-    poff = pz * PZ0_GRID;
+    poff = pz * pct.PZ0_GRID;
 
 
     /* Zero out result vector */
@@ -57,18 +57,18 @@ void write_avgv (REAL * vh, REAL * vnuc)
 
 
     /* Loop over this processor */
-    for (iz = 0; iz < PZ0_GRID; iz++)
+    for (iz = 0; iz < pct.PZ0_GRID; iz++)
     {
 
         t1 = ZERO;
-        for (ix = 0; ix < PX0_GRID; ix++)
+        for (ix = 0; ix < pct.PX0_GRID; ix++)
         {
 
-            for (iy = 0; iy < PY0_GRID; iy++)
+            for (iy = 0; iy < pct.PY0_GRID; iy++)
             {
 
-                t1 += vh[ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz] -
-                    vnuc[ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz];
+                t1 += vh[ix * pct.PY0_GRID * pct.PZ0_GRID + iy * pct.PZ0_GRID + iz] -
+                    vnuc[ix * pct.PY0_GRID * pct.PZ0_GRID + iy * pct.PZ0_GRID + iz];
 
             }                   /* end for */
 

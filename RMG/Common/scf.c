@@ -75,15 +75,15 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* allocate memory for eigenvalue send array and receive array */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, FP0_BASIS, REAL);
+    	my_malloc (rho_tot, pct.FP0_BASIS, REAL);
     }
 
-    my_malloc (new_rho, FP0_BASIS, REAL);
-    my_malloc (vtot, FP0_BASIS, REAL);
-    my_malloc (vtot_psi, P0_BASIS, REAL);
+    my_malloc (new_rho, pct.FP0_BASIS, REAL);
+    my_malloc (vtot, pct.FP0_BASIS, REAL);
+    my_malloc (vtot_psi,pct.P0_BASIS, REAL);
 
     /* save old vhxc + vnuc */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
 
@@ -96,7 +96,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     if (ct.spin_flag)        
     {
 	/*calculate the total charge density in order to calculate hartree potential*/
-	for (idx = 0; idx < FP0_BASIS; idx++)
+	for (idx = 0; idx < pct.FP0_BASIS; idx++)
 		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 	
 	/* Generate hartree potential */
@@ -114,7 +114,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     t[0] = t[1] = t[2] = 0.0;
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
         t3 = -vtot[idx];
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -289,7 +289,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     get_new_rho (states, new_rho);
 
     /*Takes care of mixing and checks whether the charge density is negative*/
-    mix_rho(new_rho, rho, rhocore, FP0_BASIS, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    mix_rho(new_rho, rho, rhocore, pct.FP0_BASIS, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
     if (ct.spin_flag)
 	get_rho_oppo (rho,  rho_oppo);

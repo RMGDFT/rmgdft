@@ -209,7 +209,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     STATE *st;
 
 
-    alloc = P0_BASIS;
+    alloc =pct.P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
@@ -340,7 +340,7 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
 
   istate = st->istate;
 
-  alloc = P0_BASIS;
+  alloc =pct.P0_BASIS;
   if (alloc < ct.max_nlpoints)
       alloc = ct.max_nlpoints;
 

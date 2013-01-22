@@ -49,51 +49,52 @@
 
 void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 {
-    int idx, iflag;
-    FP0_GRID *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
+    int idx, iflag, sizr;
+    REAL *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
     REAL d, grad, vxc1, *vxc2, enxc;
     REAL kf, pisq3, ex, vx, ec, vc, rs;
 
+    sizr = pct.FP0_BASIS;
 
     pisq3 = THREE * PI * PI;
 
 
     /* Grab some memory */
-    my_malloc (gx, 1, FP0_GRID);
-    my_malloc (gy, 1, FP0_GRID);
-    my_malloc (gz, 1, FP0_GRID);
-    my_malloc (vgx, 1, FP0_GRID);
-    my_malloc (vgy, 1, FP0_GRID);
-    my_malloc (vgz, 1, FP0_GRID);
-    my_malloc (agg, 1, FP0_GRID);
-    my_malloc (d2rho, 1, FP0_GRID);
+    my_malloc (gx, sizr, REAL);
+    my_malloc (gy, sizr, REAL);
+    my_malloc (gz, sizr, REAL);
+    my_malloc (vgx, sizr, REAL);
+    my_malloc (vgy, sizr, REAL);
+    my_malloc (vgz, sizr, REAL);
+    my_malloc (agg, sizr, REAL);
+    my_malloc (d2rho, sizr, REAL);
 
 
-    my_malloc (vxc2, FP0_BASIS, REAL);
+    my_malloc (vxc2, pct.FP0_BASIS, REAL);
 
 
 
 
     /* Generate the gradient of the density */
-    app_gradf (rho, gx, gy, gz);
+    app_grad (rho, gx, gy, gz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
     /* Get the Laplacian of the density */
-    app6_del2f (rho, d2rho);
+    app6_del2 (rho, d2rho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
 
     /* Absolute value of grad(rho) */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 
-        agg->s2[idx] = sqrt (gx->s2[idx] * gx->s2[idx] +
-                             gy->s2[idx] * gy->s2[idx] + gz->s2[idx] * gz->s2[idx]);
+        agg[idx] = sqrt (gx[idx] * gx[idx] +
+                             gy[idx] * gy[idx] + gz[idx] * gz[idx]);
 
     }                           /* end for */
 
 
     /* The LDA part of exchange correlation potential and energy */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 	    d = fabs (rho[idx]);
 	    if (d < SMALL && ct.scf_steps < 10)
@@ -146,11 +147,11 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 
 
     /* add the gradient correction for exchange correlation potential and energy */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         {
 
 	d = rho[idx];
-	grad = agg->s2[idx]; 
+	grad = agg[idx]; 
 
         if (mode == GGA_PBE)
         {
@@ -212,15 +213,15 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 
 
     /* Get gradient of vxc2 */
-    app_gradf (vxc2, vgx, vgy, vgz);
+    app_grad (vxc2, vgx, vgy, vgz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
      /* add the second term gradient correction to xc potential */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
-	     vxc[idx] -= ( vgx->s2[idx] * gx->s2[idx] + 
-	     		   vgy->s2[idx] * gy->s2[idx] + vgz->s2[idx] * gz->s2[idx] ) ;
-	     vxc[idx] -= vxc2[idx] * d2rho->s2[idx];
+	     vxc[idx] -= ( vgx[idx] * gx[idx] + 
+	     		   vgy[idx] * gy[idx] + vgz[idx] * gz[idx] ) ;
+	     vxc[idx] -= vxc2[idx] * d2rho[idx];
     }
 
 

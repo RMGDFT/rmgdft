@@ -104,14 +104,14 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 
     /* Set hartree boundary condition stuff */
-    ct.vh_pxgrid = FPX0_GRID;
-    ct.vh_pygrid = FPY0_GRID;
-    ct.vh_pzgrid = FPZ0_GRID;
+    ct.vh_pxgrid = pct.FPX0_GRID;
+    ct.vh_pygrid = pct.FPY0_GRID;
+    ct.vh_pzgrid = pct.FPZ0_GRID;
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
     my_malloc (ct.vh_ext, ct.vh_pbasis, REAL);
     
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
         vh[idx] = 0.0;
         ct.vh_ext[idx] = 0.0;
@@ -188,25 +188,25 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     /* Set state pointers and initialize state data */
 #if GAMMA_PT
   #if GPU_ENABLED
-      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(REAL));
+      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024) * sizeof(REAL));
   #else
     /* Wavefunctions are actually stored here */
-    my_malloc (rptr, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
+    my_malloc (rptr, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
   #endif
 
   if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-      my_malloc (rptr1, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
+      my_malloc (rptr1, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
   }
 
 #else
     /* Wavefunctions are actually stored here */
     if (verify ("calculation_mode", "Band Structure Only"))
     {
-        my_malloc (rptr, 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
+        my_malloc (rptr, 2 * (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
     }
     else
     {
-        my_malloc (rptr, ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024, REAL);
+        my_malloc (rptr, ct.num_kpts * 2 * (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
     }
 #endif
 
@@ -222,27 +222,27 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         {
             states[kst1].kidx = kpt;
             states[kst1].psiR = rptr;
-            states[kst1].psiI = rptr + P0_BASIS;
+            states[kst1].psiI = rptr +pct.P0_BASIS;
             states[kst1].dvhxc = rptr1;
             states[kst1].hxgrid = ct.hxgrid;
             states[kst1].hygrid = ct.hygrid;
             states[kst1].hzgrid = ct.hzgrid;
-            states[kst1].dimx = PX0_GRID;
-            states[kst1].dimy = PY0_GRID;
-            states[kst1].dimz = PZ0_GRID;
+            states[kst1].dimx = pct.PX0_GRID;
+            states[kst1].dimy = pct.PY0_GRID;
+            states[kst1].dimz = pct.PZ0_GRID;
             states[kst1].vxc = vxc;
             states[kst1].vh = vh;
             states[kst1].vnuc = vnuc;
-            states[kst1].pbasis = P0_BASIS;
-            states[kst1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
+            states[kst1].pbasis =pct.P0_BASIS;
+            states[kst1].sbasis = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
             states[kst1].istate = st1;
             states[kst1].vel = ct.vel;
 #if MPI
 #if GAMMA_PT
-            rptr += P0_BASIS;
-            rptr1 += P0_BASIS;
+            rptr +=pct.P0_BASIS;
+            rptr1 +=pct.P0_BASIS;
 #else
-            rptr += 2 * P0_BASIS;
+            rptr += 2 *pct.P0_BASIS;
 #endif
 #endif
             kst1++;
@@ -266,7 +266,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     else 
     {
         /* Set the initial hartree potential to a constant */
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < pct.FP0_BASIS; idx++)
             vh[idx] = 0.0;
 
         /* Set initial states to random start */
@@ -381,7 +381,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 	if (ct.spin_flag)
         {   
 	       fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
-       	       for (idx = 0; idx < FP0_BASIS; idx++)
+       	       for (idx = 0; idx < pct.FP0_BASIS; idx++)
 	       {
 
                     if (pct.spinpe == 0)
@@ -400,7 +400,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 	else
 	{
-  	    for (idx = 0; idx < FP0_BASIS; idx++)
+  	    for (idx = 0; idx < pct.FP0_BASIS; idx++)
             	rho[idx] = rhoc[idx];
 	}
     }
@@ -412,7 +412,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     ct.rms = 0.0;
     
     Dprintf ("Generate initial vxc potential and hartree potential");
-    pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    pack_vhstod (vh, ct.vh_ext, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
 
 
@@ -425,8 +425,8 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 	if (ct.spin_flag)
 	{
-    		my_malloc (rho_tot,  FP0_BASIS, REAL);
-  	    	for (idx = 0; idx < FP0_BASIS; idx++)
+    		my_malloc (rho_tot,  pct.FP0_BASIS, REAL);
+  	    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
             		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
         	get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
@@ -446,10 +446,10 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     if (ct.initdiag)
     {
         /*dnmI has to be stup before calling subdiag */
-        my_malloc (vtot, FP0_BASIS, REAL);
+        my_malloc (vtot, pct.FP0_BASIS, REAL);
 
 
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < pct.FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
         /*Generate the Dnm_I */

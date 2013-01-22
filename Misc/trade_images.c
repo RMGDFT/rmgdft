@@ -44,17 +44,9 @@
 #include <pthread.h>
 
 static pthread_mutex_t images_lock = PTHREAD_MUTEX_INITIALIZER;
-static int first_trade_counter=THREADS_PER_NODE;
-static int second_trade_counter=THREADS_PER_NODE;
-static int third_trade_counter=THREADS_PER_NODE;
-static int fourth_trade_counter=THREADS_PER_NODE;
-static int fifth_trade_counter=THREADS_PER_NODE;
-static int sixth_trade_counter=THREADS_PER_NODE;
-REAL swbuf1[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
-REAL swbuf2[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
+REAL *swbuf1=NULL;
+REAL *swbuf2=NULL;
 
-
-#if MPI
 
 
 void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
@@ -64,10 +56,46 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     int xmax, ymax, zmax;
     int ix, iy, iz, iys, iys2;
     int alen, alloc, alloc1, combine_trades=true, toffset;
+    int grid_max1, grid_max2;
+
     MPI_Status mstatus;
     MPI_Datatype newtype;
     int idx, stop, basetag=0, tid;
     REAL *nmat1, *nmat2;
+
+    // To initialize call from init.c with NULL args
+    if(swbuf1 == NULL) {
+        int grid_xp, grid_yp, grid_zp;
+        grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
+        grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
+        grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
+        if(grid_xp > grid_yp) {
+            grid_max1 = grid_xp;
+            if(grid_yp > grid_zp) {
+                grid_max2 = grid_yp;
+            }
+            else {
+                grid_max2 = grid_zp;
+            }
+         }
+         else {
+            grid_max1 = grid_yp;
+              if(grid_xp > grid_zp) {
+                  grid_max2 = grid_xp;
+              }
+              else {
+                  grid_max2 = grid_zp;
+              }
+         }
+         my_malloc(swbuf1, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
+         my_malloc(swbuf2, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
+         return;
+    }
+
+#if ASYNC_TRADES
+    trade_images1_async (mat, dimx, dimy, dimz);
+    return;
+#endif
 
 #if MD_TIMERS
     REAL time1, time2, time3;
@@ -88,7 +116,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     else {
         // In order to combine the requested memory allocation must fit into the
         // statically allocated storage
-        if((alloc > (6 * GRID_MAX1 * GRID_MAX2)) || !is_loop_over_states()) {
+        if((alloc > (6 * grid_max1 * grid_max2)) || !is_loop_over_states()) {
             combine_trades=false;
         }
     }
@@ -142,13 +170,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     if(combine_trades) {
         stop = dimx * dimy * THREADS_PER_NODE;
         scf_barrier_wait();
-        pthread_mutex_lock(&images_lock);
-        if(!(first_trade_counter % THREADS_PER_NODE)) {
+        if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop, MPI_DOUBLE, nb_ids[NB_U], (1>>16), swbuf2, stop,
 		  MPI_DOUBLE, nb_ids[NB_D], (1>>16), pct.grid_comm, &mstatus);
-        }
-        first_trade_counter++;
-        pthread_mutex_unlock(&images_lock);
+        } 
+        scf_barrier_wait();
     }
     else {
 
@@ -192,13 +218,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     if(combine_trades) {
         stop = dimx * dimy * THREADS_PER_NODE;
         scf_barrier_wait();
-        pthread_mutex_lock(&images_lock);
-        if(!(second_trade_counter % THREADS_PER_NODE)) {
+        if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop, MPI_DOUBLE, nb_ids[NB_D], (2>>16), swbuf2, stop,
                       MPI_DOUBLE, nb_ids[NB_U], (2>>16), pct.grid_comm, &mstatus);
         }
-        second_trade_counter++;
-        pthread_mutex_unlock(&images_lock);
+        scf_barrier_wait();
     }
     else {
         MPI_Sendrecv (nmat1, idx, MPI_DOUBLE, nb_ids[NB_D], basetag + (2>>16), nmat2, idx,
@@ -240,13 +264,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         time3 = my_crtc ();
 #endif
         scf_barrier_wait();
-        pthread_mutex_lock(&images_lock);
-        if(!(fifth_trade_counter % THREADS_PER_NODE)) {
+        if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_N], (3>>16), swbuf2, stop * THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_S], (3>>16), pct.grid_comm, &mstatus);
         }
-        fifth_trade_counter++;
-        pthread_mutex_unlock(&images_lock);
+        scf_barrier_wait();
 #if MD_TIMERS
         rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -272,13 +294,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         time3 = my_crtc ();
 #endif
         scf_barrier_wait();
-        pthread_mutex_lock(&images_lock);
-        if(!(sixth_trade_counter % THREADS_PER_NODE)) {
+        if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_S], (4>>16), swbuf2, stop * THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_N], (4>>16), pct.grid_comm, &mstatus);
         }
-        sixth_trade_counter++;
-        pthread_mutex_unlock(&images_lock);
+        scf_barrier_wait();
 #if MD_TIMERS
         rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -323,13 +343,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         time3 = my_crtc ();
 #endif
         scf_barrier_wait();
-        pthread_mutex_lock(&images_lock);
-        if(!(third_trade_counter % THREADS_PER_NODE)) {
+        if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_E], (5>>16), swbuf2, stop * THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_W], (5>>16), pct.grid_comm, &mstatus);
         }
-        third_trade_counter++;
-        pthread_mutex_unlock(&images_lock);
+        scf_barrier_wait();
 #if MD_TIMERS
         rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -340,13 +358,11 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
         time3 = my_crtc ();
 #endif
         scf_barrier_wait();
-        pthread_mutex_lock(&images_lock);
-        if(!(fourth_trade_counter % THREADS_PER_NODE)) {
+        if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_W], (6>>16), swbuf2, stop * THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_E], (6>>16), pct.grid_comm, &mstatus);
         }
-        fourth_trade_counter++;
-        pthread_mutex_unlock(&images_lock);
+        scf_barrier_wait();
 #if MD_TIMERS
         rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -390,83 +406,3 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 }
 
 
-#else
-
-void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
-{
-    int i, j;
-    int incx, incy, incz;
-    int xmax, ymax, zmax;
-    int stop, alen, ione = 1;
-#  if MD_TIMERS
-    REAL time1, time2;
-    time1 = my_crtc ();
-#  endif
-
-
-/* precalc some boundaries */
-    incx = (dimy + 2) * (dimz + 2);
-    incy = (dimz + 2);
-    incz = 1;
-    xmax = dimx * incx;
-    ymax = dimy * incy;
-    zmax = dimz * incz;
-    alen = dimz + 2;
-
-
-/*
- * First, do Up-Down Trade (+/- z)
- *  (trading dimx * dimy array of data, twice)
- */
-
-/* copy neighbors upper plane to my lower plane */
-    for (i = 1; i <= dimx; i++)
-        QMD_scopy (dimy, &mat[i * incx + incy + zmax], incy, &mat[i * incx + incy], incy);
-
-
-/* copy neighbors lower plane to my upper plane */
-    for (i = 1; i <= dimx; i++)
-        QMD_scopy (dimy, &mat[i * incx + incy + incz], incy,
-                   &mat[i * incx + incy + zmax + incz], incy);
-
-
-/*
- * next, do North-South Trade (+/- y)
- *  (trading dimx * (dimz+2) array of data, twice)
- */
-
-
-/* copy neighbors north plane to my south plane */
-    for (i = 1; i <= dimx; i++)
-        QMD_scopy (alen, &mat[i * incx + ymax], ione, &mat[i * incx], ione);
-
-
-/* copy neighbors south plane to my north plane */
-    for (i = 1; i <= dimx; i++)
-        QMD_scopy (alen, &mat[i * incx + incy], ione, &mat[i * incx + ymax + incy], ione);
-
-
-/*
- * Finally, do East - West Trade (+/- x)
- *  (trading (dimy+2) * (dimz+2) array of data, twice)
- */
-
-    stop = (dimy + 2) * (dimz + 2);
-    QMD_scopy (stop, &mat[xmax], ione, mat, ione);
-    QMD_scopy (stop, &mat[incx], ione, &mat[xmax + incx], ione);
-
-
-    if ((ct.boundaryflag == CLUSTER) || (ct.boundaryflag == SURFACE))
-        set_bc (mat, dimx, dimy, dimz, 1, 0.0);
-
-
-#  if MD_TIMERS
-    time2 = my_crtc ();
-    rmg_timings (IMAGE_TIME, (time2 - time1));
-#  endif
-
-}                               /* end trade_images */
-
-
-#endif
-/******/

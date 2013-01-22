@@ -53,6 +53,26 @@ void report (void);
 
 void finish (void);
 
+/* Global MPI stuff. Overridden by input params */
+int NPES=1;
+int PE_X=1;
+int PE_Y=1;
+int PE_Z=1;
+
+/* Global coarse grid dimesions. Set by input file */
+int NX_GRID;
+int NY_GRID;
+int NZ_GRID;
+
+/* Global fine grid dimensions */
+int FNX_GRID;
+int FNY_GRID;
+int FNZ_GRID;
+
+/* Fine/coarse grid ratios */
+int FG_NX;
+int FG_NY;
+int FG_NZ;
 
 /* State storage pointer (memory allocated dynamically in rd_cont */
 STATE *states;
@@ -60,28 +80,28 @@ STATE *states;
 
 
 /* Electronic charge density or charge density of own spin in polarized case */
-REAL rho[FP0_BASIS];
+REAL *rho;
 
 /*  Electronic charge density of pposite spin density*/
 REAL *rho_oppo;  
 
 
 /* Core Charge density */
-REAL rhocore[FP0_BASIS];
+REAL *rhocore;
 
 
 /* Compensating charge density */
-REAL rhoc[FP0_BASIS];
+REAL *rhoc;
 
 
 /* Hartree potential */
-REAL vh[FP0_BASIS];
+REAL *vh;
 
 /* Nuclear local potential */
-REAL vnuc[FP0_BASIS];
+REAL *vnuc;
 
 /* Exchange-correlation potential */
-REAL vxc[FP0_BASIS];
+REAL *vxc;
 
 
 /* Main control structure which is declared extern in main.h so any module */
@@ -99,31 +119,6 @@ PE_CONTROL pct;
 double b0[3], b1[3], b2[3];
 double alat;
 
-/*Compile time checks*/
-#if (PE_X*PE_Y*PE_Z != NPES)
-# error "Error: PE_X*PY_Y*PE_Z does not match NPES"
-#endif
-
-
-#if (NX_GRID % PE_X != 0)
-# error "Number of grid points in X direction (NX_GRID) is not divisable by number of processors in that direction (PE_X)"
-#endif
-#if (NY_GRID % PE_Y != 0)
-# error "Number of grid points in Y direction (NY_GRID) is not divisable by number of processors in that direction (PE_Y)"
-#endif
-#if (NZ_GRID % PE_Z != 0)
-# error "Number of grid points in Z direction (NZ_GRID) is not divisable by number of processors in that direction (PE_Z)"
-#endif
-
-#if (FNX_GRID % PE_X != 0)
-# error "Number of grid points in X direction (FNX_GRID) is not divisable by number of processors in that direction (PE_X)"
-#endif
-#if (FNY_GRID % PE_Y != 0)
-# error "Number of grid points in Y direction (FNY_GRID) is not divisable by number of processors in that direction (PE_Y)"
-#endif
-#if (FNZ_GRID % PE_Z != 0)
-# error "Number of grid points in Z direction (FNZ_GRID) is not divisable by number of processors in that direction (PE_Z)"
-#endif
 
 
 int main (int argc, char **argv)
@@ -167,10 +162,6 @@ void initialize(int argc, char **argv)
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
     
-    pct.pe_x = PE_X;
-    pct.pe_y = PE_Y;
-    pct.pe_z = PE_Z;
-
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/
     init_IO (argc, argv);
@@ -179,9 +170,16 @@ void initialize(int argc, char **argv)
     num_images = 1;
     lbfgs_init(ct.num_ions, num_images);
 
+    my_malloc (rho, pct.FP0_BASIS, REAL);
+    my_malloc (rhocore, pct.FP0_BASIS, REAL);
+    my_malloc (rhoc, pct.FP0_BASIS, REAL);
+    my_malloc (vh, pct.FP0_BASIS, REAL);
+    my_malloc (vnuc, pct.FP0_BASIS, REAL);
+    my_malloc (vxc, pct.FP0_BASIS, REAL);
+
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
     if(ct.spin_flag)
-    	    my_malloc (rho_oppo, FP0_BASIS, REAL);
+    	    my_malloc (rho_oppo, pct.FP0_BASIS, REAL);
 
 
     /* initialize states */

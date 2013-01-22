@@ -44,7 +44,7 @@ void ortho (STATE * states, int kpt)
     time2 = my_crtc ();
 #endif
 
-    size = P0_BASIS;
+    size =pct.P0_BASIS;
     get_psi_overlaps(st->psiR, Oij, ct.num_states, ct.num_states, size, size);
 #if MD_TIMERS
     rmg_timings (ORTHO_GET_OVERLAPS, (my_crtc () - time2));

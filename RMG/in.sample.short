@@ -10,6 +10,13 @@
 # Description of run. Default: "QMD run"
 description="Sample MD calculation"
 
+# Layout of MPI PE.
+processor_grid="2 2 2"
+# Wavefunction grid
+coarse_grid="48 48 48"
+# Ratio of fine grid to coarse grid (all values must be the same)
+potential_grid_refinement="2 2 2"
+
 
 occupations_type=
 "Fixed"  #i.e. use occupations as specified elswhere in this file

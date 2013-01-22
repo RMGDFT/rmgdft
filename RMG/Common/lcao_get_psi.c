@@ -24,7 +24,7 @@ void lcao_get_psi (STATE * states)
     /*The first index is due to k-point*/
     for (st = 0; st < ct.num_states; st++)
     {
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
         {
             states[st].psiR[idx] = 0.0;
         }
@@ -144,9 +144,9 @@ void lcao_get_psi (STATE * states)
         STATE *state_p;
 
         pe2xyz (pct.gridpe, &ix, &iy, &iz);
-        xoff = ix * PX0_GRID;
-        yoff = iy * PY0_GRID;
-        zoff = iz * PZ0_GRID;
+        xoff = ix * pct.PX0_GRID;
+        yoff = iy * pct.PY0_GRID;
+        zoff = iz * pct.PZ0_GRID;
 
         /* Initialize the random number generator */
         idum = 3356;
@@ -177,13 +177,13 @@ void lcao_get_psi (STATE * states)
 
 
             idx = 0;
-            for (ix = 0; ix < PX0_GRID; ix++)
+            for (ix = 0; ix < pct.PX0_GRID; ix++)
             {
 
-                for (iy = 0; iy < PY0_GRID; iy++)
+                for (iy = 0; iy < pct.PY0_GRID; iy++)
                 {
 
-                    for (iz = 0; iz < PZ0_GRID; iz++)
+                    for (iz = 0; iz < pct.PZ0_GRID; iz++)
                     {
 
                         state_p->psiR[idx] = xrand[xoff + ix] * yrand[yoff + iy] * zrand[zoff + iz];

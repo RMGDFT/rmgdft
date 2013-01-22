@@ -132,7 +132,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     if(potential_acceleration) {
-        for(idx = 0;idx < P0_BASIS;idx++) {
+        for(idx = 0;idx <pct.P0_BASIS;idx++) {
             nvtot_psi[idx] = vtot_psi[idx];
             saved_psi[idx] = tmp_psi[idx];
         }
@@ -295,7 +295,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 
             t1 = TWO * eig;
-            for (idx = 0; idx < P0_BASIS; idx++)
+            for (idx = 0; idx <pct.P0_BASIS; idx++)
             {
 
                 res[idx] = t1 * res[idx] - work1[idx];
@@ -320,7 +320,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            app_smooth ((S0_GRID *) sg_psi, (S0_GRID *) work1, t1);
+            app_smooth (sg_psi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 #if MD_TIMERS
             rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
@@ -370,7 +370,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             t2 = ZERO;
             t4 = ct.eig_parm.gl_step * diag;
 
-            for (idx = 0; idx < P0_BASIS; idx++)
+            for (idx = 0; idx <pct.P0_BASIS; idx++)
             {
 
                 t3 = t1 * res[idx] - work1[idx];
@@ -397,7 +397,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     if(potential_acceleration) {
 
         // Save potential used for this orbital and update potential for future orbitals
-        for(idx = 0;idx < P0_BASIS;idx++) {
+        for(idx = 0;idx <pct.P0_BASIS;idx++) {
             sp->dvhxc[idx] = nvtot_psi[idx];
         }
 
@@ -410,7 +410,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if HYBRID_MODEL
             pthread_mutex_lock(&vtot_sync_mutex);
 #endif
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi[idx] * (tmp_psi[idx] - saved_psi[idx]);
             }
 #if HYBRID_MODEL
@@ -422,13 +422,13 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         if(ct.potential_acceleration_poisson_step > 0.0) {
 
             // construct delta_rho
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                 res[idx] = -4.0 * PI * sp->occupation[0] *
                            (tmp_psi[idx] - saved_psi[idx]) * (2.0*saved_psi[idx] + (tmp_psi[idx] - saved_psi[idx]));
             }
 
             // zero out solution vector
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                 sg_twovpsi[idx] = 0.0;
             }
 
@@ -436,15 +436,15 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             pack_ptos (sg_psi, res, dimx, dimy, dimz);
             trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors);
             /* Smooth it once and store the smoothed charge in res */
-            app_smooth1 ((S0_GRID *) sg_psi, (S0_GRID *) res, 145.0);
+            app_smooth1 (sg_psi, res, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                 t2 += res[idx];
             }
             t2 = real_sum_all(t2, pct.grid_comm) / (NX_GRID * NY_GRID * NZ_GRID);
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                 res[idx] -= t2;
             }
 
@@ -455,7 +455,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             mgrid_solv (sg_twovpsi, res, work2,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, 1.0, 0.0);
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                 res[idx] = 0.0;
             }
             pack_stop_axpy (sg_twovpsi, res, 1.0, dimx, dimy, dimz);
@@ -464,7 +464,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if HYBRID_MODEL
             pthread_mutex_lock(&vtot_sync_mutex);
 #endif
-            for(idx = 0;idx < P0_BASIS;idx++) {
+            for(idx = 0;idx <pct.P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * res[idx];
             }
 #if HYBRID_MODEL
@@ -604,7 +604,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /* Apply the gradient operator to psi */
         app_grad (tmp_psiI, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
 
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
         {
 
             kdr[idx] = (ct.kp[sp->kidx].kvec[0] * gx[idx] +
@@ -613,7 +613,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         }
 
         app_grad (tmp_psiR, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
         {
 
             kdi[idx] = -(ct.kp[sp->kidx].kvec[0] * gx[idx] +
@@ -716,7 +716,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /* Next we have to generate the residual vector for smoothing */
         /* or multigridding.                                          */
         t1 = TWO * eig;
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
         {
 
             resR[idx] = t1 * resR[idx] - work1R[idx];
@@ -755,11 +755,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 
             /* Smooth it once and store the smoothed residual in work1 */
-            t1 = 145.0;
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            app_smooth ((S0_GRID *) sg_psiR, (S0_GRID *) work1R, t1);
+            app_smooth (sg_psiR, work1R, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
@@ -809,7 +808,8 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            app_smooth ((S0_GRID *) sg_psiI, (S0_GRID *) work1I, t1);
+            app_smooth (sg_psiI, work1I, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+
 #if MD_TIMERS
             rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif

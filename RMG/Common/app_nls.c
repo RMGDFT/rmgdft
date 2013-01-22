@@ -69,7 +69,7 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 #endif
 
 
-    alloc = P0_BASIS;
+    alloc =pct.P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
     my_calloc (nworkR, 4 * alloc, REAL);
@@ -83,16 +83,16 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 
 
     /* Zero out the work array */
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
         workR[idx] = 0.0;
 
-    my_copy(psiR, work2R, P0_BASIS);
+    my_copy(psiR, work2R,pct.P0_BASIS);
 
 #if !GAMMA_PT
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
         workI[idx] = 0.0;
 
-    my_copy(psiI, work2I, P0_BASIS);
+    my_copy(psiI, work2I,pct.P0_BASIS);
 #endif
 
     /* Loop over ions once again */

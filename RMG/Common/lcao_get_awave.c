@@ -25,7 +25,7 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double c
     SPECIES *sp;
 
     /* Grab some memory for temporary storage */
-    my_malloc (pvec, P0_BASIS, int);
+    my_malloc (pvec,pct.P0_BASIS, int);
 
     /* Get species type */
     sp = &ct.sp[iptr->species];
@@ -33,7 +33,7 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double c
 
     /* Determine mapping indices or even if a mapping exists */
     map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-	    sp->adim_wave, PX0_GRID, PY0_GRID, PZ0_GRID,
+	    sp->adim_wave, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
 	    ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
 	    &xstart, &ystart, &zstart);
 
@@ -62,8 +62,8 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double c
 			    ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
 		    {
 			pvec[icount] =
-			    PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
-			    PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
+			    pct.PY0_GRID * pct.PZ0_GRID * (Aix[ix] % pct.PX0_GRID) +
+			    pct.PZ0_GRID * (Aiy[iy] % pct.PY0_GRID) + (Aiz[iz] % pct.PZ0_GRID);
 
 			x[0] = xc - iptr->xtal[0];
 			x[1] = yc - iptr->xtal[1];

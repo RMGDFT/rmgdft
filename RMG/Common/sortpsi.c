@@ -53,17 +53,17 @@ void sortpsi (STATE * states)
     REAL *tmp_psi1I, *tmp_psi2I;
     ION *iptr;
 
-    my_malloc (tmp_psi1R, 2 * P0_BASIS, REAL);
-    my_malloc (tmp_psi2R, 2 * P0_BASIS, REAL);
+    my_malloc (tmp_psi1R, 2 *pct.P0_BASIS, REAL);
+    my_malloc (tmp_psi2R, 2 *pct.P0_BASIS, REAL);
     tmp_psi1I = NULL;
     tmp_psi2I = NULL;
 #if !GAMMA_PT
-    tmp_psi1I = tmp_psi1R + P0_BASIS;
-    tmp_psi2I = tmp_psi2R + P0_BASIS;
+    tmp_psi1I = tmp_psi1R +pct.P0_BASIS;
+    tmp_psi2I = tmp_psi2R +pct.P0_BASIS;
 #endif
 
 
-    n = P0_BASIS;
+    n =pct.P0_BASIS;
 #if !GAMMA_PT
     n *= 2;
 #endif

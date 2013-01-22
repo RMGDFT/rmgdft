@@ -21,7 +21,7 @@ void mulliken (STATE * states)
     REAL *awave, *overlap, xcstart, ycstart, zcstart, xc, yc, zc, x[3], r, cx[3], radial_wave,
         dot_product;
     REAL a, b, rdiff, rleft, rright, *norm_factor, max1, max2, max3;
-    int basis = P0_BASIS;
+    int basis =pct.P0_BASIS;
     int tot_atomic_states;
     int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
     ION *iptr;
@@ -79,7 +79,7 @@ void mulliken (STATE * states)
         count = 0;
 
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         dim, PX0_GRID, PY0_GRID, PZ0_GRID,
+                         dim, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid, &xcstart, &ycstart, &zcstart);
 
 
@@ -106,8 +106,8 @@ void mulliken (STATE * states)
 
                             /*Maybe spherical cutoff here ?? */
 
-                            grid_index = PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
-                                PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
+                            grid_index = pct.PY0_GRID * pct.PZ0_GRID * (Aix[ix] % pct.PX0_GRID) +
+                                pct.PZ0_GRID * (Aiy[iy] % pct.PY0_GRID) + (Aiz[iz] % PZ0_GRID);
 
                             x[0] = xc - iptr->xtal[0];
                             x[1] = yc - iptr->xtal[1];

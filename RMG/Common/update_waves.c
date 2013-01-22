@@ -26,7 +26,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
     REAL t1;
     ION *iptr;
 
-    size = P0_BASIS;
+    size =pct.P0_BASIS;
 
     sidx1 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
     sidx2 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;
@@ -84,7 +84,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
 
     /*update the wavefunction psi2 */
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
     {
         tmp_psi2R[idx] += -cR * tmp_psi1R[idx] + cI * tmp_psi1I[idx];
         tmp_psi2I[idx] += -cR * tmp_psi1I[idx] - cI * tmp_psi1R[idx];

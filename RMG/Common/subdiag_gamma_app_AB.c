@@ -53,14 +53,14 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
         if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {    
             if(ct.scf_steps == 0) {
-                    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+                    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
             }
             else {
-                    genvpsi (tmp_psi, sg_twovpsi, sp->dvhxc, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+                    genvpsi (tmp_psi, sg_twovpsi, sp->dvhxc, work2, NULL, 0.0, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
             }
         }
         else {
-            genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, PX0_GRID, PY0_GRID, PZ0_GRID);
+            genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
         }
     
 
@@ -73,35 +73,35 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         time1 = my_crtc ();
 #    endif
         /* B operating on 2*V*psi stored in work1 */
-        app_cir_driver (sg_twovpsi, work1, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (sg_twovpsi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
 
 
         /* Pack psi into smoothing array */
-        //pack_ptos (sg_psi, tmp_psi, PX0_GRID, PY0_GRID, PZ0_GRID);
+        //pack_ptos (sg_psi, tmp_psi, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
 
 #    if MD_TIMERS
         time1 = my_crtc ();
 #    endif
         /* A operating on psi stored in work2 */
-        app_cil_driver (tmp_psi, work2, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+        app_cil_driver (tmp_psi, work2, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
                        sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
             work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
 
 
 
 
-        work1 += P0_BASIS;
-        s_psi += P0_BASIS;
+        work1 +=pct.P0_BASIS;
+        s_psi +=pct.P0_BASIS;
     }
 
     my_free (work2);
@@ -131,7 +131,7 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
     {
 
         /*Pack S|psi> into smoothing array */
-        //pack_ptos (sg_psi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+        //pack_ptos (sg_psi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 	scopy (&pbasis, work1, &ione, work2, &ione);
 
 
@@ -139,13 +139,13 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
         time1 = my_crtc ();
 #    endif
         /*B operating on S|psi> and store in work3 */
-        app_cir_driver (work2, work1, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (work2, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #    endif
 
 
-        work1 += P0_BASIS;
+        work1 +=pct.P0_BASIS;
     }
 
     my_free (work2);
@@ -209,13 +209,13 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
 
 
         /* Pack psi into smoothing array and get image data */
-        /*pack_ptos (sg_psiR, tmp_psiR, PX0_GRID, PY0_GRID, PZ0_GRID);
-        pack_ptos (sg_psiI, tmp_psiI, PX0_GRID, PY0_GRID, PZ0_GRID);*/
+        /*pack_ptos (sg_psiR, tmp_psiR, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+        pack_ptos (sg_psiI, tmp_psiI, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);*/
 
 
         /* Apply the gradient operator to psi */
         app_grad (tmp_psiI, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
             kdr[idx] = (ct.kp[sp->kidx].kvec[0] * gx[idx] +
                         ct.kp[sp->kidx].kvec[1] * gy[idx] + ct.kp[sp->kidx].kvec[2] * gz[idx]);
 
@@ -226,8 +226,8 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* Generate 2*V*psi and store in sg_twovpsi */
-        genvpsi (tmp_psiR, sg_twovpsiR, vtot_eig, work2R, kdr, ct.kp[sp->kidx].kmag, PX0_GRID,
-                 PY0_GRID, PZ0_GRID);
+        genvpsi (tmp_psiR, sg_twovpsiR, vtot_eig, work2R, kdr, ct.kp[sp->kidx].kmag, pct.PX0_GRID,
+                 pct.PY0_GRID, pct.PZ0_GRID);
 #    if MD_TIMERS
         rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #    endif
@@ -235,7 +235,7 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
 
         /* Apply the gradient operator to psi */
         app_grad (tmp_psiR, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
             kdr[idx] = -(ct.kp[sp->kidx].kvec[0] * gx[idx] +
                          ct.kp[sp->kidx].kvec[1] * gy[idx] + ct.kp[sp->kidx].kvec[2] * gz[idx]);
 
@@ -244,8 +244,8 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* Generate 2 * V * psiI and store it in a smoothing grid and store in sg_twovpsiI */
-        genvpsi (tmp_psiI, sg_twovpsiI, vtot_eig, work2I, kdr, ct.kp[sp->kidx].kmag, PX0_GRID,
-                 PY0_GRID, PZ0_GRID);
+        genvpsi (tmp_psiI, sg_twovpsiI, vtot_eig, work2I, kdr, ct.kp[sp->kidx].kmag, pct.PX0_GRID,
+                 pct.PY0_GRID, pct.PZ0_GRID);
 #    if MD_TIMERS
         rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #    endif
@@ -257,8 +257,8 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* B operating on 2*V*psi stored in work1 */
-        app_cir_driver (sg_twovpsiR, work1R, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
-        app_cir_driver (sg_twovpsiI, work1I, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (sg_twovpsiR, work1R, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (sg_twovpsiI, work1I, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
@@ -269,16 +269,16 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
         time1 = my_crtc ();
 #    endif
         /* A operating on psi stored in work2 */
-        app_cil_driver (tmp_psiR, work2R, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+        app_cil_driver (tmp_psiR, work2R, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
                        sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
-        app_cil_driver (tmp_psiI, work2I, PX0_GRID, PY0_GRID, PZ0_GRID, sp->hxgrid,
+        app_cil_driver (tmp_psiI, work2I, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
                        sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
-        for (idx = 0; idx < P0_BASIS; idx++)
+        for (idx = 0; idx <pct.P0_BASIS; idx++)
         {
             work1R[idx] = 0.5 * ct.vel * (work1R[idx] - work2R[idx]);
             work1I[idx] = 0.5 * ct.vel * (work1I[idx] - work2I[idx]);
@@ -287,10 +287,10 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
 
 
 
-        work1R += P0_BASIS;
-        work1I += P0_BASIS;
-	s_psiR += P0_BASIS;
-	s_psiI += P0_BASIS;
+        work1R +=pct.P0_BASIS;
+        work1I +=pct.P0_BASIS;
+	s_psiR +=pct.P0_BASIS;
+	s_psiI +=pct.P0_BASIS;
     }
 
     my_free (work2R);
@@ -325,8 +325,8 @@ void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI)
     {
 
         /*Pack S|psi> into smoothing array */
-        //pack_ptos (sg_psiR, work1R, PX0_GRID, PY0_GRID, PZ0_GRID);
-        //pack_ptos (sg_psiI, work1I, PX0_GRID, PY0_GRID, PZ0_GRID);
+        //pack_ptos (sg_psiR, work1R, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+        //pack_ptos (sg_psiI, work1I, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 	scopy (&states[0].sbasis, work1R, &ione, work2R, &ione);
 	scopy (&states[0].sbasis, work1I, &ione, work2I, &ione);
 
@@ -335,15 +335,15 @@ void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI)
         time1 = my_crtc ();
 #    endif
         /*B operating on S|psi> and store in work3 */
-        app_cir_driver (work2R, work1R, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
-        app_cir_driver (work2I, work1I, PX0_GRID, PY0_GRID, PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (work2R, work1R, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
+        app_cir_driver (work2I, work1I, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #    endif
 
 
-        work1R += P0_BASIS;
-        work1I += P0_BASIS;
+        work1R +=pct.P0_BASIS;
+        work1I +=pct.P0_BASIS;
     }
 
     my_free (work2R);

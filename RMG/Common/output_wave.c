@@ -54,7 +54,7 @@ void output_wave (STATE * states, int ik, int fhand)
         error_handler ("Unable to write wave state. ERRNO is %d.", errno);
 
 
-    size = (GAMMA_PT) ? P0_BASIS : 2 * P0_BASIS;
+    size = (GAMMA_PT) ?pct.P0_BASIS : 2 * pct.P0_BASIS;
 
     for (is = 0; is < ct.num_states; is++)
     {

@@ -76,7 +76,7 @@ void get_QI (void)
         icut = (icenter + 1) * (icenter + 1);
 
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->qdim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
+                         sp->qdim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);
 
@@ -104,9 +104,9 @@ void get_QI (void)
 
                             if (icut >= itmp)
                             {
-                                pvec[icount] = (FPY0_GRID * FPZ0_GRID * (Aix[ix] % FPX0_GRID) +
-                                                FPZ0_GRID * (Aiy[iy] % FPY0_GRID) +
-                                                (Aiz[iz] % FPZ0_GRID));
+                                pvec[icount] = (pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
+                                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) +
+                                                (Aiz[iz] % pct.FPZ0_GRID));
 
                                 dvec[idx] = TRUE;
 

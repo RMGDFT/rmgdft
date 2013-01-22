@@ -59,6 +59,8 @@
  *************************************************************
  *************************************************************/
 
+/* Maximum number of PE's */
+#define         MAX_PES        32768
 
 /* This is the maximum number of non-local projectors for any species
  * just an upper limit on dynamically allocated data structures. */
@@ -121,97 +123,4 @@
 /* Maximum number of images for finite difference routines */
 #define MAX_TRADE_IMAGES 5
 
-
-#  ifndef PE_X
-    /* Processor topology */
-#    if   NPES == 1
-#      define		PE_X		1
-#      define		PE_Y	        1
-#      define		PE_Z	        1
-#    elif NPES == 2
-#      define		PE_X		2
-#      define		PE_Y	        1
-#      define		PE_Z	        1
-#    elif NPES == 4
-#      define		PE_X		2
-#      define		PE_Y	        2
-#      define		PE_Z	        1
-#    elif NPES == 8
-#      define		PE_X            2
-#      define		PE_Y            2
-#      define		PE_Z            2
-#    elif NPES == 16
-#      define		PE_X            2
-#      define		PE_Y            4
-#      define		PE_Z            2
-#    elif NPES == 32
-#      define		PE_X            4
-#      define		PE_Y            4
-#      define		PE_Z            2
-#    elif NPES == 48
-#      define		PE_X            4
-#      define		PE_Y            2
-#      define		PE_Z            6
-#    elif NPES == 64
-#      define		PE_X            4
-#      define		PE_Y            4
-#      define		PE_Z            4
-#    elif NPES == 128
-#      define		PE_X            8
-#      define		PE_Y            4
-#      define		PE_Z            4
-#    elif NPES == 256
-#      define		PE_X            8
-#      define		PE_Y            8
-#      define		PE_Z            4
-#    elif NPES == 512
-#      define		PE_X            8
-#      define		PE_Y            8
-#      define		PE_Z            8
-#    endif
-#  endif
-
-
-
-
-/* Fine grid size on each processor */
-#define         FNX_GRID        (NX_GRID * FG_NX)
-#define         FNY_GRID        (NY_GRID * FG_NY)
-#define         FNZ_GRID        (NZ_GRID * FG_NZ)
-
-#define         PX0_GRID        (NX_GRID / PE_X)
-#define         PY0_GRID        (NY_GRID / PE_Y)
-#define         PZ0_GRID        (NZ_GRID / PE_Z)
-
-#define         P0_BASIS        (PX0_GRID * PY0_GRID * PZ0_GRID)
-
-#define         FPX0_GRID       (PX0_GRID * FG_NX)
-#define         FPY0_GRID       (PY0_GRID * FG_NY)
-#define         FPZ0_GRID       (PZ0_GRID * FG_NZ)
-
-#define         FP0_BASIS        (FPX0_GRID * FPY0_GRID * FPZ0_GRID)
-
-
-/* These are used to determine the static storage sizes required by
-   trade_images.c and trade_imagesx.c when they are combining MPI calls
-   in hybrid mode.
-*/
-#define GRID_XP (FPX0_GRID + 2*MAX_TRADE_IMAGES)
-#define GRID_YP (FPY0_GRID + 2*MAX_TRADE_IMAGES)
-#define GRID_ZP (FPZ0_GRID + 2*MAX_TRADE_IMAGES)
-#if GRID_XP > GRID_YP
-  #define GRID_MAX1 GRID_XP
-  #if GRID_YP > GRID_ZP
-    #define GRID_MAX2 GRID_YP
-  #else
-    #define GRID_MAX2 GRID_ZP
-  #endif
-#else
-  #define GRID_MAX1 GRID_YP
-  #if GRID_XP > GRID_ZP
-    #define GRID_MAX2 GRID_XP
-  #else
-    #define GRID_MAX2 GRID_ZP
-  #endif
-#endif
 

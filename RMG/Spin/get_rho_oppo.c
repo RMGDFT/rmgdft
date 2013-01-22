@@ -48,8 +48,8 @@ void  get_rho_oppo (REAL * rho, REAL * rho_oppo)
 {
     MPI_Status status;
 
-    MPI_Sendrecv(rho,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, 
-	    rho_oppo,(int) FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+    MPI_Sendrecv(rho,(int) pct.FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, 
+	    rho_oppo,(int) pct.FP0_BASIS, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 }                               /* end scf */
 
 

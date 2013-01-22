@@ -74,6 +74,9 @@ void sl_init (int *ictxt, int size)
 
     MPI_Group grp_world, grp_this;
 
+    // Allocate the memory for scalapack_desca
+    my_malloc(pct.scalapack_desca, NPES*DLEN, int);
+
     // Reset NB to input value
     NB = ct.scalapack_block_factor;
 
@@ -225,7 +228,7 @@ void set_desca (int *desca, int *ictxt, int size)
 
         myindex = pct.scalapack_myrow * pct.scalapack_npcol + pct.scalapack_mycol;
         for(idx = 0;idx < DLEN;idx++) {
-            pct.scalapack_desca[myindex][idx] = desca[idx];
+            pct.scalapack_desca[myindex*DLEN + idx] = desca[idx];
         }
 
     }
@@ -477,11 +480,11 @@ int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int siz
 
     nprow = pct.scalapack_nprow;
     npcol = pct.scalapack_npcol;
-    mb = pct.scalapack_desca[row*npcol + col][4];
-    nb = pct.scalapack_desca[row*npcol + col][5];
+    mb = pct.scalapack_desca[(row*npcol + col)*DLEN + 4];
+    nb = pct.scalapack_desca[(row*npcol + col)*DLEN + 5];
     maxrow = (size / (nprow * mb)) + 1;
     maxcol = (size / (npcol * mb)) + 1;
-    mxllda = pct.scalapack_desca[row*npcol + col][8];
+    mxllda = pct.scalapack_desca[(row*npcol + col)*DLEN + 8];
     mxlloc = NUMROC (&size, &nb, &col, &izero, &pct.scalapack_npcol);
     dist_length = NUMROC (&ct.num_states, &mb, &row, &izero, &pct.scalapack_nprow) * 
                   NUMROC (&ct.num_states, &mb, &col, &izero, &pct.scalapack_npcol);

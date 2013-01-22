@@ -56,7 +56,7 @@ void get_new_rho (STATE * states, REAL * rho)
     STATE *sp;
     ION *iptr;
 
-    my_calloc (work, P0_BASIS, REAL);
+    my_calloc (work,pct.P0_BASIS, REAL);
 
 #if GAMMA_PT
     my_malloc (sintR, ct.max_nl, REAL);
@@ -69,7 +69,7 @@ void get_new_rho (STATE * states, REAL * rho)
     my_malloc (product, max_product, REAL);
 
     /* scale charge accumulator */
-    n = FP0_BASIS;
+    n = pct.FP0_BASIS;
     incx = 1;
 
 
@@ -84,7 +84,7 @@ void get_new_rho (STATE * states, REAL * rho)
 
             t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-            for (idx = 0; idx < P0_BASIS; idx++)
+            for (idx = 0; idx <pct.P0_BASIS; idx++)
             {
                 work[idx] += t1 * sp->psiR[idx] * sp->psiR[idx];
 #if !GAMMA_PT
@@ -110,7 +110,7 @@ void get_new_rho (STATE * states, REAL * rho)
             bspline_interp_full (work, rho);
             break;
         case 2:
-            mg_prolong_MAX10 (rho, work, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
+            mg_prolong_MAX10 (rho, work, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, FG_NX, 6);
             break;
 
         default:
@@ -216,7 +216,7 @@ void get_new_rho (STATE * states, REAL * rho)
 
     /* Check total charge. */
     ct.tcharge = ZERO;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         ct.tcharge += rho[idx];
 
     /* ct.tcharge = real_sum_all (ct.tcharge); */

@@ -32,13 +32,12 @@
 
 
 /* Function prototypes */
-void app_4del2 (S0_GRID *f, P0_GRID *work);
 REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz);
-void app6_del2 (REAL *rho, P0_GRID * work);
-void app6_del2f (REAL *rho, FP0_GRID * work);
-void app10_del2f (FS0_GRID * f, FP0_GRID * work);
-void app_smooth (S0_GRID *f, S0_GRID *work, REAL sfac);
+void app6_del2 (REAL *rho, REAL *work, int dimx, int dimy, int dimz,
+                REAL gridhx, REAL gridhy, REAL gridhz);
+void app_smooth (REAL *f, REAL *work, int dimx, int dimy, int dimz);
+void app_smooth1 (REAL *f, REAL *work, int dimx, int dimy, int dimz);
 void app_cir_driver (REAL *a, REAL *b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir_sixth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
@@ -64,9 +63,8 @@ REAL app_cil_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx
               REAL gridhy, REAL gridhz);
 REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz);
-void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz);
-void app_gradf (REAL * rho, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
-void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
+void app_grad (REAL  * rho, REAL *wx, REAL *wy, REAL *wz, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
+//void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain( void );
 void corlyp (REAL *dp, REAL *dm, REAL *dp1, REAL *dm1, REAL *dp2, REAL *dm2, REAL *ec,
              REAL *vcp0, REAL *vcm0, int *ndm);
@@ -89,7 +87,6 @@ void get_nlop (void);
 void get_weight (void);
 void get_phase (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
 void get_nlop_smp (int tid);
-void get_eig (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc);
 char *get_num (char *str);
 void get_te (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
              STATE *states);
@@ -218,9 +215,10 @@ void init_wf (STATE *states);
 void init_nuc (REAL *vnuc, REAL *rhoc, REAL *rhocore);
 void init_pos (void);
 void init_sym (void);
+#if GAMMA_POINT
 void symmetrize_rho (FP0_GRID *rho);
+#endif
 void symforce (void);
-void cforce (P0_GRID *rho, P0_GRID *vh);
 void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
                  int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy,
                  REAL gridhz, int level, int *nb_ids, int max_levels,
@@ -270,10 +268,9 @@ void set_bc (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
 void set_bcx (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
 void getpoi_bc (REAL *rho, REAL *vh_bc, int dimx, int dimy, int dimz);
 /*void trade_images2(S0_GRID *f, SS0_GRID *w);
-void trade_images2f(FS0_GRID *f, FSS0_GRID *w);
-void trade_images3(S0_GRID *f, S30_GRID *w);
-void trade_images5(S0_GRID *f, S50_GRID *w);*/
-void vol_rho (P0_GRID *rho, int step);
+//void trade_images2f(FS0_GRID *f, FSS0_GRID *w);
+//void trade_images3(S0_GRID *f, S30_GRID *w);
+//void trade_images5(S0_GRID *f, S50_GRID *w);*/
 void vol_wf (STATE *states, int state, int step);
 void write_avgd (REAL *rho);
 void write_avgv (REAL *vh, REAL *vnuc);
@@ -339,10 +336,6 @@ void cdfastrlx (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
                 REAL *rho, REAL *rhocore, REAL *rhoc);
 void moldyn (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
              REAL *rho, REAL *rho_oppo, REAL *rhoc, REAL *rhocore);
-void dx (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc,
-         P0_GRID *rho, P0_GRID *rhoc);
-void psidx (STATE *states, P0_GRID *vxc, P0_GRID *vh, P0_GRID *vnuc,
-            P0_GRID *rho, P0_GRID *rhoc);
 void cholesky (REAL *a, int n);
 
 

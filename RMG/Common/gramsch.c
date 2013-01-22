@@ -61,7 +61,7 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
    char *transt = "t";
    char *uplo = "l";
    char *uphi = "u";
-   int pbasis = P0_BASIS;
+   int pbasis =pct.P0_BASIS;
 
 
    sp = kpt->kstate;
@@ -113,7 +113,7 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 #pragma omp barrier
        
 #pragma omp for schedule(static, 1) nowait
-   for(idx = 0;idx < P0_BASIS;idx++) {
+   for(idx = 0;idx <pct.P0_BASIS;idx++) {
 
        sarr = &darr[omp_tid*numst];
 

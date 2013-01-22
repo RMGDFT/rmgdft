@@ -65,11 +65,11 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
     /*my_open( wave_f, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE ); */
 
 
-    my_malloc (vtot, FP0_BASIS, REAL);
-    my_malloc (vtot_psi, P0_BASIS, REAL);
+    my_malloc (vtot, pct.FP0_BASIS, REAL);
+    my_malloc (vtot_psi,pct.P0_BASIS, REAL);
 
     /*  get total potential  */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     get_ddd (vtot);

@@ -141,7 +141,7 @@ void xclda_pz81 (REAL * rho, REAL * vxc_f)
 
     int i;
 
-    for (i = 0; i < FP0_BASIS; i++)
+    for (i = 0; i < pct.FP0_BASIS; i++)
     {
 
         vxc_f[i] = mu_pz (rho[i]);
@@ -161,7 +161,7 @@ void exclda_pz81 (REAL * rho, REAL * exc)
 
     int i;
 
-    for (i = 0; i < FP0_BASIS; i++)
+    for (i = 0; i < pct.FP0_BASIS; i++)
     {
 
         exc[i] = e_pz (rho[i]);

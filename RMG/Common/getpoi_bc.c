@@ -102,17 +102,17 @@ void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
 
     pe2xyz (pct.gridpe, &pex, &pey, &pez);
 
-    xc = pex * ct.hxgrid * PX0_GRID;
+    xc = pex * ct.hxgrid * pct.PX0_GRID;
 
-    for (ix = 0; ix < PX0_GRID; ix++)
+    for (ix = 0; ix < pct.PX0_GRID; ix++)
     {
 
-        yc = pey * ct.hygrid * PY0_GRID;
-        for (iy = 0; iy < PY0_GRID; iy++)
+        yc = pey * ct.hygrid * pct.PY0_GRID;
+        for (iy = 0; iy < pct.PY0_GRID; iy++)
         {
 
-            zc = pez * ct.hzgrid * PZ0_GRID;
-            for (iz = 0; iz < PZ0_GRID; iz++)
+            zc = pez * ct.hzgrid * pct.PZ0_GRID;
+            for (iz = 0; iz < pct.PZ0_GRID; iz++)
             {
 
                 ax[0] = xc - 0.5;

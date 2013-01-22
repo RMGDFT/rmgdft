@@ -41,11 +41,16 @@
 
  Smooths f and returns result in work
 */
-void app_smooth1 (S0_GRID * f, S0_GRID * work, REAL sfac)
+void app_smooth1 (REAL * f, REAL * work, int dimx, int dimy, int dimz)
 {
 
-    int iz, ix, iy;
+    int iz, ix, iy, incx, incy;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+
     REAL scale, ec, fc, crn, cc, temp;
+
+    incy = dimz + 2;
+    incx = (dimz + 2) * (dimy + 2);
 
     cc = 6.0;
     fc = 1.0;
@@ -54,24 +59,32 @@ void app_smooth1 (S0_GRID * f, S0_GRID * work, REAL sfac)
     scale = 1.0 / 12.0;
 
 
-    for (ix = 1; ix <= PX0_GRID; ix++)
+    for (ix = 1; ix <= dimx; ix++)
     {
 
-        for (iy = 1; iy <= PY0_GRID; iy++)
+        ixs = ix * incx;
+        ixms = (ix - 1) * incx;
+        ixps = (ix + 1) * incx;
+
+        for (iy = 1; iy <= dimy; iy++)
         {
 
-            for (iz = 1; iz <= PZ0_GRID; iz++)
+            iys = iy * incy;
+            iyms = (iy - 1) * incy;
+            iyps = (iy + 1) * incy;
+
+            for (iz = 1; iz <= dimz; iz++)
             {
 
+                temp = cc * f[ixs + iys + iz] +
+                    fc * (f[ixms + iys + iz] +
+                          f[ixps + iys + iz] +
+                          f[ixs + iyms + iz] +
+                          f[ixs + iyps + iz] +
+                          f[ixs + iys + (iz - 1)] +
+                          f[ixs + iys + (iz + 1)]);
 
-                temp = cc * f->s1.b[ix][iy][iz] +
-                    fc * (f->s1.b[ix - 1][iy][iz] +
-                          f->s1.b[ix + 1][iy][iz] +
-                          f->s1.b[ix][iy - 1][iz] +
-                          f->s1.b[ix][iy + 1][iz] +
-                          f->s1.b[ix][iy][iz - 1] + f->s1.b[ix][iy][iz + 1]);
-                work->s1.b[ix][iy][iz] = scale * temp;
-
+                work[ixs + iys + iz] = scale * temp;
 
             }                   /* end for */
 
@@ -81,7 +94,7 @@ void app_smooth1 (S0_GRID * f, S0_GRID * work, REAL sfac)
 
 
 
-}                               /* end app_smooth */
+}                               /* end app_smooth1 */
 
 
 

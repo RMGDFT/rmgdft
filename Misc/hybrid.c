@@ -79,6 +79,10 @@ static pthread_mutex_t thread_order_mutex = PTHREAD_MUTEX_INITIALIZER;
 // Used for accessing thread specific data
 pthread_key_t scf_thread_control_key;
 
+extern int TRADE_GRID_EDGES;
+extern int GRID_MAX1;
+extern int GRID_MAX2;
+
 // Initialization function called by main process
 void init_HYBRID_MODEL(void) {
 

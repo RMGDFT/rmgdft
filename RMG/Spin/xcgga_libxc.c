@@ -47,11 +47,13 @@
 void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
 {
 
-    int idx;
-    FP0_GRID *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
+    int idx, sizr;
+    REAL *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
     REAL *ec, *vc, *vsigma, *vsigma_c, *sigma;
+
+    sizr = pct.FP0_BASIS;
 
     /* get the correct functional id for each type */
     if (mode == GGA_PBE)
@@ -82,39 +84,39 @@ void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
     if(xc_func_init(&func_c, func_id_c, XC_UNPOLARIZED) != 0)
         error_handler("Functional %d not found\n", func_id_c);
 
-    my_calloc (ec, 5 * FP0_BASIS, REAL);
-    vc = ec + FP0_BASIS; 
-    sigma = ec + 2 * FP0_BASIS; 
-    vsigma = ec + 3 * FP0_BASIS; 
-    vsigma_c = ec + 4 * FP0_BASIS; 
+    my_calloc (ec, 5 * pct.FP0_BASIS, REAL);
+    vc = ec + pct.FP0_BASIS; 
+    sigma = ec + 2 * pct.FP0_BASIS; 
+    vsigma = ec + 3 * pct.FP0_BASIS; 
+    vsigma_c = ec + 4 * pct.FP0_BASIS; 
     
-
     /* Grab some memory */
-    my_malloc (gx, 1, FP0_GRID);
-    my_malloc (gy, 1, FP0_GRID);
-    my_malloc (gz, 1, FP0_GRID);
-    my_malloc (vgx, 1, FP0_GRID);
-    my_malloc (vgy, 1, FP0_GRID);
-    my_malloc (vgz, 1, FP0_GRID);
-    /* my_malloc (agg, 1, FP0_GRID); */
-    my_malloc (d2rho, 1, FP0_GRID); 
+    my_malloc (gx, sizr, REAL);
+    my_malloc (gy, sizr, REAL);
+    my_malloc (gz, sizr, REAL);
+    my_malloc (vgx, sizr, REAL);
+    my_malloc (vgy, sizr, REAL);
+    my_malloc (vgz, sizr, REAL);
+//    my_malloc (agg, sizr, REAL);
+    my_malloc (d2rho, sizr, REAL);
+
 
 
 
     /* Generate the gradient of the density */
-    app_gradf (rho, gx, gy, gz);
+    app_grad (rho, gx, gy, gz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
     /* Get the Laplacian of the density */
-    app6_del2f (rho, d2rho);
+    app6_del2 (rho, d2rho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
 
     /* Absolute value of grad(rho) \dot grad(rho)*/
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 
-        sigma[idx] =(gx->s2[idx] * gx->s2[idx] +
-                           gy->s2[idx] * gy->s2[idx] + gz->s2[idx] * gz->s2[idx]);
+        sigma[idx] =(gx[idx] * gx[idx] +
+                           gy[idx] * gy[idx] + gz[idx] * gz[idx]);
 
     } 
 
@@ -122,19 +124,19 @@ void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
 
     /* get the exchange part for energy and potential first*/    
     if (func_x.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_x, FP0_BASIS, rho, sigma, exc, vxc, vsigma); 
+        xc_gga_exc_vxc (&func_x, pct.FP0_BASIS, rho, sigma, exc, vxc, vsigma); 
 
 
     /* get the correlation part for energy and potential */    
     if (func_c.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_c, FP0_BASIS, rho, sigma, ec, vc, vsigma_c); 
+        xc_gga_exc_vxc (&func_c, pct.FP0_BASIS, rho, sigma, ec, vc, vsigma_c); 
     
     xc_func_end (&func_x);
     xc_func_end (&func_c); 
 
     
     /* add exchange correlation together */ 
-    for (idx = 0; idx < FP0_BASIS; idx++) 
+    for (idx = 0; idx < pct.FP0_BASIS; idx++) 
     {
 	    vxc[idx] += vc[idx];
 	    exc[idx] += ec[idx];
@@ -143,15 +145,15 @@ void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
 
 
     /* Get gradient of vsigma */
-    app_gradf (vsigma, vgx, vgy, vgz);
+    app_grad (vsigma, vgx, vgy, vgz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
      /* Vxc = vrho -2 \div \dot ( vsigma * \grad(rho) ) */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
-	     vxc[idx] -= 2.0 * ( vgx->s2[idx] * gx->s2[idx] + 
-	     		   vgy->s2[idx] * gy->s2[idx] + vgz->s2[idx] * gz->s2[idx] ) ;
-	     vxc[idx] -= 2.0 * vsigma[idx] * d2rho->s2[idx];
+	     vxc[idx] -= 2.0 * ( vgx[idx] * gx[idx] + 
+	     		   vgy[idx] * gy[idx] + vgz[idx] * gz[idx] ) ;
+	     vxc[idx] -= 2.0 * vsigma[idx] * d2rho[idx];
     }
 
 

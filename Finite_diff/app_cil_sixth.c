@@ -79,7 +79,7 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
 
 #if FAST_MEHR
     numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS) 
+    if(numgrid == pct.P0_BASIS) 
         return app_cil_sixth_global (psi, b, gridhx, gridhy, gridhz);
 #endif
 
@@ -181,6 +181,23 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
 
 }
 
+// These routines are noticeably faster with grid dims fixed at compile time
+// so experts can set them by using Makefile defines
+#ifdef FD_XSIZE
+  #define         FIXED_XDIM      FD_XSIZE
+#else
+  #define         FIXED_XDIM      pct.PX0_GRID
+#endif
+#ifdef FD_YSIZE
+  #define         FIXED_YDIM      FD_YSIZE
+#else
+  #define         FIXED_YDIM      pct.PY0_GRID
+#endif
+#ifdef FD_ZSIZE
+  #define         FIXED_ZDIM      FD_ZSIZE
+#else
+  #define         FIXED_ZDIM      pct.PZ0_GRID
+#endif
 
 // Version with loop dimensions set at compile time
 REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz)
@@ -197,19 +214,19 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
     REAL td1, td2, td3, td4, td5, td6, td7, td8, tdx;
     REAL *rptr;
 
-    incx = (PZ0_GRID + 4) * (PY0_GRID + 4);
-    incy = PZ0_GRID + 4;
-    incxr = PZ0_GRID * PY0_GRID;
-    incyr = PZ0_GRID;
+    incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
+    incy = FIXED_ZDIM + 4;
+    incxr = FIXED_ZDIM * FIXED_YDIM;
+    incyr = FIXED_ZDIM;
 
-    my_malloc (rptr, (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) + 64, REAL);
+    my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + 64, REAL);
     // We run past the end of the array on purpose so make sure there is something there
     // that won't generate a floating point exception
     for(ix = 0;ix < 64;ix++) {
-        rptr[(PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4) + ix] = 0.0;
+        rptr[(FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + ix] = 0.0;
     }
 
-    trade_imagesx (psi, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2, FULL_FD);
+    trade_imagesx (psi, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 2, FULL_FD);
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
@@ -236,9 +253,9 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
     tcz = (-1.0 / 240.0) * ihz;
 
     // Handle the general case first
-    if((PZ0_GRID % 4) || (ct.ibrav != CUBIC_PRIMITIVE)) {
+    if((FIXED_ZDIM % 4) || (ct.ibrav != CUBIC_PRIMITIVE)) {
 
-        for (ix = 2; ix < PX0_GRID + 2; ix++)
+        for (ix = 2; ix < FIXED_XDIM + 2; ix++)
         {
             ixs = ix * incx;
             ixms = (ix - 1) * incx;
@@ -246,7 +263,7 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
             ixmms = (ix - 2) * incx;
             ixpps = (ix + 2) * incx;
 
-            for (iy = 2; iy < PY0_GRID + 2; iy++)
+            for (iy = 2; iy < FIXED_YDIM + 2; iy++)
             {
                 iys = iy * incy;
                 iyms = (iy - 1) * incy;
@@ -254,7 +271,7 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
                 iymms = (iy - 2) * incy;
                 iypps = (iy + 2) * incy;
 
-                for (iz = 2; iz < PZ0_GRID + 2; iz++)
+                for (iz = 2; iz < FIXED_ZDIM + 2; iz++)
                 {
 
                     b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = cc * rptr[ixs + iys + iz] +
@@ -308,7 +325,7 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
 
     // Optimized case for dimz divisible by 4 and cubic primitive grid
 
-    for (ix = 2; ix < PX0_GRID + 2; ix++)
+    for (ix = 2; ix < FIXED_XDIM + 2; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
@@ -316,7 +333,7 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
         ixmms = (ix - 2) * incx;
         ixpps = (ix + 2) * incx;
 
-        for (iy = 2; iy < PY0_GRID + 2; iy++)
+        for (iy = 2; iy < FIXED_YDIM + 2; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
@@ -397,7 +414,7 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
 
 
 
-            for (iz = 2; iz < PZ0_GRID + 2; iz+=4)
+            for (iz = 2; iz < FIXED_ZDIM + 2; iz+=4)
             {
 
                 tdx =   rptr[ixps + iys + iz + 6] +

@@ -44,7 +44,7 @@ void write_avgd (REAL * rho)
 
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
-    poff = pz * FPZ0_GRID;
+    poff = pz * pct.FPZ0_GRID;
 
 
     /* Zero out result vector */
@@ -53,17 +53,17 @@ void write_avgd (REAL * rho)
 
 
     /* Loop over this processor */
-    for (iz = 0; iz < FPZ0_GRID; iz++)
+    for (iz = 0; iz < pct.FPZ0_GRID; iz++)
     {
 
         t1 = ZERO;
-        for (ix = 0; ix < FPX0_GRID; ix++)
+        for (ix = 0; ix < pct.FPX0_GRID; ix++)
         {
 
-            for (iy = 0; iy < FPY0_GRID; iy++)
+            for (iy = 0; iy < pct.FPY0_GRID; iy++)
             {
 
-                t1 += rho[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz];
+                t1 += rho[ix * pct.FPY0_GRID * pct.FPZ0_GRID + iy * pct.FPZ0_GRID + iz];
 
             }                   /* end for */
 

@@ -52,7 +52,7 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
     REAL *sg_full;
 
     my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), REAL);
-    trade_imagesx (full, sg_full, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 5, FULL_FD);
+    trade_imagesx (full, sg_full, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, 5, FULL_FD);
 
     incz = 1;
     incy = dimz + 10;
@@ -71,8 +71,8 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
     a4 = 0.0;
     a5 = 0.0;
 
-    my_malloc (fulla, (FPX0_GRID / grid_ratio) * (FPY0_GRID + 10) * (FPZ0_GRID + 10), REAL);
-    my_malloc (fullb, (FPX0_GRID / grid_ratio) * (FPY0_GRID / grid_ratio) * (FPZ0_GRID + 10), REAL);
+    my_malloc (fulla, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID + 10) * (pct.FPZ0_GRID + 10), REAL);
+    my_malloc (fullb, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID / grid_ratio) * (pct.FPZ0_GRID + 10), REAL);
 
 
     for (ix = 0; ix < dimx / grid_ratio; ix++)

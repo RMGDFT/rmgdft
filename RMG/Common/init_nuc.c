@@ -24,12 +24,12 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
     ION *iptr;
 
     /* Grab some memory for temporary storage */
-    my_malloc (pvec, FP0_BASIS, int);
+    my_malloc (pvec, pct.FP0_BASIS, int);
 
     /* Initialize the compensating charge array and the core charge array */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
-        rhoc_f[idx] = ct.background_charge / FP0_BASIS / ct.vel_f / NPES;
+        rhoc_f[idx] = ct.background_charge / pct.FP0_BASIS / ct.vel_f / NPES;
         rhocore_f[idx] = 0.0;
         vnuc_f[idx] = 0.0;
     }
@@ -53,7 +53,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->ldim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
+                         sp->ldim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
@@ -79,8 +79,8 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
                         {
                             pvec[icount] =
-                                FPY0_GRID * FPZ0_GRID * (Aix[ix] % FPX0_GRID) +
-                                FPZ0_GRID * (Aiy[iy] % FPY0_GRID) + (Aiz[iz] % FPZ0_GRID);
+                                pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
+                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) + (Aiz[iz] % pct.FPZ0_GRID);
 
                             x[0] = xc - iptr->xtal[0];
                             x[1] = yc - iptr->xtal[1];
@@ -117,7 +117,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
 
     /* Check compensating charges */
     ct.crho = 0.0;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         ct.crho += rhoc_f[idx];
 
 
@@ -130,7 +130,7 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
     
 
     t1 = 0.0;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
         if (rhocore_f[idx] < 0.0)
             rhocore_f[idx] = 0.0;

@@ -49,6 +49,32 @@ void read_control (char *file)
     my_malloc (tptr, MAX_PATH, char);
     tbuf = tptr;
 
+    get_data ("processor_grid", tbuf, STR, NULL);
+    PE_X = strtol(tbuf, &tbuf, 10);
+    PE_Y = strtol(tbuf, &tbuf, 10);
+    PE_Z = strtol(tbuf, &tbuf, 10);
+    pct.pe_x = PE_X;
+    pct.pe_y = PE_Y;
+    pct.pe_z = PE_Z;
+
+    /* read coarse grid info */
+    get_data("coarse_grid", tbuf, STR, NULL);
+    NX_GRID = strtol(tbuf, &tbuf, 10);
+    NY_GRID = strtol(tbuf, &tbuf, 10);
+    NZ_GRID = strtol(tbuf, &tbuf, 10);
+
+    get_data("potential_grid_refinement",  &FG_NX, INT, NULL);
+    FG_NY = FG_NX;
+    FG_NZ = FG_NX;
+
+    FNX_GRID = NX_GRID * FG_NX;
+    FNY_GRID = NY_GRID * FG_NY;
+    FNZ_GRID = NZ_GRID * FG_NZ;
+
+    if(NPES != (PE_X*PE_Y*PE_Z))
+        error_handler
+                ("NPES not equal to PE_X*PE_Y*PE_Z!");
+
     /* Read in the description */
     get_data ("description", &ct.description, STR, "QMD run");
 
@@ -529,33 +555,6 @@ void read_control (char *file)
     /* Multigrid levels */
     get_data ("kohn_sham_mg_levels", &ct.eig_parm.levels, INT, "1");
     get_data ("poisson_mg_levels", &ct.poi_parm.levels, INT, "2");
-
-    if ((PX0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PX0_GRID: too many eigenvalue MG levels");
-    if ((PY0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PY0_GRID: too many eigenvalue MG levels");
-    if ((PZ0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PZ0_GRID: too many eigenvalue MG levels");
-    if ((PX0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PX0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((PY0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PY0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((PZ0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PZ0_GRID not evenly divisible by 2^(eig_parm.levels)");
-
-    if ((FPX0_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("PX0_GRID: too many hartree MG levels");
-    if ((FPY0_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("PY0_GRID: too many hartree MG levels");
-    if ((FPZ0_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("PZ0_GRID: too many hartree MG levels");
-    if ((FPX0_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("PX0_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FPY0_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("PY0_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FPZ0_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("PZ0_GRID not evenly divisible by 2^(poi_parm.levels)");
-
 
     /*Fine grid for non-local pseudopotential */
     get_data ("fine_grid_non_local_pp", &ct.nxfgrid, INT, "4");

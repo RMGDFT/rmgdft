@@ -70,7 +70,7 @@ REAL get_ke (STATE * sp, int tid)
     /* Pack psi into smoothing array */
     //pack_ptos (sg_psi, tmp_psi, dimx, dimy, dimz);
 
-    app6_del2 (tmp_psi, (P0_GRID *) work2);
+    app6_del2 (tmp_psi, work2, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid, sp->hygrid, sp->hzgrid);
 
     KE = -0.5 * ct.vel * QMD_sdot (pbasis, tmp_psi, 1, work2, 1);
     KE = real_sum_all (KE, pct.grid_comm);

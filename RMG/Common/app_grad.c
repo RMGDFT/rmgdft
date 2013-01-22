@@ -37,54 +37,47 @@
 #include <math.h>
 #include <stdlib.h>
 
-void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz)
+void app_grad (REAL  * rho, REAL *wxr, REAL *wyr, REAL *wzr, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
     int iz, ix, iy;
     REAL t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
     REAL time1, time2, *rptr;
-    REAL *wxr, *wyr, *wzr;
-    SS0_GRID *SSSptr;
     int ixs, iys;
     int ix1, iy1;
 
-    ixs = (PY0_GRID + 4) * (PZ0_GRID + 4);
-    iys = (PZ0_GRID + 4);
-    ix1 = PY0_GRID * PZ0_GRID;
-    iy1 = PZ0_GRID;
-    wxr = (REAL *) wx;
-    wyr = (REAL *) wy;
-    wzr = (REAL *) wz;
+    ixs = (dimy + 4) * (dimz + 4);
+    iys = (dimz + 4);
+    ix1 = dimy * dimz;
+    iy1 = dimz;
 
-    my_malloc (rptr, (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4), REAL);
-    SSSptr = (SS0_GRID *) rptr;
+    my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL);
 
 
     time1 = my_crtc ();
-    /*trade_images2(f, SSSptr); */
-    trade_imagesx (rho, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2, CENTRAL_FD);
+    trade_imagesx (rho, rptr, dimx, dimy, dimz, 2, CENTRAL_FD);
 
     switch (ct.ibrav)
     {
 
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:
-        t1x = 8.0 / (12.0 * ct.hxgrid * ct.xside);
-        t2x = 1.0 / (12.0 * ct.hxgrid * ct.xside);
+        t1x = 8.0 / (12.0 * gridhx * ct.xside);
+        t2x = 1.0 / (12.0 * gridhx * ct.xside);
 
-        t1y = 8.0 / (12.0 * ct.hygrid * ct.yside);
-        t2y = 1.0 / (12.0 * ct.hygrid * ct.yside);
+        t1y = 8.0 / (12.0 * gridhy * ct.yside);
+        t2y = 1.0 / (12.0 * gridhy * ct.yside);
 
-        t1z = 8.0 / (12.0 * ct.hzgrid * ct.zside);
-        t2z = 1.0 / (12.0 * ct.hzgrid * ct.zside);
+        t1z = 8.0 / (12.0 * gridhz * ct.zside);
+        t2z = 1.0 / (12.0 * gridhz * ct.zside);
 
-        for (ix = 2; ix < PX0_GRID + 2; ix++)
+        for (ix = 2; ix < dimx + 2; ix++)
         {
 
-            for (iy = 2; iy < PY0_GRID + 2; iy++)
+            for (iy = 2; iy < dimy + 2; iy++)
             {
 
-                for (iz = 2; iz < PZ0_GRID + 2; iz++)
+                for (iz = 2; iz < dimz + 2; iz++)
                 {
 
                     wxr[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
@@ -116,41 +109,44 @@ void app_grad (REAL  * rho, P0_GRID * wx, P0_GRID * wy, P0_GRID * wz)
     case HEXAGONAL:
 
         t1 = sqrt (3.0) / 2.0;
-        t1x = 8.0 / (12.0 * ct.hxgrid * ct.xside);
-        t2x = 1.0 / (12.0 * ct.hxgrid * ct.xside);
+        t1x = 8.0 / (12.0 * gridhx * ct.xside);
+        t2x = 1.0 / (12.0 * gridhx * ct.xside);
 
-        t1y = 8.0 / (t1 * 12.0 * ct.hxgrid * ct.xside);
-        t2y = 1.0 / (t1 * 12.0 * ct.hxgrid * ct.xside);
+        t1y = 8.0 / (t1 * 12.0 * gridhx * ct.xside);
+        t2y = 1.0 / (t1 * 12.0 * gridhx * ct.xside);
 
-        t1z = 8.0 / (12.0 * ct.hzgrid * ct.zside);
-        t2z = 1.0 / (12.0 * ct.hzgrid * ct.zside);
+        t1z = 8.0 / (12.0 * gridhz * ct.zside);
+        t2z = 1.0 / (12.0 * gridhz * ct.zside);
 
-        for (ix = 2; ix < PX0_GRID + 2; ix++)
+        for (ix = 2; ix < dimx + 2; ix++)
         {
 
-            for (iy = 2; iy < PY0_GRID + 2; iy++)
+            for (iy = 2; iy < dimy + 2; iy++)
             {
 
-                for (iz = 2; iz < PZ0_GRID + 2; iz++)
+                for (iz = 2; iz < dimz + 2; iz++)
                 {
 
-                    wx->s1.b[ix - 2][iy - 2][iz - 2] =
-                        t2x * SSSptr->b[ix - 2][iy][iz] +
-                        -t1x * SSSptr->b[ix - 1][iy][iz] +
-                        t1x * SSSptr->b[ix + 1][iy][iz] + -t2x * SSSptr->b[ix + 2][iy][iz];
+                   wxr[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
+                        t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
+                        -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
+                        t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
+                        -t2x * rptr[(ix + 2) * ixs + iy * iys + iz];
 
-                    t1 = (SSSptr->b[ix + 1][iy - 1][iz] + SSSptr->b[ix][iy - 1][iz]) / 2.0;
 
-                    t2 = (SSSptr->b[ix][iy + 1][iz] + SSSptr->b[ix - 1][iy + 1][iz]) / 2.0;
+                    t1 = (rptr[(ix + 1)*ixs + (iy - 1)*iys +  iz] + rptr[ix*ixs +  (iy - 1)*iys +  iz]) / 2.0;
+                    t2 = (rptr[ix*ixs + (iy + 1)*iys +  iz] + rptr[(ix - 1)*ixs +  (iy + 1)*iys +  iz]) / 2.0;
 
-                    wy->s1.b[ix - 2][iy - 2][iz - 2] =
-                        t2y * SSSptr->b[ix + 1][iy - 2][iz] +
-                        -t1y * t1 + t1y * t2 + -t2y * SSSptr->b[ix - 1][iy + 2][iz];
+                    wyr[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
+                        t2y * rptr[(ix + 1)*ixs + (iy - 2)*iys +  iz] +
+                        -t1y * t1 + t1y * t2 + 
+                        -t2y * rptr[(ix - 1)*ixs +  (iy + 2)*iys +  iz];
 
-                    wz->s1.b[ix - 2][iy - 2][iz - 2] =
-                        t2z * SSSptr->b[ix][iy][iz - 2] +
-                        -t1z * SSSptr->b[ix][iy][iz - 1] +
-                        t1z * SSSptr->b[ix][iy][iz + 1] + -t2z * SSSptr->b[ix][iy][iz + 2];
+                    wzr[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
+                        t2z * rptr[ix * ixs + iy * iys + iz - 2] +
+                        -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
+                        t1z * rptr[ix * ixs + iy * iys + iz + 1] +
+                        -t2z * rptr[ix * ixs + iy * iys + iz + 2];
 
 
 

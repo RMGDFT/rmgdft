@@ -30,119 +30,12 @@
  * SOURCE
  */
 
-
 #if MPI
 typedef struct
 {
     int count;
 } QMD_sem_t;
 #endif
-
-/* Processor grid storage on finest level */
-typedef struct
-{
-
-    REAL b[PX0_GRID][PY0_GRID][PZ0_GRID];
-
-} P0_GRID_S;
-
-
-/* Here we use a union of P0_GRID_S and a single long real array so that */
-/* we can access things in that manner.                              */
-typedef union
-{
-
-    P0_GRID_S s1;
-    REAL s2[PX0_GRID * PY0_GRID * PZ0_GRID];
-
-} P0_GRID;
-
-/* Processor grid storage on finest level on the Fine Grid*/
-typedef struct
-{
-
-    REAL b[FPX0_GRID][FPY0_GRID][FPZ0_GRID];
-
-} FP0_GRID_S;
-
-
-/* Here we use a union of FP0_GRID_S and a single long real array so that */
-/* we can access things in that manner.                              */
-typedef union
-{
-    FP0_GRID_S s1;
-    REAL s2[FPX0_GRID * FPY0_GRID * FPZ0_GRID];
-
-} FP0_GRID;
-
-
-/* Smoothing grid storage on finest level */
-typedef struct
-{
-
-    REAL b[PX0_GRID + 2][PY0_GRID + 2][PZ0_GRID + 2];
-
-} S0_GRID_S;
-
-
-/* Here we use a union of S0_GRID_S and a single long real array so that */
-/* we can access things in that manner.                              */
-typedef union
-{
-
-    S0_GRID_S s1;
-    REAL s2[(PX0_GRID + 2) * (PY0_GRID + 2) * (PZ0_GRID + 2)];
-
-} S0_GRID;
-
-/* Smoothing grid storage on finest level on the Fine Grid*/
-typedef struct
-{
-
-    REAL b[FPX0_GRID + 2][FPY0_GRID + 2][FPZ0_GRID + 2];
-
-} FS0_GRID_S;
-
-/* Here we use a union of FS0_GRID_S and a single long real array so that */
-/* we can access things in that manner.                              */
-typedef union
-{
-
-    FS0_GRID_S s1;
-    REAL s2[(FPX0_GRID + 2) * (FPY0_GRID + 2) * (FPZ0_GRID + 2)];
-
-} FS0_GRID;
-
-
-/* For applying higher order finite difference operators */
-typedef struct
-{
-
-    REAL b[PX0_GRID + 4][PY0_GRID + 4][PZ0_GRID + 4];
-
-} SS0_GRID;
-
-typedef struct
-{
-
-    REAL b[PX0_GRID + 6][PY0_GRID + 6][PZ0_GRID + 6];
-
-} S30_GRID;
-
-typedef struct
-{
-
-    REAL b[PX0_GRID + 10][PY0_GRID + 10][PZ0_GRID + 10];
-
-} S50_GRID;
-
-
-typedef struct
-{
-
-    REAL b[FPX0_GRID + 4][FPY0_GRID + 4][FPZ0_GRID + 4];
-
-} FSS0_GRID;
 
 
 /** @name PE_CONTROL
@@ -172,6 +65,22 @@ typedef struct
 	int desca[DLEN];
 	int ictxt;
 
+    /* Grid sizes on each PE */
+    int PX0_GRID;
+    int PY0_GRID;
+    int PZ0_GRID;
+
+    /* Basis size on each PE */
+    int P0_BASIS;
+
+    /* Fine grid sizes on each PE */
+    int FPX0_GRID;
+    int FPY0_GRID;
+    int FPZ0_GRID;
+
+    /* Fine grid basis size on each PE */
+    int FP0_BASIS;
+
     /*Whether pe participates in scalapack calculations*/
     int scalapack_pe;
 
@@ -184,10 +93,10 @@ typedef struct
     int scalapack_npcol;
 
     /* scalapack mpi rank for all nodes that participate */
-    int scalapack_mpi_rank[NPES];
+    int scalapack_mpi_rank[MAX_PES];
 
     /* desca for all nodes that participate */
-    int scalapack_desca[NPES][DLEN];
+    int *scalapack_desca;
 
     /* Max dist matrix size for any scalapack PE */
     int scalapack_max_dist_size;
@@ -903,7 +812,6 @@ typedef struct
     /* determine if this image is processing spin up or spin down. */
     int spin_flag;
 
-
     /* determine whether to initialize up and down density equally or not */
     int init_equal_density_flag; 
 
@@ -1523,3 +1431,18 @@ extern PE_CONTROL pct;
 #if HYBRID_MODEL
 extern SCF_THREAD_CONTROL thread_control[];
 #endif
+
+/* Extern declaration for NPES (this is per image), and PE_X,PE_Y,PE_Z */
+extern int NPES;
+extern int PE_X;
+extern int PE_Y;
+extern int PE_Z;
+extern int NX_GRID;
+extern int NY_GRID;
+extern int NZ_GRID;
+extern int FNX_GRID;
+extern int FNY_GRID;
+extern int FNZ_GRID;
+extern int FG_NX;
+extern int FG_NY;
+extern int FG_NZ;

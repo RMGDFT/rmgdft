@@ -101,6 +101,7 @@
 #define MONOCLINIC_BASE_CENTRED 13
 #define TRICLINIC_PRIMITIVE 14
 
+#define MAX_TRADE_IMAGES 5
 
 
 /* The number of possible point symmetries */
@@ -170,6 +171,22 @@ typedef struct
  *      *           communication. */
    MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm;
 
+
+    /* Grid sizes on each PE */
+    int PX0_GRID;
+    int PY0_GRID;
+    int PZ0_GRID;
+
+    /* Basis size on each PE */
+    int P0_BASIS;
+
+    /* Fine grid sizes on each PE */
+    int FPX0_GRID;
+    int FPY0_GRID;
+    int FPZ0_GRID;
+
+    /* Fine grid basis size on each PE */
+    int FP0_BASIS;
 
     /** Number (rank in MPI terminology) of this processor */
     int instances;

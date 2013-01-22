@@ -79,7 +79,7 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
     }
 
 
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
     {
         sumpsi += tmp_psiR[idx] * tmp_psiR[idx];
 #if !GAMMA_PT

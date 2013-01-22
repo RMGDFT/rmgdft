@@ -187,14 +187,6 @@ clean-libxc:
 RMG/Headers/make_conf.h:
 	@echo "/****** Compile-time options for real-space code are set here  ******/" > RMG/Headers/make_conf.h;
 	@echo "" >> RMG/Headers/make_conf.h;
-	@echo "/* Number of processors */" >> RMG/Headers/make_conf.h;
-	@echo "#define NPES 2" >> RMG/Headers/make_conf.h;
-	@echo "" >> RMG/Headers/make_conf.h;
-	@echo "/* 3D processor grid PE_X*PE_Y*PE_Z must equal NPES */ " >> RMG/Headers/make_conf.h;
-	@echo "#define PE_X 2" >> RMG/Headers/make_conf.h;
-	@echo "#define PE_Y 1" >> RMG/Headers/make_conf.h;
-	@echo "#define PE_Z 1" >> RMG/Headers/make_conf.h;
-	@echo "" >> RMG/Headers/make_conf.h;
 	@echo "/* To enable MPI/PThreads hybrid model, experimental for now */ " >> RMG/Headers/make_conf.h;
 	@echo "#define HYBRID_MODEL 0" >> RMG/Headers/make_conf.h;
 	@echo "/* Number of threads in MPI/PThreads mode */ " >> RMG/Headers/make_conf.h;
@@ -202,17 +194,6 @@ RMG/Headers/make_conf.h:
 	@echo "" >> RMG/Headers/make_conf.h;
 	@echo "/* Gamma point only set to 1, otherwise, 0 */" >> RMG/Headers/make_conf.h;
 	@echo "#define GAMMA_PT 1" >> RMG/Headers/make_conf.h;
-	@echo "" >> RMG/Headers/make_conf.h;
-	@echo "/* Number of points in coarse grid in x,y and z directions*/" >> RMG/Headers/make_conf.h;
-	@echo "#define NX_GRID 48" >> RMG/Headers/make_conf.h;
-	@echo "#define NY_GRID 48" >> RMG/Headers/make_conf.h;
-	@echo "#define NZ_GRID 48" >> RMG/Headers/make_conf.h;
-	@echo "" >> RMG/Headers/make_conf.h;
-	@echo "/* How many times the fine grid is finer than the coarse grid " >> RMG/Headers/make_conf.h;
-	@echo " * All three numbers have to be the same */" >> RMG/Headers/make_conf.h;
-	@echo "#define FG_NX 2" >> RMG/Headers/make_conf.h;
-	@echo "#define FG_NY 2" >> RMG/Headers/make_conf.h;
-	@echo "#define FG_NZ 2" >> RMG/Headers/make_conf.h;
 	@echo "" >> RMG/Headers/make_conf.h;
 	@echo "/* Set this to 0 to turn off memory Smart-ALLOCation. (salloc.c, salloc.h)" >> RMG/Headers/make_conf.h;
 	@echo " * (there is no significant time improvement)*/" >> RMG/Headers/make_conf.h;

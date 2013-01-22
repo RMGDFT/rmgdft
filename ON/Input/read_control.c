@@ -437,6 +437,13 @@ void read_control (void)
     PY0_GRID = NY_GRID/pct.pe_y;
     PZ0_GRID = NZ_GRID/pct.pe_z;
     P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+
+    pct.PX0_GRID = PX0_GRID;
+    pct.PY0_GRID = PY0_GRID;
+    pct.PZ0_GRID = PZ0_GRID;
+    pct.P0_BASIS = P0_BASIS;
+
+
     S0_BASIS = (PX0_GRID+2) * (PY0_GRID+2) * (PZ0_GRID+2);
 
 
@@ -444,6 +451,12 @@ void read_control (void)
     FPY0_GRID = PY0_GRID * FG_NY;
     FPZ0_GRID = PZ0_GRID * FG_NZ;
     FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
+
+    pct.FPX0_GRID = FPX0_GRID;
+    pct.FPY0_GRID = FPY0_GRID;
+    pct.FPZ0_GRID = FPZ0_GRID;
+    pct.FP0_BASIS = FP0_BASIS;
+
 
     if ((FPX0_GRID / (1 << ct.poi_parm.levels)) < 3)
         error_handler ("PX0_GRID: too many hartree MG levels");

@@ -119,11 +119,11 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
-    if (fine[0] != FPX0_GRID / PX0_GRID)
+    if (fine[0] != pct.FPX0_GRID / pct.PX0_GRID)
 	error_handler ("Wrong fine grid info");
-    if (fine[1] != FPY0_GRID / PY0_GRID)
+    if (fine[1] != pct.FPY0_GRID / pct.PY0_GRID)
 	error_handler ("Wrong fine grid info");
-    if (fine[2] != FPZ0_GRID / PZ0_GRID)
+    if (fine[2] != pct.FPZ0_GRID / pct.PZ0_GRID)
 	error_handler ("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 

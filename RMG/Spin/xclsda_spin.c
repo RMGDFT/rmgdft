@@ -19,7 +19,7 @@ void xclsda_spin(REAL * rho, REAL * rho_oppo, REAL * vxc, REAL * exc)
    
     pisq3 = THREE * PI * PI;
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 	rhox = rho[idx] + rho_oppo[idx];    
         arhox = fabs(rhox);

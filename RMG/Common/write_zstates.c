@@ -49,13 +49,13 @@ void write_zstates (STATE * states)
     REAL *tmp_psi;
     FILE *avg;
 
-    my_malloc (tmp_psi, P0_BASIS, REAL);
+    my_malloc (tmp_psi,pct.P0_BASIS, REAL);
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
-    poff = pz * PZ0_GRID;
+    poff = pz * pct.PZ0_GRID;
 
-    incix = PY0_GRID * PZ0_GRID;
-    inciy = PZ0_GRID;
+    incix = pct.PY0_GRID * pct.PZ0_GRID;
+    inciy = pct.PZ0_GRID;
     for (istate = 0; istate < ct.num_states; istate++)
     {
 
@@ -69,12 +69,12 @@ void write_zstates (STATE * states)
 
         gather_psi (tmp_psi, NULL, sp, 0);
         /* Loop over this processor */
-        for (iz = 0; iz < PZ0_GRID; iz++)
+        for (iz = 0; iz < pct.PZ0_GRID; iz++)
         {
             t1 = 0.0;
-            for (ix = 0; ix < PX0_GRID; ix++)
+            for (ix = 0; ix < pct.PX0_GRID; ix++)
             {
-                for (iy = 0; iy < PY0_GRID; iy++)
+                for (iy = 0; iy < pct.PY0_GRID; iy++)
                 {
                     idx = ix * incix + iy * inciy + iz;
                     t1 += tmp_psi[idx] * tmp_psi[idx];

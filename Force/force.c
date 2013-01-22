@@ -74,8 +74,8 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     }
 #endif
 
-    my_malloc (vtott, FP0_BASIS, REAL);
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    my_malloc (vtott, pct.FP0_BASIS, REAL);
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtott[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
 
@@ -129,8 +129,8 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     /* Add in the local */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, FP0_BASIS, REAL);
-	for (idx = 0; idx < FP0_BASIS; idx++)
+    	my_malloc (rho_tot, pct.FP0_BASIS, REAL);
+	for (idx = 0; idx < pct.FP0_BASIS; idx++)
 		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 	lforce(rho_tot, vh);
 	my_free (rho_tot);

@@ -53,88 +53,92 @@
 void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mode)
 
 {
-    int idx;
-    FP0_GRID *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
-    FP0_GRID *gx_up, *gy_up, *gz_up, *agg_up;
-    FP0_GRID *gx_dw, *gy_dw, *gz_dw, *agg_dw; 
-    FP0_GRID *gx_vuu, *gy_vuu, *gz_vuu, *gx_vud, *gy_vud, *gz_vud; 
+    int idx, sizr;
+    REAL *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
+    REAL *gx_up, *gy_up, *gz_up, *agg_up;
+    REAL *gx_dw, *gy_dw, *gz_dw, *agg_dw; 
+    REAL *gx_vuu, *gy_vuu, *gz_vuu, *gx_vud, *gy_vud, *gz_vud; 
 
     REAL pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
     REAL rhotot, arhox, zeta, rs, kf;
+
+    sizr = pct.FP0_BASIS;
     
     pisq3 = THREE * PI * PI;
 
-    REAL vxc2_upup[FP0_BASIS], vxc2_updw[FP0_BASIS], vxc2_dwdw, vxc2_dwup;
+    REAL *vxc2_upup, *vxc2_updw, vxc2_dwdw, vxc2_dwup;
     REAL vxc1_up, vxc1_dw, grad_up, grad_dw, grad, grad_updw2, enxc, gx, gy, gz;
 
 
     /* Grab some memory */ 
     /* to hold gradient of spin up charge density */ 
-    my_malloc (gx_up, 1, FP0_GRID);
-    my_malloc (gy_up, 1, FP0_GRID);
-    my_malloc (gz_up, 1, FP0_GRID);
+    my_malloc (gx_up, sizr, REAL);
+    my_malloc (gy_up, sizr, REAL);
+    my_malloc (gz_up, sizr, REAL);
 
     /* to hold gradient of spin down charge density */
-    my_malloc (gx_dw, 1, FP0_GRID);
-    my_malloc (gy_dw, 1, FP0_GRID);
-    my_malloc (gz_dw, 1, FP0_GRID);
+    my_malloc (gx_dw, sizr, REAL);
+    my_malloc (gy_dw, sizr, REAL);
+    my_malloc (gz_dw, sizr, REAL);
 
     /* to hold the absolute of the gradient of total, up and down density */
-    my_malloc (agg, 1, FP0_GRID); 
-    my_malloc (agg_up, 1, FP0_GRID);
-    my_malloc (agg_dw, 1, FP0_GRID);
+    my_malloc (agg, sizr, REAL);
+    my_malloc (agg_up, sizr, REAL);
+    my_malloc (agg_dw, sizr, REAL);
 
     if ( mode == GGA_BLYP )
-    	my_malloc (agg_updw2, 1, FP0_GRID); 
+    	my_malloc (agg_updw2, sizr, REAL);
         /* to holde  (grad rhoup) \dot (grad rhodw)  */
 
     
     /* to hold laplaciant of the spin up and down charge density */
-    my_malloc (d2rho_up, 1, FP0_GRID);
-    my_malloc (d2rho_dw, 1, FP0_GRID); 
+    my_malloc (d2rho_up,  sizr, REAL);
+    my_malloc (d2rho_dw,  sizr, REAL);
 
     /* to hold the gradient of potentials */
-    my_malloc (gx_vuu, 1, FP0_GRID);
-    my_malloc (gy_vuu, 1, FP0_GRID);
-    my_malloc (gz_vuu, 1, FP0_GRID);
+    my_malloc (gx_vuu,  sizr, REAL);
+    my_malloc (gy_vuu,  sizr, REAL);
+    my_malloc (gz_vuu,  sizr, REAL);
 
-    my_malloc (gx_vud, 1, FP0_GRID);
-    my_malloc (gy_vud, 1, FP0_GRID);
-    my_malloc (gz_vud, 1, FP0_GRID);
+    my_malloc (gx_vud,  sizr, REAL);
+    my_malloc (gy_vud,  sizr, REAL);
+    my_malloc (gz_vud,  sizr, REAL);
+    my_malloc (vxc2_upup, sizr, REAL);
+    my_malloc (vxc2_updw, sizr, REAL);
 
 
     /* Generate the gradient of the density */
-    app_gradf (rho_up, gx_up, gy_up, gz_up);    /* spin up density */
-    app_gradf (rho_dw, gx_dw, gy_dw, gz_dw);    /* spin down density */
+    app_grad (rho_up, gx_up, gy_up, gz_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin up density */
+    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin down density */
     
 
     /* Get the Laplacian of the density */
-    app6_del2f (rho_up, d2rho_up);
-    app6_del2f (rho_dw, d2rho_dw);
+    app6_del2 (rho_up, d2rho_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_dw, d2rho_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
     
     
     /* Absolute value of grad(rho) */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
-	gx = gx_up->s2[idx] + gx_dw->s2[idx];
-	gy = gy_up->s2[idx] + gy_dw->s2[idx];
-	gz = gz_up->s2[idx] + gz_dw->s2[idx]; 
+	gx = gx_up[idx] + gx_dw[idx];
+	gy = gy_up[idx] + gy_dw[idx];
+	gz = gz_up[idx] + gz_dw[idx]; 
 
-        agg->s2[idx] = sqrt ( gx * gx + gy * gy + gz * gz);
+        agg[idx] = sqrt ( gx * gx + gy * gy + gz * gz);
         
 	/*Absolute value of grad(rho_up)*/    
-        agg_up->s2[idx] = sqrt (gx_up->s2[idx] * gx_up->s2[idx] +
-                             gy_up->s2[idx] * gy_up->s2[idx] + gz_up->s2[idx] * gz_up->s2[idx]);
+        agg_up[idx] = sqrt (gx_up[idx] * gx_up[idx] +
+                             gy_up[idx] * gy_up[idx] + gz_up[idx] * gz_up[idx]);
         
 	/*Absolute value of grad(rho_dw) */
-        agg_dw->s2[idx] = sqrt (gx_dw->s2[idx] * gx_dw->s2[idx] +
-                             gy_dw->s2[idx] * gy_dw->s2[idx] + gz_dw->s2[idx] * gz_dw->s2[idx]);
+        agg_dw[idx] = sqrt (gx_dw[idx] * gx_dw[idx] +
+                             gy_dw[idx] * gy_dw[idx] + gz_dw[idx] * gz_dw[idx]);
         
 	/*  (grad rhoup) \dot (grad rhodw)  */
 	if (mode == GGA_BLYP)
-        	agg_updw2->s2[idx] = gx_up->s2[idx] * gx_dw->s2[idx] +
-                	             gy_up->s2[idx] * gy_dw->s2[idx] + gz_up->s2[idx] * gz_dw->s2[idx];
+        	agg_updw2[idx] = gx_up[idx] * gx_dw[idx] +
+                	             gy_up[idx] * gy_dw[idx] + gz_up[idx] * gz_dw[idx];
 
     }                           
    
@@ -142,7 +146,7 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
 
     /* Caculate the LSDA part of exchange correlation potential and energy */
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 	rhotot = rho_up[idx] + rho_dw[idx];    
         arhox = fabs(rhotot);
@@ -201,12 +205,12 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
 
     
     /* Add the gradient correction for exchange correlation potential and energy */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 
-	grad_up = agg_up->s2[idx];
-	grad_dw = agg_dw->s2[idx];
-	grad = agg->s2[idx];
+	grad_up = agg_up[idx];
+	grad_dw = agg_dw[idx];
+	grad = agg[idx];
 	    
 
         if (mode == GGA_PBE)
@@ -240,7 +244,7 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
 	else if (mode == GGA_BLYP)
         {
 		
-		grad_updw2 = agg_updw2->s2[idx];
+		grad_updw2 = agg_updw2[idx];
 
 		gcxcblyp_spin (rho_up[idx], rho_dw[idx], grad_up, grad_dw, grad_updw2, &enxc, 
 				&vxc1_up, &vxc1_dw, &vxc2_upup[idx], &vxc2_dwdw, &vxc2_updw[idx], &vxc2_dwup);
@@ -259,25 +263,27 @@ void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mod
      * vxcdw += vxc1dw - div( vxc2dwdw * grad(rhodw) + vxc2dwup * grad(rhoup) )*/ 
 
     /* Generate the gradient of the second term exchange-correlation potential vxc2*/
-    app_gradf (vxc2_upup, gx_vuu, gy_vuu, gz_vuu);    
-    app_gradf (vxc2_updw, gx_vud, gy_vud, gz_vud);   
+    app_grad (vxc2_upup, gx_vuu, gy_vuu, gz_vuu, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vxc2_updw, gx_vud, gy_vud, gz_vud, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
-	    vxc_up[idx] -= ( gx_vuu->s2[idx] * gx_up->s2[idx] + 
-		           gy_vuu->s2[idx] * gy_up->s2[idx] + gz_vuu->s2[idx] * gz_up->s2[idx] );
-	    vxc_up[idx] -=  vxc2_upup[idx] * d2rho_up->s2[idx] ;
+	    vxc_up[idx] -= ( gx_vuu[idx] * gx_up[idx] + 
+		           gy_vuu[idx] * gy_up[idx] + gz_vuu[idx] * gz_up[idx] );
+	    vxc_up[idx] -=  vxc2_upup[idx] * d2rho_up[idx] ;
 	    
-	    vxc_up[idx] -= ( gx_vud->s2[idx] * gx_dw->s2[idx] + 
-		           gy_vud->s2[idx] * gy_dw->s2[idx] + gz_vud->s2[idx] * gz_dw->s2[idx] );
-	    vxc_up[idx] -= vxc2_updw[idx] * d2rho_dw->s2[idx];
+	    vxc_up[idx] -= ( gx_vud[idx] * gx_dw[idx] + 
+		           gy_vud[idx] * gy_dw[idx] + gz_vud[idx] * gz_dw[idx] );
+	    vxc_up[idx] -= vxc2_updw[idx] * d2rho_dw[idx];
     }
 
 
     /* Release our memory */  
+    my_free (vxc2_updw);
+    my_free (vxc2_upup);
     my_free (gx_up);
     my_free (gy_up);
     my_free (gz_up);

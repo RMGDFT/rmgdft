@@ -177,7 +177,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     REAL alpha1 = 1.0, beta1 = 0.0;
 
     num_states = ct.num_states;
-    pbasis = P0_BASIS;
+    pbasis =pct.P0_BASIS;
     stop = num_states * num_states;
 
 #if GPU_ENABLED
@@ -202,14 +202,14 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*Get memory for global matrices */
 
     my_calloc (global_matrix, stop, REAL);
-    my_malloc (vtot_eig, P0_BASIS, REAL);
+    my_malloc (vtot_eig,pct.P0_BASIS, REAL);
     my_malloc (eigs, num_states, REAL);
     my_malloc (work1R, ct.num_states * 16 , REAL);
 
 
     /*Get vtot on coarse grid */
-    my_malloc (vtot, FP0_BASIS, REAL);
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    my_malloc (vtot, pct.FP0_BASIS, REAL);
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
     get_vtot_psi (vtot_eig, vtot, FG_NX);
 
@@ -650,7 +650,7 @@ static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi)
     char *trans = "n";
     REAL alpha = 1.0;
     REAL beta = 0.0;
-    int pbasis = P0_BASIS;
+    int pbasis =pct.P0_BASIS;
     int num_states = ct.num_states;
 
     dgemm (trans, trans, &pbasis, &num_states, &num_states, &alpha, base_mem, &pbasis, Aij,
@@ -681,7 +681,7 @@ void subdiag2_mpi (REAL * Aij, REAL * base_mem)
 
     rptr = base_mem;
 
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
     {
 
         /* We make a temporary copy and store it in work2 otherwise the
@@ -689,8 +689,8 @@ void subdiag2_mpi (REAL * Aij, REAL * base_mem)
          */
         for (st2 = 0; st2 < ct.num_states; st2++)
         {
-            work2R[st2] = rptr[2 * st2 * P0_BASIS + idx];
-            work2I[st2] = rptr[2 * st2 * P0_BASIS + P0_BASIS + idx];
+            work2R[st2] = rptr[2 * st2 *pct.P0_BASIS + idx];
+            work2I[st2] = rptr[2 * st2 *pct.P0_BASIS + P0_BASIS + idx];
         }
 
         for (st1 = 0; st1 < ct.num_states; st1++)
@@ -713,8 +713,8 @@ void subdiag2_mpi (REAL * Aij, REAL * base_mem)
         /* update all wavefunctions for this *idx* */
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            rptr[2 * st1 * P0_BASIS + idx] = work1R[st1];
-            rptr[2 * st1 * P0_BASIS + P0_BASIS + idx] = work1I[st1];
+            rptr[2 * st1 *pct.P0_BASIS + idx] = work1R[st1];
+            rptr[2 * st1 *pct.P0_BASIS + P0_BASIS + idx] = work1I[st1];
         }
 
     }                           /* idx */

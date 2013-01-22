@@ -1,5 +1,5 @@
 #include "params.h"
-
+#if 0
 __global__ void app_cil_sixth_cuda_kernel(const double *psi, 
                                                 double *b, 
                                                 const int dimx,
@@ -573,3 +573,4 @@ extern "C" void app_cir_sixth_gpu(const double *psi,
                                                    dimy,    
                                                    dimz);
 }
+#endif

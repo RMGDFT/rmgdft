@@ -154,7 +154,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
         }                       /*end for i */
     }                           /*end for ion */
 
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
     {
         sumpsiR += (tmp_psi2R[idx] * tmp_psi1R[idx] + tmp_psi2I[idx] * tmp_psi1I[idx]);
         sumpsiI += (tmp_psi2I[idx] * tmp_psi1R[idx] - tmp_psi2R[idx] * tmp_psi1I[idx]);
@@ -240,7 +240,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
     }                           /*end for ion */
 
 
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
         sumpsi += tmp_psi2[idx] * tmp_psi1[idx];
 
 
@@ -321,7 +321,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
         }                       /*end for i */
     }                           /*end for ion */
 
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx <pct.P0_BASIS; idx++)
     {
         sumpsiR += (tmp_psi2R[idx] * tmp_psi1R[idx] + tmp_psi2I[idx] * tmp_psi1I[idx]);
         sumpsiI += (tmp_psi2I[idx] * tmp_psi1R[idx] - tmp_psi2R[idx] * tmp_psi1I[idx]);

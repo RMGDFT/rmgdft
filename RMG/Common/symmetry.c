@@ -151,15 +151,15 @@ void symmetrize_rho (FP0_GRID * rho)
 
     /* Put this processors charge in the correct place */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = ix * FPX0_GRID;
-    yoff = iy * FPY0_GRID;
-    zoff = iz * FPZ0_GRID;
+    xoff = ix * pct.FPX0_GRID;
+    yoff = iy * pct.FPY0_GRID;
+    zoff = iz * pct.FPZ0_GRID;
 
 
 
-    for (ix = 0; ix < FPX0_GRID; ix++)
-        for (iy = 0; iy < FPY0_GRID; iy++)
-            for (iz = 0; iz < FPZ0_GRID; iz++)
+    for (ix = 0; ix < pct.FPX0_GRID; ix++)
+        for (iy = 0; iy < pct.FPY0_GRID; iy++)
+            for (iz = 0; iz < pct.FPZ0_GRID; iz++)
                 da->s[iz + zoff][iy + yoff][ix + xoff] = rho->s1.b[ix][iy][iz];
 
 
@@ -180,9 +180,9 @@ void symmetrize_rho (FP0_GRID * rho)
     t1 = (REAL) nsym;
     t1 = 1.0 / t1;
 
-    for (ix = 0; ix < FPX0_GRID; ix++)
-        for (iy = 0; iy < FPY0_GRID; iy++)
-            for (iz = 0; iz < FPZ0_GRID; iz++)
+    for (ix = 0; ix < pct.FPX0_GRID; ix++)
+        for (iy = 0; iy < pct.FPY0_GRID; iy++)
+            for (iz = 0; iz < pct.FPZ0_GRID; iz++)
                 rho->s1.b[ix][iy][iz] = da->s[iz + zoff][iy + yoff][ix + xoff] * t1;
 
 

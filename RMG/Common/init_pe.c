@@ -43,7 +43,6 @@ void init_pe ( int image )
     int image_grp_map[MAX_IMGS], range[1][3];
     MPI_Group group, world_grp, img_masters;
 
-
     /* Setup MPI */
     /* get world group handle */
     MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
@@ -85,6 +84,15 @@ void init_pe ( int image )
     /* Read in our control information, depends on pct.img_comm for dissemination */
     read_control (ct.cfile);
 
+    pct.PX0_GRID = NX_GRID / PE_X;
+    pct.PY0_GRID = NY_GRID / PE_Y;
+    pct.PZ0_GRID = NZ_GRID / PE_Z;
+    pct.P0_BASIS = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
+ 
+    pct.FPX0_GRID = FG_NX * pct.PX0_GRID;
+    pct.FPY0_GRID = FG_NY * pct.PY0_GRID;
+    pct.FPZ0_GRID = FG_NZ * pct.PZ0_GRID;
+    pct.FP0_BASIS = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
 
     /* this will need to be extnded if we want to parallelize over k_points */
     if (pct.grids == 1)

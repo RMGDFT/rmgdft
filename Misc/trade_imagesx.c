@@ -19,8 +19,8 @@ static pthread_mutex_t images_lock = PTHREAD_MUTEX_INITIALIZER;
 static int first_trade_counter=THREADS_PER_NODE;
 static int second_trade_counter=THREADS_PER_NODE;
 static int third_trade_counter=THREADS_PER_NODE;
-REAL swbuf1x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
-REAL swbuf2x[6 * GRID_MAX1 * GRID_MAX2 * THREADS_PER_NODE];
+REAL *swbuf1x = NULL;
+REAL *swbuf2x = NULL;
 
 /*
  * INPUTS
@@ -40,10 +40,39 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
     int xlen, ylen, zlen, stop;
     int *nb_ids, basetag=0, tid, combine_trades=true;
+    int grid_max1, grid_max2;
     MPI_Status mrstatus;
     REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
     REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
 
+    // To initialize call from init.c with NULL args
+    if(swbuf1x == NULL) {
+        int grid_xp, grid_yp, grid_zp;
+        grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
+        grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
+        grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
+        if(grid_xp > grid_yp) {
+            grid_max1 = grid_xp;
+            if(grid_yp > grid_zp) {
+                grid_max2 = grid_yp;
+            }
+            else {
+                grid_max2 = grid_zp;
+            }
+         }
+         else {
+            grid_max1 = grid_yp;
+              if(grid_xp > grid_zp) {
+                  grid_max2 = grid_xp;
+              }
+              else {
+                  grid_max2 = grid_zp;
+              }
+         }
+         my_malloc(swbuf1x, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
+         my_malloc(swbuf2x, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
+         return;
+    }
 #if ASYNC_TRADES
     if(type == CENTRAL_FD) {
         trade_imagesx_central_async (f, w, dimx, dimy, dimz, images);
@@ -86,7 +115,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     else {
         // In order to combine the requested memory allocation must fit into the
         // statically allocated storage
-        if((alloc > (6 * GRID_MAX1 * GRID_MAX2)) || !is_loop_over_states()) {
+        if((alloc > (6 * grid_max1 * grid_max2)) || !is_loop_over_states()) {
             combine_trades=false;
         }
     }

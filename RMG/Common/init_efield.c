@@ -62,21 +62,21 @@ void init_efield (REAL * vnuc)
     }
     /* find the cartesian coordinate of the corner */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = ix * ct.hxgrid * ct.xside * PX0_GRID;
-    yoff = iy * ct.hygrid * ct.yside * PY0_GRID;
-    zoff = iz * ct.hzgrid * ct.zside * PZ0_GRID;
-    incix = FPY0_GRID * FPZ0_GRID;
-    inciy = FPZ0_GRID;
+    xoff = ix * ct.hxgrid * ct.xside * pct.PX0_GRID;
+    yoff = iy * ct.hygrid * ct.yside * pct.PY0_GRID;
+    zoff = iz * ct.hzgrid * ct.zside * pct.PZ0_GRID;
+    incix = pct.FPY0_GRID * pct.FPZ0_GRID;
+    inciy = pct.FPZ0_GRID;
 /*   xoff, yoff, zoff are same for fine and coarse grid  */
 
 /*  we need to add the saw-tooth potential in fine grid */
-    for (jx = 0; jx < FPX0_GRID; jx++)
+    for (jx = 0; jx < pct.FPX0_GRID; jx++)
     {
         rx = jx * ct.hxxgrid * ct.xside + xoff;
-        for (jy = 0; jy < FPY0_GRID; jy++)
+        for (jy = 0; jy < pct.FPY0_GRID; jy++)
         {
             ry = jy * ct.hyygrid * ct.yside + yoff;
-            for (jz = 0; jz < FPZ0_GRID; jz++)
+            for (jz = 0; jz < pct.FPZ0_GRID; jz++)
             {
                 idx = jx * incix + jy * inciy + jz;
                 rz = jz * ct.hzzgrid * ct.zside + zoff;

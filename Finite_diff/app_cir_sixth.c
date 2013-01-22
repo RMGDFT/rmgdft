@@ -69,7 +69,7 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 
 #if FAST_MEHR
     numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS) {
+    if(numgrid == pct.P0_BASIS) {
         app_cir_sixth_global (a, b);
         return;
     }
@@ -155,14 +155,14 @@ void app_cir_sixth_global (REAL * a, REAL * b)
     REAL *rptr, rz, rzps, rzms, rzpps;
     REAL c000, c100, c110, c200;
 
-    incx = (PZ0_GRID + 4) * (PY0_GRID + 4);
-    incy = PZ0_GRID + 4;
-    incxr = PZ0_GRID * PY0_GRID;
-    incyr = PZ0_GRID;
+    incx = (pct.PZ0_GRID + 4) * (pct.PY0_GRID + 4);
+    incy = pct.PZ0_GRID + 4;
+    incxr = pct.PZ0_GRID * pct.PY0_GRID;
+    incyr = pct.PZ0_GRID;
 
-    my_malloc (rptr, (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4), REAL);
+    my_malloc (rptr, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4), REAL);
 
-    trade_imagesx (a, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 2, FULL_FD);
+    trade_imagesx (a, rptr, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, 2, FULL_FD);
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
@@ -171,9 +171,9 @@ void app_cir_sixth_global (REAL * a, REAL * b)
 
 
     // Handle the general case first
-    if(PZ0_GRID % 4) {
+    if(pct.PZ0_GRID % 4) {
 
-        for (ix = 2; ix < PX0_GRID + 2; ix++)
+        for (ix = 2; ix < pct.PX0_GRID + 2; ix++)
         {
             ixs = ix * incx;
             ixms = (ix - 1) * incx;
@@ -181,7 +181,7 @@ void app_cir_sixth_global (REAL * a, REAL * b)
             ixmms = (ix - 2) * incx;
             ixpps = (ix + 2) * incx;
 
-            for (iy = 2; iy < PY0_GRID + 2; iy++)
+            for (iy = 2; iy < pct.PY0_GRID + 2; iy++)
             {
                 iys = iy * incy;
                 iyms = (iy - 1) * incy;
@@ -189,7 +189,7 @@ void app_cir_sixth_global (REAL * a, REAL * b)
                 iymms = (iy - 2) * incy;
                 iypps = (iy + 2) * incy;
 
-                for (iz = 2; iz < PZ0_GRID + 2; iz++)
+                for (iz = 2; iz < pct.PZ0_GRID + 2; iz++)
                 {
 
                     b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] =
@@ -232,7 +232,7 @@ void app_cir_sixth_global (REAL * a, REAL * b)
 
 
     // Optimized case for dimz divisible by 4
-    for (ix = 2; ix < PX0_GRID + 2; ix++)
+    for (ix = 2; ix < pct.PX0_GRID + 2; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
@@ -240,7 +240,7 @@ void app_cir_sixth_global (REAL * a, REAL * b)
         ixmms = (ix - 2) * incx;
         ixpps = (ix + 2) * incx;
 
-        for (iy = 2; iy < PY0_GRID + 2; iy++)
+        for (iy = 2; iy < pct.PY0_GRID + 2; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
@@ -261,7 +261,7 @@ void app_cir_sixth_global (REAL * a, REAL * b)
                    rptr[ixs + iyms + 1];
 
 
-            for (iz = 2; iz < PZ0_GRID + 2; iz+=4)
+            for (iz = 2; iz < pct.PZ0_GRID + 2; iz+=4)
             {
 
                 // Forward set of edges

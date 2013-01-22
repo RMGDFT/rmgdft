@@ -68,8 +68,8 @@ void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz)
     a4 = 0.0;
     a5 = 0.0;
 
-   my_malloc (fulla,(FPX0_GRID)*(FPY0_GRID / 2+ 10)*(FPZ0_GRID / 2 + 10),REAL);
-   my_malloc (fullb,(FPX0_GRID)*(FPY0_GRID)*(FPZ0_GRID / 2 + 10),REAL);
+   my_malloc (fulla,(pct.FPX0_GRID)*(pct.FPY0_GRID / 2+ 10)*(pct.FPZ0_GRID / 2 + 10),REAL);
+   my_malloc (fullb,(pct.FPX0_GRID)*(pct.FPY0_GRID)*(pct.FPZ0_GRID / 2 + 10),REAL);
 
 
         for (ix = 0; ix < dimx / 2; ix++)

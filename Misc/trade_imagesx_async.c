@@ -29,11 +29,6 @@
 #define MAX_IMG2 (MAX_TRADE_IMAGES*MAX_TRADE_IMAGES)
 #define MAX_IMG3 (MAX_TRADE_IMAGES*MAX_TRADE_IMAGES*MAX_TRADE_IMAGES)
 
-#if GRID_MAX1 > GRID_MAX2
-  #define TRADE_GRID_EDGES GRID_MAX1
-#else
-  #define TRADE_GRID_EDGES GRID_MAX2
-#endif
 
 #if ASYNC_TRADES
 
@@ -52,6 +47,9 @@ static REAL *m0_s, *m0_r;
 static MPI_Request sreqs[26];
 static MPI_Request rreqs[26];
 
+int TRADE_GRID_EDGES;
+int GRID_MAX1;
+int GRID_MAX2;
 
 
 void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
@@ -1377,9 +1375,39 @@ void init_trade_imagesx_async(void)
     int ix, iy, iz;
     int pe_x, pe_y, pe_z;
     int t_pe_x, t_pe_y, t_pe_z;
+    int grid_xp, grid_yp, grid_zp;
 
 
     printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
+
+    grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
+    grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
+    grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
+    if(grid_xp > grid_yp) {
+        GRID_MAX1 = grid_xp;
+        if(grid_yp > grid_zp) {
+            GRID_MAX2 = grid_yp;
+        }
+        else {
+            GRID_MAX2 = grid_zp;
+        }
+     }
+     else {
+        GRID_MAX1 = grid_yp;
+          if(grid_xp > grid_zp) {
+              GRID_MAX2 = grid_xp;
+          }
+          else {
+              GRID_MAX2 = grid_zp;
+          }
+     }
+
+     if(GRID_MAX1 > GRID_MAX2) {
+         TRADE_GRID_EDGES = GRID_MAX1;
+     }
+     else {
+         TRADE_GRID_EDGES = GRID_MAX2;
+     }
 
     // Set up the target node array
     pe2xyz(pct.gridpe, &pe_x, &pe_y, &pe_z);

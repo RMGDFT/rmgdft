@@ -11,17 +11,20 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
 {
     int i, j, k, ii, jj, kk, basis1, basis2, basis3;
     int pbasis, dimx, dimy, dimz, in, jn, kn;
+    int ifxs, ifys;
     REAL tmp1, tmp2, tmp3, frac, cc[10][4];
     REAL sum_rho, sum_rhof, coef;
-    SS0_GRID rho_c;
-    FP0_GRID *tpr_rho_f;
+    REAL rho_c[pct.PX0_GRID + 4][pct.PY0_GRID + 4][pct.PZ0_GRID + 4];
+
+    ifxs = pct.FPY0_GRID * pct.FPZ0_GRID;
+    ifys = pct.FPZ0_GRID;
 
     int num = 0;
 
-    dimx = PX0_GRID;
-    dimy = PY0_GRID;
-    dimz = PZ0_GRID;
-    pbasis = P0_BASIS;
+    dimx = pct.PX0_GRID;
+    dimy = pct.PY0_GRID;
+    dimz = pct.PZ0_GRID;
+    pbasis =pct.P0_BASIS;
 
     sum_rho = 0.0;
     sum_rhof = 0.0;
@@ -39,28 +42,26 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
         cc[i][3] = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
     }
 
-    trade_imagesx (rho, &rho_c.b[0][0][0], dimx, dimy, dimz, 2, FULL_FD);
+    trade_imagesx (rho, &rho_c[0][0][0], dimx, dimy, dimz, 2, FULL_FD);
 
-    tpr_rho_f = (FP0_GRID *) rho_f;
-
-    for (i = 2; i < PX0_GRID + 2; i++)
+    for (i = 2; i < pct.PX0_GRID + 2; i++)
     {
-        for (j = 2; j < PY0_GRID + 2; j++)
+        for (j = 2; j < pct.PY0_GRID + 2; j++)
         {
-            for (k = 2; k < PZ0_GRID + 2; k++)
+            for (k = 2; k < pct.PZ0_GRID + 2; k++)
             {
-                tpr_rho_f->s1.b[FG_NX * (i - 2)][FG_NX * (j - 2)][FG_NX * (k - 2)] =
-                    rho_c.b[i][j][k];
+                rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2)] =
+                    rho_c[i][j][k];
                 ++num;
             }
         }
     }
 
-    for (i = 2; i < PX0_GRID + 2; i++)
+    for (i = 2; i < pct.PX0_GRID + 2; i++)
     {
-        for (j = 2; j < PY0_GRID + 2; j++)
+        for (j = 2; j < pct.PY0_GRID + 2; j++)
         {
-            for (k = 2; k < PZ0_GRID + 2; k++)
+            for (k = 2; k < pct.PZ0_GRID + 2; k++)
             {
 
                 for (in = 1; in < FG_NX; in++)
@@ -72,15 +73,15 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
 
                     for (ii = 0; ii < 4; ii++)
                     {
-                        tmp1 += cc[in][ii] * rho_c.b[i + basis1][j][k];
-                        tmp2 += cc[in][ii] * rho_c.b[i][j + basis1][k];
-                        tmp3 += cc[in][ii] * rho_c.b[i][j][k + basis1];
+                        tmp1 += cc[in][ii] * rho_c[i + basis1][j][k];
+                        tmp2 += cc[in][ii] * rho_c[i][j + basis1][k];
+                        tmp3 += cc[in][ii] * rho_c[i][j][k + basis1];
                         ++basis1;
                     }
 
-                    tpr_rho_f->s1.b[FG_NX * (i - 2) + in][FG_NX * (j - 2)][FG_NX * (k - 2)] = tmp1;
-                    tpr_rho_f->s1.b[FG_NX * (i - 2)][FG_NX * (j - 2) + in][FG_NX * (k - 2)] = tmp2;
-                    tpr_rho_f->s1.b[FG_NX * (i - 2)][FG_NX * (j - 2)][FG_NX * (k - 2) + in] = tmp3;
+                    rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2)] = tmp1;
+                    rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2) + in)*ifys + FG_NX * (k - 2)] = tmp2;
+                    rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2) + in] = tmp3;
                     num += 3;
                 }
 
@@ -88,11 +89,11 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
         }
     }
 
-    for (i = 2; i < PX0_GRID + 2; i++)
+    for (i = 2; i < pct.PX0_GRID + 2; i++)
     {
-        for (j = 2; j < PY0_GRID + 2; j++)
+        for (j = 2; j < pct.PY0_GRID + 2; j++)
         {
-            for (k = 2; k < PZ0_GRID + 2; k++)
+            for (k = 2; k < pct.PZ0_GRID + 2; k++)
             {
 
                 for (in = 1; in < FG_NX; in++)
@@ -110,21 +111,18 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
                             for (jj = 0; jj < 4; jj++)
                             {
                                 tmp1 +=
-                                    cc[in][ii] * cc[jn][jj] * rho_c.b[i + basis1][j + basis2][k];
+                                    cc[in][ii] * cc[jn][jj] * rho_c[i + basis1][j + basis2][k];
                                 tmp2 +=
-                                    cc[in][ii] * cc[jn][jj] * rho_c.b[i + basis1][j][k + basis2];
+                                    cc[in][ii] * cc[jn][jj] * rho_c[i + basis1][j][k + basis2];
                                 tmp3 +=
-                                    cc[in][ii] * cc[jn][jj] * rho_c.b[i][j + basis1][k + basis2];
+                                    cc[in][ii] * cc[jn][jj] * rho_c[i][j + basis1][k + basis2];
                                 ++basis2;
                             }
                             ++basis1;
                         }
-                        tpr_rho_f->s1.b[FG_NX * (i - 2) + in][FG_NX * (j - 2) +
-                                                              jn][FG_NX * (k - 2)] = tmp1;
-                        tpr_rho_f->s1.b[FG_NX * (i - 2) + in][FG_NX * (j - 2)][FG_NX * (k - 2) +
-                                                                               jn] = tmp2;
-                        tpr_rho_f->s1.b[FG_NX * (i - 2)][FG_NX * (j - 2) + in][FG_NX * (k - 2) +
-                                                                               jn] = tmp3;
+                        rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2) + jn)*ifys + FG_NX * (k - 2)] = tmp1;
+                        rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2) + jn] = tmp2;
+                        rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2) + in)*ifys + FG_NX * (k - 2) + jn] = tmp3;
                         num += 3;
                     }
                 }
@@ -133,11 +131,11 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
     }
 
 
-    for (i = 2; i < PX0_GRID + 2; i++)
+    for (i = 2; i < pct.PX0_GRID + 2; i++)
     {
-        for (j = 2; j < PY0_GRID + 2; j++)
+        for (j = 2; j < pct.PY0_GRID + 2; j++)
         {
-            for (k = 2; k < PZ0_GRID + 2; k++)
+            for (k = 2; k < pct.PZ0_GRID + 2; k++)
             {
 
                 for (in = 1; in < FG_NX; in++)
@@ -158,19 +156,14 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
                                     for (kk = 0; kk < 4; kk++)
                                     {
                                         tmp1 +=
-                                            cc[in][ii] * cc[jn][jj] * cc[kn][kk] * rho_c.b[i +
-                                                                                           basis1][j
-                                                                                                   +
-                                                                                                   basis2]
-                                            [k + basis3];
+                                            cc[in][ii] * cc[jn][jj] * cc[kn][kk] * rho_c[i + basis1][j + basis2] [k + basis3];
                                         ++basis3;
                                     }
                                     ++basis2;
                                 }
                                 ++basis1;
                             }
-                            tpr_rho_f->s1.b[FG_NX * (i - 2) + in][FG_NX * (j - 2) +
-                                                                  jn][FG_NX * (k - 2) + kn] = tmp1;
+                            rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2) + jn)*ifys + FG_NX * (k - 2) + kn] = tmp1;
                             num += 1;
 
                         }
@@ -180,7 +173,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
         }
     }
 
-    if (num != FP0_BASIS)
+    if (num != pct.FP0_BASIS)
         error_handler ("there is something wrong here");
 
     for (i = 0; i < num; i++)

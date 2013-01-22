@@ -37,7 +37,7 @@ void lforce (REAL * rho, REAL * vh)
     my_calloc( Aiy, FNY_GRID, int );
     my_calloc( Aiz, FNZ_GRID, int );
 
-    size = FP0_BASIS;
+    size = pct.FP0_BASIS;
     my_malloc (rx, 6 * size, REAL);
     ry = rx + size;
     rz = ry + size;
@@ -74,7 +74,7 @@ void lforce (REAL * rho, REAL * vh)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->ldim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
+                         sp->ldim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
@@ -105,8 +105,8 @@ void lforce (REAL * rho, REAL * vh)
 
 
                             pvec[docount] =
-                                FPY0_GRID * FPZ0_GRID * (Aix[ix] % FPX0_GRID) +
-                                FPZ0_GRID * (Aiy[iy] % FPY0_GRID) + (Aiz[iz] % FPZ0_GRID);
+                                pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
+                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) + (Aiz[iz] % pct.FPZ0_GRID);
 
                             ax[0] = xc - iptr->xtal[0];
                             ax[1] = yc - iptr->xtal[1];

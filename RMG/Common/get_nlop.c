@@ -39,8 +39,8 @@ void get_nlop (void)
 
     /* Grab some memory for temporary storage */
     alloc = ct.max_nlpoints;
-    if (alloc < P0_BASIS)
-        alloc = P0_BASIS;
+    if (alloc <pct.P0_BASIS)
+        alloc =pct.P0_BASIS;
     my_malloc (pvec, 2 * alloc, int);
     dvec = pvec + alloc;
 
@@ -67,7 +67,7 @@ void get_nlop (void)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
+                         sp->nldim, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
                          &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
 
@@ -118,8 +118,8 @@ void get_nlop (void)
                             {
 
                                 pvec[icount] =
-                                    PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
-                                    PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
+                                    pct.PY0_GRID * pct.PZ0_GRID * (Aix[ix] % pct.PX0_GRID) +
+                                    pct.PZ0_GRID * (Aiy[iy] % pct.PY0_GRID) + (Aiz[iz] % pct.PZ0_GRID);
 
                                 dvec[idx] = TRUE;
 
@@ -221,7 +221,7 @@ void get_nlop (void)
 
             /*See if this processor owns current ion */
             if (pct.gridpe ==
-                claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid,
+                claim_ion (iptr->xtal, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid,
                            ct.psi_nzgrid))
             {
                 if (pct.num_owned_ions >= MAX_NONLOC_IONS)
@@ -297,7 +297,7 @@ void get_nlop (void)
 
         /*See if this processor owns current ion */
         owner =
-            claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid,
+            claim_ion (iptr->xtal, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid,
                        ct.psi_nzgrid);
 	Dprintf ("Owner of ion %d nlion %d is PE %d", ion, nlion, owner); 
         
@@ -326,11 +326,11 @@ void get_nlop (void)
 
 		/* Determine if ion has overlap with a given PE becasue of beta functions */
 		map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim,
-			PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
+			pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
 		/* Determine if ion has overlap with a given PE becasue of Q function */
 		map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2,
-			sp->qdim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
+			sp->qdim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
 			FNX_GRID, FNY_GRID, FNZ_GRID);
 
 		Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 

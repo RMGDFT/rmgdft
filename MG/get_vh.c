@@ -90,7 +90,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    pack_vhstod (work, nrho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
     /* Transfer rho into smoothing grid */
     pack_ptos (sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
@@ -224,7 +224,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    pack_vhdtos (vh_eig, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    pack_vhdtos (vh_eig, ct.vh_ext, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
     /* Release our memory */
     my_free (mgrhsarr);

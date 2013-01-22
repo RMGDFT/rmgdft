@@ -24,10 +24,10 @@ void lcao_get_rho (REAL * arho_f)
     ION *iptr;
 
     /* Grab some memory for temporary storage */
-    my_malloc (pvec, FP0_BASIS, int);
+    my_malloc (pvec, pct.FP0_BASIS, int);
 
     /* Initialize the compensating charge array and the core charge array */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
         arho_f[idx] = 0.0;
 
 
@@ -42,7 +42,7 @@ void lcao_get_rho (REAL * arho_f)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->adim_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
+                         sp->adim_rho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &xstart, &ystart, &zstart);
 
@@ -67,8 +67,8 @@ void lcao_get_rho (REAL * arho_f)
                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
                         {
                             pvec[icount] =
-                                FPY0_GRID * FPZ0_GRID * (Aix[ix] % FPX0_GRID) +
-                                FPZ0_GRID * (Aiy[iy] % FPY0_GRID) + (Aiz[iz] % FPZ0_GRID);
+                                pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
+                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) + (Aiz[iz] % pct.FPZ0_GRID);
 
                             x[0] = xc - iptr->xtal[0];
                             x[1] = yc - iptr->xtal[1];
@@ -100,7 +100,7 @@ void lcao_get_rho (REAL * arho_f)
     /* Check total charge. */
     t2 = 0.0;
     
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
 	t2 += arho_f[idx];
 
     t2 = ct.vel_f *  real_sum_all (t2, pct.img_comm);
@@ -111,7 +111,7 @@ void lcao_get_rho (REAL * arho_f)
     
 
     
-    n = FP0_BASIS;
+    n = pct.FP0_BASIS;
     incx = 1;
     QMD_sscal (n, t1, arho_f, incx);
 

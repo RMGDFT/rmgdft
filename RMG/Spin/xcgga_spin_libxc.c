@@ -50,16 +50,17 @@
 void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mode) 
 {
 
-    int idx;
-    FP0_GRID *d2rho_up, *d2rho_dw;
-    FP0_GRID *gx_up, *gy_up, *gz_up;
-    FP0_GRID *gx_dw, *gy_dw, *gz_dw; 
-    FP0_GRID *gx_vsigmauu, *gy_vsigmauu, *gz_vsigmauu, *gx_vsigmaud, *gy_vsigmaud, *gz_vsigmaud; 
-    REAL rhospin[FP0_BASIS][2], sigma[FP0_BASIS][3], vsigma[FP0_BASIS][3], vspin[FP0_BASIS][2];
+    int idx, sizr;
+    REAL *d2rho_up, *d2rho_dw;
+    REAL *gx_up, *gy_up, *gz_up;
+    REAL *gx_dw, *gy_dw, *gz_dw; 
+    REAL *gx_vsigmauu, *gy_vsigmauu, *gz_vsigmauu, *gx_vsigmaud, *gy_vsigmaud, *gz_vsigmaud; 
+    REAL rhospin[pct.FP0_BASIS][2], sigma[pct.FP0_BASIS][3], vsigma[pct.FP0_BASIS][3], vspin[pct.FP0_BASIS][2];
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
     REAL *ec, *vsigma_upup, *vsigma_updw;
 
+    sizr = pct.FP0_BASIS;
     
     /* get the correct functional id for each type */
     if (mode == GGA_PBE)
@@ -99,51 +100,51 @@ void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, i
     } 
 
 
-    my_calloc (ec, 3 * FP0_BASIS, REAL);
-    vsigma_upup = ec + FP0_BASIS; 
-    vsigma_updw = ec + 2 * FP0_BASIS; 
+    my_calloc (ec, 3 * pct.FP0_BASIS, REAL);
+    vsigma_upup = ec + pct.FP0_BASIS; 
+    vsigma_updw = ec + 2 * pct.FP0_BASIS; 
 
 
     /* Grab some memory */ 
     /* to hold gradient of spin up charge density */ 
-    my_malloc (gx_up, 1, FP0_GRID);
-    my_malloc (gy_up, 1, FP0_GRID);
-    my_malloc (gz_up, 1, FP0_GRID);
+    my_malloc (gx_up, sizr, REAL);
+    my_malloc (gy_up, sizr, REAL);
+    my_malloc (gz_up, sizr, REAL);
 
     /* to hold gradient of spin down charge density */
-    my_malloc (gx_dw, 1, FP0_GRID);
-    my_malloc (gy_dw, 1, FP0_GRID);
-    my_malloc (gz_dw, 1, FP0_GRID);
+    my_malloc (gx_dw, sizr, REAL);
+    my_malloc (gy_dw, sizr, REAL);
+    my_malloc (gz_dw, sizr, REAL);
 
 
 
     
     /* to hold laplaciant of the spin up and down charge density */
-    my_malloc (d2rho_up, 1, FP0_GRID);
-    my_malloc (d2rho_dw, 1, FP0_GRID); 
+    my_malloc (d2rho_up, sizr, REAL);
+    my_malloc (d2rho_dw, sizr, REAL);
 
     /* to hold the gradient of potentials */
-    my_malloc (gx_vsigmauu, 1, FP0_GRID);
-    my_malloc (gy_vsigmauu, 1, FP0_GRID);
-    my_malloc (gz_vsigmauu, 1, FP0_GRID);
+    my_malloc (gx_vsigmauu, sizr, REAL);
+    my_malloc (gy_vsigmauu, sizr, REAL);
+    my_malloc (gz_vsigmauu, sizr, REAL);
 
-    my_malloc (gx_vsigmaud, 1, FP0_GRID);
-    my_malloc (gy_vsigmaud, 1, FP0_GRID);
-    my_malloc (gz_vsigmaud, 1, FP0_GRID);
+    my_malloc (gx_vsigmaud, sizr, REAL);
+    my_malloc (gy_vsigmaud, sizr, REAL);
+    my_malloc (gz_vsigmaud, sizr, REAL);
 
 
     /* Generate the gradient of the density */
-    app_gradf (rho_up, gx_up, gy_up, gz_up);    /* spin up density */
-    app_gradf (rho_dw, gx_dw, gy_dw, gz_dw);    /* spin down density */
+    app_grad (rho_up, gx_up, gy_up, gz_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin up density */
+    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin down density */
     
 
     /* Get the Laplacian of the density */
-    app6_del2f (rho_up, d2rho_up);
-    app6_del2f (rho_dw, d2rho_dw);
+    app6_del2 (rho_up, d2rho_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_dw, d2rho_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
     
     /* pack rho and rho_oppo into the 2D array rhospin */ 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 	    rhospin[idx][0] = rho_up[idx];
 	    rhospin[idx][1] = rho_dw[idx];
@@ -151,33 +152,33 @@ void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, i
 
 
     /* pack the 2D array sigma[][2] */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 
         
 	/* grad(rho_up) \dot grad(rho_up) */    
-        sigma[idx][0] =  (gx_up->s2[idx] * gx_up->s2[idx] +
-                             gy_up->s2[idx] * gy_up->s2[idx] + gz_up->s2[idx] * gz_up->s2[idx]);
+        sigma[idx][0] =  (gx_up[idx] * gx_up[idx] +
+                             gy_up[idx] * gy_up[idx] + gz_up[idx] * gz_up[idx]);
         
 	/* grad(rho_up) \dot grad(rho_dw)*/
-        sigma[idx][1] =  (gx_up->s2[idx] * gx_dw->s2[idx] +
-                             gy_up->s2[idx] * gy_dw->s2[idx] + gz_up->s2[idx] * gz_dw->s2[idx]);
+        sigma[idx][1] =  (gx_up[idx] * gx_dw[idx] +
+                             gy_up[idx] * gy_dw[idx] + gz_up[idx] * gz_dw[idx]);
         
 	/*  (grad rho_dw) \dot (grad rho_dw)  */
-        sigma[idx][2] = gx_dw->s2[idx] * gx_dw->s2[idx] +
-                	             gy_dw->s2[idx] * gy_dw->s2[idx] + gz_dw->s2[idx] * gz_dw->s2[idx];
+        sigma[idx][2] = gx_dw[idx] * gx_dw[idx] +
+                	             gy_dw[idx] * gy_dw[idx] + gz_dw[idx] * gz_dw[idx];
 
     }                           
    
     /* get the exchange part for energy and potential first*/    
     if (func_x.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_x, FP0_BASIS, &rhospin[0][0], &sigma[0][0], exc, &vspin[0][0], &vsigma[0][0]); 
+        xc_gga_exc_vxc (&func_x, pct.FP0_BASIS, &rhospin[0][0], &sigma[0][0], exc, &vspin[0][0], &vsigma[0][0]); 
 
 
 
 
     /* unpack the 2D array of exchange potential to vxc_up, vsigma_upup, vsigma_updw */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 	    vxc_up[idx] = vspin[idx][0];
 	    vsigma_upup[idx] = vsigma[idx][0];
@@ -186,12 +187,12 @@ void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, i
 
     /* get the correlation part for energy and potential */    
     if (func_c.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_c, FP0_BASIS, &rhospin[0][0], &sigma[0][0], ec, &vspin[0][0], &vsigma[0][0]); 
+        xc_gga_exc_vxc (&func_c, pct.FP0_BASIS, &rhospin[0][0], &sigma[0][0], ec, &vspin[0][0], &vsigma[0][0]); 
  
 
     
     /* add up the correlation part together */
-    for (idx = 0; idx < FP0_BASIS; idx++) 
+    for (idx = 0; idx < pct.FP0_BASIS; idx++) 
     {
 	    vxc_up[idx] += vspin[idx][0];
 	    exc[idx] += ec[idx];
@@ -203,21 +204,19 @@ void xcgga_spin_libxc(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, i
     xc_func_end (&func_c); 
 
     /* Get gradient of vsigma_upup and vsigma_updw */
-    app_gradf (vsigma_upup, gx_vsigmauu, gy_vsigmauu, gz_vsigmauu); 
-    app_gradf (vsigma_updw, gx_vsigmaud, gy_vsigmaud, gz_vsigmaud); 
-
-
+    app_grad (vsigma_upup, gx_vsigmauu, gy_vsigmauu, gz_vsigmauu, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vsigma_updw, gx_vsigmaud, gy_vsigmaud, gz_vsigmaud, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
      /* Vxc_up = vrho_up - \div \dot ( 2* vsigma_upup * \grad(rho_up) + vsigma_updw * \grad(rho_dw) ) */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
-	     vxc_up[idx] -= 2.0 * ( gx_vsigmauu->s2[idx] * gx_up->s2[idx] + 
-	     		   gy_vsigmauu->s2[idx] * gy_up->s2[idx] + gz_vsigmauu->s2[idx] * gz_up->s2[idx] ) ;
-	     vxc_up[idx] -= 2.0 * vsigma_upup[idx] * d2rho_up->s2[idx];
-	     vxc_up[idx] -=  ( gx_vsigmaud->s2[idx] * gx_dw->s2[idx] + 
-	     		   gy_vsigmaud->s2[idx] * gy_dw->s2[idx] + gz_vsigmaud->s2[idx] * gz_dw->s2[idx] ) ;
-	     vxc_up[idx] -=  vsigma_updw[idx] * d2rho_dw->s2[idx]; 
+	     vxc_up[idx] -= 2.0 * ( gx_vsigmauu[idx] * gx_up[idx] + 
+	     		   gy_vsigmauu[idx] * gy_up[idx] + gz_vsigmauu[idx] * gz_up[idx] ) ;
+	     vxc_up[idx] -= 2.0 * vsigma_upup[idx] * d2rho_up[idx];
+	     vxc_up[idx] -=  ( gx_vsigmaud[idx] * gx_dw[idx] + 
+	     		   gy_vsigmaud[idx] * gy_dw[idx] + gz_vsigmaud[idx] * gz_dw[idx] ) ;
+	     vxc_up[idx] -=  vsigma_updw[idx] * d2rho_dw[idx]; 
     }
 
 

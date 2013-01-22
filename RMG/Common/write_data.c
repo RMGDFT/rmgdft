@@ -97,9 +97,9 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     grid_size = (grid[0] * grid[1] * grid[2]) / npe;
 
     /* write fine grid info */
-    fine[0] = FPX0_GRID / PX0_GRID;
-    fine[1] = FPY0_GRID / PY0_GRID;
-    fine[2] = FPZ0_GRID / PZ0_GRID;
+    fine[0] = pct.FPX0_GRID / pct.PX0_GRID;
+    fine[1] = pct.FPY0_GRID / pct.PY0_GRID;
+    fine[2] = pct.FPZ0_GRID / pct.PZ0_GRID;
     write_int (fhand, fine, 3);
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 

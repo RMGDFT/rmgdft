@@ -26,7 +26,7 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
     }
 
     numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS && ct.anisotropy < 1.000001)
+    if(numgrid == pct.P0_BASIS && ct.anisotropy < 1.000001)
     {
         return app_cil_fourth_global (a, b, gridhx, gridhy, gridhz);
     }
@@ -193,14 +193,14 @@ REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL g
     REAL c000, c100, c110;
     REAL ihx;
 
-    incx = (PZ0_GRID + 2) * (PY0_GRID + 2);
-    incy = PZ0_GRID + 2;
-    incxr = PZ0_GRID * PY0_GRID;
-    incyr = PZ0_GRID;
+    incx = (pct.PZ0_GRID + 2) * (pct.PY0_GRID + 2);
+    incy = pct.PZ0_GRID + 2;
+    incxr = pct.PZ0_GRID * pct.PY0_GRID;
+    incyr = pct.PZ0_GRID;
 
-    my_malloc (rptr, (PX0_GRID + 2) * (PY0_GRID + 2) * (PZ0_GRID + 2), REAL);
+    my_malloc (rptr, (pct.PX0_GRID + 2) * (pct.PY0_GRID + 2) * (pct.PZ0_GRID + 2), REAL);
 
-    trade_imagesx (a, rptr, PX0_GRID, PY0_GRID, PZ0_GRID, 1, FULL_FD);
+    trade_imagesx (a, rptr, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, 1, FULL_FD);
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
@@ -209,19 +209,19 @@ REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL g
 
 
     // Handle the general case first
-    for (ix = 1; ix < PX0_GRID + 1; ix++)
+    for (ix = 1; ix < pct.PX0_GRID + 1; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
         ixps = (ix + 1) * incx;
 
-        for (iy = 1; iy < PY0_GRID + 1; iy++)
+        for (iy = 1; iy < pct.PY0_GRID + 1; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
             iyps = (iy + 1) * incy;
 
-            for (iz = 1; iz < PZ0_GRID + 1; iz++)
+            for (iz = 1; iz < pct.PZ0_GRID + 1; iz++)
             {
 
                 b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =

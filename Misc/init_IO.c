@@ -97,9 +97,10 @@ void init_IO (int argc, char **argv)
     if ( pct.images > MAX_IMGS )
         error_handler ("Multi-image input file %s asks for more images (%d) than MAX_IMGS in params.h.", argv[1], pct.images);
 
-
     /* Setup image number that this core belongs to */
     image = npes / pct.images;
+    NPES = image;   // NPES is the per image number of PES
+
     if (image * pct.images != npes)
         error_handler ("Total MPI processes (%d) must be a multiple of the number of images (%d) in this run.", npes, pct.images);
     pct.thisimg = worldpe / image;
@@ -253,6 +254,10 @@ void init_IO (int argc, char **argv)
     for(i = 0;i < THREADS_PER_NODE;i++) 
         Papi_init_omp_threads(i);
 #endif
+
+    // Allocate storage for trade_images routines
+    trade_images (NULL, 0, 0, 0, NULL);
+    trade_imagesx (NULL, NULL, 0, 0, 0, 0, 0);
 
 #if ASYNC_TRADES
   // set up memory sections for async trade images

@@ -18,7 +18,7 @@ void xclda(REAL * rho, REAL * vxc, REAL * exc)
     pisq3 = THREE * PI * PI;
 
     /* Now get the potential */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
 	d = fabs(rho[idx]);    /* use the absolute value of rho since intepolated charge may be negative*/    
         
