@@ -1,0 +1,212 @@
+############################################################################
+#                                                                          #
+#   Sample input file for ultrasoft real-space code, short version.        #
+#   All items after a # are treated as comments.                           #
+#   New tag format, tags may be in any order in input file.                #
+#   Unless stated otherwise, atomic units are used                         #
+#                                                                          #
+############################################################################
+
+# Description of run. Default: "QMD run"
+description="C60 test cell"
+
+# Layout of MPI PE.
+processor_grid="2 2 2"
+# Wavefunction grid
+coarse_grid="48 48 48"
+# Ratio of fine grid to coarse grid (all values must be the same)
+potential_grid_refinement="2 2 2"
+
+
+occupations_type=
+"Fixed"  #i.e. use occupations as specified elswhere in this file
+#"Fermi Dirac"
+#"Gaussian"
+#"Error Function" 
+
+# Occupation for states, 
+#states_count_and_occupation="6 2.0  4 0.0"
+
+# If states_count_and_occupation is not given,
+# number of states is specified by the following two options:
+unoccupied_states_per_kpoint="80"
+system_charge="0"
+
+# Orbital occupation parameters, used when occupation is not "Fixed"
+occupation_electron_temperature_eV="0.04"
+occupation_number_mixing="1.0"
+
+# K-point vector and weight, repeat for each k-point
+kpoints=
+"
+        0.0  0.0  0.0 1.0
+"
+
+# Units for bravais_lattice_type and atoms
+#crds_units=
+#"Bohr"
+#"Angstrom"
+
+bravais_lattice_type=
+"Cubic Primitive"
+#"Cubic Face Centered"
+#"Cubic Body Centered"
+#"Hexagonal Primitive"
+#"Hexagonal Rhombohedral (Trigonal)"
+#"Tetragonal Primitive"
+#"Tetragonal Body Centered"
+#"Orthorhombic Primitive"
+#"Monoclinic Primitive"
+#"Triclinic Primitive"
+
+# Lattice constants 
+a_length="19.0"
+b_length="19.0"
+c_length="19.0"
+alpha="0.0"
+beta="0.0"
+gamma="0.0"
+
+atomic_coordinate_type=
+"Absolute"
+#"Cell Relative"
+
+# List  atomic symbol, coordinates, and movable flag (1 == movable) 
+# symbol and coordinates are required, moveable is optional, default is 1
+atoms = "
+C    15.3293    12.9600    19.2070    1
+C    17.5363    12.9600    17.7857    1
+C    13.7313    15.1732    19.2251    1
+C    14.4083    17.2893    17.8251    1
+C    11.1292    14.3262    19.2527    1
+C     9.3055    15.6378    17.8881    1
+C    11.1292    11.5939    19.2527    1
+C     9.3055    10.2823    17.8881    1
+C    13.7313    10.7469    19.2251    1
+C    14.4083     8.6308    17.8251    1
+C    18.2386    15.1636    16.3387    1
+C    16.7171    17.2920    16.3627    1
+C    18.2386    10.7565    16.3387    1
+C    16.7170     8.6281    16.3627    1
+C    19.3641    14.3200    13.9962    1
+C    18.9522    15.6335    11.7652    1
+C    19.3641    11.6000    13.9962    1
+C    18.9522    10.2865    11.7652    1
+C    12.5141    18.6398    16.4036    1
+C    10.0138    17.8435    16.4390    1
+C    16.2562    18.6408    14.0355    1
+C    17.3583    17.8445    11.7869    1
+C    13.6568    19.4834    14.0698    1
+C    12.2629    19.4836    11.8500    1
+C     7.4102    14.2728    16.4751    1
+C     7.4102    11.6472    16.4751    1
+C     8.5614    17.8446    14.1329    1
+C     9.6634    18.6411    11.8843    1
+C     6.9677    15.6335    14.1547    1
+C     6.5558    14.3200    11.9237    1
+C    10.0138     8.0765    16.4390    1
+C    12.5141     7.2802    16.4036    1
+C     6.9677    10.2865    14.1547    1
+C     6.5558    11.6000    11.9237    1
+C     8.5614     8.0754    14.1329    1
+C     9.6635     7.2790    11.8844    1
+C    13.6568     6.4367    14.0698    1
+C    12.2629     6.4364    11.8500    1
+C    16.2562     7.2793    14.0355    1
+C    17.3583     8.0755    11.7869    1
+C    15.9060    17.8435     9.4808    1
+C    13.4057    18.6398     9.5163    1
+C    18.5097    14.2728     9.4447    1
+C    18.5097    11.6472     9.4447    1
+C    16.6144    15.6378     8.0317    1
+C    14.7907    14.3262     6.6672    1
+C     9.2027    17.2921     9.5572    1
+C     7.6813    15.1636     9.5812    1
+C    11.5115    17.2892     8.0948    1
+C    12.1885    15.1732     6.6948    1
+C     7.6813    10.7564     9.5812    1
+C     9.2027     8.6279     9.5572    1
+C     8.3836    12.9600     8.1343    1
+C    10.5906    12.9600     6.7129    1
+C    13.4057     7.2802     9.5163    1
+C    15.9060     8.0765     9.4808    1
+C    11.5115     8.6308     8.0948    1
+C    12.1885    10.7468     6.6948    1
+C    16.6144    10.2823     8.0317    1
+C    14.7907    11.5939     6.6672    1
+"
+
+# Pseudopotential file for each species, if not specified, 
+# species symbol with .pp extension is assumed (H.pp or O.pp) 
+pseudopotential="
+	C   C_lcao.pp
+"
+#	C   pseudo.c
+
+start_mode=
+#"Random Start"
+#"Restart From File"
+"LCAO Start" (not recommended)
+
+calculation_mode=
+"Quench Electrons"
+#"Relax Structure"
+#"Constant Volume And Energy"
+#"Constant Temperature And Energy"
+#"Band Structure Only"
+
+# Default: "LDA"
+exchange_correlation_type=
+#"LDA"
+#"GGA BLYP"
+#"GGA XB CP"
+"GGA PBE"
+
+
+# Criterion used to judge SCF convergency 
+rms_convergence_criterion="1e-8"
+
+charge_density_mixing="0.70"
+projector_mixing="0.5"
+
+charge_mixing_type=
+"Linear"
+#"Pulay"
+
+charge_pulay_order="5"
+#charge_pulay_scale="0.3"
+
+#max_scf_steps="500"
+max_scf_steps="70"
+
+
+# Subspace diagonalization options
+period_of_diagonalization="1"
+end_diagonalization_step="500"
+
+# Potential acceleration options
+# By default poisson is set to zero but it may work better for some systems
+# Setting it to 1.0 is a good option.
+potential_acceleration_constant_step="1.0"
+potential_acceleration_poisson_step="0.0"
+
+
+max_md_steps="3"
+#max_md_steps="1"
+#kohn_sham_pre_smoothing = "2"   #Was set to default!
+kohn_sham_pre_smoothing = "2"
+kohn_sham_post_smoothing = "2"
+kohn_sham_mucycles = "3"
+kohn_sham_mg_levels = "1"
+kohn_sham_time_step = "0.35"
+#kohn_sham_fd_order = "4"
+hartree_rms_ratio = "1000"
+hartree_max_sweeps = "10"
+poisson_mg_levels = "2"
+poisson_mucycles="1"
+#scalapack_global_sums="false"
+#scalapack_block_factor="256"
+#norm_conserving_pp="true"
+#fine_grid_non_local_pp="1"
+#energy_cutoff_parameter="3.7"
+
