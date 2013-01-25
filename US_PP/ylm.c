@@ -185,5 +185,4 @@ REAL ylm (int l, REAL * r)
 
     error_handler ("l higher than 24 not programmed");
 
-    return (out);
 }

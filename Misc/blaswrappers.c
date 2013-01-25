@@ -116,7 +116,7 @@ void my_axpy(REAL alpha, REAL *in, REAL *out, int length) {
     QMD_saxpy(length, alpha, in, ione, out, ione);
 }
 void my_swap(REAL *vec1, REAL *vec2, int length) {
-    int ione;
+    int ione =1;
     QMD_sswap(length, vec1, ione, vec2, ione);
 }
 

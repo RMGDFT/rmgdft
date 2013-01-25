@@ -169,9 +169,20 @@ void init_pe_on(void)
     sl_init(&ictxt, 1,npes_tem);
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-    DESCINIT(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
-            &ictxt, &numst, &info);
+    if(myrow !=-1)
+    {
 
+	    DESCINIT(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
+			    &ictxt, &numst, &info);
+	    if (info != 0)
+	    {
+		    printf(" init_pe for 1xnpes: DESCINIT, info=%d\n", info);
+		    fflush(NULL);
+		    exit(0);
+	    }
+
+    }
+    if(myrow ==-1) dprintf("\n WARNNING:  no orbital on processor %d \n", pct.gridpe);
 }                               /* end init_pe */
 
 
