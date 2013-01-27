@@ -340,7 +340,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsi, work1, work2,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, t1);
+                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, t1,
+                        NX_GRID, NY_GRID, NZ_GRID,
+                        pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET,
+                        pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
@@ -454,7 +457,11 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             levels=1;
             mgrid_solv (sg_twovpsi, res, work2,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, 1.0, 0.0);
+                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, 1.0, 0.0,
+                        NX_GRID, NY_GRID, NZ_GRID,
+                        pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET,
+                        pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+
             for(idx = 0;idx <pct.P0_BASIS;idx++) {
                 res[idx] = 0.0;
             }

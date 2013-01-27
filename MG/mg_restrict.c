@@ -42,7 +42,7 @@
 
 
 
-void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz)
+void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz;
@@ -57,8 +57,8 @@ void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz)
     incx = (dimz + 2) * (dimy + 2);
 
     incz2 = 1;
-    incy2 = dimz / 2 + 2;
-    incx2 = (dimz / 2 + 2) * (dimy / 2 + 2);
+    incy2 = dz2 + 2;
+    incx2 = (dz2 + 2) * (dy2 + 2);
 
 
     switch (ct.ibrav)
@@ -70,24 +70,24 @@ void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz)
     case HEXAGONAL:
 
         scale = ONE / 64.0;
-        for (ix = 1; ix <= dimx / 2; ix++)
+        for (ix = 1; ix <= dx2; ix++)
         {
 
-            x0 = 2 * ix - 1;
+            x0 = 2 * ix - 1 + xoffset;
             xp = x0 + 1;
             xm = x0 - 1;
 
-            for (iy = 1; iy <= dimy / 2; iy++)
+            for (iy = 1; iy <= dy2; iy++)
             {
 
-                y0 = 2 * iy - 1;
+                y0 = 2 * iy - 1 + yoffset;
                 yp = y0 + 1;
                 ym = y0 - 1;
 
-                for (iz = 1; iz <= dimz / 2; iz++)
+                for (iz = 1; iz <= dz2; iz++)
                 {
 
-                    z0 = 2 * iz - 1;
+                    z0 = 2 * iz - 1 + zoffset;
                     zp = z0 + 1;
                     zm = z0 - 1;
 
@@ -137,24 +137,24 @@ void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz)
 
         scale = ONE / 52.0;
 
-        for (ix = 1; ix <= dimx / 2; ix++)
+        for (ix = 1; ix <= dx2; ix++)
         {
 
-            x0 = 2 * ix - 1;
+            x0 = 2 * ix - 1 + xoffset;
             xp = x0 + 1;
             xm = x0 - 1;
 
-            for (iy = 1; iy <= dimy / 2; iy++)
+            for (iy = 1; iy <= dy2; iy++)
             {
 
-                y0 = 2 * iy - 1;
+                y0 = 2 * iy - 1 + yoffset;
                 yp = y0 + 1;
                 ym = y0 - 1;
 
-                for (iz = 1; iz <= dimz / 2; iz++)
+                for (iz = 1; iz <= dz2; iz++)
                 {
 
-                    z0 = 2 * iz - 1;
+                    z0 = 2 * iz - 1 + zoffset;
                     zp = z0 + 1;
                     zm = z0 - 1;
 
@@ -190,24 +190,24 @@ void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz)
     case 20:
 
         scale = ONE / 80.0;
-        for (ix = 1; ix <= dimx / 2; ix++)
+        for (ix = 1; ix <= dx2; ix++)
         {
 
-            x0 = 2 * ix - 1;
+            x0 = 2 * ix - 1 + xoffset;
             xp = x0 + 1;
             xm = x0 - 1;
 
-            for (iy = 1; iy <= dimy / 2; iy++)
+            for (iy = 1; iy <= dy2; iy++)
             {
 
-                y0 = 2 * iy - 1;
+                y0 = 2 * iy - 1 + yoffset;
                 yp = y0 + 1;
                 ym = y0 - 1;
 
-                for (iz = 1; iz <= dimz / 2; iz++)
+                for (iz = 1; iz <= dz2; iz++)
                 {
 
-                    z0 = 2 * iz - 1;
+                    z0 = 2 * iz - 1 + zoffset;
                     zp = z0 + 1;
                     zm = z0 - 1;
 

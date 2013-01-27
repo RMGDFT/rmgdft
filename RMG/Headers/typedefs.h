@@ -70,6 +70,11 @@ typedef struct
     int PY0_GRID;
     int PZ0_GRID;
 
+    /* Grid offsets on each PE */
+    int PX_OFFSET;
+    int PY_OFFSET;
+    int PZ_OFFSET;
+
     /* Basis size on each PE */
     int P0_BASIS;
 
@@ -77,6 +82,11 @@ typedef struct
     int FPX0_GRID;
     int FPY0_GRID;
     int FPZ0_GRID;
+
+    /* Fine Grid offsets on each PE */
+    int FPX_OFFSET;
+    int FPY_OFFSET;
+    int FPZ_OFFSET;
 
     /* Fine grid basis size on each PE */
     int FP0_BASIS;

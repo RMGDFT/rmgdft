@@ -41,23 +41,17 @@
 
 
 
-void mg_prolong (REAL * full, REAL * half, int dimx, int dimy, int dimz)
+void mg_prolong (REAL * full, REAL * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz;
     int incx, incy, incxr, incyr;
-    int dx2, dy2, dz2;
-
-    dx2 = dimx / 2;
-    dy2 = dimy / 2;
-    dz2 = dimz / 2;
-
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
 
-    incyr = dimz / 2 + 2;
-    incxr = (dimz / 2 + 2) * (dimy / 2 + 2);
+    incyr = dz2 + 2;
+    incxr = (dz2 + 2) * (dy2 + 2);
 
 
     /* transfer coarse grid points to fine grid along with the

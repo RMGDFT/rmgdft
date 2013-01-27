@@ -83,7 +83,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
     sg_res = sg_vh + sbasis;
     nrho = sg_res + sbasis;
 
-
+QMD_sscal (12 * sbasis, 0.0, mgrhsarr, incx);
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
         work[idx] = rho[idx] - rhoc[idx];
@@ -149,7 +149,10 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
-                            poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh);
+                            poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
+                            FG_NX*NX_GRID, FG_NY*NY_GRID, FG_NZ*NZ_GRID,
+                            pct.FPX_OFFSET, pct.FPY_OFFSET, pct.FPZ_OFFSET,
+                            pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
 
                 /* Transfer solution back to mgresarr array */
