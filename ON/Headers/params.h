@@ -116,5 +116,8 @@ int PE_X, PE_Y, PE_Z;
 /* Max. number of states localized on the same ion */
 #define MAX_LOC_ST      20
 
+/* Maximum number of images for finite difference routines */
+#define MAX_TRADE_IMAGES 5
+
 #define                MAX_PWRK        (50000)
 /******/

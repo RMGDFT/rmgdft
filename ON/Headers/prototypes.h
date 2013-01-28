@@ -2,7 +2,10 @@ void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int m
 void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
                  int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy,
                  REAL gridhz, int level, int *nb_ids, int max_levels,
-                 int *pre_cyc, int *post_cyc, int mu_cyc, REAL step, REAL k);
+                 int *pre_cyc, int *post_cyc, int mu_cyc, REAL step, REAL k,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim);
 REAL app_cil_orbital (REAL * a, REAL * b, int dimx, int dimy, int dimz,
               REAL gridhx, REAL gridhy, REAL gridhz);
 REAL app_cil_orbital6 (REAL * a, REAL * b, int dimx, int dimy, int dimz,
@@ -325,9 +328,9 @@ void write_force (void);
 void write_timings (void);
 void wvfn_residual(STATE *states);
 REAL rand0 (long *idum);
-void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz);
+void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int grid_ratio);
-void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz);
+void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void scatter_psi (REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
 void get_milliken (STATE *states);

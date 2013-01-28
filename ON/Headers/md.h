@@ -146,6 +146,11 @@ typedef struct
     int PY0_GRID;
     int PZ0_GRID;
 
+    /* Grid offsets on each PE */
+    int PX_OFFSET;
+    int PY_OFFSET;
+    int PZ_OFFSET;
+
     /* Basis size on each PE */
     int P0_BASIS;
 
@@ -154,9 +159,13 @@ typedef struct
     int FPY0_GRID;
     int FPZ0_GRID;
 
+    /* Fine Grid offsets on each PE */
+    int FPX_OFFSET;
+    int FPY_OFFSET;
+    int FPZ_OFFSET;
+
     /* Fine grid basis size on each PE */
     int FP0_BASIS;
-
 
     int instances;
     /** Neighboring processors in three-dimensional space */
@@ -1361,8 +1370,6 @@ void write_force (void);
 void write_timings (void);
 REAL rand0 (long *idum);
 
-void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz);
-void mg_prolong (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void gather_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid);
 void scatter_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid);
 void get_milliken (STATE * states);
@@ -1470,12 +1477,6 @@ void orbit_dot_orbit (STATE * states, STATE * states1, REAL *Hij_row, REAL * Bij
 
 void app_mask (int istate, double *u, int level);
 void allocate_masks (STATE * states);
-
-void mgrid_solv_local (REAL * v_mat, REAL * f_mat, REAL * work, int dimx, int dimy,
-        int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int level,
-        int *nb_ids, int max_levels, int *pre_cyc, int *post_cyc,
-        int mu_cyc, int istate, int *iion, int flag_local);
-
 
 void state_corner_xyz (STATE * states);
 
