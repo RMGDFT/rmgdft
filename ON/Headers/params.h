@@ -83,6 +83,7 @@ int PE_X, PE_Y, PE_Z;
 /* Maximum number of species -- just an upper limit on
  * dynamically allocated data structures. */
 #define         MAX_SPECIES     64
+#define MAX_TRADE_IMAGES 5
 
 
 /* Maximum number of ions -- just an upper limit on

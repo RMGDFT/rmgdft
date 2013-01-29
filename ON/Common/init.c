@@ -159,8 +159,6 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     }
     if (ct.runflag == 0)
     {
-        cut_init = 1.0;
-        make_mask_grid(cut_init, 0, states);
 
         /* Set initial states to random start */
         for (ispin = 0; ispin <= ct.spin; ispin++)

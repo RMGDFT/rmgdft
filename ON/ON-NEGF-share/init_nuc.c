@@ -310,6 +310,8 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
         printf(" Rescaling compensating charges\n");
     }
     t1 = ct.nel / ct.crho;
+    if (pct.gridpe == 0)
+        printf(" Rescaled compensating charges: ratio -1 = %e \n", t1-1.0);
     sscal(&number, &t1, rhoc, &storage_spacing);
 
     /* Check new compensating charges */

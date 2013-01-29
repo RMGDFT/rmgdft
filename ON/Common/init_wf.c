@@ -45,6 +45,8 @@ static void init_wf_gamma(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" Initialize random functions\n");
+	
+        dprintf(" Initialize random functions\n");
 
     /* Initialize the random number generator */
 
@@ -85,8 +87,8 @@ static void init_wf_gamma(STATE * states)
             idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz -1;
             idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz +1;
 
-            sp->psiR[idx] += (sg_orbit[idx1] +sg_orbit[idx2] +sg_orbit[idx3]
-                    +sg_orbit[idx4] +sg_orbit[idx5] +sg_orbit[idx6])/6.0 ;
+            sp->psiR[idx] += (sp->psiR[idx1] +sp->psiR[idx2] +sp->psiR[idx3]
+                    +sp->psiR[idx4] +sp->psiR[idx5] +sp->psiR[idx6])/6.0 ;
         }
 
 
@@ -104,6 +106,7 @@ static void init_wf_gamma(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" init_wf done  \n");
+        dprintf(" init_wf done  \n");
 
 #if     DEBUG
     print_state_sum(states);
