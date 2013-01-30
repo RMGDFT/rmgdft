@@ -78,7 +78,8 @@ void get_QI (void)
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          sp->qdim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
-                         &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);
+                         &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart,
+                         pct.FPX_OFFSET, pct.FPY_OFFSET, pct.FPZ_OFFSET);
 
         if (map)
         {

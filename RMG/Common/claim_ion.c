@@ -66,7 +66,10 @@ int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int 
     if (igridz >= nzgrid) igridz -= nzgrid ;
 
     /*Now find the rank of the owner*/
-    pe = (igridx / pxgrid) * PE_Y * PE_Z + (igridy / pygrid) * PE_Z + (igridz / pzgrid);
+//    pe = (igridx / pxgrid) * PE_Y * PE_Z + (igridy / pygrid) * PE_Z + (igridz / pzgrid);
+    pe = find_grid_1d_owner(igridx, nxgrid, PE_X) * PE_Y * PE_Z +
+         find_grid_1d_owner(igridy, nygrid, PE_Y) * PE_Z +
+         find_grid_1d_owner(igridz, nzgrid, PE_Z);
 
     return (pe);
 

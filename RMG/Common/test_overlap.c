@@ -64,6 +64,7 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     int idx, ix, iy, iz, ic, map, ilow, ihi, jlow, jhi, klow, khi;
     int ii, jj, kk, icenter, itmp;
     int ixstart, iystart, izstart, icut;
+    int pxoffset, pyoffset, pzoffset;
     REAL t1, t2, vect [3];
     REAL xcstart, ycstart, zcstart;
 
@@ -207,9 +208,12 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     /* Now we need to determine if any of this ions */
     /* projector maps onto this processors space.   */
     pe2xyz (gridpe, &ii, &jj, &kk);
-    ilow = ii * pxgrid;
-    jlow = jj * pygrid;
-    klow = kk * pzgrid;
+    find_node_offsets(gridpe, nxgrid, nygrid, nzgrid,
+                      &pxoffset, &pyoffset, &pzoffset);
+
+    ilow = pxoffset;
+    jlow = pyoffset;
+    klow = pzoffset;
     ihi = ilow + pxgrid - 1;
     jhi = jlow + pygrid - 1;
     khi = klow + pzgrid - 1;

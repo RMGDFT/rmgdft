@@ -69,7 +69,8 @@ void get_nlop (void)
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          sp->nldim, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
-                         &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
+                         &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart,
+                         pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET);
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
         /*xtal vector between ion and left bottom corner of the box */
@@ -329,9 +330,8 @@ void get_nlop (void)
 			pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
 		/* Determine if ion has overlap with a given PE becasue of Q function */
-		map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2,
-			sp->qdim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
-			FNX_GRID, FNY_GRID, FNZ_GRID);
+		map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
+                        pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, FNX_GRID, FNY_GRID, FNZ_GRID);
 
 		Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 
 
@@ -369,7 +369,7 @@ void get_nlop (void)
 			pct.num_owned_pe++;
 
 			Dprintf("Recording previously unknown PE %d, pct.owned_pe_list[%d]=%d,  pct.num_owned_ions_per_pe[%d]=%d, pct.list_owned_ions_per_pe[%d][0]=%d,  pct.num_owned_pe = %d for ion %d", 
-				pe, pct.num_owned_pe, pct.owned_pe_list[pct.num_owned_pe],pct.num_owned_pe, pct.num_owned_ions_per_pe[pct.num_owned_pe], pct.num_owned_pe, pct.list_owned_ions_per_pe[pct.num_owned_pe][0], pct.num_owned_pe, ion)
+				pe, pct.num_owned_pe, pct.owned_pe_list[pct.num_owned_pe],pct.num_owned_pe, pct.num_owned_ions_per_pe[pct.num_owned_pe], pct.num_owned_pe, pct.list_owned_ions_per_pe[pct.num_owned_pe][0], pct.num_owned_pe, ion);
 
 		    }
 
@@ -416,7 +416,7 @@ void get_nlop (void)
 		}
 	    }
 
-	    Dprintf("known_owner is %d and owner_index is %d for ion %d", known_owner, onwner_index, ion);
+	    Dprintf("known_owner is %d and owner_index is %d for ion %d", known_owner, owner_index, ion);
 
 
 	    if (!known_owner)
