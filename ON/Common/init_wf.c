@@ -58,7 +58,7 @@ static void init_wf_gamma(STATE * states)
         ixx = states[state].orbit_nx;
         iyy = states[state].orbit_ny;
         izz = states[state].orbit_nz;
-        sp = &states[state];
+        sp = &states1[state];
         for(ix = 0; ix < ixx; ix++)
         for(iy = 0; iy < iyy; iy++)
         for(iz = 0; iz < izz; iz++)
@@ -85,10 +85,10 @@ static void init_wf_gamma(STATE * states)
             idx3 = (ix+0) *iyy * izz + (iy-1) * izz + iz +0;
             idx4 = (ix+0) *iyy * izz + (iy+0) * izz + iz +0;
             idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz -1;
-            idx5 = (ix+0) *iyy * izz + (iy+0) * izz + iz +1;
+            idx6 = (ix+0) *iyy * izz + (iy+0) * izz + iz +1;
 
-            sp->psiR[idx] += (sp->psiR[idx1] +sp->psiR[idx2] +sp->psiR[idx3]
-                    +sp->psiR[idx4] +sp->psiR[idx5] +sp->psiR[idx6])/6.0 ;
+            states[state].psiR[idx] += (sp->psiR[idx1] +sp->psiR[idx2] +sp->psiR[idx3]
+                   +sp->psiR[idx4] +sp->psiR[idx5] +sp->psiR[idx6])/6.0 ;
         }
 
 
@@ -106,7 +106,6 @@ static void init_wf_gamma(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" init_wf done  \n");
-        dprintf(" init_wf done  \n");
 
 #if     DEBUG
     print_state_sum(states);
