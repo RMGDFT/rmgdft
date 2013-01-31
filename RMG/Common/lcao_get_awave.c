@@ -35,8 +35,7 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double c
     map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
 	    sp->adim_wave, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
 	    ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
-	    &xstart, &ystart, &zstart,
-            pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET);
+	    &xstart, &ystart, &zstart);
 
 
     /* If there is any overlap then we have to generate the mapping */

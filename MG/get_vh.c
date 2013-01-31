@@ -83,7 +83,6 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
     sg_res = sg_vh + sbasis;
     nrho = sg_res + sbasis;
 
-QMD_sscal (12 * sbasis, 0.0, mgrhsarr, incx);
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
         work[idx] = rho[idx] - rhoc[idx];

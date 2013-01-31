@@ -315,8 +315,7 @@ REAL QMD_sdot (int n, REAL *x, int incx, REAL *y, int incy);
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
                int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-               int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart,
-               int pxoffset, int pyoffset, int pzoffset);
+               int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart);
 
 REAL linint (REAL *y, REAL rv, REAL invdr);
 void my_barrier (void);
@@ -478,6 +477,9 @@ int claim_ion (REAL *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int 
 int find_grid_1d_owner(int igrid, int tgrid, int pgrid);
 int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxoffset, int *pyoffset, int *pzoffset);
+int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
+                      int *pxsize, int *pysize, int *pzsize);
+void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid, int nzgrid, int *xnode, int *ynode, int *znode);
 int is_loop_over_states(void);
 int rmg_is_open_mp_safe(void);
 void RMG_set_omp_parallel(void);

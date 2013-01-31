@@ -65,9 +65,9 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     int ii, jj, kk, icenter, itmp;
     int ixstart, iystart, izstart, icut;
     int pxoffset, pyoffset, pzoffset;
+    int pxsize, pysize, pzsize;
     REAL t1, t2, vect [3];
     REAL xcstart, ycstart, zcstart;
-
 
 
     /* Generate range of indices over which the operator */
@@ -80,7 +80,6 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     ixstart = ic - cdim / 2;
     xcstart = ixstart / (REAL) nxgrid;
     
-
 
     t1 = iptr->xtal[1]  * (REAL) nygrid;
     t1 = modf (t1, &t2);
@@ -211,12 +210,15 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     find_node_offsets(gridpe, nxgrid, nygrid, nzgrid,
                       &pxoffset, &pyoffset, &pzoffset);
 
+    find_node_sizes(gridpe, nxgrid, nygrid, nzgrid,
+                      &pxsize, &pysize, &pzsize);
+
     ilow = pxoffset;
     jlow = pyoffset;
     klow = pzoffset;
-    ihi = ilow + pxgrid - 1;
-    jhi = jlow + pygrid - 1;
-    khi = klow + pzgrid - 1;
+    ihi = ilow + pxsize - 1;
+    jhi = jlow + pysize - 1;
+    khi = klow + pzsize - 1;
 
     ii = jj = kk = FALSE;
     for (idx = 0; idx < cdim; idx++)

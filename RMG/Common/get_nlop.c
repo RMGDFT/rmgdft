@@ -69,8 +69,7 @@ void get_nlop (void)
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          sp->nldim, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
-                         &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart,
-                         pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET);
+                         &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
         /*xtal vector between ion and left bottom corner of the box */

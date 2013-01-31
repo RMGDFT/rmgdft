@@ -59,13 +59,14 @@
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
                int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-               int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart,
-               int pxoffset, int pyoffset, int pzoffset)
+               int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart)
 {
 
     int idx, ix, iy, iz, ic, map;
     int ii, jj, kk;
     int ixstart, iystart, izstart;
+    int pxsize, pysize, pzsize;
+    int px1, py1, pz1;
     REAL t1, t2;
 
 
@@ -207,12 +208,17 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     /* Now we need to determine if any of this ions */
     /* projector maps onto this processors space.   */
     pe2xyz (gridpe, &ii, &jj, &kk);
-    *ilow = pxoffset;
-    *jlow = pyoffset;
-    *klow = pzoffset;
-    *ihi = *ilow + pxgrid - 1;
-    *jhi = *jlow + pygrid - 1;
-    *khi = *klow + pzgrid - 1;
+    find_node_offsets(gridpe, nxgrid, nygrid, nzgrid,
+                      &px1, &py1, &pz1);
+    find_node_sizes(gridpe, nxgrid, nygrid, nzgrid,
+                      &pxsize, &pysize, &pzsize);
+
+    *ilow = px1;
+    *jlow = py1;
+    *klow = pz1;
+    *ihi = *ilow + pxsize - 1;
+    *jhi = *jlow + pysize - 1;
+    *khi = *klow + pzsize - 1;
 
     ii = jj = kk = FALSE;
     for (idx = 0; idx < cdim; idx++)

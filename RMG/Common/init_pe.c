@@ -176,6 +176,4 @@ void init_pe ( int image )
     find_node_offsets(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID,
                       &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
 
-    my_barrier ();
-
 }                               /* end init_pe */
