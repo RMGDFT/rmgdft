@@ -83,9 +83,9 @@ void init_wf (STATE * states)
 
 
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = ix * pct.PX0_GRID;
-    yoff = iy * pct.PY0_GRID;
-    zoff = iz * pct.PZ0_GRID;
+    xoff = pct.PX_OFFSET;
+    yoff = pct.PY_OFFSET;
+    zoff = pct.PZ_OFFSET;
 
 
     /* Initialize the random number generator */
