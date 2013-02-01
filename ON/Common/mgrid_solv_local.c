@@ -73,7 +73,11 @@ void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,
     REAL tem1, tem;
 
     double step;
+    int ixoff, iyoff, izoff;
 
+    ixoff = 0;
+    iyoff = 0;
+    izoff = 0;
     step = 0.3;
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -189,11 +193,11 @@ void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,
     newf = &work[siz2];
     newwork = &work[2 * siz2];
 
-
+    
     for (i = 0; i < mu_cyc; i++)
     {
 
-        mg_restrict(resid, newf, dimx, dimy, dimz);
+        mg_restrict(resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
         if (flag_local == 1)
         {
@@ -225,7 +229,7 @@ void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,
             trade_images(newv, dx2, dy2, dz2, nb_ids);
         }
 
-        mg_prolong(resid, newv, dimx, dimy, dimz);
+        mg_prolong(resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
         if (flag_local == 1)
         {
