@@ -26,23 +26,23 @@ HFILES := $(wildcard Headers/*.h)
 H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
-LOBJECTS = /usr/local/lib/libfftw.a /usr/local/lib/scalapack/libscalapack.a /usr/local/lib/scalapack/blacsC.a /usr/local/lib/scalapack/blacs.a /usr/local/lib/scalapack/blacsF77.a /usr/local/atlas/lib/liblapack.a /usr/local/atlas/lib/libptcblas.a /usr/local/atlas/lib/libptf77blas.a /usr/local/atlas/lib/libatlas.a /usr/local/lib64/libmpich.a
+#LOBJECTS = /usr/local/lib/libfftw.a /usr/local/lib/scalapack/libscalapack.a /usr/local/lib/scalapack/blacsC.a /usr/local/lib/scalapack/blacs.a /usr/local/lib/scalapack/blacsF77.a /usr/local/atlas/lib/liblapack.a /usr/local/atlas/lib/libptcblas.a /usr/local/atlas/lib/libptf77blas.a /usr/local/atlas/lib/libatlas.a /usr/local/lib64/libmpich.a
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
 
 #The line below works for MPICH, used on ox
-LIBS = -lgfortran -lblas -lm -llapack -lfftw -L ../lib/libxc/lib -lxc
+LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
 #For OpenMPI (Ubuntu, etc.) use LIBS below
 #LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran
 LDFLAGS =
 
 
-CC = /usr/local/bin/mpicc
-CF = /usr/local/bin/mpif77
+CC = mpicc
+CF = mpif77
 NVCC = /usr/local/cuda/bin/nvcc
-FC = /usr/local/bin/mpif77
+FC = mpif77
 
 
 # Makefiles: if these change, whole code should be recompiled
@@ -77,3 +77,5 @@ $(OBJECTS): $(HFILES) $(MFILES)
 
 #write_header needs to be recompiled everytime svnrev.h changes
 Common/write_header.o: Headers/svnrev.h
+
+

@@ -72,6 +72,7 @@ int PE_X, PE_Y, PE_Z;
 #define GRID_MAX1 1
 #define GRID_MAX2 1
 
+#define MAX_TRADE_IMAGES 5
 
 /* Maximum number of states -- just an upper limit on 
  * dynamically allocated data structures. */
