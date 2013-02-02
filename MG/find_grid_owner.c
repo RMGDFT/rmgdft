@@ -29,7 +29,7 @@ void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid,
             *xnode += igridx /mingrid;
         }
     }
-    
+
     mfac = nygrid / NY_GRID;
     mingrid = mfac * (NY_GRID / PE_Y);
     maxgrid = mingrid;

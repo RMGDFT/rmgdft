@@ -162,11 +162,10 @@ void init_pe ( int image )
     rem = NZ_GRID % PE_Z;
     if(rem && (kk < rem)) pct.PZ0_GRID++;
 
+    find_node_sizes(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID, &pct.PX0_GRID, &pct.PY0_GRID, &pct.PZ0_GRID);
+    find_node_sizes(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID, &pct.FPX0_GRID, &pct.FPY0_GRID, &pct.FPZ0_GRID);
+
     pct.P0_BASIS = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
- 
-    pct.FPX0_GRID = FG_NX * pct.PX0_GRID;
-    pct.FPY0_GRID = FG_NY * pct.PY0_GRID;
-    pct.FPZ0_GRID = FG_NZ * pct.PZ0_GRID;
     pct.FP0_BASIS = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
 
     // Now compute the global grid offset of the first point of the coarse and fine node grids

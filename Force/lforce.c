@@ -105,8 +105,10 @@ void lforce (REAL * rho, REAL * vh)
 
 
                             pvec[docount] =
-                                pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
-                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) + (Aiz[iz] % pct.FPZ0_GRID);
+                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
+                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
+                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+
 
                             ax[0] = xc - iptr->xtal[0];
                             ax[1] = yc - iptr->xtal[1];

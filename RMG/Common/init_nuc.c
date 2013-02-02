@@ -35,7 +35,6 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
     }
 
 
-
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -80,8 +79,10 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
                         {
                             pvec[icount] =
-                                pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
-                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) + (Aiz[iz] % pct.FPZ0_GRID);
+                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
+                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
+                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+
 
                             x[0] = xc - iptr->xtal[0];
                             x[1] = yc - iptr->xtal[1];
@@ -125,7 +126,6 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
     ct.crho = ct.crho * ct.vel_f;
     ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
-    
     if (pct.imgpe==0)
 	    printf("\nCompensating charge is %.8e\n", ct.crho);
     

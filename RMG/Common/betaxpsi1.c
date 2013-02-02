@@ -124,12 +124,18 @@ void betaxpsi1 (STATE * states, int kpt)
                     pct.num_nonowned_ions_per_pe, req_send, req_sendI);
 
     /*Wait until all data is received */
-    MPI_Waitall (pct.num_owned_pe, req_recv, MPI_STATUSES_IGNORE);
-    MPI_Waitall (pct.num_owners, req_send, MPI_STATUSES_IGNORE);
+Dprintf("BETA1  %d  %p  %d  %p",pct.num_owned_pe,req_recv,pct.num_owners,req_send);
+    if(pct.num_owned_pe)
+        MPI_Waitall (pct.num_owned_pe, req_recv, MPI_STATUSES_IGNORE);
+    if(pct.num_owners)
+        MPI_Waitall (pct.num_owners, req_send, MPI_STATUSES_IGNORE);
+Dprintf("BETA1DONE");
 
 #if !GAMMA_PT
-    MPI_Waitall (pct.num_owned_pe, req_recvI, MPI_STATUSES_IGNORE);
-    MPI_Waitall (pct.num_owners, req_sendI, MPI_STATUSES_IGNORE);
+    if(pct.num_owned_pe)
+        MPI_Waitall (pct.num_owned_pe, req_recvI, MPI_STATUSES_IGNORE);
+    if(pct.num_owners)
+        MPI_Waitall (pct.num_owners, req_sendI, MPI_STATUSES_IGNORE);
 #endif
 
     /*Unpack received data and sum contributions from all pes for owned ions */
@@ -161,12 +167,19 @@ void betaxpsi1 (STATE * states, int kpt)
                     pct.num_owned_ions_per_pe, req_send, req_sendI);
 
     /*Wait until all data is received */
-    MPI_Waitall (pct.num_owned_pe, req_send, MPI_STATUSES_IGNORE);
-    MPI_Waitall (pct.num_owners, req_recv, MPI_STATUSES_IGNORE);
+Dprintf("BETA2  %d  %p  %d  %p",pct.num_owned_pe,req_send,pct.num_owners,req_recv);
+    if(pct.num_owned_pe)
+        MPI_Waitall (pct.num_owned_pe, req_send, MPI_STATUSES_IGNORE);
+    if(pct.num_owners)
+        MPI_Waitall (pct.num_owners, req_recv, MPI_STATUSES_IGNORE);
+Dprintf("BETA2DONE");
+
 
 #if !GAMMA_PT
-    MPI_Waitall (pct.num_owned_pe, req_sendI, MPI_STATUSES_IGNORE);
-    MPI_Waitall (pct.num_owners, req_recvI, MPI_STATUSES_IGNORE);
+    if(pct.num_owned_pe)
+        MPI_Waitall (pct.num_owned_pe, req_sendI, MPI_STATUSES_IGNORE);
+    if(pct.num_owners)
+        MPI_Waitall (pct.num_owners, req_recvI, MPI_STATUSES_IGNORE);
 #endif
 
     /*Finaly, write received data about non-owned ions into sintR array */
@@ -209,7 +222,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     STATE *st;
 
 
-    alloc =pct.P0_BASIS;
+    alloc =2*pct.P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 

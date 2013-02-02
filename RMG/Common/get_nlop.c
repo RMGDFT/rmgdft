@@ -41,7 +41,7 @@ void get_nlop (void)
     alloc = ct.max_nlpoints;
     if (alloc <pct.P0_BASIS)
         alloc =pct.P0_BASIS;
-    my_malloc (pvec, 2 * alloc, int);
+    my_malloc (pvec, alloc, int);
     dvec = pvec + alloc;
 
     /* Loop over ions */
@@ -118,8 +118,9 @@ void get_nlop (void)
                             {
 
                                 pvec[icount] =
-                                    pct.PY0_GRID * pct.PZ0_GRID * (Aix[ix] % pct.PX0_GRID) +
-                                    pct.PZ0_GRID * (Aiy[iy] % pct.PY0_GRID) + (Aiz[iz] % pct.PZ0_GRID);
+                                    pct.PY0_GRID * pct.PZ0_GRID * ((Aix[ix]-pct.PX_OFFSET) % pct.PX0_GRID) +
+                                    pct.PZ0_GRID * ((Aiy[iy]-pct.PY_OFFSET) % pct.PY0_GRID) + 
+                                    ((Aiz[iz]-pct.PZ_OFFSET) % pct.PZ0_GRID);
 
                                 dvec[idx] = TRUE;
 
@@ -136,7 +137,6 @@ void get_nlop (void)
 
             /* Save number of points */
             pct.idxptrlen[ion] = icount;
-
 
 
             /* Now we have to allocate memory for the index array */
@@ -200,6 +200,7 @@ void get_nlop (void)
                 pct.phaseptr[ion] = NULL;
 
             get_phase (iptr, pct.phaseptr[ion], ip, icount, dvec);
+
 #endif
 
         }                       /* end if (map) */
@@ -237,6 +238,7 @@ void get_nlop (void)
         }
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
+
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/

@@ -68,8 +68,9 @@ void lcao_get_rho (REAL * arho_f)
                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
                         {
                             pvec[icount] =
-                                pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
-                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) + (Aiz[iz] % pct.FPZ0_GRID);
+                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
+                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
+                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
 
                             x[0] = xc - iptr->xtal[0];
                             x[1] = yc - iptr->xtal[1];

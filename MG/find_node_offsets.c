@@ -21,7 +21,7 @@ int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
         if(idx <= ix) ioffset++;
     }
     ioffset *= mfac;
-    *pxoffset += ioffset;
+    *pxoffset = *pxoffset + ioffset;
 
 
     mfac = nygrid / NY_GRID;

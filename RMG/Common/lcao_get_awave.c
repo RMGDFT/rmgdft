@@ -61,9 +61,12 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double c
 			    ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
 			    ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
 		    {
-			pvec[icount] =
-			    pct.PY0_GRID * pct.PZ0_GRID * (Aix[ix] % pct.PX0_GRID) +
-			    pct.PZ0_GRID * (Aiy[iy] % pct.PY0_GRID) + (Aiz[iz] % pct.PZ0_GRID);
+                        pvec[icount] =
+                            pct.PY0_GRID * pct.PZ0_GRID * ((Aix[ix]-pct.PX_OFFSET) % pct.PX0_GRID) +
+                            pct.PZ0_GRID * ((Aiy[iy]-pct.PY_OFFSET) % pct.PY0_GRID) +
+                            ((Aiz[iz]-pct.PZ_OFFSET) % pct.PZ0_GRID);
+
+
 
 			x[0] = xc - iptr->xtal[0];
 			x[1] = yc - iptr->xtal[1];
