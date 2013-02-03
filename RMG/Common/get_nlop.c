@@ -41,7 +41,7 @@ void get_nlop (void)
     alloc = ct.max_nlpoints;
     if (alloc <pct.P0_BASIS)
         alloc =pct.P0_BASIS;
-    my_malloc (pvec, alloc, int);
+    my_malloc (pvec, 2*alloc, int);
     dvec = pvec + alloc;
 
     /* Loop over ions */
