@@ -104,9 +104,11 @@ void get_QI (void)
 
                             if (icut >= itmp)
                             {
-                                pvec[icount] = (pct.FPY0_GRID * pct.FPZ0_GRID * (Aix[ix] % pct.FPX0_GRID) +
-                                                pct.FPZ0_GRID * (Aiy[iy] % pct.FPY0_GRID) +
-                                                (Aiz[iz] % pct.FPZ0_GRID));
+                                pvec[icount] =
+                                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
+                                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
+                                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+
 
                                 dvec[idx] = TRUE;
 
