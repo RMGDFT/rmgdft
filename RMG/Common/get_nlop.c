@@ -331,8 +331,12 @@ void get_nlop (void)
 			pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
 		/* Determine if ion has overlap with a given PE becasue of Q function */
-		map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
+                if(ct.norm_conserving_pp) {
+                    map2 = FALSE;
+                else {
+                    map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
                         pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, FNX_GRID, FNY_GRID, FNZ_GRID);
+                }
 
 		Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 
 
