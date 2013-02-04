@@ -63,13 +63,16 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
 
     int incx = 1, cycles;
 
+    double k_vh;
 
     REAL time1, time2;
     time1 = my_crtc ();
 
     /* Keep in memory vh*rho_new before updating vh */
 
-    nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst + 1;
+    k_vh = 0.0;
+
+    nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
     sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
     pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
 
@@ -147,7 +150,11 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
                 mgrid_solv_negf (mglhsarr, sg_rho, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
-                            0, pct.neighbors, ct.poi_parm.levels, poi_pre, poi_post, 1);
+                            0, pct.neighbors, ct.poi_parm.levels, poi_pre,
+                            poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
+                            FG_NX*NX_GRID, FG_NY*NY_GRID, FG_NZ*NZ_GRID,
+                            pct.FPX_OFFSET, pct.FPY_OFFSET, pct.FPZ_OFFSET,
+                            pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
 
                 /* Transfer solution back to mgresarr array */

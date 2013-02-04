@@ -56,7 +56,10 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
                 int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz,
                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                int *post_cyc, int mu_cyc)
+                 int *post_cyc, int mu_cyc, REAL step, REAL k,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim)
 {
     int i;
     int cycl;
@@ -64,6 +67,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     REAL scale;
     int ione = 1;
     int dx2, dy2, dz2, siz2;
+    int ixoff, iyoff, izoff;
     REAL *resid, *newf, *newv, *newwork;
 
     int ncycl;
@@ -72,9 +76,6 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
     REAL tem1, tem;
 
-    double step, kg= 0.0;
-
-    step = 1.0;
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     incx = (dimy + 2) * (dimz + 2);
@@ -121,10 +122,10 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
     for (cycl = 0; cycl < ncycl; cycl++)
     {
-
-        /* solve once */
-        solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, kg);
-
+  		
+	/* solve once */
+       solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+      
 
          pack_stop(v_mat, work, dimx, dimy, dimz);
          
@@ -156,15 +157,23 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     pack_stop(resid, work, dimx, dimy, dimz);
 
     confine (work, dimx, dimy, dimz, potentialCompass, level);
+    
+	trade_images(resid, dimx, dimy, dimz, nb_ids);
+	
 
-    pack_ptos(resid, work, dimx, dimy, dimz);
 
-    trade_images(resid, dimx, dimy, dimz, nb_ids);
 
-    /* size for next smaller grid */
-    dx2 = dimx / 2;
-    dy2 = dimy / 2;
-    dz2 = dimz / 2;
+
+
+
+
+
+/* size for next smaller grid */
+    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, ct.boundaryflag);
+    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, ct.boundaryflag);
+    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, ct.boundaryflag);
+
+ 
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
 
     /* set storage pointers in the current workspace */
@@ -176,17 +185,20 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     for (i = 0; i < mu_cyc; i++)
     {
 
-        mg_restrict(resid, newf, dimx, dimy, dimz);
+        mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
 
         /* call mgrid solver on new level */
         mgrid_solv_negf(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                 gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
-                max_levels, pre_cyc, post_cyc, 1);
+                    max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
+                    gxsize, gysize, gzsize,
+                    gxoffset, gyoffset, gzoffset,
+                    pxdim, pydim, pzdim);
 
         trade_images(newv, dx2, dy2, dz2, nb_ids);
 
-        mg_prolong(resid, newv, dimx, dimy, dimz);
+        mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
         scale = ONE;
 
@@ -200,7 +212,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
         {
 
             /* solve once */
-            solv_pois(v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, kg);
+            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
             pack_stop(v_mat, work, dimx, dimy, dimz);
 

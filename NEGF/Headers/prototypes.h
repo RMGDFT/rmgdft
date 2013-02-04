@@ -177,3 +177,13 @@ int min_distance_index(double *distance, int n );
 
 
 void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target);
+
+void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
+                int dimx, int dimy, int dimz,
+                REAL gridhx, REAL gridhy, REAL gridhz,
+                int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int *post_cyc, int mu_cyc, REAL step, REAL k,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim);
+void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int sweeps, int maxlevel);

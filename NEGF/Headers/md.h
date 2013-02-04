@@ -177,6 +177,11 @@ typedef struct
     int PY0_GRID;
     int PZ0_GRID;
 
+  /* Grid offsets on each PE */
+    int PX_OFFSET;
+    int PY_OFFSET;
+    int PZ_OFFSET;
+
     /* Basis size on each PE */
     int P0_BASIS;
 
@@ -184,6 +189,12 @@ typedef struct
     int FPX0_GRID;
     int FPY0_GRID;
     int FPZ0_GRID;
+
+    /* Fine Grid offsets on each PE */
+    int FPX_OFFSET;
+    int FPY_OFFSET;
+    int FPZ_OFFSET;
+
 
     /* Fine grid basis size on each PE */
     int FP0_BASIS;
@@ -1374,8 +1385,10 @@ void write_timings(void);
 
 REAL rand0(long *idum);
 
-void mg_restrict(REAL *full, REAL *half, int dimx, int dimy, int dimz);
-void mg_prolong(REAL *full, REAL *half, int dimx, int dimy, int dimz); 
+void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int grid_ratio);
+void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+
 void gather_psi(REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
 void scatter_psi(REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
 void get_milliken(STATE *states);
