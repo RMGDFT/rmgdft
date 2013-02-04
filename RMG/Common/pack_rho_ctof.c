@@ -12,12 +12,18 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
     int i, j, k, ii, jj, kk, basis1, basis2, basis3;
     int pbasis, dimx, dimy, dimz, in, jn, kn;
     int ifxs, ifys;
+    int icxs, icys, alloc;
     REAL tmp1, tmp2, tmp3, frac, cc[10][4];
-    REAL sum_rho, sum_rhof, coef;
-    REAL rho_c[pct.PX0_GRID + 4][pct.PY0_GRID + 4][pct.PZ0_GRID + 4];
+    REAL *rho_c, sum_rho, sum_rhof, coef;
+
+    alloc = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+    my_malloc(rho_c, alloc, REAL);
 
     ifxs = pct.FPY0_GRID * pct.FPZ0_GRID;
     ifys = pct.FPZ0_GRID;
+
+    icxs = (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+    icys = pct.PZ0_GRID + 4;
 
     int num = 0;
 
@@ -42,7 +48,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
         cc[i][3] = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
     }
 
-    trade_imagesx (rho, &rho_c[0][0][0], dimx, dimy, dimz, 2, FULL_FD);
+    trade_imagesx (rho, rho_c, dimx, dimy, dimz, 2, FULL_FD);
 
     for (i = 2; i < pct.PX0_GRID + 2; i++)
     {
@@ -51,7 +57,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
             for (k = 2; k < pct.PZ0_GRID + 2; k++)
             {
                 rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2)] =
-                    rho_c[i][j][k];
+                    rho_c[i*icxs + j*icys + k];
                 ++num;
             }
         }
@@ -73,9 +79,9 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
 
                     for (ii = 0; ii < 4; ii++)
                     {
-                        tmp1 += cc[in][ii] * rho_c[i + basis1][j][k];
-                        tmp2 += cc[in][ii] * rho_c[i][j + basis1][k];
-                        tmp3 += cc[in][ii] * rho_c[i][j][k + basis1];
+                        tmp1 += cc[in][ii] * rho_c[(i + basis1)*icxs + j*icys + k];
+                        tmp2 += cc[in][ii] * rho_c[i*icxs + (j + basis1)*icys + k];
+                        tmp3 += cc[in][ii] * rho_c[i*icxs + j*icys + k + basis1];
                         ++basis1;
                     }
 
@@ -111,11 +117,11 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
                             for (jj = 0; jj < 4; jj++)
                             {
                                 tmp1 +=
-                                    cc[in][ii] * cc[jn][jj] * rho_c[i + basis1][j + basis2][k];
+                                    cc[in][ii] * cc[jn][jj] * rho_c[(i + basis1)*icxs +(j + basis2)*icys + k];
                                 tmp2 +=
-                                    cc[in][ii] * cc[jn][jj] * rho_c[i + basis1][j][k + basis2];
+                                    cc[in][ii] * cc[jn][jj] * rho_c[(i + basis1)*icxs + j*icys + k + basis2];
                                 tmp3 +=
-                                    cc[in][ii] * cc[jn][jj] * rho_c[i][j + basis1][k + basis2];
+                                    cc[in][ii] * cc[jn][jj] * rho_c[i*icxs + (j + basis1)*icys + k + basis2];
                                 ++basis2;
                             }
                             ++basis1;
@@ -156,7 +162,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
                                     for (kk = 0; kk < 4; kk++)
                                     {
                                         tmp1 +=
-                                            cc[in][ii] * cc[jn][jj] * cc[kn][kk] * rho_c[i + basis1][j + basis2] [k + basis3];
+                                            cc[in][ii] * cc[jn][jj] * cc[kn][kk] * rho_c[(i + basis1)*icxs + (j + basis2)*icys + k + basis3];
                                         ++basis3;
                                     }
                                     ++basis2;
@@ -183,5 +189,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
     coef = sum_rho / sum_rhof;
     for (i = 0; i < num; i++)
         rho_f[i] *= coef;
+
+    my_free(rho_c);
 
 }
