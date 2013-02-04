@@ -171,7 +171,6 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
             }                   /* end if */
 
-
             if (ct.boundaryflag == PERIODIC)
             {
 
@@ -211,7 +210,9 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
             residual += mgresarr[idx] * mgresarr[idx];
 
         }                   /* end for */
-        residual = sqrt (real_sum_all(residual, pct.grid_comm) / (REAL) pbasis);
+
+        residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
+
        
 	//printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
 
