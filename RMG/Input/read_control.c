@@ -854,6 +854,35 @@ void read_control (char *file)
         }
     }
 
+
+    // We check multigrid levels last since we have to be sure that the grid dims have already 
+    // been read in.
+    if ((NX_GRID / (1 << ct.eig_parm.levels)) < 3)
+        error_handler ("NX_GRID: too many eigenvalue MG levels");
+    if ((NY_GRID / (1 << ct.eig_parm.levels)) < 3)
+        error_handler ("NY_GRID: too many eigenvalue MG levels");
+    if ((NZ_GRID / (1 << ct.eig_parm.levels)) < 3)
+        error_handler ("NZ_GRID: too many eigenvalue MG levels");
+    if ((NX_GRID % (1 << ct.eig_parm.levels)) != 0)
+        error_handler ("NX_GRID not evenly divisible by 2^(eig_parm.levels)");
+    if ((NY_GRID % (1 << ct.eig_parm.levels)) != 0)
+        error_handler ("NY_GRID not evenly divisible by 2^(eig_parm.levels)");
+    if ((NZ_GRID % (1 << ct.eig_parm.levels)) != 0)
+        error_handler ("NZ_GRID not evenly divisible by 2^(eig_parm.levels)");
+
+    if ((FNX_GRID / (1 << ct.poi_parm.levels)) < 3)
+        error_handler ("NX_GRID: too many hartree MG levels");
+    if ((FNY_GRID / (1 << ct.poi_parm.levels)) < 3)
+        error_handler ("NY_GRID: too many hartree MG levels");
+    if ((FNZ_GRID / (1 << ct.poi_parm.levels)) < 3)
+        error_handler ("NZ_GRID: too many hartree MG levels");
+    if ((FNX_GRID % (1 << ct.poi_parm.levels)) != 0)
+        error_handler ("NX_GRID not evenly divisible by 2^(poi_parm.levels)");
+    if ((FNY_GRID % (1 << ct.poi_parm.levels)) != 0)
+        error_handler ("NY_GRID not evenly divisible by 2^(poi_parm.levels)");
+    if ((FNZ_GRID % (1 << ct.poi_parm.levels)) != 0)
+        error_handler ("NZ_GRID not evenly divisible by 2^(poi_parm.levels)");
+
     /* Clean up malloc'ed memory */
     my_free (tptr);
     
