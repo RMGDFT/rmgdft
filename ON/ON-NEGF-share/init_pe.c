@@ -37,6 +37,7 @@ void init_pe ( int image )
 {
 
     int ii, jj, kk, ix, iy, iz, idx, ioffset;
+    int rem;
     int image_grp_map[MAX_IMGS], range[1][3];
     MPI_Group group, world_grp, img_masters;
 
@@ -155,41 +156,33 @@ void init_pe ( int image )
     XYZ2PE (ii, jj, (kk + 1) % PE_Z, pct.neighbors[NB_U]);
     XYZ2PE (ii, jj, (kk - 1 + PE_Z) % PE_Z, pct.neighbors[NB_D]);
 
-    // Now compute the global grid offset of the first point of the node grid
-    pct.PX_OFFSET = ii*(NX_GRID/PE_X);
-    pct.FPX_OFFSET = FG_NX * pct.PX_OFFSET;
-    ix = NX_GRID % PE_X;
-    ioffset = 0;
-    for(idx = 0;idx < PE_X;idx++) {
-        if(ix && (idx < ix)) ioffset++;
-    }
-    pct.PX_OFFSET += ioffset;
-    pct.FPX_OFFSET += FG_NX * ioffset;
+    // Compute grid sizes for each node.
 
+    find_node_sizes(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID, &pct.PX0_GRID, &pct.PY0_GRID, &pct.PZ0_GRID);
+    find_node_sizes(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID, &pct.FPX0_GRID, &pct.FPY0_GRID, &pct.FPZ0_GRID);
 
-    pct.PY_OFFSET = jj*(NY_GRID/PE_Y);
-    pct.FPY_OFFSET = FG_NY * pct.PY_OFFSET;
-    iy = NY_GRID % PE_Y;
-    ioffset = 0;
-    for(idx = 0;idx < PE_Y;idx++) {
-        if(iy && (idx < iy)) ioffset++;
-    }
-    pct.PY_OFFSET += ioffset;
-    pct.FPY_OFFSET += FG_NY * ioffset;
+    pct.P0_BASIS = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
+    pct.FP0_BASIS = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
 
+    // Now compute the global grid offset of the first point of the coarse and fine node grids
+    find_node_offsets(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID,
+                      &pct.PX_OFFSET, &pct.PY_OFFSET, &pct.PZ_OFFSET);
 
-    pct.PZ_OFFSET = kk*(NZ_GRID/PE_Z);
-    pct.FPZ_OFFSET = FG_NZ * pct.PZ_OFFSET;
-    iz = NZ_GRID % PE_Z;
-    ioffset = 0;
-    for(idx = 0;idx < PE_Z;idx++) {
-        if(iz && (idx < iz)) ioffset++;
-    }
-    pct.PZ_OFFSET += ioffset;
-    pct.FPZ_OFFSET += FG_NZ * ioffset;
+    find_node_offsets(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID,
+                      &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
 
+    PX0_GRID = pct.PX0_GRID;
+    PY0_GRID = pct.PY0_GRID;
+    PZ0_GRID = pct.PZ0_GRID;
+    FPX0_GRID = pct.FPX0_GRID;
+    FPY0_GRID = pct.FPY0_GRID;
+    FPZ0_GRID = pct.FPZ0_GRID;
+
+    P0_BASIS = pct.P0_BASIS;
+    FP0_BASIS = pct.FP0_BASIS;
 
     my_barrier ();
 
 }                               /* end init_pe */
+
 

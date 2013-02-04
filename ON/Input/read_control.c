@@ -458,17 +458,17 @@ void read_control (void)
     pct.FP0_BASIS = FP0_BASIS;
 
 
-    if ((FPX0_GRID / (1 << ct.poi_parm.levels)) < 3)
+    if (((NX_GRID *FG_NX) / (1 << ct.poi_parm.levels)) < 3)
         error_handler ("PX0_GRID: too many hartree MG levels");
-    if ((FPY0_GRID / (1 << ct.poi_parm.levels)) < 3)
+    if (((NY_GRID *FG_NY) / (1 << ct.poi_parm.levels)) < 3)
         error_handler ("PY0_GRID: too many hartree MG levels");
-    if ((FPZ0_GRID / (1 << ct.poi_parm.levels)) < 3)
+    if (((NZ_GRID *FG_NZ) / (1 << ct.poi_parm.levels)) < 3)
         error_handler ("PZ0_GRID: too many hartree MG levels");
-    if ((FPX0_GRID % (1 << ct.poi_parm.levels)) != 0)
+    if (((NX_GRID * FG_NX) % (1 << ct.poi_parm.levels)) != 0)
         error_handler ("PX0_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FPY0_GRID % (1 << ct.poi_parm.levels)) != 0)
+    if (((NY_GRID * FG_NY) % (1 << ct.poi_parm.levels)) != 0)
         error_handler ("PY0_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FPZ0_GRID % (1 << ct.poi_parm.levels)) != 0)
+    if (((NZ_GRID * FG_NZ) % (1 << ct.poi_parm.levels)) != 0)
         error_handler ("PZ0_GRID not evenly divisible by 2^(poi_parm.levels)");
 
     /* spin or not */
