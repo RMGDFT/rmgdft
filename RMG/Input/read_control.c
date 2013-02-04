@@ -63,7 +63,7 @@ void read_control (char *file)
     NY_GRID = strtol(tbuf, &tbuf, 10);
     NZ_GRID = strtol(tbuf, &tbuf, 10);
 
-    get_data("potential_grid_refinement",  &FG_NX, INT, NULL);
+    get_data("potential_grid_refinement",  &FG_NX, INT, "2");
     FG_NY = FG_NX;
     FG_NZ = FG_NX;
 
