@@ -200,8 +200,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #  endif
 
     /*Get memory for global matrices */
-
-    my_calloc (global_matrix, stop, REAL);
+    for(idx = 0;idx < stop;idx++) global_matrix[idx] = 0.0;
     my_malloc (vtot_eig,pct.P0_BASIS, REAL);
     my_malloc (eigs, num_states, REAL);
     my_malloc (work1R, ct.num_states * 16 , REAL);
