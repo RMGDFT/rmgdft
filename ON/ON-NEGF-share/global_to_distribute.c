@@ -32,9 +32,9 @@ void global_to_distribute(REAL * global_array, REAL * distr_array)
     incy1 = NZ_GRID;
 
     pe2xyz(pct.gridpe, &ii, &jj, &kk);
-    ii *= PX0_GRID;
-    jj *= PY0_GRID;
-    kk *= PZ0_GRID;
+    ii = pct.PX_OFFSET;
+    jj = pct.PY_OFFSET;
+    kk = pct.PZ_OFFSET;
 
     idx1 = NX_GRID * NY_GRID * NZ_GRID;
 

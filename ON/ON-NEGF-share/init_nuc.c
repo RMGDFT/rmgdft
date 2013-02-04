@@ -85,9 +85,9 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     }                           /* end for */
 
         pe2xyz(pct.gridpe, &ii, &jj, &kk);
-        ilow = ii * FPX0_GRID;
-        jlow = jj * FPY0_GRID;
-        klow = kk * FPZ0_GRID;
+        ilow = pct.PX_OFFSET;
+        jlow = pct.PY_OFFSET;
+        klow = pct.PZ_OFFSET;
         ihi = ilow + FPX0_GRID - 1;
         jhi = jlow + FPY0_GRID - 1;
         khi = klow + FPZ0_GRID - 1;
@@ -368,10 +368,9 @@ static void init_vcomp(double *vc)
     }                           /* end for */
 
 
-    pe2xyz(pct.gridpe, &ii, &jj, &kk);
-    ilow = ii * FPX0_GRID;
-    jlow = jj * FPY0_GRID;
-    klow = kk * FPZ0_GRID;
+    ilow = pct.FPX_OFFSET;
+    jlow = pct.FPY_OFFSET;
+    klow = pct.FPZ_OFFSET;
 
 
     /* Loop over ions */
