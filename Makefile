@@ -115,7 +115,6 @@ on-linux:
 	@echo "#define LINUX 1" > ON/Headers/arch.h
 	@echo "#define MPI 1" >> ON/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> ON/Headers/arch.h;
 	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
@@ -123,7 +122,6 @@ on-xt:
 	@echo "#define LINUX 1" > ON/Headers/arch.h
 	@echo "#define MPI 1" >> ON/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> ON/Headers/arch.h;
 	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
@@ -132,7 +130,6 @@ on-aix:
 	@echo '#define AIX_MPI 1' > ON/Headers/arch.h
 	@echo "#define PARALLEL_MESSAGE 1" >> ON/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> ON/Headers/arch.h;
 	@cd ON; $(clean-global); $(clean-on-negf-share)
 	cd ON; gmake -f Make.aix 2>&1 | tee .build.log
 
@@ -142,7 +139,6 @@ NEGF-linux:
 	@echo '#define LINUX 1' > NEGF/Headers/arch.h
 	@echo "#define MPI 1" >> NEGF/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> NEGF/Headers/arch.h;
 	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
@@ -150,7 +146,6 @@ NEGF-xt:
 	@echo '#define LINUX 1' > NEGF/Headers/arch.h
 	@echo "#define MPI 1" >> NEGF/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> NEGF/Headers/arch.h;
 	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
@@ -158,7 +153,6 @@ NEGF-aix:
 	@echo '#define AIX_MPI 1' > NEGF/Headers/arch.h
 	@echo "#define PARALLEL_MESSAGE 1" >> NEGF/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@echo "#define THREADS_PER_NODE 1" >> NEGF/Headers/arch.h;
 	@cd NEGF; $(clean-global); $(clean-on-negf-share)
 	cd NEGF; gmake -f Make.aix 2>&1 | tee .build.log
 
@@ -190,7 +184,6 @@ RMG/Headers/make_conf.h:
 	@echo "/* To enable MPI/PThreads hybrid model, experimental for now */ " >> RMG/Headers/make_conf.h;
 	@echo "#define HYBRID_MODEL 0" >> RMG/Headers/make_conf.h;
 	@echo "/* Number of threads in MPI/PThreads mode */ " >> RMG/Headers/make_conf.h;
-	@echo "#define THREADS_PER_NODE 4" >> RMG/Headers/make_conf.h;
 	@echo "" >> RMG/Headers/make_conf.h;
 	@echo "/* Gamma point only set to 1, otherwise, 0 */" >> RMG/Headers/make_conf.h;
 	@echo "#define GAMMA_PT 1" >> RMG/Headers/make_conf.h;

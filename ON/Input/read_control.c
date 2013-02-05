@@ -360,6 +360,11 @@ void read_control (void)
     FNY_GRID = NY_GRID * FG_NY;
     FNZ_GRID = NZ_GRID * FG_NZ;
 
+    get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "1");
+    if(!HYBRID_MODEL)
+        ct.THREADS_PER_NODE = 1;
+
+
     /*Currently, fine grid has to be the same in each direction */
     get_data("beta_grid_refinement",  &ct.nxfgrid, INT, "4");
 

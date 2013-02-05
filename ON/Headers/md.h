@@ -771,6 +771,9 @@ typedef struct
 typedef struct
 {
 
+    pid_t main_thread_pid;
+    int THREADS_PER_NODE;
+
     /** Description of the run. */
     char description[200];
 
