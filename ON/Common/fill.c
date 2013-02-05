@@ -192,7 +192,7 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
     }
     fmid -= nel;
 
-    if (fabs(fmid) > charge_tol)
+    if (fabs(fmid) > charge_tol * 10)
     {
         if (pct.gridpe == 0)
             printf("\nfill: \\sum f - n_el= %e", fmid);
