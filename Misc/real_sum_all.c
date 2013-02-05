@@ -39,8 +39,8 @@
 #if HYBRID_MODEL
     #include <hybrid.h>
     #include <pthread.h>
-    volatile REAL real_sum_all_vector[THREADS_PER_NODE];
-    volatile  REAL recvbuf[THREADS_PER_NODE];
+    volatile REAL real_sum_all_vector[MAX_SCF_THREADS];
+    volatile  REAL recvbuf[MAX_SCF_THREADS];
     volatile int real_sum_all_vector_state = 0;
     pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
     static REAL real_sum_all_threaded(REAL x, int tid, MPI_Comm comm);
@@ -109,7 +109,7 @@ REAL real_sum_all_threaded(REAL x, int tid,  MPI_Comm comm) {
   // Might have some contention here for high core counts
   pthread_mutex_lock(&real_sum_all_vector_lock);
       if(real_sum_all_vector_state == 1) {
-          MPI_Allreduce(real_sum_all_vector, recvbuf, THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
+          MPI_Allreduce(real_sum_all_vector, recvbuf, ct.THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
           real_sum_all_vector_state = 0;
       }
   pthread_mutex_unlock(&real_sum_all_vector_lock);

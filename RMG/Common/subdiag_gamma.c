@@ -131,7 +131,7 @@ void init_subdiag(void)
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop * THREADS_PER_NODE, MPI_INFO_NULL, &distTij);
+    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop * ct.THREADS_PER_NODE, MPI_INFO_NULL, &distTij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }

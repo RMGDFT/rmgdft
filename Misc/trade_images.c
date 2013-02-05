@@ -87,8 +87,8 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
                   grid_max2 = grid_zp;
               }
          }
-         my_malloc(swbuf1, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
-         my_malloc(swbuf2, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
+         my_malloc(swbuf1, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
+         my_malloc(swbuf2, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
          return;
     }
 
@@ -168,7 +168,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 #endif
     // We only want one thread to do the MPI call here.
     if(combine_trades) {
-        stop = dimx * dimy * THREADS_PER_NODE;
+        stop = dimx * dimy * ct.THREADS_PER_NODE;
         scf_barrier_wait();
         if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop, MPI_DOUBLE, nb_ids[NB_U], (1>>16), swbuf2, stop,
@@ -216,7 +216,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     time3 = my_crtc ();
 #endif
     if(combine_trades) {
-        stop = dimx * dimy * THREADS_PER_NODE;
+        stop = dimx * dimy * ct.THREADS_PER_NODE;
         scf_barrier_wait();
         if(tid == 0) {
             MPI_Sendrecv (swbuf1, stop, MPI_DOUBLE, nb_ids[NB_D], (2>>16), swbuf2, stop,
@@ -265,7 +265,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 #endif
         scf_barrier_wait();
         if(tid == 0) {
-            MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_N], (3>>16), swbuf2, stop * THREADS_PER_NODE,
+            MPI_Sendrecv (swbuf1, stop * ct.THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_N], (3>>16), swbuf2, stop * ct.THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_S], (3>>16), pct.grid_comm, &mstatus);
         }
         scf_barrier_wait();
@@ -295,7 +295,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 #endif
         scf_barrier_wait();
         if(tid == 0) {
-            MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_S], (4>>16), swbuf2, stop * THREADS_PER_NODE,
+            MPI_Sendrecv (swbuf1, stop * ct.THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_S], (4>>16), swbuf2, stop * ct.THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_N], (4>>16), pct.grid_comm, &mstatus);
         }
         scf_barrier_wait();
@@ -344,7 +344,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 #endif
         scf_barrier_wait();
         if(tid == 0) {
-            MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_E], (5>>16), swbuf2, stop * THREADS_PER_NODE,
+            MPI_Sendrecv (swbuf1, stop * ct.THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_E], (5>>16), swbuf2, stop * ct.THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_W], (5>>16), pct.grid_comm, &mstatus);
         }
         scf_barrier_wait();
@@ -359,7 +359,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
 #endif
         scf_barrier_wait();
         if(tid == 0) {
-            MPI_Sendrecv (swbuf1, stop * THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_W], (6>>16), swbuf2, stop * THREADS_PER_NODE,
+            MPI_Sendrecv (swbuf1, stop * ct.THREADS_PER_NODE, MPI_DOUBLE, nb_ids[NB_W], (6>>16), swbuf2, stop * ct.THREADS_PER_NODE,
                       MPI_DOUBLE, nb_ids[NB_E], (6>>16), pct.grid_comm, &mstatus);
         }
         scf_barrier_wait();

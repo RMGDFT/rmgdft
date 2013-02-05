@@ -227,7 +227,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
         alloc = ct.max_nlpoints;
 
 #if HYBRID_MODEL
-    my_calloc (nlarrayR, 2 * alloc * THREADS_PER_NODE, REAL);
+    my_calloc (nlarrayR, 2 * alloc * ct.THREADS_PER_NODE, REAL);
 #else
     my_calloc (nlarrayR, 2 * alloc, REAL);
 #endif
@@ -267,11 +267,11 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
             start_state = 0;
 #if HYBRID_MODEL
             enter_threaded_region();
-            scf_barrier_init(THREADS_PER_NODE);
-            istop = ct.num_states / THREADS_PER_NODE;
-            istop = istop * THREADS_PER_NODE;
+            scf_barrier_init(ct.THREADS_PER_NODE);
+            istop = ct.num_states / ct.THREADS_PER_NODE;
+            istop = istop * ct.THREADS_PER_NODE;
 
-            for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+            for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
                   thread_control[ist].job = HYBRID_BETAX_PSI1_CALCULATE;
                   thread_control[ist].sp = &states[ist];
                   thread_control[ist].ion = ion;
@@ -281,10 +281,10 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
             }
 
             // Thread tasks are set up so wake them
-            wake_threads(THREADS_PER_NODE);
+            wake_threads(ct.THREADS_PER_NODE);
 
             // Then wait for them to finish this task
-            wait_for_threads(THREADS_PER_NODE);
+            wait_for_threads(ct.THREADS_PER_NODE);
 
             scf_barrier_destroy();
             leave_threaded_region();
@@ -365,10 +365,10 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
   stop = pct.idxptrlen[ion];
   pidx = pct.nlindex[ion];
 
-  st_stop = ct.num_states / THREADS_PER_NODE;
-  st_stop = st_stop * THREADS_PER_NODE;
+  st_stop = ct.num_states / ct.THREADS_PER_NODE;
+  st_stop = st_stop * ct.THREADS_PER_NODE;
 
-  for(ist = istate;ist < st_stop;ist+=THREADS_PER_NODE) {
+  for(ist = istate;ist < st_stop;ist+=ct.THREADS_PER_NODE) {
       
       psiR = st->psiR;
 #if !GAMMA_PT
@@ -408,7 +408,7 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
 
       }
 
-      st += THREADS_PER_NODE;
+      st += ct.THREADS_PER_NODE;
   }
   my_free (nlarrayR);
 

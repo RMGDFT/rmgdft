@@ -20,13 +20,13 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     STATE *sp;
 
     enter_threaded_region();
-    scf_barrier_init(THREADS_PER_NODE);
+    scf_barrier_init(ct.THREADS_PER_NODE);
 
     // Each thread applies the operator to one wavefunction
-    istop = ct.num_states / THREADS_PER_NODE;
-    istop = istop * THREADS_PER_NODE;     
-    for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
-        for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+    istop = ct.num_states / ct.THREADS_PER_NODE;
+    istop = istop * ct.THREADS_PER_NODE;     
+    for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
+        for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_A;
             thread_control[ist].sp = &states[st1 + ist];
             thread_control[ist].p1 = &a_psi[(st1 + ist) *pct.P0_BASIS];
@@ -35,10 +35,10 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         }
 
         // Thread tasks are set up so wake them
-        wake_threads(THREADS_PER_NODE);
+        wake_threads(ct.THREADS_PER_NODE);
 
         // Then wait for them to finish this task
-        wait_for_threads(THREADS_PER_NODE);
+        wait_for_threads(ct.THREADS_PER_NODE);
 
     }
 
@@ -144,23 +144,23 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
     STATE *sp;
 
     enter_threaded_region();
-    scf_barrier_init(THREADS_PER_NODE);
+    scf_barrier_init(ct.THREADS_PER_NODE);
 
     // Each thread applies the operator to one wavefunction
-    istop = ct.num_states / THREADS_PER_NODE;
-    istop = istop * THREADS_PER_NODE;
-    for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
-        for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+    istop = ct.num_states / ct.THREADS_PER_NODE;
+    istop = istop * ct.THREADS_PER_NODE;
+    for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
+        for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_B;
             thread_control[ist].sp = &states[st1 + ist];
             thread_control[ist].p1 = &b_psi[(st1 + ist) *pct.P0_BASIS];
         }
 
         // Thread tasks are set up so wake them
-        wake_threads(THREADS_PER_NODE);
+        wake_threads(ct.THREADS_PER_NODE);
 
         // Then wait for them to finish this task
-        wait_for_threads(THREADS_PER_NODE);
+        wait_for_threads(ct.THREADS_PER_NODE);
 
     }
 

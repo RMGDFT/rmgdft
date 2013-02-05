@@ -43,13 +43,13 @@
 #if PAPI_PERFMON
 #undef kill
 #include <papi.h>
-volatile double PTHREAD_PAPI_COUNTERS[THREADS_PER_NODE];
+volatile double PTHREAD_PAPI_COUNTERS[MAX_SCF_THREADS];
 #endif
 
 #if HYBRID_MODEL
 
 // Main thread control structure
-SCF_THREAD_CONTROL thread_control[THREADS_PER_NODE];
+SCF_THREAD_CONTROL thread_control[MAX_SCF_THREADS];
 
 // Used to implement a local barrier for all threads inside of the run_threads function
 static pthread_barrier_t run_barrier;
@@ -68,7 +68,7 @@ static pthread_mutex_t sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mpi_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static pthread_attr_t thread_attrs;
-static pthread_t threads[THREADS_PER_NODE];
+static pthread_t threads[MAX_SCF_THREADS];
 volatile int in_threaded_region = 0;
 static void run_threads(SCF_THREAD_CONTROL *s);
 
@@ -90,7 +90,7 @@ void init_HYBRID_MODEL(void) {
 
     // Should work on linux and AIX
     ct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
-    printf("Hybrid mode with %d threads and %d cores per node.\n", THREADS_PER_NODE, ct.ncpus);
+    printf("Hybrid mode with %d threads and %d cores per node.\n", ct.THREADS_PER_NODE, ct.ncpus);
 
     sem_init(&thread_sem, 0, 0);
     ct.main_thread_pid = getpid();
@@ -103,10 +103,10 @@ void init_HYBRID_MODEL(void) {
     scf_tsd_init();
 
     // Create the main sync barrier
-    pthread_barrier_init(&run_barrier, NULL, THREADS_PER_NODE);
+    pthread_barrier_init(&run_barrier, NULL, ct.THREADS_PER_NODE);
 
     // Here we create a set of long lived threads
-    for(thread = 0;thread < THREADS_PER_NODE;thread++) {
+    for(thread = 0;thread < ct.THREADS_PER_NODE;thread++) {
 
         thread_control[thread].tid = thread;
         sem_init(&thread_control[thread].sync, 0, 0);
@@ -235,7 +235,7 @@ void Papi_finalize_omp_threads(int dummy) {
     Papi_values[3] = 0;
 
 
-    for(ithread = 0;ithread < THREADS_PER_NODE;ithread++) {
+    for(ithread = 0;ithread < ct.THREADS_PER_NODE;ithread++) {
         if(pthread_equal(ct.OpenMpPthreadId[ithread], pthread_self())) {
 
             PAPI_stop(ct.OpenMpEventSet[ithread], Papi_values);
@@ -263,7 +263,7 @@ void wake_threads(int jobs) {
 
     int thread;
     
-    if(jobs > THREADS_PER_NODE) {
+    if(jobs > ct.THREADS_PER_NODE) {
         // If this happens it is a bug
         printf("More jobs than available threads scheduled\n");   
         exit(0);
@@ -349,10 +349,10 @@ void set_cpu_affinity(void)
     cpu_set_t cpuset;
     pthread_t thread;
 
-    if(THREADS_PER_NODE % ct.ncpus) return;
+    if(ct.THREADS_PER_NODE % ct.ncpus) return;
 
     s = get_thread_tid();
-    s = s % THREADS_PER_NODE;
+    s = s % ct.THREADS_PER_NODE;
 
     
     // Set affinity mask
@@ -395,11 +395,11 @@ void RMG_MPI_thread_order_lock(void) {
        pthread_mutex_lock(&thread_order_mutex);
 
        // See if it's our turn
-       i1 = mpi_thread_order_counter % THREADS_PER_NODE;
+       i1 = mpi_thread_order_counter % ct.THREADS_PER_NODE;
        if(i1 == tid) {
            // Raise priority of next thread
            ntid = i1 + 1;
-           if(ntid < THREADS_PER_NODE) {
+           if(ntid < ct.THREADS_PER_NODE) {
                pthread_setschedprio(threads[ntid], -19);
            }
            return;
@@ -430,7 +430,7 @@ void rmg_timings (int what, REAL time)
 {
     pthread_mutex_lock(&timings_mutex);
     if(in_threaded_region) {
-        timings[what] += time / THREADS_PER_NODE;
+        timings[what] += time / ct.THREADS_PER_NODE;
     }
     else {
         timings[what] += time;

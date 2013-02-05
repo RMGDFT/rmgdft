@@ -16,9 +16,9 @@
 #include <pthread.h>
 
 static pthread_mutex_t images_lock = PTHREAD_MUTEX_INITIALIZER;
-static int first_trade_counter=THREADS_PER_NODE;
-static int second_trade_counter=THREADS_PER_NODE;
-static int third_trade_counter=THREADS_PER_NODE;
+static int first_trade_counter;
+static int second_trade_counter;
+static int third_trade_counter;
 REAL *swbuf1x = NULL;
 REAL *swbuf2x = NULL;
 
@@ -48,6 +48,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     // To initialize call from init.c with NULL args
     if(swbuf1x == NULL) {
         int grid_xp, grid_yp, grid_zp;
+        first_trade_counter = ct.THREADS_PER_NODE;
+        second_trade_counter = ct.THREADS_PER_NODE;
+        third_trade_counter = ct.THREADS_PER_NODE;
+
         grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
         grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
         grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
@@ -69,8 +73,8 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
                   grid_max2 = grid_zp;
               }
          }
-         my_malloc(swbuf1x, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
-         my_malloc(swbuf2x, 6 * grid_max1 * grid_max2 * THREADS_PER_NODE, REAL);
+         my_malloc(swbuf1x, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
+         my_malloc(swbuf2x, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
          return;
     }
 #if ASYNC_TRADES
@@ -159,9 +163,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     /* Collect the positive z-plane and negative z-planes */
     if(combine_trades) {
         frdz1 = &swbuf1x[tid * zlen];
-        frdz2 = &swbuf1x[tid * zlen + THREADS_PER_NODE * zlen];
+        frdz2 = &swbuf1x[tid * zlen + ct.THREADS_PER_NODE * zlen];
         frdz2n = &swbuf2x[tid * zlen];
-        frdz1n = &swbuf2x[tid * zlen + THREADS_PER_NODE * zlen];
+        frdz1n = &swbuf2x[tid * zlen + ct.THREADS_PER_NODE * zlen];
     }
     for (ix = 0; ix < dimx; ix++)
     {
@@ -190,10 +194,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     time3 = my_crtc ();
 #endif
     if(combine_trades) {
-        stop = zlen * THREADS_PER_NODE;
+        stop = zlen * ct.THREADS_PER_NODE;
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
-        if(!(first_trade_counter % THREADS_PER_NODE)) {
+        if(!(first_trade_counter % ct.THREADS_PER_NODE)) {
             MPI_Sendrecv (&swbuf1x[0], stop, MPI_DOUBLE, nb_ids[NB_D], (1>>16),
                       &swbuf2x[0], stop, MPI_DOUBLE, nb_ids[NB_U], (1>>16), pct.grid_comm, &mrstatus);
 
@@ -246,9 +250,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     /* Collect the north and south planes */
     if(combine_trades) {
         frdy1 = &swbuf1x[tid * ylen];
-        frdy2 = &swbuf1x[tid * ylen + THREADS_PER_NODE * ylen];
+        frdy2 = &swbuf1x[tid * ylen + ct.THREADS_PER_NODE * ylen];
         frdy2n = &swbuf2x[tid * ylen];
-        frdy1n = &swbuf2x[tid * ylen + THREADS_PER_NODE * ylen];
+        frdy1n = &swbuf2x[tid * ylen + ct.THREADS_PER_NODE * ylen];
     }
     c1 = images * incy;
     c2 = dimy * incy;
@@ -280,10 +284,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     time3 = my_crtc ();
 #endif
     if(combine_trades) {
-        stop = ylen * THREADS_PER_NODE;
+        stop = ylen * ct.THREADS_PER_NODE;
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
-        if(!(second_trade_counter % THREADS_PER_NODE)) {
+        if(!(second_trade_counter % ct.THREADS_PER_NODE)) {
             MPI_Sendrecv (&swbuf1x[0], stop, MPI_DOUBLE, nb_ids[NB_S], (3>>16),
                       &swbuf2x[0], stop, MPI_DOUBLE, nb_ids[NB_N], (3>>16), pct.grid_comm, &mrstatus);
 
@@ -332,9 +336,9 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     /* Collect the east and west planes */
     if(combine_trades) {
         frdx1 = &swbuf1x[tid * xlen];
-        frdx2 = &swbuf1x[tid * xlen + THREADS_PER_NODE * xlen];
+        frdx2 = &swbuf1x[tid * xlen + ct.THREADS_PER_NODE * xlen];
         frdx2n = &swbuf2x[tid * xlen];
-        frdx1n = &swbuf2x[tid * xlen + THREADS_PER_NODE * xlen];
+        frdx1n = &swbuf2x[tid * xlen + ct.THREADS_PER_NODE * xlen];
     }
     c1 = images * incx;
     c2 = dimx * incx;
@@ -365,10 +369,10 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
     time3 = my_crtc ();
 #endif
     if(combine_trades) {
-        stop = xlen * THREADS_PER_NODE;
+        stop = xlen * ct.THREADS_PER_NODE;
         scf_barrier_wait();
         pthread_mutex_lock(&images_lock);
-        if(!(third_trade_counter % THREADS_PER_NODE)) {
+        if(!(third_trade_counter % ct.THREADS_PER_NODE)) {
 
             MPI_Sendrecv (&swbuf1x[0], stop, MPI_DOUBLE, nb_ids[NB_W], (5>>16),
                        &swbuf2x[0], stop, MPI_DOUBLE, nb_ids[NB_E], (5>>16), pct.grid_comm, &mrstatus);

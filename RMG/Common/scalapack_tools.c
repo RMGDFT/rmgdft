@@ -418,24 +418,24 @@ void matsum (double *tmat, double *dismat, double *globmat, int size)
 {
     int idx, jdx;
     int istop, len;
-    int col, row, nprow, npcol, dist_length[THREADS_PER_NODE];
+    int col, row, nprow, npcol, dist_length[MAX_SCF_THREADS];
 
     nprow = pct.scalapack_nprow;
     npcol = pct.scalapack_npcol;
 
-    istop = (nprow*npcol) / THREADS_PER_NODE;
-    istop = istop * THREADS_PER_NODE;
-    for(idx = 0;idx < istop;idx+=THREADS_PER_NODE) {
+    istop = (nprow*npcol) / ct.THREADS_PER_NODE;
+    istop = istop * ct.THREADS_PER_NODE;
+    for(idx = 0;idx < istop;idx+=ct.THREADS_PER_NODE) {
 
 // Use OpenMP for the packing within a node
 #pragma omp parallel for private(row,col)
-        for(jdx = 0;jdx < THREADS_PER_NODE;jdx++) {
+        for(jdx = 0;jdx < ct.THREADS_PER_NODE;jdx++) {
             row = (idx + jdx) / npcol;
             col = (idx + jdx) % npcol;
             dist_length[jdx] = matsum_packbuffer(row, col, &tmat[jdx * pct.scalapack_max_dist_size], globmat, size);
         }
 
-        for(jdx = 0;jdx < THREADS_PER_NODE;jdx++) {
+        for(jdx = 0;jdx < ct.THREADS_PER_NODE;jdx++) {
             row = (idx + jdx) / npcol;
             col = (idx + jdx) % npcol;
             // Reduce to the target

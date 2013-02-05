@@ -114,7 +114,7 @@
 
 
 /* Dimensions of shmem workspace */
-#define		MAX_PWRK	(50000)
+#define		MAX_PWRK	(1024)
 
 
 /* The number of possible point symmetries */
@@ -123,4 +123,5 @@
 /* Maximum number of images for finite difference routines */
 #define MAX_TRADE_IMAGES 5
 
-
+/* Maximum number of scf threads. Adjust based on hardware resources */
+#define MAX_SCF_THREADS 32

@@ -56,8 +56,8 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
   scf_barrier_wait();
   pthread_mutex_lock(&global_sums_vector_lock);
       if(global_sums_vector_state == 0) {
-          my_malloc (global_sums_vector, *length * THREADS_PER_NODE, REAL);
-          my_malloc (tvector, *length * THREADS_PER_NODE, REAL);
+          my_malloc (global_sums_vector, *length * ct.THREADS_PER_NODE, REAL);
+          my_malloc (tvector, *length * ct.THREADS_PER_NODE, REAL);
       }
       global_sums_vector_state = 1;
   pthread_mutex_unlock(&global_sums_vector_lock);
@@ -69,7 +69,7 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 
   pthread_mutex_lock(&global_sums_vector_lock);
       if(global_sums_vector_state == 1) {
-          MPI_Allreduce(global_sums_vector, tvector, *length * THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
+          MPI_Allreduce(global_sums_vector, tvector, *length * ct.THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
           global_sums_vector_state = 0;
       }
   pthread_mutex_unlock(&global_sums_vector_lock);

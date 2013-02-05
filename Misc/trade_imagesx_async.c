@@ -72,10 +72,10 @@ void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int 
 #if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
-    if(is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
 #endif
 
-    corner_node_stride = THREADS_PER_NODE * MAX_IMG3; 
+    corner_node_stride = ct.THREADS_PER_NODE * MAX_IMG3; 
     tim = 2 * images;
     img3 = images*images*images;
 
@@ -611,7 +611,7 @@ void trade_imagesx_central_async (REAL * f, REAL * w, int dimx, int dimy, int di
 #if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
-    if(is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
 #endif
 
     tim = 2 * images;
@@ -870,10 +870,10 @@ void trade_images1_async (REAL * f, int dimx, int dimy, int dimz)
 #if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
-    if(is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
 #endif
 
-    corner_node_stride = THREADS_PER_NODE * MAX_IMG3;
+    corner_node_stride = ct.THREADS_PER_NODE * MAX_IMG3;
 
     incx = (dimy + 2) * (dimz + 2);
     incy = dimz + 2;
@@ -1430,99 +1430,99 @@ void init_trade_imagesx_async(void)
 
 
     // Allocate memory buffers using MPI_Alloc_mem
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1n);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2n);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1n);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2n);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1n);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2n);
+    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
+    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    yzpsps_r = yzpsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    yzmsms_r = yzpsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    yzmsps_r = yzmsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    yzpsms_s = yzmsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    yzpsps_s = yzpsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    yzmsms_s = yzpsps_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    yzmsps_s = yzmsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzpsps_r = yzpsms_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzmsms_r = yzpsps_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzmsps_r = yzmsms_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzpsms_s = yzmsps_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzpsps_s = yzpsms_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzmsms_s = yzpsps_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    yzmsps_s = yzmsms_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
 
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xypsms_r);
+    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xypsms_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    xypsps_r = xypsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xymsms_r = xypsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xymsps_r = xymsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xypsms_s = xymsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xypsps_s = xypsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xymsms_s = xypsps_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xymsps_s = xymsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xypsps_r = xypsms_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xymsms_r = xypsps_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xymsps_r = xymsms_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xypsms_s = xymsps_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xypsps_s = xypsms_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xymsms_s = xypsps_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xymsps_s = xymsms_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
 
 
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xzpsms_r);
+    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xzpsms_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
-    xzpsps_r = xzpsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xzmsms_r = xzpsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xzmsps_r = xzmsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xzpsms_s = xzmsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xzpsps_s = xzpsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xzmsms_s = xzpsps_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
-    xzmsps_s = xzmsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzpsps_r = xzpsms_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzmsms_r = xzpsps_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzmsps_r = xzmsms_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzpsms_s = xzmsps_r + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzpsps_s = xzpsms_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzmsms_s = xzpsps_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
+    xzmsps_s = xzmsms_s + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &m0_r);
+    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG3 * ct.THREADS_PER_NODE , MPI_INFO_NULL, &m0_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &m0_s);
+    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG3 * ct.THREADS_PER_NODE , MPI_INFO_NULL, &m0_s);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }

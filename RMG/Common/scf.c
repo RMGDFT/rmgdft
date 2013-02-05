@@ -166,22 +166,22 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         betaxpsi (states);
 
         enter_threaded_region();
-        scf_barrier_init(THREADS_PER_NODE);
+        scf_barrier_init(ct.THREADS_PER_NODE);
         /* Update the wavefunctions */
-        istop = ct.num_kpts * ct.num_states / THREADS_PER_NODE;
-        istop = istop * THREADS_PER_NODE;
-        for(st1=0;st1 < istop;st1+=THREADS_PER_NODE) {
-          for(ist = 0;ist < THREADS_PER_NODE;ist++) {
+        istop = ct.num_kpts * ct.num_states / ct.THREADS_PER_NODE;
+        istop = istop * ct.THREADS_PER_NODE;
+        for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
+          for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;
               thread_control[ist].sp = &states[st1 + ist];
           }
 
           // Thread tasks are set up so wake them
-          wake_threads(THREADS_PER_NODE);
+          wake_threads(ct.THREADS_PER_NODE);
 
           // Then wait for them to finish this task
-          wait_for_threads(THREADS_PER_NODE);
+          wait_for_threads(ct.THREADS_PER_NODE);
         }
         scf_barrier_destroy();
         leave_threaded_region();

@@ -809,9 +809,8 @@ typedef struct
 typedef struct
 {
 
-#if HYBRID_MODEL
     pid_t main_thread_pid;
-#endif
+    int THREADS_PER_NODE;
 
     /** Description of the run. */
     char description[MAX_CHAR];
@@ -1277,15 +1276,15 @@ typedef struct
     int EventSet;
 
     // Event set for Open MP threads
-    int OpenMpEventSet[THREADS_PER_NODE];
+    int OpenMpEventSet[MAX_SCF_THREADS];
 
     // Flop counts for OpenMp threads
-    long long OpenMpFlopCount[THREADS_PER_NODE];
+    long long OpenMpFlopCount[MAX_SCF_THREADS];
 
-    pthread_t OpenMpPthreadId[THREADS_PER_NODE];
+    pthread_t OpenMpPthreadId[MAX_SCF_THREADS];
 
     // Flop counts for pthreads
-    long long PthreadFlopCount[THREADS_PER_NODE];
+    long long PthreadFlopCount[MAX_SCF_THREADS];
     
 #endif
 
@@ -1337,7 +1336,6 @@ typedef struct
 } CONTROL;
 
 
-#if HYBRID_MODEL
 
 /* Thread control structures */
 typedef struct
@@ -1425,7 +1423,6 @@ typedef struct
     REAL *sintI;    // Used for threaded beta_xpsi
     int kpt;    // Used for threaded beta_xpsi
 } SCF_THREAD_CONTROL;
-#endif
 
 
 
@@ -1438,9 +1435,7 @@ extern PE_CONTROL pct;
 
 
 /* Extern declarations for thread control structures */
-#if HYBRID_MODEL
 extern SCF_THREAD_CONTROL thread_control[];
-#endif
 
 /* Extern declaration for NPES (this is per image), and PE_X,PE_Y,PE_Z */
 extern int NPES;

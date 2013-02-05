@@ -152,7 +152,7 @@ void write_header (void)
 
 #if HYBRID_MODEL
     printf ("\n");
-    printf ("    Using hybrid model with %d threads per PE\n", THREADS_PER_NODE);
+    printf ("    Using hybrid model with %d threads per PE\n", ct.THREADS_PER_NODE);
 #endif
 
     printf ("\n");

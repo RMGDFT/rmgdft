@@ -67,6 +67,10 @@ void read_control (char *file)
     FG_NY = FG_NX;
     FG_NZ = FG_NX;
 
+    get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "1");
+    if(!HYBRID_MODEL)
+        ct.THREADS_PER_NODE = 1;
+
     FNX_GRID = NX_GRID * FG_NX;
     FNY_GRID = NY_GRID * FG_NY;
     FNZ_GRID = NZ_GRID * FG_NZ;
