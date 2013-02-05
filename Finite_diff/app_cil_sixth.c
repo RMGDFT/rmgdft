@@ -32,6 +32,7 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
     incxr = dimz * dimy;
     incyr = dimz;
 
+#if 0
 #if GPU_ENABLED
     REAL *gpu_psi, *gpu_b;
     cudaStream_t cstream;
@@ -75,7 +76,7 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
 
     return cc;
 #endif
-
+#endif
 
 #if FAST_MEHR
     numgrid = dimx * dimy * dimz;

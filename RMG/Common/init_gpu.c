@@ -92,35 +92,35 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, 4 * THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, 4 * ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work2, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work2, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work3, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work4, THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
