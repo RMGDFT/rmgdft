@@ -210,6 +210,14 @@ void read_control (char *file)
     /* Occupation mixing */
     get_data ("occupation_number_mixing", &ct.occ_mix, DBL, "0.3");
 
+    /* Diaonalization opts */
+    char diagonalization_driver_opts[] = "lapack\n"
+                                         "scalapack\n";
+//                                       "elpa\n"
+//                                       "magma\n"
+    get_data ("subdiag_driver", NULL, INIT | OPT, diagonalization_driver_opts);
+    get_data ("subdiag_driver", &ct.subdiag_driver, OPT, "scalapack");
+
     /* Diagonalization info: initial diagonalization flag */
     get_data ("initial_diagnolization", &ct.initdiag, BOOL, "false");
 
