@@ -128,6 +128,14 @@ void write_header (void)
     if (ct.initdiag)
         printf ("    Initial subspace diagonalization\n");
 
+    printf ("\n");
+    switch(ct.subdiag_driver) {
+        case SUBDIAG_LAPACK:
+            printf ("    Subspace diagonalization using lapack driver\n");
+            break;
+        default:
+            printf ("    Subspace diagonalization using scalapack driver\n");
+    }
 
 
     printf ("\n");

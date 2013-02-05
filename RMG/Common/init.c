@@ -87,11 +87,15 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     ct.psi_fnzgrid = FNZ_GRID;
 
 
-    /*Initialize ScaLapack, get context */
-    sl_init (&pct.ictxt, ct.num_states);
+    if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
 
-    /*Set desca, variable used in ScaLapack functions */
-    set_desca (pct.desca, &pct.ictxt, ct.num_states);
+        /*Initialize ScaLapack, get context */
+        sl_init (&pct.ictxt, ct.num_states);
+
+        /*Set desca, variable used in ScaLapack functions */
+        set_desca (pct.desca, &pct.ictxt, ct.num_states);
+
+    }
 
 
     /* Allocate storage for non-local projectors */

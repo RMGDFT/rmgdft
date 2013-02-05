@@ -1140,6 +1140,9 @@ typedef struct
     int domilliken;
     int milliken;
 
+    /* Diagonalization driver type */
+    int subdiag_driver;
+
     /* Diagonalization flag and period */
     int initdiag;
     int diag;
