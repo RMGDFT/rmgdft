@@ -212,9 +212,9 @@ void read_control (char *file)
 
     /* Diaonalization opts */
     char diagonalization_driver_opts[] = "lapack\n"
-                                         "scalapack\n";
+                                         "scalapack\n"
+                                         "magma\n";
 //                                       "elpa\n"
-//                                       "magma\n"
     get_data ("subdiag_driver", NULL, INIT | OPT, diagonalization_driver_opts);
     get_data ("subdiag_driver", &ct.subdiag_driver, OPT, "scalapack");
 

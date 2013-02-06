@@ -292,7 +292,7 @@
 /* subspace diagonalization types */
 #define SUBDIAG_LAPACK 0
 #define SUBDIAG_SCALAPACK 1
-#define SUBDIAG_ELPA 2
-#define SUBDIAG_MAGMA 3
+#define SUBDIAG_MAGMA 2
+#define SUBDIAG_ELPA 3
 
 #endif /* CONST_H_INCLUDED */

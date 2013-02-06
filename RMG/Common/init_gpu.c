@@ -31,7 +31,7 @@
 
 #if GPU_ENABLED
 
-void printout_devices( )
+void rmg_printout_devices( )
 {
     int ndevices, idevice;
     cuDeviceGetCount( &ndevices );
@@ -64,6 +64,7 @@ void init_gpu (void)
 {
 
   cublasStatus_t custat;
+  int alloc;
 
   cudaDeviceReset();
   if( CUDA_SUCCESS != cuInit( 0 ) ) {
@@ -78,7 +79,7 @@ void init_gpu (void)
 //  if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
 //      fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
 //  }
-  printout_devices( );
+  rmg_printout_devices( );
 
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_global_matrix , ct.num_states * ct.num_states * sizeof(REAL) )){
       fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
@@ -88,7 +89,10 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_states\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp , ct.num_states *pct.P0_BASIS * sizeof(REAL) )){
+
+  alloc = ct.num_states * pct.P0_BASIS;
+  if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp , alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");
       exit(-1);
   }
@@ -108,7 +112,10 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+
+  alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+  if(alloc < ct.num_states) alloc = ct.num_states;
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
