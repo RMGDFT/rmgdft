@@ -93,7 +93,6 @@ void init_HYBRID_MODEL(void) {
     printf("Hybrid mode with %d threads and %d cores per node.\n", ct.THREADS_PER_NODE, ct.ncpus);
 
     sem_init(&thread_sem, 0, 0);
-    ct.main_thread_pid = getpid();
 
     pthread_attr_init( &thread_attrs );
     pthread_attr_setscope( &thread_attrs, PTHREAD_SCOPE_SYSTEM );
