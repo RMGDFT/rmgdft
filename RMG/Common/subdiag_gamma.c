@@ -934,9 +934,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     for(idx = 0;idx < dist_stop;idx++) {
         distCij[idx] = 0.0; 
     }
-    for(idx = 0;idx < dist_stop;idx++) {
-        distIij[idx] = 0.0; 
-    }
 
     rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
@@ -980,7 +977,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        // Reduce and distribute Aij
+        // Reduce Aij
         global_sums (global_matrix, &stop, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distAij, ione);
 
@@ -1005,7 +1002,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        // Reduce and distribute Sij
+        // Reduce Sij
         global_sums (global_matrix, &stop, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distSij, ione);
 
@@ -1036,7 +1033,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        // Reduce and distribute Bij
+        // Reduce Bij
         global_sums (global_matrix, &stop, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distBij, ione);
 
@@ -1055,9 +1052,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     time2 = my_crtc ();
 
-
-        /*keep an extra copy of distributed unitary matrix */
-        QMD_scopy (dist_stop, distCij, ione, distIij, ione);
 
         /*Get matrix that is inverse to B */
         {
@@ -1092,8 +1086,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
                     distSij, &num_states, distBij, &num_states, &beta1, distCij,
                     &num_states);
 
-            /*Copy result into Bij */
-            QMD_scopy (dist_stop, distCij, ione, distBij, ione);
         }
 
 
@@ -1121,7 +1113,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
             tol = 1e-15;
 
-            dsygvx_  (&ione, jobz, range, uplo, &num_states, distBij, &num_states, distSij, &num_states,
+            dsygvx_  (&ione, jobz, range, uplo, &num_states, distCij, &num_states, distSij, &num_states,
                      &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, global_matrix, &num_states, work2, 
                      &lwork, iwork, ifail, &info);
 
