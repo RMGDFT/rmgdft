@@ -1306,6 +1306,9 @@ typedef struct
     // CUBLAS library handle
     cublasHandle_t cublas_handle;
 
+    // cuda stream
+    cudaStream_t cuda_stream;
+
     // GPU storage space for wavefunctions
     REAL *gpu_states;
 

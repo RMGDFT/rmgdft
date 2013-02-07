@@ -59,7 +59,7 @@ void rmg_printout_devices( )
 
 
 
-
+cudaStream_t rmg_default_cuda_stream;
 void init_gpu (void)
 {
 
@@ -73,12 +73,12 @@ void init_gpu (void)
   if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
       fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
   }
-//  if( CUDA_SUCCESS != cuCtxCreate( &ct.cu_context, 0, ct.cu_dev ) ) {
-//      fprintf(stderr, "CUDA: Cannot create the context\n"); exit(-1);
-//  }
-//  if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
-//      fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
-//  }
+  if( CUDA_SUCCESS != cuCtxCreate( &ct.cu_context, 0, ct.cu_dev ) ) {
+      fprintf(stderr, "CUDA: Cannot create the context\n"); exit(-1);
+  }
+  if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
+      fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
+  }
   rmg_printout_devices( );
 
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_global_matrix , ct.num_states * ct.num_states * sizeof(REAL) )){
@@ -113,21 +113,25 @@ void init_gpu (void)
       exit(-1);
   }
 
+
   alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
-  if(alloc < ct.num_states) alloc = ct.num_states;
+  if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work2, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work2, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work3, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work4, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
@@ -138,6 +142,9 @@ void init_gpu (void)
       exit(-1);
   }
 
+  cudaStreamCreate(&ct.cuda_stream);
+  cublasSetStream(ct.cublas_handle, ct.cuda_stream); 
+  magmablasSetKernelStream(ct.cuda_stream);
 }
 
 void finalize_gpu (void)
@@ -147,6 +154,10 @@ void finalize_gpu (void)
     cudaFree(ct.gpu_global_matrix);
     cudaFree(ct.gpu_temp);
     cudaFree(ct.gpu_states);
+    cudaFree(ct.gpu_work1);
+    cudaFree(ct.gpu_work2);
+    cudaFree(ct.gpu_work3);
+    cudaFree(ct.gpu_work4);
     cudaFreeHost(ct.gpu_host_temp4);
     cudaFreeHost(ct.gpu_host_temp3);
     cudaFreeHost(ct.gpu_host_temp2);

@@ -1198,7 +1198,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 #if GAMMA_PT
 #if GPU_ENABLED
-
 void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
     int idx, st1, st2, ion, nion, ip, pstop;
@@ -1207,7 +1206,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     int kidx;
     REAL *eigs, *work1R, *sintR, rzero=0.0, rone=1.0;
     int ione = 1, izero = 0;    /* blas constants */
-    char *uplo = "l", *jobz = "v";
+    char *uplo = "l", *jobz = "V";
     ION *iptr;
     SPECIES *sp;
 
@@ -1217,23 +1216,24 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     REAL *tmp_array2R;
     REAL tmp1;
     REAL *vtot, *vtot_eig;
+    REAL *gpuAij, *gpuBij, *gpuCij, *gpuSij;
     int dist_stop, pbasis;
-
-#if GPU_ENABLED
     cublasStatus_t custat;
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
-#endif
     REAL alpha1 = 1.0, beta1 = 0.0;
 
     num_states = ct.num_states;
     pbasis =pct.P0_BASIS;
     stop = num_states * num_states;
 
-#if GPU_ENABLED
 
-    cublasSetVector( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
+    // Start wavefunctions transferring to the GPU
+    cublasSetVector(pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
 
-#endif
+    gpuAij = ct.gpu_work1;
+    gpuBij = ct.gpu_work2;
+    gpuCij = ct.gpu_work3;
+    gpuSij = ct.gpu_work4;
         
     time1 = my_crtc ();
 
@@ -1307,23 +1307,14 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time3 = my_crtc ();
         rmg_timings (DIAG_APP_A, time3 - time2);
 
-#if GPU_ENABLED
 
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_arrayR, ione, ct.gpu_temp, ione );
-
+        /*Global matrix will hold global A matrix */
+        cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_arrayR, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
-        
-        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
-
-#else
-        /*Global matrix will hold global A matrix */
-        dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
-               tmp_arrayR, &pbasis, &beta, global_matrix, &num_states);
-#endif
-
+        cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
@@ -1332,18 +1323,19 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         global_sums (global_matrix, &stop, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distAij, ione);
 
+cublasSetVector(num_states * num_states, sizeof( REAL ), distAij, ione, gpuAij, ione );
 
         // Now deal with the S operator
         time3 = my_crtc ();
         alpha = ct.vel;
 #if GPU_ENABLED
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+        cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
 
-        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+        cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
@@ -1355,6 +1347,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
         // Reduce Sij
         global_sums (global_matrix, &stop, pct.grid_comm);
+cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuSij, ione );
         QMD_scopy (stop, global_matrix, ione, distSij, ione);
 
         /* Apply B operator on each wavefunction */
@@ -1366,14 +1359,14 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_APP_B, time3 - time2);
 
 #if GPU_ENABLED
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+        cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
 
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
 
-        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+        cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
@@ -1396,13 +1389,12 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     {
         distCij[st1] = 1.0;
     }
-    cublasSetVector( num_states , sizeof( REAL ), distCij, ione, ct.gpu_work1, ione );
-    cublasDscal(ct.cublas_handle, num_states * num_states, &rzero, ct.gpu_temp, ione);
+    cublasSetVector(num_states , sizeof( REAL ), distCij, ione, ct.gpu_temp, ione );
+    cublasDscal(ct.cublas_handle, num_states * num_states, &rzero, gpuCij, ione);
     incy = num_states + 1;
-    cublasDaxpy(ct.cublas_handle, num_states, &rone, ct.gpu_work1, ione, ct.gpu_temp, incy);
+    cublasDaxpy(ct.cublas_handle, num_states, &rone, ct.gpu_temp, ione, gpuCij, incy);
 
     time2 = my_crtc ();
-
 
         /*Get matrix that is inverse to B */
         {
@@ -1411,10 +1403,13 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             my_calloc (ipiv, num_states, int);
 
             /*Inverse of B should be in Cij */
-            cublasSetVector( num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+            cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
 
-            magma_dgesv_gpu( num_states, num_states, ct.gpu_global_matrix, num_states, ipiv, ct.gpu_temp, num_states, &info );
-            cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_temp, ione, distCij, ione );
+            magma_dgesv_gpu( num_states, num_states, ct.gpu_global_matrix, num_states, ipiv, gpuCij, num_states, &info );
+//            dgesv (&num_states, &num_states, global_matrix, &num_states, ipiv, distCij, &num_states, &info);
+
+            // gpuCij holds B^-1
+            cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, ione );
 
             if (info)
             {
@@ -1429,16 +1424,22 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         {
             char *trans = "n";
 
+         /*B^-1*A */
+//        cublasSetVector(num_states * num_states, sizeof( REAL ), distAij, ione, gpuAij, ione );
             /*B^-1*A */
-            dgemm (trans, trans, &num_states, &num_states, &num_states, &alpha1,
-                    distCij, &num_states, distAij, &num_states, &beta1, distBij,
-                    &num_states);
+            // ct.gpu_temp holds B^-1 and ct.gpu_work1 holds A
+            cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, num_states, num_states, num_states, &alpha1, 
+                  gpuCij, num_states, gpuAij, num_states, &beta1, gpuBij, 
+                  num_states );
 
 
-            /*Multiply the result with Sij, result is in distCij */
-            dgemm (trans, trans, &num_states, &num_states, &num_states, &alpha1,
-                    distSij, &num_states, distBij, &num_states, &beta1, distCij,
-                    &num_states);
+        cublasGetVector(num_states * num_states, sizeof( REAL ), gpuBij, ione, distBij, ione );
+//cublasSetVector(num_states * num_states, sizeof( REAL ), distSij, ione, gpuSij, ione );
+            cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, num_states, num_states, num_states, &alpha1, 
+                     gpuSij, num_states, gpuBij, num_states, &beta1, gpuCij, 
+                     num_states );
+cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, ione );
+
 
         }
 
@@ -1447,11 +1448,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         /****************** Find Matrix of Eigenvectors *****************************/
         /* Using lwork=-1, pdsyev should return minimum required size for the work array */
         {
-            char *range = "A";
-            REAL vx = 0.0;
-            REAL tol = 0.0;
-            int eigs_found, eigvs_found;
-            REAL orfac = 0.0;
+            int eigs_found, eigvs_found, izero=0;
             int *iwork, *ifail, lwork;
             REAL *gap, lwork_tmp, *work2;
             int liwork_tmp, liwork;
@@ -1460,16 +1457,18 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             lwork = -1;
             liwork = -1;
 
-            lwork = 16*num_states;
-            liwork = 5*num_states;
+            lwork = 2 * num_states * num_states + 6 * num_states + 1;
+            liwork = 3 + 5*num_states;
             my_malloc (work2, lwork, REAL);
             my_malloc (iwork, liwork, int);
 
-            tol = 1e-15;
+            info = 0;
+            dsygvd_  (&ione, jobz, uplo, &num_states, distCij, &num_states, distSij, &num_states,
+                     eigs, work2, &lwork, iwork, &liwork, &info);
+//            magma_dsygvd  (ione, jobz, uplo, num_states, distCij, num_states, distSij, num_states,
+//                     eigs, work2, lwork, iwork, liwork, &info);
 
-            dsygvx_  (&ione, jobz, range, uplo, &num_states, distCij, &num_states, distSij, &num_states,
-                     &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, global_matrix, &num_states, work2, 
-                     &lwork, iwork, ifail, &info);
+
 
             if (info)
             {
@@ -1481,8 +1480,9 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             /*If subspace diagonalization is used everystep, use eigenvalues obtained here 
              * as the correct eigenvalues*/
             if (ct.diag == 1)
-                for (st1 = 0; st1 < ct.num_states; st1++)
+                for (st1 = 0; st1 < ct.num_states; st1++) {
                     states[st1].eig[0] = eigs[st1];
+                }
 
 
             my_free (ifail);
@@ -1495,21 +1495,14 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
-
-
-
     /*Finally, sum global_matrix over all PEs */
     time3 = my_crtc ();
 
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
-
-    time2 = my_crtc ();
-
     /* Do the orbital update in here */
-#if GPU_ENABLED
-
-    cublasSetVector( num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+    time2 = my_crtc ();
+    cublasSetVector(num_states * num_states, sizeof( REAL ), distCij, ione, ct.gpu_global_matrix, ione );
 
     alpha1 = 1.0;
     beta1 = 0.0;
@@ -1519,11 +1512,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
                 ct.gpu_global_matrix, num_states,
                 &beta1,  ct.gpu_temp, pbasis );
 
-    cublasGetVector( pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
-
-#else
-    subdiag2_mpi (global_matrix, states->psiR, tmp_arrayR);
-#endif
+    cublasGetVector(pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
 
 
     rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
