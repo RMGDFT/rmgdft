@@ -1,8 +1,8 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
- 
-/****f* QMD-MGDFT/get_vh_soft.c *****
+
+/****f* QMD-MGDFT/get_vh.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
  *   Quantum molecular dynamics package.
@@ -42,33 +42,29 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 /* Pre and post smoothings on each level */
-static int poi_pre[5] = { 0, 2, 2, 2, 2 };
-static int poi_post[5] = { 0, 2, 2, 2, 2 };
+static int poi_pre[5] = { 0, 3, 3, 3, 3 };
+static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int sweeps, int maxlevel)
+void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, REAL rms_target)
 {
 
     int idx, its, nits, sbasis, pbasis;
     REAL t1, vavgcor, diag;
     REAL *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    REAL *sg_rho, *nrho;
-    int stop = FP0_BASIS, ione = 1;
-    int i, j, k;
-    double tem;
-
+    REAL *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
     int incx = 1, cycles;
-
     double k_vh;
 
     REAL time1, time2;
     time1 = my_crtc ();
 
-    /* Keep in memory vh*rho_new before updating vh */
+    /*Taken from ON code, seems to help a lot with convergence*/
+    poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
     k_vh = 0.0;
 
@@ -76,40 +72,40 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
     sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
     pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
 
-    poi_pre[maxlevel] = 50;     /*shuchun wang */
 
     /* Grab some memory for our multigrid structures */
-    my_malloc_init( mgrhsarr, 9 * sbasis, REAL );
+    my_malloc (mgrhsarr, 12 * sbasis, REAL);
     mglhsarr = mgrhsarr + sbasis;
     mgresarr = mglhsarr + sbasis;
     work = mgresarr + sbasis;
     sg_rho = work + 4 * sbasis;
-    nrho = sg_rho + sbasis;
-
-
+    sg_vh = sg_rho + sbasis;
+    sg_res = sg_vh + sbasis;
+    nrho = sg_res + sbasis;
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
         work[idx] = rho[idx] - rhoc[idx];
 
-
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    pack_vhstod (work, nrho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
     /* Transfer rho into smoothing grid */
     pack_ptos (sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+
 
     /* Apply CI right hand side to rho and store result in work array */
     app_cir (sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
 
     /* Multiply through by 4PI */
-    t1 = -4.0 * PI;
+    t1 = -FOUR * PI;
     QMD_sscal (pbasis, t1, mgrhsarr, incx);
 
+    its = 0;
 
-    for (its = 0; its < sweeps; its++)
+    while ( ((its < max_sweeps) && (residual > rms_target))  || (its < min_sweeps))
     {
 
 
@@ -118,36 +114,40 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
         {
 
 
-            /* Transfer vh into smoothing grid */
-            pack_ptos (sg_rho, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
-            /* Apply operator */
-            diag = app_cil (sg_rho, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
-            diag = -1.0 / diag;
-
-            /* Generate residual vector */
-            for (idx = 0; idx < pbasis; idx++)
+	    /*At the end of this force loop, laplacian operator is reapplied to evalute the residual. Therefore,
+	     * when there is no need to apply it, when this loop is called second, third, etc time. */
+            if ( (cycles) || (!its))
             {
+                /* Transfer vh into smoothing grid */
+                pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-                mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+                /* Apply operator */
+                diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+                diag = -1.0 / diag;
 
-            }                   /* end for */
+                /* Generate residual vector */
+                for (idx = 0; idx < pbasis; idx++)
+                {
 
-            /*  Fix Hartree in some region  */
+                    mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+
+                }                   /* end for */
+
+            }
+
+         /*  Fix Hartree in some region  */
             confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
-
 
             /* Pre and Post smoothings and multigrid */
             if (cycles == ct.poi_parm.gl_pre)
             {
 
-
                 /* Transfer res into smoothing grid */
-                pack_ptos (sg_rho, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
 
-                mgrid_solv_negf (mglhsarr, sg_rho, work,
+                mgrid_solv (mglhsarr, sg_res, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
@@ -165,7 +165,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
                 confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
                 /* Update vh */
-                t1 = 1.0;
+                t1 = ONE;
                 QMD_saxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }
@@ -174,32 +174,73 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int swe
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-/*                t1  = 1.0/ct.Ac;*/
-
-
                 QMD_saxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }                   /* end if */
 
+            if (ct.boundaryflag == PERIODIC)
+            {
+
+                /* Evaluate the average potential */
+                vavgcor = 0.0;
+                for (idx = 0; idx < pbasis; idx++)
+                    vavgcor += ct.vh_ext[idx];
+
+                vavgcor = real_sum_all (vavgcor, pct.grid_comm);
+                t1 = (REAL) ct.psi_fnbasis;
+                vavgcor = vavgcor / t1;
+
+
+                /* Make sure that the average value is zero */
+                for (idx = 0; idx < pbasis; idx++)
+                    ct.vh_ext[idx] -= vavgcor;
+
+            }                   /* end if */
 
         }                       /* end for */
+            
+        /*Get residual*/
+        /* Transfer vh into smoothing grid */
+        pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
+        /* Apply operator */
+        diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+        diag = -1.0 / diag;
+
+        residual = 0.0;
+        /* Generate residual vector */
+        for (idx = 0; idx < pbasis; idx++)
+        {
+
+            mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+            residual += mgresarr[idx] * mgresarr[idx];
+
+        }                   /* end for */
+
+        residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
+
+       
+	//printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
+
+	    
+        its ++;
     }                           /* end for */
+
+    printf ("\n");
+    progress_tag ();
+    printf ("Executed %3d sweeps, residual is %15.8e, rms is %15.8e\n", its, residual, ct.rms);
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    pack_vhdtos (vh_eig, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-
+    pack_vhdtos (vh_eig, ct.vh_ext, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
     /* Release our memory */
-    my_free(mgrhsarr);
+    my_free (mgrhsarr);
 
     time2 = my_crtc ();
     rmg_timings (HARTREE_TIME, (time2 - time1));
 
 }                               /* end get_vh */
 
-
-
-/******/

@@ -268,7 +268,9 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
     /* Generate hartree potential */
-    get_vh_negf (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);
+//    get_vh (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);
+   get_vh_negf (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+
 
 
     /* check convergence */

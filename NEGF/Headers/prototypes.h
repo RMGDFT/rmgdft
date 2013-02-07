@@ -186,4 +186,4 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim);
-void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, REAL * vh_old, int sweeps, int maxlevel);
+void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target);

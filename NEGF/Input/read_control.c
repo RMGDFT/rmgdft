@@ -176,6 +176,16 @@ Error Function";
     /* Force flag */
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
 
+    /* Max number of sweeps in get_vh*/
+    get_data ("hartree_max_sweeps", &ct.hartree_max_sweeps, INT, "100");
+
+    /* Min number of sweeps in get_vh*/
+    get_data ("hartree_min_sweeps", &ct.hartree_min_sweeps, INT, "5");
+
+    /* Ratio between target RMS for get_vh and RMS total potential
+ *  *      * This determines target RMS passed to get_vh*/
+    get_data ("hartree_rms_ratio", &ct.hartree_rms_ratio, DBL, "50.0");
+
 
     /* do spin polarized calculation? */
     get_data ("enable_spin_polarized_calculation", &ct.spin_flag, BOOL, "false");
