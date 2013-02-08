@@ -436,30 +436,18 @@ Error Function";
     pct.FPZ0_GRID = FPZ0_GRID;
     pct.FP0_BASIS = FP0_BASIS;
 
-    if ((PX0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PX0_GRID: too many eigenvalue MG levels");
-    if ((PY0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PY0_GRID: too many eigenvalue MG levels");
-    if ((PZ0_GRID / (1 << ct.eig_parm.levels)) < 3)
-        error_handler ("PZ0_GRID: too many eigenvalue MG levels");
-    if ((PX0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PX0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((PY0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PY0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((PZ0_GRID % (1 << ct.eig_parm.levels)) != 0)
-        error_handler ("PZ0_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((FPX0_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("PX0_GRID: too many hartree MG levels");
-    if ((FPY0_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("PY0_GRID: too many hartree MG levels");
-    if ((FPZ0_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("PZ0_GRID: too many hartree MG levels");
-    if ((FPX0_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("PX0_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FPY0_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("PY0_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FPZ0_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("PZ0_GRID not evenly divisible by 2^(poi_parm.levels)");
+    if (((FG_NX *NX_GRID) / (1 << ct.poi_parm.levels)) < 3)
+        error_handler ("FNX_GRID: too many hartree MG levels");
+    if (((FG_NY *NY_GRID) / (1 << ct.poi_parm.levels)) < 3)
+        error_handler ("FNY_GRID: too many hartree MG levels");
+    if (((FG_NZ *NZ_GRID) / (1 << ct.poi_parm.levels)) < 3)
+        error_handler ("FNZ_GRID: too many hartree MG levels");
+    if (((FG_NX * NX_GRID) % (1 << ct.poi_parm.levels)) != 0)
+        error_handler ("FNX_GRID not evenly divisible by 2^(poi_parm.levels)");
+    if (((FG_NY * NY_GRID) % (1 << ct.poi_parm.levels)) != 0)
+        error_handler ("FNY_GRID not evenly divisible by 2^(poi_parm.levels)");
+    if (((FG_NZ * NZ_GRID) % (1 << ct.poi_parm.levels)) != 0)
+        error_handler ("FNZ_GRID not evenly divisible by 2^(poi_parm.levels)");
 
     /* spin or not */
     get_data ("do_spin_polarized", &ct.spin, BOOL, "false");

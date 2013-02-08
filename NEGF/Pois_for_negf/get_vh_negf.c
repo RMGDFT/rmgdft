@@ -147,7 +147,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
                 pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
 
-                mgrid_solv (mglhsarr, sg_res, work,
+                mgrid_solv_negf (mglhsarr, sg_res, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
@@ -178,24 +178,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
             }                   /* end if */
 
-            if (ct.boundaryflag == PERIODIC)
-            {
 
-                /* Evaluate the average potential */
-                vavgcor = 0.0;
-                for (idx = 0; idx < pbasis; idx++)
-                    vavgcor += ct.vh_ext[idx];
-
-                vavgcor = real_sum_all (vavgcor, pct.grid_comm);
-                t1 = (REAL) ct.psi_fnbasis;
-                vavgcor = vavgcor / t1;
-
-
-                /* Make sure that the average value is zero */
-                for (idx = 0; idx < pbasis; idx++)
-                    ct.vh_ext[idx] -= vavgcor;
-
-            }                   /* end if */
 
         }                       /* end for */
             
