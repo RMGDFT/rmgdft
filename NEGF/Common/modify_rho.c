@@ -18,7 +18,7 @@ void modify_rho (REAL * rho, REAL * rho_old)
     register double tcharge;
     int i, j, k;
     REAL total_charge, tcharge_fixed, t_fixed;
-    int pex, pey, pez, xoff, yoff, zoff;
+    int xoff, yoff, zoff;
     int test;
     int x1, x2, y1, y2, z1, z2;
     int idx1, idx2, item;
@@ -99,10 +99,9 @@ void modify_rho (REAL * rho, REAL * rho_old)
         z1 = chargeDensityCompass.box1.z1;
         z2 = chargeDensityCompass.box1.z2;
 
-        pe2xyz (pct.gridpe, &pex, &pey, &pez);
-        xoff = pex * FPX0_GRID;
-        yoff = pey * FPY0_GRID;
-        zoff = pez * FPZ0_GRID;
+        xoff = pct.FPX_OFFSET;
+        yoff = pct.FPY_OFFSET;
+        zoff = pct.FPZ_OFFSET;
 
         total_charge = 0.0;
         tcharge_fixed = 0.0;

@@ -21,13 +21,12 @@ get  global array  FNX_GRID * FNY_GRID * FNZ_GRID
 void X_to_distribute_soft (REAL * global_array, REAL * distr_array)
 {
 
-    int ix, iy, iz, ii, jj, kk;
+    int ix, iy, iz, ii;
     int idx2, idx1, incx, incx1, incy, incy1;
 
     incx = FPY0_GRID * FPZ0_GRID;
 
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    ii *= FPX0_GRID;
+    ii = pct.FPX_OFFSET;
 
 
     for (ix = 0; ix < FPX0_GRID; ix++)

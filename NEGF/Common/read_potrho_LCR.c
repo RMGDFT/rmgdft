@@ -69,10 +69,9 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
     my_malloc_init(vtot_global, FNXY, double);
 
 
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    ii *= FPX0_GRID;
-    jj *= FPY0_GRID;
-    kk *= FPZ0_GRID;
+    ii = pct.FPX_OFFSET;
+    jj = pct.FPX_OFFSET;
+    kk = pct.FPX_OFFSET;
 
 
     for (iz = 0; iz < FPZ0_GRID; iz++)

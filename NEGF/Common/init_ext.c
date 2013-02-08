@@ -24,7 +24,7 @@
 void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, double gate_bias)
 {
 
-    int ii, jj, kk, ix, iy, iz;
+    int ix, iy, iz;
     int x_proc;  
     double v_external;    
     double x_locate;
@@ -46,10 +46,9 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
 
 
 
-    pe2xyz(pct.gridpe, &ii, &jj, &kk);
-    x_proc = ii * FPX0_GRID;
+    x_proc = pct.FPX_OFFSET;
 
-    printf("\n my ii = %d my jj= %d my kk= %d and FPX0_GRID = %d  gate_bias = %f \n", ii, jj, kk, FPX0_GRID, gate_bias);   
+    printf("\n gate_bias = %f \n", gate_bias);   
     printf("\n gbias_begin = %f and gbias_end = %f  BT = %f \n", gbias_begin, gbias_end, BT);   
 
     for (ix = 0; ix < FPX0_GRID; ix++)
@@ -73,8 +72,7 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
             }                       /* end for */
 
 
-        if (jj == 0 && kk == 0)
-            printf("x_locate = %5f      vext  = %10.7f \n ", x_locate, v_external );
+//            printf("x_locate = %5f      vext  = %10.7f \n ", x_locate, v_external );
 
     }                           /* end for */
 

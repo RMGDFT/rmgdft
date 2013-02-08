@@ -22,7 +22,8 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
     int x, y, z;
     int pex, pey, pez, xoff, yoff, zoff;
     int test;
-    int idx;
+    int idx, xgrid, ygrid, zgrid;
+    int ioffset, ix, iy,iz;
     double tem;
 
 
@@ -30,10 +31,39 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
 
     /* find the offset  */
     pe2xyz (pct.gridpe, &pex, &pey, &pez);
-    xoff = pex * FPX0_GRID/(1<<level);
-    yoff = pey * FPY0_GRID/(1<<level);
-    zoff = pez * FPZ0_GRID/(1<<level);
+    xgrid =  FNX_GRID/(1<<level);
+    ygrid =  FNY_GRID/(1<<level);
+    zgrid =  FNZ_GRID/(1<<level);
+    
+    xoff = pex * (xgrid /PE_X );
+    ix = xgrid % PE_X;
+    ioffset = 0;
 
+    for(idx = 1;idx <= pex;idx++) {
+        if(idx <= ix) ioffset++;
+    }
+     
+    xoff += ioffset;
+
+    yoff = pey * (ygrid /PE_Y );
+    iy = ygrid % PE_Y;
+    ioffset = 0;
+
+    for(idx = 1;idx <= pey;idx++) {
+        if(idx <= iy) ioffset++;
+    }
+     
+    yoff += ioffset;
+
+    zoff = pez * (zgrid /PE_Z );
+    iz = zgrid % PE_Z;
+    ioffset = 0;
+
+    for(idx = 1;idx <= pez;idx++) {
+        if(idx <= iz) ioffset++;
+    }
+     
+    zoff += ioffset;
 
 
 

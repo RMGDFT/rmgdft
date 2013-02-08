@@ -25,9 +25,8 @@ void global_to_distribute3 (double *global_array, double *distr_array)
     incy = FPY0_GRID;
     incy1 = FNY_GRID;
 
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    ii *= FPX0_GRID;
-    jj *= FPY0_GRID;
+    ii = pct.FPX_OFFSET;
+    jj = pct.FPY_OFFSET;
 
     for (idx1 = 0; idx1 < FPX0_GRID * FPY0_GRID; idx1++)
         distr_array[idx1] = 0.0;

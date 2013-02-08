@@ -68,10 +68,11 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
                 vtot[idx2] += vbias[idx];
             }
         }
-        if (jjj == 0 && kkk == 0)
-            printf("vtot[%d][%d][%d] = %10.7f %10.7f  %10.7f  %10.7f\n", i+iii * FPX0_GRID, j, k, vtot[idx2], vh[idx2], vxc[idx2], vnuc[idx2]);
+           j= FNY_GRID/2;
+           k = FNZ_GRID/2;
+           idx2 = k + j * FPZ0_GRID + i * FPYZ0_GRID;
+//           dprintf("%d  vtot [%d][%d] = %10.7f %10.7f  %10.7f  %10.7f %10.7f\n", i+pct.FPX_OFFSET, j, k, vtot[idx2], vh[idx2], vxc[idx2], vnuc[idx2], rhoc[idx2]);
     }
-
 
 
 #if DEBUG | 0

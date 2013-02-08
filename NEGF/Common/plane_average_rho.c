@@ -29,7 +29,6 @@ void plane_average_rho (double *rho)
 
 
     int ix, iy, iz;
-    int px, py, pz;
     REAL t1;
     REAL *zvec;
     int pxoff, pyoff, pzoff;
@@ -37,10 +36,9 @@ void plane_average_rho (double *rho)
 
 
     /* Get this processors offset */
-    pe2xyz (pct.gridpe, &px, &py, &pz);
-    pxoff = px * FPX0_GRID;
-    pyoff = py * FPY0_GRID;
-    pzoff = pz * FPZ0_GRID;
+    pxoff = pct.FPX_OFFSET;
+    pyoff = pct.FPY_OFFSET;
+    pzoff = pct.FPZ_OFFSET;
 
     if(ct.plane[0] + ct.plane[1] + ct.plane[2] >1)
     {

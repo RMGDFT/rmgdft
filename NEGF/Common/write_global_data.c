@@ -40,23 +40,23 @@ void write_global_data (int file_handle, double *data, int NX, int NY, int NZ)
 
 
     pe2xyz (pct.gridpe, &pe_x, &pe_y, &pe_z);
-    x_off = pe_x * NX / pct.pe_x;
-    y_off = pe_y * NY / pct.pe_y;
-    z_off = pe_z * NZ / pct.pe_z;
+    x_off = pct.PX_OFFSET;
+    y_off = pct.PY_OFFSET;
+    z_off = pct.PZ_OFFSET;
 
     for (i = 0; i < NX; i++)
     {
         for (j = 0; j < NY * NZ; j++)
             x_plane[j] = 0.0;
 
-        if ((i >= x_off) && (i < x_off + NX / pct.pe_x))
+        if ((i >= x_off) && (i < x_off + pct.PX0_GRID))
         {
-            for (iy = 0; iy < NY / pct.pe_y; iy++)
+            for (iy = 0; iy < pct.PY0_GRID; iy++)
             {
-                for (iz = 0; iz < NZ / pct.pe_z; iz++)
+                for (iz = 0; iz < pct.PZ0_GRID; iz++)
                 {
                     global_index = (iy + y_off) * NZ + iz + z_off;
-                    local_index = (i - x_off) * NY * NZ / pct.pe_y / pct.pe_z + iy * NZ / pct.pe_z + iz;
+                    local_index = (i - x_off) * pct.PY0_GRID * pct.PZ0_GRID + iy * pct.PZ0_GRID + iz;
                     x_plane[global_index] = data[local_index];
                 }
             }
@@ -95,25 +95,24 @@ void write_global_data_lead (int file_handle, double *data, int NX, int NY, int 
     my_malloc( x_plane, size, double );
 
 
-    pe2xyz (pct.gridpe, &pe_x, &pe_y, &pe_z);
-    x_off = pe_x * NX / pct.pe_x;
-    y_off = pe_y * NY / pct.pe_y;
-    z_off = pe_z * NZ / pct.pe_z;
+    x_off = pct.PX_OFFSET;
+    y_off = pct.PY_OFFSET;
+    z_off = pct.PZ_OFFSET;
 
     for (i = 0; i < NX / 3; i++)
     {
         for (j = 0; j < NY * NZ; j++)
             x_plane[j] = 0.0;
 
-        if ((i >= x_off) && (i < x_off + NX / pct.pe_x))
+        if ((i >= x_off) && (i < x_off + pct.PX0_GRID))
         {
-            for (iy = 0; iy < NY / pct.pe_y; iy++)
+            for (iy = 0; iy < pct.PY0_GRID; iy++)
             {
-                for (iz = 0; iz < NZ / pct.pe_z; iz++)
+                for (iz = 0; iz < pct.PZ0_GRID; iz++)
                 {
                     global_index = (iy + y_off) * NZ + iz + z_off;
-                    local_index = (i - x_off) * NY * NZ / pct.pe_y / pct.pe_z
-                        + iy * NZ / pct.pe_z + iz;
+                    local_index = (i - x_off) * pct.PY0_GRID * pct.PZ0_GRID
+                        + iy * pct.PZ0_GRID + iz;
                     x_plane[global_index] = data[local_index];
                 }
             }

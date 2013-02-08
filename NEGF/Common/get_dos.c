@@ -38,7 +38,7 @@ void get_dos (STATE * states)
     int ione = 1;
 
     int ntot, ndim;
-    int ii, jj, kk, xoff, yoff, zoff;
+    int  xoff, yoff, zoff;
     REAL *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
@@ -171,10 +171,9 @@ void get_dos (STATE * states)
                                                                                               
                                                                                               
                                                                                               
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    xoff = ii * FPX0_GRID;
-    yoff = jj * FPY0_GRID;
-    zoff = kk * FPZ0_GRID;
+    xoff = pct.FPX_OFFSET;
+    yoff = pct.FPY_OFFSET;
+    zoff = pct.FPZ_OFFSET;
 
 
 /*===================================================================*/

@@ -169,10 +169,9 @@ void get_3Ddos (STATE * states)
                                                                                               
                                                                                               
                                                                                               
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    xoff = ii * FPX0_GRID;
-    yoff = jj * FPY0_GRID;
-    zoff = kk * FPZ0_GRID;
+    xoff = pct.FPX_OFFSET;
+    yoff = pct.FPY_OFFSET;
+    zoff = pct.FPZ_OFFSET;
 
 
 /*===================================================================*/

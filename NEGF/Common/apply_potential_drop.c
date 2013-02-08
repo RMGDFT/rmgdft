@@ -40,9 +40,8 @@ void apply_potential_drop (REAL *vbias)
 
     my_barrier ();
 
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    xoff = ii * FPX0_GRID;
-    yoff = jj * FPY0_GRID;
+    xoff = pct.FPX_OFFSET;
+    yoff = pct.FPY_OFFSET;
 
     V1 = (lcr[1].bias) * eV_Ha;
     V2 = (lcr[2].bias) * eV_Ha;

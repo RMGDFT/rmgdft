@@ -220,10 +220,9 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
     my_malloc_init(rho_global, FNXY, double);
 
 
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    ii *= FPX0_GRID;
-    jj *= FPY0_GRID;
-    kk *= FPZ0_GRID;
+    ii = pct.FPX_OFFSET;
+    jj = pct.FPY_OFFSET;
+    kk = pct.FPZ_OFFSET;
 
 
     for (iz = 0; iz < FPZ0_GRID; iz++)

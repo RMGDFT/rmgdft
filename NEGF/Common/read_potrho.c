@@ -62,10 +62,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     FNYPZ = FPZ0_GRID * FNY_GRID; 
     FNYZ = FNY_GRID * FNZ_GRID; 
 
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    ii *= FPX0_GRID;
-    jj *= FPY0_GRID;
-    kk *= FPZ0_GRID;
+    ii = pct.FPX_OFFSET;
+    jj = pct.FPY_OFFSET;
+    kk = pct.FPZ_OFFSET;
 
 
     hx_new = ct.xside * ct.hxxgrid;

@@ -18,7 +18,7 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 {
     int fhand;
     char newname[MAX_PATH + 200];
-    int idx, pex, pey, pez;
+    int idx;
 
     double tem1, tem2;
 
@@ -26,7 +26,6 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 
     sprintf(newname, "%s%s", name, ".pot_rho");
 
-    pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
     int sizes[3], subsizes[3], starts[3];
     MPI_Info fileinfo;
@@ -47,9 +46,9 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
     subsizes[1] = FPY0_GRID;
     subsizes[2] = FPZ0_GRID;
 
-    starts[0] = pex * FPX0_GRID;
-    starts[1] = pey * FPY0_GRID;
-    starts[2] = pez * FPZ0_GRID;
+    starts[0] = pct.FPX_OFFSET;
+    starts[1] = pct.FPY_OFFSET;
+    starts[2] = pct.FPZ_OFFSET;
 
     /*int order = MPI_ORDER_FORTRAN;*/
     int order = MPI_ORDER_C;
