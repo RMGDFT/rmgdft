@@ -1459,15 +1459,18 @@ cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, 
 
             lwork = 2 * num_states * num_states + 6 * num_states + 1;
             liwork = 3 + 5*num_states;
+lwork *=32;
+liwork *=32;
             my_malloc (work2, lwork, REAL);
             my_malloc (iwork, liwork, int);
 
             info = 0;
-            dsygvd_  (&ione, jobz, uplo, &num_states, distCij, &num_states, distSij, &num_states,
-                     eigs, work2, &lwork, iwork, &liwork, &info);
+//            dsygvd_  (&ione, jobz, uplo, &num_states, distCij, &num_states, distSij, &num_states,
+//                     eigs, work2, &lwork, iwork, &liwork, &info);
 //            magma_dsygvd  (ione, jobz, uplo, num_states, distCij, num_states, distSij, num_states,
 //                     eigs, work2, lwork, iwork, liwork, &info);
-
+info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
+                   eigs, work2, lwork, iwork, liwork, distAij);
 
 
             if (info)
@@ -1502,14 +1505,19 @@ cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, 
 
     /* Do the orbital update in here */
     time2 = my_crtc ();
-    cublasSetVector(num_states * num_states, sizeof( REAL ), distCij, ione, ct.gpu_global_matrix, ione );
+//    cublasSetVector(num_states * num_states, sizeof( REAL ), distCij, ione, ct.gpu_global_matrix, ione );
 
     alpha1 = 1.0;
     beta1 = 0.0;
+//    custat = cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, pbasis, num_states, num_states,
+//                &alpha1, 
+//                ct.gpu_states, pbasis,
+//                ct.gpu_global_matrix, num_states,
+//                &beta1,  ct.gpu_temp, pbasis );
     custat = cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, pbasis, num_states, num_states,
                 &alpha1, 
                 ct.gpu_states, pbasis,
-                ct.gpu_global_matrix, num_states,
+                gpuCij, num_states,
                 &beta1,  ct.gpu_temp, pbasis );
 
     cublasGetVector(pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
@@ -1529,5 +1537,64 @@ cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, 
     rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 } // end subdiag_gamma_magma
+
+
+// GPU specific version with itype=1,jobz=v,uplo=l
+// assumes that a and b are already in gpu memory
+int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
+		   REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa)
+{
+    int ione=1, itype=1, info=0;
+    int liopt, liwmin, lopt, lwmin;
+    REAL rone = 1.0;
+    char *trans = "T", *uplo="L", *jobz="V";
+    cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
+    cublasSideMode_t side=CUBLAS_SIDE_LEFT;
+    cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
+    cublasDiagType_t diag=CUBLAS_DIAG_NON_UNIT;
+
+    liwmin = 3 + 5*n;
+    lwmin = 1 + 6*n + 2*n*n;
+    lopt = lwmin; 
+    liopt = liwmin; 
+
+    if( lwork < lwmin ) return -11;
+    if( liwork < liwmin ) return -13;
+
+//  Form a Cholesky factorization of B.
+    magma_dpotrf_gpu('L', n, b, n, &info);
+//    dpotrf_( uplo, &n, b, &ldb, &info );
+    if( info != 0 ) {
+       info = n + info;
+       return info;
+    }
+
+//  Transform problem to standard eigenvalue problem and solve.
+
+    magma_dsygst_gpu(itype, 'L', n, a, n, b, n, &info);
+    if( info != 0 ) {
+       info = n + info;
+       return info;
+    }
+
+    magma_dsyevd_gpu('V', 'L', n, a, n, w,
+                 wa,  n,
+                 work, lwork,
+                 iwork, liwork,
+                 &info);
+
+//   dsygst_( &itype, uplo, &n, a, &lda, b, &ldb, &info );
+//   dsyevd_( jobz, uplo, &n, a, &lda, w, work, &lwork, iwork, &liwork, &info );
+
+//   For A*x=(lambda)*B*x and A*B*x=(lambda)*x;
+//        backtransform eigenvectors: x = inv(L)**T*y or inv(U)*y
+//   dtrsm_( "Leftx", uplo, trans, "Non-unit", &n, &n, &rone, b, &ldb, a, &lda );
+
+    cublasDtrsm_v2 (ct.cublas_handle,side, cuplo, cu_transT, diag, n, n, &rone, b, ldb, a, lda);
+
+
+    return 0;
+} 
 #endif
 #endif
+
