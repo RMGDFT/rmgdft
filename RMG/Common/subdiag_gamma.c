@@ -1237,7 +1237,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     gpuBij = ct.gpu_work2;
     gpuCij = ct.gpu_work3;
     gpuSij = ct.gpu_work4;
-        
+
     time1 = my_crtc ();
 
     if (pct.gridpe == 0)
@@ -1276,12 +1276,6 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*This holds number of doubles on each PE */
     dist_stop = stop;
     /* Clear distributed matrices */
-    for(idx = 0;idx < dist_stop;idx++) {
-        distAij[idx] = 0.0; 
-    }
-    for(idx = 0;idx < dist_stop;idx++) {
-        distBij[idx] = 0.0; 
-    }
     for(idx = 0;idx < dist_stop;idx++) {
         distSij[idx] = 0.0; 
     }
@@ -1372,14 +1366,12 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     }
 
     /*Create unitary matrix on GPU */
-    for (st1 = 0; st1 < num_states; st1++)
+    for (st1 = 0; st1 < num_states*num_states; st1++)
     {
-        distCij[st1] = 1.0;
+        distCij[st1] = 0.0;
     }
-    cublasSetVector(num_states , sizeof( REAL ), distCij, ione, ct.gpu_temp, ione );
-    cublasDscal(ct.cublas_handle, num_states * num_states, &rzero, gpuCij, ione);
-    incy = num_states + 1;
-    cublasDaxpy(ct.cublas_handle, num_states, &rone, ct.gpu_temp, ione, gpuCij, incy);
+    for (st1 = 0; st1 < num_states;st1++) distCij[st1*num_states+st1] = 1.0;
+    custat = cublasSetVector(num_states * num_states , sizeof( REAL ), distCij, ione, gpuCij, ione );
 
     time2 = my_crtc ();
 
@@ -1393,9 +1385,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
 
             magma_dgesv_gpu( num_states, num_states, ct.gpu_global_matrix, num_states, ipiv, gpuCij, num_states, &info );
-
             // gpuCij holds B^-1
-            cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, ione );
 
             if (info)
             {
@@ -1447,12 +1437,6 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             liwork = qw2[0];
             my_malloc (work2, lwork, REAL);
             my_malloc (iwork, liwork, int);
-
-            info = 0;
-//            dsygvd_  (&ione, jobz, uplo, &num_states, distCij, &num_states, distSij, &num_states,
-//                     eigs, work2, &lwork, iwork, &liwork, &info);
-//            magma_dsygvd  (ione, jobz, uplo, num_states, distCij, num_states, distSij, num_states,
-//                     eigs, work2, lwork, iwork, liwork, &info);
 
             info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
                    eigs, work2, lwork, iwork, liwork, distAij);
@@ -1517,6 +1501,10 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 } // end subdiag_gamma_magma
 
+#include <stdlib.h>
+       #include <sys/types.h>
+       #include <sys/stat.h>
+       #include <fcntl.h>
 
 // GPU specific version with itype=1,jobz=v,uplo=l
 // assumes that a and b are already in gpu memory.
@@ -1526,7 +1514,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
 		   REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa)
 {
-    int ione=1, itype=1, info=0;
+    int ione=1, itype=1, info=0, idx;
     REAL rone = 1.0;
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
     cublasSideMode_t side=CUBLAS_SIDE_LEFT;
@@ -1536,8 +1524,10 @@ int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
 //  Form a Cholesky factorization of B.
 //  This routine is buggy
     magma_dpotrf_gpu('L', n, b, ldb, &info);
+//cublasGetVector(n*n, sizeof( REAL ), b, ione, wa, ione );
+//dpotrf_("L", &n, wa, &n, &info);
+//cublasSetVector(n*n, sizeof( REAL ), wa, ione, b, ione );
 
-//    dpotrf_( uplo, &n, b, &ldb, &info );
     if( info != 0 ) {
         error_handler("dpotrf failure");
     }
