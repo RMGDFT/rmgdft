@@ -134,7 +134,11 @@ void write_header (void)
             printf ("    Subspace diagonalization using lapack driver\n");
             break;
         case SUBDIAG_MAGMA:
+#if MAGMA_LIBS
             printf ("    Subspace diagonalization using magma driver\n");
+#else
+            error_handler("    This version of RMG was not built with Magma.\n");
+#endif
             break;
         default:
             printf ("    Subspace diagonalization using scalapack driver\n");

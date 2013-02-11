@@ -56,6 +56,8 @@
 #include <cublas_v2.h>
 #endif
 
+int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
+		   REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa);
 
 
 /* This subspace diagonalization function uses Scalapack libraries  */
@@ -1198,6 +1200,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 #if GAMMA_PT
 #if GPU_ENABLED
+#if MAGMA_LIBS
 void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
     int idx, st1, st2, ion, nion, ip, pstop;
@@ -1246,7 +1249,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*Get memory for global matrices */
     for(idx = 0;idx < stop;idx++) global_matrix[idx] = 0.0;
     my_malloc (vtot_eig,pct.P0_BASIS, REAL);
-    my_malloc (eigs, num_states, REAL);
+    my_malloc (eigs, 2*num_states, REAL);
     my_malloc (work1R, ct.num_states * 16 , REAL);
 
 
@@ -1319,35 +1322,29 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        // Reduce Aij
+        // Reduce Aij and store it on the GPU
         global_sums (global_matrix, &stop, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distAij, ione);
-
-cublasSetVector(num_states * num_states, sizeof( REAL ), distAij, ione, gpuAij, ione );
+        cublasSetVector(num_states * num_states, sizeof( REAL ), distAij, ione, gpuAij, ione );
 
         // Now deal with the S operator
         time3 = my_crtc ();
         alpha = ct.vel;
-#if GPU_ENABLED
+
         cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
-
         cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
-#else
-        dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
-               tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
-#endif
 
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        // Reduce Sij
+        // Reduce Sij and store it on the GPU
         global_sums (global_matrix, &stop, pct.grid_comm);
-cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuSij, ione );
+        cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuSij, ione );
         QMD_scopy (stop, global_matrix, ione, distSij, ione);
 
         /* Apply B operator on each wavefunction */
@@ -1358,28 +1355,18 @@ cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gp
         alpha = ct.vel;
         rmg_timings (DIAG_APP_B, time3 - time2);
 
-#if GPU_ENABLED
         cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
-
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
-
         cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
-
-#else
-        dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
-               tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
-#endif
-
 
         time2 = my_crtc ();
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
-        // Reduce Bij
+        // Reduce Bij and leave in global_matrix
         global_sums (global_matrix, &stop, pct.grid_comm);
-        QMD_scopy (stop, global_matrix, ione, distBij, ione);
 
 
     }
@@ -1402,11 +1389,10 @@ cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gp
 
             my_calloc (ipiv, num_states, int);
 
-            /*Inverse of B should be in Cij */
+            /* Transfer Bij which we left in global_matrix to the GPU. Inverse of B stored in gpuCij after dgesv call */
             cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
 
             magma_dgesv_gpu( num_states, num_states, ct.gpu_global_matrix, num_states, ipiv, gpuCij, num_states, &info );
-//            dgesv (&num_states, &num_states, global_matrix, &num_states, ipiv, distCij, &num_states, &info);
 
             // gpuCij holds B^-1
             cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, ione );
@@ -1424,43 +1410,41 @@ cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gp
         {
             char *trans = "n";
 
-         /*B^-1*A */
-//        cublasSetVector(num_states * num_states, sizeof( REAL ), distAij, ione, gpuAij, ione );
             /*B^-1*A */
             // ct.gpu_temp holds B^-1 and ct.gpu_work1 holds A
             cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, num_states, num_states, num_states, &alpha1, 
                   gpuCij, num_states, gpuAij, num_states, &beta1, gpuBij, 
                   num_states );
 
-
-        cublasGetVector(num_states * num_states, sizeof( REAL ), gpuBij, ione, distBij, ione );
-//cublasSetVector(num_states * num_states, sizeof( REAL ), distSij, ione, gpuSij, ione );
             cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, num_states, num_states, num_states, &alpha1, 
                      gpuSij, num_states, gpuBij, num_states, &beta1, gpuCij, 
                      num_states );
-cublasGetVector(num_states * num_states, sizeof( REAL ), gpuCij, ione, distCij, ione );
-
 
         }
 
 
-#if 1
         /****************** Find Matrix of Eigenvectors *****************************/
         /* Using lwork=-1, pdsyev should return minimum required size for the work array */
         {
             int eigs_found, eigvs_found, izero=0;
             int *iwork, *ifail, lwork;
-            REAL *gap, lwork_tmp, *work2;
+            REAL *gap, lwork_tmp, *work2, qw1[10];
+            int qw2[10];
             int liwork_tmp, liwork;
 
             my_malloc (ifail, num_states, int);
             lwork = -1;
             liwork = -1;
 
-            lwork = 2 * num_states * num_states + 6 * num_states + 1;
-            liwork = 3 + 5*num_states;
-lwork *=32;
-liwork *=32;
+            // Get workspace reqs
+            magma_dsyevd_gpu('V', 'L', num_states, gpuCij, num_states, eigs,
+                 distAij,  num_states,
+                 qw1, lwork,
+                 qw2, liwork,
+                 &info);
+
+            lwork = (int)qw1[0];
+            liwork = qw2[0];
             my_malloc (work2, lwork, REAL);
             my_malloc (iwork, liwork, int);
 
@@ -1469,14 +1453,15 @@ liwork *=32;
 //                     eigs, work2, &lwork, iwork, &liwork, &info);
 //            magma_dsygvd  (ione, jobz, uplo, num_states, distCij, num_states, distSij, num_states,
 //                     eigs, work2, lwork, iwork, liwork, &info);
-info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
+
+            info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
                    eigs, work2, lwork, iwork, liwork, distAij);
 
 
             if (info)
             {
-                printf ("\n PDSYGVX failed, info is %d", info);
-                error_handler ("PDSYGVX failed");
+                printf ("\n rmg_dsygvd_gpu failed, info is %d", info);
+                error_handler ("rmg_dsygvd_gpu failed");
             }
 
 
@@ -1493,7 +1478,6 @@ info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
             my_free (iwork);
 
         }
-#endif
 
 
     rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
@@ -1503,23 +1487,18 @@ info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
 
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
-    /* Do the orbital update in here */
+    /* Do the orbital update here. All data is already on the GPU */
     time2 = my_crtc ();
-//    cublasSetVector(num_states * num_states, sizeof( REAL ), distCij, ione, ct.gpu_global_matrix, ione );
 
     alpha1 = 1.0;
     beta1 = 0.0;
-//    custat = cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, pbasis, num_states, num_states,
-//                &alpha1, 
-//                ct.gpu_states, pbasis,
-//                ct.gpu_global_matrix, num_states,
-//                &beta1,  ct.gpu_temp, pbasis );
     custat = cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, pbasis, num_states, num_states,
                 &alpha1, 
                 ct.gpu_states, pbasis,
                 gpuCij, num_states,
                 &beta1,  ct.gpu_temp, pbasis );
 
+    // Grab our data from the GPU.
     cublasGetVector(pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
 
 
@@ -1540,61 +1519,65 @@ info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
 
 
 // GPU specific version with itype=1,jobz=v,uplo=l
-// assumes that a and b are already in gpu memory
+// assumes that a and b are already in gpu memory.
+// Magma does not provide a routine that works as
+// required so we put one together using magma routines
+// and the cublas version of dtrsm.
 int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
 		   REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa)
 {
     int ione=1, itype=1, info=0;
-    int liopt, liwmin, lopt, lwmin;
     REAL rone = 1.0;
-    char *trans = "T", *uplo="L", *jobz="V";
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
     cublasSideMode_t side=CUBLAS_SIDE_LEFT;
     cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
     cublasDiagType_t diag=CUBLAS_DIAG_NON_UNIT;
 
-    liwmin = 3 + 5*n;
-    lwmin = 1 + 6*n + 2*n*n;
-    lopt = lwmin; 
-    liopt = liwmin; 
-
-    if( lwork < lwmin ) return -11;
-    if( liwork < liwmin ) return -13;
-
 //  Form a Cholesky factorization of B.
-    magma_dpotrf_gpu('L', n, b, n, &info);
+//  This routine is buggy
+    magma_dpotrf_gpu('L', n, b, ldb, &info);
+
 //    dpotrf_( uplo, &n, b, &ldb, &info );
     if( info != 0 ) {
-       info = n + info;
-       return info;
+        error_handler("dpotrf failure");
     }
 
 //  Transform problem to standard eigenvalue problem and solve.
+//   dsygst_( &itype, uplo, &n, a, &lda, b, &ldb, &info );
+//   dsyevd_( jobz, uplo, &n, a, &lda, w, work, &lwork, iwork, &liwork, &info );
 
-    magma_dsygst_gpu(itype, 'L', n, a, n, b, n, &info);
+    magma_dsygst_gpu(itype, 'L', n, a, lda, b, ldb, &info);
     if( info != 0 ) {
-       info = n + info;
-       return info;
+        error_handler("dsygst failure");
     }
 
-    magma_dsyevd_gpu('V', 'L', n, a, n, w,
+    magma_dsyevd_gpu('V', 'L', n, a, lda, w,
                  wa,  n,
                  work, lwork,
                  iwork, liwork,
                  &info);
 
-//   dsygst_( &itype, uplo, &n, a, &lda, b, &ldb, &info );
-//   dsyevd_( jobz, uplo, &n, a, &lda, w, work, &lwork, iwork, &liwork, &info );
+    if( info != 0 ) {
+        error_handler("dsyevd failure");
+    }
 
 //   For A*x=(lambda)*B*x and A*B*x=(lambda)*x;
 //        backtransform eigenvectors: x = inv(L)**T*y or inv(U)*y
 //   dtrsm_( "Leftx", uplo, trans, "Non-unit", &n, &n, &rone, b, &ldb, a, &lda );
+//
 
     cublasDtrsm_v2 (ct.cublas_handle,side, cuplo, cu_transT, diag, n, n, &rone, b, ldb, a, lda);
 
 
     return 0;
 } 
+#else
+// Empty stub 
+void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+{
+    error_handler("    This version of RMG was not built with Magma.\n");
+}
+#endif    // end #if over MAGMA_LIBS
 #endif
 #endif
 

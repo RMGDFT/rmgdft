@@ -217,6 +217,10 @@ void read_control (char *file)
 //                                       "elpa\n"
     get_data ("subdiag_driver", NULL, INIT | OPT, diagonalization_driver_opts);
     get_data ("subdiag_driver", &ct.subdiag_driver, OPT, "scalapack");
+#if !MAGMA_LIBS
+    if(verify( "subdiag_driver", "magma" ))
+          error_handler("    This version of RMG was not built with Magma.\n");
+#endif
 
     /* Diagonalization info: initial diagonalization flag */
     get_data ("initial_diagnolization", &ct.initdiag, BOOL, "false");
