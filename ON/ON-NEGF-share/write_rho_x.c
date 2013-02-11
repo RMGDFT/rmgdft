@@ -11,17 +11,13 @@ void write_rho_x(REAL * rho, char *ab)
 {
 
     int ix, iy, iz, poff;
-    int px, py, pz;
     REAL t1;
     REAL *zvec;
     int pyoff, pzoff;
 
     my_malloc_init( zvec, FNX_GRID, REAL );
     /* Get this processors offset */
-    pe2xyz(pct.gridpe, &px, &py, &pz);
-    poff = px * FPX0_GRID;
-    pyoff = py * FPY0_GRID;
-    pzoff = pz * FPZ0_GRID;
+    poff = pct.FPX_OFFSET;
 
 
 

@@ -254,9 +254,8 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
                         {
 
                             pvec[icount] =
-                                FPY0_GRID * FPZ0_GRID * (Aix[ix] %
-                                                         FPX0_GRID) +
-                                FPZ0_GRID * (Aiy[iy] % FPY0_GRID) + (Aiz[iz] % FPZ0_GRID);
+                                FPY0_GRID * FPZ0_GRID * (Aix[ix] - pct.FPX_OFFSET) +
+                                FPZ0_GRID * (Aiy[iy] - pct.FPY_OFFSET) + (Aiz[iz] - pct.FPZ_OFFSET);
 
                             x = xc - iptr->crds[0];
                             y = yc - iptr->crds[1];
