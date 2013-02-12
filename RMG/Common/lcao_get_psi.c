@@ -104,9 +104,10 @@ void lcao_get_psi (STATE * states)
     }
     else
     {
-#pragma omp parallel for private(ion,iptr,sp,ip,l,m,psi,coeff)
+#pragma omp parallel for private(ion,iptr,sp,ip,l,m,psi,coeff,idum)
         for(st = 0; st < ct.num_states; st++)
         {
+            idum = st + 3314;
             psi = states[st].psiR;
             for (ion = 0; ion < ct.num_ions; ion++)
             {
@@ -128,10 +129,7 @@ void lcao_get_psi (STATE * states)
                     /*Loop over all m values for given l and get wavefunctions */
                     for (m=0; m < 2*l+1; m++)
                     {
-#pragma omp_critical
-{
                         coeff = rand0(&idum);
-}
                         lcao_get_awave(psi, iptr, ip, l, m, coeff);
                     }
                 }
