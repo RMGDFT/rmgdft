@@ -223,7 +223,7 @@ void read_control (char *file)
 #endif
 
     /* Diagonalization info: initial diagonalization flag */
-    get_data ("initial_diagnolization", &ct.initdiag, BOOL, "false");
+    get_data ("initial_diagonalization", &ct.initdiag, BOOL, "false");
 
     /* Diagonalization info: diagonalization period */
     get_data ("period_of_diagonalization", &ct.diag, INT, "10");
