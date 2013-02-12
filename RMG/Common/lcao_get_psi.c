@@ -68,68 +68,72 @@ void lcao_get_psi (STATE * states)
 
     if(state_count <= ct.num_states)
     {
-        st = 0;
-        for (ion = 0; ion < ct.num_ions; ion++)
+        coeff = 1.0;
+#pragma omp parallel for private(ion,iptr,sp,ip,l,m,psi)
+        for(st = 0;st < state_count;st++) 
         {
-            /* Generate ion pointer */
-            iptr = &ct.ions[ion];
 
-            /* Get species type */
-            sp = &ct.sp[iptr->species];
-
-            /*Make sure that the wavefunctions have been read*/
-            if (!sp->num_atomic_waves)
-                error_handler("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
-
-
-            /*Loop over atomic wavefunctions for given ion*/
-            for (ip = 0; ip < sp->num_atomic_waves; ip++)
+            psi = states[st].psiR;
+            for (ion = 0; ion < ct.num_ions; ion++)
             {
-                l = sp->atomic_wave_l[ip];
+                /* Generate ion pointer */
+                iptr = &ct.ions[ion];
 
-                /*Loop over all m values for given l and get wavefunctions */
-                for (m=0; m < 2*l+1; m++)
+                /* Get species type */
+                sp = &ct.sp[iptr->species];
+
+                /*Make sure that the wavefunctions have been read*/
+                if (!sp->num_atomic_waves)
+                    error_handler("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
+
+
+                /*Loop over atomic wavefunctions for given ion*/
+                for (ip = 0; ip < sp->num_atomic_waves; ip++)
                 {
+                    l = sp->atomic_wave_l[ip];
 
-                    psi = states[st].psiR;
-                    coeff = 1.0;
-                    lcao_get_awave(psi, iptr, ip, l, m, coeff);
-                    st++;
+                    /*Loop over all m values for given l and get wavefunctions */
+                    for (m=0; m < 2*l+1; m++)
+                    {
+                        lcao_get_awave(psi, iptr, ip, l, m, coeff);
+                    }
                 }
             }
+
         }
     }
     else
     {
-        for (ion = 0; ion < ct.num_ions; ion++)
+#pragma omp parallel for private(ion,iptr,sp,ip,l,m,psi,coeff)
+        for(st = 0; st < ct.num_states; st++)
         {
-            /* Generate ion pointer */
-            iptr = &ct.ions[ion];
-
-            /* Get species type */
-            sp = &ct.sp[iptr->species];
-
-            /*Make sure that the wavefunctions have been read*/
-            if (!sp->num_atomic_waves)
-                error_handler("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
-
-
-            /*Loop over atomic wavefunctions for given ion*/
-            for (ip = 0; ip < sp->num_atomic_waves; ip++)
+            psi = states[st].psiR;
+            for (ion = 0; ion < ct.num_ions; ion++)
             {
-                l = sp->atomic_wave_l[ip];
+                /* Generate ion pointer */
+                iptr = &ct.ions[ion];
 
-                /*Loop over all m values for given l and get wavefunctions */
-                for (m=0; m < 2*l+1; m++)
+                /* Get species type */
+                sp = &ct.sp[iptr->species];
+
+                /*Make sure that the wavefunctions have been read*/
+                if (!sp->num_atomic_waves)
+                    error_handler("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
+
+                /*Loop over atomic wavefunctions for given ion*/
+                for (ip = 0; ip < sp->num_atomic_waves; ip++)
                 {
+                    l = sp->atomic_wave_l[ip];
 
-                    for(st = 0; st < ct.num_states; st++)
+                    /*Loop over all m values for given l and get wavefunctions */
+                    for (m=0; m < 2*l+1; m++)
                     {
+#pragma omp_critical
+{
                         coeff = rand0(&idum);
-                        psi = states[st].psiR;
-
+}
                         lcao_get_awave(psi, iptr, ip, l, m, coeff);
-                    }   
+                    }
                 }
             }
         }
