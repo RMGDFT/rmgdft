@@ -197,9 +197,13 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
         {
 
             mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
-            residual += mgresarr[idx] * mgresarr[idx];
 
         }                   /* end for */
+
+        confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
+
+        for (idx = 0; idx < pbasis; idx++)
+            residual += mgresarr[idx] * mgresarr[idx];
 
         residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
 
