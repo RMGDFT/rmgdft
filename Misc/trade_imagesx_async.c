@@ -9,6 +9,13 @@
 
 #include "main.h"
 
+
+
+int TRADE_GRID_EDGES;
+int GRID_MAX1;
+int GRID_MAX2;
+
+
 #if HYBRID_MODEL
 #include "hybrid.h"
 #endif
@@ -46,10 +53,6 @@ static REAL *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
 static REAL *m0_s, *m0_r;
 static MPI_Request sreqs[26];
 static MPI_Request rreqs[26];
-
-int TRADE_GRID_EDGES;
-int GRID_MAX1;
-int GRID_MAX2;
 
 
 void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
