@@ -69,8 +69,6 @@ int PE_X, PE_Y, PE_Z;
 #define         MAX_CHAR  255
 
 
-#define GRID_MAX1 1
-#define GRID_MAX2 1
 
 #define MAX_TRADE_IMAGES 5
 

@@ -23,40 +23,38 @@
 
 /* Writes global data to a file */
 
-void write_global_data (int file_handle, double *data, int NX, int NY, int NZ)
+void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz)
 {
     int i, j, k;
     int amode;
     double *x_plane;
     int size;
-    int pe_x, pe_y, pe_z;
     int x_off, y_off, z_off;
     int ix, iy, iz;
     int global_index, local_index;
 
     my_barrier ();
-    size = NY * NZ;
+    size = fny * fnz;
     my_malloc( x_plane, size, double );
 
 
-    pe2xyz (pct.gridpe, &pe_x, &pe_y, &pe_z);
-    x_off = pct.PX_OFFSET;
-    y_off = pct.PY_OFFSET;
-    z_off = pct.PZ_OFFSET;
+    x_off = pct.FPX_OFFSET;
+    y_off = pct.FPY_OFFSET;
+    z_off = pct.FPZ_OFFSET;
 
-    for (i = 0; i < NX; i++)
+    for (i = 0; i < fnx; i++)
     {
-        for (j = 0; j < NY * NZ; j++)
+        for (j = 0; j < fny * fnz; j++)
             x_plane[j] = 0.0;
 
-        if ((i >= x_off) && (i < x_off + pct.PX0_GRID))
+        if ((i >= x_off) && (i < x_off + pct.FPX0_GRID))
         {
-            for (iy = 0; iy < pct.PY0_GRID; iy++)
+            for (iy = 0; iy < pct.FPY0_GRID; iy++)
             {
-                for (iz = 0; iz < pct.PZ0_GRID; iz++)
+                for (iz = 0; iz < pct.FPZ0_GRID; iz++)
                 {
-                    global_index = (iy + y_off) * NZ + iz + z_off;
-                    local_index = (i - x_off) * pct.PY0_GRID * pct.PZ0_GRID + iy * pct.PZ0_GRID + iz;
+                    global_index = (iy + y_off) * fnz + iz + z_off;
+                    local_index = (i - x_off) * pct.FPY0_GRID * pct.FPZ0_GRID + iy * pct.FPZ0_GRID + iz;
                     x_plane[global_index] = data[local_index];
                 }
             }
@@ -67,7 +65,7 @@ void write_global_data (int file_handle, double *data, int NX, int NY, int NZ)
 
 
         if (pct.gridpe == 0)
-            write (file_handle, x_plane, NY * NZ * sizeof (double));
+            write (file_handle, x_plane, fny * fnz * sizeof (double));
 
     }
 
@@ -78,20 +76,19 @@ void write_global_data (int file_handle, double *data, int NX, int NY, int NZ)
 
 
 
-void write_global_data_lead (int file_handle, double *data, int NX, int NY, int NZ)
+void write_global_data_lead (int file_handle, double *data, int fnx, int fny, int fnz)
 {
     int i, j, k;
     int amode;
     double *x_plane;
     int size;
-    int pe_x, pe_y, pe_z;
     int x_off, y_off, z_off;
     int ix, iy, iz;
     int global_index, local_index;
     double sum;
 
     my_barrier ();
-    size = NY * NZ;
+    size = fny * fnz;
     my_malloc( x_plane, size, double );
 
 
@@ -99,20 +96,20 @@ void write_global_data_lead (int file_handle, double *data, int NX, int NY, int 
     y_off = pct.PY_OFFSET;
     z_off = pct.PZ_OFFSET;
 
-    for (i = 0; i < NX / 3; i++)
+    for (i = 0; i < fnx / 3; i++)
     {
-        for (j = 0; j < NY * NZ; j++)
+        for (j = 0; j < fny * fnz; j++)
             x_plane[j] = 0.0;
 
-        if ((i >= x_off) && (i < x_off + pct.PX0_GRID))
+        if ((i >= x_off) && (i < x_off + pct.FPX0_GRID))
         {
-            for (iy = 0; iy < pct.PY0_GRID; iy++)
+            for (iy = 0; iy < pct.FPY0_GRID; iy++)
             {
-                for (iz = 0; iz < pct.PZ0_GRID; iz++)
+                for (iz = 0; iz < pct.FPZ0_GRID; iz++)
                 {
-                    global_index = (iy + y_off) * NZ + iz + z_off;
-                    local_index = (i - x_off) * pct.PY0_GRID * pct.PZ0_GRID
-                        + iy * pct.PZ0_GRID + iz;
+                    global_index = (iy + y_off) * fnz + iz + z_off;
+                    local_index = (i - x_off) * pct.FPY0_GRID * pct.FPZ0_GRID
+                        + iy * pct.FPZ0_GRID + iz;
                     x_plane[global_index] = data[local_index];
                 }
             }
@@ -123,7 +120,7 @@ void write_global_data_lead (int file_handle, double *data, int NX, int NY, int 
 
 
         if (pct.gridpe == 0)
-            write (file_handle, x_plane, NY * NZ * sizeof (double));
+            write (file_handle, x_plane, fny * fnz * sizeof (double));
 
     }
 
