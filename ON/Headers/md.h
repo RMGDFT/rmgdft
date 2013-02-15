@@ -781,11 +781,16 @@ typedef struct
     REAL time0;
 
     int spin_flag;
-    /** Name of the input control file. Passed as a command line argument
-     *
-     *  Example:
-     *  bash$  md in.diamond8
-     */
+
+
+ /* determine whether to initialize up and down density equally or not
+ * */
+    int init_equal_density_flag;
+
+    /* determine whether to get_dos or not */
+    int pdos_flag;
+
+
     char cfile[MAX_PATH];
     char basename[MAX_PATH];
 
@@ -869,6 +874,13 @@ typedef struct
     /** Number of ions */
     int num_ions;
 
+   /*string to store repeat count occupations for spin up*/
+    char occupation_str_spin_up[256];
+
+    /*string to store repeat count occupations for spin down*/
+    char occupation_str_spin_down[256];
+
+
     /** Ion structure */
     ION *ions;
 
@@ -907,6 +919,10 @@ typedef struct
 
     /* The fine uniform grid spacing in z */
     REAL hzzgrid;
+
+    /* Kohn-sham finite difference order */
+    int kohn_sham_fd_order;
+
 
     /** bravais lattice type */
     int ibrav;
@@ -956,22 +972,25 @@ typedef struct
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
     REAL mix;
 
-
-    /* Projector mixing parameter */
-    REAL prjmix;
-
-
- /*Order of Pulay mixing for charge density*/
+   /*Order of Pulay mixing for charge density*/
     int charge_pulay_order;
 
     /*How often to refresh Pulay history*/
     int charge_pulay_refresh;
 
-    /*Flag to test whether or not the modified metrics should be used in * Pulay mixing*/
+    /*Scale parameter for residuals in Pulay mixing*/
+    REAL charge_pulay_scale;
+
+    /*Flag to test whether or not the modified metrics should be used in
+ * Pulay mixing*/
     int charge_pulay_special_metrics;
 
     /*Weight for Pulay special metrics*/
     REAL charge_pulay_special_metrics_weight;
+
+
+    /* Projector mixing parameter */
+    REAL prjmix;
 
 
     /* Global uniform grid corner */
@@ -1071,6 +1090,13 @@ typedef struct
     int diag;
     int end_diag;
 
+  /* scalapack block size */
+    int scalapack_block_factor;
+
+    /* How many steps between writeout of eigenvalues*/
+    int write_eigvals_period;
+
+
     /** Force flag. 0=don't compute forces, 1=compute forces */
     int forceflag;
 
@@ -1079,6 +1105,10 @@ typedef struct
 
     /* number of velocity in constrained dynamics */
     REAL cd_velocity;
+
+    /* Whether to write full memory usage report at the end of
+ * calculation */
+    int write_memory_report;
 
 
     /** Ionic motion timestep */
@@ -1211,6 +1241,12 @@ typedef struct
 
     /*Ratio between target RMS for get_vh and RMS total potential*/
     REAL hartree_rms_ratio;
+
+   /* Potential acceleration constant step factor */
+    REAL potential_acceleration_constant_step;
+
+    /* Potential acceleration constant step factor */
+    REAL potential_acceleration_poisson_step;
 
 
     int mask_function;

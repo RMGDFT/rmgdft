@@ -111,7 +111,7 @@ void init_psp_soft (void)
         if (!(it1 % 2))
             it1++;
         sp->nldim = it1;
-        sp->nlfdim = BETA_NX * it1;
+        sp->nlfdim = ct.nxfgrid * it1;
 
         if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
             || (sp->nldim >= ct.psi_nzgrid))
