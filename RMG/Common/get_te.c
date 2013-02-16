@@ -47,7 +47,7 @@
 #include "main.h"
 
 
-void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states)
+void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh, REAL * vxc, STATE * states, int ii_flag)
 {
     int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1);
     REAL r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
@@ -177,41 +177,44 @@ void get_te (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc, REAL * vh
     xcstate = vel * esum[2];
     mag *= vel;
 
+    if(ii_flag) {
 
-    time2 = my_crtc ();
-    /* Evaluate total ion-ion energy */
-    ct.II = 0.0;
-    for (i = 0; i < ct.num_ions; i++)
-        ct.II -= (ct.sp[ct.ions[i].species].zvalence *
-                  ct.sp[ct.ions[i].species].zvalence /
-                  ct.sp[ct.ions[i].species].rc) / sqrt (2.0 * PI);
+        time2 = my_crtc ();
+        /* Evaluate total ion-ion energy */
+        ct.II = 0.0;
+        for (i = 0; i < ct.num_ions; i++)
+            ct.II -= (ct.sp[ct.ions[i].species].zvalence *
+                      ct.sp[ct.ions[i].species].zvalence /
+                      ct.sp[ct.ions[i].species].rc) / sqrt (2.0 * PI);
 
 
-    for (i = 0; i < ct.num_ions; i++)
-    {
+        for (i = 0; i < ct.num_ions; i++)
+        {
 
-        iptr1 = &ct.ions[i];
-        loc_sum = 0.0;
-#if HYBRID_MODEL
-#pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
-#endif
-	for (j = i + 1; j < ct.num_ions; j++)
-	{
+            iptr1 = &ct.ions[i];
+            loc_sum = 0.0;
+    #if HYBRID_MODEL
+    #pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
+    #endif
+            for (j = i + 1; j < ct.num_ions; j++)
+            {
 
-	    iptr2 = &ct.ions[j];
+                iptr2 = &ct.ions[j];
 
-	    r = minimage (iptr1, iptr2, xtal_r);
+                r = minimage (iptr1, iptr2, xtal_r);
 
-	    t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
-		       ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
+                t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
+                           ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
 
-	    loc_sum += (ct.sp[iptr1->species].zvalence *
-		      ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
-	}
-	ct.II += loc_sum;
+                loc_sum += (ct.sp[iptr1->species].zvalence *
+                          ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
+            }
+            ct.II += loc_sum;
+        }
+
+        rmg_timings (GET_TE_II_TIME, (my_crtc () - time2));
+
     }
-
-    rmg_timings (GET_TE_II_TIME, (my_crtc () - time2));
 
 
     /* Sum them all up */

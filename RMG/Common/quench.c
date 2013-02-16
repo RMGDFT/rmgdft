@@ -70,7 +70,7 @@ bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
         CONVERGED = scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
 
-	get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, states);
+	get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
 
 	/* output the eigenvalues with occupations */
 	if (ct.write_eigvals_period)

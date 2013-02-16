@@ -89,7 +89,7 @@ void get_phase (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
 void get_nlop_smp (int tid);
 char *get_num (char *str);
 void get_te (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *rhoc, REAL *vh, REAL *vxc,
-             STATE *states);
+             STATE *states, int ii_flag);
 
 void get_vxc (REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *vxc);
 
