@@ -112,6 +112,10 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (2 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(REAL) )){
+      fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+      exit(-1);
+  }
 
 
   alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);

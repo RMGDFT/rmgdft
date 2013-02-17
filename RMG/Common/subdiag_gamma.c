@@ -594,7 +594,9 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
     /*Finally, sum global_matrix over all PEs */
     time3 = my_crtc ();
 
-    global_sums (global_matrix, &stop, pct.grid_comm);
+//    global_sums (global_matrix, &stop, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
 
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
@@ -987,7 +989,8 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce Aij
-        global_sums (global_matrix, &stop, pct.grid_comm);
+        //global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distAij, ione);
 
 
@@ -1012,7 +1015,8 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce Sij
-        global_sums (global_matrix, &stop, pct.grid_comm);
+        //global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distSij, ione);
 
         /* Apply B operator on each wavefunction */
@@ -1043,7 +1047,8 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce Bij
-        global_sums (global_matrix, &stop, pct.grid_comm);
+        //global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         QMD_scopy (stop, global_matrix, ione, distBij, ione);
 
 
@@ -1276,12 +1281,12 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     /*This holds number of doubles on each PE */
     dist_stop = stop;
     /* Clear distributed matrices */
-    for(idx = 0;idx < dist_stop;idx++) {
-        distSij[idx] = 0.0; 
-    }
-    for(idx = 0;idx < dist_stop;idx++) {
-        distCij[idx] = 0.0; 
-    }
+//    for(idx = 0;idx < dist_stop;idx++) {
+//        distSij[idx] = 0.0; 
+//    }
+//    for(idx = 0;idx < dist_stop;idx++) {
+//        distCij[idx] = 0.0; 
+//    }
 
     rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
@@ -1317,9 +1322,10 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce Aij and store it on the GPU
-        global_sums (global_matrix, &stop, pct.grid_comm);
-        QMD_scopy (stop, global_matrix, ione, distAij, ione);
-        cublasSetVector(num_states * num_states, sizeof( REAL ), distAij, ione, gpuAij, ione );
+        //global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        //QMD_scopy (stop, global_matrix, ione, distAij, ione);
+        cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuAij, ione );
 
         // Now deal with the S operator
         time3 = my_crtc ();
@@ -1337,9 +1343,10 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce Sij and store it on the GPU
-        global_sums (global_matrix, &stop, pct.grid_comm);
+        //global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuSij, ione );
-        QMD_scopy (stop, global_matrix, ione, distSij, ione);
+        //QMD_scopy (stop, global_matrix, ione, distSij, ione);
 
         /* Apply B operator on each wavefunction */
         time2 = my_crtc ();
@@ -1360,7 +1367,9 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce Bij and leave in global_matrix
-        global_sums (global_matrix, &stop, pct.grid_comm);
+//        global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
 
 
     }
@@ -1437,9 +1446,10 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
             liwork = qw2[0];
             my_malloc (work2, lwork, REAL);
             my_malloc (iwork, liwork, int);
-
+//            info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
+//                   eigs, work2, lwork, iwork, liwork, distAij);
             info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
-                   eigs, work2, lwork, iwork, liwork, distAij);
+                   eigs, ct.gpu_host_work, lwork, iwork, liwork, distAij);
 
 
             if (info)

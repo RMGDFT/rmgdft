@@ -1336,6 +1336,7 @@ typedef struct
     REAL *gpu_host_temp2;
     REAL *gpu_host_temp3;
     REAL *gpu_host_temp4;
+    REAL *gpu_host_work;
 
 #endif    
 

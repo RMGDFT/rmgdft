@@ -561,7 +561,8 @@ void reduce_and_dist_matrix(int n, REAL *global_matrix, REAL *dist_matrix, REAL 
     if(ct.scalapack_global_sums) {
 
         /*Sum matrix over all processors */
-        global_sums (global_matrix, &stop, pct.grid_comm);
+//        global_sums (global_matrix, &stop, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         time2 = my_crtc ();
         rmg_timings (DIAG_GLOB_SUMS, time2 - time1);
