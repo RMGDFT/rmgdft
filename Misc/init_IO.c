@@ -103,7 +103,14 @@ void init_IO (int argc, char **argv)
 
     if (image * pct.images != npes)
         error_handler ("Total MPI processes (%d) must be a multiple of the number of images (%d) in this run.", npes, pct.images);
-    pct.thisimg = worldpe / image;
+
+    if(ct.images_per_node > 1) {
+        // Only works for images stacked vertically. Needs to be extended for horizontal stacking.
+        pct.thisimg = worldpe % ct.images_per_node;
+    }
+    else {
+        pct.thisimg = worldpe / image;
+    }
 
     if (pct.images > 1)
         snprintf (ct.cfile, MAX_PATH, "%s.%02d.rmg", basename, pct.thisimg + 1);
@@ -220,7 +227,7 @@ void init_IO (int argc, char **argv)
     if (pct.images == 1)
         printf ("\nRMG running in a single-image mode\n");
     else
-        printf ("\nRMG running in a multi-image mode with %d images\n", pct.images);
+        printf ("\nRMG running in a multi-image mode with %d images and %d images per node.\n", pct.images, ct.images_per_node);
 
     /* Read in our pseudopotential information */
     read_pseudo ();

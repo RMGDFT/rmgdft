@@ -809,6 +809,13 @@ typedef struct
 typedef struct
 {
 
+    // Special variables when running with multiple images per node
+    // The number of images stacked on a single node
+    int images_per_node;
+
+    // Image node index ranging from 0 to (images_per_node-1)
+    int image_node_id;
+
     //pid_t main_thread_pid;
     int THREADS_PER_NODE;
 

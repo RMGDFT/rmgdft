@@ -39,7 +39,7 @@
 void init_pe ( int image )
 {
 
-    int ii, jj, kk, ix, iy, iz, idx, ioffset, rem;
+    int ii, jj, kk, ix, iy, iz, idx, ioffset, rem, ierr;
     int image_grp_map[MAX_IMGS], range[1][3];
     MPI_Group group, world_grp, img_masters;
 
@@ -58,25 +58,61 @@ void init_pe ( int image )
 
     /* setup pct.img_comm to include all pe's in this image */
 
-    /* determine range of pe ranks in this image */
-    range[0][0] = pct.thisimg * pct.grids * NPES;
-    range[0][1] = (pct.thisimg + 1) * pct.grids * NPES - 1;
-    range[0][2] = 1;
 
-    /* define this images group and put its comm in pct */
-    MPI_Group_range_incl (world_grp, 1, range, &group);
-    MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
+    // Not sure if this will work on anything other than the Crays ....
+    if(ct.images_per_node > 1) {
+
+        int ix, ir1, ir2, ir3, img_nxdim, img_nydim, img_nx, img_ny;
+        img_nxdim = pct.images / ct.images_per_node;
+        img_nydim = ct.images_per_node;
+        img_nx = pct.thisimg / img_nydim;
+        img_ny = pct.thisimg % img_nydim;
+        range[0][0] = img_nx * img_nydim * pct.grids * NPES + img_ny;
+        range[0][1] = img_nx * img_nydim * pct.grids * NPES + img_ny + img_nydim*NPES - img_nydim;
+        range[0][2] = ct.images_per_node;
+        dprintf("RRR %d  %d  %d  %d  %d",pct.thisimg, pct.grids, range[0][0],range[0][1],range[0][2]);sleep(2);fflush(NULL);
+        /* define this images group and put its comm in pct */
+        ierr=MPI_Group_range_incl (world_grp, 1, range, &group);
+        Dprintf("IERR0 = %d",ierr);fflush(NULL);
+        ierr=MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
+        Dprintf("IERR1 = %d",ierr);fflush(NULL);
+
+        /* setup pct.rmg_comm to include all image group_rank 0 pe's */
+        /* build rank list of group masters, this assumes contiguous ranges */
+        /* NOTE: this explicitly depends on range assignment method above! */
+// Still needs to be extended for images stacked horizontally
+        for (image = 0; image < pct.images; image++)
+            image_grp_map[image] = image;
+            image_grp_map[image] = image;
+
+    }
+    else {
+
+        /* determine range of pe ranks in this image */
+        range[0][0] = pct.thisimg * pct.grids * NPES;
+        range[0][1] = (pct.thisimg + 1) * pct.grids * NPES - 1;
+        range[0][2] = 1;
+
+        /* define this images group and put its comm in pct */
+        MPI_Group_range_incl (world_grp, 1, range, &group);
+        MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
+
+        /* setup pct.rmg_comm to include all image group_rank 0 pe's */
+        /* build rank list of group masters, this assumes contiguous ranges */
+        /* NOTE: this explicitly depends on range assignment method above! */
+        for (image = 0; image < pct.images; image++)
+            image_grp_map[image] = image * NPES * pct.grids;
+
+    }
 
 
-    /* setup pct.rmg_comm to include all image group_rank 0 pe's */
-    /* build rank list of group masters, this assumes contiguous ranges */
-    /* NOTE: this explicitly depends on range assignment method above! */
-    for (image = 0; image < pct.images; image++)
-        image_grp_map[image] = image * NPES * pct.grids;
+    MPI_Barrier(MPI_COMM_WORLD);
 
-	/* define master group and make its comm global */
+    /* define master group and make its comm global */
     MPI_Group_incl (world_grp, pct.images, image_grp_map, &img_masters);
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Comm_create (MPI_COMM_WORLD, img_masters, &pct.rmg_comm);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     /* set gridpe rank value to its image rank */
     MPI_Comm_rank (pct.img_comm, &pct.imgpe);
@@ -124,6 +160,7 @@ void init_pe ( int image )
         error_handler ("Other than one or two grids per image not implimented.");
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     /* set gridpe rank value to local grid rank value */
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
     /*printf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);*/

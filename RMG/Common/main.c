@@ -124,6 +124,8 @@ double alat;
 int main (int argc, char **argv)
 {
 
+    char *tptr;
+
 #if GPU_ENABLED
 //  Hack to force initialization of libsci on Cray before we create our own threads
     char *trans = "n";
@@ -143,6 +145,11 @@ int main (int argc, char **argv)
                B, &asize, &beta, C, &asize);
 #endif
 
+    // Get RMG_IMAGES_PER_NODE environment variable
+    ct.images_per_node = 1;
+    if(NULL != (tptr = getenv("RMG_IMAGES_PER_NODE"))) {
+        ct.images_per_node = atoi(tptr);
+    }
 
     initialize (argc, argv);
 
