@@ -50,7 +50,7 @@ ARCH =
 # Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
 FFLAGS = $(ARCH)  -O3 -fast -c -Mipa=fast,inline 
-CFLAGS = $(ARCH)  -O3 -fast -B -Mipa=fast,inline -IHeaders -mp
+CFLAGS = $(ARCH)  -O3 -fast -B -Mipa=fast,inline -IHeaders -I../Headers -mp
 # Comment out the preceding tw0 lines and uncomment the following two lines for hybrid mode
 #FFLAGS = $(ARCH)  -O3 -fast -Mflushz -c -Mipa=fast,inline -mp
 #CFLAGS = $(ARCH)  -O3 -fast -Mflushz -B -Mipa=fast,inline -IHeaders -mp

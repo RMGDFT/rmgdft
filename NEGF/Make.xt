@@ -42,7 +42,7 @@ ARCH =
 # Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
 FFLAGS = $(ARCH)  -O3 -fast -c -Mipa=fast,inline
-CFLAGS = $(ARCH)  -O3 -fast -B -Mipa=fast,inline -IHeaders
+CFLAGS = $(ARCH)  -O3 -fast -B -Mipa=fast,inline -IHeaders -I../Headers
 
 
 rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)

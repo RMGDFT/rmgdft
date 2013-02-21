@@ -48,7 +48,7 @@ ARCH =
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
 FFLAGS = $(ARCH) -O3 -fopenmp
 #FFLAGS = $(ARCH) -O3
-CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers -pthread -Wall -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
 #CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
 
 rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a

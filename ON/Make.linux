@@ -53,7 +53,7 @@ MFILES = Makefile Make.linux
 ARCH =
 #CWARN = -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Wundef -Wshadow  -Wredundant-decls -lefence
 FFLAGS = $(ARCH) -O3 
-CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers
 
 
 rmg-on: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a

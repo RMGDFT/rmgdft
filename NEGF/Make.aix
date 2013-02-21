@@ -45,7 +45,7 @@ MFILES = Makefile Make.aix
 ARCH = -q64 -qarch=pwr5 -qtune=pwr5
 FFLAGS = $(ARCH) -O4 -qnosave -qstrict -c
 # Add -qcheck=all to get the code that does runtime checks of various things 
-CFLAGS = $(ARCH) -O4 -qcpluscmt $(DEFS) -qstrict  -IHeaders
+CFLAGS = $(ARCH) -O4 -qcpluscmt $(DEFS) -qstrict  -IHeaders -I../Headers
 
 
 rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
