@@ -20,9 +20,11 @@ DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
 LOCAL_MODULES = Local_current Common Input Pois_for_negf ../ON/ON-NEGF-share 
 MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
+Header_dir = Headers ../Headers
+
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
-HFILES := $(wildcard Headers/*.h)
+HFILES := $(foreach MODULE, $(Header_dir), $(wildcard $(Header_dir)/*.h))
 H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
@@ -50,7 +52,7 @@ MFILES = Makefile Make.linux
 ARCH =
 #CWARN = -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Wundef -Wshadow  -Wredundant-decls -lefence
 FFLAGS = $(ARCH) -O3 
-CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers
 
 
 rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a

@@ -1283,6 +1283,7 @@ typedef struct
 
     int mask_function;
     int norm_conserving_pp;
+    int images_per_node;
 
 } CONTROL;
 

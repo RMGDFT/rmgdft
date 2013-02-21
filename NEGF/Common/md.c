@@ -80,6 +80,7 @@ int main (int argc, char **argv)
     ct.time0 = my_crtc();
 
 
+    ct.images_per_node = 1;
     init_IO(argc, argv);
 
     /* Read in our control information */
