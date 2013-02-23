@@ -56,7 +56,7 @@ void init_IO (int argc, char **argv)
     /* Set start of program time */
     timer = time (NULL);
 #if HYBRID_MODEL
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
+    MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
 #else
 
     /* Initialize MPI, we need it for error_handler, amongst others */
@@ -272,9 +272,9 @@ void init_IO (int argc, char **argv)
 #endif
 
 #if HYBRID_MODEL
-  if(provided != MPI_THREAD_SERIALIZED) {
+  if(provided < ct.mpi_threadlevel) {
 
-      printf("Thread support requested = %d but only %d provided. Terminating.\n", MPI_THREAD_SERIALIZED, provided);
+      printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
       MPI_Finalize();
       exit(0);
 

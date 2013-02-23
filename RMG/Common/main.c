@@ -151,6 +151,12 @@ int main (int argc, char **argv)
         ct.images_per_node = atoi(tptr);
     }
 
+    // Get RMG_MPI_THREAD_LEVEL environment variable
+    ct.mpi_threadlevel = MPI_THREAD_SERIALIZED;
+    if(NULL != (tptr = getenv("RMG_MPI_THREAD_LEVEL"))) {
+        ct.mpi_threadlevel = atoi(tptr);
+    }
+
     initialize (argc, argv);
 
     run ();

@@ -819,6 +819,9 @@ typedef struct
     //pid_t main_thread_pid;
     int THREADS_PER_NODE;
 
+    // requested mpi thread level
+    int mpi_threadlevel;
+
     /** Description of the run. */
     char description[MAX_CHAR];
 
@@ -1301,6 +1304,9 @@ typedef struct
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
 
+    // Support for gpu direct collectives
+    int gpu_direct_collectives;
+
     // Integer device id
     int gpu_device_id;
 
@@ -1357,6 +1363,9 @@ typedef struct
 
     /* Thread ID number assigned by us */
     int tid;
+
+    /* MPI communicator for use by this thread */
+    MPI_Comm grid_comm;
 
     /* Thread identifier from pthread_self. Needed to send signals */
     pthread_t pthread_tid;

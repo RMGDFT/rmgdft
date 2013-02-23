@@ -39,7 +39,7 @@
 void init_pe ( int image )
 {
 
-    int ii, jj, kk, ix, iy, iz, idx, ioffset, rem, ierr;
+    int ii, jj, kk, ix, iy, iz, idx, ioffset, rem, ierr, thread;
     int image_grp_map[MAX_IMGS], range[1][3];
     MPI_Group group, world_grp, img_masters;
 
@@ -127,6 +127,11 @@ void init_pe ( int image )
             error_handler
                 ("Spin calculations require 2 grids, please rerun with twice as many PEs.");
         MPI_Comm_dup (pct.img_comm, &pct.grid_comm);
+#if HYBRID_MODEL
+        for(thread = 0;thread < ct.THREADS_PER_NODE;thread++) {
+              MPI_Comm_dup (pct.img_comm, &thread_control[thread].grid_comm);
+        }
+#endif
     }
     else if (pct.grids == 2)
     {

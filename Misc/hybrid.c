@@ -339,6 +339,20 @@ int get_thread_tid(void) {
 }
 
 
+// Reads the threads MPI grid communicator from the thread specific data
+MPI_Comm *get_thread_grid_comm(void) {
+
+    SCF_THREAD_CONTROL *ss;
+
+    if(!in_threaded_region) return &pct.grid_comm;
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
+    if(!ss) return &pct.grid_comm;
+
+    return &ss->grid_comm;
+}
+
+
+
 // Used for positioning and setting processor affinity. For now assumes that
 // THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
 // does not attemp to schedule
