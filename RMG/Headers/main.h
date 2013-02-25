@@ -103,6 +103,9 @@
 /* Custom types used in the code*/
 #include "typedefs.h"
 
+/* Prototypes for common function calls*/
+#include "common_prototypes.h" 
+
 /* Prototypes for function calls*/
 #include "prototypes.h" 
 

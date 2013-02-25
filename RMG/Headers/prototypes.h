@@ -34,6 +34,8 @@
 /* Function prototypes */
 REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz);
+rmg_float_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
+                rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz);
 void app6_del2 (REAL *rho, REAL *work, int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz);
 void app_smooth (REAL *f, REAL *work, int dimx, int dimy, int dimz);
@@ -72,9 +74,14 @@ void cross_product (REAL *a, REAL *b, REAL *c);
 void destroy_fftw_wisdom (void);
 void eval_residual (REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz, REAL *res);
+void eval_residual_f (rmg_float_t *mat, rmg_float_t *f_mat, int dimx, int dimy, int dimz,
+                    rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz, rmg_float_t *res);
 void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
                 int dimx, int dimy, int dimz, REAL gridhx,
                 REAL gridhy, REAL gridhz, REAL step, REAL k);
+void solv_pois_f (rmg_float_t *vmat, rmg_float_t *fmat, rmg_float_t *work,
+                int dimx, int dimy, int dimz, rmg_float_t gridhx,
+                rmg_float_t gridhy, rmg_float_t gridhz, rmg_float_t step, rmg_float_t k);
 REAL fill (STATE *states, REAL width, REAL nel, REAL mix,
            int num_st, int occ_flag);
 
@@ -227,6 +234,13 @@ void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim);
+void mgrid_solv_f (rmg_float_t *v_mat, rmg_float_t *f_mat, rmg_float_t *work,
+                 int dimx, int dimy, int dimz, rmg_float_t gridhx, rmg_float_t gridhy,
+                 rmg_float_t gridhz, int level, int *nb_ids, int max_levels,
+                 int *pre_cyc, int *post_cyc, int mu_cyc, rmg_float_t step, rmg_float_t k,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim);
 void rmg_timings (int what, REAL time);
 REAL minimage (ION *ip1, ION *ip2, REAL *xtal_r);
 REAL my_crtc (void);
@@ -265,6 +279,7 @@ REAL real_min_all (REAL x, MPI_Comm comm);
 void reset_timers (void);
 void sortpsi (STATE *states);
 void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
+void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (REAL * f, int dimx, int dimy, int dimz);
@@ -290,8 +305,10 @@ void wvfn_residual(STATE *states);
 REAL rand0 (long *idum);
 void cgen_prolong(REAL coef[], REAL fraction, int order);
 void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+void mg_restrict_f (rmg_float_t *full, rmg_float_t *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int grid_ratio);
 void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+void mg_prolong_f (rmg_float_t *full, rmg_float_t *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz);
 void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int grid_ratio, int order);
 void gather_psi (REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid);
@@ -306,15 +323,6 @@ void QMD_sem_destroy (QMD_sem_t *sem);
 void QMD_sem_wait (QMD_sem_t *sem);
 void QMD_sem_post (QMD_sem_t *sem);
 
-/* Blas wrappers */
-void QMD_daxpy (int n, REAL alpha, REAL *x, int incx, REAL *y, int incy);
-void QMD_dscal (int n, REAL alpha, REAL *x, int incx);
-void QMD_dcopy (int n, REAL *x, int incx, REAL *y, int incy);
-REAL QMD_ddot (int n, REAL *x, int incx, REAL *y, int incy);
-void QMD_saxpy (int n, rmg_float_t alpha, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
-void QMD_sscal (int n, rmg_float_t alpha, rmg_float_t *x, int incx);
-void QMD_scopy (int n, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
-rmg_float_t QMD_sdot (int n, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
 
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
