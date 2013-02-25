@@ -59,7 +59,8 @@
 
 /** Size of floating point variables used in QMD */
 #define     REAL    double
-
+#include    "rmgtypes.h"
+#include    "common_prototypes.h"
 #include    "typedefs.h"
 
 int MXLLDA, MXLCOL;
@@ -1281,8 +1282,6 @@ extern PE_CONTROL pct;
 
 /* Function prototypes */
 void app_4del2 (REAL * f, REAL * work);
-REAL app_del2c (REAL * a, REAL * b, int dimx, int dimy, int dimz,
-        REAL gridhx, REAL gridhy, REAL gridhz);
 
 void app_smooth (REAL * f, int dimx, int dimy, int dimz);
 void app_cir (REAL * a, REAL * b, int dimx, int dimy, int dimz);
@@ -1308,11 +1307,6 @@ void app_nl (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, int state,
         int flag, int kidx, int tid);
 void cholesky (REAL * a, int n);
 void cross_product (REAL * a, REAL * b, REAL * c);
-void eval_residual (REAL * mat, REAL * f_mat, int dimx, int dimy, int dimz,
-        REAL gridhx, REAL gridhy, REAL gridhz, REAL * res);
-void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
-                int dimx, int dimy, int dimz, REAL gridhx,
-                REAL gridhy, REAL gridhz, REAL step, REAL k);
 REAL fill (STATE * states, REAL width, REAL nel, REAL mix,
         int num_st, int occ_flag);
 void force (REAL * rho, REAL * rho_opps, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states);
@@ -1420,12 +1414,6 @@ void get_milliken (STATE * states);
 void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         REAL * rho, REAL * rhocore, REAL * rhoc);
 void output_wave (STATE * states, int kpt, int fhand);
-
-/* Blas wrappers */
-void QMD_daxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy);
-void QMD_dscal (int n, REAL alpha, REAL * x, int incx);
-void QMD_dcopy (int n, REAL * x, int incx, REAL * y, int incy);
-REAL QMD_ddot (int n, REAL * x, int incx, REAL * y, int incy);
 
 
 
