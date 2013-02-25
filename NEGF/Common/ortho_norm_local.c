@@ -47,7 +47,7 @@ void ortho_norm_local (STATE *states)
                 {
                     state_minus_state (&states[j], &states[j - i], overlap[i]);
                 }
-                norm = QMD_sdot (states[j].size, states[j].psiR, ione, states[j].psiR, ione);
+                norm = QMD_ddot (states[j].size, states[j].psiR, ione, states[j].psiR, ione);
                 norm = 1.0 / (sqrt (norm));
                 sscal (&states[j].size, &norm, states[j].psiR, &ione);
 

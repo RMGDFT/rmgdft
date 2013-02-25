@@ -4,5 +4,5 @@
  
 
 
-
+#include    "rmgtypes.h"
 #include    "md.h"
