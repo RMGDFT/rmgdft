@@ -264,6 +264,7 @@ void init_IO (int argc, char **argv)
 
     // Allocate storage for trade_images routines
     trade_images (NULL, 0, 0, 0, NULL);
+    trade_images_f (NULL, 0, 0, 0, NULL);
     trade_imagesx (NULL, NULL, 0, 0, 0, 0, 0);
 
 #if ASYNC_TRADES

@@ -15,3 +15,40 @@ void QMD_scopy (int n, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
 rmg_float_t QMD_sdot (int n, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
 
 
+int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
+void mgrid_solv (REAL *v_mat, REAL *f_mat, REAL *work,
+                 int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy,
+                 REAL gridhz, int level, int *nb_ids, int max_levels,
+                 int *pre_cyc, int *post_cyc, int mu_cyc, REAL step, REAL k,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim);
+void mgrid_solv_f (rmg_float_t *v_mat, rmg_float_t *f_mat, rmg_float_t *work,
+                 int dimx, int dimy, int dimz, rmg_float_t gridhx, rmg_float_t gridhy,
+                 rmg_float_t gridhz, int level, int *nb_ids, int max_levels,
+                 int *pre_cyc, int *post_cyc, int mu_cyc, rmg_float_t step, rmg_float_t k,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim);
+void eval_residual (REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz,
+                    REAL gridhx, REAL gridhy, REAL gridhz, REAL *res);
+void eval_residual_f (rmg_float_t *mat, rmg_float_t *f_mat, int dimx, int dimy, int dimz,
+                    rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz, rmg_float_t *res);
+void solv_pois (REAL *vmat, REAL *fmat, REAL *work,
+                int dimx, int dimy, int dimz, REAL gridhx,
+                REAL gridhy, REAL gridhz, REAL step, REAL k);
+void solv_pois_f (rmg_float_t *vmat, rmg_float_t *fmat, rmg_float_t *work,
+                int dimx, int dimy, int dimz, rmg_float_t gridhx,
+                rmg_float_t gridhy, rmg_float_t gridhz, rmg_float_t step, rmg_float_t k);
+
+
+void mg_restrict (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+void mg_restrict_f (rmg_float_t *full, rmg_float_t *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+void mg_prolong (REAL *full, REAL *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+void mg_prolong_f (rmg_float_t *full, rmg_float_t *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
+
+REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
+                REAL gridhx, REAL gridhy, REAL gridhz);
+rmg_float_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
+                rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz);
+
