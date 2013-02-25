@@ -173,7 +173,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         time1 = my_crtc ();
 #endif
 
-        scf_barrier_wait();
+        //scf_barrier_wait();
         /* Apply Mehrstellen left hand operators */
         diag = app_cil_driver (tmp_psi, work2, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
@@ -188,7 +188,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
         // Copy saved application to ns to res
-        QMD_scopy(pbasis, res2, 1, res, 1);
+        QMD_dcopy(pbasis, res2, 1, res, 1);
 
 #if MD_TIMERS
         time1 = my_crtc ();
@@ -213,7 +213,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 //        cudaDeviceSynchronize();
 #endif
 
-        scf_barrier_wait();
+        //scf_barrier_wait();
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver (sg_twovpsi, work1, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
@@ -226,7 +226,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
         t1 = -ONE;
-        QMD_saxpy (pbasis, t1, work2, ione, work1, ione);
+        QMD_daxpy (pbasis, t1, work2, ione, work1, ione);
 
 
 #if MD_TIMERS
@@ -394,7 +394,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         }
 
     }                           /* end for */
-
 
 
     if(potential_acceleration) {
@@ -676,8 +675,8 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 
         t1 = -ONE;
-        QMD_saxpy (pbasis, t1, work2R, ione, work1R, ione);
-        QMD_saxpy (pbasis, t1, work2I, ione, work1I, ione);
+        QMD_daxpy (pbasis, t1, work2R, ione, work1R, ione);
+        QMD_daxpy (pbasis, t1, work2I, ione, work1I, ione);
 
 
 
@@ -858,8 +857,8 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
             if(cycles == 1)t1 = 1.0 * diag;*/
 
             /* Update wavefuntion */
-            QMD_saxpy (pbasis, t1, resR, ione, tmp_psiR, ione);
-            QMD_saxpy (pbasis, t1, resI, ione, tmp_psiI, ione);
+            QMD_daxpy (pbasis, t1, resR, ione, tmp_psiR, ione);
+            QMD_daxpy (pbasis, t1, resI, ione, tmp_psiI, ione);
 
 
         }

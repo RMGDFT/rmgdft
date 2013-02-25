@@ -324,9 +324,9 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
                 for (ip = 0; ip < sp->nh; ip++)
                 {
 
-                    sintR[ipindex] = ct.vel * QMD_sdot (stop, nlarrayR, incx, weiptr, incx);
+                    sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
 #if !GAMMA_PT
-                    sintI[ipindex] = ct.vel * QMD_sdot (stop, nlarrayI, incx, weiptr, incx);
+                    sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
                     weiptr += pct.idxptrlen[ion];
@@ -398,9 +398,9 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
       for (ip = 0; ip < sp->nh; ip++)
       {
 
-          sintR[ipindex] = ct.vel * QMD_sdot (stop, nlarrayR, incx, weiptr, incx);
+          sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
 #if !GAMMA_PT
-          sintI[ipindex] = ct.vel * QMD_sdot (stop, nlarrayI, incx, weiptr, incx);
+          sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
           weiptr += pct.idxptrlen[ion];

@@ -97,9 +97,9 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
     }
 
     t1 = sqrt (sum);
-    QMD_sscal (size, t1, tmp_psiR, incx);
+    QMD_dscal (size, t1, tmp_psiR, incx);
 #if !GAMMA_PT
-    QMD_sscal (size, t1, tmp_psiI, incx);
+    QMD_dscal (size, t1, tmp_psiI, incx);
 #endif
 
 
@@ -111,11 +111,11 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
 	ptr = &pct.newsintR_local[ion * ct.num_states * ct.max_nl];
         ptr += sidx_local;
         
-	QMD_sscal (ct.max_nl, t1, ptr, incx);
+	QMD_dscal (ct.max_nl, t1, ptr, incx);
 #if !GAMMA_PT
 	ptr = &pct.newsintI_local[ion * ct.num_states * ct.max_nl];
         ptr += sidx_local;
-        QMD_sscal (ct.max_nl, t1, ptr, incx);
+        QMD_dscal (ct.max_nl, t1, ptr, incx);
 #endif
     }
 

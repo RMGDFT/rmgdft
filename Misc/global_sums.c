@@ -62,7 +62,7 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
       global_sums_vector_state = 1;
   pthread_mutex_unlock(&global_sums_vector_lock);
 
-  QMD_scopy(*length, vect, 1, &global_sums_vector[*length * tid], 1);
+  QMD_dcopy(*length, vect, 1, &global_sums_vector[*length * tid], 1);
   
   // Wait until everyone gets here
   scf_barrier_wait();
@@ -73,7 +73,7 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
           global_sums_vector_state = 0;
       }
   pthread_mutex_unlock(&global_sums_vector_lock);
-  QMD_scopy(*length,  &tvector[*length * tid], 1, vect, 1);
+  QMD_dcopy(*length,  &tvector[*length * tid], 1, vect, 1);
 
   // Must wait until all threads have copied the data to vect before freeing memory
   scf_barrier_wait();
@@ -118,7 +118,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
     if (*length < 100)
     {
         sizr = *length;
-        QMD_scopy (sizr, vect, 1, rptr2, 1);
+        QMD_dcopy (sizr, vect, 1, rptr2, 1);
        	MPI_Allreduce (rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, comm);
 
 		
@@ -137,7 +137,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
 
     for (steps = 0; steps < blocks; steps++)
     {
-        QMD_scopy (newsize, rptr1, 1, rptr, 1);
+        QMD_dcopy (newsize, rptr1, 1, rptr, 1);
         MPI_Allreduce (rptr, rptr1, newsize, MPI_DOUBLE, MPI_SUM, comm);  
 
         rptr1 += newsize;
@@ -145,7 +145,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
 
     if (sizr)
     {
-        QMD_scopy (sizr, rptr1, 1, rptr, 1);
+        QMD_dcopy (sizr, rptr1, 1, rptr, 1);
         MPI_Allreduce (rptr, rptr1, sizr, MPI_DOUBLE, MPI_SUM, comm);
     }
 

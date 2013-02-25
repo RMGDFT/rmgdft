@@ -17,7 +17,7 @@ void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int grid_ratio)
     if (grid_ratio == 1)
     {
         idx = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
-        QMD_scopy (idx, vtot, ione, vtot_psi, ione);
+        QMD_dcopy (idx, vtot, ione, vtot_psi, ione);
     }
     /* For different grids, restriction algorithm is used to obtain potential on coarse grid */
     else

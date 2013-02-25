@@ -57,7 +57,7 @@ void pack_stop (REAL * sg, REAL * pg, int dimx, int dimy, int dimz)
         {
 
             iyh = iy + 1;
-            QMD_scopy (dimz, &sg[ixh * incxs + iyh * incys + 1], ione, &pg[ix * incx + iy * incy],
+            QMD_dcopy (dimz, &sg[ixh * incxs + iyh * incys + 1], ione, &pg[ix * incx + iy * incy],
                        ione);
 
         }                       /* end for */

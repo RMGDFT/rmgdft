@@ -157,9 +157,9 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
     /*Generate the Dnm_I */
     get_ddd (vtot);
-
 #if MPI
 
+    //ct.trade_compression_level = 0;
     time1 = my_crtc ();
 #if HYBRID_MODEL
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
@@ -203,6 +203,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 #endif
 
+    //ct.trade_compression_level = 0;
     time2 = my_crtc ();
     rmg_timings (EIG_TIME, (time2 - time1));
 

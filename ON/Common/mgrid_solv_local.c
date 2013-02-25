@@ -244,7 +244,7 @@ void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,
 
         scale = ONE;
 
-        QMD_saxpy(size, scale, resid, ione, v_mat, ione);
+        QMD_daxpy(size, scale, resid, ione, v_mat, ione);
 
         /* re-solve on this grid level */
 

@@ -118,18 +118,18 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, REAL * newsintR_x, REAL * newsin
                 {
 
                     newsintR_x[index] =
-                        ct.vel * QMD_sdot (count, workR, incx, &beta_x[prjcount], incx);
+                        ct.vel * QMD_ddot (count, workR, incx, &beta_x[prjcount], incx);
                     newsintR_y[index] =
-                        ct.vel * QMD_sdot (count, workR, incx, &beta_y[prjcount], incx);
+                        ct.vel * QMD_ddot (count, workR, incx, &beta_y[prjcount], incx);
                     newsintR_z[index] =
-                        ct.vel * QMD_sdot (count, workR, incx, &beta_z[prjcount], incx);
+                        ct.vel * QMD_ddot (count, workR, incx, &beta_z[prjcount], incx);
 #if !GAMMA_PT
                     newsintI_x[index] =
-                        ct.vel * QMD_sdot (count, workI, incx, &beta_x[prjcount], incx);
+                        ct.vel * QMD_ddot (count, workI, incx, &beta_x[prjcount], incx);
                     newsintI_y[index] =
-                        ct.vel * QMD_sdot (count, workI, incx, &beta_y[prjcount], incx);
+                        ct.vel * QMD_ddot (count, workI, incx, &beta_y[prjcount], incx);
                     newsintI_z[index] =
-                        ct.vel * QMD_sdot (count, workI, incx, &beta_z[prjcount], incx);
+                        ct.vel * QMD_ddot (count, workI, incx, &beta_z[prjcount], incx);
 #endif
                     prjcount += count;
                     index++;

@@ -141,7 +141,7 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    tmp = 1.0 / sqrt(vel);
    idx = numst * maxpt;
-   QMD_sscal(idx, tmp, c, ione);
+   QMD_dscal(idx, tmp, c, ione);
 
 #if MD_TIMERS
    rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time1));

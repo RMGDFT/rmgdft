@@ -24,7 +24,7 @@
 
 #include "main.h"
 
-void QMD_saxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy)
+void QMD_daxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy)
 {
 //    saxpy (&n, &alpha, x, &incx, y, &incy);
     int i, iy=0, ix=0;
@@ -45,7 +45,7 @@ void QMD_saxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy)
 
 }
 
-void QMD_sscal (int n, REAL alpha, REAL * x, int incx)
+void QMD_dscal (int n, REAL alpha, REAL * x, int incx)
 {
 //    sscal (&n, &alpha, x, &incx);
       int i, ix=0;
@@ -55,7 +55,7 @@ void QMD_sscal (int n, REAL alpha, REAL * x, int incx)
       }
 }
 
-void QMD_scopy (int n, REAL * x, int incx, REAL * y, int incy)
+void QMD_dcopy (int n, REAL * x, int incx, REAL * y, int incy)
 {
 //    scopy (&n, x, &incx, y, &incy);
       int i, ix=0, iy=0;
@@ -73,7 +73,7 @@ void QMD_scopy (int n, REAL * x, int incx, REAL * y, int incy)
       }
 }
 
-REAL QMD_sdot (int n, REAL * x, int incx, REAL * y, int incy)
+REAL QMD_ddot (int n, REAL * x, int incx, REAL * y, int incy)
 {
 //    return sdot (&n, x, &incx, y, &incy);
       int i, ix = 0, iy = 0;
@@ -87,7 +87,7 @@ REAL QMD_sdot (int n, REAL * x, int incx, REAL * y, int incy)
 
 }
 
-void QMD_sswap(int n, REAL * x, int incx, REAL *y, int incy)
+void QMD_dswap(int n, REAL * x, int incx, REAL *y, int incy)
 {
       int i, ix=0, iy=0;
       REAL temp;
@@ -105,19 +105,96 @@ void QMD_sswap(int n, REAL * x, int incx, REAL *y, int incy)
 
 void my_copy(REAL *in, REAL *out, int length) {
     int ione = 1;
-    QMD_scopy(length, in, ione, out, ione);
+    QMD_dcopy(length, in, ione, out, ione);
 }
 void my_scal(REAL alpha, REAL *vect, int length) {
     int ione = 1;
-    QMD_sscal(length, alpha, vect, ione); 
+    QMD_dscal(length, alpha, vect, ione); 
 }
 void my_axpy(REAL alpha, REAL *in, REAL *out, int length) {
     int ione = 1;
-    QMD_saxpy(length, alpha, in, ione, out, ione);
+    QMD_daxpy(length, alpha, in, ione, out, ione);
 }
 void my_swap(REAL *vec1, REAL *vec2, int length) {
     int ione =1;
-    QMD_sswap(length, vec1, ione, vec2, ione);
+    QMD_dswap(length, vec1, ione, vec2, ione);
 }
 
 /******/
+void QMD_saxpy (int n, rmg_float_t alpha, rmg_float_t * x, int incx, rmg_float_t * y, int incy)
+{
+//    saxpy (&n, &alpha, x, &incx, y, &incy);
+    int i, iy=0, ix=0;
+
+    if((incx == 1) && (incy == 1)) {
+
+       for(i = 0;i < n;i++) {
+           y[i] = alpha * x[i] + y[i];
+       }
+       return;
+    }
+
+    for(i = 0;i < n;i++) {
+        y[iy] = alpha * x[ix] + y[iy];
+        ix += incx;
+        iy += incy;
+    }
+
+}
+
+void QMD_sscal (int n, rmg_float_t alpha, rmg_float_t * x, int incx)
+{
+//    sscal (&n, &alpha, x, &incx);
+      int i, ix=0;
+      for(i = 0;i < n;i++) {
+          x[ix] = alpha * x[ix];
+          ix += incx;
+      }
+}
+
+void QMD_scopy (int n, rmg_float_t * x, int incx, rmg_float_t * y, int incy)
+{
+//    scopy (&n, x, &incx, y, &incy);
+      int i, ix=0, iy=0;
+      if((incx == 1) && (incy == 1)) {
+         for(i = 0;i < n;i++) {
+             y[i] = x[i];
+         }
+         return;
+      }
+
+      for(i = 0;i < n;i++) {
+          y[iy] = x[ix];
+          ix += incx;
+          iy += incy;
+      }
+}
+
+rmg_float_t QMD_sdot (int n, rmg_float_t * x, int incx, rmg_float_t * y, int incy)
+{
+      int i, ix = 0, iy = 0;
+      rmg_double_t stemp = 0.0;
+      for(i = 0;i < n;i++) {
+          stemp += (rmg_double_t)y[iy] * (rmg_double_t)x[ix];
+          ix += incx;
+          iy += incy;
+      }
+      return (rmg_float_t)stemp;
+
+}
+
+void QMD_sswap(int n, rmg_float_t * x, int incx, rmg_float_t *y, int incy)
+{
+      int i, ix=0, iy=0;
+      rmg_float_t temp;
+
+      for(i = 0;i < n;i++) {
+          temp = y[iy];
+          y[iy] = x[ix];
+          x[ix] = temp;
+          ix += incx;
+          iy += incy;
+      }
+
+
+}

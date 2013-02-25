@@ -388,7 +388,7 @@ void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int 
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-            QMD_scopy (dimz, &f[iys], ione, &w[iys2 + images], ione);
+            QMD_dcopy (dimz, &f[iys], ione, &w[iys2 + images], ione);
 
         }                       /* end for */
 
@@ -752,7 +752,7 @@ void trade_imagesx_central_async (REAL * f, REAL * w, int dimx, int dimy, int di
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-            QMD_scopy (dimz, &f[iys], ione, &w[iys2 + images], ione);
+            QMD_dcopy (dimz, &f[iys], ione, &w[iys2 + images], ione);
 
         }                       /* end for */
 

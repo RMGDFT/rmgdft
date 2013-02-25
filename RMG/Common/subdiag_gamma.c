@@ -426,7 +426,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
     {
 
         /*keep an extra copy of distributed unitary matrix */
-        QMD_scopy (dist_stop, distCij, ione, distIij, ione);
+        QMD_dcopy (dist_stop, distCij, ione, distIij, ione);
 
         /*Get matrix that is inverse to B */
         {
@@ -498,7 +498,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 #endif
 
             /*Copy result into Bij */
-            QMD_scopy (dist_stop, distCij, ione, distBij, ione);
+            QMD_dcopy (dist_stop, distCij, ione, distBij, ione);
         }
 
 
@@ -826,10 +826,10 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
     my_calloc (temp_unity_matrix, stop, REAL);
 
     /*Copy matrix into temp_matrix */
-    QMD_scopy (stop, matrix, ione, temp_matrix, ione);
+    QMD_dcopy (stop, matrix, ione, temp_matrix, ione);
 
     /*Local copy of unity matrix, this is done so that the unitary matrix that was passed here does not change */
-    QMD_scopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
+    QMD_dcopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
 
 
     /*Symmetric (or Hermitian) matrix will be obtained as
@@ -990,7 +990,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         //global_sums (global_matrix, &stop, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
-        QMD_scopy (stop, global_matrix, ione, distAij, ione);
+        QMD_dcopy (stop, global_matrix, ione, distAij, ione);
 
 
         // Now deal with the S operator
@@ -1017,7 +1017,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         //global_sums (global_matrix, &stop, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
-        QMD_scopy (stop, global_matrix, ione, distSij, ione);
+        QMD_dcopy (stop, global_matrix, ione, distSij, ione);
 
         /* Apply B operator on each wavefunction */
         time2 = my_crtc ();
@@ -1050,7 +1050,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         //global_sums (global_matrix, &stop, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
-        QMD_scopy (stop, global_matrix, ione, distBij, ione);
+        QMD_dcopy (stop, global_matrix, ione, distBij, ione);
 
 
     }
@@ -1326,7 +1326,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         //global_sums (global_matrix, &stop, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
-        //QMD_scopy (stop, global_matrix, ione, distAij, ione);
+        //QMD_dcopy (stop, global_matrix, ione, distAij, ione);
         cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuAij, ione );
 
         // Now deal with the S operator
@@ -1349,7 +1349,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
         cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuSij, ione );
-        //QMD_scopy (stop, global_matrix, ione, distSij, ione);
+        //QMD_dcopy (stop, global_matrix, ione, distSij, ione);
 
         /* Apply B operator on each wavefunction */
         time2 = my_crtc ();

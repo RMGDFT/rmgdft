@@ -227,7 +227,7 @@ void get_new_rho (STATE * states, REAL * rho)
     t1 = ct.nel / ct.tcharge;
     if (pct.imgpe == 0)
         printf ("\n get_new_rho: Normalization constant for new charge is %f", t1);
-    QMD_sscal (n, t1, rho, incx);
+    QMD_dscal (n, t1, rho, incx);
 
     /*Update ct.tcharge, do not really recalculate it, just mutltiply it by normalization constant */
     ct.tcharge *= t1;

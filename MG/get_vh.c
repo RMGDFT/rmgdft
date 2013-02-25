@@ -101,7 +101,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
     /* Multiply through by 4PI */
     t1 = -FOUR * PI;
-    QMD_sscal (pbasis, t1, mgrhsarr, incx);
+    QMD_dscal (pbasis, t1, mgrhsarr, incx);
 
     its = 0;
 
@@ -159,7 +159,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
                 /* Update vh */
                 t1 = ONE;
-                QMD_saxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }
             else
@@ -167,7 +167,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-                QMD_saxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }                   /* end if */
 

@@ -221,7 +221,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /*keep an extra copy of distributed unitary matrix */
-        QMD_scopy (dist_stop, distCij, ione, distIij, ione);
+        QMD_dcopy (dist_stop, distCij, ione, distIij, ione);
 
 
         /*Make Bij Hermitian */
@@ -568,19 +568,19 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
         tmp_psiR = sp1->psiR;
         tmp_psiI = sp1->psiI;
 
-        s1 = QMD_sdot (sp->pbasis, tmp_psiR, ione, work1R, ione);
-        s2 = QMD_sdot (sp->pbasis, tmp_psiR, ione, work1I, ione);
-        s3 = QMD_sdot (sp->pbasis, tmp_psiI, ione, work1R, ione);
-        s4 = QMD_sdot (sp->pbasis, tmp_psiI, ione, work1I, ione);
+        s1 = QMD_ddot (sp->pbasis, tmp_psiR, ione, work1R, ione);
+        s2 = QMD_ddot (sp->pbasis, tmp_psiR, ione, work1I, ione);
+        s3 = QMD_ddot (sp->pbasis, tmp_psiI, ione, work1R, ione);
+        s4 = QMD_ddot (sp->pbasis, tmp_psiI, ione, work1I, ione);
 
         Aij[2 * (sp->istate * ct.num_states + st2)] = (s1 + s4);
         Aij[2 * (sp->istate * ct.num_states + st2) + 1] = (s2 - s3);
 
 
-        s1 = QMD_sdot (sp->pbasis, tmp_psiR, ione, work4R, ione);
-        s2 = QMD_sdot (sp->pbasis, tmp_psiR, ione, work4I, ione);
-        s3 = QMD_sdot (sp->pbasis, tmp_psiI, ione, work4R, ione);
-        s4 = QMD_sdot (sp->pbasis, tmp_psiI, ione, work4I, ione);
+        s1 = QMD_ddot (sp->pbasis, tmp_psiR, ione, work4R, ione);
+        s2 = QMD_ddot (sp->pbasis, tmp_psiR, ione, work4I, ione);
+        s3 = QMD_ddot (sp->pbasis, tmp_psiI, ione, work4R, ione);
+        s4 = QMD_ddot (sp->pbasis, tmp_psiI, ione, work4I, ione);
 
         Bij[2 * (sp->istate * ct.num_states + st2)] = ct.vel * (s1 + s4);
         Bij[2 * (sp->istate * ct.num_states + st2) + 1] = ct.vel * (s2 - s3);
@@ -730,10 +730,10 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
     my_calloc (temp_unity_matrix, stop, REAL);
 
     /*Copy matrix into temp_matrix */
-    QMD_scopy (stop, matrix, ione, temp_matrix, ione);
+    QMD_dcopy (stop, matrix, ione, temp_matrix, ione);
 
     /*Local copy of unity matrix, this is done so that the unitary matrix that was passed here does not change */
-    QMD_scopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
+    QMD_dcopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
 
 
     /*Symmetric (or Hermitian) matrix will be obtained as

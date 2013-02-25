@@ -307,10 +307,14 @@ void QMD_sem_wait (QMD_sem_t *sem);
 void QMD_sem_post (QMD_sem_t *sem);
 
 /* Blas wrappers */
-void QMD_saxpy (int n, REAL alpha, REAL *x, int incx, REAL *y, int incy);
-void QMD_sscal (int n, REAL alpha, REAL *x, int incx);
-void QMD_scopy (int n, REAL *x, int incx, REAL *y, int incy);
-REAL QMD_sdot (int n, REAL *x, int incx, REAL *y, int incy);
+void QMD_daxpy (int n, REAL alpha, REAL *x, int incx, REAL *y, int incy);
+void QMD_dscal (int n, REAL alpha, REAL *x, int incx);
+void QMD_dcopy (int n, REAL *x, int incx, REAL *y, int incy);
+REAL QMD_ddot (int n, REAL *x, int incx, REAL *y, int incy);
+void QMD_saxpy (int n, rmg_float_t alpha, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
+void QMD_sscal (int n, rmg_float_t alpha, rmg_float_t *x, int incx);
+void QMD_scopy (int n, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
+rmg_float_t QMD_sdot (int n, rmg_float_t *x, int incx, rmg_float_t *y, int incy);
 
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
@@ -533,3 +537,9 @@ void app_cir_sixth_gpu(const double *psi,
                                                 cudaStream_t cstream);
 
 #endif
+void RMG_MPI_CompressSendrecv(void *sendbuf, int sendcount, MPI_Datatype sendtype,
+                int dest, int sendtag,
+                void *recvbuf, int recvcount, MPI_Datatype recvtype,  
+                int source, int recvtag,
+                MPI_Comm comm, MPI_Status *status, int compress);
+

@@ -88,8 +88,8 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 	    rho_old [i]  = rho_old[i] + alpha * residual [i];
         
 	/*Add current residual and charge density into history*/
-	QMD_scopy(N, rho_new, ione, (*hist)[0], ione);
-        QMD_scopy(N, residual, ione, (*rhist)[0], ione);
+	QMD_dcopy(N, rho_new, ione, (*hist)[0], ione);
+        QMD_dcopy(N, residual, ione, (*rhist)[0], ione);
     }
     else
     {
@@ -122,7 +122,7 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 		    fj = (*rhist)[j];
 
                 /*  get A(i,j)  */
-                A[j * (size + 1) + i] = QMD_sdot(N, fi, ione, fj, ione);
+                A[j * (size + 1) + i] = QMD_ddot(N, fi, ione, fj, ione);
 
 		/* Evaluate dot product with special metric as used by gpaw, if requested*/
 		if (special_metric) 
@@ -173,19 +173,19 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 	    rho_old[i] = b[0] * (*hist)[0][i];
 
 	for (i = 1; i < size - 1; i++)
-	    QMD_saxpy(N, b[i], (*hist)[i], ione, rho_old, ione);
+	    QMD_daxpy(N, b[i], (*hist)[i], ione, rho_old, ione);
 
-	QMD_saxpy(N, b[size - 1], rho_new, ione, rho_old, ione);
+	QMD_daxpy(N, b[size - 1], rho_new, ione, rho_old, ione);
 	    
 	/* Scale residual history by -1 * b[i] * scale and add to the result stored in rho_old*/
 	for (i = 0; i < size - 1; i++)
 	{
 	    t1 = -1.0 * scale * b[i];
-	    QMD_saxpy(N, t1, (*rhist)[i], ione, rho_old, ione);
+	    QMD_daxpy(N, t1, (*rhist)[i], ione, rho_old, ione);
 	}
 
 	t1 = -1.0 * scale * b[size - 1];
-	QMD_saxpy(N, t1, residual, ione, rho_old, ione);
+	QMD_daxpy(N, t1, residual, ione, rho_old, ione);
 
 
 	if (step > (NsavedSteps - 2))
@@ -203,16 +203,16 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 	    (*rhist)[size - 2] = tptr2;
 
 	    /*Add new charge density and residual into history*/
-	    QMD_scopy(N, rho_new, ione, (*hist)[size - 2], ione);
-	    QMD_scopy(N, residual, ione, (*rhist)[size - 2], ione);
+	    QMD_dcopy(N, rho_new, ione, (*hist)[size - 2], ione);
+	    QMD_dcopy(N, residual, ione, (*rhist)[size - 2], ione);
 	}
 
 	/*If we do not have all history saved, add current values there
 	 * without rotation and overwriting*/
 	else
 	{
-	    QMD_scopy(N, rho_new,  ione, (*hist)[(size - 1)], ione);
-	    QMD_scopy(N, residual, ione, (*rhist)[(size - 1)], ione);
+	    QMD_dcopy(N, rho_new,  ione, (*hist)[(size - 1)], ione);
+	    QMD_dcopy(N, residual, ione, (*rhist)[(size - 1)], ione);
 	}
 
     }

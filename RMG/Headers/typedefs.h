@@ -30,6 +30,7 @@
  * SOURCE
  */
 
+
 #if MPI
 typedef struct
 {
@@ -824,6 +825,9 @@ typedef struct
 
     /** Description of the run. */
     char description[MAX_CHAR];
+
+    /* Compression level for some trade images routines */
+    int trade_compression_level;
 
     /* time at which run started */
     REAL time0;

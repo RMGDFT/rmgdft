@@ -88,7 +88,7 @@ void ortho (STATE * states, int kpt)
         /*Update wavefunctions */
         for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++) {
             /*update the wavefunction psi2 */
-            QMD_saxpy (size, cR[ist2], st1->psiR, ione, st[ist2].psiR, ione);
+            QMD_daxpy (size, cR[ist2], st1->psiR, ione, st[ist2].psiR, ione);
         }
 #endif
         idx = ct.num_states - ist1 - 1;

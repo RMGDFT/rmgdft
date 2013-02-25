@@ -60,7 +60,7 @@ void pack_ptos(REAL * sg, REAL * pg, int dimx, int dimy, int dimz)
         {
 
             iyh = iy + 1;
-            QMD_scopy(dimz, &pg[ix * incx + iy * incy], ione,
+            QMD_dcopy(dimz, &pg[ix * incx + iy * incy], ione,
                       &sg[ixh * incxs + iyh * incys + 1], ione);
 
         }                       /* end for */

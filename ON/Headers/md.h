@@ -777,6 +777,9 @@ typedef struct
     /** Description of the run. */
     char description[200];
 
+    /* Compression level for some trade images routines */
+    int trade_compression_level;
+
     /** time at which run started */
     REAL time0;
 
@@ -1419,10 +1422,10 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 void output_wave (STATE * states, int kpt, int fhand);
 
 /* Blas wrappers */
-void QMD_saxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy);
-void QMD_sscal (int n, REAL alpha, REAL * x, int incx);
-void QMD_scopy (int n, REAL * x, int incx, REAL * y, int incy);
-REAL QMD_sdot (int n, REAL * x, int incx, REAL * y, int incy);
+void QMD_daxpy (int n, REAL alpha, REAL * x, int incx, REAL * y, int incy);
+void QMD_dscal (int n, REAL alpha, REAL * x, int incx);
+void QMD_dcopy (int n, REAL * x, int incx, REAL * y, int incy);
+REAL QMD_ddot (int n, REAL * x, int incx, REAL * y, int incy);
 
 
 

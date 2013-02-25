@@ -56,6 +56,9 @@
 /* Size of floating point variables used in QMD */
 #define     REAL    double
 
+/* Basic typedefs */
+#include    "rmgtypes.h"
+
 /* Version information */
 #include    "version.h"
 

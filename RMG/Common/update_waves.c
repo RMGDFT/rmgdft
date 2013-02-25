@@ -45,7 +45,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 // For FAST_ORTHO we update in a block in the main loop
 #if !FAST_ORTHO
     /*update the wavefunction psi2 */
-    QMD_saxpy (size, t1, tmp_psi1, incx, tmp_psi2, incx);
+    QMD_daxpy (size, t1, tmp_psi1, incx, tmp_psi2, incx);
 #endif
 
     /* update localized  <beta|psi2> */
@@ -54,7 +54,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
         ptr1 = &pct.newsintR_local[lsidx1 + ion * ct.num_states * ct.max_nl];
         ptr2 = &pct.newsintR_local[lsidx2 + ion * ct.num_states * ct.max_nl];
-        QMD_saxpy (ct.max_nl, t1, ptr1, incx, ptr2, incx);
+        QMD_daxpy (ct.max_nl, t1, ptr1, incx, ptr2, incx);
     }
 
 }
@@ -100,11 +100,11 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
         ptr2R = &pct.newsintR_local[lsidx2 + ion * ct.num_states * ct.max_nl];
         ptr2I = &pct.newsintI_local[lsidx2 + ion * ct.num_states * ct.max_nl];
 
-        QMD_saxpy (ct.max_nl, -cR, ptr1R, incx, ptr2R, incx);
-        QMD_saxpy (ct.max_nl, cI, ptr1I, incx, ptr2R, incx);
+        QMD_daxpy (ct.max_nl, -cR, ptr1R, incx, ptr2R, incx);
+        QMD_daxpy (ct.max_nl, cI, ptr1I, incx, ptr2R, incx);
 
-        QMD_saxpy (ct.max_nl, -cR, ptr1I, incx, ptr2I, incx);
-        QMD_saxpy (ct.max_nl, -cI, ptr1R, incx, ptr2I, incx);
+        QMD_daxpy (ct.max_nl, -cR, ptr1I, incx, ptr2I, incx);
+        QMD_daxpy (ct.max_nl, -cI, ptr1R, incx, ptr2I, incx);
     }
 
 }

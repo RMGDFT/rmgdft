@@ -115,7 +115,7 @@ void lcao_get_rho (REAL * arho_f)
     
     n = pct.FP0_BASIS;
     incx = 1;
-    QMD_sscal (n, t1, arho_f, incx);
+    QMD_dscal (n, t1, arho_f, incx);
 
 
 

@@ -164,7 +164,7 @@ void mgrid_solv (REAL * v_mat, REAL * f_mat, REAL * work,
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         scale = ONE;
 
-        QMD_saxpy (size, scale, resid, ione, v_mat, ione);
+        QMD_daxpy (size, scale, resid, ione, v_mat, ione);
 
         /* re-solve on this grid level */
 
