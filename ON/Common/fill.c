@@ -195,8 +195,7 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
     if (fabs(fmid) > charge_tol * 10)
     {
         if (pct.gridpe == 0)
-            printf("\nfill: \\sum f - n_el= %e", fmid);
-        error_handler("error in mixing occupations");
+            printf("\nWARNING after mixingf occ in fill.c: \\sum f - n_el= %e %e", fmid, charge_tol*10);
     }
 
     /*  my_free(occ); */

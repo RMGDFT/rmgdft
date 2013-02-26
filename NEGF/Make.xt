@@ -25,8 +25,8 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
-LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
-LDFLAGS = -pgf90libs
+LIBS = -L /opt/fftw/2.1.5.3/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
+LDFLAGS=
 
 
 CC = cc
@@ -41,8 +41,8 @@ MFILES = Makefile Make.xt
 ARCH =
 # Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
-FFLAGS = $(ARCH)  -O3 -fast -c -Mipa=fast,inline
-CFLAGS = $(ARCH)  -O3 -fast -B -Mipa=fast,inline -IHeaders -I../Headers
+FFLAGS = $(ARCH)  -O3 
+CFLAGS = $(ARCH)  -O3 -IHeaders -I../Headers
 
 
 rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
