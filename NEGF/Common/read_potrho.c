@@ -33,12 +33,12 @@
 
 void read_potrho (double *vh, int iflag, int data_indicator)
 {
-    int fhand;
-    long nbytes, position;
+    long fhand;
+    long nbytes, position, nbytes_first, nbytes_second;
     char newname[MAX_PATH + 200];
     char msg[200];
 
-    int idx0, idx, idx1, idx_sub;
+    long idx0, idx, idx1, idx_sub;
     double x0_old, hx_new, hx_old;
     double y0_old, hy_new, hy_old;
     int NX0, NY0, NZ0;
@@ -47,6 +47,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     int x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3;
     int FNYZ, NYZ0, NXZ0, FPYZ0, FNYPZ;
     double *array_tmp, tem;
+    double *array_tmp_tmp;
     double *vh_global, *vh_all;
     double *xold_global, *xold, xseed, sfit;
     double *yold_global, *yold, yseed;
@@ -54,6 +55,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     int dis1, dis2, dis12;
     double fac1, fac2, V1, V2;
     int ii, jj, kk;
+    int MaxNumBytes = 2000000000;  //maximum number of bytes one can read from ON calculation for each read
 
     /* Wait until everybody gets here */
     my_barrier ();
@@ -101,14 +103,27 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         position = ( idx * data_indicator) * sizeof(double);
         lseek(fhand, position, 0);
 
-        nbytes = read (fhand, array_tmp, idx * sizeof(double) );
+	if (idx * sizeof(double) > MaxNumBytes)
+	{
 
-        if(nbytes != idx * sizeof(double)) 
-        {
-            printf ("\n read %ld is different from %d ", nbytes, idx * sizeof(double));
-            error_handler ("Unexpected end of file vh");
-        }
-        close(fhand);
+		nbytes_first = read (fhand, array_tmp, MaxNumBytes );
+                array_tmp_tmp = array_tmp + MaxNumBytes / sizeof(double);  //shift the pointer by num of doubles read already
+		nbytes_second = read (fhand, array_tmp_tmp, idx * sizeof(double) - MaxNumBytes );// read the bytes left behind
+                nbytes = nbytes_second + nbytes_first;
+	} 
+	else{
+		nbytes = read (fhand, array_tmp, idx * sizeof(double) );
+
+	}
+
+	if(nbytes != idx * sizeof(double)) 
+	{
+		dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
+		dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
+		error_handler ("\n Unexpected end of file vh");
+	}
+
+       close(fhand);
 
 
 /* ================ Patches the potentials and rhos ================ */
