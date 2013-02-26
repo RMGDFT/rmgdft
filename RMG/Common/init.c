@@ -446,6 +446,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     init_subdiag();
 
 
+
     Dprintf ("If diagonalization is requested do a subspace diagonalization");
     if (ct.initdiag)
     {
@@ -482,6 +483,8 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     }
 
 
+    betaxpsi (states);
+    mix_betaxpsi(0);
 
 #if 0
     /*Setup things for mulliken population analysis */
