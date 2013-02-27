@@ -330,16 +330,20 @@ void get_3Ddos (STATE * states)
         double B_A = 0.52917721;
         int count = 0;
 
-        file = fopen ("3D_dos.txt", "w");
-	fprintf( file, "3 2\n" );
-	fprintf (file, " %d        %d       %d \n", NZ_GRID, NY_GRID, NX_GRID);
-	fprintf (file, "0.000000  %10.6f  0.000000  %10.6f  0.000000  %10.6f \n", NZ_GRID * dz * B_A, NY_GRID * dy * B_A, NX_GRID * dx * B_A);
+        file = fopen ("3D_dos.cube", "w"); //create gaussian file to plot in PYMOL the 3D charge density for energy interval with high peak transmission
+	fprintf( file, " Cubfile created from PWScf calculation\n" );
+	fprintf( file, "  Total SCF Density\n" );
+	fprintf( file, "  1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
+	fprintf (file, " %d     %12.9f      0.000000    0.000000 \n", NX_GRID, dx );//dx is the grid spacing in x in bohr
+	fprintf (file, " %d     0.000000    %12.9f      0.000000 \n", NY_GRID, dy );
+	fprintf (file, " %d     0.000000    0.000000    %12.9f   \n", NZ_GRID ,dz );
+	fprintf (file, "  6     6.000000   10.000000   10.000000   10.000000 \n");//hack file by assigning just one carbon atom at some random position
 
-	for (iz = 0; iz < NZ_GRID; iz++)
+	for (iz = 0; iz < NX_GRID; iz++)
 	{
 		for (iy = 0; iy < NY_GRID; iy++)
 		{
-			for (ix = 0; ix < NX_GRID; ix++)
+			for (ix = 0; ix < NZ_GRID; ix++)
 			{
                                 count ++;
 				fprintf ( file , " %18.6e",
