@@ -50,7 +50,7 @@ void Sigma_p (complex double *sigma, complex double *ch, complex double
     descb = &pmo.desc_lead[ ( iprobe-1)       * DLEN ];                        /* (L,L) */
     descc = &pmo.desc_cond[ ( n0 + n0 * ct.num_blocks) * DLEN ];               /* (C,C) */
     
-    descd = &pmo.desc_cond_lead[ (n0*cei.num_probe + (iprobe - 1) ) * DLEN ]; /* (L,C) */
+    descd = &pmo.desc_lead_cond[ (n0 + (iprobe - 1) * ct.num_blocks) * DLEN ]; /* (C,L) */
 
 
 	/*    ch(C,L) = ch01(C,L) * green(L,L)  */

@@ -230,7 +230,7 @@ void get_3Ddos (STATE * states)
             }
 
             desca = &pmo.desc_cond_lead[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
-            descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (iprobe-1) ) * DLEN];
+            descb = &pmo.desc_lead_cond[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
             numst = lcr[iprobe].num_states;
             numstC = ct.block_dim[idx_C];
 

@@ -239,7 +239,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     init_qfunct ();
 
     /* Initialize symmetry stuff */
-    init_sym ();
+    //init_sym ();
 
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc (vnuc, rhoc, rhocore);

@@ -21,6 +21,7 @@ struct parallel_matrix_operation
     int *desc_lead;
     int *desc_cond;
     int *desc_cond_lead;
+    int *desc_lead_cond;
  
     int myblacs;
         

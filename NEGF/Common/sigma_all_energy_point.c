@@ -132,7 +132,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                     ch01[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
                 }
                 desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
-                descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (jprobe-1) ) * DLEN];
+                descb = &pmo.desc_lead_cond[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
                 numst = lcr[jprobe].num_states;
                 numstC = ct.block_dim[idx_C];
 
@@ -223,7 +223,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                             ch01[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
                         }
                         desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
-                        descb = &pmo.desc_cond_lead[ (idx_C *cei.num_probe + (jprobe-1) ) * DLEN];
+                        descb = &pmo.desc_lead_cond[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
                         numst = lcr[jprobe].num_states;
                         numstC = ct.block_dim[idx_C];
 

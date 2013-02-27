@@ -60,6 +60,7 @@ void pmo_init ()
 
     idx = cei.num_probe * ct.num_blocks;
     my_malloc( pmo.desc_cond_lead, idx * DLEN, int);
+    my_malloc( pmo.desc_lead_cond, idx * DLEN, int);
 
     idx = ct.num_blocks * ct.num_blocks;
     my_malloc( pmo.desc_cond, idx * DLEN, int);
@@ -277,13 +278,11 @@ void pmo_init ()
                 exit (0);
             }
 
-
-            idx = i * cei.num_probe  + (iprobe - 1) ;
                                                                                                                                             
             numst = lcr[iprobe].num_states;
             mxllda = NUMROC(&numst, &pmo.mblock, &myrow, &izero, &nprow);
                                                                                                                                             
-            desca = &pmo.desc_cond_lead[ idx * DLEN];
+            desca = &pmo.desc_lead_cond[ idx * DLEN];
                                                                                                                                             
             DESCINIT (desca, &numst, &ct.block_dim[i], &nb, &nb, &rsrc, &csrc,
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
