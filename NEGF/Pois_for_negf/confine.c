@@ -79,9 +79,9 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
                     y = j + yoff;
                     z = k + zoff;
 
-                    test = ((x < compass.box1.x1/(1<<level)) || (x >= compass.box1.x2/(1<<level)) ||
-                            (y < compass.box1.y1/(1<<level)) || (y >= compass.box1.y2/(1<<level)) ||
-                            (z < compass.box1.z1/(1<<level)) || (z >= compass.box1.z2/(1<<level)));
+                    test = ((x <= compass.box1.x1/(1<<level)) || (x >= compass.box1.x2/(1<<level)) ||
+                            (y <= compass.box1.y1/(1<<level)) || (y >= compass.box1.y2/(1<<level)) ||
+                            (z <= compass.box1.z1/(1<<level)) || (z >= compass.box1.z2/(1<<level)));
 
                     if (!test)
                     {
@@ -90,6 +90,8 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
                     {
                         mat[idx] = 0.0;
                     }
+
+
                 }
             }
 
