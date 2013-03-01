@@ -88,4 +88,50 @@ void genvpsi (REAL * psi, REAL * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
 
 }                               /* end genvpsi */
 
+
+void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
+              REAL kmag, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, iz;
+    int incx, incy;
+    int incx1, incy1;
+
+    incy = dimz;
+    incx = (dimy) * (dimz);
+
+    incy1 = dimz;
+    incx1 = dimy * dimz;
+
+    /* Generate 2 * V * psi */
+    for (ix = 0; ix < dimx; ix++)
+    {
+
+        for (iy = 0; iy < dimy; iy++)
+        {
+
+            for (iz = 0; iz < dimz; iz++)
+            {
+#if GAMMA_PT
+                sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
+                    TWO * psi[ix * incx1 + iy * incy1 + iz] *
+                    vtot[ix * incx1 + iy * incy1 + iz] + TWO * vnl[ix * incx1 + iy * incy1 + iz];
+
+#else
+                sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
+                    TWO * psi[ix * incx1 + iy * incy1 + iz] *
+                    (vtot[ix * incx1 + iy * incy1 + iz] + 0.5 * kmag) +
+                    TWO * kd[ix * incx1 + iy * incy1 + iz] +
+                    TWO * vnl[ix * incx1 + iy * incy1 + iz];
+#endif
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+}                               /* end genvpsi */
+
 /******/

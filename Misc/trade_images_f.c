@@ -99,7 +99,7 @@ void trade_images_f (rmg_float_t * mat, int dimx, int dimy, int dimz, int *nb_id
 #endif
 
 #if MD_TIMERS
-    rmg_float_t time1, time2, time3;
+    rmg_double_t time1, time2, time3;
     time1 = my_crtc ();
 #endif
 

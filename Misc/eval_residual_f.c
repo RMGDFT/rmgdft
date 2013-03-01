@@ -43,7 +43,7 @@
 
 
 void eval_residual_f (rmg_float_t * mat, rmg_float_t * f_mat, int dimx, int dimy, int dimz,
-                    rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz, rmg_float_t * res)
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_float_t * res)
 {
     int size, idx;
 

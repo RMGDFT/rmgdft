@@ -23,3 +23,18 @@ REAL app_cil_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
     error_handler("APP_CIL order not programmed yet in app_cil_driver.\n");
 
 }
+
+REAL app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int order)
+{
+
+
+    if(order == APP_CI_FOURTH) {
+        return app_cil_fourth_f(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    if(order == APP_CI_SIXTH) {
+        return app_cil_sixth_f(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    
+    error_handler("APP_CIL order not programmed yet in app_cil_driver.\n");
+
+}

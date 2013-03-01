@@ -32,17 +32,18 @@
 
 
 /* Function prototypes */
-REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
-                REAL gridhx, REAL gridhy, REAL gridhz);
-rmg_float_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
-                rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz);
 void app6_del2 (REAL *rho, REAL *work, int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz);
 void app_smooth (REAL *f, REAL *work, int dimx, int dimy, int dimz);
+void app_smooth_f (rmg_float_t * f, rmg_float_t * work, int dimx, int dimy, int dimz);
 void app_smooth1 (REAL *f, REAL *work, int dimx, int dimy, int dimz);
+void app_smooth1_f (rmg_float_t *f, rmg_float_t *work, int dimx, int dimy, int dimz);
 void app_cir_driver (REAL *a, REAL *b, int dimx, int dimy, int dimz, int order);
+void app_cir_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (REAL *a, REAL *b, int dimx, int dimy, int dimz);
+void app_cir_sixth_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz);
 void app_cir (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir_ortho (REAL *a, REAL *b, int dimx, int dimy, int dimz);
 void app_cir_bcc (REAL *a, REAL *b, int dimx, int dimy, int dimz);
@@ -61,9 +62,14 @@ REAL app_cilr_ortho (REAL *a, REAL *b, REAL *c, int dimx, int dimy,
 REAL app_cil (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
               REAL gridhy, REAL gridhz);
 REAL app_cil_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int order);
+REAL app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int order);
 REAL app_cil_fourth (REAL *a, REAL *b, int dimx, int dimy, int dimz, REAL gridhx,
               REAL gridhy, REAL gridhz);
+REAL app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, 
+              REAL gridhy, REAL gridhz);
 REAL app_cil_sixth (REAL *psi, REAL *b, int dimx, int dimy, int dimz,
+                    REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cil_sixth_f (rmg_float_t *psi, rmg_float_t *b, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz);
 void app_grad (REAL  * rho, REAL *wx, REAL *wy, REAL *wz, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
@@ -80,6 +86,8 @@ void find_phase (int nldim, REAL *nlcdrs, REAL *phase_sin,
 void finish_release_mem(STATE *states);
 void genvpsi (REAL *psi, REAL *twovpsi, REAL *pvtot, REAL *pvnl,
               REAL *kd, REAL kmag, int dimx, int dimy, int dimz);
+void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
+              REAL kmag, int dimx, int dimy, int dimz);
 void get_nlop (void);
 void get_weight (void);
 void get_phase (ION *iptr, REAL *rtptr, int ip, int icount, int *dvec);
@@ -228,9 +236,11 @@ void ortho_ncpp(STATE *states);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
 void pe2xyz (int pe, int *x, int *y, int *z);
 void pack_ptos (REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
+void pack_ptos_f(rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz);
 void pack_stop (REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
-void pack_stop_axpy (REAL *sg, REAL *pg, REAL alpha, int dimx, int dimy,
-                     int dimz);
+void pack_stop_f (rmg_float_t *sg, rmg_float_t *pg, int dimx, int dimy, int dimz);
+void pack_stop_axpy (REAL *sg, REAL *pg, REAL alpha, int dimx, int dimy, int dimz);
+void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, REAL alpha, int dimx, int dimy, int dimz);
 void pack_ptos_trade (REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
 void pack_vhstod (REAL *s, REAL *d, int dimx, int dimy, int dimz);
 void pack_vhdtos (REAL *s, REAL *d, int dimx, int dimy, int dimz);
@@ -256,6 +266,7 @@ void sortpsi (STATE *states);
 void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids);
 void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images, int type);
+void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (REAL * f, int dimx, int dimy, int dimz);
 void set_bc (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
@@ -354,6 +365,8 @@ void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_
 void init_psp (void);
 void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, REAL *vtot_psi);
+void mg_eig_state_f (STATE *sp, int tid, REAL *vtot_psi);
+void mg_eig_state_driver (STATE * sp, int tid, REAL * vtot_psi, int precision);
 void ortho (STATE *states, int kpt);
 REAL qval (int ih, int jh, REAL r, REAL invdr, REAL *ptpr, int *nhtol,
            int *nhtom, int *indv, REAL *ylm, REAL ap[][9][9], int lpx[][9],

@@ -66,4 +66,35 @@ void pack_stop (REAL * sg, REAL * pg, int dimx, int dimy, int dimz)
 
 }                               /* end pack_stop */
 
+
+void pack_stop_f (rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, ixh, iyh;
+    int incx, incy, incxs, incys;
+    int ione = 1;
+    incy = dimz;
+    incx = dimy * dimz;
+    incys = dimz + 2;
+    incxs = (dimy + 2) * (dimz + 2);
+
+
+    /* Transfer pg into smoothing grid */
+    for (ix = 0; ix < dimx; ix++)
+    {
+
+        ixh = ix + 1;
+        for (iy = 0; iy < dimy; iy++)
+        {
+
+            iyh = iy + 1;
+            QMD_scopy (dimz, &sg[ixh * incxs + iyh * incys + 1], ione, &pg[ix * incx + iy * incy],
+                       ione);
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+}                               /* end pack_stop */
+
 /******/

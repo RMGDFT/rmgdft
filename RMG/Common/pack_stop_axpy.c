@@ -73,4 +73,44 @@ void pack_stop_axpy (REAL * sg, REAL * pg, REAL alpha, int dimx, int dimy, int d
 
 }                               /* end pack_stop_axpy */
 
+
+
+void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, REAL alpha, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, iz, ixh, iyh;
+    int incx, incy, incxs, incys;
+
+    incy = dimz;
+    incx = dimy * dimz;
+    incys = dimz + 2;
+    incxs = (dimy + 2) * (dimz + 2);
+
+
+    /* Transfer pg into smoothing grid */
+    for (ix = 0; ix < dimx; ix++)
+    {
+
+        ixh = ix + 1;
+        for (iy = 0; iy < dimy; iy++)
+        {
+
+            iyh = iy + 1;
+            for (iz = 0; iz < dimz; iz++)
+            {
+
+                pg[ix * incx + iy * incy + iz] += alpha * sg[ixh * incxs + iyh * incys + iz + 1];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+}                               /* end pack_stop_axpy */
+
+
+
+
 /******/

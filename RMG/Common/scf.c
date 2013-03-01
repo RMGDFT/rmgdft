@@ -159,7 +159,6 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     get_ddd (vtot);
 #if MPI
 
-    //ct.trade_compression_level = 0;
     time1 = my_crtc ();
 #if HYBRID_MODEL
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
@@ -188,7 +187,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
         // Process any remaining states in serial fashion
         for(st1 = istop;st1 < ct.num_kpts * ct.num_states;st1++) {
-            mg_eig_state (&states[st1], 0, vtot_psi);
+            mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
         }
 
     }
@@ -198,12 +197,11 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
         for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++) {
-            mg_eig_state (&states[st1], 0, vtot_psi);
+            mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
         }
     }
 #endif
 
-    //ct.trade_compression_level = 0;
     time2 = my_crtc ();
     rmg_timings (EIG_TIME, (time2 - time1));
 

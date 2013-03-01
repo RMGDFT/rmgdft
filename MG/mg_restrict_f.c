@@ -48,7 +48,7 @@ void mg_restrict_f (rmg_float_t * full, rmg_float_t * half, int dimx, int dimy, 
     int ix, iy, iz;
     int incz, incy, incx, incz2, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
-    rmg_float_t scale, face, corner, edge;
+    rmg_double_t scale, face, corner, edge;
 
 
 

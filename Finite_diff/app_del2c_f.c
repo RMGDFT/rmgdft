@@ -43,13 +43,13 @@
 #include <math.h>
 
 
-rmg_float_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz,
-                rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz)
+rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz,
+                rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ix, iy, iz;
     int incy, incx;
-    rmg_float_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
+    rmg_double_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
 

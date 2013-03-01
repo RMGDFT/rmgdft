@@ -45,11 +45,11 @@
 #include "main.h"
 
 void solv_pois_f (rmg_float_t * vmat, rmg_float_t * fmat, rmg_float_t * work,
-                int dimx, int dimy, int dimz, rmg_float_t gridhx, rmg_float_t gridhy, rmg_float_t gridhz, rmg_float_t step, rmg_float_t k)
+                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
 {
     int size, idx;
-    rmg_float_t scale;
-    rmg_float_t diag;
+    rmg_double_t scale;
+    rmg_double_t diag;
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)

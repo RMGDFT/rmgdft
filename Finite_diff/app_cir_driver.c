@@ -25,3 +25,21 @@ void app_cir_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, int order
     error_handler("APP_CIR order not programmed yet in app_cir_driver.\n");
 
 }
+
+void app_cir_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, int order)
+{
+
+
+    if(order == APP_CI_FOURTH) {
+        app_cir_fourth_f(a, b, dimx, dimy, dimz);
+        return;
+    }
+    if(order == APP_CI_SIXTH) {
+        app_cir_sixth_f(a, b, dimx, dimy, dimz);
+        return;
+    }
+
+    error_handler("APP_CIR order not programmed yet in app_cir_driver.\n");
+
+}
+
