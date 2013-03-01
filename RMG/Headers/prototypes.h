@@ -268,7 +268,9 @@ void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids
 void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images);
+void trade_imagesx_async_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (REAL * f, int dimx, int dimy, int dimz);
+void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
 void set_bc (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
 void set_bcx (REAL *mat, int dimx, int dimy, int dimz, int images, REAL val);
 void getpoi_bc (REAL *rho, REAL *vh_bc, int dimx, int dimy, int dimz);
@@ -501,6 +503,7 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int cdim, int pxgrid, int pygrid, int pzgrid,
                int nxgrid, int nygrid, int nzgrid);
 void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
+void RMG_MPI_trade_f(rmg_float_t *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
 void init_trade_imagesx_async(void);
 void  get_rho_oppo (REAL * rho, REAL * rho_oppo);
 void get_opposite_eigvals (STATE * states);

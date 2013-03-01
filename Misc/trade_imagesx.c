@@ -68,8 +68,18 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
                   grid_max2 = grid_zp;
               }
          }
-         my_malloc(swbuf1x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
-         my_malloc(swbuf2x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
+         retval = MPI_Alloc_mem(6 * sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
+         if(retval != MPI_SUCCESS) {
+             error_handler("Error in MPI_Alloc_mem.\n");
+         }
+         retval = MPI_Alloc_mem(6 * sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
+         if(retval != MPI_SUCCESS) {
+             error_handler("Error in MPI_Alloc_mem.\n");
+         }
+
+
+         //my_malloc(swbuf1x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
+         //my_malloc(swbuf2x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
          max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE;
          return;
     }
@@ -1142,6 +1152,17 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
     rmg_float_t *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
     rmg_float_t *swbuf1x_f, *swbuf2x_f;
     int ACTIVE_THREADS = 1;
+
+#if ASYNC_TRADES
+    if(type == CENTRAL_FD) {
+        trade_imagesx_central_async_f (f, w, dimx, dimy, dimz, images);
+        return;
+    }
+    else {
+        trade_imagesx_async_f (f, w, dimx, dimy, dimz, images);
+        return;
+    }
+#endif
 
 #if MD_TIMERS
     REAL time1, time2, time3;

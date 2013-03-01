@@ -23,7 +23,7 @@ void mg_eig_state_driver (STATE * sp, int tid, REAL * vtot_psi, int precision)
     }
     else {
 
-        mg_eig_state (sp, tid, vtot_psi);
+        mg_eig_state_f (sp, tid, vtot_psi);
 
     }
 
