@@ -92,9 +92,9 @@ void write_global_data_lead (int file_handle, double *data, int fnx, int fny, in
     my_malloc( x_plane, size, double );
 
 
-    x_off = pct.PX_OFFSET;
-    y_off = pct.PY_OFFSET;
-    z_off = pct.PZ_OFFSET;
+    x_off = pct.FPX_OFFSET;
+    y_off = pct.FPY_OFFSET;
+    z_off = pct.FPZ_OFFSET;
 
     for (i = 0; i < fnx / 3; i++)
     {
