@@ -107,12 +107,12 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #endif
     if(ntid == -1) {         // Normal codepath with no threads
         work2_f = (rmg_float_t *)&ct.gpu_host_temp2[0];
-        sg_twovpsi_f = (rmg_float_t)&ct.gpu_host_temp1[0];
+        sg_twovpsi_f = (rmg_float_t *)&ct.gpu_host_temp1[0];
         work1 = &ct.gpu_host_temp4[0];
     }
     else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
-        work2_f = (rmg_float_t)&ct.gpu_host_temp2[ntid * 4 * sbasis];
-        sg_twovpsi_f = (rmg_float_t)&ct.gpu_host_temp1[ntid * sbasis];
+        work2_f = (rmg_float_t *)&ct.gpu_host_temp2[ntid * 4 * sbasis];
+        sg_twovpsi_f = (rmg_float_t *)&ct.gpu_host_temp1[ntid * sbasis];
         work1 = &ct.gpu_host_temp4[ntid * sbasis];
     }
 
