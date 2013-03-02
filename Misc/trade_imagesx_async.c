@@ -210,26 +210,51 @@ void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int 
     /* Collect the positive z-plane and negative z-planes */
     c1 = (dimz-images);
     idx = tid * dimx * dimy * images;
-    for (ix = 0; ix < dimx; ix++)
-    {
-        ixs2 = ix * incx0;
-        for (iy = 0; iy < dimy; iy++)
+
+    if(images == 2) {
+
+        for (ix = 0; ix < dimx; ix++)
         {
-            iys2 = ixs2 + iy * incy0;
-            for (iz = 0; iz < images; iz++)
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < dimy; iy++)
             {
+                iys2 = ixs2 + iy * incy0;
 
-                index = iys2 + iz;
+                    frdz1[idx] = f[iys2];
+                    frdz2[idx] = f[iys2+c1];
+                    frdz1[idx+1] = f[iys2+1];
+                    frdz2[idx+1] = f[iys2+c1+1];
+                    idx+=2;
 
-                frdz1[idx] = f[index];
-                frdz2[idx] = f[index+c1];
-                idx++;
+            }                       /* end for */
 
-            }                   /* end for */
+        }                           /* end for */
 
-        }                       /* end for */
+    }
+    else{
 
-    }                           /* end for */
+        for (ix = 0; ix < dimx; ix++)
+        {
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < dimy; iy++)
+            {
+                iys2 = ixs2 + iy * incy0;
+                for (iz = 0; iz < images; iz++)
+                {
+
+                    index = iys2 + iz;
+
+                    frdz1[idx] = f[index];
+                    frdz2[idx] = f[index+c1];
+                    idx++;
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+        }                           /* end for */
+
+    }
 
 
     /* Collect the north and south planes */
@@ -478,29 +503,53 @@ void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int 
     }
 
 
+
+
+
     /* Unpack z-planes */
     c1 = dimz + images;
     idx = tid * dimx * dimy * images;
-    for (ix = 0; ix < dimx; ix++)
-    {
-        ixs2 = (ix + images) * incx;
-        for (iy = 0; iy < dimy; iy++)
+    if(images == 2) {
+
+        for (ix = 0; ix < dimx; ix++)
         {
-            iys2 = ixs2 + (iy + images) * incy;
-            for (iz = 0; iz < images; iz++)
+            ixs2 = (ix + images) * incx;
+            for (iy = 0; iy < dimy; iy++)
             {
+                iys2 = ixs2 + (iy + images) * incy;
+                w[iys2] = frdz1n[idx];
+                w[iys2+1] = frdz1n[idx+1];
+                w[iys2 + c1] = frdz2n[idx];
+                w[iys2 + c1 + 1] = frdz2n[idx+1];
+                idx+=2;
+            }                       /* end for */
 
-                index = iys2 + iz;
-                w[index] = frdz1n[idx];
-                w[index + c1] = frdz2n[idx];
-                idx++;
+        }                           /* end for */
 
-            }                   /* end for */
+    }
+    else {
 
-        }                       /* end for */
+        for (ix = 0; ix < dimx; ix++)
+        {
+            ixs2 = (ix + images) * incx;
+            for (iy = 0; iy < dimy; iy++)
+            {
+                iys2 = ixs2 + (iy + images) * incy;
+                for (iz = 0; iz < images; iz++)
+                {
 
-    }                           /* end for */
+                    index = iys2 + iz;
+                    w[index] = frdz1n[idx];
+                    w[index + c1] = frdz2n[idx];
+                    idx++;
 
+                }                   /* end for */
+
+            }                       /* end for */
+
+        }                           /* end for */
+
+    }
 
     /* Unpack the north and south planes */
     c1 = (dimy + images) * incy;
@@ -1754,30 +1803,54 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
     }
 
 
-    /* Collect the positive z-plane and negative z-planes */
+    /* Collect the positive z-plane and negative z-planes. Unroll the most common case. */
     c1 = (dimz-images);
     idx = tid * dimx * dimy * images;
-    for (ix = 0; ix < dimx; ix++)
-    {
-        ixs2 = ix * incx0;
-        for (iy = 0; iy < dimy; iy++)
+    if(images == 2) {
+
+        for (ix = 0; ix < dimx; ix++)
         {
-            iys2 = ixs2 + iy * incy0;
-            for (iz = 0; iz < images; iz++)
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < dimy; iy++)
             {
+                iys2 = ixs2 + iy * incy0;
 
-                index = iys2 + iz;
+                    frdz1_f[idx] = f[iys2];
+                    frdz1_f[idx+1] = f[iys2+1];
+                    frdz2_f[idx] = f[iys2+c1];
+                    frdz2_f[idx+1] = f[iys2+c1+1];
+                    idx+=2;
 
-                frdz1_f[idx] = f[index];
-                frdz2_f[idx] = f[index+c1];
-                idx++;
 
-            }                   /* end for */
+            }                       /* end for */
 
-        }                       /* end for */
+        }                           /* end for */
 
-    }                           /* end for */
+    }
+    else {
 
+        for (ix = 0; ix < dimx; ix++)
+        {
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < dimy; iy++)
+            {
+                iys2 = ixs2 + iy * incy0;
+                for (iz = 0; iz < images; iz++)
+                {
+
+                    index = iys2 + iz;
+
+                    frdz1_f[idx] = f[index];
+                    frdz2_f[idx] = f[index+c1];
+                    idx++;
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+        }                           /* end for */
+
+    }
 
     /* Collect the north and south planes */
     c1 = (dimy - images)*incy0;
@@ -2025,29 +2098,52 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
     }
 
 
-    /* Unpack z-planes */
+    /* Unpack z-planes. Unroll the most common case. */
     c1 = dimz + images;
     idx = tid * dimx * dimy * images;
-    for (ix = 0; ix < dimx; ix++)
-    {
-        ixs2 = (ix + images) * incx;
-        for (iy = 0; iy < dimy; iy++)
+    if(images == 2) {
+
+        for (ix = 0; ix < dimx; ix++)
         {
-            iys2 = ixs2 + (iy + images) * incy;
-            for (iz = 0; iz < images; iz++)
+            ixs2 = (ix + images) * incx;
+            for (iy = 0; iy < dimy; iy++)
             {
+                iys2 = ixs2 + (iy + images) * incy;
 
-                index = iys2 + iz;
-                w[index] = frdz1n_f[idx];
-                w[index + c1] = frdz2n_f[idx];
-                idx++;
+                    w[iys2] = frdz1n_f[idx];
+                    w[iys2+1] = frdz1n_f[idx+1];
+                    w[iys2 + c1] = frdz2n_f[idx];
+                    w[iys2 + c1 + 1] = frdz2n_f[idx+1];
+                    idx+=2;
 
-            }                   /* end for */
+            }                       /* end for */
 
-        }                       /* end for */
+        }                           /* end for */
 
-    }                           /* end for */
+    }
+    else {
 
+        for (ix = 0; ix < dimx; ix++)
+        {
+            ixs2 = (ix + images) * incx;
+            for (iy = 0; iy < dimy; iy++)
+            {
+                iys2 = ixs2 + (iy + images) * incy;
+                for (iz = 0; iz < images; iz++)
+                {
+
+                    index = iys2 + iz;
+                    w[index] = frdz1n_f[idx];
+                    w[index + c1] = frdz2n_f[idx];
+                    idx++;
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+        }                           /* end for */
+
+    }
 
     /* Unpack the north and south planes */
     c1 = (dimy + images) * incy;

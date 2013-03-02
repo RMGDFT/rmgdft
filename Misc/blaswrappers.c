@@ -49,6 +49,12 @@ void QMD_dscal (int n, REAL alpha, REAL * x, int incx)
 {
 //    sscal (&n, &alpha, x, &incx);
       int i, ix=0;
+      if(incx == 1) {
+          for(i = 0;i < n;i++) {
+              x[i] = alpha * x[i];
+          }
+          return;
+      }
       for(i = 0;i < n;i++) {
           x[ix] = alpha * x[ix];
           ix += incx;
@@ -78,6 +84,13 @@ REAL QMD_ddot (int n, REAL * x, int incx, REAL * y, int incy)
 //    return sdot (&n, x, &incx, y, &incy);
       int i, ix = 0, iy = 0;
       REAL stemp = 0.0;
+
+      if((incx == 1) && (incy == 1)) {
+          for(i = 0;i < n;i++) {
+              stemp += y[i] * x[i];
+          }
+          return stemp;
+      }
       for(i = 0;i < n;i++) {
           stemp += y[iy] * x[ix];
           ix += incx;
@@ -146,6 +159,12 @@ void QMD_sscal (int n, rmg_float_t alpha, rmg_float_t * x, int incx)
 {
 //    sscal (&n, &alpha, x, &incx);
       int i, ix=0;
+      if(incx == 1) {
+          for(i = 0;i < n;i++) {
+              x[i] = alpha * x[i];
+          }
+          return;
+      }
       for(i = 0;i < n;i++) {
           x[ix] = alpha * x[ix];
           ix += incx;
@@ -174,6 +193,13 @@ rmg_float_t QMD_sdot (int n, rmg_float_t * x, int incx, rmg_float_t * y, int inc
 {
       int i, ix = 0, iy = 0;
       rmg_double_t stemp = 0.0;
+
+      if((incx == 1) && (incy == 1)) {
+          for(i = 0;i < n;i++) {
+              stemp += y[i] * x[i];
+          }
+          return stemp;
+      }
       for(i = 0;i < n;i++) {
           stemp += (rmg_double_t)y[iy] * (rmg_double_t)x[ix];
           ix += incx;
