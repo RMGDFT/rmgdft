@@ -6,6 +6,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <hybrid.h>
 
 static REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
 
@@ -25,7 +26,7 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
     REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     REAL fc2x, fc2y, fc2z, tcx, tcy, tcz;
     REAL ihx, ihy, ihz;
-    rmg_float_t *rptr;
+    rmg_float_t *rptr, *rptr1;
 
 
 #if FAST_MEHR
@@ -40,8 +41,17 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
     incxr = dimz * dimy;
     incyr = dimz;
 
-
-    my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_float_t);
+    rptr1 = NULL;
+#if HYBRID_MODEL
+    rptr1 = (rmg_float_t *)get_thread_trade_buf();
+#endif
+    // Even in hybrid mode rptr1 will be null if called from a serial region.
+    if(rptr1 != NULL) {
+        rptr = rptr1;
+    }
+    else {
+        my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_float_t);
+    }
 
     trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
 
@@ -133,7 +143,9 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
     }                           /* end for */
 
 
-    my_free (rptr);
+    if(rptr1 == NULL)
+        my_free (rptr);
+
     return cc;
 
 }
@@ -169,14 +181,25 @@ REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, RE
     REAL rz, rzms, rzps, rzpps;
     REAL rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     REAL td1, td2, td3, td4, td5, td6, td7, td8, tdx;
-    rmg_float_t *rptr;
+    rmg_float_t *rptr, *rptr1;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
 
-    my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + 64, rmg_float_t);
+    rptr1 = NULL;
+#if HYBRID_MODEL
+    rptr1 = (rmg_float_t *)get_thread_trade_buf();
+#endif
+    // Even in hybrid mode rptr1 will be null if called from a serial region.
+    if(rptr1 != NULL) {
+        rptr = rptr1;
+    }
+    else {
+        my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + 64, rmg_float_t);
+    }
+
     // We run past the end of the array on purpose so make sure there is something there
     // that won't generate a floating point exception
     for(ix = 0;ix < 64;ix++) {
@@ -275,7 +298,9 @@ REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, RE
 
         }                           /* end for */
 
-        my_free (rptr);
+        if(rptr1 == NULL)
+            my_free (rptr);
+
         return cc;
 
     }
@@ -569,7 +594,8 @@ REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, RE
 
 
 
-    my_free (rptr);
+    if(rptr1 == NULL)
+        my_free (rptr);
     return cc;
 
 }

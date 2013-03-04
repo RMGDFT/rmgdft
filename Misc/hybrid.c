@@ -119,7 +119,7 @@ void init_HYBRID_MODEL(void) {
 // Main thread function
 void run_threads(SCF_THREAD_CONTROL *s) {
 
-    int retval, block;
+    int retval, alloc;
 
     set_cpu_affinity();
 
@@ -147,14 +147,13 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     s->pthread_tid = pthread_self();
     pthread_setspecific(scf_thread_control_key, (void *)s);
 
-    for(block = 0;block < 15;block ++){
+    alloc = (pct.PX0_GRID + 2*MAX_TRADE_IMAGES) * (pct.PY0_GRID + 2*MAX_TRADE_IMAGES) * (pct.PZ0_GRID + 2*MAX_TRADE_IMAGES);
 
-        retval = MPI_Alloc_mem(sizeof(REAL) * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &s->trade_buf[block]);
-        if(retval != MPI_SUCCESS) {
-             error_handler("Error in MPI_Alloc_mem.\n");
-        }
-
+    retval = MPI_Alloc_mem(sizeof(REAL) * (alloc + 64) , MPI_INFO_NULL, &s->trade_buf);
+    if(retval != MPI_SUCCESS) {
+         error_handler("Error in MPI_Alloc_mem.\n");
     }
+
 
     // Wait until everyone gets here
     pthread_barrier_wait(&run_barrier);
@@ -352,6 +351,17 @@ MPI_Comm *get_thread_grid_comm(void) {
 }
 
 
+// Reads the pinned memory storage from the thread specific data
+void *get_thread_trade_buf(void) {
+
+    SCF_THREAD_CONTROL *ss;
+
+    if(!in_threaded_region) return NULL;
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
+    if(!ss) return NULL;
+    return ss->trade_buf;
+
+}
 
 // Used for positioning and setting processor affinity. For now assumes that
 // THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
