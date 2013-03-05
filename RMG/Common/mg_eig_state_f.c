@@ -152,9 +152,13 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
 
-    // Copy double precision psi into single preciison array
+    // Copy double precision psi into single precison array
     for(idx = 0;idx < pbasis;idx++)
         tmp_psi_f[idx] = (rmg_float_t)tmp_psi[idx];
+
+    // Copy double precision ns into temp single precision array */
+    for(idx = 0;idx < pbasis;idx++)
+        work1_f[idx] = (rmg_float_t)ns[idx];
   
 #if MD_TIMERS
     rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
@@ -163,11 +167,8 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
     time1 = my_crtc ();
 #endif
-    /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
-    app_cir_driver (ns, res2, dimx, dimy, dimz, ct.kohn_sham_fd_order);
-
-    for(idx = 0;idx < pbasis;idx++) res2_f[idx] = (rmg_float_t)res2[idx];
-
+    /*Apply double precision Mehrstellen right hand operator to ns (stored temporarily in work1_f) and save in res2 */
+    app_cir_driver_f (work1_f, res2_f, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 #if MD_TIMERS
     rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
@@ -267,7 +268,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 	     * are not defined yet*/
             if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
             {
-                if ((ct.scf_steps == 0) && (ct.runflag != 1))
+                if (ct.scf_steps == 0)
                 {
                     eig = tarr[1] / (TWO * tarr[0]);
                     sp->eig[0] = eig;
