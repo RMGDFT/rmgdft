@@ -51,4 +51,4 @@ REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
                 REAL gridhx, REAL gridhy, REAL gridhz);
 rmg_double_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-
+init_global_sums(void);
