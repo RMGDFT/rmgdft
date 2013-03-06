@@ -46,16 +46,7 @@ volatile REAL *global_sums_vector, *tvector;
 volatile int global_sums_vector_state = 0;
 pthread_mutex_t global_sums_vector_lock = PTHREAD_MUTEX_INITIALIZER;
 static void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm);
-static REAL *fixed_vector = NULL;
 
-#define MAX_FIXED_VECTOR 512
-void init_global_sums(void) {
-    int retval;
-    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector);
-    if(retval != MPI_SUCCESS) {
-        error_handler("Error in MPI_Alloc_mem.\n");
-    }
-}
 
 
 void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
@@ -115,6 +106,16 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 #endif
 
 
+static REAL *fixed_vector = NULL;
+
+#define MAX_FIXED_VECTOR 512
+void init_global_sums(void) {
+    int retval;
+    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+}
 
 
 void global_sums (REAL * vect, int *length, MPI_Comm comm)
