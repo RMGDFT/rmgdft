@@ -187,3 +187,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim);
 void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target);
+
+double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, double simpson_tol, int *EP_final, 
+                           int *energy_insert_index, double *ener1_temp);
+

@@ -75,7 +75,7 @@ void run (STATE * states, STATE * states1)
         time1 = my_crtc ();
         get_cond_frommatrix ();
         get_cond_frommatrix_kyz ();
-        local_current ();
+    //    local_current ();
 
         time2 = my_crtc ();
         if (pct.gridpe == 0)
