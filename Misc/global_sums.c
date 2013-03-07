@@ -35,6 +35,8 @@
 
 #include "main.h"
 
+static REAL *fixed_vector = NULL;
+#define MAX_FIXED_VECTOR 512
 
 #if MPI
 
@@ -106,9 +108,6 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 #endif
 
 
-static REAL *fixed_vector = NULL;
-
-#define MAX_FIXED_VECTOR 512
 void init_global_sums(void) {
     int retval;
     retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector);
