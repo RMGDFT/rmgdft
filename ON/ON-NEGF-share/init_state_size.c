@@ -39,7 +39,7 @@ void init_state_size(STATE * states)
     REAL *rptr, *rptr1, *rptr2;
     int state;
     int max_nx, max_ny, max_nz;
-
+    int nx_tem, ny_tem, nz_tem, item;
 
     max_nx = 0;
     max_ny = 0;
@@ -48,26 +48,21 @@ void init_state_size(STATE * states)
     if (pct.gridpe == 0)
         printf("\n  States orbital size: x.y.z   \n");
 
+    item = 1<<ct.eig_parm.levels;
     for (state = 0; state < ct.num_states; state++)
     {
-        states[state].orbit_nx = 2.0 * states[state].radius / ct.hxgrid / ct.xside + 3;
-        states[state].orbit_ny = 2.0 * states[state].radius / ct.hygrid / ct.yside + 3;
-        states[state].orbit_nz = 2.0 * states[state].radius / ct.hzgrid / ct.zside + 3;
-        states[state].orbit_nx = min(states[state].orbit_nx, NX_GRID);
-        states[state].orbit_ny = min(states[state].orbit_ny, NY_GRID);
-        states[state].orbit_nz = min(states[state].orbit_nz, NZ_GRID);
-        if (states[state].orbit_nx / 2 * 2 != states[state].orbit_nx)
-            states[state].orbit_nx += 1;
-        if (states[state].orbit_ny / 2 * 2 != states[state].orbit_ny)
-            states[state].orbit_ny += 1;
-        if (states[state].orbit_nz / 2 * 2 != states[state].orbit_nz)
-            states[state].orbit_nz += 1;
-        if (states[state].orbit_nx / 4 * 4 != states[state].orbit_nx)
-            states[state].orbit_nx += 2;
-        if (states[state].orbit_ny / 4 * 4 != states[state].orbit_ny)
-            states[state].orbit_ny += 2;
-        if (states[state].orbit_nz / 4 * 4 != states[state].orbit_nz)
-            states[state].orbit_nz += 2;
+        nx_tem = 2.0 * states[state].radius / ct.hxgrid / ct.xside ;
+        ny_tem = 2.0 * states[state].radius / ct.hygrid / ct.yside ;
+        nz_tem = 2.0 * states[state].radius / ct.hzgrid / ct.zside ;
+        //at coarsest level, the number of grid point in each direction
+        //can be any number, at the upper levels, it must be an odd
+        //number
+
+        states[state].orbit_nx = (nx_tem + item -1)/item * item +1;
+        states[state].orbit_ny = (ny_tem + item -1)/item * item +1;
+        states[state].orbit_nz = (nz_tem + item -1)/item * item +1;
+
+
         states[state].size = states[state].orbit_nx * states[state].orbit_ny
             * states[state].orbit_nz;
         max_nx = max(max_nx, states[state].orbit_nx);
@@ -81,6 +76,10 @@ void init_state_size(STATE * states)
 *			printf("\n"); 
 */
     }
+
+    assert ( max_nx <= NX_GRID);
+    assert ( max_ny <= NY_GRID);
+    assert ( max_nz <= NZ_GRID);
 
     ct.max_orbit_nx = max_nx;
     ct.max_orbit_ny = max_ny;

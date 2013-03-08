@@ -170,7 +170,6 @@ void fastrlx(STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
             duplicate_states_info(states, states1);
             duplicate_states_info(states, states_tem);
 
-            make_mask_grid(1.0, 0, states);
             for (level = 0; level < ct.eig_parm.levels + 1; level++)
                 make_mask_grid_state(level, states);
 

@@ -12,14 +12,18 @@ void app_mask(int istate, double *u, int level)
     char *maskptr;
     double time1, time2;
     int idx, istart;
-    int size;
+    int size, nx, ny, nz, item;
 
 
     time1 = my_crtc();
 
     maskptr = ct.states[istate].lmask[level];
     
-    size = ct.states[istate].size/(1<<level)/(1<<level)/(1<<level);
+    item = 1<<level;
+    nx = (ct.states[istate].orbit_nx + item -1)/item;
+    ny = (ct.states[istate].orbit_ny + item -1)/item;
+    nz = (ct.states[istate].orbit_nz + item -1)/item;
+    size = nx * ny * nz;
 
     if (maskptr != NULL)
         for (idx = 0; idx < size; idx++)
