@@ -829,9 +829,6 @@ typedef struct
     // Precision level for mg_eig_state. Either single (4) or double (8) May be switched dynamically
     int mg_eig_precision;
 
-    /* Compression level for some trade images routines */
-    int trade_compression_level;
-
     /* time at which run started */
     REAL time0;
     
