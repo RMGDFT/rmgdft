@@ -83,7 +83,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     REAL hxgrid, hygrid, hzgrid, sb_step;
     REAL tarr[8];
     REAL time1;
-    rmg_float_t *sg_twovpsi_f, *work1_f;
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = sp->dimx;
@@ -127,8 +126,6 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (res2, sbasis, REAL);
     my_malloc (saved_psi, sbasis, REAL);
     my_malloc (nvtot_psi, sbasis, REAL);
-    my_malloc (sg_twovpsi_f, sbasis, rmg_float_t);
-    my_malloc (work1_f, 4*sbasis, rmg_float_t);
 
     tmp_psi = sp->psiR;
 
@@ -338,21 +335,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
                 t1 = 0.0;
             }
 
-for(idx=0;idx<sbasis;idx++) {
-    work1_f[idx]=(rmg_float_t)work1[idx];
-}
-
             /* Do multigrid step with solution returned in sg_twovpsi */
-            mgrid_solv_f (sg_twovpsi_f, work1_f, (rmg_float_t *)work2,
-                        dimx, dimy, dimz, (rmg_float_t)hxgrid,
-                        (rmg_float_t)hygrid, (rmg_float_t)hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, (rmg_float_t)sb_step, (rmg_float_t)t1,
+            mgrid_solv (sg_twovpsi, work1, work2,
+                        dimx, dimy, dimz, hxgrid,
+                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, t1,
                         NX_GRID, NY_GRID, NZ_GRID,
                         pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET,
                         pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
-for(idx=0;idx<sbasis;idx++) {
-    sg_twovpsi[idx]=(rmg_double_t)sg_twovpsi_f[idx];
-}
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif
@@ -490,8 +480,6 @@ for(idx=0;idx<sbasis;idx++) {
     } // end if
 
     /* Release our memory */
-    my_free (work1_f);
-    my_free (sg_twovpsi_f);
     my_free (nvtot_psi);
     my_free (saved_psi);
     my_free (res2);
