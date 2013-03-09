@@ -150,23 +150,6 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
 
 }
 
-// These routines are noticeably faster with grid dims fixed at compile time
-// so experts can set them by using Makefile defines
-#ifdef FD_XSIZE
-  #define         FIXED_XDIM      FD_XSIZE
-#else
-  #define         FIXED_XDIM      pct.PX0_GRID
-#endif
-#ifdef FD_YSIZE
-  #define         FIXED_YDIM      FD_YSIZE
-#else
-  #define         FIXED_YDIM      pct.PY0_GRID
-#endif
-#ifdef FD_ZSIZE
-  #define         FIXED_ZDIM      FD_ZSIZE
-#else
-  #define         FIXED_ZDIM      pct.PZ0_GRID
-#endif
 
 // Version with loop dimensions set at compile time
 REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz)

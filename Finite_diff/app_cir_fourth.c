@@ -73,7 +73,6 @@ void app_cir_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     my_free (rptr);
 }
 
-
 void app_cir_fourth_global (REAL * a, REAL * b)
 {
 
@@ -84,32 +83,32 @@ void app_cir_fourth_global (REAL * a, REAL * b)
     REAL *rptr, rz, rzps, rzms, rzpps;
     REAL c000, c100;
 
-    incx = (pct.PZ0_GRID + 2) * (pct.PY0_GRID + 2);
-    incy = pct.PZ0_GRID + 2;
-    incxr = pct.PZ0_GRID * pct.PY0_GRID;
-    incyr = pct.PZ0_GRID;
+    incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
+    incy = FIXED_ZDIM + 2;
+    incxr = FIXED_ZDIM * FIXED_YDIM;
+    incyr = FIXED_ZDIM;
 
-    my_malloc (rptr, (pct.PX0_GRID + 2) * (pct.PY0_GRID + 2) * (pct.PZ0_GRID + 2), REAL);
+    my_malloc (rptr, (FIXED_XDIM + 2) * (FIXED_YDIM + 2) * (FIXED_ZDIM + 2), REAL);
 
-    trade_imagesx (a, rptr, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, 1, FULL_FD);
+    trade_imagesx (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, FULL_FD);
 
     c000 = 0.5;
     c100 = 1.0 / 12.0;
 
 
-    for (ix = 1; ix < pct.PX0_GRID + 1; ix++)
+    for (ix = 1; ix < FIXED_XDIM + 1; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
         ixps = (ix + 1) * incx;
 
-        for (iy = 1; iy < pct.PY0_GRID + 1; iy++)
+        for (iy = 1; iy < FIXED_YDIM + 1; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
             iyps = (iy + 1) * incy;
 
-            for (iz = 1; iz < pct.PZ0_GRID + 1; iz++)
+            for (iz = 1; iz < FIXED_ZDIM + 1; iz++)
             {
 
                 b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =

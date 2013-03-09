@@ -109,7 +109,8 @@
 /* Prototypes for function calls*/
 #include "prototypes.h" 
 
-
+/* Some definitions needed for using compile time values for global grid sizes */
+#include "fixed_dims.h"
 
 /* Include the  library of exchange and correlation (namely, Libxc) */
 /* #include "../../Common/libxc/include/xc.h"   */
