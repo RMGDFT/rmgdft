@@ -106,6 +106,23 @@ void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int 
     my_free (rptr);
 }
 
+// These routines are noticeably faster with grid dims fixed at compile time
+// so experts can set them by using Makefile defines
+#ifdef FD_XSIZE
+  #define         FIXED_XDIM      FD_XSIZE
+#else
+  #define         FIXED_XDIM      pct.PX0_GRID
+#endif
+#ifdef FD_YSIZE
+  #define         FIXED_YDIM      FD_YSIZE
+#else
+  #define         FIXED_YDIM      pct.PY0_GRID
+#endif
+#ifdef FD_ZSIZE
+  #define         FIXED_ZDIM      FD_ZSIZE
+#else
+  #define         FIXED_ZDIM      pct.PZ0_GRID
+#endif
 
 void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
 {
@@ -118,14 +135,14 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
     REAL c000, c100, c110, c200;
     rmg_float_t *rptr;
 
-    incx = (pct.PZ0_GRID + 4) * (pct.PY0_GRID + 4);
-    incy = pct.PZ0_GRID + 4;
-    incxr = pct.PZ0_GRID * pct.PY0_GRID;
-    incyr = pct.PZ0_GRID;
+    incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
+    incy = FIXED_ZDIM + 4;
+    incxr = FIXED_ZDIM * FIXED_YDIM;
+    incyr = FIXED_ZDIM;
 
-    my_malloc (rptr, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4), rmg_float_t);
+    my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4), rmg_float_t);
 
-    trade_imagesx_f (a, rptr, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, 2, FULL_FD);
+    trade_imagesx_f (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 2, FULL_FD);
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
@@ -134,9 +151,9 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
 
 
     // Handle the general case first
-    if(pct.PZ0_GRID % 4) {
+    if(FIXED_ZDIM % 4) {
 
-        for (ix = 2; ix < pct.PX0_GRID + 2; ix++)
+        for (ix = 2; ix < FIXED_XDIM + 2; ix++)
         {
             ixs = ix * incx;
             ixms = (ix - 1) * incx;
@@ -144,7 +161,7 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
             ixmms = (ix - 2) * incx;
             ixpps = (ix + 2) * incx;
 
-            for (iy = 2; iy < pct.PY0_GRID + 2; iy++)
+            for (iy = 2; iy < FIXED_YDIM + 2; iy++)
             {
                 iys = iy * incy;
                 iyms = (iy - 1) * incy;
@@ -152,7 +169,7 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
                 iymms = (iy - 2) * incy;
                 iypps = (iy + 2) * incy;
 
-                for (iz = 2; iz < pct.PZ0_GRID + 2; iz++)
+                for (iz = 2; iz < FIXED_ZDIM + 2; iz++)
                 {
 
                     b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] =
@@ -195,7 +212,7 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
 
 
     // Optimized case for dimz divisible by 4
-    for (ix = 2; ix < pct.PX0_GRID + 2; ix++)
+    for (ix = 2; ix < FIXED_XDIM + 2; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
@@ -203,7 +220,7 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
         ixmms = (ix - 2) * incx;
         ixpps = (ix + 2) * incx;
 
-        for (iy = 2; iy < pct.PY0_GRID + 2; iy++)
+        for (iy = 2; iy < FIXED_YDIM + 2; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
@@ -224,7 +241,7 @@ void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b)
                    rptr[ixs + iyms + 1];
 
 
-            for (iz = 2; iz < pct.PZ0_GRID + 2; iz+=4)
+            for (iz = 2; iz < FIXED_ZDIM + 2; iz+=4)
             {
 
                 // Forward set of edges
