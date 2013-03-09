@@ -63,6 +63,9 @@
 #include    "common_prototypes.h"
 #include    "typedefs.h"
 
+/* Some definitions needed for using compile time values for global grid sizes */
+#include "fixed_dims.h"
+
 int MXLLDA, MXLCOL;
 REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *vtot,
     *vtot_c;
