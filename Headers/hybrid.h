@@ -44,6 +44,7 @@ void scf_tsd_delete(void);
 int get_thread_basetag(void);
 int get_thread_tid(void);
 void *get_thread_trade_buf(void);
+SCF_THREAD_CONTROL *get_thread_control(void);
 void mg_eig_state_threaded(MG_THREAD_STRUCT *ss);
 void set_cpu_affinity(void);
 void wait_for_threads(int jobs);
@@ -59,4 +60,8 @@ void RMG_MPI_thread_order_unlock(void);
 void trade_images_manager(void *s);
 long long Papi_thread_flops(int tid);
 MPI_Comm *get_thread_grid_comm(void);
+
+#if GPU_ENABLED
+cudaStream_t *get_thread_cstream(void);
+#endif
 #endif
