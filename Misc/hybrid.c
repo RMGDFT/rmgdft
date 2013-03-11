@@ -87,6 +87,7 @@ extern int GRID_MAX2;
 void init_HYBRID_MODEL(void) {
 
     int thread, retval;
+    SCF_THREAD_CONTROL *s;
 
     // Should work on linux and AIX
     ct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
@@ -107,11 +108,16 @@ void init_HYBRID_MODEL(void) {
     // Here we create a set of long lived threads
     for(thread = 0;thread < ct.THREADS_PER_NODE;thread++) {
 
+        s = &thread_control[thread];
         thread_control[thread].tid = thread;
         sem_init(&thread_control[thread].sync, 0, 0);
         retval = pthread_create(&threads[thread], &thread_attrs, (void *)run_threads, (void *)&thread_control[thread]);
-
     }
+
+#if GPU_ENABLED
+    // Pop context then any other threads need to push/pop to access GPU
+//    cuCtxPopCurrent(&ct.cu_context);
+#endif
 
     
 }
@@ -120,6 +126,10 @@ void init_HYBRID_MODEL(void) {
 void run_threads(SCF_THREAD_CONTROL *s) {
 
     int retval, alloc;
+
+#if GPU_ENABLED
+    cudaError_t cuerr;
+#endif
 
     set_cpu_affinity();
 
@@ -154,6 +164,27 @@ void run_threads(SCF_THREAD_CONTROL *s) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
 
+#if GPU_ENABLED
+        cudaSetDevice(ct.cu_dev); 
+//        cuCtxPushCurrent(ct.cu_context);
+        if(cudaSuccess != (cuerr = cudaStreamCreate(&s->cstream))) {
+            fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
+            exit(-1);
+        }
+        if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+            fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
+            exit(-1);
+        }
+        if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+            fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
+            exit(-1);
+        }
+        if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp3, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+            fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
+            exit(-1);
+        }
+//        cuCtxPopCurrent(&ct.cu_context);
+#endif
 
     // Wait until everyone gets here
     pthread_barrier_wait(&run_barrier);
@@ -324,6 +355,15 @@ int get_thread_basetag(void) {
 
 }
 
+// Gets the threads control structure pointer
+SCF_THREAD_CONTROL *get_thread_control(void) {
+    SCF_THREAD_CONTROL *ss;
+    if(!in_threaded_region) return NULL;
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
+    if(!ss) return NULL;
+    return ss;
+}
+
 // Reads the tid from the thread specific data. Returns -1 if we are not in 
 // a parallel region
 int get_thread_tid(void) {
@@ -350,6 +390,18 @@ MPI_Comm *get_thread_grid_comm(void) {
     return &ss->grid_comm;
 }
 
+
+#if GPU_ENABLED
+// Gets thread cstream
+cudaStream_t *get_thread_cstream(void) {
+
+    SCF_THREAD_CONTROL *ss;
+    if(!in_threaded_region) return NULL;
+    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
+    if(!ss) return NULL;
+    return &ss->cstream;
+}
+#endif
 
 // Reads the pinned memory storage from the thread specific data
 void *get_thread_trade_buf(void) {

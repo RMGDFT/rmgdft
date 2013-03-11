@@ -273,6 +273,23 @@ void init_IO (int argc, char **argv)
   init_trade_imagesx_async();
 #endif
 
+#if GPU_ENABLED
+  cudaDeviceReset();
+  if( CUDA_SUCCESS != cuInit( 0 ) ) {
+      fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
+  }
+  if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
+      fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
+  }
+  cudaSetDevice(ct.cu_dev);
+
+  if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
+      fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
+  }
+
+//  cuCtxPopCurrent(&ct.cu_context);
+#endif
+
 #if HYBRID_MODEL
   if(provided < ct.mpi_threadlevel) {
 

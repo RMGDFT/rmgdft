@@ -42,7 +42,7 @@ void rmg_printout_devices( )
     unsigned int totalMem;
 #endif
 
-    int clock;
+    int clock, retval;
     CUdevice dev;
 
     for(idevice = 0; idevice < ndevices; idevice++ ) {
@@ -52,8 +52,12 @@ void rmg_printout_devices( )
         cuDeviceTotalMem( &totalMem, dev );
         cuDeviceGetAttribute( &clock,
         CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
-        printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
+        printf( "Device %d: %s, %.1f MHz clock, %.1f MB memory\n",
         idevice, name, clock/1000.f, totalMem/1024.f/1024.f );
+        cuDeviceGetAttribute(&retval, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, ct.cu_dev);
+        printf("Device compute mode = %d\n", retval);
+
+
     }
 }
 
@@ -66,6 +70,9 @@ void init_gpu (void)
   cublasStatus_t custat;
   int alloc;
 
+// This block needed gto be called before threads were initialized so it
+// has been moved to Misc/init_IO.c
+#if 0
   cudaDeviceReset();
   if( CUDA_SUCCESS != cuInit( 0 ) ) {
       fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
@@ -79,6 +86,8 @@ void init_gpu (void)
   if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
       fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
   }
+#endif
+
   rmg_printout_devices( );
 
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_global_matrix , ct.num_states * ct.num_states * sizeof(REAL) )){
