@@ -33,7 +33,7 @@ OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
 
 #The line below works for MPICH, used on ox
-LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lscalapack  -L ../lib/libxc/lib -lxc
+LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lmpi_f77 -lscalapack  -L ../lib/libxc/lib -lxc
 #For OpenMPI (Ubuntu, etc.) use LIBS below
 #LIBS = -lblas -lm -llapack -lfftw -lblacs-openmpi -lscalapack-openmpi -lgfortran
 LDFLAGS =
