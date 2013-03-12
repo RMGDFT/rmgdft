@@ -170,6 +170,10 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     /*Apply double precision Mehrstellen right hand operator to ns (stored temporarily in work1_f) and save in res2 */
     app_cir_driver_f (work1_f, res2_f, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
+#if GPU_ENABLED
+    //cudaDeviceSynchronize();
+#endif
+
 #if MD_TIMERS
     rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
@@ -220,7 +224,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
         time1 = my_crtc ();
 #endif
 #if GPU_ENABLED
-//        cudaDeviceSynchronize();
+        cudaDeviceSynchronize();
 #endif
 
         //scf_barrier_wait();
@@ -228,7 +232,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
         app_cir_driver_f (sg_twovpsi_f, work1_f, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 #if GPU_ENABLED
-        cudaDeviceSynchronize();
+        //cudaDeviceSynchronize();
 #endif
 
 #if MD_TIMERS
