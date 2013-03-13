@@ -6,13 +6,13 @@
 #  Make.linux - Compiles code for Linux with MPI
 #
 #
-# CACHE_LINE_SIZE is the size in bytes of a L1 cache line
-# L1_CACHE_LINES is the number of lines in the L1 cache
 #
-#This seems that this has no effect, nothing in the code uses CACHE_LINE_SIZE or L1_CACHE_LINES
-CACHE_LINE_SIZE = 128
-L1_CACHE_LINES = 128
-DEFS = -DCACHE_LINE_SIZE=$(CACHE_LINE_SIZE) -DL1_CACHE_LINES=$(L1_CACHE_LINES)
+# These need to be set when running benchmarks or attempting to use GPU finite
+# differencing routines. They correspond to the global coarse grid dimensions
+# per PE.
+#DEFS = -DFD_XSIZE=24 -DFD_YSIZE=24 -DFD_ZSIZE=24
+DEFS =
+
 
 
 # If using gpuaccelerations set CUDADIR, CUDAINC and CUDALIB for your system
@@ -33,12 +33,17 @@ MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+# Uncomment for compiling cuda
+#CUFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.cu))
 HFILES := $(wildcard Headers/*.h)
 H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
+#SUFFIXES = .cu .c .f
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
+# Uncomment for compiling cuda and add to OBJECTS line
+#CUOBJECTS = $(CUFILES:.cu=.cu.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
 
@@ -56,6 +61,8 @@ LDFLAGS = -pthread -fopenmp
 
 CC = mpicc
 FC = mpif77
+# Set NVCC if compiling cuda
+#NVCC = /usr/local/cuda/bin/nvcc
 #CC = /usr/local/bin/mpicc
 #FC = /usr/local/bin/mpif77
 
@@ -74,6 +81,10 @@ CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers $(CUDA
 
 rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+# Needed for compiling cuda
+#%.cu.o : %.cu
+#        $(NVCC) --compiler-bindir=/opt/gcc43/ $(CUDAINC) -IHeaders -I../Headers $(DEFS) -DUNIX -O3 -arch compute_20 -code compute_20 -o $@ -c $<
 
 
 # Runs svnrev to create svnrev.h
