@@ -6,6 +6,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include "hybrid.h"
 
 static void app_cir_sixth_global_f (rmg_float_t * a, rmg_float_t * b);
 
@@ -29,6 +30,43 @@ void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int 
     int incyr, incxr;
     rmg_float_t *rptr;
     REAL c000, c100, c110, c200;
+#if GPU_ENABLED
+    rmg_float_t *gpu_psi, *gpu_b;
+    cudaStream_t *cstream;
+    int ione = 1, tid;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+#else
+    tid = 0;
+#endif
+    if(tid == -1) {         // Normal codepath with no threads
+        rptr = (rmg_float_t *)&ct.gpu_host_temp4[0];
+        gpu_psi = (rmg_float_t *)&ct.gpu_work3[0];
+        gpu_b = (rmg_float_t *)&ct.gpu_work4[0];
+    }
+    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
+        SCF_THREAD_CONTROL *ss;
+        ss = get_thread_control();
+        rptr = (rmg_float_t *)ss->gpu_host_temp2;
+        gpu_psi = (rmg_float_t *)&ct.gpu_work3[tid * sbasis];
+        gpu_b = (rmg_float_t *)&ct.gpu_work4[tid * sbasis];
+    }
+
+    cstream = get_thread_cstream();
+    trade_imagesx_f (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
+//    cuCtxPushCurrent(ct.cu_context);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
+
+    app_cir_sixth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, *cstream);
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
+    cudaStreamSynchronize(*cstream);
+//    cuCtxPopCurrent(&ct.cu_context);
+    return;
+#endif
 
 #if FAST_MEHR
     numgrid = dimx * dimy * dimz;
@@ -42,6 +80,7 @@ void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int 
     incy = dimz + 4;
     incxr = dimz * dimy;
     incyr = dimz;
+
 
     my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_float_t);
     trade_imagesx_f (a, rptr, dimx, dimy, dimz, 2, FULL_FD);

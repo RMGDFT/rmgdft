@@ -6,7 +6,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include <hybrid.h>
+#include "hybrid.h"
 
 static REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
 
@@ -27,6 +27,51 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
     REAL fc2x, fc2y, fc2z, tcx, tcy, tcz;
     REAL ihx, ihy, ihz;
     rmg_float_t *rptr, *rptr1;
+
+#if GPU_ENABLED
+    rmg_float_t *gpu_psi, *gpu_b;
+    cudaStream_t *cstream;
+    int ione = 1, tid;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+
+
+    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
+    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
+
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+#else
+    tid = 0;
+#endif
+    if(tid == -1) {         // Normal codepath with no threads
+        rptr = (rmg_float_t *)&ct.gpu_host_temp3[0];
+        gpu_psi = (rmg_float_t *)&ct.gpu_work1[0];
+        gpu_b = (rmg_float_t *)&ct.gpu_work2[0];
+    }
+    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
+        SCF_THREAD_CONTROL *ss;
+        ss = get_thread_control();
+        rptr = (rmg_float_t *)ss->gpu_host_temp1;
+        gpu_psi = (rmg_float_t *)&ct.gpu_work1[tid * sbasis];
+        gpu_b = (rmg_float_t *)&ct.gpu_work2[tid * sbasis];
+    }
+
+    cstream = get_thread_cstream();
+    trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
+
+    app_cil_sixth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, 
+                          gridhx, gridhy, gridhz,
+                          ct.xside, ct.yside, ct.zside, *cstream);
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
+    cudaStreamSynchronize(*cstream);
+
+    return cc;
+#endif
 
 
 #if FAST_MEHR
@@ -80,6 +125,7 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
     tcy = (-1.0 / 240.0) * ihy;
     tcz = (-1.0 / 240.0) * ihz;
 
+
     for (ix = 2; ix < dimx + 2; ix++)
     {
         ixs = ix * incx;
@@ -99,16 +145,16 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
             for (iz = 2; iz < dimz + 2; iz++)
             {
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = cc * rptr[ixs + iys + iz] +
-                    fcx * (rptr[ixms + iys + iz] + rptr[ixps + iys + iz] +
-                           rptr[ixs + iyms + iz] + rptr[ixs + iyps + iz] +
-                           rptr[ixs + iys + (iz - 1)] + rptr[ixs + iys + (iz + 1)]);
+                    fcx * (rptr[ixms + iys + iz] + rptr[ixps + iys + iz]) +
+                    fcy * (rptr[ixs + iyms + iz] + rptr[ixs + iyps + iz]) +
+                    fcz * (rptr[ixs + iys + (iz - 1)] + rptr[ixs + iys + (iz + 1)]);
 
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
                     ecxz * (rptr[ixms + iys + (iz - 1)] + rptr[ixps + iys + (iz - 1)] +
-                            rptr[ixms + iys + (iz + 1)] + rptr[ixps + iys + (iz + 1)] +
-                            rptr[ixs + iyms + (iz - 1)] + rptr[ixs + iyps + (iz - 1)] +
-                            rptr[ixs + iyms + (iz + 1)] + rptr[ixs + iyps + (iz + 1)] +
-                            rptr[ixms + iyms + iz] + rptr[ixms + iyps + iz] +
+                            rptr[ixms + iys + (iz + 1)] + rptr[ixps + iys + (iz + 1)]) +
+                    ecyz * (rptr[ixs + iyms + (iz - 1)] + rptr[ixs + iyps + (iz - 1)] +
+                            rptr[ixs + iyms + (iz + 1)] + rptr[ixs + iyps + (iz + 1)]) +
+                    ecxy * (rptr[ixms + iyms + iz] + rptr[ixms + iyps + iz] +
                             rptr[ixps + iyms + iz] + rptr[ixps + iyps + iz]);
 
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
@@ -118,20 +164,20 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
                            rptr[ixms + iyps + (iz + 1)] + rptr[ixps + iyps + (iz + 1)]);
 
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    fc2x * (rptr[ixmms + iys + iz] + rptr[ixpps + iys + iz] +
-                            rptr[ixs + iymms + iz] + rptr[ixs + iypps + iz] +
-                            rptr[ixs + iys + (iz - 2)] + rptr[ixs + iys + (iz + 2)]);
+                    fc2x * (rptr[ixmms + iys + iz] + rptr[ixpps + iys + iz]) +
+                    fc2y * (rptr[ixs + iymms + iz] + rptr[ixs + iypps + iz]) +
+                    fc2z * (rptr[ixs + iys + (iz - 2)] + rptr[ixs + iys + (iz + 2)]);
 
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
                     tcx * (rptr[ixps + iypps + iz] + rptr[ixps + iymms + iz] +
                            rptr[ixms + iypps + iz] + rptr[ixms + iymms + iz] +
                            rptr[ixps + iys + (iz + 2)] + rptr[ixps + iys + (iz - 2)] +
-                           rptr[ixms + iys + (iz + 2)] + rptr[ixms + iys + (iz - 2)] +
-                           rptr[ixpps + iyps + iz] + rptr[ixmms + iyps + iz] +
+                           rptr[ixms + iys + (iz + 2)] + rptr[ixms + iys + (iz - 2)]) +
+                    tcy * (rptr[ixpps + iyps + iz] + rptr[ixmms + iyps + iz] +
                            rptr[ixpps + iyms + iz] + rptr[ixmms + iyms + iz] +
                            rptr[ixs + iyps + (iz + 2)] + rptr[ixs + iyps + (iz - 2)] +
-                           rptr[ixs + iyms + (iz + 2)] + rptr[ixs + iyms + (iz - 2)] +
-                           rptr[ixpps + iys + (iz + 1)] + rptr[ixmms + iys + (iz + 1)] +
+                           rptr[ixs + iyms + (iz + 2)] + rptr[ixs + iyms + (iz - 2)]) +
+                    tcz * (rptr[ixpps + iys + (iz + 1)] + rptr[ixmms + iys + (iz + 1)] +
                            rptr[ixpps + iys + (iz - 1)] + rptr[ixmms + iys + (iz - 1)] +
                            rptr[ixs + iypps + (iz + 1)] + rptr[ixs + iymms + (iz + 1)] +
                            rptr[ixs + iypps + (iz - 1)] + rptr[ixs + iymms + (iz - 1)]);
