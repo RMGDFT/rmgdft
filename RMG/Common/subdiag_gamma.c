@@ -159,6 +159,9 @@ void init_subdiag(void)
 void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
 
+#if GPU_ENABLED
+      cudaDeviceSynchronize();
+#endif
     switch(ct.subdiag_driver) {
         case SUBDIAG_LAPACK:
             subdiag_gamma_lapack(states, vh, vnuc, vxc);

@@ -319,6 +319,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     }
 
     rmg_timings (SCF_TIME, (my_crtc () - time3));
+    printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time3);
 
     return CONVERGED;
 }                               /* end scf */
