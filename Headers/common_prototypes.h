@@ -52,3 +52,47 @@ REAL app_del2c (REAL *a, REAL *b, int dimx, int dimy, int dimz,
 rmg_double_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 void init_global_sums(void);
+
+#if GPU_ENABLED
+void init_gpu (void);
+void finalize_gpu (void);
+void app_cil_sixth_f_gpu(const float *psi,
+                        float *b,
+                        const int dimx,
+                        const int dimy,
+                        const int dimz,
+                        const double gridhx,
+                        const double gridhy,
+                        const double gridhz,
+                        const double xside,
+                        const double yside,
+                        const double zside,
+                        cudaStream_t cstream);
+void app_cir_sixth_f_gpu(const float *psi,
+                        float *b,
+                        const int dimx,
+                        const int dimy,
+                        const int dimz,
+                        cudaStream_t cstream);
+
+void app_cil_sixth_gpu(const double *psi,
+                        double *b,
+                        const int dimx,
+                        const int dimy,
+                        const int dimz,
+                        const double gridhx,
+                        const double gridhy,
+                        const double gridhz,
+                        const double xside,
+                        const double yside,
+                        const double zside,
+                        cudaStream_t cstream);
+void app_cir_sixth_gpu(const double *psi,
+                        double *b,
+                        const int dimx,
+                        const int dimy,
+                        const int dimz,
+                        cudaStream_t cstream);
+
+#endif
+
