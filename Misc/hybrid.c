@@ -396,7 +396,7 @@ MPI_Comm *get_thread_grid_comm(void) {
 cudaStream_t *get_thread_cstream(void) {
 
     SCF_THREAD_CONTROL *ss;
-    if(!in_threaded_region) return NULL;
+    if(!in_threaded_region) return &ct.cuda_stream;  // Return main process stream
     ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
     if(!ss) return NULL;
     return &ss->cstream;

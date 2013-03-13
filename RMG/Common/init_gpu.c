@@ -155,7 +155,7 @@ void init_gpu (void)
       exit(-1);
   }
 
-//  cudaStreamCreate(&ct.cuda_stream);
+  cudaStreamCreate(&ct.cuda_stream);
 //  cublasSetStream(ct.cublas_handle, ct.cuda_stream); 
 //  magmablasSetKernelStream(ct.cuda_stream);
 }
