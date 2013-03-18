@@ -96,6 +96,7 @@ void write_timings (void)
         printf ("      charge mat     %12.4f\n", timings[CHARGE_DEN_MAT_TIME]);
         printf ("      new rho        %12.4f\n", timings[GET_NEW_RHO]);
         printf ("      update pot     %12.4f\n", timings[UPDATE_POT_TIME]);
+        printf ("         confine     %12.4f\n", timings[CONFINE_TIME]);
         printf ("*********************************\n\n");
 
         printf ("      get_Hij        %12.4f\n", timings[GET_Hij_TIME]);
@@ -123,7 +124,6 @@ void write_timings (void)
         printf ("---------------------------------\n");
         printf ("         global sum  %12.4f\n", timings[MPISUM_EQ_TIME]);
         printf ("         Green_c     %12.4f\n", timings[GREEN_EQ_TIME]);
-        printf ("         inverse     %12.4f\n", timings[matrix_inverse_luw_TIME]);
 
         printf ("\n");
         printf ("       non-equilib   %12.4f\n", timings[NONEQ_PART_TIME]);

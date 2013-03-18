@@ -28,7 +28,9 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
 
 
 
+    double time1, time2;
 
+    time1 = my_crtc();
     /* find the offset  */
     pe2xyz (pct.gridpe, &pex, &pey, &pez);
     xgrid =  FNX_GRID/(1<<level);
@@ -96,5 +98,9 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
             }
 
         }
+
+    time2 = my_crtc();
+
+    rmg_timings (CONFINE_TIME, time2 - time1);
 
 }

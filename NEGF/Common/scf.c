@@ -40,13 +40,13 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
     int st1, st2, idx, idx1, ione = 1;
     int st11, st22;
     double tem;
-    time1 = my_crtc ();
     int i, j, k, jj, kk, iii, jjj, kkk;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j1, k1, jdiff, kdiff, iprobe, idx_C;
     int idx2, FPYZ0_GRID;
 
 
+    time1 = my_crtc ();
     for (idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
 
@@ -249,9 +249,11 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
 
     int n = FP0_BASIS, idx, ione = 1;
 
+    double time1, time2;
 
     /* allocate memory */
 
+    time1 = my_crtc ();
 
     /* save old vtot, vxc, vh */
     scopy (&n, vxc, &ione, vxc_old, &ione);
@@ -282,27 +284,6 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
         vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
     }
 
-    /* evaluate SC correction */
-    /*
-     *   t[0] = t[1] =0.;
-     *
-     *   for (idx = 0; idx < FP0_BASIS; idx++) {
-
-     *t[0] += rho[idx] * vtot[idx];
-     *t[1] += vtot[idx] * vtot[idx];
-
-     *   }
-     *   idx = 2;
-     *   t[0] *= ct.vel_f;
-     *   t[0] /= (double)ct.num_ions;
-     *   t[1] = sqrt(t[1] / ( (double) (ct.vh_nbasis) ) );
-     *
-     *   if (pct.gridpe == 0)
-     *printf(" SCF CHECKS: <rho dv>/MAX_IONS = %15.10f RMS[dv] = %15.10e\n",
-     *       t[0],t[1]);
-     *
-     *fflush(NULL);
-     */
     my_barrier ();
 
     if (ct.steps < 4 && ct.runflag == 0)
@@ -320,8 +301,7 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vext[idx];
     }
 
-    /*   if ( t[1] < ct.thr_rms  ) 
-     *      *CONVERGENCE = TRUE;
-     */
+    time2 = my_crtc ();
+    rmg_timings (UPDATE_POT_TIME, time2 - time1);
 
 }

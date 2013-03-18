@@ -493,7 +493,11 @@ void get_cond_frommatrix_kyz ()
             max_tol = find_new_energy_point(cond, ener1, tot_energy_point, simpson_tol, &EP, 
                            energy_insert_index, ener1_temp);
 
-            if(EP == 0) break;
+            if(EP == 0) 
+            {
+                printf("\n energy points converged at Simpson depth %d ", simpson_loop);
+                break;
+            }
 
         } //end of while loop
 
