@@ -51,7 +51,7 @@ void read_LCR ()
     char newname[200];
 
 
-    for (iprobe = 0; iprobe <= cei.num_probe; iprobe++)
+    for (iprobe = 0; iprobe < cei.num_subsystem; iprobe++)
     {
 
         /* Open the input file for reading */

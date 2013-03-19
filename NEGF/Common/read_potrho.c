@@ -103,30 +103,33 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         position = ( idx * data_indicator) * sizeof(double);
         lseek(fhand, position, 0);
 
-	if (idx * sizeof(double) > MaxNumBytes)
-	{
+        if (idx * sizeof(double) > MaxNumBytes)
+        {
 
-		nbytes_first = read (fhand, array_tmp, MaxNumBytes );
-                array_tmp_tmp = array_tmp + MaxNumBytes / sizeof(double);  //shift the pointer by num of doubles read already
-		nbytes_second = read (fhand, array_tmp_tmp, idx * sizeof(double) - MaxNumBytes );// read the bytes left behind
-                nbytes = nbytes_second + nbytes_first;
-	} 
-	else{
-		nbytes = read (fhand, array_tmp, idx * sizeof(double) );
+            nbytes_first = read (fhand, array_tmp, MaxNumBytes );
+            //shift the pointer by num of doubles read already
+            array_tmp_tmp = array_tmp + MaxNumBytes / sizeof(double); 
+            // read the bytes left behind
+            nbytes_second = read (fhand, array_tmp_tmp, idx * sizeof(double) - MaxNumBytes );
+            nbytes = nbytes_second + nbytes_first;
+            assert(idx * sizeof(double) < 2*MaxNumBytes);
+        } 
+        else{
+            nbytes = read (fhand, array_tmp, idx * sizeof(double) );
 
-	}
+        }
 
-	if(nbytes != idx * sizeof(double)) 
-	{
-		dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
-		dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
-		error_handler ("\n Unexpected end of file vh");
-	}
+        if(nbytes != idx * sizeof(double)) 
+        {
+            dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
+            dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
+            error_handler ("\n Unexpected end of file vh");
+        }
 
-       close(fhand);
+        close(fhand);
 
 
-/* ================ Patches the potentials and rhos ================ */
+        /* ================ Patches the potentials and rhos ================ */
 
 
 
@@ -139,7 +142,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         x1 = lcr[subsystem].x1 * FG_NX;
         y1 = lcr[subsystem].y1 * FG_NY;
         /*z1 = lcr[subsystem].z1 * FG_NZ;
-        if(pct.gridpe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
+          if(pct.gridpe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
 
 
         x2 = lcr[subsystem].x2 * FG_NX;
@@ -150,7 +153,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         x3 = x2 + x1 - x0;
         y3 = y2 + y1 - y0;
         /*z3 = z2 + z1 - z0;
-        if(pct.gridpe ==0) printf (" x3, y3, z3 = %d %d %d %d \n", subsystem, x3, y3, z3 );*/
+          if(pct.gridpe ==0) printf (" x3, y3, z3 = %d %d %d %d \n", subsystem, x3, y3, z3 );*/
 
 
         NYZ0 = NY0 * NZ0;
@@ -163,7 +166,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/FG_NY;
         y0_old = lcr[subsystem].y_shift + lcr[subsystem].y0 * FG_NY * hy_old;
         /*if(pct.gridpe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
- 
+
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
 
         if(subsystem <= 2) /* Satisfies left probe, central parta & right probe */
@@ -190,7 +193,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         }
 
         else /* Satisfies down and up probes */
-        /* pot/rhos_NEGF(x,y,z) = pot/rho_ON(y,x,z) */
+            /* pot/rhos_NEGF(x,y,z) = pot/rho_ON(y,x,z) */
         {
             for(ix = x2; ix < x3; ix++)
             {
@@ -217,11 +220,11 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     } /*  subsystem loop ends here */
 
 
-        /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
+    /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
 
 
 
-/* ====== Fillin the vaccuam space: put a ramp ============== */
+    /* ====== Fillin the vaccuam space: put a ramp ============== */
 
 
     if(cei.num_probe == 4)
@@ -233,7 +236,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         /*  For corner: Left-top */
         /*  For corner: Right-top */
 
-       
+
         x2 = 0;
         x3 = lcr[3].x2 * FG_NX;
         y2 = 0;
@@ -262,11 +265,11 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
                     idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
-/*
-                    fac1 = 1.015625 - (float) (ix) / (64.0 * (x3 - x2));
-                    fac2 = 1.015625 - (float) (iy) / (64.0 * (y3 - y2));
-                    vh_global[idx1] = (fac1 * V1 * dis2 + fac2 * V2 * dis1) / dis12; 
-*/
+                    /*
+                       fac1 = 1.015625 - (float) (ix) / (64.0 * (x3 - x2));
+                       fac2 = 1.015625 - (float) (iy) / (64.0 * (y3 - y2));
+                       vh_global[idx1] = (fac1 * V1 * dis2 + fac2 * V2 * dis1) / dis12; 
+                       */
                 }
             }
         }
@@ -341,14 +344,14 @@ void read_potrho (double *vh, int iflag, int data_indicator)
             }
         }
 
- 
+
 
         x2 = (lcr[4].x2 + lcr[4].x1 - lcr[4].x0) * FG_NX;
         x3 = FNX_GRID; 
         y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * FG_NY;
         y3 = FNY_GRID; 
 
-        
+
         for (iy = y2; iy < y3; iy++)
         {
             for (ix = x2; ix < x3; ix++)
@@ -381,7 +384,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-/* ============= Interpolate data along x-axis =================== */
+    /* ============= Interpolate data along x-axis =================== */
 
     my_malloc_init(xold,    FNX_GRID, double);   
     my_malloc_init(vh_old,  FNX_GRID, double);   
@@ -401,9 +404,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
             }
 
 
-/* 
- *           diff_hx_interpolation2 (vh_new,  vh_old,  FNX_GRID, hx_new, xold, 0.0, 0.0); 
-*/
+            /* 
+             *           diff_hx_interpolation2 (vh_new,  vh_old,  FNX_GRID, hx_new, xold, 0.0, 0.0); 
+             */
 
             spline(xold, vh_old, FNX_GRID, 0.0, 0.0, vh_new); 
 
@@ -429,11 +432,11 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     my_free(vh_new);
 
 
-/* ============= Interpolate data along y-axis =================== */
+    /* ============= Interpolate data along y-axis =================== */
 
     if(cei.num_probe >= 3)
     {
-  
+
         my_malloc_init(yold,    FNY_GRID, double);   
         my_malloc_init(vh_old,  FNY_GRID, double);   
         my_malloc_init(vh_new,  FNY_GRID, double);   
@@ -451,9 +454,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                     vh_old[iy] = vh_global[idx1];
                 }
 
-/* 
-               diff_hx_interpolation2 (vh_new,  vh_old,  FNY_GRID, hy_new, yold, 0.0, 0.0); 
-*/
+                /* 
+                   diff_hx_interpolation2 (vh_new,  vh_old,  FNY_GRID, hy_new, yold, 0.0, 0.0); 
+                   */
 
                 spline(yold, vh_old, FNY_GRID, 0.0, 0.0, vh_new); 
 
@@ -478,7 +481,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
     }
 
-/*======================================================================*/
+    /*======================================================================*/
 
 
     for (iz = 0; iz < FPZ0_GRID; iz++)  
@@ -505,7 +508,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-/* ======== Move data from Global to distributive array =========== */
+    /* ======== Move data from Global to distributive array =========== */
 
 
 

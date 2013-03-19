@@ -8,6 +8,7 @@
 
 
 #define 	NUM_PROBE_MAX 	4 
+#define 	NUM_SUBSYSTEM_MAX   10
 
 
 struct complex_energy_integral

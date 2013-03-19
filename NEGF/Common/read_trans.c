@@ -30,6 +30,7 @@ void read_trans (complex_energy_integral * cei)
 
     /* Read in the initial run flag */
     cei->num_probe = atoi (get_line (tbuf, fhand));
+    assert(cei->num_probe <= NUM_PROBE_MAX);
     tptr = tbuf;
 	my_malloc_init( cei->probe_in_block, cei->num_probe, int );
     for (idx = 0; idx < cei->num_probe; idx++)
@@ -40,6 +41,7 @@ void read_trans (complex_energy_integral * cei)
 
     /* Read in number of subsystem and their order */
     cei->num_subsystem = atoi (get_line (tbuf, fhand));
+    assert(cei->num_subsystem < NUM_SUBSYSTEM_MAX);
     tptr = tbuf;
 	my_malloc_init( cei->subsystem_idx, cei->num_subsystem, int );
     for (idx = 0; idx < cei->num_subsystem; idx++)
