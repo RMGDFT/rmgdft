@@ -72,7 +72,7 @@ void read_orbital (STATE * states)
 
                     /* ====================== Reading orbitals ======================= */                    
 
-                    if(idx0 <= 2) /* Satisfies left probe, central parta & right probe */
+                    if(idx0 <= 2 | idx0 > cei.num_probe) /* Satisfies left probe, central parta & right probe */
                     {
  
                         nbytes = read (fhand, states[st].psiR, idx);

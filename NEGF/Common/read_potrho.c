@@ -169,7 +169,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
 
-        if(subsystem <= 2) /* Satisfies left probe, central parta & right probe */
+        if(subsystem <= 2 | subsystem > cei.num_probe) /* Satisfies left probe, central parta & right probe */
         {
 
             for(ix = x2; ix < x3; ix++)
