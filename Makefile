@@ -15,11 +15,15 @@
 
 SHELL = /bin/sh
 
+codes_dir = ~/SVN/codes
+RMG_dir = $(codes_dir)/RMG
+NEGF_dir = $(codes_dir)/NEGF
+ON_dir = $(codes_dir)/ON
 
 #This is a list of shared directories. The paths are relative to the directories in which the codes reside
 #If new shared directories are created they should be added here
-export GLOBAL_MODULES = ../Finite_diff ../Force ../Input ../MG ../Misc ../US_PP ../XC
-export ON_NEGF_MODULES = ../ON/ON-NEGF-share
+export GLOBAL_MODULES = $(codes_dir)/Finite_diff $(codes_dir)/Force $(codes_dir)/Input $(codes_dir)/MG $(codes_dir)/Misc $(codes_dir)/US_PP $(codes_dir)/XC
+export ON_NEGF_MODULES = $(codes_dir)/ON/ON-NEGF-share
 
 
 # This shell script will remove object files in shared directories, if they were created after the code was last compiled
@@ -112,49 +116,52 @@ rmg-aix: RMG/Headers/make_conf.h
 
 # Order-N targets go here
 on-linux: 
-	@echo "#define LINUX 1" > ON/Headers/arch.h
-	@echo "#define MPI 1" >> ON/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@cd ON; $(clean-global); $(clean-on-negf-share)
-	cd ON; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
+	@echo "#define LINUX 1" > $(ON_dir)/Headers/arch.h
+	@echo "#define MPI 1" >> $(ON_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 0" >> $(ON_dir)/Headers/arch.h;
+	@cd $(ON_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(ON_dir); $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
 on-xt: 
-	@echo "#define LINUX 1" > ON/Headers/arch.h
-	@echo "#define MPI 1" >> ON/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@cd ON; $(clean-global); $(clean-on-negf-share)
-	cd ON; $(MAKE) -f Make.xt 2>&1 | tee .build.log
+	@echo "#define LINUX 1" > $(ON_dir)/Headers/arch.h
+	@echo "#define MPI 1" >> $(ON_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 0" >> $(ON_dir)/Headers/arch.h;
+	@cd $(ON_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(ON_dir); $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 
 on-aix: 
-	@echo '#define AIX_MPI 1' > ON/Headers/arch.h
-	@echo "#define PARALLEL_MESSAGE 1" >> ON/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> ON/Headers/arch.h;
-	@cd ON; $(clean-global); $(clean-on-negf-share)
-	cd ON; gmake -f Make.aix 2>&1 | tee .build.log
+	@echo '#define AIX_MPI 1' > $(ON_dir)/Headers/arch.h
+	@echo "#define PARALLEL_MESSAGE 1" >> $(ON_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 0" >> $(ON_dir)/Headers/arch.h;
+	@cd $(ON_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(ON_dir); gmake -f Make.aix 2>&1 | tee .build.log
 
 
 # Targets for NEGF compilation go here
 NEGF-linux: 
-	@echo '#define LINUX 1' > NEGF/Headers/arch.h
-	@echo "#define MPI 1" >> NEGF/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@cd NEGF; $(clean-global); $(clean-on-negf-share)
-	cd NEGF; $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
+	@echo '#define LINUX 1' > $(NEGF_dir)/Headers/arch.h
+	@echo "#define MPI 1" >> $(NEGF_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 0" >> $(NEGF_dir)/Headers/arch.h;
+	@echo "#define GPU_ENABLE 0" >> $(NEGF_dir)/Headers/arch.h;
+	@cd $(NEGF_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(NEGF_dir); $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
 NEGF-xt: 
-	@echo '#define LINUX 1' > NEGF/Headers/arch.h
-	@echo "#define MPI 1" >> NEGF/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@cd NEGF; $(clean-global); $(clean-on-negf-share)
-	cd NEGF; $(MAKE) -f Make.xt 2>&1 | tee .build.log
+	@echo '#define LINUX 1' > $(NEGF_dir)/Headers/arch.h
+	@echo "#define MPI 1" >> $(NEGF_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 0" >> $(NEGF_dir)/Headers/arch.h;
+	@echo "#define GPU_ENABLE 1" >> $(NEGF_dir)/Headers/arch.h;
+	@cd $(NEGF_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(NEGF_dir); $(MAKE) -f Make.xt 2>&1 | tee .build.log
 
 NEGF-aix: 
-	@echo '#define AIX_MPI 1' > NEGF/Headers/arch.h
-	@echo "#define PARALLEL_MESSAGE 1" >> NEGF/Headers/arch.h
-	@echo "#define HYBRID_MODEL 0" >> NEGF/Headers/arch.h;
-	@cd NEGF; $(clean-global); $(clean-on-negf-share)
-	cd NEGF; gmake -f Make.aix 2>&1 | tee .build.log
+	@echo '#define AIX_MPI 1' > $(NEGF_dir)/Headers/arch.h
+	@echo "#define PARALLEL_MESSAGE 1" >> $(NEGF_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 0" >> $(NEGF_dir)/Headers/arch.h;
+	@echo "#define GPU_ENABLE 0" >> $(NEGF_dir)/Headers/arch.h;
+	@cd $(NEGF_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(NEGF_dir); gmake -f Make.aix 2>&1 | tee .build.log
 
 #Clean targets
 
