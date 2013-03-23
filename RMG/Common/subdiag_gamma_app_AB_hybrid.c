@@ -49,19 +49,37 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     for(st1 = istop;st1 < ct.num_states;st1++) {
         subdiag_app_A_one (&states[st1], &a_psi[st1 *pct.P0_BASIS], &s_psi[st1 * pct.P0_BASIS], vtot_eig);
     }
+#if GPU_ENABLED
+    cuCtxSynchronize();
+#endif
 }
 
 // Applies A operator to one wavefunction
 void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 {
-    int kidx, idx, istate, sbasis;
-    REAL *sg_twovpsi, *tmp_psi, *work2, *work1;
+    int kidx, idx, istate, sbasis, tid;
+    REAL *sg_twovpsi, *tmp_psi, *work2, *work1, *work3;
 #    if MD_TIMERS
     REAL time1;
 #    endif
 
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
 
     sbasis = sp->sbasis;
+
+#if GPU_ENABLED
+    cudaStream_t *cstream;
+    cstream = get_thread_cstream();
+    work3 = &ct.gpu_host_temp3[tid * sbasis];
+#else
+    my_malloc (work3, sbasis, REAL);
+#endif
+
     my_malloc (work2, 2 * sbasis, REAL);
     sg_twovpsi = work2 + sbasis;
     kidx = 0;
@@ -69,6 +87,17 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     work1 = a_psi;
 
     tmp_psi = sp->psiR;
+
+#   if MD_TIMERS
+    time1 = my_crtc ();
+#   endif
+    /* A operating on psi stored in work3 */
+    app_cil_driver (tmp_psi, work3, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
+                   sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
+
+#   if MD_TIMERS
+    rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
+#   endif
 
 
 #   if MD_TIMERS
@@ -119,21 +148,18 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     //pack_ptos (sg_psi, tmp_psi, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
 
-#   if MD_TIMERS
-        time1 = my_crtc ();
-#   endif
-    /* A operating on psi stored in work2 */
-    app_cil_driver (tmp_psi, work2, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
-                   sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
-#   if MD_TIMERS
-        rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
-#   endif
 
+#if GPU_ENABLED
+    cuStreamSynchronize(*cstream);
+#endif
     for (idx = 0; idx <pct.P0_BASIS; idx++)
-        work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
+        work1[idx] = 0.5 * ct.vel * (work1[idx] - work3[idx]);
 
     my_free (work2);
+#if !GPU_ENABLED
+    my_free(work3);
+#endif
 
 }                               /* subdiag_app_A_one */
 
@@ -172,6 +198,10 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
         subdiag_app_B_one(&states[st1], &b_psi[st1 *pct.P0_BASIS]);
     }
 
+#if GPU_ENABLED
+    cuCtxSynchronize();
+#endif
+
 }
 
 
@@ -179,6 +209,7 @@ void subdiag_app_B_one (STATE *sp, REAL * b_psi)
 {
     int istate, pbasis, ione=1;
     REAL *work2, *work1;
+
 #    if MD_TIMERS
     REAL time1;
 #    endif

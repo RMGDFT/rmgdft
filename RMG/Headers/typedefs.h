@@ -1353,6 +1353,8 @@ typedef struct
     REAL *gpu_host_temp2;
     REAL *gpu_host_temp3;
     REAL *gpu_host_temp4;
+    REAL *gpu_host_fdbuf1;
+    REAL *gpu_host_fdbuf2;
     REAL *gpu_host_work;
 
 #endif    
@@ -1376,7 +1378,6 @@ typedef struct
     cudaStream_t cstream;
     REAL *gpu_host_temp1;
     REAL *gpu_host_temp2;
-    REAL *gpu_host_temp3;
 #endif
 
     /* Thread identifier from pthread_self. Needed to send signals */

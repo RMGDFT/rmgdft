@@ -6,7 +6,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-
+#include "hybrid.h"
 
 static REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz);
 
@@ -14,7 +14,7 @@ static REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy,
 REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
-    int  numgrid;
+    int  numgrid, tid;
     REAL *rptr;
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
@@ -24,6 +24,42 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
     }
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+#if GPU_ENABLED
+#ifdef FD_XSIZE
+    if(tid % 2) {
+        rmg_double_t *gpu_a, *gpu_b;
+        cudaStream_t *cstream;
+        int pbasis = dimx * dimy * dimz;
+        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+
+        // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+        rptr = (rmg_double_t *)&ct.gpu_host_fdbuf1[tid * sbasis];
+        gpu_a = (rmg_double_t *)&ct.gpu_work1[tid * sbasis];
+        gpu_b = (rmg_double_t *)&ct.gpu_work2[tid * sbasis];
+
+        cstream = get_thread_cstream();
+        trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+
+        cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
+
+        cc = app_cil_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz,
+                                  gridhx, gridhy, gridhz,
+                                  ct.xside, ct.yside, ct.zside, *cstream);
+        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
+
+        return cc;
+    }
+#endif
+#endif
+
 
     numgrid = dimx * dimy * dimz;
     if(numgrid == pct.P0_BASIS && ct.anisotropy < 1.000001)

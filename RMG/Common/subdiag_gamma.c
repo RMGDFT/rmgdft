@@ -59,6 +59,8 @@
 int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
 		   REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa);
 
+static REAL *tmp_arrayR;
+static REAL *tmp_array2R;
 
 /* This subspace diagonalization function uses Scalapack libraries  */
 
@@ -108,6 +110,7 @@ void init_subdiag(void)
 
     time2 = my_crtc ();
 
+    pbasis =pct.P0_BASIS;
     num_states = ct.num_states;
     dist_stop = pct.scalapack_max_dist_size;
     stop = num_states * num_states;
@@ -151,6 +154,19 @@ void init_subdiag(void)
         error_handler("Error in MPI_Alloc_mem.\n");
     }
 
+    /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
+#if GPU_ENABLED
+    if( cudaSuccess != cudaMallocHost((void **)&tmp_arrayR, pbasis * ct.num_states * sizeof(REAL) )){
+        error_handler ("cudaMallocHost failed in diagonalizer.");
+    }
+    if( cudaSuccess != cudaMallocHost((void **)&tmp_array2R, pbasis * ct.num_states * sizeof(REAL) )){
+        error_handler ("cudaMallocHost failed in diagonalizer.");
+    }
+#else
+    my_malloc (tmp_arrayR, pbasis * ct.num_states, REAL);
+    my_malloc (tmp_array2R, pbasis * ct.num_states, REAL);
+#endif
+
     rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
 
@@ -160,7 +176,7 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 {
 
 #if GPU_ENABLED
-      cudaDeviceSynchronize();
+      cuCtxSynchronize();
 #endif
     switch(ct.subdiag_driver) {
         case SUBDIAG_LAPACK:
@@ -191,8 +207,6 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
     int info = 0;
     REAL time1, time2, time3;
-    REAL *tmp_arrayR;
-    REAL *tmp_array2R;
     REAL tmp1;
 #if !GAMMA_PT
     REAL *tmp_arrayI;
@@ -213,6 +227,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
 #if GPU_ENABLED
 
+//    cublasSetVectorAsync( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione, ct.cuda_stream );
     cublasSetVector( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
 
 #endif
@@ -249,8 +264,6 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
 
     /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
-    my_malloc (tmp_arrayR, pbasis * ct.num_states, REAL);
-    my_malloc (tmp_array2R, pbasis * ct.num_states, REAL);
 #if !GAMMA_PT
     my_malloc (tmp_arrayI, pbasis * ct.num_states, REAL);
 #endif
@@ -656,8 +669,6 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 #if !GAMMA_PT
     my_free (tmp_arrayI);
 #endif
-    my_free (tmp_arrayR);
-    my_free (tmp_array2R);
     my_free (work1R);
     my_free (eigs);
     my_free (vtot_eig);
@@ -874,8 +885,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     int info = 0;
     REAL time1, time2, time3;
-    REAL *tmp_arrayR;
-    REAL *tmp_array2R;
     REAL tmp1;
     REAL *vtot, *vtot_eig;
     int dist_stop, pbasis;
@@ -922,9 +931,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 
-    /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
-    my_malloc (tmp_arrayR, pbasis * ct.num_states, REAL);
-    my_malloc (tmp_array2R, pbasis * ct.num_states, REAL);
 
 
     /*************************** ScaLapack initialization *************************************/
@@ -1195,8 +1201,6 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     /* release our temporary storage */
 
-    my_free (tmp_arrayR);
-    my_free (tmp_array2R);
     my_free (work1R);
     my_free (eigs);
     my_free (vtot_eig);
@@ -1224,8 +1228,6 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
     int info = 0;
     REAL time1, time2, time3;
-    REAL *tmp_arrayR;
-    REAL *tmp_array2R;
     REAL tmp1;
     REAL *vtot, *vtot_eig;
     REAL *gpuAij, *gpuBij, *gpuCij, *gpuSij;
@@ -1272,10 +1274,6 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
     my_free (vtot);
 
 
-
-    /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
-    my_malloc (tmp_arrayR, pbasis * ct.num_states, REAL);
-    my_malloc (tmp_array2R, pbasis * ct.num_states, REAL);
 
 
     /*************************** ScaLapack initialization *************************************/
@@ -1507,9 +1505,6 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
     /* release our temporary storage */
-
-    my_free (tmp_arrayR);
-    my_free (tmp_array2R);
     my_free (work1R);
     my_free (eigs);
     my_free (vtot_eig);

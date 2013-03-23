@@ -35,7 +35,8 @@
 
 #include "main.h"
 
-static REAL *fixed_vector = NULL;
+static REAL *fixed_vector1 = NULL;
+static REAL *fixed_vector2 = NULL;
 #define MAX_FIXED_VECTOR 512
 
 #if MPI
@@ -58,12 +59,12 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 
   if(*length < MAX_FIXED_VECTOR) {
 
-      QMD_dcopy(*length, vect, 1, &fixed_vector[*length * tid], 1);
+      QMD_dcopy(*length, vect, 1, &fixed_vector1[*length * tid], 1);
       scf_barrier_wait();
       if(tid == 0)
-          MPI_Allreduce(MPI_IN_PLACE, fixed_vector, *length * ct.THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
+          MPI_Allreduce(fixed_vector1, fixed_vector2, *length * ct.THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
       scf_barrier_wait();
-      QMD_dcopy(*length,  &fixed_vector[*length * tid], 1, vect, 1);
+      QMD_dcopy(*length,  &fixed_vector2[*length * tid], 1, vect, 1);
 
       return;
   }
@@ -110,7 +111,11 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 
 void init_global_sums(void) {
     int retval;
-    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector);
+    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector1);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector2);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }

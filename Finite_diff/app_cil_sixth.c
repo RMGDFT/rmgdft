@@ -6,9 +6,11 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include "hybrid.h"
 
 static REAL app_cil_sixth_global(REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz);
-
+static REAL app_cil_sixth_standard (REAL * rptr, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
 
 // Compilers can generate much better code if they know the loop dimensions at compile
 // as opposed to run time. Therefore since most of the finite difference stencils
@@ -20,75 +22,86 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
                     REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
-    int iz, ix, iy, incx, incy, incxr, incyr, numgrid;
+    int numgrid, tid, used_alloc=FALSE;
+    REAL cc;
+    rmg_double_t *rptr=NULL;
+    rmg_double_t *gpu_psi, *gpu_b;
+
+    int pbasis = dimx * dimy * dimz, itid;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+#if GPU_ENABLED
+    cudaStream_t *cstream;
+    cstream = get_thread_cstream();
+#endif
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+
+#if (GPU_ENABLED && FD_XSIZE)
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+    rptr = get_thread_trade_buf();
+    gpu_psi = (rmg_double_t *)&ct.gpu_work1[0];
+    gpu_psi += tid*sbasis;
+    gpu_b = (rmg_double_t *)&ct.gpu_work2[0];
+    gpu_b += tid*pbasis;
+#endif
+
+    // If rptr is null then we must allocate it here
+    if(rptr == NULL) {
+        my_malloc (rptr, sbasis + 64, rmg_double_t);
+        used_alloc = TRUE;
+    }
+
+
+#if (GPU_ENABLED && FD_XSIZE)
+if(tid < ct.THREADS_PER_NODE/2) {
+    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
+    cc = app_cil_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, gridhx, gridhy, gridhz,
+                                              ct.xside, ct.yside, ct.zside, *cstream);
+
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
+    return cc;
+}
+#endif
+
+    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
+
+    // first check for fixed dim case  
+    numgrid = dimx * dimy * dimz;
+    if(numgrid == pct.P0_BASIS) {
+        cc = app_cil_sixth_global (rptr, b, gridhx, gridhy, gridhz);
+    }
+    else {
+        cc = app_cil_sixth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+
+    if(used_alloc)
+        my_free(rptr);
+    return cc;
+
+}
+
+
+REAL app_cil_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+{
+
+    int iz, ix, iy, incx, incy, incxr, incyr, numgrid, tid;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     REAL fc2x, fc2y, fc2z, tcx, tcy, tcz;
     REAL ihx, ihy, ihz;
-    REAL *rptr;
+
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
     incxr = dimz * dimy;
     incyr = dimz;
-
-#if 0
-#if GPU_ENABLED
-    REAL *gpu_psi, *gpu_b;
-    cudaStream_t cstream;
-    int ione = 1, tid;
-    int pbasis = dimx * dimy * dimz;
-    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-
-
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
-    cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
-
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-#if HYBRID_MODEL
-    tid = get_thread_tid();
-#else
-    tid = 0;
-#endif
-    if(tid == -1) {         // Normal codepath with no threads
-        rptr = &ct.gpu_host_temp3[0];
-        gpu_psi = &ct.gpu_work1[0];
-        gpu_b = &ct.gpu_work2[0];
-    }
-    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
-        rptr = &ct.gpu_host_temp3[tid * sbasis];
-        gpu_psi = &ct.gpu_work1[tid * sbasis];
-        gpu_b = &ct.gpu_work2[tid * sbasis];
-    }
-
-
-    cudaStreamCreate(&cstream);
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
-    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof( REAL ), cudaMemcpyHostToDevice, cstream);
-
-    app_cil_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, 
-                          gridhx, gridhy, gridhz,
-                          ct.xside, ct.yside, ct.zside, cstream);
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof( REAL ), cudaMemcpyDeviceToHost, cstream);
-    cudaStreamDestroy(cstream);
-
-    return cc;
-#endif
-#endif
-
-#if FAST_MEHR
-    numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) 
-        return app_cil_sixth_global (psi, b, gridhx, gridhy, gridhz);
-#endif
-
-
-    my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL);
-
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
-
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
@@ -177,14 +190,13 @@ REAL app_cil_sixth (REAL * psi, REAL * b, int dimx, int dimy, int dimz,
     }                           /* end for */
 
 
-    my_free (rptr);
     return cc;
 
 }
 
 
 // Version with loop dimensions set at compile time
-REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz)
+REAL app_cil_sixth_global (REAL * rptr, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
 
@@ -196,21 +208,11 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
     REAL rz, rzms, rzps, rzpps;
     REAL rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     REAL td1, td2, td3, td4, td5, td6, td7, td8, tdx;
-    REAL *rptr;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
-
-    my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + 64, REAL);
-    // We run past the end of the array on purpose so make sure there is something there
-    // that won't generate a floating point exception
-    for(ix = 0;ix < 64;ix++) {
-        rptr[(FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + ix] = 0.0;
-    }
-
-    trade_imagesx (psi, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 2, FULL_FD);
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
@@ -595,8 +597,6 @@ REAL app_cil_sixth_global (REAL * psi, REAL * b, REAL gridhx, REAL gridhy, REAL 
     }                           /* end for */
 
 
-
-    my_free (rptr);
     return cc;
 
 }

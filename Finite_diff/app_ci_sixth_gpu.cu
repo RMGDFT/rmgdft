@@ -2,6 +2,14 @@
 #if GPU_ENABLED
 #include "fixed_dims.h"
 #ifdef FD_XSIZE
+#include <iostream>
+#include <cstdio>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <cuda_device_runtime_api.h>
+#include <crt/host_runtime.h>
+
 __global__ void app_cil_sixth_kernel(const double * __restrict__ psi, 
                                                 double *b, 
                                                 const int dimx,
@@ -15,7 +23,7 @@ __global__ void app_cil_sixth_kernel(const double * __restrict__ psi,
                                                 const double tcx)
 {
 
-    __shared__ double slice[FIXED_YDIM/2 + 4][FIXED_ZDIM + 4];
+    __shared__ double slice[FIXED_YDIM/2 + 4][FIXED_ZDIM/2 + 4];
     double accp_b2, accp_b1, accp, accp_a1, accp_a2;
     double accm_b2, accm_b1, accm, accm_a1;
     double acc, acc_a1, acc_a2;
@@ -284,7 +292,9 @@ __global__ void app_cil_sixth_kernel(const double * __restrict__ psi,
 
 }
 
-__global__ void app_cir_sixth_kernel(const double * __restrict__ psi, 
+
+
+__global__ void app_cir_sixth_kernel_small(const double * __restrict__ psi, 
                                                 double *b, 
                                                 const int dimx,
                                                 const int dimy,
@@ -308,9 +318,10 @@ __global__ void app_cir_sixth_kernel(const double * __restrict__ psi,
     int incxr = dimz * dimy;
     int incyr = dimz;
 
-    int ixs, ixps, ixms, ixmms, ixpps;
+    int ixs, ixps, ixmms, ixpps;
     int iys, iyms, iyps, iymms, iypps;
-    double sum;
+    double sum=0.0;
+    double a0m, a0s, a0p, b0m, b0s, b0p;
 
 
     iys = iy * incy;
@@ -319,35 +330,52 @@ __global__ void app_cir_sixth_kernel(const double * __restrict__ psi,
     iymms = (iy - 2) * incy;
     iypps = (iy + 2) * incy;
 
+    b0m = psi[incx + iys + iz]; 
+    b0s = psi[2*incx + iys + iz]; 
+    b0p = psi[3*incx + iys + iz]; 
+
+    a0m =   psi[incx + iyps + iz] +
+            psi[incx + iyms + iz] +
+            psi[incx + iys + (iz + 1)] +
+            psi[incx + iys + (iz - 1)];
+    a0s =   psi[2*incx + iyps + iz] +
+            psi[2*incx + iyms + iz] +
+            psi[2*incx + iys + (iz + 1)] +
+            psi[2*incx + iys + (iz - 1)];
+    a0p =   psi[3*incx + iyps + iz] +
+            psi[3*incx + iyms + iz] +
+            psi[3*incx + iys + (iz + 1)] +
+            psi[3*incx + iys + (iz - 1)];
+
     for (ix = 2; ix < dimx + 2; ix++)
     {
 		ixs = ix * incx;
-		ixms = (ix - 1) * incx;
 		ixps = (ix + 1) * incx;
 		ixmms = (ix - 2) * incx;
 		ixpps = (ix + 2) * incx;
 
-                sum = c000 * psi[ixs + iys + iz] +
-                      c100 * (psi[ixs + iys + (iz - 1)] +
-                              psi[ixs + iys + (iz + 1)] +
-                              psi[ixms + iys + iz] +
-                              psi[ixps + iys + iz] +
-                              psi[ixs + iyms + iz] +
-                              psi[ixs + iyps + iz]);
+                sum = c000 * b0s +
+                      c100 * (a0s + b0m + b0p);
 
-                sum += c110 * (psi[ixps + iyps + iz] +
-                               psi[ixps + iyms + iz] +
-                               psi[ixms + iyps + iz] +
-                               psi[ixms + iyms + iz] +
-                               psi[ixps + iys + (iz + 1)] +
-                               psi[ixps + iys + (iz - 1)] +
-                               psi[ixms + iys + (iz + 1)] +
-                               psi[ixms + iys + (iz - 1)] +
+                b0m = b0s;
+                b0s = b0p;
+                b0p = psi[ixps + incx + iys + iz];
+
+                sum += c110 * (a0m + a0p +
                                psi[ixs + iyps + (iz + 1)] +
                                psi[ixs + iyps + (iz - 1)] +
                                psi[ixs + iyms + (iz + 1)] + 
                                psi[ixs + iyms + (iz - 1)]);
 
+
+
+                a0m = a0s;
+                a0s = a0p;
+                a0p =   psi[ixps + incx + iyps + iz] +
+                        psi[ixps + incx + iyms + iz] +
+                        psi[ixps + incx + iys + (iz + 1)] +
+                        psi[ixps + incx + iys + (iz - 1)];
+        
                 b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = sum +
                     c200 * (psi[ixs + iys + (iz - 2)] +
                             psi[ixs + iys + (iz + 2)] +
@@ -363,10 +391,226 @@ __global__ void app_cir_sixth_kernel(const double * __restrict__ psi,
 }
 
 
+__global__ void app_cir_sixth_kernel(const double *psi, 
+                                                double *b, 
+                                                const int dimx,
+                                                const int dimy,
+                                                const int dimz,
+                                                const double c000,
+                                                const double c100,
+                                                const double c110,
+                                                const double c200)
 
+{
+
+    __shared__ double slice[FIXED_YDIM/2 + 4][FIXED_ZDIM/2 + 4];
+    double accp_b2, accp_b1, accp, accp_a1, accp_a2;
+    double accm_b1, accm, accm_a1, accm_a2;
+    double acc, acc_a1, acc_a2;
+    double acce, acce_a1, acce_a2;
+
+    // iz and iy map to the x and y coordinates of the thread
+    // withing a block
+    int iz = blockIdx.x * blockDim.x + threadIdx.x + 2;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 2;
+
+    // thread z-index into shared memory tile
+    int tz = threadIdx.x + 2;
+    // thread y-index into shared memory tile
+    int ty = threadIdx.y + 2;
+    int ix=0;
+
+    int incx = (dimz + 4) * (dimy + 4);
+    int incy = dimz + 4;
+    int incxr = dimz * dimy;
+    int incyr = dimz;
+    
+    int ixs, ixps;
+    int iys, iyms, iyps, iymms, iypps;
+    int izs, izms, izps, izmms, izpps;
+
+    ixs = ix * incx;
+    ixps = (ix + 1) * incx;
+
+    iys = iy * incy;
+    iyms = (iy - 1) * incy;
+    iyps = (iy + 1) * incy;
+    iymms = (iy - 2) * incy;
+    iypps = (iy + 2) * incy;
+
+    izs = iz;
+    izms = (iz - 1);
+    izps = (iz + 1);
+    izmms = (iz - 2);
+    izpps = (iz + 2);
+
+    accp_b1 = 0.0;
+    accm_b1 = 0.0;
+
+    accp_a1 = psi[izs + iys + ixs];
+
+    accm_a1 = psi[izms + iys + ixs] +
+              psi[izps + iys + ixs] +
+              psi[izs + iyms + ixs] +
+              psi[izs + iyps + ixs];
+
+    acc_a1 =  psi[izms + iyms + ixs] + 
+              psi[izms + iyps + ixs] + 
+              psi[izps + iyms + ixs] + 
+              psi[izps + iyps + ixs];
+
+    acce_a1 = psi[izmms + iys + ixs] + 
+              psi[izpps + iys + ixs] + 
+              psi[izs + iymms + ixs] + 
+              psi[izs + iypps + ixs];
+
+    accm_a2 = psi[izms + iys + ixps] +
+              psi[izps + iys + ixps] +
+              psi[izs + iyms + ixps] +
+              psi[izs + iyps + ixps];
+
+    acc_a2 =  psi[izms + iyms + ixps] + 
+              psi[izms + iyps + ixps] + 
+              psi[izps + iyms + ixps] + 
+              psi[izps + iyps + ixps];
+
+    acce_a2 = psi[izmms + iys + ixps] + 
+              psi[izpps + iys + ixps] + 
+              psi[izs + iymms + ixps] + 
+              psi[izs + iypps + ixps];
+
+    accp_a2 = psi[izs + iys + ixps];
+
+    for (ix = 0; ix < dimx + 2; ix++)
+    {
+
+        // Advance the slice partial sums
+        accp_b2 = accp_b1;
+        accp_b1 = accp;
+        accp = accp_a1;
+        accp_a1 = accp_a2;
+
+        accm_b1 = accm;
+        accm = accm_a1;
+        accm_a1 = accm_a2;
+
+        acce = acce_a1;
+        acce_a1 = acce_a2;
+
+        acc = acc_a1;
+        acc_a1 = acc_a2;
+
+        __syncthreads();
+        // Update the data slice in shared memory
+        if(threadIdx.x < 2) {
+            slice[ty][threadIdx.x] = 
+                            psi[(ix + 2)*incx + iy*incy + (threadIdx.x + blockIdx.x*blockDim.x)];
+            slice[ty][threadIdx.x + blockDim.x + 2] = 
+                            psi[(ix + 2)*incx + iy*incy + (threadIdx.x + blockDim.x + 2 + blockIdx.x*blockDim.x)];
+        }
+        if(threadIdx.y < 2) {
+            slice[threadIdx.y][tz] = 
+                            psi[(ix + 2)*incx + (threadIdx.y + blockIdx.y*blockDim.y)*incy + iz];
+            slice[threadIdx.y + blockDim.y + 2][tz] = 
+                            psi[(ix + 2)*incx + (threadIdx.y + blockDim.y + 2 + blockIdx.y*blockDim.y)*incy + iz];
+        }
+
+        if((threadIdx.x == 2) && (threadIdx.y == 2)) {
+            slice[0][0] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x];
+            slice[1][0] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x];
+            slice[0][1] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + 1];
+            slice[1][1] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x + 1];
+        }
+        if((threadIdx.x == 3) && (threadIdx.y == 2)) {
+            slice[0][blockDim.x + 2] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
+            slice[1][blockDim.x + 3] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
+            slice[1][blockDim.x + 2] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + 1)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
+            slice[0][blockDim.x + 3] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
+        }
+
+        if((threadIdx.x == 2) && (threadIdx.y == 3)) {
+            slice[blockDim.y + 2][0] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x];
+            slice[blockDim.y + 3][0] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x];
+            slice[blockDim.y + 2][1] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x + 1];
+            slice[blockDim.y + 3][1] =
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x + 1];
+        }
+
+        if((threadIdx.x == 3) && (threadIdx.y == 3)) {
+            slice[blockDim.y + 2][blockDim.x + 2] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
+            slice[blockDim.y + 2][blockDim.x + 3] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 2)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
+            slice[blockDim.y + 3][blockDim.x + 2] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x + blockDim.x + 2];
+            slice[blockDim.y + 3][blockDim.x + 3] = 
+                            psi[(ix + 2)*incx + (blockIdx.y*blockDim.y + blockDim.y + 3)*incy + blockIdx.x*blockDim.x + blockDim.x + 3];
+        }
+
+
+        // Put the xy tile for the leading x (+2) index into shared memory
+        slice[ty][tz] = psi[(ix + 2)*incx + iy*incy + iz];
+
+        __syncthreads();
+
+        acce_a2 =   slice[ty][(tz - 2)] + 
+                    slice[ty][(tz + 2)] + 
+                    slice[(ty - 2)][tz] + 
+                    slice[(ty + 2)][tz];
+
+        acc_a2 =    slice[(ty - 1)][(tz - 1)] + 
+                    slice[(ty + 1)][(tz - 1)] +
+                    slice[(ty - 1)][(tz + 1)] + 
+                    slice[(ty + 1)][(tz + 1)];
+
+        // Edge points 1 ahead 
+        accm_a2 =   slice[ty][(tz - 1)] + 
+                    slice[ty][(tz + 1)] +
+                    slice[(ty - 1)][tz] + 
+                    slice[(ty + 1)][tz];
+
+        // Central point 2 ahead
+        accp_a2 = slice[ty][tz];
+
+        // Write back the results
+        if(ix >= 2) {
+            b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = 
+
+                                                            c110 * acc +
+
+                                                            c100 * accm +
+                                                            c110 * accm_a1 + 
+                                                            c110 * accm_b1 + 
+
+                                                            // c200 points in plane
+                                                            c200 * acce +
+
+                                                            // central points
+                                                            c200 * accp_b2 +
+                                                            c100 * accp_b1 +
+                                                            c000 * accp +
+                                                            c100 * accp_a1 +
+                                                            c200 * accp_a2;
+        }
+        
+    }                   /* end for */
+
+
+}
 
 // C wrapper functions that call the cuda kernels above
-extern "C" void app_cil_sixth_gpu(const double *psi, 
+extern "C" double app_cil_sixth_gpu(const double *psi, 
                                                 double *b, 
                                                 const int dimx,
                                                 const int dimy,
@@ -408,6 +652,7 @@ extern "C" void app_cil_sixth_gpu(const double *psi,
                                                    cor,
                                                    fc2x,
                                                    tcx);
+  return cc;
 }
 
 extern "C" void app_cir_sixth_gpu(const double *psi, 
@@ -429,7 +674,7 @@ extern "C" void app_cir_sixth_gpu(const double *psi,
   double c110 = 1.0 / 144.0;
   double c200 = -1.0 / 240.0;
 
-  app_cir_sixth_kernel<<<Grid, Block, 0, cstream>>>(
+  app_cir_sixth_kernel_small<<<Grid, Block, 0, cstream>>>(
                                                    psi,
                                                    b,
                                                    dimx,    

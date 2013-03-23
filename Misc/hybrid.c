@@ -131,7 +131,7 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     cudaError_t cuerr;
 #endif
 
-    set_cpu_affinity();
+//    set_cpu_affinity();
 
 #if PAPI_PERFMON
     int EventSet = PAPI_NULL;
@@ -165,25 +165,20 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     }
 
 #if GPU_ENABLED
-        cudaSetDevice(ct.cu_dev); 
-//        cuCtxPushCurrent(ct.cu_context);
-        if(cudaSuccess != (cuerr = cudaStreamCreate(&s->cstream))) {
-            fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
-            exit(-1);
-        }
-        if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
-            fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
-            exit(-1);
-        }
-        if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
-            fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
-            exit(-1);
-        }
-        if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp3, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
-            fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
-            exit(-1);
-        }
-//        cuCtxPopCurrent(&ct.cu_context);
+    cudaSetDevice(ct.cu_dev); 
+    if(cudaSuccess != (cuerr = cudaStreamCreate(&s->cstream))) {
+        fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
+        exit(-1);
+    }
+    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+        fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
+        exit(-1);
+    }
+    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+        fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
+        exit(-1);
+    }
+    cuMemHostRegister ( s->trade_buf, sizeof(REAL) * (alloc + 64), CU_MEMHOSTREGISTER_PORTABLE);
 #endif
 
     // Wait until everyone gets here

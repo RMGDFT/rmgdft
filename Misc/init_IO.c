@@ -282,7 +282,10 @@ void init_IO (int argc, char **argv)
       fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
   }
   cudaSetDevice(ct.cu_dev);
-
+//  if( CUDA_SUCCESS != cuCtxCreate( &ct.cu_context, CU_CTX_SCHED_YIELD, ct.cu_dev ) ) {
+//      fprintf(stderr, "CUDA: Cannot create the context\n"); exit(-1);
+//  }
+  cudaSetDevice(ct.cu_dev);
   if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
       fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
   }

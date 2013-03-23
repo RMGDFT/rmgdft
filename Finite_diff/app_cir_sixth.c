@@ -6,10 +6,11 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include "hybrid.h"
 
 static void app_cir_sixth_global (REAL * a, REAL * b);
-
-
+static void app_cir_sixth_standard (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz);
 
 // Compilers can generate much better code if they know the loop dimensions at compile
 // as opposed to run time. Therefore since most of the finite difference stencils
@@ -23,66 +24,82 @@ static void app_cir_sixth_global (REAL * a, REAL * b);
 void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, numgrid;
-    int ixs, iys, ixms, ixps, iyms, iyps;
-    int incy, incx, ixmms, ixpps, iymms, iypps;
-    int incyr, incxr;
-    REAL *rptr;
-    REAL c000, c100, c110, c200;
-#if 0
-#if GPU_ENABLED
-    REAL *gpu_psi, *gpu_b;
-    cudaStream_t cstream;
-    int ione = 1, tid;
-    int pbasis = dimx * dimy * dimz;
+    int numgrid, tid, used_alloc=FALSE;
+    rmg_double_t *rptr=NULL, *gpu_psi, *gpu_b;
+
+    int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+#if GPU_ENABLED
+    cudaStream_t *cstream;
+    cstream = get_thread_cstream();
+#endif
+
 #if HYBRID_MODEL
     tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
 #else
     tid = 0;
 #endif
-    if(tid == -1) {         // Normal codepath with no threads
-        rptr = &ct.gpu_host_temp4[0];
-        gpu_psi = &ct.gpu_work3[0];
-        gpu_b = &ct.gpu_work4[0];
-    }
-    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
-        rptr = &ct.gpu_host_temp4[tid * sbasis];
-        gpu_psi = &ct.gpu_work3[tid * sbasis];
-        gpu_b = &ct.gpu_work4[tid * sbasis];
-    }
 
+#if (GPU_ENABLED && FD_XSIZE)
 
-    cudaStreamCreate(&cstream);
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
-    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof( REAL ), cudaMemcpyHostToDevice, cstream);
+    rptr = get_thread_trade_buf();
+    gpu_psi = (rmg_double_t *)&ct.gpu_work3[0];
+    gpu_psi += tid*sbasis;
+    gpu_b = (rmg_double_t *)&ct.gpu_work4[0];
+    gpu_b += tid*pbasis;
 
-    app_cir_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, cstream);
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof( REAL ), cudaMemcpyDeviceToHost, cstream);
-    cudaStreamDestroy(cstream);
-
-    return;
-#endif
 #endif
 
-#if FAST_MEHR
-    numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) {
-        app_cir_sixth_global (a, b);
+    // If rptr is null then we must allocate it here
+    if(rptr == NULL) {
+        my_malloc (rptr, sbasis + 64, rmg_double_t);
+        used_alloc = TRUE;
+    }
+
+
+#if (GPU_ENABLED && FD_XSIZE)
+    if(tid < ct.THREADS_PER_NODE/2) {
+        trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
+        cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
+        app_cir_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, *cstream);
+
+        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
         return;
     }
 #endif
+
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
+
+    // first check for fixed dim case
+    numgrid = dimx * dimy * dimz;
+    if(numgrid == pct.P0_BASIS) {
+        app_cir_sixth_global (rptr, b);
+    }
+    else {
+        app_cir_sixth_standard (rptr, b, dimx, dimy, dimz);
+    }
+
+    if(used_alloc)
+        my_free(rptr);
+
+}
+
+
+void app_cir_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, iz;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    int incy, incx, ixmms, ixpps, iymms, iypps;
+    int incyr, incxr;
+    REAL c000, c100, c110, c200;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
     incxr = dimz * dimy;
     incyr = dimz;
-
-    my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL);
-
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
@@ -141,27 +158,22 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 
     }                           /* end for */
 
-    my_free (rptr);
 }
 
-void app_cir_sixth_global (REAL * a, REAL * b)
+void app_cir_sixth_global (REAL * rptr, REAL * b)
 {
 
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    REAL *rptr, rz, rzps, rzms, rzpps;
+    REAL rz, rzps, rzms, rzpps;
     REAL c000, c100, c110, c200;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
-
-    my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4), REAL);
-
-    trade_imagesx (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 2, FULL_FD);
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
@@ -225,7 +237,6 @@ void app_cir_sixth_global (REAL * a, REAL * b)
 
         }                           /* end for */
 
-        my_free (rptr);
         return;
     }
 
@@ -387,5 +398,4 @@ void app_cir_sixth_global (REAL * a, REAL * b)
 
     }                           /* end for */
 
-    my_free (rptr);
 }

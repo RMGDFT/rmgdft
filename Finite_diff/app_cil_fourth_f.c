@@ -6,7 +6,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-
+#include "hybrid.h"
 
 static REAL app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
 
@@ -14,7 +14,7 @@ static REAL app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, REAL grid
 REAL app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
-    int  numgrid;
+    int  numgrid, tid;
     rmg_float_t *rptr;
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
@@ -22,8 +22,46 @@ REAL app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
     REAL ihx, ihy, ihz, a1, a2, a3;
 
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
+        error_handler("Grid symmetry not programmed yet in app_cil_fourth_f.\n");
     }
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+#if 1
+#if GPU_ENABLED
+#ifdef FD_XSIZE
+    if(tid % 2) {
+        rmg_float_t *gpu_psi, *gpu_b;
+        cudaStream_t *cstream;
+        int pbasis = dimx * dimy * dimz;
+        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+
+        // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+        rptr = (rmg_float_t *)&ct.gpu_host_fdbuf1[0];
+        rptr += tid*sbasis;
+        gpu_psi = (rmg_float_t *)&ct.gpu_work1[0];
+        gpu_psi += tid*sbasis;
+        gpu_b = (rmg_float_t *)&ct.gpu_work2[0];
+        gpu_b += tid*pbasis;
+
+        cstream = get_thread_cstream();
+        trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+        cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
+        cc = app_cil_fourth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz,
+                                  gridhx, gridhy, gridhz,
+                                  ct.xside, ct.yside, ct.zside, *cstream);
+        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
+        return cc;
+    }
+#endif
+#endif
+#endif
+
 
     numgrid = dimx * dimy * dimz;
     if(numgrid == pct.P0_BASIS && ct.anisotropy < 1.000001)

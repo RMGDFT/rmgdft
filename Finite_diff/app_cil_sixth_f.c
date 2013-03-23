@@ -6,10 +6,12 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "hybrid.h"
 
-static REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
-
+static REAL app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
+static REAL app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz); 
+static REAL c0;
 
 // Compilers can generate much better code if they know the loop dimensions at compile
 // as opposed to run time. Therefore since most of the finite difference stencils
@@ -21,85 +23,85 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
                     REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
-    int iz, ix, iy, incx, incy, incxr, incyr, numgrid;
+    int numgrid, tid, used_alloc=FALSE;
+    REAL cc;
+    rmg_float_t *rptr=NULL;
+    rmg_float_t *gpu_psi, *gpu_b;
+
+    int pbasis = dimx * dimy * dimz, itid;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+#if GPU_ENABLED
+    cudaStream_t *cstream;
+    cstream = get_thread_cstream();
+#endif
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+
+#if (GPU_ENABLED && FD_XSIZE)
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+//    rptr = (rmg_float_t *)get_thread_trade_buf();
+rptr = (rmg_float_t *)&ct.gpu_host_temp1[0];
+rptr += tid*sbasis; 
+    gpu_psi = (rmg_float_t *)&ct.gpu_work1[0];
+    gpu_psi += tid*sbasis;
+    gpu_b = (rmg_float_t *)&ct.gpu_work2[0];
+    gpu_b += tid*pbasis;
+#endif
+
+    // If rptr is null then we must allocate it here
+    if(rptr == NULL) {
+        my_malloc (rptr, sbasis + 64, rmg_float_t);
+        used_alloc = TRUE;
+    }
+
+
+#if (GPU_ENABLED && FD_XSIZE)
+    trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
+    cc = app_cil_sixth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, gridhx, gridhy, gridhz,
+                                              ct.xside, ct.yside, ct.zside, *cstream);
+
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
+    return cc;
+#endif
+
+    trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
+
+    // first check for fixed dim case  
+    numgrid = dimx * dimy * dimz;
+    if(numgrid == pct.P0_BASIS) {
+        cc = app_cil_sixth_global_f (rptr, b, gridhx, gridhy, gridhz);
+    }
+    else {
+        cc = app_cil_sixth_standard_f (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+
+    if(used_alloc)
+        my_free(rptr);
+    return cc;
+
+}
+
+
+REAL app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+{
+
+    int iz, ix, iy, incx, incy, incxr, incyr, numgrid, tid;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     REAL fc2x, fc2y, fc2z, tcx, tcy, tcz;
     REAL ihx, ihy, ihz;
-    rmg_float_t *rptr, *rptr1;
-
-#if GPU_ENABLED
-    rmg_float_t *gpu_psi, *gpu_b;
-    cudaStream_t *cstream;
-    int ione = 1, tid;
-    int pbasis = dimx * dimy * dimz;
-    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-
-
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
-    cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
-
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-#if HYBRID_MODEL
-    tid = get_thread_tid();
-#else
-    tid = 0;
-#endif
-    if(tid == -1) {         // Normal codepath with no threads
-        rptr = (rmg_float_t *)&ct.gpu_host_temp3[0];
-        gpu_psi = (rmg_float_t *)&ct.gpu_work1[0];
-        gpu_b = (rmg_float_t *)&ct.gpu_work2[0];
-    }
-    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
-        SCF_THREAD_CONTROL *ss;
-        ss = get_thread_control();
-        rptr = (rmg_float_t *)ss->gpu_host_temp1;
-        gpu_psi = (rmg_float_t *)&ct.gpu_work1[tid * sbasis];
-        gpu_b = (rmg_float_t *)&ct.gpu_work2[tid * sbasis];
-    }
-
-    cstream = get_thread_cstream();
-    trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
-    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
-
-    app_cil_sixth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, 
-                          gridhx, gridhy, gridhz,
-                          ct.xside, ct.yside, ct.zside, *cstream);
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
-    cudaStreamSynchronize(*cstream);
-
-    return cc;
-#endif
-
-
-#if FAST_MEHR
-    numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS)
-        return app_cil_sixth_global_f (psi, b, gridhx, gridhy, gridhz);
-#endif
-
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
     incxr = dimz * dimy;
     incyr = dimz;
-
-    rptr1 = NULL;
-#if HYBRID_MODEL
-    rptr1 = (rmg_float_t *)get_thread_trade_buf();
-#endif
-    // Even in hybrid mode rptr1 will be null if called from a serial region.
-    if(rptr1 != NULL) {
-        rptr = rptr1;
-    }
-    else {
-        my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_float_t);
-    }
-
-    trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
-
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
@@ -124,7 +126,6 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
     tcx = (-1.0 / 240.0) * ihx;
     tcy = (-1.0 / 240.0) * ihy;
     tcz = (-1.0 / 240.0) * ihz;
-
 
     for (ix = 2; ix < dimx + 2; ix++)
     {
@@ -188,17 +189,13 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
 
     }                           /* end for */
 
-
-    if(rptr1 == NULL)
-        my_free (rptr);
-
     return cc;
 
 }
 
 
 // Version with loop dimensions set at compile time
-REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz)
+REAL app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
 
@@ -210,32 +207,11 @@ REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, RE
     REAL rz, rzms, rzps, rzpps;
     REAL rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     REAL td1, td2, td3, td4, td5, td6, td7, td8, tdx;
-    rmg_float_t *rptr, *rptr1;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
-
-    rptr1 = NULL;
-#if HYBRID_MODEL
-    rptr1 = (rmg_float_t *)get_thread_trade_buf();
-#endif
-    // Even in hybrid mode rptr1 will be null if called from a serial region.
-    if(rptr1 != NULL) {
-        rptr = rptr1;
-    }
-    else {
-        my_malloc (rptr, (FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + 64, rmg_float_t);
-    }
-
-    // We run past the end of the array on purpose so make sure there is something there
-    // that won't generate a floating point exception
-    for(ix = 0;ix < 64;ix++) {
-        rptr[(FIXED_XDIM + 4) * (FIXED_YDIM + 4) * (FIXED_ZDIM + 4) + ix] = 0.0;
-    }
-
-    trade_imagesx_f (psi, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 2, FULL_FD);
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
@@ -326,9 +302,6 @@ REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, RE
             }                       /* end for */
 
         }                           /* end for */
-
-        if(rptr1 == NULL)
-            my_free (rptr);
 
         return cc;
 
@@ -621,10 +594,6 @@ REAL app_cil_sixth_global_f (rmg_float_t * psi, rmg_float_t * b, REAL gridhx, RE
 
     }                           /* end for */
 
-
-
-    if(rptr1 == NULL)
-        my_free (rptr);
     return cc;
 
 }

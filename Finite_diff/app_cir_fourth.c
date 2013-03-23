@@ -6,13 +6,16 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#if HYBRID_MODEL
+#include "hybrid.h"
+#endif
 
 static void app_cir_fourth_global (REAL * a, REAL * b);
 
 void app_cir_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, numgrid;
+    int ix, iy, iz, numgrid, tid;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
@@ -22,6 +25,37 @@ void app_cir_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
     }
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+#if GPU_ENABLED
+    if(tid % 2) {
+        rmg_double_t *gpu_a, *gpu_b;
+        cudaStream_t *cstream;
+        int pbasis = dimx * dimy * dimz;
+        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+
+        // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+        rptr = &ct.gpu_host_fdbuf2[tid * sbasis];
+        gpu_a = &ct.gpu_work3[tid * sbasis];
+        gpu_b = &ct.gpu_work4[tid * sbasis];
+
+        cstream = get_thread_cstream();
+        trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
+
+        cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
+
+        app_cir_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz, *cstream);
+        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
+
+        return;
+    }
+#endif
 
     numgrid = dimx * dimy * dimz;
     if(numgrid == pct.P0_BASIS) {
@@ -36,7 +70,7 @@ void app_cir_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
 
     my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), REAL);
 
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
 
     c000 = 0.5;
     c100 = 1.0 / 12.0;
@@ -90,7 +124,7 @@ void app_cir_fourth_global (REAL * a, REAL * b)
 
     my_malloc (rptr, (FIXED_XDIM + 2) * (FIXED_YDIM + 2) * (FIXED_ZDIM + 2), REAL);
 
-    trade_imagesx (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, FULL_FD);
+    trade_imagesx (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, CENTRAL_FD);
 
     c000 = 0.5;
     c100 = 1.0 / 12.0;

@@ -42,7 +42,7 @@ void rmg_printout_devices( )
     unsigned int totalMem;
 #endif
 
-    int clock, retval;
+    int clock;
     CUdevice dev;
 
     for(idevice = 0; idevice < ndevices; idevice++ ) {
@@ -52,12 +52,8 @@ void rmg_printout_devices( )
         cuDeviceTotalMem( &totalMem, dev );
         cuDeviceGetAttribute( &clock,
         CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
-        printf( "Device %d: %s, %.1f MHz clock, %.1f MB memory\n",
+        printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
         idevice, name, clock/1000.f, totalMem/1024.f/1024.f );
-        cuDeviceGetAttribute(&retval, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, ct.cu_dev);
-        printf("Device compute mode = %d\n", retval);
-
-
     }
 }
 
@@ -105,7 +101,12 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+
+  // Make sure enough is allocated for hartree solver on fine grid
+  alloc = 4 * ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+  if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
+
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
@@ -121,6 +122,18 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
+
+  // fdbuf needs to be big enough for hartee potential on fine grid
+  alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+  if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf1, alloc * sizeof(REAL) )){
+      fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+      exit(-1);
+  }
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf2, alloc * sizeof(REAL) )){
+      fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+      exit(-1);
+  }
   if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (2 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
@@ -129,6 +142,7 @@ void init_gpu (void)
 
   alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
+  if(alloc < ((pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2);
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
@@ -155,9 +169,12 @@ void init_gpu (void)
       exit(-1);
   }
 
+cudaSetDeviceFlags(cudaDeviceScheduleSpin);
+  // Create a stream for the main process
   cudaStreamCreate(&ct.cuda_stream);
 //  cublasSetStream(ct.cublas_handle, ct.cuda_stream); 
 //  magmablasSetKernelStream(ct.cuda_stream);
+
 }
 
 void finalize_gpu (void)

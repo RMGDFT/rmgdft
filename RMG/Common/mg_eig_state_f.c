@@ -83,6 +83,9 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     REAL tarr[8];
     REAL time1;
     rmg_float_t *sg_twovpsi_f, *work1_f;
+#if GPU_ENABLED
+    cudaStream_t *cstream;
+#endif
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = sp->dimx;
@@ -96,51 +99,41 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     pbasis = sp->pbasis;
     sbasis = sp->sbasis;
 
-    /* Grab some memory */
-    my_malloc (sg_psi_f, sbasis, rmg_float_t);
-    my_malloc (res, sbasis, REAL);
-#if GPU_ENABLED
 #if HYBRID_MODEL
     ntid = get_thread_tid();
+    if(ntid == -1) ntid = 0;
 #else
     ntid = 0;
 #endif
-    if(ntid == -1) {         // Normal codepath with no threads
-        work2_f = (rmg_float_t *)&ct.gpu_host_temp2[0];
-        sg_twovpsi_f = (rmg_float_t *)&ct.gpu_host_temp1[0];
-        work1 = &ct.gpu_host_temp4[0];
-    }
-    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
-        work2_f = (rmg_float_t *)&ct.gpu_host_temp2[ntid * 4 * sbasis];
-        sg_twovpsi_f = (rmg_float_t *)&ct.gpu_host_temp1[ntid * sbasis];
-        work1 = &ct.gpu_host_temp4[ntid * sbasis];
-    }
+
+#if GPU_ENABLED
+
+    res2_f = (rmg_float_t *)&ct.gpu_host_temp3[ntid * sbasis];
+    work2_f = (rmg_float_t *)&ct.gpu_host_temp2[ntid * 4 * sbasis];
+    work1_f = (rmg_float_t *)&ct.gpu_host_temp1[ntid * 4 * sbasis];
+    work1 = &ct.gpu_host_temp4[ntid * sbasis];
+
+    cstream = get_thread_cstream();
 
 #else
+    my_malloc (res2_f, sbasis, rmg_float_t);
     my_malloc (work2_f, 4 * sbasis, rmg_float_t);
-    my_malloc (sg_twovpsi_f, sbasis, rmg_float_t);
+    my_malloc (work1_f, 4 * sbasis, rmg_float_t);
     my_malloc (work1, sbasis, REAL);
 #endif
+
+    my_malloc (sg_psi_f, sbasis, rmg_float_t);
+    my_malloc (res, sbasis, REAL);
+    my_malloc (sg_twovpsi_f, sbasis, rmg_float_t);
     my_malloc (ns, sbasis, REAL);
     my_malloc (nv, sbasis, REAL);
     my_malloc (res2, sbasis, REAL);
     my_malloc (saved_psi, sbasis, REAL);
     my_malloc (nvtot_psi, sbasis, REAL);
-    my_malloc (work1_f, 4*sbasis, rmg_float_t);
     my_malloc (tmp_psi_f, sbasis, rmg_float_t);
     my_malloc (res_f, sbasis, rmg_float_t);
-    my_malloc (res2_f, sbasis, rmg_float_t);
 
     tmp_psi = sp->psiR;
-
-    potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
-    if(potential_acceleration) {
-        for(idx = 0;idx <pct.P0_BASIS;idx++) {
-            nvtot_psi[idx] = vtot_psi[idx];
-            saved_psi[idx] = tmp_psi[idx];
-        }
-
-    }
 
 #if MD_TIMERS
     time1 = my_crtc ();
@@ -151,10 +144,6 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
-
-    // Copy double precision psi into single precison array
-    for(idx = 0;idx < pbasis;idx++)
-        tmp_psi_f[idx] = (rmg_float_t)tmp_psi[idx];
 
     // Copy double precision ns into temp single precision array */
     for(idx = 0;idx < pbasis;idx++)
@@ -167,12 +156,22 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
     time1 = my_crtc ();
 #endif
-    /*Apply double precision Mehrstellen right hand operator to ns (stored temporarily in work1_f) and save in res2 */
+    /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     app_cir_driver_f (work1_f, res2_f, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
-#if GPU_ENABLED
-    //cudaDeviceSynchronize();
-#endif
+    // Copy double precision psi into single precison array
+    for(idx = 0;idx < pbasis;idx++)
+        tmp_psi_f[idx] = (rmg_float_t)tmp_psi[idx];
+
+    // Setup some potential acceleration stuff
+    potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    if(potential_acceleration) {
+        for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            nvtot_psi[idx] = vtot_psi[idx];
+            saved_psi[idx] = tmp_psi[idx];
+        }
+    }
+
 
 #if MD_TIMERS
     rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
@@ -187,7 +186,6 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
         time1 = my_crtc ();
 #endif
 
-        //scf_barrier_wait();
         /* Apply Mehrstellen left hand operators */
         diag = app_cil_driver_f (tmp_psi_f, work2_f, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
@@ -223,25 +221,19 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
         time1 = my_crtc ();
 #endif
-#if GPU_ENABLED
-        cudaDeviceSynchronize();
-#endif
 
-        //scf_barrier_wait();
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver_f (sg_twovpsi_f, work1_f, dimx, dimy, dimz, ct.kohn_sham_fd_order);
-
-#if GPU_ENABLED
-        //cudaDeviceSynchronize();
-#endif
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
 #endif
 
         t1 = -ONE;
+#if GPU_ENABLED
+        cudaStreamSynchronize(*cstream);
+#endif
         QMD_saxpy (pbasis, t1, work2_f, ione, work1_f, ione);
-
 
 #if MD_TIMERS
         time1 = my_crtc ();
@@ -301,7 +293,6 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
         rmg_timings (MG_EIG_EIGVALUE_TIME, (my_crtc () - time1));
 #endif
-//dprintf("EIG0 = %d  %18.12f", sp->istate,27.2*sp->eig[0]);
 
         /* Now either smooth the wavefunction or do a multigrid cycle */
         if (cycles == ct.eig_parm.gl_pre)
@@ -502,24 +493,25 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 
     }
 
-//dprintf("EIG1 = %d  %18.12f", sp->istate,27.2*sp->eig[0]);
     /* Release our memory */
-    my_free (res_f);
-    my_free (res2_f);
-    my_free (tmp_psi_f);
+#if !GPU_ENABLED
+    my_free (work1);
     my_free (work1_f);
+    my_free (work2_f);
+    my_free (res2_f);
+#endif
+
+
+    my_free (res_f);
+    my_free (tmp_psi_f);
     my_free (nvtot_psi);
     my_free (saved_psi);
     my_free (res2);
     my_free (nv);
     my_free (ns);
-#if !GPU_ENABLED
-    my_free (work2_f);
     my_free (sg_twovpsi_f);
-    my_free (work1);
-#endif
     my_free (res);
-    my_free (sg_psi_f);
+    my_free(sg_psi_f);
 
 
 }                               /* end mg_eig_state_f */

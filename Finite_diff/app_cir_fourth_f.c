@@ -6,13 +6,17 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#if HYBRID_MODEL
+#include "hybrid.h"
+#endif
+
 
 static void app_cir_fourth_global_f (rmg_float_t * a, rmg_float_t * b);
 
 void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, numgrid;
+    int ix, iy, iz, numgrid, tid;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
@@ -22,6 +26,45 @@ void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
     }
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+#if 1
+#if GPU_ENABLED
+#ifdef FD_XSIZE
+    if(tid % 2) {
+        rmg_float_t *gpu_a, *gpu_b;
+        cudaStream_t *cstream;
+        int pbasis = dimx * dimy * dimz;
+        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+
+        // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+        rptr = (rmg_float_t *)&ct.gpu_host_fdbuf2[0];
+        rptr += tid*sbasis;
+        gpu_a = (rmg_float_t *)&ct.gpu_work3[0];
+        gpu_a += tid*sbasis;
+        gpu_b = (rmg_float_t *)&ct.gpu_work4[0];
+        gpu_b += tid*pbasis;
+
+        cstream = get_thread_cstream();
+        trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
+
+        cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
+        app_cir_fourth_f_gpu (gpu_a, gpu_b, dimx, dimy, dimz, *cstream);
+        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
+
+        return;
+    }
+#endif
+#endif
+#endif
+
+
 
     numgrid = dimx * dimy * dimz;
     if(numgrid == pct.P0_BASIS) {
@@ -36,7 +79,7 @@ void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
 
     my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), rmg_float_t);
 
-    trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+    trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
 
     c000 = 0.5;
     c100 = 1.0 / 12.0;
@@ -92,7 +135,7 @@ void app_cir_fourth_global_f (rmg_float_t * a, rmg_float_t * b)
 
     my_malloc (rptr, (FIXED_XDIM + 2) * (FIXED_YDIM + 2) * (FIXED_ZDIM + 2), rmg_float_t);
 
-    trade_imagesx_f (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, FULL_FD);
+    trade_imagesx_f (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, CENTRAL_FD);
 
     c000 = 0.5;
     c100 = 1.0 / 12.0;
