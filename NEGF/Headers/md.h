@@ -1423,7 +1423,7 @@ void scf(complex double *sigma_all, STATE *states, STATE *states1, REAL *vxc, RE
 void apply_potential_drop(REAL *vbias);
 void sortpsi(STATE *states);
 void subdiag(STATE *states, REAL *vh, REAL *vnuc, REAL *vxc);
-void trade_images( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids );
+void trade_images( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids, int type );
 void trade_images_mpi( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids );
 void trade_images_smp( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids );
 void set_bc( REAL *mat, int dimx, int dimy, int dimz, int images, REAL val );

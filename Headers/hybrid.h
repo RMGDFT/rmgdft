@@ -46,7 +46,7 @@ int get_thread_tid(void);
 void *get_thread_trade_buf(void);
 SCF_THREAD_CONTROL *get_thread_control(void);
 void mg_eig_state_threaded(MG_THREAD_STRUCT *ss);
-void set_cpu_affinity(void);
+void set_cpu_affinity(int tid);
 void wait_for_threads(int jobs);
 void wake_threads(int jobs);
 void init_HYBRID_MODEL(void);

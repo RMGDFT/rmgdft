@@ -83,7 +83,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     REAL tarr[8];
     REAL time1;
     rmg_float_t *sg_twovpsi_f, *work1_f;
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
     cudaStream_t *cstream;
 #endif
 
@@ -106,7 +106,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     ntid = 0;
 #endif
 
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
 
     res2_f = (rmg_float_t *)&ct.gpu_host_temp3[ntid * sbasis];
     work2_f = (rmg_float_t *)&ct.gpu_host_temp2[ntid * 4 * sbasis];
@@ -230,7 +230,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
         t1 = -ONE;
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
         cudaStreamSynchronize(*cstream);
 #endif
         QMD_saxpy (pbasis, t1, work2_f, ione, work1_f, ione);
@@ -256,7 +256,6 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
             tarr[0] = t2;
             tarr[1] = eig;
             idx = 2;
-            global_sums (tarr, &idx, pct.grid_comm);
 
 
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
@@ -266,6 +265,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
             {
                 if (ct.scf_steps == 0)
                 {
+                    global_sums (tarr, &idx, pct.grid_comm);
                     eig = tarr[1] / (TWO * tarr[0]);
                     sp->eig[0] = eig;
                     sp->oldeig[0] = eig;
@@ -275,6 +275,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 	    }
             else
             {
+                global_sums (tarr, &idx, pct.grid_comm);
                 eig = tarr[1] / (TWO * tarr[0]);
                 sp->eig[0] = eig;
                 if(ct.scf_steps == 0) {
@@ -313,7 +314,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images_f (sg_psi_f, dimx, dimy, dimz, pct.neighbors);
+            trade_images_f (sg_psi_f, dimx, dimy, dimz, pct.neighbors, FULL_FD);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
@@ -441,7 +442,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 
             /* Pack delta_rho into multigrid array */
             pack_ptos_f (sg_psi_f, res_f, dimx, dimy, dimz);
-            trade_images_f (sg_psi_f, dimx, dimy, dimz, pct.neighbors);
+            trade_images_f (sg_psi_f, dimx, dimy, dimz, pct.neighbors, FULL_FD);
             /* Smooth it once and store the smoothed charge in res */
             app_smooth1_f (sg_psi_f, res_f, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
@@ -494,7 +495,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     }
 
     /* Release our memory */
-#if !GPU_ENABLED
+#if !GPU_FD_ENABLED
     my_free (work1);
     my_free (work1_f);
     my_free (work2_f);

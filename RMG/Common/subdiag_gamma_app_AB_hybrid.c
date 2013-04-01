@@ -72,7 +72,7 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 
     sbasis = sp->sbasis;
 
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
     cudaStream_t *cstream;
     cstream = get_thread_cstream();
     work3 = &ct.gpu_host_temp3[tid * sbasis];
@@ -150,14 +150,14 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 
 
 
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
     cuStreamSynchronize(*cstream);
 #endif
     for (idx = 0; idx <pct.P0_BASIS; idx++)
         work1[idx] = 0.5 * ct.vel * (work1[idx] - work3[idx]);
 
     my_free (work2);
-#if !GPU_ENABLED
+#if !GPU_FD_ENABLED
     my_free(work3);
 #endif
 

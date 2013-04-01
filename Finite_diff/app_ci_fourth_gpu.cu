@@ -1,7 +1,149 @@
 #include "make_conf.h"
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
 #include "fixed_dims.h"
 #ifdef FD_XSIZE
+
+
+__global__ void app_cil_fourth_kernel1(const double * __restrict__ psi, 
+                                                double *b, 
+                                                const int dimx,
+                                                const int dimy,
+                                                const int dimz,
+                                                const double cc,
+                                                const double fcx,
+                                                const double ecxz)
+{
+
+    __shared__ double slice[2*FIXED_YDIM/3 + 2][2*FIXED_ZDIM/3 + 2];
+    double accm_b1, accm, accm_a1;
+    double acc, acc_a1;
+    double x_b1, x_0, x_a1;
+
+    // iz and iy map to the x and y coordinates of the thread
+    // within a block
+    int iz = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y + 1;
+
+    // thread z-index into shared memory tile
+    int tz = threadIdx.x + 1;
+    // thread y-index into shared memory tile
+    int ty = threadIdx.y + 1;
+    int ix=0;
+
+    int incx = (dimz + 2) * (dimy + 2);
+    int incy = dimz + 2;
+    int incxr = dimz * dimy;
+    int incyr = dimz;
+
+    int ixs, ixps;
+    int iys, iyms, iyps;
+    int izs, izms, izps;
+
+    ixs = ix * incx;
+    ixps = (ix + 1) * incx;
+
+    iys = iy * incy;
+    iyms = (iy - 1) * incy;
+    iyps = (iy + 1) * incy;
+    izs = iz;
+    izms = (iz - 1);
+    izps = (iz + 1);
+
+    x_0 = 0.0;
+    accm = 0.0;
+    acc = 0.0;
+
+    x_a1 = psi[izs + iys + ixs];
+
+    acc_a1 = cc * psi[izs + iys + ixs] +
+            ecxz * psi[izms + iyms + ixs] +
+            ecxz * psi[izms + iyps + ixs] +
+            ecxz * psi[izps + iyms + ixs] +
+            ecxz * psi[izps + iyps + ixs];
+
+
+    accm_a1 = psi[izms + iys + ixs] +
+              psi[izps + iys + ixs] +
+              psi[izs + iyms + ixs] +
+              psi[izs + iyps + ixs];
+
+
+    for (ix = 0; ix < dimx + 1; ix++)
+    {
+
+        x_b1 = x_0;
+        x_0 = x_a1;
+         
+        accm_b1 = accm;
+        accm = accm_a1;
+
+        acc = acc_a1;
+
+        __syncthreads();
+        // Update the data slice in shared memory
+        if(threadIdx.x == 0) {
+            slice[ty][0] =
+                            psi[(ix + 1)*incx + iy*incy + (blockIdx.x*blockDim.x)];
+            slice[ty][threadIdx.x + blockDim.x + 1] =
+                            psi[(ix + 1)*incx + iy*incy + (blockDim.x + 1 + blockIdx.x*blockDim.x)];
+        }
+        if(threadIdx.y == 0) {
+            slice[0][tz] =
+                            psi[(ix + 1)*incx + (blockIdx.y*blockDim.y)*incy + iz];
+            slice[blockDim.y + 1][tz] =
+                            psi[(ix + 1)*incx + (blockDim.y + 1 + blockIdx.y*blockDim.y)*incy + iz];
+        }
+
+
+        if((threadIdx.x == 2) && (threadIdx.y == 2)) {
+            slice[0][0] = psi[(ix + 1)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x];
+        }
+
+        if((threadIdx.x == 2) && (threadIdx.y == 3)) {
+            slice[0][blockDim.x + 1] = psi[(ix + 1)*incx + (blockIdx.y*blockDim.y)*incy + blockIdx.x*blockDim.x + blockDim.x + 1];
+        }
+
+        if((threadIdx.x == 3) && (threadIdx.y == 2)) {
+            slice[blockDim.y + 1][0] = psi[(ix + 1)*incx + (blockIdx.y*blockDim.y + blockDim.y + 1)*incy + blockIdx.x*blockDim.x];
+        }
+
+        if((threadIdx.x == 3) && (threadIdx.y == 3)) {
+            slice[blockDim.y + 1][blockDim.x + 1] = psi[(ix + 1)*incx + (blockIdx.y*blockDim.y + blockDim.y + 1)*incy + blockIdx.x*blockDim.x + blockDim.x + 1];
+        }
+
+        // Put the yz tile for the leading x (+1) index into shared memory
+        slice[ty][tz] = psi[(ix + 1)*incx + iy*incy + iz];
+
+        __syncthreads();
+
+        x_a1 = slice[ty][tz];
+
+        // Center + corner points 1 ahead become edge points
+        acc_a1 = cc * x_a1 +
+            ecxz * (slice[(ty - 1)][(tz - 1)] +
+                    slice[(ty + 1)][(tz - 1)] +
+                    slice[(ty - 1)][(tz + 1)] +
+                    slice[(ty + 1)][(tz + 1)]);
+
+        // edge points 1 ahead become face points in center
+        accm_a1 =  (slice[ty][(tz - 1)] +
+                    slice[ty][(tz + 1)] +
+                    slice[(ty - 1)][tz] +
+                    slice[(ty + 1)][tz]);
+
+
+        // Write back the results
+        if(ix >= 1) {
+            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] = acc + 
+                                                                fcx * (accm + x_b1 + x_a1) +
+                                                                ecxz * (accm_b1 + accm_a1);
+
+        }
+
+    }                   /* end for */
+
+}
+
 __global__ void app_cil_fourth_kernel(const double * __restrict__ psi, 
                                                 double *b, 
                                                 const int dimx,
@@ -81,8 +223,6 @@ __global__ void app_cil_fourth_kernel(const double * __restrict__ psi,
 
 }
 
-#endif    // end of #ifdef FD_XSIZE - left hand operator needs fixed grid but right does not
-
 __global__ void app_cir_fourth_kernel(const double * __restrict__ psi, 
                                       double *b, 
                                       const int dimx,
@@ -157,7 +297,7 @@ __global__ void app_cir_fourth_kernel(const double * __restrict__ psi,
 
 
 // C wrapper functions that call the cuda kernels above
-extern "C" int app_cil_fourth_gpu(const double *psi, 
+extern "C" double app_cil_fourth_gpu(const double *psi, 
                                                 double *b, 
                                                 const int dimx,
                                                 const int dimy,
@@ -173,17 +313,17 @@ extern "C" int app_cil_fourth_gpu(const double *psi,
 
 
   dim3 Grid, Block;
-  Grid.x = 2;
-  Grid.y = 2;
+  Grid.x = 3;
+  Grid.y = 3;
   Block.x = dimz/Grid.x;
   Block.y = dimy/Grid.y;
   double ihx = 1.0 / (gridhx * gridhx * xside * xside);
   double cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
   double fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
   double ecxy = (1.0 / 12.0) * (ihx + ihx);
-  cudaFuncSetCacheConfig(&app_cil_fourth_kernel,cudaFuncCachePreferL1);
+//  cudaFuncSetCacheConfig(&app_cil_fourth_kernel,cudaFuncCachePreferL1);
 
-  app_cil_fourth_kernel<<<Grid, Block, 0, cstream>>>(
+  app_cil_fourth_kernel1<<<Grid, Block, 0, cstream>>>(
                                                    psi,
                                                    b,
                                                    dimx,    
@@ -192,6 +332,7 @@ extern "C" int app_cil_fourth_gpu(const double *psi,
                                                    cc,
                                                    fcx,
                                                    ecxy);
+
   return cc;
 }
 
@@ -211,7 +352,7 @@ extern "C" void app_cir_fourth_gpu(const double *psi,
   Block.x = dimz/Grid.x;
   Block.y = dimy/Grid.y;
 
-  cudaFuncSetCacheConfig(&app_cir_fourth_kernel,cudaFuncCachePreferL1);
+//  cudaFuncSetCacheConfig(&app_cir_fourth_kernel,cudaFuncCachePreferL1);
   app_cir_fourth_kernel<<<Grid, Block, 0, cstream>>>(
                                                    psi,
                                                    b,
@@ -221,4 +362,5 @@ extern "C" void app_cir_fourth_gpu(const double *psi,
                                                    c000,
                                                    c100);
 }
+#endif
 #endif

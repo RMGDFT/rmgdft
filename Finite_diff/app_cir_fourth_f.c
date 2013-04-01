@@ -34,33 +34,29 @@ void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
     tid = 0;
 #endif
 
-#if 1
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
 #ifdef FD_XSIZE
-    if(tid % 2) {
-        rmg_float_t *gpu_a, *gpu_b;
-        cudaStream_t *cstream;
-        int pbasis = dimx * dimy * dimz;
-        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+    rmg_float_t *gpu_a, *gpu_b;
+    cudaStream_t *cstream;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
-        // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-        rptr = (rmg_float_t *)&ct.gpu_host_fdbuf2[0];
-        rptr += tid*sbasis;
-        gpu_a = (rmg_float_t *)&ct.gpu_work3[0];
-        gpu_a += tid*sbasis;
-        gpu_b = (rmg_float_t *)&ct.gpu_work4[0];
-        gpu_b += tid*pbasis;
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+    rptr = (rmg_float_t *)&ct.gpu_host_fdbuf2[0];
+    rptr += tid*sbasis;
+    gpu_a = (rmg_float_t *)&ct.gpu_work3[0];
+    gpu_a += tid*sbasis;
+    gpu_b = (rmg_float_t *)&ct.gpu_work4[0];
+    gpu_b += tid*pbasis;
 
-        cstream = get_thread_cstream();
-        trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
+    cstream = get_thread_cstream();
+    trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
 
-        cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
-        app_cir_fourth_f_gpu (gpu_a, gpu_b, dimx, dimy, dimz, *cstream);
-        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
+    cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
+    app_cir_fourth_f_gpu (gpu_a, gpu_b, dimx, dimy, dimz, *cstream);
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
 
-        return;
-    }
-#endif
+    return;
 #endif
 #endif
 

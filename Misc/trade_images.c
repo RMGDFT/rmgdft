@@ -48,7 +48,7 @@ static REAL *swbuf2=NULL;
 static int max_alloc;
 
 
-void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
+void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
 {
     int i, j, ione=1;
     int incx, incy, incz;
@@ -94,8 +94,10 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids)
     }
 
 #if ASYNC_TRADES
-    trade_images1_async (mat, dimx, dimy, dimz);
-    return;
+    if(type == CENTRAL_FD) {
+        trade_images1_central_async (mat, dimx, dimy, dimz);
+        return;
+    }
 #endif
 
 #if MD_TIMERS

@@ -48,7 +48,7 @@ REAL app_cil (REAL * a, REAL * b, int dimx, int dimy, int dimz,
 
 
 
-    trade_images (a, dimx, dimy, dimz, pct.neighbors);
+    trade_images (a, dimx, dimy, dimz, pct.neighbors, FULL_FD);
 
 
     switch (ct.ibrav)

@@ -99,7 +99,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     /* Grab some memory */
     my_malloc (sg_psi, sbasis, REAL);
     my_malloc (res, sbasis, REAL);
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
 #if HYBRID_MODEL
     ntid = get_thread_tid();
 #else
@@ -208,7 +208,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
         time1 = my_crtc ();
 #endif
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
 //        cudaDeviceSynchronize();
 #endif
 
@@ -216,7 +216,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver (sg_twovpsi, work1, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
         cudaDeviceSynchronize();
 #endif
 
@@ -306,7 +306,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors);
+            trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors, FULL_FD);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
@@ -434,7 +434,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
             /* Pack delta_rho into multigrid array */
             pack_ptos (sg_psi, res, dimx, dimy, dimz);
-            trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors);
+            trade_images (sg_psi, dimx, dimy, dimz, pct.neighbors, FULL_FD);
             /* Smooth it once and store the smoothed charge in res */
             app_smooth1 (sg_psi, res, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
 
@@ -485,7 +485,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_free (res2);
     my_free (nv);
     my_free (ns);
-#if !GPU_ENABLED
+#if !GPU_FD_ENABLED
     my_free (work2);
     my_free (sg_twovpsi);
     my_free (work1);
@@ -755,7 +755,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #endif
 
             time1 = my_crtc ();
-            trade_images (sg_psiR, dimx, dimy, dimz, pct.neighbors);
+            trade_images (sg_psiR, dimx, dimy, dimz, pct.neighbors, FULL_FD);
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 
             /* Smooth it once and store the smoothed residual in work1 */
@@ -801,7 +801,7 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images (sg_psiI, dimx, dimy, dimz, pct.neighbors);
+            trade_images (sg_psiI, dimx, dimy, dimz, pct.neighbors, FULL_FD);
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 #endif

@@ -263,8 +263,8 @@ void init_IO (int argc, char **argv)
 #endif
 
     // Allocate storage for trade_images and global sums routines
-    trade_images (NULL, 0, 0, 0, NULL);
-    trade_images_f (NULL, 0, 0, 0, NULL);
+    trade_images (NULL, 0, 0, 0, NULL, 0);
+    trade_images_f (NULL, 0, 0, 0, NULL, 0);
     trade_imagesx (NULL, NULL, 0, 0, 0, 0, 0);
     init_global_sums();
 

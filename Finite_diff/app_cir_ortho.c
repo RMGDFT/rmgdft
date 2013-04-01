@@ -51,7 +51,7 @@ void app_cir_ortho (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     incxr = dimz * dimy;
 
 
-    trade_images (a, dimx, dimy, dimz, pct.neighbors);
+    trade_images (a, dimx, dimy, dimz, pct.neighbors, CENTRAL_FD);
 
 
     Bc = 0.5;

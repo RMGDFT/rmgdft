@@ -2992,4 +2992,473 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
 } // end trade_images1_async
 
 
+// Used by coarse level multigrid routines which assume that the central data is already present
+// and that the f array is sized [dimx+2][dimy+2][dimz+2]
+//
+void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
+{
+    int ix, iy, iz, incx, incy, index;
+    int ixs2, iys2, c1, idx;
+    int xlen, ylen, zlen;
+    int tid=0, retval;
+    int ACTIVE_THREADS = 1;
+
+#if MD_TIMERS
+    REAL time1, time2;
+    time1 = my_crtc ();
+#endif
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
+#endif
+
+
+    incx = (dimy + 2) * (dimz + 2);
+    incy = dimz + 2;
+
+    zlen = dimx * dimy;
+    ylen = dimx * dimz;
+    xlen = dimy * dimz;
+
+    // Thread 0 posts all of the receives
+    if(tid == 0) {
+
+        // The z planes
+        RMG_MPI_trade_f(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, pct.grid_comm, 0, &rreqs[0]);
+        RMG_MPI_trade_f(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, pct.grid_comm, 1, &rreqs[1]);
+
+        // The y planes
+        RMG_MPI_trade_f(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, pct.grid_comm, 2, &rreqs[2]);
+        RMG_MPI_trade_f(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, pct.grid_comm, 3, &rreqs[3]);
+
+        // The x planes
+        RMG_MPI_trade_f(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, pct.grid_comm, 4, &rreqs[4]);
+        RMG_MPI_trade_f(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, pct.grid_comm, 5, &rreqs[5]);
+
+    }
+
+
+    /* Collect the positive z-plane and negative z-planes */
+    c1 = dimz-1;
+    idx = tid * dimx * dimy;
+    for (ix = 1; ix < dimx + 1; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 1; iy < dimy + 1; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 1; iz < 2; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdz1_f[idx] = f[index];
+                frdz2_f[idx] = f[index+c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the north and south planes */
+    c1 = (dimy-1)*incy;
+    idx = tid * dimx * dimz;
+    for (ix = 1; ix < dimx + 1; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 1; iy < 2; iy++)
+        {
+
+            iys2 = ixs2 + iy * incy;
+            for (iz = 1; iz < dimz + 1; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdy1_f[idx] = f[index];
+                frdy2_f[idx] = f[index + c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the east and west planes */
+    c1 = (dimx-1)*incx;
+    idx = tid * dimy * dimz;
+    for (ix = 1; ix < 2; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 1; iy < dimy + 1; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 1; iz < dimz + 1; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdx1_f[idx] = f[index];
+                frdx2_f[idx] = f[index + c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    scf_barrier_wait();
+    if(tid == 0) {
+
+        // Send z planes
+        RMG_MPI_trade_f(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, pct.grid_comm, 0, &sreqs[0]);
+        RMG_MPI_trade_f(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, pct.grid_comm, 1, &sreqs[1]);
+
+        // Send the north and south planes
+        RMG_MPI_trade_f(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, pct.grid_comm, 2, &sreqs[2]);
+        RMG_MPI_trade_f(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, pct.grid_comm, 3, &sreqs[3]);
+
+        // Send the east and west planes
+        RMG_MPI_trade_f(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, pct.grid_comm, 4, &sreqs[4]);
+        RMG_MPI_trade_f(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, pct.grid_comm, 5, &sreqs[5]);
+
+    }
+
+    // Wait for all the recvs to finish
+    if(tid == 0) {
+        retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
+        if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
+    }
+    scf_barrier_wait();
+
+
+    /* Unpack z-planes */
+    c1 = dimz + 1;
+    idx = tid * dimx * dimy;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = (ix + 1) * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + (iy + 1) * incy;
+            for (iz = 0; iz < 1; iz++)
+            {
+
+                index = iys2 + iz;
+                f[index] = frdz1n_f[idx];
+                f[index + c1] = frdz2n_f[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Unpack the north and south planes */
+    c1 = (dimy + 1) * incy;
+    idx = tid * dimx * dimz;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = (ix + 1) * incx;
+        for (iy = 0; iy < 1; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz; iz++)
+            {
+                index = iys2 + iz + 1;
+                f[index] = frdy1n_f[idx];
+                f[index + c1] = frdy2n_f[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Unpack the east and west planes */
+    c1 = (dimx + 1) * incx;
+    idx = tid * dimy * dimz;
+    for (ix = 0; ix < 1; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + (iy + 1) * incy;
+            for (iz = 0; iz < dimz; iz++)
+            {
+
+                index = iys2 + iz + 1;
+                f[index] = frdx1n_f[idx];
+                f[index + c1] = frdx2n_f[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    // Finally wait for all the sends to finish
+    if(tid == 0) {
+        retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
+        if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
+    }
+    scf_barrier_wait();
+
+#if MD_TIMERS
+    time2 = my_crtc ();
+    rmg_timings (IMAGE_TIME, (time2 - time1));
+#endif
+
+} // end trade_images1_central_async_f
+
+
+// Used by coarse level multigrid routines which assume that the central data is already present
+// and that the f array is sized [dimx+2][dimy+2][dimz+2]
+//
+void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz)
+{
+    int ix, iy, iz, incx, incy, index;
+    int ixs2, iys2, c1, idx;
+    int xlen, ylen, zlen;
+    int tid=0, retval;
+    int ACTIVE_THREADS = 1;
+
+#if MD_TIMERS
+    REAL time1, time2;
+    time1 = my_crtc ();
+#endif
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
+#endif
+
+
+    incx = (dimy + 2) * (dimz + 2);
+    incy = dimz + 2;
+
+    zlen = dimx * dimy;
+    ylen = dimx * dimz;
+    xlen = dimy * dimz;
+
+    // Thread 0 posts all of the receives
+    if(tid == 0) {
+
+        // The z planes
+        RMG_MPI_trade(frdz2n, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, pct.grid_comm, 0, &rreqs[0]);
+        RMG_MPI_trade(frdz1n, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, pct.grid_comm, 1, &rreqs[1]);
+
+        // The y planes
+        RMG_MPI_trade(frdy2n, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, pct.grid_comm, 2, &rreqs[2]);
+        RMG_MPI_trade(frdy1n, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, pct.grid_comm, 3, &rreqs[3]);
+
+        // The x planes
+        RMG_MPI_trade(frdx2n, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, pct.grid_comm, 4, &rreqs[4]);
+        RMG_MPI_trade(frdx1n, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, pct.grid_comm, 5, &rreqs[5]);
+
+    }
+
+
+    /* Collect the positive z-plane and negative z-planes */
+    c1 = dimz-1;
+    idx = tid * dimx * dimy;
+    for (ix = 1; ix < dimx + 1; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 1; iy < dimy + 1; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 1; iz < 2; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdz1[idx] = f[index];
+                frdz2[idx] = f[index+c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the north and south planes */
+    c1 = (dimy-1)*incy;
+    idx = tid * dimx * dimz;
+    for (ix = 1; ix < dimx + 1; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 1; iy < 2; iy++)
+        {
+
+            iys2 = ixs2 + iy * incy;
+            for (iz = 1; iz < dimz + 1; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdy1[idx] = f[index];
+                frdy2[idx] = f[index + c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the east and west planes */
+    c1 = (dimx-1)*incx;
+    idx = tid * dimy * dimz;
+    for (ix = 1; ix < 2; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 1; iy < dimy + 1; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 1; iz < dimz + 1; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdx1[idx] = f[index];
+                frdx2[idx] = f[index + c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    scf_barrier_wait();
+    if(tid == 0) {
+
+        // Send z planes
+        RMG_MPI_trade(frdz1, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, pct.grid_comm, 0, &sreqs[0]);
+        RMG_MPI_trade(frdz2, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, pct.grid_comm, 1, &sreqs[1]);
+
+        // Send the north and south planes
+        RMG_MPI_trade(frdy1, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, pct.grid_comm, 2, &sreqs[2]);
+        RMG_MPI_trade(frdy2, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, pct.grid_comm, 3, &sreqs[3]);
+
+        // Send the east and west planes
+        RMG_MPI_trade(frdx1, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, pct.grid_comm, 4, &sreqs[4]);
+        RMG_MPI_trade(frdx2, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, pct.grid_comm, 5, &sreqs[5]);
+
+    }
+
+    // Wait for all the recvs to finish
+    if(tid == 0) {
+        retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
+        if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
+    }
+    scf_barrier_wait();
+
+
+    /* Unpack z-planes */
+    c1 = dimz + 1;
+    idx = tid * dimx * dimy;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = (ix + 1) * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + (iy + 1) * incy;
+            for (iz = 0; iz < 1; iz++)
+            {
+
+                index = iys2 + iz;
+                f[index] = frdz1n[idx];
+                f[index + c1] = frdz2n[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Unpack the north and south planes */
+    c1 = (dimy + 1) * incy;
+    idx = tid * dimx * dimz;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = (ix + 1) * incx;
+        for (iy = 0; iy < 1; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz; iz++)
+            {
+                index = iys2 + iz + 1;
+                f[index] = frdy1n[idx];
+                f[index + c1] = frdy2n[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Unpack the east and west planes */
+    c1 = (dimx + 1) * incx;
+    idx = tid * dimy * dimz;
+    for (ix = 0; ix < 1; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + (iy + 1) * incy;
+            for (iz = 0; iz < dimz; iz++)
+            {
+
+                index = iys2 + iz + 1;
+                f[index] = frdx1n[idx];
+                f[index + c1] = frdx2n[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    // Finally wait for all the sends to finish
+    if(tid == 0) {
+        retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
+        if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
+    }
+    scf_barrier_wait();
+
+#if MD_TIMERS
+    time2 = my_crtc ();
+    rmg_timings (IMAGE_TIME, (time2 - time1));
+#endif
+
+} // end trade_images1_central_async
+
 #endif

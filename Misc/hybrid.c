@@ -131,7 +131,7 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     cudaError_t cuerr;
 #endif
 
-//    set_cpu_affinity();
+    set_cpu_affinity(s->tid);
 
 #if PAPI_PERFMON
     int EventSet = PAPI_NULL;
@@ -413,16 +413,15 @@ void *get_thread_trade_buf(void) {
 // Used for positioning and setting processor affinity. For now assumes that
 // THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
 // does not attemp to schedule
-void set_cpu_affinity(void)
+void set_cpu_affinity(int tid)
 {
-    int s, j;
+    int s;
     cpu_set_t cpuset;
     pthread_t thread;
 
     if(ct.THREADS_PER_NODE % ct.ncpus) return;
 
-    s = get_thread_tid();
-    s = s % ct.THREADS_PER_NODE;
+    s = tid % ct.THREADS_PER_NODE;
 
     
     // Set affinity mask

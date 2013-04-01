@@ -93,7 +93,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
 
 
-    trade_images(f_mat, dimx, dimy, dimz, nb_ids);
+    trade_images(f_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
 
     for (idx = 0; idx < size; idx++)
     {
@@ -134,7 +134,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
          pack_ptos(v_mat, work, dimx, dimy, dimz);
 
         /* trade boundary info */
-        trade_images(v_mat, dimx, dimy, dimz, nb_ids);
+        trade_images(v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
     }
 
 
@@ -158,7 +158,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
     confine (work, dimx, dimy, dimz, potentialCompass, level);
     
-	trade_images(resid, dimx, dimy, dimz, nb_ids);
+	trade_images(resid, dimx, dimy, dimz, nb_ids, FULL_FD);
 	
 
 
@@ -196,7 +196,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
                     gxoffset, gyoffset, gzoffset,
                     pxdim, pydim, pzdim);
 
-        trade_images(newv, dx2, dy2, dz2, nb_ids);
+        trade_images(newv, dx2, dy2, dz2, nb_ids, FULL_FD);
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
@@ -206,7 +206,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
         /* re-solve on this grid level */
 
-        trade_images(v_mat, dimx, dimy, dimz, nb_ids);
+        trade_images(v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
@@ -222,7 +222,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
 
             /* trade boundary info */
-            trade_images(v_mat, dimx, dimy, dimz, nb_ids);
+            trade_images(v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
         }                       /* end for */
 
         /* evaluate max residual */
@@ -232,7 +232,7 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
             eval_residual(v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
 
 
-            trade_images(resid, dimx, dimy, dimz, nb_ids);
+            trade_images(resid, dimx, dimy, dimz, nb_ids, FULL_FD);
 
         }                       /* end if */
 

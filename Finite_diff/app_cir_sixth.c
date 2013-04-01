@@ -30,7 +30,7 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
     cudaStream_t *cstream;
     cstream = get_thread_cstream();
 #endif
@@ -42,7 +42,7 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     tid = 0;
 #endif
 
-#if (GPU_ENABLED && FD_XSIZE)
+#if (GPU_FD_ENABLED && FD_XSIZE)
 
     rptr = get_thread_trade_buf();
     gpu_psi = (rmg_double_t *)&ct.gpu_work3[0];
@@ -59,15 +59,13 @@ void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     }
 
 
-#if (GPU_ENABLED && FD_XSIZE)
-    if(tid < ct.THREADS_PER_NODE/2) {
-        trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
-        cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
-        app_cir_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, *cstream);
+#if (GPU_FD_ENABLED && FD_XSIZE)
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
+    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
+    app_cir_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, *cstream);
 
-        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
-        return;
-    }
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
+    return;
 #endif
 
     trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);

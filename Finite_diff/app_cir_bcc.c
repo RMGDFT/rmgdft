@@ -54,7 +54,7 @@ void app_cir_bcc (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     incxr = dimz * dimy;
 
 
-    trade_images (a, dimx, dimy, dimz, pct.neighbors);
+    trade_images (a, dimx, dimy, dimz, pct.neighbors, FULL_FD);
 
 
     Bc = 2.0 / 3.0;

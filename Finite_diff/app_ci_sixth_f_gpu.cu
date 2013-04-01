@@ -1,5 +1,5 @@
 #include "make_conf.h"
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
 #include "fixed_dims.h"
 #ifdef FD_XSIZE
 
@@ -772,9 +772,9 @@ extern "C" void app_cir_sixth_f_gpu(const float *psi,
   double c100 = 13.0 / 180.0;
   double c110 = 1.0 / 144.0;
   double c200 = -1.0 / 240.0;
-//cudaFuncSetCacheConfig(&app_cir_sixth_f_kernel_small,cudaFuncCachePreferL1);
+cudaFuncSetCacheConfig(&app_cir_sixth_f_kernel_small,cudaFuncCachePreferL1);
 
-  app_cir_sixth_f_kernel<<<Grid, Block, 0, cstream>>>(
+  app_cir_sixth_f_kernel_small<<<Grid, Block, 0, cstream>>>(
                                                    psi,
                                                    b,
                                                    dimx,    

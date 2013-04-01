@@ -263,8 +263,8 @@ REAL real_min_all (REAL x, MPI_Comm comm);
 
 void reset_timers (void);
 void sortpsi (STATE *states);
-void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids);
-void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids);
+void trade_images (REAL *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_imagesx (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (REAL *f, REAL *w, int dimx, int dimy, int dimz, int images);

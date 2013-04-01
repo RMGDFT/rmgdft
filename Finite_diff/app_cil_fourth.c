@@ -9,21 +9,23 @@
 #include "hybrid.h"
 
 static REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz);
+static REAL app_cil_fourth_standard (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
 
 
 REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
-    int  numgrid, tid;
-    REAL *rptr;
-    int iz, ix, iy, incx, incy, incxr, incyr;
-    int ixs, iys, ixms, ixps, iyms, iyps;
-    REAL ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    REAL ihx, ihy, ihz, a1, a2, a3;
+    int  numgrid, tid, used_alloc=FALSE;
+    rmg_double_t cc;
+    rmg_double_t *rptr=NULL;
+    rmg_double_t *gpu_a, *gpu_b;
 
-    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
-    }
+    int pbasis = dimx * dimy * dimz, itid;
+    int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+#if GPU_FD_ENABLED
+    cudaStream_t *cstream;
+    cstream = get_thread_cstream();
+#endif
 
 #if HYBRID_MODEL
     tid = get_thread_tid();
@@ -32,56 +34,76 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
     tid = 0;
 #endif
 
-#if GPU_ENABLED
-#ifdef FD_XSIZE
-    if(tid % 2) {
-        rmg_double_t *gpu_a, *gpu_b;
-        cudaStream_t *cstream;
-        int pbasis = dimx * dimy * dimz;
-        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
-        // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-        rptr = (rmg_double_t *)&ct.gpu_host_fdbuf1[tid * sbasis];
-        gpu_a = (rmg_double_t *)&ct.gpu_work1[tid * sbasis];
-        gpu_b = (rmg_double_t *)&ct.gpu_work2[tid * sbasis];
+#if (GPU_FD_ENABLED && FD_XSIZE)
+    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
+    //rptr = get_thread_trade_buf();
+    rptr = (rmg_float_t *)&ct.gpu_host_fdbuf1[0];
+    rptr += tid*sbasis;
+    gpu_a = (rmg_double_t *)&ct.gpu_work1[0];
+    gpu_a += tid*sbasis;
+    gpu_b = (rmg_double_t *)&ct.gpu_work2[0];
+    gpu_b += tid*pbasis;
+#endif
 
-        cstream = get_thread_cstream();
-        trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
-
-        cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
-
-        cc = app_cil_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz,
-                                  gridhx, gridhy, gridhz,
-                                  ct.xside, ct.yside, ct.zside, *cstream);
-        cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
-
-        return cc;
+    // If rptr is null then we must allocate it here
+    if(rptr == NULL) {
+        my_malloc (rptr, sbasis + 64, rmg_double_t);
+        used_alloc = TRUE;
     }
-#endif
-#endif
 
 
+    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
+    }
+
+#if (GPU_FD_ENABLED && FD_XSIZE)
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+    cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
+    cc = app_cil_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz,
+                              gridhx, gridhy, gridhz,
+                              ct.xside, ct.yside, ct.zside, *cstream);
+    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
+
+    return cc;
+#endif
+
+    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+
+
+    // first check for fixed dim case 
     numgrid = dimx * dimy * dimz;
     if(numgrid == pct.P0_BASIS && ct.anisotropy < 1.000001)
     {
-        return app_cil_fourth_global (a, b, gridhx, gridhy, gridhz);
+        cc = app_cil_fourth_global (rptr, b, gridhx, gridhy, gridhz);
+    }
+    else {
+        cc = app_cil_fourth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
 
+    if(used_alloc)
+        my_free(rptr);
+    return cc;
+
+}
+
+REAL app_cil_fourth_standard (REAL * rptr, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+{
+
+    int iz, ix, iy, incx, incy, incxr, incyr;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    REAL ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    REAL ihx, ihy, ihz, a1, a2, a3;
 
     incx = (dimz + 2) * (dimy + 2);
     incy = dimz + 2;
     incxr = dimz * dimy;
     incyr = dimz;
 
-    my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), REAL);
-
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
-
-
+    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
+    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
 
     if (ct.anisotropy < 1.000001)
     {
@@ -196,7 +218,7 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
                         ecxy * rptr[ixps + iyps + iz] +
                         ecxz * rptr[ixms + iys + iz + 1] +
                         ecxz * rptr[ixps + iys + iz + 1] +
-                        ecyz * rptr[ixs + iyms + iz + 1] + ecyz * a[ixs + iyps + iz + 1];
+                        ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
 
 
                 }           /* end for */
@@ -208,22 +230,20 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
     }                       /* end if */
 
 
-
-    my_free (rptr);
     return cc;
 
 }                               /* end app_cil */
 
 
 
-REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz)
+REAL app_cil_fourth_global (REAL * rptr, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz)
 {
 
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
-    REAL *rptr, rz, rzps, rzms, rzpps;
+    REAL rz, rzps, rzms, rzpps;
     REAL c000, c100, c110;
     REAL ihx;
 
@@ -231,10 +251,6 @@ REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL g
     incy = FIXED_ZDIM + 2;
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
-
-    my_malloc (rptr, (FIXED_XDIM + 2) * (FIXED_YDIM + 2) * (FIXED_ZDIM + 2), REAL);
-
-    trade_imagesx (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, FULL_FD);
 
     ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
     c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
@@ -285,8 +301,6 @@ REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL g
 
     }                           /* end for */
 
-
-    my_free (rptr);
     return c000;
 
 }

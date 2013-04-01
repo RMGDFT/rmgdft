@@ -87,7 +87,7 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
     scale = scale + (2.0 / (gridhy * gridhy * ct.yside * ct.yside));
     scale = scale + (2.0 / (gridhz * gridhz * ct.zside * ct.zside));
     scale = step / scale;
-    trade_images_f (f_mat, dimx, dimy, dimz, nb_ids);
+    trade_images_f (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 
 
     for (idx = 0; idx < size; idx++)
@@ -111,7 +111,12 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
 
 
         /* trade boundary info */
-        trade_images_f (v_mat, dimx, dimy, dimz, nb_ids);
+        if ((level == max_levels) && (cycl == pre_cyc[level]-1)) {
+            trade_images_f (v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
+        }
+        else {
+            trade_images_f (v_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
+        }
 
     }
 
@@ -130,7 +135,7 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
 
 /* evaluate residual */
     eval_residual_f (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-    trade_images_f (resid, dimx, dimy, dimz, nb_ids);
+    trade_images_f (resid, dimx, dimy, dimz, nb_ids, FULL_FD);
 
 
 /* size for next smaller grid */
@@ -167,7 +172,7 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
 
         /* re-solve on this grid level */
 
-        trade_images_f (v_mat, dimx, dimy, dimz, nb_ids);
+        trade_images_f (v_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
@@ -176,7 +181,7 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
             solv_pois_f (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
             /* trade boundary info */
-            trade_images_f (v_mat, dimx, dimy, dimz, nb_ids);
+            trade_images_f (v_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 
         }                       /* end for */
 
@@ -185,7 +190,7 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
         {
 
             eval_residual_f (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-            trade_images_f (resid, dimx, dimy, dimz, nb_ids);
+            trade_images_f (resid, dimx, dimy, dimz, nb_ids, FULL_FD);
 
         }                       /* end if */
 

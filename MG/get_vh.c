@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "hybrid.h"
 
 
 /* Pre and post smoothings on each level */
@@ -63,6 +64,11 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
     REAL time1, time2;
     time1 = my_crtc ();
 
+#if GPU_ENABLED
+    cudaStream_t *cstream;
+    cstream = get_thread_cstream();
+#endif
+
     /*Taken from ON code, seems to help a lot with convergence*/
     poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
@@ -74,14 +80,20 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 
 
     /* Grab some memory for our multigrid structures */
-    my_malloc (mgrhsarr, 12 * sbasis, REAL);
-    mglhsarr = mgrhsarr + sbasis;
-    mgresarr = mglhsarr + sbasis;
-    work = mgresarr + sbasis;
-    sg_rho = work + 4 * sbasis;
-    sg_vh = sg_rho + sbasis;
-    sg_res = sg_vh + sbasis;
-    nrho = sg_res + sbasis;
+#if GPU_ENABLED
+    cuCtxSynchronize();
+    mgrhsarr = &ct.gpu_host_temp1[0];
+    mglhsarr = &ct.gpu_host_temp2[0];
+#else
+    my_malloc (mgrhsarr, sbasis, REAL);
+    my_malloc (mglhsarr, sbasis, REAL);
+#endif
+    my_malloc (mgresarr, sbasis, REAL);
+    my_malloc (work, 4*sbasis, REAL);
+    my_malloc (sg_rho, sbasis, REAL);
+    my_malloc (sg_vh, sbasis, REAL);
+    my_malloc (sg_res, sbasis, REAL);
+    my_malloc (nrho, sbasis, REAL);
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
@@ -91,13 +103,11 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
         nrho[idx] = 0.0;
     pack_vhstod (work, nrho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
-    /* Transfer rho into smoothing grid */
-    pack_ptos (sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+    app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
-
-    /* Apply CI right hand side to rho and store result in work array */
-    app_cir (sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
+#if GPU_ENABLED
+    cuStreamSynchronize(*cstream);
+#endif
 
     /* Multiply through by 4PI */
     t1 = -FOUR * PI;
@@ -118,13 +128,15 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
 	     * when there is no need to apply it, when this loop is called second, third, etc time. */
             if ( (cycles) || (!its))
             {
-                /* Transfer vh into smoothing grid */
-                pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                 /* Apply operator */
-                diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+                diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid, APP_CI_FOURTH);
                 diag = -1.0 / diag;
+
+#if GPU_ENABLED
+                cuStreamSynchronize(*cstream);
+#endif
 
                 /* Generate residual vector */
                 for (idx = 0; idx < pbasis; idx++)
@@ -193,15 +205,13 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
         }                       /* end for */
             
         /*Get residual*/
-        /* Transfer vh into smoothing grid */
-        pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
-        /* Apply operator */
-        diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+        diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid, APP_CI_FOURTH);
         diag = -1.0 / diag;
-
         residual = 0.0;
+#if GPU_ENABLED
+        cuStreamSynchronize(*cstream);
+#endif
         /* Generate residual vector */
         for (idx = 0; idx < pbasis; idx++)
         {
@@ -230,7 +240,18 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
     pack_vhdtos (vh_eig, ct.vh_ext, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
 
     /* Release our memory */
+    my_free (nrho);
+    my_free (sg_res);
+    my_free (sg_vh);
+    my_free (sg_rho);
+    my_free (work);
+    my_free (mgresarr);
+#if GPU_ENABLED
+    cuStreamSynchronize(*cstream);
+#else
+    my_free (mglhsarr);
     my_free (mgrhsarr);
+#endif
 
     time2 = my_crtc ();
     rmg_timings (HARTREE_TIME, (time2 - time1));

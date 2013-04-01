@@ -30,7 +30,7 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
 
     int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-#if GPU_ENABLED
+#if GPU_FD_ENABLED
     cudaStream_t *cstream;
     cstream = get_thread_cstream();
 #endif
@@ -43,11 +43,9 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
 #endif
 
 
-#if (GPU_ENABLED && FD_XSIZE)
+#if (GPU_FD_ENABLED && FD_XSIZE)
     // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-//    rptr = (rmg_float_t *)get_thread_trade_buf();
-rptr = (rmg_float_t *)&ct.gpu_host_temp1[0];
-rptr += tid*sbasis; 
+    rptr = (rmg_float_t *)get_thread_trade_buf();
     gpu_psi = (rmg_float_t *)&ct.gpu_work1[0];
     gpu_psi += tid*sbasis;
     gpu_b = (rmg_float_t *)&ct.gpu_work2[0];
@@ -61,7 +59,7 @@ rptr += tid*sbasis;
     }
 
 
-#if (GPU_ENABLED && FD_XSIZE)
+#if (GPU_FD_ENABLED && FD_XSIZE)
     trade_imagesx_f (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
     cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
     cc = app_cil_sixth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, gridhx, gridhy, gridhz,
