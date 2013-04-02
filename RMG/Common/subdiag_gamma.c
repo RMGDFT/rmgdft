@@ -156,6 +156,8 @@ void init_subdiag(void)
 
     /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
 #if GPU_ENABLED
+    cudaHostRegister( global_matrix, sizeof(REAL) * stop, cudaHostRegisterPortable);
+
     if( cudaSuccess != cudaMallocHost((void **)&tmp_arrayR, pbasis * ct.num_states * sizeof(REAL) )){
         error_handler ("cudaMallocHost failed in diagonalizer.");
     }
