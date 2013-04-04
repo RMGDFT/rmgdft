@@ -302,7 +302,6 @@ REAL app_cil_sixth_global (REAL * rptr, REAL * b, REAL gridhx, REAL gridhy, REAL
 
         }                           /* end for */
 
-        my_free (rptr);
         return cc;
 
     }
