@@ -93,7 +93,7 @@ void init_IO (int argc, char **argv)
             pct.images = 1;
     }
 
-    Dprintf ("\nRunning with %d images", pct.images);
+    dprintf ("\nRunning with %d images", pct.images);
     if ( pct.images > MAX_IMGS )
         error_handler ("Multi-image input file %s asks for more images (%d) than MAX_IMGS in params.h.", argv[1], pct.images);
 
@@ -107,7 +107,7 @@ void init_IO (int argc, char **argv)
     // Only works for 2 images stacked vertically.
     if(ct.images_per_node > 1) {
         int image_x, image_xs;
-        image_xs = pct.images / 2;
+        image_xs = ct.images_per_node;
         
         if(worldpe % ct.images_per_node) {
             // image_y=1
