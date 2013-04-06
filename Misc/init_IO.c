@@ -104,9 +104,21 @@ void init_IO (int argc, char **argv)
     if (image * pct.images != npes)
         error_handler ("Total MPI processes (%d) must be a multiple of the number of images (%d) in this run.", npes, pct.images);
 
+    // Only works for 2 images stacked vertically.
     if(ct.images_per_node > 1) {
-        // Only works for images stacked vertically. Needs to be extended for horizontal stacking.
-        pct.thisimg = worldpe % ct.images_per_node;
+        int image_x, image_xs;
+        image_xs = pct.images / 2;
+        
+        if(worldpe % ct.images_per_node) {
+            // image_y=1
+            image_x = (worldpe - 1) / (2 * NPES);
+            pct.thisimg = image_xs * image_x + 1;
+        }
+        else {
+            // image_y=0
+            image_x = worldpe / (2 * NPES);
+            pct.thisimg = image_xs * image_x;
+        }
     }
     else {
         pct.thisimg = worldpe / image;
@@ -290,7 +302,6 @@ void init_IO (int argc, char **argv)
       fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
   }
 
-//  cuCtxPopCurrent(&ct.cu_context);
 #endif
 
 #if HYBRID_MODEL

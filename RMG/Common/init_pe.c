@@ -61,8 +61,10 @@ void init_pe ( int image )
 
     // Not sure if this will work on anything other than the Crays ....
     if(ct.images_per_node > 1) {
+    
+        int ix, ir1, ir2, ir3, img_nxdim, img_nydim, img_nx, img_ny, worldpe;
+        MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);
 
-        int ix, ir1, ir2, ir3, img_nxdim, img_nydim, img_nx, img_ny;
         img_nxdim = pct.images / ct.images_per_node;
         img_nydim = ct.images_per_node;
         img_nx = pct.thisimg / img_nydim;
@@ -70,20 +72,22 @@ void init_pe ( int image )
         range[0][0] = img_nx * img_nydim * pct.grids * NPES + img_ny;
         range[0][1] = img_nx * img_nydim * pct.grids * NPES + img_ny + img_nydim*NPES - img_nydim;
         range[0][2] = ct.images_per_node;
-        dprintf("RRR %d  %d  %d  %d  %d",pct.thisimg, pct.grids, range[0][0],range[0][1],range[0][2]);sleep(2);fflush(NULL);
+        Dprintf("DEBUG %d  %d  %d  %d  %d  %d  %d",pct.thisimg, img_nx, img_ny, pct.grids, range[0][0],range[0][1],range[0][2]);sleep(2);
         /* define this images group and put its comm in pct */
         ierr=MPI_Group_range_incl (world_grp, 1, range, &group);
-        Dprintf("IERR0 = %d",ierr);fflush(NULL);
+        Dprintf("IERR0 = %d  WPE=%d",ierr, worldpe);fflush(NULL);
         ierr=MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
-        Dprintf("IERR1 = %d",ierr);fflush(NULL);
+        Dprintf("IERR1 = %d  WPE=%d",ierr, worldpe);fflush(NULL);
 
         /* setup pct.rmg_comm to include all image group_rank 0 pe's */
         /* build rank list of group masters, this assumes contiguous ranges */
         /* NOTE: this explicitly depends on range assignment method above! */
 // Still needs to be extended for images stacked horizontally
-        for (image = 0; image < pct.images; image++)
-            image_grp_map[image] = image;
-            image_grp_map[image] = image;
+        for (image = 0; image < pct.images; image++) {
+            img_nx = image / ct.images_per_node; 
+            img_ny = image % ct.images_per_node;
+            image_grp_map[image] = img_nx * img_nydim * pct.grids * NPES + img_ny;
+        }
 
     }
     else {
@@ -107,7 +111,6 @@ void init_pe ( int image )
 
 
     MPI_Barrier(MPI_COMM_WORLD);
-
     /* define master group and make its comm global */
     MPI_Group_incl (world_grp, pct.images, image_grp_map, &img_masters);
     MPI_Barrier(MPI_COMM_WORLD);
@@ -115,7 +118,7 @@ void init_pe ( int image )
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* set gridpe rank value to its image rank */
-    MPI_Comm_rank (pct.img_comm, &pct.imgpe);
+    ierr = MPI_Comm_rank (pct.img_comm, &pct.imgpe);
 
     /* Read in our control information, depends on pct.img_comm for dissemination */
     read_control (ct.cfile);
@@ -126,7 +129,8 @@ void init_pe ( int image )
         if (ct.spin_flag)
             error_handler
                 ("Spin calculations require 2 grids, please rerun with twice as many PEs.");
-        MPI_Comm_dup (pct.img_comm, &pct.grid_comm);
+        MPI_Barrier(MPI_COMM_WORLD);
+        ierr = MPI_Comm_dup (pct.img_comm, &pct.grid_comm);
 #if HYBRID_MODEL
         for(thread = 0;thread < ct.THREADS_PER_NODE;thread++) {
               MPI_Comm_dup (pct.img_comm, &thread_control[thread].grid_comm);
@@ -168,7 +172,7 @@ void init_pe ( int image )
     MPI_Barrier(MPI_COMM_WORLD);
     /* set gridpe rank value to local grid rank value */
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
-    /*printf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);*/
+    Dprintf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
     /* Legacy portion of init_pe */
 
