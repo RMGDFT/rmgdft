@@ -62,6 +62,10 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
    char *uplo = "l";
    char *uphi = "u";
    int pbasis =pct.P0_BASIS;
+#if GPU_ENABLED
+   cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
+   cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
+#endif
 
 
    sp = kpt->kstate;
@@ -72,8 +76,15 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 #if MD_TIMERS
    time1 = my_crtc();
 #endif
+#if GPU_ENABLED
+   cublasSetVector( pbasis * numst, sizeof( REAL ), c, ione, ct.gpu_states, ione );
+   cublasDsyrk_v2 (ct.cublas_handle, cuplo, cu_transT, numst, numpt, &one, ct.gpu_states, numpt, &zero, ct.gpu_global_matrix, numst);
+   cublasGetVector( numst * numst, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+#else
    ssyrk( uplo, transt, &numst, &numpt, &one, c, &numpt, 
                &zero, global_matrix, &numst);
+#endif
+
 #if MD_TIMERS
    rmg_timings (ORTHO_GET_OVERLAPS, (my_crtc () - time1));
    time1 = my_crtc();
@@ -81,7 +92,8 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    /* get the global part */
    length = maxst * maxst;
-   global_sums(global_matrix, &length, pct.grid_comm);
+   MPI_Allreduce(MPI_IN_PLACE, global_matrix, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
 
 #if MD_TIMERS
    rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time1));
@@ -89,7 +101,13 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 #endif
 
    /* compute the cholesky factor of the overlap matrix */
+#if GPU_ENABLED
+   cublasSetVector( numst * numst, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+   magma_dpotrf_gpu('L', numst, ct.gpu_global_matrix, numst, &info);
+   cublasGetVector( numst * numst, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+#else
    cholesky(global_matrix, maxst);
+#endif
 
 #if MD_TIMERS
    rmg_timings (ORTHO_CHOLESKY, (my_crtc () - time1));
@@ -99,6 +117,29 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    // Get inverse of diagonal elements
    for(st = 0;st < numst;st++) tarr[st] = 1.0 / global_matrix[st + maxst * st];
+
+#if GPU_ENABLED
+
+   /* apply inverse of cholesky factor to states */
+   for (st = 0; st < numst; st++) {
+
+      /* normalize c[st] */
+//      QMD_dscal( numpt, tarr[st], &c[st * maxpt], ione);
+      cublasDscal_v2(ct.cublas_handle, numpt, &tarr[st], &ct.gpu_states[st * maxpt], ione);
+
+      /* subtract the projection along c[st] from the remaining vectors */
+      idx = numst - st - 1;
+      if(idx) {
+          cublasDger_v2 (ct.cublas_handle, numpt, idx, &alpha, &ct.gpu_states[st * maxpt], ione,
+                         &ct.gpu_global_matrix[(st+1) + maxst*st], ione, &ct.gpu_states[(st+1) * maxpt], maxpt);
+//          dger_(&numpt, &idx, &alpha, &c[st * maxpt], &ione,
+//               &global_matrix[(st+1) + maxst*st], &ione, &c[(st+1) * maxpt], &maxpt);
+      }
+
+   } /* end of for */
+
+   cublasGetVector( pbasis * numst, sizeof( REAL ), ct.gpu_states, ione, c, ione );
+#else
 
 // This code may look crazy but there is a method to the madness. We copy a slice
 // of the wavefunction array consisting of the values for all orbitals of a given
@@ -133,6 +174,8 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    }
 }
+   my_free(darr);
+#endif
 
 #if MD_TIMERS
    rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time1));
@@ -148,8 +191,6 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
    time1 = my_crtc();
 #endif
 
-
-   my_free(darr);
    my_free(tarr);
 
 } /* end of gram */
