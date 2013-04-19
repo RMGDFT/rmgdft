@@ -193,9 +193,17 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 #if GAMMA_PT
   #if GPU_ENABLED
       cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024) * sizeof(REAL));
+#if BATCH_NLS
+      cudaMallocHost((void **)&pct.nv, ct.num_states * pct.P0_BASIS * sizeof(REAL));
+      cudaMallocHost((void **)&pct.ns, ct.num_states * pct.P0_BASIS * sizeof(REAL));
+#endif
   #else
     /* Wavefunctions are actually stored here */
     my_malloc (rptr, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
+#if BATCH_NLS
+    my_malloc (pct.nv, ct.num_states * pct.P0_BASIS, REAL);
+    my_malloc (pct.ns, ct.num_states * pct.P0_BASIS, REAL);
+#endif
   #endif
 
   if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {

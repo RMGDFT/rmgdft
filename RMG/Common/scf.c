@@ -163,6 +163,9 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 #if HYBRID_MODEL
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
+#if BATCH_NLS
+        app_nls_batch (states);
+#endif
 
         enter_threaded_region();
         scf_barrier_init(ct.THREADS_PER_NODE);
@@ -196,6 +199,9 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     /* Update the wavefunctions */
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
+#if BATCH_NLS
+        app_nls_batch (states);
+#endif
         for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++) {
             mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
         }

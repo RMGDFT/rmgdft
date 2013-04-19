@@ -220,6 +220,10 @@ typedef struct
     REAL *newsintR_local;
     REAL *newsintI_local;
 
+    // Holds non-local and S operators acting on psi
+    REAL *nv;
+    REAL *ns;
+
 } PE_CONTROL;
 
 
