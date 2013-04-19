@@ -125,8 +125,10 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (sg_psi_f, sbasis, rmg_float_t);
     my_malloc (res, sbasis, REAL);
     my_malloc (sg_twovpsi_f, sbasis, rmg_float_t);
+#if !BATCH_NLS
     my_malloc (ns, sbasis, REAL);
     my_malloc (nv, sbasis, REAL);
+#endif
     my_malloc (res2, sbasis, REAL);
     my_malloc (saved_psi, sbasis, REAL);
     my_malloc (nvtot_psi, sbasis, REAL);
@@ -143,7 +145,12 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
         mix_betaxpsi1(sp);
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
+#if !BATCH_NLS
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
+#else
+    nv = &pct.nv[sp->istate * pct.P0_BASIS]; 
+    ns = &pct.ns[sp->istate * pct.P0_BASIS]; 
+#endif
 
     // Copy double precision ns into temp single precision array */
     for(idx = 0;idx < pbasis;idx++)
@@ -508,8 +515,10 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     my_free (nvtot_psi);
     my_free (saved_psi);
     my_free (res2);
+#if !BATCH_NLS
     my_free (nv);
     my_free (ns);
+#endif
     my_free (sg_twovpsi_f);
     my_free (res);
     my_free(sg_psi_f);

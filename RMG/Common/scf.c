@@ -164,7 +164,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
 #if BATCH_NLS
-        app_nls_batch (states);
+        app_nls_batch (states, pct.nv, pct.ns);
 #endif
 
         enter_threaded_region();
