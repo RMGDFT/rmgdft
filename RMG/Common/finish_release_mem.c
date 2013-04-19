@@ -15,13 +15,13 @@ void finish_release_mem (STATE * states)
 
 
 
+    if (pct.weight)
+        my_free (pct.weight);
 
     /*************** Memory for non-local projectors **************************/
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        if (pct.weight[ion])
-            my_free (pct.weight[ion]);
 
 #if FDIFF_BETA
 
@@ -65,8 +65,6 @@ void finish_release_mem (STATE * states)
 
 
 
-    if (pct.weight)
-        my_free (pct.weight);
 
 #if FDIFF_BETA
     if (pct.weight_derx)
@@ -207,4 +205,4 @@ void finish_release_mem (STATE * states)
 
 }
 
- /*EOF*/
+/*EOF*/

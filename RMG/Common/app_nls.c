@@ -46,7 +46,7 @@
 #include <stdio.h>
 #include "main.h"
 
-#define FAST_NLS 0
+#define FAST_NLS 1
 
 
 void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R, REAL *work2I, REAL *sintR, REAL *sintI, int state,
@@ -94,31 +94,31 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 
     my_copy(psiI, work2I,pct.P0_BASIS);
 #endif
+    stop = pct.P0_BASIS;
 
     /* Loop over ions once again */
+    weiptr = pct.weight;
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
 
         /*Actual index of the ion under consideration*/
         gion = pct.nonloc_ions_list[ion];
+        iptr = &ct.ions[gion];
+        sp = &ct.sp[iptr->species];
+
+        nh = sp->nh;
 
         /*This needs to be here, since nonlocal ions include those that have overlap due to either beta
          * or Q and here we only need those that overlap due to beta*/
         if (pct.idxptrlen[gion])
         {
-            iptr = &ct.ions[gion];
-            sp = &ct.sp[iptr->species];
-       
-            nh = sp->nh;
 
-            stop = pct.P0_BASIS;
 
             psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
             psintI = &sintI[ion * ct.num_states * ct.max_nl + sindex];
 #endif
 
-            weiptr = pct.weight[gion];
             dnmI = pct.dnmI[gion];
             qqq = pct.qqq[gion];
 
@@ -128,60 +128,31 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
             pidx = pct.nlindex[gion];
 
 
-// This if block selects blas optimized or standard code path
-#if FAST_NLS
-        // Set this up as a pair of blas level 2 calls
-        for (i = 0; i < nh; i++)
-        {
-            coeffMatR[i] = 0.0;         // First row of left hand matrix
-            coeffMatR[nh + i] = 0.0;    // Second row of left hand matrix
-            inh = i * nh;
-            for (j = 0; j < nh; j++)
-            {
-                coeffMatR[i]  += dnmI[inh + j] * psintR[j];
-                coeffMatR[nh + i] += qqq[inh + j] * psintR[j];
-#if !GAMMA_PT
-                coeffMatI[i]  += dnmI[inh + j] * psintR[j];
-                coeffMatI[nh + i] += qqq[inh + j] * psintR[j];
-#endif
-            }
-        }
-
-        dgemv(transa, &stop, &nh, &rone, weiptr, &stop, coeffMatR, &ione, &rzero, nworkR, &ione);
-        dgemv(transa, &stop, &nh, &rone, weiptr, &stop, &coeffMatR[nh], &ione, &rzero, nwork2R, &ione);
-#if !GAMMA_PT
-        dgemv(transa, &stop, &nh, &rone, weiptr, &stop, coeffMatI, &ione, &rzero, nworkI, &ione);
-        dgemv(transa, &stop, &nh, &rone, weiptr, &stop, &coeffMatI[nh], &ione, &rzero, nwork2I, &ione);
-#endif
-
-// Normal code path
-#else
-
+            // Set this up as a pair of blas level 2 calls
             for (i = 0; i < nh; i++)
             {
-                mptr = weiptr + i * pct.P0_BASIS;
-                coeffR = 0.0;
-                coeffI = 0.0;
-                coeff2R = 0.0;
-                coeff2I = 0.0;
+                coeffMatR[i] = 0.0;         // First row of left hand matrix
+                coeffMatR[nh + i] = 0.0;    // Second row of left hand matrix
                 inh = i * nh;
                 for (j = 0; j < nh; j++)
                 {
-                    coeffR += dnmI[inh + j] * psintR[j];
-                    coeff2R += qqq[inh + j] * psintR[j];
+                    coeffMatR[i]  += dnmI[inh + j] * psintR[j];
+                    coeffMatR[nh + i] += qqq[inh + j] * psintR[j];
 #if !GAMMA_PT
-                    coeffI += dnmI[inh + j] * psintI[j];
-                    coeff2I += qqq[inh + j] * psintI[j];
+                    coeffMatI[i]  += dnmI[inh + j] * psintR[j];
+                    coeffMatI[nh + i] += qqq[inh + j] * psintR[j];
 #endif
-                }                   /* end for j */
-                QMD_daxpy (stop, coeffR, mptr, incx, nworkR, incx);
-                QMD_daxpy (stop, coeff2R, mptr, incx, nwork2R, incx);
+                }
+            }
+
+            dgemv(transa, &stop, &nh, &rone, weiptr, &stop, coeffMatR, &ione, &rzero, nworkR, &ione);
+            dgemv(transa, &stop, &nh, &rone, weiptr, &stop, &coeffMatR[nh], &ione, &rzero, nwork2R, &ione);
 #if !GAMMA_PT
-                QMD_daxpy (stop, coeffI, mptr, incx, nworkI, incx);
-                QMD_daxpy (stop, coeff2I, mptr, incx, nwork2I, incx);
+            dgemv(transa, &stop, &nh, &rone, weiptr, &stop, coeffMatI, &ione, &rzero, nworkI, &ione);
+            dgemv(transa, &stop, &nh, &rone, weiptr, &stop, &coeffMatI[nh], &ione, &rzero, nwork2I, &ione);
 #endif
-            }                       /*end for i */
-#endif
+
+
 
 #if GAMMA_PT
             /* Write back the results */
@@ -189,11 +160,6 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
             {
                 workR[idx] += nworkR[idx];
                 work2R[idx] += nwork2R[idx];
-#if !FAST_NLS
-            // Fast blas version does not need this since the dgemv call will zero out the array when it enters
-                nworkR[idx] = 0.0;
-                nwork2R[idx] = 0.0;
-#endif
             }                       /* end for */
 #else
 
@@ -208,14 +174,12 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
             {
                 workI[pidx[idx]] += (-nworkR[idx] * pI[idx] + nworkI[idx] * pR[idx]);
                 work2I[pidx[idx]] += (-nwork2R[idx] * pI[idx] + nwork2I[idx] * pR[idx]);
-#if !FAST_NLS
-                nworkR[idx] = nworkI[idx] = 0.0;
-                nwork2R[idx] = nwork2I[idx] = 0.0;
-#endif
             }                       /* end for */
 #endif
 
         }
+
+        weiptr += sp->nh * pct.P0_BASIS;
 
 
     }                           /* end for */

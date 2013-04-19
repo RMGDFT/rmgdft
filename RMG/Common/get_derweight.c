@@ -71,7 +71,7 @@ void get_derweight (int ion, REAL * beta_x, REAL * beta_y, REAL * beta_z, ION * 
         /*Do the backwards transform */
         fftwnd_one (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
-        assign_weight (sp, ion, beptr, rtptr_x);
+        assign_derweight (sp, ion, beptr, rtptr_x);
 
 
     /*************** Y ********************/
@@ -89,7 +89,7 @@ void get_derweight (int ion, REAL * beta_x, REAL * beta_y, REAL * beta_z, ION * 
         /*Do the backwards transform */
         fftwnd_one (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
-        assign_weight (sp, ion, beptr, rtptr_y);
+        assign_derweight (sp, ion, beptr, rtptr_y);
 
 
     /*************** Z ********************/
@@ -107,7 +107,7 @@ void get_derweight (int ion, REAL * beta_x, REAL * beta_y, REAL * beta_z, ION * 
         /*Do the backwards transform */
         fftwnd_one (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
-        assign_weight (sp, ion, beptr, rtptr_z);
+        assign_derweight (sp, ion, beptr, rtptr_z);
 
 
 

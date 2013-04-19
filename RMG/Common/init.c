@@ -592,8 +592,6 @@ static void init_alloc_nonloc_mem (void)
 {
     int ion;
 
-    my_malloc (pct.weight, ct.num_ions, REAL *);
-
 #if FDIFF_BETA
     my_malloc (pct.weight_derx, ct.num_ions, REAL *);
     my_malloc (pct.weight_dery, ct.num_ions, REAL *);
@@ -621,9 +619,9 @@ static void init_alloc_nonloc_mem (void)
 
 
     /*Initialize pointer arrays to NULL */
+    pct.weight = NULL;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        pct.weight[ion] = NULL;
 
 #if FDIFF_BETA
         pct.weight_derx[ion] = NULL;

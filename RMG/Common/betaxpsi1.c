@@ -214,9 +214,9 @@ Dprintf("BETA2DONE");
 
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt)
 {
-    int alloc, nion, ion, *pidx, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist;
+    int alloc, nion, ion, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist;
     REAL *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
-    REAL *weiptr, *psiR, *psiI;
+    REAL *weiptr, *weightptr_ion, *psiR, *psiI;
     ION *iptr;
     SPECIES *sp;
     STATE *st;
@@ -234,7 +234,8 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     nlarrayI = nlarrayR + alloc;
 
 
-
+    
+    weightptr_ion = pct.weight;
     /* Loop over ions on this processor */
     for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
@@ -251,7 +252,6 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
         if (pct.idxptrlen[ion])
         {
 
-            pidx = pct.nlindex[ion];
 #if !GAMMA_PT
             pR = pct.phaseptr[ion];
             pR += 2 * kpt * stop;
@@ -263,7 +263,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
             sintI = &sintI_ptr[nion * ct.num_states * ct.max_nl];
 #endif
 
-// Parallelized over threads here.
+            // Parallelized over threads here.
             start_state = 0;
 #if HYBRID_MODEL
             enter_threaded_region();
@@ -272,12 +272,12 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
             istop = istop * ct.THREADS_PER_NODE;
 
             for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
-                  thread_control[ist].job = HYBRID_BETAX_PSI1_CALCULATE;
-                  thread_control[ist].sp = &states[ist];
-                  thread_control[ist].ion = ion;
-                  thread_control[ist].nion = nion;
-                  thread_control[ist].sintR = sintR;
-                  thread_control[ist].sintI = sintI;
+                thread_control[ist].job = HYBRID_BETAX_PSI1_CALCULATE;
+                thread_control[ist].sp = &states[ist];
+                thread_control[ist].ion = ion;
+                thread_control[ist].nion = nion;
+                thread_control[ist].sintR = sintR;
+                thread_control[ist].sintI = sintI;
             }
 
             // Thread tasks are set up so wake them
@@ -318,7 +318,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
 
                 /* <Beta|psi>                                       */
 
-                weiptr = pct.weight[ion];
+                weiptr = weightptr_ion;
                 ipindex = istate * ct.max_nl;
 
                 for (ip = 0; ip < sp->nh; ip++)
@@ -336,82 +336,13 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
 
             }
 
-        }
+       }
 
+        
+        weightptr_ion += sp->nh * pct.P0_BASIS;
 
     }
     my_free (nlarrayR);
-}
-
-void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI, int kpt) {
-
-  int idx, stop, alloc, ip, incx=1, ipindex, istate, *pidx, ist, st_stop;
-  ION *iptr;
-  SPECIES *sp;
-  REAL *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
-    REAL *pR, *pI;
-
-  istate = st->istate;
-
-  alloc =pct.P0_BASIS;
-  if (alloc < ct.max_nlpoints)
-      alloc = ct.max_nlpoints;
-
-  my_malloc (nlarrayR, 2 * alloc, REAL);
-  nlarrayI = nlarrayR + alloc;
-
-  iptr = &ct.ions[ion];
-  sp = &ct.sp[iptr->species];
-  stop = pct.P0_BASIS;
-  pidx = pct.nlindex[ion];
-
-  st_stop = ct.num_states / ct.THREADS_PER_NODE;
-  st_stop = st_stop * ct.THREADS_PER_NODE;
-
-  for(ist = istate;ist < st_stop;ist+=ct.THREADS_PER_NODE) {
-      
-      psiR = st->psiR;
-#if !GAMMA_PT
-      psiI = st->psiI;
-      pR = pct.phaseptr[ion];
-      pR += 2 * kpt * stop;
-      pI = pR + stop;
-#endif
-
-#if GAMMA_PT
-      /* Copy wavefunction into temporary array */
-      for (idx = 0; idx < stop; idx++)
-          nlarrayR[idx] = psiR[idx];
-#else
-      for (idx = 0; idx < stop; idx++)
-          nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
-
-      for (idx = 0; idx < stop; idx++)
-          nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
-#endif
-
-      /* <Beta|psi>                                       */
-
-      weiptr = pct.weight[ion];
-      ipindex = st->istate * ct.max_nl;
-
-      for (ip = 0; ip < sp->nh; ip++)
-      {
-
-          sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
-#if !GAMMA_PT
-          sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
-#endif
-
-          weiptr += pct.P0_BASIS;
-          ipindex++;
-
-      }
-
-      st += ct.THREADS_PER_NODE;
-  }
-  my_free (nlarrayR);
-
 }
 
 
@@ -434,11 +365,11 @@ static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
         size = num_ions_per_pe[pe] * ct.num_states * ct.max_nl;
 
         MPI_Irecv (tpr, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recv[pe]);
-	Dprintf("Posting nonblock receive from PE %d tag is %d size is %d", source, tag, size);
+        Dprintf("Posting nonblock receive from PE %d tag is %d size is %d", source, tag, size);
 #if !GAMMA_PT
         tag *= 2;
         MPI_Irecv (tprI, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recvI[pe]);
-	Dprintf("Posting nonblock receive for imaginary part from PE %d tag is %d size is %d", source, tag, size);
+        Dprintf("Posting nonblock receive for imaginary part from PE %d tag is %d size is %d", source, tag, size);
 #endif
 
         tpr += size;
@@ -468,12 +399,12 @@ static void betaxpsi1_send (REAL * send_buff, REAL * send_buffI, int num_pes,
         tag = 111;
 
         MPI_Isend (tpr, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_send[pe]);
-	Dprintf("Sending data to PE %d, tag is %d and size is %d", target, tag, size);
+        Dprintf("Sending data to PE %d, tag is %d and size is %d", target, tag, size);
 
 #if !GAMMA_PT
         tag *= 2;
         MPI_Isend (tprI, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_sendI[pe]);
-	Dprintf("Sending imaginary part of data to PE %d, tag is %d and size is %d", target, tag, size);
+        Dprintf("Sending imaginary part of data to PE %d, tag is %d and size is %d", target, tag, size);
 #endif
 
         tpr += size;

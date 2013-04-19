@@ -16,7 +16,7 @@ static void reset_pct_arrays (int ion);
 void get_nlop (void)
 {
 
-    int ion, idx, i, pe, owned, nlion, owner;
+    int ion, ion1, idx, i, pe, owned, nlion, owner;
     int ix, iy, iz, ip, prj_per_ion;
     int *pvec, *dvec, *ivec;
     int ilow, jlow, klow, ihi, jhi, khi, map, map2, icount;
@@ -169,11 +169,8 @@ void get_nlop (void)
 
             if ((icount * prj_per_ion))
             {
-                size_t weight_size = prj_per_ion * pct.P0_BASIS + 128;
 
-                my_calloc (pct.weight[ion], weight_size, REAL);
-
-
+            size_t weight_size = prj_per_ion * pct.P0_BASIS + 128;
 #if FDIFF_BETA
                 my_calloc (pct.weight_derx[ion], weight_size, REAL);
                 my_calloc (pct.weight_dery[ion], weight_size, REAL);
@@ -182,7 +179,6 @@ void get_nlop (void)
             }
             else
             {
-                pct.weight[ion] = NULL;
 #if FDIFF_BETA
                 pct.weight_derx[ion] = NULL;
                 pct.weight_dery[ion] = NULL;
@@ -238,6 +234,26 @@ void get_nlop (void)
         }
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
+
+
+    int tot_projectors;
+    tot_projectors = 0;
+    for(ion = 0; ion <pct.num_nonloc_ions; ion++)
+    {
+        ion1 = pct.nonloc_ions_list[ion];
+
+        iptr = &ct.ions[ion1];
+
+        /* Get species type */
+        sp = &ct.sp[iptr->species];
+
+        prj_per_ion = sp->nh;
+        tot_projectors += prj_per_ion;
+    }
+        
+    size_t weight_size = tot_projectors * pct.P0_BASIS + 128;
+
+    my_calloc (pct.weight, weight_size, REAL);
 
 
     /*Make sure that ownership of ions is properly established
@@ -487,22 +503,22 @@ static void reset_pct_arrays (int ion)
 	my_free (pct.nlindex[ion]);
 
 
-    if (pct.weight[ion])
-	my_free (pct.weight[ion]);
+    if (pct.weight != NULL)
+        my_free (pct.weight);
 
 #if FDIFF_BETA
     if (pct.weight_derx[ion])
-	my_free (pct.weight_derx[ion]);
+        my_free (pct.weight_derx[ion]);
     if (pct.weight_dery[ion])
-	my_free (pct.weight_dery[ion]);
+        my_free (pct.weight_dery[ion]);
     if (pct.weight_derz[ion])
-	my_free (pct.weight_derz[ion]);
+        my_free (pct.weight_derz[ion]);
 #endif
 
 
 #if !GAMMA_PT
     if (pct.phaseptr[ion])
-	my_free (pct.phaseptr[ion]);
+        my_free (pct.phaseptr[ion]);
 #endif
 
 }

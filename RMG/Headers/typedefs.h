@@ -125,7 +125,7 @@ typedef struct
 
     /** Points to start of projector storage for this ion in projector space */
     //REAL *weight[MAX_IONS];
-    REAL **weight;
+    REAL *weight;
 
 #if FDIFF_BETA
     /*These are used for non-local force */
