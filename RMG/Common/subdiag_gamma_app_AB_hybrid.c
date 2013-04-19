@@ -19,6 +19,10 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     int istate, st1, ist, istop;
     STATE *sp;
 
+#if BATCH_NLS
+    app_nls_batch (states, pct.nv, s_psi, pct.newsintR_local);
+#endif
+
     enter_threaded_region();
     scf_barrier_init(ct.THREADS_PER_NODE);
 
@@ -80,8 +84,10 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     my_malloc (work3, sbasis, REAL);
 #endif
 
-    my_malloc (work2, 2 * sbasis, REAL);
-    sg_twovpsi = work2 + sbasis;
+#if !BATCH_NLS
+    my_malloc (work2, sbasis, REAL);
+#endif
+    my_malloc (sg_twovpsi, sbasis, REAL);
     kidx = 0;
 
     work1 = a_psi;
@@ -105,7 +111,12 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 #   endif
 
     /* Apply non-local operator to psi and store in work2 */
+#if !BATCH_NLS
     app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
+#else
+    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
+#endif
+
 #   if MD_TIMERS
     rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #   endif
@@ -156,7 +167,11 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     for (idx = 0; idx <pct.P0_BASIS; idx++)
         work1[idx] = 0.5 * ct.vel * (work1[idx] - work3[idx]);
 
+#if !BATCH_NLS
     my_free (work2);
+#endif
+    my_free(sg_twovpsi);
+
 #if !GPU_FD_ENABLED
     my_free(work3);
 #endif
