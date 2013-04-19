@@ -119,7 +119,7 @@ void get_weight (void)
 
                 /*Advance the temp pointers */
                 fptr += coarse_size;
-                rtptr += pct.idxptrlen[ion];
+                rtptr += pct.P0_BASIS;
 #if FDIFF_BETA
                 rtptr_x += pct.idxptrlen[ion];
                 rtptr_y += pct.idxptrlen[ion];

@@ -169,7 +169,7 @@ void get_nlop (void)
 
             if ((icount * prj_per_ion))
             {
-                size_t weight_size = prj_per_ion * icount + 128;
+                size_t weight_size = prj_per_ion * pct.P0_BASIS + 128;
 
                 my_calloc (pct.weight[ion], weight_size, REAL);
 

@@ -245,10 +245,10 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
 
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
-        stop = pct.idxptrlen[ion];
+        stop = pct.P0_BASIS;
 
 
-        if (stop)
+        if (pct.idxptrlen[ion])
         {
 
             pidx = pct.nlindex[ion];
@@ -307,13 +307,13 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
 #if GAMMA_PT
                 /* Copy wavefunction into temporary array */
                 for (idx = 0; idx < stop; idx++)
-                    nlarrayR[idx] = psiR[pidx[idx]];
+                    nlarrayR[idx] = psiR[idx];
 #else
                 for (idx = 0; idx < stop; idx++)
-                    nlarrayR[idx] = psiR[pidx[idx]] * pR[idx] - psiI[pidx[idx]] * pI[idx];
+                    nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
 
                 for (idx = 0; idx < stop; idx++)
-                    nlarrayI[idx] = psiI[pidx[idx]] * pR[idx] + psiR[pidx[idx]] * pI[idx];
+                    nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
 #endif
 
                 /* <Beta|psi>                                       */
@@ -329,7 +329,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
                     sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
-                    weiptr += pct.idxptrlen[ion];
+                    weiptr += pct.P0_BASIS;
                     ipindex++;
 
                 }
@@ -362,7 +362,7 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
 
   iptr = &ct.ions[ion];
   sp = &ct.sp[iptr->species];
-  stop = pct.idxptrlen[ion];
+  stop = pct.P0_BASIS;
   pidx = pct.nlindex[ion];
 
   st_stop = ct.num_states / ct.THREADS_PER_NODE;
@@ -381,13 +381,13 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
 #if GAMMA_PT
       /* Copy wavefunction into temporary array */
       for (idx = 0; idx < stop; idx++)
-          nlarrayR[idx] = psiR[pidx[idx]];
+          nlarrayR[idx] = psiR[idx];
 #else
       for (idx = 0; idx < stop; idx++)
-          nlarrayR[idx] = psiR[pidx[idx]] * pR[idx] - psiI[pidx[idx]] * pI[idx];
+          nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
 
       for (idx = 0; idx < stop; idx++)
-          nlarrayI[idx] = psiI[pidx[idx]] * pR[idx] + psiR[pidx[idx]] * pI[idx];
+          nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
 #endif
 
       /* <Beta|psi>                                       */
@@ -403,7 +403,7 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *si
           sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
-          weiptr += pct.idxptrlen[ion];
+          weiptr += pct.P0_BASIS;
           ipindex++;
 
       }

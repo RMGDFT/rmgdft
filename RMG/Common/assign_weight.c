@@ -13,8 +13,11 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr)
 
     int idx, ix, iy, iz, *dvec;
     int idx1, docount;
+    int *pidx;
 
+    pidx = pct.nlindex[ion];
     dvec = pct.idxflag[ion];
+    for(idx = 0; idx < pct.P0_BASIS; idx++) rtptr[idx] = 0.0;
     idx = docount = 0;
     for (ix = 0; ix < sp->nldim; ix++)
     {
@@ -28,7 +31,7 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr)
                 if (dvec[idx])
                 {
                     idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-                    rtptr[docount] = beptr[idx1].re;
+                    rtptr[pidx[docount]] = beptr[idx1].re;
                     if (beptr[idx1].im > 1.0e-8)
                     {
                         printf ("beptr[%d].im=%e\n", idx1, beptr[idx1].im);

@@ -111,7 +111,7 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
        
             nh = sp->nh;
 
-            stop = pct.idxptrlen[gion];
+            stop = pct.P0_BASIS;
 
             psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
 #if !GAMMA_PT
@@ -159,7 +159,7 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 
             for (i = 0; i < nh; i++)
             {
-                mptr = weiptr + i * stop;
+                mptr = weiptr + i * pct.P0_BASIS;
                 coeffR = 0.0;
                 coeffI = 0.0;
                 coeff2R = 0.0;
@@ -187,8 +187,8 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
             /* Write back the results */
             for (idx = 0; idx < stop; idx++)
             {
-                workR[pidx[idx]] += nworkR[idx];
-                work2R[pidx[idx]] += nwork2R[idx];
+                workR[idx] += nworkR[idx];
+                work2R[idx] += nwork2R[idx];
 #if !FAST_NLS
             // Fast blas version does not need this since the dgemv call will zero out the array when it enters
                 nworkR[idx] = 0.0;
