@@ -223,6 +223,9 @@ typedef struct
     // Holds non-local and S operators acting on psi
     REAL *nv;
     REAL *ns;
+    int num_tot_proj;
+    REAL *M_dnm;
+    REAL *M_qqq;
 
 } PE_CONTROL;
 

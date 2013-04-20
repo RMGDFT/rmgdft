@@ -236,8 +236,7 @@ void get_nlop (void)
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
 
 
-    int tot_projectors;
-    tot_projectors = 0;
+    pct.num_tot_proj = 0;
     for(ion = 0; ion <pct.num_nonloc_ions; ion++)
     {
         ion1 = pct.nonloc_ions_list[ion];
@@ -248,12 +247,15 @@ void get_nlop (void)
         sp = &ct.sp[iptr->species];
 
         prj_per_ion = sp->nh;
-        tot_projectors += prj_per_ion;
+        pct.num_tot_proj += prj_per_ion;
     }
         
-    size_t weight_size = tot_projectors * pct.P0_BASIS + 128;
+    size_t weight_size = pct.num_tot_proj * pct.P0_BASIS + 128;
 
     my_calloc (pct.weight, weight_size, REAL);
+    weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
+    my_calloc (pct.M_dnm, weight_size, REAL);
+    my_calloc (pct.M_qqq, weight_size, REAL);
 
 
     /*Make sure that ownership of ions is properly established
