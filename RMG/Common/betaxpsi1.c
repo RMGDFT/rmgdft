@@ -278,6 +278,7 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
                 thread_control[ist].nion = nion;
                 thread_control[ist].sintR = sintR;
                 thread_control[ist].sintI = sintI;
+                thread_control[ist].weiptr = weightptr_ion;
             }
 
             // Thread tasks are set up so wake them

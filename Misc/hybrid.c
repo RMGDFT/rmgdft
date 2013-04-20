@@ -205,7 +205,7 @@ void run_threads(SCF_THREAD_CONTROL *s) {
                break;
 #endif 
             case HYBRID_BETAX_PSI1_CALCULATE:
-               betaxpsi1_calculate_one(s->sp, s->ion, s->nion, s->sintR, s->sintI, s->kpt);
+               betaxpsi1_calculate_one(s->sp, s->ion, s->nion, s->sintR, s->sintI, s->kpt, s->weiptr);
                break;
 #if PAPI_PERFMON
             case HYBRID_FINALIZE_PAPI:
