@@ -83,15 +83,17 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
     my_calloc (sintR_compack, alloc, REAL);
     my_calloc (nworkR, alloc, REAL);
 
+    for(i = 0; i < ct.num_states * pct.num_tot_proj; i++)
+        sintR_compack[i] = 0.0;
     /*Base index for sintR and sintI */
 
 
     for(istate = 0; istate < ct.num_states; istate++)
     {
         sindex = kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
-        proj_index = 0;
         for (ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
+            proj_index = ion * ct.max_nl;
             psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
             /*Actual index of the ion under consideration*/
             gion = pct.nonloc_ions_list[ion];
@@ -101,9 +103,8 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
             nh = sp->nh;
             for (i = 0; i < nh; i++)
             {
-                sintR_compack[istate * pct.num_tot_proj + proj_index] =
+                sintR_compack[istate * pct.num_tot_proj + proj_index + i] =
                     psintR[i]; 
-                proj_index ++;
             }
         }
     }
@@ -122,6 +123,7 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
     {
 
         /*Actual index of the ion under consideration*/
+        proj_index = ion * ct.max_nl;
         gion = pct.nonloc_ions_list[ion];
         iptr = &ct.ions[gion];
         sp = &ct.sp[iptr->species];
@@ -142,7 +144,6 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
                 pct.M_qqq[idx] = qqq[inh+j];
             }
         }
-        proj_index += nh;
     }
 
 

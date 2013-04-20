@@ -235,20 +235,21 @@ void get_nlop (void)
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
 
+    pct.num_tot_proj = pct.num_nonloc_ions * ct.max_nl;
 
-    pct.num_tot_proj = 0;
-    for(ion = 0; ion <pct.num_nonloc_ions; ion++)
-    {
-        ion1 = pct.nonloc_ions_list[ion];
-
-        iptr = &ct.ions[ion1];
-
+//    pct.num_tot_proj = 0;
+//    for(ion = 0; ion <pct.num_nonloc_ions; ion++)
+//    {
+//        ion1 = pct.nonloc_ions_list[ion];
+//
+//        iptr = &ct.ions[ion1];
+//
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+//        sp = &ct.sp[iptr->species];
 
-        prj_per_ion = sp->nh;
-        pct.num_tot_proj += prj_per_ion;
-    }
+//        prj_per_ion = sp->nh;
+//        pct.num_tot_proj += prj_per_ion;
+//    }
         
     size_t weight_size = pct.num_tot_proj * pct.P0_BASIS + 128;
 
