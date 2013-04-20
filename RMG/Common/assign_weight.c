@@ -15,9 +15,10 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr)
     int idx1, docount;
     int *pidx;
 
+    for(idx = 0; idx < pct.P0_BASIS; idx++) rtptr[idx] = 0.0;
+    if(pct.idxptrlen[ion] == 0) return;
     pidx = pct.nlindex[ion];
     dvec = pct.idxflag[ion];
-    for(idx = 0; idx < pct.P0_BASIS; idx++) rtptr[idx] = 0.0;
     idx = docount = 0;
     for (ix = 0; ix < sp->nldim; ix++)
     {
