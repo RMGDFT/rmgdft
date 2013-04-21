@@ -13,6 +13,7 @@
 #endif
 
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt);
+static void betaxpsi1_calculate_gamma (REAL * sintR_ptr, STATE * states);
 
 static void betaxpsi1_receive (REAL * recv_buff, REAL * recv_buffI, int num_pes,
                                int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
@@ -112,7 +113,12 @@ void betaxpsi1 (STATE * states, int kpt)
     }
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
+
+#if GAMMA_PT
+    betaxpsi1_calculate_gamma (sintR, states);
+#else
     betaxpsi1_calculate (sintR, sintI, states, kpt);
+#endif
 
 
     /*Pack data for sending */
@@ -212,6 +218,44 @@ Dprintf("BETA2DONE");
 
 
 
+static void betaxpsi1_calculate_gamma (REAL * sintR_ptr, STATE * states)
+{
+    char *transt = "t", *transn = "n";
+
+    REAL alpha, rzero = 0.0;
+    REAL *nlarray;
+    alpha = ct.vel;
+
+    int idx1, idx2, proj_index, istate, ip, nion;
+    if(pct.num_tot_proj == 0) return;
+
+    my_calloc (nlarray, pct.num_tot_proj * ct.num_states, REAL);
+    
+    //dgemm (transt, transn, &ct.num_states, &pct.num_tot_proj, &pct.P0_BASIS, &alpha, 
+     //       states[0].psiR, &pct.P0_BASIS, pct.weight, &pct.P0_BASIS, 
+      //      &rzero, nlarray, &ct.num_states);
+    dgemm (transt, transn, &pct.num_tot_proj, &ct.num_states, &pct.P0_BASIS, &alpha, 
+            pct.weight, &pct.P0_BASIS, states[0].psiR, &pct.P0_BASIS, 
+            &rzero, nlarray, &pct.num_tot_proj);
+
+    for (nion = 0; nion < pct.num_nonloc_ions; nion++)
+    {
+        for(istate = 0; istate < ct.num_states; istate++)
+        {
+            for(ip = 0; ip < ct.max_nl; ip++)
+            {
+                proj_index = nion * ct.max_nl + ip;
+                idx1 = nion * ct.num_states * ct.max_nl + istate * ct.max_nl + ip;
+                //idx2 = proj_index * ct.num_states + istate;
+                idx2 = istate * pct.num_tot_proj + proj_index;
+                sintR_ptr[idx1] = nlarray[idx2];
+            }
+        }
+    }
+
+    my_free(nlarray);
+}
+
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt)
 {
     int alloc, nion, ion, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist;
@@ -234,12 +278,12 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
     nlarrayI = nlarrayR + alloc;
 
 
-    
-    weightptr_ion = pct.weight;
+
     /* Loop over ions on this processor */
     for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
 
+        weightptr_ion = &pct.weight[nion * ct.max_nl * pct.P0_BASIS];
         /*Actual index of the ion under consideration */
         ion = pct.nonloc_ions_list[nion];
 
@@ -337,10 +381,9 @@ static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * sta
 
             }
 
-       }
+        }
 
-        
-        weightptr_ion += sp->nh * pct.P0_BASIS;
+
 
     }
     my_free (nlarrayR);
@@ -531,71 +574,71 @@ static void betaxpsi1_write_non_owned (REAL * sintR, REAL * sintI, REAL * recv_b
 
 void betaxpsi1_calculate_one(STATE *st, int ion, int nion, REAL *sintR, REAL *sintI, int kpt, REAL *weiptr_base) {
 
-  int idx, stop, alloc, ip, incx=1, ipindex, istate, ist, st_stop;
-  ION *iptr;
-  SPECIES *sp;
-  REAL *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
-  REAL *pR, *pI;
+    int idx, stop, alloc, ip, incx=1, ipindex, istate, ist, st_stop;
+    ION *iptr;
+    SPECIES *sp;
+    REAL *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
+    REAL *pR, *pI;
 
-  istate = st->istate;
+    istate = st->istate;
 
-  alloc =pct.P0_BASIS;
-  if (alloc < ct.max_nlpoints)
-      alloc = ct.max_nlpoints;
+    alloc =pct.P0_BASIS;
+    if (alloc < ct.max_nlpoints)
+        alloc = ct.max_nlpoints;
 
-  my_malloc (nlarrayR, 2 * alloc, REAL);
-  nlarrayI = nlarrayR + alloc;
+    my_malloc (nlarrayR, 2 * alloc, REAL);
+    nlarrayI = nlarrayR + alloc;
 
-  iptr = &ct.ions[ion];
-  sp = &ct.sp[iptr->species];
+    iptr = &ct.ions[ion];
+    sp = &ct.sp[iptr->species];
 
-  stop = pct.P0_BASIS;
-  st_stop = ct.num_states / ct.THREADS_PER_NODE;
-  st_stop = st_stop * ct.THREADS_PER_NODE;
+    stop = pct.P0_BASIS;
+    st_stop = ct.num_states / ct.THREADS_PER_NODE;
+    st_stop = st_stop * ct.THREADS_PER_NODE;
 
-  for(ist = istate;ist < st_stop;ist+=ct.THREADS_PER_NODE) {
-      
-      psiR = st->psiR;
+    for(ist = istate;ist < st_stop;ist+=ct.THREADS_PER_NODE) {
+
+        psiR = st->psiR;
 #if !GAMMA_PT
-      psiI = st->psiI;
-      pR = pct.phaseptr[ion];
-      pR += 2 * kpt * stop;
-      pI = pR + stop;
+        psiI = st->psiI;
+        pR = pct.phaseptr[ion];
+        pR += 2 * kpt * stop;
+        pI = pR + stop;
 #endif
 
 #if GAMMA_PT
-      /* Copy wavefunction into temporary array */
-      for (idx = 0; idx < stop; idx++)
-          nlarrayR[idx] = psiR[idx];
+        /* Copy wavefunction into temporary array */
+        for (idx = 0; idx < stop; idx++)
+            nlarrayR[idx] = psiR[idx];
 #else
-      for (idx = 0; idx < stop; idx++)
-          nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
+        for (idx = 0; idx < stop; idx++)
+            nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
 
-      for (idx = 0; idx < stop; idx++)
-          nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
+        for (idx = 0; idx < stop; idx++)
+            nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
 #endif
 
-      /* <Beta|psi>                                       */
+        /* <Beta|psi>                                       */
 
-      weiptr = weiptr_base;
-      ipindex = st->istate * ct.max_nl;
+        weiptr = weiptr_base;
+        ipindex = st->istate * ct.max_nl;
 
-      for (ip = 0; ip < sp->nh; ip++)
-      {
+        for (ip = 0; ip < sp->nh; ip++)
+        {
 
-          sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
+            sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
 #if !GAMMA_PT
-          sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
+            sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
-          weiptr += pct.P0_BASIS;
-          ipindex++;
+            weiptr += pct.P0_BASIS;
+            ipindex++;
 
-      }
+        }
 
-      st += ct.THREADS_PER_NODE;
-  }
-  my_free (nlarrayR);
+        st += ct.THREADS_PER_NODE;
+    }
+    my_free (nlarrayR);
 
 }
 
