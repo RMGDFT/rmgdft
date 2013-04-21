@@ -179,7 +179,7 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
 
         }
 
-        weiptr += sp->nh * pct.P0_BASIS;
+        weiptr += ct.max_nl * pct.P0_BASIS;
 
 
     }                           /* end for */
