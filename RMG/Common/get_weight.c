@@ -44,6 +44,8 @@ void get_weight (void)
 #endif
 
 
+    for(idx = 0; idx < pct.num_tot_proj * pct.P0_BASIS; idx++)
+        pct.weight[idx] = 0.0;
     /* Loop over ions */
     for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
     {
