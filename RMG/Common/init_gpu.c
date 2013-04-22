@@ -105,12 +105,14 @@ void init_gpu (void)
   // Make sure enough is allocated for hartree solver on fine grid
   alloc = 4 * ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
   if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
+  if(alloc < 1024 * 1024) alloc = 1024 * 1024;
+  if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
 
   if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, 4 * ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
@@ -134,7 +136,7 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (2 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (3 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
@@ -143,6 +145,7 @@ void init_gpu (void)
   alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
   if(alloc < ((pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2);
+  if(alloc < 1024 * 1024) alloc = 1024 * 1024;
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(REAL) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);

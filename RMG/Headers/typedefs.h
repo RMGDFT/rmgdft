@@ -1339,6 +1339,9 @@ typedef struct
     // GPU temporary storage space for wavefunctions
     REAL *gpu_temp;
 
+    // GPU temporary storage space for weights
+    REAL *gpu_weight;
+
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
     REAL *gpu_work1;
 

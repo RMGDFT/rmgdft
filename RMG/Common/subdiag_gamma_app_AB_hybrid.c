@@ -18,9 +18,12 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 {
     int istate, st1, ist, istop;
     STATE *sp;
+    REAL time1, time2;
 
 #if BATCH_NLS
+    time1 = my_crtc();
     app_nls_batch (states, pct.nv, s_psi, pct.newsintR_local);
+    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #endif
 
     enter_threaded_region();
@@ -113,13 +116,13 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     /* Apply non-local operator to psi and store in work2 */
 #if !BATCH_NLS
     app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
-#else
-    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
-#endif
-
 #   if MD_TIMERS
     rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #   endif
+
+#else
+    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
+#endif
 
 
 

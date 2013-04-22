@@ -253,10 +253,27 @@ void get_nlop (void)
         
     size_t weight_size = pct.num_tot_proj * pct.P0_BASIS + 128;
 
+#if GPU_ENABLED
+    if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(REAL) ))
+        error_handler("Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
+
+    weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
+    if( cudaSuccess != cudaMallocHost((void **)&pct.M_dnm, weight_size * sizeof(REAL) ))
+        error_handler("Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.M_dnm[idx] = 0.0;
+
+    if( cudaSuccess != cudaMallocHost((void **)&pct.M_qqq, weight_size * sizeof(REAL) ))
+        error_handler("Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.M_dnm[idx] = 0.0;
+
+#else
     my_calloc (pct.weight, weight_size, REAL);
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     my_calloc (pct.M_dnm, weight_size, REAL);
     my_calloc (pct.M_qqq, weight_size, REAL);
+#endif
+
 
 
     /*Make sure that ownership of ions is properly established
@@ -506,8 +523,29 @@ static void reset_pct_arrays (int ion)
 	my_free (pct.nlindex[ion]);
 
 
-    if (pct.weight != NULL)
+    if (pct.weight != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.weight);
+#else
         my_free (pct.weight);
+#endif
+    }
+
+    if (pct.M_dnm != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.M_dnm);
+#else
+        my_free (pct.M_dnm);
+#endif
+    }
+
+    if (pct.M_qqq != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.M_qqq);
+#else
+        my_free (pct.M_qqq);
+#endif
+    }
 
 #if FDIFF_BETA
     if (pct.weight_derx[ion])

@@ -61,7 +61,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     bool CONVERGED = false;
     REAL t3;
     REAL *vtot, *vtot_psi, *new_rho;
-    REAL time1, time2, time3;
+    REAL time1, time2, time3, time4;
     REAL t[3];                  /* SCF checks and average potential */
     int ist;
 
@@ -200,7 +200,13 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
 #if BATCH_NLS
+#if MD_TIMERS
+        time4 = my_crtc ();
+#endif
         app_nls_batch (states, pct.nv, pct.ns, pct.oldsintR_local);
+#if MD_TIMERS
+        rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time4));
+#endif
 #endif
         for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++) {
             mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);

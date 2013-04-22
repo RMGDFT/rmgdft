@@ -147,18 +147,20 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
 #if !BATCH_NLS
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
+
 #else
     nv = &pct.nv[sp->istate * pct.P0_BASIS]; 
     ns = &pct.ns[sp->istate * pct.P0_BASIS]; 
+#endif
+
+#if MD_TIMERS
+    rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
 #endif
 
     // Copy double precision ns into temp single precision array */
     for(idx = 0;idx < pbasis;idx++)
         work1_f[idx] = (rmg_float_t)ns[idx];
   
-#if MD_TIMERS
-    rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
-#endif
 
 #if MD_TIMERS
     time1 = my_crtc ();

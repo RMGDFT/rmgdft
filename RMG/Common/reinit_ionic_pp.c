@@ -28,7 +28,7 @@
 
 #include "main.h"
 
-
+static gpu_weight_alloc=0;
 
 void reinit_ionic_pp (STATE * states, REAL * vnuc, REAL * rhocore, REAL * rhoc)
 {
@@ -41,6 +41,23 @@ void reinit_ionic_pp (STATE * states, REAL * vnuc, REAL * rhocore, REAL * rhoc)
     /*Other things that need to be recalculated when ionic positions change */
     get_weight ();
     get_qqq ();
+
+#if GPU_ENABLED
+    // If gpu weight buffer has not been setup yet or size has changed must take care of allocation
+    if((ct.gpu_weight == NULL) || (gpu_weight_alloc < (pct.P0_BASIS * pct.num_tot_proj * sizeof(REAL)))) {
+        if(ct.gpu_weight != NULL) {
+            cudaFree(ct.gpu_weight); 
+            ct.gpu_weight = NULL;
+        }
+        if(pct.num_tot_proj) {
+            if( cudaSuccess != cudaMalloc((void **)&ct.gpu_weight , pct.P0_BASIS * pct.num_tot_proj * sizeof(REAL) ))
+                error_handler("cudaMalloc failed for: gpu_weight\n");
+        }
+        gpu_weight_alloc = pct.P0_BASIS * pct.num_tot_proj * sizeof(REAL);
+    }
+    // Transfer copy of weights to GPU
+    cublasSetVector( pct.P0_BASIS * pct.num_tot_proj, sizeof( REAL ), pct.weight, 1, ct.gpu_weight, 1 );
+#endif
 
     if (!verify ("calculation_mode", "Band Structure Only"))
     {

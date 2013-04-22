@@ -12,6 +12,13 @@
 #include "hybrid.h"
 #endif
 
+#if GPU_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#endif
+
+
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt);
 static void betaxpsi1_calculate_gamma (REAL * sintR_ptr, STATE * states);
 
@@ -35,7 +42,6 @@ static void betaxpsi1_write_non_owned (REAL * sintR, REAL * sintI, REAL * recv_b
                                        REAL * recv_buffI, int num_pes,
                                        int num_ions_per_pe[MAX_NONLOC_PROCS],
                                        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
-
 
 
 
@@ -220,24 +226,55 @@ Dprintf("BETA2DONE");
 
 static void betaxpsi1_calculate_gamma (REAL * sintR_ptr, STATE * states)
 {
+    int idx1, idx2, proj_index, istate, ip, nion, ione=1;
     char *transt = "t", *transn = "n";
 
     REAL alpha, rzero = 0.0;
     REAL *nlarray;
+    REAL time1, time2;
     alpha = ct.vel;
 
-    int idx1, idx2, proj_index, istate, ip, nion;
     if(pct.num_tot_proj == 0) return;
 
+#if GPU_ENABLED
+    cublasStatus_t custat;
+    cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
+    nlarray = ct.gpu_host_work;
+#else
     my_calloc (nlarray, pct.num_tot_proj * ct.num_states, REAL);
+#endif
     
+    time1=my_crtc();
+#if GPU_ENABLED
+    Dprintf("SIZES %d %d  %d  %d", pct.num_tot_proj * ct.num_states, pct.P0_BASIS, ct.num_states, pct.num_tot_proj);
+    cublasSetVector( pct.P0_BASIS * ct.num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
+    Dprintf("DGEMM TIME0 %12.8f", my_crtc()-time1);
+    time1=my_crtc();
+//    cublasSetVector( pct.P0_BASIS * pct.num_tot_proj, sizeof( REAL ), pct.weight, ione, ct.gpu_temp, ione );
+//    dprintf("DGEMM TIME1 %12.8f", my_crtc()-time1);
+//    time1=my_crtc();
+
+    cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, pct.num_tot_proj, ct.num_states, pct.P0_BASIS, &alpha, 
+         ct.gpu_weight, pct.P0_BASIS, ct.gpu_states, pct.P0_BASIS,
+         &rzero, ct.gpu_work1, pct.num_tot_proj );
+
+    Dprintf("DGEMM TIME2 %12.8f", my_crtc()-time1);
+    time1=my_crtc();
+    cublasGetVector( ct.num_states * pct.num_tot_proj, sizeof( REAL ), ct.gpu_work1, ione, nlarray, ione );
+    Dprintf("DGEMM TIME3 %12.8f", my_crtc()-time1);
+    time1=my_crtc();
+
+#else
+
     //dgemm (transt, transn, &ct.num_states, &pct.num_tot_proj, &pct.P0_BASIS, &alpha, 
      //       states[0].psiR, &pct.P0_BASIS, pct.weight, &pct.P0_BASIS, 
       //      &rzero, nlarray, &ct.num_states);
     dgemm (transt, transn, &pct.num_tot_proj, &ct.num_states, &pct.P0_BASIS, &alpha, 
             pct.weight, &pct.P0_BASIS, states[0].psiR, &pct.P0_BASIS, 
             &rzero, nlarray, &pct.num_tot_proj);
-
+#endif
+    Dprintf("DGEMM TIME4 %12.8f", my_crtc()-time1);
+    time1=my_crtc();
     for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
         for(istate = 0; istate < ct.num_states; istate++)
@@ -253,7 +290,10 @@ static void betaxpsi1_calculate_gamma (REAL * sintR_ptr, STATE * states)
         }
     }
 
+    Dprintf("UPDATE TIME %12.8f", my_crtc()-time1);
+#if !GPU_ENABLED
     my_free(nlarray);
+#endif
 }
 
 static void betaxpsi1_calculate (REAL * sintR_ptr, REAL * sintI_ptr, STATE * states, int kpt)
