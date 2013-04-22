@@ -20,9 +20,17 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     REAL time1;
 #    endif
 
+#if BATCH_NLS
+    time1 = my_crtc();
+    app_nls_batch (states, pct.nv, s_psi, pct.newsintR_local);
+    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
+#endif
+
     sbasis = states[0].sbasis;
-    my_malloc (work2, 2 * sbasis, REAL);
-    sg_twovpsi = work2 + sbasis;
+#if !BATCH_NLS
+    my_malloc (work2, sbasis, REAL);
+#endif
+    my_malloc (sg_twovpsi, sbasis, REAL);
     kidx = 0;
 
     work1 = a_psi;
@@ -35,15 +43,15 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         tmp_psi = sp->psiR;
 
 
-#    if MD_TIMERS
-        time1 = my_crtc ();
-#    endif
-        /* Apply non-local operator to psi and store in work2 */
-        app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
-#    if MD_TIMERS
-        rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
-#    endif
+#if !BATCH_NLS
+    app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
+#   if MD_TIMERS
+    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
+#   endif
 
+#else
+    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
+#endif
 
 
 #    if MD_TIMERS
@@ -104,7 +112,10 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
         s_psi +=pct.P0_BASIS;
     }
 
+    my_free (sg_twovpsi);
+#if !BATCH_NLS
     my_free (work2);
+#endif
 
 }                               /* subdiag_app_A */
 
