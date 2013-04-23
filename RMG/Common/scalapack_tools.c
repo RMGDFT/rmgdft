@@ -81,6 +81,9 @@ void sl_init (int *ictxt, int size)
     NB = ct.scalapack_block_factor;
 
     npes = NPES;
+    if(ct.images_per_node  >1 && ct.images_per_node <= npes)
+        npes = npes/ct.images_per_node;
+
     /*First, determine if we want all processors to be involved in scalapack operations
      * We do not want to have too many processors*/
     num_blocks = size / NB;
@@ -111,10 +114,10 @@ void sl_init (int *ictxt, int size)
 
 
     /* calculate MPI world rank range in this group to be mapped to blacs */
-    if (nprow * npcol > NPES)
+    if (nprow * npcol* ct.images_per_node > NPES)
         error_handler
-            ("Insufficient MPI group processes to handle scalapack call, have %d, need %d.",
-             NPES, nprow * npcol);
+            ("Insufficient MPI group processes to handle scalapack call, have %d, need %d  * %d",
+             NPES, nprow * npcol, ct.images_per_node);
 
 
     /* Allocate space on the assumption that NPES is the same as group size */
@@ -132,11 +135,15 @@ void sl_init (int *ictxt, int size)
     MPI_Group_translate_ranks (grp_this, NPES, tgmap, grp_world, pmap);
 
     /* Assign nprow*npcol processes to blacs for calculations */
-    Cblacs_gridmap (ictxt, pmap, nprow, nprow, npcol);
+    int item; 
+    item = pct.thisimg % ct.images_per_node;
+    Cblacs_gridmap (ictxt, &pmap[item * nprow * npcol], nprow, nprow, npcol);
 
     /*Figures out blacs information, used so that we can find 
      * which processors are participating in scalapack operations*/
     Cblacs_gridinfo (*ictxt, &nprow, &npcol, &myrow, &mycol);
+
+//dprintf("\n  myrow, mycol nprow npcol %d %d %d %d", myrow, mycol, nprow, npcol);
 
     /*Variable pct.scalapack_pe will tell use whether the PE participates in scalapack calculations */
     if (myrow >= 0)
