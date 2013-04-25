@@ -613,19 +613,19 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
     time3 = my_crtc ();
 
 //    global_sums (global_matrix, &stop, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.scalapack_comm);
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
 
 
     /*If some processors did not participate in Scalapack,
      * broadcast eigenvalues, since only Scalapack processors have updated eigenvalues*/
-    if ((pct.scalapack_nprow * pct.scalapack_npcol != NPES) && (ct.diag == 1))
+    if ((pct.scalapack_nprow * pct.scalapack_npcol != pct.scalapack_npes) && (ct.diag == 1))
     {
 
         time2 = my_crtc ();
 
-        MPI_Bcast (eigs, num_states, MPI_DOUBLE, 0, pct.grid_comm);
+        MPI_Bcast (eigs, num_states, MPI_DOUBLE, 0, pct.scalapack_comm);
 
         /*Assign eigenvalues */
         for (st1 = 0; st1 < ct.num_states; st1++)

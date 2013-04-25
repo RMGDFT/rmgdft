@@ -58,7 +58,7 @@ typedef struct
 	/* MPI communicators for each code grid (grid_comm) and one (rmg_comm)
 	 * for all group rank 0 pe's. The later effectively replaces MPI_COMM_WORLD
 	 * unless you really need all-to-all, even across grids, communication. */
-	MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm;
+	MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm, scalapack_comm;
 
 
 
@@ -94,6 +94,7 @@ typedef struct
 
     /*Whether pe participates in scalapack calculations*/
     int scalapack_pe;
+    int scalapack_npes;
 
     /* Row or Column that given processor handles when using scalapack*/
     int scalapack_myrow;

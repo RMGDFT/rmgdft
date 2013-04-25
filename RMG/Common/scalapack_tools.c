@@ -128,11 +128,16 @@ void sl_init (int *ictxt, int size)
     for (i = 0; i < NPES; i++)
 	tgmap[i] = i;
 
+    set_scalapack_comm(nprow, npcol, NPES, ct.images_per_node);
     /* Get the world rank maping of this groups processes,
        blacs appears to operate on world group ranking */
+    int num_pe_scalapack;
+    
     MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
-    MPI_Comm_group (pct.grid_comm, &grp_this);
-    MPI_Group_translate_ranks (grp_this, NPES, tgmap, grp_world, pmap);
+    MPI_Comm_group (pct.scalapack_comm, &grp_this);
+    MPI_Comm_size (pct.scalapack_comm, &num_pe_scalapack);
+    
+    MPI_Group_translate_ranks (grp_this, num_pe_scalapack, tgmap, grp_world, pmap);
 
     /* Assign nprow*npcol processes to blacs for calculations */
     int item; 
@@ -143,7 +148,7 @@ void sl_init (int *ictxt, int size)
      * which processors are participating in scalapack operations*/
     Cblacs_gridinfo (*ictxt, &nprow, &npcol, &myrow, &mycol);
 
-//dprintf("\n  myrow, mycol nprow npcol %d %d %d %d", myrow, mycol, nprow, npcol);
+dprintf("\n  myrow, mycol nprow npcol %d %d %d %d", myrow, mycol, nprow, npcol);
 
     /*Variable pct.scalapack_pe will tell use whether the PE participates in scalapack calculations */
     if (myrow >= 0)
@@ -589,6 +594,35 @@ void reduce_and_dist_matrix(int n, REAL *global_matrix, REAL *dist_matrix, REAL 
         rmg_timings (DIAG_DISTMAT, time2 - time1);
 
     }
+
+}
+
+void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node)
+{
+
+    //devide NPES to groups, each group has same number of MPI processes which is >= nprw * npcol * imagpes_per_nodes.
+    int num_group, i, num_pe;
+    MPI_Comm tem_comm;
+
+    num_group = NPES /(nprow * npcol * images_per_node);
+
+    for ( i = num_group; i >0; i--)
+        if(NPES % i == 0) break;
+
+    num_group = i;
+    num_pe = NPES/i;
+    
+    pct.scalapack_npes = num_pe;
+
+    int ndims = 2;
+    int dims[] = { num_pe, num_group};
+    int periods[] = { 0, 0 };
+    int reorder = 1;
+    int remains[] = { 1, 0 };
+
+    MPI_Cart_create (pct.grid_comm, ndims, dims, periods, reorder, &tem_comm);
+    MPI_Cart_sub (tem_comm, remains, &pct.scalapack_comm);
+
 
 }
 
