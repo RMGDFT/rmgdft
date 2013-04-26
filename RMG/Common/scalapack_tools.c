@@ -65,6 +65,7 @@ int NB = 32;
 *  ============================================================
 *  =====================================================================
 */
+static void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node);
 void sl_init (int *ictxt, int size)
 {
     int i, npes;
@@ -144,11 +145,15 @@ void sl_init (int *ictxt, int size)
     item = pct.thisimg % ct.images_per_node;
     Cblacs_gridmap (ictxt, &pmap[item * nprow * npcol], nprow, nprow, npcol);
 
+    /*Store number of processor distribution */
+    pct.scalapack_nprow = nprow;
+    pct.scalapack_npcol = npcol;
+
     /*Figures out blacs information, used so that we can find 
      * which processors are participating in scalapack operations*/
     Cblacs_gridinfo (*ictxt, &nprow, &npcol, &myrow, &mycol);
 
-dprintf("\n  myrow, mycol nprow npcol %d %d %d %d", myrow, mycol, nprow, npcol);
+//dprintf("\n  myrow, mycol nprow npcol %d %d %d %d", myrow, mycol, nprow, npcol);
 
     /*Variable pct.scalapack_pe will tell use whether the PE participates in scalapack calculations */
     if (myrow >= 0)
@@ -160,9 +165,6 @@ dprintf("\n  myrow, mycol nprow npcol %d %d %d %d", myrow, mycol, nprow, npcol);
     pct.scalapack_myrow = myrow;
     pct.scalapack_mycol = mycol;
 
-    /*Store number of processor distribution */
-    pct.scalapack_nprow = nprow;
-    pct.scalapack_npcol = npcol;
 
 
     if(pct.scalapack_pe) {
@@ -597,7 +599,7 @@ void reduce_and_dist_matrix(int n, REAL *global_matrix, REAL *dist_matrix, REAL 
 
 }
 
-void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node)
+static void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node)
 {
 
     //devide NPES to groups, each group has same number of MPI processes which is >= nprw * npcol * imagpes_per_nodes.

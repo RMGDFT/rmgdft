@@ -190,7 +190,7 @@ REAL fill (STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_f
     if (fabs (fmid) > charge_tol)
     {
         printf ("\nfill: \\sum f - n_el= %e", fmid);
-        error_handler ("error in mixing occupations");
+        error_handler ("error in mixing occupations %e", fmid);
     }                           /* end if */
 
     my_free (occ);

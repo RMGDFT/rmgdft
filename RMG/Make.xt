@@ -1,15 +1,13 @@
 #
-#  Make.xt3_mpi - Compiles the real-space code for CRAY XT# system with MPI
-#
-# For hybrid mode you need to comment/uncomment the indicated lines below and set the
-# following job submission environment variables for hybrid mode.
+#  Make.xk-gnu - Compiles the hybrid real-space code for CRAY XK# system with MPI
+#  The job submission script should also include the following lines.
 #
 # export MPICH_MAX_THREAD_SAFETY=serialized
-# export OMP_NUM_THREADS=6   (replace 6 with whatever THREADS_PER_NODE is set to)
+# export OMP_NUM_THREADS=16
 # export OMP_WAIT_POLICY=passive
 #
 #
-#
+DEFS=-DFD_XSIZE=24 -DFD_YSIZE=24 -DFD_ZSIZE=48
 
 
 # Modules(directories) that contain the necessary source files
@@ -19,45 +17,58 @@ MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+CUFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.cu))
 HFILES := $(wildcard Headers/*.h)
 H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 
+#LOBJECTS = /opt/gcc/4.6.2/snos/lib64/libgfortran.a /opt/gcc/4.6.2/snos/lib64/libquadmath.a
+#LOBJECTS = /ccs/home/elbriggs/extralibs/libscalapack.a /ccs/home/elbriggs/extralibs/blacsC.a /ccs/home/elbriggs/extralibs/blacs.a
+SUFFIXES = .cu .c .f
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
-OBJECTS = $(COBJECTS) $(FOBJECTS)
+CUOBJECTS = $(CUFILES:.cu=.cu.o)
+LOBJECTS = /u/sciteam/luw/lib/libmagma.a /u/sciteam/luw/lib/libmagmablas.a /u/sciteam/luw/lib/cblas.a
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) $(LOBJECTS)
 
 
-#LIBS = -L /apps/FFTW/prod/jaguar/lib -L /usr/local/usp/fftw/fftw-2.1.5/lib -lfftw 
-LIBS = -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
-LDFLAGS = -pgf90libs
-# Comment out the preceding line and uncomment the following two lines for hybrid mode
-#LIBS = -lsci_istanbul_mp -L /opt/fftw/2.1.5.1/cnos/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
-#LDFLAGS = -pgf90libs -mp
+LIBS = -L /opt/fftw/2.1.5.4/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm -lcublas -lcuda -lhugetlbfs
+
+LDFLAGS = -pthread -openmp
+#LDFLAGS = -pthread
 
 
 CC = cc
-FC = ftn
+CF = gfortran
+NVCC = nvcc
 
 
 # Makefiles: if these change, whole code should be recompiled
-MFILES = Makefile Make.xt
+MFILES = Makefile Make.xk-gnu
 
 
 # Compile flags
 ARCH =
 # Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
-FFLAGS = $(ARCH)  -O3 -fast -c -Mipa=fast,inline 
-CFLAGS = $(ARCH)  -O3 -fast -B -Mipa=fast,inline -IHeaders -I../Headers -mp
-# Comment out the preceding tw0 lines and uncomment the following two lines for hybrid mode
-#FFLAGS = $(ARCH)  -O3 -fast -Mflushz -c -Mipa=fast,inline -mp
-#CFLAGS = $(ARCH)  -O3 -fast -Mflushz -B -Mipa=fast,inline -IHeaders -mp
+FFLAGS = $(ARCH) -O3 -fopenmp
+#FFLAGS = $(ARCH) -O3
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers -pthread -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mxop
+#CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
 
-
-rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+$(COBJECTS): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(FOBJECTS): %.o: %.f
+	$(CF) $(FFLAGS) -c $< -o $@
+
+%.cu.o : %.cu
+	$(NVCC) $(CUDAINC) -IHeaders -I../Headers $(DEFS) -DUNIX -O3 -use_fast_math -arch compute_35 -code compute_35 -o $@ -c $<
+
 
 
 # Runs svnrev to create svnrev.h

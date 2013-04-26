@@ -7,6 +7,7 @@
 # export OMP_WAIT_POLICY=passive
 #
 #
+DEFS=-DFD_XSIZE=24 -DFD_YSIZE=24 -DFD_ZSIZE=24
 
 
 # Modules(directories) that contain the necessary source files
@@ -16,6 +17,7 @@ MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+CUFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.cu))
 HFILES := $(wildcard Headers/*.h)
 H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
@@ -23,19 +25,23 @@ HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 #LOBJECTS = /opt/gcc/4.6.2/snos/lib64/libgfortran.a /opt/gcc/4.6.2/snos/lib64/libquadmath.a
 #LOBJECTS = /ccs/home/elbriggs/extralibs/libscalapack.a /ccs/home/elbriggs/extralibs/blacsC.a /ccs/home/elbriggs/extralibs/blacs.a
+SUFFIXES = .cu .c .f
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
-OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
+CUOBJECTS = $(CUFILES:.cu=.cu.o)
+LOBJECTS = /u/sciteam/luw/lib/libmagma.a /u/sciteam/luw/lib/libmagmablas.a /u/sciteam/luw/lib/cblas.a
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) $(LOBJECTS)
 
 
-LIBS = -L /apps/FFTW/prod/jaguar/lib -L /opt/fftw/2.1.5.2/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm -lcublas -lcuda
+LIBS = -L /opt/fftw/2.1.5.4/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm -lcublas -lcuda -lhugetlbfs
 
 LDFLAGS = -pthread -openmp
 #LDFLAGS = -pthread
 
 
 CC = cc
-FC = gfortran
+CF = gfortran
+NVCC = nvcc
 
 
 # Makefiles: if these change, whole code should be recompiled
@@ -48,10 +54,10 @@ ARCH =
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
 FFLAGS = $(ARCH) -O3 -fopenmp
 #FFLAGS = $(ARCH) -O3
-CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers -pthread -Wall -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers -pthread -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mxop
 #CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
 
-rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) ../lib/libxc/lib/libxc.a
+rmg: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 $(COBJECTS): %.o: %.c
@@ -59,6 +65,9 @@ $(COBJECTS): %.o: %.c
 
 $(FOBJECTS): %.o: %.f
 	$(CF) $(FFLAGS) -c $< -o $@
+
+%.cu.o : %.cu
+	$(NVCC) $(CUDAINC) -IHeaders -I../Headers $(DEFS) -DUNIX -O3 -use_fast_math -arch compute_35 -code compute_35 -o $@ -c $<
 
 
 
