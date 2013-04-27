@@ -154,6 +154,7 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 
     /* B operating on 2*V*psi stored in work1 */
     app_cir_driver (sg_twovpsi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
+    for(idx = 0; idx < pct.P0_BASIS; idx++) work1[idx] += TWO * work2[idx];
 #   if MD_TIMERS
        rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #   endif

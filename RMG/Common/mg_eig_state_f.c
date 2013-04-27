@@ -233,6 +233,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
 
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver_f (sg_twovpsi_f, work1_f, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_f[idx] += TWO * nv[idx];
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));

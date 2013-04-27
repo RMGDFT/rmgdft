@@ -173,7 +173,7 @@ REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int
             &rone, ct.gpu_work1,  pct.num_tot_proj, ct.gpu_work3, pct.num_tot_proj,
             &rzero,  ct.gpu_work2, pct.num_tot_proj);
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
-            &rone, ct.gpu_weight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
+            &rone, ct.gpu_Bweight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
             &rzero,  ct.gpu_temp, pct.P0_BASIS);
     cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), ct.gpu_temp, ione, workR, ione);
 
@@ -199,7 +199,7 @@ REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int
             &rone, pct.M_dnm,  &pct.num_tot_proj, sintR_compack, &pct.num_tot_proj,
             &rzero,  nworkR, &pct.num_tot_proj);
     dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
-            &rone, pct.weight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
+            &rone, pct.Bweight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
             &rzero,  workR, &pct.P0_BASIS);
 
 

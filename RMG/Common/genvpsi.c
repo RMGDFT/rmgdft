@@ -69,7 +69,7 @@ void genvpsi (REAL * psi, REAL * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
 #if GAMMA_PT
                 sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
                     TWO * psi[ix * incx1 + iy * incy1 + iz] *
-                    vtot[ix * incx1 + iy * incy1 + iz] + TWO * vnl[ix * incx1 + iy * incy1 + iz];
+                    vtot[ix * incx1 + iy * incy1 + iz];
 
 #else
                 sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
@@ -115,7 +115,7 @@ void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, REAL * vtot, REAL *
 #if GAMMA_PT
                 sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
                     TWO * psi[ix * incx1 + iy * incy1 + iz] *
-                    vtot[ix * incx1 + iy * incy1 + iz] + TWO * vnl[ix * incx1 + iy * incy1 + iz];
+                    vtot[ix * incx1 + iy * incy1 + iz];
 
 #else
                 sg_twovpsi[(ix) * incx + (iy) * incy + iz] =

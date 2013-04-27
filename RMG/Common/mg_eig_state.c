@@ -121,8 +121,10 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (sg_twovpsi, sbasis, REAL);
     my_malloc (work1, sbasis, REAL);
 #endif
+#if !BATCH_NLS
     my_malloc (ns, sbasis, REAL);
     my_malloc (nv, sbasis, REAL);
+#endif
     my_malloc (res2, sbasis, REAL);
     my_malloc (saved_psi, sbasis, REAL);
     my_malloc (nvtot_psi, sbasis, REAL);
@@ -145,8 +147,14 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
     if(ct.eig_parm.mucycles > 1)
         mix_betaxpsi1(sp);
 
-    /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
+#if !BATCH_NLS
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
+
+#else
+    nv = &pct.nv[sp->istate * pct.P0_BASIS];
+    ns = &pct.ns[sp->istate * pct.P0_BASIS];
+#endif
+
 
 #if MD_TIMERS
     rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time1));
@@ -879,3 +887,4 @@ void mg_eig_state (STATE * sp, int tid, REAL * vtot_psi)
 
 
 /******/
+
