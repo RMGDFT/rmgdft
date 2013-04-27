@@ -59,6 +59,20 @@ void reinit_ionic_pp (STATE * states, REAL * vnuc, REAL * rhocore, REAL * rhoc)
     cublasSetVector( pct.P0_BASIS * pct.num_tot_proj, sizeof( REAL ), pct.weight, 1, ct.gpu_weight, 1 );
 #endif
 
+    if((ct.gpu_Bweight == NULL) || (gpu_weight_alloc < (pct.P0_BASIS * pct.num_tot_proj * sizeof(REAL)))) {
+        if(ct.gpu_Bweight != NULL) {
+            cudaFree(ct.gpu_Bweight); 
+            ct.gpu_Bweight = NULL;
+        }
+        if(pct.num_tot_proj) {
+            if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Bweight , pct.P0_BASIS * pct.num_tot_proj * sizeof(REAL) ))
+                error_handler("cudaMalloc failed for: gpu_Bweight\n");
+        }
+    }
+    // Transfer copy of weights to GPU
+    cublasSetVector( pct.P0_BASIS * pct.num_tot_proj, sizeof( REAL ), pct.Bweight, 1, ct.gpu_Bweight, 1 );
+#endif
+
     if (!verify ("calculation_mode", "Band Structure Only"))
     {
         betaxpsi (states);

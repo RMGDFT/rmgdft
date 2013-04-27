@@ -200,6 +200,7 @@ void read_control (char *file)
     /* MD Integration flag */
     get_data ("md_integration_order", &ct.mdorder, OPT, "2nd Velocity Verlet");
 
+    get_data ("ionic_time_step", &ct.iondt, DBL, "50");
     /* Maximum ionic timestep */
     get_data ("max_ionic_time_step", &ct.iondt_max, DBL, "150");
 

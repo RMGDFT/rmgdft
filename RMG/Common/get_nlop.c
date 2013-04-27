@@ -257,6 +257,9 @@ void get_nlop (void)
     if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(REAL) ))
         error_handler("Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
+    if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(REAL) ))
+        error_handler("Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
 
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     if( cudaSuccess != cudaMallocHost((void **)&pct.M_dnm, weight_size * sizeof(REAL) ))
@@ -269,6 +272,7 @@ void get_nlop (void)
 
 #else
     my_calloc (pct.weight, weight_size, REAL);
+    my_calloc (pct.Bweight, weight_size, REAL);
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     my_calloc (pct.M_dnm, weight_size, REAL);
     my_calloc (pct.M_qqq, weight_size, REAL);
@@ -528,6 +532,13 @@ static void reset_pct_arrays (int ion)
         cudaFreeHost(pct.weight);
 #else
         my_free (pct.weight);
+#endif
+    }
+    if (pct.Bweight != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.Bweight);
+#else
+        my_free (pct.Bweight);
 #endif
     }
 

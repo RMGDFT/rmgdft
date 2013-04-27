@@ -8,12 +8,23 @@
 #include <stdlib.h>
 #include "main.h"
 
-void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr)
+void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr, REAL *Bweight)
 {
 
     int idx, ix, iy, iz, *dvec;
     int idx1, docount;
-    int *pidx;
+    int *pidx, nldim;
+    REAL *tem_array, *Btem_array;
+
+    nldim = sp->nldim;
+    idx = nldim * nldim * nldim;
+    my_malloc (tem_array, idx, REAL);
+    my_malloc (Btem_array, idx, REAL);
+    for(ix = 0; ix < nldim * nldim * nldim; ix++) 
+        tem_array[ix] = beptr[ix].re;
+
+    app_cir_beta_driver (tem_array, Btem_array, nldim, nldim, 
+            nldim, ct.kohn_sham_fd_order);
 
     for(idx = 0; idx < pct.P0_BASIS; idx++) rtptr[idx] = 0.0;
     if(pct.idxptrlen[ion] == 0) return;
@@ -33,6 +44,7 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr)
                 {
                     idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
                     rtptr[pidx[docount]] = beptr[idx1].re;
+                    Bweight[pidx[docount]] = Btem_array[idx1];
                     if (beptr[idx1].im > 1.0e-8)
                     {
                         printf ("beptr[%d].im=%e\n", idx1, beptr[idx1].im);

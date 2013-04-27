@@ -441,7 +441,7 @@ void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int grid_ratio);
 void betaxpsi (STATE *states);
 void betaxpsi1 (STATE *states, int kpt);
 void assign_weight (SPECIES *sp, int ion, fftw_complex *beptr,
-                    REAL *rtptr);
+                    REAL *rtptr, REAL *Bweight);
 void assign_weight2 (int nldim, int ion, REAL *beptr, REAL *rtptr);
 void pack_gftoc (SPECIES *sp, fftw_complex *gwptr, fftw_complex *gbptr);
 void debug_write_rho_z (REAL *rhoz);

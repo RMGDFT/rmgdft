@@ -12,7 +12,7 @@ void get_weight (void)
 {
 
     int ion, ion1, ip, coarse_size, max_size, idx;
-    REAL *rtptr;
+    REAL *rtptr, *Bweight;
 #if FDIFF_BETA
     REAL *rtptr_x, *rtptr_y, *rtptr_z;
     REAL *r1, *r2, *r3;
@@ -45,11 +45,15 @@ void get_weight (void)
 
 
     for(idx = 0; idx < pct.num_tot_proj * pct.P0_BASIS; idx++)
+    {
         pct.weight[idx] = 0.0;
+        pct.Bweight[idx] = 0.0;
+    }
     /* Loop over ions */
     for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
     {
         rtptr = &pct.weight[ion1 * ct.max_nl * pct.P0_BASIS];
+        Bweight = &pct.Bweight[ion1 * ct.max_nl * pct.P0_BASIS];
         ion = pct.nonloc_ions_list[ion1];
         /* Generate ion pointer */
         iptr = &ct.ions[ion];
@@ -104,7 +108,7 @@ void get_weight (void)
             /*Do the backwards transform */
             fftwnd_one (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
-            assign_weight (sp, ion, beptr, rtptr);
+            assign_weight (sp, ion, beptr, rtptr, Bweight);
 
             /*Calculate derivative of beta */
 #if FDIFF_BETA
@@ -120,6 +124,7 @@ void get_weight (void)
             /*Advance the temp pointers */
             fptr += coarse_size;
             rtptr += pct.P0_BASIS;
+            Bweight += pct.P0_BASIS;
 #if FDIFF_BETA
             rtptr_x += pct.idxptrlen[ion];
             rtptr_y += pct.idxptrlen[ion];

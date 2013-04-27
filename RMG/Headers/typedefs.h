@@ -127,6 +127,7 @@ typedef struct
     /** Points to start of projector storage for this ion in projector space */
     //REAL *weight[MAX_IONS];
     REAL *weight;
+    REAL *Bweight;
 
 #if FDIFF_BETA
     /*These are used for non-local force */
@@ -1342,6 +1343,7 @@ typedef struct
 
     // GPU temporary storage space for weights
     REAL *gpu_weight;
+    REAL *gpu_Bweight;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
     REAL *gpu_work1;
