@@ -9,7 +9,7 @@
 
 
 
-void app_nls_batch (STATE *sp, REAL *nv, REAL *ns, REAL *sintR)
+void app_nls_batch (STATE *sp, REAL *nv, REAL *ns, REAL *Bns, REAL *sintR)
 {
 
    int istate;
@@ -17,7 +17,7 @@ void app_nls_batch (STATE *sp, REAL *nv, REAL *ns, REAL *sintR)
 
 
    tmp_psi = sp->psiR;
-   app_nls_allstates (tmp_psi, NULL, nv, NULL, ns, NULL, sintR, NULL, sp->kidx);
+   app_nls_allstates (tmp_psi, NULL, nv, NULL, ns, NULL, Bns, NULL, sintR, NULL, sp->kidx);
 
 }
 

@@ -55,7 +55,8 @@
 
 
 
-void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R, REAL *work2I, REAL *sintR, REAL *sintI, int kidx)
+void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, 
+REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int kidx)
 {
 
     int idx, ion, gion, stop, ip, sindex, index2, ione=1, itwo=2;
@@ -82,7 +83,10 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
     if(pct.num_tot_proj == 0)
     {
         for(i = 0; i < ct.num_states * pct.P0_BASIS; i++)
+        {
             workR[i] = 0.0;
+            Bns[i] = 0.0;
+        }
         my_copy(psiR, work2R, ct.num_states * pct.P0_BASIS);
         return;
     }
@@ -184,6 +188,11 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
             &rone,  ct.gpu_temp, pct.P0_BASIS);
     cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), ct.gpu_temp, ione, work2R, ione);
 
+    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
+            &rone, ct.gpu_Bweight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
+            &rzero,  ct.gpu_temp, pct.P0_BASIS);
+    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), ct.gpu_temp, ione, Bns, ione);
+
 #else
 
     dgemm (transa, transa, &pct.num_tot_proj, &ct.num_states, &pct.num_tot_proj, 
@@ -202,6 +211,9 @@ void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, RE
     dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
             &rone, pct.weight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
             &rone,  work2R, &pct.P0_BASIS);
+    dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
+            &rone, pct.Bweight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
+            &rone,  Bns, &pct.P0_BASIS);
 #endif
 
 

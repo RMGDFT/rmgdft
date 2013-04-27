@@ -164,7 +164,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
 #if BATCH_NLS
-        app_nls_batch (states, pct.nv, pct.ns, pct.oldsintR_local);
+        app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
 #endif
 
         enter_threaded_region();
@@ -203,7 +203,7 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 #if MD_TIMERS
         time4 = my_crtc ();
 #endif
-        app_nls_batch (states, pct.nv, pct.ns, pct.oldsintR_local);
+        app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
 #if MD_TIMERS
         rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time4));
 #endif
