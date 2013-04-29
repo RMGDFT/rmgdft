@@ -20,6 +20,16 @@ REAL app_cilr_fourth (REAL *psi, REAL *a_psi, REAL *b_psi, REAL *vtot_eig_s, int
     REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz;
     REAL ihx, ihy, ihz, a1, a2, a3;
     REAL c000, c100;
+    int tid;
+
+#if HYBRID_MODEL
+    tid = get_thread_tid();
+    if(tid < 0) tid = 0;  // OK in this case
+#else
+    tid = 0;
+#endif
+
+
 
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);

@@ -537,7 +537,7 @@ int is_loop_over_states(void)
     if(!in_threaded_region) return 0;
     ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
     if(!ss) return 0;
-    if((ss->job == HYBRID_EIG) || (ss->job == HYBRID_SUBDIAG_APP_A) || (ss->job == HYBRID_SUBDIAG_APP_B))
+    if((ss->job == HYBRID_EIG) || (ss->job == HYBRID_SUBDIAG_APP_A) || (ss->job == HYBRID_SUBDIAG_APP_B) ||(ss->job == HYBRID_SUBDIAG_APP_AB))
         return 1;
 
     return 0;
