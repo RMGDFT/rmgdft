@@ -53,6 +53,11 @@ rmg_double_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, in
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 void init_global_sums(void);
 
+REAL app_cilr_sixth (REAL * psi, REAL *a_psi, REAL *b_psi, REAL *vtot_eig_s, int dimx, int dimy, int dimz,
+                    REAL gridhx, REAL gridhy, REAL gridhz);
+REAL app_cilr_fourth (REAL * psi, REAL *a_psi, REAL *b_psi, REAL *vtot_eig_s, int dimx, int dimy, int dimz,
+                    REAL gridhx, REAL gridhy, REAL gridhz);
+
 #if GPU_ENABLED
 void init_gpu (void);
 void finalize_gpu (void);

@@ -213,7 +213,7 @@ REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int
             &rone,  work2R, &pct.P0_BASIS);
     dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
             &rone, pct.Bweight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
-            &rone,  Bns, &pct.P0_BASIS);
+            &rzero,  Bns, &pct.P0_BASIS);
 #endif
 
 

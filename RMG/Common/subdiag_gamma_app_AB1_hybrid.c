@@ -18,13 +18,28 @@ void subdiag_app_AB (STATE * states, REAL * a_psi, REAL * b_psi, REAL * vtot_eig
     int istate, st1, ist, istop;
     STATE *sp;
     REAL time1, time2;
+    REAL *vtot_eig_s;
     int ione = 1;
+#if !BATCH_NLS
+    error_handler("set BATCJ_NLS 1, other mode not programmed here");
+#endif
+    
+    int idx, dimx = pct.PX0_GRID, dimy = pct.PY0_GRID, dimz = pct.PZ0_GRID;
+    idx = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) ;
+    my_malloc(vtot_eig_s, idx, REAL);
 
-#if BATCH_NLS
+// trade images for vtot_eig and stored in vtot_eig_s. It will be used
+// in app_cilr
+//
+    if(ct.kohn_sham_fd_order == APP_CI_FOURTH) 
+        trade_imagesx (vtot_eig, vtot_eig_s, dimx, dimy, dimz, 1, FULL_FD);
+
+    if(ct.kohn_sham_fd_order == APP_CI_SIXTH) 
+        trade_imagesx (vtot_eig, vtot_eig_s, dimx, dimy, dimz, 2, FULL_FD);
+
     time1 = my_crtc();
     app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.newsintR_local);
     rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
-#endif
 
     enter_threaded_region();
     scf_barrier_init(ct.THREADS_PER_NODE);
@@ -34,11 +49,11 @@ void subdiag_app_AB (STATE * states, REAL * a_psi, REAL * b_psi, REAL * vtot_eig
     istop = istop * ct.THREADS_PER_NODE;     
     for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
         for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
-            thread_control[ist].job = HYBRID_SUBDIAG_APP_A;
+            thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
             thread_control[ist].sp = &states[st1 + ist];
             thread_control[ist].p1 = &a_psi[(st1 + ist) *pct.P0_BASIS];
             thread_control[ist].p2 = &b_psi[(st1 + ist) *pct.P0_BASIS];
-            thread_control[ist].vtot = vtot_eig;
+            thread_control[ist].vtot = vtot_eig_s;
         }
 
         // Thread tasks are set up so wake them
@@ -54,147 +69,65 @@ void subdiag_app_AB (STATE * states, REAL * a_psi, REAL * b_psi, REAL * vtot_eig
 
     // Process any remaining orbitals serially
     for(st1 = istop;st1 < ct.num_states;st1++) {
-        subdiag_app_AB_one (&states[st1], &a_psi[st1 *pct.P0_BASIS], &b_psi[st1 * pct.P0_BASIS], vtot_eig);
+        subdiag_app_AB_one (&states[st1], &a_psi[st1 *pct.P0_BASIS], &b_psi[st1 * pct.P0_BASIS], vtot_eig_s);
     }
 #if GPU_ENABLED
     cuCtxSynchronize();
 #endif
+
+    my_free(vtot_eig_s);
 }
 
 // Applies A operator to one wavefunction
-void subdiag_app_AB_one (STATE *sp, REAL * a_psi, REAL * b_psi, REAL * vtot_eig)
+void subdiag_app_AB_one (STATE *sp, REAL * a_psi, REAL * b_psi, REAL * vtot_eig_s)
 {
-    int kidx, idx, istate, sbasis, tid;
-    REAL *sg_twovpsi, *tmp_psi, *work2, *work1, *work3;
+    int idx, istate, sbasis, tid;
+    REAL *sg_twovpsi, *tmp_psi, *work2;
+    int dimx = pct.PX0_GRID, dimy = pct.PY0_GRID, dimz = pct.PZ0_GRID;
     int ione = 1;
 #    if MD_TIMERS
     REAL time1;
 #    endif
 
-#if HYBRID_MODEL
-    tid = get_thread_tid();
-    if(tid < 0) tid = 0;  // OK in this case
-#else
-    tid = 0;
-#endif
-
-    sbasis = sp->sbasis;
-
-#if GPU_FD_ENABLED
-    cudaStream_t *cstream;
-    cstream = get_thread_cstream();
-    work3 = &ct.gpu_host_temp3[tid * sbasis];
-#else
-    my_malloc (work3, sbasis, REAL);
-#endif
-
-#if !BATCH_NLS
-    my_malloc (work2, sbasis, REAL);
-#endif
-    my_malloc (sg_twovpsi, sbasis, REAL);
-    kidx = 0;
-
-    work1 = a_psi;
 
     tmp_psi = sp->psiR;
 
 #   if MD_TIMERS
     time1 = my_crtc ();
 #   endif
+    /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
+    if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
+        if(ct.scf_steps > 0) 
+        {
+            if(ct.kohn_sham_fd_order == APP_CI_FOURTH) 
+                trade_imagesx (sp->dvhxc, vtot_eig_s, dimx, dimy, dimz, 1, FULL_FD);
+
+            if(ct.kohn_sham_fd_order == APP_CI_SIXTH) 
+                trade_imagesx (sp->dvhxc, vtot_eig_s, dimx, dimy, dimz, 2, FULL_FD);
+        }
+    }
+
     /* A operating on psi stored in work3 */
-    app_cil_driver (tmp_psi, work3, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
-                   sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
+    app_cilr_driver (tmp_psi, a_psi, b_psi, vtot_eig_s, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
+            sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #   if MD_TIMERS
     rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #   endif
 
 
-#   if MD_TIMERS
-        time1 = my_crtc ();
-#   endif
-
     /* Apply non-local operator to psi and store in work2 */
-#if !BATCH_NLS
-    app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
-#   if MD_TIMERS
-    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
-#   endif
-
-#else
     work2 = &pct.nv[sp->istate * pct.P0_BASIS];
-#endif
 
 
+    for(idx = 0; idx < pct.P0_BASIS; idx++) a_psi[idx] += TWO * work2[idx];
 
-#   if MD_TIMERS
-        time1 = my_crtc ();
-#   endif
-
-    /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
-        if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-            if(ct.scf_steps == 0) {
-                    genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
-            }
-            else {
-                    genvpsi (tmp_psi, sg_twovpsi, sp->dvhxc, work2, NULL, 0.0, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
-            }
-        }
-        else {
-            genvpsi (tmp_psi, sg_twovpsi, vtot_eig, work2, NULL, 0.0, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
-        }
-
-
-#   if MD_TIMERS
-        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
-#   endif
-
-#   if MD_TIMERS
-        time1 = my_crtc ();
-#   endif
-
-    /* B operating on 2*V*psi stored in work1 */
-    app_cir_driver (sg_twovpsi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
-    for(idx = 0; idx < pct.P0_BASIS; idx++) work1[idx] += TWO * work2[idx];
-#   if MD_TIMERS
-       rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
-#   endif
-
-    /* Pack psi into smoothing array */
-    //pack_ptos (sg_psi, tmp_psi, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
-
-
-
-
-#if GPU_FD_ENABLED
-    cuStreamSynchronize(*cstream);
-#endif
     for (idx = 0; idx <pct.P0_BASIS; idx++)
-        work1[idx] = 0.5 * ct.vel * (work1[idx] - work3[idx]);
+        a_psi[idx] = 0.5 * ct.vel * a_psi[idx];
 
-    work1 = b_psi;
+    work2 = &pct.Bns[sp->istate * pct.P0_BASIS];
+    for(idx = 0; idx < pct.P0_BASIS; idx++) b_psi[idx] += work2[idx];
 
-    /*Pack S|psi> into smoothing array */
-    //pack_ptos (sg_psi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
-    scopy (&pct.P0_BASIS, work1, &ione, work2, &ione);
-
-
-#   if MD_TIMERS
-        time1 = my_crtc ();
-#   endif
-    /*B operating on S|psi> and store in work3 */
-    app_cir_driver (work2, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
-#   if MD_TIMERS
-        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
-#   endif
-#if !BATCH_NLS
-    my_free (work2);
-#endif
-    my_free(sg_twovpsi);
-
-#if !GPU_FD_ENABLED
-    my_free(work3);
-#endif
 
 }                               /* subdiag_app_A_one */
 

@@ -326,9 +326,11 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
         time2 = my_crtc ();
 
-        /*Apply A operator on each wavefunction 
-	 * S operator is also applied, the result is returned in tmp_array2R*/
-        subdiag_app_A (states, tmp_arrayR, tmp_array2R, vtot_eig);
+        /*Apply AB operator on each wavefunction 
+	 tmp_arrayR:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
+	 tmp_array2R:  B|psi> + B|beta>qnm<beta|psi> */
+
+		subdiag_app_AB (states, tmp_arrayR, tmp_array2R, vtot_eig);
 
         time3 = my_crtc ();
         rmg_timings (DIAG_APP_A, time3 - time2);
@@ -362,7 +364,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
         time3 = my_crtc ();
         alpha = ct.vel;
 #if GPU_ENABLED
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+        cublasSetVector( pbasis * num_states, sizeof( REAL ), pct.ns, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
@@ -372,7 +374,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
 #else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
-               tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
+               pct.ns, &pbasis, &beta, global_matrix, &num_states);
 #endif
 
         time2 = my_crtc ();
@@ -382,12 +384,12 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
         reduce_and_dist_matrix(num_states, global_matrix, distSij, distTij);
 
         /* Apply B operator on each wavefunction */
-        time2 = my_crtc ();
-        subdiag_app_B (states, tmp_array2R);
 
         time3 = my_crtc ();
         alpha = ct.vel;
-        rmg_timings (DIAG_APP_B, time3 - time2);
+
+		//subdiag_app_B (states, tmp_array2R);
+       // for(idx = 0; idx < 100; idx++) printf("\n iaaa  %d  %f ", idx, tmp_array2R[idx]);
 
 #if GPU_ENABLED
         cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );

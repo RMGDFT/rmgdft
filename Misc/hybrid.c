@@ -197,6 +197,9 @@ void run_threads(SCF_THREAD_CONTROL *s) {
             case HYBRID_SKIP:
                break;
 #if GAMMA_PT
+            case HYBRID_SUBDIAG_APP_AB:
+               subdiag_app_AB_one(s->sp, s->p1, s->p2, s->vtot);
+               break;
             case HYBRID_SUBDIAG_APP_A:
                subdiag_app_A_one(s->sp, s->p1, s->p2, s->vtot);
                break;
