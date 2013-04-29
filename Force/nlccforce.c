@@ -274,6 +274,10 @@ void nlccforce (REAL * rho, REAL * vxc)
 
 
 
+    my_free (Aiz);
+    my_free (Aiy);
+    my_free (Aix);
+
     my_free (pvec);
     my_free (prjptr);
     my_free (locsum);
