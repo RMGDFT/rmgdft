@@ -174,6 +174,9 @@ void lforce (REAL * rho, REAL * vh)
     }                           /* end for */
 
 
+    my_free(Aiz);
+    my_free(Aiy);
+    my_free(Aix);
     my_free (pvec);
     my_free (rx);
 
