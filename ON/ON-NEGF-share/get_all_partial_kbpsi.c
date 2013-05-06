@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void get_all_partial_kbpsi(STATE * states)

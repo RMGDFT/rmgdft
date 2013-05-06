@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 #define 	MAX_STEPS 	300
 

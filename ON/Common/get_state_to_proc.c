@@ -15,7 +15,7 @@ get_state_to_proc.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void get_state_to_proc(STATE * states)

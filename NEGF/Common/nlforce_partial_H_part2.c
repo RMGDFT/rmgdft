@@ -5,7 +5,7 @@
 #include <float.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 #if USE_DIS_MAT

@@ -18,7 +18,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, double gate_bias)

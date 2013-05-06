@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 /* which_part = 0 for conductors 
  *              1 for left lead

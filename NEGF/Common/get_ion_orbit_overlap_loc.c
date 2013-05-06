@@ -25,7 +25,7 @@ index =  (st1 - ct.state_begin) * ct.num_ions + ion2;
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void get_ion_orbit_overlap_loc (STATE * states)

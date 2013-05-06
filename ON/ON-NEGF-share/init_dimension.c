@@ -19,7 +19,7 @@
  * CHILDREN
  *   run.c
  * SEE ALSO
- *   md.h for structure defination
+ *   main.h for structure defination
  * SOURCE
  */
 
@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "md.h"
+#include "main.h"
 
 void init_dimension()
 {

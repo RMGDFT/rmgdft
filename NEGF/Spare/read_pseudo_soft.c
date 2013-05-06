@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "md.h"
+#include "main.h"
 
 
 

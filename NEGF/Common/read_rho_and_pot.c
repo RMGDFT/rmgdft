@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void read_rho_and_pot (char *name, double *vh, double *vxc, 

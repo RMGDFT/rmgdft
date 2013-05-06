@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void normalize_orbits(STATE * states)

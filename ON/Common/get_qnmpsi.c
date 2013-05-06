@@ -17,7 +17,7 @@ modified by Wenchang Lu, 09-24-2005
 #include <stdio.h>
 #include <assert.h>
 
-#include "md.h"
+#include "main.h"
 
 
 /*shuchun wang*/

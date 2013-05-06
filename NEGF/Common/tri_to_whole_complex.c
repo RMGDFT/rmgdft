@@ -7,7 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 void tri_to_whole_complex (complex double * H_tri, complex double * Hii, int N, int * ni)
 {

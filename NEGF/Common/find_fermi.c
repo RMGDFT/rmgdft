@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "md.h"
+#include "main.h"
 #include "method.h"
 #include "pmo.h"
 

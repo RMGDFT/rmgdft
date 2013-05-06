@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "pmo.h"
-#include "md.h"
+#include "main.h"
 
 void pmo_init ()
 {

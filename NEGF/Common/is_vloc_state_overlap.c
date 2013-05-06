@@ -13,7 +13,7 @@ is_atom_overlap.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void is_vloc_state_overlap (STATE *states)

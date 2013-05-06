@@ -35,7 +35,7 @@
 
 
 #include <float.h>
-#include "md.h"
+#include "main.h"
 
 
 #define   IA  16807

@@ -191,3 +191,93 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, double simpson_tol, int *EP_final, 
                            int *energy_insert_index, double *ener1_temp);
 
+void zgetrf( int *n1, int *, complex double *Hii, int *, int *piv, int *info);
+void zgetrs(char *trans, int *n1, int *, complex double *Hii, int *,int *ipiv, complex double *Gii, int *, int *info);
+void zgetrf_acc( int *n1, int *, complex double *Hii, int *, int *piv, int *info);
+void zgetrs_acc(char *trans, int *n1, int *, complex double *Hii, int *,int *ipiv, complex double *Gii, int *, int *info);
+void zcopy_acc(int *n1, complex double *Hii, int *, complex double *Gii, int *);
+
+
+
+REAL dot_product_orbit_nl(STATE *st1, int ion2, REAL *psi, REAL *prjptr);
+
+void non_zero_pairs();
+void non_zero_pairs1();
+
+void init_nl_xyz(void);
+
+void theta_phi_new(int st1, int st2, REAL theta_ion, REAL *st2_psi,
+		                REAL *state1_psi, int mode, STATE *states); 
+
+void    print_status( STATE *, REAL *, REAL *, REAL *, REAL *, char *);
+void    print_global_function(REAL *, char, char *);
+void    print_state_sum(STATE *states);
+void    print_state(STATE *state);
+void    print_sum(int size, double *data, char *msg); 
+void    print_sum_square(int size, double *data, char *msg); 
+
+
+void init_comm(STATE *states); 
+
+void init_comm_res(STATE *states); 
+
+
+void get_orbit_overlap_region(STATE *states); 
+
+void get_ion_orbit_overlap_nl(STATE *states); 
+
+void    duplicate_states_info(STATE *states, STATE *states1); 
+
+
+void is_state_overlap(STATE *states); 
+
+
+void set_energy_weight(complex double *ene, complex double *weight, REAL EF, int *nenergy);
+void set_energy_weight_ne(complex double *eneR, complex double *weight, REAL EF1, REAL EF2, int *nenergy);
+
+
+/* do we need these declarations? I think not... 
+ * */
+void zgemm(char*, char*, int*, int*, int*, complex double*, complex double*, int*, complex double*, int*, complex double*, complex double*, int*); 
+/* void zgemm(char*, char*, int*, int*, int*, REAL*, REAL*, int*, REAL*, int*, REAL*, REAL*, int*);
+ */
+void ZCOPY(int*, complex double*, int*, complex double*, int*);
+void ZAXPY(int*, complex double*, complex double*, int*, complex double*, int*);
+void pzgemm(_fcd, _fcd, int*, int*, int*, complex double*,
+        complex double*, int*, int*, int*,
+        complex double*, int*, int*, int*,
+        complex double*, complex double*, int*, int*, int*);
+
+
+
+void Stransfer_f(REAL*, REAL*, REAL*, REAL*, int*);
+void mat_part(REAL*, REAL*, REAL*, int);
+void part_to_distribute(REAL*, REAL*, int);
+void read_LCR();
+void read_data_LCR(char *nameL, char *nameC, char *nameR, double *vh,
+        double *vxc, double *rho, STATE *states);
+void read_data_part(char *name, double *vh, double *vxc, double *rho, int which_part);
+
+void Sigma(REAL *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, REAL *Green, int iprobe);
+
+void Sgreen_c_wang(REAL *Htri, REAL *Stri, complex double *sigma_all, int *sigma_idx, REAL eneR, REAL eneI, complex double *Green_C, int nC);
+
+void Sgreen_c(REAL *H00, REAL *S00, complex double *sigma, complex
+        double *, complex double ene, complex double *Green_C, int nC);
+void distri_fermi(complex double ene, REAL EF, complex double *distri);
+void rho_munu(complex double *rho_mn, complex double *green_C, complex double *sigma_L, int nL, int N, int *ni, int iprobe);
+void modify_rho(REAL *rho, REAL *rho_old);
+void modify_rho_y(REAL *rho, REAL *rho_old);
+void read_data_lead(double *vh, double *vxc, double *vh_old, double *vxc_old, double *rho);
+void write_data_lead(char *name, double *vh, double *vxc, double *vh_old, double *vxc_old, double *rho);
+void get_cond_lead();
+void whole_to_tri_real(REAL *A_tri, REAL *Aii, int N, int *ni);
+
+void    get_inverse_block(complex double *Hii, complex double *Gii, int *ipiv, int nn);
+
+void read_data_conductor(char *name, double *vh, double *vxc, double *rho);
+
+
+//void PZGESV(int*, int*, complex double *, int*, int*, int*, int*,
+//                complex double*, int*, int*, int*, int*);
+

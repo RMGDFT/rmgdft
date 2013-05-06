@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void allocate_matrix_soft ()

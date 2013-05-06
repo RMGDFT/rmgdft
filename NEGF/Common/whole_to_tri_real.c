@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 void whole_to_tri_real (REAL * A_tri, REAL * Aii, int N, int *ni)

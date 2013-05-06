@@ -13,7 +13,7 @@ to the distributed array FPX0_GRID * FPY0_GRID
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void global_to_distribute3 (double *global_array, double *distr_array)

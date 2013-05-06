@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void is_state_overlap(STATE * states)

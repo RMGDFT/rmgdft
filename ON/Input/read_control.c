@@ -19,7 +19,7 @@
  * OUTPUT
  *   variables in structure CONTROL c are updated
  *   in most of other file, the name is ct.... 
- *   see md.h for structure CONTROL
+ *   see main.h for structure CONTROL
  * PARENTS
  *   md.c
  * CHILDREN

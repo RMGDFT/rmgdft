@@ -147,6 +147,14 @@ NEGF-linux:
 	@cd $(NEGF_dir); $(clean-global); $(clean-on-negf-share)
 	cd $(NEGF_dir); $(MAKE) -j 8 -f Make.linux 2>&1 | tee .build.log
 
+NEGF-xk-gnu: 
+	@echo '#define LINUX 1' > $(NEGF_dir)/Headers/arch.h
+	@echo "#define MPI 1" >> $(NEGF_dir)/Headers/arch.h
+	@echo "#define USE_SALLOC 0" >> $(NEGF_dir)/Headers/arch.h
+	@echo "#define HYBRID_MODEL 1" >> $(NEGF_dir)/Headers/arch.h;
+	@echo "#define GPU_ENABLED 1" >> $(NEGF_dir)/Headers/arch.h;
+	@cd $(NEGF_dir); $(clean-global); $(clean-on-negf-share)
+	cd $(NEGF_dir); $(MAKE) -f Make.xk-gnu 2>&1 | tee .build.log
 NEGF-xt: 
 	@echo '#define LINUX 1' > $(NEGF_dir)/Headers/arch.h
 	@echo "#define MPI 1" >> $(NEGF_dir)/Headers/arch.h

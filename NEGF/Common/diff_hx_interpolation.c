@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "md.h"
+#include "main.h"
 
 void diff_hx_interpolation (double *xi, double *xi_old, int NX,
                             double hx, double hx_old, double x0, double x0_old)

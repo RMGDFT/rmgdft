@@ -13,7 +13,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, int level)

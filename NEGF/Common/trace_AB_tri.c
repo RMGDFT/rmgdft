@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 double trace_AB_tri(REAL * H_tri, REAL * par_D_tri, int N, int *ni)

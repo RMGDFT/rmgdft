@@ -17,7 +17,7 @@ get X  array  FNX_GRID * FPY0_GRID * FPZ0_GRID
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void distribute_to_X_soft (REAL * distr_array, REAL * global_array)

@@ -105,9 +105,6 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
-/* Define to the home page for this package. */
-#undef PACKAGE_URL
-
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
@@ -133,6 +130,3 @@
 #ifndef __cplusplus
 #undef inline
 #endif
-
-/* Define to `unsigned int' if <sys/types.h> does not define. */
-#undef size_t

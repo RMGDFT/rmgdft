@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 void whole_to_tri_complex (complex double * H_tri, complex double * Hii, int N, int * ni)

@@ -26,7 +26,7 @@
  * CHILDREN
  *   run.c
  * SEE ALSO
- *   md.h for structure defination
+ *   main.h for structure defination
  * SOURCE
  */
 
@@ -37,16 +37,16 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "md.h"
+#include "main.h"
 #include "svnrev.h"
 
 
 
-/* Main control structure which is declared extern in md.h so any module */
+/* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
 CONTROL ct;
 
-/* PE control structure which is also declared extern in md.h */
+/* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
 int mpi_nprocs;

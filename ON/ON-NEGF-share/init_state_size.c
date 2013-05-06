@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 void init_state_size(STATE * states)
 {

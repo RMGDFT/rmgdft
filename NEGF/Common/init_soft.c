@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 #include "pmo.h"
 
 #define min(a,b) (((a)>(b)) ? (b) : (a))

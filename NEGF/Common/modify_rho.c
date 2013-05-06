@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "md.h"
+#include "main.h"
 
 
 void modify_rho (REAL * rho, REAL * rho_old)

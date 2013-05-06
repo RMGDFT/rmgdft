@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void print_status (STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh_old, char *msg)

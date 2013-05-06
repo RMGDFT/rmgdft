@@ -4,7 +4,7 @@
  
 #include <float.h>
 #include <stdio.h>
-#include "md.h"
+#include "main.h"
 
 /* 
    output: matB = matrix (psi**T * B * psi) 

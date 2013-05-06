@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "md.h"
+#include "main.h"
 #include "pmo.h"
 
 
@@ -67,7 +67,7 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_i
 
     time1 = my_crtc ();
 
-    matrix_inverse_p (H_tri, Green_C);
+    matrix_inverse_cuda (H_tri, Green_C);
 
 
     time2 = my_crtc ();

@@ -23,7 +23,7 @@ the operation orbitals_NEGF(x,y,z) = orbitals_ON(y,x,z) is needed.
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void read_orbital (STATE * states)

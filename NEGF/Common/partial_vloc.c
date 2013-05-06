@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "method.h"
-#include "md.h"
+#include "main.h"
 #include "fftw.h"
 
 

@@ -11,7 +11,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "md.h"
+#include "main.h"
 
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 #define DELTA_V_MAX 1.0

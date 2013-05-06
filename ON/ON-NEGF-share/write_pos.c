@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "md.h"
+#include "main.h"
 
 void write_pos(void)
 {

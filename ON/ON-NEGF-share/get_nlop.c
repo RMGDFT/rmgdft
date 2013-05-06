@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 #include "fftw.h"
 
 void init_derweight();

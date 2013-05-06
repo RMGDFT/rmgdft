@@ -26,7 +26,7 @@
  * CHILDREN
  *   run.c
  * SEE ALSO
- *   md.h for structure defination
+ *   main.h for structure defination
  * SOURCE
  */
 
@@ -38,7 +38,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "md.h"
+#include "main.h"
 #include "pmo.h"
 #include "svnrev.h"
 
@@ -46,7 +46,7 @@
 STATE states[MAX_STATES];
 STATE states1[MAX_STATES];
 
-/* Main control structure which is declared extern in md.h so any module */
+/* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
 CONTROL ct;
 
@@ -59,7 +59,7 @@ CONTROL part2;
 PE_CONTROL pct1;
 PE_CONTROL pct2;
 
-/* PE control structure which is also declared extern in md.h */
+/* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
 int mpi_nprocs;

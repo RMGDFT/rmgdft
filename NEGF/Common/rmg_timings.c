@@ -30,21 +30,12 @@
  */
 
 
-#include "md.h"
+#include "main.h"
 #include <time.h>
 #include <stdio.h>
 
 
 REAL timings[LAST_TIME];
-
-
-void rmg_timings (int what, REAL time)
-{
-
-    timings[what] += time;
-
-}                               /* end rmg_timings */
-
 
 
 

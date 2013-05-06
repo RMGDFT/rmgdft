@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 #if NONORTHO
 #if USE_DIS_MAT

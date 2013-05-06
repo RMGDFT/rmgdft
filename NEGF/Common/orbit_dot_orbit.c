@@ -17,7 +17,7 @@ work_matrix(i,j) = <states[i].psiR | states1[j].psiR>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 /* For Linux and MPICH 
  * 	#include "/usr/lib/mpich/include/mpi.h"
  */

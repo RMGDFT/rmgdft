@@ -30,7 +30,7 @@
  */
 
 
-#include "md.h"
+#include "main.h"
 #include <time.h>
 #include <stdio.h>
 #include <sys/time.h>

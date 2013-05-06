@@ -13,7 +13,7 @@ multiplication of (orbit,  local projector )
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void partial_vlocpsi (STATE st1, int ion2, REAL * psi, REAL * prjptr, REAL *vlpsi)

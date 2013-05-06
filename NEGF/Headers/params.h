@@ -71,6 +71,7 @@ int PE_X, PE_Y, PE_Z;
 #define         MAX_CHAR  255
 #define         MAX_OPTS  12556
 
+#define MAX_SCF_THREADS 32
 
 /* Maximum number of states -- just an upper limit on 
  * dynamically allocated data structures. */

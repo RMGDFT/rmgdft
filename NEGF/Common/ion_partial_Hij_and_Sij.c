@@ -9,7 +9,7 @@
 #include <assert.h>
 
 #include "method.h"
-#include "md.h"
+#include "main.h"
 
 
 void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)

@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "md.h"
+#include "main.h"
 
 /* begin shuchun wang */
 void rho_augmented(REAL * rho, REAL * global_mat_X)

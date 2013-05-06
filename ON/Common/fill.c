@@ -39,7 +39,7 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "md.h"
+#include "main.h"
 
 
 static REAL fd(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st);

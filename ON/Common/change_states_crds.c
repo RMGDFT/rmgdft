@@ -4,7 +4,7 @@
  
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 
 /* Reads and parses the input control file */

@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <complex.h>
 
-#include "md.h"
+#include "main.h"
 #include "pmo.h"
 
 

@@ -7,7 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "md.h"
+#include "main.h"
 
 void get_inverse_block_p (complex double *Hii, complex double *Gii, int *ipiv, int *desca )
 {

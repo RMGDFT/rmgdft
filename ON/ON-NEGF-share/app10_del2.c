@@ -20,7 +20,7 @@
  *   Apply the sixth order Laplacian operator on a orthorhombic grid
  * INPUTS
  *   S0_GRID *f:  real array of (dimx+2) * (dimy+2) * ((dimz+2)
- *   see md.h for defination of unions S0_GRID and P0_GRID
+ *   see main.h for defination of unions S0_GRID and P0_GRID
  * OUTPUT
  *   P0_GRID *work: real array of dimx * dimy * dimz
  * PARENTS
@@ -32,7 +32,7 @@
 
 
 
-#include "md.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 

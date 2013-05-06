@@ -17,7 +17,7 @@ get  global array  NX_GRID * NY_GRID * NZ_GRID
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void distribute_to_global(REAL * distr_array, REAL * global_array)

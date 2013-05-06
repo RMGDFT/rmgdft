@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <complex.h>
 
-#include "md.h"
+#include "main.h"
 #include "pmo.h"
 
 double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, double simpson_tol, int *EP_final, 

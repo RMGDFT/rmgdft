@@ -17,7 +17,7 @@
 #include <assert.h>
 
 #include "method.h"
-#include "md.h"
+#include "main.h"
 
 
 void rho_nm_mat (double *Aij, REAL * global_mat_X)

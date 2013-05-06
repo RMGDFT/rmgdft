@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void state_corner_xyz(STATE * states)

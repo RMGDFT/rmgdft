@@ -184,6 +184,7 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     // Wait until everyone gets here
     pthread_barrier_wait(&run_barrier);
 
+#if REAL_SPACE
     while(1) {
 
         // We sleep forever or until we get a signal that wakes us up
@@ -224,6 +225,8 @@ void run_threads(SCF_THREAD_CONTROL *s) {
         sem_post(&thread_sem);
 
     }
+
+#endif
 }
 
 #if PAPI_PERFMON

@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 REAL minimage1(REAL aa[3], REAL bb[3])
 {

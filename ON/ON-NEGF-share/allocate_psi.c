@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 void allocate_psi(STATE * states, STATE * states1)
 {

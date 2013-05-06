@@ -29,7 +29,7 @@ Documentation:
 #include <stdlib.h>
 #include <float.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 #include "my_scalapack.h"
 
 #if USE_DIS_MAT

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "md.h"
+#include "main.h"
 
 
 void Sgreen_c (REAL * Htri, REAL * Stri, complex double * sigma1, complex double * sigma2,

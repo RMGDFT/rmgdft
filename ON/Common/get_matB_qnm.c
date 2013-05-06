@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "md.h"
+#include "main.h"
 
 
 void get_matB_qnm(double *Aij)

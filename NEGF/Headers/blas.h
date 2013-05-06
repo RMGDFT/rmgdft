@@ -63,6 +63,12 @@
   #define               cgemm   zgemm_
   #define               zgemm   zgemm_
   #define               zgesv   zgesv_
+  #define               zgetrf   zgetrf_
+  #define               zgetrs   zgetrs_
+  #define               zgetrf_acc   zgetrf_acc_
+  #define               zgetrs_acc   zgetrs_acc_
+  #define               zcopy_acc   zcopy_acc_
+
   #define               sger    dger_
   #define               ssyrk   dsyrk_
   #define               spotrf  dpotrf_

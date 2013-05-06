@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE

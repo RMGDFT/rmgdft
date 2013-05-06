@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-#include "md.h"
+#include "main.h"
 
 
 void mgrid_solv_local(REAL * v_mat, REAL * f_mat, REAL * work,

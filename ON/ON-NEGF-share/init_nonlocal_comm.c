@@ -24,7 +24,7 @@ This should be called after get_nlop.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "md.h"
+#include "main.h"
 
 
 
