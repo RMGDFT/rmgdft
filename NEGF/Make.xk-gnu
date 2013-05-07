@@ -26,7 +26,8 @@ HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
-OBJECTS = $(COBJECTS) $(FOBJECTS)
+LOBJECTS = /u/sciteam/luw/lib/libmagma.a /u/sciteam/luw/lib/libmagmablas.a /u/sciteam/luw/lib/cblas.a
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
 
 LDFLAGS=

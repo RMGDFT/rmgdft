@@ -67,7 +67,11 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_i
 
     time1 = my_crtc ();
 
+#if GPU_ENABLED
     matrix_inverse_cuda (H_tri, Green_C);
+#else
+    matrix_inverse_p (H_tri, Green_C);
+#endif
 
 
     time2 = my_crtc ();

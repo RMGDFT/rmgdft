@@ -1235,11 +1235,16 @@ typedef struct
     // cuda stream
     cudaStream_t cuda_stream;
 
+    cuDoubleComplex *gpu_Htri, *gpu_Gtri;
+    cuDoubleComplex *gpu_Gtem; 
+    cuDoubleComplex *gpu_Gii; 
+    cuDoubleComplex *gpu_temp; 
+    cuDoubleComplex *gpu_Hii; 
+    cuDoubleComplex *gpu_Imatrix; 
+    int *gpu_ipiv;
+
     // GPU storage space for wavefunctions
     REAL *gpu_states;
-
-    // GPU temporary storage space for wavefunctions
-    REAL *gpu_temp;
 
     // GPU temporary storage space for weights
     REAL *gpu_weight;

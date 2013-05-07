@@ -143,6 +143,9 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 
     pmo_init();
+#if GPU_ENABLED
+    init_gpu();
+#endif
 /*
     nameL = lcr[1].name;
     nameC = lcr[0].name;
