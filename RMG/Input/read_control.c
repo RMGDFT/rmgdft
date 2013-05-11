@@ -112,12 +112,15 @@ void read_control (char *file)
     /* Diaonalization opts */
     char diagonalization_driver_opts[] = "lapack\n"
                                          "scalapack\n"
-                                         "magma\n";
+                                         "magma\n"
+                                         "magmafs\n";
 //                                       "elpa\n"
     get_data ("subdiag_driver", NULL, INIT | OPT, diagonalization_driver_opts);
     get_data ("subdiag_driver", &ct.subdiag_driver, OPT, "scalapack");
 #if !MAGMA_LIBS
     if(verify( "subdiag_driver", "magma" ))
+          error_handler("    This version of RMG was not built with Magma.\n");
+    if(verify( "subdiag_driver", "magmafs" ))
           error_handler("    This version of RMG was not built with Magma.\n");
 #endif
 
