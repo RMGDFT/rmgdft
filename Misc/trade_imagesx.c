@@ -16,8 +16,8 @@
 
 #include <pthread.h>
 
-static REAL *swbuf1x = NULL;
-static REAL *swbuf2x = NULL;
+static rmg_double_t *swbuf1x = NULL;
+static rmg_double_t *swbuf2x = NULL;
 static int max_alloc;
 
 /*
@@ -32,15 +32,15 @@ static int max_alloc;
 
 
 
-void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images, int type)
+void trade_imagesx (rmg_double_t * f, REAL * w, int dimx, int dimy, int dimz, int images, int type)
 {
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1, retval;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
     int xlen, ylen, zlen, stop, tid, grid_max1, grid_max2;
     int *nb_ids, basetag=0;
     MPI_Status mrstatus;
-    REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
-    REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
+    rmg_double_t *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+    rmg_double_t *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
     int ACTIVE_THREADS = 1;
 
     // To initialize call from init.c with NULL args
@@ -68,18 +68,18 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
                   grid_max2 = grid_zp;
               }
          }
-         retval = MPI_Alloc_mem(6 * sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
+         retval = MPI_Alloc_mem(6 * sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
          if(retval != MPI_SUCCESS) {
              error_handler("Error in MPI_Alloc_mem.\n");
          }
-         retval = MPI_Alloc_mem(6 * sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
+         retval = MPI_Alloc_mem(6 * sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
          if(retval != MPI_SUCCESS) {
              error_handler("Error in MPI_Alloc_mem.\n");
          }
 
 
-         //my_malloc(swbuf1x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
-         //my_malloc(swbuf2x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
+         //my_malloc(swbuf1x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, rmg_double_t);
+         //my_malloc(swbuf2x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, rmg_double_t);
          max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE;
          return;
     }
@@ -95,7 +95,7 @@ void trade_imagesx (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images
 #endif
 
 #if MD_TIMERS
-    REAL time1, time2, time3;
+    rmg_double_t time1, time2, time3;
     time1 = my_crtc ();
 #endif
 
@@ -400,7 +400,7 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
 #endif
 
 #if MD_TIMERS
-    REAL time1, time2, time3;
+    rmg_double_t time1, time2, time3;
     time1 = my_crtc ();
 #endif
 

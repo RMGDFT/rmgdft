@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void eval_residual( REAL *mat, REAL *f_mat, int dimx, int dimy, int dimz, 
- *                       REAL gridhx, REAL gridhy, REAL gridhz, REAL *res )
+ *   void eval_residual( rmg_double_t *mat, REAL *f_mat, int dimx, int dimy, int dimz, 
+ *                       rmg_double_t gridhx, REAL gridhy, REAL gridhz, REAL *res )
  *  Evaluate the residual of Poisson equation 
  *      f_mat - (del**2)mat 
  * INPUTS
@@ -42,8 +42,8 @@
 #include "main.h"
 
 
-void eval_residual (REAL * mat, REAL * f_mat, int dimx, int dimy, int dimz,
-                    REAL gridhx, REAL gridhy, REAL gridhz, REAL * res)
+void eval_residual (rmg_double_t * mat, REAL * f_mat, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, REAL gridhy, REAL gridhz, REAL * res)
 {
     int size, idx;
 

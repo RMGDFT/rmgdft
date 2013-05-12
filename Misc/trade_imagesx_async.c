@@ -42,15 +42,15 @@ int GRID_MAX2;
 // Rank of target node based on offsets from current node
 static int target_node[3][3][3];
 
-static REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
-static REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
-static REAL *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
-static REAL *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
-static REAL *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
-static REAL *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
-static REAL *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
-static REAL *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
-static REAL *m0_s, *m0_r;
+static rmg_double_t *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+static rmg_double_t *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
+static rmg_double_t *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
+static rmg_double_t *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
+static rmg_double_t *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
+static rmg_double_t *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
+static rmg_double_t *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
+static rmg_double_t *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
+static rmg_double_t *m0_s, *m0_r;
 
 static rmg_float_t *frdx1_f, *frdx2_f, *frdy1_f, *frdy2_f, *frdz1_f, *frdz2_f;
 static rmg_float_t *frdx1n_f, *frdx2n_f, *frdy1n_f, *frdy2n_f, *frdz1n_f, *frdz2n_f;
@@ -66,7 +66,7 @@ static MPI_Request sreqs[26];
 static MPI_Request rreqs[26];
 
 
-void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
+void trade_imagesx_async (rmg_double_t * f, REAL * w, int dimx, int dimy, int dimz, int images)
 {
     int ix, iy, iz, ix1, iy1, iz1, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, c2, c3, idx, idx1, img3;
@@ -75,7 +75,7 @@ void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int 
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -654,7 +654,7 @@ void trade_imagesx_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int 
 
 
 // Asynchronous image trades for central finite difference operators
-void trade_imagesx_central_async (REAL * f, REAL * w, int dimx, int dimy, int dimz, int images)
+void trade_imagesx_central_async (rmg_double_t * f, REAL * w, int dimx, int dimy, int dimz, int images)
 {
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, idx;
@@ -663,7 +663,7 @@ void trade_imagesx_central_async (REAL * f, REAL * w, int dimx, int dimy, int di
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -917,7 +917,7 @@ void trade_imagesx_central_async (REAL * f, REAL * w, int dimx, int dimy, int di
 // Used by coarse level multigrid routines which assume that the central data is already present
 // and that the f array is sized [dimx+2][dimy+2][dimz+2]
 //
-void trade_images1_async (REAL * f, int dimx, int dimy, int dimz)
+void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
 {
     int ix, iy, iz, incx, incy, index;
     int ixs2, iys2, c1, c2, c3, idx, idx1;
@@ -926,7 +926,7 @@ void trade_images1_async (REAL * f, int dimx, int dimy, int dimz)
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -1400,7 +1400,7 @@ void trade_images1_async (REAL * f, int dimx, int dimy, int dimz)
 
 
 // This function is used to setup the MPI request
-void RMG_MPI_trade(REAL *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req)
+void RMG_MPI_trade(rmg_double_t *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req)
 {
     int tid=0, ntag, target;
 
@@ -1524,67 +1524,67 @@ void init_trade_imagesx_async(void)
 
 
     // Allocate memory buffers using MPI_Alloc_mem
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdx1_f = (rmg_float_t *)frdx1;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdx2_f = (rmg_float_t *)frdx2;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdy1_f = (rmg_float_t *)frdy1;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdy2_f = (rmg_float_t *)frdy2;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdz1_f = (rmg_float_t *)frdz1;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdz2_f = (rmg_float_t *)frdz2;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1n);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdx1n_f = (rmg_float_t *)frdx1n;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2n);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdx2n_f = (rmg_float_t *)frdx2n;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1n);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdy1n_f = (rmg_float_t *)frdy1n;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2n);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdy2n_f = (rmg_float_t *)frdy2n;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1n);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdz1n_f = (rmg_float_t *)frdz1n;
-    retval = MPI_Alloc_mem(sizeof(REAL) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2n);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * MAX_TRADE_IMAGES * ct.THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2n);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     frdz2n_f = (rmg_float_t *)frdz2n;
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
@@ -1605,7 +1605,7 @@ void init_trade_imagesx_async(void)
     yzmsms_s_f = yzpsps_s_f + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
     yzmsps_s_f = yzmsms_s_f + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xypsms_r);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xypsms_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
@@ -1627,7 +1627,7 @@ void init_trade_imagesx_async(void)
     xymsps_s_f = xymsms_s_f + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
 
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xzpsms_r);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * 8 * MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xzpsms_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
@@ -1648,13 +1648,13 @@ void init_trade_imagesx_async(void)
     xzmsms_s_f = xzpsps_s_f + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
     xzmsps_s_f = xzmsms_s_f + MAX_IMG2 * ct.THREADS_PER_NODE * TRADE_GRID_EDGES;
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG3 * ct.THREADS_PER_NODE , MPI_INFO_NULL, &m0_r);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * 8 * MAX_IMG3 * ct.THREADS_PER_NODE , MPI_INFO_NULL, &m0_r);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
     m0_r_f = (rmg_float_t *)m0_r;
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * 8 * MAX_IMG3 * ct.THREADS_PER_NODE , MPI_INFO_NULL, &m0_s);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * 8 * MAX_IMG3 * ct.THREADS_PER_NODE , MPI_INFO_NULL, &m0_s);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
@@ -1671,7 +1671,7 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -2257,7 +2257,7 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -2520,7 +2520,7 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -3004,7 +3004,7 @@ void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dim
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -3239,7 +3239,7 @@ void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz
     int ACTIVE_THREADS = 1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 

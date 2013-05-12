@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void mg_restrict(REAL *full, REAL *half, int dimx, int dimy, int dimz)
+ *   void mg_restrict(rmg_double_t *full, REAL *half, int dimx, int dimy, int dimz)
  *   get half dimensioned array in the corse grid from full dimensioned 
  *   array in the fine grid. The returned values are smoothed.
  * INPUTS
@@ -41,17 +41,17 @@
 
 
 
-void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int grid_ratio)
+void mg_restrict_6 (rmg_double_t * full, REAL * half, int dimx, int dimy, int dimz, int grid_ratio)
 {
 
     int ix, iy, iz;
     int incz, incy, incx, incz2, incy2, incx2, incx3;
-    REAL a0, a1, a2, a3, a4, a5;
-    REAL *fulla;
-    REAL *fullb;
-    REAL *sg_full;
+    rmg_double_t a0, a1, a2, a3, a4, a5;
+    rmg_double_t *fulla;
+    rmg_double_t *fullb;
+    rmg_double_t *sg_full;
 
-    my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), REAL);
+    my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), rmg_double_t);
     trade_imagesx (full, sg_full, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, 5, FULL_FD);
 
     incz = 1;
@@ -71,8 +71,8 @@ void mg_restrict_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz, int 
     a4 = 0.0;
     a5 = 0.0;
 
-    my_malloc (fulla, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID + 10) * (pct.FPZ0_GRID + 10), REAL);
-    my_malloc (fullb, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID / grid_ratio) * (pct.FPZ0_GRID + 10), REAL);
+    my_malloc (fulla, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID + 10) * (pct.FPZ0_GRID + 10), rmg_double_t);
+    my_malloc (fullb, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID / grid_ratio) * (pct.FPZ0_GRID + 10), rmg_double_t);
 
 
     for (ix = 0; ix < dimx / grid_ratio; ix++)

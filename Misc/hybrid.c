@@ -159,7 +159,7 @@ void run_threads(SCF_THREAD_CONTROL *s) {
 
     alloc = (pct.PX0_GRID + 2*MAX_TRADE_IMAGES) * (pct.PY0_GRID + 2*MAX_TRADE_IMAGES) * (pct.PZ0_GRID + 2*MAX_TRADE_IMAGES);
 
-    retval = MPI_Alloc_mem(sizeof(REAL) * (alloc + 64) , MPI_INFO_NULL, &s->trade_buf);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * (alloc + 64) , MPI_INFO_NULL, &s->trade_buf);
     if(retval != MPI_SUCCESS) {
          error_handler("Error in MPI_Alloc_mem.\n");
     }
@@ -170,15 +170,15 @@ void run_threads(SCF_THREAD_CONTROL *s) {
         fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
         exit(-1);
     }
-    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
         fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
         exit(-1);
     }
-    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
         fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
         exit(-1);
     }
-    cuMemHostRegister ( s->trade_buf, sizeof(REAL) * (alloc + 64), CU_MEMHOSTREGISTER_PORTABLE);
+    cuMemHostRegister ( s->trade_buf, sizeof(rmg_double_t) * (alloc + 64), CU_MEMHOSTREGISTER_PORTABLE);
 #endif
 
     // Wait until everyone gets here
@@ -499,9 +499,9 @@ void RMG_MPI_thread_order_unlock(void) {
 }
 
 
-extern REAL timings[LAST_TIME];
+extern rmg_double_t timings[LAST_TIME];
 static pthread_mutex_t timings_mutex = PTHREAD_MUTEX_INITIALIZER;
-void rmg_timings (int what, REAL time)
+void rmg_timings (int what, rmg_double_t time)
 {
     pthread_mutex_lock(&timings_mutex);
     if(in_threaded_region) {

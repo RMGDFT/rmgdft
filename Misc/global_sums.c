@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void global_sums (REAL *vect, int *length)
+ *   void global_sums (rmg_double_t *vect, int *length)
  *   Sums an array over all processors. For serial machines it just returns.
  * INPUTS
  *   vect: a vector to be sumed. Each processor has his own value
@@ -35,8 +35,8 @@
 
 #include "main.h"
 
-static REAL *fixed_vector1 = NULL;
-static REAL *fixed_vector2 = NULL;
+static rmg_double_t *fixed_vector1 = NULL;
+static rmg_double_t *fixed_vector2 = NULL;
 #define MAX_FIXED_VECTOR 512
 
 #if MPI
@@ -45,17 +45,17 @@ static REAL *fixed_vector2 = NULL;
 
 #include <hybrid.h>
 #include <pthread.h>
-volatile REAL *global_sums_vector, *tvector;
+volatile rmg_double_t *global_sums_vector, *tvector;
 volatile int global_sums_vector_state = 0;
 pthread_mutex_t global_sums_vector_lock = PTHREAD_MUTEX_INITIALIZER;
-static void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm);
+static void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm comm);
 
 
 
-void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
+void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm comm)
 {
 
-  REAL *rptr, *rptr1;
+  rmg_double_t *rptr, *rptr1;
 
   if(*length < MAX_FIXED_VECTOR) {
 
@@ -72,8 +72,8 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
   scf_barrier_wait();
   pthread_mutex_lock(&global_sums_vector_lock);
       if(global_sums_vector_state == 0) {
-          my_malloc (global_sums_vector, *length * ct.THREADS_PER_NODE, REAL);
-          my_malloc (tvector, *length * ct.THREADS_PER_NODE, REAL);
+          my_malloc (global_sums_vector, *length * ct.THREADS_PER_NODE, rmg_double_t);
+          my_malloc (tvector, *length * ct.THREADS_PER_NODE, rmg_double_t);
       }
       global_sums_vector_state = 1;
   pthread_mutex_unlock(&global_sums_vector_lock);
@@ -111,24 +111,24 @@ void global_sums_threaded (REAL *vect, int *length, int tid, MPI_Comm comm)
 
 void init_global_sums(void) {
     int retval;
-    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector1);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector1);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector2);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * ct.THREADS_PER_NODE * MAX_FIXED_VECTOR , MPI_INFO_NULL, &fixed_vector2);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
 }
 
 
-void global_sums (REAL * vect, int *length, MPI_Comm comm)
+void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
 {
     int sizr, steps, blocks, newsize, tid;
-    REAL *rptr, *rptr1;
-    REAL rptr2[100];
+    rmg_double_t *rptr, *rptr1;
+    rmg_double_t rptr2[100];
 #if MD_TIMERS
-    REAL time0;
+    rmg_double_t time0;
 
     time0 = my_crtc ();
 #endif
@@ -155,7 +155,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
         return;
     }
 
-    my_malloc (rptr, MAX_PWRK, REAL);
+    my_malloc (rptr, MAX_PWRK, rmg_double_t);
     newsize = MAX_PWRK;
     blocks = *length / newsize;
     sizr = (*length % newsize);
@@ -189,7 +189,7 @@ void global_sums (REAL * vect, int *length, MPI_Comm comm)
 
 
 
-void global_sums (REAL * vect, int *length, MPI_Comm comm)
+void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
 {
     return;
 }

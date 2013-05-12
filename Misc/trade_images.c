@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void trade_images( REAL *mat, int dimx, int dimy, int dimz, int *nb_ids )
+ *   void trade_images( rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids )
  *   trades boundary information with neighboring PEs. Includes corner pieces, 
  *   as needed by restrict and expand in multi-grid
  * INPUTS
@@ -43,12 +43,12 @@
 
 #include <pthread.h>
 
-static REAL *swbuf1=NULL;
-static REAL *swbuf2=NULL;
+static rmg_double_t *swbuf1=NULL;
+static rmg_double_t *swbuf2=NULL;
 static int max_alloc;
 
 
-void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
+void trade_images (rmg_double_t * mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
 {
     int i, j, ione=1;
     int incx, incy, incz;
@@ -61,7 +61,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids, int ty
     MPI_Status mstatus;
     MPI_Datatype newtype;
     int idx, stop, basetag=0, tid=0;
-    REAL *nmat1, *nmat2;
+    rmg_double_t *nmat1, *nmat2;
 
     // To initialize call from init.c with NULL args
     if(swbuf1 == NULL) {
@@ -87,8 +87,8 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids, int ty
                   grid_max2 = grid_zp;
               }
          }
-         my_malloc(swbuf1, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
-         my_malloc(swbuf2, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, REAL);
+         my_malloc(swbuf1, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, rmg_double_t);
+         my_malloc(swbuf2, 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, rmg_double_t);
          max_alloc = 6 * grid_max1 * grid_max2 * ct.THREADS_PER_NODE;
          return;
     }
@@ -101,7 +101,7 @@ void trade_images (REAL * mat, int dimx, int dimy, int dimz, int *nb_ids, int ty
 #endif
 
 #if MD_TIMERS
-    REAL time1, time2, time3;
+    rmg_double_t time1, time2, time3;
     time1 = my_crtc ();
 #endif
 

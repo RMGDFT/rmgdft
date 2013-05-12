@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   REAL real_sum_all(REAL x)
+ *   rmg_double_t real_sum_all(REAL x)
  *   Performs a scalar sum over all processors.
  * INPUTS
  *   x: defined in each processor
@@ -55,7 +55,7 @@ int int_sum_all (int x, MPI_Comm comm)
     int outreg;
     int tid;
 #if MD_TIMERS
-    REAL time0;
+    rmg_double_t time0;
 
     time0 = my_crtc ();
 #endif
@@ -91,7 +91,7 @@ int int_sum_all (int x, MPI_Comm comm)
 int int_sum_all_threaded(int x, int tid,  MPI_Comm comm) {
 
 #if MD_TIMERS
-  REAL time0;
+  rmg_double_t time0;
   time0 = my_crtc ();
 #endif
 

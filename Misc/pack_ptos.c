@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_ptos(REAL *sg, REAL *pg, int dimx, int dimy, int dimz)
+ *   void pack_ptos(rmg_double_t *sg, REAL *pg, int dimx, int dimy, int dimz)
  *   pack processor grids pg to smoothing grids sg
  * INPUTS
  *   pg[dimx*dimy*dimz]: original array 
@@ -37,7 +37,7 @@
 
 
 
-void pack_ptos(REAL * sg, REAL * pg, int dimx, int dimy, int dimz)
+void pack_ptos(rmg_double_t * sg, REAL * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;

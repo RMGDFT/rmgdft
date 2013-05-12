@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "main.h"
 
-void get_vtot_psi (REAL * vtot_psi, REAL * vtot, int grid_ratio)
+void get_vtot_psi (rmg_double_t * vtot_psi, REAL * vtot, int grid_ratio)
 {
     int idx, ione = 1;
     int ix, iy,iz, idx1;

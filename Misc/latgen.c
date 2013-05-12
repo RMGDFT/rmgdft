@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void latgen (int *ibrav, REAL *celldm, REAL *A0I, REAL *A1I, REAL *A2I, 
- *                REAL *OMEGAI, int *flag)
+ *   void latgen (int *ibrav, rmg_double_t *celldm, REAL *A0I, REAL *A1I, REAL *A2I, 
+ *                rmg_double_t *OMEGAI, int *flag)
  *   sets up the crystallographic vectors a0, a1, and a2.
  * INPUTS
  *   ibrav: bravais lattice type
@@ -101,14 +101,14 @@
 
 
 /* If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0) */
-void latgen (int *ibrav, REAL * celldm, REAL * A0I, REAL * A1I, REAL * A2I,
-             REAL * OMEGAI, int *flag)
+void latgen (int *ibrav, rmg_double_t * celldm, REAL * A0I, REAL * A1I, REAL * A2I,
+             rmg_double_t * OMEGAI, int *flag)
 {
 
     int ir;
-    REAL term, term1, term2, cbya, sine, singam;
-    REAL distance, t1;
-    REAL cvec[3];
+    rmg_double_t term, term1, term2, cbya, sine, singam;
+    rmg_double_t distance, t1;
+    rmg_double_t cvec[3];
 
     /* Initialise the appropriate variables */
 
@@ -273,10 +273,10 @@ void latgen (int *ibrav, REAL * celldm, REAL * A0I, REAL * A1I, REAL * A2I,
     *OMEGAI = fabs (*OMEGAI);
 
     /* Generate volume element */
-    t1 = (REAL) (ct.psi_nbasis);
+    t1 = (rmg_double_t) (ct.psi_nbasis);
     ct.vel = *OMEGAI / t1;
 
-    t1 = (REAL) (ct.psi_fnbasis);
+    t1 = (rmg_double_t) (ct.psi_fnbasis);
     ct.vel_f = *OMEGAI / t1;
 
     /* Calculate length of supercell */
@@ -300,17 +300,17 @@ void latgen (int *ibrav, REAL * celldm, REAL * A0I, REAL * A1I, REAL * A2I,
 
     /* Calculate grid size in crystal coordinates */
 
-    t1 = (REAL) ct.psi_nxgrid;
+    t1 = (rmg_double_t) ct.psi_nxgrid;
     ct.hxgrid = 1.0 / t1;
-    ct.hxxgrid = ct.hxgrid / (REAL) FG_NX;
+    ct.hxxgrid = ct.hxgrid / (rmg_double_t) FG_NX;
 
-    t1 = (REAL) ct.psi_nygrid;
+    t1 = (rmg_double_t) ct.psi_nygrid;
     ct.hygrid = 1.0 / t1;
-    ct.hyygrid = ct.hygrid / (REAL) FG_NY;
+    ct.hyygrid = ct.hygrid / (rmg_double_t) FG_NY;
 
-    t1 = (REAL) ct.psi_nzgrid;
+    t1 = (rmg_double_t) ct.psi_nzgrid;
     ct.hzgrid = 1.0 / t1;
-    ct.hzzgrid = ct.hzgrid / (REAL) FG_NZ;
+    ct.hzzgrid = ct.hzgrid / (rmg_double_t) FG_NZ;
 
     if (*flag)
     {

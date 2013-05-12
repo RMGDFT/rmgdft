@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_vhstod(REAL *s, REAL *d, int dimx, int dimy, int dimz)
+ *   void pack_vhstod(rmg_double_t *s, REAL *d, int dimx, int dimy, int dimz)
  *   Used to pack grids when computing the hartree potential 
  *   For periodic system, d = s
  *   For surface system,  d[x,y,Nz/2+1:Nz/2+Nz] = s[x,y,1:Nz]
@@ -40,7 +40,7 @@
 #include <math.h>
 
 /* This function is used to pack grids when computing the hartree potential */
-void pack_vhstod (REAL * s, REAL * d, int dimx, int dimy, int dimz)
+void pack_vhstod (rmg_double_t * s, REAL * d, int dimx, int dimy, int dimz)
 {
     int ix, iy, iz;
     int pex, pey, pez;

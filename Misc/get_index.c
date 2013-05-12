@@ -20,7 +20,7 @@
  *                 int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
  *                 int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
  *                 int nxgrid, int nygrid, int nzgrid,
- *                 REAL *xcstart, REAL *ycstart, REAL *zcstart)
+ *                 rmg_double_t *xcstart, REAL *ycstart, REAL *zcstart)
  *   This function generates the indices needed to map a spherical 
  *   short-ranged operator onto a rectangular grid. This is required
  *   for the non-local potential operators. Since the code uses
@@ -59,7 +59,7 @@
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
                int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-               int nxgrid, int nygrid, int nzgrid, REAL * xcstart, REAL * ycstart, REAL * zcstart)
+               int nxgrid, int nygrid, int nzgrid, rmg_double_t * xcstart, REAL * ycstart, REAL * zcstart)
 {
 
     int idx, ix, iy, iz, ic, map;
@@ -67,37 +67,37 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     int ixstart, iystart, izstart;
     int pxsize, pysize, pzsize;
     int px1, py1, pz1;
-    REAL t1, t2;
+    rmg_double_t t1, t2;
 
 
 
     /* Generate range of indices over which the operator */
     /* will be mapped onto the global grid.              */
-    t1 = (iptr->xtal[0] - ct.xcstart) * (REAL) nxgrid;
+    t1 = (iptr->xtal[0] - ct.xcstart) * (rmg_double_t) nxgrid;
     t1 = modf (t1, &t2);
     ic = (int) t2;
     if (t1 > 0.5)
         ic++;
     ixstart = ic - cdim / 2;
-    *xcstart = ct.xcstart + ixstart / (REAL) nxgrid;
+    *xcstart = ct.xcstart + ixstart / (rmg_double_t) nxgrid;
 
 
-    t1 = (iptr->xtal[1] - ct.ycstart) * (REAL) nygrid;
+    t1 = (iptr->xtal[1] - ct.ycstart) * (rmg_double_t) nygrid;
     t1 = modf (t1, &t2);
     ic = (int) t2;
     if (t1 > 0.5)
         ic++;
     iystart = ic - cdim / 2;
-    *ycstart = ct.ycstart + iystart / (REAL) nygrid;
+    *ycstart = ct.ycstart + iystart / (rmg_double_t) nygrid;
 
 
-    t1 = (iptr->xtal[2] - ct.zcstart) * (REAL) nzgrid;
+    t1 = (iptr->xtal[2] - ct.zcstart) * (rmg_double_t) nzgrid;
     t1 = modf (t1, &t2);
     ic = (int) t2;
     if (t1 > 0.5)
         ic++;
     izstart = ic - cdim / 2;
-    *zcstart = ct.zcstart + izstart / (REAL) nzgrid;
+    *zcstart = ct.zcstart + izstart / (rmg_double_t) nzgrid;
 
 
 

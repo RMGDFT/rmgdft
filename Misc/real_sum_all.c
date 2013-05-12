@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   REAL real_sum_all(REAL x)
+ *   rmg_double_t real_sum_all(REAL x)
  *   Performs a scalar sum over all processors.
  * INPUTS
  *   x: defined in each processor
@@ -39,23 +39,23 @@
 #if HYBRID_MODEL
     #include <hybrid.h>
     #include <pthread.h>
-    volatile REAL real_sum_all_vector[MAX_SCF_THREADS];
-    volatile  REAL recvbuf[MAX_SCF_THREADS];
+    volatile rmg_double_t real_sum_all_vector[MAX_SCF_THREADS];
+    volatile  rmg_double_t recvbuf[MAX_SCF_THREADS];
     volatile int real_sum_all_vector_state = 0;
     pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
-    static REAL real_sum_all_threaded(REAL x, int tid, MPI_Comm comm);
+    static rmg_double_t real_sum_all_threaded(REAL x, int tid, MPI_Comm comm);
 #endif
 
 
 
-REAL real_sum_all (REAL x, MPI_Comm comm)
+rmg_double_t real_sum_all (REAL x, MPI_Comm comm)
 {
 
-    REAL inreg;
-    REAL outreg;
+    rmg_double_t inreg;
+    rmg_double_t outreg;
     int tid;
 #if MD_TIMERS
-    REAL time0;
+    rmg_double_t time0;
 
     time0 = my_crtc ();
 #endif
@@ -88,10 +88,10 @@ REAL real_sum_all (REAL x, MPI_Comm comm)
 #if HYBRID_MODEL
 
 // Used to sum a block of data from a set of threads operating in parallel
-REAL real_sum_all_threaded(REAL x, int tid,  MPI_Comm comm) {
+rmg_double_t real_sum_all_threaded(REAL x, int tid,  MPI_Comm comm) {
 
 #if MD_TIMERS
-  REAL time0;
+  rmg_double_t time0;
   time0 = my_crtc ();
 #endif
 
