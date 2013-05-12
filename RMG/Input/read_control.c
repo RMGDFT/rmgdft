@@ -37,7 +37,7 @@ void read_control (char *file)
     int tmp, is;
     char *tbuf, *tptr;
     float ftmp;
-    REAL time1;
+    rmg_double_t time1;
     static int run_count = - 1;
 
     run_count ++;
@@ -218,7 +218,7 @@ void read_control (char *file)
     /*Estimate default decrease factor, so that it takes about 3 decrease steps 
      * to go from max to starting time step*/
     {
-        REAL ttt;
+        rmg_double_t ttt;
         char s_ttt[12] = { '\0' };
 
         ttt = pow (ct.iondt_max / ct.iondt, 0.3);
@@ -336,9 +336,9 @@ void read_control (char *file)
 
     /* Cutoff parameter */
     get_data ("energy_cutoff_parameter", &ct.cparm, DBL, "1.75");
-    ct.qcparm = ct.cparm / (REAL) FG_NX;
-    ct.betacparm = ct.cparm / (REAL) ct.nxfgrid;
-    ct.cparm /= (REAL) FG_NX; 
+    ct.qcparm = ct.cparm / (rmg_double_t) FG_NX;
+    ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
+    ct.cparm /= (rmg_double_t) FG_NX; 
     
     // Norm conserving pseudo potential flag
     get_data ("norm_conserving_pp", &ct.norm_conserving_pp, BOOL, "false");
