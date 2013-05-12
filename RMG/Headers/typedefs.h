@@ -125,18 +125,18 @@ typedef struct
 
 
     /** Points to start of projector storage for this ion in projector space */
-    //REAL *weight[MAX_IONS];
-    REAL *weight;
-    REAL *Bweight;
+    //rmg_double_t *weight[MAX_IONS];
+    rmg_double_t *weight;
+    rmg_double_t *Bweight;
 
 #if FDIFF_BETA
     /*These are used for non-local force */
-    //REAL *weight_derx[MAX_IONS];
-    REAL **weight_derx;
-    //REAL *weight_dery[MAX_IONS];
-    REAL **weight_dery;
-    //REAL *weight_derz[MAX_IONS];
-    REAL **weight_derz;
+    //rmg_double_t *weight_derx[MAX_IONS];
+    rmg_double_t **weight_derx;
+    //rmg_double_t *weight_dery[MAX_IONS];
+    rmg_double_t **weight_dery;
+    //rmg_double_t *weight_derz[MAX_IONS];
+    rmg_double_t **weight_derz;
 #endif
 
 
@@ -165,20 +165,20 @@ typedef struct
     int *lptrlen;
 
     /** Phase shifts for the non-local operators */
-    //REAL *phaseptr[MAX_IONS];
-    REAL **phaseptr;
+    //rmg_double_t *phaseptr[MAX_IONS];
+    rmg_double_t **phaseptr;
 
     /** Points to start of storage for theaugument function*/
-    //REAL *augfunc[MAX_IONS];
-    REAL **augfunc;
+    //rmg_double_t *augfunc[MAX_IONS];
+    rmg_double_t **augfunc;
 
     /** points to start of DnmI function storage for this ion*/
-    //REAL *dnmI[MAX_IONS];
-    REAL **dnmI;
+    //rmg_double_t *dnmI[MAX_IONS];
+    rmg_double_t **dnmI;
 
     /** points to start of qqq storage for this ion*/
-    //REAL *qqq[MAX_IONS];
-    REAL **qqq;
+    //rmg_double_t *qqq[MAX_IONS];
+    rmg_double_t **qqq;
 
 
     int num_owned_ions;
@@ -217,18 +217,18 @@ typedef struct
      * These are indices within nonloc ions, not absolute ones*/ 
     int list_ions_per_owner[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     
-    REAL *oldsintR_local;
-    REAL *oldsintI_local;
-    REAL *newsintR_local;
-    REAL *newsintI_local;
+    rmg_double_t *oldsintR_local;
+    rmg_double_t *oldsintI_local;
+    rmg_double_t *newsintR_local;
+    rmg_double_t *newsintI_local;
 
     // Holds non-local and S operators acting on psi
-    REAL *nv;
-    REAL *ns;
-    REAL *Bns;
+    rmg_double_t *nv;
+    rmg_double_t *ns;
+    rmg_double_t *Bns;
     int num_tot_proj;
-    REAL *M_dnm;
-    REAL *M_qqq;
+    rmg_double_t *M_dnm;
+    rmg_double_t *M_qqq;
 
 } PE_CONTROL;
 
@@ -244,34 +244,34 @@ typedef struct
     int firstflag;
 
     /** Current estimate of the eigenvalue for this orbital (state). */
-    REAL eig[2];
+    rmg_double_t eig[2];
 
     /** Previous estimate */
-    REAL oldeig[2];
+    rmg_double_t oldeig[2];
 
     /** Wavefunction residual error computed by multigrid solver */
-    REAL res;
+    rmg_double_t res;
 
     /** Points to the storage area for the real part of the orbital */
-    REAL *psiR;
+    rmg_double_t *psiR;
     /** Points to the storage area for the imaginary part of the orbital */
-    REAL *psiI;
+    rmg_double_t *psiI;
 
 
     /** Nuclear potential */
-    REAL *vnuc;
+    rmg_double_t *vnuc;
     /** Hartree potential */
-    REAL *vh;
+    rmg_double_t *vh;
     /** Exchange correlation potential */
-    REAL *vxc;
+    rmg_double_t *vxc;
     /** Total potential */
-    REAL *vtot;
+    rmg_double_t *vtot;
 
     /** dvhxc */
-    REAL *dvhxc;
+    rmg_double_t *dvhxc;
 
     /** Core charge for non-linear core corrections */
-    REAL *rhocore;
+    rmg_double_t *rhocore;
 
     /** Grid dimension in the x-coordinate direction on this processor */
     int dimx;
@@ -282,9 +282,9 @@ typedef struct
 
 
     /** Grid spacings */
-    REAL hxgrid;
-    REAL hygrid;
-    REAL hzgrid;
+    rmg_double_t hxgrid;
+    rmg_double_t hygrid;
+    rmg_double_t hzgrid;
 
 
     /** Total basis size on each processor (dimx*dimy*dimz) */
@@ -298,12 +298,12 @@ typedef struct
 
 
     /** Volume element associated with each real space grid point */
-    REAL vel;
+    rmg_double_t vel;
 
 
     /** Occupation of the orbital */
-    REAL occupation[2];
-//    REAL oldeig;
+    rmg_double_t occupation[2];
+//    rmg_double_t oldeig;
 
     /* The offsets and the sizes of the grid that the orbital
      * is defined on relative to the global grid. These will
@@ -346,16 +346,16 @@ typedef struct
     char *atomic_symbol;
 
     /** Atomic mass */
-    REAL atomic_mass;
+    rmg_double_t atomic_mass;
 
     /** Number of valence electrons */
-    REAL zvalence;
+    rmg_double_t zvalence;
 
     /** Gaussian charge parameter used for compensating the 1/r Coulomb
      * tail of the pseudopotentials
      */
 
-    REAL rc;
+    rmg_double_t rc;
 
     /* Number of grid points in the local in each coordinate direction. 
      * These used to be L0_LDIM and L0_NLDIM.
@@ -371,28 +371,28 @@ typedef struct
     /* These are input parameters in the pseudopotential file. They represent the
      * real radii that are used in generating ldim and nldim.
      */
-    REAL lradius;
-    REAL nlradius;
-    REAL qradius;
+    rmg_double_t lradius;
+    rmg_double_t nlradius;
+    rmg_double_t qradius;
 
     /*Radius for milliken analysis*/
-    REAL mill_radius;
+    rmg_double_t mill_radius;
     /*Radius in number of grid points*/
     int mill_dim;
     /*Number of radial atomic wave functions - these depend on l only, not on m*/
     int num_atomic_waves;
     /*l-numbers for states for which we have atomic orbitals*/
     int atomic_wave_l[5];
-    REAL atomic_wave_oc[5];
+    rmg_double_t atomic_wave_oc[5];
     
     char atomic_wave_label[5][3];
 
-    REAL *atomic_rho;
+    rmg_double_t *atomic_rho;
     
     /* Pseudo atomic valence density read from PP file in log grid*/
-    REAL **atomic_wave;
+    rmg_double_t **atomic_wave;
     /* Pseudo atomic valence density on linear grid*/
-    REAL **awave_lig;
+    rmg_double_t **awave_lig;
 
 
     /*Sum of all atomic states (with different l or m numbers*/
@@ -406,7 +406,7 @@ typedef struct
     int rg_points;
 
     /* Log mesh parameter, where aa=exp(-aasf)/Z, bb=1.0/bbsf */
-    REAL aa, bb;
+    rmg_double_t aa, bb;
 
     /** Non-linear core correction flag */
     int nlccflag;
@@ -424,11 +424,11 @@ typedef struct
     int kkbeta;
 
     /*matrix ddd0(nbeta,nbeta) */
-    REAL ddd0[18][18];
-    REAL ddd[18][18];
+    rmg_double_t ddd0[18][18];
+    rmg_double_t ddd[18][18];
 
     /*matrix qqq(nbeta,nbeta) */
-    REAL qqq[18][18];
+    rmg_double_t qqq[18][18];
 
     /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */
     int nlc;
@@ -437,37 +437,37 @@ typedef struct
     int nqf;
 
     /*L-independent inner coutoff radii rinner for Q_I(r) function */
-    REAL rinner[5];
+    rmg_double_t rinner[5];
 
     /* ultrosoft Vanderbilt Qnm_rad(r) function and */
-    REAL *qnm;
-    REAL *qnmlig;
-    REAL *drqnmlig;
+    rmg_double_t *qnm;
+    rmg_double_t *qnmlig;
+    rmg_double_t *drqnmlig;
 
     /* the coefficient for pseudosation of Qnm_L(r) */
-    REAL *qfcoef;
+    rmg_double_t *qfcoef;
 
     /* Logarithmic radial mesh information */
-    REAL r[MAX_RGRID];
-    REAL rab[MAX_RGRID];
+    rmg_double_t r[MAX_RGRID];
+    rmg_double_t rab[MAX_RGRID];
 
 
     /* Local Pseudopotentials */
-    REAL vloc0[MAX_RGRID];
+    rmg_double_t vloc0[MAX_RGRID];
 
     /* Core charge radial grids */
-    REAL cr[MAX_RGRID];
+    rmg_double_t cr[MAX_RGRID];
 
 
 
     /* Pseudo atomic core density */
-    REAL rspsco[MAX_RGRID];
+    rmg_double_t rspsco[MAX_RGRID];
 
     /*the L-value for the beta function */
     int llbeta[MAX_NB];
 
     /*utrosoft Vanderbilt beta_n(r) function on radial grid */
-    REAL beta[MAX_NB][MAX_RGRID];
+    rmg_double_t beta[MAX_NB][MAX_RGRID];
 
 
     /* Total number of projectors */
@@ -477,45 +477,45 @@ typedef struct
     /* Linear interpolation storage for the compensated local potential
      * and for it's radial derivative.
      */
-    REAL localig[MAX_LOCAL_LIG];
-    REAL drlocalig[MAX_LOCAL_LIG];
+    rmg_double_t localig[MAX_LOCAL_LIG];
+    rmg_double_t drlocalig[MAX_LOCAL_LIG];
 
     /* Linear interpolation storage for the core charge density */
-    REAL rhocorelig[MAX_LOCAL_LIG];
+    rmg_double_t rhocorelig[MAX_LOCAL_LIG];
 
     /* Utrosoft Vandbelit Projectors on linear interpolation grid */
-    REAL betalig[MAX_NB][MAX_LOCAL_LIG];
+    rmg_double_t betalig[MAX_NB][MAX_LOCAL_LIG];
 
     /* Radial derivatives of the Utrosoft Vandbelit Projectors on linear interpolation grid */
-    REAL drbetalig[MAX_NB][MAX_LOCAL_LIG];
+    rmg_double_t drbetalig[MAX_NB][MAX_LOCAL_LIG];
 
     /* Local potential linear interpolation grid spacing */
-    REAL drlig;
+    rmg_double_t drlig;
 
     /* Non-local linear interpolation grid spacing */
-    REAL drnlig;
+    rmg_double_t drnlig;
 
     /* Qfunction linear interpolation grid spacing */
-    REAL drqlig;
+    rmg_double_t drqlig;
 
     /*Grid spacing for atomic charge density on linear grid*/
-    REAL drlig_arho;
+    rmg_double_t drlig_arho;
     
     /*Grid spacing for atomic wave functions on linear grid*/
-    REAL drlig_awave;
+    rmg_double_t drlig_awave;
 
 
     /* Pseudopotential filtering parameters */
-    REAL lrcut;                 /* Real space local cutoff */
-    REAL nlrcut[4];             /*Real space nonlocal cutoff */
-    REAL rwidth;                /* Real-space width parameter */
-    REAL gwidth;                /* G-space width parameter */
+    rmg_double_t lrcut;                 /* Real space local cutoff */
+    rmg_double_t nlrcut[4];             /*Real space nonlocal cutoff */
+    rmg_double_t rwidth;                /* Real-space width parameter */
+    rmg_double_t gwidth;                /* G-space width parameter */
 
     /*Filtering parameters for atomic wavefunctions and charge density*/
-    REAL acut; 
-    REAL aradius; 
-    REAL agwidth;
-    REAL arwidth;
+    rmg_double_t acut; 
+    rmg_double_t aradius; 
+    rmg_double_t agwidth;
+    rmg_double_t arwidth;
 
     /* radius of atomic wavefunctions and charge in terms of number of grid points*/
     int adim_rho;
@@ -546,7 +546,7 @@ typedef struct
     int nh;
 
     /*Atomic charge density on linear grid*/
-    REAL arho_lig[MAX_LOCAL_LIG];
+    rmg_double_t arho_lig[MAX_LOCAL_LIG];
 
 } SPECIES;
 
@@ -555,9 +555,9 @@ typedef struct
 typedef struct
 {
     char name[4];
-    REAL valence;
-    REAL mass;
-    REAL rc;
+    rmg_double_t valence;
+    rmg_double_t mass;
+    rmg_double_t rc;
     int nlccflag;
     int maxl;
     int local;
@@ -595,10 +595,10 @@ int resSeq;
 char iCode[2];
 
 /* 55 - 60 Occupancy*/
-REAL occupancy;
+rmg_double_t occupancy;
 
 /* 61 - 66 Temperature factor*/
-REAL tempFactor;
+rmg_double_t tempFactor;
 
 /* 77 - 78  Element symbol, right-justified. */
 char element[3];
@@ -616,69 +616,69 @@ typedef struct
 {
 
     /* Initial physical coordinates at start of run */
-    REAL icrds[3];
+    rmg_double_t icrds[3];
 
     /* Actual Physical coordinates at current time step */
-    REAL crds[3];
+    rmg_double_t crds[3];
 
     /* Positions at the previous time step */
-    REAL ocrds1[3];
+    rmg_double_t ocrds1[3];
     
     /* Positions at  2dt back */
-    REAL ocrds2[3];
+    rmg_double_t ocrds2[3];
     
     /* Positions at  3dt back */
-    REAL ocrds3[3];
+    rmg_double_t ocrds3[3];
 
     /* Initial crystal coordinates at start of run */
-    REAL ixtal[3];
+    rmg_double_t ixtal[3];
 
     /* Actual crystal coordinates at current time step */
-    REAL xtal[3];
+    rmg_double_t xtal[3];
 
     /* Crystal coordinates  at the previous time step */
-    REAL oxtal[3];
+    rmg_double_t oxtal[3];
 
     /*Position of ion relative to the middle of non-local box around the ion 
      *          * determined in get_nlop, AIget_cindex sets this up*/
-    REAL nlcrds[3];
+    rmg_double_t nlcrds[3];
 
 
     /* Coordinates of the corner of the grid that the local */
     /* difference potential is nonzero on.                  */
-    REAL lxcstart;
-    REAL lycstart;
-    REAL lzcstart;
+    rmg_double_t lxcstart;
+    rmg_double_t lycstart;
+    rmg_double_t lzcstart;
 
 
     /* Coordinates of the corner of the grid that the non-local */
     /* potential is nonzero on.                                 */
-    REAL nlxcstart;
-    REAL nlycstart;
-    REAL nlzcstart;
+    rmg_double_t nlxcstart;
+    rmg_double_t nlycstart;
+    rmg_double_t nlzcstart;
 
 
     /* Coordinates of the corner of the grid that the Qfunction */
     /* potential is nonzero on.                                 */
-    REAL Qxcstart;
-    REAL Qycstart;
-    REAL Qzcstart;
+    rmg_double_t Qxcstart;
+    rmg_double_t Qycstart;
+    rmg_double_t Qzcstart;
 
 
     /* Integer species type when using a raw pseudopotential */
     int species;
 
     /* Forces on the ion */
-    REAL force[4][3];
+    rmg_double_t force[4][3];
 
     /* Current velocity of the ion */
-    REAL velocity[3];
+    rmg_double_t velocity[3];
 
     /* Kleinman-Bylander normalization coefficients */
-    REAL pd[(MAX_L + 1) * (MAX_L + 1)];
+    rmg_double_t pd[(MAX_L + 1) * (MAX_L + 1)];
 
     /* Milliken normalization coefficients */
-    REAL mnorm[(MAX_L + 1) * (MAX_L + 1)];
+    rmg_double_t mnorm[(MAX_L + 1) * (MAX_L + 1)];
 
     /* Total number of projectors */
     int prjcount;
@@ -688,18 +688,18 @@ typedef struct
 
 	/* Force modifier parameters */
 	struct {
-		REAL setA_weight;
-		REAL setA_coord[3];
-		REAL setB_weight;
-		REAL setB_coord[3];
+		rmg_double_t setA_weight;
+		rmg_double_t setA_coord[3];
+		rmg_double_t setB_weight;
+		rmg_double_t setB_coord[3];
         double forcemask[3];
 	} constraint;
 		
 
 
     /* Stores sine and cosine of a phase factor for backwards fourier transform */
-    REAL *fftw_phase_sin;
-    REAL *fftw_phase_cos;
+    rmg_double_t *fftw_phase_sin;
+    rmg_double_t *fftw_phase_cos;
 
 
     /*Stores PDB information*/
@@ -715,15 +715,15 @@ typedef struct
 {
 
     /* number of global-grid pre/post smoothings and timestep */
-    REAL gl_step;
+    rmg_double_t gl_step;
     int gl_pre;
     int gl_pst;
 
     /* timestep for the subiteration */
-    REAL sb_step;
+    rmg_double_t sb_step;
 
     /* timestep for the Richardson-Iteration */
-    REAL ri_step;
+    rmg_double_t ri_step;
 
     /* lowest MG level */
     int levels;
@@ -744,25 +744,25 @@ typedef struct
     int N;
 
     /* ionic target temperature in Kelvin */
-    REAL temp;
+    rmg_double_t temp;
 
     /* ionic target kinetic energy */
-    REAL k0;
+    rmg_double_t k0;
 
     /* randomize velocity flag */
     int randomvel;
 
     /* Nose oscillation frequency */
-    REAL fNose;
+    rmg_double_t fNose;
 
     /* number of thermostats used */
     int m;
 
     /* thermostat positions,velocities,masses and forces */
-    REAL xx[10];
-    REAL xv[10];
-    REAL xq[10];
-    REAL xf[4][10];
+    rmg_double_t xx[10];
+    rmg_double_t xv[10];
+    rmg_double_t xq[10];
+    rmg_double_t xf[4][10];
 
 } FINITE_T_PARM;
 
@@ -777,34 +777,34 @@ typedef struct
     int kidx;
 
     /** The k-point */
-    REAL kpt[3];
+    rmg_double_t kpt[3];
 
     /** The corresponding vector */
-    REAL kvec[3];
+    rmg_double_t kvec[3];
 
     /** The weight associated with the k-point */
-    REAL kweight;
+    rmg_double_t kweight;
 
     /** The magnitude of the k-vector */
-    REAL kmag;
+    rmg_double_t kmag;
 
     /* The orbital structure for this k-point */
     STATE *kstate;
 
 
     /* Mean min, and max wavefunction residuals for occupied space */
-    REAL meanres;
-    REAL minres;
-    REAL maxres;
+    rmg_double_t meanres;
+    rmg_double_t minres;
+    rmg_double_t maxres;
 
     /* Total energies */
-    REAL ES;
-    REAL NUC;
-    REAL KE;
-    REAL XC;
-    REAL NL;
-    REAL II;
-    REAL TOTAL;
+    rmg_double_t ES;
+    rmg_double_t NUC;
+    rmg_double_t KE;
+    rmg_double_t XC;
+    rmg_double_t NL;
+    rmg_double_t II;
+    rmg_double_t TOTAL;
 
 } KPOINT;
 
@@ -840,7 +840,7 @@ typedef struct
     int mg_eig_precision;
 
     /* time at which run started */
-    REAL time0;
+    rmg_double_t time0;
     
     /* determine if this image is processing spin up or spin down. */
     int spin_flag;
@@ -903,10 +903,10 @@ typedef struct
     int md_steps;
 
     /* Emin when get_dos */
-    REAL Emin;
+    rmg_double_t Emin;
 
     /* Emax when get_dos */
-    REAL Emax;
+    rmg_double_t Emax;
 
     /* number of energy points when get_dos */
     int E_POINTS;
@@ -922,10 +922,10 @@ typedef struct
 
 
     /* convergence criterion */
-    REAL thr_rms;
+    rmg_double_t thr_rms;
 
     /* force convergence criterion */
-    REAL thr_frc;
+    rmg_double_t thr_frc;
 
     /* Number of steps after which to perform checkpointing */
     int checkpoint;
@@ -963,15 +963,15 @@ typedef struct
     int num_species;
 
     /* Cutoff parameter */
-    REAL cparm;
-    REAL betacparm;
-    REAL qcparm;
+    rmg_double_t cparm;
+    rmg_double_t betacparm;
+    rmg_double_t qcparm;
 
     /** Total conpensating charge density */
-    REAL crho;
+    rmg_double_t crho;
 
     /** Total charge in supercell */
-    REAL tcharge;
+    rmg_double_t tcharge;
 
     /** Norm conserving pseudo potential flag */
     int norm_conserving_pp;
@@ -986,22 +986,22 @@ typedef struct
     int nzfgrid;
 
     /** Global uniform grid spacing in x */
-    REAL hxgrid;
+    rmg_double_t hxgrid;
 
     /** Global uniform grid spacing in y */
-    REAL hygrid;
+    rmg_double_t hygrid;
 
     /** Global uniform grid spacing in z */
-    REAL hzgrid;
+    rmg_double_t hzgrid;
 
     /** The fine uniform grid spacing in x */
-    REAL hxxgrid;
+    rmg_double_t hxxgrid;
 
     /** The fine uniform grid spacing in y */
-    REAL hyygrid;
+    rmg_double_t hyygrid;
 
     /** The fine uniform grid spacing in z */
-    REAL hzzgrid;
+    rmg_double_t hzzgrid;
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
@@ -1010,20 +1010,20 @@ typedef struct
     int ibrav;
 
     /** Lattice information */
-    REAL celldm[6];
+    rmg_double_t celldm[6];
 
     /* lattice vectors */
-    REAL a0[3];
-    REAL a1[3];
-    REAL a2[3];
+    rmg_double_t a0[3];
+    rmg_double_t a1[3];
+    rmg_double_t a2[3];
 
     /** Total cell volume */
-    REAL omega;
+    rmg_double_t omega;
 
     /* lengths of the sides of the supercell */
-    REAL xside;
-    REAL yside;
-    REAL zside;
+    rmg_double_t xside;
+    rmg_double_t yside;
+    rmg_double_t zside;
 
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
@@ -1031,20 +1031,20 @@ typedef struct
     int max_Qpoints;
 
     /** Maximum grid spacing in any coordinate direction */
-    REAL hmaxgrid;
+    rmg_double_t hmaxgrid;
 
 
     /** Minimum grid spacing in any coordinate direction */
-    REAL hmingrid;
+    rmg_double_t hmingrid;
 
 
     /** Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
-    REAL anisotropy;
+    rmg_double_t anisotropy;
 
 
     /** Volume element associated with each grid point */
-    REAL vel;
-    REAL vel_f;
+    rmg_double_t vel;
+    rmg_double_t vel_f;
 
 
     /** Physical grid basis size */
@@ -1055,7 +1055,7 @@ typedef struct
     int relax_mass;
 
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
-    REAL mix;
+    rmg_double_t mix;
 
     /*Order of Pulay mixing for charge density*/
     int charge_pulay_order;
@@ -1064,21 +1064,21 @@ typedef struct
     int charge_pulay_refresh;
 
     /*Scale parameter for residuals in Pulay mixing*/
-    REAL charge_pulay_scale;
+    rmg_double_t charge_pulay_scale;
 
     /*Flag to test whether or not the modified metrics should be used in Pulay mixing*/
     int charge_pulay_special_metrics;
 
     /*Weight for Pulay special metrics*/
-    REAL charge_pulay_special_metrics_weight;
+    rmg_double_t charge_pulay_special_metrics_weight;
 
     /* Projector mixing parameter */
-    REAL prjmix;
+    rmg_double_t prjmix;
 
     /* Global uniform grid corner */
-    REAL xcstart;
-    REAL ycstart;
-    REAL zcstart;
+    rmg_double_t xcstart;
+    rmg_double_t ycstart;
+    rmg_double_t zcstart;
 
 
     /* Hartree potential offset from wavefunction grid */
@@ -1116,28 +1116,28 @@ typedef struct
     int psi_fnbasis;
 
     /* Decoupled hartree potential */
-    REAL *vh_ext;
+    rmg_double_t *vh_ext;
 
 
     /* Mean min, and max wavefunction residuals for occupied space */
-    REAL meanres;
-    REAL minres;
-    REAL maxres;
+    rmg_double_t meanres;
+    rmg_double_t minres;
+    rmg_double_t maxres;
 
     /* total ionic charge */
-    REAL ionic_charge;
+    rmg_double_t ionic_charge;
 
     /* Variable occupation stuff */
-    REAL nel;
+    rmg_double_t nel;
 
     int occ_flag;
 
-    REAL occ_width;
+    rmg_double_t occ_width;
 
-    REAL occ_mix;
+    rmg_double_t occ_mix;
 
     /** total background smearing charge -- for charged supercells */
-    REAL background_charge;
+    rmg_double_t background_charge;
 
 
     /** Multigrid parameters for the eigenvalue solver */
@@ -1198,16 +1198,16 @@ typedef struct
     int write_memory_report;
 
     /** Ionic motion timestep */
-    REAL iondt;
+    rmg_double_t iondt;
 
     /*** Maximum ionic motion timestep */
-    REAL iondt_max;
+    rmg_double_t iondt_max;
 
     /*** Factor by which iondt is increased */
-    REAL iondt_inc;
+    rmg_double_t iondt_inc;
 
     /*** Factor by which iondt is decreased */
-    REAL iondt_dec;
+    rmg_double_t iondt_dec;
 
     /*Number of steps after which iondt is increased */
     int relax_steps_delay;
@@ -1217,20 +1217,20 @@ typedef struct
 
 
     /** Ionic motion energy */
-    REAL ionke;
+    rmg_double_t ionke;
 
 
     /* Total energies */
-    REAL ES;
-    REAL NUC;
-    REAL KE;
-    REAL XC;
-    REAL NL;
-    REAL II;
-    REAL TOTAL;
+    rmg_double_t ES;
+    rmg_double_t NUC;
+    rmg_double_t KE;
+    rmg_double_t XC;
+    rmg_double_t NL;
+    rmg_double_t II;
+    rmg_double_t TOTAL;
 
     /* fermi energy */
-    REAL efermi;
+    rmg_double_t efermi;
 
     /** Total number of k-points being used in the calculation */
     int num_kpts;
@@ -1263,18 +1263,18 @@ typedef struct
     int interp_trade;
 
     /* the external electric field */
-    REAL e_field;
+    rmg_double_t e_field;
 
-    REAL x_field_0;
+    rmg_double_t x_field_0;
 
-    REAL y_field_0;
+    rmg_double_t y_field_0;
 
-    REAL z_field_0;
+    rmg_double_t z_field_0;
 
-    REAL neb_spring_constant;
+    rmg_double_t neb_spring_constant;
 
     /*Current RMS value*/
-    REAL rms;
+    rmg_double_t rms;
 
     /* Max number of sweeps in get_vh*/
     int hartree_max_sweeps;
@@ -1283,7 +1283,7 @@ typedef struct
     int hartree_min_sweeps;
 
     /*Ratio between target RMS for get_vh and RMS total potential*/
-    REAL hartree_rms_ratio;
+    rmg_double_t hartree_rms_ratio;
 
     /*Boolean flag for using mask function filtering*/
     int mask_function;
@@ -1292,10 +1292,10 @@ typedef struct
     int ncpus;
 
     /* Potential acceleration constant step factor */
-    REAL potential_acceleration_constant_step;
+    rmg_double_t potential_acceleration_constant_step;
 
     /* Potential acceleration constant step factor */
-    REAL potential_acceleration_poisson_step;
+    rmg_double_t potential_acceleration_poisson_step;
 
 #if PAPI_PERFMON
 
@@ -1337,39 +1337,39 @@ typedef struct
     cudaStream_t cuda_stream;
 
     // GPU storage space for wavefunctions
-    REAL *gpu_states;
+    rmg_double_t *gpu_states;
 
     // GPU temporary storage space for wavefunctions
-    REAL *gpu_temp;
+    rmg_double_t *gpu_temp;
 
     // GPU temporary storage space for weights
-    REAL *gpu_weight;
-    REAL *gpu_Bweight;
+    rmg_double_t *gpu_weight;
+    rmg_double_t *gpu_Bweight;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    REAL *gpu_work1;
+    rmg_double_t *gpu_work1;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    REAL *gpu_work2;
+    rmg_double_t *gpu_work2;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    REAL *gpu_work3;
+    rmg_double_t *gpu_work3;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    REAL *gpu_work4;
+    rmg_double_t *gpu_work4;
 
     // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
-    REAL *gpu_global_matrix;
+    rmg_double_t *gpu_global_matrix;
 
     // Pinned host memory for finite difference routines. Allocation is slow so it
     // needs to be done once at initializatio time for each thread.
-    REAL *gpu_host_temp1;
-    REAL *gpu_host_temp2;
-    REAL *gpu_host_temp3;
-    REAL *gpu_host_temp4;
-    REAL *gpu_host_fdbuf1;
-    REAL *gpu_host_fdbuf2;
-    REAL *gpu_host_work;
+    rmg_double_t *gpu_host_temp1;
+    rmg_double_t *gpu_host_temp2;
+    rmg_double_t *gpu_host_temp3;
+    rmg_double_t *gpu_host_temp4;
+    rmg_double_t *gpu_host_fdbuf1;
+    rmg_double_t *gpu_host_fdbuf2;
+    rmg_double_t *gpu_host_work;
 
 #endif    
 
@@ -1390,8 +1390,8 @@ typedef struct
 #if GPU_ENABLED
     // Cuda device context
     cudaStream_t cstream;
-    REAL *gpu_host_temp1;
-    REAL *gpu_host_temp2;
+    rmg_double_t *gpu_host_temp1;
+    rmg_double_t *gpu_host_temp2;
 #endif
 
     /* Thread identifier from pthread_self. Needed to send signals */
@@ -1417,16 +1417,16 @@ typedef struct
     STATE *my_states;
 
     /* Local variable -- summed to obtain total charge for all orbitals */
-    REAL tcharge;
+    rmg_double_t tcharge;
 
     /* Spacial offset for the thread */
     int offset;
 
     /* Points to base of distributed storage array for this thread */
-    REAL *base_mem;
+    rmg_double_t *base_mem;
 
     /* Points to base of distributed scratch array for this thread */
-    REAL *scratch1;
+    rmg_double_t *scratch1;
 
     /* Number of points per wavefunction in the distributed storage array */
     int numpt;
@@ -1435,43 +1435,43 @@ typedef struct
     int lda;
 
     /* Local copies of eigenvalues and occupations for this thread */
-    REAL *eigs;
-    REAL *occs;
+    rmg_double_t *eigs;
+    rmg_double_t *occs;
 
     /* Force contributions computed by this thread */
-    REAL force[MAX_IONS][3];
+    rmg_double_t force[MAX_IONS][3];
 
     /* Pointer to dynamically allocated arrays of size ct.num_states*ct.num_states */
     /* that is required in ortho. Each thread has it's own copy */
-    REAL *darr;
-    REAL *barr;
+    rmg_double_t *darr;
+    rmg_double_t *barr;
 
 
     /* The same array as referenced by darr but this copy is 
      *allocated in the main program rather than in one of the threads.
      */
-    REAL *farr;
+    rmg_double_t *farr;
 
 
-    REAL *rho;
-    REAL *rhocore;
-    REAL *vtot;
-    REAL *vnuc;
+    rmg_double_t *rho;
+    rmg_double_t *rhocore;
+    rmg_double_t *vtot;
+    rmg_double_t *vnuc;
 
     /* Pointers to the non-local potential index list 
      *and to the projectors themselves */
     int *nlindex;
-    REAL *projectors;
+    rmg_double_t *projectors;
 
     // Pointers to special args
     void *p1;
     void *p2;
-    REAL *trade_buf;// Used by trade_images
+    rmg_double_t *trade_buf;// Used by trade_images
     int ion;        // Used for threaded beta_xpsi
     int nion;       // Used for threaded beta_xpsi
-    REAL *sintR;    // Used for threaded beta_xpsi
-    REAL *sintI;    // Used for threaded beta_xpsi
-    REAL *weiptr;   // Used for threaded beta_xpsi
+    rmg_double_t *sintR;    // Used for threaded beta_xpsi
+    rmg_double_t *sintI;    // Used for threaded beta_xpsi
+    rmg_double_t *weiptr;   // Used for threaded beta_xpsi
     int kpt;    // Used for threaded beta_xpsi
 } SCF_THREAD_CONTROL;
 

@@ -273,7 +273,7 @@
 #define TRICLINIC_PRIMITIVE 14
 
 /* The real or imaginary part of a wavefunction */
-#define PSI_REAL     0
+#define PSI_rmg_double_t     0
 #define PSI_IMAG     1
 
 /* Type of async request passed to the mpi trade_images manager */
