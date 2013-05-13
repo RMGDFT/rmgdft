@@ -43,12 +43,12 @@ void iiforce (void)
 {
 
     int i, j;
-    REAL Zi, Zj, rci, rcj, t1, t2, s1, s2, s3, n1, r;
-    REAL xtal_r[3], crd_r[3];
+    rmg_double_t Zi, Zj, rci, rcj, t1, t2, s1, s2, s3, n1, r;
+    rmg_double_t xtal_r[3], crd_r[3];
     ION *iptr1, *iptr2;
-    REAL tx, ty, tz;
+    rmg_double_t tx, ty, tz;
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 

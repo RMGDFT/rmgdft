@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void nlccforce(REAL *rho, REAL *vxc)
+ *   void nlccforce(rmg_double_t *rho, rmg_double_t *vxc)
  *   Evaluates the ionic force component due to the non-linear core
  *   correction terms. 
  * INPUTS
@@ -43,24 +43,24 @@
 
 
 
-void nlccforce (REAL * rho, REAL * vxc)
+void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 {
 
     int ix, iy, iz, ion, idx;
     int *pvec, docount, ishift;
     int ilow, jlow, klow, ihi, jhi, khi, map;
     int *Aix, *Aiy, *Aiz;
-    REAL r, xc, yc, zc, invdr;
-    REAL ax[3], axs[3], bx[3];
-    REAL shift[4];
-    REAL fx, fy, fz;
+    rmg_double_t r, xc, yc, zc, invdr;
+    rmg_double_t ax[3], axs[3], bx[3];
+    rmg_double_t shift[4];
+    rmg_double_t fx, fy, fz;
     SPECIES *sp;
     ION *iptr;
-    REAL deltac;
-    REAL *locsum, *rx, *ry, *rz, *prjptr, *pptr;
-    REAL sumxc2, sumxyc;
+    rmg_double_t deltac;
+    rmg_double_t *locsum, *rx, *ry, *rz, *prjptr, *pptr;
+    rmg_double_t sumxc2, sumxyc;
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -69,8 +69,8 @@ void nlccforce (REAL * rho, REAL * vxc)
     my_calloc( Aiy, FNY_GRID, int );
     my_calloc( Aiz, FNZ_GRID, int );
 
-    my_malloc (locsum, 12, REAL);
-    my_malloc (prjptr, 12 * pct.FP0_BASIS, REAL);
+    my_malloc (locsum, 12, rmg_double_t);
+    my_malloc (prjptr, 12 * pct.FP0_BASIS, rmg_double_t);
     my_malloc (pvec, pct.FP0_BASIS, int);
 
 
@@ -80,7 +80,7 @@ void nlccforce (REAL * rho, REAL * vxc)
 
 
 
-    deltac = ct.hmaxgrid / 200.0 / (REAL) FG_NX;
+    deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) FG_NX;
     shift[0] = -TWO * deltac;
     shift[1] = TWO * deltac;
     shift[2] = -deltac;

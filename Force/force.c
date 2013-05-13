@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void force(REAL *rho, REAL *rhoc, REAL *vh, REAL *vxc, STATE *states)
+ *   void force(rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *vh, rmg_double_t *vxc, STATE *states)
  *   Driver routine to calculate ionic forces.
  * INPUTS
  *   rho: total charge density
@@ -49,22 +49,22 @@
 
 
 
-void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REAL * vnuc, STATE * states)
+void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, STATE * states)
 {
     int ion, st, kpt, idx, nspin = (ct.spin_flag + 1);
-    REAL *vtott, *rho_tot, meanres;
+    rmg_double_t *vtott, *rho_tot, meanres;
     STATE *sp;
-    REAL time1, time2, time3;
+    rmg_double_t time1, time2, time3;
 #if VERBOSE
-    REAL *old_force;
-    REAL sumx, sumy, sumz;
+    rmg_double_t *old_force;
+    rmg_double_t sumx, sumy, sumz;
 #endif
 
     int Zi;
     time3 = my_crtc ();
 
 #if VERBOSE
-    my_malloc (old_force, 3 * ct.num_ions, REAL);
+    my_malloc (old_force, 3 * ct.num_ions, rmg_double_t);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -74,7 +74,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     }
 #endif
 
-    my_malloc (vtott, pct.FP0_BASIS, REAL);
+    my_malloc (vtott, pct.FP0_BASIS, rmg_double_t);
     for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtott[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
@@ -129,7 +129,7 @@ void force (REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * vh, REAL * vxc, REA
     /* Add in the local */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, pct.FP0_BASIS, REAL);
+    	my_malloc (rho_tot, pct.FP0_BASIS, rmg_double_t);
 	for (idx = 0; idx < pct.FP0_BASIS; idx++)
 		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 	lforce(rho_tot, vh);

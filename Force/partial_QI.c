@@ -9,17 +9,17 @@
 #include "main.h"
 
 
-void partial_QI (int ion, REAL * QI_R, ION * iptr)
+void partial_QI (int ion, rmg_double_t * QI_R, ION * iptr)
 {
     int idx, idx1, i, j, k, l, num;
     int ix, iy, iz, ih, size, *dvec;
     int lpx[9][9], lpl[9][9][9];
     int  nh, icount;
-    REAL x[3], cx[3], r, invdr, ap[25][9][9];
-    REAL ylm[25], ylm_x[25], ylm_y[25], ylm_z[25];
-    REAL xc, yc, zc;
-    REAL *QI_x, *QI_y, *QI_z;
-    REAL *qnmlig_tpr, *drqnmlig_tpr;
+    rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9];
+    rmg_double_t ylm[25], ylm_x[25], ylm_y[25], ylm_z[25];
+    rmg_double_t xc, yc, zc;
+    rmg_double_t *QI_x, *QI_y, *QI_z;
+    rmg_double_t *qnmlig_tpr, *drqnmlig_tpr;
     SPECIES *sp;
 
     aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,

@@ -11,7 +11,7 @@
 
 
 
-void lforce (REAL * rho, REAL * vh)
+void lforce (rmg_double_t * rho, rmg_double_t * vh)
 {
 
     int ix, iy, iz;
@@ -20,15 +20,15 @@ void lforce (REAL * rho, REAL * vh)
     int ilow, jlow, klow, ihi, jhi, khi, map;
     int icut, icenter;
     int *Aix, *Aiy, *Aiz;
-    REAL r, xc, yc, zc, Zv, rc, rcnorm, t1;
-    REAL ax[3], bx[3], x_hat, y_hat, z_hat, rc2, invdr, norm1;
-    REAL fx, fy, fz;
+    rmg_double_t r, xc, yc, zc, Zv, rc, rcnorm, t1;
+    rmg_double_t ax[3], bx[3], x_hat, y_hat, z_hat, rc2, invdr, norm1;
+    rmg_double_t fx, fy, fz;
     SPECIES *sp;
     ION *iptr;
-    REAL *rx, *ry, *rz;
-    REAL *urx, *ury, *urz;
+    rmg_double_t *rx, *ry, *rz;
+    rmg_double_t *urx, *ury, *urz;
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -38,7 +38,7 @@ void lforce (REAL * rho, REAL * vh)
     my_calloc( Aiz, FNZ_GRID, int );
 
     size = pct.FP0_BASIS;
-    my_malloc (rx, 6 * size, REAL);
+    my_malloc (rx, 6 * size, rmg_double_t);
     ry = rx + size;
     rz = ry + size;
     urx = rz + size;

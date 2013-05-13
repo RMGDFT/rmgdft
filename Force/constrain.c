@@ -44,13 +44,13 @@ void constrain (void)
             {
                 int ion;
                 ION *iptr;
-                REAL Mag_T = 0.0;
-                REAL Mag_L = 0.0;
-                REAL Mag_R = 0.0;
-                REAL FdotT = 0.0;
-                REAL Tau[3*ct.num_ions];
-                REAL Img_L[3*ct.num_ions];
-                REAL Img_R[3*ct.num_ions];
+                rmg_double_t Mag_T = 0.0;
+                rmg_double_t Mag_L = 0.0;
+                rmg_double_t Mag_R = 0.0;
+                rmg_double_t FdotT = 0.0;
+                rmg_double_t Tau[3*ct.num_ions];
+                rmg_double_t Img_L[3*ct.num_ions];
+                rmg_double_t Img_R[3*ct.num_ions];
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -171,13 +171,13 @@ void constrain (void)
             {
                 int ion;
                 ION *iptr;
-                REAL Mag_T = 0.0;
-                REAL Mag_L = 0.0;
-                REAL Mag_R = 0.0;
-                REAL FdotT = 0.0;
-                REAL Tau[3*ct.num_ions];
-                REAL Img_L[3*ct.num_ions];
-                REAL Img_R[3*ct.num_ions];
+                rmg_double_t Mag_T = 0.0;
+                rmg_double_t Mag_L = 0.0;
+                rmg_double_t Mag_R = 0.0;
+                rmg_double_t FdotT = 0.0;
+                rmg_double_t Tau[3*ct.num_ions];
+                rmg_double_t Img_L[3*ct.num_ions];
+                rmg_double_t Img_R[3*ct.num_ions];
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -282,13 +282,13 @@ void constrain (void)
             {
                 int ion;
                 ION *iptr;
-                REAL Mag_T = 0.0;
-                REAL Mag_L = 0.0;
-                REAL Mag_R = 0.0;
-                REAL FdotT = 0.0;
-                REAL Tau[3*ct.num_ions];
-                REAL Img_L[3*ct.num_ions];
-                REAL Img_R[3*ct.num_ions];
+                rmg_double_t Mag_T = 0.0;
+                rmg_double_t Mag_L = 0.0;
+                rmg_double_t Mag_R = 0.0;
+                rmg_double_t FdotT = 0.0;
+                rmg_double_t Tau[3*ct.num_ions];
+                rmg_double_t Img_L[3*ct.num_ions];
+                rmg_double_t Img_R[3*ct.num_ions];
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -370,13 +370,13 @@ void constrain (void)
             {
                 int ion;
                 ION *iptr;
-                REAL Mag_T = 0.0;
-                REAL Mag_L = 0.0;
-                REAL Mag_R = 0.0;
-                REAL FdotT = 0.0;
-                REAL Tau[3*ct.num_ions];
-                REAL Img_L[3*ct.num_ions];
-                REAL Img_R[3*ct.num_ions];
+                rmg_double_t Mag_T = 0.0;
+                rmg_double_t Mag_L = 0.0;
+                rmg_double_t Mag_R = 0.0;
+                rmg_double_t FdotT = 0.0;
+                rmg_double_t Tau[3*ct.num_ions];
+                rmg_double_t Img_L[3*ct.num_ions];
+                rmg_double_t Img_R[3*ct.num_ions];
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -456,7 +456,7 @@ void constrain (void)
         case 1:                    /* In plane, 2-D restriction (typical). */
             {
                 int ion;
-                REAL FdotC;
+                rmg_double_t FdotC;
                 ION *iptr;
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
