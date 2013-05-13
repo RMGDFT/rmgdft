@@ -1347,9 +1347,11 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 		time2 = my_crtc ();
 
-		/*Apply A operator on each wavefunction 
-		 * S operator is also applied, the result is returned in tmp_array2R*/
-		subdiag_app_A (states, tmp_arrayR, tmp_array2R, vtot_eig);
+                /*Apply AB operator on each wavefunction 
+                 tmp_arrayR:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
+                 tmp_array2R:  B|psi> + B|beta>qnm<beta|psi> */
+
+                subdiag_app_AB (states, tmp_arrayR, tmp_array2R, vtot_eig);
 
 		time3 = my_crtc ();
 		rmg_timings (DIAG_APP_A, time3 - time2);
@@ -1377,7 +1379,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 		time3 = my_crtc ();
 		alpha = ct.vel;
 
-		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
+		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
@@ -1397,7 +1399,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 		/* Apply B operator on each wavefunction */
 		time2 = my_crtc ();
-		subdiag_app_B (states, tmp_array2R);
+//		subdiag_app_B (states, tmp_array2R);
 
 		time3 = my_crtc ();
 		alpha = ct.vel;
