@@ -43,12 +43,12 @@ void read_pseudo (void)
 
     int i, j, k, idx, indx, idx1, idx2, idx3, idx4, nmb;
     int l, ih, check;
-    REAL  ddd0[6][6], qqq[6][6];
-    /*REAL ddd[6][6]; */
+    rmg_double_t  ddd0[6][6], qqq[6][6];
+    /*rmg_double_t ddd[6][6]; */
     int max_nlprojectors = 0, nlc;
     SPECIES *sp;
     char tbuf[MAX_CHAR], *tptr, *endptr;
-    REAL time1;
+    rmg_double_t time1;
 
     time1 = my_crtc ();
     ct.max_l = 0;
@@ -211,7 +211,7 @@ void read_pseudo (void)
         Dprintf( "Coefficients of the pseudoized Q_L(r)  Start\n", tbuf);
         /*read in the coefficient of the pseudoized Q_L(r) function */
         nlc = (sp->nbeta * (sp->nbeta + 1)) / 2;
-        my_malloc (sp->qfcoef, nlc * sp->nlc * sp->nqf, REAL);
+        my_malloc (sp->qfcoef, nlc * sp->nlc * sp->nqf, rmg_double_t);
         idx = 0;
         for (idx1 = 0; idx1 < sp->nbeta; idx1++)
         {
@@ -302,7 +302,7 @@ void read_pseudo (void)
             for ( k = sp->kkbeta; k < sp->rg_points; k++)
                 sp->beta[j][k] = 0.0;
         }
-        my_calloc (sp->qnm, nlc * MAX_RGRID, REAL);
+        my_calloc (sp->qnm, nlc * MAX_RGRID, rmg_double_t);
         for (idx = 0; idx < nlc; idx++)
         {
             for (idx1 = 0; idx1 < MAX_RGRID; idx1++)
@@ -404,14 +404,14 @@ void read_pseudo (void)
             if (get_data (sp->pseudo_filename, &sp->num_atomic_waves, ITEM | INT, NULL)) 
             {
                 
-                my_malloc(sp->atomic_wave, sp->num_atomic_waves, REAL *);
-                my_malloc(sp->awave_lig, sp->num_atomic_waves, REAL *);
+                my_malloc(sp->atomic_wave, sp->num_atomic_waves, rmg_double_t *);
+                my_malloc(sp->awave_lig, sp->num_atomic_waves, rmg_double_t *);
 
                 for (j = 0; j < sp->num_atomic_waves; j++ )
                 {
                     /*Allocate and zero memory for atomic wave functions */
-                    my_malloc(sp->atomic_wave[j], sp->rg_points, REAL);
-                    my_malloc(sp->awave_lig[j], MAX_LOCAL_LIG, REAL);
+                    my_malloc(sp->atomic_wave[j], sp->rg_points, rmg_double_t);
+                    my_malloc(sp->awave_lig[j], MAX_LOCAL_LIG, rmg_double_t);
 
                     get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
 
@@ -434,7 +434,7 @@ void read_pseudo (void)
 
 
                 /*Read atomic charge density*/
-                my_malloc(sp->atomic_rho, sp->rg_points, REAL);
+                my_malloc(sp->atomic_rho, sp->rg_points, rmg_double_t);
                 for (k = 0; k < sp->rg_points; k+=4)
                 {
                     get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 

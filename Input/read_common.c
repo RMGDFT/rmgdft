@@ -37,7 +37,7 @@ void read_common ()
     int tmp, is;
     char *tbuf, *tptr;
     float ftmp;
-    REAL time1;
+    rmg_double_t time1;
     static int run_count = - 1;
 
     run_count ++;
@@ -324,9 +324,9 @@ void read_common ()
 
     /* Cutoff parameter */
     get_data ("energy_cutoff_parameter", &ct.cparm, DBL, "1.75");
-    ct.qcparm = ct.cparm / (REAL) FG_NX;
-    ct.betacparm = ct.cparm / (REAL) ct.nxfgrid;
-    ct.cparm /= (REAL) FG_NX; 
+    ct.qcparm = ct.cparm / (rmg_double_t) FG_NX;
+    ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
+    ct.cparm /= (rmg_double_t) FG_NX; 
     
     /*Blocking factor for scalapack*/
     get_data ("scalapack_block_factor", &ct.scalapack_block_factor, INT, "32");

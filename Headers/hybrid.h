@@ -27,11 +27,11 @@
 
 typedef struct {
   STATE *sp;
-  REAL *vtot;
+  rmg_double_t *vtot;
   int basetag;
   int tid;
-  REAL *p1;    // p1 and p2 are only used in some parallel regions
-  REAL *p2;
+  rmg_double_t *p1;    // p1 and p2 are only used in some parallel regions
+  rmg_double_t *p2;
 } MG_THREAD_STRUCT;
 
 void scf_barrier_init(int nthreads);
