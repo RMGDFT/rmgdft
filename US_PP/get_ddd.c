@@ -8,11 +8,11 @@
 #include <math.h>
 #include "main.h"
 
-void get_ddd (REAL * veff)
+void get_ddd (rmg_double_t * veff)
 {
     int idx, i, j, ion;
     int nh, ncount, icount;
-    REAL *qnmI, *dnmI, *sum;
+    rmg_double_t *qnmI, *dnmI, *sum;
     int *ivec, sum_dim, sum_idx;
     ION *iptr;
     SPECIES *sp;
@@ -31,7 +31,7 @@ void get_ddd (REAL * veff)
         sum_dim += nh * (nh + 1) / 2;
     }
 
-    my_calloc (sum, sum_dim, REAL);
+    my_calloc (sum, sum_dim, rmg_double_t);
 
 
     sum_idx = 0;
@@ -46,7 +46,7 @@ void get_ddd (REAL * veff)
         ncount = pct.Qidxptrlen[ion];
 
         if (pct.dnmI[ion] == NULL)
-            my_malloc (pct.dnmI[ion], nh * nh, REAL);
+            my_malloc (pct.dnmI[ion], nh * nh, rmg_double_t);
 
         idx = 0;
         for (i = 0; i < nh; i++)

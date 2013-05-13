@@ -8,15 +8,15 @@
 #include <math.h>
 #include "main.h"
 
-void aainit (int lli, int mix, int lx, int mx, int nlx, REAL ap[][9][9], int lpx[][9],
+void aainit (int lli, int mix, int lx, int mx, int nlx, rmg_double_t ap[][9][9], int lpx[][9],
              int lpl[][9][9])
 {
     int ll, lp, mp, np, l, m, k, n, p, il, ik, mpp, li, lj, mi, mj, ilp, j, i;
-    REAL y = 0.0, f, t, s, fs, ss, fts, ts;
-    REAL cc[3][5][3][5][5];
-    REAL aaR[5][9][3][5][3][5], aaI[5][9][3][5][3][5];
-    REAL uR[5][9][9], uI[5][9][9];
-    REAL sumR, sumI;
+    rmg_double_t y = 0.0, f, t, s, fs, ss, fts, ts;
+    rmg_double_t cc[3][5][3][5][5];
+    rmg_double_t aaR[5][9][3][5][3][5], aaI[5][9][3][5][3][5];
+    rmg_double_t uR[5][9][9], uI[5][9][9];
+    rmg_double_t sumR, sumI;
 
 
     for (k = 0; k < 9; k++)

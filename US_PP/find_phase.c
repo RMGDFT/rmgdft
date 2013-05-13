@@ -9,13 +9,13 @@
 #include "main.h"
 
 /*This calculates phase factor that will be used when calculating backwards fourier transform*/
-void find_phase (int nldim, REAL * nlcdrs, REAL * phase_sin, REAL * phase_cos)
+void find_phase (int nldim, rmg_double_t * nlcdrs, rmg_double_t * phase_sin, rmg_double_t * phase_cos)
 {
 
     int idx1, i, j, k;
     int i1, j1, k1, nldim_sq;
-    REAL theta;
-    REAL rgs_x, rgs_y, rgs_z;
+    rmg_double_t theta;
+    rmg_double_t rgs_x, rgs_y, rgs_z;
 
     /*Reciprocal grid spacings in x, y and z directions */
     rgs_x = 1.0 / (ct.hxgrid * ct.xside);
@@ -50,8 +50,8 @@ void find_phase (int nldim, REAL * nlcdrs, REAL * phase_sin, REAL * phase_cos)
 
                 /* Phase factor */
                 theta = 2.0 * PI / nldim *
-                    (((nlcdrs[0] * (REAL) i) * rgs_x)
-                     + ((nlcdrs[1] * (REAL) j) * rgs_y) + ((nlcdrs[2] * (REAL) k) * rgs_z));
+                    (((nlcdrs[0] * (rmg_double_t) i) * rgs_x)
+                     + ((nlcdrs[1] * (rmg_double_t) j) * rgs_y) + ((nlcdrs[2] * (rmg_double_t) k) * rgs_z));
 
                 idx1 = i1 * nldim_sq + j1 * nldim + k1;
 

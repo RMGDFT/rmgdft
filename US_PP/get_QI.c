@@ -21,10 +21,10 @@ void get_QI (void)
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
     int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
-    REAL x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
-    REAL xc, yc, zc;
+    rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
+    rmg_double_t xc, yc, zc;
     ION *iptr;
-    REAL *qnmlig, *QI_tpr;
+    rmg_double_t *qnmlig, *QI_tpr;
     SPECIES *sp;
 
     // If norm conserving pp just return
@@ -143,7 +143,7 @@ void get_QI (void)
 
 
                 size = nh * (nh + 1) / 2;
-                my_calloc (pct.augfunc[ion], size * icount + 128, REAL);
+                my_calloc (pct.augfunc[ion], size * icount + 128, rmg_double_t);
 
             }
 

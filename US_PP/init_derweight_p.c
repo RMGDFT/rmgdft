@@ -15,8 +15,8 @@ void init_derweight_p (SPECIES * sp,
 #if !FDIFF_BETA
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
-    REAL r, rsq, r3, rsqd, ax[3], bx[3], x, y, z, xc, yc, zc, cc, t1, t2, invdr;
-    REAL hxx, hyy, hzz;
+    rmg_double_t r, rsq, r3, rsqd, ax[3], bx[3], x, y, z, xc, yc, zc, cc, t1, t2, invdr;
+    rmg_double_t hxx, hyy, hzz;
     fftw_complex *weptr1x, *weptr1y, *weptr1z, *gwptr;
     fftw_complex *weptr2x, *weptr2y, *weptr2z;
     fftw_complex *weptr3x, *weptr3y, *weptr3z;
@@ -46,9 +46,9 @@ void init_derweight_p (SPECIES * sp,
 
     gwptr = weptr3z + size;
 
-    hxx = ct.hxgrid / (REAL) ct.nxfgrid;
-    hyy = ct.hygrid / (REAL) ct.nyfgrid;
-    hzz = ct.hzgrid / (REAL) ct.nzfgrid;
+    hxx = ct.hxgrid / (rmg_double_t) ct.nxfgrid;
+    hyy = ct.hygrid / (rmg_double_t) ct.nyfgrid;
+    hzz = ct.hzgrid / (rmg_double_t) ct.nzfgrid;
 
     r1x = rtptr_x;
     r1y = rtptr_y;
@@ -70,15 +70,15 @@ void init_derweight_p (SPECIES * sp,
     idx = 0;
     for (ix = ibegin; ix < iend; ix++)
     {
-        xc = (REAL) ix *hxx;
+        xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
-            yc = (REAL) iy *hyy;
+            yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
-                zc = (REAL) iz *hzz;
+                zc = (rmg_double_t) iz *hzz;
 
                 ax[0] = xc;
                 ax[1] = yc;

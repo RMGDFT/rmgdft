@@ -12,8 +12,8 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
 {
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
-    REAL r, ax[3], bx[3], xc, yc, zc, cc, t1, invdr;
-    REAL hxx, hyy, hzz;
+    rmg_double_t r, ax[3], bx[3], xc, yc, zc, cc, t1, invdr;
+    rmg_double_t hxx, hyy, hzz;
     fftw_complex *weptr1, *weptr2, *weptr3, *gwptr;
     fftw_complex *r1, *r2, *r3;
 
@@ -32,9 +32,9 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
     weptr3 = weptr2 + size;
     gwptr = weptr3 + size;
 
-    hxx = ct.hxgrid / (REAL) ct.nxfgrid;
-    hyy = ct.hygrid / (REAL) ct.nyfgrid;
-    hzz = ct.hzgrid / (REAL) ct.nzfgrid;
+    hxx = ct.hxgrid / (rmg_double_t) ct.nxfgrid;
+    hyy = ct.hygrid / (rmg_double_t) ct.nyfgrid;
+    hzz = ct.hzgrid / (rmg_double_t) ct.nzfgrid;
 
     r1 = rtptr;
     r2 = r1 + coarse_size;
@@ -48,15 +48,15 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
     idx = 0;
     for (ix = ibegin; ix < iend; ix++)
     {
-        xc = (REAL) ix *hxx;
+        xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
-            yc = (REAL) iy *hyy;
+            yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
-                zc = (REAL) iz *hzz;
+                zc = (rmg_double_t) iz *hzz;
 
                 ax[0] = xc;
                 ax[1] = yc;

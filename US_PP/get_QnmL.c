@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include "main.h"
 
-REAL get_QnmL (int idx, int ltot, REAL r, SPECIES * sp)
+rmg_double_t get_QnmL (int idx, int ltot, rmg_double_t r, SPECIES * sp)
 {
     int i;
-    REAL return_value, r2, power_r;
-    REAL *coeff;
+    rmg_double_t return_value, r2, power_r;
+    rmg_double_t *coeff;
 
     if(ct.norm_conserving_pp) return 0.0;
 
@@ -41,7 +41,7 @@ REAL get_QnmL (int idx, int ltot, REAL r, SPECIES * sp)
 
     }
 
-    return_value *= pow (r, (REAL) ltot);
+    return_value *= pow (r, (rmg_double_t) ltot);
 
     return (return_value);
 }

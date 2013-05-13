@@ -5,7 +5,7 @@
 #include "main.h"
 #include <math.h>
 
-REAL mask_function (REAL x)
+rmg_double_t mask_function (rmg_double_t x)
 {
     if (x >= 1.0)
         return 0.0;

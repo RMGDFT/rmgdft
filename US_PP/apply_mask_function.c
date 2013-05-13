@@ -20,7 +20,7 @@
 #define VERBOSE 0
 
 
-void apply_mask_function (REAL *f, REAL * r, int rg_points, REAL rmax, REAL offset)
+void apply_mask_function (rmg_double_t *f, rmg_double_t * r, int rg_points, rmg_double_t rmax, rmg_double_t offset)
 {
 
 int idx;

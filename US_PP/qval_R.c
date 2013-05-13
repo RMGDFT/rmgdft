@@ -8,15 +8,15 @@
 #include <math.h>
 #include "main.h"
 
-void qval_R (int ih, int jh, REAL r, REAL * x, REAL * qlig, REAL * drqlig, REAL invdr, int *nhtol,
-             int *nhtom, int *indv, REAL * ylm, REAL * ylm_x, REAL * ylm_y, REAL * ylm_z,
-             REAL ap[][9][9], int lpx[][9], int lpl[][9][9], REAL * Q_x, REAL * Q_y, REAL * Q_z,
+void qval_R (int ih, int jh, rmg_double_t r, rmg_double_t * x, rmg_double_t * qlig, rmg_double_t * drqlig, rmg_double_t invdr, int *nhtol,
+             int *nhtom, int *indv, rmg_double_t * ylm, rmg_double_t * ylm_x, rmg_double_t * ylm_y, rmg_double_t * ylm_z,
+             rmg_double_t ap[][9][9], int lpx[][9], int lpl[][9][9], rmg_double_t * Q_x, rmg_double_t * Q_y, rmg_double_t * Q_z,
              SPECIES * sp)
 {
     int ivl, jvl;
     int nb, mb, nmb, lm, lp, l;
-    REAL qrad, drqrad, *q_tpr, *drq_tpr;
-    REAL x_hat, y_hat, z_hat;
+    rmg_double_t qrad, drqrad, *q_tpr, *drq_tpr;
+    rmg_double_t x_hat, y_hat, z_hat;
 
     x_hat = x[0] / (r + 1.0e-9);
     y_hat = x[1] / (r + 1.0e-9);

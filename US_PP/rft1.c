@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void rft1(REAL cparm, REAL *f, REAL *r, REAL *ffil, REAL al, int rg_points, 
-  *           int lval, REAL dr, REAL width, int lrg_points)
+ *   void rft1(rmg_double_t cparm, rmg_double_t *f, rmg_double_t *r, rmg_double_t *ffil, rmg_double_t al, int rg_points, 
+  *           int lval, rmg_double_t dr, rmg_double_t width, int lrg_points)
  *   This function is used to filter the high frequencies from a radial function 
  *   defined on a logarithmic grid. It computes a DFT, applies a cutoff function
  *   defined in gcutoff to the transform and then reconstructs the filtered function
@@ -53,10 +53,10 @@
 
 
 /* G-vector cutoff function */
-REAL gcutoff (REAL g1, REAL gcut, REAL width)
+rmg_double_t gcutoff (rmg_double_t g1, rmg_double_t gcut, rmg_double_t width)
 {
 
-    REAL t1;
+    rmg_double_t t1;
 
     if (g1 < gcut)
         return ONE;
@@ -68,23 +68,23 @@ REAL gcutoff (REAL g1, REAL gcut, REAL width)
 }
 
 
-void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_points,
-           int lval, REAL dr, REAL width, int lrg_points)
+void rft1 (rmg_double_t cparm, rmg_double_t * f, rmg_double_t * r, rmg_double_t * ffil, rmg_double_t * rab, int rg_points,
+           int lval, rmg_double_t dr, rmg_double_t width, int lrg_points)
 {
 
     int idx, ift, gnum, istep, alloc;
-    REAL gmesh, gmax, gcut, t1, t2, *work1, *work2, *gcof, *gvec;
-    REAL rfil, rstep;
+    rmg_double_t gmesh, gmax, gcut, t1, t2, *work1, *work2, *gcof, *gvec;
+    rmg_double_t rfil, rstep;
 
 
     /* Get some temporary memory */
     alloc = rg_points;
     if (alloc < lrg_points)
         alloc = lrg_points;
-    my_malloc (work1, alloc, REAL);
-    my_malloc (work2, alloc, REAL);
-    my_malloc (gcof, alloc, REAL);
-    my_malloc (gvec, alloc, REAL);
+    my_malloc (work1, alloc, rmg_double_t);
+    my_malloc (work2, alloc, rmg_double_t);
+    my_malloc (gcof, alloc, rmg_double_t);
+    my_malloc (gvec, alloc, rmg_double_t);
 
     for (idx = 0; idx < alloc; idx++)
     {
@@ -112,7 +112,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
     for (idx = 1; idx < gnum; idx++)
     {
 
-        gvec[idx] = gvec[0] * pow (t1, (REAL) idx);
+        gvec[idx] = gvec[0] * pow (t1, (rmg_double_t) idx);
 
     }                           /* end for */
 
@@ -253,9 +253,9 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
 
     /* Now we reconstruct the filtered function */
     istep = lrg_points / NPES;
-    t1 = (REAL) istep;
+    t1 = (rmg_double_t) istep;
     rstep = t1 * dr;
-    t1 = (REAL) pct.gridpe;
+    t1 = (rmg_double_t) pct.gridpe;
     rfil = t1 * rstep + 1.0e-10;
 
     switch (lval)
@@ -295,7 +295,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         istep = NPES * istep;
         global_sums (ffil, &istep, pct.grid_comm);
 
-        t1 = (REAL) NPES;
+        t1 = (rmg_double_t) NPES;
         rfil = t1 * rstep + 1.0e-10;
 
         for (idx = istep; idx < lrg_points; idx++)
@@ -365,7 +365,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         istep = NPES * istep;
         global_sums (ffil, &istep, pct.grid_comm);
 
-        t1 = (REAL) NPES;
+        t1 = (rmg_double_t) NPES;
         rfil = t1 * rstep + 1.0e-10;
 
         for (idx = istep; idx < lrg_points; idx++)
@@ -433,7 +433,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         istep = NPES * istep;
         global_sums (ffil, &istep, pct.grid_comm);
 
-        t1 = (REAL) NPES;
+        t1 = (rmg_double_t) NPES;
         rfil = t1 * rstep + 1.0e-10;
 
         for (idx = istep; idx < lrg_points; idx++)
@@ -500,7 +500,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         istep = NPES * istep;
         global_sums (ffil, &istep, pct.grid_comm);
 
-        t1 = (REAL) NPES;
+        t1 = (rmg_double_t) NPES;
         rfil = t1 * rstep + 1.0e-10;
 
         for (idx = istep; idx < lrg_points; idx++)
@@ -567,7 +567,7 @@ void rft1 (REAL cparm, REAL * f, REAL * r, REAL * ffil, REAL * rab, int rg_point
         istep = NPES * istep;
         global_sums (ffil, &istep, pct.grid_comm);
 
-        t1 = (REAL) NPES;
+        t1 = (rmg_double_t) NPES;
         rfil = t1 * rstep + 1.0e-10;
 
         for (idx = istep; idx < lrg_points; idx++)

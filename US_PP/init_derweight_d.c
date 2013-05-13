@@ -15,12 +15,12 @@ void init_derweight_d (SPECIES * sp,
 #if !FDIFF_BETA
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
-    REAL r, ax[3], bx[3], xc, yc, zc, t1, t2, t3, invdr;
-    REAL x, y, z, rsq, rsqd, r4, xsq, ysq, zsq, y1, y2, y3, y4, y5;
-    REAL dy1_dx, dy1_dy, dy1_dz, dy2_dx, dy2_dy, dy2_dz, dy3_dx, dy3_dy, dy3_dz, dy4_dx, dy4_dy,
+    rmg_double_t r, ax[3], bx[3], xc, yc, zc, t1, t2, t3, invdr;
+    rmg_double_t x, y, z, rsq, rsqd, r4, xsq, ysq, zsq, y1, y2, y3, y4, y5;
+    rmg_double_t dy1_dx, dy1_dy, dy1_dz, dy2_dx, dy2_dy, dy2_dz, dy3_dx, dy3_dy, dy3_dz, dy4_dx, dy4_dy,
         dy4_dz, dy5_dx, dy5_dy, dy5_dz;
-    REAL dt2_dx, dt2_dy, dt2_dz;
-    REAL cc, hxx, hyy, hzz;
+    rmg_double_t dt2_dx, dt2_dy, dt2_dz;
+    rmg_double_t cc, hxx, hyy, hzz;
     fftw_complex *weptr1x, *weptr1y, *weptr1z, *gwptr;
     fftw_complex *weptr2x, *weptr2y, *weptr2z;
     fftw_complex *weptr3x, *weptr3y, *weptr3z;
@@ -66,9 +66,9 @@ void init_derweight_d (SPECIES * sp,
     gwptr = weptr5z + size;
 
 
-    hxx = ct.hxgrid / (REAL) ct.nxfgrid;
-    hyy = ct.hygrid / (REAL) ct.nyfgrid;
-    hzz = ct.hzgrid / (REAL) ct.nzfgrid;
+    hxx = ct.hxgrid / (rmg_double_t) ct.nxfgrid;
+    hyy = ct.hygrid / (rmg_double_t) ct.nyfgrid;
+    hzz = ct.hzgrid / (rmg_double_t) ct.nzfgrid;
 
     r1x = rtptr_x;
     r1y = rtptr_y;
@@ -100,15 +100,15 @@ void init_derweight_d (SPECIES * sp,
     idx = 0;
     for (ix = ibegin; ix < iend; ix++)
     {
-        xc = (REAL) ix *hxx;
+        xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
-            yc = (REAL) iy *hyy;
+            yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
-                zc = (REAL) iz *hzz;
+                zc = (rmg_double_t) iz *hzz;
 
 
                 ax[0] = xc;
