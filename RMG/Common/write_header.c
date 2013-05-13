@@ -64,8 +64,8 @@ void write_header (void)
 
     int kpt, idx, j;
     time_t tt;
-    REAL t1;
-    REAL crho_int, crho_fract;
+    rmg_double_t t1;
+    rmg_double_t crho_int, crho_fract;
 
     char *timeptr;
     time (&tt);

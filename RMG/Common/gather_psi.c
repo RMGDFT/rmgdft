@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void gather_psi(REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid)
+ *   void gather_psi(rmg_double_t *tmp_psiR, rmg_double_t *tmp_psiI, STATE *sp, int tid)
  *   For smp mode, this function is used to gather an orbital that 
  *   is distributed across remote memory into a local memory array.
  *   For mpi mode, copy sp->psiR to tmp_psiR and sp->psiI to tmp_psiI
@@ -40,12 +40,12 @@
 
 
 
-void gather_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid)
+void gather_psi (rmg_double_t * tmp_psiR, rmg_double_t * tmp_psiI, STATE * sp, int tid)
 {
 
     int idx;
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 

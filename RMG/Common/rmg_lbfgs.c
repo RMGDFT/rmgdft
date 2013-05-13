@@ -41,7 +41,7 @@ void rmg_lbfgs (void)
 {
     int ion, fpt;
     ION *iptr;
-    REAL step, mass, magf, dotfv;
+    rmg_double_t step, mass, magf, dotfv;
 
     double *position, *force;
 

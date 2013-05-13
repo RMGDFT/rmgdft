@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_vxc(REAL *rho, REAL *rho_oppo, REAL *rhocore, REAL *vxc)
+ *   void get_vxc(rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *vxc)
  *   Top-level driver routine that calls a subfunction to generate
  *   a specific exchange-corrleation potential.
  * INPUTS
@@ -41,20 +41,20 @@
 
 
 
-void get_vxc (REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * vxc)
+void get_vxc (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * vxc)
 {
 
     int idx;
-    REAL *exc, *nrho, *nrho_oppo;
+    rmg_double_t *exc, *nrho, *nrho_oppo;
 
     
     if (ct.spin_flag)
     {
-    	my_malloc (exc, 3 * pct.FP0_BASIS, REAL);
+    	my_malloc (exc, 3 * pct.FP0_BASIS, rmg_double_t);
 	nrho_oppo = exc + 2 * pct.FP0_BASIS;
     }
     else
-    	my_malloc (exc, 2 * pct.FP0_BASIS, REAL);
+    	my_malloc (exc, 2 * pct.FP0_BASIS, rmg_double_t);
     
     nrho = exc + pct.FP0_BASIS;
 

@@ -44,12 +44,12 @@ void write_zstates (STATE * states)
     int idx, incix, inciy;
     char newname[MAX_PATH + 20];
     STATE *sp;
-    REAL t1;
-    REAL zvec[NZ_GRID];
-    REAL *tmp_psi;
+    rmg_double_t t1;
+    rmg_double_t zvec[NZ_GRID];
+    rmg_double_t *tmp_psi;
     FILE *avg;
 
-    my_malloc (tmp_psi,pct.P0_BASIS, REAL);
+    my_malloc (tmp_psi,pct.P0_BASIS, rmg_double_t);
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = pz * pct.PZ0_GRID;

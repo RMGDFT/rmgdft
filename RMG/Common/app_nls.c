@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void app_nl(REAL *psiR, REAL *psiI, REAL *workR, REAL *workI, 
+ *   void app_nl(rmg_double_t *psiR, rmg_double_t *psiI, rmg_double_t *workR, rmg_double_t *workI, 
  *               int state, int flag, int kidx, int tid)
  *    Applies the non-local potential operator to an orbital.
  *    Also mixes the projections of the non-local operator on the
@@ -49,7 +49,7 @@
 #define FAST_NLS 1
 
 
-void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R, REAL *work2I, REAL *sintR, REAL *sintI, int state,
+void app_nls (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rmg_double_t * workI, rmg_double_t *work2R, rmg_double_t *work2I, rmg_double_t *sintR, rmg_double_t *sintI, int state,
         int kidx)
 {
 
@@ -57,22 +57,22 @@ void app_nls (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, REAL *work2R
     int *pidx;
     int i, j, nh, inh;
     int incx = 1, alloc, step, count;
-    REAL *weiptr, *mptr, *dnmI, coeffR, coeffI, coeff2R, coeff2I;
-    REAL *nworkR, *nworkI, *nwork2R, *nwork2I, *pR, *pI, *psintR, *qqq;
+    rmg_double_t *weiptr, *mptr, *dnmI, coeffR, coeffI, coeff2R, coeff2I;
+    rmg_double_t *nworkR, *nworkI, *nwork2R, *nwork2I, *pR, *pI, *psintR, *qqq;
     ION *iptr;
     SPECIES *sp;
-    REAL coeffMatR[2*MAX_NL], coeffMatI[2*MAX_NL], rzero = 0.0, rone=1.0;
+    rmg_double_t coeffMatR[2*MAX_NL], coeffMatI[2*MAX_NL], rzero = 0.0, rone=1.0;
     char *transa = "n";
 
 #if !GAMMA_PT
-    REAL *psintI;
+    rmg_double_t *psintI;
 #endif
 
 
     alloc =pct.P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
-    my_calloc (nworkR, 4 * alloc, REAL);
+    my_calloc (nworkR, 4 * alloc, rmg_double_t);
     nworkI = nworkR + alloc;
     nwork2R = nworkI + alloc;
     nwork2I = nwork2R + alloc;

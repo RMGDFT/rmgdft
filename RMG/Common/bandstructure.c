@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void bandstructure(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc)
+ *   void bandstructure(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc)
  *
  *   After we got converged rho, vxc ... by specicial kpoints, 
  *   calculate the band structure for some specified k-point
@@ -49,12 +49,12 @@ static void write_bs_eigenvalues (char *fn, STATE * states, int ik);
 
 
 
-void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
+void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc)
 {
 
     int ik, st1, idx;
-    REAL *vtot, *vtot_psi;
-    REAL time1, time2;
+    rmg_double_t *vtot, *vtot_psi;
+    rmg_double_t time1, time2;
     char newname[MAX_PATH + 20];
     char name[] = "wavefunc.dat";
 
@@ -65,8 +65,8 @@ void bandstructure (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc)
     /*my_open( wave_f, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE ); */
 
 
-    my_malloc (vtot, pct.FP0_BASIS, REAL);
-    my_malloc (vtot_psi,pct.P0_BASIS, REAL);
+    my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vtot_psi,pct.P0_BASIS, rmg_double_t);
 
     /*  get total potential  */
     for (idx = 0; idx < pct.FP0_BASIS; idx++)

@@ -6,7 +6,7 @@
 
 #include "main.h"
 
-void mg_eig_state_driver (STATE * sp, int tid, REAL * vtot_psi, int precision)
+void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision)
 {
 
 #if !GAMMA_PT

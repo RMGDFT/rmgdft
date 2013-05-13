@@ -9,7 +9,7 @@
 #include "main.h"
 
 
-void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
+void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhocore_f)
 {
 
     int ix, iy, iz;
@@ -18,8 +18,8 @@ void init_nuc (REAL * vnuc_f, REAL * rhoc_f, REAL * rhocore_f)
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
     int icount;
     int *pvec;
-    REAL r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
-    REAL x[3], invdr;
+    rmg_double_t r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
+    rmg_double_t x[3], invdr;
     SPECIES *sp;
     ION *iptr;
 

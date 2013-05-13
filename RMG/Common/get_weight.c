@@ -12,10 +12,10 @@ void get_weight (void)
 {
 
     int ion, ion1, ip, coarse_size, max_size, idx;
-    REAL *rtptr, *Bweight;
+    rmg_double_t *rtptr, *Bweight;
 #if FDIFF_BETA
-    REAL *rtptr_x, *rtptr_y, *rtptr_z;
-    REAL *r1, *r2, *r3;
+    rmg_double_t *rtptr_x, *rtptr_y, *rtptr_z;
+    rmg_double_t *r1, *r2, *r3;
 #endif
     SPECIES *sp;
     ION *iptr;
@@ -38,7 +38,7 @@ void get_weight (void)
     gbptr = beptr + max_size;
 
 #if FDIFF_BETA
-    my_malloc (r1, 3 * max_size, REAL);
+    my_malloc (r1, 3 * max_size, rmg_double_t);
     r2 = r1 + max_size;
     r3 = r2 + max_size;
 #endif

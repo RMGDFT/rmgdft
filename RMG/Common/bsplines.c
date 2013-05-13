@@ -1961,7 +1961,7 @@ static void dbs3gd2 (int nxvec, int nyvec, int nzvec,
     int ix, iy, iz, ikx, iky, ikz;
     int biatx_dim, biaty_dim, biatz_dim;
     int v23, b12, lx, ly, lz, bcz, bcyz;
-    REAL bz, byz, *ptr;
+    rmg_double_t bz, byz, *ptr;
 
     bcoef_dim1 = nx;
     bcoef_dim2 = ny;
@@ -2170,21 +2170,21 @@ static void huntn (double *xx, int n, int kord, double x, int *jlo)
 
 
 /*This is a function that does interpolation*/
-void bspline_interp_full (REAL * rho, REAL * rho_f)
+void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
 {
-    REAL *rho_c;
+    rmg_double_t *rho_c;
 
     int xorder, yorder, zorder, cmax_x, cmax_y, cmax_z, ix, iy, iz;
-    REAL *bscoef, *crdsx, *crdsy, *crdsz, t1;
-    REAL cspacing_x, cspacing_y, cspacing_z, fspacing_x, fspacing_y, fspacing_z;
-    REAL offset_x, offset_y, offset_z;
+    rmg_double_t *bscoef, *crdsx, *crdsy, *crdsz, t1;
+    rmg_double_t cspacing_x, cspacing_y, cspacing_z, fspacing_x, fspacing_y, fspacing_z;
+    rmg_double_t offset_x, offset_y, offset_z;
 
     /*These variables should keep values between calls */
 #if MD_TIMERS
-    static REAL time, time1;
+    static rmg_double_t time, time1;
 #endif
     static int flag = 0;
-    static REAL *biatx, *biaty, *biatz, *knots_x, *knots_y, *knots_z;
+    static rmg_double_t *biatx, *biaty, *biatz, *knots_x, *knots_y, *knots_z;
     static int *leftx, *lefty, *leftz;
 
 
@@ -2201,24 +2201,24 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
     cmax_y = (pct.PY0_GRID + 2 * ct.interp_trade);
     cmax_z = (pct.PZ0_GRID + 2 * ct.interp_trade);
 
-    my_malloc (bscoef, cmax_x * cmax_y * cmax_z, REAL);
+    my_malloc (bscoef, cmax_x * cmax_y * cmax_z, rmg_double_t);
 
     /*This will hold coordinates of the grid points */
-    my_malloc (crdsx, pct.FPX0_GRID, REAL);
-    my_malloc (crdsy, pct.FPY0_GRID, REAL);
-    my_malloc (crdsz, pct.FPZ0_GRID, REAL);
+    my_malloc (crdsx, pct.FPX0_GRID, rmg_double_t);
+    my_malloc (crdsy, pct.FPY0_GRID, rmg_double_t);
+    my_malloc (crdsz, pct.FPZ0_GRID, rmg_double_t);
 
     if (!flag)
     {
 
         /*Memory for knots and B-spline coefficients */
-        my_malloc (knots_x, cmax_x + xorder, REAL);
-        my_malloc (knots_y, cmax_y + yorder, REAL);
-        my_malloc (knots_z, cmax_z + zorder, REAL);
+        my_malloc (knots_x, cmax_x + xorder, rmg_double_t);
+        my_malloc (knots_y, cmax_y + yorder, rmg_double_t);
+        my_malloc (knots_z, cmax_z + zorder, rmg_double_t);
 
-        my_malloc (biatx, pct.FPX0_GRID * xorder, REAL);
-        my_malloc (biaty, pct.FPY0_GRID * yorder, REAL);
-        my_malloc (biatz, pct.FPZ0_GRID * zorder, REAL);
+        my_malloc (biatx, pct.FPX0_GRID * xorder, rmg_double_t);
+        my_malloc (biaty, pct.FPY0_GRID * yorder, rmg_double_t);
+        my_malloc (biatz, pct.FPZ0_GRID * zorder, rmg_double_t);
 
         my_malloc (leftx, pct.FPX0_GRID, int);
         my_malloc (lefty, pct.FPY0_GRID, int);
@@ -2228,17 +2228,17 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
 
 
     /*Setup crds for knots */
-    t1 = 1.0 / (REAL) (cmax_x - 1);
+    t1 = 1.0 / (rmg_double_t) (cmax_x - 1);
     for (ix = 0; ix < cmax_x; ix++)
-        crdsx[ix] = (REAL) ix *t1;
+        crdsx[ix] = (rmg_double_t) ix *t1;
 
-    t1 = 1.0 / (REAL) (cmax_y - 1);
+    t1 = 1.0 / (rmg_double_t) (cmax_y - 1);
     for (ix = 0; ix < cmax_y; ix++)
-        crdsy[ix] = (REAL) ix *t1;
+        crdsy[ix] = (rmg_double_t) ix *t1;
 
-    t1 = 1.0 / (REAL) (cmax_z - 1);
+    t1 = 1.0 / (rmg_double_t) (cmax_z - 1);
     for (ix = 0; ix < cmax_z; ix++)
-        crdsz[ix] = (REAL) ix *t1;
+        crdsz[ix] = (rmg_double_t) ix *t1;
 
 
 #if MD_TIMERS
@@ -2291,7 +2291,7 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
      * coeffcients and release memory for rho_c
      * In short, do everything that depends on ct.interp_trade*/
 
-    my_malloc (rho_c, cmax_x * cmax_y * cmax_z, REAL);
+    my_malloc (rho_c, cmax_x * cmax_y * cmax_z, rmg_double_t);
     trade_imagesx (rho, rho_c, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.interp_trade, FULL_FD);
     /*Find B-spline coeffients */
     dbs3in (cmax_x, crdsx, cmax_y, crdsy, cmax_z, crdsz, rho_c,
@@ -2315,9 +2315,9 @@ void bspline_interp_full (REAL * rho, REAL * rho_f)
     {
 
         /*Spacing on coarse grid */
-        cspacing_x = 1.0 / (REAL) (cmax_x - 1);
-        cspacing_y = 1.0 / (REAL) (cmax_y - 1);
-        cspacing_z = 1.0 / (REAL) (cmax_z - 1);
+        cspacing_x = 1.0 / (rmg_double_t) (cmax_x - 1);
+        cspacing_y = 1.0 / (rmg_double_t) (cmax_y - 1);
+        cspacing_z = 1.0 / (rmg_double_t) (cmax_z - 1);
 
         /*Fine grid spacing */
         fspacing_x = cspacing_x / FG_NX;

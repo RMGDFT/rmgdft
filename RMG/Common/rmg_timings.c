@@ -46,13 +46,13 @@
 
 
 
-REAL timings[LAST_TIME];
+rmg_double_t timings[LAST_TIME];
 
 // For the hybrid model case we need to lock the timings array with a mutex and do some
 // adjustments to the timings to account for multiple threads so the function is defined
 // in hybrid.c instead of here.
 #if !HYBRID_MODEL
-void rmg_timings (int what, REAL time)
+void rmg_timings (int what, rmg_double_t time)
 {
 
     timings[what] += time;
@@ -64,7 +64,7 @@ void rmg_timings (int what, REAL time)
 
 #include <sys/time.h>
 
-REAL my_crtc (void)
+rmg_double_t my_crtc (void)
 {
     struct timeval t1;
     gettimeofday (&t1, NULL);
@@ -94,7 +94,7 @@ REAL my_crtc (void)
 /* Outputs timing information */
 void write_timings (void)
 {
-    REAL total_time, FLOPS, TOTAL_FLOPS=0.0;
+    rmg_double_t total_time, FLOPS, TOTAL_FLOPS=0.0;
     int i, md_steps, total_scf_steps, ithread;
 
 #if PAPI_PERFMON
@@ -296,7 +296,7 @@ void write_timings (void)
         printf ("\n\n");
         printf ("%d SCF steps were done in %d MD steps\n", ct.total_scf_steps, ct.md_steps);
         printf (" Average: %.1f SCF steps per MD step\n\n",
-                (REAL) ct.total_scf_steps / (REAL) ct.md_steps);
+                (rmg_double_t) ct.total_scf_steps / (rmg_double_t) ct.md_steps);
     }
 
 

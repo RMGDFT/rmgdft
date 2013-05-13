@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void moldyn(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
- *               REAL *rho, REAL *rhoc, REAL *rhocore)
+ *   void moldyn(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
+ *               rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *rhocore)
  *   Molecular Dynamics driver routine
  * INPUTS
  *   states: point to orbital structure (see main.h)
@@ -49,27 +49,27 @@ void init_nose (void);
 void nose_velup1 (void);
 void nose_posup (void);
 void nose_velup2 (void);
-void nose_energy (REAL *, REAL *);
+void nose_energy (rmg_double_t *, rmg_double_t *);
 
 void velup1 (void);
 //void posup (void);
 void velup2 (void);
 
-void rms_disp (REAL *, REAL *);
+void rms_disp (rmg_double_t *, rmg_double_t *);
 
 int stepcount = 0;
 
-void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-             REAL * rho, REAL * rho_oppo, REAL * rhoc, REAL * rhocore)
+void moldyn (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
+             rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * rhocore)
 {
 
-    REAL target;
-    REAL *crdsx, *crdsy, *crdsz, rsteps;
-    REAL kB, step;
-    REAL tmix, tprjmix;
-    REAL rms[3], trms;
-    REAL nosekin, nosepot;
-    REAL iontemp;
+    rmg_double_t target;
+    rmg_double_t *crdsx, *crdsy, *crdsz, rsteps;
+    rmg_double_t kB, step;
+    rmg_double_t tmix, tprjmix;
+    rmg_double_t rms[3], trms;
+    rmg_double_t nosekin, nosepot;
+    rmg_double_t iontemp;
     int ion, it, steps1, isteps, nsteps = 1, nmsteps, N;
     int ic;
     ION *iptr;
@@ -84,9 +84,9 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
 
 
     /*Get some memory */
-    my_malloc (crdsx, ct.num_ions, REAL);
-    my_malloc (crdsy, ct.num_ions, REAL);
-    my_malloc (crdsz, ct.num_ions, REAL);
+    my_malloc (crdsx, ct.num_ions, rmg_double_t);
+    my_malloc (crdsy, ct.num_ions, rmg_double_t);
+    my_malloc (crdsz, ct.num_ions, rmg_double_t);
 
 
 
@@ -233,7 +233,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         /* Do a halfstep update of the velocities */
         velup1 ();
 
-        rsteps = 1.0 / (REAL) isteps;
+        rsteps = 1.0 / (rmg_double_t) isteps;
 
         /* do nmsteps iterations to move the hamiltonian smoothly */
         /* to the next positions                            */
@@ -398,7 +398,7 @@ void moldyn (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         rms_disp (&rms[0], &trms);
 
         /* get the total T of the system */
-        iontemp = ct.ionke * 2.0 / (3.0 * (REAL) N * kB);
+        iontemp = ct.ionke * 2.0 / (3.0 * (rmg_double_t) N * kB);
 
 
         /*write data to output file */
@@ -469,9 +469,9 @@ void init_nose ()
 {
     int ion, N, jc;
     ION *iptr;
-    REAL wNose, tau_nose, kB, mass, step;
-    REAL inittemp, nosesteps;
-    REAL v1, v2, v3;
+    rmg_double_t wNose, tau_nose, kB, mass, step;
+    rmg_double_t inittemp, nosesteps;
+    rmg_double_t v1, v2, v3;
 
     step = ct.iondt;
 
@@ -512,7 +512,7 @@ void init_nose ()
 
     }
 
-    inittemp = ct.ionke * 2.0 / (3.0 * (REAL) N * kB);
+    inittemp = ct.ionke * 2.0 / (3.0 * (rmg_double_t) N * kB);
 
     /* init thermostat forces */
     ct.nose.xf[ct.fpt[0]][0] = 2.0 * (ct.ionke - ct.nose.k0) / ct.nose.xq[0];
@@ -548,10 +548,10 @@ void velup1 ()
 {
     int ion, ic;
     ION *iptr;
-    REAL step, mass, kB;
-    REAL t1, t2, v1, v2, v3;
-    REAL scale = 1.0;
-    REAL temperature;
+    rmg_double_t step, mass, kB;
+    rmg_double_t t1, t2, v1, v2, v3;
+    rmg_double_t scale = 1.0;
+    rmg_double_t temperature;
 
     step = ct.iondt;
 
@@ -695,7 +695,7 @@ void posup ()
 {
     int ion;
     ION *iptr;
-    REAL step;
+    rmg_double_t step;
 
     step = ct.iondt;
 
@@ -735,10 +735,10 @@ void velup2 ()
 {
     int ion, ic;
     ION *iptr;
-    REAL step, mass;
-    REAL t1, t2;
-    REAL v1, v2, v3;
-    REAL scale = 1.0, kB;
+    rmg_double_t step, mass;
+    rmg_double_t t1, t2;
+    rmg_double_t v1, v2, v3;
+    rmg_double_t scale = 1.0, kB;
 
     step = ct.iondt;
 
@@ -846,12 +846,12 @@ void velup2 ()
 
 
 
-void rms_disp (REAL * rms, REAL * trms)
+void rms_disp (rmg_double_t * rms, rmg_double_t * trms)
 {
 
     int it;
     ION *iptr;
-    REAL t1, t2, t3;
+    rmg_double_t t1, t2, t3;
 
     *trms = 0.0;
     rms[0] = rms[1] = rms[2] = 0.0;
@@ -882,7 +882,7 @@ void rms_disp (REAL * rms, REAL * trms)
         rms[1] = t2;
         rms[2] = t3;
 
-        *trms += metric (rms) / ((REAL) ct.nose.N);
+        *trms += metric (rms) / ((rmg_double_t) ct.nose.N);
 
     }
 
@@ -891,8 +891,8 @@ void rms_disp (REAL * rms, REAL * trms)
 void nose_velup1 ()
 {
     int jc;
-    REAL step;
-    REAL scale;
+    rmg_double_t step;
+    rmg_double_t scale;
     int mn;
 
     step = ct.iondt;
@@ -946,7 +946,7 @@ void nose_posup ()
 {
 
     int jc;
-    REAL step;
+    rmg_double_t step;
 
     step = ct.iondt;
 
@@ -963,8 +963,8 @@ void nose_posup ()
 void nose_velup2 ()
 {
     int jc;
-    REAL kB, step;
-    REAL scale;
+    rmg_double_t kB, step;
+    rmg_double_t scale;
     int mn;
 
     step = ct.iondt;
@@ -1088,10 +1088,10 @@ void nose_velup2 ()
 }                               /* end of nose_velup2 */
 
 
-void nose_energy (REAL * nosekin, REAL * nosepot)
+void nose_energy (rmg_double_t * nosekin, rmg_double_t * nosepot)
 {
     int jc;
-    REAL kB;
+    rmg_double_t kB;
 
     /* define Boltzmann param */
     kB = 1.0 / (11605.0 * Ha_eV);

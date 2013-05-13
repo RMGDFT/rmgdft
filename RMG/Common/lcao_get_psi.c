@@ -15,7 +15,7 @@ void lcao_get_psi (STATE * states)
     int ion, idx, ip, l, m, state_count, nspin, st;
     SPECIES *sp;
     ION *iptr;
-    REAL *psi, occupancy, occ_per_wave, charge_count;
+    rmg_double_t *psi, occupancy, occ_per_wave, charge_count;
     long idum;
     double coeff;
 
@@ -142,7 +142,7 @@ void lcao_get_psi (STATE * states)
     {
         int ix, iy, iz;
         int xoff, yoff, zoff;
-        REAL xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
+        rmg_double_t xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
         STATE *state_p;
 
         pe2xyz (pct.gridpe, &ix, &iy, &iz);

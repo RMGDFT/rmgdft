@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void scatter_psi(REAL *tmp_psiR, REAL *tmp_psiI, STATE *sp, int tid)
+ *   void scatter_psi(rmg_double_t *tmp_psiR, rmg_double_t *tmp_psiI, STATE *sp, int tid)
  *   For smp mode, this function is used to scatter an orbital from a local
  *   memory array to remote memory
  *   For mpi mode, copy tmp_psiR to sp->psiR and tmp_psiI to sp->psiI 
@@ -38,7 +38,7 @@
 
 
 
-void scatter_psi (REAL * tmp_psiR, REAL * tmp_psiI, STATE * sp, int tid)
+void scatter_psi (rmg_double_t * tmp_psiR, rmg_double_t * tmp_psiI, STATE * sp, int tid)
 {
 
     int idx;

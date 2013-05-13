@@ -17,7 +17,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_xc (REAL *nrho, REAL *nrho_oppo, REAL *vxc, REAL *exc, int xctype. int spinflag)
+ *   void get_xc (rmg_double_t *nrho, rmg_double_t *nrho_oppo, rmg_double_t *vxc, rmg_double_t *exc, int xctype. int spinflag)
  *   Top-level driver routine that calls a subfunction to generate
  *   a specific exchange-corrleation potential.
  * INPUTS
@@ -45,7 +45,7 @@
 
 
 
-void get_xc (REAL * nrho, REAL * nrho_oppo,  REAL * vxc, REAL * exc, int xctype)
+void get_xc (rmg_double_t * nrho, rmg_double_t * nrho_oppo,  rmg_double_t * vxc, rmg_double_t * exc, int xctype)
 {   
 	int libflag;
  

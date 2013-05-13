@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_new_rho(STATE *states, REAL *rho)
+ *   void get_new_rho(STATE *states, rmg_double_t *rho)
  *   Generates new charge density
  * INPUTS
  *   states:  point to orbital structure (see main.h)
@@ -41,32 +41,32 @@
 
 
 
-void get_new_rho (STATE * states, REAL * rho)
+void get_new_rho (STATE * states, rmg_double_t * rho)
 {
 
     int istate, kpt, n, incx, idx, max_product;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion;
-    REAL *qnmI, *sintR, *qtpr;
-    REAL t1, *work, *product;
-    REAL time1;
+    rmg_double_t *qnmI, *sintR, *qtpr;
+    rmg_double_t t1, *work, *product;
+    rmg_double_t time1;
 #if !GAMMA_PT
-    REAL *sintI;
+    rmg_double_t *sintI;
 #endif
     STATE *sp;
     ION *iptr;
 
-    my_calloc (work,pct.P0_BASIS, REAL);
+    my_calloc (work,pct.P0_BASIS, rmg_double_t);
 
 #if GAMMA_PT
-    my_malloc (sintR, ct.max_nl, REAL);
+    my_malloc (sintR, ct.max_nl, rmg_double_t);
 #else
-    my_malloc (sintR, 2 * ct.max_nl, REAL);
+    my_malloc (sintR, 2 * ct.max_nl, rmg_double_t);
     sintI = sintR + ct.max_nl;
 #endif
             
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    my_malloc (product, max_product, REAL);
+    my_malloc (product, max_product, rmg_double_t);
 
     /* scale charge accumulator */
     n = pct.FP0_BASIS;

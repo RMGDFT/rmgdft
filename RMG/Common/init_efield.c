@@ -10,7 +10,7 @@
  * COPYRIGHT
  *   Copyright (C) 2001  Vincent Meunier, Wenchang Lu, Jerzy Bernholc
  * FUNCTION
- *   void init_efield(REAL *vnuc)
+ *   void init_efield(rmg_double_t *vnuc)
  *   Set up the electric field (add it to vnuc already defined)
  *   sawtooth potential
  * INPUTS
@@ -33,17 +33,17 @@
 #include "main.h"
 
 
-void init_efield (REAL * vnuc)
+void init_efield (rmg_double_t * vnuc)
 {
 
-    REAL norm_field_0;
+    rmg_double_t norm_field_0;
     int ix, iy, iz;
     int jx, jy, jz;
     int idx;
     int incix, inciy;
-    REAL xoff, yoff, zoff;
-    REAL rx, ry, rz;
-    REAL d_field;
+    rmg_double_t xoff, yoff, zoff;
+    rmg_double_t rx, ry, rz;
+    rmg_double_t d_field;
 
     /* normalization of the electric field direction */
     norm_field_0 = sqrt (pow (ct.x_field_0, 2) + pow (ct.y_field_0, 2) + pow (ct.z_field_0, 2));

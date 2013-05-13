@@ -45,14 +45,14 @@
 static int s[MAX_SYMMETRY][3][3];
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int ftau[MAX_SYMMETRY][3], ityp[MAX_IONS];
-static REAL tau[MAX_IONS][3];
+static rmg_double_t tau[MAX_IONS][3];
 static int nsym;
 
 
 
 typedef struct
 {
-    REAL s[FNZ_GRID][FNY_GRID][FNX_GRID];
+    rmg_double_t s[FNZ_GRID][FNY_GRID][FNX_GRID];
 } DENS_ARRAY;
 
 
@@ -61,8 +61,8 @@ void init_sym (void)
 {
     int nr1, nr2, nr3;
     int ion, kpt, wflag;
-    REAL celldm[6];
-    REAL *xk, *wk;
+    rmg_double_t celldm[6];
+    rmg_double_t *xk, *wk;
 
     /* This function uses MAX_IONS as a limit for array sizes.
      * It is, of course, possible to allocate these arrays dynamically,
@@ -88,8 +88,8 @@ void init_sym (void)
     }
 
 
-    my_malloc (xk, 3 * ct.num_kpts, REAL);
-    my_malloc (wk, ct.num_kpts, REAL);
+    my_malloc (xk, 3 * ct.num_kpts, rmg_double_t);
+    my_malloc (wk, ct.num_kpts, rmg_double_t);
 
     /* Set up special k-point positions and weights for fortran routines */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
@@ -129,7 +129,7 @@ void symmetrize_rho (FP0_GRID * rho)
 
     int idx, ix, iy, iz, xoff, yoff, zoff, nr1, nr2, nr3;
     DENS_ARRAY *da;
-    REAL t1;
+    rmg_double_t t1;
 
 
     /* Wait until all processors arrive at this point */
@@ -177,7 +177,7 @@ void symmetrize_rho (FP0_GRID * rho)
 
 
     /* Pack density back into correct place */
-    t1 = (REAL) nsym;
+    t1 = (rmg_double_t) nsym;
     t1 = 1.0 / t1;
 
     for (ix = 0; ix < pct.FPX0_GRID; ix++)
@@ -198,7 +198,7 @@ void symmetrize_rho (FP0_GRID * rho)
 void symforce (void)
 {
     int ion, nr1, nr2, nr3;
-    REAL celldm[6], force[MAX_IONS][3];
+    rmg_double_t celldm[6], force[MAX_IONS][3];
 
     nr1 = ct.psi_nxgrid;
     nr2 = ct.psi_nygrid;

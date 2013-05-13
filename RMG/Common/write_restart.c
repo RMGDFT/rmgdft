@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void write_data(char *name, REAL *vh, REAL *rho, REAL *vxc, STATE *states)
+ *   void write_data(char *name, rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *vxc, STATE *states)
  *   Writes the hartree potential, the wavefunctions, the 
  *   charge density and various other things to a file.
  *   This file is useful for re-run (ct.runflag =1)
@@ -49,14 +49,14 @@
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-void write_restart (char *name, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
+void write_restart (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc, STATE * states)
 {
     char newname[MAX_PATH + 20];
     int amode;
     FILE *fhandle;
     int fhand;
     int ia, ion;
-    REAL time0, write_time;
+    rmg_double_t time0, write_time;
     SPECIES *sp;
     ION *iptr;
 

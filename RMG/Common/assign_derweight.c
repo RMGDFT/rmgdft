@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "main.h"
 
-void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr)
+void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * rtptr)
 {
 
     int idx, ix, iy, iz, *dvec;

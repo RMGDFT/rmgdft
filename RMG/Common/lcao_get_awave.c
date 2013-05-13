@@ -11,7 +11,7 @@
 /*This function calculates atomic wavefunctions using wavefunctions read from PP files
  * with angular part added. The result is in psi, which is assumed to be initialized to zero*/
 
-void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double coeff)
+void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, double coeff)
 {
 
     int ix, iy, iz;
@@ -20,8 +20,8 @@ void lcao_get_awave (REAL *psi, ION *iptr, int awave_idx, int l, int m, double c
     int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
     int icount, n, incx;
     int *pvec;
-    REAL r, xc, yc, zc, vector[3];
-    REAL x[3], invdr, t1, t2, xstart, ystart, zstart;;
+    rmg_double_t r, xc, yc, zc, vector[3];
+    rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
     SPECIES *sp;
 
     /* Grab some memory for temporary storage */

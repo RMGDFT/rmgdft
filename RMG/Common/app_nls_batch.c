@@ -9,11 +9,11 @@
 
 
 
-void app_nls_batch (STATE *sp, REAL *nv, REAL *ns, REAL *Bns, REAL *sintR)
+void app_nls_batch (STATE *sp, rmg_double_t *nv, rmg_double_t *ns, rmg_double_t *Bns, rmg_double_t *sintR)
 {
 
    int istate;
-   REAL *tmp_psi;
+   rmg_double_t *tmp_psi;
 
 
    tmp_psi = sp->psiR;

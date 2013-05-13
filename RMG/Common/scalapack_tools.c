@@ -562,12 +562,12 @@ int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int siz
 // global_matrix  contains the data to be reduced while dist_matrix
 // is the target distributed matrix and work is temporary space that
 // should be sized at least as large as dist_matrix
-void reduce_and_dist_matrix(int n, REAL *global_matrix, REAL *dist_matrix, REAL *work)
+void reduce_and_dist_matrix(int n, rmg_double_t *global_matrix, rmg_double_t *dist_matrix, rmg_double_t *work)
 {
 
     int stop;
 
-    REAL time1, time2;
+    rmg_double_t time1, time2;
 
     stop = n * n;
     time1 = my_crtc();

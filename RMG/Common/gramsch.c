@@ -43,19 +43,19 @@
 
 
 // Also used by subdiag but never at the same time.
-extern REAL *global_matrix;
+extern rmg_double_t *global_matrix;
 
 
-void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
+void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int maxpt)
 {
 
    int st, st1, info, length, idx, idj, omp_tid;
    int ione = 1, block, num_blocks, block_pts;
-   REAL alpha = -1.0;
-   REAL zero = 0.0;
-   REAL one = 1.0;
-   REAL tmp, *c, *tarr, *darr, *sarr;
-   REAL time1;
+   rmg_double_t alpha = -1.0;
+   rmg_double_t zero = 0.0;
+   rmg_double_t one = 1.0;
+   rmg_double_t tmp, *c, *tarr, *darr, *sarr;
+   rmg_double_t time1;
    STATE *sp;
    char *transn = "n";
    char *transt = "t";
@@ -71,15 +71,15 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
    sp = kpt->kstate;
    c = sp->psiR;
 
-   my_malloc(tarr, numst , REAL);
+   my_malloc(tarr, numst , rmg_double_t);
 
 #if MD_TIMERS
    time1 = my_crtc();
 #endif
 #if GPU_ENABLED
-   cublasSetVector( pbasis * numst, sizeof( REAL ), c, ione, ct.gpu_states, ione );
+   cublasSetVector( pbasis * numst, sizeof( rmg_double_t ), c, ione, ct.gpu_states, ione );
    cublasDsyrk_v2 (ct.cublas_handle, cuplo, cu_transT, numst, numpt, &one, ct.gpu_states, numpt, &zero, ct.gpu_global_matrix, numst);
-   cublasGetVector( numst * numst, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+   cublasGetVector( numst * numst, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 #else
    ssyrk( uplo, transt, &numst, &numpt, &one, c, &numpt, 
                &zero, global_matrix, &numst);
@@ -102,9 +102,9 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    /* compute the cholesky factor of the overlap matrix */
 #if GPU_ENABLED
-   cublasSetVector( numst * numst, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+   cublasSetVector( numst * numst, sizeof( rmg_double_t ), global_matrix, ione, ct.gpu_global_matrix, ione );
    magma_dpotrf_gpu('L', numst, ct.gpu_global_matrix, numst, &info);
-   cublasGetVector( numst * numst, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+   cublasGetVector( numst * numst, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 #else
    cholesky(global_matrix, maxst);
 #endif
@@ -138,7 +138,7 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 
    } /* end of for */
 
-   cublasGetVector( pbasis * numst, sizeof( REAL ), ct.gpu_states, ione, c, ione );
+   cublasGetVector( pbasis * numst, sizeof( rmg_double_t ), ct.gpu_states, ione, c, ione );
 #else
 
 // This code may look crazy but there is a method to the madness. We copy a slice
@@ -150,7 +150,7 @@ void gram(KPOINT *kpt, REAL vel, int numst, int maxst, int numpt, int maxpt)
 #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
 {
        omp_tid = omp_get_thread_num();
-       if(omp_tid == 0) my_malloc(darr, numst * omp_get_num_threads(), REAL);
+       if(omp_tid == 0) my_malloc(darr, numst * omp_get_num_threads(), rmg_double_t);
 #pragma omp barrier
        
 #pragma omp for schedule(static, 1) nowait

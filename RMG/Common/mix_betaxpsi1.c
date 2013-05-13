@@ -32,12 +32,12 @@ void mix_betaxpsi1 (STATE *sp)
 {
 
     int size, koffset, loffset, idx1, kpt, istate;
-    REAL scale;
+    rmg_double_t scale;
 
     kpt = sp->kidx;
     istate = sp->istate;
 
-    scale = pow(1.0 - ct.prjmix, (REAL)istate);
+    scale = pow(1.0 - ct.prjmix, (rmg_double_t)istate);
     if(istate == 0) scale = 1.0 - ct.prjmix;
     size = ct.max_nl;
     koffset = kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl;

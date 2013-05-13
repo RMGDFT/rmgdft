@@ -4,11 +4,11 @@
 #include <math.h>
 
 
-void get_psi_overlaps(REAL *psi_array, REAL *overlap, int numst, int maxst, int numpt, int maxpt)
+void get_psi_overlaps(rmg_double_t *psi_array, rmg_double_t *overlap, int numst, int maxst, int numpt, int maxpt)
 {
 
-   REAL rzero = 0.0;
-   REAL rone = 1.0;
+   rmg_double_t rzero = 0.0;
+   rmg_double_t rone = 1.0;
    char *transt = "t";
    char *uplo = "l";
 

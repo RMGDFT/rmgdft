@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void write_avgd(REAL *rho)
+ *   void write_avgd(rmg_double_t *rho)
  *   Generates the average electron density along the z-axis.
  *   Integrates over the x and y axes.
  * INPUTS
@@ -34,13 +34,13 @@
 #include <stdio.h>
 #include "main.h"
 
-void write_avgd (REAL * rho)
+void write_avgd (rmg_double_t * rho)
 {
 
     int ix, iy, iz, poff;
     int px, py, pz;
-    REAL t1;
-    REAL zvec[FNZ_GRID];
+    rmg_double_t t1;
+    rmg_double_t zvec[FNZ_GRID];
 
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);

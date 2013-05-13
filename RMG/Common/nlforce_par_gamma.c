@@ -8,11 +8,11 @@
 #include <math.h>
 #include "main.h"
 
-void nlforce_par_gamma (REAL * par_gamma, int ion, int nh, REAL *force)
+void nlforce_par_gamma (rmg_double_t * par_gamma, int ion, int nh, rmg_double_t *force)
 {
     int idx, idx1, size, n, m, three = 3;
-    REAL forces[3];
-    REAL *gamma_x, *gamma_y, *gamma_z, *dnmI;
+    rmg_double_t forces[3];
+    rmg_double_t *gamma_x, *gamma_y, *gamma_z, *dnmI;
 
     size = nh * (nh + 1) / 2;
 

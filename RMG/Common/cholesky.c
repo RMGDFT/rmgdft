@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void cholesky(REAL *a, int n)
+ *   void cholesky(rmg_double_t *a, int n)
  *   Computes the choleski decomposition of a symmetric positive 
  *   definite matrix if the matrix is not positive definite outputs
  *   an error message and halts program execution.
@@ -37,7 +37,7 @@
 #include <math.h>
 
 #if 1
-void cholesky(REAL * a, int n) {
+void cholesky(rmg_double_t * a, int n) {
 
     int info;
     char *uplo = "l";
@@ -50,13 +50,13 @@ void cholesky(REAL * a, int n) {
 }
 
 #else
-void cholesky (REAL * a, int n)
+void cholesky (rmg_double_t * a, int n)
 {
 
     int i, j, k;
-    REAL sum, *diagonal;
+    rmg_double_t sum, *diagonal;
 
-    my_malloc (diagonal, n, REAL);
+    my_malloc (diagonal, n, rmg_double_t);
 
     for (i = 0; i < n; i++)
     {

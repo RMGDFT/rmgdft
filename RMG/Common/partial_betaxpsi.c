@@ -8,20 +8,20 @@
 #include <float.h>
 #include "main.h"
 
-void partial_betaxpsi (int ion, fftwnd_plan p2, REAL * newsintR_x, REAL * newsintR_y,
-                       REAL * newsintR_z, REAL * newsintI_x, REAL * newsintI_y, REAL * newsintI_z,
+void partial_betaxpsi (int ion, fftwnd_plan p2, rmg_double_t * newsintR_x, rmg_double_t * newsintR_y,
+                       rmg_double_t * newsintR_z, rmg_double_t * newsintI_x, rmg_double_t * newsintI_y, rmg_double_t * newsintI_z,
                        ION * iptr)
 {
 
     int idx, kidx, istate, size, nh, index;
     int alloc, prjcount, count;
     int incx = 1, *pidx, ip;
-    REAL *workR;
-    REAL *beta_x, *beta_y, *beta_z;
-    REAL *temp_psiR;
+    rmg_double_t *workR;
+    rmg_double_t *beta_x, *beta_y, *beta_z;
+    rmg_double_t *temp_psiR;
     STATE *sta;
 #if !GAMMA_PT
-    REAL *workI, *pI, *temp_psiI, *pR;
+    rmg_double_t *workI, *pI, *temp_psiI, *pR;
 #endif
 
     nh = ct.sp[ct.ions[ion].species].nh;
@@ -35,9 +35,9 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, REAL * newsintR_x, REAL * newsin
     if (count)
     {
 #if GAMMA_PT
-        my_malloc (workR, alloc, REAL);
+        my_malloc (workR, alloc, rmg_double_t);
 #else
-        my_malloc (workR, 2 * alloc, REAL);
+        my_malloc (workR, 2 * alloc, rmg_double_t);
         workI = workR + alloc;
 #endif
     }
@@ -47,7 +47,7 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, REAL * newsintR_x, REAL * newsin
     if (size)
     {
 #if !FDIFF_BETA
-        my_malloc (beta_x, 3 * size, REAL);
+        my_malloc (beta_x, 3 * size, rmg_double_t);
         beta_y = beta_x + size;
         beta_z = beta_y + size;
 

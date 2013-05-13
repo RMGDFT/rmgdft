@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void quench(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, 
- *               REAL *rho, REAL *rhocore, REAL *rhoc)
+ *   void quench(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc, 
+ *               rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
  *   For a fixed atomic configuration, quench the electrons to find 
  *   the minimum total energy 
  * INPUTS
@@ -45,14 +45,14 @@
 #include <stdio.h>
 #include "main.h"
 
-bool quench (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc, REAL * rho,
-             REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
+bool quench (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * rho,
+             rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc)
 {
 
     bool CONVERGED;
     int numacc = 1, ic;
     /*int ist, ik;
-       REAL KE; */
+       rmg_double_t KE; */
 
     /* ---------- begin scf loop ---------- */
     

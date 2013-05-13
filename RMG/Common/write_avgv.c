@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void write_avgv(REAL *vh, REAL *vnuc)
+ *   void write_avgv(rmg_double_t *vh, rmg_double_t *vnuc)
  *   Generates the avergage electrostatic potential along the z-axis.
  *   Integrates over the x and y axes.
  * INPUTS
@@ -37,13 +37,13 @@
 #include "main.h"
 
 
-void write_avgv (REAL * vh, REAL * vnuc)
+void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 {
 
     int ix, iy, iz, poff;
     int px, py, pz;
-    REAL t1;
-    REAL zvec[NZ_GRID];
+    rmg_double_t t1;
+    rmg_double_t zvec[NZ_GRID];
 
 
     /* Get this processors offset */

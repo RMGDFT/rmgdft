@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   REAL get_ke(STATE *sp, int tid)
+ *   rmg_double_t get_ke(STATE *sp, int tid)
  *   Computes the kinetic energy of a given orbital. 
  * INPUTS
  *   sp: points to orbital structure (see main.h)
@@ -40,16 +40,16 @@
 
 
 #if GAMMA_PT
-REAL get_ke (STATE * sp, int tid)
+rmg_double_t get_ke (STATE * sp, int tid)
 {
 
     int pbasis, sbasis;
-    REAL *work2;
-    REAL *tmp_psi, KE;
+    rmg_double_t *work2;
+    rmg_double_t *tmp_psi, KE;
     int dimx, dimy, dimz;
 
 #if 1
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -62,7 +62,7 @@ REAL get_ke (STATE * sp, int tid)
 
 
     /* Grab some memory */
-    my_malloc (tmp_psi, 2 * (sbasis), REAL);
+    my_malloc (tmp_psi, 2 * (sbasis), rmg_double_t);
     work2 = tmp_psi + sbasis;
 
     gather_psi (tmp_psi, NULL, sp, tid);
@@ -91,16 +91,16 @@ REAL get_ke (STATE * sp, int tid)
 
 
 /* Complex version */
-REAL get_ke (STATE * sp, int tid)
+rmg_double_t get_ke (STATE * sp, int tid)
 {
 
     int pbasis, sbasis;
-    REAL *work1, *work2;
-    REAL *tmp_psiR, *tmp_psiI, KE;
+    rmg_double_t *work1, *work2;
+    rmg_double_t *tmp_psiR, *tmp_psiI, KE;
     int dimx, dimy, dimz;
 
 #if 1
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 #endif
 
@@ -113,10 +113,10 @@ REAL get_ke (STATE * sp, int tid)
 
 
     /* Grab some memory */
-    my_malloc (tmp_psiR, 2 * (sbasis), REAL);
+    my_malloc (tmp_psiR, 2 * (sbasis), rmg_double_t);
     work1 = tmp_psiR + sbasis;
 
-    my_malloc (tmp_psiI, 2 * (sbasis), REAL);
+    my_malloc (tmp_psiI, 2 * (sbasis), rmg_double_t);
     work2 = tmp_psiI + sbasis;
 
 

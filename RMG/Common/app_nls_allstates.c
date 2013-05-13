@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void app_nl(REAL *psiR, REAL *psiI, REAL *workR, REAL *workI, 
+ *   void app_nl(rmg_double_t *psiR, rmg_double_t *psiI, rmg_double_t *workR, rmg_double_t *workI, 
  *               int state, int flag, int kidx, int tid)
  *    Applies the non-local potential operator to an orbital.
  *    Also mixes the projections of the non-local operator on the
@@ -55,21 +55,21 @@
 
 
 
-void app_nls_allstates (REAL * psiR, REAL * psiI, REAL * workR, REAL * workI, 
-REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int kidx)
+void app_nls_allstates (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rmg_double_t * workI, 
+rmg_double_t *work2R, rmg_double_t *work2I, rmg_double_t *Bns, rmg_double_t *BnsI, rmg_double_t *sintR, rmg_double_t *sintI, int kidx)
 {
 
     int idx, ion, gion, stop, ip, sindex, index2, ione=1, itwo=2;
     int *pidx;
     int i, j, nh, inh;
     int incx = 1, alloc, step, count;
-    REAL *weiptr, *mptr, *dnmI, coeffR, coeffI, coeff2R, coeff2I;
-    REAL *nworkR, *nworkI, *nwork2R, *nwork2I, *pR, *pI, *psintR, *qqq;
+    rmg_double_t *weiptr, *mptr, *dnmI, coeffR, coeffI, coeff2R, coeff2I;
+    rmg_double_t *nworkR, *nworkI, *nwork2R, *nwork2I, *pR, *pI, *psintR, *qqq;
     ION *iptr;
     SPECIES *sp;
-    REAL coeffMatR[2*MAX_NL], coeffMatI[2*MAX_NL], rzero = 0.0, rone=1.0;
+    rmg_double_t coeffMatR[2*MAX_NL], coeffMatI[2*MAX_NL], rzero = 0.0, rone=1.0;
     char *transa = "n", *transt = "t";
-    REAL *sintR_compack, *sintI_compack;
+    rmg_double_t *sintR_compack, *sintI_compack;
     int istate, proj_index;
 #if GPU_ENABLED
     cublasStatus_t custat;
@@ -98,9 +98,9 @@ REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int
 #if GPU_ENABLED
     sintR_compack = ct.gpu_host_temp1;
 #else
-    my_calloc (sintR_compack, alloc, REAL);
+    my_calloc (sintR_compack, alloc, rmg_double_t);
 #endif
-    my_calloc (nworkR, alloc, REAL);
+    my_calloc (nworkR, alloc, rmg_double_t);
 
     for(i = 0; i < ct.num_states * pct.num_tot_proj; i++)
         sintR_compack[i] = 0.0;
@@ -166,32 +166,32 @@ REAL *work2R, REAL *work2I, REAL *Bns, REAL *BnsI, REAL *sintR, REAL *sintI, int
     }
 
 #if GPU_ENABLED
-    cublasSetVector( ct.num_states * pct.num_tot_proj, sizeof( REAL ), sintR_compack, ione, ct.gpu_work3, ione );
+    cublasSetVector( ct.num_states * pct.num_tot_proj, sizeof( rmg_double_t ), sintR_compack, ione, ct.gpu_work3, ione );
 
-    cublasSetVector( pct.num_tot_proj*pct.num_tot_proj, sizeof( REAL ), pct.M_dnm, ione, ct.gpu_work1, ione );
+    cublasSetVector( pct.num_tot_proj*pct.num_tot_proj, sizeof( rmg_double_t ), pct.M_dnm, ione, ct.gpu_work1, ione );
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.num_tot_proj, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_work1,  pct.num_tot_proj, ct.gpu_work3, pct.num_tot_proj,
             &rzero,  ct.gpu_work2, pct.num_tot_proj);
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_Bweight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
             &rzero,  ct.gpu_temp, pct.P0_BASIS);
-    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), ct.gpu_temp, ione, workR, ione);
+    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, workR, ione);
 
 
-    cublasSetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), psiR, ione, ct.gpu_temp, ione);
-    cublasSetVector( pct.num_tot_proj*pct.num_tot_proj, sizeof( REAL ), pct.M_qqq, ione, ct.gpu_work1, ione );
+    cublasSetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), psiR, ione, ct.gpu_temp, ione);
+    cublasSetVector( pct.num_tot_proj*pct.num_tot_proj, sizeof( rmg_double_t ), pct.M_qqq, ione, ct.gpu_work1, ione );
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.num_tot_proj, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_work1,  pct.num_tot_proj, ct.gpu_work3, pct.num_tot_proj,
             &rzero,  ct.gpu_work2, pct.num_tot_proj);
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_weight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
             &rone,  ct.gpu_temp, pct.P0_BASIS);
-    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), ct.gpu_temp, ione, work2R, ione);
+    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, work2R, ione);
 
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_Bweight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
             &rzero,  ct.gpu_temp, pct.P0_BASIS);
-    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( REAL ), ct.gpu_temp, ione, Bns, ione);
+    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, Bns, ione);
 
 #else
 

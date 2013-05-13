@@ -14,8 +14,8 @@
 void ortho (STATE * states, int kpt)
 {
     int ist1, ist2, length, size, ione=1, idx;
-    REAL time1, time2, rone=1.0;
-    REAL *cR, *cI, *Oij;
+    rmg_double_t time1, time2, rone=1.0;
+    rmg_double_t *cR, *cI, *Oij;
     STATE *st, *st1;
 
     if(ct.norm_conserving_pp) {
@@ -25,9 +25,9 @@ void ortho (STATE * states, int kpt)
 
     time1 = my_crtc ();
 
-    my_malloc (cR, ct.num_states, REAL);
-    my_malloc (cI, ct.num_states, REAL);
-    my_malloc (Oij, ct.num_states * ct.num_states, REAL);
+    my_malloc (cR, ct.num_states, rmg_double_t);
+    my_malloc (cI, ct.num_states, rmg_double_t);
+    my_malloc (Oij, ct.num_states * ct.num_states, rmg_double_t);
 
 
     st = states;
@@ -126,8 +126,8 @@ void ortho (STATE * states, int kpt)
 void ortho (STATE * states, int kpt)
 {
     int ist1, ist2, length;
-    REAL time1, time2;
-    REAL *cR, *cI;
+    rmg_double_t time1, time2;
+    rmg_double_t *cR, *cI;
     STATE *st, *st1;
 
     if(ct.norm_conserving_pp) {
@@ -137,8 +137,8 @@ void ortho (STATE * states, int kpt)
 
     time1 = my_crtc ();
 
-    my_malloc (cR, ct.num_states, REAL);
-    my_malloc (cI, ct.num_states, REAL);
+    my_malloc (cR, ct.num_states, rmg_double_t);
+    my_malloc (cI, ct.num_states, rmg_double_t);
 
 
 

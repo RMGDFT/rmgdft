@@ -14,7 +14,7 @@
  * 		NsavedSteps ---	Number of steps saved, including the current step, Must be greater than 2
  *              hist, rhist --- Pointers to arrays to keep history for charge density and residual
  *                              These should be setup as static double pointers:
- *                              static REAL **rhohist=NULL, **residhist=NULL;
+ *                              static rmg_double_t **rhohist=NULL, **residhist=NULL;
  *                              Memory allocation takes place inside this function when the pointers are NULL at step 0
  * 	
  * 	Output: rho_old ----- updated 
@@ -27,9 +27,9 @@
 
 #define 	MAX_STEPS 	500
 
-REAL special_dot_product(REAL *a, REAL *b, REAL *b_trade, REAL weight, int length_x, int length_y, int length_z);
+rmg_double_t special_dot_product(rmg_double_t *a, rmg_double_t *b, rmg_double_t *b_trade, rmg_double_t weight, int length_x, int length_y, int length_z);
 
-void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, REAL ***hist, REAL ***rhist, int special_metric, REAL weight)
+void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, rmg_double_t ***hist, rmg_double_t ***rhist, int special_metric, rmg_double_t weight)
 {
     double  *residual, *trade_space;
     double A[MAX_STEPS * MAX_STEPS];
@@ -48,7 +48,7 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 
     scale = -1.0 * ct.charge_pulay_scale;
 
-    my_malloc (residual, N, REAL);
+    my_malloc (residual, N, rmg_double_t);
     
     /*Calculate residual*/
     for (i=0; i<N; i++)
@@ -222,13 +222,13 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 }
 
 
-REAL special_dot_product(REAL *a, REAL *b, REAL *b_trade, REAL weight, int length_x, int length_y, int length_z)
+rmg_double_t special_dot_product(rmg_double_t *a, rmg_double_t *b, rmg_double_t *b_trade, rmg_double_t weight, int length_x, int length_y, int length_z)
 {
     int ix, iy, iz;
     int idx, idy, idz;
     int idxp1, idyp1, idzp1;
     int idxm1, idym1, idzm1;
-    REAL rvalue = 0.0, a_value;
+    rmg_double_t rvalue = 0.0, a_value;
     int incx, incy;
    
     trade_imagesx (b, b_trade, length_x, length_y, length_z, 1, FULL_FD);

@@ -8,18 +8,18 @@
 #include <stdlib.h>
 #include "main.h"
 
-void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, REAL * rtptr, REAL *Bweight)
+void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * rtptr, rmg_double_t *Bweight)
 {
 
     int idx, ix, iy, iz, *dvec;
     int idx1, docount;
     int *pidx, nldim;
-    REAL *tem_array, *Btem_array;
+    rmg_double_t *tem_array, *Btem_array;
 
     nldim = sp->nldim;
     idx = nldim * nldim * nldim;
-    my_malloc (tem_array, idx, REAL);
-    my_malloc (Btem_array, idx, REAL);
+    my_malloc (tem_array, idx, rmg_double_t);
+    my_malloc (Btem_array, idx, rmg_double_t);
     for(ix = 0; ix < nldim * nldim * nldim; ix++) 
         tem_array[ix] = beptr[ix].re;
 

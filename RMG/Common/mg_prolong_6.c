@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void mg_prolong_6(REAL *full, REAL *half, int dimx, int dimy, int dimz)
+ *   void mg_prolong_6(rmg_double_t *full, rmg_double_t *half, int dimx, int dimy, int dimz)
  *   get full dimensioned array in the fine grid from half dimensioned 
  *   array in the fine grid. Make sure to do the tradeimagex before prolongation.
  * OUTPUTS
@@ -42,14 +42,14 @@
 
 
 
-void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz)
+void mg_prolong_6 (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int incz, incy, incx, incz2, incy2, incx2, incx3;
-    REAL scale,  a1, a2, a3, a4, a5;
-    REAL * fulla;
-    REAL * fullb;
+    rmg_double_t scale,  a1, a2, a3, a4, a5;
+    rmg_double_t * fulla;
+    rmg_double_t * fullb;
 
 
     incz = 1;
@@ -68,8 +68,8 @@ void mg_prolong_6 (REAL * full, REAL * half, int dimx, int dimy, int dimz)
     a4 = 0.0;
     a5 = 0.0;
 
-   my_malloc (fulla,(pct.FPX0_GRID)*(pct.FPY0_GRID / 2+ 10)*(pct.FPZ0_GRID / 2 + 10),REAL);
-   my_malloc (fullb,(pct.FPX0_GRID)*(pct.FPY0_GRID)*(pct.FPZ0_GRID / 2 + 10),REAL);
+   my_malloc (fulla,(pct.FPX0_GRID)*(pct.FPY0_GRID / 2+ 10)*(pct.FPZ0_GRID / 2 + 10),rmg_double_t);
+   my_malloc (fullb,(pct.FPX0_GRID)*(pct.FPY0_GRID)*(pct.FPZ0_GRID / 2 + 10),rmg_double_t);
 
 
         for (ix = 0; ix < dimx / 2; ix++)

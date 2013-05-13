@@ -9,7 +9,7 @@
 #include "main.h"
 
 
-void lcao_get_rho (REAL * arho_f)
+void lcao_get_rho (rmg_double_t * arho_f)
 {
 
     int ix, iy, iz;
@@ -18,8 +18,8 @@ void lcao_get_rho (REAL * arho_f)
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
     int icount, n, incx;
     int *pvec;
-    REAL r, xc, yc, zc;;
-    REAL x[3], invdr, t1, t2, xstart, ystart, zstart;;
+    rmg_double_t r, xc, yc, zc;;
+    rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
     SPECIES *sp;
     ION *iptr;
 

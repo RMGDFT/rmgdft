@@ -9,16 +9,16 @@
 #if GAMMA_PT
 #include "hybrid.h"
 #include <pthread.h>
-void subdiag_app_AB_one (STATE *sp, REAL * a_psi, REAL * b_psi, REAL * vtot_eig);
+void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig);
 
 
 /*Applies A operator to all wavefunctions*/
-void subdiag_app_AB (STATE * states, REAL * a_psi, REAL * b_psi, REAL * vtot_eig)
+void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig)
 {
     int istate, st1, ist, istop;
     STATE *sp;
-    REAL time1, time2;
-    REAL *vtot_eig_s;
+    rmg_double_t time1, time2;
+    rmg_double_t *vtot_eig_s;
     int ione = 1;
 #if !BATCH_NLS
     error_handler("set BATCJ_NLS 1, other mode not programmed here");
@@ -26,7 +26,7 @@ void subdiag_app_AB (STATE * states, REAL * a_psi, REAL * b_psi, REAL * vtot_eig
     
     int idx, dimx = pct.PX0_GRID, dimy = pct.PY0_GRID, dimz = pct.PZ0_GRID;
     idx = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) ;
-    my_malloc(vtot_eig_s, idx, REAL);
+    my_malloc(vtot_eig_s, idx, rmg_double_t);
 
 // trade images for vtot_eig and stored in vtot_eig_s. It will be used
 // in app_cilr
@@ -79,14 +79,14 @@ void subdiag_app_AB (STATE * states, REAL * a_psi, REAL * b_psi, REAL * vtot_eig
 }
 
 // Applies A operator to one wavefunction
-void subdiag_app_AB_one (STATE *sp, REAL * a_psi, REAL * b_psi, REAL * vtot_eig_s)
+void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig_s)
 {
     int idx, istate, sbasis, tid;
-    REAL *sg_twovpsi, *tmp_psi, *work2;
+    rmg_double_t *sg_twovpsi, *tmp_psi, *work2;
     int dimx = pct.PX0_GRID, dimy = pct.PY0_GRID, dimz = pct.PZ0_GRID;
     int ione = 1;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
 

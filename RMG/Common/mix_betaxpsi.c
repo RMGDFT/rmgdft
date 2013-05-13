@@ -35,7 +35,7 @@ void mix_betaxpsi (int mix)
 {
 
     int size;
-    REAL *newsintR, *oldsintR, *newsintI, *oldsintI;
+    rmg_double_t *newsintR, *oldsintR, *newsintI, *oldsintI;
 
 
     /*Local version*/

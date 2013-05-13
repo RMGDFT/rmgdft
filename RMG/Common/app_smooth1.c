@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void app_smooth(S0_GRID *f, S0_GRID *work, REAL sfac)
+ *   void app_smooth(S0_GRID *f, S0_GRID *work, rmg_double_t sfac)
  *   Smooths the function f by averaging the neighbors 
  * INPUTS
  *   f: array to be smoothed
@@ -41,13 +41,13 @@
 
  Smooths f and returns result in work
 */
-void app_smooth1 (REAL * f, REAL * work, int dimx, int dimy, int dimz)
+void app_smooth1 (rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int dimz)
 {
 
     int iz, ix, iy, incx, incy;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
-    REAL scale, ec, fc, crn, cc, temp;
+    rmg_double_t scale, ec, fc, crn, cc, temp;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -102,7 +102,7 @@ void app_smooth1_f (rmg_float_t * f, rmg_float_t * work, int dimx, int dimy, int
     int iz, ix, iy, incx, incy;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
-    REAL scale, ec, fc, crn, cc, temp;
+    rmg_double_t scale, ec, fc, crn, cc, temp;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);

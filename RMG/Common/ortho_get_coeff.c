@@ -16,13 +16,13 @@
 
 #if FAST_ORTHO
 #if GAMMA_PT
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI, REAL *Oij)
+void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t * cR, rmg_double_t * cI, rmg_double_t *Oij)
 {
     int ion, i, j, inh, sidx1, sidx2, nidx, oion;
     int idx, nh;
-    REAL *tmp_psi2, *tmp_psi1;
-    REAL *sint1R, *sint2R, *qqq;
-    REAL sumpsi, sumbeta, sri;
+    rmg_double_t *tmp_psi2, *tmp_psi1;
+    rmg_double_t *sint1R, *sint2R, *qqq;
+    rmg_double_t sumpsi, sumbeta, sri;
     ION *iptr;
     SPECIES *sp;
 
@@ -85,14 +85,14 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 
 
 #else
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI)
+void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t * cR, rmg_double_t * cI)
 {
     int ion, i, j, nidx, oion;
     int idx, nh;
     int sidx1, sidx2, inh;
-    REAL *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I;
-    REAL *sint1R, *sint1I, *sint2R, *sint2I, *qqq;
-    REAL sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
+    rmg_double_t *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I;
+    rmg_double_t *sint1R, *sint1I, *sint2R, *sint2I, *qqq;
+    rmg_double_t sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
     ION *iptr;
     SPECIES *sp;
 
@@ -179,13 +179,13 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
  * at the end of ortho_full.c*/
 
 #if GAMMA_PT
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI)
+void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t * cR, rmg_double_t * cI)
 {
     int ion, i, j, inh, sidx1, sidx2, nidx, oion;
     int idx, nh;
-    REAL *tmp_psi2, *tmp_psi1;
-    REAL *sint1R, *sint2R, *qqq;
-    REAL sumpsi, sumbeta, sri;
+    rmg_double_t *tmp_psi2, *tmp_psi1;
+    rmg_double_t *sint1R, *sint2R, *qqq;
+    rmg_double_t sumpsi, sumbeta, sri;
     ION *iptr;
     SPECIES *sp;
 
@@ -252,14 +252,14 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, RE
 
 
 #else
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL * cR, REAL * cI)
+void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t * cR, rmg_double_t * cI)
 {
     int ion, i, j, nidx, oion;
     int idx, nh;
     int sidx1, sidx2, inh;
-    REAL *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I;
-    REAL *sint1R, *sint1I, *sint2R, *sint2I, *qqq;
-    REAL sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
+    rmg_double_t *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I;
+    rmg_double_t *sint1R, *sint1I, *sint2R, *sint2I, *qqq;
+    rmg_double_t sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
     ION *iptr;
     SPECIES *sp;
 

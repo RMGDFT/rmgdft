@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_rho(STATE *states, REAL *rho)
+ *   void get_rho(STATE *states, rmg_double_t *rho)
  *   Generates new charge density and mix linearly with old one.
  * INPUTS
  *   states:  point to orbital structure (see main.h)
@@ -38,11 +38,11 @@
 #include "main.h"
 
 
-void mix_rho (REAL * new_rho, REAL * rho, REAL *rhocore, int length, int length_x, int length_y, int length_z)
+void mix_rho (rmg_double_t * new_rho, rmg_double_t * rho, rmg_double_t *rhocore, int length, int length_x, int length_y, int length_z)
 {
-    REAL t1, min, min2, nspin = (ct.spin_flag + 1.0);
+    rmg_double_t t1, min, min2, nspin = (ct.spin_flag + 1.0);
     int step, idx, inc = 1;
-    static REAL **rhohist=NULL, **residhist=NULL;
+    static rmg_double_t **rhohist=NULL, **residhist=NULL;
 
     /*Linear Mixing*/
     if (verify("charge_mixing_type","Linear"))

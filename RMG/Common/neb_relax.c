@@ -10,8 +10,8 @@
  * COPYRIGHT
  *   Copyright (C) 2001  Frisco Rose, Jerzy Bernholc
  * FUNCTION
- *   void neb_relax (STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
- *                REAL *rho, REAL *rhocore, REAL *rhoc)
+ *   void neb_relax (STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
+ *                rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
  *   drive routine for elementary nudged elastic band relax.
  * INPUTS
  *   states: all wave functions (see main.h)
@@ -44,14 +44,14 @@
 #define Y 1
 #define Z 2
 
-void neb_relax (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-              REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
+void neb_relax (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
+              rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc)
 {
     /* This may need to be malloced if we start using large ion counts */
     int constrain, count, neb_steps = 0, img_rank_map[3];
-    REAL imgA[3*ct.num_ions], imgB[3*ct.num_ions], imgC[3*ct.num_ions];
-    REAL tmp_mag, max_frc, *fp, *L_ptr, *S_ptr, *R_ptr;
-	REAL L_total, S_total, R_total;
+    rmg_double_t imgA[3*ct.num_ions], imgB[3*ct.num_ions], imgC[3*ct.num_ions];
+    rmg_double_t tmp_mag, max_frc, *fp, *L_ptr, *S_ptr, *R_ptr;
+	rmg_double_t L_total, S_total, R_total;
     bool CONV_FORCE, DONE = false;
     MPI_Request req[3];
     MPI_Status status;

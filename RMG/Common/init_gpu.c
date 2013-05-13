@@ -86,18 +86,18 @@ void init_gpu (void)
 
   rmg_printout_devices( );
 
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_global_matrix , ct.num_states * ct.num_states * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_global_matrix , ct.num_states * ct.num_states * sizeof(rmg_double_t) )){
       fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_states , ct.num_states *pct.P0_BASIS * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_states , ct.num_states *pct.P0_BASIS * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_states\n");
       exit(-1);
   }
 
   alloc = ct.num_states * pct.P0_BASIS;
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp , alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp , alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");
       exit(-1);
   }
@@ -108,19 +108,19 @@ void init_gpu (void)
   if(alloc < 1024 * 1024) alloc = 1024 * 1024;
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
 
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
@@ -128,15 +128,15 @@ void init_gpu (void)
   // fdbuf needs to be big enough for hartee potential on fine grid
   alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
   if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf1, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf1, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf2, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf2, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (3 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(REAL) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (3 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
@@ -146,22 +146,22 @@ void init_gpu (void)
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
   if(alloc < ((pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2);
   if(alloc < 1024 * 1024) alloc = 1024 * 1024;
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
 
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work2, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work2, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
 
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work3, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work3, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }
 
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work4, alloc * sizeof(REAL) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work4, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");
       exit(-1);
   }

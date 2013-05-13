@@ -37,12 +37,12 @@
 #include <math.h>
 #include <stdlib.h>
 
-void app_grad (REAL  * rho, REAL *wxr, REAL *wyr, REAL *wzr, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_double_t *wzr, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int iz, ix, iy;
-    REAL t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
-    REAL time1, time2, *rptr;
+    rmg_double_t t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
+    rmg_double_t time1, time2, *rptr;
     int ixs, iys;
     int ix1, iy1;
 
@@ -51,7 +51,7 @@ void app_grad (REAL  * rho, REAL *wxr, REAL *wyr, REAL *wzr, int dimx, int dimy,
     ix1 = dimy * dimz;
     iy1 = dimz;
 
-    my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), REAL);
+    my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_double_t);
 
 
     time1 = my_crtc ();

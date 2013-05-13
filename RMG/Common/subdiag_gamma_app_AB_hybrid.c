@@ -9,16 +9,16 @@
 #if GAMMA_PT
 #include "hybrid.h"
 #include <pthread.h>
-void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig);
-void subdiag_app_B_one (STATE *sp, REAL * b_psi);
+void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig);
+void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi);
 
 
 /*Applies A operator to all wavefunctions*/
-void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
+void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig)
 {
     int istate, st1, ist, istop;
     STATE *sp;
-    REAL time1, time2;
+    rmg_double_t time1, time2;
 
 #if BATCH_NLS
     time1 = my_crtc();
@@ -62,12 +62,12 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 }
 
 // Applies A operator to one wavefunction
-void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
+void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig)
 {
     int kidx, idx, istate, sbasis, tid;
-    REAL *sg_twovpsi, *tmp_psi, *work2, *work1, *work3;
+    rmg_double_t *sg_twovpsi, *tmp_psi, *work2, *work1, *work3;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
 #if HYBRID_MODEL
@@ -84,13 +84,13 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
     cstream = get_thread_cstream();
     work3 = &ct.gpu_host_temp3[tid * sbasis];
 #else
-    my_malloc (work3, sbasis, REAL);
+    my_malloc (work3, sbasis, rmg_double_t);
 #endif
 
 #if !BATCH_NLS
-    my_malloc (work2, sbasis, REAL);
+    my_malloc (work2, sbasis, rmg_double_t);
 #endif
-    my_malloc (sg_twovpsi, sbasis, REAL);
+    my_malloc (sg_twovpsi, sbasis, rmg_double_t);
     kidx = 0;
 
     work1 = a_psi;
@@ -183,7 +183,7 @@ void subdiag_app_A_one (STATE *sp, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 }                               /* subdiag_app_A_one */
 
 
-void subdiag_app_B (STATE * states, REAL * b_psi)
+void subdiag_app_B (STATE * states, rmg_double_t * b_psi)
 {
     int st1, ist, istate, istop;
     STATE *sp;
@@ -224,18 +224,18 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
 }
 
 
-void subdiag_app_B_one (STATE *sp, REAL * b_psi)
+void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi)
 {
     int istate, pbasis, ione=1;
-    REAL *work2, *work1;
+    rmg_double_t *work2, *work1;
 
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
     pbasis = sp->pbasis;
 
-    my_malloc (work2, pbasis, REAL);
+    my_malloc (work2, pbasis, rmg_double_t);
 
     work1 = b_psi;
 

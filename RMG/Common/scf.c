@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void scf(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
- *            REAL *rho, REAL *rhocore, REAL *rhoc, int *CONVERGENCE)
+ *   void scf(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
+ *            rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, int *CONVERGENCE)
  *   Performs a single self consistent step over a full set of orbitals.
  *   This includes a loop over k-points.
  * INPUTS
@@ -53,34 +53,34 @@
 
 static int firststep = TRUE;
 
-bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-          REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc )
+bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
+          rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc )
 {
 
     int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1), istop, vcycle;
     bool CONVERGED = false;
-    REAL t3;
-    REAL *vtot, *vtot_psi, *new_rho;
-    REAL time1, time2, time3, time4;
-    REAL t[3];                  /* SCF checks and average potential */
+    rmg_double_t t3;
+    rmg_double_t *vtot, *vtot_psi, *new_rho;
+    rmg_double_t time1, time2, time3, time4;
+    rmg_double_t t[3];                  /* SCF checks and average potential */
     int ist;
 
     MPI_Status status, stat[2]; 
     MPI_Request req[2];   
     /* to hold the send data and receive data of eigenvalues */
-    REAL *eigval_sd, *eigval_rv, *rho_tot;   
+    rmg_double_t *eigval_sd, *eigval_rv, *rho_tot;   
     
     time3 = my_crtc ();
 
     /* allocate memory for eigenvalue send array and receive array */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, pct.FP0_BASIS, REAL);
+    	my_malloc (rho_tot, pct.FP0_BASIS, rmg_double_t);
     }
 
-    my_malloc (new_rho, pct.FP0_BASIS, REAL);
-    my_malloc (vtot, pct.FP0_BASIS, REAL);
-    my_malloc (vtot_psi,pct.P0_BASIS, REAL);
+    my_malloc (new_rho, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vtot_psi,pct.P0_BASIS, rmg_double_t);
 
     /* save old vhxc + vnuc */
     for (idx = 0; idx < pct.FP0_BASIS; idx++)
@@ -132,8 +132,8 @@ bool scf (STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
     t[0] *= ct.vel_f;
     
     /* get the averaged value over each spin and each fine grid */
-    t[1] = sqrt (t[1] / ((REAL) (nspin * ct.psi_fnbasis)));  
-    t[2] /= ((REAL) (nspin * ct.psi_fnbasis));   
+    t[1] = sqrt (t[1] / ((rmg_double_t) (nspin * ct.psi_fnbasis)));  
+    t[2] /= ((rmg_double_t) (nspin * ct.psi_fnbasis));   
     
     ct.rms = t[1];
 

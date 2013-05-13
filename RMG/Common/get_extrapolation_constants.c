@@ -32,12 +32,12 @@
 #define VERBOSE 0
 
 #include "main.h"
-void get_extrapolation_constants (REAL *alpha, REAL *beta)
+void get_extrapolation_constants (rmg_double_t *alpha, rmg_double_t *beta)
 {
     int ion;
     ION *iptr;
-    REAL d01x, d01y, d01z, d12x, d12y, d12z, d23x, d23y, d23z, detA;
-    REAL a11, a12, a22, b1, b2, a21;
+    rmg_double_t d01x, d01y, d01z, d12x, d12y, d12z, d23x, d23y, d23z, detA;
+    rmg_double_t a11, a12, a22, b1, b2, a21;
 
 
     a11 = 0.0;

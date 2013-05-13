@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void genvpsi(REAL *psi, REAL *sg_twovpsi, REAL *vtot, REAL *vnl, REAL *kd,
- *                REAL kmag, int dimx, int dimy, int dimz)
+ *   void genvpsi(rmg_double_t *psi, rmg_double_t *sg_twovpsi, rmg_double_t *vtot, rmg_double_t *vnl, rmg_double_t *kd,
+ *                rmg_double_t kmag, int dimx, int dimy, int dimz)
  *   Used to generate the product 2*V*psi for the Mehrstellen B operator.
  * INPUTS
  *   psi: wave function
@@ -43,8 +43,8 @@
 #include "main.h"
 
 
-void genvpsi (REAL * psi, REAL * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
-              REAL kmag, int dimx, int dimy, int dimz)
+void genvpsi (rmg_double_t * psi, rmg_double_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
+              rmg_double_t kmag, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
@@ -89,8 +89,8 @@ void genvpsi (REAL * psi, REAL * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
 }                               /* end genvpsi */
 
 
-void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, REAL * vtot, REAL * vnl, REAL * kd,
-              REAL kmag, int dimx, int dimy, int dimz)
+void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
+              rmg_double_t kmag, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;

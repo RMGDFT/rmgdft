@@ -10,7 +10,7 @@
 
 /*This is almost exact copy of assign_weight, except that input is real array, not fftw_complex*/
 
-void assign_weight2 (int nldim, int ion, REAL * beptr, REAL * rtptr)
+void assign_weight2 (int nldim, int ion, rmg_double_t * beptr, rmg_double_t * rtptr)
 {
 #if FDIFF_BETA
 

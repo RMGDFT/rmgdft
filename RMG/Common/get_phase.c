@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_phase(ION *iptr, REAL *rtptr, int ip, int icount, int *dvec)
+ *   void get_phase(ION *iptr, rmg_double_t *rtptr, int ip, int icount, int *dvec)
  *   Generates the phase factors for the k-points 
  * INPUTS
  *   iptr: point to structure ION (see main.h )
@@ -39,12 +39,12 @@
 #include <stdlib.h>
 #include "main.h"
 
-void get_phase (ION * iptr, REAL * rtptr, int ip, int icount, int *dvec)
+void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
 {
 
     int kpt, idx, ix, iy, iz, docount;
-    REAL ax[3], bx[3], xc, yc, zc;
-    REAL kdr;
+    rmg_double_t ax[3], bx[3], xc, yc, zc;
+    rmg_double_t kdr;
     SPECIES *sp;
 
 

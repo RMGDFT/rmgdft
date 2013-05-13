@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, 
- *             STATE *states, REAL *vnuc, REAL *vxc)
+ *   void init(rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, 
+ *             STATE *states, rmg_double_t *vnuc, rmg_double_t *vxc)
  *   Basic initialization stuff.
  * INPUTS
  *   rhocore: core charge density for non-linear core corection
@@ -52,17 +52,17 @@ static void init_alloc_nonloc_mem (void);
 
 
 
-void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
-           STATE * states, REAL * vnuc, REAL * vxc)
+void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc,
+           STATE * states, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
 
     int kpt, kpt1, kst1, ic, idx, state, ion, st1, it1;
     int species, i;
     SPECIES *sp;
     int flag;
-    REAL *rptr = NULL, *rptr1 = NULL, *vtot, t1, t2, scale, *rho_tot;
+    rmg_double_t *rptr = NULL, *rptr1 = NULL, *vtot, t1, t2, scale, *rho_tot;
     ION *iptr, *iptr0;
-    REAL time1, time2, v1, v2, v3, fac;
+    rmg_double_t time1, time2, v1, v2, v3, fac;
     STATE *st;
 
 #if GPU_ENABLED
@@ -113,7 +113,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     ct.vh_pzgrid = pct.FPZ0_GRID;
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
-    my_malloc (ct.vh_ext, ct.vh_pbasis, REAL);
+    my_malloc (ct.vh_ext, ct.vh_pbasis, rmg_double_t);
     
     for (idx = 0; idx < pct.FP0_BASIS; idx++)
     {
@@ -192,35 +192,35 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     /* Set state pointers and initialize state data */
 #if GAMMA_PT
   #if GPU_ENABLED
-      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024) * sizeof(REAL));
+      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024) * sizeof(rmg_double_t));
 #if BATCH_NLS
-      cudaMallocHost((void **)&pct.nv, ct.num_states * pct.P0_BASIS * sizeof(REAL));
-      cudaMallocHost((void **)&pct.ns, ct.num_states * pct.P0_BASIS * sizeof(REAL));
-      cudaMallocHost((void **)&pct.Bns, ct.num_states * pct.P0_BASIS * sizeof(REAL));
+      cudaMallocHost((void **)&pct.nv, ct.num_states * pct.P0_BASIS * sizeof(rmg_double_t));
+      cudaMallocHost((void **)&pct.ns, ct.num_states * pct.P0_BASIS * sizeof(rmg_double_t));
+      cudaMallocHost((void **)&pct.Bns, ct.num_states * pct.P0_BASIS * sizeof(rmg_double_t));
 #endif
   #else
     /* Wavefunctions are actually stored here */
-    my_malloc (rptr, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
+    my_malloc (rptr, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, rmg_double_t);
 #if BATCH_NLS
-    my_malloc (pct.nv, ct.num_states * pct.P0_BASIS, REAL);
-    my_malloc (pct.ns, ct.num_states * pct.P0_BASIS, REAL);
-    my_malloc (pct.Bns, ct.num_states * pct.P0_BASIS, REAL);
+    my_malloc (pct.nv, ct.num_states * pct.P0_BASIS, rmg_double_t);
+    my_malloc (pct.ns, ct.num_states * pct.P0_BASIS, rmg_double_t);
+    my_malloc (pct.Bns, ct.num_states * pct.P0_BASIS, rmg_double_t);
 #endif
   #endif
 
   if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-      my_malloc (rptr1, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
+      my_malloc (rptr1, (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, rmg_double_t);
   }
 
 #else
     /* Wavefunctions are actually stored here */
     if (verify ("calculation_mode", "Band Structure Only"))
     {
-        my_malloc (rptr, 2 * (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
+        my_malloc (rptr, 2 * (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, rmg_double_t);
     }
     else
     {
-        my_malloc (rptr, ct.num_kpts * 2 * (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, REAL);
+        my_malloc (rptr, ct.num_kpts * 2 * (ct.num_states + 1) * (pct.P0_BASIS + 4) + 1024, rmg_double_t);
     }
 #endif
 
@@ -352,8 +352,8 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
 
-        my_malloc (iptr->fftw_phase_sin, sp->nldim * sp->nldim * sp->nldim, REAL);
-        my_malloc (iptr->fftw_phase_cos, sp->nldim * sp->nldim * sp->nldim, REAL);
+        my_malloc (iptr->fftw_phase_sin, sp->nldim * sp->nldim * sp->nldim, rmg_double_t);
+        my_malloc (iptr->fftw_phase_cos, sp->nldim * sp->nldim * sp->nldim, rmg_double_t);
     }
 
 
@@ -444,7 +444,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
 
 	if (ct.spin_flag)
 	{
-    		my_malloc (rho_tot,  pct.FP0_BASIS, REAL);
+    		my_malloc (rho_tot,  pct.FP0_BASIS, rmg_double_t);
   	    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
             		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
@@ -461,7 +461,7 @@ void init (REAL * vh, REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc,
     if (ct.initdiag)
     {
         /*dnmI has to be stup before calling subdiag */
-        my_malloc (vtot, pct.FP0_BASIS, REAL);
+        my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
 
 
         for (idx = 0; idx < pct.FP0_BASIS; idx++)
@@ -595,9 +595,9 @@ static void init_alloc_nonloc_mem (void)
     int ion;
 
 #if FDIFF_BETA
-    my_malloc (pct.weight_derx, ct.num_ions, REAL *);
-    my_malloc (pct.weight_dery, ct.num_ions, REAL *);
-    my_malloc (pct.weight_derz, ct.num_ions, REAL *);
+    my_malloc (pct.weight_derx, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.weight_dery, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.weight_derz, ct.num_ions, rmg_double_t *);
 #endif
 
     my_malloc (pct.nlindex, ct.num_ions, int *);
@@ -611,10 +611,10 @@ static void init_alloc_nonloc_mem (void)
     my_malloc (pct.lptrlen, ct.num_ions, int);
 
 
-    my_malloc (pct.phaseptr, ct.num_ions, REAL *);
-    my_malloc (pct.augfunc, ct.num_ions, REAL *);
-    my_malloc (pct.dnmI, ct.num_ions, REAL *);
-    my_malloc (pct.qqq, ct.num_ions, REAL *);
+    my_malloc (pct.phaseptr, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.augfunc, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.dnmI, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.qqq, ct.num_ions, rmg_double_t *);
 
     //my_malloc(pct.nonloc_ions_list, ct.num_ions, int);
     //my_malloc(pct.q_ions_list, ct.num_ions, int);

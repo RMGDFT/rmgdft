@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void subdiag(STATE *states, REAL *vh, REAL *vnuc, REAL *vxc)
+ *   void subdiag(STATE *states, rmg_double_t *vh, rmg_double_t *vnuc, rmg_double_t *vxc)
  *   This is the version of subdiag for message passing machines(MPI).
  *   Subspace diagonalizer for the Mehrstellen discretization of the
  *   Kohn-Sham Hamiltonian.
@@ -66,29 +66,29 @@
 
 
 #if !GAMMA_PT
-static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, REAL * vtot_eig);
-static void subdiag2_mpi (REAL * Aij, REAL * base_mem);
-static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int *desca,
+static void subdiag1_mpi (int istate, STATE * states, rmg_double_t * Aij, rmg_double_t * Bij, rmg_double_t * vtot_eig);
+static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem);
+static void symmetrize_matrix (rmg_double_t * matrix, rmg_double_t * unity_matrix, int size, int *desca,
                                int local_size);
-static void print_matrix2 (REAL * matrix, int size);
-static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
+static void print_matrix2 (rmg_double_t * matrix, int size);
+static void print_dist_matrix (rmg_double_t * dist_matrix, int global_size, int *desca);
 
 
-void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+void subdiag_nongamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
     int idx, st1;
 	int num_states;
     int stop;
     int kidx;
-    REAL *work1;
+    rmg_double_t *work1;
     int ione = 1, izero = 0;    /* blas constants */
     char *uplo = "l", *jobz = "v";
 
     int info = 0;
-    REAL time1, time2, time3;
-    REAL *Aij, *Bij, *Cij;
-    REAL *distAij, *distBij, *distCij, *distIij;
-    REAL *vtot, *vtot_eig;
+    rmg_double_t time1, time2, time3;
+    rmg_double_t *Aij, *Bij, *Cij;
+    rmg_double_t *distAij, *distBij, *distCij, *distIij;
+    rmg_double_t *vtot, *vtot_eig;
     int dist_length, dist_stop;
 
 
@@ -108,16 +108,16 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #  endif
 
     /*Get memory for global matrices */
-    my_malloc (Aij, stop, REAL);
-    my_malloc (Bij, stop, REAL);
-    my_calloc (Cij, stop, REAL);
+    my_malloc (Aij, stop, rmg_double_t);
+    my_malloc (Bij, stop, rmg_double_t);
+    my_calloc (Cij, stop, rmg_double_t);
 
-    my_malloc (work1, 8 * num_states, REAL);
-    my_malloc (vtot_eig,pct.P0_BASIS, REAL);
+    my_malloc (work1, 8 * num_states, rmg_double_t);
+    my_malloc (vtot_eig,pct.P0_BASIS, rmg_double_t);
 
 
     /*Get vtot on coarse grid */
-    my_malloc (vtot, pct.FP0_BASIS, REAL);
+    my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
     for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
     get_vtot_psi (vtot_eig, vtot, FG_NX);
@@ -206,10 +206,10 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
         /*Get memory for distributed matrices */
-        my_calloc (distAij, dist_stop, REAL);
-        my_calloc (distBij, dist_stop, REAL);
-        my_calloc (distCij, dist_stop, REAL);
-        my_calloc (distIij, dist_stop, REAL);
+        my_calloc (distAij, dist_stop, rmg_double_t);
+        my_calloc (distBij, dist_stop, rmg_double_t);
+        my_calloc (distCij, dist_stop, rmg_double_t);
+        my_calloc (distIij, dist_stop, rmg_double_t);
 
 
 
@@ -279,8 +279,8 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         /*Multiply inverse of B and and A */
         {
             char *trans = "n";
-            REAL alpha[] = { 1.0, 0.0 };
-            REAL beta[] = { 0.0, 0.0 };
+            rmg_double_t alpha[] = { 1.0, 0.0 };
+            rmg_double_t beta[] = { 0.0, 0.0 };
 
             /*B^-1*A */
 #if GAMMA_PT
@@ -314,7 +314,7 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
         /* Using lwork=-1, pdsyev should return minimum required size for the work array */
         {
             int lwork = -1, lrwork = -1;
-            REAL t1[2], t2[2], *work2, *work3;
+            rmg_double_t t1[2], t2[2], *work2, *work3;
 
 
 
@@ -333,13 +333,13 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 #if GAMMA_PT
-            my_malloc (work2, lwork, REAL);
+            my_malloc (work2, lwork, rmg_double_t);
             PDSYEV (jobz, uplo, &num_states, distBij, &ione, &ione, pct.desca, work1, distAij, &ione,
                     &ione, pct.desca, work2, &lwork, &info);
 #else
             /*Calculate lwork first */
-            my_malloc (work2, 2 * lwork, REAL);
-            my_malloc (work3, 2 * lrwork, REAL);
+            my_malloc (work2, 2 * lwork, rmg_double_t);
+            my_malloc (work3, 2 * lrwork, rmg_double_t);
             PCHEEV (jobz, uplo, &num_states, distBij, &ione, &ione, pct.desca, work1, distAij, &ione,
                     &ione, pct.desca, work2, &lwork, work3, &lrwork, &info);
 #endif
@@ -427,23 +427,23 @@ void subdiag_nongamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 
-static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, REAL * vtot_eig)
+static void subdiag1_mpi (int istate, STATE * states, rmg_double_t * Aij, rmg_double_t * Bij, rmg_double_t * vtot_eig)
 {
     int idx, st2, ione = 1;
     int dimx, dimy, dimz, kidx;
-    REAL *sg_twovpsiR, *sg_twovpsiI, *tmp_psiR, *tmp_psiI;
-    REAL *work1R, *work1I;
-    REAL *work2R, *work2I, *work3R, *work3I, *work4R, *work4I;
-    REAL *gx, *gy, *gz, *kdr;
-    REAL s1, s2, s3, s4;
+    rmg_double_t *sg_twovpsiR, *sg_twovpsiI, *tmp_psiR, *tmp_psiI;
+    rmg_double_t *work1R, *work1I;
+    rmg_double_t *work2R, *work2I, *work3R, *work3I, *work4R, *work4I;
+    rmg_double_t *gx, *gy, *gz, *kdr;
+    rmg_double_t s1, s2, s3, s4;
     STATE *sp, *sp1;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
     sp = &states[istate];
     kidx = sp->kidx;
-    my_malloc (work4R, 15 * sp->sbasis, REAL);
+    my_malloc (work4R, 15 * sp->sbasis, rmg_double_t);
     work4I = work4R + sp->sbasis;
     work1R = work4I+ sp->sbasis;
     work1I = work1R + sp->sbasis;
@@ -604,14 +604,14 @@ static void subdiag1_mpi (int istate, STATE * states, REAL * Aij, REAL * Bij, RE
 /* This routine is used to do the subspace rotation of the orbitals. Each
  * thread handles a specific portion of the real space domain.
  */
-static void subdiag2_mpi (REAL * Aij, REAL * base_mem)
+static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem)
 {
     int idx, st1, st2;
-    REAL *rptr;
-    REAL *work1R, *work2R;
-    REAL *work1I, *work2I;
+    rmg_double_t *rptr;
+    rmg_double_t *work1R, *work2R;
+    rmg_double_t *work1I, *work2I;
 
-    my_malloc (work1R, 4 * ct.num_states, REAL);
+    my_malloc (work1R, 4 * ct.num_states, rmg_double_t);
     work2R = work1R + ct.num_states;
     work1I = work2R + ct.num_states;
     work2I = work1I + ct.num_states;
@@ -662,7 +662,7 @@ static void subdiag2_mpi (REAL * Aij, REAL * base_mem)
 
 
 
-static void print_matrix2 (REAL * matrix, int size)
+static void print_matrix2 (rmg_double_t * matrix, int size)
 {
     int i, j;
 
@@ -677,14 +677,14 @@ static void print_matrix2 (REAL * matrix, int size)
 
 }
 
-static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
+static void print_dist_matrix (rmg_double_t * dist_matrix, int global_size, int *desca)
 {
-    REAL *glob_matrix;
+    rmg_double_t *glob_matrix;
     int stop;
 
     stop = global_size * global_size;
 
-    my_calloc (glob_matrix, stop, REAL);
+    my_calloc (glob_matrix, stop, rmg_double_t);
 
 
     if (pct.scalapack_pe)
@@ -705,13 +705,13 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
 
 
 /*This works with distributed matrices*/
-static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int *desca,
+static void symmetrize_matrix (rmg_double_t * matrix, rmg_double_t * unity_matrix, int size, int *desca,
                                int local_size)
 {
     int stop, ione = 1;
-    REAL *temp_unity_matrix, *temp_matrix;
-    REAL alpha[] = { 0.5, 0.0 };
-    REAL beta[] = { 0.5, 0.0 };
+    rmg_double_t *temp_unity_matrix, *temp_matrix;
+    rmg_double_t alpha[] = { 0.5, 0.0 };
+    rmg_double_t beta[] = { 0.5, 0.0 };
     char *trans = "n";
 #if GAMMA_PT
     char *trans2 = "t";
@@ -726,8 +726,8 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
 
 
     /*Get memory */
-    my_malloc (temp_matrix, stop, REAL);
-    my_calloc (temp_unity_matrix, stop, REAL);
+    my_malloc (temp_matrix, stop, rmg_double_t);
+    my_calloc (temp_unity_matrix, stop, rmg_double_t);
 
     /*Copy matrix into temp_matrix */
     QMD_dcopy (stop, matrix, ione, temp_matrix, ione);

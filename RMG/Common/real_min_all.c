@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   REAL real_min_all(REAL x)
+ *   rmg_double_t real_min_all(rmg_double_t x)
  *   Finds minimum over all processors.
  * INPUTS
  *   x: defined in each processor
@@ -36,7 +36,7 @@
 
 
 
-REAL real_min_all (REAL x, MPI_Comm comm)
+rmg_double_t real_min_all (rmg_double_t x, MPI_Comm comm)
 {
 
 #ifndef MPI
@@ -44,8 +44,8 @@ REAL real_min_all (REAL x, MPI_Comm comm)
     return x;
 
 #else
-    REAL inreg;
-    REAL outreg;
+    rmg_double_t inreg;
+    rmg_double_t outreg;
 
     inreg = x;
 

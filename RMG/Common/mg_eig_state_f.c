@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void mg_eig_state_f(STATE *sp, int tid, REAL *vtot)
+ *   void mg_eig_state_f(STATE *sp, int tid, rmg_double_t *vtot)
  *   mixed precision gamma point only  Multigrid solver for a single electronic orbital.
  *
  *   Algorithm:
@@ -65,23 +65,23 @@ static pthread_mutex_t vtot_sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern STATE *states;
 
-void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
+void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 {
 
     int idx, cycles, ntid;
     int nits, pbasis, sbasis;
-    REAL eig, diag, t1, t2, t3, t4;
-    REAL *work1, *nv, *ns, *res2;
-    REAL *tmp_psi, *res, *saved_psi;
-    REAL *nvtot_psi;
+    rmg_double_t eig, diag, t1, t2, t3, t4;
+    rmg_double_t *work1, *nv, *ns, *res2;
+    rmg_double_t *tmp_psi, *res, *saved_psi;
+    rmg_double_t *nvtot_psi;
     rmg_float_t *tmp_psi_f, *work2_f, *res_f, *res2_f, *sg_psi_f;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
     int dimx, dimy, dimz, levels, potential_acceleration;
-    REAL hxgrid, hygrid, hzgrid, sb_step;
-    REAL tarr[8];
-    REAL time1;
+    rmg_double_t hxgrid, hygrid, hzgrid, sb_step;
+    rmg_double_t tarr[8];
+    rmg_double_t time1;
     rmg_float_t *sg_twovpsi_f, *work1_f;
 #if GPU_FD_ENABLED
     cudaStream_t *cstream;
@@ -119,19 +119,19 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
     my_malloc (res2_f, sbasis, rmg_float_t);
     my_malloc (work2_f, 4 * sbasis, rmg_float_t);
     my_malloc (work1_f, 4 * sbasis, rmg_float_t);
-    my_malloc (work1, sbasis, REAL);
+    my_malloc (work1, sbasis, rmg_double_t);
 #endif
 
     my_malloc (sg_psi_f, sbasis, rmg_float_t);
-    my_malloc (res, sbasis, REAL);
+    my_malloc (res, sbasis, rmg_double_t);
     my_malloc (sg_twovpsi_f, sbasis, rmg_float_t);
 #if !BATCH_NLS
-    my_malloc (ns, sbasis, REAL);
-    my_malloc (nv, sbasis, REAL);
+    my_malloc (ns, sbasis, rmg_double_t);
+    my_malloc (nv, sbasis, rmg_double_t);
 #endif
-    my_malloc (res2, sbasis, REAL);
-    my_malloc (saved_psi, sbasis, REAL);
-    my_malloc (nvtot_psi, sbasis, REAL);
+    my_malloc (res2, sbasis, rmg_double_t);
+    my_malloc (saved_psi, sbasis, rmg_double_t);
+    my_malloc (nvtot_psi, sbasis, rmg_double_t);
     my_malloc (tmp_psi_f, sbasis, rmg_float_t);
     my_malloc (res_f, sbasis, rmg_float_t);
 
@@ -402,7 +402,7 @@ void mg_eig_state_f (STATE * sp, int tid, REAL * vtot_psi)
             {
 
                 t2 = real_sum_all (t2, pct.grid_comm);
-                t1 = (REAL) (ct.psi_nbasis);
+                t1 = (rmg_double_t) (ct.psi_nbasis);
                 sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
 
             }

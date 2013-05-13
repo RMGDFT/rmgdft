@@ -80,28 +80,28 @@ STATE *states;
 
 
 /* Electronic charge density or charge density of own spin in polarized case */
-REAL *rho;
+rmg_double_t *rho;
 
 /*  Electronic charge density of pposite spin density*/
-REAL *rho_oppo;  
+rmg_double_t *rho_oppo;  
 
 
 /* Core Charge density */
-REAL *rhocore;
+rmg_double_t *rhocore;
 
 
 /* Compensating charge density */
-REAL *rhoc;
+rmg_double_t *rhoc;
 
 
 /* Hartree potential */
-REAL *vh;
+rmg_double_t *vh;
 
 /* Nuclear local potential */
-REAL *vnuc;
+rmg_double_t *vnuc;
 
 /* Exchange-correlation potential */
-REAL *vxc;
+rmg_double_t *vxc;
 
 
 /* Main control structure which is declared extern in main.h so any module */
@@ -130,9 +130,9 @@ int main (int argc, char **argv)
 //  Hack to force initialization of libsci on Cray before we create our own threads
     char *trans = "n";
     int asize = 32, i, j;
-    REAL alpha = 1.0;
-    REAL beta = 0.0;
-    REAL A[32*32], B[32*32], C[32*32];
+    rmg_double_t alpha = 1.0;
+    rmg_double_t beta = 0.0;
+    rmg_double_t A[32*32], B[32*32], C[32*32];
 
     for(i = 0;i < asize * asize;i++) {
         A[i] = 1.0;
@@ -183,16 +183,16 @@ void initialize(int argc, char **argv)
     num_images = 1;
     lbfgs_init(ct.num_ions, num_images);
 
-    my_malloc (rho, pct.FP0_BASIS, REAL);
-    my_malloc (rhocore, pct.FP0_BASIS, REAL);
-    my_malloc (rhoc, pct.FP0_BASIS, REAL);
-    my_malloc (vh, pct.FP0_BASIS, REAL);
-    my_malloc (vnuc, pct.FP0_BASIS, REAL);
-    my_malloc (vxc, pct.FP0_BASIS, REAL);
+    my_malloc (rho, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (rhocore, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (rhoc, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vh, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vnuc, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vxc, pct.FP0_BASIS, rmg_double_t);
 
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
     if(ct.spin_flag)
-    	    my_malloc (rho_oppo, pct.FP0_BASIS, REAL);
+    	    my_malloc (rho_oppo, pct.FP0_BASIS, rmg_double_t);
 
 
     /* initialize states */
@@ -238,7 +238,7 @@ void initialize(int argc, char **argv)
 void run (void)
 {
 
-    REAL time2;
+    rmg_double_t time2;
 
     /* Dispatch to the correct driver routine */
     switch (ct.forceflag)

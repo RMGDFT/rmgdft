@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void read_data(char *name, REAL *vh, REAL *rho, REAL *vxc, STATE *states)
+ *   void read_data(char *name, rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *vxc, STATE *states)
  *   when ct.runflag == 1,
  *   Reads the hartree potential, the wavefunctions
  *   and various other things from a file which is created by the 
@@ -47,14 +47,14 @@
 
 
 /* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of REALs (doubles) but writes floats */
-static void read_float (int fhand, REAL * rp, int count);
+/* The following routine accepts a buffer of rmg_double_ts (doubles) but writes floats */
+static void read_float (int fhand, rmg_double_t * rp, int count);
 static void read_double (int fhand, double * rp, int count);
 static void read_int (int fhand, int *ip, int count);
 
 /* Reads the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things from a file. */
-void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
+void read_data (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * vxc, STATE * states)
 {
     char newname[MAX_PATH + 200];
     int fhand;
@@ -62,7 +62,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     int fine[3];
     int pe[3];
     int npe;
-    REAL a[9];
+    rmg_double_t a[9];
     int grid_size;
     int fgrid_size;
     int gamma;
@@ -70,7 +70,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     int ns, is;
     int na, ia;
     int i;
-    REAL r[40];
+    rmg_double_t r[40];
     int tmp_int[4];
 
     /* wait until everybody gets here */
@@ -174,8 +174,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
     /* read state occupations */
     {
 	STATE *sp;
-	REAL *occ;
-	my_malloc (occ, nk * ns, REAL); 
+	rmg_double_t *occ;
+	my_malloc (occ, nk * ns, rmg_double_t); 
 	read_double (fhand, occ, (nk * ns));
 
 	printf ("read_data: read 'occupations'\n"); 
@@ -183,7 +183,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
 	if (ct.forceflag != BAND_STRUCTURE)
 	{
-	    REAL occ_total = 0.0; 
+	    rmg_double_t occ_total = 0.0; 
 
 	    sp = states;
 	    for (ik = 0; ik < nk; ik++)
@@ -204,8 +204,8 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 	     */
 
 	    {
-		REAL iocc_total = (REAL) (int) (occ_total + 0.5);
-		REAL fac = iocc_total / occ_total;
+		rmg_double_t iocc_total = (rmg_double_t) (int) (occ_total + 0.5);
+		rmg_double_t fac = iocc_total / occ_total;
 
 		    sp = states;
 		    for (ik = 0; ik < nk; ik++)
@@ -281,7 +281,7 @@ void read_data (char *name, REAL * vh, REAL * rho, REAL * vxc, STATE * states)
 
 
 /* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of REALs (doubles) but writes floats */
+/* The following routine accepts a buffer of rmg_double_ts (doubles) but writes floats */
 
 static void read_double (int fhand, double * rp, int count)
 {
@@ -294,7 +294,7 @@ static void read_double (int fhand, double * rp, int count)
 	error_handler ("error reading");
 
 }
-static void read_float (int fhand, REAL * rp, int count)
+static void read_float (int fhand, rmg_double_t * rp, int count)
 {
 
     float *buf;
@@ -307,7 +307,7 @@ static void read_float (int fhand, REAL * rp, int count)
 	error_handler ("error reading");
 
     for (i = 0; i < count; i++)
-	rp[i] = (REAL) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
+	rp[i] = (rmg_double_t) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
 
     my_free (buf);
 }

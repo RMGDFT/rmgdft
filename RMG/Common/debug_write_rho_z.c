@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "main.h"
 
-void debug_write_rho_z (REAL * rhoz)
+void debug_write_rho_z (rmg_double_t * rhoz)
 {
     int k;
     int basis;

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_stop_axpy(REAL *sg, REAL *pg, REAL alpha, int dimx,
+ *   void pack_stop_axpy(rmg_double_t *sg, rmg_double_t *pg, rmg_double_t alpha, int dimx,
  *                       int dimy, int dimz)
  *   Adds the contents of the smoothing grid sg * alpha
  *           into the physical grid pg
@@ -38,7 +38,7 @@
 #include <float.h>
 #include <math.h>
 
-void pack_stop_axpy (REAL * sg, REAL * pg, REAL alpha, int dimx, int dimy, int dimz)
+void pack_stop_axpy (rmg_double_t * sg, rmg_double_t * pg, rmg_double_t alpha, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, ixh, iyh;
@@ -75,7 +75,7 @@ void pack_stop_axpy (REAL * sg, REAL * pg, REAL alpha, int dimx, int dimy, int d
 
 
 
-void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, REAL alpha, int dimx, int dimy, int dimz)
+void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, rmg_double_t alpha, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, ixh, iyh;

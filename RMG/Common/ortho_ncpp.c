@@ -43,7 +43,7 @@ void ortho_ncpp(STATE *states)
 {
 
     int kpt;
-    REAL time1;
+    rmg_double_t time1;
     time1 = my_crtc();
 
     for(kpt = 0;kpt < ct.num_kpts;kpt++) {

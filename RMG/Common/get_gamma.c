@@ -8,12 +8,12 @@
 #include <math.h>
 #include "main.h"
 
-void get_gamma (REAL * gammaR, int ion, int nh)
+void get_gamma (rmg_double_t * gammaR, int ion, int nh)
 {
     int i, j, idx, kidx, istate;
-    REAL t1, sintNR, sintMR;
+    rmg_double_t t1, sintNR, sintMR;
 #if !GAMMA_PT
-    REAL sintNI, sintMI;
+    rmg_double_t sintNI, sintMI;
 #endif
     STATE *sta;
 

@@ -47,14 +47,14 @@ void sortpsi (STATE * states)
 {
 
     int state, n, incx, idx1, koffset, koffset2, loffset;
-    REAL t1;
+    rmg_double_t t1;
     STATE *sp, *sp1;
-    REAL *tmp_psi1R, *tmp_psi2R;
-    REAL *tmp_psi1I, *tmp_psi2I;
+    rmg_double_t *tmp_psi1R, *tmp_psi2R;
+    rmg_double_t *tmp_psi1I, *tmp_psi2I;
     ION *iptr;
 
-    my_malloc (tmp_psi1R, 2 *pct.P0_BASIS, REAL);
-    my_malloc (tmp_psi2R, 2 *pct.P0_BASIS, REAL);
+    my_malloc (tmp_psi1R, 2 *pct.P0_BASIS, rmg_double_t);
+    my_malloc (tmp_psi2R, 2 *pct.P0_BASIS, rmg_double_t);
     tmp_psi1I = NULL;
     tmp_psi2I = NULL;
 #if !GAMMA_PT

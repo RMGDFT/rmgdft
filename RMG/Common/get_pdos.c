@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_dos(STATE *states, REAL *rho)
+ *   void get_dos(STATE *states, rmg_double_t *rho)
  *   Generates pdos when CONVERGENCE = TRUE 
  * INPUTS
  *   states:  point to orbital structure (see main.h)
@@ -41,37 +41,37 @@
 
 
 
-void get_pdos (STATE * states, REAL Emin, REAL Emax, int E_POINTS)
+void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINTS)
 {
 
     int istate, kpt, n, incx, idx, max_product, iene;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion, ix, iy, iz, ii, jj, kk, xoff, yoff, zoff;
-    REAL *qnmI, *sintR, *qtpr;
-    REAL t1, *work, *work_temp, *rho_temp, *rho_energy, *product, de, E;
-    REAL time1;
+    rmg_double_t *qnmI, *sintR, *qtpr;
+    rmg_double_t t1, *work, *work_temp, *rho_temp, *rho_energy, *product, de, E;
+    rmg_double_t time1;
     FILE *file;
 
 #if !GAMMA_PT
-    REAL *sintI;
+    rmg_double_t *sintI;
 #endif
     STATE *sp;
     ION *iptr;
     de = (Emax - Emin) / (E_POINTS - 1);
 
-    my_calloc (work,pct.P0_BASIS, REAL);
+    my_calloc (work,pct.P0_BASIS, rmg_double_t);
 
 #if GAMMA_PT
-    my_malloc (sintR, ct.max_nl, REAL);
+    my_malloc (sintR, ct.max_nl, rmg_double_t);
 #else
-    my_malloc (sintR, 2 * ct.max_nl, REAL);
+    my_malloc (sintR, 2 * ct.max_nl, rmg_double_t);
     sintI = sintR + ct.max_nl;
 #endif
             
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    my_malloc (product, max_product, REAL);
+    my_malloc (product, max_product, rmg_double_t);
 
-    my_malloc_init( rho_energy, E_POINTS * FNX_GRID, REAL );
+    my_malloc_init( rho_energy, E_POINTS * FNX_GRID, rmg_double_t );
                                                                                               
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
     xoff = ii * pct.FPX0_GRID;
@@ -86,8 +86,8 @@ void get_pdos (STATE * states, REAL Emin, REAL Emax, int E_POINTS)
 for (iene = 0; iene < E_POINTS; iene++)
 {
 
-	my_malloc_init (work_temp,pct.P0_BASIS, REAL);
-	my_malloc_init (rho_temp, pct.FP0_BASIS, REAL);
+	my_malloc_init (work_temp,pct.P0_BASIS, rmg_double_t);
+	my_malloc_init (rho_temp, pct.FP0_BASIS, rmg_double_t);
 
 	sp = ct.kp[0].kstate;
 	E =  iene * de  + Emin;

@@ -44,10 +44,10 @@
 
 /*For a quantity localized around ionic positions, this function finds radius in number of grid points
  * given a radius in a.u.*/
-int radius2grid (REAL radius, REAL mingrid_spacing)
+int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing)
 {
 
-    REAL scale, t1, t2;
+    rmg_double_t scale, t1, t2;
     int it1, dim;
     
     /* Set the scaling factor for determining the radius of the local grids */
@@ -75,14 +75,14 @@ void init_psp (void)
 
     int isp, idx, ip, write_flag;
     SPECIES *sp;
-    REAL *work, *workr, Zv, rc, rfil, t1;
-    REAL rcut, exp_fac;
+    rmg_double_t *work, *workr, Zv, rc, rfil, t1;
+    rmg_double_t rcut, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
     FILE *psp2 = NULL;
 
 
-    my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, REAL);
+    my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t);
     workr = work + MAX_RGRID;
 
     write_flag = 0;
@@ -105,19 +105,19 @@ void init_psp (void)
         sp = &ct.sp[isp];
 
         /*Get ldim */
-	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (REAL) FG_NX);
+	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (rmg_double_t) FG_NX);
         if ((sp->ldim >= ct.psi_fnxgrid) || (sp->ldim >= ct.psi_fnygrid)
             || (sp->ldim >= ct.psi_fnzgrid))
             error_handler ("local potential radius exceeds global grid size");
 
 
         /*Get drnlig */
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)FG_NX; */
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)FG_NX; */
         t1 = sp->ldim / FG_NX + 1;
         sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
         if (ct.ibrav == HEXAGONAL)
             sp->drlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
+        t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drlig /= t1;
 
 
@@ -133,7 +133,7 @@ void init_psp (void)
         sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
         if (ct.ibrav == HEXAGONAL)
             sp->drnlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
+        t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drnlig /= t1;
 
 

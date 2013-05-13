@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void write_data(char *name, REAL *vh, REAL *rho, REAL *vxc, STATE *states)
+ *   void write_data(char *name, rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *vxc, STATE *states)
  *   Writes the hartree potential, the wavefunctions, the 
  *   charge density and various other things to a file.
  *   This file is useful for re-run (ct.runflag =1)
@@ -50,8 +50,8 @@ static size_t totalsize;
 
 
 /* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of REALs (doubles) but writes floats */
-static void write_float (int fh, REAL * rp, int count);
+/* The following routine accepts a buffer of rmg_double_ts (doubles) but writes floats */
+static void write_float (int fh, rmg_double_t * rp, int count);
 static void write_double (int fh, double * rp, int count);
 static void write_int (int fh, int *ip, int count);
 
@@ -60,7 +60,7 @@ static void write_int (int fh, int *ip, int count);
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, STATE * states)
+void write_data (int fhand, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc, STATE * states)
 {
     char newname[MAX_PATH + 20];
     int amode;
@@ -74,7 +74,7 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     int nk, ik;
     int ns, is;
     int ia;
-    REAL time0, write_time;
+    rmg_double_t time0, write_time;
 
     time0 = my_crtc ();
     totalsize = 0;
@@ -179,9 +179,9 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
     if (pct.imgpe == 0)
     {
         printf ("write_data: total size of each of the %d files = %.1f Mb\n", npe,
-                ((REAL) totalsize) / (1024 * 1024));
+                ((rmg_double_t) totalsize) / (1024 * 1024));
         printf ("write_data: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
-                ((REAL) totalsize) / (1024 * 1024) / write_time);
+                ((rmg_double_t) totalsize) / (1024 * 1024) / write_time);
     }
 
 
@@ -193,7 +193,7 @@ void write_data (int fhand, REAL * vh, REAL * rho, REAL * rho_oppo, REAL * vxc, 
 
 
 /* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of REALs (doubles) but writes floats */
+/* The following routine accepts a buffer of rmg_double_ts (doubles) but writes floats */
 
 static void write_double (int fh, double * rp, int count)
 {
@@ -205,7 +205,7 @@ static void write_double (int fh, double * rp, int count)
 
     totalsize += size;
 }
-static void write_float (int fh, REAL * rp, int count)
+static void write_float (int fh, rmg_double_t * rp, int count)
 {
     float *buf;
     int i, size;

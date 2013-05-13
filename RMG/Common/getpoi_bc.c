@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void getpoi_bc(REAL *rho, REAL *vh_bc, int dimx, int dimy, int dimz)
+ *   void getpoi_bc(rmg_double_t *rho, rmg_double_t *vh_bc, int dimx, int dimy, int dimz)
  *   Computes the hartree potential boundary conditions via multipole
  *   expansion about the center when using cluster or surface boundary
  *   conditions
@@ -44,18 +44,18 @@
 
 
 
-void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
+void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, idx, stop;
     int ix1, iy1;
     int ixdim, iydim, izdim;
     int pex, pey, pez;
-    REAL ir2, q, px, py, pz, sxx, syy, szz, sxy, syz, szx, temp;
-    REAL r, xc, yc, zc, x, y, z;
-    REAL ax[3], bx[3];
-    REAL xoff, yoff, zoff;
-    REAL *mask;
+    rmg_double_t ir2, q, px, py, pz, sxx, syy, szz, sxy, syz, szx, temp;
+    rmg_double_t r, xc, yc, zc, x, y, z;
+    rmg_double_t ax[3], bx[3];
+    rmg_double_t xoff, yoff, zoff;
+    rmg_double_t *mask;
     int incx, incy, incz;
 
     ixdim = 2 * dimx;
@@ -75,7 +75,7 @@ void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
     }                           /* end if */
 
     stop = (ixdim + 2) * (iydim + 2) * (izdim + 2);
-    my_malloc (mask, stop, REAL);
+    my_malloc (mask, stop, rmg_double_t);
 
     for (idx = 0; idx < stop; idx++)
         mask[idx] = 0.0;
@@ -198,7 +198,7 @@ void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
             for (iz = 0; iz < izdim + 2; iz += incz)
             {
 
-                zc = pez * ct.hzgrid * izdim + ((REAL) iz) * ct.hzgrid - zoff - ct.hzgrid;
+                zc = pez * ct.hzgrid * izdim + ((rmg_double_t) iz) * ct.hzgrid - zoff - ct.hzgrid;
                 ax[0] = xc;
                 ax[1] = yc;
                 ax[2] = zc;
@@ -229,8 +229,8 @@ void getpoi_bc (REAL * rho, REAL * vh_bc, int dimx, int dimy, int dimz)
                         for (iy1 = -2; iy1 <= 2; iy1++)
                         {
 
-                            ax[0] = xc + (REAL) ix1;
-                            ax[1] = yc + (REAL) iy1;
+                            ax[0] = xc + (rmg_double_t) ix1;
+                            ax[1] = yc + (rmg_double_t) iy1;
                             ax[2] = zc;
                             r = metric (ax);
                             to_cartesian (ax, bx);

@@ -13,8 +13,8 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
 {
 
     int idx, ion, nh, i, j, size, incx = 1, inh, sidx, sidx_local, nidx, oion;
-    REAL sumbeta, sumpsi, sum, t1;
-    REAL *tmp_psiR, *tmp_psiI, *qqq, *sintR, *sintI, *ptr;
+    rmg_double_t sumbeta, sumpsi, sum, t1;
+    rmg_double_t *tmp_psiR, *tmp_psiI, *qqq, *sintR, *sintI, *ptr;
     ION *iptr;
 
     sidx = kidx * ct.num_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;

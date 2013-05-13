@@ -8,19 +8,19 @@
 #include <float.h>
 #include "main.h"
 
-void partial_gamma (int ion, REAL * par_gammaR, REAL * par_omegaR, int nion, int nh,
-                    REAL * newsintR_x, REAL * newsintR_y, REAL * newsintR_z,
-                    REAL * newsintI_x, REAL * newsintI_y, REAL * newsintI_z)
+void partial_gamma (int ion, rmg_double_t * par_gammaR, rmg_double_t * par_omegaR, int nion, int nh,
+                    rmg_double_t * newsintR_x, rmg_double_t * newsintR_y, rmg_double_t * newsintR_z,
+                    rmg_double_t * newsintI_x, rmg_double_t * newsintI_y, rmg_double_t * newsintI_z)
 {
     int i, j, idx, kidx, istate, size, index;
-    REAL *gamma_x, *gamma_y, *gamma_z;
-    REAL *omega_x, *omega_y, *omega_z;
-    REAL t1, betaxpsiNR, betaxpsiMR;
+    rmg_double_t *gamma_x, *gamma_y, *gamma_z;
+    rmg_double_t *omega_x, *omega_y, *omega_z;
+    rmg_double_t t1, betaxpsiNR, betaxpsiMR;
 #if !GAMMA_PT
-    REAL betaxpsiNI, betaxpsiMI;
-    REAL *psixbetaI_x, *psixbetaI_y, *psixbetaI_z;
+    rmg_double_t betaxpsiNI, betaxpsiMI;
+    rmg_double_t *psixbetaI_x, *psixbetaI_y, *psixbetaI_z;
 #endif
-    REAL *psixbetaR_x, *psixbetaR_y, *psixbetaR_z;
+    rmg_double_t *psixbetaR_x, *psixbetaR_y, *psixbetaR_z;
     STATE *sta;
 
 

@@ -8,14 +8,14 @@
 #include <stdlib.h>
 #include "main.h"
 
-void get_derweight (int ion, REAL * beta_x, REAL * beta_y, REAL * beta_z, ION * iptr,
+void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_double_t * beta_z, ION * iptr,
                     fftwnd_plan p2)
 {
 
 #if !FDIFF_BETA
     int ip, coarse_size, idx, nh;
     SPECIES *sp;
-    REAL *rtptr_x, *rtptr_y, *rtptr_z;
+    rmg_double_t *rtptr_x, *rtptr_y, *rtptr_z;
     /*Pointer to the result of forward transform on the coarse grid */
     fftw_complex *fptr_x, *fptr_y, *fptr_z;
     fftw_complex *beptr, *gbptr;

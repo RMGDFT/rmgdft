@@ -18,12 +18,12 @@
  * at the end of ortho_full.c*/
 
 #if GAMMA_PT
-void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL cR, REAL cI)
+void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t cR, rmg_double_t cI)
 {
     int ion, sidx1, sidx2, lsidx1, lsidx2;
     int size, incx = 1;
-    REAL *tmp_psi2, *tmp_psi1, *ptr1, *ptr2;
-    REAL t1;
+    rmg_double_t *tmp_psi2, *tmp_psi1, *ptr1, *ptr2;
+    rmg_double_t t1;
     ION *iptr;
 
     size =pct.P0_BASIS;
@@ -59,13 +59,13 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL 
 
 }
 #else
-void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, REAL cR, REAL cI)
+void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t cR, rmg_double_t cI)
 {
     int ion;
     int incx = 1;
     int sidx1, sidx2, lsidx1, lsidx2, idx;
-    REAL *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I, *ptr1R, *ptr1I, *ptr2R, *ptr2I;
-    REAL sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
+    rmg_double_t *tmp_psi2R, *tmp_psi2I, *tmp_psi1R, *tmp_psi1I, *ptr1R, *ptr1I, *ptr2R, *ptr2I;
+    rmg_double_t sumpsiR, sumpsiI, sumbetaR, sumbetaI, sri, sii;
     ION *iptr;
 
 

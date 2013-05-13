@@ -47,8 +47,8 @@ void lcao_init (void)
 
     int isp, idx, ip, it1, write_flag;
     SPECIES *sp;
-    REAL *work, rfil;
-    REAL t1, t2, rcut, exp_fac;
+    rmg_double_t *work, rfil;
+    rmg_double_t t1, t2, rcut, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
 
@@ -73,7 +73,7 @@ void lcao_init (void)
         work = sp->atomic_rho;
 
 	/*Find radii of atomic wavefunctions and charge in terms of number of grid points*/
-	sp->adim_rho  = radius2grid (sp->aradius, ct.hmingrid/ (REAL) FG_NX);
+	sp->adim_rho  = radius2grid (sp->aradius, ct.hmingrid/ (rmg_double_t) FG_NX);
         if ((sp->adim_rho >= ct.psi_fnxgrid) || (sp->adim_rho >= ct.psi_fnygrid)
             || (sp->adim_rho >= ct.psi_fnzgrid))
             error_handler ("LCAO charge radius exceeds global grid size");
@@ -87,13 +87,13 @@ void lcao_init (void)
 	sp->drlig_awave = sqrt (3.0) * (sp->adim_wave + 1.0) * ct.hmaxgrid / 2.0;
 	if (ct.ibrav == HEXAGONAL)
 	     sp->drlig_awave *= 2.0;
-	t1 = (REAL) MAX_LOCAL_LIG;
+	t1 = (rmg_double_t) MAX_LOCAL_LIG;
 	sp->drlig_awave /= t1;
 
 	sp->drlig_arho = sqrt (3.0) * (sp->adim_rho/FG_NX + 1.0) * ct.hmaxgrid / 2.0;
 	if (ct.ibrav == HEXAGONAL)
 	     sp->drlig_arho *= 2.0;
-	t1 = (REAL) MAX_LOCAL_LIG;
+	t1 = (rmg_double_t) MAX_LOCAL_LIG;
 	sp->drlig_arho /= t1;
 
         if (pct.gridpe == 0 && write_flag)

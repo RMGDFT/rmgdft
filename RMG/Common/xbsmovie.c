@@ -55,7 +55,7 @@ static void init_xbsmovie (FILE * movie)
     ION *iptr;
     SPECIES *sp, *sp2;
     int max_atomic_number, min_atomic_number;
-    REAL radius, color;
+    rmg_double_t radius, color;
 
     max_atomic_number = 0;
     min_atomic_number = 1000;

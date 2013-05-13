@@ -12,21 +12,21 @@
  * that comes from eigenvalues*/
 #define VERBOSE 0
 
-void nlforce (REAL * veff)
+void nlforce (rmg_double_t * veff)
 {
     int ion, isp, index, gion, nion;
     int nh, size, size1;
-    REAL *gamma, *par_gamma, *par_omega;
+    rmg_double_t *gamma, *par_gamma, *par_omega;
     SPECIES *sp;
     ION *iptr;
     int num_ions;
     fftwnd_plan p2;
-    REAL *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
-    REAL *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
+    rmg_double_t *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
+    rmg_double_t *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
     int fpt0;
 #if VERBOSE
-    REAL *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
-    my_malloc (old_force, 3 * ct.num_ions, REAL);
+    rmg_double_t *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
+    my_malloc (old_force, 3 * ct.num_ions, rmg_double_t);
 #endif
 
 
@@ -36,12 +36,12 @@ void nlforce (REAL * veff)
 
     num_ions = ct.num_ions;
 
-    my_malloc (newsintR_x, 3 * size1, REAL);
+    my_malloc (newsintR_x, 3 * size1, rmg_double_t);
     newsintR_y = newsintR_x + size1;
     newsintR_z = newsintR_y + size1;
 
 #if !GAMMA_PT
-    my_malloc (newsintI_x, 3 * size1, REAL);
+    my_malloc (newsintI_x, 3 * size1, rmg_double_t);
     newsintI_y = newsintI_x + size1;
     newsintI_z = newsintI_y + size1;
 #else
@@ -61,9 +61,9 @@ void nlforce (REAL * veff)
 
 
     /*Array for q-force */
-    my_malloc (qforce, 3 * num_ions, REAL);
-    my_malloc (tmp_force_gamma, 3 * num_ions, REAL);
-    my_malloc (tmp_force_omega, 3 * num_ions, REAL);
+    my_malloc (qforce, 3 * num_ions, rmg_double_t);
+    my_malloc (tmp_force_gamma, 3 * num_ions, rmg_double_t);
+    my_malloc (tmp_force_omega, 3 * num_ions, rmg_double_t);
 
     for (isp = 0; isp < 3 * num_ions; isp++)
     {
@@ -76,8 +76,8 @@ void nlforce (REAL * veff)
     /*max for nh * (nh + 1) / 2 */
     size = (ct.max_nl + 1) * ct.max_nl / 2;
     
-    my_malloc (gamma, size, REAL);
-    my_malloc (par_gamma, 6 * size, REAL);
+    my_malloc (gamma, size, rmg_double_t);
+    my_malloc (par_gamma, 6 * size, rmg_double_t);
     par_omega = par_gamma + 3 * size;
 
 

@@ -11,13 +11,13 @@
 
 #  if GAMMA_PT
 /*Applies A operator to all wavefunctions*/
-void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
+void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig)
 {
     int i, kidx, idx, istate, sbasis;
-    REAL *sg_twovpsi, *tmp_psi, *work2, *work1;
+    rmg_double_t *sg_twovpsi, *tmp_psi, *work2, *work1;
     STATE *sp;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
 #if BATCH_NLS
@@ -28,9 +28,9 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 
     sbasis = states[0].sbasis;
 #if !BATCH_NLS
-    my_malloc (work2, sbasis, REAL);
+    my_malloc (work2, sbasis, rmg_double_t);
 #endif
-    my_malloc (sg_twovpsi, sbasis, REAL);
+    my_malloc (sg_twovpsi, sbasis, rmg_double_t);
     kidx = 0;
 
     work1 = a_psi;
@@ -123,18 +123,18 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 
 /*Applies B operator to all wavefunctions*/
 /*On input b_psi contains s-operator applied to wavefunction*/
-void subdiag_app_B (STATE * states, REAL * b_psi)
+void subdiag_app_B (STATE * states, rmg_double_t * b_psi)
 {
     int istate, pbasis, ione=1;
-    REAL *work2, *work1;
+    rmg_double_t *work2, *work1;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
     pbasis = states[0].pbasis;
 
 
-    my_malloc (work2, pbasis, REAL);
+    my_malloc (work2, pbasis, rmg_double_t);
 
     work1 = b_psi;
 
@@ -168,21 +168,21 @@ void subdiag_app_B (STATE * states, REAL * b_psi)
 #else
 
 /*Applies A operator to all wavefunctions*/
-void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR, REAL * s_psiI, REAL * vtot_eig)
+void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI, rmg_double_t * s_psiR, rmg_double_t * s_psiI, rmg_double_t * vtot_eig)
 {
     int kidx, idx, istate, sbasis;
-    REAL *sg_twovpsiR, *sg_twovpsiI, *tmp_psiR, *tmp_psiI, *work2R, *work2I,
+    rmg_double_t *sg_twovpsiR, *sg_twovpsiI, *tmp_psiR, *tmp_psiI, *work2R, *work2I,
         *work1R, *work1I;
-    REAL *gx, *gy, *gz, *kdr;
+    rmg_double_t *gx, *gy, *gz, *kdr;
     STATE *sp;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
 
 
     sbasis = states[0].sbasis;
-    my_malloc (work2R, 8 * sbasis, REAL);
+    my_malloc (work2R, 8 * sbasis, rmg_double_t);
     work2I = work2R + sbasis;
     sg_twovpsiR = work2I + sbasis;
     sg_twovpsiI = sg_twovpsiR + sbasis;
@@ -316,17 +316,17 @@ void subdiag_app_A (STATE * states, REAL * a_psiR, REAL * a_psiI, REAL * s_psiR,
 
 /*Applies B operator to all wavefunctions*/
 /*On input b_psi contains s-operator applied to wavefunction*/
-void subdiag_app_B (STATE * states, REAL * b_psiR, REAL * b_psiI)
+void subdiag_app_B (STATE * states, rmg_double_t * b_psiR, rmg_double_t * b_psiI)
 {
     int istate, ione=1;
-    REAL *work2R, *work2I, *work1R, *work1I;
+    rmg_double_t *work2R, *work2I, *work1R, *work1I;
 #    if MD_TIMERS
-    REAL time1;
+    rmg_double_t time1;
 #    endif
 
 
 
-    my_malloc (work2R, 2 * states[0].sbasis, REAL);
+    my_malloc (work2R, 2 * states[0].sbasis, rmg_double_t);
     work2I = work2R + states[0].sbasis;
 
     work1R = b_psiR;

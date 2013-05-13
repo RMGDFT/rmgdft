@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void subdiag(STATE *states, REAL *vh, REAL *vnuc, REAL *vxc)
+ *   void subdiag(STATE *states, rmg_double_t *vh, rmg_double_t *vnuc, rmg_double_t *vxc)
  *   This is the version of subdiag for message passing machines(MPI).
  *   Subspace diagonalizer for the Mehrstellen discretization of the
  *   Kohn-Sham Hamiltonian.
@@ -56,11 +56,11 @@
 #include <cublas_v2.h>
 #endif
 
-int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
-		   REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa);
+int rmg_dsygvd_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, int ldb, 
+		   rmg_double_t *w, rmg_double_t *work, int lwork, int *iwork, int liwork, rmg_double_t *wa);
 
-static REAL *tmp_arrayR;
-static REAL *tmp_array2R;
+static rmg_double_t *tmp_arrayR;
+static rmg_double_t *tmp_array2R;
 
 // Array storage for folded spectrum diagonalization
 static int *fs_eigstart;
@@ -85,32 +85,32 @@ static int *fs_eigcounts;
 
 
 #if GAMMA_PT
-static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi);
-void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
-void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
-void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
-void subdiag_gamma_elpa (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc);
+static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem, rmg_double_t * tmp_psi);
+void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc);
+void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc);
+void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc);
+void subdiag_gamma_elpa (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc);
 #else
-static void subdiag2_mpi (REAL * Aij, REAL * base_mem);
+static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem);
 #endif
-static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int *desca,
+static void symmetrize_matrix (rmg_double_t * matrix, rmg_double_t * unity_matrix, int size, int *desca,
                                int local_size);
-static void print_matrix2 (REAL * matrix, int size);
-static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca);
+static void print_matrix2 (rmg_double_t * matrix, int size);
+static void print_dist_matrix (rmg_double_t * dist_matrix, int global_size, int *desca);
 
 
 
 // MPI operations are faster on some systems when the memory is allocated by MPI_Alloc_mem
 // instead of the normal system malloc.
-static REAL *distAij, *distBij, *distCij, *distIij, *distSij, *distTij;
-REAL *global_matrix;
+static rmg_double_t *distAij, *distBij, *distCij, *distIij, *distSij, *distTij;
+rmg_double_t *global_matrix;
 void init_subdiag(void)
 {
 
     int dist_length, dist_stop, pbasis, num_states, retval, stop, idx;
     int ione = 1, izero = 0;    /* blas constants */
     rmg_double_t t1, t2;
-    REAL time2;
+    rmg_double_t time2;
 
     /*************************** ScaLapack initialization *************************************/
 
@@ -132,54 +132,54 @@ void init_subdiag(void)
 #endif
 
     /*Get memory for distributed matrices */
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distAij);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * dist_stop , MPI_INFO_NULL, &distAij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distBij);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * dist_stop , MPI_INFO_NULL, &distBij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distSij);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * dist_stop , MPI_INFO_NULL, &distSij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distCij);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * dist_stop , MPI_INFO_NULL, &distCij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop , MPI_INFO_NULL, &distIij);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * dist_stop , MPI_INFO_NULL, &distIij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * dist_stop * ct.THREADS_PER_NODE, MPI_INFO_NULL, &distTij);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * dist_stop * ct.THREADS_PER_NODE, MPI_INFO_NULL, &distTij);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(REAL) * stop , MPI_INFO_NULL, &global_matrix);
+    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * stop , MPI_INFO_NULL, &global_matrix);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
 
     /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
 #if GPU_ENABLED
-    cudaHostRegister( global_matrix, sizeof(REAL) * stop, cudaHostRegisterPortable);
+    cudaHostRegister( global_matrix, sizeof(rmg_double_t) * stop, cudaHostRegisterPortable);
 
-    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(REAL) , MPI_INFO_NULL, &tmp_arrayR);
+    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_arrayR);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    cudaHostRegister( tmp_arrayR, pbasis * ct.num_states * sizeof(REAL), cudaHostRegisterPortable);
+    cudaHostRegister( tmp_arrayR, pbasis * ct.num_states * sizeof(rmg_double_t), cudaHostRegisterPortable);
 
-    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(REAL) , MPI_INFO_NULL, &tmp_array2R);
+    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_array2R);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    cudaHostRegister( tmp_array2R, pbasis * ct.num_states * sizeof(REAL), cudaHostRegisterPortable);
+    cudaHostRegister( tmp_array2R, pbasis * ct.num_states * sizeof(rmg_double_t), cudaHostRegisterPortable);
 
 #else
-    my_malloc (tmp_arrayR, pbasis * ct.num_states, REAL);
-    my_malloc (tmp_array2R, pbasis * ct.num_states, REAL);
+    my_malloc (tmp_arrayR, pbasis * ct.num_states, rmg_double_t);
+    my_malloc (tmp_array2R, pbasis * ct.num_states, rmg_double_t);
 #endif
 
 
@@ -206,7 +206,7 @@ void init_subdiag(void)
 
 }
 
-void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
 
 #if GPU_ENABLED
@@ -228,33 +228,33 @@ void subdiag_gamma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 }
 
-void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
     int idx, st1, st2, ion, nion, ip, pstop;
 	int num_states;
     int stop;
     int kidx;
-    REAL *eigs, *work1R, *sintR;
+    rmg_double_t *eigs, *work1R, *sintR;
     int ione = 1, izero = 0;    /* blas constants */
     char *uplo = "l", *jobz = "v";
     ION *iptr;
     SPECIES *sp;
 
     int info = 0;
-    REAL time1, time2, time3;
-    REAL tmp1;
+    rmg_double_t time1, time2, time3;
+    rmg_double_t tmp1;
 #if !GAMMA_PT
-    REAL *tmp_arrayI;
+    rmg_double_t *tmp_arrayI;
 #endif
-//    REAL *distAij, *distBij, *distCij, *distIij, *distSij;
-    REAL *vtot, *vtot_eig;
+//    rmg_double_t *distAij, *distBij, *distCij, *distIij, *distSij;
+    rmg_double_t *vtot, *vtot_eig;
     int dist_length, dist_stop, pbasis;
 
 #if GPU_ENABLED
     cublasStatus_t custat;
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
 #endif
-    REAL alpha1 = 1.0, beta1 = 0.0;
+    rmg_double_t alpha1 = 1.0, beta1 = 0.0;
 
     num_states = ct.num_states;
     pbasis =pct.P0_BASIS;
@@ -262,8 +262,8 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
 #if GPU_ENABLED
 
-//    cublasSetVectorAsync( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione, ct.cuda_stream );
-    cublasSetVector( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
+//    cublasSetVectorAsync( pbasis * num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione, ct.cuda_stream );
+    cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione );
 
 #endif
         
@@ -282,13 +282,13 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
     /*Get memory for global matrices */
     for(idx = 0;idx < stop;idx++) global_matrix[idx] = 0.0;
-    my_malloc (vtot_eig,pct.P0_BASIS, REAL);
-    my_malloc (eigs, num_states, REAL);
-    my_malloc (work1R, ct.num_states * 16 , REAL);
+    my_malloc (vtot_eig,pct.P0_BASIS, rmg_double_t);
+    my_malloc (eigs, num_states, rmg_double_t);
+    my_malloc (work1R, ct.num_states * 16 , rmg_double_t);
 
 
     /*Get vtot on coarse grid */
-    my_malloc (vtot, pct.FP0_BASIS, REAL);
+    my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
     for (idx = 0; idx < pct.FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
     get_vtot_psi (vtot_eig, vtot, FG_NX);
@@ -300,7 +300,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
     /*Temporary memory that will be used to calculate matrices and to update wavefunctions */
 #if !GAMMA_PT
-    my_malloc (tmp_arrayI, pbasis * ct.num_states, REAL);
+    my_malloc (tmp_arrayI, pbasis * ct.num_states, rmg_double_t);
 #endif
 
 
@@ -354,8 +354,8 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
     {
         char *trans = "t";
         char *trans2 = "n";
-        REAL alpha = 1.0;
-        REAL beta = 0.0;
+        rmg_double_t alpha = 1.0;
+        rmg_double_t beta = 0.0;
 
         time2 = my_crtc ();
 
@@ -370,14 +370,14 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 
 #if GPU_ENABLED
 
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_arrayR, ione, ct.gpu_temp, ione );
+        cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_arrayR, ione, ct.gpu_temp, ione );
 
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
         
-        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+        cublasGetVector( num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
         /*Global matrix will hold global A matrix */
@@ -397,13 +397,13 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
         time3 = my_crtc ();
         alpha = ct.vel;
 #if GPU_ENABLED
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), pct.ns, ione, ct.gpu_temp, ione );
+        cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
 
-        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+        cublasGetVector( num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
@@ -425,14 +425,14 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
        // for(idx = 0; idx < 100; idx++) printf("\n iaaa  %d  %f ", idx, tmp_array2R[idx]);
 
 #if GPU_ENABLED
-        cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+        cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
              &alpha, ct.gpu_states, pbasis,
              ct.gpu_temp, pbasis,
              &beta,  ct.gpu_global_matrix, num_states );
 
-        cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+        cublasGetVector( num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
@@ -518,8 +518,8 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
         /*Multiply inverse of B and and A */
         {
             char *trans = "n";
-            REAL alpha[] = { 1.0, 0.0 };
-            REAL beta[] = { 0.0, 0.0 };
+            rmg_double_t alpha[] = { 1.0, 0.0 };
+            rmg_double_t beta[] = { 0.0, 0.0 };
 
             /*B^-1*A */
 #if GAMMA_PT
@@ -560,17 +560,17 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
         /* Using lwork=-1, pdsyev should return minimum required size for the work array */
         {
             char *range = "a";
-            REAL vx = 0.0;
-            REAL tol = 0.0;
+            rmg_double_t vx = 0.0;
+            rmg_double_t tol = 0.0;
             int eigs_found, eigvs_found;
-            REAL orfac = 0.0;
+            rmg_double_t orfac = 0.0;
             int *iwork, *ifail, *iclustr, lwork;
-            REAL *gap, lwork_tmp, *work2;
+            rmg_double_t *gap, lwork_tmp, *work2;
             int liwork_tmp, liwork;
 
             my_malloc (ifail, num_states, int);
             my_malloc (iclustr, 2 * pct.scalapack_nprow * pct.scalapack_npcol, int);
-            my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, REAL);
+            my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, rmg_double_t);
             lwork = -1;
             liwork = -1;
 
@@ -590,7 +590,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
             lwork = (int) lwork_tmp + 1;
             liwork = liwork_tmp;
 
-            my_malloc (work2, lwork, REAL);
+            my_malloc (work2, lwork, rmg_double_t);
             my_malloc (iwork, liwork, int);
 
             tol = 1e-15;
@@ -684,7 +684,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 #if GAMMA_PT
 #if GPU_ENABLED
 
-    cublasSetVector( num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+    cublasSetVector( num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, ct.gpu_global_matrix, ione );
 
     alpha1 = 1.0;
     beta1 = 0.0;
@@ -694,7 +694,7 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 		    ct.gpu_global_matrix, num_states,
 		    &beta1,  ct.gpu_temp, pbasis );
 
-    cublasGetVector( pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
+    cublasGetVector( pbasis * num_states, sizeof( rmg_double_t ), ct.gpu_temp, ione, states->psiR, ione );
 
 #else
     subdiag2_mpi (global_matrix, states->psiR, tmp_arrayR);
@@ -727,13 +727,13 @@ void subdiag_gamma_scalapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc
 /* This routine is used to do the subspace rotation of the orbitals. Each
  * thread handles a specific portion of the real space domain.
  */
-static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi)
+static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem, rmg_double_t * tmp_psi)
 {
 	int idx;
 
 	char *trans = "n";
-	REAL alpha = 1.0;
-	REAL beta = 0.0;
+	rmg_double_t alpha = 1.0;
+	rmg_double_t beta = 0.0;
 	int pbasis =pct.P0_BASIS;
 	int num_states = ct.num_states;
 
@@ -751,14 +751,14 @@ static void subdiag2_mpi (REAL * Aij, REAL * base_mem, REAL * tmp_psi)
 /* This routine is used to do the subspace rotation of the orbitals. Each
  * thread handles a specific portion of the real space domain.
  */
-void subdiag2_mpi (REAL * Aij, REAL * base_mem)
+void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem)
 {
 	int idx, st1, st2;
-	REAL *rptr;
-	REAL *work1R, *work2R;
-	REAL *work1I, *work2I;
+	rmg_double_t *rptr;
+	rmg_double_t *work1R, *work2R;
+	rmg_double_t *work1I, *work2I;
 
-	my_malloc (work1R, 4 * ct.num_states, REAL);
+	my_malloc (work1R, 4 * ct.num_states, rmg_double_t);
 	work2R = work1R + ct.num_states;
 	work1I = work2R + ct.num_states;
 	work2I = work1I + ct.num_states;
@@ -810,7 +810,7 @@ void subdiag2_mpi (REAL * Aij, REAL * base_mem)
 
 #  endif
 
-static void print_matrix2 (REAL * matrix, int size)
+static void print_matrix2 (rmg_double_t * matrix, int size)
 {
 	int i, j;
 
@@ -830,14 +830,14 @@ static void print_matrix2 (REAL * matrix, int size)
 
 }
 
-static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
+static void print_dist_matrix (rmg_double_t * dist_matrix, int global_size, int *desca)
 {
-	REAL *glob_matrix;
+	rmg_double_t *glob_matrix;
 	int stop;
 
 	stop = global_size * global_size;
 
-	my_calloc (glob_matrix, stop, REAL);
+	my_calloc (glob_matrix, stop, rmg_double_t);
 
 
 	if (pct.scalapack_pe)
@@ -858,13 +858,13 @@ static void print_dist_matrix (REAL * dist_matrix, int global_size, int *desca)
 
 
 /*This works with distributed matrices*/
-static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int *desca,
+static void symmetrize_matrix (rmg_double_t * matrix, rmg_double_t * unity_matrix, int size, int *desca,
 		int local_size)
 {
 	int stop, ione = 1;
-	REAL *temp_unity_matrix, *temp_matrix;
-	REAL alpha[] = { 0.5, 0.0 };
-	REAL beta[] = { 0.5, 0.0 };
+	rmg_double_t *temp_unity_matrix, *temp_matrix;
+	rmg_double_t alpha[] = { 0.5, 0.0 };
+	rmg_double_t beta[] = { 0.5, 0.0 };
 	char *trans = "n";
 #if GAMMA_PT
 	char *trans2 = "t";
@@ -879,8 +879,8 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
 
 
 	/*Get memory */
-	my_malloc (temp_matrix, stop, REAL);
-	my_calloc (temp_unity_matrix, stop, REAL);
+	my_malloc (temp_matrix, stop, rmg_double_t);
+	my_calloc (temp_unity_matrix, stop, rmg_double_t);
 
 	/*Copy matrix into temp_matrix */
 	QMD_dcopy (stop, matrix, ione, temp_matrix, ione);
@@ -914,29 +914,29 @@ static void symmetrize_matrix (REAL * matrix, REAL * unity_matrix, int size, int
 
 
 #if GAMMA_PT
-void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
 	int idx, st1, st2, ion, nion, ip, pstop;
 	int num_states;
 	int stop;
 	int kidx;
-	REAL *eigs, *work1R, *sintR;
+	rmg_double_t *eigs, *work1R, *sintR;
 	int ione = 1, izero = 0;    /* blas constants */
 	char *uplo = "l", *jobz = "v";
 	ION *iptr;
 	SPECIES *sp;
 
 	int info = 0;
-	REAL time1, time2, time3;
-	REAL tmp1;
-	REAL *vtot, *vtot_eig;
+	rmg_double_t time1, time2, time3;
+	rmg_double_t tmp1;
+	rmg_double_t *vtot, *vtot_eig;
 	int dist_stop, pbasis;
 
 #if GPU_ENABLED
 	cublasStatus_t custat;
 	cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
 #endif
-	REAL alpha1 = 1.0, beta1 = 0.0;
+	rmg_double_t alpha1 = 1.0, beta1 = 0.0;
 
 	num_states = ct.num_states;
 	pbasis =pct.P0_BASIS;
@@ -944,7 +944,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 #if GPU_ENABLED
 
-	cublasSetVector( pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
+	cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione );
 
 #endif
 
@@ -958,13 +958,13 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 	/*Get memory for global matrices */
 	for(idx = 0;idx < stop;idx++) global_matrix[idx] = 0.0;
-	my_malloc (vtot_eig,pct.P0_BASIS, REAL);
-	my_malloc (eigs, num_states, REAL);
-	my_malloc (work1R, ct.num_states * 16 , REAL);
+	my_malloc (vtot_eig,pct.P0_BASIS, rmg_double_t);
+	my_malloc (eigs, num_states, rmg_double_t);
+	my_malloc (work1R, ct.num_states * 16 , rmg_double_t);
 
 
 	/*Get vtot on coarse grid */
-	my_malloc (vtot, pct.FP0_BASIS, REAL);
+	my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
 	for (idx = 0; idx < pct.FP0_BASIS; idx++)
 		vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
 	get_vtot_psi (vtot_eig, vtot, FG_NX);
@@ -1005,8 +1005,8 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 	{
 		char *trans = "t";
 		char *trans2 = "n";
-		REAL alpha = 1.0;
-		REAL beta = 0.0;
+		rmg_double_t alpha = 1.0;
+		rmg_double_t beta = 0.0;
 
 		time2 = my_crtc ();
 
@@ -1019,14 +1019,14 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 #if GPU_ENABLED
 
-		cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_arrayR, ione, ct.gpu_temp, ione );
+		cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_arrayR, ione, ct.gpu_temp, ione );
 
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
 				&beta,  ct.gpu_global_matrix, num_states );
 
-		cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+		cublasGetVector( num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
 		/*Global matrix will hold global A matrix */
@@ -1049,13 +1049,13 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		time3 = my_crtc ();
 		alpha = ct.vel;
 #if GPU_ENABLED
-		cublasSetVector( pbasis * num_states, sizeof( REAL ), pct.ns, ione, ct.gpu_temp, ione );
+		cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
 				&beta,  ct.gpu_global_matrix, num_states );
 
-		cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+		cublasGetVector( num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
 		dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
@@ -1080,14 +1080,14 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		rmg_timings (DIAG_APP_B, time3 - time2);
 
 #if GPU_ENABLED
-		cublasSetVector( pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+		cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
 				&beta,  ct.gpu_global_matrix, num_states );
 
-		cublasGetVector( num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+		cublasGetVector( num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 #else
 		dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
@@ -1161,12 +1161,12 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 	/* Using lwork=-1, pdsyev should return minimum required size for the work array */
 	{
 		char *range = "A";
-		REAL vx = 0.0;
-		REAL tol = 0.0;
+		rmg_double_t vx = 0.0;
+		rmg_double_t tol = 0.0;
 		int eigs_found, eigvs_found;
-		REAL orfac = 0.0;
+		rmg_double_t orfac = 0.0;
 		int *iwork, *ifail, lwork;
-		REAL *gap, lwork_tmp, *work2;
+		rmg_double_t *gap, lwork_tmp, *work2;
 		int liwork_tmp, liwork;
 
 		my_malloc (ifail, num_states, int);
@@ -1175,7 +1175,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 		lwork = 16*num_states;
 		liwork = 5*num_states;
-		my_malloc (work2, lwork, REAL);
+		my_malloc (work2, lwork, rmg_double_t);
 		my_malloc (iwork, liwork, int);
 
 		tol = 1e-15;
@@ -1222,7 +1222,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 	/* Do the orbital update in here */
 #if GPU_ENABLED
 
-	cublasSetVector( num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+	cublasSetVector( num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, ct.gpu_global_matrix, ione );
 
 	alpha1 = 1.0;
 	beta1 = 0.0;
@@ -1232,7 +1232,7 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 			ct.gpu_global_matrix, num_states,
 			&beta1,  ct.gpu_temp, pbasis );
 
-	cublasGetVector( pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
+	cublasGetVector( pbasis * num_states, sizeof( rmg_double_t ), ct.gpu_temp, ione, states->psiR, ione );
 
 #else
 	subdiag2_mpi (global_matrix, states->psiR, tmp_arrayR);
@@ -1257,27 +1257,27 @@ void subdiag_gamma_lapack (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #if GAMMA_PT
 #if GPU_ENABLED
 #if MAGMA_LIBS
-void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
 	int idx, st1, st2, ion, nion, ip, pstop;
 	int num_states;
 	int stop, incy;
 	int kidx;
-	REAL *eigs, *work1R, *sintR, rzero=0.0, rone=1.0;
+	rmg_double_t *eigs, *work1R, *sintR, rzero=0.0, rone=1.0;
 	int ione = 1, izero = 0;    /* blas constants */
 	char *uplo = "l", *jobz = "V";
 	ION *iptr;
 	SPECIES *sp;
 
 	int info = 0;
-	REAL time1, time2, time3;
-	REAL tmp1;
-	REAL *vtot, *vtot_eig;
-	REAL *gpuAij, *gpuBij, *gpuCij, *gpuSij;
+	rmg_double_t time1, time2, time3;
+	rmg_double_t tmp1;
+	rmg_double_t *vtot, *vtot_eig;
+	rmg_double_t *gpuAij, *gpuBij, *gpuCij, *gpuSij;
 	int dist_stop, pbasis;
 	cublasStatus_t custat;
 	cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
-	REAL alpha1 = 1.0, beta1 = 0.0;
+	rmg_double_t alpha1 = 1.0, beta1 = 0.0;
 
 	num_states = ct.num_states;
 	pbasis =pct.P0_BASIS;
@@ -1285,7 +1285,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 	// Start wavefunctions transferring to the GPU
-	cublasSetVector(pbasis * num_states, sizeof( REAL ), states[0].psiR, ione, ct.gpu_states, ione );
+	cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione );
 
 	gpuAij = ct.gpu_work1;
 	gpuBij = ct.gpu_work2;
@@ -1302,13 +1302,13 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 	/*Get memory for global matrices */
 	for(idx = 0;idx < stop;idx++) global_matrix[idx] = 0.0;
-	my_malloc (vtot_eig,pct.P0_BASIS, REAL);
-	my_malloc (eigs, 2*num_states, REAL);
-	my_malloc (work1R, ct.num_states * 16 , REAL);
+	my_malloc (vtot_eig,pct.P0_BASIS, rmg_double_t);
+	my_malloc (eigs, 2*num_states, rmg_double_t);
+	my_malloc (work1R, ct.num_states * 16 , rmg_double_t);
 
 
 	/*Get vtot on coarse grid */
-	my_malloc (vtot, pct.FP0_BASIS, REAL);
+	my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
 	for (idx = 0; idx < pct.FP0_BASIS; idx++)
 		vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
 	get_vtot_psi (vtot_eig, vtot, FG_NX);
@@ -1342,8 +1342,8 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 	{
 		char *trans = "t";
 		char *trans2 = "n";
-		REAL alpha = 1.0;
-		REAL beta = 0.0;
+		rmg_double_t alpha = 1.0;
+		rmg_double_t beta = 0.0;
 
 		time2 = my_crtc ();
 
@@ -1356,12 +1356,12 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 
 		/*Global matrix will hold global A matrix */
-		cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_arrayR, ione, ct.gpu_temp, ione );
+		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), tmp_arrayR, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
 				&beta,  ct.gpu_global_matrix, num_states );
-		cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+		cublasGetVector(num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 		time2 = my_crtc ();
 		rmg_timings (DIAG_DGEMM, time2 - time3);
@@ -1371,18 +1371,18 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
 		//QMD_dcopy (stop, global_matrix, ione, distAij, ione);
-		cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuAij, ione );
+		cublasSetVector(num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, gpuAij, ione );
 
 		// Now deal with the S operator
 		time3 = my_crtc ();
 		alpha = ct.vel;
 
-		cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
 				&beta,  ct.gpu_global_matrix, num_states );
-		cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+		cublasGetVector(num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 
 		time2 = my_crtc ();
@@ -1392,7 +1392,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		//global_sums (global_matrix, &stop, pct.grid_comm);
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
-		cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, gpuSij, ione );
+		cublasSetVector(num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, gpuSij, ione );
 		//QMD_dcopy (stop, global_matrix, ione, distSij, ione);
 
 		/* Apply B operator on each wavefunction */
@@ -1403,12 +1403,12 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		alpha = ct.vel;
 		rmg_timings (DIAG_APP_B, time3 - time2);
 
-		cublasSetVector(pbasis * num_states, sizeof( REAL ), tmp_array2R, ione, ct.gpu_temp, ione );
+		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
 				&alpha, ct.gpu_states, pbasis,
 				ct.gpu_temp, pbasis,
 				&beta,  ct.gpu_global_matrix, num_states );
-		cublasGetVector(num_states * num_states, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+		cublasGetVector(num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 		time2 = my_crtc ();
 		rmg_timings (DIAG_DGEMM, time2 - time3);
@@ -1428,7 +1428,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		distCij[st1] = 0.0;
 	}
 	for (st1 = 0; st1 < num_states;st1++) distCij[st1*num_states+st1] = 1.0;
-	custat = cublasSetVector(num_states * num_states , sizeof( REAL ), distCij, ione, gpuCij, ione );
+	custat = cublasSetVector(num_states * num_states , sizeof( rmg_double_t ), distCij, ione, gpuCij, ione );
 
 	time2 = my_crtc ();
 
@@ -1439,7 +1439,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 		my_calloc (ipiv, num_states, int);
 
 		/* Transfer Bij which we left in global_matrix to the GPU. Inverse of B stored in gpuCij after dgesv call */
-		cublasSetVector(num_states * num_states, sizeof( REAL ), global_matrix, ione, ct.gpu_global_matrix, ione );
+		cublasSetVector(num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, ct.gpu_global_matrix, ione );
 
 		magma_dgesv_gpu( num_states, num_states, ct.gpu_global_matrix, num_states, ipiv, gpuCij, num_states, &info );
 		// gpuCij holds B^-1
@@ -1475,7 +1475,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 	{
 		int eigs_found, eigvs_found, izero=0;
 		int *iwork, *ifail, lwork;
-		REAL *gap, lwork_tmp, *work2, qw1[10];
+		rmg_double_t *gap, lwork_tmp, *work2, qw1[10];
 		int qw2[10];
 		int liwork_tmp, liwork;
 
@@ -1492,7 +1492,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 
 		lwork = (int)qw1[0];
 		liwork = qw2[0];
-		my_malloc (work2, lwork, REAL);
+		my_malloc (work2, lwork, rmg_double_t);
 		my_malloc (iwork, liwork, int);
 		//            info = rmg_dsygvd_gpu(num_states, gpuCij, num_states, gpuSij, num_states,
 		//                   eigs, work2, lwork, iwork, liwork, distAij);
@@ -1541,7 +1541,7 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 			&beta1,  ct.gpu_temp, pbasis );
 
 	// Grab our data from the GPU.
-	cublasGetVector(pbasis * num_states, sizeof( REAL ), ct.gpu_temp, ione, states->psiR, ione );
+	cublasGetVector(pbasis * num_states, sizeof( rmg_double_t ), ct.gpu_temp, ione, states->psiR, ione );
 
 
 	rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
@@ -1566,11 +1566,11 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 // Magma does not provide a routine that works as
 // required so we put one together using magma routines
 // and the cublas version of dtrsm.
-int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
-		REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa)
+int rmg_dsygvd_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, int ldb, 
+		rmg_double_t *w, rmg_double_t *work, int lwork, int *iwork, int liwork, rmg_double_t *wa)
 {
 	int ione=1, itype=1, info=0, idx;
-	REAL rone = 1.0;
+	rmg_double_t rone = 1.0;
 	cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
 	cublasSideMode_t side=CUBLAS_SIDE_LEFT;
 	cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
@@ -1579,9 +1579,9 @@ int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
 	//  Form a Cholesky factorization of B.
 	//  This routine is buggy
 	magma_dpotrf_gpu('L', n, b, ldb, &info);
-	//cublasGetVector(n*n, sizeof( REAL ), b, ione, wa, ione );
+	//cublasGetVector(n*n, sizeof( rmg_double_t ), b, ione, wa, ione );
 	//dpotrf_("L", &n, wa, &n, &info);
-	//cublasSetVector(n*n, sizeof( REAL ), wa, ione, b, ione );
+	//cublasSetVector(n*n, sizeof( rmg_double_t ), wa, ione, b, ione );
 
 	if( info != 0 ) {
 		error_handler("dpotrf failure");
@@ -1618,7 +1618,7 @@ int rmg_dsygvd_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
 } 
 #else
 // Empty stub 
-void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
+void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
 	error_handler("    This version of RMG was not built with Magma.\n");
 }
@@ -1639,12 +1639,12 @@ void subdiag_gamma_magma (STATE * states, REAL * vh, REAL * vnuc, REAL * vxc)
 #include <fcntl.h>
 
 
-int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb, 
-		REAL *w, REAL *work, int lwork, int *iwork, int liwork, REAL *wa)
+int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, int ldb, 
+		rmg_double_t *w, rmg_double_t *work, int lwork, int *iwork, int liwork, rmg_double_t *wa)
 {
 
     int ione=1, itype=1, info=0, idx;
-    REAL rone = 1.0;
+    rmg_double_t rone = 1.0;
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
     cublasSideMode_t side=CUBLAS_SIDE_LEFT;
     cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
@@ -1692,9 +1692,9 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
     my_malloc(p1, n, rmg_double_t);
     n_eigs = distTij;
 
-    if( cudaSuccess != cudaMalloc((void **)&d_p0 , n * sizeof(REAL) ))
+    if( cudaSuccess != cudaMalloc((void **)&d_p0 , n * sizeof(rmg_double_t) ))
         error_handler ("cudaMalloc failed for: d_p0\n");
-    if( cudaSuccess != cudaMalloc((void **)&d_p1 , n * sizeof(REAL) ))
+    if( cudaSuccess != cudaMalloc((void **)&d_p1 , n * sizeof(rmg_double_t) ))
         error_handler ("cudaMalloc failed for: d_p1\n");
 
     time1=my_crtc();
@@ -1745,7 +1745,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
         Asave = ct.gpu_host_temp2;
 
         // AX=lambdaX  store a copy of A in Asave
-        cublasGetVector(n * n, sizeof( REAL ), a, 1, Asave, 1 );
+        cublasGetVector(n * n, sizeof( rmg_double_t ), a, 1, Asave, 1 );
 
         // Zero out matrix of eigenvectors and eigenvalues
         for(idx=0;idx < n*n;idx++) V[idx] = 0.0;
@@ -1761,7 +1761,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
                 G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
             }
         }
-        cublasSetVector(n_win * n_win, sizeof( REAL ), G, 1, a, 1 );
+        cublasSetVector(n_win * n_win, sizeof( rmg_double_t ), G, 1, a, 1 );
         magma_dsyevd_gpu('V', 'L', n_win, a, n_win, &w[n_start],
                         wa,  n_win,
                         work, lwork,
@@ -1772,7 +1772,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
         }
         //--------------------------------------------------------------------
 
-        cublasGetVector(n_win * n_win, sizeof( REAL ), a, 1, G, 1 );
+        cublasGetVector(n_win * n_win, sizeof( rmg_double_t ), a, 1, G, 1 );
         for(ix = 0;ix < n_win;ix++) {
             Vdiag[ix] = 1.0;
             if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -1.0;
@@ -1801,7 +1801,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
             }
 
             alpha = 1.0;
-            cublasSetVector( ct.num_states*ct.num_states, sizeof( REAL ), Asave, ione, ct.gpu_global_matrix, ione );
+            cublasSetVector( ct.num_states*ct.num_states, sizeof( rmg_double_t ), Asave, ione, ct.gpu_global_matrix, ione );
             cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, ct.num_states, ct.num_states, ct.num_states,
                  &alpha, ct.gpu_global_matrix, ct.num_states,
                  ct.gpu_global_matrix, ct.num_states,
@@ -1812,7 +1812,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
                 Asave[ix*ct.num_states + ix] += lambda;
             }
 
-            cublasSetVector( n, sizeof( REAL ), &V[eig_index*n], ione, d_p0, ione );
+            cublasSetVector( n, sizeof( rmg_double_t ), &V[eig_index*n], ione, d_p0, ione );
 
             alpha = -0.5;
             beta = 0.0;
@@ -1820,7 +1820,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
                 cublasDgemv_v2(ct.cublas_handle, cu_transN, n, n, &alpha, ct.gpu_global_matrix, n, d_p0, ione, &beta, d_p1, ione);
                 cublasDaxpy_v2(ct.cublas_handle, n, &rone, d_p1, ione, d_p0, ione);
             }
-            cublasGetVector(n, sizeof( REAL ), d_p0, ione, &V[eig_index*n], ione);
+            cublasGetVector(n, sizeof( rmg_double_t ), d_p0, ione, &V[eig_index*n], ione);
         }
 
         time2=my_crtc();
@@ -1853,7 +1853,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
         beta = 0.0;
 
         // Overlaps
-        cublasSetVector( n * n, sizeof( REAL ), V, ione, a, ione );
+        cublasSetVector( n * n, sizeof( rmg_double_t ), V, ione, a, ione );
         cublasDsyrk_v2 (ct.cublas_handle, cuplo, cu_transT, n, n, &alpha, a, n, &beta, ct.gpu_global_matrix, n);
         time2=my_crtc();
         dprintf("OVERLAPS  = %12.6f",time2-time1);
@@ -1861,7 +1861,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
 
         // Cholesky factorization
         magma_dpotrf_gpu('L', n, ct.gpu_global_matrix, n, &info);
-        cublasGetVector( n * n, sizeof( REAL ), ct.gpu_global_matrix, ione, global_matrix, ione );
+        cublasGetVector( n * n, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
         time2=my_crtc();
         dprintf("CHOLESKY  = %12.6f",time2-time1);
@@ -1875,7 +1875,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
 #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
 {
         omp_tid = omp_get_thread_num();
-        if(omp_tid == 0) my_malloc(darr, n * omp_get_num_threads(), REAL);
+        if(omp_tid == 0) my_malloc(darr, n * omp_get_num_threads(), rmg_double_t);
 #pragma omp barrier
 
 #pragma omp for schedule(static, 1) nowait
@@ -1910,7 +1910,7 @@ int rmg_folded_spectrum_gpu(int n, REAL *a, int lda, REAL *b, int ldb,
         // A matrix transpose here would let us use an Allgatherv which would be
         // almost twice as fast for the communications part.
         MPI_Allreduce(MPI_IN_PLACE, G, n*n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        cublasSetVector(n * n, sizeof( REAL ), G, 1, a, 1 );
+        cublasSetVector(n * n, sizeof( rmg_double_t ), G, 1, a, 1 );
 
         time2=my_crtc();
         dprintf("MPI_ALLREDUCE3  = %12.6f",time2-time1);

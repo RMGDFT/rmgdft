@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void fastrlx(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
- *                REAL *rho, REAL *rhocore, REAL *rhoc)
+ *   void fastrlx(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
+ *                rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
  *   drive routine for fast relax.
  * INPUTS
  *   states: all wave functions (see main.h)
@@ -49,8 +49,8 @@
 
 
 
-void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
-              REAL * rho, REAL * rho_oppo, REAL * rhocore, REAL * rhoc)
+void relax (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
+              rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc)
 {
 
     int iion;
@@ -123,7 +123,7 @@ void relax (int steps, STATE * states, REAL * vxc, REAL * vh, REAL * vnuc,
         {
             if (ct.ions[iion].movable)
             {
-                REAL *fp;
+                rmg_double_t *fp;
                 fp = ct.ions[iion].force[ct.fpt[0]];
                 CONV_FORCE &=
                     ((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);

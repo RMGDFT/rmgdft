@@ -7,17 +7,17 @@
 #include "main.h"
 #include <float.h>
 
-void pack_rho_ctof (REAL * rho, REAL * rho_f)
+void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
 {
     int i, j, k, ii, jj, kk, basis1, basis2, basis3;
     int pbasis, dimx, dimy, dimz, in, jn, kn;
     int ifxs, ifys;
     int icxs, icys, alloc;
-    REAL tmp1, tmp2, tmp3, frac, cc[10][4];
-    REAL *rho_c, sum_rho, sum_rhof, coef;
+    rmg_double_t tmp1, tmp2, tmp3, frac, cc[10][4];
+    rmg_double_t *rho_c, sum_rho, sum_rhof, coef;
 
     alloc = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
-    my_malloc(rho_c, alloc, REAL);
+    my_malloc(rho_c, alloc, rmg_double_t);
 
     ifxs = pct.FPY0_GRID * pct.FPZ0_GRID;
     ifys = pct.FPZ0_GRID;
@@ -41,7 +41,7 @@ void pack_rho_ctof (REAL * rho, REAL * rho_f)
 
     for (i = 0; i < FG_NX; i++)
     {
-        frac = (REAL) i / (REAL) FG_NX;
+        frac = (rmg_double_t) i / (rmg_double_t) FG_NX;
         cc[i][0] = -frac * (1.0 - frac) * (2.0 - frac) / 6.0;
         cc[i][1] = (1.0 + frac) * (1.0 - frac) * (2.0 - frac) / 2.0;
         cc[i][2] = (1.0 + frac) * frac * (2.0 - frac) / 2.0;

@@ -47,16 +47,16 @@ void init_wf (STATE * states)
 
     int idx, state, ix, iy, iz, pbasis, nspin=(ct.spin_flag+1);
     int xoff, yoff, zoff;
-    REAL *tmp_psiR, *tmp_psiI;
+    rmg_double_t *tmp_psiR, *tmp_psiI;
     STATE *sp;
-    REAL xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
+    rmg_double_t xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
     long idum;
 
     pbasis = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
 
-    my_malloc (tmp_psiR, pbasis, REAL);
+    my_malloc (tmp_psiR, pbasis, rmg_double_t);
 #if !GAMMA_PT
-    my_malloc (tmp_psiI, pbasis, REAL);
+    my_malloc (tmp_psiI, pbasis, rmg_double_t);
 #endif
 
     /* Set state 0 to a constant */
