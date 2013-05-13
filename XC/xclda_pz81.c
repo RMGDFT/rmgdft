@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void xclda_pz81(REAL *rho, REAL *vxc)
- *   void exclda_pz81(REAL *rho, REAL *exc)
+ *   void xclda_pz81(rmg_double_t *rho, rmg_double_t *vxc)
+ *   void exclda_pz81(rmg_double_t *rho, rmg_double_t *exc)
  *   Functions to generate the exchange-correlation potential and
  *   energy density using the Ceperley - Alder exchange-correlation
  *   potential and energy as parameterized by Perdew and Zunger, 
@@ -136,7 +136,7 @@ double mu_pz (double rho)
 
 
 
-void xclda_pz81 (REAL * rho, REAL * vxc_f)
+void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc_f)
 {
 
     int i;
@@ -156,7 +156,7 @@ void xclda_pz81 (REAL * rho, REAL * vxc_f)
 
 
 
-void exclda_pz81 (REAL * rho, REAL * exc)
+void exclda_pz81 (rmg_double_t * rho, rmg_double_t * exc)
 {
 
     int i;
