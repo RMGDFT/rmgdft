@@ -13,7 +13,7 @@
 /*Applies A operator to all wavefunctions*/
 void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 {
-    int kidx, idx, istate, sbasis;
+    int i, kidx, idx, istate, sbasis;
     REAL *sg_twovpsi, *tmp_psi, *work2, *work1;
     STATE *sp;
 #    if MD_TIMERS
@@ -22,7 +22,7 @@ void subdiag_app_A (STATE * states, REAL * a_psi, REAL * s_psi, REAL * vtot_eig)
 
 #if BATCH_NLS
     time1 = my_crtc();
-    app_nls_batch (states, pct.nv, s_psi, , pct.Bns, pct.newsintR_local);
+    app_nls_batch (states, pct.nv, s_psi, pct.Bns, pct.newsintR_local);
     rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #endif
 
