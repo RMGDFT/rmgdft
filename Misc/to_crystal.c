@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void to_crystal(rmg_double_t crystal[], REAL cartesian[])
+ *   void to_crystal(rmg_double_t crystal[], rmg_double_t cartesian[])
  *   get crystal coordinates from cartesian coordinates 
  * INPUTS
  *   cartesian[3]: coordinates in atomic unit
@@ -40,7 +40,7 @@
 
 #define     SR3         1.732050807569
 
-void to_crystal (rmg_double_t crystal[], REAL cartesian[])
+void to_crystal (rmg_double_t crystal[], rmg_double_t cartesian[])
 {
     int ir;
 

@@ -66,7 +66,7 @@ static MPI_Request sreqs[26];
 static MPI_Request rreqs[26];
 
 
-void trade_imagesx_async (rmg_double_t * f, REAL * w, int dimx, int dimy, int dimz, int images)
+void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images)
 {
     int ix, iy, iz, ix1, iy1, iz1, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, c2, c3, idx, idx1, img3;
@@ -654,7 +654,7 @@ void trade_imagesx_async (rmg_double_t * f, REAL * w, int dimx, int dimy, int di
 
 
 // Asynchronous image trades for central finite difference operators
-void trade_imagesx_central_async (rmg_double_t * f, REAL * w, int dimx, int dimy, int dimz, int images)
+void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images)
 {
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, idx;

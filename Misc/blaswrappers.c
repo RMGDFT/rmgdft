@@ -24,7 +24,7 @@
 
 #include "main.h"
 
-void QMD_daxpy (int n, rmg_double_t alpha, REAL * x, int incx, REAL * y, int incy)
+void QMD_daxpy (int n, rmg_double_t alpha, rmg_double_t * x, int incx, rmg_double_t * y, int incy)
 {
 //    saxpy (&n, &alpha, x, &incx, y, &incy);
     int i, iy=0, ix=0;
@@ -45,7 +45,7 @@ void QMD_daxpy (int n, rmg_double_t alpha, REAL * x, int incx, REAL * y, int inc
 
 }
 
-void QMD_dscal (int n, rmg_double_t alpha, REAL * x, int incx)
+void QMD_dscal (int n, rmg_double_t alpha, rmg_double_t * x, int incx)
 {
 //    sscal (&n, &alpha, x, &incx);
       int i, ix=0;
@@ -61,7 +61,7 @@ void QMD_dscal (int n, rmg_double_t alpha, REAL * x, int incx)
       }
 }
 
-void QMD_dcopy (int n, rmg_double_t * x, int incx, REAL * y, int incy)
+void QMD_dcopy (int n, rmg_double_t * x, int incx, rmg_double_t * y, int incy)
 {
 //    scopy (&n, x, &incx, y, &incy);
       int i, ix=0, iy=0;
@@ -79,7 +79,7 @@ void QMD_dcopy (int n, rmg_double_t * x, int incx, REAL * y, int incy)
       }
 }
 
-rmg_double_t QMD_ddot (int n, REAL * x, int incx, REAL * y, int incy)
+rmg_double_t QMD_ddot (int n, rmg_double_t * x, int incx, rmg_double_t * y, int incy)
 {
 //    return sdot (&n, x, &incx, y, &incy);
       int i, ix = 0, iy = 0;
@@ -100,7 +100,7 @@ rmg_double_t QMD_ddot (int n, REAL * x, int incx, REAL * y, int incy)
 
 }
 
-void QMD_dswap(int n, rmg_double_t * x, int incx, REAL *y, int incy)
+void QMD_dswap(int n, rmg_double_t * x, int incx, rmg_double_t *y, int incy)
 {
       int i, ix=0, iy=0;
       rmg_double_t temp;
@@ -116,19 +116,19 @@ void QMD_dswap(int n, rmg_double_t * x, int incx, REAL *y, int incy)
 
 }
 
-void my_copy(rmg_double_t *in, REAL *out, int length) {
+void my_copy(rmg_double_t *in, rmg_double_t *out, int length) {
     int ione = 1;
     QMD_dcopy(length, in, ione, out, ione);
 }
-void my_scal(rmg_double_t alpha, REAL *vect, int length) {
+void my_scal(rmg_double_t alpha, rmg_double_t *vect, int length) {
     int ione = 1;
     QMD_dscal(length, alpha, vect, ione); 
 }
-void my_axpy(rmg_double_t alpha, REAL *in, REAL *out, int length) {
+void my_axpy(rmg_double_t alpha, rmg_double_t *in, rmg_double_t *out, int length) {
     int ione = 1;
     QMD_daxpy(length, alpha, in, ione, out, ione);
 }
-void my_swap(rmg_double_t *vec1, REAL *vec2, int length) {
+void my_swap(rmg_double_t *vec1, rmg_double_t *vec2, int length) {
     int ione =1;
     QMD_dswap(length, vec1, ione, vec2, ione);
 }

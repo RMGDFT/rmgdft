@@ -20,7 +20,7 @@
  *                 int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
  *                 int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
  *                 int nxgrid, int nygrid, int nzgrid,
- *                 rmg_double_t *xcstart, REAL *ycstart, REAL *zcstart)
+ *                 rmg_double_t *xcstart, rmg_double_t *ycstart, rmg_double_t *zcstart)
  *   This function generates the indices needed to map a spherical 
  *   short-ranged operator onto a rectangular grid. This is required
  *   for the non-local potential operators. Since the code uses
@@ -59,7 +59,7 @@
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
                int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
-               int nxgrid, int nygrid, int nzgrid, rmg_double_t * xcstart, REAL * ycstart, REAL * zcstart)
+               int nxgrid, int nygrid, int nzgrid, rmg_double_t * xcstart, rmg_double_t * ycstart, rmg_double_t * zcstart)
 {
 
     int idx, ix, iy, iz, ic, map;

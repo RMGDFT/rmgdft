@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t minimage(ION *ip1, ION *ip2, REAL *xtal_r)
+ *   rmg_double_t minimage(ION *ip1, ION *ip2, rmg_double_t *xtal_r)
  *   This function returns the minimum distance between two ions in the
  *   supercell. It also returns the x, y, and z coordinates for the minimum
  *   distance. 
@@ -41,7 +41,7 @@
 #include <math.h>
 
 
-rmg_double_t minimage (ION * ip1, ION * ip2, REAL * xtal_r)
+rmg_double_t minimage (ION * ip1, ION * ip2, rmg_double_t * xtal_r)
 {
 
     int ix, iy, iz, idx, idxmin = 0;

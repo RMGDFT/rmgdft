@@ -32,7 +32,7 @@ static int max_alloc;
 
 
 
-void trade_imagesx (rmg_double_t * f, REAL * w, int dimx, int dimy, int dimz, int images, int type)
+void trade_imagesx (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images, int type)
 {
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1, retval;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;

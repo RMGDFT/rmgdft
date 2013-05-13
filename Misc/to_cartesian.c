@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void to_cartesian(rmg_double_t crystal[], REAL cartesian[])
+ *   void to_cartesian(rmg_double_t crystal[], rmg_double_t cartesian[])
  *   get cartesian coordinates from crystal coordinates 
  * INPUTS
  *   crystal[3]: coordinates in crystal unit
@@ -41,7 +41,7 @@
 #include "main.h"
 #include "recips.h"
 
-void to_cartesian (rmg_double_t crystal[], REAL cartesian[])
+void to_cartesian (rmg_double_t crystal[], rmg_double_t cartesian[])
 {
     int ir;
 

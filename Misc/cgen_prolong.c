@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void cgen_prolong(rmg_double_t  coef[], REAL fraction, int order)
+ *   void cgen_prolong(rmg_double_t  coef[], rmg_double_t fraction, int order)
  * INPUTS
  *   int order,(total number of neighbour points we need)
  *   double fraction,(the relative position of the interpolated point inside two nearest neighbour)
@@ -43,7 +43,7 @@
 
 
 
-void cgen_prolong (rmg_double_t coef[], REAL fraction, int order)
+void cgen_prolong (rmg_double_t coef[], rmg_double_t fraction, int order)
 {
 
     int ix, iy;

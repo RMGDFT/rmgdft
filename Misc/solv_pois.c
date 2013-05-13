@@ -16,9 +16,9 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void solv_pois( rmg_double_t *vmat, REAL *fmat, REAL *work, 
+ *   void solv_pois( rmg_double_t *vmat, rmg_double_t *fmat, rmg_double_t *work, 
  *                   int dimx, int dimy, int dimz,
- *                   rmg_double_t gridhx, REAL gridhy, REAL gridhz, REAL step)
+ *                   rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step)
  *   Routines for solving poisson's equation iteratively.
  *		del**2 vmat= fmat
  *   Uses weighted Jacobi iterative method for one iteration
@@ -44,8 +44,8 @@
 
 #include "main.h"
 
-void solv_pois (rmg_double_t * vmat, REAL * fmat, REAL * work,
-                int dimx, int dimy, int dimz, rmg_double_t gridhx, REAL gridhy, REAL gridhz, REAL step, REAL k)
+void solv_pois (rmg_double_t * vmat, rmg_double_t * fmat, rmg_double_t * work,
+                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
 {
     int size, idx;
     rmg_double_t scale;

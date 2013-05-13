@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t real_sum_all(REAL x)
+ *   rmg_double_t real_sum_all(rmg_double_t x)
  *   Performs a scalar sum over all processors.
  * INPUTS
  *   x: defined in each processor

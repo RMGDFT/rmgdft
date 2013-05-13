@@ -171,7 +171,7 @@ static void initialize (void *ptr, size_t n, char *vn, char *type, char *fn, int
 #else
     else if (strcmp (type, "rmg_double_t") == 0)
     {
-        rmg_double_t *p = (REAL *) ptr;
+        rmg_double_t *p = (rmg_double_t *) ptr;
         for (i = 0; i < n; i ++ )
             p[i] = 0.0;
     }

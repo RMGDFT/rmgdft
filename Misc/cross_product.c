@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void cross_product(rmg_double_t *a, REAL *b, REAL *c)
+ *   void cross_product(rmg_double_t *a, rmg_double_t *b, rmg_double_t *c)
  *   cross product of two vectors.
  * INPUTS
  *   a: a vector with dimension of 3
@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include "main.h"
 
-void cross_product (rmg_double_t * a, REAL * b, REAL * c)
+void cross_product (rmg_double_t * a, rmg_double_t * b, rmg_double_t * c)
 {
     c[0] = a[1] * b[2] - a[2] * b[1];
     c[1] = -(a[0] * b[2] - a[2] * b[0]);

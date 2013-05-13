@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t metric(REAL *crystal)
+ *   rmg_double_t metric(rmg_double_t *crystal)
  *   Calculate length (or distance) of a vector crystal(3)
  * INPUTS
  *   crystal: real array dimensioned 3
@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include "main.h"
 
-rmg_double_t metric (REAL * crystal)
+rmg_double_t metric (rmg_double_t * crystal)
 {
     rmg_double_t cartesian[3];          /* cartesian coordinates of point */
     rmg_double_t distance;

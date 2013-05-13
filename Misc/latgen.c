@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void latgen (int *ibrav, rmg_double_t *celldm, REAL *A0I, REAL *A1I, REAL *A2I, 
+ *   void latgen (int *ibrav, rmg_double_t *celldm, rmg_double_t *A0I, rmg_double_t *A1I, rmg_double_t *A2I, 
  *                rmg_double_t *OMEGAI, int *flag)
  *   sets up the crystallographic vectors a0, a1, and a2.
  * INPUTS
@@ -101,7 +101,7 @@
 
 
 /* If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0) */
-void latgen (int *ibrav, rmg_double_t * celldm, REAL * A0I, REAL * A1I, REAL * A2I,
+void latgen (int *ibrav, rmg_double_t * celldm, rmg_double_t * A0I, rmg_double_t * A1I, rmg_double_t * A2I,
              rmg_double_t * OMEGAI, int *flag)
 {
 

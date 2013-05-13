@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t real_sum_all(REAL x)
+ *   rmg_double_t real_sum_all(rmg_double_t x)
  *   Performs a scalar sum over all processors.
  * INPUTS
  *   x: defined in each processor
@@ -43,12 +43,12 @@
     volatile  rmg_double_t recvbuf[MAX_SCF_THREADS];
     volatile int real_sum_all_vector_state = 0;
     pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
-    static rmg_double_t real_sum_all_threaded(REAL x, int tid, MPI_Comm comm);
+    static rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid, MPI_Comm comm);
 #endif
 
 
 
-rmg_double_t real_sum_all (REAL x, MPI_Comm comm)
+rmg_double_t real_sum_all (rmg_double_t x, MPI_Comm comm)
 {
 
     rmg_double_t inreg;
@@ -88,7 +88,7 @@ rmg_double_t real_sum_all (REAL x, MPI_Comm comm)
 #if HYBRID_MODEL
 
 // Used to sum a block of data from a set of threads operating in parallel
-rmg_double_t real_sum_all_threaded(REAL x, int tid,  MPI_Comm comm) {
+rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid,  MPI_Comm comm) {
 
 #if MD_TIMERS
   rmg_double_t time0;

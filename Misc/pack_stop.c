@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_stop(rmg_double_t *sg, REAL *pg, int dimx, int dimy, int dimz)
+ *   void pack_stop(rmg_double_t *sg, rmg_double_t *pg, int dimx, int dimy, int dimz)
  *   pack smoothing grids sg to processor grids pg
  * INPUTS
  *   sg[(dimx+2)*(dimy+2)*(dimz+2)]: array with images
@@ -36,7 +36,7 @@
 #include <math.h>
 
 
-void pack_stop (rmg_double_t * sg, REAL * pg, int dimx, int dimy, int dimz)
+void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
