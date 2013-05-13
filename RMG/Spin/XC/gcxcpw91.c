@@ -6,9 +6,9 @@
 
 #define SMALL 1.e-10
 
-void gcxcpw91 (REAL rho, REAL grad, REAL * enxc, REAL * vxc1, REAL * vxc2)
+void gcxcpw91 (rmg_double_t rho, rmg_double_t grad, rmg_double_t * enxc, rmg_double_t * vxc1, rmg_double_t * vxc2)
 {
-	REAL sx, sc, v1x, v2x, v1c, v2c, arho;
+	rmg_double_t sx, sc, v1x, v2x, v1c, v2c, arho;
 	int iflag;
 
 	iflag = 0;
@@ -31,14 +31,14 @@ void gcxcpw91 (REAL rho, REAL grad, REAL * enxc, REAL * vxc1, REAL * vxc2)
 	*enxc = sx + sc;
 }
 
-void ggax(REAL rho, REAL grho, REAL * sx, REAL * v1x, REAL * v2x)
+void ggax(rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x)
 {
 	/* Perdew-Wang GGA (PW91), exchange part: J.P.Perdew et al., PRB 46, 6671 (1992) */
 	
-	REAL f1=0.19645, f2=7.7956, f3=0.2743, f4=0.1508, f5=0.004;
-	REAL fp1=-0.019292021296426, fp2=0.161620459673995;     
+	rmg_double_t f1=0.19645, f2=7.7956, f3=0.2743, f4=0.1508, f5=0.004;
+	rmg_double_t fp1=-0.019292021296426, fp2=0.161620459673995;     
 	/* fp1=-3/(16 pi)*(3 pi^2)^(-1/3)   fp2=(1/2)(3 pi^2)^(-1/3)*/
-	REAL rhom43, s, s2, s3, s4, exps, as, sa2b8, shm1, bs, das, dbs, dls;
+	rmg_double_t rhom43, s, s2, s3, s4, exps, as, sa2b8, shm1, bs, das, dbs, dls;
 
 	rhom43 = pow ( rho, - 4.0/3.0 );
 	s = fp2 * grho * rhom43;
@@ -59,18 +59,18 @@ void ggax(REAL rho, REAL grho, REAL * sx, REAL * v1x, REAL * v2x)
 	*sx = (*sx) / rho;
 }
 
-void ggac (REAL rho, REAL grho, REAL * sc, REAL * v1c, REAL * v2c)
+void ggac (rmg_double_t rho, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1c, rmg_double_t * v2c)
 {
 	/* Perdew-Wang GGA (PW91), correlation part: J.P.Perdew et al., PRB 46, 6671 (1992) */
 	
-	REAL al=0.09, pa=0.023266, pb=7.389e-6, pc=8.723, pd=0.472;
-	REAL cx=-0.001667, cxc0=0.002568, cc0=-cx + cxc0;
-	REAL third=1.0/3.0, pi34=0.6203504908994; /*pi34 = (3/(4*pi) )^(1/3)*/
-	REAL nu=15.755920349483144, be=nu*cc0, xkf=1.919158292677513, xks=1.128379167095513;
+	rmg_double_t al=0.09, pa=0.023266, pb=7.389e-6, pc=8.723, pd=0.472;
+	rmg_double_t cx=-0.001667, cxc0=0.002568, cc0=-cx + cxc0;
+	rmg_double_t third=1.0/3.0, pi34=0.6203504908994; /*pi34 = (3/(4*pi) )^(1/3)*/
+	rmg_double_t nu=15.755920349483144, be=nu*cc0, xkf=1.919158292677513, xks=1.128379167095513;
 	/* nu=(16/pi)*(3 pi^2)^(1/3), xkf=(9 pi/4)^(1/3), xks=sqrt(4/pi) */
 
-	REAL kf, ks, rs, rs2, rs3, ec, vc, t, expe, af, bf, y, xy, qy, s1;
-	REAL h0, dh0, ddh0, ee, cn, dcn, cna, dcna, cnb, dcnb, h1, dh1, ddh1;
+	rmg_double_t kf, ks, rs, rs2, rs3, ec, vc, t, expe, af, bf, y, xy, qy, s1;
+	rmg_double_t h0, dh0, ddh0, ee, cn, dcn, cna, dcna, cnb, dcnb, h1, dh1, ddh1;
 	int iflag;
 	
 	rs = pi34 / pow ( rho, third );
@@ -112,19 +112,19 @@ void ggac (REAL rho, REAL grho, REAL * sc, REAL * v1c, REAL * v2c)
 
 
 
-void ggac_spin (REAL rho, REAL zeta, REAL grho, REAL * sc, REAL * v1cup, REAL * v1cdw, REAL * v2c)
+void ggac_spin (rmg_double_t rho, rmg_double_t zeta, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1cup, rmg_double_t * v1cdw, rmg_double_t * v2c)
 {
 	/* Perdew-Wang GGA (PW91), correlation part: J.P.Perdew et al., PRB 46, 6671 (1992) -Spin polarized */
 
-	REAL al=0.09, pa=0.023266, pb=7.389e-6, pc=8.723, pd=0.472;
-	REAL cx=-0.001667, cxc0=0.002568, cc0=-cx + cxc0;
-	REAL third=1.0/3.0, pi34=0.6203504908994; /*pi34 = (3/(4*pi) )^(1/3)*/
-	REAL nu=15.755920349483144, be=nu*cc0, xkf=1.919158292677513, xks=1.128379167095513;
+	rmg_double_t al=0.09, pa=0.023266, pb=7.389e-6, pc=8.723, pd=0.472;
+	rmg_double_t cx=-0.001667, cxc0=0.002568, cc0=-cx + cxc0;
+	rmg_double_t third=1.0/3.0, pi34=0.6203504908994; /*pi34 = (3/(4*pi) )^(1/3)*/
+	rmg_double_t nu=15.755920349483144, be=nu*cc0, xkf=1.919158292677513, xks=1.128379167095513;
 	/* nu=(16/pi)*(3 pi^2)^(1/3), xkf=(9 pi/4)^(1/3), xks=sqrt(4/pi) */
 
-	REAL kf, ks, rs, rs2, rs3, ec, vcup, vcdw, t, expe, af, y, xy, qy, s1;
-	REAL h0, ddh0, ee, cn, dcn, cna, dcna, cnb, dcnb, h1, dh1, ddh1;
-	REAL fz, fz2, fz3, fz4, dfz, bfup, bfdw, dh0up, dh0dw, dh0zup, dh0zdw, dh1zup, dh1zdw;
+	rmg_double_t kf, ks, rs, rs2, rs3, ec, vcup, vcdw, t, expe, af, y, xy, qy, s1;
+	rmg_double_t h0, ddh0, ee, cn, dcn, cna, dcna, cnb, dcnb, h1, dh1, ddh1;
+	rmg_double_t fz, fz2, fz3, fz4, dfz, bfup, bfdw, dh0up, dh0dw, dh0zup, dh0zdw, dh1zup, dh1zdw;
 	
 	rs = pi34 / pow ( rho, third );
         rs2 = rs * rs;

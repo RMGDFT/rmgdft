@@ -4,22 +4,22 @@
 #include <math.h> 
 
 
-void pbex (REAL rho, REAL grho, int iflag, REAL * sx, REAL * v1x, REAL * v2x)
+void pbex (rmg_double_t rho, rmg_double_t grho, int iflag, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x)
 {
 	/* PBE exchange without Slater exchange */
 	/* iflag=0 J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996)
 	 * iflag=1 "revised" PBE: Y.Zhang et al., PRL 80, 890 (1998)
 	 * iflag=2 PBEsol: J.P.Perdew et al., PRL 100, 136406 (2008) */
 	
-	REAL kf, s1, s2, ds, dsg, exunif, fx;
-	REAL dxunif, dfx, f1, f2, f3, dfx1;
-	REAL third, c1, c2, c5;
+	rmg_double_t kf, s1, s2, ds, dsg, exunif, fx;
+	rmg_double_t dxunif, dfx, f1, f2, f3, dfx1;
+	rmg_double_t third, c1, c2, c5;
 	third = 1.0 / 3.0;
 	c1 = 0.75 / PI;
 	c2 = 3.093667726280136; /* (3 pi^2)^(1/3) */
 	c5 = 4.0 / 3.0;
 	
-	REAL k[]={0.804, 1.2450, 0.804}, mu[]={0.21951, 0.21951, 0.12345679012345679012};
+	rmg_double_t k[]={0.804, 1.2450, 0.804}, mu[]={0.21951, 0.21951, 0.12345679012345679012};
 
 	kf = c2 * pow (rho, third);    /* kf = (3 pi^2 |rho|)^(1/3)*/
 	dsg = 0.5 / kf;  
@@ -44,22 +44,22 @@ void pbex (REAL rho, REAL grho, int iflag, REAL * sx, REAL * v1x, REAL * v2x)
 }
 
 
-void pbec_spin (REAL rho, REAL zeta, REAL grho, int iflag, REAL * sc, REAL * v1cup, REAL * v1cdw, REAL * v2c)
+void pbec_spin (rmg_double_t rho, rmg_double_t zeta, rmg_double_t grho, int iflag, rmg_double_t * sc, rmg_double_t * v1cup, rmg_double_t * v1cdw, rmg_double_t * v2c)
 {
 	/* PBE correction without LDA part - spin-polarized */
 	/* iflag=1 J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996) 
 	 * iflag=2 J.P.Perdew et al., PRL 100, 136406 (2008)*/
 
-	REAL ga=0.031091, be[]={0.066725, 0.046};
-	REAL third, third2, pi34, xkf, xks;
+	rmg_double_t ga=0.031091, be[]={0.066725, 0.046};
+	rmg_double_t third, third2, pi34, xkf, xks;
 	third = 1.0 / 3.0;
 	third2 = 2.0 / 3.0;
 	pi34 = 0.6203504908994;    /* (3/(4 *pi))^(1/3) */
 	xkf = 1.919158292677513;    /* (9*pi/4)^(1/3) */
 	xks = 1.128379167095513;	/* sqrt(pi/4)*/
 
-	REAL kf, ks, rs, ec, vcup, vcdw, t, expe, af, y, xy, qy, s1, h0, ddh0;
-	REAL fz, fz2, fz3, fz4, dfz, bfup, bfdw, dh0up, dh0dw, dh0zup, dh0zdw; 
+	rmg_double_t kf, ks, rs, ec, vcup, vcdw, t, expe, af, y, xy, qy, s1, h0, ddh0;
+	rmg_double_t fz, fz2, fz3, fz4, dfz, bfup, bfdw, dh0up, dh0dw, dh0zup, dh0zdw; 
 
 	rs = pi34 / pow (rho, third); 
 	pw_spin(rs, zeta, &ec, &vcup, &vcdw);
@@ -97,26 +97,26 @@ void pbec_spin (REAL rho, REAL zeta, REAL grho, int iflag, REAL * sc, REAL * v1c
 
 
 
-void pw_spin (REAL rs, REAL zeta, REAL * ec, REAL * vcup, REAL * vcdw)
+void pw_spin (rmg_double_t rs, rmg_double_t zeta, rmg_double_t * ec, rmg_double_t * vcup, rmg_double_t * vcdw)
 {
 	/* J.P.Perdew and Y. Wang, PRB 45, 13244 (1992) */
 
 	/* xc parameter, unpolarized */
-	 REAL a=0.031091, a1=0.21370, b1=7.5957, b2=3.5876, b3=1.6382, b4=0.49294;
+	 rmg_double_t a=0.031091, a1=0.21370, b1=7.5957, b2=3.5876, b3=1.6382, b4=0.49294;
 
 	/* xc parameter, polarized */
-	REAL ap=0.015545, a1p=0.20548, b1p=14.1189, b2p=6.1977, b3p=3.3662, b4p=0.62517;
+	rmg_double_t ap=0.015545, a1p=0.20548, b1p=14.1189, b2p=6.1977, b3p=3.3662, b4p=0.62517;
 
 	/* xc parameter, antiferro */
-	REAL aa=0.016887, a1a=0.11125, b1a=10.357, b2a=3.6231, b3a=0.88026, b4a=0.49671;
+	rmg_double_t aa=0.016887, a1a=0.11125, b1a=10.357, b2a=3.6231, b3a=0.88026, b4a=0.49671;
 
-	REAL fz0=1.709921;
+	rmg_double_t fz0=1.709921;
 
-	REAL rs12, rs32, rs2, zeta2, zeta3, zeta4, fz, dfz;
-	REAL om, dom, olog, epwc, vpwc;
-	REAL omp, domp, ologp, epwcp, vpwcp;
-	REAL oma, doma, ologa, alpha, vpwca;
-	REAL third, third4;
+	rmg_double_t rs12, rs32, rs2, zeta2, zeta3, zeta4, fz, dfz;
+	rmg_double_t om, dom, olog, epwc, vpwc;
+	rmg_double_t omp, domp, ologp, epwcp, vpwcp;
+	rmg_double_t oma, doma, ologa, alpha, vpwca;
+	rmg_double_t third, third4;
 	third = 1.0 / 3.0;
 	third4 = 4.0 / 3.0;
 

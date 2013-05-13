@@ -5,15 +5,15 @@
 #include <math.h> 
 
 
-void lyp ( REAL rs, REAL * ec, REAL * vc )
+void lyp ( rmg_double_t rs, rmg_double_t * ec, rmg_double_t * vc )
 {
 	/* C. Lee. W. Yang and R.G. Parr, PRB 37, 785 (1988 ) - LDA part only */
 	
-	REAL a=0.04918, b=0.132*2.87123400018819108;
-	REAL pi43=1.61199195401647, c=0.2533*pi43, d=0.349*pi43;
+	rmg_double_t a=0.04918, b=0.132*2.87123400018819108;
+	rmg_double_t pi43=1.61199195401647, c=0.2533*pi43, d=0.349*pi43;
 	/* pi43 = (4 * pi / 3)^(1 / 3) */
 
-	REAL ecrs, ox;
+	rmg_double_t ecrs, ox;
 
 	ecrs = b * exp ( - c * rs );
 	ox = 1.0 / ( 1.0 + d * rs );
@@ -22,12 +22,12 @@ void lyp ( REAL rs, REAL * ec, REAL * vc )
 }
 
 
-void glyp ( REAL rho, REAL grho, REAL * sc, REAL * v1c, REAL * v2c )
+void glyp ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1c, rmg_double_t * v2c )
 {
 	/* Lee Yang Parr: gradient correction part */
 
-	REAL a=0.04918, b=0.132, c=0.2533, d=0.349;
-	REAL rhom13, rhom43, rhom53, om, xl, ff, dom, dxl;
+	rmg_double_t a=0.04918, b=0.132, c=0.2533, d=0.349;
+	rmg_double_t rhom13, rhom43, rhom53, om, xl, ff, dom, dxl;
 
 	rhom13 = pow ( rho, - 1.0 / 3.0 );
 	om = exp ( -c * rhom13 ) / ( 1.0 + d * rhom13 );

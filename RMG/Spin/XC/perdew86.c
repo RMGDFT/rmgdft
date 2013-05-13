@@ -4,14 +4,14 @@
 #include <float.h>
 #include <math.h> 
 
-void perdew86 ( REAL rho, REAL grho, REAL * sc, REAL * v1c, REAL * v2c )
+void perdew86 ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1c, rmg_double_t * v2c )
 {
 	/* Perdew gradient correction on correlation: PRB 33, 8822 (1986) */
 	
-	REAL p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
-	REAL pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
-	REAL third=1.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
-	REAL rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi;
+	rmg_double_t p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
+	rmg_double_t pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
+	rmg_double_t third=1.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
+	rmg_double_t rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi;
 
 	rho13 = pow ( rho, third );
 	rho43 = pow ( rho13, 4 );
@@ -36,13 +36,13 @@ void perdew86 ( REAL rho, REAL grho, REAL * sc, REAL * v1c, REAL * v2c )
 }
 
 
-void becke88 ( REAL rho, REAL grho, REAL * sx, REAL * v1x, REAL * v2x )
+void becke88 ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x )
 {
 	/* Becke exchange: A.D. Becke, PRA 38, 3098 (1988) 
 	 * only gradient-corrected part, no Slater term included*/
 
-	REAL beta=0.0042, third=1.0/3.0, two13=1.259921049894873; /* two13 = 2^(1/3) */
-	REAL rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
+	rmg_double_t beta=0.0042, third=1.0/3.0, two13=1.259921049894873; /* two13 = 2^(1/3) */
+	rmg_double_t rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
 
 	rho13 = pow ( rho, third );
 	rho43 = pow ( rho13, 4 );
@@ -60,12 +60,12 @@ void becke88 ( REAL rho, REAL grho, REAL * sx, REAL * v1x, REAL * v2x )
 }
 
 
-void becke88_spin ( REAL rho, REAL grho, REAL * sx, REAL * v1x, REAL * v2x )
+void becke88_spin ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x )
 {
 	/* Becke exchange: A.D. Becke, PRA 38, 3098 (1988)  - Spin polarized case */
 	
-	REAL beta=0.0042, third=1.0/3.0;
-	REAL rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
+	rmg_double_t beta=0.0042, third=1.0/3.0;
+	rmg_double_t rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
 	
 	rho13 = pow ( rho, third );
 	rho43 = pow ( rho13, 4 );
@@ -85,15 +85,15 @@ void becke88_spin ( REAL rho, REAL grho, REAL * sx, REAL * v1x, REAL * v2x )
 
 
 
-void perdew86_spin ( REAL rho, REAL zeta, REAL grho, REAL * sc, REAL * v1cup, REAL * v1cdw, REAL * v2c )
+void perdew86_spin ( rmg_double_t rho, rmg_double_t zeta, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1cup, rmg_double_t * v1cdw, rmg_double_t * v2c )
 {
 	/* Perdew gradient correction on correlation: PRB 33, 8822 (1986)  - Spin polarized case*/
 	
-	REAL p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
-	REAL pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
-	REAL third=1.0/3.0, third2=2.0/3.0, third5=5.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
-	REAL rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi, dd, ddd;
-	REAL g1, g2, gg;
+	rmg_double_t p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
+	rmg_double_t pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
+	rmg_double_t third=1.0/3.0, third2=2.0/3.0, third5=5.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
+	rmg_double_t rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi, dd, ddd;
+	rmg_double_t g1, g2, gg;
 		
 
 	rho13 = pow ( rho, third );

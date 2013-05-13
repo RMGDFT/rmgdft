@@ -5,11 +5,11 @@
 #include <math.h>
 
 
-void lsd_glyp ( REAL rhoa, REAL rhob, REAL grhoaa, REAL grhoab2, REAL grhobb, REAL * sc, REAL * v1ca, REAL * v2ca, REAL * v1cb, REAL * v2cb, REAL * v2cab )
+void lsd_glyp ( rmg_double_t rhoa, rmg_double_t rhob, rmg_double_t grhoaa, rmg_double_t grhoab2, rmg_double_t grhobb, rmg_double_t * sc, rmg_double_t * v1ca, rmg_double_t * v2ca, rmg_double_t * v1cb, rmg_double_t * v2cb, rmg_double_t * v2cab )
 {
-	REAL a=0.04918, b=0.132, c=0.2533, d=0.349;
-	REAL rho, rm3, dr, or, dor, der, dder;
-	REAL dlaa, dlab, dlbb, dlaaa, dlaab, dlaba, dlabb, dlbba, dlbbb;
+	rmg_double_t a=0.04918, b=0.132, c=0.2533, d=0.349;
+	rmg_double_t rho, rm3, dr, or, dor, der, dder;
+	rmg_double_t dlaa, dlab, dlbb, dlaaa, dlaab, dlaba, dlabb, dlbba, dlbbb;
 
 	rho = rhoa + rhob;
 	rm3 = pow( rho, - 1.0 / 3.0 );
@@ -47,13 +47,13 @@ void lsd_glyp ( REAL rhoa, REAL rhob, REAL grhoaa, REAL grhoab2, REAL grhobb, RE
 
 
 
-void lsd_lyp ( REAL rho, REAL zeta, REAL * elyp, REAL * valyp, REAL * vblyp )
+void lsd_lyp ( rmg_double_t rho, rmg_double_t zeta, rmg_double_t * elyp, rmg_double_t * valyp, rmg_double_t * vblyp )
 {
 	/* C. Lee, W. Yang and R. G. Parr, PRB 37, 785 ( 1988 ) 
 	 * only the correlation for LDA part */
 
-	REAL rhoa, rhob, rm3, dr, en1, or, dor, en2, de1a, de1b, de2a, de2b;
-	REAL small=1.e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
+	rmg_double_t rhoa, rhob, rm3, dr, en1, or, dor, en2, de1a, de1b, de2a, de2b;
+	rmg_double_t small=1.e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
 
 	rhoa = rho * 0.5 * ( 1.0 + zeta );
 	rhoa = max ( rhoa, small );

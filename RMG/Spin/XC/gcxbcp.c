@@ -5,9 +5,9 @@
 
 #define SMALL 1.e-10
 
-void gcxbcp (REAL rho, REAL grad, REAL * enxc, REAL * vxc1, REAL * vxc2)
+void gcxbcp (rmg_double_t rho, rmg_double_t grad, rmg_double_t * enxc, rmg_double_t * vxc1, rmg_double_t * vxc2)
 {
-	REAL sx, sc, v1x, v2x, v1c, v2c, arho;
+	rmg_double_t sx, sc, v1x, v2x, v1c, v2c, arho;
 
 
 	sx = v1x = v2x = 0.0;

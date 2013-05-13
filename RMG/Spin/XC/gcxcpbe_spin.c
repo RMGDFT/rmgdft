@@ -7,14 +7,14 @@
 #define SMALL 1.e-10
 #define  EPSR   1.e-6
 
-void gcxcpbe_spin(REAL rho_up, REAL rho_dw,
-  REAL grad_up, REAL grad_dw, REAL grad, REAL *enxc,
-  REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
-  REAL *vxc2_updw, REAL *vxc2_dwup)
+void gcxcpbe_spin(rmg_double_t rho_up, rmg_double_t rho_dw,
+  rmg_double_t grad_up, rmg_double_t grad_dw, rmg_double_t grad, rmg_double_t *enxc,
+  rmg_double_t *vxc1_up, rmg_double_t *vxc1_dw, rmg_double_t *vxc2_upup, rmg_double_t *vxc2_dwdw,
+  rmg_double_t *vxc2_updw, rmg_double_t *vxc2_dwup)
 {
 	int iflag;
-	REAL rhotot, lim, zeta;	
-        REAL sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw, sc, v1cup, v1cdw, v2c;
+	rmg_double_t rhotot, lim, zeta;	
+        rmg_double_t sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw, sc, v1cup, v1cdw, v2c;
 
 	iflag = 0;  /* use PBE */
 

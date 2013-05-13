@@ -5,9 +5,9 @@
 
 #define SMALL 1.e-10
 
-void gcxcpbe (REAL rho, REAL grad, REAL * enxc, REAL * vxc1, REAL * vxc2)
+void gcxcpbe (rmg_double_t rho, rmg_double_t grad, rmg_double_t * enxc, rmg_double_t * vxc1, rmg_double_t * vxc2)
 {
-	REAL sx, sc, v1x, v2x, v1c, v2c, arho;
+	rmg_double_t sx, sc, v1x, v2x, v1c, v2c, arho;
 	int iflag;
 
 	iflag = 0;
@@ -30,21 +30,21 @@ void gcxcpbe (REAL rho, REAL grad, REAL * enxc, REAL * vxc1, REAL * vxc2)
 	*enxc = sx + sc;
 }
 
-void pbec (REAL rho, REAL grad, int iflag, REAL * sc, REAL * v1c, REAL * v2c)
+void pbec (rmg_double_t rho, rmg_double_t grad, int iflag, rmg_double_t * sc, rmg_double_t * v1c, rmg_double_t * v2c)
 {
 	/* PBE correction withou LDA part
 	 * iflag=0: J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996) 
 	 * iflag=1: J.P.Perdew et al., PRL 100, 136406 (2008)*/
 
-	REAL ga=0.031091, be[]={0.066725, 0.046};
-	REAL third, pi34, xkf, xks;
+	rmg_double_t ga=0.031091, be[]={0.066725, 0.046};
+	rmg_double_t third, pi34, xkf, xks;
 	third = 1.0 / 3.0;
 	pi34 = 0.6203504908994;              /* (3 / (4 * pi))^(1 / 3) */
 	xkf = 1.919158292677513;             /* (9 * pi / 4)^(1 / 3) */
 	xks = 1.128379167095513;             /* sqrt (4 / pi) */
 
-	REAL kf, ks, rs, ec, vc, t, expe, af, bf, y, xy, qy;
-	REAL s1, h0, dh0, ddh0;
+	rmg_double_t kf, ks, rs, ec, vc, t, expe, af, bf, y, xy, qy;
+	rmg_double_t s1, h0, dh0, ddh0;
 
 	rs = pi34 / pow (rho, third);        /* rs = (3 / (4 * pi * rho))^(1 / 3) */
 	pw (rs, iflag, &ec, &vc );             
@@ -66,14 +66,14 @@ void pbec (REAL rho, REAL grad, int iflag, REAL * sc, REAL * v1c, REAL * v2c)
 	*v2c = ddh0;
 } 
 
-void pw (REAL rs, int iflag, REAL * ec, REAL * vc)
+void pw (rmg_double_t rs, int iflag, rmg_double_t * ec, rmg_double_t * vc)
 {
 	/*iflag=0: J.P.Perdew and Y. Wang, PRB 45, 13244 (1992)
 	 *iflag=1: G.Ortiz and P. Ballone, PRB 50, 1391 (1994)   */
 	
-	REAL a=0.031091, b1=7.5957, b2=3.5876, c0=a, c1=0.046644, c2=0.00664, c3=0.01043, d0=0.4335, d1=1.4408;
-	REAL lnrs, rs12, rs32, rs2, om, dom, olog;
-	REAL a1[]={0.21370, 0.026481}, b3[]={1.6382, -0.46647}, b4[]={0.49294, 0.13354};
+	rmg_double_t a=0.031091, b1=7.5957, b2=3.5876, c0=a, c1=0.046644, c2=0.00664, c3=0.01043, d0=0.4335, d1=1.4408;
+	rmg_double_t lnrs, rs12, rs32, rs2, om, dom, olog;
+	rmg_double_t a1[]={0.21370, 0.026481}, b3[]={1.6382, -0.46647}, b4[]={0.49294, 0.13354};
 
 	/* high- and low-density formula implemented but not used in PW case
 	 * (reason): inconsistencies in PBE/PW91 functionals */

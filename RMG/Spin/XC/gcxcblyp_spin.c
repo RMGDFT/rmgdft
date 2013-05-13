@@ -7,14 +7,14 @@
 #define SMALL 1.e-10
 #define  EPSR   1.e-6
 
-void gcxcblyp_spin (REAL rho_up, REAL rho_dw,
-  REAL grad_up, REAL grad_dw, REAL grad_updw2, REAL *enxc,
-  REAL *vxc1_up, REAL *vxc1_dw, REAL *vxc2_upup, REAL *vxc2_dwdw,
-  REAL *vxc2_updw, REAL *vxc2_dwup)
+void gcxcblyp_spin (rmg_double_t rho_up, rmg_double_t rho_dw,
+  rmg_double_t grad_up, rmg_double_t grad_dw, rmg_double_t grad_updw2, rmg_double_t *enxc,
+  rmg_double_t *vxc1_up, rmg_double_t *vxc1_dw, rmg_double_t *vxc2_upup, rmg_double_t *vxc2_dwdw,
+  rmg_double_t *vxc2_updw, rmg_double_t *vxc2_dwup)
 {
-	REAL rhotot;	
-        REAL sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw;
-	REAL sc, v1cup, v1cdw, v2cup, v2cdw, v2cupdw;
+	rmg_double_t rhotot;	
+        rmg_double_t sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw;
+	rmg_double_t sc, v1cup, v1cdw, v2cup, v2cdw, v2cupdw;
 
 	
 	/* exchange correction for spin up */
