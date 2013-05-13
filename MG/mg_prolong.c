@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void mg_prolong(REAL *full, REAL *half, int dimx, int dimy, int dimz)
+ *   void mg_prolong(rmg_double_t *full, rmg_double_t *half, int dimx, int dimy, int dimz)
  *   prolongation operator: when we go from corse grid to fine grid,
  *                          we need to get full array from the half array
  * INPUTS
@@ -41,7 +41,7 @@
 
 
 
-void mg_prolong (REAL * full, REAL * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz;

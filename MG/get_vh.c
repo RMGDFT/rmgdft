@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_vh(REAL *rho, REAL *rhoc, REAL *vh_eig, int sweeps, int maxlevel)
+ *   void get_vh(rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *vh_eig, int sweeps, int maxlevel)
  *   Iterative procedure to obtain the hartree potential.
  *   Uses Mehrstallen finite differencing with multigrid accelerations.
  *   The multigrid scheme uses a standard W-cycle with Jacobi relaxation.
@@ -51,17 +51,17 @@ static int poi_pre[5] = { 0, 3, 3, 3, 3 };
 static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, REAL rms_target)
+void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target)
 {
 
     int idx, its, nits, sbasis, pbasis;
-    REAL t1, vavgcor, diag;
-    REAL *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    REAL *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
+    rmg_double_t t1, vavgcor, diag;
+    rmg_double_t *mgrhsarr, *mglhsarr, *mgresarr, *work;
+    rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
 
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 
 #if GPU_ENABLED
@@ -85,15 +85,15 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
     mgrhsarr = &ct.gpu_host_temp1[0];
     mglhsarr = &ct.gpu_host_temp2[0];
 #else
-    my_malloc (mgrhsarr, sbasis, REAL);
-    my_malloc (mglhsarr, sbasis, REAL);
+    my_malloc (mgrhsarr, sbasis, rmg_double_t);
+    my_malloc (mglhsarr, sbasis, rmg_double_t);
 #endif
-    my_malloc (mgresarr, sbasis, REAL);
-    my_malloc (work, 4*sbasis, REAL);
-    my_malloc (sg_rho, sbasis, REAL);
-    my_malloc (sg_vh, sbasis, REAL);
-    my_malloc (sg_res, sbasis, REAL);
-    my_malloc (nrho, sbasis, REAL);
+    my_malloc (mgresarr, sbasis, rmg_double_t);
+    my_malloc (work, 4*sbasis, rmg_double_t);
+    my_malloc (sg_rho, sbasis, rmg_double_t);
+    my_malloc (sg_vh, sbasis, rmg_double_t);
+    my_malloc (sg_res, sbasis, rmg_double_t);
+    my_malloc (nrho, sbasis, rmg_double_t);
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
@@ -192,7 +192,7 @@ void get_vh (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_swe
                     vavgcor += ct.vh_ext[idx];
 
                 vavgcor = real_sum_all (vavgcor, pct.grid_comm);
-                t1 = (REAL) ct.psi_fnbasis;
+                t1 = (rmg_double_t) ct.psi_fnbasis;
                 vavgcor = vavgcor / t1;
 
 

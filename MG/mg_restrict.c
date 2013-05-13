@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void mg_restrict(REAL *full, REAL *half, int dimx, int dimy, int dimz)
+ *   void mg_restrict(rmg_double_t *full, rmg_double_t *half, int dimx, int dimy, int dimz)
  *   get half dimensioned array in the corse grid from full dimensioned 
  *   array in the fine grid. The returned values are smoothed.
  * INPUTS
@@ -42,13 +42,13 @@
 
 
 
-void mg_restrict (REAL * full, REAL * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mg_restrict (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz;
     int incz, incy, incx, incz2, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
-    REAL scale, face, corner, edge;
+    rmg_double_t scale, face, corner, edge;
 
 
 
