@@ -47,12 +47,12 @@
 #define    SMALL  1.e-10
 
 
-void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
+void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode)
 {
     int idx, iflag, sizr;
-    REAL *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
-    REAL d, grad, vxc1, *vxc2, enxc;
-    REAL kf, pisq3, ex, vx, ec, vc, rs;
+    rmg_double_t *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
+    rmg_double_t d, grad, vxc1, *vxc2, enxc;
+    rmg_double_t kf, pisq3, ex, vx, ec, vc, rs;
 
     sizr = pct.FP0_BASIS;
 
@@ -60,17 +60,17 @@ void xcgga (REAL * rho, REAL * vxc, REAL * exc, int mode)
 
 
     /* Grab some memory */
-    my_malloc (gx, sizr, REAL);
-    my_malloc (gy, sizr, REAL);
-    my_malloc (gz, sizr, REAL);
-    my_malloc (vgx, sizr, REAL);
-    my_malloc (vgy, sizr, REAL);
-    my_malloc (vgz, sizr, REAL);
-    my_malloc (agg, sizr, REAL);
-    my_malloc (d2rho, sizr, REAL);
+    my_malloc (gx, sizr, rmg_double_t);
+    my_malloc (gy, sizr, rmg_double_t);
+    my_malloc (gz, sizr, rmg_double_t);
+    my_malloc (vgx, sizr, rmg_double_t);
+    my_malloc (vgy, sizr, rmg_double_t);
+    my_malloc (vgz, sizr, rmg_double_t);
+    my_malloc (agg, sizr, rmg_double_t);
+    my_malloc (d2rho, sizr, rmg_double_t);
 
 
-    my_malloc (vxc2, pct.FP0_BASIS, REAL);
+    my_malloc (vxc2, pct.FP0_BASIS, rmg_double_t);
 
 
 

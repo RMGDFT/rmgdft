@@ -47,12 +47,12 @@ void get_opposite_occupancies (STATE * states)
 {
 
     MPI_Status status; 
-    REAL *occ_sd, *occ_rv;   
+    rmg_double_t *occ_sd, *occ_rv;   
     int st, st1, kpt;
 
 
     /* allocate memory for occupation send array and receive array */
-    my_malloc (occ_sd, 2 * ct.num_kpts * ct.num_states, REAL);
+    my_malloc (occ_sd, 2 * ct.num_kpts * ct.num_states, rmg_double_t);
     occ_rv = occ_sd + ct.num_kpts * ct.num_states;
 
 

@@ -8,14 +8,14 @@
 #define    SMALL  1.e-10
 
 
-void xclsda_spin(REAL * rho, REAL * rho_oppo, REAL * vxc, REAL * exc)
+void xclsda_spin(rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc, rmg_double_t * exc)
 {
     int idx;
 
-    REAL pisq3, ex, ec, vx, vx_oppo, vc, vc_oppo;
-    REAL zeta, rs, kf;
+    rmg_double_t pisq3, ex, ec, vx, vx_oppo, vc, vc_oppo;
+    rmg_double_t zeta, rs, kf;
     
-    REAL rhox, arhox; /* the total charge in each grid point and the abosolute value of the charge */
+    rmg_double_t rhox, arhox; /* the total charge in each grid point and the abosolute value of the charge */
    
     pisq3 = THREE * PI * PI;
 
@@ -56,10 +56,10 @@ void xclsda_spin(REAL * rho, REAL * rho_oppo, REAL * vxc, REAL * exc)
 
 
 
-void slater_spin(REAL arhox, REAL zeta, REAL * ex, REAL * vx, REAL * vx_oppo)
+void slater_spin(rmg_double_t arhox, rmg_double_t zeta, rmg_double_t * ex, rmg_double_t * vx, rmg_double_t * vx_oppo)
 {
-	REAL vxup, vxdw, f, alpha, third, p43;
-	REAL exup, exdw, rho13, rhoup, rhodw;
+	rmg_double_t vxup, vxdw, f, alpha, third, p43;
+	rmg_double_t exup, exdw, rho13, rhoup, rhodw;
 
 	f = -1.10783814957303361;  /* -9/8*(3/pi)^(1/3) */
 	alpha = 2.0 / 3.0;
@@ -84,12 +84,12 @@ void slater_spin(REAL arhox, REAL zeta, REAL * ex, REAL * vx, REAL * vx_oppo)
 
 
 
-void pz_spin(REAL rs, REAL zeta, REAL * ec, REAL * vc, REAL * vc_oppo)
+void pz_spin(rmg_double_t rs, rmg_double_t zeta, rmg_double_t * ec, rmg_double_t * vc, rmg_double_t * vc_oppo)
 {
-	REAL ecu, vcu, ecp, vcp, fz, dfz;
-	REAL p43, third;
+	rmg_double_t ecu, vcu, ecp, vcp, fz, dfz;
+	rmg_double_t p43, third;
 	int iflag = 0;
-	REAL p1, p2, p3;
+	rmg_double_t p1, p2, p3;
 
 	p43 = 4.0 / 3.0;
 	third = 1.0 / 3.0;
@@ -121,11 +121,11 @@ void pz_spin(REAL rs, REAL zeta, REAL * ec, REAL * vc, REAL * vc_oppo)
 /* J.P.Perdew and A.Zunger, PRB 23, 5048 (1981) 
  * Spin-polarized energy and potential*/
 
-void pz_polarized(REAL rs, REAL * ec, REAL * vc)
+void pz_polarized(rmg_double_t rs, rmg_double_t * ec, rmg_double_t * vc)
 {
-	REAL a = 0.01555, b = -0.0269, c = 0.0007, d = -0.0048;
-        REAL gc = -0.0843, b1 = 1.3981, b2 = 0.2611;
-	REAL lnrs, rs12, ox, dox;
+	rmg_double_t a = 0.01555, b = -0.0269, c = 0.0007, d = -0.0048;
+        rmg_double_t gc = -0.0843, b1 = 1.3981, b2 = 0.2611;
+	rmg_double_t lnrs, rs12, ox, dox;
 
 	if (rs < 1.0)   /* high density formula */
 	{

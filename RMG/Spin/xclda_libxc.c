@@ -8,12 +8,12 @@
 /* include Libxc's header file */
 
 
-void xclda_libxc (REAL * rho, REAL * vxc, REAL * exc)
+void xclda_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
 {
    /* XC_LDA_X = 1, XC_LDA_C_PZ = 9, XC_LDA_C_PW = 12*/
     int func_id_x = 1, func_id_c = 9; 
     xc_func_type func_x, func_c;
-    REAL *ec, *vc; 
+    rmg_double_t *ec, *vc; 
     int idx;
 
     if(xc_func_init(&func_x, func_id_x, XC_UNPOLARIZED) != 0)
@@ -30,7 +30,7 @@ void xclda_libxc (REAL * rho, REAL * vxc, REAL * exc)
     	exit(1);
     } 
 
-    my_calloc (ec, 2 * pct.FP0_BASIS, REAL);
+    my_calloc (ec, 2 * pct.FP0_BASIS, rmg_double_t);
     vc = ec + pct.FP0_BASIS; 
 
     

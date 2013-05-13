@@ -50,61 +50,61 @@
 /* up and dn are convenient for naming the processor's own spin the the opposite spin, 
  doesn't mean the real physics */
 
-void xcgga_spin(REAL * rho_up, REAL * rho_dw, REAL * vxc_up, REAL * exc, int mode)
+void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc_up, rmg_double_t * exc, int mode)
 
 {
     int idx, sizr;
-    REAL *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
-    REAL *gx_up, *gy_up, *gz_up, *agg_up;
-    REAL *gx_dw, *gy_dw, *gz_dw, *agg_dw; 
-    REAL *gx_vuu, *gy_vuu, *gz_vuu, *gx_vud, *gy_vud, *gz_vud; 
+    rmg_double_t *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
+    rmg_double_t *gx_up, *gy_up, *gz_up, *agg_up;
+    rmg_double_t *gx_dw, *gy_dw, *gz_dw, *agg_dw; 
+    rmg_double_t *gx_vuu, *gy_vuu, *gz_vuu, *gx_vud, *gy_vud, *gz_vud; 
 
-    REAL pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
-    REAL rhotot, arhox, zeta, rs, kf;
+    rmg_double_t pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
+    rmg_double_t rhotot, arhox, zeta, rs, kf;
 
     sizr = pct.FP0_BASIS;
     
     pisq3 = THREE * PI * PI;
 
-    REAL *vxc2_upup, *vxc2_updw, vxc2_dwdw, vxc2_dwup;
-    REAL vxc1_up, vxc1_dw, grad_up, grad_dw, grad, grad_updw2, enxc, gx, gy, gz;
+    rmg_double_t *vxc2_upup, *vxc2_updw, vxc2_dwdw, vxc2_dwup;
+    rmg_double_t vxc1_up, vxc1_dw, grad_up, grad_dw, grad, grad_updw2, enxc, gx, gy, gz;
 
 
     /* Grab some memory */ 
     /* to hold gradient of spin up charge density */ 
-    my_malloc (gx_up, sizr, REAL);
-    my_malloc (gy_up, sizr, REAL);
-    my_malloc (gz_up, sizr, REAL);
+    my_malloc (gx_up, sizr, rmg_double_t);
+    my_malloc (gy_up, sizr, rmg_double_t);
+    my_malloc (gz_up, sizr, rmg_double_t);
 
     /* to hold gradient of spin down charge density */
-    my_malloc (gx_dw, sizr, REAL);
-    my_malloc (gy_dw, sizr, REAL);
-    my_malloc (gz_dw, sizr, REAL);
+    my_malloc (gx_dw, sizr, rmg_double_t);
+    my_malloc (gy_dw, sizr, rmg_double_t);
+    my_malloc (gz_dw, sizr, rmg_double_t);
 
     /* to hold the absolute of the gradient of total, up and down density */
-    my_malloc (agg, sizr, REAL);
-    my_malloc (agg_up, sizr, REAL);
-    my_malloc (agg_dw, sizr, REAL);
+    my_malloc (agg, sizr, rmg_double_t);
+    my_malloc (agg_up, sizr, rmg_double_t);
+    my_malloc (agg_dw, sizr, rmg_double_t);
 
     if ( mode == GGA_BLYP )
-    	my_malloc (agg_updw2, sizr, REAL);
+    	my_malloc (agg_updw2, sizr, rmg_double_t);
         /* to holde  (grad rhoup) \dot (grad rhodw)  */
 
     
     /* to hold laplaciant of the spin up and down charge density */
-    my_malloc (d2rho_up,  sizr, REAL);
-    my_malloc (d2rho_dw,  sizr, REAL);
+    my_malloc (d2rho_up,  sizr, rmg_double_t);
+    my_malloc (d2rho_dw,  sizr, rmg_double_t);
 
     /* to hold the gradient of potentials */
-    my_malloc (gx_vuu,  sizr, REAL);
-    my_malloc (gy_vuu,  sizr, REAL);
-    my_malloc (gz_vuu,  sizr, REAL);
+    my_malloc (gx_vuu,  sizr, rmg_double_t);
+    my_malloc (gy_vuu,  sizr, rmg_double_t);
+    my_malloc (gz_vuu,  sizr, rmg_double_t);
 
-    my_malloc (gx_vud,  sizr, REAL);
-    my_malloc (gy_vud,  sizr, REAL);
-    my_malloc (gz_vud,  sizr, REAL);
-    my_malloc (vxc2_upup, sizr, REAL);
-    my_malloc (vxc2_updw, sizr, REAL);
+    my_malloc (gx_vud,  sizr, rmg_double_t);
+    my_malloc (gy_vud,  sizr, rmg_double_t);
+    my_malloc (gz_vud,  sizr, rmg_double_t);
+    my_malloc (vxc2_upup, sizr, rmg_double_t);
+    my_malloc (vxc2_updw, sizr, rmg_double_t);
 
 
     /* Generate the gradient of the density */

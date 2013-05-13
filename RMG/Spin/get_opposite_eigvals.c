@@ -47,12 +47,12 @@ void get_opposite_eigvals (STATE * states)
 {
 
     MPI_Status status; 
-    REAL *eigval_sd, *eigval_rv;   
+    rmg_double_t *eigval_sd, *eigval_rv;   
     int st, st1, kpt;
 
 
     /* allocate memory for eigenvalue send array and receive array */
-    my_malloc (eigval_sd, 2 * ct.num_kpts * ct.num_states, REAL);
+    my_malloc (eigval_sd, 2 * ct.num_kpts * ct.num_states, rmg_double_t);
     eigval_rv = eigval_sd + ct.num_kpts * ct.num_states;
 
 

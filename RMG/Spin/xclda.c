@@ -7,13 +7,13 @@
 #define    SMALL  1.e-10
 
 
-void xclda(REAL * rho, REAL * vxc, REAL * exc)
+void xclda(rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
 {
     int  idx, iflag;
-    REAL d, kf;
+    rmg_double_t d, kf;
     
-    REAL pisq3, ex, vx, ec, vc;
-    REAL rs;
+    rmg_double_t pisq3, ex, vx, ec, vc;
+    rmg_double_t rs;
    
     pisq3 = THREE * PI * PI;
 
@@ -49,9 +49,9 @@ void xclda(REAL * rho, REAL * vxc, REAL * exc)
 
 /* slater exchange with alpha = 2.0 / 3.0 */
 
-void slater(REAL rs, REAL * ex, REAL * vx)
+void slater(rmg_double_t rs, rmg_double_t * ex, rmg_double_t * vx)
 {
-	REAL f, alpha;
+	rmg_double_t f, alpha;
 	f = -0.687247939924714;   /* -9/8*(3/(2*pi))^(2/3) */
         alpha = 2.0 / 3.0;
 	*ex = f * alpha / rs;
@@ -64,12 +64,12 @@ void slater(REAL rs, REAL * ex, REAL * vx)
  * iflag=0: J.P.Perdew and A. Zunger, PRB 23, 5048 (1981)
  * iflag=1: G.Ortiz and P.Ballone, PRB 50, 1391 (1994)*/
 
-void pz(REAL rs, int iflag, REAL * ec, REAL * vc)
+void pz(rmg_double_t rs, int iflag, rmg_double_t * ec, rmg_double_t * vc)
 {
-	REAL lnrs, rs12, ox, dox;
-	REAL a[]={0.0311, 0.031091}, b[]={-0.048, -0.046644};
-	REAL c[]={0.0020, 0.00419}, d[]={-0.0116, -0.00983};
-	REAL gc[]={-0.1423, -0.103756}, b1[]={1.0529, 0.56371}, b2[]={0.3334, 0.27358};
+	rmg_double_t lnrs, rs12, ox, dox;
+	rmg_double_t a[]={0.0311, 0.031091}, b[]={-0.048, -0.046644};
+	rmg_double_t c[]={0.0020, 0.00419}, d[]={-0.0116, -0.00983};
+	rmg_double_t gc[]={-0.1423, -0.103756}, b1[]={1.0529, 0.56371}, b2[]={0.3334, 0.27358};
 
 	if ( rs < 1.0)         /* high density formula*/
 	{

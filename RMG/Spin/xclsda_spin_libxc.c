@@ -8,19 +8,19 @@
 /* include Libxc's header file */
 
 
-void xclsda_spin_libxc (REAL * rho, REAL * rho_oppo, REAL * vxc, REAL * exc)
+void xclsda_spin_libxc (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc, rmg_double_t * exc)
 {
 
    /* XC_LDA_X = 1, XC_LDA_C_PZ = 9, XC_LDA_C_PW = 12*/
     int func_id_x = 1, func_id_c = 9; 
     xc_func_type func_x, func_c;
     /* double rhospin(*)[2], vspin(*)[2]; */
-    REAL rhospin[pct.FP0_BASIS][2], vspin[pct.FP0_BASIS][2];
-    REAL *ec;
+    rmg_double_t rhospin[pct.FP0_BASIS][2], vspin[pct.FP0_BASIS][2];
+    rmg_double_t *ec;
     int idx; 
 
     	
-    my_calloc (ec, pct.FP0_BASIS, REAL);
+    my_calloc (ec, pct.FP0_BASIS, rmg_double_t);
     
     if(xc_func_init(&func_x, func_id_x, XC_POLARIZED) != 0)
     {

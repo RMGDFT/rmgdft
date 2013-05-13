@@ -44,14 +44,14 @@
 #include "../../lib/libxc/include/xc.h"   
 /* include Libxc's header file */
 
-void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
+void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode)
 {
 
     int idx, sizr;
-    REAL *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
+    rmg_double_t *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
-    REAL *ec, *vc, *vsigma, *vsigma_c, *sigma;
+    rmg_double_t *ec, *vc, *vsigma, *vsigma_c, *sigma;
 
     sizr = pct.FP0_BASIS;
 
@@ -84,21 +84,21 @@ void xcgga_libxc (REAL * rho, REAL * vxc, REAL * exc, int mode)
     if(xc_func_init(&func_c, func_id_c, XC_UNPOLARIZED) != 0)
         error_handler("Functional %d not found\n", func_id_c);
 
-    my_calloc (ec, 5 * pct.FP0_BASIS, REAL);
+    my_calloc (ec, 5 * pct.FP0_BASIS, rmg_double_t);
     vc = ec + pct.FP0_BASIS; 
     sigma = ec + 2 * pct.FP0_BASIS; 
     vsigma = ec + 3 * pct.FP0_BASIS; 
     vsigma_c = ec + 4 * pct.FP0_BASIS; 
     
     /* Grab some memory */
-    my_malloc (gx, sizr, REAL);
-    my_malloc (gy, sizr, REAL);
-    my_malloc (gz, sizr, REAL);
-    my_malloc (vgx, sizr, REAL);
-    my_malloc (vgy, sizr, REAL);
-    my_malloc (vgz, sizr, REAL);
-//    my_malloc (agg, sizr, REAL);
-    my_malloc (d2rho, sizr, REAL);
+    my_malloc (gx, sizr, rmg_double_t);
+    my_malloc (gy, sizr, rmg_double_t);
+    my_malloc (gz, sizr, rmg_double_t);
+    my_malloc (vgx, sizr, rmg_double_t);
+    my_malloc (vgy, sizr, rmg_double_t);
+    my_malloc (vgz, sizr, rmg_double_t);
+//    my_malloc (agg, sizr, rmg_double_t);
+    my_malloc (d2rho, sizr, rmg_double_t);
 
 
 
