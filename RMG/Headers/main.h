@@ -54,7 +54,7 @@
 #include <semaphore.h>
 
 /* Size of floating point variables used in QMD */
-#define     REAL    double
+//#define     REAL    double
 
 /* Basic typedefs */
 #include    "rmgtypes.h"
