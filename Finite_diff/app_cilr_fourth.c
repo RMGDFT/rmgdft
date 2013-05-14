@@ -9,7 +9,7 @@
 #include "hybrid.h"
 
 
-REAL app_cilr_fourth (REAL *psi, REAL *a_psi, REAL *b_psi, REAL *vtot_eig_s, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int  numgrid, used_alloc=FALSE;
@@ -17,9 +17,9 @@ REAL app_cilr_fourth (REAL *psi, REAL *a_psi, REAL *b_psi, REAL *vtot_eig_s, int
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz;
-    REAL ihx, ihy, ihz, a1, a2, a3;
-    REAL c000, c100;
+    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz;
+    rmg_double_t ihx, ihy, ihz, a1, a2, a3;
+    rmg_double_t c000, c100;
     int tid;
 
 #if HYBRID_MODEL
