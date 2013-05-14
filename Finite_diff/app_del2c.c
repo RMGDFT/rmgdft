@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    REAL app_del2c(REAL *a, REAL *b, int dimx, int dimy, int dimz,
- *                   REAL gridhx, REAL gridhy, REAL gridhz)
+ *    rmg_double_t app_del2c(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz,
+ *                   rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
  *    Applies a 7-point finite difference discretization of the 
  *    Laplacian operator to  a matrix 
  * INPUTS
@@ -43,13 +43,13 @@
 #include <math.h>
 
 
-REAL app_del2c (REAL * a, REAL * b, int dimx, int dimy, int dimz,
-                REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_del2c (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz,
+                rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ix, iy, iz;
     int incy, incx;
-    REAL cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
+    rmg_double_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
 

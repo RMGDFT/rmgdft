@@ -93,7 +93,7 @@ void app_cir_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, in
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    REAL c000, c100, c110, c200;
+    rmg_double_t c000, c100, c110, c200;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -167,8 +167,8 @@ void app_cir_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b)
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    REAL rz, rzps, rzms, rzpps;
-    REAL c000, c100, c110, c200;
+    rmg_double_t rz, rzps, rzms, rzpps;
+    rmg_double_t c000, c100, c110, c200;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
