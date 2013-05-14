@@ -11,15 +11,15 @@
 #endif
 
 
-void app_cir_beta_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
+void app_cir_beta_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, numgrid, tid;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
-    REAL *rptr;
-    REAL c000, c100;
+    rmg_double_t *rptr;
+    rmg_double_t c000, c100;
 
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
@@ -30,7 +30,7 @@ void app_cir_beta_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
     incxr = dimz * dimy;
     incyr = dimz;
 
-    my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), REAL);
+    my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), rmg_double_t);
 
     for(ix = 0; ix < (dimx + 2) * (dimy + 2) * (dimz + 2); ix++)
         rptr[ix] = 0.0;
