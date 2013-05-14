@@ -21,7 +21,7 @@ void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
     int incy, incx;
     int incyr, incxr;
     rmg_float_t *rptr;
-    REAL c000, c100;
+    rmg_double_t c000, c100;
 
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
@@ -121,8 +121,8 @@ void app_cir_fourth_global_f (rmg_float_t * a, rmg_float_t * b)
     int incy, incx;
     int incyr, incxr;
     rmg_float_t *rptr;
-    REAL rz, rzps, rzms, rzpps;
-    REAL c000, c100;
+    rmg_double_t rz, rzps, rzms, rzpps;
+    rmg_double_t c000, c100;
 
     incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
     incy = FIXED_ZDIM + 2;

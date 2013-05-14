@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    void app_cir_bcc(REAL *a, REAL *b, int dimx, int dimy, int dimz)
+ *    void app_cir_bcc(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz)
  *    Applies the Mehrstellen RHS operator to a matrix for BCC lattice 
  * INPUTS
  *    a[(dimx+2) * (dimy+2) * (dimz+2)]: the matrix to be applied
@@ -39,14 +39,14 @@
 
 
 
-void app_cir_bcc (REAL * a, REAL * b, int dimx, int dimy, int dimz)
+void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int ixs, iys;
     int incy, incx;
     int incyr, incxr;
-    REAL Bc, Bf;
+    rmg_double_t Bc, Bf;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);

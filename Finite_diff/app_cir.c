@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    REAL app_cir(REAL *a, REAL *b, int dimx, int dimy, int dimz)
+ *    rmg_double_t app_cir(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz)
  *    Top level driver routine for applying the Mehrstellen RHS operator.
  * INPUTS
  *    a[(dimx+2) * (dimy+2) * (dimz+2)]: the matrix to be applied
@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 
-void app_cir (REAL * a, REAL * b, int dimx, int dimy, int dimz)
+void app_cir (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
 

@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include "hybrid.h"
 
-static REAL app_cil_fourth_global (REAL * a, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz);
-static REAL app_cil_fourth_standard (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz);
+static rmg_double_t app_cil_fourth_global (rmg_double_t * a, rmg_double_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+static rmg_double_t app_cil_fourth_standard (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 
 
-REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int  numgrid, tid, used_alloc=FALSE;
@@ -88,13 +88,13 @@ REAL app_cil_fourth (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
 
 }
 
-REAL app_cil_fourth_standard (REAL * rptr, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_fourth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    REAL ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    REAL ihx, ihy, ihz, a1, a2, a3;
+    rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    rmg_double_t ihx, ihy, ihz, a1, a2, a3;
 
     incx = (dimz + 2) * (dimy + 2);
     incy = dimz + 2;
@@ -236,16 +236,16 @@ REAL app_cil_fourth_standard (REAL * rptr, REAL * b, int dimx, int dimy, int dim
 
 
 
-REAL app_cil_fourth_global (REAL * rptr, REAL * b, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_fourth_global (rmg_double_t * rptr, rmg_double_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
-    REAL rz, rzps, rzms, rzpps;
-    REAL c000, c100, c110;
-    REAL ihx;
+    rmg_double_t rz, rzps, rzms, rzpps;
+    rmg_double_t c000, c100, c110;
+    rmg_double_t ihx;
 
     incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
     incy = FIXED_ZDIM + 2;

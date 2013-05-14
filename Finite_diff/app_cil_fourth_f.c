@@ -8,18 +8,18 @@
 #include <stdlib.h>
 #include "hybrid.h"
 
-static REAL app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
+static rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 
 
-REAL app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int  numgrid, tid;
     rmg_float_t *rptr;
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    REAL ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    REAL ihx, ihy, ihz, a1, a2, a3;
+    rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    rmg_double_t ihx, ihy, ihz, a1, a2, a3;
 
     if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cil_fourth_f.\n");
@@ -216,7 +216,7 @@ REAL app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
 
 
 
-REAL app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ix, iy, iz;
@@ -224,9 +224,9 @@ REAL app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, REAL gridhx, REA
     int incy, incx;
     int incyr, incxr;
     rmg_float_t *rptr;
-    REAL rz, rzps, rzms, rzpps;
-    REAL c000, c100, c110;
-    REAL ihx;
+    rmg_double_t rz, rzps, rzms, rzpps;
+    rmg_double_t c000, c100, c110;
+    rmg_double_t ihx;
 
     incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
     incy = FIXED_ZDIM + 2;

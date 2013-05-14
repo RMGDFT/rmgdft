@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include "hybrid.h"
 
-static void app_cir_sixth_global (REAL * a, REAL * b);
+static void app_cir_sixth_global (rmg_double_t * a, rmg_double_t * b);
 static void app_cir_sixth_standard (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz);
 
 // Compilers can generate much better code if they know the loop dimensions at compile
@@ -21,7 +21,7 @@ static void app_cir_sixth_standard (rmg_double_t * a, rmg_double_t * b, int dimx
 // For the global grid case we also implement an optimized version of the operator
 // that takes advantage of certain symmetries to improve performance.
 
-void app_cir_sixth (REAL * a, REAL * b, int dimx, int dimy, int dimz)
+void app_cir_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
     int numgrid, tid, used_alloc=FALSE;
@@ -92,7 +92,7 @@ void app_cir_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, in
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    REAL c000, c100, c110, c200;
+    rmg_double_t c000, c100, c110, c200;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -158,15 +158,15 @@ void app_cir_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, in
 
 }
 
-void app_cir_sixth_global (REAL * rptr, REAL * b)
+void app_cir_sixth_global (rmg_double_t * rptr, rmg_double_t * b)
 {
 
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    REAL rz, rzps, rzms, rzpps;
-    REAL c000, c100, c110, c200;
+    rmg_double_t rz, rzps, rzms, rzpps;
+    rmg_double_t c000, c100, c110, c200;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;

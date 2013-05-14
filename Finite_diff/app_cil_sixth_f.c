@@ -9,9 +9,9 @@
 #include <pthread.h>
 #include "hybrid.h"
 
-static REAL app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz);
-static REAL app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz); 
-static REAL c0;
+static rmg_double_t app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+static rmg_double_t app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz); 
+static rmg_double_t c0;
 
 // Compilers can generate much better code if they know the loop dimensions at compile
 // as opposed to run time. Therefore since most of the finite difference stencils
@@ -19,12 +19,12 @@ static REAL c0;
 // dimensions correpsond to the global case. If so we call a routine with those
 // dimensions set at compile time. If not we just fall through to the general case.
 
-REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, int dimz,
-                    REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int numgrid, tid, used_alloc=FALSE;
-    REAL cc;
+    rmg_double_t cc;
     rmg_float_t *rptr=NULL;
     rmg_float_t *gpu_psi, *gpu_b;
 
@@ -87,14 +87,14 @@ REAL app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int dimy, in
 }
 
 
-REAL app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr, numgrid, tid;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    REAL fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    REAL ihx, ihy, ihz;
+    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
+    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
+    rmg_double_t ihx, ihy, ihz;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -193,18 +193,18 @@ REAL app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, in
 
 
 // Version with loop dimensions set at compile time
-REAL app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    REAL ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    REAL fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    REAL ihx, ihy, ihz;
-    REAL rz, rzms, rzps, rzpps;
-    REAL rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
-    REAL td1, td2, td3, td4, td5, td6, td7, td8, tdx;
+    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
+    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
+    rmg_double_t ihx, ihy, ihz;
+    rmg_double_t rz, rzms, rzps, rzpps;
+    rmg_double_t rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
+    rmg_double_t td1, td2, td3, td4, td5, td6, td7, td8, tdx;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
