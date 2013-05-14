@@ -9,7 +9,7 @@
 
 
 
-REAL app_cil_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int order)
+rmg_double_t app_cil_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
 {
 
 
@@ -24,7 +24,7 @@ REAL app_cil_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, REAL grid
 
 }
 
-REAL app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, REAL gridhx, REAL gridhy, REAL gridhz, int order)
+rmg_double_t app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
 {
 
 

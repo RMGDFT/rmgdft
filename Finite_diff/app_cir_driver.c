@@ -9,7 +9,7 @@
 
 
 
-void app_cir_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, int order)
+void app_cir_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, int order)
 {
 
 
@@ -43,7 +43,7 @@ void app_cir_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int
 
 }
 
-void app_cir_beta_driver (REAL * a, REAL * b, int dimx, int dimy, int dimz, int order)
+void app_cir_beta_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, int order)
 {
 
 
