@@ -58,6 +58,56 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
 rmg_double_t app_cilr_fourth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s, int dimx, int dimy, int dimz,
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 
+void app6_del2 (rmg_double_t *rho, rmg_double_t *work, int dimx, int dimy, int dimz,
+                rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+void app_cir_driver (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz, int order);
+void app_cir_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, int order);
+void app_cir_fourth (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz);
+void app_cir_sixth (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+void app_cir_sixth_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz);
+void app_cir (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+void app_cir_ortho (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+void app_cir_bcc (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+void app_cir_fcc (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+void app_cir_hex (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz);
+rmg_double_t app_cilr (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c, int dimx, int dimy, int dimz,
+               rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cilr_bcc (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c, int dimx, int dimy, int dimz,
+                   rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cilr_fcc (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c, int dimx, int dimy, int dimz,
+                   rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cilr_hex (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c, int dimx, int dimy, int dimz,
+                   rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cilr_ortho (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c, int dimx, int dimy,
+                     int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cil (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx,
+              rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cil_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order);
+rmg_double_t app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order);
+rmg_double_t app_cil_fourth (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx,
+              rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, 
+              rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cil_sixth (rmg_double_t *psi, rmg_double_t *b, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+rmg_double_t app_cil_sixth_f (rmg_float_t *psi, rmg_float_t *b, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+
+void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
+
+
+void app_cir_beta_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz);
+void app_cir_beta_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz);
+
+int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
+                      int *pxoffset, int *pyoffset, int *pzoffset);
+int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
+                      int *pxsize, int *pysize, int *pzsize);
+void read_common();
+void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+
 #if GPU_ENABLED
 void init_gpu (void);
 void finalize_gpu (void);
@@ -129,4 +179,5 @@ double app_cil_fourth_f_gpu(const float *psi,
                        const double zside,
                        cudaStream_t cstream);
 #endif
+
 

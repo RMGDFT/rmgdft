@@ -99,6 +99,7 @@ void trade_imagesx (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int 
     time1 = my_crtc ();
 #endif
 
+tid = 0;
 #if HYBRID_MODEL
     basetag = get_thread_basetag();
     tid = get_thread_tid();
@@ -403,7 +404,7 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
     rmg_double_t time1, time2, time3;
     time1 = my_crtc ();
 #endif
-
+    tid = 0;
 #if HYBRID_MODEL
     basetag = get_thread_basetag();
     tid = get_thread_tid();

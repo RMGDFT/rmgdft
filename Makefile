@@ -126,6 +126,7 @@ on-xt:
 	@echo "#define LINUX 1" > $(ON_dir)/Headers/arch.h
 	@echo "#define MPI 1" >> $(ON_dir)/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> $(ON_dir)/Headers/arch.h;
+	@echo "#define GPU_ENABLE 0" >> $(ON_dir)/Headers/arch.h;
 	@cd $(ON_dir); $(clean-global); $(clean-on-negf-share)
 	cd $(ON_dir); $(MAKE) -f Make.xt 2>&1 | tee .build.log
 

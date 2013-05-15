@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <float.h>
 #include <assert.h>
+#include "blacs.h"
 
 /*
  *
