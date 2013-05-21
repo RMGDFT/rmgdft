@@ -103,7 +103,7 @@ void interpolation_orbit (STATE * states)
                                     idx1 = iz + iy * NZ + ix * incx;
                                     psi_old[ix] = states[st].psiR[idx1];
                                 }
-                                diff_hx_interpolation (psi_new, psi_old, NX, hx_new, hx_old, x1_new, x1_old);
+                                diff_hx_interpolation (st, psi_new, psi_old, NX, hx_new, hx_old, x1_new, x1_old);
 
                                 for (ix = 0; ix < NX; ix++)
                                 {
@@ -129,7 +129,7 @@ void interpolation_orbit (STATE * states)
                                     idx1 = iz + iy * NZ + ix * incx;
                                     psi_old[ix] = states[st].psiR[idx1];
                                 }
-                                diff_hx_interpolation (psi_new, psi_old, NX, hx_new, hx_old, x1_new, x1_old);
+                                diff_hx_interpolation (st, psi_new, psi_old, NX, hx_new, hx_old, x1_new, x1_old);
 
                                 for (ix = 0; ix < NX; ix++)
                                 {
@@ -167,7 +167,7 @@ void interpolation_orbit (STATE * states)
                                 if(pct.gridpe ==0) 
                                 printf (" urgent %d %d %f %f %f %f \n", idx0, NY, hy_new, hy_old, y1_new, y1_old);
 */
-                                diff_hx_interpolation (psi_new, psi_old, NY, hy_new, hy_old, y1_new, y1_old); 
+                                diff_hx_interpolation (st, psi_new, psi_old, NY, hy_new, hy_old, y1_new, y1_old); 
 
                                 for (iy = 0; iy < NY; iy++)
                                 {

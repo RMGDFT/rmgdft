@@ -68,7 +68,7 @@ void read_potrho (double *vh, int iflag, int data_indicator);
 void spline(double *x, double *y, int n, double yp1, double ypn, double *y2);
 void splint(double *xa, double *ya, double *y2a, int n, double x, double *y);
 void sigma_all_energy_point (complex double * sigma_all);
-void diff_hx_interpolation (double *xi, double *xi_old, int NX,
+void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX,
         double hx, double hx_old, double x0, double x0_old);
 void find_phase (int nldim, REAL * nlcdrs, REAL * phase_sin, REAL * phase_cos);
 void read_orbital (STATE * states);

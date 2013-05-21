@@ -17,7 +17,7 @@
 #include <string.h>
 #include "main.h"
 
-void diff_hx_interpolation (double *xi, double *xi_old, int NX,
+void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX,
                             double hx, double hx_old, double x0, double x0_old)
 {
 
@@ -35,7 +35,7 @@ void diff_hx_interpolation (double *xi, double *xi_old, int NX,
 
         if (x1 < -2.0)
         {
-            printf ("\n x1 = %f %f %f %f %f", x1, x0, x0_old, hx, hx_old);
+            dprintf ("\n x1 =%d %f %f %f %f %f", st, x1, x0, x0_old, hx, hx_old);
             error_handler ("grid ???");
         }
 

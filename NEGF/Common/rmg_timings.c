@@ -37,6 +37,12 @@
 
 REAL timings[LAST_TIME];
 
+void rmg_timings(int what, REAL time)
+{
+
+    timings[what] += time;
+
+}                               /* end rmg_timings */
 
 
 #include <sys/time.h>
