@@ -26,6 +26,7 @@ HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
+LOBJECTS = 
 LOBJECTS = /u/sciteam/luw/lib/libmagma.a /u/sciteam/luw/lib/libmagmablas.a /u/sciteam/luw/lib/cblas.a
 OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
 
@@ -50,7 +51,7 @@ FFLAGS = $(ARCH)  -O3
 CFLAGS = $(ARCH)  -O3 -IHeaders -I../Headers
 
 
-rmg-negf: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg-negf-gpu: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 

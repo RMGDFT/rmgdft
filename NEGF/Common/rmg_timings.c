@@ -37,13 +37,14 @@
 
 REAL timings[LAST_TIME];
 
+#if !HYBRID_MODEL
 void rmg_timings(int what, REAL time)
 {
 
     timings[what] += time;
 
 }                               /* end rmg_timings */
-
+#endif
 
 #include <sys/time.h>
 

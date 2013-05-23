@@ -222,8 +222,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
     /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
 
-
-
     /* ====== Fillin the vaccuam space: put a ramp ============== */
 
 
@@ -265,11 +263,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
                     idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
-                    /*
-                       fac1 = 1.015625 - (float) (ix) / (64.0 * (x3 - x2));
-                       fac2 = 1.015625 - (float) (iy) / (64.0 * (y3 - y2));
-                       vh_global[idx1] = (fac1 * V1 * dis2 + fac2 * V2 * dis1) / dis12; 
-                       */
                 }
             }
         }
@@ -347,6 +340,89 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
         x2 = (lcr[4].x2 + lcr[4].x1 - lcr[4].x0) * FG_NX;
+        x3 = FNX_GRID; 
+        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * FG_NY;
+        y3 = FNY_GRID; 
+
+
+        for (iy = y2; iy < y3; iy++)
+        {
+            for (ix = x2; ix < x3; ix++)
+            {
+                dis1 = ix - (x2 - 1);
+                dis2 = iy - (y2 - 1);
+                dis12 = dis1 + dis2;
+
+                idx0 = iy + ix * FNY_GRID; 
+                xold_global[idx0] = hx_new * ix;
+                yold_global[idx0] = hy_new * iy;
+
+                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                {
+
+                    idx1 = iz + iy * FPZ0_GRID + (x2 - 1) * FNYPZ; 
+                    V1 = vh_global[idx1];
+                    idx1 = iz + (y2 - 1) * FPZ0_GRID + ix * FNYPZ; 
+                    V2 = vh_global[idx1];
+
+                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
+
+                }
+            }
+        }
+
+
+    }  /* end of if statement */
+
+
+    /* ====== Fillin the vaccuam space: put a ramp ============== */
+
+
+    if(cei.num_probe == 3)
+    {
+
+
+        /*  For corner: Left-top */
+        /*  For corner: Right-top */
+
+
+        x2 = 0;
+        x3 = lcr[3].x2 * FG_NX;
+        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * FG_NY;
+        y3 = FNY_GRID; 
+
+
+        for (iy = y2; iy < y3; iy++)
+        {
+            for (ix = x2; ix < x3; ix++)
+            {
+                dis1 = x3 - ix;
+                dis2 = iy - (y2 - 1);
+                dis12 = dis1 + dis2;
+
+                idx0 = iy + ix * FNY_GRID; 
+                xold_global[idx0] = hx_new * ix;
+                yold_global[idx0] = hy_new * iy;
+
+                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                {
+
+                    idx1 = iz + iy * FPZ0_GRID + x3 * FNYPZ; 
+                    V1 = vh_global[idx1];
+                    idx1 = iz + (y2 - 1) * FPZ0_GRID + ix * FNYPZ; 
+                    V2 = vh_global[idx1];
+
+                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
+
+                }
+            }
+        }
+
+
+
+        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * FG_NX;
         x3 = FNX_GRID; 
         y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * FG_NY;
         y3 = FNY_GRID; 
@@ -519,3 +595,5 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 }                               /* end read_data */
 
 /* ============================================================ */
+
+

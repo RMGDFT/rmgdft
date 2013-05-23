@@ -39,7 +39,7 @@ void splint(double *xa, double *ya, double *y2a, int n, double x, double *y)
     h=xa[khi]-xa[klo];
     if (h == 0.0) 
     {
-        printf (" Bad xa input to routine splint \n");
+        dprintf (" Bad xa input to routine splint \n");
         exit(0);
     }
     a=(xa[khi]-x)/h;
