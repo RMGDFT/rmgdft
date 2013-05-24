@@ -40,7 +40,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
     int st1, st2, idx, idx1, ione = 1;
     int st11, st22;
     double tem;
-    int i, j, k, jj, kk, iii, jjj, kkk;
+    int i, j, k, jj, kk;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j1, k1, jdiff, kdiff, iprobe, idx_C;
     int idx2, FPYZ0_GRID;
@@ -48,58 +48,23 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
 
     time1 = my_crtc ();
     for (idx = 0; idx < FP0_BASIS; idx++)
-        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
-
-    pe2xyz(pct.gridpe, &iii, &jjj, &kkk);
-
-/*  apply_potential_drop( vtot ); */
-
-    FPYZ0_GRID = FPY0_GRID * FPZ0_GRID;
-
-    for (i = 0; i < FPX0_GRID; i++)
-    {
-        for (j = 0; j < FPY0_GRID; j++)
-        {
-            idx = j + i * FPY0_GRID;
-
-            for (k = 0; k < FPZ0_GRID; k++)
-            {
-                idx2 = k + j * FPZ0_GRID + i * FPYZ0_GRID;
-                vtot[idx2] += vbias[idx];
-            }
-        }
-           j= FNY_GRID/2;
-           k = FNZ_GRID/2;
-           idx2 = k + j * FPZ0_GRID + i * FPYZ0_GRID;
-//           dprintf("%d  vtot [%d][%d] = %10.7f %10.7f  %10.7f  %10.7f %10.7f\n", i+pct.FPX_OFFSET, j, k, vtot[idx2], vh[idx2], vxc[idx2], vnuc[idx2], rhoc[idx2]);
-    }
+        vtot[idx] = vh[idx] + vxc[idx] -vh_old[idx] - vxc_old[idx];
 
 
-#if DEBUG | 0
-    write_rho_x (vtot, "vtot_1");
-    if (pct.gridpe == 0)
-        printf ("\n  vtot");
-    write_rho_x (vh, "vhhh_1");
-    if (pct.gridpe == 0)
-        printf ("\n  vhhh");
-    write_rho_x (vxc, "vxc_1");
-    if (pct.gridpe == 0)
-        printf ("\n  vxccch");
-#endif
 
     get_vtot_psi(vtot_c, vtot, FG_NX);
 
-    get_ddd (vtot);
+    get_ddd_update (vtot);
 
 
     idx = ct.num_states - lcr[2].num_states;
     idx1 = ct.num_states - lcr[2].num_states / 2;
 
     /* get lcr[0].H00 part */
-    get_Hij (states, states1, vtot_c, work_matrix);
+    get_Hij_update (states, states1, vtot_c, work_matrix);
 
 
-    whole_to_tri_p (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
+    whole_to_tri_update (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
 
 
 /* ========= interaction between L3-L4 is zero ========== */

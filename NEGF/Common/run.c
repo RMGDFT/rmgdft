@@ -100,11 +100,11 @@ void run (STATE * states, STATE * states1)
         /* Perform some necessary initializations 
          * no matter localized or not  
          */
-/*    my_malloc_init( vxc_old, FP0_BASIS, REAL );
- *   my_malloc_init( vh_old, FP0_BASIS, REAL );
- */
-        vxc_old = vxc;
-        vh_old = vh;
+    my_malloc_init( vxc_old, FP0_BASIS, REAL );
+    my_malloc_init( vh_old, FP0_BASIS, REAL );
+ 
+//        vxc_old = vxc;
+//        vh_old = vh;
         
         init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old);
         if (ct.runflag == 200)

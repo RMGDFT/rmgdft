@@ -59,6 +59,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j, k, jj, kk, idx_delta, idx_C;
     int j1, k1, jdiff, kdiff;
+    int idx2, FPYZ0_GRID;
     int i;
 
     double time1, time2;
@@ -171,6 +172,51 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
     /* the corner elements of the matrix should be unchanged */
     setback_corner_matrix_S();  
 
+
+    for (idx = 0; idx < FP0_BASIS; idx++)
+        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
+
+
+/*  apply_potential_drop( vtot ); */
+
+    FPYZ0_GRID = FPY0_GRID * FPZ0_GRID;
+
+    for (i = 0; i < FPX0_GRID; i++)
+    {
+        for (j = 0; j < FPY0_GRID; j++)
+        {
+            idx = j + i * FPY0_GRID;
+
+            for (k = 0; k < FPZ0_GRID; k++)
+            {
+                idx2 = k + j * FPZ0_GRID + i * FPYZ0_GRID;
+                vtot[idx2] += vbias[idx];
+            }
+        }
+    }
+
+
+
+    get_vtot_psi(vtot_c, vtot, FG_NX);
+
+    get_ddd (vtot);
+
+
+    /* get lcr[0].H00 part */
+    get_Hij (states, states1, vtot_c, work_matrix);
+
+
+    whole_to_tri_p (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
+
+
+/* ========= interaction between L3-L4 is zero ========== */
+
+      zero_lead_image(lcr[0].Htri);  
+
+/* corner elements keep unchanged */
+    setback_corner_matrix_H();  
+
+
  
 
     for (ct.steps = 0; ct.steps < ct.max_scf_steps; ct.steps++)
@@ -242,3 +288,5 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
 }                               /* end quench */
 
 /******/
+
+
