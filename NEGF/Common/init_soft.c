@@ -48,7 +48,7 @@
 
 void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
                 STATE * states, STATE * states1, REAL * vnuc, REAL * vext, REAL * vxc, REAL * vh_old,
-                REAL * vxc_old)
+                REAL * vxc_old, STATE *states_distribute)
 {
 
     int kpt, ic, idx, ion, ispin, kpt1;
@@ -152,6 +152,8 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     nameR = lcr[2].name;
 */
         read_orbital(states);
+    interpolation_orbit (states);
+    init_state_distribute(states, states_distribute);
         if (pct.gridpe == 0) printf ("completed: read_orbital \n");
         allocate_matrix_LCR();
         if (pct.gridpe == 0) printf ("completed: allocate_matrix \n");
@@ -187,6 +189,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     }
 
 
+
     write_rho_x (vh, "vh_init");
 
 
@@ -198,11 +201,10 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state (level, states);
 
-    interpolation_orbit (states);
 
 /*    normalize_orbits(states);
 */
-    ortho_norm_local (states);
+//    ortho_norm_local (states);
 
 
     /*modify the lead Hamiltonia by bias and Fermi energy */

@@ -47,7 +47,7 @@
 #include "pmo.h"
 
 
-void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc, REAL * vext,
+void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * vxc, REAL * vh, REAL * vnuc, REAL * vext,
              REAL * vh_old, REAL * vxc_old, REAL * rho, REAL * rhoc, REAL * rhocore, REAL * vbias)
 {
 
@@ -228,7 +228,7 @@ void quench (STATE * states, STATE * states1, REAL * vxc, REAL * vh, REAL * vnuc
         if (!CONVERGENCE)
         {
 
-            scf (sigma_all, states, states1, vxc, vh, vnuc, vext, rho, rhoc,
+            scf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
                     rhocore, vxc_old, vh_old, vbias, &CONVERGENCE);
 
 

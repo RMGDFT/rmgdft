@@ -15,27 +15,28 @@
 #endif
 
 
-void get_Hij_update (STATE * states, STATE * states1, double *vtot_c, double *Aij)
+void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, double *Aij)
 {
     int idx, st1, st2, idx1, idx2;
+    int st11, st22;
     int maxst, n2;
     STATE *sp;
     int ione = 1;
-    REAL tem;
+    REAL tem, tem1;
     int ixx, iyy, izz;
     char msg[100];
     double time1, time2, time3, time4;
+    double *psi, *mat, one = 1.0, zero = 0.0;
 
+    int ix, iy,iz;
     time1 = my_crtc ();
 
     n2 = ct.num_states * ct.num_states;
     maxst = ct.num_states;
 
-    my_malloc_init( vtot_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
 
-    distribute_to_global (vtot_c, vtot_global);
-
-
+    my_malloc(psi, pct.num_local_orbit * pct.P0_BASIS, double);
+    my_malloc(mat, pct.num_local_orbit * pct.num_local_orbit, double);
     for (st1 = 0; st1 < ct.num_states * ct.num_states; st1++)
         Aij[st1] = 0.;
 
@@ -44,45 +45,34 @@ void get_Hij_update (STATE * states, STATE * states1, double *vtot_c, double *Ai
 
     time3 = my_crtc ();
 
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    for (st1 = 0; st1 < pct.num_local_orbit; st1++)
+        for(idx1 = 0; idx1 <pct.P0_BASIS; idx1++)
+            psi[st1 * pct.P0_BASIS + idx1] = states_distribute[st1].psiR[idx1] * vtot_c[idx1];
+
+
+    dgemm ("T", "N", &pct.num_local_orbit, &pct.num_local_orbit, &pct.P0_BASIS, &one, psi, &pct.P0_BASIS,
+                states_distribute[0].psiR, &pct.P0_BASIS, &zero, mat, &pct.num_local_orbit);
+
+
+    for (st1 = 0; st1 < pct.num_local_orbit; st1++)
     {
-        sp = &states[st1];
-        ixx = states[st1].ixmax - states[st1].ixmin + 1;
-        iyy = states[st1].iymax - states[st1].iymin + 1;
-        izz = states[st1].izmax - states[st1].izmin + 1;
-
-        /* Generate 2*V*psi and store it  in orbit_tem */
-        genvlocpsi (states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
-
-/*  sprintf(msg, "STATE1: %d sum", st1);
- *  print_sum(states[st1].size, states1[st1].psiR, msg);
- */
-
-
-
-        for (idx = 0; idx < ixx * iyy * izz; idx++)
+        st11 = states_distribute[st1].istate;
+        for (st2 = 0; st2 < pct.num_local_orbit; st2++)
         {
-            states1[st1].psiR[idx] = 0.5 * (states1[st1].psiR[idx]);
+            st22 = states_distribute[st2].istate;
+
+            idx = st11 * ct.num_states + st22;
+            Aij[idx] = mat[st1 * pct.num_local_orbit + st2];
 
         }
     }                           /* end for st1 = .. */
 
+
     time4 = my_crtc ();
     rmg_timings (H_psi_TIME, (time4 - time3));
 
-    /* calculate the < states.psiR | states1.psiR>  */
-
-    my_barrier ();
-    if (pct.gridpe == 0)
-        printf ("\n AAAAAAAAAAA %f", Aij[0]);
-    time3 = my_crtc ();
-    orbit_dot_orbit (states, states1, work_matrix);
-    my_barrier ();
-    time4 = my_crtc ();
-    rmg_timings (ORBIT_DOT_ORBIT_H, (time4 - time3));
 
     time3 = my_crtc ();
-
 
     get_Hvnlij (Aij);
 
@@ -115,6 +105,7 @@ void get_Hij_update (STATE * states, STATE * states1, double *vtot_c, double *Ai
 
     rmg_timings (GET_Hij_TIME, (time2 - time1));
 
-    my_free(vtot_global);
+    my_free(mat);
+    my_free(psi);
 
 }

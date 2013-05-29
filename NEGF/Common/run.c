@@ -40,7 +40,7 @@
 
 extern REAL *vh_old, *vxc_old;
 
-void run (STATE * states, STATE * states1)
+void run (STATE * states, STATE * states1, STATE *states_distribute)
 {
     REAL time1, time2;
     FILE *file;
@@ -106,7 +106,7 @@ void run (STATE * states, STATE * states1)
 //        vxc_old = vxc;
 //        vh_old = vh;
         
-        init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old);
+        init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
         if (ct.runflag == 200)
         {
             time1 = my_crtc ();
@@ -193,7 +193,7 @@ void run (STATE * states, STATE * states1)
             {
 
             case MD_QUENCH:            /* Quench the electrons */
-                quench (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, vbias);
+                quench (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, vbias);
                 break;
 
             default:

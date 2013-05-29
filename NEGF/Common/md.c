@@ -45,6 +45,7 @@
 
 STATE states[MAX_STATES];
 STATE states1[MAX_STATES];
+STATE states_distribute[MAX_STATES];
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
@@ -96,7 +97,7 @@ int main (int argc, char **argv)
     my_barrier ();
 
     /*  Begin to do the real calculations */
-    run (states, states1);
+    run (states, states1, states_distribute);
 
     {
         char tag[10];

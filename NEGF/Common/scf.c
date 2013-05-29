@@ -32,7 +32,7 @@ extern int it_scf;
 
 
 
-void scf (complex double * sigma_all, STATE * states, STATE * states1, double *vxc,
+void scf (complex double * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore,
           REAL * vxc_old, REAL * vh_old, REAL * vbias, int *CONVERGENCE)
 {
@@ -61,7 +61,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states1, double *v
     idx1 = ct.num_states - lcr[2].num_states / 2;
 
     /* get lcr[0].H00 part */
-    get_Hij_update (states, states1, vtot_c, work_matrix);
+    get_Hij_update (states, states_distribute, vtot_c, work_matrix);
 
 
     whole_to_tri_update (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);

@@ -186,6 +186,7 @@ typedef struct
     int myrow;
     int nprow;
     int npcol;
+    int num_local_orbit;
 
 } PE_CONTROL;
 

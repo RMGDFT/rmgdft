@@ -324,8 +324,8 @@ void to_crystal(REAL crystal[], REAL cartesian[]);
 REAL metric(REAL *crystal);
 
 /* Md run types */
-void run(STATE *states, STATE *states1); 
-void quench(STATE *states, STATE *states1, REAL *vxc, REAL *vh, REAL *vnuc, REAL *vext, REAL *vh_old, REAL *vxc_old, REAL *rho, 
+void run(STATE *states, STATE *states1, STATE *states_distribute); 
+void quench(STATE *states, STATE *states1, STATE *states_dis, REAL *vxc, REAL *vh, REAL *vnuc, REAL *vext, REAL *vh_old, REAL *vxc_old, REAL *rho, 
         REAL *rhocore, REAL *rhoc, REAL *vbias);
 void fastrlx(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc,
         REAL *rho, REAL *rhocore, REAL *rhoc);     
@@ -454,7 +454,7 @@ void get_vxc_soft(REAL *rho, REAL *rhocore, REAL *vxc);
 void init_nuc_soft(REAL *vnuc, REAL *rhoc, REAL *rhocore);
 void init_psp_soft(void);
 void init_soft(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
-        STATE *states1, REAL *vnuc, REAL *vext, REAL *vxc, REAL *vh_old, REAL *vxc_old);
+        STATE *states1, REAL *vnuc, REAL *vext, REAL *vxc, REAL *vh_old, REAL *vxc_old, STATE *state_distribute);
 void read_pseudo_soft(void);
 REAL get_Exc_soft(REAL *rho, REAL *rhocore);
 void fill_orbit_borders4(REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
