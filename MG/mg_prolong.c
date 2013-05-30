@@ -58,16 +58,16 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
      * high side image point
      */
 
-    for (ix = 1; ix <= dx2 + 1; ix++)
+    for (ix = 1-xoffset; ix <= dimx/2 + 1; ix++)
     {
 
-        for (iy = 1; iy <= dy2 + 1; iy++)
+        for (iy = 1-yoffset; iy <= dimy/2 + 1; iy++)
         {
 
-            for (iz = 1; iz <= dz2 + 1; iz++)
+            for (iz = 1-zoffset; iz <= dimz/2 + 1; iz++)
             {
 
-                full[(2 * ix - 1) * incx + (2 * iy - 1) * incy + 2 * iz - 1] =
+                full[(2 * ix - 1+xoffset) * incx + (2 * iy - 1+yoffset) * incy + 2 * iz - 1+zoffset] =
                     half[ix * incxr + iy * incyr + iz];
 
             }                   /* end for */
@@ -80,13 +80,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
     /* interior center points
      */
-    for (ix = 2; ix <= dimx; ix += 2)
+    for (ix = 2-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 2; iy <= dimy; iy += 2)
+        for (iy = 2-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 2; iz <= dimz; iz += 2)
+            for (iz = 2-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
@@ -107,13 +107,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
 
 
-    for (ix = 1; ix <= dimx; ix += 2)
+    for (ix = 1-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 1; iy <= dimy; iy += 2)
+        for (iy = 1-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 2; iz <= dimz; iz += 2)
+            for (iz = 2-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
@@ -128,13 +128,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
 
 
-    for (ix = 1; ix <= dimx; ix += 2)
+    for (ix = 1-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 2; iy <= dimy; iy += 2)
+        for (iy = 2-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 1; iz <= dimz; iz += 2)
+            for (iz = 1-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
@@ -149,13 +149,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
 
 
-    for (ix = 2; ix <= dimx; ix += 2)
+    for (ix = 2-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 1; iy <= dimy; iy += 2)
+        for (iy = 1-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 1; iz <= dimz; iz += 2)
+            for (iz = 1-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
@@ -170,13 +170,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
 
 
-    for (ix = 1; ix <= dimx; ix += 2)
+    for (ix = 1-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 2; iy <= dimy; iy += 2)
+        for (iy = 2-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 2; iz <= dimz; iz += 2)
+            for (iz = 2-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
@@ -193,13 +193,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
 
 
-    for (ix = 2; ix <= dimx; ix += 2)
+    for (ix = 2-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 1; iy <= dimy; iy += 2)
+        for (iy = 1-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 2; iz <= dimz; iz += 2)
+            for (iz = 2-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
@@ -216,13 +216,13 @@ void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, i
 
 
 
-    for (ix = 2; ix <= dimx; ix += 2)
+    for (ix = 2-xoffset; ix <= dimx; ix += 2)
     {
 
-        for (iy = 2; iy <= dimy; iy += 2)
+        for (iy = 2-yoffset; iy <= dimy; iy += 2)
         {
 
-            for (iz = 1; iz <= dimz; iz += 2)
+            for (iz = 1-zoffset; iz <= dimz; iz += 2)
             {
 
                 full[ix * incx + iy * incy + iz] =
