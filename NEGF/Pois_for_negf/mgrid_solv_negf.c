@@ -157,6 +157,8 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     pack_stop(resid, work, dimx, dimy, dimz);
 
     confine (work, dimx, dimy, dimz, potentialCompass, level);
+
+    pack_ptos(resid, work, dimx, dimy, dimz);
     
 	trade_images(resid, dimx, dimy, dimz, nb_ids, FULL_FD);
 	
