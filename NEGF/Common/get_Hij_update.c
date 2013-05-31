@@ -35,8 +35,8 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     maxst = ct.num_states;
 
 
-    my_malloc(psi, pct.num_local_orbit * pct.P0_BASIS, double);
-    my_malloc(mat, pct.num_local_orbit * pct.num_local_orbit, double);
+    my_malloc(psi, pct.num_local_orbit * pct.P0_BASIS+1024, double);
+    my_malloc(mat, pct.num_local_orbit * pct.num_local_orbit+1024, double);
     for (st1 = 0; st1 < ct.num_states * ct.num_states; st1++)
         Aij[st1] = 0.;
 
@@ -68,6 +68,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     }                           /* end for st1 = .. */
 
 
+    my_barrier();
     time4 = my_crtc ();
     rmg_timings (H_psi_TIME, (time4 - time3));
 

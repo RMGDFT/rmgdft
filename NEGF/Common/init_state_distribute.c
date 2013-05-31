@@ -36,6 +36,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     int NX, NY, NZ;
     int ixmin_old, ixmax_old, iymin_old, iymax_old, izmin_old, izmax_old;
     int st, st1, st2, st_new, max_orbit_nx_ny;
+    int item;
 
     int x_off, y_off, z_off;
 
@@ -190,6 +191,9 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
                     else /* Satisfies down and up probes */ 
                     {
 
+			item = ixmin_old;
+			ixmin_old = iymin_old;
+			iymin_old = item;
                         incx = states[st].orbit_nz * states[st].orbit_ny;
                         incy = states[st].orbit_nz * states[st].orbit_nx;
                         for(ix = 0; ix < states[st].orbit_nx; ix++)
