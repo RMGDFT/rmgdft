@@ -77,34 +77,68 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
     }
 
     if (compass.type == 1)
+    {
         for (i = 0; i < size_x; i++)
         {
-            for (j = 0; j < size_y; j++)
+            x = i + xoff;
+            test = ((x <= compass.box1.x1/(1<<level)) || (x >= compass.box1.x2/(1<<level)) );
+            if(test)
             {
-                for (k = 0; k < size_z; k++)
+                for (j = 0; j < size_y; j++)
                 {
-                    idx = i * size_y * size_z + j * size_z + k;
-                    x = i + xoff;
-                    y = j + yoff;
-                    z = k + zoff;
-
-                    test = ((x <= compass.box1.x1/(1<<level)) || (x >= compass.box1.x2/(1<<level)) ||
-                            (y <= compass.box1.y1/(1<<level)) || (y >= compass.box1.y2/(1<<level)) ||
-                            (z <= compass.box1.z1/(1<<level)) || (z >= compass.box1.z2/(1<<level)));
-
-                    if (!test)
+                    for (k = 0; k < size_z; k++)
                     {
-                    }
-                    else
-                    {
+                        idx = i * size_y * size_z + j * size_z + k;
+
                         mat[idx] = 0.0;
+
                     }
-
-
                 }
-            }
 
+            }
         }
+
+        for (j = 0; j < size_y; j++)
+        {
+            y = j + yoff;
+            test = ((y <= compass.box1.y1/(1<<level)) || (y >= compass.box1.y2/(1<<level)) );
+            if(test)
+            {
+                for (i = 0; i < size_x; i++)
+                {
+                    for (k = 0; k < size_z; k++)
+                    {
+                        idx = i * size_y * size_z + j * size_z + k;
+
+                        mat[idx] = 0.0;
+
+                    }
+                }
+
+            }
+        }
+
+        for (k = 0; k < size_z; k++)
+        {
+            z = k + zoff;
+            test = ((z <= compass.box1.z1/(1<<level)) || (z >= compass.box1.z2/(1<<level)) );
+            if(test)
+            {
+                for (i = 0; i < size_x; i++)
+                {
+                    for (j = 0; j < size_y; j++)
+                    {
+                        idx = i * size_y * size_z + j * size_z + k;
+
+                        mat[idx] = 0.0;
+
+                    }
+                }
+
+            }
+        }
+
+    }
 
     time2 = my_crtc();
 
