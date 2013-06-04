@@ -1,5 +1,5 @@
-#include "make_conf.h"
 #if GPU_FD_ENABLED
+#include "make_conf.h"
 #include "fixed_dims.h"
 #ifdef FD_XSIZE
 #include <iostream>

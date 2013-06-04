@@ -14,29 +14,36 @@
 
 # Modules(directories) that contain the necessary source files
 #GLOBAL_MODULES are defined in the top level Makefile
-LOCAL_MODULES = Local_current Common Input Pois_for_negf ../ON/ON-NEGF-share 
+LOCAL_MODULES = Local_current Common Input Pois_for_negf ../ON/ON-NEGF-share Cuda_funcs
 MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
 
 CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
 FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+CUFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.cu))
 HFILES := $(wildcard Headers/*.h)
 H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
 HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
 
 
+#LOBJECTS = /opt/gcc/4.6.2/snos/lib64/libgfortran.a /opt/gcc/4.6.2/snos/lib64/libquadmath.a
+#LOBJECTS = /ccs/home/elbriggs/extralibs/libscalapack.a /ccs/home/elbriggs/extralibs/blacsC.a /ccs/home/elbriggs/extralibs/blacs.a
+SUFFIXES = .cu .c .f
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
-LOBJECTS = 
-LOBJECTS = /u/sciteam/luw/lib/libmagma.a /u/sciteam/luw/lib/libmagmablas.a /u/sciteam/luw/lib/cblas.a
-OBJECTS = $(COBJECTS) $(FOBJECTS) $(LOBJECTS)
+CUOBJECTS = $(CUFILES:.cu=.cu.o)
+LOBJECTS = ~/lib/libmagma.a ~/lib/libmagmablas.a ~/lib/cblas.a
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) $(LOBJECTS)
 
-
-LDFLAGS=
 
 LIBS = -L /opt/fftw/2.1.5.4/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm -lcublas -lcuda -lhugetlbfs
 
+LDFLAGS = -pthread -openmp
+#LDFLAGS = -pthread
+
+
 CC = cc
-FC = ftn
+CF = gfortran
+NVCC = nvcc
 
 
 # Makefiles: if these change, whole code should be recompiled
@@ -47,12 +54,23 @@ MFILES = Makefile Make.xk-gnu
 ARCH =
 # Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
 # Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
-FFLAGS = $(ARCH)  -O3 
-CFLAGS = $(ARCH)  -O3 -IHeaders -I../Headers
+FFLAGS = $(ARCH) -O3 -fopenmp
+#FFLAGS = $(ARCH) -O3
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers -pthread -fopenmp -ffast-math -mfpmath=sse -msse4.2 -mavx -mxop
+#CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
 
-
-rmg-negf-gpu: Headers/svnrev.h $(COBJECTS) $(FOBJECTS)
+rmg-negf-gnu: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) ../lib/libxc/lib/libxc.a
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+$(COBJECTS): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(FOBJECTS): %.o: %.f
+	$(CF) $(FFLAGS) -c $< -o $@
+
+%.cu.o : %.cu
+	$(NVCC) $(CUDAINC) -IHeaders -I../Headers $(DEFS) -DUNIX -O3 -use_fast_math -arch compute_35 -code compute_35 -o $@ -c $<
+
 
 
 # Runs svnrev to create svnrev.h
@@ -62,7 +80,7 @@ Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
 
 # Compiles to get svnrev binary
 SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
-	cc $< -o $@
+	gcc $< -o $@
 	rm -f svnrev.o
 
 

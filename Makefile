@@ -15,7 +15,7 @@
 
 SHELL = /bin/sh
 
-codes_dir = ~/SVN_old/codes
+codes_dir = ~/SVN/codes
 RMG_dir = $(codes_dir)/RMG
 NEGF_dir = $(codes_dir)/NEGF
 ON_dir = $(codes_dir)/ON

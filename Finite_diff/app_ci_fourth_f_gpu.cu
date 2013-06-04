@@ -1,5 +1,5 @@
-#include "make_conf.h"
 #if GPU_FD_ENABLED
+#include "make_conf.h"
 #include "fixed_dims.h"
 #ifdef FD_XSIZE
 __global__ void app_cil_fourth_f_kernel(const float * __restrict__ psi, 

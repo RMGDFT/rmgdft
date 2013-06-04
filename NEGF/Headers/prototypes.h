@@ -281,3 +281,6 @@ void read_data_conductor(char *name, double *vh, double *vxc, double *rho);
 //void PZGESV(int*, int*, complex double *, int*, int*, int*, int*,
 //                complex double*, int*, int*, int*, int*);
 
+
+void genvpsi_gpu(const double *psi, const double *veff, double *psiv, 
+        const int num_local_orbital, const int p0basis);

@@ -171,6 +171,8 @@
 #define ORBIT_DOT_ORBIT_H  (25)
 #define MPISUM_EQ_TIME (26)
 
+#define MGRID_VH_TIME (27)
+#define POIS_SOLV_TIME (28)
 
 #define APPCIR_TIME (50)
 #define APPCIL_TIME (51)

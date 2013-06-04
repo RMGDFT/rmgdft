@@ -70,6 +70,14 @@ void init_gpu (void)
 
 	rmg_printout_devices( );
 
+	if(alloc < 1024 * 1024) alloc = 1024 * 1024;
+	if(alloc < pct.num_local_orbit * pct.P0_BASIS) alloc = pct.num_local_orbit * pct.P0_BASIS;
+
+	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_states, alloc * sizeof(REAL) )){
+		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_states\n");
+		exit(-1);
+	}
+
 	alloc = pmo.ntot * sizeof(complex double);
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Htri , alloc )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
@@ -119,24 +127,19 @@ void init_gpu (void)
 	}
 
 	// Make sure enough is allocated for hartree solver on fine grid
-	alloc = 4 * ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
-	if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
-	if(alloc < 1024 * 1024) alloc = 1024 * 1024;
-	if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
+	alloc = 1024 ;
+	if(alloc < pct.num_local_orbit * pct.P0_BASIS) alloc = pct.num_local_orbit * pct.P0_BASIS;
 
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(REAL) )){
 		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
 		exit(-1);
 	}
+
+	alloc = 1024 ;
+	if(alloc < pct.P0_BASIS) alloc = pct.P0_BASIS;
+	if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
+
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
-		exit(-1);
-	}
-	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
-		exit(-1);
-	}
-	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(REAL) )){
 		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
 		exit(-1);
 	}

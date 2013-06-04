@@ -25,7 +25,7 @@ FOBJECTS = $(FFILES:.f=.o)
 OBJECTS = $(COBJECTS) $(FOBJECTS)
 
 
-LIBS = -L /opt/fftw/2.1.5.3/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.2/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
+LIBS = -L /opt/fftw/2.1.5.3/lib/ -L /opt/fftw/2.1.5/cnos/lib/ -L /opt/fftw/2.1.5.4/lib/ -ldfftw  -L ../lib/libxc/lib -lxc -lm
 LDFLAGS = 
 
 
@@ -56,7 +56,7 @@ Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
 
 # Compiles to get svnrev binary
 SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
-	cc $< -o $@
+	gcc $< -o $@
 	rm -f svnrev.o
 
 

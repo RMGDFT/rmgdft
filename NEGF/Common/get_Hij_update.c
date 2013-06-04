@@ -45,13 +45,26 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
     time3 = my_crtc ();
 
+#if GPU_ENABLED
+    cublasOperation_t transT = CUBLAS_OP_T, transN = CUBLAS_OP_N;
+
+    cublasSetVector( pct.P0_BASIS, sizeof( double ), vtot_c, ione, ct.gpu_host_temp2, ione );
+    genvpsi_gpu(ct.gpu_states, ct.gpu_host_temp2, ct.gpu_host_temp1, pct.num_local_orbit, pct.P0_BASIS);
+
+    cublasDgemm (ct.cublas_handle, transT, transN, pct.num_local_orbit, pct.num_local_orbit, pct.P0_BASIS, 
+            &one, ct.gpu_host_temp1, pct.P0_BASIS, ct.gpu_states, pct.P0_BASIS, &zero, ct.gpu_host_temp2, pct.num_local_orbit);
+
+    cublasGetVector( pct.num_local_orbit * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp2, ione, mat, ione );
+
+#else
+
     for (st1 = 0; st1 < pct.num_local_orbit; st1++)
         for(idx1 = 0; idx1 <pct.P0_BASIS; idx1++)
             psi[st1 * pct.P0_BASIS + idx1] = states_distribute[st1].psiR[idx1] * vtot_c[idx1];
-
-
     dgemm ("T", "N", &pct.num_local_orbit, &pct.num_local_orbit, &pct.P0_BASIS, &one, psi, &pct.P0_BASIS,
-                states_distribute[0].psiR, &pct.P0_BASIS, &zero, mat, &pct.num_local_orbit);
+            states_distribute[0].psiR, &pct.P0_BASIS, &zero, mat, &pct.num_local_orbit);
+#endif
+
 
 
     for (st1 = 0; st1 < pct.num_local_orbit; st1++)

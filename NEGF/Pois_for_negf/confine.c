@@ -79,7 +79,6 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
     if (compass.type == 1)
         for (i = 0; i < size_x; i++)
         {
-            tem = 0.0;
             for (j = 0; j < size_y; j++)
             {
                 for (k = 0; k < size_z; k++)
@@ -101,7 +100,6 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
                         mat[idx] = 0.0;
                     }
 
-                tem += mat[idx];
 
                 }
             }

@@ -94,7 +94,9 @@ void write_timings (void)
         printf ("      charge mat     %12.4f\n", timings[CHARGE_DEN_MAT_TIME]);
         printf ("      new rho        %12.4f\n", timings[GET_NEW_RHO]);
         printf ("      update pot     %12.4f\n", timings[UPDATE_POT_TIME]);
-        printf ("         confine     %12.4f\n", timings[CONFINE_TIME]);
+        printf ("         Hartree     %12.4f\n", timings[HARTREE_TIME]);
+        printf ("           confine   %12.4f\n", timings[CONFINE_TIME]);
+        printf ("           mgrid_vh  %12.4f\n", timings[MGRID_VH_TIME]);
         printf ("*********************************\n\n");
 
         printf ("      get_Hij        %12.4f\n", timings[GET_Hij_TIME]);

@@ -75,6 +75,9 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     int iz, ix;
 
     REAL tem1, tem;
+    double time1, time2;
+
+    time1 = my_crtc();
 
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -241,6 +244,8 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
     }                           /* for mu_cyc */
 
+    time2 = my_crtc();
+    rmg_timings (MGRID_VH_TIME, (time2 - time1));
 
     /* my_free(resid); */
 }

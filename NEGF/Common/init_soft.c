@@ -58,6 +58,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     int item;
     char *nameL, *nameC, *nameR;
     int st1, iprobe, i;
+        int ione = 1;
 
 
     time1 = my_crtc ();
@@ -143,9 +144,6 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 
     pmo_init();
-#if GPU_ENABLED
-    init_gpu();
-#endif
 /*
     nameL = lcr[1].name;
     nameC = lcr[0].name;
@@ -154,6 +152,11 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
         read_orbital(states);
     interpolation_orbit (states);
     init_state_distribute(states, states_distribute);
+#if GPU_ENABLED
+    init_gpu();
+    cublasSetVector( pct.num_local_orbit * pct.P0_BASIS, sizeof( double ), states_distribute[0].psiR, ione, ct.gpu_states, ione );
+
+#endif
         if (pct.gridpe == 0) printf ("completed: read_orbital \n");
         allocate_matrix_LCR();
         if (pct.gridpe == 0) printf ("completed: allocate_matrix \n");
