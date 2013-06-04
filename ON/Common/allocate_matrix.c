@@ -51,7 +51,9 @@ void allocate_matrix()
     my_malloc_init( vtot, FP0_BASIS, REAL );
     my_malloc_init( vtot_c, P0_BASIS, REAL ); /*shuchun add */
     my_malloc_init( rhocore, FP0_BASIS, REAL );
+    my_malloc_init( eig_rho, FP0_BASIS, REAL );
     my_malloc_init( vtot_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
+    my_malloc_init( wave_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
     rho_global = vtot_global;
     my_malloc_init( rho_old, FP0_BASIS * ispin, REAL );
 
@@ -73,6 +75,7 @@ void allocate_matrix()
     my_malloc_init( work_dis, sizeofmatrix, REAL );
     my_malloc_init( work_dis2, sizeofmatrix, REAL );
     my_malloc_init( zz_dis, sizeofmatrix, REAL );
+    my_malloc_init( cc_dis, sizeofmatrix, REAL ); //transpose of zz_dis
     my_malloc_init( gamma_dis, sizeofmatrix, REAL );
     my_malloc_init( uu_dis, sizeofmatrix, REAL );
     /*added by shuchun wang, it is used to calculate partial_omega/partial_R 

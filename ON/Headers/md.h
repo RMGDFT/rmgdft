@@ -67,13 +67,13 @@
 #include "fixed_dims.h"
 
 int MXLLDA, MXLCOL;
-REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *vtot,
+REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot,
     *vtot_c;
 REAL *vh_old, *vxc_old;
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
-REAL *work_dis2, *zz_dis, *gamma_dis, *uu_dis, *mat_Omega;
-REAL *work_matrix_row, *nlarray1;
+REAL *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
+REAL *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 REAL *projectors, *projectors_x, *projectors_y, *projectors_z;
 REAL *sg_twovpsi, *sg_res;
 int *nlindex;
@@ -1483,6 +1483,9 @@ void genvlocpsi (REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * 
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
 void get_new_rho (STATE * states, double *rho);
+void get_wave(int st, STATE * states, double *wave_global);
+void add_orbit_to_wave(int st1, REAL scale, REAL * psi1, REAL * wave_global, STATE * states);
+void print_wave(REAL * wave_global, int wave_plot, STATE * states);
 void mg_eig (STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, REAL * vxc_old,
         REAL * vh_old);

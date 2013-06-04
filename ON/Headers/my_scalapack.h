@@ -31,6 +31,7 @@ char *_cptofcd(char*, int);
 #define PSTRTRS pdtrtrs
 #define PSGEMM  pdgemm
 #define PSSYMM pdsymm
+#define PDTRAN pdtran
 
 void Cpdgemr2d(int m, int n,
                 double* a, int ia, int ja, int* desca,
@@ -87,6 +88,7 @@ int indxg2p (int *, int *, int *, int *, int *);
 #define 	PSTRTRS		pdtrtrs_
 #define 	PSGEMM 		pdgemm_
 #define 	PSSYMM 		pdsymm_
+#define 	PDTRAN 		pdtran_
 
 #define 	PSUBDIAG 	psubdiag_
 

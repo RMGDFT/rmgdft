@@ -55,6 +55,7 @@ void get_state_to_proc(STATE * states)
     my_malloc(Hij_00, st, double);
     my_malloc(Bij_00, st, double);
     my_malloc(work_matrix_row, st, double);
+    my_malloc(coefficient_matrix_row, st, double);
 
 
 }
