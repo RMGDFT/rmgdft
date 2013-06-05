@@ -56,6 +56,7 @@ void app_cir_ortho (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
 
     Bc = 0.5;
     Bf = 1.0 / 12.0;
+#pragma omp parallel for
     for (ix = 1; ix <= dimx; ix++)
     {
         ixs = ix * incx;
@@ -138,6 +139,8 @@ void app_cir_ortho (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
         }                       /* end if */
 
     }                           /* end for */
+
+#pragma omp barrier
 
 }                               /* end app_cir_ortho */
 

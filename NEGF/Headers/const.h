@@ -173,6 +173,16 @@
 
 #define MGRID_VH_TIME (27)
 #define POIS_SOLV_TIME (28)
+#define CIL_IMAGE_TIME (29)
+#define CIL_TIME (30)
+#define VH1_TIME (31)
+#define VH2_TIME (32)
+#define VH3_TIME (33)
+#define VH2a_TIME (34)
+#define VH2b_TIME (35)
+#define VH2c_TIME (36)
+#define VH2d_TIME (37)
+
 
 #define APPCIR_TIME (50)
 #define APPCIL_TIME (51)

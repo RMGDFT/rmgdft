@@ -95,8 +95,17 @@ void write_timings (void)
         printf ("      new rho        %12.4f\n", timings[GET_NEW_RHO]);
         printf ("      update pot     %12.4f\n", timings[UPDATE_POT_TIME]);
         printf ("         Hartree     %12.4f\n", timings[HARTREE_TIME]);
+        printf ("            Hartre1  %12.4f\n", timings[VH1_TIME]);
+        printf ("            Hartre2  %12.4f\n", timings[VH2_TIME]);
+        printf ("                  a  %12.4f\n", timings[VH2a_TIME]);
+        printf ("                  b  %12.4f\n", timings[VH2b_TIME]);
+        printf ("                  c  %12.4f\n", timings[VH2c_TIME]);
+        printf ("                  d  %12.4f\n", timings[VH2d_TIME]);
+        printf ("            Hartre3  %12.4f\n", timings[VH3_TIME]);
         printf ("           confine   %12.4f\n", timings[CONFINE_TIME]);
         printf ("           mgrid_vh  %12.4f\n", timings[MGRID_VH_TIME]);
+        printf ("           app_cil   %12.4f\n", timings[CIL_TIME]);
+        printf ("             image   %12.4f\n", timings[CIL_IMAGE_TIME]);
         printf ("*********************************\n\n");
 
         printf ("      get_Hij        %12.4f\n", timings[GET_Hij_TIME]);

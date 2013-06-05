@@ -185,6 +185,7 @@
   int ilaenv(int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
              int *n4);
   void saxpy(int *n, REAL *alpha, REAL *x, int *incx, REAL *y, int *incy);
+  void daxpy(int *n, REAL *alpha, REAL *x, int *incx, REAL *y, int *incy);
   void sscal(int *n, REAL *alpha, REAL *x, int *incx);
   void scopy(int *n, REAL *x, int *incx, REAL *y, int *incy);
   REAL sdot(int *n, REAL *x, int *incx, REAL *y, int *incy);

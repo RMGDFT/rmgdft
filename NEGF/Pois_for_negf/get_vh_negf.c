@@ -60,9 +60,10 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
     int incx = 1, cycles;
     double k_vh;
 
-    REAL time1, time2;
+    REAL time1, time2, time3, time4, time5, time6;
     time1 = my_crtc ();
 
+    time3 = my_crtc();
     /*Taken from ON code, seems to help a lot with convergence*/
     poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
@@ -102,6 +103,9 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
     /* Multiply through by 4PI */
     t1 = -FOUR * PI;
     QMD_dscal (pbasis, t1, mgrhsarr, incx);
+    time4 = my_crtc();
+    rmg_timings (VH1_TIME, (time4 - time3));
+
 
     its = 0;
 
@@ -113,40 +117,55 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
         for (cycles = 0; cycles < nits; cycles++)
         {
 
+    time3 = my_crtc();
 
 	    /*At the end of this force loop, laplacian operator is reapplied to evalute the residual. Therefore,
 	     * when there is no need to apply it, when this loop is called second, third, etc time. */
             if ( (cycles) || (!its))
             {
                 /* Transfer vh into smoothing grid */
+                time5 = my_crtc();
                 pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                time6 = my_crtc();
+                rmg_timings (VH2a_TIME, (time6 - time5));
 
                 /* Apply operator */
                 diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
                 diag = -1.0 / diag;
 
+                time5 = my_crtc();
+                rmg_timings (VH2b_TIME, (time6 - time5));
                 /* Generate residual vector */
+#pragma omp parallel for schedule(static, 1024)
                 for (idx = 0; idx < pbasis; idx++)
                 {
 
                     mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
 
                 }                   /* end for */
+                time6 = my_crtc();
+                rmg_timings (VH2c_TIME, (time6 - time5));
 
             }
 
          /*  Fix Hartree in some region  */
+                time5 = my_crtc();
             confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
+                time6 = my_crtc();
+                rmg_timings (VH2d_TIME, (time6 - time5));
 
+        time4 = my_crtc();
+        rmg_timings (VH2_TIME, (time4 - time3));
             /* Pre and Post smoothings and multigrid */
             if (cycles == ct.poi_parm.gl_pre)
             {
 
                 /* Transfer res into smoothing grid */
+                time3 = my_crtc();
                 pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
-
+                 
                 mgrid_solv_negf (mglhsarr, sg_res, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
@@ -155,6 +174,9 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
                             FG_NX*NX_GRID, FG_NY*NY_GRID, FG_NZ*NZ_GRID,
                             pct.FPX_OFFSET, pct.FPY_OFFSET, pct.FPZ_OFFSET,
                             pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+
+                time4 = my_crtc ();
+                rmg_timings (MGRID_VH_TIME, (time4 - time3));
 
 
                 /* Transfer solution back to mgresarr array */
@@ -166,7 +188,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
                 /* Update vh */
                 t1 = ONE;
-                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                saxpy (&pbasis, &t1, mgresarr, &incx, ct.vh_ext, &incx);
 
             }
             else
@@ -174,24 +196,24 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                saxpy (&pbasis, &t1, mgresarr, &incx, ct.vh_ext, &incx);
 
             }                   /* end if */
 
 
 
         }                       /* end for */
-            
+
+        time4 = my_crtc();
         /*Get residual*/
         /* Transfer vh into smoothing grid */
         pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
         /* Apply operator */
         diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+                ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
         diag = -1.0 / diag;
 
-        residual = 0.0;
         /* Generate residual vector */
         for (idx = 0; idx < pbasis; idx++)
         {
@@ -202,15 +224,19 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
         confine (mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, potentialCompass, 0);
 
+        residual = 0.0;
         for (idx = 0; idx < pbasis; idx++)
-            residual += mgresarr[idx] * mgresarr[idx];
+           residual += mgresarr[idx] * mgresarr[idx];
+
 
         residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
 
-       
-	//printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
+        time3 = my_crtc();
+        rmg_timings (VH3_TIME, (time3 - time4));
 
-	    
+        //printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
+
+
         its ++;
     }                           /* end for */
 
