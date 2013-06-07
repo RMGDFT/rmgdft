@@ -39,6 +39,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     int item;
 
     int x_off, y_off, z_off;
+    int istart, block_i, st_in_block;
 
     REAL *psi_old, *psi_new, *psi_whole; 
     REAL hx_old, hx_new, hy_old, hy_new;
@@ -68,55 +69,66 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     z_off = pct.PZ_OFFSET;
 
     pct.num_local_orbit = 0;
-    for (st = 0; st < ct.num_states; st++)
+    istart = 0;
+    for(block_i = 0; block_i < ct.num_blocks; block_i++)
     {
-        if(states[st].ixmax < x_off || states[st].ixmin > x_off + pct.PX0_GRID) continue;
-        if(cei.num_probe >2)    
+        for(st_in_block = 0; st_in_block < ct.block_dim[block_i]; st_in_block++)
         {
-            if(states[st].iymax <y_off || states[st].iymin > y_off + pct.PY0_GRID) continue;
+
+            st = istart + st_in_block;
+
+            if(states[st].ixmax < x_off || states[st].ixmin > x_off + pct.PX0_GRID) continue;
+            if(cei.num_probe >2)    
+            {
+                if(states[st].iymax <y_off || states[st].iymin > y_off + pct.PY0_GRID) continue;
+            }
+
+            iymin = states[st].iymin;
+            iymax = states[st].iymax;
+            if(iymin >= 0 && iymax < NY_GRID)
+            {
+                if(states[st].iymax <y_off || states[st].iymin > y_off + pct.PY0_GRID) continue;
+            }
+
+            if(iymin < 0)
+            {
+                iymin += NY_GRID;
+                if(y_off > states[st].iymax && y_off + pct.PY0_GRID < iymin) continue;
+            }
+
+            if(iymax >= NY_GRID ) 
+            {
+                iymax -= NY_GRID;
+                if(y_off > iymax && y_off + pct.PY0_GRID < iymin) continue;
+            }
+
+            izmin = states[st].izmin;
+            izmax = states[st].izmax;
+            if(izmin >= 0 && izmax < NZ_GRID)
+            {
+                if(states[st].izmax <z_off || states[st].izmin > z_off + pct.PZ0_GRID) continue;
+            }
+
+            if(izmin < 0)
+            {
+                izmin += NZ_GRID;
+                if(z_off > states[st].izmax && z_off + pct.PZ0_GRID < izmin) continue;
+            }
+
+            if(izmax >= NZ_GRID ) 
+            {
+                izmax -= NZ_GRID;
+                if(z_off > izmax && z_off + pct.PZ0_GRID < izmin) continue;
+            }
+
+
+            states_distribute[pct.num_local_orbit].istate = st;
+            states_distribute[pct.num_local_orbit].whichblock = block_i;
+            states_distribute[pct.num_local_orbit].istate_in_block = st_in_block;
+            pct.num_local_orbit++;
         }
 
-        iymin = states[st].iymin;
-        iymax = states[st].iymax;
-        if(iymin >= 0 && iymax < NY_GRID)
-        {
-            if(states[st].iymax <y_off || states[st].iymin > y_off + pct.PY0_GRID) continue;
-        }
-
-        if(iymin < 0)
-        {
-            iymin += NY_GRID;
-            if(y_off > states[st].iymax && y_off + pct.PY0_GRID < iymin) continue;
-        }
-
-        if(iymax >= NY_GRID ) 
-        {
-            iymax -= NY_GRID;
-            if(y_off > iymax && y_off + pct.PY0_GRID < iymin) continue;
-        }
-
-        izmin = states[st].izmin;
-        izmax = states[st].izmax;
-        if(izmin >= 0 && izmax < NZ_GRID)
-        {
-            if(states[st].izmax <z_off || states[st].izmin > z_off + pct.PZ0_GRID) continue;
-        }
-
-        if(izmin < 0)
-        {
-            izmin += NZ_GRID;
-            if(z_off > states[st].izmax && z_off + pct.PZ0_GRID < izmin) continue;
-        }
-
-        if(izmax >= NZ_GRID ) 
-        {
-            izmax -= NZ_GRID;
-            if(z_off > izmax && z_off + pct.PZ0_GRID < izmin) continue;
-        }
-
-
-        states_distribute[pct.num_local_orbit].istate = st;
-        pct.num_local_orbit++;
+        istart += ct.block_dim[block_i];
     }
 
 
@@ -168,7 +180,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
 
                     /*
                        printf ("reading orbitals for 3rd/4th probe, idx0 =  %d %s \n", idx0, newname);
-                       */
+                     */
 
                     nbytes = read (fhand, array_tmp, idx);
                     nbytes = read (fhand, &ixmin_old, sizeof (int));
@@ -191,9 +203,9 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
                     else /* Satisfies down and up probes */ 
                     {
 
-			item = ixmin_old;
-			ixmin_old = iymin_old;
-			iymin_old = item;
+                        item = ixmin_old;
+                        ixmin_old = iymin_old;
+                        iymin_old = item;
                         incx = states[st].orbit_nz * states[st].orbit_ny;
                         incy = states[st].orbit_nz * states[st].orbit_nx;
                         for(ix = 0; ix < states[st].orbit_nx; ix++)
@@ -243,7 +255,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
                     /*
                        y1_old = lcr[idx0].y_shift + iymin_old * hy_old;
                        y1_new = (iymin_new + lcr[idx0].y0) * hy_new;
-                       */
+                     */
 
                     /* ==== Interpolation along y-direction ==== */
 
@@ -273,7 +285,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
 
             }   /* loop st1 */
         }   /* subsystem loop ends */
-        
+
         map_orbital_to_process(st2, states, states_distribute, psi_whole);
     }   
 }   

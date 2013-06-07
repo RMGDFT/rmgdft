@@ -218,6 +218,8 @@ typedef struct
     /** Index showing which k-point this orbital is associated with */
     int kidx;
     int istate;
+    int whichblock;
+    int istate_in_block;
 
     /* The ion on which this state is localized */
     int inum;

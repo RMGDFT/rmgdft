@@ -32,6 +32,8 @@ void get_new_rho_soft (STATE * states, double *rho)
     REAL *rho_temp;
     char filename[MAX_PATH];
 
+    int ix, iy;
+    double tem;
 
     state_per_proc = ct.state_per_proc + 2;
     time1 = my_crtc ();
@@ -45,6 +47,8 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
 
+//    for(i = 0; i < pct.num_local_orbit * pct.num_local_orbit; i++) work_matrix[i] = 0.0;
+//    work_matrix[100 * (pct.num_local_orbit +1)] = 10000.0;
 
     for (idx = 0; idx < NX_GRID * NY_GRID * NZ_GRID; idx++)
     {
@@ -140,6 +144,16 @@ void get_new_rho_soft (STATE * states, double *rho)
     idx = NX_GRID * NY_GRID * NZ_GRID;
     global_sums (rho_global, &idx, pct.grid_comm);
     global_to_distribute (rho_global, rho_temp);
+
+
+
+    for(ix = 0; ix < pct.PX0_GRID; ix++)
+    {
+        tem = 0.0;
+        for(iy = 0; iy < pct.PY0_GRID * pct.PZ0_GRID; iy++) tem+= rho_temp[ix * pct.PY0_GRID * pct.PZ0_GRID + iy];
+        printf ("\n %d   %f  rho_oldwww ", ix, tem);
+    }
+
 
     my_free(rho_global);
 

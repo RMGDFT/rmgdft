@@ -143,7 +143,8 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 #endif
 
 
-    get_new_rho_soft (states, rho);
+//    get_new_rho_soft (states, rho);
+    get_new_rho_local (states_distribute, rho);
 #if DEBUG
     write_rho_x (rho, "rhoaaa_1");
     if (pct.gridpe == 0)
