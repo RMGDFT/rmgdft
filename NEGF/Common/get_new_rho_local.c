@@ -41,27 +41,36 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
 
     tri_to_local (states_distribute, lcr[0].density_matrix_tri, work_matrix);
 
-    dgemm ("N", "N", &pct.P0_BASIS, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
-            states_distribute[0].psiR, &pct.P0_BASIS, work_matrix, &pct.num_local_orbit, 
-            &zero, psi, &pct.P0_BASIS);
+    if(pct.num_local_orbit > 0)
+    {
+#if GPU_ENABLED
+        cublasOperation_t transN = CUBLAS_OP_N, transT = CUBLAS_OP_T;
+
+        int n2 = pct.num_local_orbit * pct.num_local_orbit;
+        cublasSetVector( n2, sizeof( double ), work_matrix, ione, ct.gpu_host_temp2, ione );
+
+        cublasDgemm (ct.cublas_handle, transN, transN, pct.P0_BASIS, pct.num_local_orbit, pct.num_local_orbit,
+                &one, ct.gpu_states, pct.P0_BASIS, ct.gpu_host_temp2, pct.num_local_orbit, &zero, ct.gpu_host_temp1, pct.P0_BASIS);
+
+        cublasGetVector( pct.P0_BASIS * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp1, ione, psi, ione );
+        //    rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states, ct.gpu_host_temp2, pct.num_local_orbit, pct.P0_BASIS);
+
+        //    cublasGetVector( pct.P0_BASIS, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
+
+#else
+
+
+        dgemm ("N", "N", &pct.P0_BASIS, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
+                states_distribute[0].psiR, &pct.P0_BASIS, work_matrix, &pct.num_local_orbit, 
+                &zero, psi, &pct.P0_BASIS);
+#endif
+    }
 
     for(idx = 0; idx < pct.P0_BASIS; idx++)rho_temp[idx] = 0.0;
 
     for(st1 = 0; st1 < pct.num_local_orbit; st1++)
         for(idx = 0; idx < pct.P0_BASIS; idx++)
             rho_temp[idx] += states_distribute[st1].psiR[idx] * psi[st1 * pct.P0_BASIS + idx];
-
-
-    for(ix = 0; ix < pct.PX0_GRID; ix++)
-    {
-        tem = 0.0;
-        double tem1 = 0.0;
-        double tem2 = 0.0;
-        for(iy = 0; iy < pct.PY0_GRID * pct.PZ0_GRID; iy++) tem+= rho_temp[ix * pct.PY0_GRID * pct.PZ0_GRID + iy];
-        for(iy = 0; iy < pct.PY0_GRID * pct.PZ0_GRID; iy++) tem1+= states_distribute[100].psiR[ix * pct.PY0_GRID * pct.PZ0_GRID + iy]*states_distribute[100].psiR[ix * pct.PY0_GRID * pct.PZ0_GRID + iy];
-        for(iy = 0; iy < pct.PY0_GRID * pct.PZ0_GRID; iy++) tem2+= psi[100 * pct.P0_BASIS+ ix * pct.PY0_GRID * pct.PZ0_GRID + iy]*psi[100 * pct.P0_BASIS+ ix * pct.PY0_GRID * pct.PZ0_GRID + iy];
-        printf ("\n %d   %f  %f  %frho_newwww ", ix, tem, tem1, tem2);
-    }
 
 
     mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID,

@@ -45,6 +45,8 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
     time3 = my_crtc ();
 
+    if(pct.num_local_orbit >0)
+    {
 #if GPU_ENABLED
     cublasOperation_t transT = CUBLAS_OP_T, transN = CUBLAS_OP_N;
 
@@ -65,6 +67,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
             states_distribute[0].psiR, &pct.P0_BASIS, &zero, mat, &pct.num_local_orbit);
 #endif
 
+    }
 
 
     for (st1 = 0; st1 < pct.num_local_orbit; st1++)

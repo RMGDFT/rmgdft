@@ -36,6 +36,7 @@
 #if ( SGIFLAG || LINUX || LINUX_MPI || M_SGI_ORIGIN_MPI )
 
   #define               sgemm   dgemm_
+  #define               dgemm   dgemm_
   #define               ssymm   dsymm_
   #define               ssyrk   dsyrk_
   #define               ssymv   dsymv_

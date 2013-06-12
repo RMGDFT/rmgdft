@@ -125,9 +125,12 @@ void tri_to_local (STATE *states_distribute, REAL * A_tri, REAL * Aii_local)
 
 
     size = pct.num_local_orbit * pct.num_local_orbit;
-    comm_sums(Aii_local, &size, COMM_EN2);
+    if(size > 0)
+    {
+        comm_sums(Aii_local, &size, COMM_EN2);
 
-    dscal(&size, &spin_degenerate, Aii_local, &ione);
+        dscal(&size, &spin_degenerate, Aii_local, &ione);
+    }
 
 }
 
