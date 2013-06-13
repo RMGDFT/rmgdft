@@ -1,0 +1,92 @@
+#************************** SVN Revision Information **************************
+#**    $Id: Make.xt 1915 2013-02-26 23:24:14Z luw $    **
+#*****************************************************************************/
+#  Make.xk-gnu - Compiles the hybrid real-space code for CRAY XK# system with MPI
+#  The job submission script should also include the following lines.
+#
+# export MPICH_MAX_THREAD_SAFETY=serialized
+# export OMP_NUM_THREADS=16
+# export OMP_WAIT_POLICY=passive
+#
+#
+ 
+
+
+# Modules(directories) that contain the necessary source files
+#GLOBAL_MODULES are defined in the top level Makefile
+LOCAL_MODULES = Local_current Common Input Pois_for_negf ../ON/ON-NEGF-share Cuda_funcs
+MODULES = $(GLOBAL_MODULES) $(LOCAL_MODULES)
+
+CFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.c))
+FFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.f))
+CUFILES := $(foreach MODULE, $(MODULES), $(wildcard $(MODULE)/*.cu))
+HFILES := $(wildcard Headers/*.h)
+H_EXCLUDES = Headers/arch.h Headers/grid.h Headers/svnrev.h
+HFILES := $(filter-out $(H_EXCLUDES),$(HFILES))
+
+
+#LOBJECTS = /opt/gcc/4.6.2/snos/lib64/libgfortran.a /opt/gcc/4.6.2/snos/lib64/libquadmath.a
+#LOBJECTS = /ccs/home/elbriggs/extralibs/libscalapack.a /ccs/home/elbriggs/extralibs/blacsC.a /ccs/home/elbriggs/extralibs/blacs.a
+SUFFIXES = .cu .c .f
+COBJECTS = $(CFILES:.c=.o)
+FOBJECTS = $(FFILES:.f=.o)
+CUOBJECTS = $(CUFILES:.cu=.cu.o)
+LOBJECTS = ~/lib/libmagma.a ~/lib/libmagmablas.a ~/lib/cblas.a
+OBJECTS = $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) $(LOBJECTS)
+
+
+LIBS = -L /opt/fftw/2.1.5.4/lib/ -ldfftw -L ../lib/libxc/lib -lxc -lm -lcublas -lcuda -lhugetlbfs
+
+LDFLAGS = 
+#LDFLAGS = -pthread
+
+
+CC = cc
+CF = ftn
+NVCC = nvcc
+
+
+# Makefiles: if these change, whole code should be recompiled
+MFILES = Makefile Make.xk-gnu
+
+
+# Compile flags
+ARCH =
+# Other useful flags: -fastsse should give speed improvemnts, but causes weird behavior
+# Other flags: debug, I think: -g -gopt -Mbounds -Mchkfpstk -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf
+FFLAGS = $(ARCH) -O3 
+#FFLAGS = $(ARCH) -O3
+CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -I../Headers -hgnu -h pragma=acc
+#CFLAGS = $(ARCH) -O3 $(CWARN) -D_REENTRANT $(DEFS) -IHeaders -pthread -Wall -ffast-math -mfpmath=sse -msse4.2 -mavx -mfma4 -mxop
+
+rmg-negf-cray: Headers/svnrev.h $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) ../lib/libxc/lib/libxc.a
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
+
+$(COBJECTS): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(FOBJECTS): %.o: %.f
+	$(CF) $(FFLAGS) -c $< -o $@
+
+%.cu.o : %.cu
+	$(NVCC) $(CUDAINC) -IHeaders -I../Headers $(DEFS) -DUNIX -O3 -use_fast_math -arch compute_35 -code compute_35 -o $@ -c $<
+
+
+
+# Runs svnrev to create svnrev.h
+Headers/svnrev.h: SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+	SvnRev/svnrev $(CFILES) $(FFILES) $(HFILES) $(MFILES)
+
+
+# Compiles to get svnrev binary
+SvnRev/svnrev: SvnRev/svnrev.c $(MFILES)
+	gcc $< -o $@
+	rm -f svnrev.o
+
+
+#dependencies
+$(OBJECTS): $(HFILES) $(MFILES)
+
+
+#write_header needs to be recompiled everytime svnrev.h changes
+Common/write_header.o: Headers/svnrev.h

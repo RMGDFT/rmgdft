@@ -52,10 +52,11 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
         cublasDgemm (ct.cublas_handle, transN, transN, pct.P0_BASIS, pct.num_local_orbit, pct.num_local_orbit,
                 &one, ct.gpu_states, pct.P0_BASIS, ct.gpu_host_temp2, pct.num_local_orbit, &zero, ct.gpu_host_temp1, pct.P0_BASIS);
 
-        cublasGetVector( pct.P0_BASIS * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp1, ione, psi, ione );
-        //    rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states, ct.gpu_host_temp2, pct.num_local_orbit, pct.P0_BASIS);
+//        cublasGetVector( pct.P0_BASIS * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp1, ione, psi, ione );
+        cublasDscal (ct.cublas_handle, pct.P0_BASIS, &zero, ct.gpu_host_temp2, ione);
+        rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states, ct.gpu_host_temp2, pct.num_local_orbit, pct.P0_BASIS);
 
-        //    cublasGetVector( pct.P0_BASIS, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
+        cublasGetVector( pct.P0_BASIS, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
 
 #else
 
@@ -63,14 +64,14 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
         dgemm ("N", "N", &pct.P0_BASIS, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
                 states_distribute[0].psiR, &pct.P0_BASIS, work_matrix, &pct.num_local_orbit, 
                 &zero, psi, &pct.P0_BASIS);
+
+        for(idx = 0; idx < pct.P0_BASIS; idx++)rho_temp[idx] = 0.0;
+
+        for(st1 = 0; st1 < pct.num_local_orbit; st1++)
+            for(idx = 0; idx < pct.P0_BASIS; idx++)
+                rho_temp[idx] += states_distribute[st1].psiR[idx] * psi[st1 * pct.P0_BASIS + idx];
 #endif
     }
-
-    for(idx = 0; idx < pct.P0_BASIS; idx++)rho_temp[idx] = 0.0;
-
-    for(st1 = 0; st1 < pct.num_local_orbit; st1++)
-        for(idx = 0; idx < pct.P0_BASIS; idx++)
-            rho_temp[idx] += states_distribute[st1].psiR[idx] * psi[st1 * pct.P0_BASIS + idx];
 
 
     mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
