@@ -3,7 +3,7 @@
 #if GPU_ENABLED
 
 #define THREAD_PER_BLOCK 32
-#define THREAD_PER_BLOCKX 1
+#define THREAD_PER_BLOCKX 32
 
 __device__ inline void atomicAdd_double(double* address, double val)
 {
@@ -37,7 +37,7 @@ __global__ void rho_psi_times_psi_kernel(const double *psi1, const double *psi2,
     {
         double sum = 0.0;
         for(int i = 0; i < THREAD_PER_BLOCK;  i++) sum += temp[i * THREAD_PER_BLOCKX + threadIdx.x];
-        atomicAdd_double(&rho[x], sum);
+        if(x < p0basis) atomicAdd_double(&rho[x], sum);
     }
 
 }
