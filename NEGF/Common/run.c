@@ -73,6 +73,10 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
     else if (ct.runflag == 110)
     {
         time1 = my_crtc ();
+#if GPU_ENABLED
+        init_gpu();
+#endif
+
         get_cond_frommatrix ();
         get_cond_frommatrix_kyz ();
     //    local_current ();

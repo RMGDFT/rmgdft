@@ -169,7 +169,7 @@ NEGF-xt:
 	@echo '#define LINUX 1' > $(NEGF_dir)/Headers/arch.h
 	@echo "#define MPI 1" >> $(NEGF_dir)/Headers/arch.h
 	@echo "#define HYBRID_MODEL 0" >> $(NEGF_dir)/Headers/arch.h;
-	@echo "#define GPU_ENABLE 1" >> $(NEGF_dir)/Headers/arch.h;
+	@echo "#define GPU_ENABLE 0" >> $(NEGF_dir)/Headers/arch.h;
 	@cd $(NEGF_dir); $(clean-global); $(clean-on-negf-share)
 	cd $(NEGF_dir); $(MAKE) -f Make.xt 2>&1 | tee .build.log
 

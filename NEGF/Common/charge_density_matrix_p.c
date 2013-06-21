@@ -198,7 +198,11 @@ void charge_density_matrix_p (complex double * sigma_all)
                         {
                             gamma[i] = I * (sigma[i] - gamma[i]);
                         }
+#if GPU_ENABLED
+                        rho_munu_cuda (rho_mn, green_C_non, gamma, idx_delta); 
+#else
                         rho_munu_p (rho_mn, green_C_non, gamma, idx_delta); 
+#endif
 
                         time6 = my_crtc ();
                         rmg_timings (RHO_MUNU_TIME, (time6 - time5));
