@@ -39,10 +39,10 @@ LIBS = -lgfortran -lblas -lm -llapack -lfftw -lmpiblacs -lmpiblacsCinit -lmpi_f7
 LDFLAGS =
 
 
-CC = mpicc
-CF = mpif77
+CC = cc
+CF = ftn
 NVCC = /usr/local/cuda/bin/nvcc
-FC = mpif77
+FC = ftn
 
 
 # Makefiles: if these change, whole code should be recompiled

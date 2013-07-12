@@ -209,6 +209,11 @@
 #define READ_PSEUDO_TIME 71
 #define READ_CONTROL_TIME 72
 
+#define CIL_IMAGE_TIME (74)
+#define CIL_TIME (75)
+
+
+
 #define LAST_TIME     100
 
 /* Boolean definitions */
