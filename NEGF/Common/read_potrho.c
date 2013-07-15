@@ -34,7 +34,7 @@
 void read_potrho (double *vh, int iflag, int data_indicator)
 {
     long fhand;
-    long nbytes, position, nbytes_first, nbytes_second;
+    long nbytes, position, nbytes_first, nbytes_last;
     char newname[MAX_PATH + 200];
     char msg[200];
 
@@ -56,6 +56,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     double fac1, fac2, V1, V2;
     int ii, jj, kk;
     int MaxNumBytes = 2000000000;  //maximum number of bytes one can read from ON calculation for each read
+    long NumBytesLeft;  //number of bytes one need to read from ON calculation for each read
 
     /* Wait until everybody gets here */
     my_barrier ();
@@ -102,29 +103,41 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
         position = ( idx * data_indicator) * sizeof(double);
         lseek(fhand, position, 0);
+        
+        NumBytesLeft = idx * sizeof(double); // this is the number of bytes we need to read at the very beginning
+        
+	printf ("\n  NumBytes to read at the beginning is %ld ", NumBytesLeft);
+        
+        array_tmp_tmp = array_tmp;  //initialize the two pointers point to the same location
+        int time = 0;
+        nbytes = 0;
+	while (NumBytesLeft > MaxNumBytes)
+	{
 
-        if (idx * sizeof(double) > MaxNumBytes)
-        {
+		nbytes_first = read (fhand, array_tmp_tmp, MaxNumBytes );
+                array_tmp_tmp = array_tmp_tmp + MaxNumBytes / sizeof(double);  //shift the tmp_tmp pointer by num of doubles read already
+		NumBytesLeft = NumBytesLeft - MaxNumBytes;// read the bytes left behind
+		printf ("\n  NumBytes to read is %ld after the %d time", NumBytesLeft, time);
+                nbytes = nbytes + nbytes_first;
+		printf ("\n  NumBytes already read is %ld after the %d time", nbytes, time);
+		time++;
+	} 
+	
+	nbytes_last = read (fhand, array_tmp_tmp, NumBytesLeft ); 
+	printf ("\n  NumBytes read is  %ld from the last time %d", nbytes_last, time);
+	//out of the while loop, means NumBytesLeft is less than MaxNumBytes
+	// read one last time to collect whatever is left from the while loop
 
-            nbytes_first = read (fhand, array_tmp, MaxNumBytes );
-            //shift the pointer by num of doubles read already
-            array_tmp_tmp = array_tmp + MaxNumBytes / sizeof(double); 
-            // read the bytes left behind
-            nbytes_second = read (fhand, array_tmp_tmp, idx * sizeof(double) - MaxNumBytes );
-            nbytes = nbytes_second + nbytes_first;
-            assert(idx * sizeof(double) < 2*MaxNumBytes);
-        } 
-        else{
-            nbytes = read (fhand, array_tmp, idx * sizeof(double) );
+	nbytes = nbytes + nbytes_last;
 
-        }
 
-        if(nbytes != idx * sizeof(double)) 
-        {
-            dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
-            dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
-            error_handler ("\n Unexpected end of file vh");
-        }
+	if(nbytes != idx * sizeof(double)) 
+	{
+		dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
+		dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
+		error_handler ("\n Unexpected end of file vh");
+	}
+
 
         close(fhand);
 
