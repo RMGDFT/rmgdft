@@ -100,6 +100,9 @@ void read_control (void)
     /* read mg steps */
     get_data("mg_steps", &ct.mg_steps, INT, "2");
 
+    /* number of waves to plot, by default plot zero waves */
+    get_data("num_waves_to_plot", &ct.num_waves, INT, "0");
+
     /* read orbital movable centers option */
     get_data("do_movable_orbital_centers", &ct.movingCenter, BOOL, "false");
 

@@ -1209,6 +1209,8 @@ typedef struct
     STATE *states;
 
 
+    /* number of waves to plot in ON calculation */
+    int num_waves;
     /*This keeps track whether ct.fftw_wisdom_setup was setup or not so that
      *      * we know whether to release wisdom memory at the end or not*/
     int fftw_wisdom_setup;
@@ -1483,9 +1485,9 @@ void genvlocpsi (REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * 
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
 void get_new_rho (STATE * states, double *rho);
-void get_wave(int st, STATE * states, double *wave_global);
+void get_wave(int st, STATE * states);
 void add_orbit_to_wave(int st1, REAL scale, REAL * psi1, REAL * wave_global, STATE * states);
-void print_wave(REAL * wave_global, int wave_plot, STATE * states);
+void print_wave(int wave_plot, STATE * states, int coarse_level);
 void mg_eig (STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, REAL * vxc_old,
         REAL * vh_old);

@@ -47,6 +47,7 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
             REAL * vnuc, REAL * vh_old, REAL * vxc_old, REAL * rho, REAL * rhoc, REAL * rhocore)
 {
     int outcount = 0;
+    int state_plot, i;
     static int CONVERGENCE = FALSE;
     double time1, time2;
 
@@ -82,6 +83,25 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
         }
         outcount++;
     }
+    
+
+    printf ("\n print relative eigenvalue list for plotted states\n");
+
+    state_plot = ct.nel/2 + 3; // start from a state slightly above the Fermi level, and then go deeper  
+    for (i = 0; i < ct.num_waves; i++)
+    {
+	    printf ("\n %f \n",(states[state_plot].eig - ct.efermi)* Ha_eV);
+            state_plot--;
+    }
+
+    state_plot = ct.nel/2 + 3;   
+    for (i = 0; i < ct.num_waves; i++)
+    {
+	    get_wave(state_plot, states);
+            print_wave(state_plot, states, 2); //use coarse_level = 2, otherwise file too big
+            state_plot--;
+    }
+
 
 //    get_mat_Omega(states, mat_Omega);
     /* Calculate the force */

@@ -17,7 +17,7 @@ Get a particular wave st and store it in wave_global
 #include "my_scalapack.h"
 
 
-void get_wave(int st, STATE * states, double *wave_global)
+void get_wave(int st, STATE * states)
 {
 	int  j, idx, ione = 1;
 	REAL t2;
