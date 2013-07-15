@@ -140,6 +140,15 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     write_rho_x (rho, "rhoooo_1");
     if (pct.gridpe == 0)
         printf ("\n rhoooo");
+    write_rho_x (vtot, "vtot_1");
+    if (pct.gridpe == 0)
+        printf ("\n  vtot");
+    write_rho_x (vh, "vhhh_1");
+    if (pct.gridpe == 0)
+        printf ("\n  vhhh");
+    write_rho_x (vxc, "vxc_1");
+    if (pct.gridpe == 0)
+        printf ("\n  vxccch");
 #endif
 
 
