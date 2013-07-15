@@ -331,23 +331,23 @@ void get_3Ddos (STATE * states)
         int count = 0;
 
         file = fopen ("3D_dos.cube", "w"); //create gaussian file to plot in PYMOL the 3D charge density for energy interval with high peak transmission
-	fprintf( file, " Cubfile created from PWScf calculation\n" );
-	fprintf( file, "  Total SCF Density\n" );
-	fprintf( file, "  1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
-	fprintf (file, " %d     %12.9f      0.000000    0.000000 \n", NX_GRID, dx );//dx is the grid spacing in x in bohr
-	fprintf (file, " %d     0.000000    %12.9f      0.000000 \n", NY_GRID, dy );
-	fprintf (file, " %d     0.000000    0.000000    %12.9f   \n", NZ_GRID ,dz );
-	fprintf (file, "  6     6.000000   10.000000   10.000000   10.000000 \n");//hack file by assigning just one carbon atom at some random position
+	fprintf( file, "Cubfile created from PWScf calculation\n" );
+	fprintf( file, "Total SCF Density\n" );
+	fprintf( file, "1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
+	fprintf (file, "%d    %12.9f      0.000000    0.000000 \n", NX_GRID/2, 2*dx );//dx is the grid spacing in x in bohr
+	fprintf (file, "%d    0.000000    %12.9f      0.000000 \n", NY_GRID/2, 2*dy );
+	fprintf (file, "%d    0.000000    0.000000    %12.9f   \n", NZ_GRID/2, 2*dz );
+	fprintf (file, "6     6.000000   10.000000   10.000000   10.000000 \n");//hack file by assigning just one carbon atom at some random position
 
-	for (iz = 0; iz < NX_GRID; iz++)
+	for (ix = 0; ix < NX_GRID/2; ix++)
 	{
-		for (iy = 0; iy < NY_GRID; iy++)
+		for (iy = 0; iy < NY_GRID/2; iy++)
 		{
-			for (ix = 0; ix < NZ_GRID; ix++)
+			for (iz = 0; iz < NZ_GRID/2; iz++)
 			{
                                 count ++;
 				fprintf ( file , " %18.6e",
-					 rho_energy[ix * FG_NX * FNY_GRID * FNZ_GRID + iy * FG_NY *  FNZ_GRID + iz * FG_NZ] );
+					 rho_energy[ix * 2 * FG_NX * FNY_GRID * FNZ_GRID + iy * 2 * FG_NY *  FNZ_GRID + iz * 2 * FG_NZ] );
 				if (count % 6 == 0)
 					fprintf (file, "\n");
 			}
