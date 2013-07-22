@@ -166,22 +166,19 @@ void init_pe_on(void)
     int numst1, npes_tem;
     numst1 = (ct.num_states + NPES -1)/NPES;
     npes_tem = (ct.num_states + numst1 -1) /numst1;
-    sl_init(&ictxt, 1,npes_tem);
+    sl_init(&ictxt, 1,NPES);
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-    if(myrow !=-1)
+
+    DESCINIT(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
+            &ictxt, &numst, &info);
+    if (info != 0)
     {
-
-	    DESCINIT(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
-			    &ictxt, &numst, &info);
-	    if (info != 0)
-	    {
-		    printf(" init_pe for 1xnpes: DESCINIT, info=%d\n", info);
-		    fflush(NULL);
-		    exit(0);
-	    }
-
+        printf(" init_pe for 1xnpes: DESCINIT, info=%d\n", info);
+        fflush(NULL);
+        exit(0);
     }
+
     if(myrow ==-1) dprintf("\n WARNNING:  no orbital on processor %d \n", pct.gridpe);
 }                               /* end init_pe */
 

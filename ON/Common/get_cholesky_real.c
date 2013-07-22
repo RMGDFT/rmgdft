@@ -116,7 +116,7 @@ void get_cholesky_real(double *matS)
     if (pct.gridpe == 0)
     {
         printf("\n Reciprocal of the condition number of the overlap matrix = %f\n", rcond);
-        if (rcond < 0.0001)
+        if (rcond < 0.00001)
         {
             printf(" Reciprocal of the condition number of the overlap matrix too small!!\n");
             fflush(NULL);
