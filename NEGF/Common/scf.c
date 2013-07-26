@@ -40,6 +40,8 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     int st1, st2, idx, idx1, ione = 1;
     int st11, st22;
     double tem;
+    int *desca;
+    double one = 1.0, zero = 0.0;
     int i, j, k, jj, kk;
     int ictxt, mb, nprow, npcol, myrow, mycol;
     int j1, k1, jdiff, kdiff, iprobe, idx_C;
@@ -82,39 +84,38 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
     if (ct.runflag == 111 && cei.num_probe == 2)
     {
+        idx1 = 2*pmo.mxllda_lead[1] * pmo.mxlocc_lead[1];
+        idx2 = 3*pmo.mxllda_lead[1] * pmo.mxlocc_lead[1];
+ 
         for(j=0; j < pmo.mxllda_lead[1]; j++)
         {
             for(k =0; k < pmo.mxlocc_lead[1]; k++)
             {
 
-                jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb;
-                kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb;
-
-                st11 = jj + lcr[1].num_states;
-                st22 = kk + lcr[1].num_states;
                 lcr[1].H00[j + k * pmo.mxllda_lead[1]]=
-                    work_matrix[st11 * ct.num_states + st22];
+                    lcr[0].Htri[idx1 + j + k * pmo.mxllda_lead[1]];
                 lcr[2].H00[j + k * pmo.mxllda_lead[1]]=
-                    work_matrix[st11 * ct.num_states + st22];
+                    lcr[0].Htri[idx1 + j + k * pmo.mxllda_lead[1]];
 
-                st11 = jj + lcr[1].num_states + lcr[0].num_states;
-                lcr[1].H01[j + k * pmo.mxllda_lead[1]]=
-                    work_matrix[st11 * ct.num_states + st22];
-                lcr[1].HCL[j + k * pmo.mxllda_lead[1]]=
-                    work_matrix[st11 * ct.num_states + st22];
-
-                st11 = jj + lcr[1].num_states;
-                st22 = kk + lcr[1].num_states + lcr[0].num_states;
                 lcr[2].H01[j + k * pmo.mxllda_lead[1]]=
-                    work_matrix[st11 * ct.num_states + st22];
+                    lcr[0].Htri[idx2 + j + k * pmo.mxllda_lead[1]];
                 lcr[2].HCL[j + k * pmo.mxllda_lead[1]]=
-                    work_matrix[st11 * ct.num_states + st22];
+                    lcr[0].Htri[idx2 + j + k * pmo.mxllda_lead[1]];
+
 
             }
         }
+
+        int numst = lcr[1].num_states;
+        desca = pmo.desc_lead;
+        PDTRAN(&numst, &numst, &one, lcr[2].H01, &ione, &ione, desca,
+                &zero, lcr[1].H01, &ione, &ione, desca);
+        PDTRAN(&numst, &numst, &one, lcr[2].HCL, &ione, &ione, desca,
+                &zero, lcr[1].HCL, &ione, &ione, desca);
+
     }
 
-/* corner elements keep unchanged */
+    /* corner elements keep unchanged */
     setback_corner_matrix_H();  
 
 
@@ -152,7 +153,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 #endif
 
 
-//    get_new_rho_soft (states, rho);
+    //    get_new_rho_soft (states, rho);
     get_new_rho_local (states_distribute, rho);
 #if DEBUG
     write_rho_x (rho, "rhoaaa_1");
@@ -217,7 +218,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
    The new potentials are computed as a linear combination 
    of the old ones (input "vh" and "vxc") and the ones 
    corresponding to the input "rho".
- */
+   */
 void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double *vnuc, double *vext,
         double *rho, double *rhoc, double *rhocore, int *CONVERGENCE)
 {
@@ -246,9 +247,9 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
     /* Generate hartree potential */
-//    get_vh (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);
-   get_vh_negf (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
-//   get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+    //    get_vh (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);
+    get_vh_negf (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+    //   get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
 
 
 
