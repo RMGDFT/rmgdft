@@ -131,16 +131,16 @@ void init_gpu (void)
 	if(alloc < pct.num_local_orbit * pct.P0_BASIS) alloc = pct.num_local_orbit * pct.P0_BASIS;
 
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp1\n");
 		exit(-1);
 	}
 
 	alloc = 1024 ;
 	if(alloc < pct.P0_BASIS) alloc = pct.P0_BASIS;
-	if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
+	if(alloc < ct.num_states * ct.num_states) alloc = pct.num_local_orbit * pct.num_local_orbit;
 
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp2\n");
 		exit(-1);
 	}
 
@@ -148,18 +148,13 @@ void init_gpu (void)
 	alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
 	if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf1, alloc * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_fdbuf1\n");
 		exit(-1);
 	}
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf2, alloc * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
+		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_fdbuf2\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (3 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(REAL) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
-		exit(-1);
-	}
-
 
 
 	custat = cublasCreate(&ct.cublas_handle);

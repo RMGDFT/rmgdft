@@ -75,11 +75,11 @@ void read_control (void)
     get_data ("Simpson_depth", &ct.simpson_depth, INT, "0");
     get_data ("Simpson_tol", &ct.simpson_tol, DBL, "0.001");
 
-    get_data ("bg_begin", &ct.bg_begin, DBL, "0");
-    get_data ("bg_end",   &ct.bg_end, DBL, "10");
+    get_data ("bg_begin", &ct.bg_begin, DBL, "-100");
+    get_data ("bg_end",   &ct.bg_end, DBL, "622");
 
-    get_data ("gbias_begin", &ct.gbias_begin, DBL, "0");
-    get_data ("gbias_end",   &ct.gbias_end, DBL, "10");
+    get_data ("gbias_begin", &ct.gbias_begin, DBL, "-100");
+    get_data ("gbias_end",   &ct.gbias_end, DBL, "622");
     get_data ("BT", &ct.BT, DBL, "4.0");
     get_data ("gate_bias", &ct.gate_bias, DBL, "0.0");
     
