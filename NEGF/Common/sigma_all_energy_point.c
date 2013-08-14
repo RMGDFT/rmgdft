@@ -111,7 +111,12 @@ void sigma_all_energy_point (complex double * sigma_all)
                     ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
-                if (cimag(ene) > 0.5 )
+#if GPU_ENABLED
+                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
+
+#else
+
+                if (cimag(ene) >0.5 )
                 {
                     Sgreen_semi_infinite_p (g, ch0, ch01, jprobe);
                 }
@@ -122,6 +127,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                     Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
 
                 }
+#endif
 
                 
                 idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -211,8 +217,13 @@ void sigma_all_energy_point (complex double * sigma_all)
                             ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
+#if GPU_ENABLED
+                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
+
+#else
                         Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
                         Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
+#endif
 
 
 

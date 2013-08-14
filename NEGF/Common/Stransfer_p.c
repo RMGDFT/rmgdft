@@ -124,7 +124,7 @@ void Stransfer_p (complex double * tot, complex double * tott,
         PZGESV (&nmax, &nmax, s1, &IA, &JA, desca, ipiv, s2, &IA, &JA, desca, &info);
         if (info != 0)
         {
-            printf ("Stransfer.c: error in ZGESV with INFO = %d \n", info);
+            printf ("Stransfer.c: error in ZGESV with INFO = %d %d\n", info, step);
             fflush (NULL);
             MPI_Finalize ();
             exit (0);
