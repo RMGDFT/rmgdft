@@ -191,10 +191,18 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
         exit(0);
     }
 
+    write_rho_x (vh, "vh_init");  // information about vh_init is recorded in zvec array
 
+    if (ct.vcomp_Rend > 0) // if ct.vcomp_Rend > 0 means the user turned on the initial compensating potential correction
+    {
+	    init_comp (vcomp);
+	    for (idx = 0; idx < FP0_BASIS; idx++)
+	    {
+		    vh[idx] = vh[idx] + vcomp[idx]; //add compensating potential to align lead and center part at the very beginning
+	    }
 
-    write_rho_x (vh, "vh_init");
-
+	    write_rho_x (vh, "vh_vcomp_init");
+    }
 
 /*  interpolation for the orbits if the grid space is slightly different between lead and conductor */
 

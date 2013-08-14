@@ -82,6 +82,13 @@ void read_control (void)
     get_data ("gbias_end",   &ct.gbias_end, DBL, "622");
     get_data ("BT", &ct.BT, DBL, "4.0");
     get_data ("gate_bias", &ct.gate_bias, DBL, "0.0");
+
+//  vcomp_Lbegin vcomp_Lend controls the left buffer region in center part which must be aligned with left lead
+    get_data ("vcomp_Lbegin", &ct.vcomp_Lbegin, INT, "-10");
+    get_data ("vcomp_Lend",   &ct.vcomp_Lend, INT, "-9");
+//  vcomp_Rbegin vcomp_Rend controls the right buffer region in center part which must be aligned with right lead
+    get_data ("vcomp_Rbegin", &ct.vcomp_Rbegin, INT, "-8");
+    get_data ("vcomp_Rend", &ct.vcomp_Rend, INT, "-7");
     
 
     /* -------------------------------- */

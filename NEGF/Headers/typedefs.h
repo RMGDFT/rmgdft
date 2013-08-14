@@ -812,6 +812,12 @@ typedef struct
     double bg_begin;
     double bg_end;
 
+    /* parameter to define compensating potential */
+    int vcomp_Lbegin;
+    int vcomp_Lend;
+    int vcomp_Rbegin;
+    int vcomp_Rend;
+
     /* override occupations */
     int override_occ;
 
