@@ -86,10 +86,13 @@ void read_control (void)
 //  vcomp_Lbegin vcomp_Lend controls the left buffer region in center part which must be aligned with left lead
     get_data ("vcomp_Lbegin", &ct.vcomp_Lbegin, INT, "-10");
     get_data ("vcomp_Lend",   &ct.vcomp_Lend, INT, "-9");
+
 //  vcomp_Rbegin vcomp_Rend controls the right buffer region in center part which must be aligned with right lead
     get_data ("vcomp_Rbegin", &ct.vcomp_Rbegin, INT, "-8");
     get_data ("vcomp_Rend", &ct.vcomp_Rend, INT, "-7");
     
+//  by default, we will not print 3Ddos for transmission peaks 
+    get_data ("auto_3Ddos", &ct.auto_3Ddos, INT, "0");
 
     /* -------------------------------- */
     /*                                  */

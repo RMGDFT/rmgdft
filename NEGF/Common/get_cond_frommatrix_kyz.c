@@ -21,7 +21,7 @@ double pmo_trace(complex double*, int*);
 
 void kpoints(int *nkp, double *kvecx, double *kvecy, double *kvecz, int *nkp_tot, double *kweight);
 
-void get_cond_frommatrix_kyz ()
+void get_cond_frommatrix_kyz (STATE * states)
 {
 	int iprobe, iprobe1, iprobe2, iter;
 	int iene, icond, count, insert_num;
@@ -42,6 +42,7 @@ void get_cond_frommatrix_kyz ()
 	complex double alpha, beta;
 	complex double one, zero;
 	int i, j, idx, E_POINTS, nkp[3];
+        double peaks[100]; // record the energy peaks to be plotted
 	char fcd_n = 'N', fcd_c = 'C', newname[100];
 	FILE *file;
 	int ione =1, *desca, *descb, *descc, *descd;
@@ -50,9 +51,8 @@ void get_cond_frommatrix_kyz ()
 	int num_offdiag_yz;
 	int numst, numstC;
 	int kp, nkp_tot;
-    double critical_val = 1.0e-14; //transmission below this value will not be investigated for insertion.
-    double second_dif;
-    double cond_value, de, emin, emax;
+	double critical_val = 1.0e-14; //transmission below this value will not be investigated for insertion.
+	double cond_value, de, emin, emax;
 	double *kvecx, *kvecy, *kvecz, *kweight;
 
 	/*=============== Reading input and then print them ==============*/ 
@@ -471,15 +471,14 @@ void get_cond_frommatrix_kyz ()
 				}
 			}
 
-			for (iene = 0; iene < EP; iene++)   //start from 1, figure out which points need to be marked, so insert afterward
+			for (iene = 0; iene < EP; iene++)   //clear the tags before searching maximum peaks for next while loop
 			{
                                       have_cond[iene] = 0;
 			}
 			for (iene = 1; iene < EP-1; iene++)   //start from 1, figure out which points need to be marked, so insert afterward
 			{
-				second_dif =  (cond[iene]-cond[iene-1])/de * (cond[iene+1]-cond[iene])/de  ; // negative means change of sign of slope!
 				cond_value = cond[iene] + cond[iene-1] + cond[iene+1]; // this criteria is heuristic!
-				if ( (second_dif < 0) && (cond_value > critical_val) && (ener1[iene]-ener1[iene-1] < 1.1*de) && (ener1[iene+1]-ener1[iene]<1.1*de))
+				if ( ((cond[iene]-cond[iene-1])/de > 0) && ( (cond[iene+1]-cond[iene])/de < 0) && (cond_value > critical_val) && (ener1[iene]-ener1[iene-1] < 1.1*de) && (ener1[iene+1]-ener1[iene] < 1.1*de) )
 				{
                                       have_cond[iene-1] = 1;
                                       have_cond[iene]   = 2;
@@ -538,20 +537,33 @@ void get_cond_frommatrix_kyz ()
 			fclose (file);
 		}
 
-		/* output the peak points have_cond[iene]==2 and close to Fermi level for 3Ddos plotting purpose */
 		my_barrier ();
-
-		file = fopen ("peaks_to_plot.dat", "w");
+		/* output the peak points have_cond[iene]==2 and close to Fermi level for 3Ddos plotting purpose */
 		if (pct.gridpe == 0)
 		{
+			file = fopen ("peaks_to_plot.dat", "w");
+                        count = 0;
 			for (iene = 0; iene < EP; iene++)
 			{
-				if(have_cond[iene]==2 && cond[iene] > 0.00001 && ener1[iene]> -0.1 && ener1[iene] < 0.01)
-					fprintf (file, " %8.4f %8.4f 3 \n", ener1[iene]-0.0002, ener1[iene]+0.0002);
+				/* the following if state depends on the interests of the user for his particular system */
+				if(have_cond[iene]==2 && cond[iene] > 0.4 && ener1[iene]> -2.5 && ener1[iene] < 2.5)
+				{
+					fprintf (file, " %8.4f  \n", ener1[iene]);
+                                        peaks[count] =  ener1[iene];
+                                        count++;
+				}
+			}
+			fclose(file);
+		}
+
+		/* if user enables ct.auto_3Ddos = 1, it will automatically calculate and plot 3Ddos for each peak */
+		if (ct.auto_3Ddos = 1)
+		{
+			for (iene = 0; iene < count; iene++)
+			{
+				get_3Ddos (states, peaks[iene]-0.02 , peaks[iene]+0.02, 5, iene);
 			}
 		}
-		fclose(file);
-
 		/* calculating the current */
 
 		current = 0.0;

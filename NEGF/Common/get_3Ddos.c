@@ -18,7 +18,7 @@
 #include "pmo.h"
 
 
-void get_3Ddos (STATE * states)
+void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int number)
 {
     int iprobe, idx_e;
     int iene, st1;
@@ -38,7 +38,7 @@ void get_3Ddos (STATE * states)
     int ione = 1;
 
     int ntot, ndim;
-    int ii, jj, kk, xoff, yoff, zoff;
+    int  xoff, yoff, zoff;
     REAL *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
@@ -49,7 +49,8 @@ void get_3Ddos (STATE * states)
     int *desca, *descb, numst, numstC;
 
     read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, kpoint);
-    de = (emax - emin) / (E_POINTS - 1);
+    de = (EMAX - EMIN) / (EPoints - 1);
+
 
 
 
@@ -148,8 +149,7 @@ void get_3Ddos (STATE * states)
 
 
     my_malloc_init( green_C, ntot, complex double );
-    /*st1 = (E_POINTS + NPES - 1) / NPES;*/
-    st1 = (E_POINTS + pmo.npe_energy - 1) / pmo.npe_energy;
+    st1 = (EPoints + pmo.npe_energy - 1) / pmo.npe_energy;
    
     my_malloc_init( Green_store, st1 * ntot, REAL );
 
@@ -179,10 +179,9 @@ void get_3Ddos (STATE * states)
 
 
     idx_e = 0;
-    /*for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)*/
-    for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
+    for (iene = pmo.myblacs; iene < EPoints; iene += pmo.npe_energy)
     {
-        ene = emin + iene * de + I * E_imag;
+        ene = EMIN + iene * de + I * E_imag;
         printf ("\n energy point %d %f +i %f\n", iene, creal(ene), cimag(ene));
 
 
@@ -282,8 +281,7 @@ void get_3Ddos (STATE * states)
     /*===================================================================*/
 
 
-    /*for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)*/
-    for (iene = 0; iene < E_POINTS; iene++)
+    for (iene = 0; iene < EPoints; iene++)
     {
         printf ("hello .... %d\n", iene);
 
@@ -329,30 +327,32 @@ void get_3Ddos (STATE * states)
         double dz = ct.celldm[0] * ct.celldm[2] / NZ_GRID;
         double B_A = 0.52917721;
         int count = 0;
+        int level = 1; 
+        char output[80];
+	sprintf(output, "%s%d%s", "3Ddos_", number, ".cube");
+        file = fopen (output, "w"); //create gaussian file to plot in PYMOL the 3D charge density for energy interval with high peak transmission
+        fprintf( file, "Cubfile created from PWScf calculation\n" );
+        fprintf( file, "Total SCF Density at Energy %12.9f \n", (EMIN+EMAX)/2 );
+        fprintf( file, "1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
+        fprintf (file, "%d    %12.9f      0.000000    0.000000 \n", NX_GRID/level, level*dx );//dx is the grid spacing in x in bohr
+        fprintf (file, "%d    0.000000    %12.9f      0.000000 \n", NY_GRID/level, level*dy );
+        fprintf (file, "%d    0.000000    0.000000    %12.9f   \n", NZ_GRID/level, level*dz );
+        fprintf (file, "6     6.000000   10.000000   10.000000   10.000000 \n");//hack file by assigning just one carbon atom at some random position
 
-        file = fopen ("3D_dos.cube", "w"); //create gaussian file to plot in PYMOL the 3D charge density for energy interval with high peak transmission
-	fprintf( file, "Cubfile created from PWScf calculation\n" );
-	fprintf( file, "Total SCF Density\n" );
-	fprintf( file, "1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
-	fprintf (file, "%d    %12.9f      0.000000    0.000000 \n", NX_GRID/2, 2*dx );//dx is the grid spacing in x in bohr
-	fprintf (file, "%d    0.000000    %12.9f      0.000000 \n", NY_GRID/2, 2*dy );
-	fprintf (file, "%d    0.000000    0.000000    %12.9f   \n", NZ_GRID/2, 2*dz );
-	fprintf (file, "6     6.000000   10.000000   10.000000   10.000000 \n");//hack file by assigning just one carbon atom at some random position
-
-	for (ix = 0; ix < NX_GRID/2; ix++)
-	{
-		for (iy = 0; iy < NY_GRID/2; iy++)
-		{
-			for (iz = 0; iz < NZ_GRID/2; iz++)
-			{
-                                count ++;
-				fprintf ( file , " %18.6e",
-					 rho_energy[ix * 2 * FG_NX * FNY_GRID * FNZ_GRID + iy * 2 * FG_NY *  FNZ_GRID + iz * 2 * FG_NZ] );
-				if (count % 6 == 0)
-					fprintf (file, "\n");
-			}
-		}
-	}
+        for (ix = 0; ix < NX_GRID/level; ix++)
+        {
+            for (iy = 0; iy < NY_GRID/level; iy++)
+            {
+                for (iz = 0; iz < NZ_GRID/level; iz++)
+                {
+                    count ++;
+                    fprintf ( file , " %18.6e",
+                            rho_energy[ix * level * FG_NX * FNY_GRID * FNZ_GRID + iy * level * FG_NY *  FNZ_GRID + iz * level * FG_NZ] );
+                    if (count % 6 == 0)
+                        fprintf (file, "\n");
+                }
+            }
+        }
 
 
 	fclose (file);

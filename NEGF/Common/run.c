@@ -77,9 +77,22 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
         init_gpu();
 #endif
 
+        /* allocate memory for matrixs  */
+        allocate_matrix_soft ();
+        
+        /* Perform some necessary initializations 
+         * no matter localized or not  
+         */
+	my_malloc_init( vxc_old, FP0_BASIS, REAL );
+	my_malloc_init( vh_old, FP0_BASIS, REAL );
+ 
+        init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
+
+	if (pct.gridpe == 0)
+		printf ("init_soft is done\n");
+
         get_cond_frommatrix ();
-        get_cond_frommatrix_kyz ();
-    //    local_current ();
+        get_cond_frommatrix_kyz (states);
 
         time2 = my_crtc ();
         if (pct.gridpe == 0)
@@ -88,15 +101,6 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
     else 
     {
-/*    if(ct.runflag == 100)
- *    {
- *        time1 = my_crtc();
- *        get_cond_lead();
- *        time2 = my_crtc();
- *        if(pct.gridpe ==0) printf("\n TIME for get_cond_dos %f", time2 - time1);
- *        exit(0);
- *    }
- */
         
         /* allocate memory for matrixs  */
         allocate_matrix_soft ();
@@ -104,27 +108,27 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
         /* Perform some necessary initializations 
          * no matter localized or not  
          */
-    my_malloc_init( vxc_old, FP0_BASIS, REAL );
-    my_malloc_init( vh_old, FP0_BASIS, REAL );
+	my_malloc_init( vxc_old, FP0_BASIS, REAL );
+	my_malloc_init( vh_old, FP0_BASIS, REAL );
  
-//        vxc_old = vxc;
-//        vh_old = vh;
         
         init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
+
+	if (pct.gridpe == 0)
+		printf ("init_soft is done\n");
+
         if (ct.runflag == 200)
         {
             time1 = my_crtc ();
             get_dos (states);
-            get_3Ddos (states);
             time2 = my_crtc ();
             if (pct.gridpe == 0)
                 printf ("\n TIME for get_cond_dos %f", time2 - time1);
         }
+
         else 
         {
             
-            if (pct.gridpe == 0)
-                printf ("init_soft is done\n");
 
             /* total energy point = # of poles + ncircle + nmax_gq1 */
 

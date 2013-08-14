@@ -41,7 +41,7 @@ void is_vloc_state_overlap (STATE *states);
 void get_ion_orbit_overlap_loc (STATE * states);
 void read_trans (complex_energy_integral * cei);
 void get_dos (STATE * states); 
-void get_3Ddos (STATE * states); 
+void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int number); 
 
 void Stransfer_p (complex double * tot, complex double * tott, complex
         double *ch0, complex double *ch01, complex double *ch10, int iprobe);

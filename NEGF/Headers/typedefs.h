@@ -818,6 +818,9 @@ typedef struct
     int vcomp_Rbegin;
     int vcomp_Rend;
 
+    /* tag to determine whether to do auto 3Ddos printing for transmission peaks */
+    int auto_3Ddos;
+
     /* override occupations */
     int override_occ;
 
