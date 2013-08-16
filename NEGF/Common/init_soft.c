@@ -195,7 +195,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     if (ct.vcomp_Rend > 0) // if ct.vcomp_Rend > 0 means the user turned on the initial compensating potential correction
     {
-	    init_comp (vcomp);
+	    init_comp (vh);
 	    for (idx = 0; idx < FP0_BASIS; idx++)
 	    {
 		    vh[idx] = vh[idx] + vcomp[idx]; //add compensating potential to align lead and center part at the very beginning

@@ -122,7 +122,7 @@
 
 
 int MXLLDA, MXLCOL;
-REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *vext,  *vcomp, *zvec, *rhocore, *vtot, *vtot_old;
+REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *vext,  *vcomp, *rhocore, *vtot, *vtot_old;
 REAL *vh_old, *vxc_old; 
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 REAL *work_dis2, *zz_dis, *gamma_dis, *uu_dis; 
@@ -455,7 +455,7 @@ void init_nuc_soft(REAL *vnuc, REAL *rhoc, REAL *rhocore);
 void init_psp_soft(void);
 void init_soft(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, STATE *states,
         STATE *states1, REAL *vnuc, REAL *vext, REAL *vxc, REAL *vh_old, REAL *vxc_old, STATE *state_distribute);
-void init_comp (double *vcomp);
+void init_comp (REAL *vh);
 void read_pseudo_soft(void);
 REAL get_Exc_soft(REAL *rho, REAL *rhocore);
 void fill_orbit_borders4(REAL *sg, REAL *pg, int dimx, int dimy, int dimz);
