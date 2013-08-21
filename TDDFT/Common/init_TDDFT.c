@@ -2,31 +2,6 @@
  **    $Id$    **
 ******************************************************************************/
  
-/****f* QMD-MGDFT/run.c *****
- * NAME
- *   Ab initio O(n) real space code with 
- *   localized orbitals and multigrid acceleration
- *   Version: 3.0.0
- * COPYRIGHT
- *   Copyright (C) 2001  Wenchang Lu,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void run()   
- *   Perform any initializations that are required and then
- *   enters the main driver loop. It also handles checkpointing and the
- *   output of intermediate results.
- * INPUTS
- *   nothing
- * OUTPUT
- *   Print standard output.
- * PARENTS
- *   md.c
- * CHILDREN
- *   
- * SEE ALSO
- *   main.h for structure defination
- * SOURCE
- */
 
 
 #include <float.h>
@@ -38,8 +13,7 @@
 
 extern REAL *vh_old, *vxc_old;
 
-
-void run(STATE * states, STATE * states1)
+void init_TDDFT()
 {
     REAL time1;
     int MAT_TRANSFER = 0;
@@ -70,17 +44,5 @@ void run(STATE * states, STATE * states1)
 
     my_barrier();
 
-    /* Dispatch to the correct driver routine */
-
-        quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhoc, rhocore);
-
-    /* Save data to output file */
-    write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
-
-
-    my_barrier();
-
-    time1 = my_crtc() - time1;
-    rmg_timings(TOTAL_TIME, time1);
 
 }

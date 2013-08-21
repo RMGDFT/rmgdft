@@ -44,13 +44,10 @@
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
-CONTROL ct;
+//CONTROL ct;
 
 /* PE control structure which is also declared extern in main.h */
-PE_CONTROL pct;
-
-int mpi_nprocs;
-int mpi_myrank;
+//PE_CONTROL pct;
 
 
 int main(int argc, char **argv)
@@ -61,6 +58,7 @@ int main(int argc, char **argv)
     time_t tt;
     char *timeptr;
 
+    double *Hmatrix, *Smatrix;
 
     time(&tt);
     timeptr = ctime(&tt);
@@ -70,26 +68,32 @@ int main(int argc, char **argv)
     init_IO(argc, argv);
 
 
-    /* Read in the name of the control file from the command line */
-//    strcpy(ct.cfile, argv[1]);
-
-    /* Read in our control information */
- //   read_control();
-
-    /* Read in our pseudopotential information */
-//    read_pseudo();
-
     my_barrier();
 
+    
+    int n2 = ct.num_states * ct.num_states;
+    my_malloc( Hmatrix, n2, double );
+    my_malloc( Smatrix, n2, double );
+
     /*  Begin to do the real calculations */
-    run(states, states1);
+    init_TDDFT();
 
-    //my_alloc_report( "order-n" );
+    for(ct.scf_steps = 0; ct.scf_steps < 5; ct.scf_steps++)
+    {
+        get_cholesky_real(matB);
 
-    write_timings();
+        get_dm_diag_p(states, l_s, mat_X, Hij);
+
+        write_eigs(states);
+
+        update_TDDFT(mat_X);
+
+    }
+
     MPI_Finalize();
 
     return 0;
 }
+
 
 

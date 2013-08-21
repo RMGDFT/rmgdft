@@ -151,39 +151,10 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if(gridpe == 0) printf("\n init_allocate mask done %f sec",my_crtc()-time1 );
 
     /* If not an initial run read data from files */
-    if (ct.runflag == 1)
-    {
-        read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
+    read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
     if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-    }
-    if (ct.runflag == 0)
-    {
+    pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
 
-        /* Set initial states to random start */
-        for (ispin = 0; ispin <= ct.spin; ispin++)
-            for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-            {
-                kpt1 = kpt + ispin * ct.num_kpts;
-                init_wf(&states[kpt1 * ct.num_states]);
-            }
-
-    if(gridpe == 0) printf("\n init_wf done %f sec",my_crtc()-time1 );
-    }
-
-    if (ct.runflag == INIT_GAUSSIAN)
-    {
-
-        /* Set initial states to random start */
-        for (ispin = 0; ispin <= ct.spin; ispin++)
-            for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-            {
-                kpt1 = kpt + ispin * ct.num_kpts;
-                init_wf_gaussian(&states[kpt1 * ct.num_states]);
-            }
-
-    if(gridpe == 0) printf("\n init_wf_gaussian done %f sec",my_crtc()-time1 );
-    }
 
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
@@ -193,83 +164,10 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     init_kbr();
     if(gridpe == 0) printf("\n init_kbr done %f sec",my_crtc()-time1 );
 
-    /* Initialize symmetry stuff */
-   //  init_sym();
-    if(gridpe == 0) printf("\n init_sys done %f sec",my_crtc()-time1 );
 
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc(vnuc, rhoc, rhocore);
     if(gridpe == 0) printf("\n init_nuc done %f sec",my_crtc()-time1 );
-
-    if (ct.runflag == INIT_FIREBALL)
-    {
-        init_wf_atom(states);
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vh[idx] = ZERO;
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vxc[idx] = ZERO;
-
-        init_rho_atom(rho);
-    if(gridpe == 0) printf("\n init_rho_atom done %f sec",my_crtc()-time1 );
-
-#if DEBUG
-        tem = 0.0;
-        tem1 = 0.0;
-
-        for (idx = 0; idx < FP0_BASIS; idx++)
-
-        {
-            tem += rho[idx];
-            tem1 += rhoc[idx];
-        }
-        tem = real_sum_all(tem, pct.grid_comm);
-        tem1 = real_sum_all(tem1, pct.grid_comm);
-        if (pct.gridpe == 0)
-            printf("\n %f %f initial rho sum ", tem, tem1);
-        write_rho_x(rho, "rhoooo");
-        write_rho_x(rhoc, "rhoccc");
-#endif
-
-        get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vh_old[idx] = vh[idx];
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vxc_old[idx] = vxc[idx];
-    if(gridpe == 0) printf("\n init_vpot done %f sec",my_crtc()-time1 );
-
-    }
-
-    if (ct.runflag == 0 | ct.runflag == INIT_GAUSSIAN)
-    {
-        /* Set the initial hartree potential to a constant */
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vh[idx] = ZERO;
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vxc[idx] = ZERO;
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            rho[idx] = rhoc[idx];
-
-        get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vh_old[idx] = vh[idx];
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vxc_old[idx] = vxc[idx];
-    if(gridpe == 0) printf("\n init_vpot_0 done %f sec",my_crtc()-time1 );
-
-        if (ct.spin == 1)
-        {
-            for (idx = 0; idx < FP0_BASIS; idx++)
-            {
-                rho[idx + FP0_BASIS] = 0.4 * rho[idx];
-                rho[idx] = 0.6 * rho[idx];
-            }
-        }
-    }
-
 
     /* Initialize Non-local operators */
     init_nl_xyz();
@@ -305,48 +203,20 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 
     /* If diagonalization is requested do a subspace diagonalization */
-    for (ispin = 0; ispin <= ct.spin; ispin++)
-    {
-        for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-        {
-            kpt1 = kpt + ispin * ct.num_kpts;
-            for (idx = 0; idx < FP0_BASIS; idx++)
-                vtot[idx] = vh_old[idx] + vxc_old[idx] + vnuc[idx];
+    for (idx = 0; idx < FP0_BASIS; idx++)
+        vtot[idx] = vh_old[idx] + vxc_old[idx] + vnuc[idx];
 
-            get_vtot_psi(vtot_c, vtot, FG_NX);
-            get_ddd(vtot);
+    get_vtot_psi(vtot_c, vtot, FG_NX);
+    get_ddd(vtot);
 
-            flag = 0;
-            matrix_and_diag(ct.kp[kpt1].kstate, states1, vtot_c, flag);
-    if(gridpe == 0) printf("\n init_matrix_and_diag done %f sec",my_crtc()-time1 );
-        }
-        if (pct.gridpe == 0)
-            write_eigs(states);
-    if(gridpe == 0) printf("\n init_write_eigs done %f sec",my_crtc()-time1 );
-    }
+    get_HS(states, states1, vtot_c, Hij, matB);
 
     time2 = my_crtc();
     rmg_timings(INIT_TIME, (time2 - time1));
     my_barrier();
     if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
-	fflush(NULL);
-
-
-#if	DEBUG
-    print_state_sum(states);
-    print_status(states, vh, vxc, vnuc, vh_old, "before leaving init.c  ");
-    print_sum(pct.psi_size, states[ct.state_begin].psiR, "init.c states sum ");
-#endif
-
-/* some utilities, used in debuging */
-
-    if (pct.gridpe > 100000)
-    {
-        print_status(states, vh, vxc, vnuc, vh_old, "before leaving init.c  ");
-        print_state_sum(states1);
-        print_state(&states[0]);
-        print_sum(pct.psi_size, states[ct.state_begin].psiR, "init.c states sum ");
-    }
+    fflush(NULL);
 
 
 }
+

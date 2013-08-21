@@ -2,41 +2,6 @@
  **    $Id$    **
  ******************************************************************************/
 
-/****f* QMD-MGDFT/quench.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void quench(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, 
- *               REAL *rho, REAL *rhocore, REAL *rhoc)
- *   For a fixed atomic configuration, quench the electrons to find 
- *   the minimum total energy 
- * INPUTS
- *   states: point to orbital structure (see main.h)
- *   vxc:    exchange correlation potential
- *   vh:     Hartree potential
- *   vnuc:   Pseudopotential 
- *   rho:    total valence charge density
- *   rhocore: core chare density only for non-linear core correction
- *   rhoc:   Gaussian compensating charge density
- * OUTPUT
- *   states, vxc, vh, rho are updated
- * PARENTS
- *   cdfastrlx.c fastrlx.c md.c
- * CHILDREN
- *   scf.c force.c get_te.c subdiag.c get_ke.c
- * SOURCE
- */
-
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -51,8 +16,7 @@ static double t[2];
 extern int it_scf;
 double tem1;
 
-void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
-        REAL * vnuc, REAL * vh_old, REAL * vxc_old, REAL * rho, REAL * rhoc, REAL * rhocore)
+void update_TDDFT(double *mat_X)
 {
     int outcount = 0;
     int state_plot, i;
@@ -63,46 +27,31 @@ void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
     time1 = my_crtc();
 
 
-    for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
+    scopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
+
+    get_new_rho(states, rho);
+
+    tem1 = 0.0;
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
-        if (pct.gridpe == 0)
-            printf("\n\n\n ITERATION     %d\n", ct.scf_steps);
+        tem = rho_old[idx];
+        rho_old[idx] = -rho[idx] + rho_old[idx];
+        rho[idx] = tem;
+        tem1 += rho_old[idx] * rho_old[idx];
+    }
 
-        matrix_and_diag(ct.kp[0].kstate, states1, vtot_c, 0);
-        /* Generate new density */
-        ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
-
-        if (pct.gridpe == 0 && ct.occ_flag == 1)
-            printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
-
-        scopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
-
-        get_new_rho(states, rho);
-
-        tem1 = 0.0;
-        for (idx = 0; idx < FP0_BASIS; idx++)
-        {
-            tem = rho_old[idx];
-            rho_old[idx] = -rho[idx] + rho_old[idx];
-            rho[idx] = tem;
-            tem1 += rho_old[idx] * rho_old[idx];
-        }
-
-        tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) FP0_BASIS;
-        pulay_rho (ct.scf_steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) FP0_BASIS;
+    pulay_rho (ct.scf_steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 
-        /* Update potential */
-        update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, &CONVERGENCE, states);
+    /* Update potential */
+    update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, &CONVERGENCE, states);
 
 
-        get_te(rho, rhoc, rhocore, vh, vxc, states);
+    get_te(rho, rhoc, rhocore, vh, vxc, states);
 
 
-        time2 = my_crtc();
-        rmg_timings(SCF_TIME, time2 - time1);
-
-    }                               /* end scf */
+    get_HS(states, states1, vtot_c, Hij, matB);
 
 
 }
