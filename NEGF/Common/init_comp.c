@@ -22,10 +22,10 @@
 void init_comp (REAL *vh)
 {
 
-    int ix, iy, iz;
+    int ix, iy, iz, i;
     int pxoff;  
-    double v_comp;    
-    double x_locate;
+    double v_comp, v_sum, v_reference;    
+    int x_locate;
     double delta_v1;
     double delta_v2;
     double delta_v3;
@@ -91,6 +91,14 @@ void init_comp (REAL *vh)
     printf(" delta_v3  = %f \n", delta_v3);   
     printf(" delta_v4  = %f \n", delta_v4);   
 
+    v_reference = 0;
+    for (i = 0; i < lb; i++)
+    {
+	    v_reference = v_reference + zvec[i];
+
+    }
+    v_reference = v_reference / lb;
+
     for (ix = 0; ix < FPX0_GRID; ix++)
     {
         x_locate = ix + pxoff; // everything is based on FINE grid!
@@ -104,9 +112,17 @@ void init_comp (REAL *vh)
             v_comp = (delta_v4 - delta_v3) * (x_locate - rb)/ (re - rb) + delta_v3;
 
         else if (x_locate > le && x_locate <= rb)
+	{       
+                v_sum = zvec[x_locate];
+		for (i = 1; i < 32; i++)
+		{
+                    v_sum = v_sum + zvec[x_locate-i] + zvec[x_locate+i];
+                    
+		}
+                v_sum = v_sum / 63.0;
 
-            v_comp = (delta_v3 - delta_v2) * (x_locate - le)/ (rb - le) + delta_v2;
-
+		v_comp = v_reference - v_sum;
+	}
         else
 
             v_comp = 0;
@@ -126,7 +142,7 @@ void init_comp (REAL *vh)
         }                       /* end for */
 
 
-	printf("x_locate = %5f      vcomp  = %10.7f \n ", x_locate, v_comp );
+	printf("x_locate = %5d      vcomp  = %10.7f \n ", x_locate, v_comp );
 
     }                           /* end for */
 
