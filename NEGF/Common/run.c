@@ -45,7 +45,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 	REAL time1, time2;
 	FILE *file;
 	int ix, iy, iz, idx;
-	int size, iprobe, idx_delta, j;
+	int size, iprobe, idx_delta, i, j;
 	double *vbias;
 
 	time1 = my_crtc ();
