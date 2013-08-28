@@ -21,7 +21,7 @@ double pmo_trace(complex double*, int*);
 
 void kpoints(int *nkp, double *kvecx, double *kvecy, double *kvecz, int *nkp_tot, double *kweight);
 
-void get_cond_frommatrix_kyz (STATE * states)
+void get_cond_frommatrix_kyz ()
 {
 	int iprobe, iprobe1, iprobe2, iter;
 	int iene, icond, count, insert_num;
@@ -42,7 +42,6 @@ void get_cond_frommatrix_kyz (STATE * states)
 	complex double alpha, beta;
 	complex double one, zero;
 	int i, j, idx, E_POINTS, nkp[3];
-        double peaks[100]; // record the energy peaks to be plotted
 	char fcd_n = 'N', fcd_c = 'C', newname[100];
 	FILE *file;
 	int ione =1, *desca, *descb, *descc, *descd;
@@ -539,31 +538,25 @@ void get_cond_frommatrix_kyz (STATE * states)
 
 		my_barrier ();
 		/* output the peak points have_cond[iene]==2 and close to Fermi level for 3Ddos plotting purpose */
+		peakNum = 0;
+		for (iene = 0; iene < EP; iene++)
+		{
+			/* the following if state depends on the interests of the user for his particular system */
+			if(have_cond[iene]==2 && ener1[iene]> -0.12 && ener1[iene] < 0.05)
+			{
+				peaks[peakNum] =  ener1[iene];
+				peakNum++;
+			}
+		}
+
 		if (pct.gridpe == 0)
 		{
 			file = fopen ("peaks_to_plot.dat", "w");
-                        count = 0;
-			for (iene = 0; iene < EP; iene++)
-			{
-				/* the following if state depends on the interests of the user for his particular system */
-				if(have_cond[iene]==2 && cond[iene] > 0.4 && ener1[iene]> -2.5 && ener1[iene] < 2.5)
-				{
-					fprintf (file, " %8.4f  \n", ener1[iene]);
-                                        peaks[count] =  ener1[iene];
-                                        count++;
-				}
-			}
+			for (i = 0; i < peakNum; i++)
+				fprintf (file, " %8.4f  \n", peaks[i]);
 			fclose(file);
 		}
 
-		/* if user enables ct.auto_3Ddos = 1, it will automatically calculate and plot 3Ddos for each peak */
-		if (ct.auto_3Ddos = 1)
-		{
-			for (iene = 0; iene < count; iene++)
-			{
-				get_3Ddos (states, peaks[iene]-0.02 , peaks[iene]+0.02, 5, iene);
-			}
-		}
 		/* calculating the current */
 
 		current = 0.0;

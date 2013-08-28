@@ -44,6 +44,8 @@ void allocate_matrix_soft ()
 
     ispin = ct.spin + 1;
 
+    my_malloc_init( peaks, 100, REAL );
+
     my_malloc_init( rho, FP0_BASIS * ispin, REAL );
     my_malloc_init( rhoc, FP0_BASIS, REAL );
     my_malloc_init( vh, FP0_BASIS, REAL );

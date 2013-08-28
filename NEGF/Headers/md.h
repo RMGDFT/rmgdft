@@ -122,7 +122,7 @@
 
 
 int MXLLDA, MXLCOL;
-REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *vext,  *vcomp, *rhocore, *vtot, *vtot_old;
+REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *vext,  *vcomp, *rhocore, *vtot, *vtot_old, *peaks;
 REAL *vh_old, *vxc_old; 
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 REAL *work_dis2, *zz_dis, *gamma_dis, *uu_dis; 
@@ -139,6 +139,7 @@ complex double *sigma_all;
 
 
 int NPES;
+int peakNum;
 int NX_GRID, NY_GRID, NZ_GRID;
 int P0_BASIS;
 int S0_BASIS;
