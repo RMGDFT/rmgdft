@@ -29,7 +29,7 @@ SUFFIXES = .cu .c .f
 COBJECTS = $(CFILES:.c=.o)
 FOBJECTS = $(FFILES:.f=.o)
 CUOBJECTS = $(CUFILES:.cu=.cu.o)
-LOBJECTS = /u/sciteam/luw/lib/libmagma.a /u/sciteam/luw/lib/libmagmablas.a /u/sciteam/luw/lib/cblas.a
+LOBJECTS = ~/lib/libmagma.a ~/lib/libmagmablas.a ~/lib/cblas.a
 OBJECTS = $(COBJECTS) $(FOBJECTS) $(CUOBJECTS) $(LOBJECTS)
 
 
@@ -45,7 +45,7 @@ NVCC = nvcc
 
 
 # Makefiles: if these change, whole code should be recompiled
-MFILES = Makefile Make.xk-gnu
+MFILES = ../Makefile Make.xk-gnu
 
 
 # Compile flags

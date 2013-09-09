@@ -38,7 +38,7 @@ FC = mpxlf_r
 
 
 # Makefiles: if these change, whole code should be recompiled
-MFILES = Makefile Make.aix
+MFILES = ../Makefile Make.aix
 
 
 # Compile flags
