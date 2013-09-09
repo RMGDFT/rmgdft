@@ -229,6 +229,8 @@
 #define ORTHO_GET_OVERLAPS 73
 #define TRADE_MPI_TIME 74
 #define ORTHO_CHOLESKY 75
+#define CIL_IMAGE_TIME 76
+#define CIL_TIME 76
 
 #define LAST_TIME (80)
 
