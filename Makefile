@@ -15,7 +15,7 @@
 
 SHELL = /bin/sh
 
-codes_dir = ~/SVN/codes
+codes_dir := $(shell pwd -P)
 RMG_dir = $(codes_dir)/RMG
 NEGF_dir = $(codes_dir)/NEGF
 ON_dir = $(codes_dir)/ON
@@ -185,7 +185,7 @@ NEGF-aix:
 
 .PHONY: clean-common
 clean-common:
-	cd RMG; find $(GLOBAL_MODULES)  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
+	find $(GLOBAL_MODULES)  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
 
 clean-rmg: clean-common
 	find RMG  \( -name '*.o' -o -name '*.oo' \) -exec rm {} \;
