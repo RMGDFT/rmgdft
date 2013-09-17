@@ -46,7 +46,7 @@ FC = ftn
 
 
 # Makefiles: if these change, whole code should be recompiled
-MFILES = Makefile Make.linux
+MFILES = ../Makefile Make.linux
 
 
 # Compile flags

@@ -47,7 +47,7 @@ NVCC = nvcc
 
 
 # Makefiles: if these change, whole code should be recompiled
-MFILES = Makefile Make.xk-gnu
+MFILES = ../Makefile Make.xk-gnu
 
 
 # Compile flags

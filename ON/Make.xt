@@ -34,7 +34,7 @@ FC = ftn
 
 
 # Makefiles: if these change, whole code should be recompiled
-MFILES = Makefile Make.xt
+MFILES = ../Makefile Make.xt
 
 
 # Compile flags

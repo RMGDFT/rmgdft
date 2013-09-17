@@ -186,7 +186,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                 for (iene = pmo.myblacs; iene < lcr[iprobe].lcr_ne[j].nenergy_ne; iene += pmo.npe_energy)
                 {
 
-                    ene = lcr[iprobe].ene[iene];
+                    ene = lcr[iprobe].lcr_ne[j].ene_ne[iene];
 
 
                     /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
