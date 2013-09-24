@@ -73,7 +73,8 @@ void sigma_all_energy_point (complex double * sigma_all)
     /*  Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
 
     idx_sigma = 0;
-    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+//    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    iprobe = 1;
     {
 
         /*   parallel for the processor on energy grid */
@@ -111,10 +112,10 @@ void sigma_all_energy_point (complex double * sigma_all)
                     ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
-#if GPU_ENABLED
-                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
+//#if GPU_ENABLED
+//                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
 
-#else
+//#else
 
                 if (cimag(ene) >0.5 )
                 {
@@ -127,7 +128,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                     Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
 
                 }
-#endif
+//#endif
 
                 
                 idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -174,7 +175,8 @@ void sigma_all_energy_point (complex double * sigma_all)
 
     /*  Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
 
-    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+//    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    iprobe = 1;
     {
         j = 0;
         for (idx_delta = 1; idx_delta <= cei.num_probe; idx_delta++)
@@ -217,13 +219,13 @@ void sigma_all_energy_point (complex double * sigma_all)
                             ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
-#if GPU_ENABLED
-                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
+//#if GPU_ENABLED
+//                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
 
-#else
+//#else
                         Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
                         Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
-#endif
+//#endif
 
 
 

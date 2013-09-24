@@ -84,7 +84,8 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
 
 
     idx1 = 0;
-    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+//    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    iprobe = 1;
     {
         idx = (lcr[iprobe].nenergy + pmo.npe_energy - 1) / pmo.npe_energy;
  
@@ -107,7 +108,8 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
     if (ct.runflag != 111)
         sigma_all_energy_point (sigma_all);
 
-
+	my_barrier();
+	if(pct.gridpe==0) dprintf("\n sigma_all done");
     get_all_kbpsi (states, states);
     /* get lcr[0].S00 part */
     get_matB_soft (states, states1, work_matrix);

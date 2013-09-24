@@ -115,7 +115,8 @@ void allocate_matrix_LCR ()
     }
     else
     {
-        for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+       // for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+	iprobe = 1;
         {
             my_malloc_init( lcr[iprobe].density_matrix_tri, ntot, REAL );
             for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
