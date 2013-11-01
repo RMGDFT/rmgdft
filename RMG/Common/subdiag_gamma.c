@@ -107,7 +107,7 @@ rmg_double_t *global_matrix;
 void init_subdiag(void)
 {
 
-    int dist_length, dist_stop, pbasis, num_states, retval, stop, idx;
+    int dist_length, dist_stop, pbasis, num_states, retval, stop, idx, alen;
     int ione = 1, izero = 0;    /* blas constants */
     rmg_double_t t1, t2;
     rmg_double_t time2;
@@ -122,6 +122,7 @@ void init_subdiag(void)
     stop = num_states * num_states;
 
     if((ct.subdiag_driver == SUBDIAG_LAPACK) ||
+       (ct.subdiag_driver == SUBDIAG_LAPACKFS) ||
        (ct.subdiag_driver == SUBDIAG_MAGMA)  ||
        (ct.subdiag_driver == SUBDIAG_MAGMAFS)) dist_stop=stop;
 
@@ -165,21 +166,24 @@ void init_subdiag(void)
 #if GPU_ENABLED
     cudaHostRegister( global_matrix, sizeof(rmg_double_t) * stop, cudaHostRegisterPortable);
 
-    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_arrayR);
-    if(retval != MPI_SUCCESS) {
-        error_handler("Error in MPI_Alloc_mem.\n");
-    }
-    cudaHostRegister( tmp_arrayR, pbasis * ct.num_states * sizeof(rmg_double_t), cudaHostRegisterPortable);
+    alen = pbasis * ct.num_states;
+    if(alen < (ct.num_states * ct.num_states)) alen = ct.num_states * ct.num_states;
 
-    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_array2R);
+    retval = MPI_Alloc_mem(alen * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_arrayR);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    cudaHostRegister( tmp_array2R, pbasis * ct.num_states * sizeof(rmg_double_t), cudaHostRegisterPortable);
+    cudaHostRegister( tmp_arrayR, alen * sizeof(rmg_double_t), cudaHostRegisterPortable);
+
+    retval = MPI_Alloc_mem(alen * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_array2R);
+    if(retval != MPI_SUCCESS) {
+        error_handler("Error in MPI_Alloc_mem.\n");
+    }
+    cudaHostRegister( tmp_array2R, alen * sizeof(rmg_double_t), cudaHostRegisterPortable);
 
 #else
-    my_malloc (tmp_arrayR, pbasis * ct.num_states, rmg_double_t);
-    my_malloc (tmp_array2R, pbasis * ct.num_states, rmg_double_t);
+    my_malloc (tmp_arrayR, alen, rmg_double_t);
+    my_malloc (tmp_array2R, alen, rmg_double_t);
 #endif
 
 
@@ -214,6 +218,7 @@ void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_
 #endif
     switch(ct.subdiag_driver) {
         case SUBDIAG_LAPACK:
+        case SUBDIAG_LAPACKFS:
             subdiag_gamma_lapack(states, vh, vnuc, vxc);
             break;
 #if GPU_ENABLED
@@ -639,7 +644,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
             global_matrix[idx] = 0.0;
 
 
-    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
 
 
@@ -651,6 +655,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.scalapack_comm);
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
+    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
 
     /*If some processors did not participate in Scalapack,
@@ -1173,16 +1178,30 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		lwork = -1;
 		liwork = -1;
 
-		lwork = 16*num_states;
-		liwork = 5*num_states;
+		lwork = 2 * num_states * num_states + 6 * num_states + 2;
+		liwork = 6*num_states;
 		my_malloc (work2, lwork, rmg_double_t);
 		my_malloc (iwork, liwork, int);
 
 		tol = 1e-15;
 
-		dsygvx_  (&ione, jobz, range, uplo, &num_states, distCij, &num_states, distSij, &num_states,
-				&vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, global_matrix, &num_states, work2, 
-				&lwork, iwork, ifail, &info);
+                if(ct.subdiag_driver == SUBDIAG_LAPACKFS) {
+
+                    rmg_double_t *hwork;
+                    my_malloc(hwork, lwork, rmg_double_t);
+                    info = rmg_folded_spectrum_cpu(num_states, distCij, num_states, distSij, num_states,
+                                eigs, hwork, lwork, iwork, liwork, distAij);
+                    my_free(hwork);
+                    QMD_dcopy(num_states*num_states, distCij, 1, global_matrix, 1);
+
+                }
+                else {
+
+                    dsygvx_  (&ione, jobz, range, uplo, &num_states, distCij, &num_states, distSij, &num_states,
+                        &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, global_matrix, &num_states, work2, 
+                        &lwork, iwork, ifail, &info);
+
+                }
 
 		if (info)
 		{
@@ -1251,6 +1270,297 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 	rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 } // end subdiag_gamma_lapack
+
+
+
+int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, int ldb, 
+		rmg_double_t *w, rmg_double_t *work, int lwork, int *iwork, int liwork, rmg_double_t *wa)
+{
+
+    int ione=1, itype=1, info=0, idx;
+    rmg_double_t rone = 1.0;
+    int ix, iy, eig_index, its, n_win, n_start, st, st1, i_width, ireps;
+    char *trans="n", *transt="t", *transn="n";
+    char *cuplo = "l", *side="l", *diag="n", *jobz="V";
+    rmg_double_t alpha, beta=0.0, lambda, *d_p0, *d_p1, t1, t2;
+    rmg_double_t *Vdiag, sum, *V, *G, *p0, *p1, *n_eigs, *tarr, *darr, *sarr, *Asave;
+    rmg_double_t time1, time2, time3, r_width;
+    int eig_step, eig_start, eig_stop, map, istride, ibase, omp_tid;
+     
+    // Folded spectrum method is parallelized over PE's. Each PE gets assigned
+    // a subset of the eigenvectors.
+    t1 = (rmg_double_t)n;
+    t1 = t1 / ((rmg_double_t)NPES);
+    t2 = t1 * (rmg_double_t)pct.gridpe;
+    eig_start = (int)rint(t2);
+    eig_stop = (int)rint(t1 + t2);
+    eig_step = eig_stop - eig_start;
+    if(pct.gridpe == (NPES - 1)) eig_stop = n;
+
+    // Set width of window in terms of a percentage of n. Larger values will be slower but
+    // exhibit behavior closer to full diagonalization.
+    r_width = 0.3;
+    t1 = (rmg_double_t)n;
+    n_win = (int)(r_width * t1);
+
+    // Find start of interval
+    ix = n_win - eig_step;
+    if(ix < 4)
+        error_handler("Too few PE's to use folded spectrum method for this problem");
+    if(ix % 2) {
+        n_win++;
+        ix = n_win - eig_step;
+    }
+
+    n_start = eig_start - ix/2;
+    if(n_start < 0)n_start = 0;
+    if((n_start + n_win) > n) {
+        n_start = n - n_win;
+    }
+
+    my_malloc(Vdiag, n, rmg_double_t);
+    my_malloc(p0, n, rmg_double_t);
+    my_malloc(p1, n, rmg_double_t);
+    n_eigs = distTij;
+
+    my_malloc(d_p0, n, rmg_double_t);
+    my_malloc(d_p1, n, rmg_double_t);
+    my_malloc(Asave, n*n, rmg_double_t);
+    my_malloc(tarr, n, rmg_double_t);
+
+    time1=my_crtc();
+    //  Form a Cholesky factorization of B.
+    dpotrf(cuplo, &n, b, &ldb, &info);
+    if( info != 0 ) {
+        error_handler("dpotrf failure");
+    }
+
+    time2=my_crtc();
+    dprintf("DPOTRF1  = %12.6f",time2-time1);
+    time1=my_crtc();
+
+    //  Transform problem to standard eigenvalue problem
+    dsygst_(&itype, cuplo, &n, a, &lda, b, &ldb, &info);
+    if( info != 0 ) {
+        error_handler("dsygst failure");
+    }
+
+    time2=my_crtc();
+    dprintf("DSYGST  = %12.6f",time2-time1);
+    time1=my_crtc();
+
+
+    // We need to wait until a is diagonally dominant so we skip the first 3 steps
+    if(ct.scf_steps < 3) {
+
+        dsyevd_(jobz, cuplo, &n, a, &lda, w,
+                         work,  &lwork,
+                         iwork, &liwork,
+                         &info);
+        if( info != 0 ) {
+            error_handler("dsyevd failure");
+        }
+        //   For A*x=(lambda)*B*x and A*B*x=(lambda)*x;
+        //        backtransform eigenvectors: x = inv(L)**T*y or inv(U)*y
+        //   dtrsm_( "Leftx", uplo, trans, "Non-unit", &n, &n, &rone, b, &ldb, a, &lda );
+        //
+        dtrsm_ (side, cuplo, transt, diag, &n, &n, &rone, b, &ldb, a, &lda);
+
+    }
+    else {
+       
+        V=tmp_arrayR;
+        G=tmp_array2R;
+
+        // AX=lambdaX  store a copy of A in Asave
+        QMD_dcopy (n*n, a, 1, Asave, 1);
+
+        // Zero out matrix of eigenvectors and eigenvalues
+        for(idx=0;idx < n*n;idx++) V[idx] = 0.0;
+        for(idx=0;idx < n;idx++) n_eigs[idx] = 0.0;
+     
+
+        time1=my_crtc();
+
+        // Do the submatrix along the diagonal to get starting values for folded spectrum
+        //--------------------------------------------------------------------
+        for(ix = 0;ix < n_win;ix++){
+            for(iy = 0;iy < n_win;iy++){
+                G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
+            }
+        }
+        QMD_dcopy (n_win * n_win, G, 1, a, 1);
+        dsyevd_(jobz, cuplo, &n_win, a, &n_win, &w[n_start],
+                        work, &lwork,
+                        iwork, &liwork,
+                        &info);
+        if( info != 0 ) {
+                error_handler("dsyevd failure");
+        }
+        //--------------------------------------------------------------------
+
+        QMD_dcopy (n_win * n_win, a, 1, G, 1);
+
+        for(ix = 0;ix < n_win;ix++) {
+            Vdiag[ix] = 1.0;
+            if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -1.0;
+        }
+
+        // Store the eigen vector from the submatrix
+        for(ix=0;ix<n_win;ix++) {
+            if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
+                for(iy=0;iy<n_win;iy++) {
+                      V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
+                }
+            }
+        }
+
+
+        time2=my_crtc();
+        dprintf("SUBMATRIX = %12.6f",time2-time1);
+        time1=my_crtc();
+
+        // Apply folded spectrum to this PE's range of eigenvectors
+        for(eig_index = eig_start;eig_index < eig_stop;eig_index++) {
+
+                lambda = w[eig_index];
+                n_eigs[eig_index] = lambda;
+
+                for(ix=0;ix<ct.num_states;ix++){
+                    Asave[ix*ct.num_states + ix] -= lambda;
+                }
+                alpha = 1.0;
+                QMD_dcopy (ct.num_states*ct.num_states, Asave, 1, global_matrix, 1);
+
+                // Restore matrix for next pass
+                for(ix=0;ix<ct.num_states;ix++){
+                    Asave[ix*ct.num_states + ix] += lambda;
+                }
+
+                QMD_dcopy (n, &V[eig_index*n], 1, d_p0, 1);
+
+                alpha = -0.5;
+                beta = 0.0;
+                for(its = 0;its < 6;its++) {
+                    dgemv_(transn, &n, &n, &alpha, global_matrix, &n, d_p0, &ione, &beta, d_p1, &ione);
+                    daxpy_(&n, &rone, d_p1, &ione, d_p0, &ione);
+                }
+                // Renormalize
+                t1 = dnrm2_(&n, d_p0, &ione);
+                t1 = 1.0 / t1;
+                dscal_(&n, &t1, d_p0, &ione);
+
+                QMD_dcopy (n, d_p0, 1, &V[eig_index*n], 1);
+        }
+
+        time2=my_crtc();
+        dprintf("FOLDED SPECTRUM = %12.6f",time2-time1);
+        time1=my_crtc();
+
+        // Make sure all PE's have all eigenvectors. Possible optimization here would be to 
+        // overlap computation in the above loop with communication here.
+//        MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allgatherv(MPI_IN_PLACE, eig_step*n, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+
+        time2=my_crtc();
+        dprintf("MPI_ALLREDUCE1  = %12.6f",time2-time1);
+        time1=my_crtc();
+
+        // Do the same for the eigenvalues
+        // Could replace this with an MPI_Allgatherv as well
+        MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+        time2=my_crtc();
+        dprintf("MPI_ALLREDUCE2  = %12.6f",time2-time1);
+
+        // Copy summed eigs back to w
+        for(idx = 0;idx < n;idx++) w[idx] = n_eigs[idx];
+
+        time1=my_crtc();
+
+        // Gram-Schmidt ortho for eigenvectors.
+        alpha = 1.0;
+        beta = 0.0;
+
+        // Overlaps
+        QMD_dcopy (n*n, V, 1, a, 1);
+        dsyrk_ (cuplo, transt, &n, &n, &alpha, a, &n, &beta, global_matrix, &n);
+        time2=my_crtc();
+        dprintf("OVERLAPS  = %12.6f",time2-time1);
+        time1=my_crtc();
+
+        // Cholesky factorization
+        dpotrf(cuplo, &n, global_matrix, &n, &info);
+
+        time2=my_crtc();
+        dprintf("CHOLESKY  = %12.6f",time2-time1);
+        time1=my_crtc();
+
+        // Get inverse of diagonal elements
+        for(ix = 0;ix < n;ix++) tarr[ix] = 1.0 / global_matrix[n * ix + ix];
+
+//----------------------------------------------------------------
+        for(idx = 0;idx < n*n;idx++)G[idx] = 0.0;
+#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+{
+        omp_tid = omp_get_thread_num();
+        if(omp_tid == 0) my_malloc(darr, n * omp_get_num_threads(), rmg_double_t);
+#pragma omp barrier
+
+#pragma omp for schedule(static, 1) nowait
+        for(idx = eig_start;idx < eig_stop;idx++) {
+
+            sarr = &darr[omp_tid*n];
+
+            for (st = 0; st < n; st++) sarr[st] = V[st*n + idx];
+
+            for (st = 0; st < n; st++) {
+
+                sarr[st] *= tarr[st];
+
+                for (st1 = st+1; st1 < n; st1++) {
+                    sarr[st1] -= global_matrix[st1 + n*st] * sarr[st];
+                }
+
+            }
+
+            for (st = 0; st < n; st++) G[st*n + idx] = sarr[st];
+
+        }
+} // end omp section
+
+        my_free(darr);
+
+        time2=my_crtc();
+        dprintf("GRAM  = %12.6f",time2-time1);
+        time1=my_crtc();
+
+
+        // A matrix transpose here would let us use an Allgatherv which would be
+        // almost twice as fast for the communications part.
+        MPI_Allreduce(MPI_IN_PLACE, G, n*n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        QMD_dcopy (n*n, G, 1, a, 1);
+
+        time2=my_crtc();
+        dprintf("MPI_ALLREDUCE3  = %12.6f",time2-time1);
+        time1=my_crtc();
+
+
+        dtrsm_ (side, cuplo, transt, diag, &n, &n, &rone, b, &ldb, a, &lda);
+        time2=my_crtc();
+        dprintf("DTRSM  = %12.6f",time2-time1);
+
+    }
+
+    my_free(tarr);
+    my_free(Asave);
+    my_free(d_p1);
+    my_free(d_p0);
+    my_free(p1);
+    my_free(p0);
+    my_free(Vdiag);
+    return 0;
+} 
 #endif
 
 
@@ -1645,13 +1955,13 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 		rmg_double_t *w, rmg_double_t *work, int lwork, int *iwork, int liwork, rmg_double_t *wa)
 {
 
-    int ione=1, itype=1, info=0, idx;
-    rmg_double_t rone = 1.0;
+    int ione=1, itype=1, info=0, idx, istate;
+    rmg_double_t rone = 1.0, rzero = 0.0;
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
     cublasSideMode_t side=CUBLAS_SIDE_LEFT;
     cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
     cublasDiagType_t diag=CUBLAS_DIAG_NON_UNIT;
-    int ix, iy, eig_index, its, n_win, n_start, st, st1, i_width;
+    int ix, iy, eig_index, its, n_win, n_start, st, st1, i_width, ireps;
     char *trans="n";
     rmg_double_t alpha, beta=0.0, lambda, *d_p0, *d_p1, t1, t2;
     rmg_double_t *Vdiag, sum, *V, *G, *p0, *p1, *n_eigs, *tarr, *darr, *sarr, *Asave;
@@ -1670,7 +1980,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.
-    r_width = 0.25;
+    r_width = ct.folded_spectrum_width;
     t1 = (rmg_double_t)n;
     n_win = (int)(r_width * t1);
 
@@ -1707,7 +2017,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
     }
 
     time2=my_crtc();
-    Dprintf("DPOTRF1  = %12.6f",time2-time1);
+    dprintf("DPOTRF1  = %12.6f",time2-time1);
     time1=my_crtc();
 
     //  Transform problem to standard eigenvalue problem
@@ -1717,12 +2027,12 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
     }
 
     time2=my_crtc();
-    Dprintf("DSYGST  = %12.6f",time2-time1);
+    dprintf("DSYGST  = %12.6f",time2-time1);
     time1=my_crtc();
 
 
     // We need to wait until a is diagonally dominant so we skip the first 3 steps
-    if(ct.scf_steps < 3) {
+    if((ct.scf_steps < 5) && (ct.runflag != 1)) {
 
         magma_dsyevd_gpu('V', 'L', n, a, lda, w,
                          wa,  n,
@@ -1794,35 +2104,42 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         dprintf("SUBMATRIX = %12.6f",time2-time1);
         time1=my_crtc();
 
+        for(ix = 0;ix < n*n;ix++) tarr[ix] = Asave[ix];
+
         // Apply folded spectrum to this PE's range of eigenvectors
         for(eig_index = eig_start;eig_index < eig_stop;eig_index++) {
-            lambda = w[eig_index];
-            n_eigs[eig_index] = lambda;
-            for(ix=0;ix<ct.num_states;ix++){
-                Asave[ix*ct.num_states + ix] -= lambda;
-            }
 
-            alpha = 1.0;
-            cublasSetVector( ct.num_states*ct.num_states, sizeof( rmg_double_t ), Asave, ione, ct.gpu_global_matrix, ione );
-            cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, ct.num_states, ct.num_states, ct.num_states,
-                 &alpha, ct.gpu_global_matrix, ct.num_states,
-                 ct.gpu_global_matrix, ct.num_states,
-                 &beta,  ct.gpu_temp, ct.num_states );
+                lambda = w[eig_index];
+                n_eigs[eig_index] = lambda;
 
-            // Restore matrix for next pass
-            for(ix=0;ix<ct.num_states;ix++){
-                Asave[ix*ct.num_states + ix] += lambda;
-            }
+                cublasSetVector( n, sizeof( rmg_double_t ), &V[eig_index*n], ione, d_p0, ione );
+                for(ix=0;ix<ct.num_states;ix++){
+                    tarr[ix*ct.num_states + ix] = Asave[ix*ct.num_states + ix] - lambda;
+                }
+                cublasSetVector( ct.num_states*ct.num_states, sizeof( rmg_double_t ), tarr, ione, ct.gpu_global_matrix, ione );
 
-            cublasSetVector( n, sizeof( rmg_double_t ), &V[eig_index*n], ione, d_p0, ione );
+                alpha = -0.5;
+                beta = 0.0;
+                for(its = 0;its < 7;its++) {
 
-            alpha = -0.5;
-            beta = 0.0;
-            for(its = 0;its < 8;its++) {
-                cublasDgemv_v2(ct.cublas_handle, cu_transN, n, n, &alpha, ct.gpu_global_matrix, n, d_p0, ione, &beta, d_p1, ione);
-                cublasDaxpy_v2(ct.cublas_handle, n, &rone, d_p1, ione, d_p0, ione);
-            }
-            cublasGetVector(n, sizeof( rmg_double_t ), d_p0, ione, &V[eig_index*n], ione);
+//                    if(its > 4) {
+//                        cublasGetVector(n, sizeof( rmg_double_t ), d_p0, ione, p0, ione);
+//                        dgemv_(trans, &n, &n, &rone, Asave, &n, p0, &ione, &rzero, p1, &ione);
+//                        lambda = QMD_ddot (n, p0, ione, p1, ione);
+//                    }
+
+
+                    cublasDgemv_v2(ct.cublas_handle, cu_transN, n, n, &alpha, ct.gpu_global_matrix, n, d_p0, ione, &beta, d_p1, ione);
+                    cublasDaxpy_v2(ct.cublas_handle, n, &rone, d_p1, ione, d_p0, ione);
+                    // Renormalize
+                    cublasDnrm2(ct.cublas_handle, n, d_p0, ione, &t1);
+                    t1 = 1.0 / t1;
+                    cublasDscal(ct.cublas_handle, n, &t1, d_p0, ione);
+                }
+
+                cublasGetVector(n, sizeof( rmg_double_t ), d_p0, ione, &V[eig_index*n], ione);
+                w[eig_index] = lambda;
+                n_eigs[eig_index] = lambda;
         }
 
         time2=my_crtc();
@@ -1845,9 +2162,27 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         time2=my_crtc();
         dprintf("MPI_ALLREDUCE2  = %12.6f",time2-time1);
 
+
+
+#if 0
+// Sort eigenvectors in case FS caused a level crossing
+for(ix=0;ix<10;ix++){
+	for(istate = 0;istate < n - 1; istate++) {
+	    if(n_eigs[istate] > n_eigs[istate + 1]) {
+		t1 = n_eigs[istate + 1];
+		n_eigs[istate + 1] = n_eigs[istate];
+		n_eigs[istate] = t1;
+		for(idx = 0;idx < n;idx++) {
+		    t1 = V[istate*n + idx];
+		    V[istate*n + idx] = V[(istate + 1)*n + idx];
+		    V[(istate + 1)*n + idx] = t1;
+		}
+	    }
+	}
+}
+#endif
         // Copy summed eigs back to w
         for(idx = 0;idx < n;idx++) w[idx] = n_eigs[idx];
-
         time1=my_crtc();
 
         // Gram-Schmidt ortho for eigenvectors.
