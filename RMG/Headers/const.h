@@ -230,7 +230,7 @@
 #define TRADE_MPI_TIME 74
 #define ORTHO_CHOLESKY 75
 #define CIL_IMAGE_TIME 76
-#define CIL_TIME 76
+#define CIL_TIME 77
 
 #define LAST_TIME (80)
 
@@ -296,6 +296,7 @@
 #define SUBDIAG_SCALAPACK 1
 #define SUBDIAG_MAGMA 2
 #define SUBDIAG_MAGMAFS 3
-#define SUBDIAG_ELPA 4
+#define SUBDIAG_LAPACKFS 4
+#define SUBDIAG_ELPA 5
 
 #endif /* CONST_H_INCLUDED */

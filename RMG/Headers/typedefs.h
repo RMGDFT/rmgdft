@@ -1172,6 +1172,9 @@ typedef struct
     int diag;
     int end_diag;
 
+    /* Folded spectrum width */
+    rmg_double_t folded_spectrum_width;
+
     /* Flag indicating whether to use MPI_Allreduce operations or point to point in subdiag */
     int scalapack_global_sums;
 

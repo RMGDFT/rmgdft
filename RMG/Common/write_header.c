@@ -133,6 +133,9 @@ void write_header (void)
         case SUBDIAG_LAPACK:
             printf ("    Subspace diagonalization using lapack driver\n");
             break;
+        case SUBDIAG_LAPACKFS:
+            printf ("    Subspace diagonalization using lapackfs driver\n");
+            break;
         case SUBDIAG_MAGMAFS:
 #if MAGMA_LIBS
             printf ("    Subspace diagonalization using magmafs driver\n");
