@@ -113,7 +113,8 @@ void read_control (char *file)
     char diagonalization_driver_opts[] = "lapack\n"
                                          "scalapack\n"
                                          "magma\n"
-                                         "magmafs\n";
+                                         "magmafs\n"
+                                         "lapackfs\n";
 //                                       "elpa\n"
     get_data ("subdiag_driver", NULL, INIT | OPT, diagonalization_driver_opts);
     get_data ("subdiag_driver", &ct.subdiag_driver, OPT, "scalapack");
@@ -132,6 +133,9 @@ void read_control (char *file)
 
     /* stop diagonalizing after end_diag steps */
     get_data ("end_diagonalization_step", &ct.end_diag, INT, "100");
+
+    /* Read in the folded spectrum width */
+    get_data ("folded_spectrum_width", &ct.folded_spectrum_width, DBL, "0.3");
 
 
     /* Set up and validate input options */
