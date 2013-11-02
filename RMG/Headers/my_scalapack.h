@@ -27,6 +27,10 @@
 #define 	PZGESV 		pzgesv
 #define 	PSUBDIAG 	psubdiag
 #define 	PDSYGVX 	pdsygvx
+#define         PDSYEVX         pdsyevx
+#define         PDPOTRF         pdpotrf
+#define         PDSYNGST        pdsyngst
+#define         PDTRSM          pdtrsm
 
 
 
@@ -52,6 +56,10 @@
 #define 	PZGESV 		pzgesv_
 #define 	PSUBDIAG 	psubdiag_
 #define 	PDSYGVX 	pdsygvx_
+#define 	PDSYEVX 	pdsyevx_
+#define 	PDPOTRF 	pdpotrf_
+#define 	PDSYNGST 	pdsyngst_
+#define 	PDTRSM  	pdtrsm_
 #endif
 #endif
 
@@ -90,6 +98,9 @@ void PSUBDIAG (char *, char *, int, double *, int, double *, int *);
 void PDSYGVX(int *, char*, char*, char*, int*, rmg_double_t *, int*, int*, int*, rmg_double_t*, int*, int*, 
        int*, rmg_double_t*, rmg_double_t *, int*, int*, rmg_double_t*, int*, int*, rmg_double_t*, rmg_double_t*, rmg_double_t*, int*, 
        int*, int*, rmg_double_t*, int*, int*, int*, int*, int*, rmg_double_t*, int*);       
+void PDSYEVX(char*, char*, char*, int*, rmg_double_t *, int*, int*, int*, rmg_double_t*, rmg_double_t*, int*,
+       int*, rmg_double_t*, int*, int*, rmg_double_t*, rmg_double_t*, rmg_double_t*, int*,                                           
+       int*, int*, rmg_double_t*, int*, int*, int*, int*, int*, rmg_double_t*, int*);
 
 
 
