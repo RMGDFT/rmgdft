@@ -39,7 +39,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
 
 
 
-    tri_to_local (states_distribute, lcr[0].density_matrix_tri, work_matrix);
+    tri_to_local (states_distribute, lcr[0].density_matrix_tri, mat_local);
 
     if(pct.num_local_orbit > 0)
     {
@@ -47,7 +47,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
         cublasOperation_t transN = CUBLAS_OP_N, transT = CUBLAS_OP_T;
 
         int n2 = pct.num_local_orbit * pct.num_local_orbit;
-        cublasSetVector( n2, sizeof( double ), work_matrix, ione, ct.gpu_host_temp2, ione );
+        cublasSetVector( n2, sizeof( double ), mat_local, ione, ct.gpu_host_temp2, ione );
 
         cublasDgemm (ct.cublas_handle, transN, transN, pct.P0_BASIS, pct.num_local_orbit, pct.num_local_orbit,
                 &one, ct.gpu_states, pct.P0_BASIS, ct.gpu_host_temp2, pct.num_local_orbit, &zero, ct.gpu_host_temp1, pct.P0_BASIS);
@@ -62,7 +62,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
 
 
         dgemm ("N", "N", &pct.P0_BASIS, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
-                states_distribute[0].psiR, &pct.P0_BASIS, work_matrix, &pct.num_local_orbit, 
+                states_distribute[0].psiR, &pct.P0_BASIS, mat_local, &pct.num_local_orbit, 
                 &zero, psi, &pct.P0_BASIS);
 
         for(idx = 0; idx < pct.P0_BASIS; idx++)rho_temp[idx] = 0.0;

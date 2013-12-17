@@ -125,6 +125,7 @@ int MXLLDA, MXLCOL;
 REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *vext,  *vcomp, *rhocore, *vtot, *vtot_old, *peaks;
 REAL *vh_old, *vxc_old; 
 REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
+double *mat_local;
 REAL *work_dis2, *zz_dis, *gamma_dis, *uu_dis; 
 REAL *work_matrix, *nlarray1;
 REAL *projectors, *projectors_x, *projectors_y, *projectors_z;

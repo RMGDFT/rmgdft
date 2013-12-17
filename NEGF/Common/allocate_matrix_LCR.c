@@ -128,6 +128,8 @@ void allocate_matrix_LCR ()
     }
 
 
+    int size = pct.num_local_orbit * pct.num_local_orbit;
+    my_malloc_init( mat_local, size+1024, REAL );
 
 
 

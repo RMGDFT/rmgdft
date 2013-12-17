@@ -26,7 +26,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     int ixx, iyy, izz;
     char msg[100];
     double time1, time2, time3, time4;
-    double *psi, *mat, one = 1.0, zero = 0.0;
+    double *psi, one = 1.0, zero = 0.0;
 
     int ix, iy,iz;
     time1 = my_crtc ();
@@ -36,7 +36,6 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
 
     my_malloc(psi, pct.num_local_orbit * pct.P0_BASIS+1024, double);
-    my_malloc(mat, pct.num_local_orbit * pct.num_local_orbit+1024, double);
     for (st1 = 0; st1 < ct.num_states * ct.num_states; st1++)
         Aij[st1] = 0.;
 
@@ -56,7 +55,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     cublasDgemm (ct.cublas_handle, transT, transN, pct.num_local_orbit, pct.num_local_orbit, pct.P0_BASIS, 
             &one, ct.gpu_host_temp1, pct.P0_BASIS, ct.gpu_states, pct.P0_BASIS, &zero, ct.gpu_host_temp2, pct.num_local_orbit);
 
-    cublasGetVector( pct.num_local_orbit * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp2, ione, mat, ione );
+    cublasGetVector( pct.num_local_orbit * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp2, ione, mat_local, ione );
 
 #else
 
@@ -64,7 +63,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
         for(idx1 = 0; idx1 <pct.P0_BASIS; idx1++)
             psi[st1 * pct.P0_BASIS + idx1] = states_distribute[st1].psiR[idx1] * vtot_c[idx1];
     dgemm ("T", "N", &pct.num_local_orbit, &pct.num_local_orbit, &pct.P0_BASIS, &one, psi, &pct.P0_BASIS,
-            states_distribute[0].psiR, &pct.P0_BASIS, &zero, mat, &pct.num_local_orbit);
+            states_distribute[0].psiR, &pct.P0_BASIS, &zero, mat_local, &pct.num_local_orbit);
 #endif
 
     }
@@ -78,7 +77,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
             st22 = states_distribute[st2].istate;
 
             idx = st11 * ct.num_states + st22;
-            Aij[idx] = mat[st1 * pct.num_local_orbit + st2];
+            Aij[idx] = mat_local[st1 * pct.num_local_orbit + st2];
 
         }
     }                           /* end for st1 = .. */
@@ -122,7 +121,6 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
     rmg_timings (GET_Hij_TIME, (time2 - time1));
 
-    my_free(mat);
     my_free(psi);
 
 }
