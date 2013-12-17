@@ -1,7 +1,7 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -36,17 +36,18 @@ void tri_to_local (STATE *states_distribute, REAL * A_tri, REAL * Aii_local)
      *  output: Aii [ct.states_end - ct.state_begins, ct.num_states]
      */
 
-    int ictxt, mb, nprow, npcol, myrow, mycol;
-    
     int size;
-    int idx2, idx1;
+    int idx;
 
     double spin_degenerate;
 
-    int st1, st2, block1, block2, st1_local, st2_local, col_proc, row_proc;
-    int st1_index, st2_index;
+    int st1, st2, st11, st22;
     int ione = 1;
-    
+
+    int i, j,  k;
+    int ictxt, mb, nprow, npcol, myrow, mycol;
+    int istart, jj, kk, jjj, kkk;
+
     // the density matrix multiply by 2.0 to count for spin degeneracy
     spin_degenerate = 2.0;
 
@@ -60,66 +61,105 @@ void tri_to_local (STATE *states_distribute, REAL * A_tri, REAL * Aii_local)
     // in pct.grid_comm, each process have different orbitals, and
     // returned Aii_row only storeis (ct.state_end-ct.state_begin) * ndim, 
     // not the whole matrix ndim * ndim
-    
+
     //determing the starting and ending ranks in pct.grid_comm for these
     //nprow * npcol PE
-    
 
-    for(st1 = 0; st1 < pct.num_local_orbit * pct.num_local_orbit; st1++) Aii_local[st1] = 0.0;
 
-    for(st1 = 0; st1 < pct.num_local_orbit; st1++)
+
+    // change the tri-diagonal distributed matrix to global matrix, need
+    // to be optimized later for memory issues with work_matrix.
+    //
+    for(i=0; i<ct.num_states * ct.num_states; i++)
     {
-        block1 = states_distribute[st1].whichblock;
-        st1_index = states_distribute[st1].istate_in_block;
+        work_matrix[i] = 0.0;
+    }
 
-        col_proc = (st1_index/mb)%npcol;
 
-        st1_local = (st1_index/mb)/npcol *mb + st1_index%mb;
 
-        if(col_proc == mycol)
+    /* for diagonal blocks */
+
+    istart = 0;
+    for(i = 0; i < ct.num_blocks; i++)
+    {
+
+        for(j =0; j < pmo.mxllda_cond[i]; j++)
         {
-
-            for(st2 = st1; st2 < pct.num_local_orbit; st2++)
+            for(k=0; k < pmo.mxlocc_cond[i]; k++)
             {
-                block2 = states_distribute[st2].whichblock;
-                st2_index = states_distribute[st2].istate_in_block;
 
-                row_proc = (st2_index/mb)%nprow;
+                /* for each block, distributed local index (j,k) is (jj, kk) in block matrix
+                 * and (jjj,kkk) in whole matrix
+                 */
 
-                st2_local = (st2_index/mb)/nprow *mb + st2_index%mb;
+                jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
+                kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
 
-                if(row_proc == myrow)
-                {
+                jjj = jj + istart;
+                kkk = kk + istart;
+                work_matrix[kkk * ct.num_states + jjj] =
+                    A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j];
 
-                    if(block1 == block2) 
-                    {
-                        idx1 = st1 * pct.num_local_orbit + st2;
-                        idx2 = pmo.diag_begin[block1] + st1_local * pmo.mxllda_cond[block1] + st2_local;
-
-                        Aii_local[idx1] = A_tri[idx2];
-                        Aii_local[st2 * pct.num_local_orbit + st1 ] = Aii_local[idx1];
-
-                    }
-                    else if(block1 +1 == block2)
-                    {
-                        idx1 = st1 * pct.num_local_orbit + st2;
-                        idx2 = pmo.offdiag_begin[block1] + st2_local * pmo.mxllda_cond[block1] + st1_local;
-
-                        Aii_local[idx1] = A_tri[idx2];
-                        Aii_local[st2 * pct.num_local_orbit + st1 ] = Aii_local[idx1];
-
-                    }
-                    else
-                    {
-
-                        Aii_local[st1 * pct.num_local_orbit + st2 ] = 0.0;
-                        Aii_local[st2 * pct.num_local_orbit + st1 ] = 0.0;
-                    }
-                         
-                }
             }
         }
+
+        istart += ct.block_dim[i];
     }
+
+
+
+    /* for off-diagonal blocks */
+
+    istart = 0;
+    for(i = 1; i < ct.num_blocks; i++)
+    {
+
+        for(j =0; j < pmo.mxllda_cond[i-1]; j++)
+        {
+            for(k=0; k < pmo.mxlocc_cond[i]; k++)
+            {
+
+                /* for each block, distributed local index (j,k) is (jj, kk) in block matrix
+                 * and (jjj,kkk) in whole matrix
+                 */
+
+                jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
+                kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
+
+                jjj = jj + istart;
+                kkk = kk + istart + ct.block_dim[i-1];
+                work_matrix[kkk * ct.num_states + jjj] =
+                    A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j];
+
+                work_matrix[jjj * ct.num_states + kkk] = work_matrix[kkk * ct.num_states + jjj] ;
+
+            }
+        }
+
+        istart += ct.block_dim[i-1];
+    }
+
+    size = ct.num_states * ct.num_states;
+    comm_sums((REAL *)work_matrix, &size, COMM_EN2);
+
+
+    // global matrix map to local matrix(pct.num_local * pct.num_local);
+    //
+    for(st1 = 0; st1 < pct.num_local_orbit * pct.num_local_orbit; st1++) Aii_local[st1] = 0.0;
+
+
+    for (st1 = 0; st1 < pct.num_local_orbit; st1++)
+    {
+        st11 = states_distribute[st1].istate;
+        for (st2 = 0; st2 < pct.num_local_orbit; st2++)
+        {
+            st22 = states_distribute[st2].istate;
+
+            idx = st11 * ct.num_states + st22;
+            Aii_local[st1 * pct.num_local_orbit + st2] = work_matrix[idx];
+
+        }
+    }                           /* end for st1 = .. */
 
 
 
@@ -127,8 +167,6 @@ void tri_to_local (STATE *states_distribute, REAL * A_tri, REAL * Aii_local)
     size = pct.num_local_orbit * pct.num_local_orbit;
     if(size > 0)
     {
-        comm_sums(Aii_local, &size, COMM_EN2);
-
         dscal(&size, &spin_degenerate, Aii_local, &ione);
     }
 
