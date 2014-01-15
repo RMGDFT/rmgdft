@@ -34,9 +34,11 @@
  * SOURCE
  */
 
-#include "main.h"
 #include <float.h>
 #include <math.h>
+#include "rmgtypes.h"
+#include "const.h"
+#include "xc.h"
 
 #define MA  -0.4582E0
 #define MB  -0.0480E0
@@ -136,12 +138,12 @@ double mu_pz (double rho)
 
 
 
-void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc_f)
+void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc_f, int n)
 {
 
     int i;
 
-    for (i = 0; i < pct.FP0_BASIS; i++)
+    for (i = 0; i < n; i++)
     {
 
         vxc_f[i] = mu_pz (rho[i]);
@@ -156,12 +158,12 @@ void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc_f)
 
 
 
-void exclda_pz81 (rmg_double_t * rho, rmg_double_t * exc)
+void exclda_pz81 (rmg_double_t * rho, rmg_double_t * exc, int n)
 {
 
     int i;
 
-    for (i = 0; i < pct.FP0_BASIS; i++)
+    for (i = 0; i < n; i++)
     {
 
         exc[i] = e_pz (rho[i]);
