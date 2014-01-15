@@ -74,8 +74,6 @@ rmg_double_t app_cil_sixth_f (rmg_float_t *psi, rmg_float_t *b, int dimx, int di
 void app_grad (rmg_double_t  * rho, rmg_double_t *wx, rmg_double_t *wy, rmg_double_t *wz, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain( void );
-void corlyp (rmg_double_t *dp, rmg_double_t *dm, rmg_double_t *dp1, rmg_double_t *dm1, rmg_double_t *dp2, rmg_double_t *dm2, rmg_double_t *ec,
-             rmg_double_t *vcp0, rmg_double_t *vcm0, int *ndm);
 void cross_product (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c);
 void destroy_fftw_wisdom (void);
 rmg_double_t fill (STATE *states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix,
@@ -101,8 +99,6 @@ void get_vxc (rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, 
 void get_xc (rmg_double_t * nrho, rmg_double_t * nrho_oppo,  rmg_double_t * vxc, rmg_double_t * exc, int xctype);
 
 void get_zdens (STATE *states, int state, rmg_double_t *zvec);
-void xclda_pz81 (rmg_double_t *rho, rmg_double_t *vxc);
-void exclda_pz81 (rmg_double_t *rho, rmg_double_t *exc);
 void get_psi_overlaps(rmg_double_t *psi_array, rmg_double_t *overlap, int numst, int maxst, int numpt, int maxpt);
 
 /* new lda function incorporating both  1981 and 1994 monte carlo data */

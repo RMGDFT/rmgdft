@@ -84,7 +84,7 @@
 
 
 /* this declares macros and external functions for memory allocation */
-#include "salloc.h"
+#include "rmg_alloc.h"
 
 
 /* other general macros */
