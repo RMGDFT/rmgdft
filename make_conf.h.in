@@ -1,0 +1,35 @@
+/****** Compile-time options for real-space code are set here  ******/
+
+/* To enable MPI/PThreads hybrid model, experimental for now */ 
+#define HYBRID_MODEL ${HYBRID_MODEL}
+
+/* Gamma point only set to 1, otherwise, 0 */
+#define GAMMA_PT ${GAMMA_PT}
+
+/* Set this to 1 if you want to use finite difference method for calculating
+ * derivatives of beta. This is faster since it avoids doing 3 backwards fourier
+ * transforms per ion, but it may not be very accurate since the finite diff
+ * derivative is done on the coarse grid.
+ * Leave this set to 0 unless you know what you are doing */
+#define FDIFF_BETA ${FDIFF_BETA}
+
+/* Extra fine timers, may cause some slowdown, but they are generally useful */
+#define MD_TIMERS ${MD_TIMERS}
+
+/* Experimental fast Mehrstellen operator. Disabled by default. */
+#define FAST_MEHR ${FAST_MEHR}
+
+/* Experimental fast ortho. Disabled by default. */
+#define FAST_ORTHO ${FAST_ORTHO}
+
+/* Use GPU accelerations. */
+#define GPU_ENABLED ${GPU_ENABLED}
+
+/* Use Magma libs. */
+#define MAGMA_LIBS ${MAGMA_LIBS}
+
+/* Use Async trade_images. */
+#define ASYNC_TRADES ${ASYNC_TRADES}
+
+/* Number of OMP threads to use (internal only). If 0 then none will be used. */
+#define RMG_OMP_THREADS 0
