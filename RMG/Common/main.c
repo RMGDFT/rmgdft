@@ -307,9 +307,6 @@ void report ()
         /*Release memory for projectors first */
         finish_release_mem (states);
 
-        /* write allocation report for each processor */
-        my_alloc_report ("real-space");
-
     }
 
 

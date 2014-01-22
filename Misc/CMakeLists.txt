@@ -34,6 +34,6 @@ trade_imagesx.c
 ATL_assert.c
 mg_prolong_MAX10.c
 init_pos.c
-rmg_alloc.c
 rmg_error.c
+rmg_alloc.c
 )

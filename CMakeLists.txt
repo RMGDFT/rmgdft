@@ -33,6 +33,7 @@ target_link_libraries (rmg US_PP Force)
 
 
 # Search for various libraries that we need
+set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
 find_package(MPI REQUIRED)
 if(MPI_C_FOUND)
   include_directories(${MPI_C_INCLUDE_DIRS})
@@ -48,6 +49,7 @@ endif (LAPACK_FOUND)
 target_link_libraries (rmg "/usr/local/lib64/scalapack/libscalapack.a")
 target_link_libraries (rmg "/mnt/ssd2/briggs/Projects/RMG_RELEASE1/codes/lib/libxc/lib64/libxc.a")
 target_link_libraries (rmg "/usr/local/atlas/lib/libtatlas.so")
+target_link_libraries (rmg "/usr/lib64/libgfortran.so.3")
 
 find_package(BLAS REQUIRED)
 if(BLAS_FOUND)
@@ -62,14 +64,15 @@ if (${UNIX})
     endif(CMAKE_USE_PTHREADS_INIT)
 endif(${UNIX})
 
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDES})
-target_link_libraries (rmg ${FFTW_LIBRARIES})
+#find_package(FFTW REQUIRED)
+#include_directories(${FFTW_INCLUDES})
+#target_link_libraries (rmg ${FFTW_LIBRARIES})
+target_link_libraries (rmg "/usr/local/lib/libfftw.a")
 
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -g  -march=native -ffast-math -mfpmath=sse -mavx -fopenmp")        ## Optimize
-    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
+    set(CMAKE_C_FLAGS "-Wall -O -g -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp")        ## Optimize
+#    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
 endif()
 set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 
@@ -78,6 +81,7 @@ set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
+include_directories("/opt/openmpi/include")
 
 
 # Code subdirectories
