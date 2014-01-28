@@ -600,6 +600,7 @@ __global__ void app_cir_sixth_f_kernel(const float * __restrict__ psi,
 
 }
 
+                                       
 #if 1
 __global__ void app_cil_sixth_f_batch_kernel(const float * __restrict__ psi,
                                                 float *b,
@@ -786,4 +787,49 @@ cudaFuncSetCacheConfig(&app_cir_sixth_f_kernel_small,cudaFuncCachePreferL1);
                                                    (float)c200);
 }
 #endif
+#endif
+
+#if GPU_ENABLED
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+
+__global__ void gramsch_update_psi_gpu_kernel(double *psi,
+                                       const double * __restrict__ cfac,
+                                       const double * __restrict__ diag,
+                                       int numpt,
+                                       int numst)
+{
+    cublasHandle_t cnpHandle;
+    int idx, st;
+    double alpha = -1.0;
+    cublasStatus_t status = cublasCreate(&cnpHandle);
+
+
+    if(threadIdx.x == 0) {
+
+        for(st = 0;st < numst;st++) {
+            cublasDscal(cnpHandle, numpt, &diag[st], &psi[st * numpt], 1);
+            idx = numst - st - 1;
+            if(idx) {
+                cublasDger_v2 (cnpHandle, numpt, idx, &alpha, &psi[st * numpt], 1,
+                               &cfac[(st+1) + numst*st], 1, &psi[(st+1) * numpt], numpt);
+            } 
+        }
+    }
+
+    cublasDestroy(cnpHandle);
+
+}
+
+extern "C" void  gramsch_update_psi_gpu(double *psi,
+                                       const double * cfac,
+                                       const double * diag,
+                                       int numpt,
+                                       int numst)
+{
+
+    gramsch_update_psi_gpu_kernel<<<1,  1>>>
+                                 (psi, cfac, diag, numpt, numst);   
+}
+
 #endif

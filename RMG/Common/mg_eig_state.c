@@ -491,8 +491,10 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
     my_free (nvtot_psi);
     my_free (saved_psi);
     my_free (res2);
+#if !BATCH_NLS
     my_free (nv);
     my_free (ns);
+#endif
 #if !GPU_FD_ENABLED
     my_free (work2);
     my_free (sg_twovpsi);

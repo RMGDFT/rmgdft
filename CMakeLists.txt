@@ -1,15 +1,48 @@
+#
+#    RMG master cmake file
+#
+#    Subprojects:
+#        rmg        Base code
+#        rmg-on     ON code
+#        NEGF
+#
+# Environment variables that may also control configuration
+# MKLROOT = root directory of Intel MKL libraries if installed.
+#
+#
+#
 cmake_minimum_required (VERSION 2.6) 
 project (RMG C Fortran) 
 
-# Needed for a custom cmake module for FFTW
+
+# Executables defined by the file that contains main()
+add_executable(rmg RMG/Common/main.c)		# Base code
+add_executable(rmg-on ON/Common/md.c)		# Order N
+
+
+# Require a 64 bit system
+if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
+    message( SEND_ERROR "RMG requires a 64 bit architechture." )
+endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
+
+
+# Require pthreads on UNIX
+if (${UNIX})
+    set (CMAKE_THREAD_PREFER_PTHREAD)
+    find_package(Threads REQUIRED)
+    if(CMAKE_USE_PTHREADS_INIT)
+        target_link_libraries (rmg ${CMAKE_THREAD_LIBS_INIT})
+    endif(CMAKE_USE_PTHREADS_INIT)
+endif(${UNIX})
+
+# Custom cmake module for FFTW
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
-# Executable defined by file that contains main()
-add_executable(rmg RMG/Common/main.c)
+
 
 
 # static libraries are created for the object files in each subdir. Duplicates
-# handle circular references
+# are needed to handle circular references
 target_link_libraries (rmg Finite_diff RMG_Common)
 target_link_libraries (rmg RMG_Common Finite_diff)
 target_link_libraries (rmg RMG_Common Force)
@@ -32,70 +65,106 @@ target_link_libraries (rmg Force US_PP)
 target_link_libraries (rmg US_PP Force)
 
 
-# Search for various libraries that we need
-set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
+
+# Search for an MPI implementation
+#set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
 find_package(MPI REQUIRED)
 if(MPI_C_FOUND)
-  include_directories(${MPI_C_INCLUDE_DIRS})
+  include_directories(${MPI_C_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_C_LIBRARIES})
 endif (MPI_C_FOUND)
 
-find_package(LAPACK REQUIRED)
-if(LAPACK_FOUND)
-  target_link_libraries (rmg ${LAPACK_LIBRARIES})
-endif (LAPACK_FOUND)
+
+# For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
+# Check if environment variable is set
+set(MKLROOT $ENV{MKLROOT})
+if (NOT MKLROOT)
+    # Check the default location
+    if (EXISTS "/opt/intel/mkl")
+        set(MKLROOT "/opt/intel/mkl")
+    endif (EXISTS "/opt/intel/mkl")
+endif (NOT MKLROOT)
+
+if(MKLROOT)
+    set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
+    set(MKL_LIB64 "${MKLROOT}/lib/intel64")
+    if(EXISTS "${MKL_LIB64}")
+        target_link_libraries (rmg "${MKL_LIB64}/libmkl_scalapack_lp64.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
+#        target_link_libraries (rmg "/usr/local/intel_fftw/libfftw2xc_double_gnu.a")
+        target_link_libraries (rmg "${MKL_LIB64}/libmkl_cdft_core.a")
+        target_link_libraries (rmg "${MKL_LIB64}/libmkl_intel_lp64.a")
+        target_link_libraries (rmg "${MKL_LIB64}/libmkl_core.a")
+        target_link_libraries (rmg "${MKL_LIB64}/libmkl_gnu_thread.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
+        target_link_libraries (rmg "${MKL_LIB64}/libmkl_blacs_openmpi_lp64.a")
+        set(RMG_MATH_LIBS "done")
+    else(EXISTS "${MKL_LIB64}")
+        message( SEND_ERROR "RMG requires 64 bit MKL." )
+    endif(EXISTS "${MKL_LIB64}")
+endif(MKLROOT)
+
+
+# MKL includes blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
+# individually
+if(NOT RMG_MATH_LIBS)
+    find_package(BLAS REQUIRED)
+    if(BLAS_FOUND)
+        target_link_libraries (rmg ${BLAS_LIBRARIES})
+    endif (BLAS_FOUND)
+
+    find_package(LAPACK REQUIRED)
+    if(LAPACK_FOUND)
+        target_link_libraries (rmg ${LAPACK_LIBRARIES})
+    endif (LAPACK_FOUND)
+endif(NOT RMG_MATH_LIBS)
+
+
+# Look for GPU libraries. Only CUDA supported for now
+find_package(CUDA REQUIRED)
+if(CUDA_FOUND)
+  target_link_libraries(rmg ${CUDA_CUDART_LIBRARY})
+  target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
+  target_link_libraries(rmg ${CUDA_cublas_LIBRARY})
+  include_directories(${CUDA_INCLUDE_DIRS})
+endif(CUDA_FOUND)
 
 # These are hard coded for now
-target_link_libraries (rmg "/usr/local/lib64/scalapack/libscalapack.a")
-target_link_libraries (rmg "/mnt/ssd2/briggs/Projects/RMG_RELEASE1/codes/lib/libxc/lib64/libxc.a")
-target_link_libraries (rmg "/usr/local/atlas/lib/libtatlas.so")
-target_link_libraries (rmg "/usr/lib64/libgfortran.so.3")
+target_link_libraries (rmg "/home/emil/Projects/RMG_RELEASE1/codes/lib/libxc/lib64/libxc.a")
 
-find_package(BLAS REQUIRED)
-if(BLAS_FOUND)
-  target_link_libraries (rmg ${BLAS_LIBRARIES})
-endif (BLAS_FOUND)
+find_package(FFTW REQUIRED)
+include_directories(${FFTW_INCLUDES})
+target_link_libraries (rmg ${FFTW_LIBRARIES})
 
-if (${UNIX})
-    set (CMAKE_THREAD_PREFER_PTHREAD)
-    find_package(Threads REQUIRED)
-    if(CMAKE_USE_PTHREADS_INIT)
-      target_link_libraries (rmg ${CMAKE_THREAD_LIBS_INIT})
-    endif(CMAKE_USE_PTHREADS_INIT)
-endif(${UNIX})
-
-#find_package(FFTW REQUIRED)
-#include_directories(${FFTW_INCLUDES})
-#target_link_libraries (rmg ${FFTW_LIBRARIES})
-target_link_libraries (rmg "/usr/local/lib/libfftw.a")
 
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -O -g -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp")        ## Optimize
+    set(CMAKE_C_FLAGS "-Wall -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl")  ## Strip binary
 endif()
 set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 
 
 # include files
 include_directories("${RMG_SOURCE_DIR}/Headers/")
-include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
-include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
-include_directories("/opt/openmpi/include")
+#include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
+#include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
+#include_directories("/opt/openmpi/include")
 
 
-# Code subdirectories
+# Common code subdirectories
 add_subdirectory (Finite_diff) 
 add_subdirectory (Force) 
 add_subdirectory (Input) 
 add_subdirectory (MG) 
 add_subdirectory (Misc) 
-add_subdirectory (RMG/Common) 
-add_subdirectory (RMG/Input) 
-add_subdirectory (RMG/Spin) 
-add_subdirectory (RMG/Spin/XC) 
 add_subdirectory (US_PP) 
 add_subdirectory (XC) 
+
+# Target specific code subdirectories
+add_subdirectory (RMG/Common EXCLUDE_FROM_ALL) 
+add_subdirectory (RMG/Input EXCLUDE_FROM_ALL) 
+add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
+add_subdirectory (RMG/Spin/XC EXCLUDE_FROM_ALL) 
 
 # Link subdirectories
 link_directories (${RMG_BINARY_DIR}/Finite_diff) 
@@ -174,7 +243,11 @@ endif(EXPERIMENTAL_FEATURES)
 
 option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
 if (RMG_GPU_ENABLED)
-    set (GPU_ENABLED 1)
+    if(CUDA_FOUND)
+        set (GPU_ENABLED 1)
+    else(CUDA_FOUND)
+        set (GPU_ENABLED 0)
+    endif(CUDA_FOUND)
 else (RMG_GPU_ENABLED)
     set (GPU_ENABLED 0)
 endif(RMG_GPU_ENABLED)

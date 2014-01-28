@@ -107,7 +107,7 @@ rmg_double_t *global_matrix;
 void init_subdiag(void)
 {
 
-    int dist_length, dist_stop, pbasis, num_states, retval, stop, idx, alen;
+    int dist_length, dist_stop, pbasis, num_states, retval, stop, idx;
     int ione = 1, izero = 0;    /* blas constants */
     rmg_double_t t1, t2;
     rmg_double_t time2;
@@ -166,24 +166,21 @@ void init_subdiag(void)
 #if GPU_ENABLED
     cudaHostRegister( global_matrix, sizeof(rmg_double_t) * stop, cudaHostRegisterPortable);
 
-    alen = pbasis * ct.num_states;
-    if(alen < (ct.num_states * ct.num_states)) alen = ct.num_states * ct.num_states;
-
-    retval = MPI_Alloc_mem(alen * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_arrayR);
+    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_arrayR);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    cudaHostRegister( tmp_arrayR, alen * sizeof(rmg_double_t), cudaHostRegisterPortable);
+    cudaHostRegister( tmp_arrayR, pbasis * ct.num_states * sizeof(rmg_double_t), cudaHostRegisterPortable);
 
-    retval = MPI_Alloc_mem(alen * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_array2R);
+    retval = MPI_Alloc_mem(pbasis * ct.num_states * sizeof(rmg_double_t) , MPI_INFO_NULL, &tmp_array2R);
     if(retval != MPI_SUCCESS) {
         error_handler("Error in MPI_Alloc_mem.\n");
     }
-    cudaHostRegister( tmp_array2R, alen * sizeof(rmg_double_t), cudaHostRegisterPortable);
+    cudaHostRegister( tmp_array2R, pbasis * ct.num_states * sizeof(rmg_double_t), cudaHostRegisterPortable);
 
 #else
-    my_malloc (tmp_arrayR, alen, rmg_double_t);
-    my_malloc (tmp_array2R, alen, rmg_double_t);
+    my_malloc (tmp_arrayR, pbasis * ct.num_states, rmg_double_t);
+    my_malloc (tmp_array2R, pbasis * ct.num_states, rmg_double_t);
 #endif
 
 
@@ -565,11 +562,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         /* Using lwork=-1, pdsyev should return minimum required size for the work array */
         {
             char *range = "a";
-            char  *side="l";
-            char *diag = "n";
-            char *trans="n";
-            char *transt = "t";
-
             rmg_double_t vx = 0.0;
             rmg_double_t tol = 0.0;
             int eigs_found, eigvs_found;
@@ -577,24 +569,23 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
             int *iwork, *ifail, *iclustr, lwork;
             rmg_double_t *gap, lwork_tmp, *work2;
             int liwork_tmp, liwork;
-            rmg_double_t vl, vu, scale=1.0, rone=1.0, rzero=0.0, time4;
-            int il, iu;
 
             my_malloc (ifail, num_states, int);
             my_malloc (iclustr, 2 * pct.scalapack_nprow * pct.scalapack_npcol, int);
             my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, rmg_double_t);
             lwork = -1;
             liwork = -1;
-            tol = 1e-15;
 
-            PDSYEVX( jobz, range, uplo, &num_states, distBij, &ione, &ione, pct.desca, &vl, &vu, &il, &iu, &tol, &eigs_found,  &eigvs_found, 
-                     eigs, &orfac, distAij, &ione, &ione, pct.desca, &lwork_tmp, 
-                    &lwork, &liwork_tmp, &liwork, ifail, iclustr, gap, &info );
+
+            PDSYGVX (&ione, jobz, range, uplo, &num_states, distBij, &ione, &ione, pct.desca,
+                     distSij, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                     &eigvs_found, eigs, &orfac, distAij, &ione, &ione, pct.desca, &lwork_tmp, &lwork,
+                     &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
 
             if (info)
             {
-                printf ("\n PDSYEVX query failed, info is %d", info);
-                error_handler ("PDSYEVX query failed");
+                printf ("\n PDSYGVX query failed, info is %d", info);
+                error_handler ("PDSYGVX query failed");
             }
 
             /*set lwork and liwork */
@@ -604,34 +595,21 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
             my_malloc (work2, lwork, rmg_double_t);
             my_malloc (iwork, liwork, int);
 
+            tol = 1e-15;
 
-            PDPOTRF(uplo, &num_states, distSij, &ione, &ione, pct.desca, &info);
-            if (info)
-            {
-                printf ("\n PDPPOTRF, info is %d", info);
-                error_handler ("PDPOTRF failed");
-            }
 
-            PDSYNGST( &ione, uplo, &num_states, distBij, &ione, &ione, pct.desca, distSij, &ione, &ione, pct.desca, &scale, work2, &lwork, &info );
-            if (info)
-            {
-                printf ("\n PDSYNGST, info is %d", info);
-                error_handler ("PDSYNGST failed");
-            }
 
-            time4 = my_crtc();
-            PDSYEVX( jobz, range, uplo, &num_states, distBij, &ione, &ione, pct.desca, &vl, &vu, &il, &iu, &tol, &eigs_found,  &eigvs_found, 
-                     eigs, &orfac, distAij, &ione, &ione, pct.desca, work2,
-                    &lwork, iwork, &liwork, ifail, iclustr, gap, &info );
-            Dprintf("PDSYEVX = %14.8f", my_crtc() - time4);
+
+            PDSYGVX (&ione, jobz, range, uplo, &num_states, distBij, &ione, &ione, pct.desca,
+                     distSij, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                     &eigvs_found, eigs, &orfac, distAij, &ione, &ione, pct.desca, work2, &lwork, iwork,
+                     &liwork, ifail, iclustr, gap, &info);
 
             if (info)
             {
-                printf ("\n PDSYEVX, info is %d", info);
-                error_handler ("PDSYEVX failed");
+                printf ("\n PDSYGVX failed, info is %d", info);
+                error_handler ("PDSYGVX failed");
             }
-
-            PDTRSM(side, uplo, transt, diag, &num_states, &num_states, &rone, distSij, &ione, &ione, pct.desca, distAij, &ione, &ione, pct.desca );
 
 
             /*If subspace diagonalization is used everystep, use eigenvalues obtained here 
@@ -663,6 +641,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
             global_matrix[idx] = 0.0;
 
 
+    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
 
 
@@ -674,7 +653,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.scalapack_comm);
     rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
 
-    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
 
     /*If some processors did not participate in Scalapack,
@@ -1436,7 +1414,7 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 
 
         time2=my_crtc();
-        Dprintf("SUBMATRIX = %12.6f",time2-time1);
+        dprintf("SUBMATRIX = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Apply folded spectrum to this PE's range of eigenvectors
@@ -1473,7 +1451,7 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         }
 
         time2=my_crtc();
-        Dprintf("FOLDED SPECTRUM = %12.6f",time2-time1);
+        dprintf("FOLDED SPECTRUM = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Make sure all PE's have all eigenvectors. Possible optimization here would be to 
@@ -1482,7 +1460,7 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         MPI_Allgatherv(MPI_IN_PLACE, eig_step*n, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
 
         time2=my_crtc();
-        Dprintf("MPI_ALLREDUCE1  = %12.6f",time2-time1);
+        dprintf("MPI_ALLREDUCE1  = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Do the same for the eigenvalues
@@ -1490,7 +1468,7 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         time2=my_crtc();
-        Dprintf("MPI_ALLREDUCE2  = %12.6f",time2-time1);
+        dprintf("MPI_ALLREDUCE2  = %12.6f",time2-time1);
 
         // Copy summed eigs back to w
         for(idx = 0;idx < n;idx++) w[idx] = n_eigs[idx];
@@ -1505,14 +1483,14 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         QMD_dcopy (n*n, V, 1, a, 1);
         dsyrk_ (cuplo, transt, &n, &n, &alpha, a, &n, &beta, global_matrix, &n);
         time2=my_crtc();
-        Dprintf("OVERLAPS  = %12.6f",time2-time1);
+        dprintf("OVERLAPS  = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Cholesky factorization
         dpotrf(cuplo, &n, global_matrix, &n, &info);
 
         time2=my_crtc();
-        Dprintf("CHOLESKY  = %12.6f",time2-time1);
+        dprintf("CHOLESKY  = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Get inverse of diagonal elements
@@ -1551,7 +1529,7 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         my_free(darr);
 
         time2=my_crtc();
-        Dprintf("GRAM  = %12.6f",time2-time1);
+        dprintf("GRAM  = %12.6f",time2-time1);
         time1=my_crtc();
 
 
@@ -1561,13 +1539,13 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         QMD_dcopy (n*n, G, 1, a, 1);
 
         time2=my_crtc();
-        Dprintf("MPI_ALLREDUCE3  = %12.6f",time2-time1);
+        dprintf("MPI_ALLREDUCE3  = %12.6f",time2-time1);
         time1=my_crtc();
 
 
         dtrsm_ (side, cuplo, transt, diag, &n, &n, &rone, b, &ldb, a, &lda);
         time2=my_crtc();
-        Dprintf("DTRSM  = %12.6f",time2-time1);
+        dprintf("DTRSM  = %12.6f",time2-time1);
 
     }
 
@@ -1654,6 +1632,13 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 	/*This holds number of doubles on each PE */
 	dist_stop = stop;
+	/* Clear distributed matrices */
+	//    for(idx = 0;idx < dist_stop;idx++) {
+	//        distSij[idx] = 0.0; 
+	//    }
+	//    for(idx = 0;idx < dist_stop;idx++) {
+	//        distCij[idx] = 0.0; 
+	//    }
 
 	rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
 	/********************* Scalapack should be initialized ******************************/
@@ -1967,8 +1952,8 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 		rmg_double_t *w, rmg_double_t *work, int lwork, int *iwork, int liwork, rmg_double_t *wa)
 {
 
-    int ione=1, itype=1, info=0, idx, istate;
-    rmg_double_t rone = 1.0, rzero = 0.0;
+    int ione=1, itype=1, info=0, idx;
+    rmg_double_t rone = 1.0;
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
     cublasSideMode_t side=CUBLAS_SIDE_LEFT;
     cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
@@ -2044,7 +2029,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 
 
     // We need to wait until a is diagonally dominant so we skip the first 3 steps
-    if((ct.scf_steps < 5) && (ct.runflag != 1)) {
+    if(ct.scf_steps < 3) {
 
         magma_dsyevd_gpu('V', 'L', n, a, lda, w,
                          wa,  n,
@@ -2113,10 +2098,8 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 
 
         time2=my_crtc();
-        Dprintf("SUBMATRIX = %12.6f",time2-time1);
+        dprintf("SUBMATRIX = %12.6f",time2-time1);
         time1=my_crtc();
-
-        for(ix = 0;ix < n*n;ix++) tarr[ix] = Asave[ix];
 
         // Apply folded spectrum to this PE's range of eigenvectors
         for(eig_index = eig_start;eig_index < eig_stop;eig_index++) {
@@ -2124,31 +2107,35 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
                 lambda = w[eig_index];
                 n_eigs[eig_index] = lambda;
 
-                cublasSetVector( n, sizeof( rmg_double_t ), &V[eig_index*n], ione, d_p0, ione );
                 for(ix=0;ix<ct.num_states;ix++){
-                    tarr[ix*ct.num_states + ix] = Asave[ix*ct.num_states + ix] - lambda;
+                    Asave[ix*ct.num_states + ix] -= lambda;
                 }
-                cublasSetVector( ct.num_states*ct.num_states, sizeof( rmg_double_t ), tarr, ione, ct.gpu_global_matrix, ione );
+                alpha = 1.0;
+                cublasSetVector( ct.num_states*ct.num_states, sizeof( rmg_double_t ), Asave, ione, ct.gpu_global_matrix, ione );
+
+                // Restore matrix for next pass
+                for(ix=0;ix<ct.num_states;ix++){
+                    Asave[ix*ct.num_states + ix] += lambda;
+                }
+
+                cublasSetVector( n, sizeof( rmg_double_t ), &V[eig_index*n], ione, d_p0, ione );
 
                 alpha = -0.5;
                 beta = 0.0;
-                for(its = 0;its < 7;its++) {
-
+                for(its = 0;its < 8;its++) {
                     cublasDgemv_v2(ct.cublas_handle, cu_transN, n, n, &alpha, ct.gpu_global_matrix, n, d_p0, ione, &beta, d_p1, ione);
                     cublasDaxpy_v2(ct.cublas_handle, n, &rone, d_p1, ione, d_p0, ione);
-                    // Renormalize
-                    cublasDnrm2(ct.cublas_handle, n, d_p0, ione, &t1);
-                    t1 = 1.0 / t1;
-                    cublasDscal(ct.cublas_handle, n, &t1, d_p0, ione);
                 }
+                // Renormalize
+                cublasDnrm2(ct.cublas_handle, n, d_p0, ione, &t1);
+                t1 = 1.0 / t1;
+                cublasDscal(ct.cublas_handle, n, &t1, d_p0, ione);
 
-                cublasGetVector(n, sizeof( rmg_double_t ), d_p0, ione, &V[eig_index*n], ione);
-                w[eig_index] = lambda;
-                n_eigs[eig_index] = lambda;
+            cublasGetVector(n, sizeof( rmg_double_t ), d_p0, ione, &V[eig_index*n], ione);
         }
 
         time2=my_crtc();
-        Dprintf("FOLDED SPECTRUM = %12.6f",time2-time1);
+        dprintf("FOLDED SPECTRUM = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Make sure all PE's have all eigenvectors. Possible optimization here would be to 
@@ -2157,7 +2144,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         MPI_Allgatherv(MPI_IN_PLACE, eig_step*n, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
 
         time2=my_crtc();
-        Dprintf("MPI_ALLREDUCE1  = %12.6f",time2-time1);
+        dprintf("MPI_ALLREDUCE1  = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Do the same for the eigenvalues
@@ -2165,11 +2152,11 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         time2=my_crtc();
-        Dprintf("MPI_ALLREDUCE2  = %12.6f",time2-time1);
-
+        dprintf("MPI_ALLREDUCE2  = %12.6f",time2-time1);
 
         // Copy summed eigs back to w
         for(idx = 0;idx < n;idx++) w[idx] = n_eigs[idx];
+
         time1=my_crtc();
 
         // Gram-Schmidt ortho for eigenvectors.
@@ -2180,7 +2167,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         cublasSetVector( n * n, sizeof( rmg_double_t ), V, ione, a, ione );
         cublasDsyrk_v2 (ct.cublas_handle, cuplo, cu_transT, n, n, &alpha, a, n, &beta, ct.gpu_global_matrix, n);
         time2=my_crtc();
-        Dprintf("OVERLAPS  = %12.6f",time2-time1);
+        dprintf("OVERLAPS  = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Cholesky factorization
@@ -2188,7 +2175,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         cublasGetVector( n * n, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
         time2=my_crtc();
-        Dprintf("CHOLESKY  = %12.6f",time2-time1);
+        dprintf("CHOLESKY  = %12.6f",time2-time1);
         time1=my_crtc();
 
         // Get inverse of diagonal elements
@@ -2227,7 +2214,7 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         my_free(darr);
 
         time2=my_crtc();
-        Dprintf("GRAM  = %12.6f",time2-time1);
+        dprintf("GRAM  = %12.6f",time2-time1);
         time1=my_crtc();
 
 
@@ -2237,13 +2224,13 @@ int rmg_folded_spectrum_gpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
         cublasSetVector(n * n, sizeof( rmg_double_t ), G, 1, a, 1 );
 
         time2=my_crtc();
-        Dprintf("MPI_ALLREDUCE3  = %12.6f",time2-time1);
+        dprintf("MPI_ALLREDUCE3  = %12.6f",time2-time1);
         time1=my_crtc();
 
 
         cublasDtrsm_v2 (ct.cublas_handle,side, cuplo, cu_transT, diag, n, n, &rone, b, ldb, a, lda);
         time2=my_crtc();
-        Dprintf("DTRSM  = %12.6f",time2-time1);
+        dprintf("DTRSM  = %12.6f",time2-time1);
 
     }
 

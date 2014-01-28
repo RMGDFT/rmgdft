@@ -101,7 +101,7 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
 #endif
 
    /* compute the cholesky factor of the overlap matrix */
-#if GPU_ENABLED
+#if GPU_ENABLED && MAGMA_LIBS
    cublasSetVector( numst * numst, sizeof( rmg_double_t ), global_matrix, ione, ct.gpu_global_matrix, ione );
    magma_dpotrf_gpu('L', numst, ct.gpu_global_matrix, numst, &info);
    cublasGetVector( numst * numst, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );

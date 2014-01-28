@@ -121,3 +121,6 @@ reinit_ionic_pp.c
 partial_beta_fdiff.c
 output_eigenvalues.c
 )
+include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
+include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
+

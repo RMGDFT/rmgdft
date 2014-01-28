@@ -12,3 +12,6 @@ gcxcpbe_spin.c
 gcxbcp.c
 gcxbcp_spin.c
 )
+include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
+include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
+

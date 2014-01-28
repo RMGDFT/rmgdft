@@ -113,7 +113,6 @@ void sl_init (int *ictxt, int size)
 
     Cblacs_get (0, 0, ictxt);
 
-
     /* calculate MPI world rank range in this group to be mapped to blacs */
     if (nprow * npcol* ct.images_per_node > NPES)
         error_handler
@@ -143,6 +142,7 @@ void sl_init (int *ictxt, int size)
     /* Assign nprow*npcol processes to blacs for calculations */
     int item; 
     item = pct.thisimg % ct.images_per_node;
+
     Cblacs_gridmap (ictxt, &pmap[item * nprow * npcol], nprow, nprow, npcol);
 
     /*Store number of processor distribution */

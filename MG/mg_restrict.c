@@ -35,6 +35,7 @@
 
 
 #include "main.h"
+#include "mg.h"
 #include <float.h>
 #include <math.h>
 

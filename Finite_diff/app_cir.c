@@ -30,6 +30,7 @@
  * SOURCE
  */
 
+#include "make_conf.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>

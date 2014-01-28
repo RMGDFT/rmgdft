@@ -44,7 +44,7 @@ PAPI_option_t papi_opts;
 void init_IO (int argc, char **argv)
 {
 
-    int i, npes, worldpe, image, status, lognum = 0, provided, retval;
+    int i, npes, worldpe, image, status, lognum = 0, provided=0, retval;
     char workdir[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH], *quantity, *extension, *endptr;
     struct stat buffer;
     time_t timer;
@@ -311,11 +311,6 @@ void init_IO (int argc, char **argv)
       MPI_Finalize();
       exit(0);
 
-  }
-  if(USE_SALLOC) {
-        error_handler ("USE_SALLOC must be set to 0 for hybrid mode.\n");
-        MPI_Finalize();
-        exit(0);
   }
   printf("Running with thread level = %d\n", provided);
   fflush(NULL);
