@@ -74,8 +74,8 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     }
 #endif
 
-    my_malloc (vtott, pct.FP0_BASIS, rmg_double_t);
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    my_malloc (vtott, get_FP0_BASIS(), rmg_double_t);
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtott[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
 
@@ -129,8 +129,8 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     /* Add in the local */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, pct.FP0_BASIS, rmg_double_t);
-	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	my_malloc (rho_tot, get_FP0_BASIS(), rmg_double_t);
+	for (idx = 0; idx < get_FP0_BASIS(); idx++)
 		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 	lforce(rho_tot, vh);
 	my_free (rho_tot);

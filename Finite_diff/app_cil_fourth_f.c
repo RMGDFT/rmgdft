@@ -2,10 +2,17 @@
  **    $Id: app_cil_fourth.c 1722 2012-05-07 19:38:37Z ebriggs $    **
 ******************************************************************************/
 
-#include "main.h"
+#include "const.h"
+#include "rmgtypes.h"
+#include "rmgtypedefs.h"
+#include "common_prototypes.h"
+#include "rmg_alloc.h"
+#include "rmg_error.h"
+#include "fixed_dims.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include "main.h"
 #include "hybrid.h"
 
 static rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
@@ -14,16 +21,20 @@ static rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, r
 rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int  numgrid, tid;
+    int  numgrid, tid, P0_BASIS, ibrav;
     rmg_float_t *rptr;
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
     rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    rmg_double_t ihx, ihy, ihz, a1, a2, a3;
+    rmg_double_t ihx, ihy, ihz;
 
-    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    ibrav = get_ibrav_type();
+
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cil_fourth_f.\n");
     }
+
+    P0_BASIS = get_P0_BASIS();
 
 #if HYBRID_MODEL
     tid = get_thread_tid();
@@ -60,7 +71,7 @@ rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int d
 
 
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS && ct.anisotropy < 1.000001)
+    if(numgrid == P0_BASIS && ct.anisotropy < 1.000001)
     {
         return app_cil_fourth_global_f (a, b, gridhx, gridhy, gridhz);
     }
@@ -224,7 +235,6 @@ rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, rmg_doub
     int incy, incx;
     int incyr, incxr;
     rmg_float_t *rptr;
-    rmg_double_t rz, rzps, rzms, rzpps;
     rmg_double_t c000, c100, c110;
     rmg_double_t ihx;
 

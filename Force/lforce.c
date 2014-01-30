@@ -37,7 +37,7 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
     my_calloc( Aiy, FNY_GRID, int );
     my_calloc( Aiz, FNZ_GRID, int );
 
-    size = pct.FP0_BASIS;
+    size = get_FP0_BASIS();
     my_malloc (rx, 6 * size, rmg_double_t);
     ry = rx + size;
     rz = ry + size;
@@ -74,7 +74,7 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->ldim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
+                         sp->ldim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
@@ -105,9 +105,9 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
 
 
                             pvec[docount] =
-                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
-                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
-                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+                                get_FPY0_GRID() * get_FPZ0_GRID() * ((Aix[ix]-get_FPX_OFFSET()) % get_FPX0_GRID()) +
+                                get_FPZ0_GRID() * ((Aiy[iy]-get_FPY_OFFSET()) % get_FPY0_GRID()) +
+                                ((Aiz[iz]-get_FPZ_OFFSET()) % get_FPZ0_GRID());
 
 
                             ax[0] = xc - iptr->xtal[0];

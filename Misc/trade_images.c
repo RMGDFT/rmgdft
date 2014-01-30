@@ -66,9 +66,9 @@ void trade_images (rmg_double_t * mat, int dimx, int dimy, int dimz, int *nb_ids
     // To initialize call from init.c with NULL args
     if(swbuf1 == NULL) {
         int grid_xp, grid_yp, grid_zp;
-        grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
-        grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
-        grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
+        grid_xp = get_FPX0_GRID() + 2*MAX_TRADE_IMAGES;
+        grid_yp = get_FPY0_GRID() + 2*MAX_TRADE_IMAGES;
+        grid_zp = get_FPZ0_GRID() + 2*MAX_TRADE_IMAGES;
         if(grid_xp > grid_yp) {
             grid_max1 = grid_xp;
             if(grid_yp > grid_zp) {

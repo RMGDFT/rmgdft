@@ -23,7 +23,7 @@ rmg_double_t app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int 
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int numgrid, tid, used_alloc=FALSE;
+    int numgrid, tid, used_alloc=FALSE, P0_BASIS;
     rmg_double_t cc;
     rmg_float_t *rptr=NULL;
     rmg_float_t *gpu_psi, *gpu_b;
@@ -42,6 +42,7 @@ rmg_double_t app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int 
     tid = 0;
 #endif
 
+    P0_BASIS = get_P0_BASIS();
 
 #if (GPU_FD_ENABLED && FD_XSIZE)
     // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
@@ -73,7 +74,7 @@ rmg_double_t app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int 
 
     // first check for fixed dim case  
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) {
+    if(numgrid == P0_BASIS) {
         cc = app_cil_sixth_global_f (rptr, b, gridhx, gridhy, gridhz);
     }
     else {
@@ -197,7 +198,7 @@ rmg_double_t app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, rmg_do
 {
 
 
-    int iz, ix, iy, incx, incy, incxr, incyr;
+    int iz, ix, iy, incx, incy, incxr, incyr, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
@@ -205,6 +206,8 @@ rmg_double_t app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, rmg_do
     rmg_double_t rz, rzms, rzps, rzpps;
     rmg_double_t rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     rmg_double_t td1, td2, td3, td4, td5, td6, td7, td8, tdx;
+
+    ibrav = get_ibrav_type();
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
@@ -236,7 +239,7 @@ rmg_double_t app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b, rmg_do
     tcz = (-1.0 / 240.0) * ihz;
 
     // Handle the general case first
-    if((FIXED_ZDIM % 4) || (ct.ibrav != CUBIC_PRIMITIVE)) {
+    if((FIXED_ZDIM % 4) || (ibrav != CUBIC_PRIMITIVE)) {
 
         for (ix = 2; ix < FIXED_XDIM + 2; ix++)
         {

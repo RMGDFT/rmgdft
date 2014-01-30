@@ -47,17 +47,18 @@ rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, 
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int ix, iy, iz;
+    int ix, iy, iz, ibrav;
     int incy, incx;
     rmg_double_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
 
+    ibrav = get_ibrav_type();
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
 
-    switch (ct.ibrav)
+    switch (ibrav)
     {
 
     case CUBIC_PRIMITIVE:

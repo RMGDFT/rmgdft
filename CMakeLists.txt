@@ -269,7 +269,7 @@ endif(RMG_ASYNC_TRADES)
 # Send the configure file to the build directory
 configure_file (
   "${PROJECT_SOURCE_DIR}/make_conf.h.in"
-  "${PROJECT_BINARY_DIR}/RMG/Headers/make_conf.h"
+  "${PROJECT_BINARY_DIR}/Headers/make_conf.h"
   )
 
 

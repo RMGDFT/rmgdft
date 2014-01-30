@@ -15,10 +15,13 @@ static rmg_double_t app_cil_fourth_standard (rmg_double_t * a, rmg_double_t * b,
 rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int  numgrid, tid, used_alloc=FALSE;
+    int  numgrid, tid, used_alloc=FALSE, ibrav, P0_BASIS;
     rmg_double_t cc;
     rmg_double_t *rptr=NULL;
     rmg_double_t *gpu_a, *gpu_b;
+
+    ibrav = get_ibrav_type();
+    P0_BASIS = get_P0_BASIS();
 
     int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -53,7 +56,7 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
     }
 
 
-    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
     }
 
@@ -73,7 +76,7 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
 
     // first check for fixed dim case 
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS && ct.anisotropy < 1.000001)
+    if(numgrid == P0_BASIS && ct.anisotropy < 1.000001)
     {
         cc = app_cil_fourth_global (rptr, b, gridhx, gridhy, gridhz);
     }

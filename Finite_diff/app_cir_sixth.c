@@ -24,7 +24,7 @@ static void app_cir_sixth_standard (rmg_double_t * a, rmg_double_t * b, int dimx
 void app_cir_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
-    int numgrid, tid, used_alloc=FALSE;
+    int numgrid, tid, used_alloc=FALSE, P0_BASIS;
     rmg_double_t *rptr=NULL, *gpu_psi, *gpu_b;
 
     int pbasis = dimx * dimy * dimz, itid;
@@ -52,6 +52,8 @@ void app_cir_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
 
 #endif
 
+    P0_BASIS = get_P0_BASIS();
+
     // If rptr is null then we must allocate it here
     if(rptr == NULL) {
         my_malloc (rptr, sbasis + 64, rmg_double_t);
@@ -72,7 +74,7 @@ void app_cir_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
 
     // first check for fixed dim case
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) {
+    if(numgrid == P0_BASIS) {
         app_cir_sixth_global (rptr, b);
     }
     else {

@@ -4,6 +4,8 @@
 
 */
 
+#include "rmgtypedefs.h"
+
 /* Blas wrappers */
 void QMD_daxpy (int n, rmg_double_t alpha, rmg_double_t *x, int incx, rmg_double_t *y, int incy);
 void QMD_dscal (int n, rmg_double_t alpha, rmg_double_t *x, int incx);
@@ -107,6 +109,23 @@ int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
 void read_common();
 void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+
+int get_PX0_GRID(void);
+int get_PY0_GRID(void);
+int get_PZ0_GRID(void);
+int get_FPX_OFFSET(void);
+int get_FPY_OFFSET(void);
+int get_FPZ_OFFSET(void);
+int get_P0_BASIS(void);
+int get_FP0_BASIS(void);
+int get_FPX0_GRID(void);
+int get_FPY0_GRID(void);
+int get_FPZ0_GRID(void);
+void set_neighbors(int *list);
+int *get_neighbors(void);
+int get_ibrav_type(void);
+void set_ibrav_type(int ibrav);
+ION *get_ion(int ion);
 
 #if GPU_ENABLED
 void init_gpu (void);

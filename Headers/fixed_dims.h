@@ -11,17 +11,17 @@
 #ifdef FD_XSIZE
   #define         FIXED_XDIM      FD_XSIZE
 #else
-  #define         FIXED_XDIM      pct.PX0_GRID
+  #define         FIXED_XDIM      get_PX0_GRID()
 #endif
 #ifdef FD_YSIZE
   #define         FIXED_YDIM      FD_YSIZE
 #else
-  #define         FIXED_YDIM      pct.PY0_GRID
+  #define         FIXED_YDIM      get_PY0_GRID()
 #endif
 #ifdef FD_ZSIZE
   #define         FIXED_ZDIM      FD_ZSIZE
 #else
-  #define         FIXED_ZDIM      pct.PZ0_GRID
+  #define         FIXED_ZDIM      get_PZ0_GRID()
 #endif
 
 

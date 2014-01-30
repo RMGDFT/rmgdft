@@ -15,14 +15,17 @@ static void app_cir_fourth_global (rmg_double_t * a, rmg_double_t * b);
 void app_cir_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, numgrid, tid;
+    int ix, iy, iz, numgrid, tid, ibrav, P0_BASIS;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
     rmg_double_t *rptr;
     rmg_double_t c000, c100;
 
-    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    ibrav = get_ibrav_type();
+    P0_BASIS = get_P0_BASIS();
+
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
     }
 
@@ -58,7 +61,7 @@ void app_cir_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int
 #endif
 
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) {
+    if(numgrid == P0_BASIS) {
         app_cir_fourth_global (a, b);
         return;
     }

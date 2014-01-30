@@ -157,7 +157,7 @@ void run_threads(SCF_THREAD_CONTROL *s) {
     s->pthread_tid = pthread_self();
     pthread_setspecific(scf_thread_control_key, (void *)s);
 
-    alloc = (pct.PX0_GRID + 2*MAX_TRADE_IMAGES) * (pct.PY0_GRID + 2*MAX_TRADE_IMAGES) * (pct.PZ0_GRID + 2*MAX_TRADE_IMAGES);
+    alloc = (get_PX0_GRID() + 2*MAX_TRADE_IMAGES) * (get_PY0_GRID() + 2*MAX_TRADE_IMAGES) * (get_PZ0_GRID() + 2*MAX_TRADE_IMAGES);
 
     retval = MPI_Alloc_mem(sizeof(rmg_double_t) * (alloc + 64) , MPI_INFO_NULL, &s->trade_buf);
     if(retval != MPI_SUCCESS) {
@@ -170,11 +170,11 @@ void run_threads(SCF_THREAD_CONTROL *s) {
         fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
         exit(-1);
     }
-    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
+    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4) * sizeof(rmg_double_t) )){
         fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
         exit(-1);
     }
-    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
+    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4) * sizeof(rmg_double_t) )){
         fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
         exit(-1);
     }

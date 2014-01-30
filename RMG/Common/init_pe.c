@@ -40,7 +40,7 @@ void init_pe ( int image )
 {
 
     int ii, jj, kk, ix, iy, iz, idx, ioffset, rem, ierr, thread;
-    int image_grp_map[MAX_IMGS], range[1][3];
+    int image_grp_map[MAX_IMGS], range[1][3], neighbors[6];
     MPI_Group group, world_grp, img_masters;
 
     /* Setup MPI */
@@ -188,37 +188,15 @@ void init_pe ( int image )
         ii -= PE_X;
 
     /* Have each processor figure out who it's neighbors are */
-    XYZ2PE (ii, (jj + 1) % PE_Y, kk, pct.neighbors[NB_N]);
-    XYZ2PE (ii, (jj - 1 + PE_Y) % PE_Y, kk, pct.neighbors[NB_S]);
-    XYZ2PE ((ii + 1) % PE_X, jj, kk, pct.neighbors[NB_E]);
-    XYZ2PE ((ii - 1 + PE_X) % PE_X, jj, kk, pct.neighbors[NB_W]);
-    XYZ2PE (ii, jj, (kk + 1) % PE_Z, pct.neighbors[NB_U]);
-    XYZ2PE (ii, jj, (kk - 1 + PE_Z) % PE_Z, pct.neighbors[NB_D]);
+    XYZ2PE (ii, (jj + 1) % PE_Y, kk, neighbors[NB_N]);
+    XYZ2PE (ii, (jj - 1 + PE_Y) % PE_Y, kk, neighbors[NB_S]);
+    XYZ2PE ((ii + 1) % PE_X, jj, kk, neighbors[NB_E]);
+    XYZ2PE ((ii - 1 + PE_X) % PE_X, jj, kk, neighbors[NB_W]);
+    XYZ2PE (ii, jj, (kk + 1) % PE_Z, neighbors[NB_U]);
+    XYZ2PE (ii, jj, (kk - 1 + PE_Z) % PE_Z, neighbors[NB_D]);
 
-    // Compute grid sizes for each node.
-    pct.PX0_GRID = NX_GRID / PE_X;
-    rem = NX_GRID % PE_X;
-    if(rem && (ii < rem)) pct.PX0_GRID++;
-
-    pct.PY0_GRID = NY_GRID / PE_Y;
-    rem = NY_GRID % PE_Y;
-    if(rem && (jj < rem)) pct.PY0_GRID++;
-
-    pct.PZ0_GRID = NZ_GRID / PE_Z;
-    rem = NZ_GRID % PE_Z;
-    if(rem && (kk < rem)) pct.PZ0_GRID++;
-
-    find_node_sizes(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID, &pct.PX0_GRID, &pct.PY0_GRID, &pct.PZ0_GRID);
-    find_node_sizes(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID, &pct.FPX0_GRID, &pct.FPY0_GRID, &pct.FPZ0_GRID);
-
-    pct.P0_BASIS = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
-    pct.FP0_BASIS = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
-
-    // Now compute the global grid offset of the first point of the coarse and fine node grids
-    find_node_offsets(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID,
-                      &pct.PX_OFFSET, &pct.PY_OFFSET, &pct.PZ_OFFSET);
-
-    find_node_offsets(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID,
-                      &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
+    // Set up grids and neighbors
+    set_neighbors(neighbors);
+    set_grids();
 
 }                               /* end init_pe */

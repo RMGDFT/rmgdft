@@ -31,9 +31,14 @@
 #define Y 1
 #define Z 2
 
+
+#include "const.h"
+#include "rmgtypes.h"
+#include "rmgtypedefs.h"
+#include "common_prototypes.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
-#include "main.h"
 
 void constrain (void)
 {
@@ -54,7 +59,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = get_ion(ion);
 
                     /*Calculate displacement vectors from self to left and right image coords */
                     Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];

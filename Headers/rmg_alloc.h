@@ -1,6 +1,8 @@
 #ifndef RMG_ALLOC_H
 #define RMG_ALLOC_H 1
 
+#include "stddef.h"
+
 void *rmg_malloc(int n, size_t size );
 void *rmg_malloc_init(int n, size_t size, char *type );
 void *rmg_calloc(int n, size_t size );

@@ -70,13 +70,13 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     my_calloc( Aiz, FNZ_GRID, int );
 
     my_malloc (locsum, 12, rmg_double_t);
-    my_malloc (prjptr, 12 * pct.FP0_BASIS, rmg_double_t);
-    my_malloc (pvec, pct.FP0_BASIS, int);
+    my_malloc (prjptr, 12 * get_FP0_BASIS(), rmg_double_t);
+    my_malloc (pvec, get_FP0_BASIS(), int);
 
 
     rx = prjptr;
-    ry = rx + 4 * pct.FP0_BASIS;
-    rz = ry + 4 * pct.FP0_BASIS;
+    ry = rx + 4 * get_FP0_BASIS();
+    rz = ry + 4 * get_FP0_BASIS();
 
 
 
@@ -105,7 +105,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 
             /* Determine mapping indices or even if a mapping exists */
             map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                             sp->ldim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
+                             sp->ldim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
                              ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                              &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
@@ -134,9 +134,9 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
                             {
 
                                 pvec[docount] =
-                                    pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
-                                    pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
-                                    ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+                                    get_FPY0_GRID() * get_FPZ0_GRID() * ((Aix[ix]-get_FPX_OFFSET()) % get_FPX0_GRID()) +
+                                    get_FPZ0_GRID() * ((Aiy[iy]-get_FPY_OFFSET()) % get_FPY0_GRID()) +
+                                    ((Aiz[iz]-get_FPZ_OFFSET()) % get_FPZ0_GRID());
 
                                 ax[0] = xc - iptr->xtal[0];
                                 ax[1] = yc - iptr->xtal[1];
@@ -153,7 +153,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
                                     axs[2] = bx[2];
                                     r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
 
-                                    rx[docount + ishift * pct.FP0_BASIS] =
+                                    rx[docount + ishift * get_FP0_BASIS()] =
                                         linint (&sp->rhocorelig[0], r, invdr);
 
 
@@ -169,7 +169,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
                                     axs[2] = bx[2];
                                     r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
 
-                                    ry[docount + ishift * pct.FP0_BASIS] =
+                                    ry[docount + ishift * get_FP0_BASIS()] =
                                         linint (&sp->rhocorelig[0], r, invdr);
 
 
@@ -183,7 +183,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
                                     axs[2] = bx[2] - shift[ishift];
                                     r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
 
-                                    rz[docount + ishift * pct.FP0_BASIS] =
+                                    rz[docount + ishift * get_FP0_BASIS()] =
                                         linint (&sp->rhocorelig[0], r, invdr);
 
 
@@ -230,7 +230,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
                 }               /* end for */
 
                 locsum[ishift] = locsum[ishift] * ct.vel_f;
-                pptr += pct.FP0_BASIS;
+                pptr += get_FP0_BASIS();
 
             }                   /* end for */
 

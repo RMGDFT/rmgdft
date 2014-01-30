@@ -45,20 +45,18 @@ void mg_restrict_6 (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy
 {
 
     int ix, iy, iz;
-    int incz, incy, incx, incz2, incy2, incx2, incx3;
+    int incy, incx, incy2, incx2, incx3;
     rmg_double_t a0, a1, a2, a3, a4, a5;
     rmg_double_t *fulla;
     rmg_double_t *fullb;
     rmg_double_t *sg_full;
 
     my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), rmg_double_t);
-    trade_imagesx (full, sg_full, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, 5, FULL_FD);
+    trade_imagesx (full, sg_full, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), 5, FULL_FD);
 
-    incz = 1;
     incy = dimz + 10;
     incx = (dimz + 10) * (dimy + 10);
 
-    incz2 = 1;
     incy2 = dimz / grid_ratio;
     incx2 = (dimz / grid_ratio) * (dimy / grid_ratio);
 
@@ -71,8 +69,8 @@ void mg_restrict_6 (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy
     a4 = 0.0;
     a5 = 0.0;
 
-    my_malloc (fulla, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID + 10) * (pct.FPZ0_GRID + 10), rmg_double_t);
-    my_malloc (fullb, (pct.FPX0_GRID / grid_ratio) * (pct.FPY0_GRID / grid_ratio) * (pct.FPZ0_GRID + 10), rmg_double_t);
+    my_malloc (fulla, (get_FPX0_GRID() / grid_ratio) * (get_FPY0_GRID() + 10) * (get_FPZ0_GRID() + 10), rmg_double_t);
+    my_malloc (fullb, (get_FPX0_GRID() / grid_ratio) * (get_FPY0_GRID() / grid_ratio) * (get_FPZ0_GRID() + 10), rmg_double_t);
 
 
     for (ix = 0; ix < dimx / grid_ratio; ix++)

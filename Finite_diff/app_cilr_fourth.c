@@ -12,7 +12,7 @@
 rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int  numgrid, used_alloc=FALSE;
+    int  numgrid, used_alloc=FALSE, ibrav;
     rmg_double_t *rptr=NULL;
 
     int iz, ix, iy, incx, incy, incxr, incyr;
@@ -29,11 +29,11 @@ rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double
     tid = 0;
 #endif
 
-
-
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
+
+    ibrav = get_ibrav_type();
 
     // If rptr is null then we must allocate it here
     if(rptr == NULL) {
@@ -42,7 +42,7 @@ rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double
     }
 
 
-    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
     }
 

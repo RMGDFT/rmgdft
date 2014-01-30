@@ -68,7 +68,7 @@ void app_cir_hex (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int di
     incxr = dimz * dimy;
 
 
-    trade_images (a, dimx, dimy, dimz, pct.neighbors, FULL_FD);
+    trade_images (a, dimx, dimy, dimz, get_neighbors(), FULL_FD);
 
 
     Bc = 7.0 / 12.0;

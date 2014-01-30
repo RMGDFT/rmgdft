@@ -23,4 +23,5 @@ app_cir_driver.c
 app_cilr_fourth.c
 app_cil_sixth.c
 )
+include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 

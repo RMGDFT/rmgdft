@@ -42,8 +42,10 @@
 
 void init_pos ()
 {
-    int i, ir;
+    int i, ir, ibrav;
     ION *iptr;
+
+    ibrav = get_ibrav_type();
 
     /* Scale the ion-coordinates by the lattice vectors (if required) */
 
@@ -66,7 +68,7 @@ void init_pos ()
                     + iptr->crds[1] * b1[ir] + iptr->crds[2] * b2[ir];
             }                   /* end for ir */
 
-            if (ct.ibrav == HEXAGONAL)
+            if (ibrav == HEXAGONAL)
             {
 
                 iptr->xtal[0] = (iptr->crds[0] - iptr->crds[1] / SR3) / ct.celldm[0];

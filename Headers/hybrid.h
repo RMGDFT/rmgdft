@@ -13,6 +13,12 @@
  *  Jerzy Bernholc
  */
 
+#include <semaphore.h>
+#include <mpi.h>
+#include "rmgtypes.h"
+#include "rmgtypedefs.h"
+#include "rmgthreads.h"
+
 #if HYBRID_MODEL
 
 #define HYBRID_EIG 1

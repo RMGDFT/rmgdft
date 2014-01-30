@@ -14,14 +14,15 @@
 void app_cir_beta_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, numgrid, tid;
+    int ix, iy, iz, numgrid, tid, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
     rmg_double_t *rptr;
     rmg_double_t c000, c100;
 
-    if((ct.ibrav != CUBIC_PRIMITIVE) && (ct.ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    ibrav = get_ibrav_type();
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
     }
 

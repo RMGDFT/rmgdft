@@ -30,6 +30,9 @@
  * SOURCE
  */
 
+#include "fftw.h"
+#include "mpi.h"
+#include "my_scalapack.h"
 
 #if MPI
 typedef struct
@@ -66,32 +69,6 @@ typedef struct
 	int desca[DLEN];
 	int ictxt;
 
-    /* Grid sizes on each PE */
-    int PX0_GRID;
-    int PY0_GRID;
-    int PZ0_GRID;
-
-    /* Grid offsets on each PE */
-    int PX_OFFSET;
-    int PY_OFFSET;
-    int PZ_OFFSET;
-
-    /* Basis size on each PE */
-    int P0_BASIS;
-
-    /* Fine grid sizes on each PE */
-    int FPX0_GRID;
-    int FPY0_GRID;
-    int FPZ0_GRID;
-
-    /* Fine Grid offsets on each PE */
-    int FPX_OFFSET;
-    int FPY_OFFSET;
-    int FPZ_OFFSET;
-
-    /* Fine grid basis size on each PE */
-    int FP0_BASIS;
-
     /*Whether pe participates in scalapack calculations*/
     int scalapack_pe;
     int scalapack_npes;
@@ -112,9 +89,6 @@ typedef struct
 
     /* Max dist matrix size for any scalapack PE */
     int scalapack_max_dist_size;
-
-    /** Neighboring processors in three-dimensional space */
-    int neighbors[6];
 
     /** Processor x-coordinate for domain decomposition */
     int pe_x;
@@ -565,151 +539,6 @@ typedef struct
 
 
 
-/*Structure for storing PDB information
- * Each ion should have it*/
-typedef struct
-{
-
-/* 1 -  6  Record name*/
-char record_name[7];
-
-/* 7 - 11 Atom serial number*/
-int serial_num;
-
-/*13 - 16  Atom name*/
-char name[5];
-
-/* 17 Alternate location indicator.*/
-char altLoc[2];
-
-/* 18 - 20 Residue name*/
-char resName[4];
-
-/* 22 Chain identifier*/
-char chainID[2];
-
-/* 23 - 26 Residue sequence number*/
-int resSeq;
-
-/* 27 Code for insertion of residues*/
-char iCode[2];
-
-/* 55 - 60 Occupancy*/
-rmg_double_t occupancy;
-
-/* 61 - 66 Temperature factor*/
-rmg_double_t tempFactor;
-
-/* 77 - 78  Element symbol, right-justified. */
-char element[3];
-
-/*79 - 80  Charge on the atom.*/
-char charge[3];
-
-} PDB_INFO;
-
-
-
-
-/* Ion structure */
-typedef struct
-{
-
-    /* Initial physical coordinates at start of run */
-    rmg_double_t icrds[3];
-
-    /* Actual Physical coordinates at current time step */
-    rmg_double_t crds[3];
-
-    /* Positions at the previous time step */
-    rmg_double_t ocrds1[3];
-    
-    /* Positions at  2dt back */
-    rmg_double_t ocrds2[3];
-    
-    /* Positions at  3dt back */
-    rmg_double_t ocrds3[3];
-
-    /* Initial crystal coordinates at start of run */
-    rmg_double_t ixtal[3];
-
-    /* Actual crystal coordinates at current time step */
-    rmg_double_t xtal[3];
-
-    /* Crystal coordinates  at the previous time step */
-    rmg_double_t oxtal[3];
-
-    /*Position of ion relative to the middle of non-local box around the ion 
-     *          * determined in get_nlop, AIget_cindex sets this up*/
-    rmg_double_t nlcrds[3];
-
-
-    /* Coordinates of the corner of the grid that the local */
-    /* difference potential is nonzero on.                  */
-    rmg_double_t lxcstart;
-    rmg_double_t lycstart;
-    rmg_double_t lzcstart;
-
-
-    /* Coordinates of the corner of the grid that the non-local */
-    /* potential is nonzero on.                                 */
-    rmg_double_t nlxcstart;
-    rmg_double_t nlycstart;
-    rmg_double_t nlzcstart;
-
-
-    /* Coordinates of the corner of the grid that the Qfunction */
-    /* potential is nonzero on.                                 */
-    rmg_double_t Qxcstart;
-    rmg_double_t Qycstart;
-    rmg_double_t Qzcstart;
-
-
-    /* Integer species type when using a raw pseudopotential */
-    int species;
-
-    /* Forces on the ion */
-    rmg_double_t force[4][3];
-
-    /* Current velocity of the ion */
-    rmg_double_t velocity[3];
-
-    /* Kleinman-Bylander normalization coefficients */
-    rmg_double_t pd[(MAX_L + 1) * (MAX_L + 1)];
-
-    /* Milliken normalization coefficients */
-    rmg_double_t mnorm[(MAX_L + 1) * (MAX_L + 1)];
-
-    /* Total number of projectors */
-    int prjcount;
-
-    /* Movable flag */
-    int movable;
-
-	/* Force modifier parameters */
-	struct {
-		rmg_double_t setA_weight;
-		rmg_double_t setA_coord[3];
-		rmg_double_t setB_weight;
-		rmg_double_t setB_coord[3];
-        double forcemask[3];
-	} constraint;
-		
-
-
-    /* Stores sine and cosine of a phase factor for backwards fourier transform */
-    rmg_double_t *fftw_phase_sin;
-    rmg_double_t *fftw_phase_cos;
-
-
-    /*Stores PDB information*/
-    PDB_INFO pdb;
-
-
-} ION;
-
-
-
 /* multigrid-parameter structure */
 typedef struct
 {
@@ -1005,9 +834,6 @@ typedef struct
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
-
-    /** bravais lattice type */
-    int ibrav;
 
     /** Lattice information */
     rmg_double_t celldm[6];
@@ -1379,117 +1205,12 @@ typedef struct
 } CONTROL;
 
 
-
-/* Thread control structures */
-typedef struct
-{
-
-    /* Thread ID number assigned by us */
-    int tid;
-
-    /* MPI communicator for use by this thread */
-    MPI_Comm grid_comm;
-
-#if GPU_ENABLED
-    // Cuda device context
-    cudaStream_t cstream;
-    rmg_double_t *gpu_host_temp1;
-    rmg_double_t *gpu_host_temp2;
-#endif
-
-    /* Thread identifier from pthread_self. Needed to send signals */
-    pthread_t pthread_tid;
-
-    /* Assigned job */
-    int job;
-
-    /* Synchronization semaphore */
-    sem_t sync;
-
-    /* These volatiles are used as synchronization variables for the threads */
-    volatile int start;
-
-    /* With the complex option this lets the threads know which k-point is
-     * currently being worked on in ortho and subdiag. */
-    int kidx;
-
-    /* Pointer to current state assigned to the thread when used in sections that process a single state */
-    STATE *sp;
-
-    /* Pointer to state array used by each thread */
-    STATE *my_states;
-
-    /* Local variable -- summed to obtain total charge for all orbitals */
-    rmg_double_t tcharge;
-
-    /* Spacial offset for the thread */
-    int offset;
-
-    /* Points to base of distributed storage array for this thread */
-    rmg_double_t *base_mem;
-
-    /* Points to base of distributed scratch array for this thread */
-    rmg_double_t *scratch1;
-
-    /* Number of points per wavefunction in the distributed storage array */
-    int numpt;
-
-    /* leading dimension of the distributed wave function storage array */
-    int lda;
-
-    /* Local copies of eigenvalues and occupations for this thread */
-    rmg_double_t *eigs;
-    rmg_double_t *occs;
-
-    /* Force contributions computed by this thread */
-    rmg_double_t force[MAX_IONS][3];
-
-    /* Pointer to dynamically allocated arrays of size ct.num_states*ct.num_states */
-    /* that is required in ortho. Each thread has it's own copy */
-    rmg_double_t *darr;
-    rmg_double_t *barr;
-
-
-    /* The same array as referenced by darr but this copy is 
-     *allocated in the main program rather than in one of the threads.
-     */
-    rmg_double_t *farr;
-
-
-    rmg_double_t *rho;
-    rmg_double_t *rhocore;
-    rmg_double_t *vtot;
-    rmg_double_t *vnuc;
-
-    /* Pointers to the non-local potential index list 
-     *and to the projectors themselves */
-    int *nlindex;
-    rmg_double_t *projectors;
-
-    // Pointers to special args
-    void *p1;
-    void *p2;
-    rmg_double_t *trade_buf;// Used by trade_images
-    int ion;        // Used for threaded beta_xpsi
-    int nion;       // Used for threaded beta_xpsi
-    rmg_double_t *sintR;    // Used for threaded beta_xpsi
-    rmg_double_t *sintI;    // Used for threaded beta_xpsi
-    rmg_double_t *weiptr;   // Used for threaded beta_xpsi
-    int kpt;    // Used for threaded beta_xpsi
-} SCF_THREAD_CONTROL;
-
-
-
 /* Extern declaration for the main control structure */
 extern CONTROL ct;
 
 
 /* Extern declaration for the processor control structure */
 extern PE_CONTROL pct;
-
-
-/* Extern declarations for thread control structures */
-extern SCF_THREAD_CONTROL thread_control[];
 
 /* Extern declaration for NPES (this is per image), and PE_X,PE_Y,PE_Z */
 extern int NPES;

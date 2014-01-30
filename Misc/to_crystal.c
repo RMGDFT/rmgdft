@@ -42,9 +42,11 @@
 
 void to_crystal (rmg_double_t crystal[], rmg_double_t cartesian[])
 {
-    int ir;
+    int ir, ibrav;
 
-    if (ct.ibrav == HEXAGONAL)
+    ibrav = get_ibrav_type();
+
+    if (ibrav == HEXAGONAL)
     {
 
         crystal[0] = (cartesian[0] - cartesian[1] / SR3) / ct.celldm[0];
@@ -65,7 +67,7 @@ void to_crystal (rmg_double_t crystal[], rmg_double_t cartesian[])
             crystal[2] -= 1.0;
 
     }
-    else if (ct.ibrav == CUBIC_PRIMITIVE)
+    else if (ibrav == CUBIC_PRIMITIVE)
     {
 
         crystal[0] = cartesian[0] / ct.celldm[0];
@@ -86,7 +88,7 @@ void to_crystal (rmg_double_t crystal[], rmg_double_t cartesian[])
             crystal[2] -= 1.0;
 
     }
-    else if (ct.ibrav == ORTHORHOMBIC_PRIMITIVE)
+    else if (ibrav == ORTHORHOMBIC_PRIMITIVE)
     {
 
         crystal[0] = cartesian[0] / ct.celldm[0];

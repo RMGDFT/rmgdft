@@ -16,19 +16,19 @@ void get_vtot_psi (rmg_double_t * vtot_psi, rmg_double_t * vtot, int grid_ratio)
     /*If the grids are the same, just copy the data */
     if (grid_ratio == 1)
     {
-        idx = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
+        idx = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
         QMD_dcopy (idx, vtot, ione, vtot_psi, ione);
     }
     /* For different grids, restriction algorithm is used to obtain potential on coarse grid */
     else
     {
-//        mg_restrict_6 (vtot, vtot_psi, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, grid_ratio);
-        for(ix = 0; ix < pct.FPX0_GRID/2; ix++)
-        for(iy = 0; iy < pct.FPY0_GRID/2; iy++)
-        for(iz = 0; iz < pct.FPZ0_GRID/2; iz++)
+//        mg_restrict_6 (vtot, vtot_psi, get_FPX0_GRID, get_FPY0_GRID, get_FPZ0_GRID, grid_ratio);
+        for(ix = 0; ix < get_FPX0_GRID()/2; ix++)
+        for(iy = 0; iy < get_FPY0_GRID()/2; iy++)
+        for(iz = 0; iz < get_FPZ0_GRID()/2; iz++)
         {
-            idx = ix * pct.FPY0_GRID/2 * pct.FPZ0_GRID/2 + iy * pct.FPZ0_GRID/2 + iz;
-            idx1 = 2 *ix * pct.FPY0_GRID * pct.FPZ0_GRID + 2 *iy * pct.FPZ0_GRID + 2*iz;
+            idx = ix * get_FPY0_GRID()/2 * get_FPZ0_GRID()/2 + iy * get_FPZ0_GRID()/2 + iz;
+            idx1 = 2 *ix * get_FPY0_GRID() * get_FPZ0_GRID() + 2 *iy * get_FPZ0_GRID() + 2*iz;
             vtot_psi[idx] = vtot[idx1];
         }
 

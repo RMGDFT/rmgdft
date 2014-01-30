@@ -22,7 +22,7 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int numgrid, tid, used_alloc=FALSE;
+    int numgrid, tid, used_alloc=FALSE, P0_BASIS;
     rmg_double_t *rptr=NULL;
     rmg_double_t *gpu_psi, *gpu_b;
 
@@ -32,6 +32,8 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
     rmg_double_t ihx, ihy, ihz, retv;
     rmg_double_t c000, c100, c110, c200;
+
+    P0_BASIS = get_P0_BASIS();
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
@@ -52,7 +54,7 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
 
     // first check for fixed dim case
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) {
+    if(numgrid == P0_BASIS) {
         retv = app_cilr_sixth_global (rptr, a_psi, b_psi, vtot_eig_s, gridhx, gridhy, gridhz);
         if(used_alloc) my_free(rptr);
         return retv;

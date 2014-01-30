@@ -29,3 +29,4 @@ validate.c
 read_common.c
 cast.c
 )
+include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")

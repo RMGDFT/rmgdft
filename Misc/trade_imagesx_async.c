@@ -1474,9 +1474,9 @@ void init_trade_imagesx_async(void)
 
     printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
 
-    grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
-    grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
-    grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
+    grid_xp = get_FPX0_GRID() + 2*MAX_TRADE_IMAGES;
+    grid_yp = get_FPY0_GRID() + 2*MAX_TRADE_IMAGES;
+    grid_zp = get_FPZ0_GRID() + 2*MAX_TRADE_IMAGES;
     if(grid_xp > grid_yp) {
         GRID_MAX1 = grid_xp;
         if(grid_yp > grid_zp) {

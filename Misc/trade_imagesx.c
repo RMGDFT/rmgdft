@@ -47,9 +47,9 @@ void trade_imagesx (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int 
     if(swbuf1x == NULL) {
         int grid_xp, grid_yp, grid_zp;
 
-        grid_xp = pct.FPX0_GRID + 2*MAX_TRADE_IMAGES;
-        grid_yp = pct.FPY0_GRID + 2*MAX_TRADE_IMAGES;
-        grid_zp = pct.FPZ0_GRID + 2*MAX_TRADE_IMAGES;
+        grid_xp = get_FPX0_GRID() + 2*MAX_TRADE_IMAGES;
+        grid_yp = get_FPY0_GRID() + 2*MAX_TRADE_IMAGES;
+        grid_zp = get_FPZ0_GRID() + 2*MAX_TRADE_IMAGES;
         if(grid_xp > grid_yp) {
             grid_max1 = grid_xp;
             if(grid_yp > grid_zp) {
@@ -124,7 +124,7 @@ tid = 0;
         error_handler("Not enough memory. This should never happen.");
 
 
-    nb_ids = &pct.neighbors[0];
+    nb_ids = get_neighbors();
 
     /* Load up w with the basic stuff */
     for (ix = 0; ix < dimx; ix++)
@@ -432,7 +432,7 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
         error_handler("Not enough memory. This should never happen.");
 
 
-    nb_ids = &pct.neighbors[0];
+    nb_ids = get_neighbors();
 
     /* Load up w with the basic stuff */
     for (ix = 0; ix < dimx; ix++)

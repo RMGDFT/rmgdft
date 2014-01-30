@@ -24,7 +24,7 @@ static void app_cir_sixth_standard_f (rmg_float_t * a, rmg_float_t * b, int dimx
 void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz)
 {
 
-    int numgrid, tid, used_alloc=FALSE;
+    int numgrid, tid, used_alloc=FALSE, P0_BASIS;
     rmg_float_t *rptr=NULL, *gpu_psi, *gpu_b;
 
     int pbasis = dimx * dimy * dimz;
@@ -41,6 +41,8 @@ void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int 
 #else
     tid = 0;
 #endif
+
+    P0_BASIS = get_P0_BASIS();
 
 #if (GPU_FD_ENABLED && FD_XSIZE)
 
@@ -73,7 +75,7 @@ void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int 
 
     // first check for fixed dim case
     numgrid = dimx * dimy * dimz;
-    if(numgrid == pct.P0_BASIS) {
+    if(numgrid == P0_BASIS) {
         app_cir_sixth_global_f (rptr, b);
     }
     else {

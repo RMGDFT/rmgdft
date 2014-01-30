@@ -34,7 +34,7 @@
 
 void read_common ()
 {
-    int tmp, is;
+    int tmp, is, ibrav;
     char *tbuf, *tptr;
     float ftmp;
     rmg_double_t time1;
@@ -261,7 +261,8 @@ void read_common ()
     get_data ("bravais_lattice_type", NULL, INIT | OPT, bravais_lattice_type_opts);
 
     /* lattice type */
-    require (get_data ("bravais_lattice_type", &ct.ibrav, OPT, NULL));
+    require (get_data ("bravais_lattice_type", &ibrav, OPT, NULL));
+    set_ibrav_type(ibrav);
 
     /* Lattice constants */
     /* These should be conditionally read depending on ibrav etc. */

@@ -40,8 +40,11 @@
 void app_cir (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
+    int ibrav;
 
-    switch (ct.ibrav)
+    ibrav = get_ibrav_type();
+
+    switch (ibrav)
     {
 
     case CUBIC_PRIMITIVE:
