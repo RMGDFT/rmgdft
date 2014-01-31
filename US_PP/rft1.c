@@ -47,6 +47,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include "grid.h"
 #include "main.h"
 
 #define SMALL 1.0e-8

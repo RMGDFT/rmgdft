@@ -16,7 +16,7 @@ project (RMG C Fortran)
 
 
 # Executables defined by the file that contains main()
-add_executable(rmg RMG/Common/main.c)		# Base code
+add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/RMG/Headers/main.h)		# Base code
 add_executable(rmg-on ON/Common/md.c)		# Order N
 
 
@@ -48,7 +48,7 @@ target_link_libraries (rmg RMG_Common Finite_diff)
 target_link_libraries (rmg RMG_Common Force)
 target_link_libraries (rmg Force RMG_Common)
 target_link_libraries (rmg Input RMG_Input)
-target_link_libraries (rmg MG)
+target_link_libraries (rmg MG RMG_Common)
 target_link_libraries (rmg Misc)
 target_link_libraries (rmg Finite_diff Misc)
 target_link_libraries (rmg Misc Finite_diff)

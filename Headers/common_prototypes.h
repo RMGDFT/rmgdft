@@ -113,6 +113,9 @@ void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids
 int get_PX0_GRID(void);
 int get_PY0_GRID(void);
 int get_PZ0_GRID(void);
+int get_PX_OFFSET(void);
+int get_PY_OFFSET(void);
+int get_PZ_OFFSET(void);
 int get_FPX_OFFSET(void);
 int get_FPY_OFFSET(void);
 int get_FPZ_OFFSET(void);

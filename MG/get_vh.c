@@ -42,6 +42,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
 #include "main.h"
 #include "hybrid.h"
 
@@ -101,7 +102,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+    pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
@@ -159,11 +160,11 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
                 mgrid_solv (mglhsarr, sg_res, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
                             ct.hyygrid, ct.hzzgrid,
-                            0, pct.neighbors, ct.poi_parm.levels, poi_pre,
+                            0, get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
                             FG_NX*NX_GRID, FG_NY*NY_GRID, FG_NZ*NZ_GRID,
-                            pct.FPX_OFFSET, pct.FPY_OFFSET, pct.FPZ_OFFSET,
-                            pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+                            get_FPX_OFFSET(), get_FPY_OFFSET(), get_FPZ_OFFSET(),
+                            get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
 
                 /* Transfer solution back to mgresarr array */
@@ -237,7 +238,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    pack_vhdtos (vh_eig, ct.vh_ext, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+    pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     /* Release our memory */
     my_free (nrho);

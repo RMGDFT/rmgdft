@@ -6,12 +6,13 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
 #include "main.h"
 
 
 void init_qfunct (void)
 {
-    int isp, idx, i, j, k, num, il, jl, ll, it1;
+    int isp, idx, i, j, k, num, il, jl, ll, it1, ibrav;
     rmg_double_t rcut, rfil, t1, t2, scale;
     rmg_double_t work[MAX_RGRID];
     rmg_double_t *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr, *workr;
@@ -21,13 +22,14 @@ void init_qfunct (void)
     FILE *fdq = NULL;
 
     if(ct.norm_conserving_pp) return;
+    ibrav = get_ibrav_type();
 
     my_malloc (workr, MAX_QLIG, rmg_double_t);
 
     scale = 1.0;
-    if (ct.ibrav == CUBIC_BC)
+    if (ibrav == CUBIC_BC)
         scale = 1.1;
-    if (ct.ibrav == CUBIC_FC)
+    if (ibrav == CUBIC_FC)
         scale = 1.3;
     for (isp = 0; isp < ct.num_species; isp++)
     {
@@ -69,7 +71,7 @@ void init_qfunct (void)
 
         t1 = sp->qdim / FG_NX + 1;
         sp->drqlig = 2.0 * sqrt (THREE) * (t1 + 1.0) * ct.hmaxgrid / TWO;
-        if (ct.ibrav == HEXAGONAL)
+        if (ibrav == HEXAGONAL)
             sp->drqlig *= 2.0;
         t1 = (rmg_double_t) MAX_QLIG;
         sp->drqlig = sp->drqlig / t1;

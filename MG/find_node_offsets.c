@@ -1,6 +1,7 @@
 
 
 #include "main.h"
+#include "grid.h"
 #include <math.h>
 
 int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,

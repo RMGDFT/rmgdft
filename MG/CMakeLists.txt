@@ -11,3 +11,4 @@ get_vh.c
 mg_prolong.c
 find_grid_owner.c
 )
+include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")

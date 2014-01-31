@@ -4,7 +4,10 @@
 
 */
 
+#include "grid.h"
+#include "main.h"
 #include "common_prototypes.h"
+
 
 /* Grid sizes on each PE */
 static int PX0_GRID;
@@ -82,7 +85,18 @@ int get_PZ0_GRID(void)
 {
     return PZ0_GRID;
 }
-
+int get_PX_OFFSET(void)
+{
+    return PX_OFFSET;
+}
+int get_PY_OFFSET(void)
+{
+    return PY_OFFSET;
+}
+int get_PZ_OFFSET(void)
+{
+    return PZ_OFFSET;
+}
 int get_FPX_OFFSET(void)
 {
     return FPX_OFFSET;

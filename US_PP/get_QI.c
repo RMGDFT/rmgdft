@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
 #include "main.h"
 
 /* Sets Qnm function (part of ultrasfot pseudpotential*/
@@ -76,7 +77,7 @@ void get_QI (void)
         icut = (icenter + 1) * (icenter + 1);
 
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->qdim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
+                         sp->qdim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);
 
@@ -105,9 +106,9 @@ void get_QI (void)
                             if (icut >= itmp)
                             {
                                 pvec[icount] =
-                                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
-                                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
-                                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+                                                get_FPY0_GRID() * get_FPZ0_GRID() * ((Aix[ix]-get_FPX_OFFSET()) % get_FPX0_GRID()) +
+                                                get_FPZ0_GRID() * ((Aiy[iy]-get_FPY_OFFSET()) % get_FPY0_GRID()) +
+                                                ((Aiz[iz]-get_FPZ_OFFSET()) % get_FPZ0_GRID());
 
 
                                 dvec[idx] = TRUE;

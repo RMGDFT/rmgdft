@@ -49,8 +49,13 @@
 
 
 #include <stdio.h>
-
+#include "const.h"
+#include "grid.h"
+#include "rmgtypes.h"
+#include "common_prototypes.h"
+#include "mg.h"
 #include "main.h"
+
 
 /*
  */

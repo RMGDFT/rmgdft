@@ -10,7 +10,7 @@
 
 ION *get_ion(int ion)
 {
-    return ct.ions[ion];
+    return &ct.ions[ion];
 }
 
 

@@ -29,6 +29,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "grid.h"
 #include "main.h"
 
 
@@ -36,7 +37,6 @@ void read_common ()
 {
     int tmp, is, ibrav;
     char *tbuf, *tptr;
-    float ftmp;
     rmg_double_t time1;
     static int run_count = - 1;
 

@@ -33,9 +33,11 @@
  */
 
 
-
-#include "main.h"
+#include "const.h"
+#include "rmgtypes.h"
+#include "common_prototypes.h"
 #include "mg.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 
@@ -46,12 +48,13 @@
 void mg_restrict (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
-    int ix, iy, iz;
+    int ix, iy, iz, ibrav;
     int incz, incy, incx, incz2, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
     rmg_double_t scale, face, corner, edge;
 
 
+    ibrav = get_ibrav_type();
 
     incz = 1;
     incy = dimz + 2;
@@ -62,7 +65,7 @@ void mg_restrict (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, 
     incx2 = (dz2 + 2) * (dy2 + 2);
 
 
-    switch (ct.ibrav)
+    switch (ibrav)
     {
 
     case CUBIC_PRIMITIVE:

@@ -1,6 +1,10 @@
 
 
-#include "main.h"
+#include "const.h"
+#include "grid.h"
+#include "rmgtypes.h"
+#include "common_prototypes.h"
+#include "mg.h"
 #include <math.h>
 
 int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,

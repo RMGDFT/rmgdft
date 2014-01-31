@@ -1,4 +1,8 @@
 
+#include "const.h"
+#include "rmgtypes.h"
+#include "common_prototypes.h"
+#include "mg.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
