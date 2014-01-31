@@ -38,6 +38,7 @@
  */
 
 
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
@@ -55,12 +56,20 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     rmg_double_t *gx_up, *gy_up, *gz_up;
     rmg_double_t *gx_dw, *gy_dw, *gz_dw; 
     rmg_double_t *gx_vsigmauu, *gy_vsigmauu, *gz_vsigmauu, *gx_vsigmaud, *gy_vsigmaud, *gz_vsigmaud; 
-    rmg_double_t rhospin[pct.FP0_BASIS][2], sigma[pct.FP0_BASIS][3], vsigma[pct.FP0_BASIS][3], vspin[pct.FP0_BASIS][2];
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
     rmg_double_t *ec, *vsigma_upup, *vsigma_updw;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
-    sizr = pct.FP0_BASIS;
+    FP0_BASIS = get_FP0_BASIS();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+
+
+    rmg_double_t rhospin[FP0_BASIS][2], sigma[FP0_BASIS][3], vsigma[FP0_BASIS][3], vspin[FP0_BASIS][2];
+
+    sizr = FP0_BASIS;
     
     /* get the correct functional id for each type */
     if (mode == GGA_PBE)
@@ -100,9 +109,9 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     } 
 
 
-    my_calloc (ec, 3 * pct.FP0_BASIS, rmg_double_t);
-    vsigma_upup = ec + pct.FP0_BASIS; 
-    vsigma_updw = ec + 2 * pct.FP0_BASIS; 
+    my_calloc (ec, 3 * FP0_BASIS, rmg_double_t);
+    vsigma_upup = ec + FP0_BASIS; 
+    vsigma_updw = ec + 2 * FP0_BASIS; 
 
 
     /* Grab some memory */ 
@@ -134,17 +143,17 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
 
 
     /* Generate the gradient of the density */
-    app_grad (rho_up, gx_up, gy_up, gz_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin up density */
-    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin down density */
+    app_grad (rho_up, gx_up, gy_up, gz_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin up density */
+    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin down density */
     
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho_up, d2rho_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
-    app6_del2 (rho_dw, d2rho_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_up, d2rho_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_dw, d2rho_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
     
     /* pack rho and rho_oppo into the 2D array rhospin */ 
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	    rhospin[idx][0] = rho_up[idx];
 	    rhospin[idx][1] = rho_dw[idx];
@@ -152,7 +161,7 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
 
 
     /* pack the 2D array sigma[][2] */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 
         
@@ -172,13 +181,13 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
    
     /* get the exchange part for energy and potential first*/    
     if (func_x.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_x, pct.FP0_BASIS, &rhospin[0][0], &sigma[0][0], exc, &vspin[0][0], &vsigma[0][0]); 
+        xc_gga_exc_vxc (&func_x, FP0_BASIS, &rhospin[0][0], &sigma[0][0], exc, &vspin[0][0], &vsigma[0][0]); 
 
 
 
 
     /* unpack the 2D array of exchange potential to vxc_up, vsigma_upup, vsigma_updw */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	    vxc_up[idx] = vspin[idx][0];
 	    vsigma_upup[idx] = vsigma[idx][0];
@@ -187,12 +196,12 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
 
     /* get the correlation part for energy and potential */    
     if (func_c.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_c, pct.FP0_BASIS, &rhospin[0][0], &sigma[0][0], ec, &vspin[0][0], &vsigma[0][0]); 
+        xc_gga_exc_vxc (&func_c, FP0_BASIS, &rhospin[0][0], &sigma[0][0], ec, &vspin[0][0], &vsigma[0][0]); 
  
 
     
     /* add up the correlation part together */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++) 
+    for (idx = 0; idx < FP0_BASIS; idx++) 
     {
 	    vxc_up[idx] += vspin[idx][0];
 	    exc[idx] += ec[idx];
@@ -204,12 +213,12 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     xc_func_end (&func_c); 
 
     /* Get gradient of vsigma_upup and vsigma_updw */
-    app_grad (vsigma_upup, gx_vsigmauu, gy_vsigmauu, gz_vsigmauu, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
-    app_grad (vsigma_updw, gx_vsigmaud, gy_vsigmaud, gz_vsigmaud, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vsigma_upup, gx_vsigmauu, gy_vsigmauu, gz_vsigmauu, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vsigma_updw, gx_vsigmaud, gy_vsigmaud, gz_vsigmaud, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
      /* Vxc_up = vrho_up - \div \dot ( 2* vsigma_upup * \grad(rho_up) + vsigma_updw * \grad(rho_dw) ) */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	     vxc_up[idx] -= 2.0 * ( gx_vsigmauu[idx] * gx_up[idx] + 
 	     		   gy_vsigmauu[idx] * gy_up[idx] + gz_vsigmauu[idx] * gz_up[idx] ) ;

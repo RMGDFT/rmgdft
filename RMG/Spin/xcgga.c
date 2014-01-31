@@ -37,7 +37,7 @@
  * SOURCE
  */
 
-
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
@@ -53,8 +53,15 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
     rmg_double_t *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
     rmg_double_t d, grad, vxc1, *vxc2, enxc;
     rmg_double_t kf, pisq3, ex, vx, ec, vc, rs;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
-    sizr = pct.FP0_BASIS;
+
+    FP0_BASIS = get_FP0_BASIS();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+
+    sizr = FP0_BASIS;
 
     pisq3 = THREE * PI * PI;
 
@@ -70,21 +77,21 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
     my_malloc (d2rho, sizr, rmg_double_t);
 
 
-    my_malloc (vxc2, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (vxc2, FP0_BASIS, rmg_double_t);
 
 
 
 
     /* Generate the gradient of the density */
-    app_grad (rho, gx, gy, gz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho, d2rho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
 
     /* Absolute value of grad(rho) */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 
         agg[idx] = sqrt (gx[idx] * gx[idx] +
@@ -94,7 +101,7 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* The LDA part of exchange correlation potential and energy */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	    d = fabs (rho[idx]);
 	    if (d < SMALL && ct.scf_steps < 10)
@@ -147,7 +154,7 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* add the gradient correction for exchange correlation potential and energy */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
         {
 
 	d = rho[idx];
@@ -213,11 +220,11 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* Get gradient of vxc2 */
-    app_grad (vxc2, vgx, vgy, vgz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vxc2, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
      /* add the second term gradient correction to xc potential */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	     vxc[idx] -= ( vgx[idx] * gx[idx] + 
 	     		   vgy[idx] * gy[idx] + vgz[idx] * gz[idx] ) ;

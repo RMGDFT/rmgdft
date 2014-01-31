@@ -38,6 +38,7 @@
  */
 
 
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
@@ -61,8 +62,15 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 
     rmg_double_t pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
     rmg_double_t rhotot, arhox, zeta, rs, kf;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
-    sizr = pct.FP0_BASIS;
+    FP0_BASIS = get_FP0_BASIS();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+
+
+    sizr = FP0_BASIS;
     
     pisq3 = THREE * PI * PI;
 
@@ -108,18 +116,18 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 
 
     /* Generate the gradient of the density */
-    app_grad (rho_up, gx_up, gy_up, gz_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin up density */
-    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin down density */
+    app_grad (rho_up, gx_up, gy_up, gz_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin up density */
+    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin down density */
     
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho_up, d2rho_up, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
-    app6_del2 (rho_dw, d2rho_dw, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_up, d2rho_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_dw, d2rho_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
     
     
     /* Absolute value of grad(rho) */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	gx = gx_up[idx] + gx_dw[idx];
 	gy = gy_up[idx] + gy_dw[idx];
@@ -146,7 +154,7 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 
     /* Caculate the LSDA part of exchange correlation potential and energy */
 
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	rhotot = rho_up[idx] + rho_dw[idx];    
         arhox = fabs(rhotot);
@@ -205,7 +213,7 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 
     
     /* Add the gradient correction for exchange correlation potential and energy */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 
 	grad_up = agg_up[idx];
@@ -263,13 +271,13 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
      * vxcdw += vxc1dw - div( vxc2dwdw * grad(rhodw) + vxc2dwup * grad(rhoup) )*/ 
 
     /* Generate the gradient of the second term exchange-correlation potential vxc2*/
-    app_grad (vxc2_upup, gx_vuu, gy_vuu, gz_vuu, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
-    app_grad (vxc2_updw, gx_vud, gy_vud, gz_vud, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vxc2_upup, gx_vuu, gy_vuu, gz_vuu, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vxc2_updw, gx_vud, gy_vud, gz_vud, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
 
 
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	    vxc_up[idx] -= ( gx_vuu[idx] * gx_up[idx] + 
 		           gy_vuu[idx] * gy_up[idx] + gz_vuu[idx] * gz_up[idx] );

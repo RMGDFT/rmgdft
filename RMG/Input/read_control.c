@@ -29,6 +29,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 

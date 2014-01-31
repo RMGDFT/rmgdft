@@ -38,6 +38,7 @@
  */
 
 
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
@@ -53,7 +54,14 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
     xc_func_type func_x, func_c;
     rmg_double_t *ec, *vc, *vsigma, *vsigma_c, *sigma;
 
-    sizr = pct.FP0_BASIS;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
+
+    FP0_BASIS = get_FP0_BASIS();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+
+    sizr = FP0_BASIS;
 
     /* get the correct functional id for each type */
     if (mode == GGA_PBE)
@@ -84,11 +92,11 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
     if(xc_func_init(&func_c, func_id_c, XC_UNPOLARIZED) != 0)
         error_handler("Functional %d not found\n", func_id_c);
 
-    my_calloc (ec, 5 * pct.FP0_BASIS, rmg_double_t);
-    vc = ec + pct.FP0_BASIS; 
-    sigma = ec + 2 * pct.FP0_BASIS; 
-    vsigma = ec + 3 * pct.FP0_BASIS; 
-    vsigma_c = ec + 4 * pct.FP0_BASIS; 
+    my_calloc (ec, 5 * FP0_BASIS, rmg_double_t);
+    vc = ec + FP0_BASIS; 
+    sigma = ec + 2 * FP0_BASIS; 
+    vsigma = ec + 3 * FP0_BASIS; 
+    vsigma_c = ec + 4 * FP0_BASIS; 
     
     /* Grab some memory */
     my_malloc (gx, sizr, rmg_double_t);
@@ -104,15 +112,15 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
 
 
     /* Generate the gradient of the density */
-    app_grad (rho, gx, gy, gz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho, d2rho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
 
 
     /* Absolute value of grad(rho) \dot grad(rho)*/
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 
         sigma[idx] =(gx[idx] * gx[idx] +
@@ -124,19 +132,19 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
 
     /* get the exchange part for energy and potential first*/    
     if (func_x.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_x, pct.FP0_BASIS, rho, sigma, exc, vxc, vsigma); 
+        xc_gga_exc_vxc (&func_x, FP0_BASIS, rho, sigma, exc, vxc, vsigma); 
 
 
     /* get the correlation part for energy and potential */    
     if (func_c.info->family == XC_FAMILY_GGA)
-        xc_gga_exc_vxc (&func_c, pct.FP0_BASIS, rho, sigma, ec, vc, vsigma_c); 
+        xc_gga_exc_vxc (&func_c, FP0_BASIS, rho, sigma, ec, vc, vsigma_c); 
     
     xc_func_end (&func_x);
     xc_func_end (&func_c); 
 
     
     /* add exchange correlation together */ 
-    for (idx = 0; idx < pct.FP0_BASIS; idx++) 
+    for (idx = 0; idx < FP0_BASIS; idx++) 
     {
 	    vxc[idx] += vc[idx];
 	    exc[idx] += ec[idx];
@@ -145,11 +153,11 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
 
 
     /* Get gradient of vsigma */
-    app_grad (vsigma, vgx, vgy, vgz, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vsigma, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
      /* Vxc = vrho -2 \div \dot ( vsigma * \grad(rho) ) */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	     vxc[idx] -= 2.0 * ( vgx[idx] * gx[idx] + 
 	     		   vgy[idx] * gy[idx] + vgz[idx] * gz[idx] ) ;
