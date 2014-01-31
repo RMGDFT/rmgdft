@@ -226,7 +226,7 @@ Dprintf("BETA2DONE");
 
 static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
 {
-    int idx1, idx2, proj_index, istate, ip, nion, ione=1;
+    int idx1, idx2, proj_index, istate, ip, nion, ione=1, P0_BASIS;
     char *transt = "t", *transn = "n";
 
     rmg_double_t alpha, rzero = 0.0;
@@ -235,6 +235,7 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
     alpha = ct.vel;
 
     if(pct.num_tot_proj == 0) return;
+    P0_BASIS = get_P0_BASIS();
 
 #if GPU_ENABLED
     cublasStatus_t custat;
@@ -246,16 +247,16 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
     
     time1=my_crtc();
 #if GPU_ENABLED
-    Dprintf("SIZES %d %d  %d  %d", pct.num_tot_proj * ct.num_states, pct.P0_BASIS, ct.num_states, pct.num_tot_proj);
-    cublasSetVector( pct.P0_BASIS * ct.num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione );
+    Dprintf("SIZES %d %d  %d  %d", pct.num_tot_proj * ct.num_states, P0_BASIS, ct.num_states, pct.num_tot_proj);
+    cublasSetVector( P0_BASIS * ct.num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione );
     Dprintf("DGEMM TIME0 %12.8f", my_crtc()-time1);
     time1=my_crtc();
-//    cublasSetVector( pct.P0_BASIS * pct.num_tot_proj, sizeof( rmg_double_t ), pct.weight, ione, ct.gpu_temp, ione );
+//    cublasSetVector( P0_BASIS * pct.num_tot_proj, sizeof( rmg_double_t ), pct.weight, ione, ct.gpu_temp, ione );
 //    dprintf("DGEMM TIME1 %12.8f", my_crtc()-time1);
 //    time1=my_crtc();
 
-    cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, pct.num_tot_proj, ct.num_states, pct.P0_BASIS, &alpha, 
-         ct.gpu_weight, pct.P0_BASIS, ct.gpu_states, pct.P0_BASIS,
+    cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, pct.num_tot_proj, ct.num_states, P0_BASIS, &alpha, 
+         ct.gpu_weight, P0_BASIS, ct.gpu_states, P0_BASIS,
          &rzero, ct.gpu_work1, pct.num_tot_proj );
 
     Dprintf("DGEMM TIME2 %12.8f", my_crtc()-time1);
@@ -266,11 +267,11 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
 
 #else
 
-    //dgemm (transt, transn, &ct.num_states, &pct.num_tot_proj, &pct.P0_BASIS, &alpha, 
-     //       states[0].psiR, &pct.P0_BASIS, pct.weight, &pct.P0_BASIS, 
+    //dgemm (transt, transn, &ct.num_states, &pct.num_tot_proj, &P0_BASIS, &alpha, 
+     //       states[0].psiR, &P0_BASIS, pct.weight, &P0_BASIS, 
       //      &rzero, nlarray, &ct.num_states);
-    dgemm (transt, transn, &pct.num_tot_proj, &ct.num_states, &pct.P0_BASIS, &alpha, 
-            pct.weight, &pct.P0_BASIS, states[0].psiR, &pct.P0_BASIS, 
+    dgemm (transt, transn, &pct.num_tot_proj, &ct.num_states, &P0_BASIS, &alpha, 
+            pct.weight, &P0_BASIS, states[0].psiR, &P0_BASIS, 
             &rzero, nlarray, &pct.num_tot_proj);
 #endif
     Dprintf("DGEMM TIME4 %12.8f", my_crtc()-time1);
@@ -298,15 +299,15 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
 
 static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_ptr, STATE * states, int kpt)
 {
-    int alloc, nion, ion, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist;
+    int alloc, nion, ion, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist, P0_BASIS;
     rmg_double_t *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
     rmg_double_t *weiptr, *weightptr_ion, *psiR, *psiI;
     ION *iptr;
     SPECIES *sp;
     STATE *st;
 
-
-    alloc =2*pct.P0_BASIS;
+    P0_BASIS = get_P0_BASIS();
+    alloc = 2 * P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
@@ -323,14 +324,14 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
     for (nion = 0; nion < pct.num_nonloc_ions; nion++)
     {
 
-        weightptr_ion = &pct.weight[nion * ct.max_nl * pct.P0_BASIS];
+        weightptr_ion = &pct.weight[nion * ct.max_nl * P0_BASIS];
         /*Actual index of the ion under consideration */
         ion = pct.nonloc_ions_list[nion];
 
 
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
-        stop = pct.P0_BASIS;
+        stop = P0_BASIS;
 
 
         if (pct.idxptrlen[ion])
@@ -414,7 +415,7 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
                     sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
-                    weiptr += pct.P0_BASIS;
+                    weiptr += P0_BASIS;
                     ipindex++;
 
                 }
@@ -614,7 +615,7 @@ static void betaxpsi1_write_non_owned (rmg_double_t * sintR, rmg_double_t * sint
 
 void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, rmg_double_t *sintI, int kpt, rmg_double_t *weiptr_base) {
 
-    int idx, stop, alloc, ip, incx=1, ipindex, istate, ist, st_stop;
+    int idx, stop, alloc, ip, incx=1, ipindex, istate, ist, st_stop, P0_BASIS;
     ION *iptr;
     SPECIES *sp;
     rmg_double_t *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
@@ -622,7 +623,8 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, 
 
     istate = st->istate;
 
-    alloc =pct.P0_BASIS;
+    P0_BASIS = get_P0_BASIS();
+    alloc = P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
@@ -632,7 +634,7 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, 
     iptr = &ct.ions[ion];
     sp = &ct.sp[iptr->species];
 
-    stop = pct.P0_BASIS;
+    stop = P0_BASIS;
     st_stop = ct.num_states / ct.THREADS_PER_NODE;
     st_stop = st_stop * ct.THREADS_PER_NODE;
 
@@ -671,7 +673,7 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, 
             sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
-            weiptr += pct.P0_BASIS;
+            weiptr += P0_BASIS;
             ipindex++;
 
         }

@@ -34,6 +34,8 @@
 
 
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -44,11 +46,16 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
     int px, py, pz;
     rmg_double_t t1;
     rmg_double_t zvec[NZ_GRID];
+    int PX0_GRID, PY0_GRID, PZ0_GRID;
+
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
 
 
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
-    poff = pz * pct.PZ0_GRID;
+    poff = pz * PZ0_GRID;
 
 
     /* Zero out result vector */
@@ -57,18 +64,18 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 
 
     /* Loop over this processor */
-    for (iz = 0; iz < pct.PZ0_GRID; iz++)
+    for (iz = 0; iz < PZ0_GRID; iz++)
     {
 
         t1 = ZERO;
-        for (ix = 0; ix < pct.PX0_GRID; ix++)
+        for (ix = 0; ix < PX0_GRID; ix++)
         {
 
-            for (iy = 0; iy < pct.PY0_GRID; iy++)
+            for (iy = 0; iy < PY0_GRID; iy++)
             {
 
-                t1 += vh[ix * pct.PY0_GRID * pct.PZ0_GRID + iy * pct.PZ0_GRID + iz] -
-                    vnuc[ix * pct.PY0_GRID * pct.PZ0_GRID + iy * pct.PZ0_GRID + iz];
+                t1 += vh[ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz] -
+                    vnuc[ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz];
 
             }                   /* end for */
 

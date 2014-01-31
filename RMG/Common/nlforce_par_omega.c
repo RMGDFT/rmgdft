@@ -10,7 +10,7 @@
 
 void nlforce_par_omega (rmg_double_t * par_omega, int ion, int nh, rmg_double_t *force)
 {
-    int idx, idx1, size, n, m, three = 3;
+    int idx, idx1, size, n, m;
     rmg_double_t forces[3];
     rmg_double_t *omega_x, *omega_y, *omega_z, *qqq;
 

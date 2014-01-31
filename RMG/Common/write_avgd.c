@@ -32,6 +32,8 @@
 
 
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 void write_avgd (rmg_double_t * rho)
@@ -39,12 +41,18 @@ void write_avgd (rmg_double_t * rho)
 
     int ix, iy, iz, poff;
     int px, py, pz;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+
     rmg_double_t t1;
     rmg_double_t zvec[FNZ_GRID];
 
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
-    poff = pz * pct.FPZ0_GRID;
+    poff = pz * FPZ0_GRID;
 
 
     /* Zero out result vector */
@@ -53,17 +61,17 @@ void write_avgd (rmg_double_t * rho)
 
 
     /* Loop over this processor */
-    for (iz = 0; iz < pct.FPZ0_GRID; iz++)
+    for (iz = 0; iz < FPZ0_GRID; iz++)
     {
 
         t1 = ZERO;
-        for (ix = 0; ix < pct.FPX0_GRID; ix++)
+        for (ix = 0; ix < FPX0_GRID; ix++)
         {
 
-            for (iy = 0; iy < pct.FPY0_GRID; iy++)
+            for (iy = 0; iy < FPY0_GRID; iy++)
             {
 
-                t1 += rho[ix * pct.FPY0_GRID * pct.FPZ0_GRID + iy * pct.FPZ0_GRID + iz];
+                t1 += rho[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz];
 
             }                   /* end for */
 

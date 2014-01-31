@@ -53,7 +53,7 @@ void app_nls (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rm
         int kidx)
 {
 
-    int idx, ion, gion, stop, ip, sindex, index2, ione=1, itwo=2;
+    int idx, ion, gion, stop, ip, sindex, index2, ione=1, itwo=2, P0_BASIS;
     int *pidx;
     int i, j, nh, inh;
     int incx = 1, alloc, step, count;
@@ -68,8 +68,8 @@ void app_nls (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rm
     rmg_double_t *psintI;
 #endif
 
-
-    alloc =pct.P0_BASIS;
+    P0_BASIS = get_P0_BASIS();
+    alloc = P0_BASIS;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
     my_calloc (nworkR, 4 * alloc, rmg_double_t);
@@ -83,18 +83,18 @@ void app_nls (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rm
 
 
     /* Zero out the work array */
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx < P0_BASIS; idx++)
         workR[idx] = 0.0;
 
-    my_copy(psiR, work2R,pct.P0_BASIS);
+    my_copy(psiR, work2R, P0_BASIS);
 
 #if !GAMMA_PT
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx < P0_BASIS; idx++)
         workI[idx] = 0.0;
 
-    my_copy(psiI, work2I,pct.P0_BASIS);
+    my_copy(psiI, work2I, P0_BASIS);
 #endif
-    stop = pct.P0_BASIS;
+    stop = P0_BASIS;
 
     /* Loop over ions once again */
     weiptr = pct.weight;
@@ -179,7 +179,7 @@ void app_nls (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rm
 
         }
 
-        weiptr += ct.max_nl * pct.P0_BASIS;
+        weiptr += ct.max_nl * P0_BASIS;
 
 
     }                           /* end for */

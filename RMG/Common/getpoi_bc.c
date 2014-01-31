@@ -47,7 +47,7 @@
 void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, idx, stop;
+    int ix, iy, iz, idx, stop, PX0_GRID, PY0_GRID, PZ0_GRID;
     int ix1, iy1;
     int ixdim, iydim, izdim;
     int pex, pey, pez;
@@ -57,6 +57,10 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
     rmg_double_t xoff, yoff, zoff;
     rmg_double_t *mask;
     int incx, incy, incz;
+
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
 
     ixdim = 2 * dimx;
     iydim = 2 * dimy;
@@ -102,17 +106,17 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
 
     pe2xyz (pct.gridpe, &pex, &pey, &pez);
 
-    xc = pex * ct.hxgrid * pct.PX0_GRID;
+    xc = pex * ct.hxgrid * PX0_GRID;
 
-    for (ix = 0; ix < pct.PX0_GRID; ix++)
+    for (ix = 0; ix < PX0_GRID; ix++)
     {
 
-        yc = pey * ct.hygrid * pct.PY0_GRID;
-        for (iy = 0; iy < pct.PY0_GRID; iy++)
+        yc = pey * ct.hygrid * PY0_GRID;
+        for (iy = 0; iy < PY0_GRID; iy++)
         {
 
-            zc = pez * ct.hzgrid * pct.PZ0_GRID;
-            for (iz = 0; iz < pct.PZ0_GRID; iz++)
+            zc = pez * ct.hzgrid * PZ0_GRID;
+            for (iz = 0; iz < PZ0_GRID; iz++)
             {
 
                 ax[0] = xc - 0.5;

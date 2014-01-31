@@ -44,12 +44,14 @@
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
 void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, STATE * states, int ii_flag)
 {
-    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1);
+    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
     rmg_double_t r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     rmg_double_t vel, loc_sum;
     rmg_double_t *exc, *nrho, *nrho_oppo;
@@ -58,18 +60,20 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
 
     time1 = my_crtc ();
 
+    FP0_BASIS = get_FP0_BASIS();
+
     vel = ct.vel_f;
 
     /* Grab some memory */
     if (ct.spin_flag)
     {
-    	my_malloc (exc, 3 * pct.FP0_BASIS, rmg_double_t);
-    	nrho_oppo = exc + 2 * pct.FP0_BASIS;
+    	my_malloc (exc, 3 * FP0_BASIS, rmg_double_t);
+    	nrho_oppo = exc + 2 * FP0_BASIS;
     }
     else
-    	my_malloc (exc, 2 * pct.FP0_BASIS, rmg_double_t);
+    	my_malloc (exc, 2 * FP0_BASIS, rmg_double_t);
     
-    nrho = exc + pct.FP0_BASIS;
+    nrho = exc + FP0_BASIS;
 
 
     /* Loop over states and get sum of the eigenvalues */
@@ -97,13 +101,13 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     if (ct.spin_flag)
     {
 	/* Add the compensating charge to total charge to calculation electrostatic energy */    
-    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	for (idx = 0; idx < FP0_BASIS; idx++)
 	    	esum[0] += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
 
     }
     else 
     {
-    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	for (idx = 0; idx < FP0_BASIS; idx++)
         	esum[0] += (rho[idx] + rhoc[idx]) * vh[idx];
     }
 
@@ -113,7 +117,7 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     /* Add the nonlinear core correction charge if there is any */
     if (ct.spin_flag)
     {
-    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	for (idx = 0; idx < FP0_BASIS; idx++)
     	{    
 	    	nrho[idx] = rhocore[idx] * 0.5 + rho[idx];
 	    	nrho_oppo[idx] = rhocore[idx] * 0.5 + rho_oppo[idx];
@@ -121,7 +125,7 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     }
     else
     {
-    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	for (idx = 0; idx < FP0_BASIS; idx++)
         	nrho[idx] = rhocore[idx] + rho[idx];
     }
 
@@ -136,7 +140,7 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     if (ct.spin_flag)
     {
 	mag = 0.0;    
-    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	for (idx = 0; idx < FP0_BASIS; idx++)
 	{
         	esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
 		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
@@ -144,12 +148,12 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     }
     else
     {
-    	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    	for (idx = 0; idx < FP0_BASIS; idx++)
         	esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
     }
 
 
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
         esum[2] += rho[idx] * vxc[idx];
 
     rmg_timings (GET_TE_XC_TIME, (my_crtc () - time2));

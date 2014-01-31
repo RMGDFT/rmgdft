@@ -33,7 +33,11 @@
  * SOURCE
  */
 
+#include "grid.h"
+#include "rmgtypes.h"
+#include "common_prototypes.h"
 #include "main.h"
+#include "rmgthreads.h"
 
 
 void init_pe ( int image )

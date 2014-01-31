@@ -38,6 +38,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 #define SMALL 1.e-35
@@ -45,14 +47,14 @@
 void lcao_init (void)
 {
 
-    int isp, idx, ip, it1, write_flag;
+    int isp, idx, ip, it1, write_flag, ibrav;
     SPECIES *sp;
     rmg_double_t *work, rfil;
     rmg_double_t t1, t2, rcut, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
 
-
+    ibrav = get_ibrav_type();
 
     write_flag = 0;
     if (verify ("write_pseudopotential_plots", &SET))
@@ -85,13 +87,13 @@ void lcao_init (void)
 	
 
 	sp->drlig_awave = sqrt (3.0) * (sp->adim_wave + 1.0) * ct.hmaxgrid / 2.0;
-	if (ct.ibrav == HEXAGONAL)
+	if (ibrav == HEXAGONAL)
 	     sp->drlig_awave *= 2.0;
 	t1 = (rmg_double_t) MAX_LOCAL_LIG;
 	sp->drlig_awave /= t1;
 
 	sp->drlig_arho = sqrt (3.0) * (sp->adim_rho/FG_NX + 1.0) * ct.hmaxgrid / 2.0;
-	if (ct.ibrav == HEXAGONAL)
+	if (ibrav == HEXAGONAL)
 	     sp->drlig_arho *= 2.0;
 	t1 = (rmg_double_t) MAX_LOCAL_LIG;
 	sp->drlig_arho /= t1;

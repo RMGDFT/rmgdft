@@ -35,6 +35,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -70,7 +72,7 @@ rmg_double_t get_ke (STATE * sp, int tid)
     /* Pack psi into smoothing array */
     //pack_ptos (sg_psi, tmp_psi, dimx, dimy, dimz);
 
-    app6_del2 (tmp_psi, work2, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid, sp->hygrid, sp->hzgrid);
+    app6_del2 (tmp_psi, work2, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), sp->hxgrid, sp->hygrid, sp->hzgrid);
 
     KE = -0.5 * ct.vel * QMD_ddot (pbasis, tmp_psi, 1, work2, 1);
     KE = real_sum_all (KE, pct.grid_comm);

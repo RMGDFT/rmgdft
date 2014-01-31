@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 static void bsplvb (double *t, int jhigh, int index, double x, int left, double *biatx);
@@ -2197,16 +2199,16 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
     zorder = ct.interp_order;
 
     /*Number of points in bigger coarse grid */
-    cmax_x = (pct.PX0_GRID + 2 * ct.interp_trade);
-    cmax_y = (pct.PY0_GRID + 2 * ct.interp_trade);
-    cmax_z = (pct.PZ0_GRID + 2 * ct.interp_trade);
+    cmax_x = (get_PX0_GRID() + 2 * ct.interp_trade);
+    cmax_y = (get_PY0_GRID() + 2 * ct.interp_trade);
+    cmax_z = (get_PZ0_GRID() + 2 * ct.interp_trade);
 
     my_malloc (bscoef, cmax_x * cmax_y * cmax_z, rmg_double_t);
 
     /*This will hold coordinates of the grid points */
-    my_malloc (crdsx, pct.FPX0_GRID, rmg_double_t);
-    my_malloc (crdsy, pct.FPY0_GRID, rmg_double_t);
-    my_malloc (crdsz, pct.FPZ0_GRID, rmg_double_t);
+    my_malloc (crdsx, get_FPX0_GRID(), rmg_double_t);
+    my_malloc (crdsy, get_FPY0_GRID(), rmg_double_t);
+    my_malloc (crdsz, get_FPZ0_GRID(), rmg_double_t);
 
     if (!flag)
     {
@@ -2216,13 +2218,13 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
         my_malloc (knots_y, cmax_y + yorder, rmg_double_t);
         my_malloc (knots_z, cmax_z + zorder, rmg_double_t);
 
-        my_malloc (biatx, pct.FPX0_GRID * xorder, rmg_double_t);
-        my_malloc (biaty, pct.FPY0_GRID * yorder, rmg_double_t);
-        my_malloc (biatz, pct.FPZ0_GRID * zorder, rmg_double_t);
+        my_malloc (biatx, get_FPX0_GRID() * xorder, rmg_double_t);
+        my_malloc (biaty, get_FPY0_GRID() * yorder, rmg_double_t);
+        my_malloc (biatz, get_FPZ0_GRID() * zorder, rmg_double_t);
 
-        my_malloc (leftx, pct.FPX0_GRID, int);
-        my_malloc (lefty, pct.FPY0_GRID, int);
-        my_malloc (leftz, pct.FPZ0_GRID, int);
+        my_malloc (leftx, get_FPX0_GRID(), int);
+        my_malloc (lefty, get_FPY0_GRID(), int);
+        my_malloc (leftz, get_FPZ0_GRID(), int);
     }
 
 
@@ -2292,7 +2294,7 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
      * In short, do everything that depends on ct.interp_trade*/
 
     my_malloc (rho_c, cmax_x * cmax_y * cmax_z, rmg_double_t);
-    trade_imagesx (rho, rho_c, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.interp_trade, FULL_FD);
+    trade_imagesx (rho, rho_c, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.interp_trade, FULL_FD);
     /*Find B-spline coeffients */
     dbs3in (cmax_x, crdsx, cmax_y, crdsy, cmax_z, crdsz, rho_c,
             cmax_x, cmax_y, cmax_z, xorder, yorder, zorder, knots_x, knots_y, knots_z, bscoef);
@@ -2329,20 +2331,20 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
         offset_z = ct.interp_trade * cspacing_z;
 
         /*Setup coordinates that will be used to interpolate */
-        for (ix = 0; ix < pct.FPX0_GRID; ix++)
+        for (ix = 0; ix < get_FPX0_GRID(); ix++)
             crdsx[ix] = offset_x + ix * fspacing_x;
 
-        for (iy = 0; iy < pct.FPY0_GRID; iy++)
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
             crdsy[iy] = offset_y + iy * fspacing_y;
 
-        for (iz = 0; iz < pct.FPZ0_GRID; iz++)
+        for (iz = 0; iz < get_FPZ0_GRID(); iz++)
             crdsz[iz] = offset_z + iz * fspacing_z;
 
 
         /*Calculate arrays that depend on grid
          * These are needed when calculating interpolation values, 
          * but need to be setup only once*/
-        get_biats (pct.FPX0_GRID, crdsx, pct.FPY0_GRID, crdsy, pct.FPZ0_GRID, crdsz,
+        get_biats (get_FPX0_GRID(), crdsx, get_FPY0_GRID(), crdsy, get_FPZ0_GRID(), crdsz,
                    xorder, yorder, zorder,
                    knots_x, knots_y, knots_z,
                    cmax_x, cmax_y, cmax_z, biatx, biaty, biatz, leftx, lefty, leftz);
@@ -2357,10 +2359,10 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
     rmg_timings (INTERP_SETUP_TIME, time1 - time);
 #endif
 
-    dbs3gd2 (pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
+    dbs3gd2 (get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
              xorder, yorder, zorder,
              cmax_x, cmax_y, cmax_z, bscoef,
-             rho_f, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, biatx, biaty, biatz, leftx, lefty, leftz);
+             rho_f, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), biatx, biaty, biatz, leftx, lefty, leftz);
 
 
 #if MD_TIMERS

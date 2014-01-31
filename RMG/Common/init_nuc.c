@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -18,18 +20,30 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
     int icount;
     int *pvec;
+    int FP0_BASIS;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+    int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
+
+    FP0_BASIS = get_FP0_BASIS();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+    FPX_OFFSET = get_FPX_OFFSET();
+    FPY_OFFSET = get_FPY_OFFSET();
+    FPZ_OFFSET = get_FPZ_OFFSET();
+
     rmg_double_t r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
     rmg_double_t x[3], invdr;
     SPECIES *sp;
     ION *iptr;
 
     /* Grab some memory for temporary storage */
-    my_malloc (pvec, pct.FP0_BASIS, int);
+    my_malloc (pvec, FP0_BASIS, int);
 
     /* Initialize the compensating charge array and the core charge array */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
-        rhoc_f[idx] = ct.background_charge / pct.FP0_BASIS / ct.vel_f / NPES;
+        rhoc_f[idx] = ct.background_charge / FP0_BASIS / ct.vel_f / NPES;
         rhocore_f[idx] = 0.0;
         vnuc_f[idx] = 0.0;
     }
@@ -52,7 +66,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->ldim, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
+                         sp->ldim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
@@ -79,9 +93,9 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
                         {
                             pvec[icount] =
-                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
-                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
-                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+                                FPY0_GRID * FPZ0_GRID * ((Aix[ix]-FPX_OFFSET) % FPX0_GRID) +
+                                FPZ0_GRID * ((Aiy[iy]-FPY_OFFSET) % FPY0_GRID) +
+                                ((Aiz[iz]-FPZ_OFFSET) % FPZ0_GRID);
 
 
                             x[0] = xc - iptr->xtal[0];
@@ -119,7 +133,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
 
     /* Check compensating charges */
     ct.crho = 0.0;
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
         ct.crho += rhoc_f[idx];
 
 
@@ -131,7 +145,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     
 
     t1 = 0.0;
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < FP0_BASIS; idx++)
     {
         if (rhocore_f[idx] < 0.0)
             rhocore_f[idx] = 0.0;

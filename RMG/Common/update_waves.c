@@ -26,7 +26,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_d
     rmg_double_t t1;
     ION *iptr;
 
-    size =pct.P0_BASIS;
+    size = get_P0_BASIS();
 
     sidx1 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist1 * ct.max_nl;
     sidx2 = kidx * ct.num_ions * ct.num_states * ct.max_nl + ist2 * ct.max_nl;

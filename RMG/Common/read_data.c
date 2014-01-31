@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "grid.h"
 #include "main.h"
 
 
@@ -119,11 +120,11 @@ void read_data (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
-    if (fine[0] != pct.FPX0_GRID / pct.PX0_GRID)
+    if (fine[0] != get_FPX0_GRID() / get_PX0_GRID())
 	error_handler ("Wrong fine grid info");
-    if (fine[1] != pct.FPY0_GRID / pct.PY0_GRID)
+    if (fine[1] != get_FPY0_GRID() / get_PY0_GRID())
 	error_handler ("Wrong fine grid info");
-    if (fine[2] != pct.FPZ0_GRID / pct.PZ0_GRID)
+    if (fine[2] != get_FPZ0_GRID() / get_PZ0_GRID())
 	error_handler ("Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 

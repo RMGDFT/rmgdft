@@ -61,7 +61,7 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
    char *transt = "t";
    char *uplo = "l";
    char *uphi = "u";
-   int pbasis =pct.P0_BASIS;
+   int pbasis = get_P0_BASIS();
 #if GPU_ENABLED
    cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
    cublasFillMode_t cuplo=CUBLAS_FILL_MODE_LOWER;
@@ -154,7 +154,7 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
 #pragma omp barrier
        
 #pragma omp for schedule(static, 1) nowait
-   for(idx = 0;idx <pct.P0_BASIS;idx++) {
+   for(idx = 0;idx < pbasis;idx++) {
 
        sarr = &darr[omp_tid*numst];
 

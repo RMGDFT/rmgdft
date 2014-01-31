@@ -15,7 +15,7 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
 /*Applies A operator to all wavefunctions*/
 void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig)
 {
-    int istate, st1, ist, istop;
+    int istate, st1, ist, istop, P0_BASIS;
     STATE *sp;
     rmg_double_t time1, time2;
     rmg_double_t *vtot_eig_s;
@@ -24,8 +24,10 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
     error_handler("set BATCJ_NLS 1, other mode not programmed here");
 #endif
     
-    int idx, dimx = pct.PX0_GRID, dimy = pct.PY0_GRID, dimz = pct.PZ0_GRID;
-    idx = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) ;
+    P0_BASIS = get_P0_BASIS();
+
+    int idx, dimx = get_PX0_GRID(), dimy = get_PY0_GRID(), dimz = get_PZ0_GRID();
+    idx = (dimx + 4) * (dimy + 4) * (dimz + 4) ;
     my_malloc(vtot_eig_s, idx, rmg_double_t);
 
 // trade images for vtot_eig and stored in vtot_eig_s. It will be used
@@ -51,8 +53,8 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
         for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
             thread_control[ist].sp = &states[st1 + ist];
-            thread_control[ist].p1 = &a_psi[(st1 + ist) *pct.P0_BASIS];
-            thread_control[ist].p2 = &b_psi[(st1 + ist) *pct.P0_BASIS];
+            thread_control[ist].p1 = &a_psi[(st1 + ist) *P0_BASIS];
+            thread_control[ist].p2 = &b_psi[(st1 + ist) *P0_BASIS];
             thread_control[ist].vtot = vtot_eig_s;
         }
 
@@ -69,7 +71,7 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
 
     // Process any remaining orbitals serially
     for(st1 = istop;st1 < ct.num_states;st1++) {
-        subdiag_app_AB_one (&states[st1], &a_psi[st1 *pct.P0_BASIS], &b_psi[st1 * pct.P0_BASIS], vtot_eig_s);
+        subdiag_app_AB_one (&states[st1], &a_psi[st1 *P0_BASIS], &b_psi[st1 * P0_BASIS], vtot_eig_s);
     }
 #if GPU_ENABLED
     cuCtxSynchronize();
@@ -81,15 +83,15 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
 // Applies A operator to one wavefunction
 void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig_s)
 {
-    int idx, istate, sbasis, tid;
+    int idx, istate, sbasis, tid, P0_BASIS;
     rmg_double_t *sg_twovpsi, *tmp_psi, *work2;
-    int dimx = pct.PX0_GRID, dimy = pct.PY0_GRID, dimz = pct.PZ0_GRID;
+    int dimx = get_PX0_GRID(), dimy = get_PY0_GRID(), dimz = get_PZ0_GRID();
     int ione = 1;
 #    if MD_TIMERS
     rmg_double_t time1;
 #    endif
 
-
+    P0_BASIS = get_P0_BASIS();
     tmp_psi = sp->psiR;
 
 #   if MD_TIMERS
@@ -108,7 +110,7 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
     }
 
     /* A operating on psi stored in work3 */
-    app_cilr_driver (tmp_psi, a_psi, b_psi, vtot_eig_s, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, sp->hxgrid,
+    app_cilr_driver (tmp_psi, a_psi, b_psi, vtot_eig_s, dimx, dimy, dimz, sp->hxgrid,
             sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #   if MD_TIMERS
@@ -117,16 +119,16 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
 
 
     /* Apply non-local operator to psi and store in work2 */
-    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
+    work2 = &pct.nv[sp->istate * P0_BASIS];
 
 
-    for(idx = 0; idx < pct.P0_BASIS; idx++) a_psi[idx] += TWO * work2[idx];
+    for(idx = 0; idx < P0_BASIS; idx++) a_psi[idx] += TWO * work2[idx];
 
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx <P0_BASIS; idx++)
         a_psi[idx] = 0.5 * ct.vel * a_psi[idx];
 
-    work2 = &pct.Bns[sp->istate * pct.P0_BASIS];
-    for(idx = 0; idx < pct.P0_BASIS; idx++) b_psi[idx] += work2[idx];
+    work2 = &pct.Bns[sp->istate * P0_BASIS];
+    for(idx = 0; idx < P0_BASIS; idx++) b_psi[idx] += work2[idx];
 
 
 }                               /* subdiag_app_A_one */

@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -18,16 +20,26 @@ void lcao_get_rho (rmg_double_t * arho_f)
     int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
     int icount, n, incx;
     int *pvec;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+    int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
+
     rmg_double_t r, xc, yc, zc;;
     rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
     SPECIES *sp;
     ION *iptr;
 
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+    FPX_OFFSET = get_FPX_OFFSET();
+    FPY_OFFSET = get_FPY_OFFSET();
+    FPZ_OFFSET = get_FPZ_OFFSET();
+
     /* Grab some memory for temporary storage */
-    my_malloc (pvec, pct.FP0_BASIS, int);
+    my_malloc (pvec, get_FP0_BASIS(), int);
 
     /* Initialize the compensating charge array and the core charge array */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         arho_f[idx] = 0.0;
 
 
@@ -42,7 +54,7 @@ void lcao_get_rho (rmg_double_t * arho_f)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->adim_rho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID,
+                         sp->adim_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
                          ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
                          &xstart, &ystart, &zstart);
 
@@ -68,9 +80,9 @@ void lcao_get_rho (rmg_double_t * arho_f)
                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
                         {
                             pvec[icount] =
-                                pct.FPY0_GRID * pct.FPZ0_GRID * ((Aix[ix]-pct.FPX_OFFSET) % pct.FPX0_GRID) +
-                                pct.FPZ0_GRID * ((Aiy[iy]-pct.FPY_OFFSET) % pct.FPY0_GRID) +
-                                ((Aiz[iz]-pct.FPZ_OFFSET) % pct.FPZ0_GRID);
+                                FPY0_GRID * FPZ0_GRID * ((Aix[ix]-FPX_OFFSET) % FPX0_GRID) +
+                                FPZ0_GRID * ((Aiy[iy]-FPY_OFFSET) % FPY0_GRID) +
+                                ((Aiz[iz]-FPZ_OFFSET) % FPZ0_GRID);
 
                             x[0] = xc - iptr->xtal[0];
                             x[1] = yc - iptr->xtal[1];
@@ -102,7 +114,7 @@ void lcao_get_rho (rmg_double_t * arho_f)
     /* Check total charge. */
     t2 = 0.0;
     
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
 	t2 += arho_f[idx];
 
     t2 = ct.vel_f *  real_sum_all (t2, pct.img_comm);
@@ -113,7 +125,7 @@ void lcao_get_rho (rmg_double_t * arho_f)
     
 
     
-    n = pct.FP0_BASIS;
+    n = get_FP0_BASIS();
     incx = 1;
     QMD_dscal (n, t1, arho_f, incx);
 

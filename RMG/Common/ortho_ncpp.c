@@ -33,6 +33,8 @@
 
 */
 
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
@@ -49,7 +51,7 @@ void ortho_ncpp(STATE *states)
     for(kpt = 0;kpt < ct.num_kpts;kpt++) {
 
         /* Do the orthogonalization here */  
-        gram(&ct.kp[kpt], ct.vel, ct.num_states, ct.num_states,pct.P0_BASIS, pct.P0_BASIS);
+        gram(&ct.kp[kpt], ct.vel, ct.num_states, ct.num_states, get_P0_BASIS(), get_P0_BASIS());
 
     } /* end for */
 

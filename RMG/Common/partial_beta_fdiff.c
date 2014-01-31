@@ -2,6 +2,8 @@
  **    $Id$    **
 ******************************************************************************/
 
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 #include <math.h>
@@ -17,7 +19,7 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
 
 
 
-    int iz, ix, iy, index, index2;
+    int iz, ix, iy, index, index2, ibrav;
     rmg_double_t t1x, t2x, t1y, t2y, t1z, t2z;
     rmg_double_t *rptr;
     rmg_double_t *wxr, *wyr, *wzr;
@@ -26,7 +28,7 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
     int ix1, iy1;
 
 
-
+    ibrav = get_ibrav_type();
 
     ixs = (nldim + 4) * (nldim + 4);
     iys = (nldim + 4);
@@ -72,7 +74,7 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
     }                           /*for(ix = 0;ix < nldim+4;ix++) */
 
 
-    switch (ct.ibrav)
+    switch (ibrav)
     {
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:

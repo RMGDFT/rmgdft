@@ -37,6 +37,7 @@
 
 
 
+#include "common_prototypes.h"
 #include "main.h"
 #include <math.h>
 #include <float.h>
@@ -53,17 +54,17 @@ void sortpsi (STATE * states)
     rmg_double_t *tmp_psi1I, *tmp_psi2I;
     ION *iptr;
 
-    my_malloc (tmp_psi1R, 2 *pct.P0_BASIS, rmg_double_t);
-    my_malloc (tmp_psi2R, 2 *pct.P0_BASIS, rmg_double_t);
+    my_malloc (tmp_psi1R, 2 * get_P0_BASIS(), rmg_double_t);
+    my_malloc (tmp_psi2R, 2 * get_P0_BASIS(), rmg_double_t);
     tmp_psi1I = NULL;
     tmp_psi2I = NULL;
 #if !GAMMA_PT
-    tmp_psi1I = tmp_psi1R +pct.P0_BASIS;
-    tmp_psi2I = tmp_psi2R +pct.P0_BASIS;
+    tmp_psi1I = tmp_psi1R + get_P0_BASIS();
+    tmp_psi2I = tmp_psi2R + get_P0_BASIS();
 #endif
 
 
-    n =pct.P0_BASIS;
+    n = get_P0_BASIS();
 #if !GAMMA_PT
     n *= 2;
 #endif

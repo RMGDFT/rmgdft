@@ -42,6 +42,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -65,11 +67,11 @@ void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_d
     /*my_open( wave_f, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE ); */
 
 
-    my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
-    my_malloc (vtot_psi,pct.P0_BASIS, rmg_double_t);
+    my_malloc (vtot, get_FP0_BASIS(), rmg_double_t);
+    my_malloc (vtot_psi, get_P0_BASIS(), rmg_double_t);
 
     /*  get total potential  */
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     get_ddd (vtot);

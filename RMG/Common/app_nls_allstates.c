@@ -59,7 +59,7 @@ void app_nls_allstates (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t *
 rmg_double_t *work2R, rmg_double_t *work2I, rmg_double_t *Bns, rmg_double_t *BnsI, rmg_double_t *sintR, rmg_double_t *sintI, int kidx)
 {
 
-    int idx, ion, gion, stop, ip, sindex, index2, ione=1, itwo=2;
+    int idx, ion, gion, stop, ip, sindex, index2, ione=1, itwo=2, P0_BASIS;
     int *pidx;
     int i, j, nh, inh;
     int incx = 1, alloc, step, count;
@@ -80,19 +80,21 @@ rmg_double_t *work2R, rmg_double_t *work2I, rmg_double_t *Bns, rmg_double_t *Bns
     error_handler("\n app_nls_allstate is not programed for kpoint");
 #endif
 
+    P0_BASIS = get_P0_BASIS();
+
     if(pct.num_tot_proj == 0)
     {
-        for(i = 0; i < ct.num_states * pct.P0_BASIS; i++)
+        for(i = 0; i < ct.num_states * P0_BASIS; i++)
         {
             workR[i] = 0.0;
             Bns[i] = 0.0;
         }
-        my_copy(psiR, work2R, ct.num_states * pct.P0_BASIS);
+        my_copy(psiR, work2R, ct.num_states * P0_BASIS);
         return;
     }
         
 
-    alloc =pct.P0_BASIS;
+    alloc =P0_BASIS;
 
     alloc = pct.num_tot_proj * ct.num_states;
 #if GPU_ENABLED
@@ -172,48 +174,48 @@ rmg_double_t *work2R, rmg_double_t *work2I, rmg_double_t *Bns, rmg_double_t *Bns
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.num_tot_proj, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_work1,  pct.num_tot_proj, ct.gpu_work3, pct.num_tot_proj,
             &rzero,  ct.gpu_work2, pct.num_tot_proj);
-    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
-            &rone, ct.gpu_Bweight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
-            &rzero,  ct.gpu_temp, pct.P0_BASIS);
-    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, workR, ione);
+    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, P0_BASIS, ct.num_states, pct.num_tot_proj, 
+            &rone, ct.gpu_Bweight,  P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
+            &rzero,  ct.gpu_temp, P0_BASIS);
+    cublasGetVector( ct.num_states * P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, workR, ione);
 
 
-    cublasSetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), psiR, ione, ct.gpu_temp, ione);
+    cublasSetVector( ct.num_states * P0_BASIS, sizeof( rmg_double_t ), psiR, ione, ct.gpu_temp, ione);
     cublasSetVector( pct.num_tot_proj*pct.num_tot_proj, sizeof( rmg_double_t ), pct.M_qqq, ione, ct.gpu_work1, ione );
     cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.num_tot_proj, ct.num_states, pct.num_tot_proj, 
             &rone, ct.gpu_work1,  pct.num_tot_proj, ct.gpu_work3, pct.num_tot_proj,
             &rzero,  ct.gpu_work2, pct.num_tot_proj);
-    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
-            &rone, ct.gpu_weight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
-            &rone,  ct.gpu_temp, pct.P0_BASIS);
-    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, work2R, ione);
+    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, P0_BASIS, ct.num_states, pct.num_tot_proj, 
+            &rone, ct.gpu_weight,  P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
+            &rone,  ct.gpu_temp, P0_BASIS);
+    cublasGetVector( ct.num_states * P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, work2R, ione);
 
-    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, pct.P0_BASIS, ct.num_states, pct.num_tot_proj, 
-            &rone, ct.gpu_Bweight,  pct.P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
-            &rzero,  ct.gpu_temp, pct.P0_BASIS);
-    cublasGetVector( ct.num_states * pct.P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, Bns, ione);
+    cublasDgemm (ct.cublas_handle, cu_transN, cu_transN, P0_BASIS, ct.num_states, pct.num_tot_proj, 
+            &rone, ct.gpu_Bweight,  P0_BASIS, ct.gpu_work2, pct.num_tot_proj,
+            &rzero,  ct.gpu_temp, P0_BASIS);
+    cublasGetVector( ct.num_states * P0_BASIS, sizeof( rmg_double_t ), ct.gpu_temp, ione, Bns, ione);
 
 #else
 
     dgemm (transa, transa, &pct.num_tot_proj, &ct.num_states, &pct.num_tot_proj, 
             &rone, pct.M_dnm,  &pct.num_tot_proj, sintR_compack, &pct.num_tot_proj,
             &rzero,  nworkR, &pct.num_tot_proj);
-    dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
-            &rone, pct.Bweight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
-            &rzero,  workR, &pct.P0_BASIS);
+    dgemm (transa, transa, &P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
+            &rone, pct.Bweight,  &P0_BASIS, nworkR, &pct.num_tot_proj,
+            &rzero,  workR, &P0_BASIS);
 
 
-    my_copy(psiR, work2R, ct.num_states * pct.P0_BASIS);
+    my_copy(psiR, work2R, ct.num_states * P0_BASIS);
 
     dgemm (transa, transa, &pct.num_tot_proj, &ct.num_states, &pct.num_tot_proj, 
             &rone, pct.M_qqq,  &pct.num_tot_proj, sintR_compack, &pct.num_tot_proj,
             &rzero,  nworkR, &pct.num_tot_proj);
-    dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
-            &rone, pct.weight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
-            &rone,  work2R, &pct.P0_BASIS);
-    dgemm (transa, transa, &pct.P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
-            &rone, pct.Bweight,  &pct.P0_BASIS, nworkR, &pct.num_tot_proj,
-            &rzero,  Bns, &pct.P0_BASIS);
+    dgemm (transa, transa, &P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
+            &rone, pct.weight,  &P0_BASIS, nworkR, &pct.num_tot_proj,
+            &rone,  work2R, &P0_BASIS);
+    dgemm (transa, transa, &P0_BASIS, &ct.num_states, &pct.num_tot_proj, 
+            &rone, pct.Bweight,  &P0_BASIS, nworkR, &pct.num_tot_proj,
+            &rzero,  Bns, &P0_BASIS);
 #endif
 
 

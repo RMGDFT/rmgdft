@@ -40,7 +40,7 @@
 void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_double_t *wzr, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int iz, ix, iy;
+    int iz, ix, iy, ibrav;
     rmg_double_t t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
     rmg_double_t time1, time2, *rptr;
     int ixs, iys;
@@ -51,13 +51,15 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
     ix1 = dimy * dimz;
     iy1 = dimz;
 
+    ibrav = get_ibrav_type();
+
     my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_double_t);
 
 
     time1 = my_crtc ();
     trade_imagesx (rho, rptr, dimx, dimy, dimz, 2, CENTRAL_FD);
 
-    switch (ct.ibrav)
+    switch (ibrav)
     {
 
     case CUBIC_PRIMITIVE:

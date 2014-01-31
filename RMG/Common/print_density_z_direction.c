@@ -9,6 +9,8 @@
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 #if MPI
 

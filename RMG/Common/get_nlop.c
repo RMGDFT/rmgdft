@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 /*Call to this function needs to be preceeded by get_QI, since we use pct.Qidxptrlen,
@@ -39,8 +41,8 @@ void get_nlop (void)
 
     /* Grab some memory for temporary storage */
     alloc = ct.max_nlpoints;
-    if (alloc <pct.P0_BASIS)
-        alloc =pct.P0_BASIS;
+    if (alloc <get_P0_BASIS())
+        alloc =get_P0_BASIS();
     my_malloc (pvec, 2*alloc, int);
     dvec = pvec + alloc;
 
@@ -67,7 +69,7 @@ void get_nlop (void)
 
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->nldim, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
+                         sp->nldim, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(),
                          ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
                          &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
 
@@ -118,9 +120,9 @@ void get_nlop (void)
                             {
 
                                 pvec[icount] =
-                                    pct.PY0_GRID * pct.PZ0_GRID * ((Aix[ix]-pct.PX_OFFSET) % pct.PX0_GRID) +
-                                    pct.PZ0_GRID * ((Aiy[iy]-pct.PY_OFFSET) % pct.PY0_GRID) + 
-                                    ((Aiz[iz]-pct.PZ_OFFSET) % pct.PZ0_GRID);
+                                    get_PY0_GRID() * get_PZ0_GRID() * ((Aix[ix]-get_PX_OFFSET()) % get_PX0_GRID()) +
+                                    get_PZ0_GRID() * ((Aiy[iy]-get_PY_OFFSET()) % get_PY0_GRID()) + 
+                                    ((Aiz[iz]-get_PZ_OFFSET()) % get_PZ0_GRID());
 
                                 dvec[idx] = TRUE;
 
@@ -170,7 +172,7 @@ void get_nlop (void)
             if ((icount * prj_per_ion))
             {
 
-            size_t weight_size = prj_per_ion * pct.P0_BASIS + 128;
+            size_t weight_size = prj_per_ion * get_P0_BASIS() + 128;
 #if FDIFF_BETA
                 my_calloc (pct.weight_derx[ion], weight_size, rmg_double_t);
                 my_calloc (pct.weight_dery[ion], weight_size, rmg_double_t);
@@ -218,7 +220,7 @@ void get_nlop (void)
 
             /*See if this processor owns current ion */
             if (pct.gridpe ==
-                claim_ion (iptr->xtal, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid,
+                claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.psi_nxgrid, ct.psi_nygrid,
                            ct.psi_nzgrid))
             {
                 if (pct.num_owned_ions >= MAX_NONLOC_IONS)
@@ -251,7 +253,7 @@ void get_nlop (void)
 //        pct.num_tot_proj += prj_per_ion;
 //    }
         
-    size_t weight_size = pct.num_tot_proj * pct.P0_BASIS + 128;
+    size_t weight_size = pct.num_tot_proj * get_P0_BASIS() + 128;
 
 #if GPU_ENABLED
     if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(rmg_double_t) ))
@@ -339,7 +341,7 @@ void get_nlop (void)
 
         /*See if this processor owns current ion */
         owner =
-            claim_ion (iptr->xtal, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.psi_nxgrid, ct.psi_nygrid,
+            claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.psi_nxgrid, ct.psi_nygrid,
                        ct.psi_nzgrid);
 	Dprintf ("Owner of ion %d nlion %d is PE %d", ion, nlion, owner); 
         
@@ -368,7 +370,7 @@ void get_nlop (void)
 
 		/* Determine if ion has overlap with a given PE becasue of beta functions */
 		map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim,
-			pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
+			get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), NX_GRID, NY_GRID, NZ_GRID);
 
 		/* Determine if ion has overlap with a given PE becasue of Q function */
                 if(ct.norm_conserving_pp) {
@@ -376,7 +378,7 @@ void get_nlop (void)
                 }
                 else {
                     map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
-                        pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, FNX_GRID, FNY_GRID, FNZ_GRID);
+                        get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
                 }
 
 		Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 

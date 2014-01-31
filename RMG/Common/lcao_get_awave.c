@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 /*This function calculates atomic wavefunctions using wavefunctions read from PP files
@@ -20,12 +22,23 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
     int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
     int icount, n, incx;
     int *pvec;
+    int PX0_GRID, PY0_GRID, PZ0_GRID;
+    int PX_OFFSET, PY_OFFSET, PZ_OFFSET;
+
     rmg_double_t r, xc, yc, zc, vector[3];
     rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
     SPECIES *sp;
 
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
+    PX_OFFSET = get_PX_OFFSET();
+    PY_OFFSET = get_PY_OFFSET();
+    PZ_OFFSET = get_PZ_OFFSET();
+
+
     /* Grab some memory for temporary storage */
-    my_malloc (pvec,pct.P0_BASIS, int);
+    my_malloc (pvec, get_P0_BASIS(), int);
 
     /* Get species type */
     sp = &ct.sp[iptr->species];
@@ -33,7 +46,7 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
 
     /* Determine mapping indices or even if a mapping exists */
     map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-	    sp->adim_wave, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
+	    sp->adim_wave, PX0_GRID, PY0_GRID, PZ0_GRID,
 	    ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
 	    &xstart, &ystart, &zstart);
 
@@ -62,9 +75,9 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
 			    ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
 		    {
                         pvec[icount] =
-                            pct.PY0_GRID * pct.PZ0_GRID * ((Aix[ix]-pct.PX_OFFSET) % pct.PX0_GRID) +
-                            pct.PZ0_GRID * ((Aiy[iy]-pct.PY_OFFSET) % pct.PY0_GRID) +
-                            ((Aiz[iz]-pct.PZ_OFFSET) % pct.PZ0_GRID);
+                            PY0_GRID * PZ0_GRID * ((Aix[ix]-PX_OFFSET) % PX0_GRID) +
+                            PZ0_GRID * ((Aiy[iy]-PY_OFFSET) % PY0_GRID) +
+                            ((Aiz[iz]-PZ_OFFSET) % PZ0_GRID);
 
 
 

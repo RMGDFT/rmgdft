@@ -44,6 +44,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 static size_t totalsize;
@@ -97,9 +99,9 @@ void write_data (int fhand, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
     grid_size = (grid[0] * grid[1] * grid[2]) / npe;
 
     /* write fine grid info */
-    fine[0] = pct.FPX0_GRID / pct.PX0_GRID;
-    fine[1] = pct.FPY0_GRID / pct.PY0_GRID;
-    fine[2] = pct.FPZ0_GRID / pct.PZ0_GRID;
+    fine[0] = get_FPX0_GRID() / get_PX0_GRID();
+    fine[1] = get_FPY0_GRID() / get_PY0_GRID();
+    fine[2] = get_FPZ0_GRID() / get_PZ0_GRID();
     write_int (fhand, fine, 3);
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 

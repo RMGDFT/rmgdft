@@ -6,12 +6,13 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "common_prototypes.h"
 #include "main.h"
 
 void get_weight (void)
 {
 
-    int ion, ion1, ip, coarse_size, max_size, idx;
+    int ion, ion1, ip, coarse_size, max_size, idx, P0_BASIS;
     rmg_double_t *rtptr, *Bweight;
 #if FDIFF_BETA
     rmg_double_t *rtptr_x, *rtptr_y, *rtptr_z;
@@ -24,6 +25,7 @@ void get_weight (void)
     fftw_complex *fptr;
     fftw_complex *beptr, *gbptr;
 
+    P0_BASIS = get_P0_BASIS();
 
     /*maximum of nldim^3 for any species */
     max_size = ct.max_nldim * ct.max_nldim * ct.max_nldim;
@@ -44,7 +46,7 @@ void get_weight (void)
 #endif
 
 
-    for(idx = 0; idx < pct.num_tot_proj * pct.P0_BASIS; idx++)
+    for(idx = 0; idx < pct.num_tot_proj * P0_BASIS; idx++)
     {
         pct.weight[idx] = 0.0;
         pct.Bweight[idx] = 0.0;
@@ -52,8 +54,8 @@ void get_weight (void)
     /* Loop over ions */
     for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
     {
-        rtptr = &pct.weight[ion1 * ct.max_nl * pct.P0_BASIS];
-        Bweight = &pct.Bweight[ion1 * ct.max_nl * pct.P0_BASIS];
+        rtptr = &pct.weight[ion1 * ct.max_nl * P0_BASIS];
+        Bweight = &pct.Bweight[ion1 * ct.max_nl * P0_BASIS];
         ion = pct.nonloc_ions_list[ion1];
         /* Generate ion pointer */
         iptr = &ct.ions[ion];
@@ -123,8 +125,8 @@ void get_weight (void)
 
             /*Advance the temp pointers */
             fptr += coarse_size;
-            rtptr += pct.P0_BASIS;
-            Bweight += pct.P0_BASIS;
+            rtptr += P0_BASIS;
+            Bweight += P0_BASIS;
 #if FDIFF_BETA
             rtptr_x += pct.idxptrlen[ion];
             rtptr_y += pct.idxptrlen[ion];

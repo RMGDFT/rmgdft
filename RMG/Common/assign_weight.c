@@ -26,7 +26,7 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * 
     app_cir_beta_driver (tem_array, Btem_array, nldim, nldim, 
             nldim, ct.kohn_sham_fd_order);
 
-    for(idx = 0; idx < pct.P0_BASIS; idx++) rtptr[idx] = 0.0;
+    for(idx = 0; idx < get_P0_BASIS(); idx++) rtptr[idx] = 0.0;
     if(pct.idxptrlen[ion] == 0) return;
     pidx = pct.nlindex[ion];
     dvec = pct.idxflag[ion];

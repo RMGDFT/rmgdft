@@ -35,6 +35,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -44,13 +46,22 @@
 void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINTS)
 {
 
-    int istate, kpt, n, incx, idx, max_product, iene;
+    int istate, kpt, n, incx, idx, max_product, iene, P0_BASIS, FP0_BASIS;
+    int PX0_GRID, PY0_GRID, PZ0_GRID;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion, ix, iy, iz, ii, jj, kk, xoff, yoff, zoff;
     rmg_double_t *qnmI, *sintR, *qtpr;
     rmg_double_t t1, *work, *work_temp, *rho_temp, *rho_energy, *product, de, E;
     rmg_double_t time1;
     FILE *file;
+
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
 
 #if !GAMMA_PT
     rmg_double_t *sintI;
@@ -59,7 +70,10 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
     ION *iptr;
     de = (Emax - Emin) / (E_POINTS - 1);
 
-    my_calloc (work,pct.P0_BASIS, rmg_double_t);
+    P0_BASIS = get_P0_BASIS();
+    FP0_BASIS = get_FP0_BASIS();
+
+    my_calloc (work, P0_BASIS, rmg_double_t);
 
 #if GAMMA_PT
     my_malloc (sintR, ct.max_nl, rmg_double_t);
@@ -74,10 +88,10 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
     my_malloc_init( rho_energy, E_POINTS * FNX_GRID, rmg_double_t );
                                                                                               
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    xoff = ii * pct.FPX0_GRID;
+    xoff = ii * FPX0_GRID;
 
     /* scale charge accumulator */
-    n = pct.FP0_BASIS;
+    n = FP0_BASIS;
     incx = 1;
 
 
@@ -86,8 +100,8 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
 for (iene = 0; iene < E_POINTS; iene++)
 {
 
-	my_malloc_init (work_temp,pct.P0_BASIS, rmg_double_t);
-	my_malloc_init (rho_temp, pct.FP0_BASIS, rmg_double_t);
+	my_malloc_init (work_temp, P0_BASIS, rmg_double_t);
+	my_malloc_init (rho_temp, FP0_BASIS, rmg_double_t);
 
 	sp = ct.kp[0].kstate;
 	E =  iene * de  + Emin;
@@ -99,7 +113,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 		t1 = 5.6418959 * exp( -100.0 * (sp->eig[0] * Ha_eV - E) * (sp->eig[0] * Ha_eV - E) ) ;
                 printf("t1 = %f, eig = %f , E = %f  \n", t1, sp->eig[0] * Ha_eV, E);
 
-		for (idx = 0; idx <pct.P0_BASIS; idx++)
+		for (idx = 0; idx < P0_BASIS; idx++)
 		{
 			work_temp[idx] += t1 * sp->psiR[idx] * sp->psiR[idx];
 #if !GAMMA_PT
@@ -124,7 +138,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 		    bspline_interp_full (work_temp, rho_temp);
 		    break;
 	    case 2:
-		    mg_prolong_MAX10 (rho_temp, work_temp, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, FG_NX, 6);
+		    mg_prolong_MAX10 (rho_temp, work_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
 		    break;
 
 	    default:
@@ -222,13 +236,13 @@ for (iene = 0; iene < E_POINTS; iene++)
     }                           /*end for ion */
 
 
-for (ix = 0; ix < pct.FPX0_GRID; ix++)
+for (ix = 0; ix < FPX0_GRID; ix++)
 {
-	for (iy = 0; iy < pct.FPY0_GRID; iy++)
+	for (iy = 0; iy < FPY0_GRID; iy++)
 	{
-		for (iz = 0; iz < pct.FPZ0_GRID; iz++)
+		for (iz = 0; iz < FPZ0_GRID; iz++)
 		{
-			idx = iz + iy * pct.FPZ0_GRID + ix * pct.FPZ0_GRID * pct.FPY0_GRID;
+			idx = iz + iy * FPZ0_GRID + ix * FPZ0_GRID * FPY0_GRID;
 			rho_energy[iene * FNX_GRID + ix + xoff] += rho_temp[idx];
 		}
 	}

@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
 
@@ -16,21 +18,21 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
     rmg_double_t tmp1, tmp2, tmp3, frac, cc[10][4];
     rmg_double_t *rho_c, sum_rho, sum_rhof, coef;
 
-    alloc = (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+    alloc = (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4);
     my_malloc(rho_c, alloc, rmg_double_t);
 
-    ifxs = pct.FPY0_GRID * pct.FPZ0_GRID;
-    ifys = pct.FPZ0_GRID;
+    ifxs = get_FPY0_GRID() * get_FPZ0_GRID();
+    ifys = get_FPZ0_GRID();
 
-    icxs = (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
-    icys = pct.PZ0_GRID + 4;
+    icxs = (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4);
+    icys = get_PZ0_GRID() + 4;
 
     int num = 0;
 
-    dimx = pct.PX0_GRID;
-    dimy = pct.PY0_GRID;
-    dimz = pct.PZ0_GRID;
-    pbasis =pct.P0_BASIS;
+    dimx = get_PX0_GRID();
+    dimy = get_PY0_GRID();
+    dimz = get_PZ0_GRID();
+    pbasis =get_P0_BASIS();
 
     sum_rho = 0.0;
     sum_rhof = 0.0;
@@ -50,11 +52,11 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
 
     trade_imagesx (rho, rho_c, dimx, dimy, dimz, 2, FULL_FD);
 
-    for (i = 2; i < pct.PX0_GRID + 2; i++)
+    for (i = 2; i < get_PX0_GRID() + 2; i++)
     {
-        for (j = 2; j < pct.PY0_GRID + 2; j++)
+        for (j = 2; j < get_PY0_GRID() + 2; j++)
         {
-            for (k = 2; k < pct.PZ0_GRID + 2; k++)
+            for (k = 2; k < get_PZ0_GRID() + 2; k++)
             {
                 rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2)] =
                     rho_c[i*icxs + j*icys + k];
@@ -63,11 +65,11 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
         }
     }
 
-    for (i = 2; i < pct.PX0_GRID + 2; i++)
+    for (i = 2; i < get_PX0_GRID() + 2; i++)
     {
-        for (j = 2; j < pct.PY0_GRID + 2; j++)
+        for (j = 2; j < get_PY0_GRID() + 2; j++)
         {
-            for (k = 2; k < pct.PZ0_GRID + 2; k++)
+            for (k = 2; k < get_PZ0_GRID() + 2; k++)
             {
 
                 for (in = 1; in < FG_NX; in++)
@@ -95,11 +97,11 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
         }
     }
 
-    for (i = 2; i < pct.PX0_GRID + 2; i++)
+    for (i = 2; i < get_PX0_GRID() + 2; i++)
     {
-        for (j = 2; j < pct.PY0_GRID + 2; j++)
+        for (j = 2; j < get_PY0_GRID() + 2; j++)
         {
-            for (k = 2; k < pct.PZ0_GRID + 2; k++)
+            for (k = 2; k < get_PZ0_GRID() + 2; k++)
             {
 
                 for (in = 1; in < FG_NX; in++)
@@ -137,11 +139,11 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
     }
 
 
-    for (i = 2; i < pct.PX0_GRID + 2; i++)
+    for (i = 2; i < get_PX0_GRID() + 2; i++)
     {
-        for (j = 2; j < pct.PY0_GRID + 2; j++)
+        for (j = 2; j < get_PY0_GRID() + 2; j++)
         {
-            for (k = 2; k < pct.PZ0_GRID + 2; k++)
+            for (k = 2; k < get_PZ0_GRID() + 2; k++)
             {
 
                 for (in = 1; in < FG_NX; in++)
@@ -179,7 +181,7 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
         }
     }
 
-    if (num != pct.FP0_BASIS)
+    if (num != get_FP0_BASIS())
         error_handler ("there is something wrong here");
 
     for (i = 0; i < num; i++)

@@ -39,6 +39,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -47,12 +49,17 @@ void init_wf (STATE * states)
 
     int idx, state, ix, iy, iz, pbasis, nspin=(ct.spin_flag+1);
     int xoff, yoff, zoff;
+    int PX0_GRID, PY0_GRID, PZ0_GRID;
     rmg_double_t *tmp_psiR, *tmp_psiI;
     STATE *sp;
     rmg_double_t xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
     long idum;
 
-    pbasis = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
+
+    pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
 
     my_malloc (tmp_psiR, pbasis, rmg_double_t);
 #if !GAMMA_PT
@@ -61,7 +68,7 @@ void init_wf (STATE * states)
 
     /* Set state 0 to a constant */
     sp = states;
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx < pbasis; idx++)
         tmp_psiR[idx] = ONE;
     scatter_psi (tmp_psiR, NULL, sp, 0);
 
@@ -83,9 +90,9 @@ void init_wf (STATE * states)
 
 
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = pct.PX_OFFSET;
-    yoff = pct.PY_OFFSET;
-    zoff = pct.PZ_OFFSET;
+    xoff = get_PX_OFFSET();
+    yoff = get_PY_OFFSET();
+    zoff = get_PZ_OFFSET();
 
 
     /* Initialize the random number generator */
@@ -126,13 +133,13 @@ void init_wf (STATE * states)
 
 
         idx = 0;
-        for (ix = 0; ix < pct.PX0_GRID; ix++)
+        for (ix = 0; ix < PX0_GRID; ix++)
         {
 
-            for (iy = 0; iy < pct.PY0_GRID; iy++)
+            for (iy = 0; iy < PY0_GRID; iy++)
             {
 
-                for (iz = 0; iz < pct.PZ0_GRID; iz++)
+                for (iz = 0; iz < PZ0_GRID; iz++)
                 {
 
                     tmp_psiR[idx] = xrand[xoff + ix] * yrand[yoff + iy] * zrand[zoff + iz];

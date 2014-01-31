@@ -53,6 +53,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
@@ -68,7 +70,7 @@ extern STATE *states;
 void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 {
 
-    int idx, cycles, ntid;
+    int idx, cycles, ntid, P0_BASIS;
     int nits, pbasis, sbasis;
     rmg_double_t eig, diag, t1, t2, t3, t4;
     rmg_double_t *work1, *nv, *ns, *res2;
@@ -86,6 +88,8 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if GPU_FD_ENABLED
     cudaStream_t *cstream;
 #endif
+
+    P0_BASIS = get_P0_BASIS();
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = sp->dimx;
@@ -149,8 +153,8 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
 
 #else
-    nv = &pct.nv[sp->istate * pct.P0_BASIS]; 
-    ns = &pct.ns[sp->istate * pct.P0_BASIS]; 
+    nv = &pct.nv[sp->istate * P0_BASIS]; 
+    ns = &pct.ns[sp->istate * P0_BASIS]; 
 #endif
 
 #if MD_TIMERS
@@ -175,7 +179,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     if(potential_acceleration) {
-        for(idx = 0;idx <pct.P0_BASIS;idx++) {
+        for(idx = 0;idx <P0_BASIS;idx++) {
             nvtot_psi[idx] = vtot_psi[idx];
             saved_psi[idx] = tmp_psi[idx];
         }
@@ -311,7 +315,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
 
             t1 = TWO * eig;
-            for (idx = 0; idx <pct.P0_BASIS; idx++)
+            for (idx = 0; idx <P0_BASIS; idx++)
             {
 
                 res_f[idx] = t1 * res_f[idx] - work1_f[idx];
@@ -324,7 +328,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images_f (sg_psi_f, dimx, dimy, dimz, pct.neighbors, FULL_FD);
+            trade_images_f (sg_psi_f, dimx, dimy, dimz, get_neighbors(), FULL_FD);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
@@ -336,7 +340,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            app_smooth_f (sg_psi_f, work1_f, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+            app_smooth_f (sg_psi_f, work1_f, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 #if MD_TIMERS
             rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
@@ -356,10 +360,10 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv_f (sg_twovpsi_f, work1_f, work2_f,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, sb_step, t1,
+                        hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
                         NX_GRID, NY_GRID, NZ_GRID,
-                        pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET,
-                        pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+                        get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
+                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
@@ -389,7 +393,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
             t2 = ZERO;
             t4 = ct.eig_parm.gl_step * diag;
 
-            for (idx = 0; idx <pct.P0_BASIS; idx++)
+            for (idx = 0; idx <P0_BASIS; idx++)
             {
 
                 t3 = t1 * (rmg_double_t)res_f[idx] - (rmg_double_t)work1_f[idx];
@@ -415,7 +419,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     if(potential_acceleration) {
 
         // Save potential used for this orbital and update potential for future orbitals
-        for(idx = 0;idx <pct.P0_BASIS;idx++) {
+        for(idx = 0;idx <P0_BASIS;idx++) {
             sp->dvhxc[idx] = nvtot_psi[idx];
         }
 
@@ -428,7 +432,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if HYBRID_MODEL
             pthread_mutex_lock(&vtot_sync_mutex);
 #endif
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi_f[idx] * (tmp_psi_f[idx] - saved_psi[idx]);
             }
 #if HYBRID_MODEL
@@ -440,29 +444,29 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
         if(ct.potential_acceleration_poisson_step > 0.0) {
 
             // construct delta_rho
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                 res_f[idx] = -4.0 * PI * sp->occupation[0] *
                            (tmp_psi_f[idx] - saved_psi[idx]) * (2.0*saved_psi[idx] + (tmp_psi_f[idx] - saved_psi[idx]));
             }
 
             // zero out solution vector
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                 sg_twovpsi_f[idx] = 0.0;
             }
 
             /* Pack delta_rho into multigrid array */
             pack_ptos_f (sg_psi_f, res_f, dimx, dimy, dimz);
-            trade_images_f (sg_psi_f, dimx, dimy, dimz, pct.neighbors, FULL_FD);
+            trade_images_f (sg_psi_f, dimx, dimy, dimz, get_neighbors(), FULL_FD);
             /* Smooth it once and store the smoothed charge in res */
-            app_smooth1_f (sg_psi_f, res_f, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+            app_smooth1_f (sg_psi_f, res_f, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                 t2 += res_f[idx];
             }
             t2 = real_sum_all(t2, pct.grid_comm) / (NX_GRID * NY_GRID * NZ_GRID);
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                 res_f[idx] -= t2;
             }
 
@@ -472,12 +476,12 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
             levels=1;
             mgrid_solv_f (sg_twovpsi_f, res_f, work2_f,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, pct.neighbors, levels, eig_pre, eig_post, 1, 1.0, 0.0,
+                        hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
                         NX_GRID, NY_GRID, NZ_GRID,
-                        pct.PX_OFFSET, pct.PY_OFFSET, pct.PZ_OFFSET,
-                        pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID);
+                        get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
+                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                 res_f[idx] = 0.0;
             }
             pack_stop_axpy_f (sg_twovpsi_f, res_f, 1.0, dimx, dimy, dimz);
@@ -486,7 +490,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if HYBRID_MODEL
             pthread_mutex_lock(&vtot_sync_mutex);
 #endif
-            for(idx = 0;idx <pct.P0_BASIS;idx++) {
+            for(idx = 0;idx <P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * res_f[idx];
             }
 #if HYBRID_MODEL

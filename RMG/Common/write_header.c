@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 #include "svnrev.h"
 
@@ -165,7 +167,7 @@ void write_header (void)
     printf ("        NZ  = %d\n", ct.psi_nzgrid);
 
     printf ("\n");
-    printf ("    Bravais lattice type is %s\n", lattice_type[ct.ibrav]);
+    printf ("    Bravais lattice type is %s\n", lattice_type[get_ibrav_type()]);
     printf ("    Cell volume      = %12.6f a0^3\n", ct.vel * ct.psi_nbasis);
     printf ("    Grid anisotropy  = %12.6f\n", ct.anisotropy);
 

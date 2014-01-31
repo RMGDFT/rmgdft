@@ -6,25 +6,39 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 
 void lcao_get_psi (STATE * states)
 {
 
-    int ion, idx, ip, l, m, state_count, nspin, st;
+    int ion, idx, ip, l, m, state_count, nspin, st, P0_BASIS;
+    int PX0_GRID, PY0_GRID, PZ0_GRID;
+    int PX_OFFSET, PY_OFFSET, PZ_OFFSET;
+
     SPECIES *sp;
     ION *iptr;
     rmg_double_t *psi, occupancy, occ_per_wave, charge_count;
     long idum;
     double coeff;
 
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
+    PX_OFFSET = get_PX_OFFSET();
+    PY_OFFSET = get_PY_OFFSET();
+    PZ_OFFSET = get_PZ_OFFSET();
+
     nspin = ct.spin_flag+1;
 
     /*The first index is due to k-point*/
+    P0_BASIS = get_P0_BASIS();
+
     for (st = 0; st < ct.num_states; st++)
     {
-        for (idx = 0; idx <pct.P0_BASIS; idx++)
+        for (idx = 0; idx < P0_BASIS; idx++)
         {
             states[st].psiR[idx] = 0.0;
         }
@@ -146,9 +160,9 @@ void lcao_get_psi (STATE * states)
         STATE *state_p;
 
         pe2xyz (pct.gridpe, &ix, &iy, &iz);
-        xoff = pct.PX_OFFSET;
-        yoff = pct.PY_OFFSET;
-        zoff = pct.PZ_OFFSET;
+        xoff = PX_OFFSET;
+        yoff = PY_OFFSET;
+        zoff = PZ_OFFSET;
 
         /* Initialize the random number generator */
         idum = 3356;
@@ -179,13 +193,13 @@ void lcao_get_psi (STATE * states)
 
 
             idx = 0;
-            for (ix = 0; ix < pct.PX0_GRID; ix++)
+            for (ix = 0; ix < PX0_GRID; ix++)
             {
 
-                for (iy = 0; iy < pct.PY0_GRID; iy++)
+                for (iy = 0; iy < PY0_GRID; iy++)
                 {
 
-                    for (iz = 0; iz < pct.PZ0_GRID; iz++)
+                    for (iz = 0; iz < PZ0_GRID; iz++)
                     {
 
                         state_p->psiR[idx] = xrand[xoff + ix] * yrand[yoff + iy] * zrand[zoff + iz];

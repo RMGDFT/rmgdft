@@ -25,7 +25,7 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, rmg_double_t * newsintR_x, rmg_d
 #endif
 
     nh = ct.sp[ct.ions[ion].species].nh;
-    alloc =pct.P0_BASIS;
+    alloc = get_P0_BASIS();
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 

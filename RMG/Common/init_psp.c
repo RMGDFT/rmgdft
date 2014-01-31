@@ -38,6 +38,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
+#include "common_prototypes.h"
 #include "main.h"
 
 #define SMALL 1.e-35
@@ -48,13 +50,15 @@ int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing)
 {
 
     rmg_double_t scale, t1, t2;
-    int it1, dim;
+    int it1, dim, ibrav;
+
+    ibrav = get_ibrav_type();
     
     /* Set the scaling factor for determining the radius of the local grids */
     scale = 1.0;
-    if (ct.ibrav == CUBIC_BC)
+    if (ibrav == CUBIC_BC)
 	scale = 1.1;
-    if (ct.ibrav == CUBIC_FC)
+    if (ibrav == CUBIC_FC)
 	scale = 1.3;
         
 	t1 = 2.0 * scale * radius / mingrid_spacing;
@@ -73,7 +77,7 @@ int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing)
 void init_psp (void)
 {
 
-    int isp, idx, ip, write_flag;
+    int isp, idx, ip, write_flag, ibrav;
     SPECIES *sp;
     rmg_double_t *work, *workr, Zv, rc, rfil, t1;
     rmg_double_t rcut, exp_fac;
@@ -81,6 +85,7 @@ void init_psp (void)
     FILE *psp = NULL;
     FILE *psp2 = NULL;
 
+    ibrav = get_ibrav_type();
 
     my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t);
     workr = work + MAX_RGRID;
@@ -115,7 +120,7 @@ void init_psp (void)
         /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)FG_NX; */
         t1 = sp->ldim / FG_NX + 1;
         sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
+        if (ibrav == HEXAGONAL)
             sp->drlig *= 2.0;
         t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drlig /= t1;
@@ -131,7 +136,7 @@ void init_psp (void)
 
         /*Get drnlig */
         sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
+        if (ibrav == HEXAGONAL)
             sp->drnlig *= 2.0;
         t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drnlig /= t1;

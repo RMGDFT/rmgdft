@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "main.h"
+#include "../Headers/main.h"
 
 void initialize (int argc, char **argv);
 
@@ -172,27 +172,31 @@ int main (int argc, char **argv)
 void initialize(int argc, char **argv) 
 {
 
+    int FP0_BASIS;
+
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
-    
+
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/
     init_IO (argc, argv);
+
+    FP0_BASIS = get_FP0_BASIS();
 
     int num_images = pct.images;
     num_images = 1;
     lbfgs_init(ct.num_ions, num_images);
 
-    my_malloc (rho, pct.FP0_BASIS, rmg_double_t);
-    my_malloc (rhocore, pct.FP0_BASIS, rmg_double_t);
-    my_malloc (rhoc, pct.FP0_BASIS, rmg_double_t);
-    my_malloc (vh, pct.FP0_BASIS, rmg_double_t);
-    my_malloc (vnuc, pct.FP0_BASIS, rmg_double_t);
-    my_malloc (vxc, pct.FP0_BASIS, rmg_double_t);
+    my_malloc (rho, FP0_BASIS, rmg_double_t);
+    my_malloc (rhocore, FP0_BASIS, rmg_double_t);
+    my_malloc (rhoc, FP0_BASIS, rmg_double_t);
+    my_malloc (vh, FP0_BASIS, rmg_double_t);
+    my_malloc (vnuc, FP0_BASIS, rmg_double_t);
+    my_malloc (vxc, FP0_BASIS, rmg_double_t);
 
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
     if(ct.spin_flag)
-    	    my_malloc (rho_oppo, pct.FP0_BASIS, rmg_double_t);
+    	    my_malloc (rho_oppo, FP0_BASIS, rmg_double_t);
 
 
     /* initialize states */

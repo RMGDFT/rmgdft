@@ -35,6 +35,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "grid.h"
 #include "main.h"
 
 
@@ -56,7 +57,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
     STATE *sp;
     ION *iptr;
 
-    my_calloc (work,pct.P0_BASIS, rmg_double_t);
+    my_calloc (work, get_P0_BASIS(), rmg_double_t);
 
 #if GAMMA_PT
     my_malloc (sintR, ct.max_nl, rmg_double_t);
@@ -69,7 +70,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
     my_malloc (product, max_product, rmg_double_t);
 
     /* scale charge accumulator */
-    n = pct.FP0_BASIS;
+    n = get_FP0_BASIS();
     incx = 1;
 
 
@@ -84,7 +85,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
 
             t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-            for (idx = 0; idx <pct.P0_BASIS; idx++)
+            for (idx = 0; idx < get_P0_BASIS(); idx++)
             {
                 work[idx] += t1 * sp->psiR[idx] * sp->psiR[idx];
 #if !GAMMA_PT
@@ -110,7 +111,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
             bspline_interp_full (work, rho);
             break;
         case 2:
-            mg_prolong_MAX10 (rho, work, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, FG_NX, 6);
+            mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), FG_NX, 6);
             break;
 
         default:
@@ -216,7 +217,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
 
     /* Check total charge. */
     ct.tcharge = ZERO;
-    for (idx = 0; idx < pct.FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         ct.tcharge += rho[idx];
 
     /* ct.tcharge = real_sum_all (ct.tcharge); */
