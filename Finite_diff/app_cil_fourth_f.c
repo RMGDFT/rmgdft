@@ -12,7 +12,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include "main.h"
+#include "common_prototypes.h"
 #include "hybrid.h"
 
 static rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);

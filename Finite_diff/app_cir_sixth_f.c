@@ -2,7 +2,7 @@
  **    $Id: app_cir_sixth.c 1840 2013-01-22 13:52:34Z ebriggs $    **
 ******************************************************************************/
 
-#include "main.h"
+#include "common_prototypes.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
