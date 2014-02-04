@@ -230,7 +230,6 @@ void ortho_half (STATE *states);
 void ortho_bcc (STATE *states);
 void ortho_ncpp(STATE *states);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
-void pe2xyz (int pe, int *x, int *y, int *z);
 void pack_ptos (rmg_double_t *sg, rmg_double_t *pg, int dimx, int dimy, int dimz);
 void pack_ptos_f(rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz);
 void pack_stop (rmg_double_t *sg, rmg_double_t *pg, int dimx, int dimy, int dimz);
@@ -382,6 +381,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
 void subdiag_app_B (STATE * states, rmg_double_t * b_psi);
 void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi);
 void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig);
+void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig_s);
 #else
 void subdiag_nongamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc);
 void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI, rmg_double_t * s_psiR, rmg_double_t * s_psiI, rmg_double_t * vtot_eig);

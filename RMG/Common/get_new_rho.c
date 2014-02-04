@@ -45,7 +45,7 @@
 void get_new_rho (STATE * states, rmg_double_t * rho)
 {
 
-    int istate, kpt, n, incx, idx, max_product;
+    int istate, kpt, n, incx, idx, max_product, P0_BASIS;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion;
     rmg_double_t *qnmI, *sintR, *qtpr;
@@ -57,7 +57,9 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
     STATE *sp;
     ION *iptr;
 
-    my_calloc (work, get_P0_BASIS(), rmg_double_t);
+    P0_BASIS = get_P0_BASIS();
+
+    my_calloc (work, P0_BASIS, rmg_double_t);
 
 #if GAMMA_PT
     my_malloc (sintR, ct.max_nl, rmg_double_t);
@@ -85,7 +87,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
 
             t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-            for (idx = 0; idx < get_P0_BASIS(); idx++)
+            for (idx = 0; idx < P0_BASIS; idx++)
             {
                 work[idx] += t1 * sp->psiR[idx] * sp->psiR[idx];
 #if !GAMMA_PT

@@ -359,10 +359,9 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
     /*Setup some fftw stuff */
     /*Setup fftw wisdom */
-dprintf("P0_BASIS = %d  %d",P0_BASIS, FP0_BASIS);fflush(NULL);
     init_fftw_wisdom ();
 
-    dprintf ("Get memory for fourier transform phase");
+    Dprintf ("Get memory for fourier transform phase");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];

@@ -109,6 +109,11 @@ int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
 void read_common();
 void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
+void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz);
+void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images);
+void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images);
+void pe2xyz(int pe, int *x, int *y, int *z);
 
 int get_PX0_GRID(void);
 int get_PY0_GRID(void);
@@ -126,6 +131,7 @@ int get_FPY0_GRID(void);
 int get_FPZ0_GRID(void);
 void set_neighbors(int *list);
 int *get_neighbors(void);
+void set_grids(int ii, int jj, int kk);
 int get_ibrav_type(void);
 void set_ibrav_type(int ibrav);
 ION *get_ion(int ion);

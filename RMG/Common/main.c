@@ -120,7 +120,6 @@ double b0[3], b1[3], b2[3];
 double alat;
 
 
-
 int main (int argc, char **argv)
 {
 

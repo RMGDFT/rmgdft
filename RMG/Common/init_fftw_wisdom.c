@@ -6,13 +6,12 @@
 #include <stdlib.h>
 #include <float.h>
 #include "main.h"
-
+#include "fftw.h"
 void init_fftw_wisdom (void)
 {
     int is;
     fftwnd_plan p2;
     /*fftwnd_plan p1; */
-
     for (is = 0; is < ct.num_species; is++)
     {
         /*Backward wisdom */

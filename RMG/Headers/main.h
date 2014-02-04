@@ -50,15 +50,6 @@
 /* Use predefined booleans */
 #include <stdbool.h>
 
-/* For semaphore type */
-#include <semaphore.h>
-
-/* Size of floating point variables used in QMD */
-//#define     REAL    double
-
-/* Basic types */
-#include    "rmgtypes.h"
-
 /* Typedefs */
 #include    "rmgtypedefs.h"
 
@@ -68,17 +59,11 @@
 /* Compile time parameters */
 #include    "params.h"
 
-/* Constants and symbolic definitions */
-#include    "const.h"
-
 /* include the mpi wrapper */
 #include    "my_mpi.h"
 
 /* include scalapack wrapper */
 #include "my_scalapack.h"
-
-/* fourier transformation structure definitions*/
-#include    "fftw.h"
 
 #include "lbfgs.h"
 
@@ -96,18 +81,12 @@
 /* routines for input parsing */
 #include "input.h"
 
-/* GPU includes */
-#if GPU_ENABLED
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-#endif
 
 /* Custom types used in the code*/
 #include "typedefs.h"
 
 /* Prototypes for common function calls*/
-#include "common_prototypes.h" 
+//#include "common_prototypes.h" 
 
 /* Prototypes for function calls*/
 #include "prototypes.h" 

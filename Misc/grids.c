@@ -39,12 +39,13 @@ static int FP0_BASIS;
 static int ibrav;
 
 static int neighbor_first=0;
+static int grid_first=0;
 static int neighbors[6];
 
-void set_grids(void)
+void set_grids(int ii, int jj, int kk)
 {
 
-    int rem, ii, jj, kk;
+    int rem;
 
     // Compute grid sizes for each node.
     PX0_GRID = NX_GRID / PE_X;
@@ -72,65 +73,96 @@ void set_grids(void)
     find_node_offsets(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID,
                       &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
 
+    grid_first = 1;
 }
 int get_PX0_GRID(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return PX0_GRID;
 }
 int get_PY0_GRID(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return PY0_GRID;
 }
 int get_PZ0_GRID(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return PZ0_GRID;
 }
 int get_PX_OFFSET(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return PX_OFFSET;
 }
 int get_PY_OFFSET(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return PY_OFFSET;
 }
 int get_PZ_OFFSET(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return PZ_OFFSET;
 }
 int get_FPX_OFFSET(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FPX_OFFSET;
 }
 int get_FPY_OFFSET(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FPY_OFFSET;
 }
 int get_FPZ_OFFSET(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FPZ_OFFSET;
 }
 int get_P0_BASIS(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return P0_BASIS;
 }
 int get_FP0_BASIS(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FP0_BASIS;
 }
 int get_FPX0_GRID(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FPX0_GRID;
 }
 int get_FPY0_GRID(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FPY0_GRID;
 }
 int get_FPZ0_GRID(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return FPZ0_GRID;
 }
 int get_ibrav_type(void)
 {
+    if(!grid_first)
+        error_handler("Grids not initialized. Please call set_grids first");
     return ibrav;
 }
 void set_ibrav_type(int value)

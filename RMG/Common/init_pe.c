@@ -33,6 +33,8 @@
  * SOURCE
  */
 
+#include <semaphore.h>
+
 #include "grid.h"
 #include "rmgtypes.h"
 #include "common_prototypes.h"
@@ -201,6 +203,6 @@ void init_pe ( int image )
 
     // Set up grids and neighbors
     set_neighbors(neighbors);
-    set_grids();
+    set_grids(ii, jj, kk);
 
 }                               /* end init_pe */
