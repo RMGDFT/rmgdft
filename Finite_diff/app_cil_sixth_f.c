@@ -17,6 +17,11 @@ static rmg_double_t app_cil_sixth_global_f (rmg_float_t * rptr, rmg_float_t * b,
 static rmg_double_t app_cil_sixth_standard_f (rmg_float_t * rptr, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz); 
 static rmg_double_t c0;
 
+double FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+double FD_app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+double FD_app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+double FD_app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+
 // Compilers can generate much better code if they know the loop dimensions at compile
 // as opposed to run time. Therefore since most of the finite difference stencils
 // are applied at the global level we check at the top level to see if the grid
@@ -79,10 +84,14 @@ rmg_double_t app_cil_sixth_f (rmg_float_t * psi, rmg_float_t * b, int dimx, int 
     // first check for fixed dim case  
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) {
-        cc = app_cil_sixth_global_f (rptr, b, gridhx, gridhy, gridhz);
+//        cc = app_cil_sixth_global_f (rptr, b, gridhx, gridhy, gridhz);
+        cc = FD_app_cil_sixth_global_rmg_float (rptr, b, gridhx, gridhy, gridhz);
+
     }
     else {
-        cc = app_cil_sixth_standard_f (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+//        cc = app_cil_sixth_standard_f (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        cc = FD_app_cil_sixth_standard_rmg_float (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
     }
 
     if(used_alloc)

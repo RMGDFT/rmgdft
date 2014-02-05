@@ -95,7 +95,6 @@ void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work
     scale = step / scale;
     trade_images (f_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
 
-
     for (idx = 0; idx < size; idx++)
     {
 

@@ -1,98 +1,36 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
 
 #include "const.h"
-#include "common_prototypes.h"
+#include "rmgtypes.h"
 #include "fixed_dims.h"
-#include "rmg_alloc.h"
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include "hybrid.h"
+#include "iostream"
 
-static rmg_double_t app_cil_sixth_global(rmg_double_t * psi, rmg_double_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-static rmg_double_t app_cil_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+using namespace std;
+//#include "common_prototypes.h"
 
-// Compilers can generate much better code if they know the loop dimensions at compile
-// as opposed to run time. Therefore since most of the finite difference stencils
-// are applied at the global level we check at the top level to see if the grid
-// dimensions correpsond to the global case. If so we call a routine with those
-// dimensions set at compile time. If not we just fall through to the general case.
-
-rmg_double_t app_cil_sixth (rmg_double_t * psi, rmg_double_t * b, int dimx, int dimy, int dimz,
-                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    int numgrid, tid, used_alloc=FALSE, P0_BASIS;
-    rmg_double_t cc;
-    rmg_double_t *rptr=NULL;
-    rmg_double_t *gpu_psi, *gpu_b;
-
-    int pbasis = dimx * dimy * dimz, itid;
-    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-#if GPU_FD_ENABLED
-    cudaStream_t *cstream;
-    cstream = get_thread_cstream();
-#endif
-
-#if HYBRID_MODEL
-    tid = get_thread_tid();
-    if(tid < 0) tid = 0;  // OK in this case
-#else
-    tid = 0;
-#endif
-
-    P0_BASIS = get_P0_BASIS();
-
-#if (GPU_FD_ENABLED && FD_XSIZE)
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-    rptr = get_thread_trade_buf();
-    gpu_psi = (rmg_double_t *)&ct.gpu_work1[0];
-    gpu_psi += tid*sbasis;
-    gpu_b = (rmg_double_t *)&ct.gpu_work2[0];
-    gpu_b += tid*pbasis;
-#endif
-
-    // If rptr is null then we must allocate it here
-    if(rptr == NULL) {
-        my_malloc (rptr, sbasis + 64, rmg_double_t);
-        used_alloc = TRUE;
-    }
-
-
-#if (GPU_FD_ENABLED && FD_XSIZE)
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
-    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
-    cc = app_cil_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, gridhx, gridhy, gridhz,
-                                              get_xside(), get_yside(), get_zside(), *cstream);
-
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
-    return cc;
-#endif
-
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
-
-    // first check for fixed dim case  
-    numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS) {
-//        cc = app_cil_sixth_global (rptr, b, gridhx, gridhy, gridhz);
-        cc = FD_app_cil_sixth_global_rmg_double (rptr, b, gridhx, gridhy, gridhz);
-    }
-    else {
-//        cc = app_cil_sixth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        cc = FD_app_cil_sixth_standard_rmg_double (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-
-    if(used_alloc)
-        my_free(rptr);
-    return cc;
-
+extern "C" {
+  rmg_double_t get_xside(void);
+}
+extern "C" {
+  rmg_double_t get_yside(void);
+}
+extern "C" {
+  rmg_double_t get_zside(void);
+}
+extern "C" {
+  int get_PX0_GRID(void);
+}
+extern "C" {
+  int get_PY0_GRID(void);
+}
+extern "C" {
+  int get_PZ0_GRID(void);
+}
+extern "C" {
+  int get_ibrav_type(void);
 }
 
-
-rmg_double_t app_cil_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+template <typename RmgType>
+rmg_double_t FD_app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr, numgrid, tid;
@@ -193,14 +131,14 @@ rmg_double_t app_cil_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int 
 
     }                           /* end for */
 
-
     return cc;
-
 }
 
 
+
 // Version with loop dimensions set at compile time
-rmg_double_t app_cil_sixth_global (rmg_double_t * rptr, rmg_double_t * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+template <typename RmgType>
+rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
 
@@ -606,3 +544,30 @@ rmg_double_t app_cil_sixth_global (rmg_double_t * rptr, rmg_double_t * b, rmg_do
 
 }
 
+
+// Wrappers to call these from C
+extern "C" double FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_sixth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_sixth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+}
+
+extern "C" double FD_app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_sixth_global<double> (rptr, b, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_sixth_global<float> (rptr, b, gridhx, gridhy, gridhz);
+
+}

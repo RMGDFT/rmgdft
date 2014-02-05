@@ -31,6 +31,7 @@
 #include <math.h>
 #include "grid.h"
 #include "main.h"
+#include "common_prototypes.h"
 
 
 void read_common ()

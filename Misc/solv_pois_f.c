@@ -43,6 +43,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 
 void solv_pois_f (rmg_float_t * vmat, rmg_float_t * fmat, rmg_float_t * work,
                 int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)

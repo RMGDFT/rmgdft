@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "common_prototypes.h"
 
 void lbfgs (double *posion, double *force, int num_ions, int num_images)
 {

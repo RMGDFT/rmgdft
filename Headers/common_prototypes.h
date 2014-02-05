@@ -4,6 +4,9 @@
 
 */
 
+#ifndef RMG_COMMON_PROTOTYPES_H
+#define RMG_COMMON_PROTOTYPES_H 1
+
 #include "rmgtypedefs.h"
 
 
@@ -115,6 +118,7 @@ void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz
 void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images);
 void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images);
 void pe2xyz(int pe, int *x, int *y, int *z);
+int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing);
 
 int get_PX0_GRID(void);
 int get_PY0_GRID(void);
@@ -234,4 +238,4 @@ double app_cil_fourth_f_gpu(const float *psi,
 
 #endif
 
-
+#endif

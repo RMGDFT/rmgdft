@@ -12,8 +12,7 @@
 #
 #
 cmake_minimum_required (VERSION 2.6) 
-#project (RMG C CXX Fortran) 
-project (RMG C Fortran) 
+project (RMG C CXX Fortran) 
 
 
 # Executables defined by the file that contains main()
@@ -70,10 +69,10 @@ target_link_libraries (rmg US_PP Force)
 # Search for an MPI implementation
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
 find_package(MPI REQUIRED)
-#if(MPI_CXX_FOUND)
+if(MPI_CXX_FOUND)
 #  include_directories(${MPI_CXX_INCLUDE_PATH})
 #  target_link_libraries (rmg ${MPI_CXX_LIBRARIES})
-#endif (MPI_CXX_FOUND)
+endif (MPI_CXX_FOUND)
 if(MPI_C_FOUND)
   include_directories(${MPI_C_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_C_LIBRARIES})
@@ -145,7 +144,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 #    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
     set(CMAKE_C_FLAGS "-Wall -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
-    set(CMAKE_EXE_LINKER_FLAGS "-ldl")  ## Strip binary
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
 endif()
 set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 

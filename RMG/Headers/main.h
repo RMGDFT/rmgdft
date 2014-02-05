@@ -90,6 +90,7 @@
 
 /* Prototypes for function calls*/
 #include "prototypes.h" 
+//#include "common_prototypes.h" 
 
 /* Some definitions needed for using compile time values for global grid sizes */
 #include "fixed_dims.h"
