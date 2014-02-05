@@ -81,7 +81,7 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 
         }                       /* end for */
 
-        t1 = t1 * ct.vel / ct.hzgrid / 4.0 / PI;
+        t1 = t1 * ct.vel / get_hzgrid() / 4.0 / PI;
 
         zvec[iz + poff] = t1;
 
@@ -97,7 +97,7 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
         printf ("\n\n Planar average of the electron potential\n");
         for (iz = 0; iz < NZ_GRID; iz++)
         {
-            t1 = iz * ct.hzgrid;
+            t1 = iz * get_hzgrid();
             printf (" %f %f\n", t1, zvec[iz]);
         }
 

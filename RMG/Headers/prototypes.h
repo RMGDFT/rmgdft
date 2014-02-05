@@ -30,6 +30,7 @@
  * SOURCE
  */
 
+#include <stdbool.h>
 
 /* Function prototypes */
 void app6_del2 (rmg_double_t *rho, rmg_double_t *work, int dimx, int dimy, int dimz,

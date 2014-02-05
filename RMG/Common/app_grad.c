@@ -33,6 +33,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -64,14 +65,14 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
 
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:
-        t1x = 8.0 / (12.0 * gridhx * ct.xside);
-        t2x = 1.0 / (12.0 * gridhx * ct.xside);
+        t1x = 8.0 / (12.0 * gridhx * get_xside());
+        t2x = 1.0 / (12.0 * gridhx * get_xside());
 
-        t1y = 8.0 / (12.0 * gridhy * ct.yside);
-        t2y = 1.0 / (12.0 * gridhy * ct.yside);
+        t1y = 8.0 / (12.0 * gridhy * get_yside());
+        t2y = 1.0 / (12.0 * gridhy * get_yside());
 
-        t1z = 8.0 / (12.0 * gridhz * ct.zside);
-        t2z = 1.0 / (12.0 * gridhz * ct.zside);
+        t1z = 8.0 / (12.0 * gridhz * get_zside());
+        t2z = 1.0 / (12.0 * gridhz * get_zside());
 
         for (ix = 2; ix < dimx + 2; ix++)
         {
@@ -111,14 +112,14 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
     case HEXAGONAL:
 
         t1 = sqrt (3.0) / 2.0;
-        t1x = 8.0 / (12.0 * gridhx * ct.xside);
-        t2x = 1.0 / (12.0 * gridhx * ct.xside);
+        t1x = 8.0 / (12.0 * gridhx * get_xside());
+        t2x = 1.0 / (12.0 * gridhx * get_xside());
 
-        t1y = 8.0 / (t1 * 12.0 * gridhx * ct.xside);
-        t2y = 1.0 / (t1 * 12.0 * gridhx * ct.xside);
+        t1y = 8.0 / (t1 * 12.0 * gridhx * get_xside());
+        t2y = 1.0 / (t1 * 12.0 * gridhx * get_xside());
 
-        t1z = 8.0 / (12.0 * gridhz * ct.zside);
-        t2z = 1.0 / (12.0 * gridhz * ct.zside);
+        t1z = 8.0 / (12.0 * gridhz * get_zside());
+        t2z = 1.0 / (12.0 * gridhz * get_zside());
 
         for (ix = 2; ix < dimx + 2; ix++)
         {

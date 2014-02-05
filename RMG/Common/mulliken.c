@@ -21,7 +21,7 @@ void mulliken (STATE * states)
     rmg_double_t *awave, *overlap, xcstart, ycstart, zcstart, xc, yc, zc, x[3], r, cx[3], radial_wave,
         dot_product;
     rmg_double_t a, b, rdiff, rleft, rright, *norm_factor, max1, max2, max3;
-    int basis =pct.P0_BASIS;
+    int basis =get_P0_BASIS();
     int tot_atomic_states;
     int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
     ION *iptr;
@@ -201,13 +201,13 @@ void mulliken (STATE * states)
                         }
 
 
-                        zc += ct.hzgrid;
+                        zc += get_hzgrid();
 
                     }           /* end for iz */
-                    yc += ct.hygrid;
+                    yc += get_hygrid();
 
                 }               /* end for iy */
-                xc += ct.hxgrid;
+                xc += get_hxgrid();
 
             }                   /* end for ix */
 

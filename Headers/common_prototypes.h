@@ -6,6 +6,7 @@
 
 #include "rmgtypedefs.h"
 
+
 /* Blas wrappers */
 void QMD_daxpy (int n, rmg_double_t alpha, rmg_double_t *x, int incx, rmg_double_t *y, int incy);
 void QMD_dscal (int n, rmg_double_t alpha, rmg_double_t *x, int incx);
@@ -129,12 +130,21 @@ int get_FP0_BASIS(void);
 int get_FPX0_GRID(void);
 int get_FPY0_GRID(void);
 int get_FPZ0_GRID(void);
+void set_anisotropy(rmg_double_t a);
+rmg_double_t get_anisotropy(void);
 void set_neighbors(int *list);
 int *get_neighbors(void);
 void set_grids(int ii, int jj, int kk);
 int get_ibrav_type(void);
 void set_ibrav_type(int ibrav);
 ION *get_ion(int ion);
+rmg_double_t get_xside(void);
+rmg_double_t get_yside(void);
+rmg_double_t get_zside(void);
+rmg_double_t get_hxgrid(void);
+rmg_double_t get_hygrid(void);
+rmg_double_t get_hzgrid(void);
+
 
 #if GPU_ENABLED
 void init_gpu (void);
@@ -206,6 +216,22 @@ double app_cil_fourth_f_gpu(const float *psi,
                        const double yside,
                        const double zside,
                        cudaStream_t cstream);
+#define my_fopen(_fhandle_, _filename_, _mode_) do {\
+    _fhandle_ = fopen(_filename_, _mode_);\
+    if (_fhandle_ == NULL)\
+        error_handler("macro my_fopen: can't fopen file %s", _filename_);\
+    printf("\nfopening file '%s' mode '%s'\n", _filename_, _mode_);\
+} while (0)
+
+
+
+#define my_open(_fhandle_, _filename_, _flags_, _mode_) do {\
+    _fhandle_ = open(_filename_, _flags_, _mode_);\
+    if (_fhandle_ < 0)\
+        error_handler("macro my_open: can't open file %s", _filename_);\
+    printf("\nopening file '%s' flags '%s' mode '%s'\n", _filename_, #_flags_, #_mode_);\
+} while (0)
+
 #endif
 
 

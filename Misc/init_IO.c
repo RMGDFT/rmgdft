@@ -26,8 +26,18 @@
 
 
 #include "grid.h"
-#include "main.h"
+#include "const.h"
+#include "params.h"
+#include "rmgtypes.h"
+#include "rmg_alloc.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "prototypes.h"
+#include "macros.h"
+
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <time.h>
 #include <sys/stat.h>

@@ -6,7 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "main.h"
+#include "grid.h"
+#include "const.h"
+#include "params.h"
+#include "rmgtypes.h"
+#include "rmg_alloc.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "prototypes.h"
+
 
 /*This calculates phase factor that will be used when calculating backwards fourier transform*/
 void find_phase (int nldim, rmg_double_t * nlcdrs, rmg_double_t * phase_sin, rmg_double_t * phase_cos)
@@ -18,9 +27,9 @@ void find_phase (int nldim, rmg_double_t * nlcdrs, rmg_double_t * phase_sin, rmg
     rmg_double_t rgs_x, rgs_y, rgs_z;
 
     /*Reciprocal grid spacings in x, y and z directions */
-    rgs_x = 1.0 / (ct.hxgrid * ct.xside);
-    rgs_y = 1.0 / (ct.hygrid * ct.yside);
-    rgs_z = 1.0 / (ct.hzgrid * ct.zside);
+    rgs_x = 1.0 / (get_hxgrid() * get_xside());
+    rgs_y = 1.0 / (get_hygrid() * get_yside());
+    rgs_z = 1.0 / (get_hzgrid() * get_zside());
 
     nldim_sq = nldim * nldim;
 

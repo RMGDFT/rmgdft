@@ -2,6 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
 #include <float.h>
 #include <math.h>

@@ -42,6 +42,10 @@ static int neighbor_first=0;
 static int grid_first=0;
 static int neighbors[6];
 
+/** Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
+static rmg_double_t anisotropy;
+
+
 void set_grids(int ii, int jj, int kk)
 {
 
@@ -169,7 +173,14 @@ void set_ibrav_type(int value)
 {
     ibrav = value;
 }
-
+void set_anisotropy(rmg_double_t a)
+{
+  anisotropy = a;
+}
+rmg_double_t get_anisotropy(void)
+{
+    return anisotropy;
+}
 void set_neighbors(int *list)
 {
     int idx;

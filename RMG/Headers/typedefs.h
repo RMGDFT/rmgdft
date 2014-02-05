@@ -30,6 +30,9 @@
  * SOURCE
  */
 
+#ifndef TYPEDEFS_H
+#define TYPEDEFS_H 1
+
 #include "fftw.h"
 #include "mpi.h"
 #include "my_scalapack.h"
@@ -814,15 +817,6 @@ typedef struct
     int nyfgrid;
     int nzfgrid;
 
-    /** Global uniform grid spacing in x */
-    rmg_double_t hxgrid;
-
-    /** Global uniform grid spacing in y */
-    rmg_double_t hygrid;
-
-    /** Global uniform grid spacing in z */
-    rmg_double_t hzgrid;
-
     /** The fine uniform grid spacing in x */
     rmg_double_t hxxgrid;
 
@@ -846,11 +840,6 @@ typedef struct
     /** Total cell volume */
     rmg_double_t omega;
 
-    /* lengths of the sides of the supercell */
-    rmg_double_t xside;
-    rmg_double_t yside;
-    rmg_double_t zside;
-
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
     int max_nlfpoints;
@@ -862,10 +851,6 @@ typedef struct
 
     /** Minimum grid spacing in any coordinate direction */
     rmg_double_t hmingrid;
-
-
-    /** Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
-    rmg_double_t anisotropy;
 
 
     /** Volume element associated with each grid point */
@@ -1212,3 +1197,4 @@ extern CONTROL ct;
 /* Extern declaration for the processor control structure */
 extern PE_CONTROL pct;
 
+#endif

@@ -2,8 +2,10 @@
  **    $Id: app_cil_fourth.c 1722 2012-05-07 19:38:37Z ebriggs $    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
-#include "common_prototypes.h"
+#include "rmg_alloc.h"
+#include "fixed_dims.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -66,7 +68,7 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
     cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
     cc = app_cil_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz,
                               gridhx, gridhy, gridhz,
-                              ct.xside, ct.yside, ct.zside, *cstream);
+                              get_xside(), get_yside(), get_zside(), *cstream);
     cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
 
     return cc;
@@ -77,7 +79,7 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
 
     // first check for fixed dim case 
     numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS && ct.anisotropy < 1.000001)
+    if(numgrid == P0_BASIS && get_anisotropy() < 1.000001)
     {
         cc = app_cil_fourth_global (rptr, b, gridhx, gridhy, gridhz);
     }
@@ -105,14 +107,14 @@ rmg_double_t app_cil_fourth_standard (rmg_double_t * rptr, rmg_double_t * b, int
     incxr = dimz * dimy;
     incyr = dimz;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
-    if (ct.anisotropy < 1.000001)
+    if (get_anisotropy() < 1.000001)
     {
 
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
         cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
         fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
         ecxy = (1.0 / 12.0) * (ihx + ihx);
@@ -167,9 +169,9 @@ rmg_double_t app_cil_fourth_standard (rmg_double_t * rptr, rmg_double_t * b, int
     {
 
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-        ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+        ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
         cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
 
@@ -256,7 +258,7 @@ rmg_double_t app_cil_fourth_global (rmg_double_t * rptr, rmg_double_t * b, rmg_d
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
     c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
     c100 = (5.0 / 6.0) * ihx + (c000 / 8.0);
     c110 = (1.0 / 12.0) * (ihx + ihx);

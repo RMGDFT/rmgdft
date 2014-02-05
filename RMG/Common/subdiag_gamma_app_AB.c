@@ -50,7 +50,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
 #   endif
 
 #else
-    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
+    work2 = &pct.nv[sp->istate * get_P0_BASIS()];
 #endif
 
 
@@ -82,7 +82,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
 #    endif
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver (sg_twovpsi, work1, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID, ct.kohn_sham_fd_order);
-    for(i = 0; i < pct.P0_BASIS; i++) work1[i] += work2[i];
+    for(i = 0; i < get_P0_BASIS(); i++) work1[i] += work2[i];
 #    if MD_TIMERS
         rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #    endif
@@ -103,14 +103,14 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
-        for (idx = 0; idx <pct.P0_BASIS; idx++)
+        for (idx = 0; idx < get_P0_BASIS(); idx++)
             work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
 
 
 
 
-        work1 +=pct.P0_BASIS;
-        s_psi +=pct.P0_BASIS;
+        work1 += get_P0_BASIS();
+        s_psi += get_P0_BASIS();
     }
 
     my_free (sg_twovpsi);
@@ -157,7 +157,7 @@ void subdiag_app_B (STATE * states, rmg_double_t * b_psi)
 #    endif
 
 
-        work1 +=pct.P0_BASIS;
+        work1 += get_P0_BASIS();
     }
 
     my_free (work2);
@@ -197,7 +197,7 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
 
     // Process any remaining orbitals serially
     for(st1 = 0;st1 < ct.num_states;st1++) {
-        subdiag_app_AB_one (&states[st1], &a_psi[st1 *pct.P0_BASIS], &b_psi[st1 * pct.P0_BASIS], vtot_eig_s);
+        subdiag_app_AB_one (&states[st1], &a_psi[st1 * get_P0_BASIS()], &b_psi[st1 * get_P0_BASIS()], vtot_eig_s);
     }
 #if GPU_ENABLED
     cuCtxSynchronize();
@@ -245,16 +245,16 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
 
 
     /* Apply non-local operator to psi and store in work2 */
-    work2 = &pct.nv[sp->istate * pct.P0_BASIS];
+    work2 = &pct.nv[sp->istate * get_P0_BASIS()];
 
 
-    for(idx = 0; idx < pct.P0_BASIS; idx++) a_psi[idx] += TWO * work2[idx];
+    for(idx = 0; idx < get_P0_BASIS(); idx++) a_psi[idx] += TWO * work2[idx];
 
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx < get_P0_BASIS(); idx++)
         a_psi[idx] = 0.5 * ct.vel * a_psi[idx];
 
-    work2 = &pct.Bns[sp->istate * pct.P0_BASIS];
-    for(idx = 0; idx < pct.P0_BASIS; idx++) b_psi[idx] += work2[idx];
+    work2 = &pct.Bns[sp->istate * get_P0_BASIS()];
+    for(idx = 0; idx < get_P0_BASIS(); idx++) b_psi[idx] += work2[idx];
 
 
 }                               /* subdiag_app_A_one */
@@ -322,7 +322,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI
 
         /* Apply the gradient operator to psi */
         app_grad (tmp_psiI, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-        for (idx = 0; idx <pct.P0_BASIS; idx++)
+        for (idx = 0; idx < get_P0_BASIS(); idx++)
             kdr[idx] = (ct.kp[sp->kidx].kvec[0] * gx[idx] +
                         ct.kp[sp->kidx].kvec[1] * gy[idx] + ct.kp[sp->kidx].kvec[2] * gz[idx]);
 
@@ -342,7 +342,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI
 
         /* Apply the gradient operator to psi */
         app_grad (tmp_psiR, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-        for (idx = 0; idx <pct.P0_BASIS; idx++)
+        for (idx = 0; idx < get_P0_BASIS(); idx++)
             kdr[idx] = -(ct.kp[sp->kidx].kvec[0] * gx[idx] +
                          ct.kp[sp->kidx].kvec[1] * gy[idx] + ct.kp[sp->kidx].kvec[2] * gz[idx]);
 
@@ -385,7 +385,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI
         rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #    endif
 
-        for (idx = 0; idx <pct.P0_BASIS; idx++)
+        for (idx = 0; idx < get_P0_BASIS(); idx++)
         {
             work1R[idx] = 0.5 * ct.vel * (work1R[idx] - work2R[idx]);
             work1I[idx] = 0.5 * ct.vel * (work1I[idx] - work2I[idx]);
@@ -394,10 +394,10 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI
 
 
 
-        work1R +=pct.P0_BASIS;
-        work1I +=pct.P0_BASIS;
-	s_psiR +=pct.P0_BASIS;
-	s_psiI +=pct.P0_BASIS;
+        work1R += get_P0_BASIS();
+        work1I += get_P0_BASIS();
+	s_psiR += get_P0_BASIS();
+	s_psiI += get_P0_BASIS();
     }
 
     my_free (work2R);
@@ -449,8 +449,8 @@ void subdiag_app_B (STATE * states, rmg_double_t * b_psiR, rmg_double_t * b_psiI
 #    endif
 
 
-        work1R +=pct.P0_BASIS;
-        work1I +=pct.P0_BASIS;
+        work1R += get_P0_BASIS();
+        work1I += get_P0_BASIS();
     }
 
     my_free (work2R);

@@ -38,7 +38,11 @@
  */
 
 
+#include "const.h"
 #include "common_prototypes.h"
+#include "fixed_dims.h"
+#include "rmg_alloc.h"
+
 #include <float.h>
 #include <math.h>
 
@@ -64,13 +68,13 @@ rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, 
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:
 
-        if (ct.anisotropy < 1.0000001)
+        if (get_anisotropy() < 1.0000001)
         {
 
-            cc = -2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-            cc = cc - 2.0 / (gridhy * gridhy * ct.yside * ct.yside);
-            cc = cc - 2.0 / (gridhz * gridhz * ct.zside * ct.zside);
-            fcx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+            cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
+            cc = cc - 2.0 / (gridhy * gridhy * get_yside() * get_yside());
+            cc = cc - 2.0 / (gridhz * gridhz * get_zside() * get_zside());
+            fcx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -144,12 +148,12 @@ rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, 
         else
         {
 
-            cc = -2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-            cc = cc - 2.0 / (gridhy * gridhy * ct.yside * ct.yside);
-            cc = cc - 2.0 / (gridhz * gridhz * ct.zside * ct.zside);
-            fcx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-            fcy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-            fcz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+            cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
+            cc = cc - 2.0 / (gridhy * gridhy * get_yside() * get_yside());
+            cc = cc - 2.0 / (gridhz * gridhz * get_zside() * get_zside());
+            fcx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+            fcy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+            fcz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -187,8 +191,8 @@ rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, 
 
     case CUBIC_BC:
 
-        cc = -2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        fc = 1.0 / (4.0 * gridhx * gridhx * ct.xside * ct.xside);
+        cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
+        fc = 1.0 / (4.0 * gridhx * gridhx * get_xside() * get_xside());
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -225,8 +229,8 @@ rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, 
 
     case CUBIC_FC:
 
-        cc = -6.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        fc = 1.0 / (2.0 * gridhx * gridhx * ct.xside * ct.xside);
+        cc = -6.0 / (gridhx * gridhx * get_xside() * get_xside());
+        fc = 1.0 / (2.0 * gridhx * gridhx * get_xside() * get_xside());
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -267,10 +271,10 @@ rmg_double_t app_del2c_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, 
 
     case HEXAGONAL:
 
-        cc = -4.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        cc = cc - 2.0 / (gridhz * gridhz * ct.zside * ct.zside);
-        fc1 = 2.0 / (3.0 * gridhx * gridhx * ct.xside * ct.xside);
-        fc2 = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+        cc = -4.0 / (gridhx * gridhx * get_xside() * get_xside());
+        cc = cc - 2.0 / (gridhz * gridhz * get_zside() * get_zside());
+        fc1 = 2.0 / (3.0 * gridhx * gridhx * get_xside() * get_xside());
+        fc2 = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
         for (ix = 1; ix <= dimx; ix++)
         {

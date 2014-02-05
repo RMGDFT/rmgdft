@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "common_prototypes.h"
 #include "recips.h"
 
 #define     SR2         1.414213562373

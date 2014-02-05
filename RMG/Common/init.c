@@ -148,9 +148,9 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     /* Initialize some k-point stuff */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
-        v1 = twoPI * ct.kp[kpt].kpt[0] / ct.xside;
-        v2 = twoPI * ct.kp[kpt].kpt[1] / ct.yside;
-        v3 = twoPI * ct.kp[kpt].kpt[2] / ct.zside;
+        v1 = twoPI * ct.kp[kpt].kpt[0] / get_xside();
+        v2 = twoPI * ct.kp[kpt].kpt[1] / get_yside();
+        v3 = twoPI * ct.kp[kpt].kpt[2] / get_zside();
 
         ct.kp[kpt].kvec[0] = v1;
         ct.kp[kpt].kvec[1] = v2;
@@ -167,27 +167,27 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     init_pos ();
 
 
-    ct.hmaxgrid = ct.xside * ct.hxgrid;
-    if (ct.yside * ct.hygrid > ct.hmaxgrid)
-        ct.hmaxgrid = ct.yside * ct.hygrid;
-    if (ct.zside * ct.hzgrid > ct.hmaxgrid)
-        ct.hmaxgrid = ct.zside * ct.hzgrid;
+    ct.hmaxgrid = get_xside() * get_hxgrid();
+    if (get_yside() * get_hygrid() > ct.hmaxgrid)
+        ct.hmaxgrid = get_yside() * get_hygrid();
+    if (get_zside() * get_hzgrid() > ct.hmaxgrid)
+        ct.hmaxgrid = get_zside() * get_hzgrid();
 
-    ct.hmingrid = ct.xside * ct.hxgrid;
-    if (ct.yside * ct.hygrid < ct.hmingrid)
-        ct.hmingrid = ct.yside * ct.hygrid;
-    if (ct.zside * ct.hzgrid < ct.hmingrid)
-        ct.hmingrid = ct.zside * ct.hzgrid;
+    ct.hmingrid = get_xside() * get_hxgrid();
+    if (get_yside() * get_hygrid() < ct.hmingrid)
+        ct.hmingrid = get_yside() * get_hygrid();
+    if (get_zside() * get_hzgrid() < ct.hmingrid)
+        ct.hmingrid = get_zside() * get_hzgrid();
 
-    ct.anisotropy = ct.hmaxgrid / ct.hmingrid;
+    set_anisotropy(ct.hmaxgrid / ct.hmingrid);
 
-    if (ct.anisotropy > 1.1)
+    if ((ct.hmaxgrid / ct.hmingrid) > 1.1)
     {
         if (pct.imgpe == 0)
         {
-            printf ("ct.hxgrid = %7.5f\n", ct.hxgrid);
-            printf ("ct.hygrid = %7.5f\n", ct.hygrid);
-            printf ("ct.hzgrid = %7.5f\n", ct.hzgrid);
+            printf ("get_hxgrid() = %7.5f\n", get_hxgrid());
+            printf ("get_hygrid() = %7.5f\n", get_hygrid());
+            printf ("get_hzgrid() = %7.5f\n", get_hzgrid());
         }
         error_handler ("Anisotropy too large");
     }
@@ -253,9 +253,9 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
             states[kst1].psiR = rptr;
             states[kst1].psiI = rptr +P0_BASIS;
             states[kst1].dvhxc = rptr1;
-            states[kst1].hxgrid = ct.hxgrid;
-            states[kst1].hygrid = ct.hygrid;
-            states[kst1].hzgrid = ct.hzgrid;
+            states[kst1].hxgrid = get_hxgrid();
+            states[kst1].hygrid = get_hygrid();
+            states[kst1].hzgrid = get_hzgrid();
             states[kst1].dimx = PX0_GRID;
             states[kst1].dimy = PY0_GRID;
             states[kst1].dimz = PZ0_GRID;

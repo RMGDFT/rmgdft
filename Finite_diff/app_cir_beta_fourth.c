@@ -2,8 +2,10 @@
  **    $Id: app_cir_sixth.c 1722 2012-05-07 19:38:37Z ebriggs $    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
 #include "common_prototypes.h"
+#include "rmg_alloc.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>

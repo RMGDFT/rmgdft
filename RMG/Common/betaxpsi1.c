@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 #if HYBRID_MODEL
 #include "hybrid.h"

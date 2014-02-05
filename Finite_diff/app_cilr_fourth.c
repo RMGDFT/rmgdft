@@ -2,7 +2,12 @@
  **    $Id: app_cil_fourth.c 1722 2012-05-07 19:38:37Z ebriggs $    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
+#include "fixed_dims.h"
+#include "rmg_alloc.h"
+
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -55,17 +60,17 @@ rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double
     incxr = dimz * dimy;
     incyr = dimz;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
     c000 = 0.5;
     c100 = 1.0 / 12.0;
 
-    if (ct.anisotropy < 1.000001)
+    if (get_anisotropy() < 1.000001)
     {
 
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
         cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
         fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
         ecxy = (1.0 / 12.0) * (ihx + ihx);
@@ -139,9 +144,9 @@ rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double
     {
 
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-        ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+        ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
         cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
 

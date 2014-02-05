@@ -2,8 +2,10 @@
  **    $Id$    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
-#include "common_prototypes.h"
+#include "fixed_dims.h"
+#include "rmg_alloc.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -67,9 +69,9 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
     incxr = dimz * dimy;
     incyr = dimz;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 
@@ -249,9 +251,9 @@ rmg_double_t app_cilr_sixth_global (rmg_double_t * rptr, rmg_double_t *a_psi, rm
     c110 = 1.0 / 144.0;
     c200 = -1.0 / 240.0;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 

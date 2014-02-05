@@ -35,6 +35,7 @@
 #include <float.h>
 #include <math.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 
 
@@ -61,17 +62,17 @@ void app6_del2 (rmg_double_t *rho, rmg_double_t * work, int dimx, int dimy, int 
 
     trade_imagesx (rho, f, dimx, dimy, dimz, 2, CENTRAL_FD);
 
-    h2 = gridhx * gridhx * ct.xside * ct.xside;
+    h2 = gridhx * gridhx * get_xside() * get_xside();
     t0 = -30.0 / (12.0 * h2);
     t1x = 16.0 / (12.0 * h2);
     t2x = -1.0 / (12.0 * h2);
 
-    h2 = gridhy * gridhy * ct.yside * ct.yside;
+    h2 = gridhy * gridhy * get_yside() * get_yside();
     t0 -= 30.0 / (12.0 * h2);
     t1y = 16.0 / (12.0 * h2);
     t2y = -1.0 / (12.0 * h2);
 
-    h2 = gridhz * gridhz * ct.zside * ct.zside;
+    h2 = gridhz * gridhz * get_zside() * get_zside();
     t0 -= 30.0 / (12.0 * h2);
     t1z = 16.0 / (12.0 * h2);
     t2z = -1.0 / (12.0 * h2);

@@ -36,6 +36,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 
 #include <float.h>
 #include <math.h>
@@ -56,11 +57,16 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
     rmg_double_t ax[3], bx[3];
     rmg_double_t xoff, yoff, zoff;
     rmg_double_t *mask;
+    rmg_double_t hxgrid, hygrid, hzgrid;
     int incx, incy, incz;
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
+
+    hxgrid = get_hxgrid();
+    hygrid = get_hygrid();
+    hzgrid = get_hzgrid();
 
     ixdim = 2 * dimx;
     iydim = 2 * dimy;
@@ -106,16 +112,16 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
 
     pe2xyz (pct.gridpe, &pex, &pey, &pez);
 
-    xc = pex * ct.hxgrid * PX0_GRID;
+    xc = pex * hxgrid * PX0_GRID;
 
     for (ix = 0; ix < PX0_GRID; ix++)
     {
 
-        yc = pey * ct.hygrid * PY0_GRID;
+        yc = pey * hygrid * PY0_GRID;
         for (iy = 0; iy < PY0_GRID; iy++)
         {
 
-            zc = pez * ct.hzgrid * PZ0_GRID;
+            zc = pez * hzgrid * PZ0_GRID;
             for (iz = 0; iz < PZ0_GRID; iz++)
             {
 
@@ -141,15 +147,15 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
                 syz = syz + y * z * temp;
                 szx = szx + z * x * temp;
 
-                zc += ct.hzgrid;
+                zc += hzgrid;
 
             }                   /* end for */
 
-            yc += ct.hygrid;
+            yc += hygrid;
 
         }                       /* end for */
 
-        xc += ct.hxgrid;
+        xc += hxgrid;
 
     }                           /* end for */
 
@@ -191,18 +197,18 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
         incz = izdim + 1;
 
     /* Set the boundary condition on the surface of the grid */
-    xc = pex * ct.hxgrid * ixdim - xoff - ct.hxgrid;
+    xc = pex * hxgrid * ixdim - xoff - hxgrid;
     for (ix = 0; ix < ixdim + 2; ix++)
     {
 
-        yc = pey * ct.hygrid * iydim - yoff - ct.hygrid;
+        yc = pey * hygrid * iydim - yoff - hygrid;
         for (iy = 0; iy < iydim + 2; iy++)
         {
 
             for (iz = 0; iz < izdim + 2; iz += incz)
             {
 
-                zc = pez * ct.hzgrid * izdim + ((rmg_double_t) iz) * ct.hzgrid - zoff - ct.hzgrid;
+                zc = pez * hzgrid * izdim + ((rmg_double_t) iz) * hzgrid - zoff - hzgrid;
                 ax[0] = xc;
                 ax[1] = yc;
                 ax[2] = zc;
@@ -258,11 +264,11 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
 
             }                   /* end for */
 
-            yc += ct.hygrid;
+            yc += hygrid;
 
         }                       /* end for */
 
-        xc += ct.hxgrid;
+        xc += hxgrid;
 
     }                           /* end for */
 

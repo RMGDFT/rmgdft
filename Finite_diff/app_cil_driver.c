@@ -2,6 +2,7 @@
  **    $Id: app_cil_driver.c 1722 2012-05-07 19:38:37Z ebriggs $    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
 #include <float.h>
 #include <math.h>

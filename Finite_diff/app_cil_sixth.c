@@ -2,7 +2,10 @@
  **    $Id$    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
+#include "fixed_dims.h"
+#include "rmg_alloc.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -63,7 +66,7 @@ rmg_double_t app_cil_sixth (rmg_double_t * psi, rmg_double_t * b, int dimx, int 
     trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
     cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
     cc = app_cil_sixth_gpu (gpu_psi, gpu_b, dimx, dimy, dimz, gridhx, gridhy, gridhz,
-                                              ct.xside, ct.yside, ct.zside, *cstream);
+                                              get_xside(), get_yside(), get_zside(), *cstream);
 
     cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
     return cc;
@@ -102,9 +105,9 @@ rmg_double_t app_cil_sixth_standard (rmg_double_t * rptr, rmg_double_t * b, int 
     incxr = dimz * dimy;
     incyr = dimz;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 
@@ -215,9 +218,9 @@ rmg_double_t app_cil_sixth_global (rmg_double_t * rptr, rmg_double_t * b, rmg_do
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 

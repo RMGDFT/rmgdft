@@ -2,7 +2,12 @@
  **    $Id: app_cir_driver.c 1722 2012-05-07 19:38:37Z ebriggs $    **
 ******************************************************************************/
 
+#include "const.h"
 #include "common_prototypes.h"
+#include "fixed_dims.h"
+#include "rmg_alloc.h"
+
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>

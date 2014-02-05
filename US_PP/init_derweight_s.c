@@ -6,7 +6,15 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+#include "grid.h"
+#include "const.h"
+#include "params.h"
+#include "rmgtypes.h"
+#include "rmg_alloc.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "prototypes.h"
 
 void init_derweight_s (SPECIES * sp,
                        fftw_complex * rtptr_x,
@@ -31,9 +39,9 @@ void init_derweight_s (SPECIES * sp,
     weptrz = weptry + size;
     gwptr = weptrz + size;
 
-    hxx = ct.hxgrid / (rmg_double_t) ct.nxfgrid;
-    hyy = ct.hygrid / (rmg_double_t) ct.nyfgrid;
-    hzz = ct.hzgrid / (rmg_double_t) ct.nzfgrid;
+    hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
+    hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
+    hzz = get_hzgrid() / (rmg_double_t) ct.nzfgrid;
 
     invdr = 1.0 / sp->drnlig;
 

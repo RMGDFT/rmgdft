@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
 {
@@ -32,9 +33,9 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
     weptr3 = weptr2 + size;
     gwptr = weptr3 + size;
 
-    hxx = ct.hxgrid / (rmg_double_t) ct.nxfgrid;
-    hyy = ct.hygrid / (rmg_double_t) ct.nyfgrid;
-    hzz = ct.hzgrid / (rmg_double_t) ct.nzfgrid;
+    hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
+    hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
+    hzz = get_hzgrid() / (rmg_double_t) ct.nzfgrid;
 
     r1 = rtptr;
     r2 = r1 + coarse_size;

@@ -27,6 +27,7 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
 
     rmg_double_t r, xc, yc, zc, vector[3];
     rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
+    rmg_double_t hxgrid, hygrid, hzgrid;
     SPECIES *sp;
 
     PX0_GRID = get_PX0_GRID();
@@ -35,6 +36,9 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
     PX_OFFSET = get_PX_OFFSET();
     PY_OFFSET = get_PY_OFFSET();
     PZ_OFFSET = get_PZ_OFFSET();
+    hxgrid = get_hxgrid();
+    hygrid = get_hygrid();
+    hzgrid = get_hzgrid();
 
 
     /* Grab some memory for temporary storage */
@@ -95,15 +99,15 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
 			icount++;
 		    }
 
-		    zc += ct.hzgrid;
+		    zc += hzgrid;
 
 		}           /* end for */
 
-		yc += ct.hygrid;
+		yc += hygrid;
 
 	    }               /* end for */
 
-	    xc += ct.hxgrid;
+	    xc += hxgrid;
 
 	}                   /* end for */
 

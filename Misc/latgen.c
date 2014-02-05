@@ -99,7 +99,62 @@
 #define     SQRT3         1.732050807569
 
 
+/* lengths of the sides of the supercell */
+static rmg_double_t xside;
+static rmg_double_t yside;
+static rmg_double_t zside;
 
+/* lattice vectors */
+static rmg_double_t a0[3];
+static rmg_double_t a1[3];
+static rmg_double_t a2[3];
+
+/** Total cell volume */
+static rmg_double_t omega;
+
+
+/** Global uniform grid spacing in x */
+static rmg_double_t hxgrid;
+
+/** Global uniform grid spacing in y */
+static rmg_double_t hygrid;
+
+/** Global uniform grid spacing in z */
+static rmg_double_t hzgrid;
+
+/** The fine uniform grid spacing in x */
+static rmg_double_t hxxgrid;
+
+/** The fine uniform grid spacing in y */
+static rmg_double_t hyygrid;
+
+/** The fine uniform grid spacing in z */
+static rmg_double_t hzzgrid;
+
+rmg_double_t get_xside(void)
+{
+    return xside;
+}
+rmg_double_t get_yside(void)
+{
+    return yside;
+}
+rmg_double_t get_zside(void)
+{
+    return zside;
+}
+rmg_double_t get_hxgrid(void)
+{
+    return hxgrid;
+}
+rmg_double_t get_hygrid(void)
+{
+    return hygrid;
+}
+rmg_double_t get_hzgrid(void)
+{
+    return hzgrid;
+}
 
 /* If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0) */
 void latgen (int *ibrav, rmg_double_t * celldm, rmg_double_t * A0I, rmg_double_t * A1I, rmg_double_t * A2I,
@@ -285,33 +340,33 @@ void latgen (int *ibrav, rmg_double_t * celldm, rmg_double_t * A0I, rmg_double_t
     for (ir = 0; ir < 3; ir++)
         distance += A0I[ir] * A0I[ir];
 
-    ct.xside = sqrt (distance);
+    xside = sqrt (distance);
 
     distance = 0.0;
     for (ir = 0; ir < 3; ir++)
         distance += A1I[ir] * A1I[ir];
 
-    ct.yside = sqrt (distance);
+    yside = sqrt (distance);
 
     distance = 0.0;
     for (ir = 0; ir < 3; ir++)
         distance += A2I[ir] * A2I[ir];
 
-    ct.zside = sqrt (distance);
+    zside = sqrt (distance);
 
     /* Calculate grid size in crystal coordinates */
 
     t1 = (rmg_double_t) ct.psi_nxgrid;
-    ct.hxgrid = 1.0 / t1;
-    ct.hxxgrid = ct.hxgrid / (rmg_double_t) FG_NX;
+    hxgrid = 1.0 / t1;
+    ct.hxxgrid = hxgrid / (rmg_double_t) FG_NX;
 
     t1 = (rmg_double_t) ct.psi_nygrid;
-    ct.hygrid = 1.0 / t1;
-    ct.hyygrid = ct.hygrid / (rmg_double_t) FG_NY;
+    hygrid = 1.0 / t1;
+    ct.hyygrid = hygrid / (rmg_double_t) FG_NY;
 
     t1 = (rmg_double_t) ct.psi_nzgrid;
-    ct.hzgrid = 1.0 / t1;
-    ct.hzzgrid = ct.hzgrid / (rmg_double_t) FG_NZ;
+    hzgrid = 1.0 / t1;
+    ct.hzzgrid = hzgrid / (rmg_double_t) FG_NZ;
 
     if (*flag)
     {

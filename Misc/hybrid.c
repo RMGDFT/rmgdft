@@ -37,6 +37,10 @@
 #include <semaphore.h>
 
 #include "main.h"
+#include "const.h"
+#include "common_prototypes.h"
+#include "fixed_dims.h"
+#include "rmg_alloc.h"
 #include "hybrid.h"
 
 

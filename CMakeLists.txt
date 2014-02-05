@@ -12,6 +12,7 @@
 #
 #
 cmake_minimum_required (VERSION 2.6) 
+#project (RMG C CXX Fortran) 
 project (RMG C Fortran) 
 
 
@@ -69,11 +70,18 @@ target_link_libraries (rmg US_PP Force)
 # Search for an MPI implementation
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
 find_package(MPI REQUIRED)
+#if(MPI_CXX_FOUND)
+#  include_directories(${MPI_CXX_INCLUDE_PATH})
+#  target_link_libraries (rmg ${MPI_CXX_LIBRARIES})
+#endif (MPI_CXX_FOUND)
 if(MPI_C_FOUND)
   include_directories(${MPI_C_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_C_LIBRARIES})
 endif (MPI_C_FOUND)
 
+find_package(FFTW REQUIRED)
+include_directories(${FFTW_INCLUDES})
+target_link_libraries (rmg ${FFTW_LIBRARIES})
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
@@ -130,13 +138,11 @@ endif(CUDA_FOUND)
 # These are hard coded for now
 target_link_libraries (rmg "/home/emil/Projects/RMG_RELEASE1/codes/lib/libxc/lib64/libxc.a")
 
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDES})
-target_link_libraries (rmg ${FFTW_LIBRARIES})
 
 
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC)
+#    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
     set(CMAKE_C_FLAGS "-Wall -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
     set(CMAKE_EXE_LINKER_FLAGS "-ldl")  ## Strip binary

@@ -159,9 +159,9 @@ void write_header (void)
 
     printf ("\n");
     printf ("    Grid discretization:\n");
-    printf ("        Hx  = %12.6f a0\n", ct.hxgrid * ct.xside);
-    printf ("        Hy  = %12.6f a0\n", ct.hygrid * ct.yside);
-    printf ("        Hz  = %12.6f a0\n", ct.hzgrid * ct.zside);
+    printf ("        Hx  = %12.6f a0\n", get_hxgrid() * get_xside());
+    printf ("        Hy  = %12.6f a0\n", get_hygrid() * get_yside());
+    printf ("        Hz  = %12.6f a0\n", get_hzgrid() * get_zside());
     printf ("        NX  = %d\n", ct.psi_nxgrid);
     printf ("        NY  = %d\n", ct.psi_nygrid);
     printf ("        NZ  = %d\n", ct.psi_nzgrid);
@@ -169,7 +169,7 @@ void write_header (void)
     printf ("\n");
     printf ("    Bravais lattice type is %s\n", lattice_type[get_ibrav_type()]);
     printf ("    Cell volume      = %12.6f a0^3\n", ct.vel * ct.psi_nbasis);
-    printf ("    Grid anisotropy  = %12.6f\n", ct.anisotropy);
+    printf ("    Grid anisotropy  = %12.6f\n", get_anisotropy());
 
     printf ("\n");
     printf ("    Processor topology:  total PE's = %d\n", (PE_X * PE_Y * PE_Z));
@@ -209,7 +209,7 @@ void write_header (void)
      * points in the cell with a correction for the grid anisotropy.
      */
     t1 = pow (ct.vel, 0.333333333333);
-    t1 = PI / (t1 * ct.anisotropy);
+    t1 = PI / (t1 * get_anisotropy());
     t1 = t1 * t1 / 2.0;
     printf ("       Equivalent energy cutoff  %12.6f Ry\n", t1);
 
@@ -224,8 +224,8 @@ void write_header (void)
     printf ("\n");
     printf ("\n    TEST OF MINIMUM IMAGING ASSUMPTION");
     printf ("\n          SPEC-PAIR  ENERGY CONTRIBUTION");
-    t1 = (ct.xside < ct.yside) ? ct.xside : ct.yside;
-    t1 = (t1 < ct.zside) ? t1 : ct.zside;
+    t1 = (get_xside() < get_yside()) ? get_xside() : get_yside();
+    t1 = (t1 < get_zside()) ? t1 : get_zside();
     t1 = 0.5 * t1;
     for (i = 0; i < ct.num_species; i++)
     {

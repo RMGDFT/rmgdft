@@ -51,6 +51,7 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "common_prototypes.h"
 
 /*
  */
@@ -83,9 +84,9 @@ void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
     incz = 1;
     resid = work + 2 * size;
 
-    scale = 2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    scale = scale + (2.0 / (gridhy * gridhy * ct.yside * ct.yside));
-    scale = scale + (2.0 / (gridhz * gridhz * ct.zside * ct.zside));
+    scale = 2.0 / (gridhx * gridhx * get_xside() * get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = step / scale;
     trade_images_f (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 

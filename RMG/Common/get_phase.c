@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
 {
@@ -45,8 +46,12 @@ void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
     int kpt, idx, ix, iy, iz, docount;
     rmg_double_t ax[3], bx[3], xc, yc, zc;
     rmg_double_t kdr;
+    rmg_double_t hxgrid, hygrid, hzgrid;
     SPECIES *sp;
 
+    hxgrid = get_hxgrid();
+    hygrid = get_hygrid();
+    hzgrid = get_hzgrid();
 
     if (rtptr == NULL)
         return;
@@ -91,13 +96,13 @@ void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
                     idx++;
 
 
-                    zc += ct.hzgrid;
+                    zc += hzgrid;
                 }               /* end for */
 
-                yc += ct.hygrid;
+                yc += hygrid;
             }                   /* end for */
 
-            xc += ct.hxgrid;
+            xc += hxgrid;
         }                       /* end for */
 
         if (docount != icount)

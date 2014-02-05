@@ -15,6 +15,7 @@
 
 #include <semaphore.h>
 #include <mpi.h>
+#include "typedefs.h"
 #include "rmgtypes.h"
 #include "rmgtypedefs.h"
 #include "rmgthreads.h"
@@ -32,7 +33,8 @@
 
 
 typedef struct {
-  STATE *sp;
+//  STATE *sp;
+  void *sp;
   rmg_double_t *vtot;
   int basetag;
   int tid;

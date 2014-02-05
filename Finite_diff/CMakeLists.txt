@@ -22,6 +22,7 @@ app_cir_sixth_f.c
 app_cir_driver.c
 app_cilr_fourth.c
 app_cil_sixth.c
+#FiniteDiff.cc
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 

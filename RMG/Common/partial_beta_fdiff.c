@@ -80,14 +80,14 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
     case ORTHORHOMBIC_PRIMITIVE:
 
 
-        t1x = 8.0 / (12.0 * ct.hxgrid * ct.xside);
-        t2x = 1.0 / (12.0 * ct.hxgrid * ct.xside);
+        t1x = 8.0 / (12.0 * get_hxgrid() * get_xside());
+        t2x = 1.0 / (12.0 * get_hxgrid() * get_xside());
 
-        t1y = 8.0 / (12.0 * ct.hygrid * ct.yside);
-        t2y = 1.0 / (12.0 * ct.hygrid * ct.yside);
+        t1y = 8.0 / (12.0 * get_hygrid() * get_yside());
+        t2y = 1.0 / (12.0 * get_hygrid() * get_yside());
 
-        t1z = 8.0 / (12.0 * ct.hzgrid * ct.zside);
-        t2z = 1.0 / (12.0 * ct.hzgrid * ct.zside);
+        t1z = 8.0 / (12.0 * get_hzgrid() * get_zside());
+        t2z = 1.0 / (12.0 * get_hzgrid() * get_zside());
 
         for (ix = 2; ix < nldim + 2; ix++)
         {

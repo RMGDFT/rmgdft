@@ -63,7 +63,7 @@ rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int d
     cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
     cc = app_cil_fourth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz,
                               gridhx, gridhy, gridhz,
-                              ct.xside, ct.yside, ct.zside, *cstream);
+                              get_xside(), get_yside(), get_zside(), *cstream);
     cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
     return cc;
 #endif
@@ -71,14 +71,14 @@ rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int d
 
 
     numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS && ct.anisotropy < 1.000001)
+    if(numgrid == P0_BASIS && (get_anisotropy() < 1.000001))
     {
         return app_cil_fourth_global_f (a, b, gridhx, gridhy, gridhz);
     }
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
 
     incx = (dimz + 2) * (dimy + 2);
@@ -92,10 +92,10 @@ rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int d
 
 
 
-    if (ct.anisotropy < 1.000001)
+    if (get_anisotropy() < 1.000001)
     {
 
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
         cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
         fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
         ecxy = (1.0 / 12.0) * (ihx + ihx);
@@ -150,9 +150,9 @@ rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int d
     {
 
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-        ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+        ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
         cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
 
@@ -247,7 +247,7 @@ rmg_double_t app_cil_fourth_global_f (rmg_float_t * a, rmg_float_t * b, rmg_doub
 
     trade_imagesx_f (a, rptr, FIXED_XDIM, FIXED_YDIM, FIXED_ZDIM, 1, FULL_FD);
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
     c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
     c100 = (5.0 / 6.0) * ihx + (c000 / 8.0);
     c110 = (1.0 / 12.0) * (ihx + ihx);

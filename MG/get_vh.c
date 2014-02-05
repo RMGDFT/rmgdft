@@ -42,9 +42,20 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
 #include "grid.h"
-#include "main.h"
-#include "hybrid.h"
+#include "const.h"
+#include "params.h"
+#include "rmgtypes.h"
+#include "rmg_alloc.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "prototypes.h"
+#include "macros.h"
+
+//#include "hybrid.h"
 
 
 /* Pre and post smoothings on each level */
@@ -155,7 +166,6 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
                 /* Transfer res into smoothing grid */
                 pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
 
                 mgrid_solv (mglhsarr, sg_res, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,

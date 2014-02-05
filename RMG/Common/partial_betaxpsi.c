@@ -7,6 +7,7 @@
 #include <math.h>
 #include <float.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 void partial_betaxpsi (int ion, fftwnd_plan p2, rmg_double_t * newsintR_x, rmg_double_t * newsintR_y,
                        rmg_double_t * newsintR_z, rmg_double_t * newsintI_x, rmg_double_t * newsintI_y, rmg_double_t * newsintI_z,

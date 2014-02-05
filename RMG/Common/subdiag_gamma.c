@@ -48,8 +48,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "grid.h"
-#include "common_prototypes.h"
 #include "main.h"
+#include "common_prototypes.h"
+#include "blas.h"
 
 
 #if GPU_ENABLED
@@ -1594,7 +1595,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 	rmg_double_t alpha1 = 1.0, beta1 = 0.0;
 
 	num_states = ct.num_states;
-	pbasis =pct.P0_BASIS;
+	pbasis =get_P0_BASIS();
 	stop = num_states * num_states;
 
 
@@ -1616,7 +1617,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 	/*Get memory for global matrices */
 	for(idx = 0;idx < stop;idx++) global_matrix[idx] = 0.0;
-	my_malloc (vtot_eig,pct.P0_BASIS, rmg_double_t);
+	my_malloc (vtot_eig,get_P0_BASIS(), rmg_double_t);
 	my_malloc (eigs, 2*num_states, rmg_double_t);
 	my_malloc (work1R, ct.num_states * 16 , rmg_double_t);
 

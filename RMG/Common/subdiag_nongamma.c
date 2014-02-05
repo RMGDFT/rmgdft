@@ -113,7 +113,7 @@ void subdiag_nongamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, r
     my_calloc (Cij, stop, rmg_double_t);
 
     my_malloc (work1, 8 * num_states, rmg_double_t);
-    my_malloc (vtot_eig,pct.P0_BASIS, rmg_double_t);
+    my_malloc (vtot_eig,get_P0_BASIS(), rmg_double_t);
 
 
     /*Get vtot on coarse grid */
@@ -503,7 +503,7 @@ static void subdiag1_mpi (int istate, STATE * states, rmg_double_t * Aij, rmg_do
 
     /* Apply the gradient operator to psi */
     app_grad (tmp_psiI, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx <get_P0_BASIS(); idx++)
         kdr[idx] = (ct.kp[sp->kidx].kvec[0] * gx[idx] +
                     ct.kp[sp->kidx].kvec[1] * gy[idx] + ct.kp[sp->kidx].kvec[2] * gz[idx]);
 
@@ -513,7 +513,7 @@ static void subdiag1_mpi (int istate, STATE * states, rmg_double_t * Aij, rmg_do
 
     /* Apply the gradient operator to psi */
     app_grad (tmp_psiR, (P0_GRID *) gx, (P0_GRID *) gy, (P0_GRID *) gz);
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx <get_P0_BASIS(); idx++)
         kdr[idx] = -(ct.kp[sp->kidx].kvec[0] * gx[idx] +
                      ct.kp[sp->kidx].kvec[1] * gy[idx] + ct.kp[sp->kidx].kvec[2] * gz[idx]);
 
@@ -618,7 +618,7 @@ static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem)
 
     rptr = base_mem;
 
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx <get_P0_BASIS(); idx++)
     {
 
         /* We make a temporary copy and store it in work2 otherwise the
@@ -626,8 +626,8 @@ static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem)
          */
         for (st2 = 0; st2 < ct.num_states; st2++)
         {
-            work2R[st2] = rptr[2 * st2 *pct.P0_BASIS + idx];
-            work2I[st2] = rptr[2 * st2 *pct.P0_BASIS + pct.P0_BASIS + idx];
+            work2R[st2] = rptr[2 * st2 *get_P0_BASIS() + idx];
+            work2I[st2] = rptr[2 * st2 *get_P0_BASIS() + get_P0_BASIS() + idx];
         }
 
         for (st1 = 0; st1 < ct.num_states; st1++)
@@ -650,8 +650,8 @@ static void subdiag2_mpi (rmg_double_t * Aij, rmg_double_t * base_mem)
         /* update all wavefunctions for this *idx* */
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            rptr[2 * st1 *pct.P0_BASIS + idx] = work1R[st1];
-            rptr[2 * st1 *pct.P0_BASIS + pct.P0_BASIS + idx] = work1I[st1];
+            rptr[2 * st1 *get_P0_BASIS() + idx] = work1R[st1];
+            rptr[2 * st1 *get_P0_BASIS() + get_P0_BASIS() + idx] = work1I[st1];
         }
 
     }                           /* idx */

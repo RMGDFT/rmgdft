@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 void get_vtot_psi (rmg_double_t * vtot_psi, rmg_double_t * vtot, int grid_ratio)
 {

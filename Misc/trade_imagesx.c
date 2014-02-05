@@ -9,6 +9,7 @@
 #include <ieee754.h>
 #include <stdint.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 #if HYBRID_MODEL
 #include "hybrid.h"

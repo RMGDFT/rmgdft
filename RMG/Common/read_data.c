@@ -45,6 +45,7 @@
 #include <unistd.h>
 #include "grid.h"
 #include "main.h"
+#include "common_prototypes.h"
 
 
 /* To save disk space 'floats' are written instead of 'doubles'. */

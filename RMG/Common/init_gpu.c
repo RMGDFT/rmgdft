@@ -90,12 +90,12 @@ void init_gpu (void)
       fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_states , ct.num_states *pct.P0_BASIS * sizeof(rmg_double_t) )){
+  if( cudaSuccess != cudaMalloc((void **)&ct.gpu_states , ct.num_states *get_P0_BASIS() * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_states\n");
       exit(-1);
   }
 
-  alloc = ct.num_states * pct.P0_BASIS;
+  alloc = ct.num_states * get_P0_BASIS();
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp , alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: gpu_temp\n");

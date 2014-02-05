@@ -3,6 +3,7 @@
  ******************************************************************************/
 
 #include "main.h"
+#include "common_prototypes.h"
 #include <float.h>
 #include <stdlib.h>
 #include <math.h>
@@ -84,7 +85,7 @@ void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_d
 
 
     /*update the wavefunction psi2 */
-    for (idx = 0; idx <pct.P0_BASIS; idx++)
+    for (idx = 0; idx < get_P0_BASIS(); idx++)
     {
         tmp_psi2R[idx] += -cR * tmp_psi1R[idx] + cI * tmp_psi1I[idx];
         tmp_psi2I[idx] += -cR * tmp_psi1I[idx] - cI * tmp_psi1R[idx];

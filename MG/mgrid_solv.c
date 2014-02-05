@@ -89,9 +89,9 @@ void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work
     resid = work + 2 * size;
 
 
-    scale = 2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    scale = scale + (2.0 / (gridhy * gridhy * ct.yside * ct.yside));
-    scale = scale + (2.0 / (gridhz * gridhz * ct.zside * ct.zside));
+    scale = 2.0 / (gridhx * gridhx * get_xside() * get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = step / scale;
     trade_images (f_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
 

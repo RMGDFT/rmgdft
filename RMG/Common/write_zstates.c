@@ -87,7 +87,7 @@ void write_zstates (STATE * states)
                 }
             }
 
-            zvec[iz + poff] = t1 * ct.vel / (ct.hzgrid * 4.0 * PI);
+            zvec[iz + poff] = t1 * ct.vel / (get_hzgrid() * 4.0 * PI);
         }
 
         /* Now sum over all processors */
@@ -103,7 +103,7 @@ void write_zstates (STATE * states)
 
             for (iz = 0; iz < NZ_GRID; iz++)
             {
-                t1 = iz * ct.hzgrid * ct.zside;
+                t1 = iz * get_hzgrid() * get_zside();
                 fprintf (avg, "%f %f\n", t1, zvec[iz]);
             }
             fprintf

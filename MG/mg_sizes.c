@@ -29,7 +29,7 @@ Return value  = size of next grid level
 
 int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
 {
-    int id, skip, new_dim, istart, istop;
+    int skip, new_dim, istart, istop;
 
     // Default offset is 0
     *roffset = 0;
@@ -66,6 +66,8 @@ int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int gl
         return new_dim;
 
     }
+
+    rmg_error_handler("Boundary condition not programmed."); 
 
 }
 

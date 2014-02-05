@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * rtptr, rmg_double_t *Bweight)
 {

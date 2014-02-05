@@ -44,6 +44,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "../Headers/main.h"
+#include "../Headers/common_prototypes.h"
 
 void initialize (int argc, char **argv);
 
