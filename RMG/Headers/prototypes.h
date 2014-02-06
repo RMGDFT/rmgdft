@@ -259,6 +259,7 @@ rmg_double_t real_min_all (rmg_double_t x, MPI_Comm comm);
 
 void reset_timers (void);
 void sortpsi (STATE *states);
+/*
 void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_imagesx (rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz, int images, int type);
@@ -266,6 +267,7 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
 void trade_imagesx_async (rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz, int images);
 void trade_imagesx_async_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz);
+*/
 void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
 void set_bc (rmg_double_t *mat, int dimx, int dimy, int dimz, int images, rmg_double_t val);
 void set_bcx (rmg_double_t *mat, int dimx, int dimy, int dimz, int images, rmg_double_t val);

@@ -49,7 +49,6 @@
  */
 
 
-
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -72,7 +71,7 @@ extern STATE *states;
 void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 {
 
-    int idx, cycles, ntid, P0_BASIS;
+    int idx, cycles, P0_BASIS;
     int nits, pbasis, sbasis;
     rmg_double_t eig, diag, t1, t2, t3, t4;
     rmg_double_t *work1, *work2, *nv, *ns, *res2;
@@ -82,24 +81,12 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
     int dimx, dimy, dimz, levels, potential_acceleration;
-    int PX0_GRID, PY0_GRID, PZ0_GRID;
-    int PX_OFFSET, PY_OFFSET, PZ_OFFSET;
-    int *neighbors;
 
     rmg_double_t hxgrid, hygrid, hzgrid, sb_step;
     rmg_double_t tarr[8];
     rmg_double_t time1;
 
-    neighbors = get_neighbors();
-
     P0_BASIS = get_P0_BASIS();
-    PX0_GRID = get_PX0_GRID();
-    PY0_GRID = get_PY0_GRID();
-    PZ0_GRID = get_PZ0_GRID();
-    PX_OFFSET = get_PX_OFFSET();
-    PY_OFFSET = get_PY_OFFSET();
-    PZ_OFFSET = get_PZ_OFFSET();
-
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = sp->dimx;
@@ -116,28 +103,11 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
     /* Grab some memory */
     my_malloc (sg_psi, sbasis, rmg_double_t);
     my_malloc (res, sbasis, rmg_double_t);
-#if GPU_FD_ENABLED
-#if HYBRID_MODEL
-    ntid = get_thread_tid();
-#else
-    ntid = 0;
-#endif
-    if(ntid == -1) {         // Normal codepath with no threads
-        work2 = &ct.gpu_host_temp2[0];
-        sg_twovpsi = &ct.gpu_host_temp1[0];
-        work1 = &ct.gpu_host_temp4[0];
-    }
-    else {                  // Threaded codepath for hybrid mode since each thread needs it's own copy
-        work2 = &ct.gpu_host_temp2[ntid * 4 * sbasis];
-        sg_twovpsi = &ct.gpu_host_temp1[ntid * sbasis];
-        work1 = &ct.gpu_host_temp4[ntid * sbasis];
-    }
 
-#else
     my_malloc (work2, 4 * sbasis, rmg_double_t);
     my_malloc (sg_twovpsi, sbasis, rmg_double_t);
-    my_malloc (work1, sbasis, rmg_double_t);
-#endif
+    my_malloc (work1, 4 * sbasis, rmg_double_t);
+
 #if !BATCH_NLS
     my_malloc (ns, sbasis, rmg_double_t);
     my_malloc (nv, sbasis, rmg_double_t);
@@ -233,17 +203,9 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
         time1 = my_crtc ();
 #endif
-#if GPU_FD_ENABLED
-//        cudaDeviceSynchronize();
-#endif
 
-        //scf_barrier_wait();
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver (sg_twovpsi, work1, dimx, dimy, dimz, ct.kohn_sham_fd_order);
-
-#if GPU_FD_ENABLED
-        cudaDeviceSynchronize();
-#endif
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));
@@ -274,32 +236,33 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             tarr[0] = t2;
             tarr[1] = eig;
             idx = 2;
-            global_sums (tarr, &idx, pct.grid_comm);
 
 
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
-	     * are not defined yet*/
+             * are not defined yet*/
             if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
             {
                 if (ct.scf_steps == 0)
                 {
+                    global_sums (tarr, &idx, pct.grid_comm);
                     eig = tarr[1] / (TWO * tarr[0]);
                     sp->eig[0] = eig;
                     sp->oldeig[0] = eig;
                 }
-		else
+                else
                     eig = sp->eig[0];
-	    }
+            }
             else
             {
+                global_sums (tarr, &idx, pct.grid_comm);
                 eig = tarr[1] / (TWO * tarr[0]);
                 sp->eig[0] = eig;
                 if(ct.scf_steps == 0) {
                     sp->oldeig[0] = eig;
                 }
             }
-            
+
             if(potential_acceleration) {
                 t1 = eig;
                 eig = 0.3 * eig + 0.7 * sp->oldeig[0];
@@ -331,7 +294,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images (sg_psi, dimx, dimy, dimz, neighbors, FULL_FD);
+            trade_images (sg_psi, dimx, dimy, dimz, get_neighbors(), FULL_FD);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
@@ -343,7 +306,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            app_smooth (sg_psi, work1, PX0_GRID, PY0_GRID, PZ0_GRID);
+            app_smooth (sg_psi, work1, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 #if MD_TIMERS
             rmg_timings (MG_EIG_APPSMOOTH_TIME, (my_crtc () - time1));
 #endif
@@ -363,10 +326,10 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsi, work1, work2,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, neighbors, levels, eig_pre, eig_post, 1, sb_step, t1,
+                        hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
                         NX_GRID, NY_GRID, NZ_GRID,
-                        PX_OFFSET, PY_OFFSET, PZ_OFFSET,
-                        PX0_GRID, PY0_GRID, PZ0_GRID);
+                        get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
+                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
@@ -459,9 +422,9 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
             /* Pack delta_rho into multigrid array */
             pack_ptos (sg_psi, res, dimx, dimy, dimz);
-            trade_images (sg_psi, dimx, dimy, dimz, neighbors, FULL_FD);
+            trade_images (sg_psi, dimx, dimy, dimz, get_neighbors(), FULL_FD);
             /* Smooth it once and store the smoothed charge in res */
-            app_smooth1 (sg_psi, res, PX0_GRID, PY0_GRID, PZ0_GRID);
+            app_smooth1 (sg_psi, res, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
@@ -479,10 +442,10 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             levels=1;
             mgrid_solv (sg_twovpsi, res, work2,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, neighbors, levels, eig_pre, eig_post, 1, 1.0, 0.0,
+                        hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
                         NX_GRID, NY_GRID, NZ_GRID,
-                        PX_OFFSET, PY_OFFSET, PZ_OFFSET,
-                        PX0_GRID, PY0_GRID, PZ0_GRID);
+                        get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
+                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res[idx] = 0.0;
@@ -512,11 +475,9 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
     my_free (nv);
     my_free (ns);
 #endif
-#if !GPU_FD_ENABLED
     my_free (work2);
     my_free (sg_twovpsi);
     my_free (work1);
-#endif
     my_free (res);
     my_free (sg_psi);
 
@@ -782,7 +743,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #endif
 
             time1 = my_crtc ();
-            trade_images (sg_psiR, dimx, dimy, dimz, neighbors, FULL_FD);
+            trade_images (sg_psiR, dimx, dimy, dimz, get_neighbors(), FULL_FD);
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 
             /* Smooth it once and store the smoothed residual in work1 */
@@ -802,7 +763,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsiR, work1R, work2R,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, neighbors, levels, eig_pre, eig_post, 1, sb_step);
+                        hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step);
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif
@@ -828,7 +789,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images (sg_psiI, dimx, dimy, dimz, neighbors, FULL_FD);
+            trade_images (sg_psiI, dimx, dimy, dimz, get_neighbors(), FULL_FD);
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 #endif
@@ -852,7 +813,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             /* Do multigrid step with solution returned in sg_twovpsi */
             mgrid_solv (sg_twovpsiI, work1I, work2I,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, neighbors, levels, eig_pre, eig_post, 1, sb_step);
+                        hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step);
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
 #endif

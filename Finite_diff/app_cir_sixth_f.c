@@ -41,11 +41,9 @@ void app_cir_sixth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int 
     // first check for fixed dim case
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) {
-//        app_cir_sixth_global_f (rptr, b);
           FD_app_cir_sixth_global_rmg_float(rptr, b);
     }
     else {
-//        app_cir_sixth_standard_f (rptr, b, dimx, dimy, dimz);
           FD_app_cir_sixth_standard_rmg_float(rptr, b, dimx, dimy, dimz);
     }
 

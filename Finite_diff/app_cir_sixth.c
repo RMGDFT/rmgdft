@@ -26,7 +26,7 @@ void app_cir_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
 {
 
     int numgrid, P0_BASIS;
-    rmg_double_t *rptr=NULL;
+    rmg_double_t *rptr;
 
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
@@ -39,12 +39,9 @@ void app_cir_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
     // first check for fixed dim case
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) {
-//        app_cir_sixth_global (rptr, b);
         FD_app_cir_sixth_global_rmg_double(rptr, b);
-
     }
     else {
-//        app_cir_sixth_standard (rptr, b, dimx, dimy, dimz);
         FD_app_cir_sixth_standard_rmg_double(rptr, b, dimx, dimy, dimz);
     }
 

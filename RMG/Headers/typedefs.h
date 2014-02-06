@@ -33,6 +33,11 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H 1
 
+#if GPU_ENABLED
+#include <cuda.h>
+#include <cublas_v2.h>
+#endif
+
 #include "fftw.h"
 #include "mpi.h"
 #include "my_scalapack.h"

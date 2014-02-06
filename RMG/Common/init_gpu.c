@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 #if GPU_ENABLED
 
@@ -103,8 +104,8 @@ void init_gpu (void)
   }
 
   // Make sure enough is allocated for hartree solver on fine grid
-  alloc = 4 * ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
-  if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
+  alloc = 4 * ct.THREADS_PER_NODE * (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4);
+  if(alloc < ((get_FPX0_GRID() + 2)*(get_FPY0_GRID() + 2)*(get_FPZ0_GRID() + 2))) alloc = (get_FPX0_GRID() + 2)*(get_FPY0_GRID() + 2)*(get_FPZ0_GRID() + 2);
   if(alloc < 1024 * 1024) alloc = 1024 * 1024;
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
 
@@ -116,18 +117,18 @@ void init_gpu (void)
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp3, ct.THREADS_PER_NODE * (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4) * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
-  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4) * sizeof(rmg_double_t) )){
+  if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp4, ct.THREADS_PER_NODE * (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4) * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
   }
 
   // fdbuf needs to be big enough for hartee potential on fine grid
-  alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
-  if(alloc < ((pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2)*(pct.FPY0_GRID + 2)*(pct.FPZ0_GRID + 2);
+  alloc = ct.THREADS_PER_NODE * (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4);
+  if(alloc < ((get_FPX0_GRID() + 2)*(get_FPY0_GRID() + 2)*(get_FPZ0_GRID() + 2))) alloc = (get_FPX0_GRID() + 2)*(get_FPY0_GRID() + 2)*(get_FPZ0_GRID() + 2);
   if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf1, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
       exit(-1);
@@ -142,9 +143,9 @@ void init_gpu (void)
   }
 
 
-  alloc = ct.THREADS_PER_NODE * (pct.PX0_GRID + 4) * (pct.PY0_GRID + 4) * (pct.PZ0_GRID + 4);
+  alloc = ct.THREADS_PER_NODE * (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4);
   if(alloc < ct.num_states * ct.num_states) alloc = ct.num_states * ct.num_states;
-  if(alloc < ((pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2))) alloc = (pct.FPX0_GRID + 2) * (pct.FPY0_GRID + 2) * (pct.FPZ0_GRID + 2);
+  if(alloc < ((get_FPX0_GRID() + 2) * (get_FPY0_GRID() + 2) * (get_FPZ0_GRID() + 2))) alloc = (get_FPX0_GRID() + 2) * (get_FPY0_GRID() + 2) * (get_FPZ0_GRID() + 2);
   if(alloc < 1024 * 1024) alloc = 1024 * 1024;
   if( cudaSuccess != cudaMalloc((void **)&ct.gpu_work1, alloc * sizeof(rmg_double_t) )){
       fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_work\n");

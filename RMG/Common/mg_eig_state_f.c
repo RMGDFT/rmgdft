@@ -70,7 +70,7 @@ extern STATE *states;
 void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 {
 
-    int idx, cycles, ntid, P0_BASIS;
+    int idx, cycles, P0_BASIS;
     int nits, pbasis, sbasis;
     rmg_double_t eig, diag, t1, t2, t3, t4;
     rmg_double_t *work1, *nv, *ns, *res2;
@@ -85,9 +85,6 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     rmg_double_t tarr[8];
     rmg_double_t time1;
     rmg_float_t *sg_twovpsi_f, *work1_f;
-#if GPU_FD_ENABLED
-    cudaStream_t *cstream;
-#endif
 
     P0_BASIS = get_P0_BASIS();
 
@@ -103,28 +100,11 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     pbasis = sp->pbasis;
     sbasis = sp->sbasis;
 
-#if HYBRID_MODEL
-    ntid = get_thread_tid();
-    if(ntid == -1) ntid = 0;
-#else
-    ntid = 0;
-#endif
-
-#if GPU_FD_ENABLED
-
-    res2_f = (rmg_float_t *)&ct.gpu_host_temp3[ntid * sbasis];
-    work2_f = (rmg_float_t *)&ct.gpu_host_temp2[ntid * 4 * sbasis];
-    work1_f = (rmg_float_t *)&ct.gpu_host_temp1[ntid * 4 * sbasis];
-    work1 = &ct.gpu_host_temp4[ntid * sbasis];
-
-    cstream = get_thread_cstream();
-
-#else
+    /* Grab some memory */
     my_malloc (res2_f, sbasis, rmg_float_t);
     my_malloc (work2_f, 4 * sbasis, rmg_float_t);
     my_malloc (work1_f, 4 * sbasis, rmg_float_t);
     my_malloc (work1, sbasis, rmg_double_t);
-#endif
 
     my_malloc (sg_psi_f, sbasis, rmg_float_t);
     my_malloc (res, sbasis, rmg_double_t);
@@ -244,9 +224,6 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #endif
 
         t1 = -ONE;
-#if GPU_FD_ENABLED
-        cudaStreamSynchronize(*cstream);
-#endif
         QMD_saxpy (pbasis, t1, work2_f, ione, work1_f, ione);
 
 #if MD_TIMERS
@@ -509,12 +486,10 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     }
 
     /* Release our memory */
-#if !GPU_FD_ENABLED
     my_free (work1);
     my_free (work1_f);
     my_free (work2_f);
     my_free (res2_f);
-#endif
 
 
     my_free (res_f);

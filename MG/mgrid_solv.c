@@ -93,7 +93,7 @@ void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work
     scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
     scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = step / scale;
-    trade_images (f_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
+    trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 
     for (idx = 0; idx < size; idx++)
     {
@@ -120,7 +120,7 @@ void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work
             trade_images (v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
         }
         else {
-            trade_images (v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
+            trade_images (v_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
         }
 
     }
@@ -177,7 +177,7 @@ void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work
 
         /* re-solve on this grid level */
 
-        trade_images (v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
+        trade_images (v_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
@@ -186,7 +186,7 @@ void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
             /* trade boundary info */
-            trade_images (v_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
+            trade_images (v_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
 
         }                       /* end for */
 

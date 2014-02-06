@@ -7,6 +7,14 @@
 #ifndef RMG_COMMON_PROTOTYPES_H
 #define RMG_COMMON_PROTOTYPES_H 1
 
+#include "make_conf.h"
+
+#if GPU_ENABLED
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#endif
+
 #include "rmgtypedefs.h"
 
 
@@ -148,6 +156,16 @@ rmg_double_t get_zside(void);
 rmg_double_t get_hxgrid(void);
 rmg_double_t get_hygrid(void);
 rmg_double_t get_hzgrid(void);
+
+void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_imagesx (rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz, int images, int type);
+void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
+void trade_imagesx_async (rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz, int images);
+void trade_imagesx_async_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images);
+void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz);
+void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
+
 
 // This set is used for the C++ interface
 void FD_app_cir_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz);
