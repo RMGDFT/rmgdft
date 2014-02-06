@@ -34,6 +34,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 
 static rmg_double_t *fixed_vector1 = NULL;
 static rmg_double_t *fixed_vector2 = NULL;

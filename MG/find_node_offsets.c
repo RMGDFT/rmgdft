@@ -1,6 +1,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 #include "grid.h"
 #include <math.h>
 

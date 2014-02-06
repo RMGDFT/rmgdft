@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 
 void mix_rho (rmg_double_t * new_rho, rmg_double_t * rho, rmg_double_t *rhocore, int length, int length_x, int length_y, int length_z)

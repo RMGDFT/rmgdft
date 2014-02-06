@@ -32,6 +32,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 #include <float.h>
 #include <math.h>
 

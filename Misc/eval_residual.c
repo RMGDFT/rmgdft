@@ -40,6 +40,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 
 
 void eval_residual (rmg_double_t * mat, rmg_double_t * f_mat, int dimx, int dimy, int dimz,

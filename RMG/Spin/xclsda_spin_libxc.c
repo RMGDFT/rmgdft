@@ -2,6 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
 #include "main.h"
+#include "common_prototypes.h"
 #include <float.h>
 #include <math.h> 
 #include "../../lib/libxc/include/xc.h"   

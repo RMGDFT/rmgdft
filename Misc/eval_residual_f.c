@@ -40,6 +40,7 @@
 
 
 #include "main.h"
+#include "common_prototypes.h"
 
 
 void eval_residual_f (rmg_float_t * mat, rmg_float_t * f_mat, int dimx, int dimy, int dimz,

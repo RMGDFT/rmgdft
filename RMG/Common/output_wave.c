@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "main.h"
+#include "common_prototypes.h"
 
 void output_wave (STATE * states, int ik, int fhand)
 {
