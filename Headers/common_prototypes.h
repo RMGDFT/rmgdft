@@ -149,6 +149,17 @@ rmg_double_t get_hxgrid(void);
 rmg_double_t get_hygrid(void);
 rmg_double_t get_hzgrid(void);
 
+// This set is used for the C++ interface
+void FD_app_cir_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz);
+void FD_app_cir_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz);
+void FD_app_cir_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b);
+void FD_app_cir_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b);
+double FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+double FD_app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+double FD_app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+double FD_app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+
+
 
 #if GPU_ENABLED
 void init_gpu (void);
