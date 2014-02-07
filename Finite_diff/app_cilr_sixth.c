@@ -25,9 +25,8 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int numgrid, tid, used_alloc=FALSE, P0_BASIS;
-    rmg_double_t *rptr=NULL;
-    rmg_double_t *gpu_psi, *gpu_b;
+    int numgrid, tid, P0_BASIS;
+    rmg_double_t *rptr;
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
@@ -35,6 +34,8 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
     rmg_double_t ihx, ihy, ihz, retv;
     rmg_double_t c000, c100, c110, c200;
+    int pbasis = dimx * dimy * dimz, itid;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
     P0_BASIS = get_P0_BASIS();
 
@@ -43,26 +44,17 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
     c110 = 1.0 / 144.0;
     c200 = -1.0 / 240.0;
 
-    int pbasis = dimx * dimy * dimz, itid;
-    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
-    // If rptr is null then we must allocate it here
-    if(rptr == NULL) {
-        my_malloc (rptr, sbasis + 64, rmg_double_t);
-        used_alloc = TRUE;
-    }
-
-
+    my_malloc (rptr, sbasis + 64, rmg_double_t);
     trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
 
     // first check for fixed dim case
-    numgrid = dimx * dimy * dimz;
-    if(numgrid == P0_BASIS) {
-        retv = app_cilr_sixth_global (rptr, a_psi, b_psi, vtot_eig_s, gridhx, gridhy, gridhz);
-        if(used_alloc) my_free(rptr);
-        return retv;
-    }
-
+//    numgrid = dimx * dimy * dimz;
+//    if(numgrid == P0_BASIS) {
+//        retv = app_cilr_sixth_global (rptr, a_psi, b_psi, vtot_eig_s, gridhx, gridhy, gridhz);
+//        my_free(rptr);
+//        return retv;
+//    }
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -216,8 +208,7 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
 
     }                           /* end for */
 
-    if(used_alloc)
-        my_free(rptr);
+    my_free(rptr);
     return cc;
 
 }

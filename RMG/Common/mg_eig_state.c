@@ -105,7 +105,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
     my_malloc (res, sbasis, rmg_double_t);
 
     my_malloc (work2, 4 * sbasis, rmg_double_t);
-    my_malloc (sg_twovpsi, sbasis, rmg_double_t);
+    my_malloc (sg_twovpsi, 4 * sbasis, rmg_double_t);
     my_malloc (work1, 4 * sbasis, rmg_double_t);
 
 #if !BATCH_NLS
@@ -206,6 +206,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
         /* B operating on 2*V*psi stored in work1 */
         app_cir_driver (sg_twovpsi, work1, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        for(idx = 0; idx < dimx * dimy * dimz; idx++) work1[idx] += TWO * nv[idx];
 
 #if MD_TIMERS
         rmg_timings (MG_EIG_APPCIR_TIME, (my_crtc () - time1));

@@ -27,6 +27,7 @@
  */
 
 #include "main.h"
+#include "common_prototypes.h"
 
 static int gpu_weight_alloc=0;
 

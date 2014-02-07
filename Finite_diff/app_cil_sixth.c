@@ -43,12 +43,9 @@ rmg_double_t app_cil_sixth (rmg_double_t * psi, rmg_double_t * b, int dimx, int 
     // first check for fixed dim case  
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) {
-//        cc = app_cil_sixth_global (rptr, b, gridhx, gridhy, gridhz);
         cc = FD_app_cil_sixth_global_rmg_double (rptr, b, gridhx, gridhy, gridhz);
-
     }
     else {
-//        cc = app_cil_sixth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         cc = FD_app_cil_sixth_standard_rmg_double (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
 

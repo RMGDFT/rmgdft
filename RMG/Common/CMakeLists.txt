@@ -37,7 +37,6 @@ write_header.c
 app_nls_batch.c
 init_pe.c
 norm_psi1.c
-qgemv.c
 quench.c
 get_psioverlaps.c
 read_data.c
@@ -47,7 +46,6 @@ cholesky.c
 get_pdos.c
 bandstructure.c
 del_space.c
-dgemv.f
 get_new_rho.c
 wvfn_residual.c
 init_img_topo.c

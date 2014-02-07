@@ -104,7 +104,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     my_malloc (res2_f, sbasis, rmg_float_t);
     my_malloc (work2_f, 4 * sbasis, rmg_float_t);
     my_malloc (work1_f, 4 * sbasis, rmg_float_t);
-    my_malloc (work1, sbasis, rmg_double_t);
+    my_malloc (work1, 4 * sbasis, rmg_double_t);
 
     my_malloc (sg_psi_f, sbasis, rmg_float_t);
     my_malloc (res, sbasis, rmg_double_t);

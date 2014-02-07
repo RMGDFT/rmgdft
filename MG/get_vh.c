@@ -76,11 +76,6 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
     rmg_double_t time1, time2;
     time1 = my_crtc ();
 
-#if GPU_ENABLED
-    cudaStream_t *cstream;
-    cstream = get_thread_cstream();
-#endif
-
     /*Taken from ON code, seems to help a lot with convergence*/
     poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
@@ -92,14 +87,8 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
 
     /* Grab some memory for our multigrid structures */
-#if GPU_ENABLED
-    cuCtxSynchronize();
-    mgrhsarr = &ct.gpu_host_temp1[0];
-    mglhsarr = &ct.gpu_host_temp2[0];
-#else
     my_malloc (mgrhsarr, sbasis, rmg_double_t);
     my_malloc (mglhsarr, sbasis, rmg_double_t);
-#endif
     my_malloc (mgresarr, sbasis, rmg_double_t);
     my_malloc (work, 4*sbasis, rmg_double_t);
     my_malloc (sg_rho, sbasis, rmg_double_t);
@@ -117,9 +106,6 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
     app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
-#if GPU_ENABLED
-    cuStreamSynchronize(*cstream);
-#endif
 
     /* Multiply through by 4PI */
     t1 = -FOUR * PI;
@@ -145,10 +131,6 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
                 diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             ct.hxxgrid, ct.hyygrid, ct.hzzgrid, APP_CI_FOURTH);
                 diag = -1.0 / diag;
-
-#if GPU_ENABLED
-                cuStreamSynchronize(*cstream);
-#endif
 
                 /* Generate residual vector */
                 for (idx = 0; idx < pbasis; idx++)
@@ -220,9 +202,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
                             ct.hxxgrid, ct.hyygrid, ct.hzzgrid, APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
-#if GPU_ENABLED
-        cuStreamSynchronize(*cstream);
-#endif
+
         /* Generate residual vector */
         for (idx = 0; idx < pbasis; idx++)
         {
@@ -257,12 +237,8 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
     my_free (sg_rho);
     my_free (work);
     my_free (mgresarr);
-#if GPU_ENABLED
-    cuStreamSynchronize(*cstream);
-#else
     my_free (mglhsarr);
     my_free (mgrhsarr);
-#endif
 
     time2 = my_crtc ();
     rmg_timings (HARTREE_TIME, (time2 - time1));

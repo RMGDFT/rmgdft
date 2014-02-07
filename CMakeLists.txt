@@ -136,13 +136,15 @@ endif(CUDA_FOUND)
 
 # These are hard coded for now
 target_link_libraries (rmg "/home/emil/Projects/RMG_RELEASE1/codes/lib/libxc/lib64/libxc.a")
+include_directories(rmg "/usr/local/magma/include")
+
 
 
 
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC)
 #    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_C_FLAGS "-Wall -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_C_FLAGS "-Wall -g -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
 endif()
@@ -184,6 +186,10 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 link_directories (${RMG_BINARY_DIR}/US_PP)
 link_directories (${RMG_BINARY_DIR}/XC)
 
+#target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_scalapack_lp64.a")
+#target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
+target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "/usr/local/magma/lib/libmagma.a")
+target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
 
 # configure make_conf.h to pass some of the CMake settings
 # to the source code

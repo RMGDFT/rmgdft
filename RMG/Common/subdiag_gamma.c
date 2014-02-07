@@ -1623,8 +1623,8 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 
 	/*Get vtot on coarse grid */
-	my_malloc (vtot, pct.FP0_BASIS, rmg_double_t);
-	for (idx = 0; idx < pct.FP0_BASIS; idx++)
+	my_malloc (vtot, get_FP0_BASIS(), rmg_double_t);
+	for (idx = 0; idx < get_FP0_BASIS(); idx++)
 		vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
 	get_vtot_psi (vtot_eig, vtot, FG_NX);
 
