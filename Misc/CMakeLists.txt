@@ -36,7 +36,7 @@ mg_prolong_MAX10.c
 init_pos.c
 rmg_error.c
 rmg_alloc.c
-grids.c
 ions.c
+Grid.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")

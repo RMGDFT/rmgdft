@@ -3,35 +3,20 @@
 #include "rmgtypes.h"
 #include "fixed_dims.h"
 #include "iostream"
+#include "Grid.h"
+#include <cmath>
+#include <complex>
 
 using namespace std;
 //#include "common_prototypes.h"
 
 extern "C" {
   rmg_double_t get_xside(void);
-}
-extern "C" {
   rmg_double_t get_yside(void);
-}
-extern "C" {
   rmg_double_t get_zside(void);
-}
-extern "C" {
   int get_PX0_GRID(void);
-}
-extern "C" {
   int get_PY0_GRID(void);
-}
-extern "C" {
   int get_PZ0_GRID(void);
-}
-extern "C" {
-  int get_ibrav_type(void);
-}
-extern "C" {
-  rmg_double_t get_anisotropy(void);
-}
-extern "C" {
   void rmg_error_handler(const char *message);
 }
 
@@ -44,7 +29,6 @@ rmg_double_t FD_app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
     rmg_double_t ihx, ihy, ihz;
-
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -157,7 +141,9 @@ rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t 
     rmg_double_t rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     rmg_double_t td1, td2, td3, td4, td5, td6, td7, td8, tdx;
 
-    ibrav = get_ibrav_type();
+    Grid G;
+
+    ibrav = G.get_ibrav_type();
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
@@ -879,8 +865,9 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
     rmg_double_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
+    Grid G;
 
-    ibrav = get_ibrav_type();
+    ibrav = G.get_ibrav_type();
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -891,7 +878,7 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:
 
-        if (get_anisotropy() < 1.0000001)
+        if (G.get_anisotropy() < 1.0000001)
         {
 
             cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
@@ -1204,5 +1191,11 @@ extern "C" double FD_app_del2c_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int 
 {
 
     return FD_app_del2c<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_del2c_rmg_complex(complex<double> *rptr, complex<double> *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_del2c<complex <double> > (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }

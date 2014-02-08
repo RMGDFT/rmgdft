@@ -48,6 +48,7 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
+#include "transition.h"
 
 
 static void init_alloc_nonloc_mem (void);
@@ -140,6 +141,8 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     /* initialize the lattice basis vectors */
     flag = 0;
     latgen (&ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
+
+    /* initialize the lattice basis vectors */
 
 
     /* initialize the reciprocal lattice vectors */
@@ -338,7 +341,6 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
     Dprintf ("Allocate memory for arrays related to nonlocal PP");
     init_alloc_nonloc_mem ();
-
 
     /*Set max_nldim */
     ct.max_nldim = 0;

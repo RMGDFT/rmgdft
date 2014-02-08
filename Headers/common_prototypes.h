@@ -127,6 +127,11 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
 void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images);
 void pe2xyz(int pe, int *x, int *y, int *z);
 int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing);
+int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
+                      int *pxoffset, int *pyoffset, int *pzoffset);
+int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
+                      int *pxsize, int *pysize, int *pzsize);
+
 
 int get_PX0_GRID(void);
 int get_PY0_GRID(void);
@@ -146,7 +151,7 @@ void set_anisotropy(rmg_double_t a);
 rmg_double_t get_anisotropy(void);
 void set_neighbors(int *list);
 int *get_neighbors(void);
-void set_grids(int ii, int jj, int kk);
+void set_grids(int gridpe, int ii, int jj, int kk);
 int get_ibrav_type(void);
 void set_ibrav_type(int ibrav);
 ION *get_ion(int ion);
@@ -252,6 +257,7 @@ double app_cil_fourth_f_gpu(const float *psi,
                        const double yside,
                        const double zside,
                        cudaStream_t cstream);
+
 #define my_fopen(_fhandle_, _filename_, _mode_) do {\
     _fhandle_ = fopen(_filename_, _mode_);\
     if (_fhandle_ == NULL)\

@@ -40,6 +40,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "rmgthreads.h"
+#include "transition.h"
 
 
 void init_pe ( int image )
@@ -201,8 +202,8 @@ void init_pe ( int image )
     XYZ2PE (ii, jj, (kk + 1) % PE_Z, neighbors[NB_U]);
     XYZ2PE (ii, jj, (kk - 1 + PE_Z) % PE_Z, neighbors[NB_D]);
 
-    // Set up grids and neighbors
+    // Set up grids and neighbors using both C and C++ for now
     set_neighbors(neighbors);
-    set_grids(ii, jj, kk);
+    set_grids(pct.gridpe, ii, jj, kk);
 
 }                               /* end init_pe */

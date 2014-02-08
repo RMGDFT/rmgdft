@@ -24,6 +24,11 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
 
+    rmg_double_t r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
+    rmg_double_t x[3], invdr;
+    SPECIES *sp;
+    ION *iptr;
+
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
@@ -31,11 +36,6 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     FPX_OFFSET = get_FPX_OFFSET();
     FPY_OFFSET = get_FPY_OFFSET();
     FPZ_OFFSET = get_FPZ_OFFSET();
-
-    rmg_double_t r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
-    rmg_double_t x[3], invdr;
-    SPECIES *sp;
-    ION *iptr;
 
     /* Grab some memory for temporary storage */
     my_malloc (pvec, FP0_BASIS, int);
