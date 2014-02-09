@@ -1508,15 +1508,15 @@ void init_trade_imagesx_async(void)
     pe2xyz(pct.gridpe, &pe_x, &pe_y, &pe_z);
     for(ix = -1;ix <= 1;ix++) {
 
-        t_pe_x = (pe_x + ix + PE_X) % PE_X;
+        t_pe_x = (pe_x + ix + get_PE_X()) % get_PE_X();
 
         for(iy = -1;iy <= 1;iy++) {
 
-            t_pe_y = (pe_y + iy + PE_Y) % PE_Y;
+            t_pe_y = (pe_y + iy + get_PE_Y()) % get_PE_Y();
 
             for(iz = -1;iz <= 1;iz++) {
 
-                t_pe_z = (pe_z + iz + PE_Z) % PE_Z;
+                t_pe_z = (pe_z + iz + get_PE_Z()) % get_PE_Z();
                 XYZ2PE (t_pe_x, t_pe_y, t_pe_z, target_node[ix+1][iy+1][iz+1]);
 
             }

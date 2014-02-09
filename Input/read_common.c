@@ -41,6 +41,10 @@ void read_common ()
     char *tbuf, *tptr;
     rmg_double_t time1;
     static int run_count = - 1;
+    int NX_GRID, NY_GRID, NZ_GRID;
+    int FNX_GRID, FNY_GRID, FNZ_GRID;
+    int PE_X, PE_Y, PE_Z;
+    int FG_NX, FG_NY, FG_NZ;
 
     run_count ++;
     time1 = my_crtc ();
@@ -63,9 +67,13 @@ void read_common ()
     NY_GRID = strtol(tbuf, &tbuf, 10);
     NZ_GRID = strtol(tbuf, &tbuf, 10);
 
+
     get_data("potential_grid_refinement",  &FG_NX, INT, "2");
     FG_NY = FG_NX;
     FG_NZ = FG_NX;
+
+    // Set up grid and node data
+    set_grids(NX_GRID, NY_GRID, NZ_GRID, PE_X, PE_Y, PE_Z, FG_NX, FG_NY, FG_NZ);
 
     get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "1");
     if(!HYBRID_MODEL)

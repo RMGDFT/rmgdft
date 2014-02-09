@@ -17,7 +17,7 @@ void lcao_get_rho (rmg_double_t * arho_f)
     int ix, iy, iz;
     int ion, idx;
     int ilow, jlow, klow, ihi, jhi, khi, map;
-    int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
+    int *Aix, *Aiy, *Aiz;
     int icount, n, incx;
     int *pvec;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
@@ -37,6 +37,10 @@ void lcao_get_rho (rmg_double_t * arho_f)
 
     /* Grab some memory for temporary storage */
     my_malloc (pvec, get_FP0_BASIS(), int);
+    my_malloc (Aix, get_FNX_GRID(), int);
+    my_malloc (Aiy, get_FNY_GRID(), int);
+    my_malloc (Aiz, get_FNZ_GRID(), int);
+
 
     /* Initialize the compensating charge array and the core charge array */
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -132,6 +136,9 @@ void lcao_get_rho (rmg_double_t * arho_f)
 
 
     /* Release our memory */
+    my_free(Aiz);
+    my_free(Aiy);
+    my_free(Aix);
     my_free (pvec);
 
 }                               /* end init_nuc */

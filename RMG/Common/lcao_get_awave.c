@@ -19,7 +19,7 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
     int ix, iy, iz;
     int ion, idx, yindex;
     int ilow, jlow, klow, ihi, jhi, khi, map;
-    int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
+    int *Aix, *Aiy, *Aiz;
     int icount, n, incx;
     int *pvec;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
@@ -43,6 +43,10 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
 
     /* Grab some memory for temporary storage */
     my_malloc (pvec, get_P0_BASIS(), int);
+    my_malloc (Aix, get_NX_GRID(), int);
+    my_malloc (Aiy, get_NY_GRID(), int);
+    my_malloc (Aiz, get_NZ_GRID(), int);
+
 
     /* Get species type */
     sp = &ct.sp[iptr->species];
@@ -115,6 +119,9 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
 
 
     /* Release our memory */
+    my_free(Aiz);
+    my_free(Aiy);
+    my_free(Aix);
     my_free (pvec);
 
 }                               /* end init_nuc */

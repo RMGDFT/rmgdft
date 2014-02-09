@@ -338,7 +338,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
             mgrid_solv_f (sg_twovpsi_f, work1_f, work2_f,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
-                        NX_GRID, NY_GRID, NZ_GRID,
+                        get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
                         get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
                         get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
@@ -442,7 +442,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
             for(idx = 0;idx <P0_BASIS;idx++) {
                 t2 += res_f[idx];
             }
-            t2 = real_sum_all(t2, pct.grid_comm) / (NX_GRID * NY_GRID * NZ_GRID);
+            t2 = real_sum_all(t2, pct.grid_comm) / (get_NX_GRID() * get_NY_GRID() * get_NZ_GRID());
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res_f[idx] -= t2;
             }
@@ -454,7 +454,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
             mgrid_solv_f (sg_twovpsi_f, res_f, work2_f,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
-                        NX_GRID, NY_GRID, NZ_GRID,
+                        get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
                         get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
                         get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 

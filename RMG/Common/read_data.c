@@ -100,20 +100,20 @@ void read_data (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
 
     /* read grid info */
     read_int (fhand, grid, 3);
-    if (grid[0] != NX_GRID)
+    if (grid[0] != get_NX_GRID())
 	error_handler ("Wrong NX_GRID");
-    if (grid[1] != NY_GRID)
+    if (grid[1] != get_NY_GRID())
 	error_handler ("Wrong NY_GRID");
-    if (grid[2] != NZ_GRID)
+    if (grid[2] != get_NZ_GRID())
 	error_handler ("Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
-    if (pe[0] != PE_X)
+    if (pe[0] != get_PE_X())
 	error_handler ("Wrong PE_X");
-    if (pe[1] != PE_Y)
+    if (pe[1] != get_PE_Y())
 	error_handler ("Wrong PE_Y");
-    if (pe[2] != PE_Z)
+    if (pe[2] != get_PE_Z())
 	error_handler ("Wrong PE_Z");
 
     npe = (pe[0] * pe[1] * pe[2]);

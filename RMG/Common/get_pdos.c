@@ -85,10 +85,10 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
     my_malloc (product, max_product, rmg_double_t);
 
-    my_malloc_init( rho_energy, E_POINTS * FNX_GRID, rmg_double_t );
+    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), rmg_double_t );
                                                                                               
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
-    xoff = ii * FPX0_GRID;
+    xoff = ii * get_FPX0_GRID();
 
     /* scale charge accumulator */
     n = FP0_BASIS;
@@ -138,7 +138,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 		    bspline_interp_full (work_temp, rho_temp);
 		    break;
 	    case 2:
-		    mg_prolong_MAX10 (rho_temp, work_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
+		    mg_prolong_MAX10 (rho_temp, work_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
 		    break;
 
 	    default:
@@ -236,14 +236,14 @@ for (iene = 0; iene < E_POINTS; iene++)
     }                           /*end for ion */
 
 
-for (ix = 0; ix < FPX0_GRID; ix++)
+for (ix = 0; ix < get_FPX0_GRID(); ix++)
 {
-	for (iy = 0; iy < FPY0_GRID; iy++)
+	for (iy = 0; iy < get_FPY0_GRID(); iy++)
 	{
-		for (iz = 0; iz < FPZ0_GRID; iz++)
+		for (iz = 0; iz < get_FPZ0_GRID(); iz++)
 		{
-			idx = iz + iy * FPZ0_GRID + ix * FPZ0_GRID * FPY0_GRID;
-			rho_energy[iene * FNX_GRID + ix + xoff] += rho_temp[idx];
+			idx = iz + iy * get_FPZ0_GRID() + ix * get_FPZ0_GRID() * get_FPY0_GRID();
+			rho_energy[iene * get_FNX_GRID() + ix + xoff] += rho_temp[idx];
 		}
 	}
 }
@@ -257,11 +257,11 @@ for (ix = 0; ix < FPX0_GRID; ix++)
 
 
 /***************begin plot pdos******************/
-    iene = E_POINTS * FNX_GRID;
+    iene = E_POINTS * get_FNX_GRID();
     global_sums (rho_energy, &iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
-        double dx = ct.celldm[0] / NX_GRID;
+        double dx = ct.celldm[0] / get_NX_GRID();
         double x0 = 0.5 * ct.celldm[0];
 
         file = fopen ("dos.dat", "w");
@@ -269,11 +269,11 @@ for (ix = 0; ix < FPX0_GRID; ix++)
         for (iene = 0; iene < E_POINTS; iene++)
         {
 
-            for (ix = 0; ix < NX_GRID; ix++)
+            for (ix = 0; ix < get_NX_GRID(); ix++)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                        ix * dx - x0, Emin+iene*de, rho_energy[iene * FNX_GRID + ix * FG_NX]);
+                        ix * dx - x0, Emin+iene*de, rho_energy[iene * get_FNX_GRID() + ix * get_FG_NX()]);
             }
             fprintf (file, "\n");
         }

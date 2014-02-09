@@ -156,8 +156,12 @@ void lcao_get_psi (STATE * states)
     {
         int ix, iy, iz;
         int xoff, yoff, zoff;
-        rmg_double_t xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
+        rmg_double_t *xrand, *yrand, *zrand;
         STATE *state_p;
+
+        my_malloc(xrand, 2 * get_NX_GRID(), rmg_double_t);
+        my_malloc(yrand, 2 * get_NY_GRID(), rmg_double_t);
+        my_malloc(zrand, 2 * get_NZ_GRID(), rmg_double_t);
 
         pe2xyz (pct.gridpe, &ix, &iy, &iz);
         xoff = PX_OFFSET;
@@ -220,6 +224,10 @@ void lcao_get_psi (STATE * states)
 
 
         }                           /* end for */
+
+        my_free(zrand);
+        my_free(yrand);
+        my_free(xrand);
 
     }
 

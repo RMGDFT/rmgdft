@@ -4,6 +4,26 @@
 class Grid {
 
 public:
+    /* Global coarse grid dimensions */
+    static int NX_GRID;
+    static int NY_GRID;
+    static int NZ_GRID;
+
+    /* Fine grid/coarse grid ratio */
+    static int FG_NX;
+    static int FG_NY;
+    static int FG_NZ;
+
+    /* Global fine grid dimensions */
+    static int FNX_GRID;
+    static int FNY_GRID;
+    static int FNZ_GRID;
+
+    /* Node (PE) dimensions */
+    static int PE_X;
+    static int PE_Y;
+    static int PE_Z;
+
     /* Grid sizes on each PE */
     static int PX0_GRID;
     static int PY0_GRID;
@@ -40,11 +60,15 @@ public:
     /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
     static rmg_double_t anisotropy;
 
+    /* Initialiazation flags */
+    static int ibrav_first;
     static int neighbor_first;
     static int grid_first;
     static int anisotropy_first;
 
-    void set_grids(int newgridpe, int ii, int jj, int kk);
+    /* Function prototypes */
+    void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_NX, int FG_NY, int FG_NZ);
+    void set_nodes(int newgridpe, int ii, int jj, int kk);
     void set_neighbors(int *list);
     int get_PX0_GRID(void);
     int get_PY0_GRID(void);

@@ -84,15 +84,15 @@ void write_data (int fhand, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
 
 
     /* write grid info */
-    grid[0] = NX_GRID;
-    grid[1] = NY_GRID;
-    grid[2] = NZ_GRID;
+    grid[0] = get_NX_GRID();
+    grid[1] = get_NY_GRID();
+    grid[2] = get_NZ_GRID();
     write_int (fhand, grid, 3);
 
     /* write grid processor topology */
-    pe[0] = PE_X;
-    pe[1] = PE_Y;
-    pe[2] = PE_Z;
+    pe[0] = get_PE_X();
+    pe[1] = get_PE_Y();
+    pe[2] = get_PE_Z();
     write_int (fhand, pe, 3);
 
     npe = (pe[0] * pe[1] * pe[2]);

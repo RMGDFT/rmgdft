@@ -52,7 +52,7 @@ void init_wf (STATE * states)
     int PX0_GRID, PY0_GRID, PZ0_GRID;
     rmg_double_t *tmp_psiR, *tmp_psiI;
     STATE *sp;
-    rmg_double_t xrand[2 * NX_GRID], yrand[2 * NY_GRID], zrand[2 * NZ_GRID];
+    rmg_double_t *xrand, *yrand, *zrand;
     long idum;
 
     PX0_GRID = get_PX0_GRID();
@@ -65,6 +65,11 @@ void init_wf (STATE * states)
 #if !GAMMA_PT
     my_malloc (tmp_psiI, pbasis, rmg_double_t);
 #endif
+
+    my_malloc(xrand, 2 * get_NX_GRID(), rmg_double_t);
+    my_malloc(yrand, 2 * get_NY_GRID(), rmg_double_t);
+    my_malloc(zrand, 2 * get_NZ_GRID(), rmg_double_t);
+
 
     /* Set state 0 to a constant */
     sp = states;
@@ -166,6 +171,9 @@ void init_wf (STATE * states)
 
     }                           /* end for */
 
+    my_free(zrand);
+    my_free(yrand);
+    my_free(xrand);
     my_free (tmp_psiR);
 #if !GAMMA_PT
     my_free (tmp_psiI);

@@ -58,7 +58,7 @@ void set_bc (rmg_double_t * mat, int dimx, int dimy, int dimz, int images, rmg_d
     ibnd = FALSE;
     if ((pex == 0) || (pey == 0) || (pez == 0))
         ibnd = TRUE;
-    if ((pex == (PE_X - 1)) || (pey == (PE_Y - 1)) || (pez == (PE_Z - 1)))
+    if ((pex == (get_PE_X() - 1)) || (pey == (get_PE_Y() - 1)) || (pez == (get_PE_Z() - 1)))
         ibnd = TRUE;
 
     if (!ibnd)
@@ -94,7 +94,7 @@ void set_bc (rmg_double_t * mat, int dimx, int dimy, int dimz, int images, rmg_d
         }                       /* end if */
 
 
-        if (pex == (PE_X - 1))
+        if (pex == (get_PE_X() - 1))
         {
 
             for (iy = 0; iy < dimy_max; iy++)
@@ -115,7 +115,7 @@ void set_bc (rmg_double_t * mat, int dimx, int dimy, int dimz, int images, rmg_d
         }                       /* end if */
 
 
-        if (pey == (PE_Y - 1))
+        if (pey == (get_PE_Y() - 1))
         {
 
             for (ix = 0; ix < dimx_max; ix++)
@@ -137,7 +137,7 @@ void set_bc (rmg_double_t * mat, int dimx, int dimy, int dimz, int images, rmg_d
     }                           /* end if */
 
 
-    if (pez == (PE_Z - 1))
+    if (pez == (get_PE_Z() - 1))
     {
 
         for (ix = 0; ix < dimx_max; ix++)

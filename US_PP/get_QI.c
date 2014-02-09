@@ -20,7 +20,7 @@ void get_QI (void)
     int lpx[9][9], lpl[9][9][9];
     int nh;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
-    int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
+    int *Aix, *Aiy, *Aiz;
     int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
     rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
@@ -39,6 +39,10 @@ void get_QI (void)
     alloc = ct.max_Qpoints;
     my_malloc (pvec, 2 * alloc, int);
     dvec = pvec + alloc;
+
+    my_malloc (Aix, get_FNX_GRID(), int);
+    my_malloc (Aiy, get_FNY_GRID(), int);
+    my_malloc (Aiz, get_FNZ_GRID(), int);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -215,6 +219,9 @@ void get_QI (void)
 
     }                           /*end for ion */
 
+    my_free (Aiz);
+    my_free (Aiy);
+    my_free (Aix);
     my_free (pvec);
 
 }

@@ -32,9 +32,9 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, 
 
 
     /*Check consistency */
-    if ((grid_x >= PE_X * px0_grid) || (grid_x < 0))
+    if ((grid_x >= get_PE_X() * px0_grid) || (grid_x < 0))
         error_handler ("grid_x is specified incorrectly");
-    if ((grid_y >= PE_Y * py0_grid) || (grid_y < 0))
+    if ((grid_y >= get_PE_Y() * py0_grid) || (grid_y < 0))
         error_handler ("grid_y is specified incorrectly");
 
     p0_basis = px0_grid * py0_grid * pz0_grid;
@@ -59,7 +59,7 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, 
        MPI_Barrier(pct.grid_comm); */
 
 
-    for (i = 0; i < PE_Z; i++)
+    for (i = 0; i < get_PE_Z(); i++)
     {
 
         /*only one processor will be sending data at this time */
@@ -108,7 +108,7 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, 
                       &mstatus);
 
             for (j = 0; j < pz0_grid; j++)
-                printf ("\n%f\t%e", (i * pz0_grid + j) / ((rmg_double_t) (pz0_grid * PE_Z)) * zside,
+                printf ("\n%f\t%e", (i * pz0_grid + j) / ((rmg_double_t) (pz0_grid * get_PE_Z())) * zside,
                         temp_buff[j]);
 
             fflush (NULL);

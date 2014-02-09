@@ -358,15 +358,15 @@ void latgen (int *ibrav, rmg_double_t * celldm, rmg_double_t * A0I, rmg_double_t
 
     t1 = (rmg_double_t) ct.psi_nxgrid;
     hxgrid = 1.0 / t1;
-    ct.hxxgrid = hxgrid / (rmg_double_t) FG_NX;
+    ct.hxxgrid = hxgrid / (rmg_double_t) get_FG_NX();
 
     t1 = (rmg_double_t) ct.psi_nygrid;
     hygrid = 1.0 / t1;
-    ct.hyygrid = hygrid / (rmg_double_t) FG_NY;
+    ct.hyygrid = hygrid / (rmg_double_t) get_FG_NY();
 
     t1 = (rmg_double_t) ct.psi_nzgrid;
     hzgrid = 1.0 / t1;
-    ct.hzzgrid = hzgrid / (rmg_double_t) FG_NZ;
+    ct.hzzgrid = hzgrid / (rmg_double_t) get_FG_NZ();
 
     if (*flag)
     {

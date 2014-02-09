@@ -17,12 +17,13 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     int ix, iy, iz;
     int ion, idx;
     int ilow, jlow, klow, ihi, jhi, khi, map;
-    int Aix[FNX_GRID], Aiy[FNY_GRID], Aiz[FNZ_GRID];
+    int *Aix, *Aiy, *Aiz;
     int icount;
     int *pvec;
     int FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
+    int FNX_GRID, FNY_GRID, FNZ_GRID;
 
     rmg_double_t r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
     rmg_double_t x[3], invdr;
@@ -36,9 +37,15 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     FPX_OFFSET = get_FPX_OFFSET();
     FPY_OFFSET = get_FPY_OFFSET();
     FPZ_OFFSET = get_FPZ_OFFSET();
+    FNX_GRID = get_FNX_GRID();
+    FNY_GRID = get_FNY_GRID();
+    FNZ_GRID = get_FNZ_GRID();
 
     /* Grab some memory for temporary storage */
     my_malloc (pvec, FP0_BASIS, int);
+    my_malloc (Aix, FNX_GRID, int);
+    my_malloc (Aiy, FNY_GRID, int);
+    my_malloc (Aiz, FNZ_GRID, int);
 
     /* Initialize the compensating charge array and the core charge array */
     for (idx = 0; idx < FP0_BASIS; idx++)
@@ -158,6 +165,9 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
 
 
     /* Release our memory */
+    my_free(Aiz);
+    my_free(Aiy);
+    my_free(Aix);
     my_free (pvec);
 
 

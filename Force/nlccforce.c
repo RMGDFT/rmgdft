@@ -67,9 +67,9 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 #endif
 
 
-    my_calloc( Aix, FNX_GRID, int );
-    my_calloc( Aiy, FNY_GRID, int );
-    my_calloc( Aiz, FNZ_GRID, int );
+    my_calloc( Aix, get_FNX_GRID(), int );
+    my_calloc( Aiy, get_FNY_GRID(), int );
+    my_calloc( Aiz, get_FNZ_GRID(), int );
 
     my_malloc (locsum, 12, rmg_double_t);
     my_malloc (prjptr, 12 * get_FP0_BASIS(), rmg_double_t);
@@ -82,7 +82,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 
 
 
-    deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) FG_NX;
+    deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) get_FG_NX();
     shift[0] = -TWO * deltac;
     shift[1] = TWO * deltac;
     shift[2] = -deltac;

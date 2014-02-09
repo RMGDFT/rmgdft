@@ -133,6 +133,18 @@ int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxsize, int *pysize, int *pzsize);
 
 
+int get_PE_X(void);
+int get_PE_Y(void);
+int get_PE_Z(void);
+int get_NX_GRID(void);
+int get_NY_GRID(void);
+int get_NZ_GRID(void);
+int get_FNX_GRID(void);
+int get_FNY_GRID(void);
+int get_FNZ_GRID(void);
+int get_FG_NX(void);
+int get_FG_NY(void);
+int get_FG_NZ(void);
 int get_PX0_GRID(void);
 int get_PY0_GRID(void);
 int get_PZ0_GRID(void);
@@ -151,7 +163,8 @@ void set_anisotropy(rmg_double_t a);
 rmg_double_t get_anisotropy(void);
 void set_neighbors(int *list);
 int *get_neighbors(void);
-void set_grids(int gridpe, int ii, int jj, int kk);
+void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_NX, int FG_NY, int FG_NZ);
+void set_nodes(int newgridpe, int ii, int jj, int kk);
 int get_ibrav_type(void);
 void set_ibrav_type(int ibrav);
 ION *get_ion(int ion);

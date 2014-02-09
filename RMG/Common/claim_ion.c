@@ -72,8 +72,8 @@ int claim_ion (rmg_double_t *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgr
 //    pe = (igridx / pxgrid) * PE_Y * PE_Z + (igridy / pygrid) * PE_Z + (igridz / pzgrid);
     find_grid_owner(igridx, igridy, igridz, nxgrid, nygrid, nzgrid, &xnode, &ynode, &znode);
 
-    pe = xnode * PE_Y * PE_Z +
-         ynode * PE_Z +
+    pe = xnode * get_PE_Y() * get_PE_Z() +
+         ynode * get_PE_Z() +
          znode;
 
     return (pe);

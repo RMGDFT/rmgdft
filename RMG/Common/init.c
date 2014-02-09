@@ -92,15 +92,15 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     ct.total_scf_steps = 0;
     ct.md_steps = 0;
 
-    ct.psi_nbasis = NX_GRID * NY_GRID * NZ_GRID;
-    ct.psi_nxgrid = NX_GRID;
-    ct.psi_nygrid = NY_GRID;
-    ct.psi_nzgrid = NZ_GRID;
+    ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    ct.psi_nxgrid = get_NX_GRID();
+    ct.psi_nygrid = get_NY_GRID();
+    ct.psi_nzgrid = get_NZ_GRID();
 
-    ct.psi_fnbasis = FNX_GRID * FNY_GRID * FNZ_GRID;
-    ct.psi_fnxgrid = FNX_GRID;
-    ct.psi_fnygrid = FNY_GRID;
-    ct.psi_fnzgrid = FNZ_GRID;
+    ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
+    ct.psi_fnxgrid = get_FNX_GRID();
+    ct.psi_fnygrid = get_FNY_GRID();
+    ct.psi_fnzgrid = get_FNZ_GRID();
 
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {

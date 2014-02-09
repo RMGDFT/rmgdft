@@ -15,9 +15,9 @@ int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
     pe2xyz (gridpe, &ii, &jj, &kk);
 
     // Now compute the global grid offset of the first point of the node grid
-    mfac = nxgrid / NX_GRID;
-    *pxoffset = mfac * ii*(NX_GRID/PE_X);
-    ix = NX_GRID % PE_X;
+    mfac = nxgrid / get_NX_GRID();
+    *pxoffset = mfac * ii*(get_NX_GRID()/get_PE_X());
+    ix = get_NX_GRID() % get_PE_X();
     ioffset = 0;
     for(idx = 1;idx <= ii;idx++) {
         if(idx <= ix) ioffset++;
@@ -26,9 +26,9 @@ int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
     *pxoffset = *pxoffset + ioffset;
 
 
-    mfac = nygrid / NY_GRID;
-    *pyoffset = mfac * jj*(NY_GRID/PE_Y);
-    iy = NY_GRID % PE_Y;
+    mfac = nygrid / get_NY_GRID();
+    *pyoffset = mfac * jj*(get_NY_GRID()/get_PE_Y());
+    iy = get_NY_GRID() % get_PE_Y();
     ioffset = 0;
     for(idx = 1;idx <= jj;idx++) {
         if(idx <= iy) ioffset++;
@@ -36,9 +36,9 @@ int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
     ioffset *= mfac;
     *pyoffset += ioffset;
 
-    mfac = nzgrid / NZ_GRID;
-    *pzoffset = mfac * kk*(NZ_GRID/PE_Z);
-    iz = NZ_GRID % PE_Z;
+    mfac = nzgrid / get_NZ_GRID();
+    *pzoffset = mfac * kk*(get_NZ_GRID()/get_PE_Z());
+    iz = get_NZ_GRID() % get_PE_Z();
     ioffset = 0;
     for(idx = 1;idx <= kk;idx++) {
         if(idx <= iz) ioffset++;

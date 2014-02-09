@@ -158,7 +158,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
 	    CONVERGED = true;
     }
 
-    get_vtot_psi (vtot_psi, vtot, FG_NX);
+    get_vtot_psi (vtot_psi, vtot, get_FG_NX());
 
     /*Generate the Dnm_I */
     get_ddd (vtot);

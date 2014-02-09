@@ -1,6 +1,7 @@
 
 #include "grid.h"
 #include "main.h"
+#include "common_prototypes.h"
 #include <math.h>
 
 // Finds a 1-D node coordinate that a given coarse grid point
@@ -12,10 +13,10 @@ void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid,
 {
     int mingrid, maxgrid, remainder, mfac;
  
-    mfac = nxgrid / NX_GRID;
-    mingrid = mfac * (NX_GRID / PE_X);
+    mfac = nxgrid / get_NX_GRID();
+    mingrid = mfac * (get_NX_GRID() / get_PE_X());
     maxgrid = mingrid;
-    remainder = NX_GRID % PE_X;
+    remainder = get_NX_GRID() % get_PE_X();
     if(remainder) maxgrid += mfac;
     if(maxgrid == mingrid) {
         *xnode = igridx / maxgrid;
@@ -31,10 +32,10 @@ void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid,
         }
     }
 
-    mfac = nygrid / NY_GRID;
-    mingrid = mfac * (NY_GRID / PE_Y);
+    mfac = nygrid / get_NY_GRID();
+    mingrid = mfac * (get_NY_GRID() / get_PE_Y());
     maxgrid = mingrid;
-    remainder = NY_GRID % PE_Y;
+    remainder = get_NY_GRID() % get_PE_Y();
     if(remainder) maxgrid += mfac;
     if(maxgrid == mingrid) {
         *ynode = igridy / maxgrid;
@@ -50,10 +51,10 @@ void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid,
         }
     }
 
-    mfac = nzgrid / NZ_GRID;
-    mingrid = mfac * (NZ_GRID / PE_Z);
+    mfac = nzgrid / get_NZ_GRID();
+    mingrid = mfac * (get_NZ_GRID() / get_PE_Z());
     maxgrid = mingrid;
-    remainder = NZ_GRID % PE_Z;
+    remainder = get_NZ_GRID() % get_PE_Z();
     if(remainder) maxgrid += mfac;
     if(maxgrid == mingrid) {
         *znode = igridz / maxgrid;

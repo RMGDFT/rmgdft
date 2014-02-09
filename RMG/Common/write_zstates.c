@@ -47,7 +47,7 @@ void write_zstates (STATE * states)
     char newname[MAX_PATH + 20];
     STATE *sp;
     rmg_double_t t1;
-    rmg_double_t zvec[NZ_GRID];
+    rmg_double_t *zvec;
     rmg_double_t *tmp_psi;
     FILE *avg;
 
@@ -56,6 +56,7 @@ void write_zstates (STATE * states)
     PZ0_GRID = get_PZ0_GRID();
 
     my_malloc (tmp_psi, get_P0_BASIS(), rmg_double_t);
+    my_malloc (zvec, get_NZ_GRID(), rmg_double_t);
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = pz * PZ0_GRID;
@@ -69,7 +70,7 @@ void write_zstates (STATE * states)
         sp = &states[istate];
 
         /* Zero out result vector */
-        for (iz = 0; iz < NZ_GRID; iz++)
+        for (iz = 0; iz < get_NZ_GRID(); iz++)
             zvec[iz] = 0.0;
 
 
@@ -92,7 +93,7 @@ void write_zstates (STATE * states)
 
         /* Now sum over all processors */
 
-        iz = NZ_GRID;
+        iz = get_NZ_GRID();
         global_sums (zvec, &iz, pct.grid_comm);
 
         if (pct.gridpe == 0)
@@ -101,7 +102,7 @@ void write_zstates (STATE * states)
             sprintf (newname, "%s%d", "zavg.", istate);
             my_fopen (avg, newname, "w+");
 
-            for (iz = 0; iz < NZ_GRID; iz++)
+            for (iz = 0; iz < get_NZ_GRID(); iz++)
             {
                 t1 = iz * get_hzgrid() * get_zside();
                 fprintf (avg, "%f %f\n", t1, zvec[iz]);
@@ -115,6 +116,7 @@ void write_zstates (STATE * states)
     }                           /* istate */
 #endif
 
+    my_free(zvec);
 }                               /* end write_zstates */
 
 /******/

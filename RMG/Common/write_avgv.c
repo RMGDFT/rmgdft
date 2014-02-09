@@ -45,12 +45,14 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
     int ix, iy, iz, poff;
     int px, py, pz;
     rmg_double_t t1;
-    rmg_double_t zvec[NZ_GRID];
+    rmg_double_t *zvec;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
+
+    my_malloc (zvec, get_NZ_GRID(), rmg_double_t);
 
 
     /* Get this processors offset */
@@ -59,7 +61,7 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 
 
     /* Zero out result vector */
-    for (iz = 0; iz < NZ_GRID; iz++)
+    for (iz = 0; iz < get_NZ_GRID(); iz++)
         zvec[iz] = ZERO;
 
 
@@ -89,13 +91,13 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 
 
     /* Now sum over all processors */
-    iz = NZ_GRID;
+    iz = get_NZ_GRID();
     global_sums (zvec, &iz, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {
         printf ("\n\n Planar average of the electron potential\n");
-        for (iz = 0; iz < NZ_GRID; iz++)
+        for (iz = 0; iz < get_NZ_GRID(); iz++)
         {
             t1 = iz * get_hzgrid();
             printf (" %f %f\n", t1, zvec[iz]);
@@ -103,6 +105,8 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 
         fflush (NULL);
     }
+
+    my_free(zvec);
 }                               /* end get_avgv */
 
 /******/

@@ -35,9 +35,9 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
 #endif
 
 
-    my_calloc( Aix, FNX_GRID, int );
-    my_calloc( Aiy, FNY_GRID, int );
-    my_calloc( Aiz, FNZ_GRID, int );
+    my_calloc( Aix, get_FNX_GRID(), int );
+    my_calloc( Aiy, get_FNY_GRID(), int );
+    my_calloc( Aiz, get_FNZ_GRID(), int );
 
     size = get_FP0_BASIS();
     my_malloc (rx, 6 * size, rmg_double_t);

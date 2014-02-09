@@ -114,7 +114,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
             bspline_interp_full (work, rho);
             break;
         case 2:
-            mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), FG_NX, 6);
+            mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
             break;
 
         default:

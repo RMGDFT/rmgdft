@@ -23,8 +23,8 @@ void get_nlop (void)
     int *pvec, *dvec, *ivec;
     int ilow, jlow, klow, ihi, jhi, khi, map, map2, icount;
     int alloc;
-    int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
-    int Aix2[FNX_GRID], Aiy2[FNY_GRID], Aiz2[FNZ_GRID];
+    int *Aix, *Aiy, *Aiz;
+    int *Aix2, *Aiy2, *Aiz2;
     int icut, itmp, icenter;
     rmg_double_t vect[3];
     SPECIES *sp;
@@ -45,6 +45,15 @@ void get_nlop (void)
         alloc =get_P0_BASIS();
     my_malloc (pvec, 2*alloc, int);
     dvec = pvec + alloc;
+
+    my_malloc (Aix, get_NX_GRID(), int);
+    my_malloc (Aiy, get_NY_GRID(), int);
+    my_malloc (Aiz, get_NZ_GRID(), int);
+
+    my_malloc (Aix2, get_FNX_GRID(), int);
+    my_malloc (Aiy2, get_FNY_GRID(), int);
+    my_malloc (Aiz2, get_FNZ_GRID(), int);
+
 
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -370,7 +379,7 @@ void get_nlop (void)
 
 		/* Determine if ion has overlap with a given PE becasue of beta functions */
 		map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim,
-			get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), NX_GRID, NY_GRID, NZ_GRID);
+			get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(), get_NZ_GRID());
 
 		/* Determine if ion has overlap with a given PE becasue of Q function */
                 if(ct.norm_conserving_pp) {
@@ -378,7 +387,7 @@ void get_nlop (void)
                 }
                 else {
                     map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
-                        get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
+                        get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
                 }
 
 		Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 
@@ -510,6 +519,13 @@ void get_nlop (void)
 
 
     /* Release temporary memory */
+    my_free (Aiz2);
+    my_free (Aiy2);
+    my_free (Aix2);
+    my_free (Aiz);
+    my_free (Aiy);
+    my_free (Aix);
+
     my_free (pvec);
 
 }                               /* end get_nlop */

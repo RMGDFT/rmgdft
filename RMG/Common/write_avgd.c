@@ -42,13 +42,17 @@ void write_avgd (rmg_double_t * rho)
     int ix, iy, iz, poff;
     int px, py, pz;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+    int FNZ_GRID;
 
     rmg_double_t t1;
-    rmg_double_t zvec[FNZ_GRID];
+    rmg_double_t *zvec;
 
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();
+    FNZ_GRID = get_FNZ_GRID();
+
+    my_malloc(zvec, FNZ_GRID, rmg_double_t);
 
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
@@ -98,6 +102,8 @@ void write_avgd (rmg_double_t * rho)
         }
         fflush (NULL);
     }
+
+    free(zvec);
 }                               /* end get_avgd */
 
 /******/

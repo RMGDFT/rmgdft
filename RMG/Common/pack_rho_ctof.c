@@ -15,13 +15,14 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
     int pbasis, dimx, dimy, dimz, in, jn, kn;
     int ifxs, ifys;
     int icxs, icys, alloc;
-    int PX0_GRID, PY0_GRID, PZ0_GRID;
+    int PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX;
     rmg_double_t tmp1, tmp2, tmp3, frac, cc[10][4];
     rmg_double_t *rho_c, sum_rho, sum_rhof, coef;
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
+    FG_NX = get_FG_NX();
 
     alloc = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
     my_malloc(rho_c, alloc, rmg_double_t);

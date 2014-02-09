@@ -16,19 +16,19 @@ int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
 
     pe2xyz (gridpe, &ii, &jj, &kk);
 
-    mfac = nxgrid / NX_GRID;
-    *pxsize = mfac * (NX_GRID/PE_X);
-    ix = NX_GRID % PE_X;
+    mfac = nxgrid / get_NX_GRID();
+    *pxsize = mfac * (get_NX_GRID()/get_PE_X());
+    ix = get_NX_GRID() % get_PE_X();
     if(ii < ix) *pxsize += mfac;
 
-    mfac = nygrid / NY_GRID;
-    *pysize = mfac * (NY_GRID/PE_Y);
-    iy = NY_GRID % PE_Y;
+    mfac = nygrid / get_NY_GRID();
+    *pysize = mfac * (get_NY_GRID()/get_PE_Y());
+    iy = get_NY_GRID() % get_PE_Y();
     if(jj < iy) *pysize += mfac;
 
-    mfac = nzgrid / NZ_GRID;
-    *pzsize = mfac * (NZ_GRID/PE_Z);
-    iz = NZ_GRID % PE_Z;
+    mfac = nzgrid / get_NZ_GRID();
+    *pzsize = mfac * (get_NZ_GRID()/get_PE_Z());
+    iz = get_NZ_GRID() % get_PE_Z();
     if(kk < iz) *pzsize += mfac;
 }
 

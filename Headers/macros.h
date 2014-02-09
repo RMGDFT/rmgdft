@@ -19,7 +19,7 @@
 /*
  * determines pe at given position
  */
-#define XYZ2PE(x,y,z,pe) pe = (x)*PE_Y*PE_Z + (y)*PE_Z + (z)
+#define XYZ2PE(x,y,z,pe) pe = (x)*get_PE_Y()*get_PE_Z() + (y)*get_PE_Z() + (z)
 
 #define DEBUG 0
 

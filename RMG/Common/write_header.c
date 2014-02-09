@@ -172,10 +172,10 @@ void write_header (void)
     printf ("    Grid anisotropy  = %12.6f\n", get_anisotropy());
 
     printf ("\n");
-    printf ("    Processor topology:  total PE's = %d\n", (PE_X * PE_Y * PE_Z));
-    printf ("       PE_X  = %d\n", PE_X);
-    printf ("       PE_Y  = %d\n", PE_Y);
-    printf ("       PE_Z  = %d\n", PE_Z);
+    printf ("    Processor topology:  total PE's = %d\n", (get_PE_X() * get_PE_Y() * get_PE_Z()));
+    printf ("       PE_X  = %d\n", get_PE_X());
+    printf ("       PE_Y  = %d\n", get_PE_Y());
+    printf ("       PE_Z  = %d\n", get_PE_Z());
 
 #if HYBRID_MODEL
     printf ("\n");
@@ -184,9 +184,9 @@ void write_header (void)
 
     printf ("\n");
     printf ("    Fine grid (for charge density):\n");
-    printf ("       FG_NX / CG_NX  = %d\n", FG_NX);
-    printf ("       FG_NY / CG_NY  = %d\n", FG_NY);
-    printf ("       FG_NZ / CG_NZ  = %d\n", FG_NZ);
+    printf ("       FG_NX / CG_NX  = %d\n", get_FG_NX());
+    printf ("       FG_NY / CG_NY  = %d\n", get_FG_NY());
+    printf ("       FG_NZ / CG_NZ  = %d\n", get_FG_NZ());
     printf ("    Interpolation type:\n");
     if (!ct.interp_flag)
         printf ("       Cubic interpolation\n");

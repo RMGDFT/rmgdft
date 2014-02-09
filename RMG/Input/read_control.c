@@ -342,9 +342,9 @@ void read_control (char *file)
 
     /* Cutoff parameter */
     get_data ("energy_cutoff_parameter", &ct.cparm, DBL, "1.75");
-    ct.qcparm = ct.cparm / (rmg_double_t) FG_NX;
+    ct.qcparm = ct.cparm / (rmg_double_t) get_FG_NX();
     ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
-    ct.cparm /= (rmg_double_t) FG_NX; 
+    ct.cparm /= (rmg_double_t) get_FG_NX(); 
     
     // Norm conserving pseudo potential flag
     get_data ("norm_conserving_pp", &ct.norm_conserving_pp, BOOL, "false");
@@ -585,17 +585,17 @@ void read_control (char *file)
 
     // We check multigrid levels last since we have to be sure that the grid dims have already 
     // been read in.
-    if ((NX_GRID / (1 << ct.eig_parm.levels)) < 3)
+    if ((get_NX_GRID() / (1 << ct.eig_parm.levels)) < 3)
         error_handler ("NX_GRID: too many eigenvalue MG levels");
-    if ((NY_GRID / (1 << ct.eig_parm.levels)) < 3)
+    if ((get_NY_GRID() / (1 << ct.eig_parm.levels)) < 3)
         error_handler ("NY_GRID: too many eigenvalue MG levels");
-    if ((NZ_GRID / (1 << ct.eig_parm.levels)) < 3)
+    if ((get_NZ_GRID() / (1 << ct.eig_parm.levels)) < 3)
         error_handler ("NZ_GRID: too many eigenvalue MG levels");
-    if ((NX_GRID % (1 << ct.eig_parm.levels)) != 0)
+    if ((get_NX_GRID() % (1 << ct.eig_parm.levels)) != 0)
         error_handler ("NX_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((NY_GRID % (1 << ct.eig_parm.levels)) != 0)
+    if ((get_NY_GRID() % (1 << ct.eig_parm.levels)) != 0)
         error_handler ("NY_GRID not evenly divisible by 2^(eig_parm.levels)");
-    if ((NZ_GRID % (1 << ct.eig_parm.levels)) != 0)
+    if ((get_NZ_GRID() % (1 << ct.eig_parm.levels)) != 0)
         error_handler ("NZ_GRID not evenly divisible by 2^(eig_parm.levels)");
 
 

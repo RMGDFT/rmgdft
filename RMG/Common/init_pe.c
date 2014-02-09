@@ -189,21 +189,21 @@ void init_pe ( int image )
     /* Now wrap them in case we are running with some processors duplicated */
     /* Two should be enough for any case that we might be doing.            */
     /* Wouldn't ii %= PE_X; be better??? */
-    if (ii >= PE_X)
-        ii -= PE_X;
-    if (ii >= PE_X)
-        ii -= PE_X;
+    if (ii >= get_PE_X())
+        ii -= get_PE_X();
+    if (ii >= get_PE_X())
+        ii -= get_PE_X();
 
     /* Have each processor figure out who it's neighbors are */
-    XYZ2PE (ii, (jj + 1) % PE_Y, kk, neighbors[NB_N]);
-    XYZ2PE (ii, (jj - 1 + PE_Y) % PE_Y, kk, neighbors[NB_S]);
-    XYZ2PE ((ii + 1) % PE_X, jj, kk, neighbors[NB_E]);
-    XYZ2PE ((ii - 1 + PE_X) % PE_X, jj, kk, neighbors[NB_W]);
-    XYZ2PE (ii, jj, (kk + 1) % PE_Z, neighbors[NB_U]);
-    XYZ2PE (ii, jj, (kk - 1 + PE_Z) % PE_Z, neighbors[NB_D]);
+    XYZ2PE (ii, (jj + 1) % get_PE_Y(), kk, neighbors[NB_N]);
+    XYZ2PE (ii, (jj - 1 + get_PE_Y()) % get_PE_Y(), kk, neighbors[NB_S]);
+    XYZ2PE ((ii + 1) % get_PE_X(), jj, kk, neighbors[NB_E]);
+    XYZ2PE ((ii - 1 + get_PE_X()) % get_PE_X(), jj, kk, neighbors[NB_W]);
+    XYZ2PE (ii, jj, (kk + 1) % get_PE_Z(), neighbors[NB_U]);
+    XYZ2PE (ii, jj, (kk - 1 + get_PE_Z()) % get_PE_Z(), neighbors[NB_D]);
 
     // Set up grids and neighbors using both C and C++ for now
     set_neighbors(neighbors);
-    set_grids(pct.gridpe, ii, jj, kk);
+    set_nodes(pct.gridpe, ii, jj, kk);
 
 }                               /* end init_pe */
