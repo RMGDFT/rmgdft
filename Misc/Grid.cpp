@@ -3,12 +3,7 @@
 
 */
 
-#include <iostream>
-#include <cstdio>
-#include "rmgtypes.h"
-#include "grid.h"
 #include "Grid.h"
-#include "rmg_error.h"
 
 extern "C" {
 void pe2xyz(int pe, int *x, int *y, int *z);

@@ -1,6 +1,13 @@
 #ifndef RMG_Grid_H
 #define RMG_Grid_H 1
 
+#include <iostream>
+#include <cstdio>
+#include "const.h"
+#include "rmgtypes.h"
+#include "grid.h"
+#include "rmg_error.h"
+
 class Grid {
 
 public:
