@@ -13,7 +13,7 @@ node_t *newNode (char *name, item_t * item)
     if (findNode (name))
     {
         Dprintf ("Must remove crufty node of the same name as %s", name);
-        kill ();
+        killNode( unlinkNode() );
     }
 
     Dprintf ("Making new keyword(TAG): %s with item", name);

@@ -210,7 +210,7 @@ bool get_data (char *meta, void *dest, flags_t flags, char *data)
             if (findNode (meta))
             {
                 Dprintf ("Remove existing data node");
-                return kill();
+                return killNode( unlinkNode() );
             }
             else
             {

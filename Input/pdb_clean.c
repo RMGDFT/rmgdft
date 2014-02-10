@@ -30,7 +30,7 @@ void pdb_clean (void)
         {
             pushItem (item, node);
         }
-        kill ();
+        killNode( unlinkNode() );
         this = node;
     }
     return;

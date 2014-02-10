@@ -75,7 +75,6 @@ node_t	*newNode( char *name, item_t *item );
 node_t	*linkNode( node_t *new );
 node_t	*unlinkNode( void );
 bool	 killNode( node_t *node );
-#define  kill() killNode( unlinkNode() )
 bool	 findNode( char *name );
 void	 fcatNode( FILE *stream, node_t *here );
 #define	 catNode( NODE ) fcatNode( ct.logfile, NODE );

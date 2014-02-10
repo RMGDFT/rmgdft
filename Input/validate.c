@@ -41,7 +41,7 @@ bool validate (char *optlist)
             {
                 Dprintf ("Validated %s against input %s", this->is->the.string,
                          here->is->the.string);
-                kill ();
+                killNode( unlinkNode() );
                 this = here;
                 this->is->as |= TAGS;
                 append (validation_count);
