@@ -38,12 +38,6 @@
 #include "hybrid.h"
 #endif
 
-#if PAPI_PERFMON
-#undef kill
-#include <papi.h>
-#endif
-
-
 
 
 rmg_double_t timings[LAST_TIME];
@@ -96,51 +90,6 @@ void write_timings (void)
 {
     rmg_double_t total_time, FLOPS, TOTAL_FLOPS=0.0;
     int i, md_steps, total_scf_steps, ithread;
-
-#if PAPI_PERFMON
-    long long Papi_values[4];
-    Papi_values[0] = 0;
-    Papi_values[1] = 0;
-    Papi_values[2] = 0;
-    Papi_values[3] = 0;
-
-#if HYBRID_MODEL
-    enter_threaded_region();
-    scf_barrier_init(THREADS_PER_NODE);
-    for(ithread = 0;ithread < THREADS_PER_NODE;ithread++) {
-          thread_control[ithread].job = HYBRID_FINALIZE_PAPI;
-    }
-
-    // Thread tasks are set up so wake them
-    wake_threads(THREADS_PER_NODE);
-
-    // Then wait for them to finish this task
-    wait_for_threads(THREADS_PER_NODE);
-    scf_barrier_destroy();
-    leave_threaded_region();
-
-#pragma omp parallel for
-    for(i = 0;i < THREADS_PER_NODE;i++)
-        Papi_finalize_omp_threads(i);
-
-    printf("\n\nPer thread performance data for 1 PE\n");
-    for(ithread = 0;ithread < THREADS_PER_NODE;ithread++) {
-        FLOPS = ((double)Papi_thread_flops(ithread)) / (my_crtc () - ct.time0);
-        printf("  MFLOPS for Posix thread %d  = %f \n", ithread, FLOPS / 1.0e6);
-        TOTAL_FLOPS += Papi_thread_flops(ithread);
-    }
-
-    for(ithread = 0;ithread < THREADS_PER_NODE;ithread++) {
-        FLOPS = ((double)ct.OpenMpFlopCount[ithread]) / (my_crtc () - ct.time0);
-        printf("  MFLOPS for OpenMP thread %d = %f \n", ithread, FLOPS / 1.0e6);
-        TOTAL_FLOPS += ct.OpenMpFlopCount[ithread];
-    }
-#endif
-
-    printf("Total performance for this PE = %f  MFLOPS\n\n", TOTAL_FLOPS / (my_crtc () - ct.time0) / 1.0e6);
-
-#endif
-
 
     /*Since we count SCF and MD steps from 0, we are undercounting by one */
     md_steps = ct.md_steps + 1;

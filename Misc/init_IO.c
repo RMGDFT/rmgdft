@@ -46,12 +46,6 @@
 #include "hybrid.h"
 #endif
 
-#if PAPI_PERFMON
-#undef kill
-#include <papi.h>
-PAPI_option_t papi_opts;
-#endif
-
 void init_IO (int argc, char **argv)
 {
 
@@ -59,10 +53,6 @@ void init_IO (int argc, char **argv)
     char workdir[MAX_PATH], logname[MAX_PATH], basename[MAX_PATH], *quantity, *extension, *endptr;
     struct stat buffer;
     time_t timer;
-
-#if PAPI_PERFMON
-    PAPI_option_t options;
-#endif
 
     /* Set start of program time */
     timer = time (NULL);
@@ -254,36 +244,6 @@ void init_IO (int argc, char **argv)
 
     /* Read in our pseudopotential information */
     read_pseudo ();
-
-    // If papi performance monitoring is desired initialize the library
-#if PAPI_PERFMON
-    if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT) {
-        error_handler("Problem with papi support. Exiting.\n");
-    }
-    if (PAPI_thread_init(pthread_self) != PAPI_OK) {
-        error_handler("Problem with papi thread support. Exiting.\n");
-    }
-
-#if 1
-    ct.EventSet = PAPI_NULL;
-    if (PAPI_create_eventset(&ct.EventSet) != PAPI_OK) {
-         error_handler ("Cannot create PAPI event set.\n");
-    }
-    if (PAPI_add_event(ct.EventSet, PAPI_FP_OPS) != PAPI_OK) {
-         error_handler ("Cannot add PAPI event.\n");
-    }
-
-    PAPI_start(ct.EventSet);
-     if(PAPI_set_granularity(PAPI_GRN_PROC) != PAPI_OK) {
-         error_handler ("Cannot add PAPI granularity.\n");
-     }
-
-#endif
-
-#pragma omp parallel for
-    for(i = 0;i < THREADS_PER_NODE;i++) 
-        Papi_init_omp_threads(i);
-#endif
 
     // Allocate storage for trade_images and global sums routines
     trade_images (NULL, 0, 0, 0, NULL, 0);
