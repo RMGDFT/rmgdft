@@ -1,5 +1,6 @@
 
 #include "Mgrid.h"
+#include "FiniteDiff.h"
 
 using namespace std;
 
@@ -414,6 +415,67 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
 }                               /* end mg_prolong */
 
 
+
+template <typename RmgType>
+void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, RmgType * res)
+{
+    int size, idx;
+
+    size = (dimx + 2) * (dimy + 2) * (dimz + 2);
+    for (idx = 0; idx < size; idx++)
+        res[idx] = 0.0;
+    FD_app_del2c (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+    for (idx = 0; idx < size; idx++)
+        res[idx] = f_mat[idx] - res[idx];
+
+
+}                               /* end eval_residual */
+
+
+
+template <typename RmgType>
+void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
+                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
+{
+    int size, idx;
+    rmg_double_t scale;
+    rmg_double_t diag;
+
+    size = (dimx + 2) * (dimy + 2) * (dimz + 2);
+    for (idx = 0; idx < size; idx++)
+        work[idx] = ZERO;
+    diag = -FD_app_del2c (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+    scale = step / diag;
+    
+    // Non-zero k effectively means we are solving the Helmholtz rather than Poissons equation
+    if(k != 0.0) {
+
+        for (idx = 0; idx < size; idx++)
+        {
+
+            vmat[idx] += scale * (work[idx] - k*vmat[idx] - fmat[idx]);
+
+        }                           /* end for */
+
+     }
+     else {
+
+        for (idx = 0; idx < size; idx++)
+        {
+
+            vmat[idx] += scale * (work[idx] - fmat[idx]);
+
+        }                           /* end for */
+
+     }
+
+}                               /* end solv_pois */
+
+
+
 // C wrappers
 extern "C" void mg_restrict_f (rmg_float_t * full, rmg_float_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
@@ -437,4 +499,32 @@ extern "C" void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, 
 {
     Mgrid MG;
     MG.mg_prolong<double>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
+}
+
+extern "C" void eval_residual_f (rmg_float_t * mat, rmg_float_t * f_mat, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_float_t * res)
+{
+    Mgrid MG;
+    MG.eval_residual<float>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res);
+}
+
+extern "C" void eval_residual (rmg_double_t * mat, rmg_double_t * f_mat, int dimx, int dimy, int dimz,
+                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t * res)
+{
+    Mgrid MG;
+    MG.eval_residual<double>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res);
+}
+
+extern "C" void solv_pois_f (rmg_float_t * vmat, rmg_float_t * fmat, rmg_float_t * work,
+                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
+{
+    Mgrid MG;
+    MG.solv_pois<float>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+}
+
+extern "C" void solv_pois (rmg_double_t * vmat, rmg_double_t * fmat, rmg_double_t * work,
+                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
+{
+    Mgrid MG;
+    MG.solv_pois<double>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 }

@@ -1,9 +1,7 @@
 
-#include "const.h"
-#include "rmgtypes.h"
 #include "fixed_dims.h"
-#include "iostream"
 #include "Grid.h"
+#include "FiniteDiff.h"
 #include <cmath>
 #include <complex>
 

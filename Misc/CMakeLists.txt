@@ -1,8 +1,6 @@
 add_library (Misc
 init_IO.c
-solv_pois_f.c
 trade_images_f.c
-eval_residual_f.c
 pack_ptos.c
 get_index.c
 hybrid.c
@@ -12,10 +10,8 @@ to_cartesian.c
 minimage.c
 pack_stop.c
 recips.c
-eval_residual.c
 get_vtot_psi.c
 to_crystal.c
-solv_pois.c
 trade_imagesx_async.c
 cross_product.c
 my_mpi.c
