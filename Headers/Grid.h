@@ -70,6 +70,9 @@ public:
     void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_NX, int FG_NY, int FG_NZ);
     void set_nodes(int newgridpe, int ii, int jj, int kk);
     void set_neighbors(int *list);
+    int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
+    int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
+
     int get_PX0_GRID(void);
     int get_PY0_GRID(void);
     int get_PZ0_GRID(void);

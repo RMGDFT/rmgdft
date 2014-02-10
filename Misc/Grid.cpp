@@ -11,10 +11,7 @@
 #include "rmg_error.h"
 
 extern "C" {
-int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
-                      int *pxoffset, int *pyoffset, int *pzoffset);
-int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
-                      int *pxsize, int *pysize, int *pzsize);
+void pe2xyz(int pe, int *x, int *y, int *z);
 }
 
 using namespace std;
@@ -66,17 +63,17 @@ using namespace std;
         if(rem && (kk < rem)) Grid::PZ0_GRID++;
 
         // Adjust if needed
-        find_node_sizes(gridpe, Grid::NX_GRID, Grid::NY_GRID, Grid::NZ_GRID, &Grid::PX0_GRID, &Grid::PY0_GRID, &Grid::PZ0_GRID);
-        find_node_sizes(gridpe, Grid::FNX_GRID, Grid::FNY_GRID, Grid::FNZ_GRID, &Grid::FPX0_GRID, &Grid::FPY0_GRID, &Grid::FPZ0_GRID);
+        Grid::find_node_sizes(gridpe, Grid::NX_GRID, Grid::NY_GRID, Grid::NZ_GRID, &Grid::PX0_GRID, &Grid::PY0_GRID, &Grid::PZ0_GRID);
+        Grid::find_node_sizes(gridpe, Grid::FNX_GRID, Grid::FNY_GRID, Grid::FNZ_GRID, &Grid::FPX0_GRID, &Grid::FPY0_GRID, &Grid::FPZ0_GRID);
 
         Grid::P0_BASIS = Grid::PX0_GRID * Grid::PY0_GRID * Grid::PZ0_GRID;
         Grid::FP0_BASIS = Grid::FPX0_GRID * Grid::FPY0_GRID * Grid::FPZ0_GRID;
 
         // Now compute the global grid offset of the first point of the coarse and fine node grids
-        find_node_offsets(gridpe, Grid::NX_GRID, Grid::NY_GRID, Grid::NZ_GRID,
+        Grid::find_node_offsets(gridpe, Grid::NX_GRID, Grid::NY_GRID, Grid::NZ_GRID,
                           &Grid::PX_OFFSET, &Grid::PY_OFFSET, &Grid::PZ_OFFSET);
 
-        find_node_offsets(gridpe, Grid::FNX_GRID, Grid::FNY_GRID, Grid::FNZ_GRID,
+        Grid::find_node_offsets(gridpe, Grid::FNX_GRID, Grid::FNY_GRID, Grid::FNZ_GRID,
                           &Grid::FPX_OFFSET, &Grid::FPY_OFFSET, &Grid::FPZ_OFFSET);
 
 
@@ -94,6 +91,73 @@ using namespace std;
         Grid::neighbor_first = 1;
 
     }
+
+    int Grid::find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
+    {
+
+	int ii, jj, kk;
+	int idx, ix, iy, iz, mfac;
+
+	pe2xyz (gridpe, &ii, &jj, &kk);
+
+	mfac = nxgrid / Grid::NX_GRID;
+	*pxsize = mfac * (Grid::NX_GRID / Grid::PE_X);
+	ix = Grid::NX_GRID % Grid::PE_X;
+	if(ii < ix) *pxsize += mfac;
+
+	mfac = nygrid / Grid::NY_GRID;
+	*pysize = mfac * (Grid::NY_GRID / Grid::PE_Y);
+	iy = Grid::NY_GRID % Grid::PE_Y;
+	if(jj < iy) *pysize += mfac;
+
+	mfac = nzgrid / Grid::NZ_GRID;
+	*pzsize = mfac * (Grid::NZ_GRID / Grid::PE_Z);
+	iz = Grid::NZ_GRID % Grid::PE_Z;
+	if(kk < iz) *pzsize += mfac;
+    }
+
+    int Grid::find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
+    {
+
+	int ii, jj, kk;
+	int idx, ix, iy, iz, ioffset, mfac;
+
+	pe2xyz (gridpe, &ii, &jj, &kk);
+
+	// Now compute the global grid offset of the first point of the node grid
+	mfac = nxgrid / Grid::NX_GRID;
+	*pxoffset = mfac * ii*(Grid::NX_GRID / Grid::PE_X);
+        ix = Grid::NX_GRID % Grid::PE_X;
+	ioffset = 0;
+	for(idx = 1;idx <= ii;idx++) {
+	    if(idx <= ix) ioffset++;
+	}
+	ioffset *= mfac;
+	*pxoffset = *pxoffset + ioffset;
+
+
+	mfac = nygrid / Grid::NY_GRID;
+	*pyoffset = mfac * jj*(Grid::NY_GRID / Grid::PE_Y);
+        iy = Grid::NY_GRID % Grid::PE_Y;
+	ioffset = 0;
+	for(idx = 1;idx <= jj;idx++) {
+	    if(idx <= iy) ioffset++;
+	}
+	ioffset *= mfac;
+	*pyoffset += ioffset;
+
+	mfac = nzgrid / Grid::NZ_GRID;
+	*pzoffset = mfac * kk*(Grid::NZ_GRID / Grid::PE_Z);
+        iz = Grid::NZ_GRID % Grid::PE_Z;
+	ioffset = 0;
+	for(idx = 1;idx <= kk;idx++) {
+	    if(idx <= iz) ioffset++;
+	}
+	ioffset *= mfac;
+	*pzoffset += ioffset;
+
+    }
+
     int Grid::get_PX0_GRID(void)
     {
 	if(!Grid::grid_first)
@@ -448,4 +512,15 @@ extern "C" int *get_neighbors(void)
 {
   Grid G;
   return G.get_neighbors();
+}
+extern "C" int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
+{
+  Grid G;
+  return G.find_node_sizes(gridpe, nxgrid, nygrid, nzgrid, pxsize, pysize, pzsize);
+}
+extern "C" int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
+{
+  Grid G;
+  return G.find_node_offsets(gridpe, nxgrid, nygrid, nzgrid, pxoffset, pyoffset, pzoffset);
+
 }
