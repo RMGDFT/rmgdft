@@ -137,11 +137,6 @@ void init_pe ( int image )
                 ("Spin calculations require 2 grids, please rerun with twice as many PEs.");
         MPI_Barrier(MPI_COMM_WORLD);
         ierr = MPI_Comm_dup (pct.img_comm, &pct.grid_comm);
-#if HYBRID_MODEL
-        for(thread = 0;thread < ct.THREADS_PER_NODE;thread++) {
-              MPI_Comm_dup (pct.img_comm, &thread_control[thread].grid_comm);
-        }
-#endif
     }
     else if (pct.grids == 2)
     {

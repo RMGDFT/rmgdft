@@ -43,7 +43,6 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
 
 #if (GPU_FD_ENABLED && FD_XSIZE)
     // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-    //rptr = get_thread_trade_buf();
     rptr = (rmg_float_t *)&ct.gpu_host_fdbuf1[0];
     rptr += tid*sbasis;
     gpu_a = (rmg_double_t *)&ct.gpu_work1[0];

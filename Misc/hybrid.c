@@ -58,8 +58,6 @@ static pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // These are used to synchronize the main process and the worker threads
 sem_t thread_sem;
-volatile int job_count=0;
-static pthread_mutex_t sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // This is used when running with MPI_THREAD_SERIALIZED to ensure 
 // proper serialization
@@ -123,7 +121,7 @@ void init_HYBRID_MODEL(void) {
 // Main thread function
 void run_threads(SCF_THREAD_CONTROL *s) {
 
-    int retval, alloc;
+    int retval;
 
 #if GPU_ENABLED
     cudaError_t cuerr;
@@ -133,13 +131,6 @@ void run_threads(SCF_THREAD_CONTROL *s) {
 
     s->pthread_tid = pthread_self();
     pthread_setspecific(scf_thread_control_key, (void *)s);
-
-    alloc = (get_PX0_GRID() + 2*MAX_TRADE_IMAGES) * (get_PY0_GRID() + 2*MAX_TRADE_IMAGES) * (get_PZ0_GRID() + 2*MAX_TRADE_IMAGES);
-
-    retval = MPI_Alloc_mem(sizeof(rmg_double_t) * (alloc + 64) , MPI_INFO_NULL, &s->trade_buf);
-    if(retval != MPI_SUCCESS) {
-         error_handler("Error in MPI_Alloc_mem.\n");
-    }
 
 #if GPU_ENABLED
     cudaSetDevice(ct.cu_dev); 
@@ -222,7 +213,6 @@ void wake_threads(int jobs) {
     }
 
     pthread_mutex_lock(&job_mutex);
-    job_count = jobs;
     pthread_mutex_unlock(&job_mutex);
 
     for(thread = 0;thread < jobs;thread++) {
@@ -300,20 +290,6 @@ int get_thread_tid(void) {
     return ss->tid;
 }
 
-
-// Reads the threads MPI grid communicator from the thread specific data
-MPI_Comm *get_thread_grid_comm(void) {
-
-    SCF_THREAD_CONTROL *ss;
-
-    if(!in_threaded_region) return &pct.grid_comm;
-    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
-    if(!ss) return &pct.grid_comm;
-
-    return &ss->grid_comm;
-}
-
-
 #if GPU_ENABLED
 // Gets thread cstream
 cudaStream_t *get_thread_cstream(void) {
@@ -325,18 +301,6 @@ cudaStream_t *get_thread_cstream(void) {
     return &ss->cstream;
 }
 #endif
-
-// Reads the pinned memory storage from the thread specific data
-void *get_thread_trade_buf(void) {
-
-    SCF_THREAD_CONTROL *ss;
-
-    if(!in_threaded_region) return NULL;
-    ss = (SCF_THREAD_CONTROL *)pthread_getspecific(scf_thread_control_key);
-    if(!ss) return NULL;
-    return ss->trade_buf;
-
-}
 
 // Used for positioning and setting processor affinity. For now assumes that
 // THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
