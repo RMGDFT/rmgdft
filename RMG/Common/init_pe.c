@@ -40,7 +40,6 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "rmgthreads.h"
-#include "transition.h"
 
 
 void init_pe ( int image )

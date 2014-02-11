@@ -5,9 +5,6 @@
 
 #include "Grid.h"
 
-extern "C" {
-void pe2xyz(int pe, int *x, int *y, int *z);
-}
 
 using namespace std;
 
@@ -93,7 +90,7 @@ using namespace std;
 	int ii, jj, kk;
 	int idx, ix, iy, iz, mfac;
 
-	pe2xyz (gridpe, &ii, &jj, &kk);
+	Grid::pe2xyz (gridpe, &ii, &jj, &kk);
 
 	mfac = nxgrid / Grid::NX_GRID;
 	*pxsize = mfac * (Grid::NX_GRID / Grid::PE_X);
@@ -117,7 +114,7 @@ using namespace std;
 	int ii, jj, kk;
 	int idx, ix, iy, iz, ioffset, mfac;
 
-	pe2xyz (gridpe, &ii, &jj, &kk);
+	Grid::pe2xyz (gridpe, &ii, &jj, &kk);
 
 	// Now compute the global grid offset of the first point of the node grid
 	mfac = nxgrid / Grid::NX_GRID;
@@ -260,6 +257,22 @@ using namespace std;
 	    rmg_error_handler("Anisotropy not initialized. Please call set_anisotropy first");
 	return Grid::anisotropy;
     }
+
+    void Grid::pe2xyz(int pe, int *x, int *y, int *z)
+    {
+
+        *x = pe;
+        *z = *x % Grid::PE_Z;
+        *x /= Grid::PE_Z;
+        *y = *x % Grid::PE_Y;
+        *x /= Grid::PE_Y;
+
+        if (*x >= Grid::PE_X)
+            *x -= Grid::PE_X;
+        if (*x >= Grid::PE_X)
+            *x -= Grid::PE_X;
+
+    }                             
 
     // Returns a pointer to the neighbors structure which contains the rank
     // of neighboring processors in three-dimensional space.
@@ -502,6 +515,11 @@ extern "C" rmg_double_t get_anisotropy(void)
 {
   Grid G;
   return G.get_anisotropy();
+}
+extern "C" void pe2xyz(int pe, int *x, int *y, int *z)
+{
+  Grid G;
+  G.pe2xyz(pe, x, y, z);
 }
 extern "C" int *get_neighbors(void)
 {

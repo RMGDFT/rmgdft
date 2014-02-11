@@ -48,7 +48,6 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
-#include "transition.h"
 
 
 static void init_alloc_nonloc_mem (void);

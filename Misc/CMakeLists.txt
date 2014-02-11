@@ -17,7 +17,6 @@ cross_product.c
 my_mpi.c
 metric.c
 pack_vhstod.c
-pe2xyz.c
 int_sum_all.c
 blaswrappers.c
 set_bc.c

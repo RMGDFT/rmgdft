@@ -98,6 +98,7 @@ public:
     void set_ibrav_type(int value);
     void set_anisotropy(rmg_double_t a);
     rmg_double_t get_anisotropy(void);
+    void pe2xyz(int pe, int *x, int *y, int *z);
 
     // Returns a pointer to the neighbors structure which contains the rank
     // of neighboring processors in three-dimensional space.
