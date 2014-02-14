@@ -12,7 +12,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
     int incz, incy, incx, incz2, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
     rmg_double_t scale, face, corner, edge;
-    Grid G;
+    BaseGrid G;
 
     ibrav = G.get_ibrav_type();
 

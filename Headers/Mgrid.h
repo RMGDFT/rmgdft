@@ -1,7 +1,7 @@
 #ifndef RMG_Mgrid_H
 #define RMG_Mgrid_H 1
 
-#include "Grid.h"
+#include "BaseGrid.h"
 
 class Mgrid {
 

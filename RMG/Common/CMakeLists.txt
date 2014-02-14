@@ -118,6 +118,7 @@ mg_prolong_6.c
 reinit_ionic_pp.c
 partial_beta_fdiff.c
 output_eigenvalues.c
+RmgThread.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

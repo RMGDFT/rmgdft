@@ -1,6 +1,6 @@
 
 #include "fixed_dims.h"
-#include "Grid.h"
+#include "BaseGrid.h"
 #include "FiniteDiff.h"
 #include <cmath>
 #include <complex>
@@ -139,7 +139,7 @@ rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t 
     rmg_double_t rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     rmg_double_t td1, td2, td3, td4, td5, td6, td7, td8, tdx;
 
-    Grid G;
+    BaseGrid G;
 
     ibrav = G.get_ibrav_type();
 
@@ -863,7 +863,7 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
     rmg_double_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
-    Grid G;
+    BaseGrid G;
 
     ibrav = G.get_ibrav_type();
 

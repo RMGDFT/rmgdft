@@ -30,6 +30,3 @@
 
 /* Use Async trade_images. */
 #define ASYNC_TRADES ${ASYNC_TRADES}
-
-/* Number of OMP threads to use (internal only). If 0 then none will be used. */
-#define RMG_OMP_THREADS 0

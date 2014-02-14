@@ -32,6 +32,7 @@ init_pos.c
 rmg_error.c
 rmg_alloc.c
 ions.c
-Grid.cpp
+BaseGrid.cpp
+BaseThread.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")

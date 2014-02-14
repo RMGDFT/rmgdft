@@ -1,5 +1,5 @@
-#ifndef RMG_Grid_H
-#define RMG_Grid_H 1
+#ifndef RMG_BaseGrid_H
+#define RMG_BaseGrid_H 1
 
 #include <iostream>
 #include <cstdio>
@@ -8,7 +8,7 @@
 #include "grid.h"
 #include "rmg_error.h"
 
-class Grid {
+class BaseGrid {
 
 public:
     /* Global coarse grid dimensions */
