@@ -7,13 +7,11 @@
 class RmgThread : public BaseThread
 {
 
+public:
+    void init_threads(void);
+    void run_threads(BaseThread *s);
 
-
-
-}
-
-
-
+};
 
 #endif
 
