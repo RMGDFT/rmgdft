@@ -4,7 +4,7 @@ using namespace std;
 
 
 // Main thread control structure
-BaseThread thread_control[MAX_SCF_THREADS];
+BaseThread thread_controls[MAX_SCF_THREADS];
 
 // Called when the main thread of execution is waiting for a set of threads to finish
 void BaseThread::wait_for_threads(int jobs) {
@@ -29,7 +29,7 @@ void BaseThread::wake_threads(int jobs) {
     pthread_mutex_unlock(&job_mutex);
 
     for(thread = 0;thread < jobs;thread++) {
-        sem_post(&thread_control[thread].this_sync);
+        sem_post(&thread_controls[thread].this_sync);
     }
 
 }
@@ -75,7 +75,7 @@ int BaseThread::get_thread_basetag(void) {
     ss = (BaseThread *)pthread_getspecific(scf_thread_control_key);
     if(!ss) return 0;
 
-    return ss->sp->istate;
+//    return ss->sp->istate;
 
 }
 
@@ -162,20 +162,20 @@ void BaseThread::RMG_MPI_thread_order_lock(void) {
    while(1) {
 
        // Acquire the lock
-       pthread_mutex_lock(&thread_order_mutex);
+       pthread_mutex_lock(&BaseThread::thread_order_mutex);
 
        // See if it's our turn
-       i1 = mpi_thread_order_counter1 % THREADS_PER_NODE;
+       i1 = BaseThread::mpi_thread_order_counter1 % THREADS_PER_NODE;
        if(i1 == tid) {
            // Raise priority of next thread
            ntid = i1 + 1;
            if(ntid < THREADS_PER_NODE) {
-               pthread_setschedprio(threads[ntid], -19);
+               pthread_setschedprio(BaseThread::threads[ntid], -19);
            }
            return;
        }
 
-       pthread_mutex_unlock(&thread_order_mutex);
+       pthread_mutex_unlock(&BaseThread::thread_order_mutex);
        sched_yield();
 
    }
@@ -187,9 +187,9 @@ void BaseThread::RMG_MPI_thread_order_unlock(void) {
   int tid;
   tid = get_thread_tid();
 
-  mpi_thread_order_counter1++;
-  pthread_setschedprio(threads[tid], -1);
-  pthread_mutex_unlock(&thread_order_mutex);
+  BaseThread::mpi_thread_order_counter1++;
+  pthread_setschedprio(BaseThread::threads[tid], -1);
+  pthread_mutex_unlock(&BaseThread::thread_order_mutex);
 
 }
 
@@ -209,35 +209,35 @@ void BaseThread::rmg_timings (int what, rmg_double_t time)
 
 
 // Threads to use on each MPI node
-int THREADS_PER_NODE=1;
+int BaseThread::THREADS_PER_NODE=1;
 
 /* Thread ID number assigned by us */
 int tid;
 
 // Used to implement a local barrier for all threads inside of the run_threads function
-pthread_barrier_t run_barrier;
+pthread_barrier_t BaseThread::run_barrier;
 
 // Used to implement a local barrier inside of the scf loops
-pthread_barrier_t scf_barrier;
-pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t BaseThread::scf_barrier;
+pthread_mutex_t BaseThread::job_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // These are used to synchronize the main process and the worker threads
-sem_t thread_sem;
+sem_t BaseThread::thread_sem;
 
 // This is used when running with MPI_THREAD_SERIALIZED to ensure 
 // proper serialization
-pthread_mutex_t mpi_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t BaseThread::mpi_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_attr_t thread_attrs;
-pthread_t threads[MAX_SCF_THREADS];
-volatile int in_threaded_region1 = 0;
+pthread_attr_t BaseThread::thread_attrs;
+pthread_t BaseThread::threads[MAX_SCF_THREADS];
+volatile int BaseThread::in_threaded_region1 = 0;
 
 // These are used to ensure thread ordering
-volatile int mpi_thread_order_counter1 = 0;
-pthread_mutex_t thread_order_mutex = PTHREAD_MUTEX_INITIALIZER;
+volatile int BaseThread::mpi_thread_order_counter1 = 0;
+pthread_mutex_t BaseThread::thread_order_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Used for accessing thread specific data
-pthread_key_t scf_thread_control_key;
+pthread_key_t BaseThread::scf_thread_control_key;
 
 pthread_mutex_t timings_mutex = PTHREAD_MUTEX_INITIALIZER;
 
