@@ -3,7 +3,6 @@ init_IO.c
 trade_images_f.c
 pack_ptos.c
 get_index.c
-hybrid.c
 global_sums.c
 real_sum_all.c
 to_cartesian.c

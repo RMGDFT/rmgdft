@@ -178,10 +178,12 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
         istop = ct.num_kpts * ct.num_states / ct.THREADS_PER_NODE;
         istop = istop * ct.THREADS_PER_NODE;
         for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
+          SCF_THREAD_CONTROL thread_control[MAX_SCF_THREADS];
           for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;
               thread_control[ist].sp = &states[st1 + ist];
+              set_pptr(ist, &thread_control[ist]);
           }
 
           // Thread tasks are set up so wake them

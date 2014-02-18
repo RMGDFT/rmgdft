@@ -285,7 +285,7 @@ void init_IO (int argc, char **argv)
   }
   printf("Running with thread level = %d\n", provided);
   fflush(NULL);
-  init_HYBRID_MODEL();
+  init_HYBRID_MODEL(ct.THREADS_PER_NODE);
 #endif
     return;
 }

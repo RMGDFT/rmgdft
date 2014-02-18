@@ -44,7 +44,7 @@ SCF_THREAD_CONTROL *get_thread_control(void);
 void set_cpu_affinity(int tid);
 void wait_for_threads(int jobs);
 void wake_threads(int jobs);
-void init_HYBRID_MODEL(void);
+void init_HYBRID_MODEL(int nthreads);
 void enter_threaded_region(void);
 void leave_threaded_region(void);
 int is_loop_over_states(void);

@@ -32,6 +32,10 @@
 
 #include <stdbool.h>
 
+#if __cplusplus
+extern "C" {
+#endif
+
 /* Function prototypes */
 void app6_del2 (rmg_double_t *rho, rmg_double_t *work, int dimx, int dimy, int dimz,
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
@@ -506,4 +510,8 @@ void init_trade_imagesx_async(void);
 void  get_rho_oppo (rmg_double_t * rho, rmg_double_t * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
+
+#if __cplusplus
+}
+#endif
 

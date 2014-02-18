@@ -22,9 +22,6 @@ class BaseThread {
 
 private:
 
-    // Initialization flag
-    static int init_flag;
-
     // Threads to use on each MPI node
     static int THREADS_PER_NODE;
 
@@ -32,30 +29,35 @@ private:
     static pthread_barrier_t scf_barrier;
     static pthread_mutex_t job_mutex;
 
-    // These are used to synchronize the main process and the worker threads
-    static sem_t thread_sem;
-
     // This is used when running with MPI_THREAD_SERIALIZED to ensure 
     // proper serialization
     static pthread_mutex_t mpi_mutex;
 
     static pthread_attr_t thread_attrs;
     static pthread_t threads[MAX_SCF_THREADS];
-    static volatile int in_threaded_region1;
+    static volatile int in_threaded_region;
 
     // These are used to ensure thread ordering
-    static volatile int mpi_thread_order_counter1;
+    static volatile int mpi_thread_order_counter;
     static pthread_mutex_t thread_order_mutex;
 
     // Used for timing information
     static pthread_mutex_t timings_mutex;
 
-    /* Synchronization semaphore for this instance */
-    sem_t this_sync;
-        
+    // Base tag
+    int basetag;
 
 public:
 
+    // Initialization flag
+    static int init_flag;
+
+    // These are used to synchronize the main process and the worker threads
+    static sem_t thread_sem;
+
+    // Synchronization semaphore for this instance
+    sem_t this_sync;
+        
     // Thread ID number assigned by us
     int tid;
 
@@ -68,7 +70,10 @@ public:
     // Used for accessing thread specific data
     static pthread_key_t scf_thread_control_key;
 
-    BaseThread();
+    // Pointer to project specific data structure
+    void *pptr;
+
+    BaseThread(int nthreads);
     void wait_for_threads(int jobs);
     void wake_threads(int jobs);
     void scf_barrier_init(int nthreads);
@@ -78,6 +83,7 @@ public:
     void scf_tsd_set_value(void *s);
     void scf_tsd_delete(void);
     int get_thread_basetag(void);
+    void set_thread_basetag(int tid, int tag);
     BaseThread *get_thread_control(void);
     int get_thread_tid(void);
     //cudaStream_t *get_thread_cstream(void);
@@ -89,6 +95,7 @@ public:
     void RMG_MPI_thread_order_lock(void);
     void RMG_MPI_thread_order_unlock(void);
     void rmg_timings (int what, rmg_double_t time);
+    void set_pptr(int tid, void *p);
     int is_loop_over_states(void);
 
 
