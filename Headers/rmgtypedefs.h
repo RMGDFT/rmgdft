@@ -135,12 +135,27 @@ typedef struct
         double forcemask[3];
         } constraint;
 
+    /*  number of local orbitals on the ion */
+    int n_loc_states;
 
 
-    /* Stores sine and cosine of a phase factor for backwards fourier transform */
-    rmg_double_t *fftw_phase_sin;
-    rmg_double_t *fftw_phase_cos;
+    int ixstart;
+    int iystart;
+    int izstart;
+    int ixend;
+    int iyend;
+    int izend;
 
+    int frozen;
+ 
+       /* Localization mask */
+    char *lmask[4];
+
+    
+
+    int first_state_index;
+    double *fftw_phase_sin;
+    double *fftw_phase_cos;
 
     /*Stores PDB information*/
     PDB_INFO pdb;

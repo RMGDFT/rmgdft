@@ -19,7 +19,7 @@
  * OUTPUT
  *   variables in structure CONTROL c are updated
  *   in most of other file, the name is ct.... 
- *   see main.h for structure CONTROL
+ *   see main_on.h for structure CONTROL
  * PARENTS
  *   md.c
  * CHILDREN
@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-#include "main.h"
+#include "main_on.h"
 
 static void read_orbitals ();
 static void read_kpoints ();
@@ -53,6 +53,7 @@ void read_control (void)
 
     /* Open the input file for reading */
 
+    dprintf("\n %s file ", ct.cfile);
     get_data (ct.cfile, NULL, INIT | TAGS, NULL);
 
     read_common();

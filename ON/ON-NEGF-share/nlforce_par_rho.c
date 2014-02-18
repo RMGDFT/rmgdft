@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
-#include "main.h"
+#include "main_on.h"
 
 void nlforce_par_rho(REAL * par_gamma_x, REAL * par_gamma_y, REAL * par_gamma_z, int ion, int nh)
 {

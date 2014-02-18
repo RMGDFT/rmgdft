@@ -254,7 +254,6 @@ void print_error(char *type, char *what, double diff, xc_func_type *func, double
 
   if(strcmp(what, "v2rho2")==0 || strcmp(what, "v2rhosig")==0 || strcmp(what, "v2sig2")==0){
     double f_an[5][5], f_fd[5][5];
-    int i, j;
 
     get_fxc(func, p, f_an);
     second_derivatives(func, p, f_fd);
@@ -281,6 +280,10 @@ void print_error(char *type, char *what, double diff, xc_func_type *func, double
 
 }
 
+#if defined(HAVE_FEENABLEEXCEPT)
+#define _GNU_SOURCE         /* See feature_test_macros(7) */
+#include <fenv.h>
+#endif
 
 void test_functional(int functional)
 {
@@ -288,6 +291,10 @@ void test_functional(int functional)
   const xc_func_info_type *info;
   int i, j, k, p_max[6][5];
   double max_diff[6][5], avg_diff[6][5], val[5];
+
+#if defined(HAVE_FEENABLEEXCEPT)
+  feenableexcept(FE_INVALID | FE_OVERFLOW);
+#endif
 
   /* initialize functional */
   if(xc_func_init(&func, functional, nspin) != 0){
@@ -323,12 +330,10 @@ void test_functional(int functional)
     first_derivative(&func, val, v_fd, 0);
 
     if(info->flags & XC_FLAGS_HAVE_FXC){
-      int i, j;
-      
       /* initialize */
-      for(i=0; i<5; i++)
+      for(k=0; k<5; k++)
 	for(j=0; j<5; j++)
-	  f_an[i][j] = f_fd[i][j] = 0.0;
+	  f_an[k][j] = f_fd[k][j] = 0.0;
 
       /* now get the second derivatives */
       second_derivatives(&func, val, f_fd);
@@ -376,7 +381,6 @@ void test_functional(int functional)
   /* print statistics */
   {
     double diff;
-    int i, j;
 
     printf("Functional: %s\n", info->name);
     print_error("Avg.", "vrho", (avg_diff[0][0] + avg_diff[0][1])/2.0, NULL, NULL);
@@ -426,6 +430,8 @@ void test_functional(int functional)
       }
     }
   }
+
+  xc_func_end(&func);
 }
 
 /*----------------------------------------------------------*/

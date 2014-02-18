@@ -35,7 +35,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
+#include "main_on.h"
 
 void md_fastrelax(void)
 {

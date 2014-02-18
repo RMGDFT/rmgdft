@@ -21,7 +21,7 @@
  *   For a fixed atomic configuration, quench the electrons to find 
  *   the minimum total energy 
  * INPUTS
- *   states: point to orbital structure (see main.h)
+ *   states: point to orbital structure (see main_on.h)
  *   vxc:    exchange correlation potential
  *   vh:     Hartree potential
  *   vnuc:   Pseudopotential 
@@ -41,7 +41,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
+#include "main_on.h"
 
 void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
             REAL * vnuc, REAL * vh_old, REAL * vxc_old, REAL * rho, REAL * rhoc, REAL * rhocore)

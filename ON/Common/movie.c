@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "main.h"
+#include "main_on.h"
 
 void movie(FILE * mfp)
 {

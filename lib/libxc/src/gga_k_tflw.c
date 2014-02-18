@@ -45,32 +45,24 @@ typedef struct{
 
 
 static void 
-gga_k_tflw_init(void *p_)
+gga_k_tflw_init(XC(func_type) *p)
 {
-  XC(gga_type) *p = (XC(gga_type) *)p_;
 
   assert(p->params == NULL);
   p->params = malloc(sizeof(gga_k_tflw_params));
 
   /* This automatically sets gamma and lambda depending on the functional chosen.
      We put by default N = 1.0 */
-  XC(gga_k_tflw_set_params_)(p, -1.0, -1.0, 1.0);
-}
-
-void 
-XC(gga_k_tflw_set_params)(XC(func_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N)
-{
-  assert(p != NULL && p->gga != NULL);
-  XC(gga_k_tflw_set_params_)(p->gga, gamma, lambda, N);
+  XC(gga_k_tflw_set_params)(p, -1.0, -1.0, 1.0);
 }
 
 /* for automatically assigning lambda and gamma set them to -1 */
 void 
-XC(gga_k_tflw_set_params_)(XC(gga_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N)
+XC(gga_k_tflw_set_params)(XC(func_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N)
 {
   gga_k_tflw_params *params;
 
-  assert(p->params != NULL);
+  assert(p != NULL && p->params != NULL);
   params = (gga_k_tflw_params *) (p->params);
 
   params->gamma = 1.0;
@@ -126,7 +118,7 @@ XC(gga_k_tflw_set_params_)(XC(gga_type) *p, FLOAT gamma, FLOAT lambda, FLOAT N)
 
 
 static inline void 
-func(const XC(gga_type) *p, int order, FLOAT x, 
+func(const XC(func_type) *p, int order, FLOAT x, 
      FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   FLOAT lambda, gamma;
@@ -161,7 +153,8 @@ const XC(func_info_type) XC(func_info_gga_k_vw) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init, 
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_ge2) = {
@@ -175,7 +168,8 @@ const XC(func_info_type) XC(func_info_gga_k_ge2) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_golden) = {
@@ -183,12 +177,13 @@ const XC(func_info_type) XC(func_info_gga_k_golden) = {
   XC_KINETIC,
   "TF-lambda-vW form by Golden (l = 13/45)",
   XC_FAMILY_GGA,
-  "S Golden, Phys. Rev. 105, 604–615 (1957)",
+  "S Golden, Phys. Rev. 105, 604-615 (1957)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_yt65) = {
@@ -201,7 +196,8 @@ const XC(func_info_type) XC(func_info_gga_k_yt65) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_baltin) = {
@@ -214,7 +210,8 @@ const XC(func_info_type) XC(func_info_gga_k_baltin) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_lieb) = {
@@ -222,12 +219,13 @@ const XC(func_info_type) XC(func_info_gga_k_lieb) = {
   XC_KINETIC,
   "TF-lambda-vW form by Lieb (l = 0.185909191)",
   XC_FAMILY_GGA,
-  "EH Lieb, Rev. Mod. Phys. 53, 603–641 (1981)",
+  "EH Lieb, Rev. Mod. Phys. 53, 603-641 (1981)",
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_absr1) = {
@@ -240,7 +238,8 @@ const XC(func_info_type) XC(func_info_gga_k_absr1) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_absr2) = {
@@ -253,7 +252,8 @@ const XC(func_info_type) XC(func_info_gga_k_absr2) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_gr) = {
@@ -266,7 +266,8 @@ const XC(func_info_type) XC(func_info_gga_k_gr) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_ludena) = {
@@ -279,7 +280,8 @@ const XC(func_info_type) XC(func_info_gga_k_ludena) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_gp85) = {
@@ -292,5 +294,6 @@ const XC(func_info_type) XC(func_info_gga_k_gp85) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_tflw_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };

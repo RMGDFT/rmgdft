@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
-#include "main.h"
+#include "main_on.h"
 
 void nlforce_par_Q(REAL * veff, REAL * rho_nm, int ion, int nh, double *forces)
 {

@@ -69,7 +69,7 @@ hl_f(int func, int order, int i, FLOAT rs, FLOAT *zk, FLOAT *drs, FLOAT *d2rs, F
 
 
 void 
-XC(lda_c_hl_func)(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
+XC(lda_c_hl_func)(const XC(func_type) *p, XC(lda_work_t) *r)
 {
   int func;
   FLOAT ecp, vcp, fcp, kcp;
@@ -143,6 +143,8 @@ const XC(func_info_type) XC(func_info_lda_c_hl) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_lda_c_gl) = {
@@ -156,6 +158,8 @@ const XC(func_info_type) XC(func_info_lda_c_gl) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_lda_c_vbh) = {
@@ -169,4 +173,6 @@ const XC(func_info_type) XC(func_info_lda_c_vbh) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };

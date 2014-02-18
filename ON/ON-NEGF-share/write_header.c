@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "main.h"
+#include "main_on.h"
 #include "svnrev.h"
 
 
@@ -242,12 +242,6 @@ void write_header(void)
                 printf("\n\n    MOLECULAR DYNAMICS USING FAST RELAX");
                 break;
 
-            case CD_FASTRLX:
-                printf("\n\n    CONSTRAINED DYNAMICS USING FAST RELAX");
-                printf("\n      constraint vector: %10.4f %10.4f %10.4f",
-                        ct.cd_vector[0], ct.cd_vector[1], ct.cd_vector[2]);
-                printf("\n      constraint velocity: %10.4f", ct.cd_velocity);
-                break;
 
             case BAND_STRUCTURE:
                 printf("\n\n    BAND STRUCTURE CALCULATION");

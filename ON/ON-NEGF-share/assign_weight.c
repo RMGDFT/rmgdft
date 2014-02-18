@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+#include "main_on.h"
 
 void assign_weight(SPECIES * sp, fftw_complex * weptr, REAL * rtptr)
 {

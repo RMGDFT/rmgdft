@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void theta_phi_new(int st1, int st2, REAL theta_ion, REAL * st2_psi,

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void precond_mg(double *res, double *work1, double *work2, int istate)

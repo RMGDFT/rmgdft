@@ -13,7 +13,7 @@ Here we determine their overlap regions.
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void get_orbit_overlap_region(STATE * states)

@@ -26,7 +26,7 @@
 #define XC_LDA_C_WIGNER  2   /* Wigner parametrization       */
 
 static inline void 
-func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
+func(const XC(func_type) *p, XC(lda_work_t) *r)
 {
   static FLOAT a = -0.44, b = 7.8;
   FLOAT t, t2;
@@ -64,4 +64,6 @@ const XC(func_info_type) XC(func_info_lda_c_wigner) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };

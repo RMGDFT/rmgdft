@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "main.h"
+#include "main_on.h"
 
 
 
@@ -129,7 +129,7 @@ void write_force(void)
         printf (" max FZ       = %12.8f Ha/a0\n", maxfz);
         progress_tag ();
         printf (" max F        = %12.8f Ha/a0\n", max_all_f);
-        if ((ct.forceflag == MD_FASTRLX) || (ct.forceflag == CD_FASTRLX))
+        if ((ct.forceflag == MD_FASTRLX) )
         {
             progress_tag ();
             printf (" tolerance    = %12.8f Ha/a0\n", ct.thr_frc);

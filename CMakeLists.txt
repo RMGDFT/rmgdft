@@ -17,7 +17,7 @@ project (RMG C CXX Fortran)
 
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/RMG/Headers/main.h)		# Base code
-add_executable(rmg-on ON/Common/md.c)		# Order N
+add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/ON/Headers/main_on.h)		# Base code
 
 
 # Require a 64 bit system
@@ -65,6 +65,25 @@ target_link_libraries (rmg Force US_PP)
 target_link_libraries (rmg US_PP Force)
 
 
+target_link_libraries (rmg-on Finite_diff ON_Common)
+target_link_libraries (rmg-on ON_Common Finite_diff)
+target_link_libraries (rmg-on ON_Common ON_NEGF_share)
+target_link_libraries (rmg-on Misc ON_NEGF_share)
+target_link_libraries (rmg-on ON_Common Force)
+target_link_libraries (rmg-on Force ON_Common)
+target_link_libraries (rmg-on Input ON_Input)
+target_link_libraries (rmg-on MG ON_Common)
+target_link_libraries (rmg-on Misc)
+target_link_libraries (rmg-on Finite_diff Misc)
+target_link_libraries (rmg-on Misc Finite_diff)
+target_link_libraries (rmg-on ON_Input Input)
+target_link_libraries (rmg-on XC)
+target_link_libraries (rmg-on US_PP)
+target_link_libraries (rmg-on ON_Common)
+target_link_libraries (rmg-on Force)
+target_link_libraries (rmg-on Force US_PP)
+target_link_libraries (rmg-on US_PP Force)
+target_link_libraries (rmg-on US_PP Misc)
 
 # Search for an MPI implementation
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
@@ -72,15 +91,18 @@ find_package(MPI REQUIRED)
 if(MPI_CXX_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_CXX_LIBRARIES})
+  target_link_libraries (rmg-on ${MPI_CXX_LIBRARIES})
 endif (MPI_CXX_FOUND)
 if(MPI_C_FOUND)
   include_directories(${MPI_C_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_C_LIBRARIES})
+  target_link_libraries (rmg-on ${MPI_C_LIBRARIES})
 endif (MPI_C_FOUND)
 
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDES})
 target_link_libraries (rmg ${FFTW_LIBRARIES})
+target_link_libraries (rmg-on ${FFTW_LIBRARIES})
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
@@ -116,12 +138,23 @@ if(NOT RMG_MATH_LIBS)
     find_package(BLAS REQUIRED)
     if(BLAS_FOUND)
         target_link_libraries (rmg ${BLAS_LIBRARIES})
+        target_link_libraries (rmg-on ${BLAS_LIBRARIES})
     endif (BLAS_FOUND)
 
     find_package(LAPACK REQUIRED)
     if(LAPACK_FOUND)
         target_link_libraries (rmg ${LAPACK_LIBRARIES})
+        target_link_libraries (rmg-on ${LAPACK_LIBRARIES})
     endif (LAPACK_FOUND)
+
+    target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
+    target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
+    target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+
+    target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
+    target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
+    target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+
 endif(NOT RMG_MATH_LIBS)
 
 
@@ -131,12 +164,16 @@ if(CUDA_FOUND)
   target_link_libraries(rmg ${CUDA_CUDART_LIBRARY})
   target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
   target_link_libraries(rmg ${CUDA_cublas_LIBRARY})
+  target_link_libraries(rmg-on ${CUDA_CUDART_LIBRARY})
+  target_link_libraries(rmg-on ${CUDA_CUDA_LIBRARY})
+  target_link_libraries(rmg-on ${CUDA_cublas_LIBRARY})
   include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
 
 # These are hard coded for now
-target_link_libraries (rmg "/home/emil/Projects/RMG_RELEASE1/codes/lib/libxc/lib64/libxc.a")
-include_directories(rmg "/usr/local/magma/include")
+target_link_libraries (rmg "/home/luw/SVN/codes/lib/libxc/lib64/libxc.a")
+target_link_libraries (rmg-on "/home/luw/SVN/codes/lib/libxc/lib64/libxc.a")
+#include_directories(rmg "/usr/local/magma/include")
 
 
 
@@ -153,6 +190,8 @@ set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 
 # include files
 include_directories("${RMG_SOURCE_DIR}/Headers/")
+  
+include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 #include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 #include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
 #include_directories("/opt/openmpi/include")
@@ -173,23 +212,28 @@ add_subdirectory (RMG/Input EXCLUDE_FROM_ALL)
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Spin/XC EXCLUDE_FROM_ALL) 
 
+add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
+add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
+add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 
+
 # Link subdirectories
 link_directories (${RMG_BINARY_DIR}/Finite_diff) 
 link_directories (${RMG_BINARY_DIR}/Force)
 link_directories (${RMG_BINARY_DIR}/Input)
 link_directories (${RMG_BINARY_DIR}/MG)
 link_directories (${RMG_BINARY_DIR}/Misc)
+link_directories (${RMG_BINARY_DIR}/US_PP)
+link_directories (${RMG_BINARY_DIR}/XC)
+
 link_directories (${RMG_BINARY_DIR}/RMG/Common)
 link_directories (${RMG_BINARY_DIR}/RMG/Input)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
-link_directories (${RMG_BINARY_DIR}/US_PP)
-link_directories (${RMG_BINARY_DIR}/XC)
 
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_scalapack_lp64.a")
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
-target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "/usr/local/magma/lib/libmagma.a")
-target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
+#target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "/usr/local/magma/lib/libmagma.a")
+#target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
 
 # configure make_conf.h to pass some of the CMake settings
 # to the source code
@@ -202,7 +246,7 @@ else (RMG_EXPERIMENTAL_FEATURES)
     set (EXPERIMENTAL_FEATURES 0)
 endif(RMG_EXPERIMENTAL_FEATURES)
 
-option (RMG_HYBRID_MODEL "To enable MPI/PThreads hybrid model." ON)
+option (RMG_HYBRID_MODEL "To enable MPI/PThreads hybrid model." OFF)
 if (RMG_HYBRID_MODEL)
     set (HYBRID_MODEL 1)
 else (RMG_HYBRID_MODEL)

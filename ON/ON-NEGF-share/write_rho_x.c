@@ -5,7 +5,7 @@
 
 
 #include <stdio.h>
-#include "main.h"
+#include "main_on.h"
 
 void write_rho_x(REAL * rho, char *ab)
 {

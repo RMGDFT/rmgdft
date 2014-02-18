@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <time.h>
-#include "main.h"
+#include "main_on.h"
 #include <math.h>
 
 #include <mpi.h>

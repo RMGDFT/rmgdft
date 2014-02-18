@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 double get_gamma(double *vtot, double small_eig)

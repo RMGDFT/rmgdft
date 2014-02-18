@@ -24,14 +24,13 @@
 #define XC_HYB_GGA_XC_PBEH 406 /* aka PBE0 or PBE1PBE */
 
 static void
-hyb_gga_xc_pbeh_init(void *p_)
+hyb_gga_xc_pbeh_init(XC(func_type) *p)
 {
   static int   funcs_id  [2] = {XC_GGA_X_PBE, XC_GGA_C_PBE};
   static FLOAT funcs_coef[2] = {1.0 - 0.25, 1.0};
-  XC(gga_type) *p = (XC(gga_type) *)p_;
 
-  XC(gga_init_mix)(p, 2, funcs_id, funcs_coef);
-  p->exx_coef = 0.25;
+  XC(mix_init)(p, 2, funcs_id, funcs_coef);
+  p->cam_alpha = 0.25;
 }
 
 
@@ -44,5 +43,5 @@ const XC(func_info_type) XC(func_info_hyb_gga_xc_pbeh) = {
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC,
   1e-32, 1e-32, 0.0, 1e-32,
   hyb_gga_xc_pbeh_init,
-  NULL, NULL, NULL /* this is taken care by the generic routine */
+  NULL, NULL, NULL, NULL /* this is taken care by the generic routine */
 };

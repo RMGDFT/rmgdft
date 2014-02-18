@@ -12,7 +12,7 @@ print out wave_plot stored in wave_global in coarse grids to file
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "md.h"
+#include "main_on.h"
 void print_wave(int wave_plot, STATE * states, int coarse_level)
 {
     int  ix, iy, iz;

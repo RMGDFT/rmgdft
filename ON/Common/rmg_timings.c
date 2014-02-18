@@ -30,7 +30,7 @@
  */
 
 
-#include "main.h"
+#include "main_on.h"
 #include <time.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -39,12 +39,14 @@
 REAL timings[LAST_TIME];
 
 
+#if !HYBRID_MODEL
 void rmg_timings(int what, REAL time)
 {
 
     timings[what] += time;
 
 }                               /* end rmg_timings */
+#endif
 
 
 #if (CRAY_C90)

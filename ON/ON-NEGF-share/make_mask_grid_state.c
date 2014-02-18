@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void make_mask_grid_state(int level, STATE * states)

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "main.h"
+#include "main_on.h"
 
 /*Functions here handle generating xbs movie for dynamic simulations*/
 static void init_xbsmovie(FILE * movie);

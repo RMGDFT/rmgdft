@@ -16,7 +16,7 @@ dot_product of (orbit,  non-local projector )
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 REAL dot_product_orbit_nl(STATE *st1, int ion2, REAL * psi, REAL * prjptr)

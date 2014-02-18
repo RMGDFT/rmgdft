@@ -108,16 +108,6 @@
 #endif
 #endif
 
-#if 0
-/* Macro to simplify calling dcopy*/
-#define my_copy(in, out, length)  do{ int my_one = 1; int my_length = length;  dcopy(& (my_length),  (in), & (my_one),  (out), & (my_one)); }while(0)
-
-#define my_scal(alpha, vect, length)  do{ int my_one = 1; int my_length = length; double my_alpha = alpha; sscal(& (my_length), & (my_alpha), (vect), & (my_one)); }while(0)
-
-#define my_axpy(alpha, in, out, length)  do{ int my_one = 1; int my_length = length; double my_alpha = alpha;   saxpy(& (my_length), & (my_alpha),  (in), & (my_one),  (out), & (my_one)); }while(0)
-
-#define my_swap(vec1, vec2, length) do{ int my_one = 1; int my_length = length;  dswap( & (my_length),  (vec1), & (my_one),  (vec2), & (my_one)); }while(0)
-#endif
 
 void my_copy(rmg_double_t *in, rmg_double_t *out, int length);
 void my_scal(rmg_double_t alpha, rmg_double_t *vect, int length);

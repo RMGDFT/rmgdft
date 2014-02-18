@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "main.h"
+#include "main_on.h"
 
 
 

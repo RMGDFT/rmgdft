@@ -1,73 +1,76 @@
 add_library (ON_Common
-rmg_timings.c
-init_wf_gaussian.c
-get_gamma.c
-mg_eig.c
-precond_mg.c
-dot_product_orbit_orbit.c
-get_te.c
-md.c
-theta_phi_new.c
-nlforce.c
-get_dnmpsi.c
-get_invmat.c
-init_wf_atom.c
-fill.c
-get_matB_qnm.c
-get_state_to_proc.c
-orbit_dot_orbit.c
-rand0.c
-get_mat_Omega.c
-get_orbit_center.c
-diag_eig_matrix.c
-get_wave.c
-get_sum_eig.c
-quench.c
-read_data.c
-run.c
-md_fastrelax.c
-genvpsi.c
-get_Hvnlij.c
-get_mehr.c
-print_status.c
-write_eigs.c
-get_new_rho.c
-get_qnmpsi.c
-allocate_matrix.c
-mgrid_solv_local.c
-get_dm_diag_p.c
-update_orbit_centers.c
-app_cil_orbital.c
-nlforce_par_omega.c
-fastrlx.c
-app_grad.c
-kain.c
-pulay.c
-write_data.c
-init_kbr.c
-xbsmovie.c
-init.c
-init_comm_res.c
-print_wave.c
-sd.c
-interpolate_atom_density.c
-normalize_orbits.c
-write_states_info.c
-init_pe_on.c
-matrix_and_diag.c
-pulay_weighted.c
-add_orbit_to_wave.c
-init_wf.c
-scf.c
-real_max_all.c
-get_HS.c
-qnm_beta_betapsi.c
-app_cil_orbital6.c
-init_rho_atom.c
-tools_submat.c
-movie.c
-precond.c
-change_states_crds.c
-get_cholesky_real.c
-init_states.c
+ add_orbit_to_wave.c
+ allocate_matrix.c
+ app_cil_orbital6.c
+ app_cil_orbital.c
+ app_grad.c
+ change_states_crds.c
+ CMakeLists.txt
+ diag_eig_matrix.c
+ dot_product_orbit_orbit.c
+ fastrlx.c
+ fill.c
+ genvpsi.c
+ get_cholesky_real.c
+ get_dm_diag_p.c
+ get_dnmpsi.c
+ get_gamma.c
+ get_HS.c
+ get_Hvnlij.c
+ get_invmat.c
+ get_matB_qnm.c
+ get_mat_Omega.c
+ get_mehr.c
+ get_new_rho.c
+ get_orbit_center.c
+ get_qnmpsi.c
+ get_state_to_proc.c
+ get_sum_eig.c
+ get_te.c
+ get_wave.c
+ init.c
+ init_comm_res.c
+ init_kbr.c
+ init_pe_on.c
+ init_rho_atom.c
+ init_states.c
+ init_wf_atom.c
+ init_wf.c
+ init_wf_gaussian.c
+ interpolate_atom_density.c
+ kain.c
+ matrix_and_diag.c
+ md.c
+ md_fastrelax.c
+ mg_eig.c
+ mgrid_solv_local.c
+ movie.c
+ nlforce.c
+ nlforce_par_omega.c
+ normalize_orbits.c
+ orbit_dot_orbit.c
+ precond.c
+ precond_mg.c
+ print_status.c
+ print_wave.c
+ pulay.c
+ pulay_weighted.c
+ qnm_beta_betapsi.c
+ quench.c
+ rand0.c
+ read_data.c
+ real_max_all.c
+ rmg_timings.c
+ run.c
+ scf.c
+ sd.c
+ theta_phi_new.c
+ tools_submat.c
+ update_orbit_centers.c
+ write_data.c
+ write_eigs.c
+ write_states_info.c
+ xbsmovie.c
 )
+include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
+include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

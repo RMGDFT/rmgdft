@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-#include "main.h"
+#include "main_on.h"
 
 #define MAX_NOCC 10
 

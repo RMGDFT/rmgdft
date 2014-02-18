@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void get_cholesky_real(double *matS)

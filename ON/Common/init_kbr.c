@@ -25,7 +25,7 @@
  * INPUTS
  *   nothing
  * OUTPUT
- *   projectors are stored in structure SPECIES (see main.h)
+ *   projectors are stored in structure SPECIES (see main_on.h)
  * PARENTS
  *   init.c
  * CHILDREN
@@ -38,7 +38,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void init_kbr(void)

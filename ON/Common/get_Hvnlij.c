@@ -16,7 +16,7 @@ potential, and add them into Aij.
 #include <stdio.h>
 #include <assert.h>
 
-#include "main.h"
+#include "main_on.h"
 
 
 void get_Hvnlij(double *Aij)

@@ -53,9 +53,6 @@
 /* Typedefs */
 #include    "rmgtypedefs.h"
 
-/* Version information */
-#include    "version.h"
-
 /* Compile time parameters */
 #include    "params.h"
 

@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "main.h"
+#include "main_on.h"
 
 
 void partial_Mat_nm_R(double *partial_x, double *partial_y, double *partial_z, REAL * global_mat_X)

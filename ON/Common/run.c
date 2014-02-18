@@ -24,7 +24,7 @@
  * CHILDREN
  *   
  * SEE ALSO
- *   main.h for structure defination
+ *   main_on.h for structure defination
  * SOURCE
  */
 
@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 extern REAL *vh_old, *vxc_old;
 

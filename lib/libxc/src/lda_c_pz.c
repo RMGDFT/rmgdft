@@ -133,7 +133,7 @@ ec_pot_high(pz_consts_type *X, int order, int i, FLOAT *rs,
 
 /* the functional */
 void 
-XC(lda_c_pz_func)(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
+XC(lda_c_pz_func)(const XC(func_type) *p, XC(lda_work_t) *r)
 {
   int func;
   FLOAT ecp, vcp, fcp, kcp;
@@ -213,6 +213,8 @@ const XC(func_info_type) XC(func_info_lda_c_pz) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_lda_c_pz_mod) = {
@@ -227,6 +229,8 @@ const XC(func_info_type) XC(func_info_lda_c_pz_mod) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_lda_c_ob_pz) = {
@@ -242,4 +246,6 @@ const XC(func_info_type) XC(func_info_lda_c_ob_pz) = {
   NULL,     /* init */
   NULL,     /* end  */
   work_lda, /* lda  */
+  NULL,
+  NULL
 };

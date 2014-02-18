@@ -12,8 +12,8 @@
 ##
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-## 02111-1307, USA.
+## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+## 02110-1301, USA.
 ##
 ## $Id: acx.m4 3881 2008-03-12 23:51:07Z xavier $
 ##
@@ -79,6 +79,6 @@ m4_define([AC_LANG_FUNC_LINK_TRY(Fortran)],
 # ---------------------------
 m4_define([AC_LANG_PREPROC(Fortran)],[
   # this should not be hardwired
-  if test -z "$FCCPP"; then FCCPP="/lib/cpp -C -ansi"; fi
-  AC_ARG_VAR(FCCPP, [Fortran preprocessor. Defaults to '/lib/cpp -C -ansi'])
+  if test -z "$FCCPP"; then FCCPP="/lib/cpp -ansi"; fi
+  AC_ARG_VAR(FCCPP, [Fortran preprocessor. Defaults to '/lib/cpp -ansi'])
 ])

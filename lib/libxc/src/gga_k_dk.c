@@ -32,12 +32,10 @@ typedef struct{
 } gga_k_dk_params;
 
 static void 
-gga_k_dk_init(void *p_)
+gga_k_dk_init(XC(func_type) *p)
 {
   int i;
   FLOAT ff, *aa, *bb;
-
-  XC(gga_type) *p = (XC(gga_type) *)p_;
 
   assert(p->params == NULL);
   p->params = malloc(sizeof(gga_k_dk_params));
@@ -123,7 +121,7 @@ gga_k_dk_init(void *p_)
 
 
 static inline void 
-func(const XC(gga_type) *p, int order, FLOAT x, 
+func(const XC(func_type) *p, int order, FLOAT x, 
      FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   FLOAT xx2, xx4, num, denom, dnum, ddenom, d2num, d2denom;
@@ -169,7 +167,8 @@ const XC(func_info_type) XC(func_info_gga_k_dk) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_dk_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_perdew) = {
@@ -182,7 +181,8 @@ const XC(func_info_type) XC(func_info_gga_k_perdew) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_dk_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_vsk) = {
@@ -195,7 +195,8 @@ const XC(func_info_type) XC(func_info_gga_k_vsk) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_dk_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_vjks) = {
@@ -208,7 +209,8 @@ const XC(func_info_type) XC(func_info_gga_k_vjks) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_dk_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_gga_k_ernzerhof) = {
@@ -221,5 +223,6 @@ const XC(func_info_type) XC(func_info_gga_k_ernzerhof) = {
   1e-32, 1e-32, 0.0, 1e-32,
   gga_k_dk_init,
   NULL, NULL,
-  work_gga_k
+  work_gga_k,
+  NULL
 };

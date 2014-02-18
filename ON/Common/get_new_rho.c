@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 #include "my_scalapack.h"
 

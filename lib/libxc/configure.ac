@@ -12,17 +12,58 @@
 ##
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-## 02111-1307, USA.
+## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+## 02110-1301, USA.
 ##
 ## $Id: configure.ac 2422 2006-09-23 20:43:15Z marques $
 
-AC_INIT([libxc],[diurnus],[octopus-devel@tddft.org],[libxc])
+AC_INIT([libxc],[2.0.3],[libxc@tddft.org],[libxc],[http://www.tddft.org/programs/Libxc])
 AC_CONFIG_SRCDIR([src/xc.h])
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
+
+# Library versioning (C:R:A == current:revision:age)
+# See the libtool manual for an explanation of the numbers
+#
+# libxc-2.0.0   1:0:0
+# libxc-2.0.1   1:1:0
+# libxc-2.0.2   1:2:0
+# libxc-2.0.3   1:3:0
+# 
+# Note that libtool versioning was not used prior to libxc-2.0.
+# Because of this, we will start counting at 1.
+#
+# How to update library version number
+# ====================================
+# 
+# C: increment if the interface has additions, changes, removals.
+#
+# R: increment any time the source changes; set to 0 if you
+# incremented CURRENT
+#
+# A: increment if any interfaces have been added; set to 0 if any
+# interfaces have been removed. removal has precedence over adding,
+# so set to 0 if both happened.
+
+XC_CURRENT=1
+XC_REVISION=3
+XC_AGE=0
+
+XC_LT_VERSION="${XC_CURRENT}:${XC_REVISION}:${XC_AGE}"
+AC_SUBST(XC_LT_VERSION)
+
+# Split VERSION into XC_VERSION_MAJOR and XC_VERSION_MINOR
+# Follows AX_SPLIT_VERSION macro from AC-Archive
+# Rhys Ulerich <rhys.ulerich@gmail.com>
+AC_PROG_SED
+XC_MAJOR_VERSION=`echo "$VERSION" | $SED 's/\([[^.]][[^.]]*\).*/\1/'`
+XC_MINOR_VERSION=`echo "$VERSION" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
+AC_SUBST(XC_MAJOR_VERSION)
+AC_SUBST(XC_MINOR_VERSION)
+
+
 
 # Installation prefix by default
 AC_PREFIX_DEFAULT([/opt/etsf])
@@ -47,6 +88,7 @@ AC_CHECK_SIZEOF(void*)
 AC_CHECK_LIB([m],[sqrtf],[AC_DEFINE([HAVE_SQRTF],[1],[libm includes sqrtf])])
 AC_CHECK_LIB([m],[cbrt],[AC_DEFINE([HAVE_CBRT],[1],[libm includes cbrt])])
 AC_CHECK_LIB([m],[cbrtf],[AC_DEFINE([HAVE_CBRTF],[1],[libm includes cbrtf])])
+AC_CHECK_LIB([m],[feenableexcept],[AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
 
 dnl build/install fortran bits unless --disable-fortran is used
 AC_ARG_ENABLE([fortran],
@@ -110,6 +152,7 @@ AM_CONDITIONAL(COMPILE_SINGLE, test  $ac_cv_single_prec = yes)
 
 
 AC_CONFIG_FILES([Makefile
+  xc_version.h
   src/Makefile
   testsuite/Makefile
   build/Makefile

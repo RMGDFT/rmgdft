@@ -4,7 +4,7 @@
  
 #include <stdio.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void app_mask(int istate, double *u, int level)

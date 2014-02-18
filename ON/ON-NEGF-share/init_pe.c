@@ -30,7 +30,7 @@
  * SOURCE
  */
 
-#include "main.h"
+#include "main_on.h"
 
 
 void init_pe ( int image )
@@ -42,6 +42,7 @@ void init_pe ( int image )
     MPI_Group group, world_grp, img_masters;
 
 
+dprintf("\n 11111");
     /* Setup MPI */
     /* get world group handle */
     MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
@@ -130,6 +131,7 @@ void init_pe ( int image )
     //printf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
     /* Read in our control information, depends on pct.img_comm for dissemination */
+dprintf("\n 22222");
     read_control ();
 
 

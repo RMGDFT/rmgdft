@@ -21,7 +21,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+#include "main_on.h"
 
 #define DELTA		1e-10
 #ifndef M_2_SQRTPI

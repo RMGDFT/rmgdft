@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 REAL minimage1(REAL aa[3], REAL bb[3])
 {
@@ -53,24 +53,6 @@ REAL minimage1(REAL aa[3], REAL bb[3])
                 }               /* end for */
 
             }                   /* end for */
-
-        }                       /* end for */
-    }
-    else if (ct.boundaryflag == ZPERIODIC)
-    {
-        nn = 3;
-
-        idx = 0;
-        for (iz = -1; iz <= 1; iz++)
-        {
-
-            x = aa[0] - bb[0];
-            y = aa[1] - bb[1];
-            z = aa[2] - bb[2] + (REAL) iz *az;
-
-            r[idx] = (x * x + y * y + z * z);
-
-            idx++;
 
         }                       /* end for */
     }

@@ -19,7 +19,7 @@
  *   void app_gradf(FS0_GRID *f, FP0_GRID *wx, FP0_GRID *wy, FP0_GRID *wz, int dimx, int dimy, int dimz)
  *   Generates the gradient of function defined on the FINE grid.
  * INPUTS
- *   S0_GRID *f: the function to be applied (see main.h)
+ *   S0_GRID *f: the function to be applied (see main_on.h)
  * OUTPUT
  *   P0_GRID *wx: (\partial/\partial x)f
  *   P0_GRID *wy: (\partial/\partial y)f
@@ -32,7 +32,7 @@
  */
 
 
-#include "main.h"
+#include "main_on.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>

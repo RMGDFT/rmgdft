@@ -33,17 +33,19 @@
 
 #define ORDER_N 1
 
+#define REAL_SPACE 0
+
 /* Version information */
-#include    "version.h"
 #include    "input.h"
+#include    "rmg_alloc.h"
 
 
 /* Compile time parameters */
-#include    "params.h"
+#include    "params_on.h"
 
 
 /* Constants and symbolic definitions */
-#include    "const.h"
+#include    "const_on.h"
 
 /* Fourier transformation structure definition */
 #include    "fftw.h"
@@ -61,7 +63,7 @@
 #define     REAL    double
 #include    "rmgtypes.h"
 #include    "common_prototypes.h"
-#include    "typedefs.h"
+#include    "typedefs_on.h"
 
 /* Some definitions needed for using compile time values for global grid sizes */
 #include "fixed_dims.h"
@@ -606,102 +608,6 @@ typedef struct
 } SPECIES;
 
 
-/* Ion structure */
-typedef struct
-{
-
-    /* Initial physical coordinates at start of run */
-    REAL icrds[3];
-
-    /* Actual Physical coordinates at current time step */
-    REAL crds[3];
-
-    /* Positions at the previous time step */
-    REAL ocrds[3];
-
-    /* Initial crystal coordinates at start of run */
-    REAL ixtal[3];
-
-    /* Actual crystal coordinates at current time step */
-    REAL xtal[3];
-
-    /* Crystal coordinates  at the previous time step */
-    REAL oxtal[3];
-
-    /* Coordinates of the corner of the grid that the local */
-    /* difference potential is nonzero on.                  */
-    REAL lxcstart;
-    REAL lycstart;
-    REAL lzcstart;
-
-
-    /* Coordinates of the corner of the grid that the non-local */
-    /* potential is nonzero on.                                 */
-    REAL nlxcstart;
-    REAL nlycstart;
-    REAL nlzcstart;
-
-
-    /* Coordinates of the corner of the grid that the non-local */
-    /* potential is nonzero on.                                 */
-    REAL Qxcstart;
-    REAL Qycstart;
-    REAL Qzcstart;
-
-    /* Integer species type when using a raw pseudopotential */
-    int species;
-
-
-    /* Forces on the ion */
-    REAL force[4][3];
-
-    /* Current velocity of the ion */
-    REAL velocity[3];
-
-    /* Kleinman-Bylander normalization coefficients */
-    REAL pd[(MAX_L + 1) * (MAX_L + 1)];
-
-    /* Milliken normalization coefficients */
-    REAL mnorm[(MAX_L + 1) * (MAX_L + 1)];
-
-    /* Total number of projectors */
-    int prjcount;
-
-    /* Movable flag */
-    int movable;
-
-    int frozen;
-
-    /*  number of local orbitals on the ion */
-    int n_loc_states;
-
-    /* Localization mask */
-    char *lmask[4];
-
-    int ixstart;
-    int iystart;
-    int izstart;
-    int ixend;
-    int iyend;
-    int izend;
-
-    int first_state_index;
-    double *fftw_phase_sin;
-    double *fftw_phase_cos;
-
-    /* Force modifier parameters */
-    struct {
-        REAL setA_weight;
-        REAL setA_coord[3];
-        REAL setB_weight;
-        REAL setB_coord[3];
-        double forcemask[3];
-    } constraint;
-
-
-
-
-} ION;
 
 
 
@@ -1693,7 +1599,5 @@ void filter_potential (REAL *potential, REAL *r, int rg_points, REAL rmax, REAL 
 	REAL *rab, int l_value, REAL dr, REAL  gwidth, int lgrid_points, REAL rcut, REAL rwidth, REAL * drpotential_lgrid);
 
 
-#include "salloc.h"
-
 #include "macros.h"
-#include    "prototypes.h"
+#include    "prototypes_on.h"

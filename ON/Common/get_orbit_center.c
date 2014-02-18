@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "main_on.h"
 
 
 void get_orbit_center(STATE *state, REAL * x, REAL * y, REAL * z)

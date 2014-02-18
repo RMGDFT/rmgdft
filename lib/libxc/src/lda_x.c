@@ -44,83 +44,76 @@
 
 /* Range separation */
 /* J. Toulouse, A. Savin, H.-J. Flad, Int. J. of Quant. Chem. 100, 1047-1056 (2004).
-
-**** This is hack that should get a proper interface soon ****
-   0 = ERF interaction
-   1 = ERF_GAU
 */
-static int interaction = 0;
 
 typedef struct{
   FLOAT alpha;       /* parameter for Xalpha functional */
-  FLOAT omega;       /* parameter for range separation (0 means normal LDA) */
   int relativistic;  /* use the relativistic version of the functional or not */
 } XC(lda_x_params);
 
 static void 
-lda_x_init(void *p_)
+lda_x_init(XC(func_type) *p)
 {
-  XC(lda_type) *p = (XC(lda_type) *)p_;
-
-  assert(p->params == NULL);
+  assert(p != NULL && p->params == NULL);
   p->params = malloc(sizeof(XC(lda_x_params)));
 
   /* exchange is equal to xalpha with a parameter of 4/3 */
-  XC(lda_x_set_params_)(p, 4.0/3.0, XC_NON_RELATIVISTIC, 0.0);
+  XC(lda_x_set_params)(p, 4.0/3.0, XC_NON_RELATIVISTIC, 0.0);
 }
 
 static void 
-lda_c_xalpha_init(void *p_)
+lda_c_xalpha_init(XC(func_type) *p)
 {
-  XC(lda_type) *p = (XC(lda_type) *)p_;
-
-  assert(p->params == NULL);
+  assert(p != NULL && p->params == NULL);
   p->params = malloc(sizeof(XC(lda_x_params)));
 
   /* This gives the usual Xalpha functional */
-  XC(lda_x_set_params_)(p, 1.0, XC_NON_RELATIVISTIC, 0.0);
+  XC(lda_x_set_params)(p, 1.0, XC_NON_RELATIVISTIC, 0.0);
 }
 
 void 
 XC(lda_c_xalpha_set_params)(XC(func_type) *p, FLOAT alpha)
 {
-  assert(p != NULL && p->lda != NULL);
-  XC(lda_x_set_params_)(p->lda, alpha, XC_NON_RELATIVISTIC, 0.0);
+  XC(lda_x_set_params)(p, alpha, XC_NON_RELATIVISTIC, 0.0);
 }
 
 void 
-XC(lda_x_set_params)(XC(func_type) *p, int relativistic, FLOAT omega)
-{
-  assert(p != NULL && p->lda != NULL);
-  XC(lda_x_set_params_)(p->lda, 4.0/3.0, relativistic, omega);
-}
-
-void 
-XC(lda_x_set_params_)(XC(lda_type) *p, FLOAT alpha, int relativistic, FLOAT omega)
+XC(lda_x_set_params)(XC(func_type) *p, FLOAT alpha, int relativistic, FLOAT omega)
 {
   XC(lda_x_params) *params;
 
-  assert(p->params != NULL);
+  assert(p != NULL && p->params != NULL);
   params = (XC(lda_x_params) *) (p->params);
 
   params->alpha = 1.5*alpha - 1.0;
   params->relativistic = relativistic;
-  params->omega = omega;
+  p->cam_omega = omega;
 }
 
 
+/* interaction = 0 -> ERF interaction
+               = 1 -> ERF_GAU          
+
+see also J. Chem. Phys. 120, 8425 (2004)
+*/
 void
-XC(lda_x_attenuation_function)(int order, FLOAT aa, FLOAT *f, FLOAT *df, FLOAT *d2f, FLOAT *d3f)
+XC(lda_x_attenuation_function)(int interaction, int order, FLOAT aa, FLOAT *f, FLOAT *df, FLOAT *d2f, FLOAT *d3f)
 {
-  FLOAT aa2, aa3, auxa1, auxa2;
+  FLOAT aa2, aa3, auxa1, auxa2, auxa3;
   FLOAT bb, bb2, bb3, auxb1, auxb2;
 
   aa2 = aa*aa;
   aa3 = aa*aa2;
   auxa1 = M_SQRTPI*erf(1.0/(2.0*aa));
-  auxa2 = exp(-1.0/(4.0*aa2));
 
-  *f = 1.0 - 8.0/3.0*aa*(auxa1 - 3.0*aa + 4.0*aa3 + (2.0*aa - 4*aa3)*auxa2);
+  if(aa < 1.0e6) 
+    auxa2 = exp(-1.0/(4.0*aa2)) - 1.0;
+  else
+    auxa2 = -1.0/(4.0*aa2);
+
+  auxa3 = 2.0*aa2*auxa2 + 0.5;
+
+  *f = 1.0 - 8.0/3.0*aa*(auxa1 + 2.0*aa*(auxa2 - auxa3));
 
   if(interaction == 1){ /* erfgau */
     bb  = aa/M_SQRT3;
@@ -134,21 +127,21 @@ XC(lda_x_attenuation_function)(int order, FLOAT aa, FLOAT *f, FLOAT *df, FLOAT *
 
   if(order < 1) return;
 
-  *df = 8.0/3.0 * (2.0*aa*(3.0 - 8.0*aa2 - (1.0 - 8.0*aa2)*auxa2) - auxa1);
+  *df = 8.0/3.0 * (4.0*aa - 2.0*(1.0 - 8.0*aa2)*aa*auxa2 - auxa1);
 
   if(interaction == 1)  /* erfgau */
     *df -= 8.0/3.0*(4.0*bb*(3.0 - 16.0*bb2 + (1.0 + 16.0*bb2)*auxb2) - auxb1);
 
   if(order < 2) return;
 
-  *d2f = 16.0*(1.0 - 8*aa2 +(1.0 + 8.0*aa2)*auxa2);
+  *d2f = 16.0*(2.0 + (1.0 + 8.0*aa2)*auxa2);
 
   if(interaction == 1)  /* erfgau */
     *d2f -= 8.0/(3.0*M_SQRT3)*(12.0 - 192.0*bb2 + 3.0*(1.0/bb2 + 12.0 + 64.0*bb2)*auxb2);
 
   if(order < 3) return;
 
-  *d3f = -256.0*aa + 8.0*(1.0 + 8.0*aa2 + 32.0*aa2*aa2)*auxa2/aa3;
+  *d3f = -256.0*aa + 8.0*(1.0 + 8.0*aa2 + 32.0*aa2*aa2)*(auxa2 + 1.0)/aa3;
 
   if(interaction == 1)  /* erfgau */
     *d3f -=  8.0/9.0*(-384.0*bb + 3.0*(1.0 + 8.0*bb2*(1.0 + bb2*(8.0 + bb2*32.0))*auxb2/(2.0*bb2*bb2*bb)));
@@ -157,7 +150,7 @@ XC(lda_x_attenuation_function)(int order, FLOAT aa, FLOAT *f, FLOAT *df, FLOAT *
 
 
 static inline void 
-func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
+func(const XC(func_type) *p, XC(lda_work_t) *r)
 {
   FLOAT ax, omz, cbrtomz, opz, cbrtopz, fz, dfzdz, dfzdrs, d2fzdz2, d2fzdrsz, d2fzdrs2;
   FLOAT d3fzdz3, d3fzdrsz2, d3fzdrs2z, d3fzdrs3;
@@ -180,22 +173,23 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
     cbrtomz = CBRT(omz);
   }
 
-  if(params->omega == 0.0){
+  if(p->cam_omega == 0.0){
+    a_cnst = 0.0;
     fa_u = fa_d = 1.0;
 
   }else{
-    a_cnst = CBRT(4.0/(9.0*M_PI))*params->omega/2.0;
+    a_cnst = CBRT(4.0/(9.0*M_PI))*p->cam_omega/2.0;
 
     if(p->nspin == XC_UNPOLARIZED){
-      XC(lda_x_attenuation_function)(r->order, a_cnst*r->rs[1], &fa_u, &dfa_u, &d2fa_u, &d3fa_u);
+      XC(lda_x_attenuation_function)(0, r->order, a_cnst*r->rs[1], &fa_u, &dfa_u, &d2fa_u, &d3fa_u);
     }else{
       if(cbrtopz > 0.0)
-	XC(lda_x_attenuation_function)(r->order, a_cnst*r->rs[1]/cbrtopz, &fa_u, &dfa_u, &d2fa_u, &d3fa_u);
+	XC(lda_x_attenuation_function)(0, r->order, a_cnst*r->rs[1]/cbrtopz, &fa_u, &dfa_u, &d2fa_u, &d3fa_u);
       else
 	fa_u = dfa_u = d2fa_u = d3fa_u = 0.0;
 
       if(cbrtomz > 0.0)
-	XC(lda_x_attenuation_function)(r->order, a_cnst*r->rs[1]/cbrtomz, &fa_d, &dfa_d, &d2fa_d, &d3fa_d);
+	XC(lda_x_attenuation_function)(0, r->order, a_cnst*r->rs[1]/cbrtomz, &fa_d, &dfa_d, &d2fa_d, &d3fa_d);
       else
 	fa_d = dfa_d = d2fa_d = d3fa_d = 0.0;
     }
@@ -224,7 +218,7 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
   
   r->dedrs = -ax/r->rs[2];
 
-  if(params->omega == 0.0)
+  if(p->cam_omega == 0.0)
     dfa_u = dfa_d = 0.0;
 
   if(p->nspin == XC_POLARIZED){
@@ -256,7 +250,7 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
 
   if(r->order < 2) return;
     
-  if(params->omega == 0.0)
+  if(p->cam_omega == 0.0)
     d2fa_u = d2fa_d = 0.0;
 
   if(p->nspin == XC_POLARIZED){
@@ -304,7 +298,7 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
 
   if(r->order < 3) return;
 
-  if(params->omega == 0.0)
+  if(p->cam_omega == 0.0)
     d3fa_u = d3fa_d = 0.0;
 
   if(p->nspin == XC_POLARIZED){
@@ -369,7 +363,9 @@ const XC(func_info_type) XC(func_info_lda_x) = {
   1e-29, 0.0, 0.0, 1e-32,
   lda_x_init,
   NULL,
-  work_lda
+  work_lda,
+  NULL,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_lda_c_xalpha) = {
@@ -382,6 +378,8 @@ const XC(func_info_type) XC(func_info_lda_c_xalpha) = {
   1e-29, 0.0, 0.0, 1e-32,
   lda_c_xalpha_init,
   NULL,
-  work_lda
+  work_lda,
+  NULL,
+  NULL
 };
 

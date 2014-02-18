@@ -25,17 +25,15 @@
 #define XC_HYB_GGA_X_SOGGA11_X  426 /* Hybrid based on SOGGA11 form */
 
 static void 
-gga_x_sogga11_init(void *p_)
+gga_x_sogga11_init(XC(func_type) *p)
 {
-  XC(gga_type) *p = (XC(gga_type) *)p_;
-
   switch(p->info->number){
   case XC_GGA_X_SOGGA11:
     p->func = 0;
     break;
   case XC_HYB_GGA_X_SOGGA11_X:
     p->func = 1;
-    p->exx_coef = 0.4015;
+    p->cam_alpha = 0.4015;
     break;
   default:
     fprintf(stderr, "Internal error in gga_x_sogga11\n");
@@ -44,7 +42,7 @@ gga_x_sogga11_init(void *p_)
 }
 
 void XC(gga_x_sogga11_enhance)
-  (const XC(gga_type) *p, int order, FLOAT x, 
+  (const XC(func_type) *p, int order, FLOAT x, 
    FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   const FLOAT kappa = 0.552;
@@ -60,7 +58,6 @@ void XC(gga_x_sogga11_enhance)
   };
     
   FLOAT f0, df0, d2f0, den0, den1, t0, t1, f1, df1, d2f1;
-  FLOAT f0_2, f0_3, f0_4, f0_5;
 
   den0 = -1.0/(1.0 + alpha*x*x);
   f0   =  1.0 + den0;
@@ -106,7 +103,8 @@ const XC(func_info_type) XC(func_info_gga_x_sogga11) = {
   1e-31, 1e-32, 0.0, 1e-32,
   gga_x_sogga11_init, 
   NULL, NULL,
-  work_gga_x
+  work_gga_x,
+  NULL
 };
 
 const XC(func_info_type) XC(func_info_hyb_gga_x_sogga11_x) = {
@@ -120,5 +118,6 @@ const XC(func_info_type) XC(func_info_hyb_gga_x_sogga11_x) = {
   1e-31, 1e-32, 0.0, 1e-32,
   gga_x_sogga11_init, 
   NULL, NULL,
-  work_gga_x
+  work_gga_x,
+  NULL
 };

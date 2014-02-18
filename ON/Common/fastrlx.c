@@ -20,7 +20,7 @@
  *                REAL *rho, REAL *rhocore, REAL *rhoc)
  *   drive routine for fast relax.
  * INPUTS
- *   states: all wave functions (see main.h)
+ *   states: all wave functions (see main_on.h)
  *   vxc: exchange-correlation potential
  *   vh:  Hartree potential
  *   vnuc: pseudopotential
@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "main.h"
+#include "main_on.h"
 
 
 

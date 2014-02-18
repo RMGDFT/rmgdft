@@ -22,7 +22,7 @@
 #define XC_GGA_X_LG93  113 /* Lacks & Gordon 93 */
 
 static inline void 
-func(const XC(gga_type) *p, int order, FLOAT x, 
+func(const XC(func_type) *p, int order, FLOAT x, 
      FLOAT *f, FLOAT *dfdx, FLOAT *d2fdx2)
 {
   static const FLOAT ad = 1e-8, a4 = 29.790, a6 = 22.417;
@@ -72,6 +72,7 @@ const XC(func_info_type) XC(func_info_gga_x_lg93) = {
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   1e-32, 1e-32, 0.0, 1e-32,
   NULL, NULL, NULL,
-  work_gga_x
+  work_gga_x,
+  NULL
 };
 
