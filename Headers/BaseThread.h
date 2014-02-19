@@ -73,6 +73,11 @@ public:
     // Pointer to project specific data structure
     void *pptr;
 
+#if GPU_ENABLED
+    // Cuda device stream
+    void *cstream;
+#endif
+
     BaseThread(int nthreads);
     void wait_for_threads(int jobs);
     void wake_threads(int jobs);

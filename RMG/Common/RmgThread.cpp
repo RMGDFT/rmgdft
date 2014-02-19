@@ -1,3 +1,4 @@
+#include "BaseGrid.h"
 #include "BaseThread.h"
 #include "RmgThread.h"
 #include "rmg_error.h"
@@ -6,6 +7,10 @@
 #include "rmgthreads.h"
 #include "const.h"
 #include "prototypes.h"
+#if GPU_ENABLED
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
 using namespace std;
 
 
@@ -16,7 +21,7 @@ void *run_threads(void *v) {
     BaseThread *s;
     SCF_THREAD_CONTROL *ss;
     s = (BaseThread *)v;
-    
+    BaseGrid G;    
 
 #if GPU_ENABLED
     cudaError_t cuerr;
@@ -27,21 +32,15 @@ void *run_threads(void *v) {
     s->pthread_tid = pthread_self();
     pthread_setspecific(s->scf_thread_control_key, (void *)s);
 
+    // Get the control structure
+    ss = (SCF_THREAD_CONTROL *)s->pptr;
+
 #if GPU_ENABLED
     cudaSetDevice(ct.cu_dev); 
-    if(cudaSuccess != (cuerr = cudaStreamCreate(&s->cstream))) {
+    if(cudaSuccess != (cuerr = cudaStreamCreate((cudaStream_t *)&s->cstream))) {
         fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
         exit(-1);
     }
-    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp1, (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4) * sizeof(rmg_double_t) )){
-        fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
-        exit(-1);
-    }
-    if( cudaSuccess != cudaMallocHost((void **)&s->gpu_host_temp2, (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4) * sizeof(rmg_double_t) )){
-        fprintf (stderr, "Error: cudaMallocHost failed for: threads gpu_host_temp\n");
-        exit(-1);
-    }
-    cuMemHostRegister ( s->trade_buf, sizeof(rmg_double_t) * (alloc + 64), CU_MEMHOSTREGISTER_PORTABLE);
 #endif
 
     // Wait until everyone gets here

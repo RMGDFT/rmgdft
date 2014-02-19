@@ -287,6 +287,11 @@ pthread_t pthread_tid;
 // Pointer to project specific data structure
 void *pptr;
 
+#if GPU_ENABLED
+    // Cuda device stream
+    void *cstream;
+#endif
+
 // Used to implement a local barrier for all threads inside of the run_threads function
 pthread_barrier_t BaseThread::run_barrier;
 

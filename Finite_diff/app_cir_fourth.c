@@ -39,30 +39,6 @@ void app_cir_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int
     tid = 0;
 #endif
 
-#if 0
-#if GPU_FD_ENABLED
-    rmg_double_t *gpu_a, *gpu_b;
-    cudaStream_t *cstream;
-    int pbasis = dimx * dimy * dimz;
-    int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
-
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-    rptr = &ct.gpu_host_fdbuf2[tid * sbasis];
-    gpu_a = &ct.gpu_work3[tid * sbasis];
-    gpu_b = &ct.gpu_work4[tid * sbasis];
-
-    cstream = get_thread_cstream();
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
-
-    cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
-
-    app_cir_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz, *cstream);
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
-
-    return;
-#endif
-#endif
-
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS) {
         app_cir_fourth_global (a, b);

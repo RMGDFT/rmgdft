@@ -43,33 +43,6 @@ rmg_double_t app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int d
     tid = 0;
 #endif
 
-#if GPU_FD_ENABLED
-#ifdef FD_XSIZE
-    rmg_float_t *gpu_psi, *gpu_b;
-    cudaStream_t *cstream;
-    int pbasis = dimx * dimy * dimz;
-    int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
-
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-    rptr = (rmg_float_t *)&ct.gpu_host_fdbuf1[0];
-    rptr += tid*sbasis;
-    gpu_psi = (rmg_float_t *)&ct.gpu_work1[0];
-    gpu_psi += tid*sbasis;
-    gpu_b = (rmg_float_t *)&ct.gpu_work2[0];
-    gpu_b += tid*pbasis;
-
-    cstream = get_thread_cstream();
-    trade_imagesx_f (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
-    cudaMemcpyAsync( gpu_psi, rptr, sbasis * sizeof(rmg_float_t), cudaMemcpyHostToDevice, *cstream);
-    cc = app_cil_fourth_f_gpu (gpu_psi, gpu_b, dimx, dimy, dimz,
-                              gridhx, gridhy, gridhz,
-                              get_xside(), get_yside(), get_zside(), *cstream);
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_float_t), cudaMemcpyDeviceToHost, *cstream);
-    return cc;
-#endif
-#endif
-
-
     numgrid = dimx * dimy * dimz;
     if(numgrid == P0_BASIS && (get_anisotropy() < 1.000001))
     {

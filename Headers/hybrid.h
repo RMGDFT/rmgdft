@@ -35,13 +35,9 @@ void scf_barrier_wait(void);
 void scf_barrier_destroy(void);
 
 
-void scf_tsd_init(void);
-void scf_tsd_set_value(void *s);
-void scf_tsd_delete(void);
 int get_thread_basetag(void);
 int get_thread_tid(void);
 SCF_THREAD_CONTROL *get_thread_control(void);
-void set_cpu_affinity(int tid);
 void wait_for_threads(int jobs);
 void wake_threads(int jobs);
 void init_HYBRID_MODEL(int nthreads);

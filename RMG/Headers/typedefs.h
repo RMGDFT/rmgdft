@@ -1107,9 +1107,6 @@ typedef struct
     /*Boolean flag for using mask function filtering*/
     int mask_function;
 
-    /* Number of CPU's in system */
-    int ncpus;
-
     /* Potential acceleration constant step factor */
     rmg_double_t potential_acceleration_constant_step;
 

@@ -86,13 +86,7 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
 
     sbasis = sp->sbasis;
 
-#if GPU_FD_ENABLED
-    cudaStream_t *cstream;
-    cstream = get_thread_cstream();
-    work3 = &ct.gpu_host_temp3[tid * sbasis];
-#else
     my_malloc (work3, sbasis, rmg_double_t);
-#endif
 
 #if !BATCH_NLS
     my_malloc (work2, sbasis, rmg_double_t);
@@ -172,9 +166,6 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
 
 
 
-#if GPU_FD_ENABLED
-    cuStreamSynchronize(*cstream);
-#endif
     for (idx = 0; idx < P0_BASIS; idx++)
         work1[idx] = 0.5 * ct.vel * (work1[idx] - work3[idx]);
 
@@ -182,10 +173,7 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
     my_free (work2);
 #endif
     my_free(sg_twovpsi);
-
-#if !GPU_FD_ENABLED
     my_free(work3);
-#endif
 
 }                               /* subdiag_app_A_one */
 

@@ -28,27 +28,12 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
 
     int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
-#if GPU_FD_ENABLED
-    cudaStream_t *cstream;
-    cstream = get_thread_cstream();
-#endif
 
 #if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;  // OK in this case
 #else
     tid = 0;
-#endif
-
-
-#if (GPU_FD_ENABLED && FD_XSIZE)
-    // cudaMallocHost is painfully slow so we use a pointers into regions that were previously allocated.
-    rptr = (rmg_float_t *)&ct.gpu_host_fdbuf1[0];
-    rptr += tid*sbasis;
-    gpu_a = (rmg_double_t *)&ct.gpu_work1[0];
-    gpu_a += tid*sbasis;
-    gpu_b = (rmg_double_t *)&ct.gpu_work2[0];
-    gpu_b += tid*pbasis;
 #endif
 
     // If rptr is null then we must allocate it here
@@ -61,17 +46,6 @@ rmg_double_t app_cil_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int d
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         error_handler("Grid symmetry not programmed yet in app_cil_fourth.\n");
     }
-
-#if (GPU_FD_ENABLED && FD_XSIZE)
-    trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
-    cudaMemcpyAsync( gpu_a, rptr, sbasis * sizeof(rmg_double_t), cudaMemcpyHostToDevice, *cstream);
-    cc = app_cil_fourth_gpu (gpu_a, gpu_b, dimx, dimy, dimz,
-                              gridhx, gridhy, gridhz,
-                              get_xside(), get_yside(), get_zside(), *cstream);
-    cudaMemcpyAsync(b, gpu_b, pbasis * sizeof(rmg_double_t), cudaMemcpyDeviceToHost, *cstream);
-
-    return cc;
-#endif
 
     trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
 
