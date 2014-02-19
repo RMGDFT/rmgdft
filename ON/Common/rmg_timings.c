@@ -39,34 +39,6 @@
 REAL timings[LAST_TIME];
 
 
-#if !HYBRID_MODEL
-void rmg_timings(int what, REAL time)
-{
-
-    timings[what] += time;
-
-}                               /* end rmg_timings */
-#endif
-
-
-#if (CRAY_C90)
-
-#include <time.h>
-clock_t clock(void);
-
-REAL my_crtc(void)
-{
-    clock_t i;
-    REAL r;
-
-    i = clock();
-    r = i * 1.0;
-    return r;
-}
-#endif
-
-
-
 REAL my_crtc (void)
 {
     struct timeval t1;
