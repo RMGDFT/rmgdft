@@ -246,7 +246,7 @@ else (RMG_EXPERIMENTAL_FEATURES)
     set (EXPERIMENTAL_FEATURES 0)
 endif(RMG_EXPERIMENTAL_FEATURES)
 
-option (RMG_HYBRID_MODEL "To enable MPI/PThreads hybrid model." OFF)
+option (RMG_HYBRID_MODEL "To enable MPI/PThreads hybrid model." ON)
 if (RMG_HYBRID_MODEL)
     set (HYBRID_MODEL 1)
 else (RMG_HYBRID_MODEL)

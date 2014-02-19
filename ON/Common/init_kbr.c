@@ -110,11 +110,9 @@ void init_kbr(void)
 
 
         /* Check value to make sure a local potential is defined */
-        sp->localidx = -1;
 
         Zv = sp->zvalence;
         rc = sp->rc;
-        sp->localidx = sp->local;       /*thinking */
 
 
         /* Loop over radial grid points */
@@ -371,8 +369,6 @@ void init_kbr(void)
 
 
         /* Make sure that a local potential was specified */
-        if (sp->localidx < 0)
-            error_handler("No local potential defined");
 
         if (pct.gridpe == 0)
             fclose(psp);

@@ -309,21 +309,6 @@ void write_header(void)
         printf("\n        GWIDTH          = %12.6f", sp->gwidth);
 
 
-        for (ip = 0; ip < sp->num_potentials; ip++)
-        {
-            l = sp->lval[ip];
-
-            printf("\n        KBNORM[l=%1d]     = ", l);
-
-            if (l == sp->local)
-            {
-                printf("N/A");
-            }
-            else
-            {
-                printf("%12.6f", sp->kbnorm[ip]);
-            }                   /* end if */
-        }                       /* ip */
 
 
 

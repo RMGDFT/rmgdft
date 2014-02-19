@@ -121,6 +121,7 @@ void read_control (void)
 
 
 
+    dprintf("\n 11111 \n");
 
     /* Number of states */
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
@@ -130,6 +131,7 @@ void read_control (void)
         error_handler("Too many states specified in input file");
     }
 
+    dprintf("\n 21111 \n");
 
     /* Get k-points and weights */
     read_kpoints ();
@@ -149,6 +151,9 @@ void read_control (void)
     pct.npcol = strtol(tbuf, &tbuf, 10);
 
 
+
+
+    dprintf("\n 31111\n ");
     if(NPES < pct.pe_kpoint * pct.nprow * pct.npcol)
     {
         printf("\n NPES = %d", NPES);
@@ -193,6 +198,7 @@ void read_control (void)
     get_data ("output_information_for_GW", &ct.flag_gw, INT, "0");
 
 
+    dprintf("\n 41111\n ");
     /* read info about atomic orbital filenames for each species for
      * LCAO start */
     char s[32], fn[MAX_PATH];
@@ -216,10 +222,13 @@ void read_control (void)
 
 
     /* read the atomic positions and species */
+    dprintf("\n 51111\n ");
     read_atoms ();
 
+    dprintf("\n 61111\n ");
     read_orbitals ();
 
+    dprintf("\n 71111\n ");
 
     /* Close input file */
     my_free (tptr);

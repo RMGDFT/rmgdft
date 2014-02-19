@@ -1,0 +1,230 @@
+/**@name SPECIES
+ * @memo Species (pseudopotential) control structure
+ * @doc Structure holds data about the pseudopotentials used to
+ * represent different types of atomic species. 
+*/
+typedef struct
+{
+
+    /* symbol read from control file */
+    char pseudo_symbol[32];
+
+    /* pseudopotential filename */
+    char pseudo_filename[MAX_PATH];
+
+    /** Description of the species (e.g Atomic carbon generated using 
+     * hamann's code with  rcs=0.80 rcp=0.85 bohr
+     */
+    char description[MAX_CHAR];
+
+    /** Atomic number */
+    int atomic_number;
+
+    /** Atomic symbol */
+    char *atomic_symbol;
+
+    /** Atomic mass */
+    rmg_double_t atomic_mass;
+
+    /** Number of valence electrons */
+    rmg_double_t zvalence;
+
+    /** Gaussian charge parameter used for compensating the 1/r Coulomb
+     * tail of the pseudopotentials
+     */
+
+    rmg_double_t rc;
+
+    /* Number of grid points in the local in each coordinate direction. 
+     * These used to be L0_LDIM and L0_NLDIM.
+     */
+    int ldim;
+    int nldim;
+    int nlfdim;
+    int qdim;
+
+
+
+
+    /* These are input parameters in the pseudopotential file. They represent the
+     * real radii that are used in generating ldim and nldim.
+     */
+    rmg_double_t lradius;
+    rmg_double_t nlradius;
+    rmg_double_t qradius;
+
+    /*Radius for milliken analysis*/
+    rmg_double_t mill_radius;
+    /*Radius in number of grid points*/
+    int mill_dim;
+    /*Number of radial atomic wave functions - these depend on l only, not on m*/
+    int num_atomic_waves;
+    /*l-numbers for states for which we have atomic orbitals*/
+    int atomic_wave_l[5];
+    rmg_double_t atomic_wave_oc[5];
+    
+    char atomic_wave_label[5][3];
+
+    rmg_double_t *atomic_rho;
+    
+    /* Pseudo atomic valence density read from PP file in log grid*/
+    rmg_double_t **atomic_wave;
+    /* Pseudo atomic valence density on linear grid*/
+    rmg_double_t **awave_lig;
+
+
+    /*Sum of all atomic states (with different l or m numbers*/
+    //int sum_atomic_waves;
+
+    /*This will store name of atomic wavefunctions, such as s, px, py, pz, dxx etc*/
+    //char atomic_wave_symbol[20][12];
+
+
+    /** Number of radial grid points in the pseudopotential file */
+    int rg_points;
+
+    /* Log mesh parameter, where aa=exp(-aasf)/Z, bb=1.0/bbsf */
+    rmg_double_t aa, bb;
+
+    /** Non-linear core correction flag */
+    int nlccflag;
+
+    /* Number of potentials */
+    int num_potentials;
+
+    /* L-values for the reference states */
+    int lval[10];
+
+    /* L-value for local pseudopotential state */
+    int local;
+
+    /*Number of grid points in the beta function */
+    int kkbeta;
+
+    /*matrix ddd0(nbeta,nbeta) */
+    rmg_double_t ddd0[18][18];
+    rmg_double_t ddd[18][18];
+
+    /*matrix qqq(nbeta,nbeta) */
+    rmg_double_t qqq[18][18];
+
+    /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */
+    int nlc;
+
+    /*the number of component in polynomial of the pseudized Q_I(r) function we limit nqf<=10 */
+    int nqf;
+
+    /*L-independent inner coutoff radii rinner for Q_I(r) function */
+    rmg_double_t rinner[5];
+
+    /* ultrosoft Vanderbilt Qnm_rad(r) function and */
+    rmg_double_t *qnm;
+    rmg_double_t *qnmlig;
+    rmg_double_t *drqnmlig;
+
+    /* the coefficient for pseudosation of Qnm_L(r) */
+    rmg_double_t *qfcoef;
+
+    /* Logarithmic radial mesh information */
+    rmg_double_t r[MAX_RGRID];
+    rmg_double_t rab[MAX_RGRID];
+
+
+    /* Local Pseudopotentials */
+    rmg_double_t vloc0[MAX_RGRID];
+
+    /* Core charge radial grids */
+    rmg_double_t cr[MAX_RGRID];
+
+
+
+    /* Pseudo atomic core density */
+    rmg_double_t rspsco[MAX_RGRID];
+
+    /*the L-value for the beta function */
+    int llbeta[MAX_NB];
+
+    /*utrosoft Vanderbilt beta_n(r) function on radial grid */
+    rmg_double_t beta[MAX_NB][MAX_RGRID];
+
+
+    /* Total number of projectors */
+    int nbeta;
+
+
+    /* Linear interpolation storage for the compensated local potential
+     * and for it's radial derivative.
+     */
+    rmg_double_t localig[MAX_LOCAL_LIG];
+    rmg_double_t drlocalig[MAX_LOCAL_LIG];
+
+    /* Linear interpolation storage for the core charge density */
+    rmg_double_t rhocorelig[MAX_LOCAL_LIG];
+
+    /* Utrosoft Vandbelit Projectors on linear interpolation grid */
+    rmg_double_t betalig[MAX_NB][MAX_LOCAL_LIG];
+
+    /* Radial derivatives of the Utrosoft Vandbelit Projectors on linear interpolation grid */
+    rmg_double_t drbetalig[MAX_NB][MAX_LOCAL_LIG];
+
+    /* Local potential linear interpolation grid spacing */
+    rmg_double_t drlig;
+
+    /* Non-local linear interpolation grid spacing */
+    rmg_double_t drnlig;
+
+    /* Qfunction linear interpolation grid spacing */
+    rmg_double_t drqlig;
+
+    /*Grid spacing for atomic charge density on linear grid*/
+    rmg_double_t drlig_arho;
+    
+    /*Grid spacing for atomic wave functions on linear grid*/
+    rmg_double_t drlig_awave;
+
+
+    /* Pseudopotential filtering parameters */
+    rmg_double_t lrcut;                 /* Real space local cutoff */
+    rmg_double_t nlrcut[4];             /*Real space nonlocal cutoff */
+    rmg_double_t rwidth;                /* Real-space width parameter */
+    rmg_double_t gwidth;                /* G-space width parameter */
+
+    /*Filtering parameters for atomic wavefunctions and charge density*/
+    rmg_double_t acut; 
+    rmg_double_t aradius; 
+    rmg_double_t agwidth;
+    rmg_double_t arwidth;
+
+    /* radius of atomic wavefunctions and charge in terms of number of grid points*/
+    int adim_rho;
+    int adim_wave;
+
+
+    /*Total number (of what exactly ???) */
+    int num_projectors;
+
+
+    /*This will store results of forward fourier transform on the coarse grid */
+    fftw_complex *forward_beta;
+
+#if !FDIFF_BETA
+    /*This will store results of forward fourier transform for derivatives of beta on the coarse grid */
+    fftw_complex *forward_derbeta_x;
+    fftw_complex *forward_derbeta_y;
+    fftw_complex *forward_derbeta_z;
+#endif
+
+    /*Backwards wisdom for fftw */
+    char *backward_wisdom;
+
+    /*Some parameters for Q function*/
+    int indv[18];
+    int nhtol[18];
+    int nhtom[18];
+    int nh;
+
+    /*Atomic charge density on linear grid*/
+    rmg_double_t arho_lig[MAX_LOCAL_LIG];
+
+} SPECIES;
+

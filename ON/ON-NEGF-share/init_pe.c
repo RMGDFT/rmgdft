@@ -42,7 +42,6 @@ void init_pe ( int image )
     MPI_Group group, world_grp, img_masters;
 
 
-dprintf("\n 11111");
     /* Setup MPI */
     /* get world group handle */
     MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
@@ -131,7 +130,6 @@ dprintf("\n 11111");
     //printf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
     /* Read in our control information, depends on pct.img_comm for dissemination */
-dprintf("\n 22222");
     read_control ();
 
 
@@ -140,6 +138,7 @@ dprintf("\n 22222");
     /* Legacy portion of init_pe */
 
     /* XYZ coordinates of this processor */
+dprintf("\n a11111\n");
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
     /* Now wrap them in case we are running with some processors duplicated */
@@ -150,6 +149,8 @@ dprintf("\n 22222");
     if (ii >= PE_X)
         ii -= PE_X;
 
+
+dprintf("\n b11111 %d %d %d\n", PE_X, PE_Y, PE_Z);
     /* Have each processor figure out who it's neighbors are */
     XYZ2PE (ii, (jj + 1) % PE_Y, kk, pct.neighbors[NB_N]);
     XYZ2PE (ii, (jj - 1 + PE_Y) % PE_Y, kk, pct.neighbors[NB_S]);
@@ -160,12 +161,14 @@ dprintf("\n 22222");
 
     // Compute grid sizes for each node.
 
+dprintf("\n c11111\n");
     find_node_sizes(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID, &pct.PX0_GRID, &pct.PY0_GRID, &pct.PZ0_GRID);
     find_node_sizes(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID, &pct.FPX0_GRID, &pct.FPY0_GRID, &pct.FPZ0_GRID);
 
     pct.P0_BASIS = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
     pct.FP0_BASIS = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
 
+dprintf("\n d11111\n");
     // Now compute the global grid offset of the first point of the coarse and fine node grids
     find_node_offsets(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID,
                       &pct.PX_OFFSET, &pct.PY_OFFSET, &pct.PZ_OFFSET);
@@ -183,6 +186,7 @@ dprintf("\n 22222");
     P0_BASIS = pct.P0_BASIS;
     FP0_BASIS = pct.FP0_BASIS;
 
+dprintf("\n e11111\n");
     my_barrier ();
 
 }                               /* end init_pe */
