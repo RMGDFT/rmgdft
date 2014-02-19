@@ -42,8 +42,9 @@
 
 
 /* Makefile generated compile time parameters */
+#ifndef RMG_transition_h
 #include "arch.h"
-
+#endif
 
 /* Global grid sizes set in the Makefile */
 #include "make_conf.h"

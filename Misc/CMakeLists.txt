@@ -33,5 +33,7 @@ rmg_alloc.c
 ions.c
 BaseGrid.cpp
 BaseThread.cpp
+TradeImages.cpp
+transition.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")

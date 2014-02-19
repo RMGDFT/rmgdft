@@ -48,7 +48,6 @@ static rmg_double_t *swbuf1=NULL;
 static rmg_double_t *swbuf2=NULL;
 static int max_alloc;
 
-
 void trade_images (rmg_double_t * mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
 {
     int i, j, ione=1;
@@ -336,5 +335,4 @@ void trade_images (rmg_double_t * mat, int dimx, int dimy, int dimz, int *nb_ids
 #  endif
 
 }
-
 

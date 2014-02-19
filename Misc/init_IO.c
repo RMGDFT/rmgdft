@@ -245,16 +245,6 @@ void init_IO (int argc, char **argv)
     /* Read in our pseudopotential information */
     read_pseudo ();
 
-    // Allocate storage for trade_images and global sums routines
-    trade_images (NULL, 0, 0, 0, NULL, 0);
-    trade_images_f (NULL, 0, 0, 0, NULL, 0);
-    trade_imagesx (NULL, NULL, 0, 0, 0, 0, 0);
-    init_global_sums();
-
-#if ASYNC_TRADES
-  // set up memory sections for async trade images
-  init_trade_imagesx_async();
-#endif
 
 #if GPU_ENABLED
   cudaDeviceReset();
@@ -286,6 +276,19 @@ void init_IO (int argc, char **argv)
   printf("Running with thread level = %d\n", provided);
   fflush(NULL);
   init_HYBRID_MODEL(ct.THREADS_PER_NODE);
+
+  // Allocate storage for trade_images and global sums routines
+  trade_images (NULL, 0, 0, 0, NULL, 0);
+  trade_images_f (NULL, 0, 0, 0, NULL, 0);
+  //trade_imagesx (NULL, NULL, 0, 0, 0, 0, 0);
+  init_TradeImages();
+  init_global_sums();
+
+#if ASYNC_TRADES
+  // set up memory sections for async trade images
+  init_trade_imagesx_async();
+#endif
+
 #endif
     return;
 }

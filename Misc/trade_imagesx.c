@@ -16,7 +16,7 @@
 #endif
 
 #include <pthread.h>
-
+#if 0
 static rmg_double_t *swbuf1x = NULL;
 static rmg_double_t *swbuf2x = NULL;
 static int max_alloc;
@@ -683,3 +683,4 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
 #endif
 
 }                               /* end trade_imagesx */
+#endif

@@ -102,6 +102,7 @@ public:
     void rmg_timings (int what, rmg_double_t time);
     void set_pptr(int tid, void *p);
     int is_loop_over_states(void);
+    int get_threads_per_node(void);
 
 
 };

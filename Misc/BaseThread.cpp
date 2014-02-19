@@ -14,6 +14,9 @@ BaseThread::BaseThread(int nthreads)
     int thread, retval, ncpus;
     BaseThread *s;
 
+    if(nthreads > MAX_SCF_THREADS)
+        rmg_error_handler("Too many threads requested. Change MAX_SCF_THREADS and recompile if needed.");
+
     if(!BaseThread::init_flag) {
 
         BaseThread::THREADS_PER_NODE = nthreads;
@@ -265,6 +268,13 @@ int BaseThread::is_loop_over_states(void)
     ss = (BaseThread *)pthread_getspecific(BaseThread::scf_thread_control_key);
     if(!ss) return 0;
     return 1;
+}
+
+int BaseThread::get_threads_per_node(void)
+{
+    if(BaseThread::THREADS_PER_NODE == 0)
+        rmg_error_handler("Threads not initialized yet");
+    return BaseThread::THREADS_PER_NODE;
 }
 
 void BaseThread::set_pptr(int tid, void *p)

@@ -17,6 +17,9 @@
 
 #include "rmgtypedefs.h"
 
+#if __cplusplus
+extern "C" {
+#endif
 
 /* Blas wrappers */
 void QMD_daxpy (int n, rmg_double_t alpha, rmg_double_t *x, int incx, rmg_double_t *y, int incy);
@@ -271,6 +274,10 @@ double app_cil_fourth_f_gpu(const float *psi,
                        const double zside,
                        cudaStream_t cstream);
 
+#if __cplusplus
+}
+#endif
+
 #define my_fopen(_fhandle_, _filename_, _mode_) do {\
     _fhandle_ = fopen(_filename_, _mode_);\
     if (_fhandle_ == NULL)\
@@ -290,3 +297,5 @@ double app_cil_fourth_f_gpu(const float *psi,
 #endif
 
 #endif
+
+

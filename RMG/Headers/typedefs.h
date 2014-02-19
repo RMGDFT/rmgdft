@@ -1113,24 +1113,6 @@ typedef struct
     /* Potential acceleration constant step factor */
     rmg_double_t potential_acceleration_poisson_step;
 
-#if PAPI_PERFMON
-
-    // Global event set for serial portion of code
-    int EventSet;
-
-    // Event set for Open MP threads
-    int OpenMpEventSet[MAX_SCF_THREADS];
-
-    // Flop counts for OpenMp threads
-    long long OpenMpFlopCount[MAX_SCF_THREADS];
-
-    pthread_t OpenMpPthreadId[MAX_SCF_THREADS];
-
-    // Flop counts for pthreads
-    long long PthreadFlopCount[MAX_SCF_THREADS];
-    
-#endif
-
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
 
