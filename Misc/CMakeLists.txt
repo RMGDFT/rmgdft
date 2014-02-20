@@ -1,6 +1,5 @@
 add_library (Misc
 init_IO.c
-trade_images_f.c
 pack_ptos.c
 get_index.c
 global_sums.c
@@ -20,7 +19,6 @@ int_sum_all.c
 blaswrappers.c
 set_bc.c
 cgen_prolong.c
-trade_images.c
 latgen.c
 pack_vhdtos.c
 mg_restrict_6.c
