@@ -1357,6 +1357,116 @@ rmg_double_t FD_app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t
     return c000;
 
 }
+
+
+template <typename RmgType>
+void FD_app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, iz, numgrid, tid, ibrav;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    int incy, incx;
+    int incyr, incxr;
+    rmg_double_t c000, c100;
+    BaseGrid G;
+
+    ibrav = G.get_ibrav_type();
+
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        rmg_error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
+    }
+
+    incx = (dimz + 2) * (dimy + 2);
+    incy = dimz + 2;
+    incxr = dimz * dimy;
+    incyr = dimz;
+
+    c000 = 0.5;
+    c100 = 1.0 / 12.0;
+    for (ix = 1; ix < dimx + 1; ix++)
+    {
+        ixs = ix * incx;
+        ixms = (ix - 1) * incx;
+        ixps = (ix + 1) * incx;
+
+        for (iy = 1; iy < dimy + 1; iy++)
+        {
+            iys = iy * incy;
+            iyms = (iy - 1) * incy;
+            iyps = (iy + 1) * incy;
+
+            for (iz = 1; iz < dimz + 1; iz++)
+            {
+
+                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                    c100 * (rptr[ixs + iys + (iz - 1)] +
+                            rptr[ixs + iys + (iz + 1)] +
+                            rptr[ixms + iys + iz] +
+                            rptr[ixps + iys + iz] +
+                            rptr[ixs + iyms + iz] +
+                            rptr[ixs + iyps + iz]) + 
+                    c000 *  rptr[ixs + iys + iz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+}
+
+template <typename RmgType>
+void FD_app_cir_fourth_global (RmgType * rptr, RmgType * b)
+{
+
+    int ix, iy, iz;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    int incy, incx;
+    int incyr, incxr;
+    rmg_double_t rz, rzps, rzms, rzpps;
+    rmg_double_t c000, c100;
+
+    incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
+    incy = FIXED_ZDIM + 2;
+    incxr = FIXED_ZDIM * FIXED_YDIM;
+    incyr = FIXED_ZDIM;
+
+    c000 = 0.5;
+    c100 = 1.0 / 12.0;
+
+
+    for (ix = 1; ix < FIXED_XDIM + 1; ix++)
+    {
+        ixs = ix * incx;
+        ixms = (ix - 1) * incx;
+        ixps = (ix + 1) * incx;
+
+        for (iy = 1; iy < FIXED_YDIM + 1; iy++)
+        {
+            iys = iy * incy;
+            iyms = (iy - 1) * incy;
+            iyps = (iy + 1) * incy;
+
+            for (iz = 1; iz < FIXED_ZDIM + 1; iz++)
+            {
+
+                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                    c100 * (rptr[ixs + iys + (iz - 1)] +
+                            rptr[ixs + iys + (iz + 1)] +
+                            rptr[ixms + iys + iz] +
+                            rptr[ixps + iys + iz] +
+                            rptr[ixs + iyms + iz] +
+                            rptr[ixs + iyps + iz]) + 
+                    c000 * rptr[ixs + iys + iz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+}
+
 // Wrappers to call these from C
 extern "C" double FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
@@ -1448,5 +1558,29 @@ extern "C" double FD_app_cil_fourth_global_rmg_float(rmg_float_t *rptr, rmg_floa
 {
 
     return FD_app_cil_fourth_global<float> (rptr, b, gridhx, gridhy, gridhz);
+
+}
+extern "C" void FD_app_cir_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
+{
+
+    FD_app_cir_fourth_standard<double> (rptr, b, dimx, dimy, dimz);
+
+}
+extern "C" void FD_app_cir_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
+{
+
+    FD_app_cir_fourth_standard<float> (rptr, b, dimx, dimy, dimz);
+
+}
+extern "C" void FD_app_cir_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
+{
+
+    FD_app_cir_fourth_global<double> (rptr, b);
+
+}
+extern "C" void FD_app_cir_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
+{
+
+    FD_app_cir_fourth_global<float> (rptr, b);
 
 }
