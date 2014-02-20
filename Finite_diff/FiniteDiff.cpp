@@ -6,7 +6,6 @@
 #include <complex>
 
 using namespace std;
-//#include "common_prototypes.h"
 
 extern "C" {
   rmg_double_t get_xside(void);
@@ -22,7 +21,7 @@ template <typename RmgType>
 rmg_double_t FD_app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int iz, ix, iy, incx, incy, incxr, incyr, numgrid, tid;
+    int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
@@ -1128,6 +1127,236 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
 
 }                               /* end app_del2c */
 
+
+template <typename RmgType>
+rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    int ibrav;
+    int iz, ix, iy, incx, incy, incxr, incyr;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    rmg_double_t ihx, ihy, ihz;
+    BaseGrid G;
+
+    ibrav = G.get_ibrav_type();
+
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        rmg_error_handler("Grid symmetry not programmed yet in FD_app_cil_fourth_standard.\n");
+    }
+
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+
+
+    incx = (dimz + 2) * (dimy + 2);
+    incy = dimz + 2;
+    incxr = dimz * dimy;
+    incyr = dimz;
+
+
+    if (G.get_anisotropy() < 1.000001)
+    {
+
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
+        fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
+        ecxy = (1.0 / 12.0) * (ihx + ihx);
+        incy = dimz + 2;
+        incx = (dimz + 2) * (dimy + 2);
+        incyr = dimz;
+        incxr = dimz * dimy;
+
+        for (ix = 1; ix <= dimx; ix++)
+        {
+            ixs = ix * incx;
+            ixms = (ix - 1) * incx;
+            ixps = (ix + 1) * incx;
+            for (iy = 1; iy <= dimy; iy++)
+            {
+                iys = iy * incy;
+                iyms = (iy - 1) * incy;
+                iyps = (iy + 1) * incy;
+
+                for (iz = 1; iz <= dimz; iz++)
+                {
+
+                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                        cc * rptr[ixs + iys + iz] +
+                        fcx * (rptr[ixms + iys + iz] +
+                                rptr[ixps + iys + iz] +
+                                rptr[ixs + iyms + iz] +
+                                rptr[ixs + iyps + iz] +
+                                rptr[ixs + iys + (iz - 1)] + rptr[ixs + iys + (iz + 1)]);
+
+                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                        ecxy * (rptr[ixms + iys + iz - 1] +
+                                rptr[ixps + iys + iz - 1] +
+                                rptr[ixs + iyms + iz - 1] +
+                                rptr[ixs + iyps + iz - 1] +
+                                rptr[ixms + iyms + iz] +
+                                rptr[ixms + iyps + iz] +
+                                rptr[ixps + iyms + iz] +
+                                rptr[ixps + iyps + iz] +
+                                rptr[ixms + iys + iz + 1] +
+                                rptr[ixps + iys + iz + 1] +
+                                rptr[ixs + iyms + iz + 1] + rptr[ixs + iyps + iz + 1]);
+
+
+                }           /* end for */
+
+            }               /* end for */
+
+        }                   /* end for */
+    }
+    else
+    {
+
+        /* Compute coefficients for this grid spacing */
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+        ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+
+        cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
+
+        fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
+        fcy = (5.0 / 6.0) * ihy + (cc / 8.0);
+        fcz = (5.0 / 6.0) * ihz + (cc / 8.0);
+
+        ecxy = (1.0 / 12.0) * (ihx + ihy);
+        ecxz = (1.0 / 12.0) * (ihx + ihz);
+        ecyz = (1.0 / 12.0) * (ihy + ihz);
+
+
+        incy = dimz + 2;
+        incx = (dimz + 2) * (dimy + 2);
+        incyr = dimz;
+        incxr = dimz * dimy;
+
+
+
+        for (ix = 1; ix <= dimx; ix++)
+        {
+            ixs = ix * incx;
+            ixms = (ix - 1) * incx;
+            ixps = (ix + 1) * incx;
+            for (iy = 1; iy <= dimy; iy++)
+            {
+                iys = iy * incy;
+                iyms = (iy - 1) * incy;
+                iyps = (iy + 1) * incy;
+
+                for (iz = 1; iz <= dimz; iz++)
+                {
+
+                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                        cc * rptr[ixs + iys + iz] +
+                        fcx * rptr[ixms + iys + iz] +
+                        fcx * rptr[ixps + iys + iz] +
+                        fcy * rptr[ixs + iyms + iz] +
+                        fcy * rptr[ixs + iyps + iz] +
+                        fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
+
+                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                        ecxz * rptr[ixms + iys + iz - 1] +
+                        ecxz * rptr[ixps + iys + iz - 1] +
+                        ecyz * rptr[ixs + iyms + iz - 1] +
+                        ecyz * rptr[ixs + iyps + iz - 1] +
+                        ecxy * rptr[ixms + iyms + iz] +
+                        ecxy * rptr[ixms + iyps + iz] +
+                        ecxy * rptr[ixps + iyms + iz] +
+                        ecxy * rptr[ixps + iyps + iz] +
+                        ecxz * rptr[ixms + iys + iz + 1] +
+                        ecxz * rptr[ixps + iys + iz + 1] +
+                        ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
+
+
+                }           /* end for */
+
+            }               /* end for */
+
+        }                   /* end for */
+
+    }                       /* end if */
+
+
+
+    return cc;
+
+}                               /* end app_cil */
+
+
+
+template <typename RmgType>
+rmg_double_t FD_app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    int ix, iy, iz;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    int incy, incx;
+    int incyr, incxr;
+    rmg_double_t c000, c100, c110;
+    rmg_double_t ihx;
+
+    incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
+    incy = FIXED_ZDIM + 2;
+    incxr = FIXED_ZDIM * FIXED_YDIM;
+    incyr = FIXED_ZDIM;
+
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
+    c100 = (5.0 / 6.0) * ihx + (c000 / 8.0);
+    c110 = (1.0 / 12.0) * (ihx + ihx);
+
+
+    // Handle the general case first
+    for (ix = 1; ix < FIXED_XDIM + 1; ix++)
+    {
+        ixs = ix * incx;
+        ixms = (ix - 1) * incx;
+        ixps = (ix + 1) * incx;
+
+        for (iy = 1; iy < FIXED_YDIM + 1; iy++)
+        {
+            iys = iy * incy;
+            iyms = (iy - 1) * incy;
+            iyps = (iy + 1) * incy;
+
+            for (iz = 1; iz < FIXED_ZDIM + 1; iz++)
+            {
+
+                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                    c100 * (rptr[ixs + iys + (iz - 1)] +
+                            rptr[ixs + iys + (iz + 1)] +
+                            rptr[ixms + iys + iz] +
+                            rptr[ixps + iys + iz] +
+                            rptr[ixs + iyms + iz] +
+                            rptr[ixs + iyps + iz]) + c000 * rptr[ixs + iys + iz];
+
+                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                    c110 * (rptr[ixps + iyps + iz] +
+                            rptr[ixps + iyms + iz] +
+                            rptr[ixms + iyps + iz] +
+                            rptr[ixms + iyms + iz] +
+                            rptr[ixps + iys + (iz + 1)] +
+                            rptr[ixps + iys + (iz - 1)] +
+                            rptr[ixms + iys + (iz + 1)] +
+                            rptr[ixms + iys + (iz - 1)] +
+                            rptr[ixs + iyps + (iz + 1)] +
+                            rptr[ixs + iyps + (iz - 1)] +
+                            rptr[ixs + iyms + (iz + 1)] + rptr[ixs + iyms + (iz - 1)]);
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    return c000;
+
+}
 // Wrappers to call these from C
 extern "C" double FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
@@ -1195,5 +1424,29 @@ extern "C" double FD_app_del2c_rmg_complex(complex<double> *rptr, complex<double
 {
 
     return FD_app_del2c<complex <double> > (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_cil_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_fourth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_cil_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_fourth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_cil_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_fourth_global<double> (rptr, b, gridhx, gridhy, gridhz);
+
+}
+extern "C" double FD_app_cil_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    return FD_app_cil_fourth_global<float> (rptr, b, gridhx, gridhy, gridhz);
 
 }

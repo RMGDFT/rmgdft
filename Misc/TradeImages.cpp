@@ -652,7 +652,6 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
 }
 
 
-
 // C interfaces for transitional usage
 extern "C" void init_TradeImages(void)
 {
