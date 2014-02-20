@@ -16,8 +16,8 @@ project (RMG C CXX Fortran)
 
 
 # Executables defined by the file that contains main()
-add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/RMG/Headers/main.h)		# Base code
-add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/ON/Headers/main_on.h)		# Base code
+add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
+add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 
 
 # Require a 64 bit system

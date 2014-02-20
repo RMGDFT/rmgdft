@@ -23,5 +23,5 @@ app_cilr_fourth.c
 app_cil_sixth.c
 FiniteDiff.cpp
 )
-include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
+include_directories("${RMG_SOURCE_DIR}/Headers/")
 

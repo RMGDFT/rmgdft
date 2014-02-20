@@ -32,5 +32,5 @@ radint.c
 pack_gftoc.c
 find_phase.c
 )
-include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
+include_directories("${RMG_SOURCE_DIR}/Headers/")
 
