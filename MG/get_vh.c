@@ -52,7 +52,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
-#include "prototypes.h"
+#include "common_prototypes1.h"
 #include "macros.h"
 
 //#include "hybrid.h"

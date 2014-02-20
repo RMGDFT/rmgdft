@@ -43,12 +43,13 @@ void get_cholesky_real(double *matS)
     double rcond, anorm = 1.;
     double *work;
     int *iwork, liwork, locr;
-    int nb = NB, nproc, iproc;
+    int nb, nproc, iproc;
     int mxllda, mxllda2;
     _fcd char_fcd1;
 
     int ix, iy, idx;
 
+    nb = ct.scalapack_block_factor;
     maxst = ct.num_states;
     time3 = my_crtc();
 #if DEBUG

@@ -13,18 +13,10 @@
 void allocate_masks(STATE * states)
 {
 
-    int radius_order[MAX_STATES];
-    REAL radius[MAX_STATES];
-    int num_masks;
-    REAL mask_radius[MAX_STATES];
-    int mask_size[MAX_STATES];
     int state;
-    int temp_i;
-    REAL temp_r;
     char *mask_ptr;
-    int i, item;
+    int item;
     int idx, level, nx, ny, nz;
-    int order;
 
 
 

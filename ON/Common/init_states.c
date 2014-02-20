@@ -121,7 +121,7 @@ STATE *init_states ()
             for (is = ns; is < ns + occ[i].n; is++)
             {
                 for (ik = 0; ik < nk; ik++)
-                    states[ik * ct.num_states + is].occupation = occ[i].occ;
+                    states[ik * ct.num_states + is].occupation[0] = occ[i].occ;
 
             }
             ns += occ[i].n;
@@ -146,7 +146,7 @@ STATE *init_states ()
             ne -= oc;
 
             for (ik = 0; ik < nk; ik++)
-                states[ik * ct.num_states + is].occupation = oc;
+                states[ik * ct.num_states + is].occupation[0] = oc;
 
         }
     }

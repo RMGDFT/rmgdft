@@ -45,10 +45,10 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     int st1, itype = 1;
     char diag, side, uplo = 'l', jobz = 'v', transa, transb, char_tmp;
     double time1, time2, time3;
-    double val[NN];
+    double val[ct.num_states];
 
     /* for parallel libraries */
-    int nb = NB, npcol, nprow;
+    int nb, npcol, nprow;
     int mycol, myrow;
     int lwork;
     int rsrc = 0, csrc = 0;
@@ -61,8 +61,12 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
 
 
     int icrow, iccol, mpc0, nqc0, sizemqrleft, qrmem, i1, itwo = 2, izero = 0;
-    int npes = NPES, nn = NN, ldc, nrc;
+    int npes = NPES, nn, NN, ldc, nrc;
 
+    nn = ct.num_states;
+    NN = ct.num_states;
+    nb = ct.scalapack_block_factor;
+    int NB = ct.scalapack_block_factor;
     my_barrier();
     time3 = my_crtc();
 
@@ -146,7 +150,7 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
         /* generalize the gamma for charge density matrix X */
         for (st1 = 0; st1 < numst; st1++)
         {
-            work_matrix_row[st1] = states[st1].occupation;
+            work_matrix_row[st1] = states[st1].occupation[0];
         }
 
         diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);
@@ -210,7 +214,7 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     MPI_Bcast(&val[0], numst, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     for (st1 = 0; st1 < ct.num_states; st1++)
     {
-        states[st1].eig = val[st1];
+        states[st1].eig[0] = val[st1];
     }
 
     /* my_free(work); */

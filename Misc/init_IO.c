@@ -33,7 +33,6 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
-#include "prototypes.h"
 #include "macros.h"
 
 #include <stdio.h>

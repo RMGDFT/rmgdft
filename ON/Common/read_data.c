@@ -208,7 +208,7 @@ tem1 = my_crtc();
         if (nbytes != sizeof(double))
             error_handler("Unexpected end of file");
 
-        sp->occupation = temp_occ;
+        sp->occupation[0] = temp_occ;
 
         sp++;
 

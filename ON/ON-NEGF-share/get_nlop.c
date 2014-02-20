@@ -205,7 +205,7 @@ void get_nlop(void)
             /*Do the backwards transform */
             fftwnd_one (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
-            assign_weight (sp, beptr, &beta[prjcount]);
+            assign_weight_on (sp, beptr, &beta[prjcount]);
 
             /****************** beta_X *************/
             /*Apply the phase factor   */
@@ -223,7 +223,7 @@ void get_nlop(void)
             /*Do the backwards transform */
             fftwnd_one (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
-            assign_weight (sp, beptr, &beta_x[prjcount]);
+            assign_weight_on (sp, beptr, &beta_x[prjcount]);
 
 
             /****************** beta_Y *************/
@@ -242,7 +242,7 @@ void get_nlop(void)
             /*Do the backwards transform */
             fftwnd_one (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
-            assign_weight (sp, beptr, &beta_y[prjcount]);
+            assign_weight_on (sp, beptr, &beta_y[prjcount]);
 
 
 
@@ -262,7 +262,7 @@ void get_nlop(void)
             /*Do the backwards transform */
             fftwnd_one (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
-            assign_weight (sp, beptr, &beta_z[prjcount]);
+            assign_weight_on (sp, beptr, &beta_z[prjcount]);
 
 
 

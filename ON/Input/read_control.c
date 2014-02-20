@@ -43,7 +43,7 @@ static void read_orbitals ();
 static void read_kpoints ();
 
 
-void read_control (void)
+void read_control (char *file)
 {
     int tmp, mpi_nprocs;
     char *tbuf, *tptr;
@@ -53,8 +53,7 @@ void read_control (void)
 
     /* Open the input file for reading */
 
-    dprintf("\n %s file ", ct.cfile);
-    get_data (ct.cfile, NULL, INIT | TAGS, NULL);
+    get_data (file, NULL, INIT | TAGS, NULL);
 
     read_common();
     my_malloc (tptr, MAX_PATH, char);

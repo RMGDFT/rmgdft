@@ -5,7 +5,7 @@ app10_del2.c
 app6_del2.c
 app_grad6.c
 app_mask.c
-assign_weight.c
+assign_weight_on.c
 density_orbit_X_orbit.c
 distribute_to_global.c
 dot_product_orbit_nl.c
@@ -33,12 +33,11 @@ int_max_all.c
 is_state_overlap.c
 make_mask_grid_state.c
 minimage1.c
-nlforce_par_Q.c
 nlforce_par_rho.c
 open_wave_file.c
 partial_Mat_nm_R.c
 print_matrix.c
-pulay_rho.c
+pulay_rho_on.c
 rho_augmented.c
 rho_Qnm_mat.c
 state_corner_xyz.c

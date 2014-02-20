@@ -36,8 +36,9 @@ void init_dimension()
 {
 
     int NNBB, NNBBR, NNBBRB;
+    int NB;
 
-    NB = 8;
+    NB = ct.scalapack_block_factor;
     if (ct.num_states < NB)
         NB = ct.num_states;
     NNBB = (ct.num_states + NB - 1) / NB;

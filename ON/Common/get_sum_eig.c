@@ -80,8 +80,8 @@ double get_sum_eig(STATE * states)
         for (state = 0; state < ct.num_states; state++)
         {
 
-            t1 += states[state + kpt * ct.num_states].occupation *
-                states[state + kpt * ct.num_states].eig;
+            t1 += states[state + kpt * ct.num_states].occupation[0] *
+                states[state + kpt * ct.num_states].eig[0];
 
         }                       /* end for */
         eigsum += t1 * ct.kp[kpt].kweight;

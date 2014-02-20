@@ -32,8 +32,8 @@ void write_eigs(STATE * states)
     printf("\n  KOHN-SHAM EIGENVALUES: [eV]\n");
 
     for (i = 0; i < ct.num_states; i++)
-        printf("  %8.3f [%4.2f]%s", states[i].eig * Ha_eV,
-               states[i].occupation, ((i % 5 == 4) ? "\n" : ""));
+        printf("  %8.3f [%4.2f]%s", states[i].eig[0] * Ha_eV,
+               states[i].occupation[0], ((i % 5 == 4) ? "\n" : ""));
 
     printf("\n\n");
 

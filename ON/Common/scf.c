@@ -18,7 +18,7 @@
 
 void update_pot(double *, double *, double *, double *, double *, double *,
                 double *, double *, int *, STATE * states);
-void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
+void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning);
 static double t[2];
 extern int it_scf;
@@ -104,7 +104,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) FP0_BASIS;
-    pulay_rho (steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+    pulay_rho_on (steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 
     /* Update potential */

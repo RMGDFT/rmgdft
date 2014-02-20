@@ -65,7 +65,7 @@ Documentation:
 *  ============================================================
 *  =====================================================================
 */
-void sl_init(int *ictxt, int nprow, int npcol)
+void sl_init_on(int *ictxt, int nprow, int npcol)
 {
     int i, j;
     /*char    order='R'; */

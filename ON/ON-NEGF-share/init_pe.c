@@ -130,7 +130,7 @@ void init_pe ( int image )
     //printf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
     /* Read in our control information, depends on pct.img_comm for dissemination */
-    read_control ();
+    read_control (ct.cfile);
 
 
 

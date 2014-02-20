@@ -14,7 +14,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
-#include "prototypes.h"
+#include "common_prototypes1.h"
 
 void init_derweight_p (SPECIES * sp,
                        fftw_complex * rtptr_x,

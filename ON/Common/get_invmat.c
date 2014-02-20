@@ -24,7 +24,7 @@ void get_invmat(double *matB)
 
     int idx;
     int ione = 1;
-    int nb = NB, npcol, nprow;
+    int  npcol, nprow;
     int mycol, myrow;
     int rsrc = 0, csrc = 0, l, mxllda;
     _fcd char_fcd1;

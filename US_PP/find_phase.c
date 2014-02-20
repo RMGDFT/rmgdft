@@ -14,7 +14,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
-#include "prototypes.h"
+#include "common_prototypes1.h"
 
 
 /*This calculates phase factor that will be used when calculating backwards fourier transform*/

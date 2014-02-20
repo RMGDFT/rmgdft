@@ -63,10 +63,6 @@ int PE_X, PE_Y, PE_Z;
 
 #define         MAX_OPTS  16
 
-/* Maximum number of states -- just an upper limit on 
- * dynamically allocated data structures. */
-#define         MAX_STATES  30000
-
 
 /* Maximum number of species -- just an upper limit on
  * dynamically allocated data structures. */

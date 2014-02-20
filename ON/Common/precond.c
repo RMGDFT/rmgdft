@@ -19,7 +19,7 @@ void precond(double *x)
     my_malloc_init( work1, 4 * ct.max_orbit_size, REAL );
     my_malloc_init( work2, 4 * ct.max_orbit_size, REAL );
 
-    gamma = get_gamma(vtot_c, states[0].eig);
+    gamma = get_gamma_precond(vtot_c, states[0].eig[0]);
 
     size = 0;
     for (istate = ct.state_begin; istate < ct.state_end; istate++)

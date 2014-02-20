@@ -96,10 +96,7 @@ void get_weight (void);
 void get_phase (ION *iptr, rmg_double_t *rtptr, int ip, int icount, int *dvec);
 void get_nlop_smp (int tid);
 char *get_num (char *str);
-void get_te (rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc, rmg_double_t *vh, rmg_double_t *vxc,
-             STATE *states, int ii_flag);
 
-void get_vxc (rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *vxc);
 
 void get_xc (rmg_double_t * nrho, rmg_double_t * nrho_oppo,  rmg_double_t * vxc, rmg_double_t * exc, int xctype);
 
@@ -191,8 +188,6 @@ rmg_double_t get_ke (STATE *sp, int tid);
 void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target);
 char *get_symbol (int atomic_number);
 void global_sums (rmg_double_t *vect, int *length, MPI_Comm comm);
-void init (rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc, STATE *states,
-           rmg_double_t *vnuc, rmg_double_t *vxc);
 void init_derweight (void);
 void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
@@ -253,8 +248,6 @@ void read_control (char *file);
 void write_pdb (void);
 int read_atom_line(char *species, rmg_double_t *crds, int *movable, FILE *fhand, char *tbuf, int index);
 int assign_species (CONTROL * c, char *buf);
-void read_data (char *name, rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *vxc,
-                STATE *states);
 
 void read_pseudo (void);
 rmg_double_t real_sum_all (rmg_double_t x, MPI_Comm comm);
@@ -284,8 +277,6 @@ void vol_wf (STATE *states, int state, int step);
 void write_avgd (rmg_double_t *rho);
 void write_avgv (rmg_double_t *vh, rmg_double_t *vnuc);
 void write_zstates (STATE *states);
-void write_data (int fhand, rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *vxc,
-                 STATE *states);
 
 void write_header (void);
 void write_occ (STATE *states);
@@ -328,8 +319,6 @@ void to_crystal (rmg_double_t crystal[], rmg_double_t cartesian[]);
 rmg_double_t metric (rmg_double_t *crystal);
 
 /* Md run types */
-bool quench (STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc, rmg_double_t *rho,
-             rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc);
 void relax (int steps, STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
               rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc);
 void neb_relax (STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
@@ -373,28 +362,21 @@ void init_psp (void);
 void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, rmg_double_t *vtot_psi);
 void mg_eig_state_f (STATE *sp, int tid, rmg_double_t *vtot_psi);
-void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision);
 void ortho (STATE *states, int kpt);
 rmg_double_t qval (int ih, int jh, rmg_double_t r, rmg_double_t invdr, rmg_double_t *ptpr, int *nhtol,
            int *nhtom, int *indv, rmg_double_t *ylm, rmg_double_t ap[][9][9], int lpx[][9],
            int lpl[][9][9], SPECIES *sp);
-bool scf (STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
-          rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc);
 void reinit_ionic_pp (STATE * states, rmg_double_t * vnuc, rmg_double_t * rhocore, rmg_double_t * rhoc);
 
 #if GAMMA_PT
 void subdiag_gamma (STATE *states, rmg_double_t *vh, rmg_double_t *vnuc, rmg_double_t *vxc);
 void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig);
 void subdiag_app_B (STATE * states, rmg_double_t * b_psi);
-void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi);
-void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig);
-void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig_s);
 #else
 void subdiag_nongamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc);
 void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI, rmg_double_t * s_psiR, rmg_double_t * s_psiI, rmg_double_t * vtot_eig);
 void subdiag_app_B (STATE * states, rmg_double_t * b_psiR, rmg_double_t * b_psiI);
 #endif
-void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, rmg_double_t *sintI, int kpt, rmg_double_t *weiptr_base);
 void init_subdiag(void);
 
 
@@ -426,10 +408,6 @@ void partial_betaxpsi (int ion, fftwnd_plan p2, rmg_double_t *newsintR_x,
                        rmg_double_t *newsintR_y, rmg_double_t *newsintR_z,
                        rmg_double_t *newsintI_x, rmg_double_t *newsintI_y,
                        rmg_double_t *newsintI_z, ION *iptr);
-void nlforce_par_Q (rmg_double_t *veff, rmg_double_t *gamma, int ion, ION *iptr, int nh,
-                     rmg_double_t *forces);
-void nlforce_par_gamma (rmg_double_t * par_gamma, int ion, int nh, rmg_double_t *force);
-void nlforce_par_omega (rmg_double_t * par_omega, int ion, int nh, rmg_double_t *force);
 void partial_QI (int ion, rmg_double_t *QI_R, ION *iptr);
 void qval_R (int ih, int jh, rmg_double_t r, rmg_double_t *x, rmg_double_t *qlig, rmg_double_t *drqlig,
              rmg_double_t invdr, int *nhtol, int *nhtom, int *indv, rmg_double_t *ylm,

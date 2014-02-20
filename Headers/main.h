@@ -42,14 +42,54 @@
 
 
 /* Typedefs */
-#include    "main_share.h"
+
+#define REAL_SPACE 1
+
+
+/* stdio for file handle argument type */
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Use predefined booleans */
+#include <stdbool.h>
+
+/* Typedefs */
+#include    "rmgtypedefs.h"
+
+/* Compile time parameters */
+#include    "params.h"
+
+/* include the mpi wrapper */
+#include    "my_mpi.h"
+
+/* include scalapack wrapper */
+#include "my_scalapack.h"
+
+/* Header file for blas routines */
+#include "blas.h"
+
+
+/* this declares macros and external functions for memory allocation */
+#include "rmg_alloc.h"
+
+
+/* other general macros */
+#include "macros.h"
+
+/* routines for input parsing */
+#include "input.h"
+
+
+/* Custom types used in the code*/
+#include "typedefs.h"
 
 
 #include "lbfgs.h"
 
 
 /* Prototypes for function calls*/
-#include "prototypes.h" 
+#include "common_prototypes.h" 
+#include "common_prototypes1.h" 
 //#include "common_prototypes.h" 
 
 /* Some definitions needed for using compile time values for global grid sizes */

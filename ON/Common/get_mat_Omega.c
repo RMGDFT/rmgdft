@@ -27,7 +27,7 @@ void get_mat_Omega(STATE * states, double Omega[])
     char side, uplo = 'l', jobz = 'v', transa, transb;
 
     /* for parallel libraries */
-    int nb = NB, npcol, nprow;
+    int  npcol, nprow;
     int mycol, myrow;
     int rsrc = 0, csrc = 0;
     int mxllda, mxllda2;
@@ -55,7 +55,7 @@ void get_mat_Omega(STATE * states, double Omega[])
         /* generilize the omega for mat_omega */
         for (st1 = 0; st1 < numst; st1++)
         {
-            work_matrix_row[st1] = states[st1].occupation * states[st1].eig;
+            work_matrix_row[st1] = states[st1].occupation[0] * states[st1].eig[0];
         }
 
         diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);

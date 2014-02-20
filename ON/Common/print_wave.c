@@ -35,7 +35,7 @@ void print_wave(int wave_plot, STATE * states, int coarse_level)
         file = fopen (filename, "w"); //create gaussian file to plot state_plot stored in eig_rho_global 
 
         fprintf (file, "Cubfile created from PWScf calculation\n" );
-        fprintf (file, "Plotted wave with eigenvalue = %f \n", states[wave_plot].eig * Ha_eV);
+        fprintf (file, "Plotted wave with eigenvalue = %f \n", states[wave_plot].eig[0] * Ha_eV);
         fprintf (file, "1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
         fprintf (file, "%d    %12.9f      0.000000    0.000000 \n", NX_GRID/coarse_level, dx*coarse_level);//dx is the grid spacing in x in bohr
         fprintf (file, "%d    0.000000    %12.9f      0.000000 \n", NY_GRID/coarse_level, dy*coarse_level);
@@ -65,7 +65,7 @@ void print_wave(int wave_plot, STATE * states, int coarse_level)
         file1 = fopen (filename1, "w"); //create gaussian file to plot state_plot stored in eig_rho_global 
 
         fprintf (file1, "Cubfile created from PWScf calculation\n" );
-        fprintf (file1, "Plotted rho with eigenvalue = %f \n", states[wave_plot].eig * Ha_eV);
+        fprintf (file1, "Plotted rho with eigenvalue = %f \n", states[wave_plot].eig[0] * Ha_eV);
         fprintf (file1, "1     0.000000    0.000000    0.000000 \n" );
         fprintf (file1, "%d    %12.9f      0.000000    0.000000 \n", NX_GRID/coarse_level, dx*coarse_level );
         fprintf (file1, "%d    0.000000    %12.9f      0.000000 \n", NY_GRID/coarse_level, dy*coarse_level );

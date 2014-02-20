@@ -10,7 +10,7 @@
 #include "main_on.h"
 
 
-double get_gamma(double *vtot, double small_eig)
+double get_gamma_precond(double *vtot, double small_eig)
 {
     int idx, nits;
     double vmax, diag = -1. / ct.Ac, gamma;

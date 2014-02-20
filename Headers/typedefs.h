@@ -135,6 +135,48 @@ typedef struct
     int kidx;
 
 
+
+
+    /* The ion on which this state is localized */
+    int inum;
+
+    /* index for functions with same localization */
+    int loc_index;
+
+    /* Actual Physical coordinates at current time step */
+    int pe;
+    rmg_double_t crds[3];
+    rmg_double_t radius;
+    int movable;
+    int frozen;
+    int index;
+
+    int ixmin;
+    int ixmax;
+    int iymin;
+    int iymax;
+    int izmin;
+    int izmax;
+    int xfold;
+    int yfold;
+    int zfold;
+    int ixstart;
+    int iystart;
+    int izstart;
+    int ixend;
+    int iyend;
+    int izend;
+    int orbit_nx, orbit_ny, orbit_nz;
+    int size;
+    /* Localization mask */
+    char *lmask[4];
+
+    int atomic_orbital_index;
+
+
+    int n_orbital_same_center;
+    int gaussian_orbital_index;
+
 } STATE;
 
 

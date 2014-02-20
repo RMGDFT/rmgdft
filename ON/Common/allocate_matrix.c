@@ -36,10 +36,16 @@ void allocate_matrix()
 {
     int ispin, sizeofmatrix, item, item1, item2, lwork;
     int ictxt, nproc, iproc, myrow, mycol, icrow, iccol;
-    int izero = 0, ione = 1, itwo = 2, nb = NB, nn = NN;
+    int izero = 0, ione = 1, itwo = 2, nb, nn, NN;
     int nprow = pct.nprow, npcol = pct.npcol, npes = NPES;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
+    int NB;
 
+    nb = ct.scalapack_block_factor;
+    NB = ct.scalapack_block_factor;
+    nn = ct.num_states;
+    NN = ct.num_states;
+    
     ispin = ct.spin + 1;
 
 

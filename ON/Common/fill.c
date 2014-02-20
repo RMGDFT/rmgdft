@@ -64,12 +64,12 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
     if(nel == 1 && ct.num_kpts == 1)
     {
         sp = &ct.kp[0].kstate[0];
-        sp->occupation = 1.0;
-        mu = sp->eig;
+        sp->occupation[0] = 1.0;
+        mu = sp->eig[0];
         for (st1 = 1; st1 < ct.num_states; st1++)
         {
             sp = &ct.kp[0].kstate[st1];
-            sp->occupation = 0.0;
+            sp->occupation[0] = 0.0;
         }
 
         return(mu);
@@ -121,8 +121,8 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
         {
             sp = &ct.kp[kpt].kstate[st];
 
-            mu1 = (sp->eig < mu1) ? sp->eig : mu1;
-            mu2 = (sp->eig > mu2) ? sp->eig : mu2;
+            mu1 = (sp->eig[0] < mu1) ? sp->eig[0] : mu1;
+            mu2 = (sp->eig[0] > mu2) ? sp->eig[0] : mu2;
         }
     }
 
@@ -186,8 +186,8 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
             st += 1;
             sp = &ct.kp[kpt].kstate[st1];
 
-            sp->occupation = mix * occ[st] + (1.0 - mix) * sp->occupation;
-            fmid += sp->occupation * ct.kp[kpt].kweight;
+            sp->occupation[0] = mix * occ[st] + (1.0 - mix) * sp->occupation[0];
+            fmid += sp->occupation[0] * ct.kp[kpt].kweight;
         }
     }
     fmid -= nel;
@@ -228,7 +228,7 @@ static REAL fd(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int nu
             st += 1;
             sp = &ct.kp[kpt].kstate[st1];
 
-            t1 = (sp->eig - mu) / width;
+            t1 = (sp->eig[0] - mu) / width;
 
             if (t1 > 0.0)
             {
@@ -273,7 +273,7 @@ static REAL gs(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int nu
             st += 1;
             sp = &ct.kp[kpt].kstate[st1];
 
-            t1 = (sp->eig - mu) / (2.0 * width);
+            t1 = (sp->eig[0] - mu) / (2.0 * width);
             if (t1 > 0.0)
             {
                 occ[st] = exp(-t1 * (1.0 + 0.5 * t1));
@@ -317,7 +317,7 @@ static REAL ef(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int nu
             st += 1;
             sp = &ct.kp[kpt].kstate[st1];
 
-            t1 = (sp->eig - mu) / (t2 * width);
+            t1 = (sp->eig[0] - mu) / (t2 * width);
 
             /* debug: this conditional mayn't be necessary */
 

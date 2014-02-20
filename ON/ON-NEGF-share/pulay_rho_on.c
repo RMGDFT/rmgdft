@@ -29,7 +29,7 @@
 #define     MAX_STEPS   300
 
 
-void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
+void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning)
 {
     static double *x;

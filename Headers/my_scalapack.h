@@ -19,8 +19,10 @@
 #define 	PSPOTRF		pdpotrf
 #define 	PSPOTRI		pdpotri
 #define 	PSSYGST		pdsygst
+#define 	PSSYEV		pdsyev
 #define 	PSTRTRS		pdtrtrs
 #define 	PDGEMM 		pdgemm
+#define 	PSGEMM 		pdgemm
 #define 	PZGEMM 		pzgemm
 #define 	PSSYMM 		pdsymm
 #define 	PDGESV 		pdgesv
@@ -31,6 +33,7 @@
 #define         PDPOTRF         pdpotrf
 #define         PDSYNGST        pdsyngst
 #define         PDTRSM          pdtrsm
+#define 	PDTRAN  	pdtran
 
 
 
@@ -50,8 +53,10 @@
 #define 	PSSYGST		pdsygst_
 #define 	PSTRTRS		pdtrtrs_
 #define 	PDGEMM 		pdgemm_
+#define 	PSGEMM 		pdgemm_
 #define 	PZGEMM 		pzgemm_
 #define 	PSSYMM 		pdsymm_
+#define 	PSSYEV		pdsyev_
 #define 	PDGESV 		pdgesv_
 #define 	PZGESV 		pzgesv_
 #define 	PSUBDIAG 	psubdiag_
@@ -60,6 +65,8 @@
 #define 	PDPOTRF 	pdpotrf_
 #define 	PDSYNGST 	pdsyngst_
 #define 	PDTRSM  	pdtrsm_
+#define 	PDTRAN  	pdtran_
+
 #endif
 #endif
 

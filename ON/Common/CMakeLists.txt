@@ -3,7 +3,6 @@ add_library (ON_Common
  allocate_matrix.c
  app_cil_orbital6.c
  app_cil_orbital.c
- app_grad.c
  change_states_crds.c
  CMakeLists.txt
  diag_eig_matrix.c
@@ -14,7 +13,7 @@ add_library (ON_Common
  get_cholesky_real.c
  get_dm_diag_p.c
  get_dnmpsi.c
- get_gamma.c
+ get_gamma_precond.c
  get_HS.c
  get_Hvnlij.c
  get_invmat.c

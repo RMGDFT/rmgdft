@@ -68,14 +68,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     rmg_timings(POTFC_TIME, time2 - time1);
 
 
-    gamma = get_gamma(vtot_c, states[0].eig);
-
-    if (pct.gridpe == 0)
-    {
-        printf("\n time step for low frequencies corrections = %e\n", gamma);
-        printf(" levels= %d\n", ct.eig_parm.levels);
-    }
-
     get_invmat(matB);
 
     /* Compute matrix theta = matB * Hij  */
