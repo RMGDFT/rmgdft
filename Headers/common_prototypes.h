@@ -274,9 +274,6 @@ double app_cil_fourth_f_gpu(const float *psi,
                        const double zside,
                        cudaStream_t cstream);
 
-#if __cplusplus
-}
-#endif
 
 #define my_fopen(_fhandle_, _filename_, _mode_) do {\
     _fhandle_ = fopen(_filename_, _mode_);\
@@ -299,3 +296,6 @@ double app_cil_fourth_f_gpu(const float *psi,
 #endif
 
 
+#if __cplusplus
+}
+#endif

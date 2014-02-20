@@ -24,7 +24,6 @@ trade_images.c
 latgen.c
 pack_vhdtos.c
 mg_restrict_6.c
-trade_imagesx.c
 ATL_assert.c
 mg_prolong_MAX10.c
 init_pos.c
