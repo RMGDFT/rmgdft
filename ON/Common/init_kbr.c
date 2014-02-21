@@ -79,7 +79,7 @@ void init_kbr(void)
             psp = fopen(newname, "w+");
         sp = &ct.sp[isp];
 
-        t1 = 2.0 * scale * (REAL) FG_NX *sp->lradius / ct.hmingrid;
+        t1 = 2.0 * scale * (REAL) get_FG_NX() *sp->lradius / ct.hmingrid;
         t1 = modf(t1, &t2);
         it1 = (int) t2;
         if (t1 > 0.5)
@@ -136,8 +136,8 @@ void init_kbr(void)
 
 
 
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)FG_NX; */
-        t1 = sp->ldim / FG_NX + 1;
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)get_FG_NX(); */
+        t1 = sp->ldim / get_FG_NX() + 1;
         sp->drlig = sqrt(3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
         if (ct.ibrav == HEXAGONAL)
             sp->drlig *= 2.0;

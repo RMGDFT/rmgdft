@@ -17,7 +17,7 @@ double get_gamma_precond(double *vtot, double small_eig)
 
     /* Definition of parameter gamma */
     vmax = -100000.0;
-    for (idx = 0; idx < P0_BASIS; idx++)
+    for (idx = 0; idx < get_P0_BASIS(); idx++)
         if (vmax < vtot[idx])
             vmax = vtot[idx];
     vmax = real_max_all(vmax);

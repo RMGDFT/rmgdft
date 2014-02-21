@@ -118,9 +118,9 @@ void write_header(void)
     printf("\n        NX  = %d", ct.psi_nxgrid);
     printf("\n        NY  = %d", ct.psi_nygrid);
     printf("\n        NZ  = %d\n", ct.psi_nzgrid);
-    printf("\n        FG_NX  = %d", FG_NX);
-    printf("\n        FG_NY  = %d", FG_NY);
-    printf("\n        FG_NZ  = %d\n", FG_NZ);
+    printf("\n        get_FG_NX()  = %d", get_FG_NX());
+    printf("\n        get_FG_NY()  = %d", get_FG_NY());
+    printf("\n        get_FG_NZ()  = %d\n", get_FG_NZ());
 
     printf("\n    BRAVAIS LATTICE TYPE IS %s", lattice_type[ct.ibrav]);
     printf("\n    Cell volume      = %16.8f", ct.vel * ct.psi_nbasis);

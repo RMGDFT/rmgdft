@@ -60,15 +60,15 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     /* initialize the lattice basis vectors */
     flag = 0;
 
-    ct.psi_nbasis = NX_GRID * NY_GRID * NZ_GRID;
-    ct.psi_nxgrid = NX_GRID;
-    ct.psi_nygrid = NY_GRID;
-    ct.psi_nzgrid = NZ_GRID;
+    ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    ct.psi_nxgrid = get_NX_GRID();
+    ct.psi_nygrid = get_NY_GRID();
+    ct.psi_nzgrid = get_NZ_GRID();
 
-    ct.psi_fnbasis = FNX_GRID * FNY_GRID * FNZ_GRID;
-    ct.psi_fnxgrid = FNX_GRID;
-    ct.psi_fnygrid = FNY_GRID;
-    ct.psi_fnzgrid = FNZ_GRID;
+    ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
+    ct.psi_fnxgrid = get_FNX_GRID();
+    ct.psi_fnygrid = get_FNY_GRID();
+    ct.psi_fnzgrid = get_FNZ_GRID();
 
 
 
@@ -155,7 +155,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     {
         read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
     if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
     }
     if (ct.runflag == 0)
     {
@@ -204,9 +204,9 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if (ct.runflag == INIT_FIREBALL)
     {
         init_wf_atom(states);
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vh[idx] = ZERO;
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vxc[idx] = ZERO;
 
         init_rho_atom(rho);
@@ -216,7 +216,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
         tem = 0.0;
         tem1 = 0.0;
 
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
 
         {
             tem += rho[idx];
@@ -231,11 +231,11 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 #endif
 
         get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
         get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vh_old[idx] = vh[idx];
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vxc_old[idx] = vxc[idx];
     if(gridpe == 0) printf("\n init_vpot done %f sec",my_crtc()-time1 );
 
@@ -244,27 +244,27 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if (ct.runflag == 0 | ct.runflag == INIT_GAUSSIAN)
     {
         /* Set the initial hartree potential to a constant */
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vh[idx] = ZERO;
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vxc[idx] = ZERO;
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             rho[idx] = rhoc[idx];
 
         get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
         get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vh_old[idx] = vh[idx];
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vxc_old[idx] = vxc[idx];
     if(gridpe == 0) printf("\n init_vpot_0 done %f sec",my_crtc()-time1 );
 
         if (ct.spin == 1)
         {
-            for (idx = 0; idx < FP0_BASIS; idx++)
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
             {
-                rho[idx + FP0_BASIS] = 0.4 * rho[idx];
+                rho[idx + get_FP0_BASIS()] = 0.4 * rho[idx];
                 rho[idx] = 0.6 * rho[idx];
             }
         }
@@ -310,10 +310,10 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
         for (kpt = pct.kstart; kpt < pct.kend; kpt++)
         {
             kpt1 = kpt + ispin * ct.num_kpts;
-            for (idx = 0; idx < FP0_BASIS; idx++)
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 vtot[idx] = vh_old[idx] + vxc_old[idx] + vnuc[idx];
 
-            get_vtot_psi(vtot_c, vtot, FG_NX);
+            get_vtot_psi(vtot_c, vtot, get_FG_NX());
             get_ddd(vtot);
 
             flag = 0;

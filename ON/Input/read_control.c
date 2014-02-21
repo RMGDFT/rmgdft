@@ -168,29 +168,29 @@ void read_control (char *file)
 
 
 
-    PX0_GRID = NX_GRID/pct.pe_x;
-    PY0_GRID = NY_GRID/pct.pe_y;
-    PZ0_GRID = NZ_GRID/pct.pe_z;
-    P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+//    get_PX0_GRID() = get_NX_GRID()/pct.pe_x;
+//    get_PY0_GRID() = get_NY_GRID()/pct.pe_y;
+//    get_PZ0_GRID() = get_NZ_GRID()/pct.pe_z;
+//    get_P0_BASIS() = get_PX0_GRID() * get_PY0_GRID() * get_PZ0_GRID();
 
-    pct.PX0_GRID = PX0_GRID;
-    pct.PY0_GRID = PY0_GRID;
-    pct.PZ0_GRID = PZ0_GRID;
-    pct.P0_BASIS = P0_BASIS;
-
-
-    S0_BASIS = (PX0_GRID+2) * (PY0_GRID+2) * (PZ0_GRID+2);
+    pct.PX0_GRID = get_PX0_GRID();
+    pct.PY0_GRID = get_PY0_GRID();
+    pct.PZ0_GRID = get_PZ0_GRID();
+    pct.P0_BASIS = get_P0_BASIS();
 
 
-    FPX0_GRID = PX0_GRID * FG_NX;
-    FPY0_GRID = PY0_GRID * FG_NY;
-    FPZ0_GRID = PZ0_GRID * FG_NZ;
-    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
+    S0_BASIS = (get_PX0_GRID()+2) * (get_PY0_GRID()+2) * (get_PZ0_GRID()+2);
 
-    pct.FPX0_GRID = FPX0_GRID;
-    pct.FPY0_GRID = FPY0_GRID;
-    pct.FPZ0_GRID = FPZ0_GRID;
-    pct.FP0_BASIS = FP0_BASIS;
+
+//    get_FPX0_GRID() = get_PX0_GRID() * get_FG_NX();
+//    get_FPY0_GRID() = get_PY0_GRID() * get_FG_NY();
+//    get_FPZ0_GRID() = get_PZ0_GRID() * get_FG_NZ();
+//    get_FP0_BASIS() = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
+
+    pct.FPX0_GRID = get_FPX0_GRID();
+    pct.FPY0_GRID = get_FPY0_GRID();
+    pct.FPZ0_GRID = get_FPZ0_GRID();
+    pct.FP0_BASIS = get_FP0_BASIS();
 
 
     /* Output some information for GW calculation. */

@@ -43,12 +43,12 @@ void init_rho_atom(double *rho)
 
     pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
-    ix0 = pex * FPX0_GRID;
-    iy0 = pey * FPY0_GRID;
-    iz0 = pez * FPZ0_GRID;
-    ix1 = ix0 + FPX0_GRID;
-    iy1 = iy0 + FPY0_GRID;
-    iz1 = iz0 + FPZ0_GRID;
+    ix0 = pex * get_FPX0_GRID();
+    iy0 = pey * get_FPY0_GRID();
+    iz0 = pez * get_FPZ0_GRID();
+    ix1 = ix0 + get_FPX0_GRID();
+    iy1 = iy0 + get_FPY0_GRID();
+    iz1 = iz0 + get_FPZ0_GRID();
 
 
 
@@ -60,7 +60,7 @@ void init_rho_atom(double *rho)
     iydim = 0;
     izdim = 0;
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         rho[idx] = 0.0;
     }
@@ -115,17 +115,17 @@ void init_rho_atom(double *rho)
                     iyy = iy;
                     izz = iz;
                     if (ixx < 0)
-                        ixx += FNX_GRID;
+                        ixx += get_FNX_GRID();
                     if (iyy < 0)
-                        iyy += FNY_GRID;
+                        iyy += get_FNY_GRID();
                     if (izz < 0)
-                        izz += FNZ_GRID;
-                    if (ixx >= FNX_GRID)
-                        ixx -= FNX_GRID;
-                    if (iyy >= FNY_GRID)
-                        iyy -= FNY_GRID;
-                    if (izz >= FNZ_GRID)
-                        izz -= FNZ_GRID;
+                        izz += get_FNZ_GRID();
+                    if (ixx >= get_FNX_GRID())
+                        ixx -= get_FNX_GRID();
+                    if (iyy >= get_FNY_GRID())
+                        iyy -= get_FNY_GRID();
+                    if (izz >= get_FNZ_GRID())
+                        izz -= get_FNZ_GRID();
 
                     if (ixx >= ix0 && ixx < ix1
                         && iyy >= iy0 && iyy < iy1 && izz >= iz0 && izz < iz1)
@@ -203,17 +203,17 @@ void init_rho_atom(double *rho)
                         iyy = iy;
                         izz = iz;
                         if (ixx < 0)
-                            ixx += FNX_GRID;
+                            ixx += get_FNX_GRID();
                         if (iyy < 0)
-                            iyy += FNY_GRID;
+                            iyy += get_FNY_GRID();
                         if (izz < 0)
-                            izz += FNZ_GRID;
-                        if (ixx >= FNX_GRID)
-                            ixx -= FNX_GRID;
-                        if (iyy >= FNY_GRID)
-                            iyy -= FNY_GRID;
-                        if (izz >= FNZ_GRID)
-                            izz -= FNZ_GRID;
+                            izz += get_FNZ_GRID();
+                        if (ixx >= get_FNX_GRID())
+                            ixx -= get_FNX_GRID();
+                        if (iyy >= get_FNY_GRID())
+                            iyy -= get_FNY_GRID();
+                        if (izz >= get_FNZ_GRID())
+                            izz -= get_FNZ_GRID();
 
                         if (ixx >= ix0 && ixx < ix1
                             && iyy >= iy0 && iyy < iy1 && izz >= iz0 && izz < iz1)
@@ -221,8 +221,8 @@ void init_rho_atom(double *rho)
                         {
                             idx = (ix - ixmin) * iydim * izdim + (iy - iymin) * izdim + iz - izmin;
                             idx1 =
-                                (ixx - ix0) * FPY0_GRID * FPZ0_GRID + (iyy -
-                                                                       iy0) * FPZ0_GRID + izz - iz0;
+                                (ixx - ix0) * get_FPY0_GRID() * get_FPZ0_GRID() + (iyy -
+                                                                       iy0) * get_FPZ0_GRID() + izz - iz0;
 
                             rho[idx1] += rho_out[idx];
 

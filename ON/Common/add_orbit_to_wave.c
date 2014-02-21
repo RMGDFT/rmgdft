@@ -37,17 +37,17 @@ void add_orbit_to_wave(int st1, REAL scale, REAL * psi1, REAL * wave_global, STA
     for (ix = states[st1].ixmin; ix <= states[st1].ixmax; ix++)
     {
         ix1 = (ix - states[st1].ixmin) * incx;//ix1 traverse the relative grids within orbital st1
-        ix3 = fold_to_unitcell(ix, NX_GRID) * NY_GRID * NZ_GRID;//ix3 traverse the corresponding global coarse grids
+        ix3 = fold_to_unitcell(ix, get_NX_GRID()) * get_NY_GRID() * get_NZ_GRID();//ix3 traverse the corresponding global coarse grids
 
         for (iy = states[st1].iymin; iy <= states[st1].iymax; iy++)
         {
             iy1 = (iy - states[st1].iymin) * incy;
-            iy3 = fold_to_unitcell(iy, NY_GRID) * NZ_GRID;
+            iy3 = fold_to_unitcell(iy, get_NY_GRID()) * get_NZ_GRID();
 
             for (iz = states[st1].izmin; iz <= states[st1].izmax; iz++)
             {
                 iz1 = iz - states[st1].izmin;
-                iz3 = fold_to_unitcell(iz, NZ_GRID);
+                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
 
                 idx1 = ix1 + iy1 + iz1;
                 idx3 = ix3 + iy3 + iz3;

@@ -162,29 +162,19 @@ dprintf("\n b11111 %d %d %d\n", PE_X, PE_Y, PE_Z);
     // Compute grid sizes for each node.
 
 dprintf("\n c11111\n");
-    find_node_sizes(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID, &pct.PX0_GRID, &pct.PY0_GRID, &pct.PZ0_GRID);
-    find_node_sizes(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID, &pct.FPX0_GRID, &pct.FPY0_GRID, &pct.FPZ0_GRID);
+//    find_node_sizes(pct.gridpe, get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(), &pct.get_PX0_GRID(), &pct.get_PY0_GRID(), &pct.get_PZ0_GRID());
+ //   find_node_sizes(pct.gridpe, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(), &pct.get_FPX0_GRID(), &pct.get_FPY0_GRID(), &pct.get_FPZ0_GRID());
 
-    pct.P0_BASIS = pct.PX0_GRID * pct.PY0_GRID * pct.PZ0_GRID;
-    pct.FP0_BASIS = pct.FPX0_GRID * pct.FPY0_GRID * pct.FPZ0_GRID;
+  //  pct.get_P0_BASIS() = pct.get_PX0_GRID() * pct.get_PY0_GRID() * pct.get_PZ0_GRID();
+   // pct.get_FP0_BASIS() = pct.get_FPX0_GRID() * pct.get_FPY0_GRID() * pct.get_FPZ0_GRID();
 
-dprintf("\n d11111\n");
     // Now compute the global grid offset of the first point of the coarse and fine node grids
-    find_node_offsets(pct.gridpe, NX_GRID, NY_GRID, NZ_GRID,
-                      &pct.PX_OFFSET, &pct.PY_OFFSET, &pct.PZ_OFFSET);
+    //find_node_offsets(pct.gridpe, get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
+      //                &pct.PX_OFFSET, &pct.PY_OFFSET, &pct.PZ_OFFSET);
 
-    find_node_offsets(pct.gridpe, FNX_GRID, FNY_GRID, FNZ_GRID,
-                      &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
+    //find_node_offsets(pct.gridpe, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
+     //                 &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
 
-    PX0_GRID = pct.PX0_GRID;
-    PY0_GRID = pct.PY0_GRID;
-    PZ0_GRID = pct.PZ0_GRID;
-    FPX0_GRID = pct.FPX0_GRID;
-    FPY0_GRID = pct.FPY0_GRID;
-    FPZ0_GRID = pct.FPZ0_GRID;
-
-    P0_BASIS = pct.P0_BASIS;
-    FP0_BASIS = pct.FP0_BASIS;
 
 dprintf("\n e11111\n");
     my_barrier ();

@@ -21,9 +21,9 @@ REAL minimage1(REAL aa[3], REAL bb[3])
 
 
     /* Get lattice vectors */
-    ax = NX_GRID * ct.hxgrid * ct.xside;
-    ay = NY_GRID * ct.hygrid * ct.yside;
-    az = NZ_GRID * ct.hzgrid * ct.zside;
+    ax = get_NX_GRID() * ct.hxgrid * ct.xside;
+    ay = get_NY_GRID() * ct.hygrid * ct.yside;
+    az = get_NZ_GRID() * ct.hzgrid * ct.zside;
 
 
 

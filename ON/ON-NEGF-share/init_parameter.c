@@ -39,25 +39,25 @@ void init_parameter(STATE * states)
     REAL v1, v2, v3;
     int ispin;
 
-    ct.psi_nbasis = NX_GRID * NY_GRID * NZ_GRID;
-    ct.psi_nxgrid = NX_GRID;
-    ct.psi_nygrid = NY_GRID;
-    ct.psi_nzgrid = NZ_GRID;
+    ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    ct.psi_nxgrid = get_NX_GRID();
+    ct.psi_nygrid = get_NY_GRID();
+    ct.psi_nzgrid = get_NZ_GRID();
 
 
     /* Set hartree boundary condition stuff */
-    ct.vh_pxgrid = FPX0_GRID;
-    ct.vh_pygrid = FPY0_GRID;
-    ct.vh_pzgrid = FPZ0_GRID;
+    ct.vh_pxgrid = get_FPX0_GRID();
+    ct.vh_pygrid = get_FPY0_GRID();
+    ct.vh_pzgrid = get_FPZ0_GRID();
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
     my_malloc_init( ct.vh_ext, ct.vh_pbasis, REAL );
 
 
-    ct.vh_nbasis = FNX_GRID * FNY_GRID * FNZ_GRID;
-    ct.vh_nxgrid = FNX_GRID;
-    ct.vh_nygrid = FNY_GRID;
-    ct.vh_nzgrid = FNZ_GRID;
+    ct.vh_nbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
+    ct.vh_nxgrid = get_FNX_GRID();
+    ct.vh_nygrid = get_FNY_GRID();
+    ct.vh_nzgrid = get_FNZ_GRID();
     /* Initialize some k-point stuff */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {

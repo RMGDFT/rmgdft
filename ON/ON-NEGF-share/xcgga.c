@@ -66,29 +66,29 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
 
 
     /* Grab some memory */
-    my_malloc_init( gx, FP0_BASIS, REAL );
-    my_malloc_init( gy, FP0_BASIS, REAL );
-    my_malloc_init( gz, FP0_BASIS, REAL );
-    my_malloc_init( agx, FP0_BASIS, REAL );
-    my_malloc_init( agy, FP0_BASIS, REAL );
-    my_malloc_init( agz, FP0_BASIS, REAL );
-    my_malloc_init( agg, FP0_BASIS, REAL );
-    my_malloc_init( d2rho, FP0_BASIS, REAL );
+    my_malloc_init( gx, get_FP0_BASIS(), REAL );
+    my_malloc_init( gy, get_FP0_BASIS(), REAL );
+    my_malloc_init( gz, get_FP0_BASIS(), REAL );
+    my_malloc_init( agx, get_FP0_BASIS(), REAL );
+    my_malloc_init( agy, get_FP0_BASIS(), REAL );
+    my_malloc_init( agz, get_FP0_BASIS(), REAL );
+    my_malloc_init( agg, get_FP0_BASIS(), REAL );
+    my_malloc_init( d2rho, get_FP0_BASIS(), REAL );
 
 
     /* Load the density into the smoothing grid */
     nrho = rho1;
 
     /* Generate the gradient of the density */
-    app_grad6(rho1, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    app_grad6(rho1, gx, gy, gz, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
 
     /* Get the Laplacian of the density */
-    app6_del2(rho1, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app6_del2(rho1, d2rho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
 
 
     /* Absolute value of grad(rho) */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
         agg[idx] = sqrt(gx[idx] * gx[idx] + gy[idx] * gy[idx] + gz[idx] * gz[idx]);
@@ -97,13 +97,13 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
 
 
     /* Get its gradient */
-    app_grad6(agg, agx, agy, agz, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    app_grad6(agg, agx, agy, agz, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
 
 
     /* Now get the potential */
     ndim = 3;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         d = nrho[idx];
         if (d  > SMALL)

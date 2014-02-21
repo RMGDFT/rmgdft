@@ -446,12 +446,12 @@ void xclsd_pz81(REAL * rho, REAL * vxc)
 
     /* set up the pointers to the up and down rho and vxc */
     rho_up = &rho[0];
-    rho_dn = &rho[P0_BASIS];
+    rho_dn = &rho[get_P0_BASIS()];
 
     vxc_up = &vxc[0];
-    vxc_dn = &vxc[P0_BASIS];
+    vxc_dn = &vxc[get_P0_BASIS()];
 
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
     {
 
         mu_lsd_pz(rho_up[i], rho_dn[i], &vxc_up[i], &vxc_dn[i]);
@@ -474,9 +474,9 @@ void exclsd_pz81(REAL * rho, REAL * exc)
 
     /* set up the pointers to the up and down rho and vxc */
     rho_up = &rho[0];
-    rho_dn = &rho[P0_BASIS];
+    rho_dn = &rho[get_P0_BASIS()];
 
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
     {
 
         exc[i] = e_lsd_pz(rho_up[i], rho_dn[i]);

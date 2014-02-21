@@ -50,9 +50,9 @@ void is_state_overlap(STATE * states)
             yoverlap =abs(iycenter1 - iycenter2);
             zoverlap =abs(izcenter1 - izcenter2);
 
-            if (xoverlap > NX_GRID/2) xoverlap = NX_GRID - xoverlap;
-            if (yoverlap > NY_GRID/2) yoverlap = NY_GRID - yoverlap;
-            if (zoverlap > NZ_GRID/2) zoverlap = NZ_GRID - zoverlap;
+            if (xoverlap > get_NX_GRID()/2) xoverlap = get_NX_GRID() - xoverlap;
+            if (yoverlap > get_NY_GRID()/2) yoverlap = get_NY_GRID() - yoverlap;
+            if (zoverlap > get_NZ_GRID()/2) zoverlap = get_NZ_GRID() - zoverlap;
 
 
             if ((xoverlap <= ixhalf1 + ixhalf2 ) && 

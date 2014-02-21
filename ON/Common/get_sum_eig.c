@@ -105,7 +105,7 @@ double get_Exc(double *rho, double *rhocore)
     my_malloc_init( work, ct.vh_pbasis, REAL );
     my_malloc_init( nrho, ct.vh_pbasis, REAL );
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         nrho[idx] = rhocore[idx] + rho[idx];
 
 
@@ -141,7 +141,7 @@ double get_Exc(double *rho, double *rhocore)
 
 
     esum = 0.;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
         esum += (rhocore[idx] + rho[idx]) * work[idx];

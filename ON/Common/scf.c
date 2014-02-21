@@ -35,6 +35,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     double tem;
     int flag;
     int steps;
+    int nfp0 = get_FP0_BASIS();
 
     time1 = my_crtc();
 
@@ -90,12 +91,12 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     if (pct.gridpe == 0 && ct.occ_flag == 1)
         printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
-    scopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
+    scopy(&nfp0, rho, &ione, rho_old, &ione);
 
     get_new_rho(states, rho);
 
     tem1 = 0.0;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         tem = rho_old[idx];
         rho_old[idx] = -rho[idx] + rho_old[idx];
@@ -103,8 +104,8 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         tem1 += rho_old[idx] * rho_old[idx];
     }
 
-    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) FP0_BASIS;
-    pulay_rho_on (steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) get_FP0_BASIS();
+    pulay_rho_on (steps, get_FP0_BASIS(), rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 
     /* Update potential */
@@ -135,23 +136,23 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
         double *vnuc, double *rho, double *rhoc, double *rhocore,
         int *CONVERGENCE, STATE * states)
 {
-    int n = FP0_BASIS, idx, ione = 1;
+    int n = get_FP0_BASIS(), idx, ione = 1;
     double tem;
 
     /* save old vtot, vxc, vh */
     scopy(&n, vxc, &ione, vxc_old, &ione);
     scopy(&n, vh, &ione, vh_old, &ione);
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx];
 
     /* Generate exchange-correlation potential */
     get_vxc(rho, rhocore, vxc);
 
-    pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     /* Keep in memory vh*rho_new before updating vh */
-    tem = ddot(&FP0_BASIS, rho, &ione, vh, &ione);
+    tem = ddot(&n, rho, &ione, vh, &ione);
     ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
 
 
@@ -162,22 +163,22 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
 
 
     /* Compute quantities function of rho only */
-    tem = ddot(&FP0_BASIS, rho, &ione, vh, &ione);
+    tem = ddot(&n, rho, &ione, vh, &ione);
     ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
 
-    tem = ddot(&FP0_BASIS, rhoc, &ione, vh, &ione);
+    tem = ddot(&n, rhoc, &ione, vh, &ione);
     ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
 
 
 
     /* evaluate correction vh+vxc */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
 
     /* evaluate SC correction */
     t[0] = t[1] = 0.;
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         t[0] += rho[idx] * vtot[idx];
         t[1] += vtot[idx] * vtot[idx];
@@ -197,17 +198,17 @@ void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
 
     if (ct.scf_steps < 4 && ct.runflag == 0)
     {
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
         {
             vxc[idx] = vxc_old[idx];
             vh[idx] = vh_old[idx];
         }
     }
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
-   get_vtot_psi(vtot_c, vtot, FG_NX);
+   get_vtot_psi(vtot_c, vtot, get_FG_NX());
     
     if (t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;

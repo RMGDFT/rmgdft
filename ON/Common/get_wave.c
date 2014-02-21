@@ -37,7 +37,7 @@ void get_wave(int st, STATE * states)
 	int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
 	int st11;
 
-	my_malloc_init( wave_temp, P0_BASIS, REAL );
+	my_malloc_init( wave_temp, get_P0_BASIS(), REAL );
 	if (pct.gridpe == 0)
 		printf(" Compute %d th wave\n", st);
 
@@ -73,7 +73,7 @@ void get_wave(int st, STATE * states)
 
 */        
 
-	for (idx = 0; idx < NX_GRID * NY_GRID * NZ_GRID; idx++)
+	for (idx = 0; idx < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx++)
 		wave_global[idx] = 0.;
 
 	for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
@@ -100,7 +100,7 @@ void get_wave(int st, STATE * states)
 
 	my_barrier();
 
-	idx = NX_GRID * NY_GRID * NZ_GRID;
+	idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
 	global_sums(wave_global, &idx, pct.grid_comm);
 
@@ -112,7 +112,7 @@ void get_wave(int st, STATE * states)
 	tcharge = 0.0;
 	charge_from_wave = 0.0;
 
-	for (idx = 0; idx < P0_BASIS; idx++)
+	for (idx = 0; idx < get_P0_BASIS(); idx++)
 		tcharge += wave_temp[idx] * wave_temp[idx];
 
 	charge_from_wave = real_sum_all(tcharge, pct.grid_comm);

@@ -37,8 +37,8 @@ void genvlocpsi(REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * s
     incx = (iy2 - iy1 + 1) * (iz2 - iz1 + 1);
     incy = (iz2 - iz1 + 1);
 
-    incx1 = NY_GRID * NZ_GRID;
-    incy1 = NZ_GRID;
+    incx1 = get_NY_GRID() * get_NZ_GRID();
+    incy1 = get_NZ_GRID();
 
 
     /* Generate 2 * V * psi */
@@ -48,11 +48,11 @@ void genvlocpsi(REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * s
         ixstart = (ix - ix1) * incx;
         if (ix < 0)
         {
-            ixstartp = (ix + NX_GRID) * incx1;
+            ixstartp = (ix + get_NX_GRID()) * incx1;
         }
-        else if (ix >= NX_GRID)
+        else if (ix >= get_NX_GRID())
         {
-            ixstartp = (ix - NX_GRID) * incx1;
+            ixstartp = (ix - get_NX_GRID()) * incx1;
         }
         else
         {
@@ -65,11 +65,11 @@ void genvlocpsi(REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * s
             iystart = ixstart + (iy - iy1) * incy;
             if (iy < 0)
             {
-                iystartp = ixstartp + (iy + NY_GRID) * incy1;
+                iystartp = ixstartp + (iy + get_NY_GRID()) * incy1;
             }
-            else if (iy >= NY_GRID)
+            else if (iy >= get_NY_GRID())
             {
-                iystartp = ixstartp + (iy - NY_GRID) * incy1;
+                iystartp = ixstartp + (iy - get_NY_GRID()) * incy1;
             }
             else
             {
@@ -81,11 +81,11 @@ void genvlocpsi(REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * s
                 idx1 = iystart + iz - iz1;
                 if (iz < 0)
                 {
-                    idx2 = iystartp + (iz + NZ_GRID);
+                    idx2 = iystartp + (iz + get_NZ_GRID());
                 }
-                else if (iz >= NZ_GRID)
+                else if (iz >= get_NZ_GRID())
                 {
-                    idx2 = iystartp + (iz - NZ_GRID);
+                    idx2 = iystartp + (iz - get_NZ_GRID());
                 }
                 else
                 {

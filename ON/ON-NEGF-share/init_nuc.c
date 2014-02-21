@@ -47,7 +47,7 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     int *Aix, *Aiy, *Aiz;
     int icount;
     int *pvec;
-    int number = FP0_BASIS;
+    int number = get_FP0_BASIS();
     int storage_spacing = 1;
     double r, r2, xc, yc, zc, Zv, rc, rcnorm, t1;
     double x, y, z, rc2, invdr, charge_bg, x_locate;
@@ -71,13 +71,13 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
     /* Grab some memory for temporary storage */
     /*shuchun wang */
-    my_calloc( pvec, FP0_BASIS, int );
-    my_calloc( Aix, FNX_GRID, int );
-    my_calloc( Aiy, FNY_GRID, int );
-    my_calloc( Aiz, FNZ_GRID, int );
+    my_calloc( pvec, get_FP0_BASIS(), int );
+    my_calloc( Aix, get_FNX_GRID(), int );
+    my_calloc( Aiy, get_FNY_GRID(), int );
+    my_calloc( Aiz, get_FNZ_GRID(), int );
 
     /* Zero out the nuclear potential array */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
         vnuc[idx] = 0.;
@@ -88,21 +88,21 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
         ilow = pct.FPX_OFFSET;
         jlow = pct.FPY_OFFSET;
         klow = pct.FPZ_OFFSET;
-        ihi = ilow + FPX0_GRID - 1;
-        jhi = jlow + FPY0_GRID - 1;
-        khi = klow + FPZ0_GRID - 1;
+        ihi = ilow + get_FPX0_GRID() - 1;
+        jhi = jlow + get_FPY0_GRID() - 1;
+        khi = klow + get_FPZ0_GRID() - 1;
 
 
     /* Initialize the compensating charge array and the core charge
        array */
-    t1 = ct.background_charge / (double) FP0_BASIS / ct.vel_f / NPES;
+    t1 = ct.background_charge / (double) get_FP0_BASIS() / ct.vel_f / NPES;
     
     printf("\n bg_begin = %f and bg_end = %f  BT = %f  t1=%f \n", ct.bg_begin, ct.bg_end, ct.BT, t1);   
 
 
     if (ct.background_charge == 0)
     {
-	    for (idx = 0; idx < FP0_BASIS; idx++)
+	    for (idx = 0; idx < get_FP0_BASIS(); idx++)
 	    {
 
 		    rhoc[idx] = t1;
@@ -111,20 +111,20 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     }
     else
     {
-	    for (ix = 0; ix < FPX0_GRID; ix++)
+	    for (ix = 0; ix < get_FPX0_GRID(); ix++)
 	    {
 
 		    x_locate = (ix + ilow)/2.0; // everything is based on coarse grid now!
 		    charge_bg = t1 / (1.0 + exp((ct.bg_begin - x_locate)/ct.BT)  + exp((x_locate - ct.bg_end)/ct.BT) ); 
 
 
-		    for (iy = 0; iy < FPY0_GRID; iy++)
+		    for (iy = 0; iy < get_FPY0_GRID(); iy++)
 		    {
 
-			    for (iz = 0; iz < FPZ0_GRID; iz++)
+			    for (iz = 0; iz < get_FPZ0_GRID(); iz++)
 			    {
 
-				    rhoc[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = charge_bg;
+				    rhoc[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz] = charge_bg;
 
 
 			    }                   /* end for */
@@ -159,7 +159,7 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
 	    rhocore[idx] = 0.;
@@ -202,9 +202,9 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
         /* Next we have to map these onto the global grid */
 
         /* Generate indices */
-        get_Ai(L0_LDIM, Aix, FNX_GRID, ixstart);
-        get_Ai(L0_LDIM, Aiy, FNY_GRID, iystart);
-        get_Ai(L0_LDIM, Aiz, FNZ_GRID, izstart);
+        get_Ai(L0_LDIM, Aix, get_FNX_GRID(), ixstart);
+        get_Ai(L0_LDIM, Aiy, get_FNY_GRID(), iystart);
+        get_Ai(L0_LDIM, Aiz, get_FNZ_GRID(), izstart);
 
 
         ii = jj = kk = FALSE;
@@ -254,8 +254,8 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
                         {
 
                             pvec[icount] =
-                                FPY0_GRID * FPZ0_GRID * (Aix[ix] - pct.FPX_OFFSET) +
-                                FPZ0_GRID * (Aiy[iy] - pct.FPY_OFFSET) + (Aiz[iz] - pct.FPZ_OFFSET);
+                                get_FPY0_GRID() * get_FPZ0_GRID() * (Aix[ix] - pct.FPX_OFFSET) +
+                                get_FPZ0_GRID() * (Aiy[iy] - pct.FPY_OFFSET) + (Aiz[iz] - pct.FPZ_OFFSET);
 
                             x = xc - iptr->crds[0];
                             y = yc - iptr->crds[1];
@@ -359,7 +359,7 @@ static void init_vcomp(double *vc)
     ION *iptr;
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
         vc[idx] = 0.;
@@ -385,19 +385,19 @@ static void init_vcomp(double *vc)
         Zv = sp->zvalence;
         rc = sp->rc;
 
-        for (ix = 0; ix < FPX0_GRID; ix++)
+        for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {
 
             point[0] = (ix + ilow) * ct.hxxgrid;
-            istart = FPZ0_GRID * FPY0_GRID * ix;
+            istart = get_FPZ0_GRID() * get_FPY0_GRID() * ix;
 
-            for (iy = 0; iy < FPY0_GRID; iy++)
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
 
                 point[1] = (iy + jlow) * ct.hyygrid;
-                jstart = istart + FPZ0_GRID * iy;
+                jstart = istart + get_FPZ0_GRID() * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                 {
 
                     point[2] = (iz + klow) * ct.hzzgrid;
@@ -430,7 +430,7 @@ static double get_charge(double *rho1)
     double charge;
 
     charge = 0.;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
         charge += rho1[idx];

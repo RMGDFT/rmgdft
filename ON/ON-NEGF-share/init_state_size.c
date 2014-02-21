@@ -77,9 +77,9 @@ void init_state_size(STATE * states)
 */
     }
 
-    assert ( max_nx <= NX_GRID);
-    assert ( max_ny <= NY_GRID);
-    assert ( max_nz <= NZ_GRID);
+    assert ( max_nx <= get_NX_GRID());
+    assert ( max_ny <= get_NY_GRID());
+    assert ( max_nz <= get_NZ_GRID());
 
     ct.max_orbit_nx = max_nx;
     ct.max_orbit_ny = max_ny;

@@ -38,10 +38,10 @@ void get_new_rho(STATE * states, double *rho)
     if (pct.gridpe == 0)
         printf(" Compute new density\n");
 
-    my_malloc_init( rho_temp, P0_BASIS, REAL );
+    my_malloc_init( rho_temp, get_P0_BASIS(), REAL );
 
 #if  	DEBUG
-    print_sum_square(P0_BASIS, rho, "rho_sum_square before get_new_rho  ");
+    print_sum_square(get_P0_BASIS(), rho, "rho_sum_square before get_new_rho  ");
 #endif
 
     mxllda = MXLLDA;
@@ -52,7 +52,7 @@ void get_new_rho(STATE * states, double *rho)
             pct.descb, pct.desca[1]);
 
 
-   for (idx = 0; idx < NX_GRID * NY_GRID * NZ_GRID; idx++)
+   for (idx = 0; idx < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx++)
        rho_global[idx] = 0.;
 
    time2 = my_crtc();
@@ -269,14 +269,14 @@ void get_new_rho(STATE * states, double *rho)
    time3 = my_crtc();
    rmg_timings(RHO_PHI_TIME, time3 - time2);
 
-   idx = NX_GRID * NY_GRID * NZ_GRID;
+   idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
    global_sums(rho_global, &idx, pct.grid_comm);
    time2 = my_crtc();
    rmg_timings(RHO_SUM_TIME, time2 - time3);
 
    global_to_distribute(rho_global, rho_temp);
 
-   mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
+   mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
 
    my_free(rho_temp);
 
@@ -289,14 +289,15 @@ void get_new_rho(STATE * states, double *rho)
    rmg_timings(RHO_AUG_TIME, time2 - time3);
 
    tcharge = 0.0;
-   for (idx = 0; idx < FP0_BASIS; idx++)
+   for (idx = 0; idx < get_FP0_BASIS(); idx++)
        tcharge += rho[idx];
    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
 
 
    ct.tcharge *= ct.vel_f;
    t2 = ct.nel / ct.tcharge;
-   sscal(&FP0_BASIS, &t2, &rho[0], &ione);
+   int iii = get_FP0_BASIS();
+   sscal(&iii, &t2, &rho[0], &ione);
 
    if (pct.gridpe == 0)
        printf("\n total charge Normalization constant = %f  \n", t2);
@@ -306,7 +307,7 @@ void get_new_rho(STATE * states, double *rho)
    rmg_timings(GET_NEW_RHO, time1);
 
 #if  	DEBUG
-   print_sum_square(P0_BASIS, rho, "rho_sum_sqare in the end of get_new_rho  ");
+   print_sum_square(get_P0_BASIS(), rho, "rho_sum_sqare in the end of get_new_rho  ");
 #endif
 
 }

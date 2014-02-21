@@ -128,20 +128,20 @@ void symmetrize_rho (REAL * rho)
 
     /* Put this processors charge in the correct place */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = ix * PX0_GRID;
-    yoff = iy * PY0_GRID;
-    zoff = iz * PZ0_GRID;
+    xoff = ix * get_PX0_GRID();
+    yoff = iy * get_PY0_GRID();
+    zoff = iz * get_PZ0_GRID();
 
 
-    incx = NY_GRID * NZ_GRID;
-    incy = NZ_GRID;
+    incx = get_NY_GRID() * get_NZ_GRID();
+    incy = get_NZ_GRID();
 
     idx = 0;
-    for (ix = 0; ix < PX0_GRID; ix++)
+    for (ix = 0; ix < get_PX0_GRID(); ix++)
     {
-        for (iy = 0; iy < PY0_GRID; iy++)
+        for (iy = 0; iy < get_PY0_GRID(); iy++)
         {
-            for (iz = 0; iz < PZ0_GRID; iz++)
+            for (iz = 0; iz < get_PZ0_GRID(); iz++)
             {
                 idx1 = (ix + xoff) * incx + (iy + yoff) * incy + (iz + zoff);
 
@@ -169,11 +169,11 @@ void symmetrize_rho (REAL * rho)
     t1 = 1.0 / t1;
 
     idx = 0;
-    for (ix = 0; ix < PX0_GRID; ix++)
+    for (ix = 0; ix < get_PX0_GRID(); ix++)
     {
-        for (iy = 0; iy < PY0_GRID; iy++)
+        for (iy = 0; iy < get_PY0_GRID(); iy++)
         {
-            for (iz = 0; iz < PZ0_GRID; iz++)
+            for (iz = 0; iz < get_PZ0_GRID(); iz++)
             {
                 idx1 = (ix + xoff) * incx + (iy + yoff) * incy + (iz + zoff);
 

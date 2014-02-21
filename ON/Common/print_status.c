@@ -18,22 +18,22 @@ void print_status(STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh_
     printf("\n print_status ----%s ", msg);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vh[i];
     printf("PE: %d, vh total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vxc[i];
     printf("PE: %d, vxc total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vnuc[i];
     printf("PE: %d, vnuc total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vh_old[i];
     printf("PE: %d, vh_old total: %22.16f \n", pct.gridpe, total);
 

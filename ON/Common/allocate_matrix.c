@@ -49,19 +49,19 @@ void allocate_matrix()
     ispin = ct.spin + 1;
 
 
-    my_malloc_init( rho, FP0_BASIS * ispin, REAL );
-    my_malloc_init( rhoc, FP0_BASIS, REAL );
-    my_malloc_init( vh, 2*FP0_BASIS, REAL );
-    vxc = vh + FP0_BASIS;
-    my_malloc_init( vnuc, FP0_BASIS, REAL );
-    my_malloc_init( vtot, FP0_BASIS, REAL );
-    my_malloc_init( vtot_c, P0_BASIS, REAL ); /*shuchun add */
-    my_malloc_init( rhocore, FP0_BASIS, REAL );
-    my_malloc_init( eig_rho, FP0_BASIS, REAL );
-    my_malloc_init( vtot_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
-    my_malloc_init( wave_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
+    my_malloc_init( rho, get_FP0_BASIS() * ispin, REAL );
+    my_malloc_init( rhoc, get_FP0_BASIS(), REAL );
+    my_malloc_init( vh, 2*get_FP0_BASIS(), REAL );
+    vxc = vh + get_FP0_BASIS();
+    my_malloc_init( vnuc, get_FP0_BASIS(), REAL );
+    my_malloc_init( vtot, get_FP0_BASIS(), REAL );
+    my_malloc_init( vtot_c, get_P0_BASIS(), REAL ); /*shuchun add */
+    my_malloc_init( rhocore, get_FP0_BASIS(), REAL );
+    my_malloc_init( eig_rho, get_FP0_BASIS(), REAL );
+    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), REAL );
+    my_malloc_init( wave_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), REAL );
     rho_global = vtot_global;
-    my_malloc_init( rho_old, FP0_BASIS * ispin, REAL );
+    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, REAL );
 
     my_malloc_init( sg_res, S0_BASIS, REAL );
 
@@ -92,7 +92,7 @@ void allocate_matrix()
 
     item = ct.num_kpts * ct.num_states;
     item1 = item;
-    item2 = 2 * P0_BASIS + S0_BASIS + item1;
+    item2 = 2 * get_P0_BASIS() + S0_BASIS + item1;
     item = max(13 * S0_BASIS, item2);
 
     nproc = pct.nprow * pct.npcol;

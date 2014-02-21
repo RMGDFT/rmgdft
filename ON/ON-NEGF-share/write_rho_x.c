@@ -15,25 +15,25 @@ void write_rho_x(REAL * rho, char *ab)
     REAL *zvec;
     int pyoff, pzoff;
 
-    my_malloc_init( zvec, FNX_GRID, REAL );
+    my_malloc_init( zvec, get_FNX_GRID(), REAL );
     /* Get this processors offset */
     poff = pct.FPX_OFFSET;
 
 
 
     /* Zero out result vector */
-    for (ix = 0; ix < FNX_GRID; ix++)
+    for (ix = 0; ix < get_FNX_GRID(); ix++)
         zvec[ix] = ZERO;
 
 
     /* Loop over this processor */
-    for (ix = 0; ix < FPX0_GRID; ix++)
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
         t1 = 0.0;
-        for (iy = 0; iy < FPY0_GRID; iy++)
-            for (iz = 0; iz < FPZ0_GRID; iz++)
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
+            for (iz = 0; iz < get_FPZ0_GRID(); iz++)
 
-                t1 += rho[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz];
+                t1 += rho[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz];
 
 
         zvec[ix + poff] = t1;
@@ -42,16 +42,16 @@ void write_rho_x(REAL * rho, char *ab)
 
 
     /* Now sum over all processors */
-    ix = FNX_GRID;
+    ix = get_FNX_GRID();
     global_sums(zvec, &ix, pct.grid_comm);
 
     if (pct.gridpe == 0)
     {
         printf("\n\n Planar average of the electrostatic density\n");
-        for (ix = 0; ix < FNX_GRID; ix++)
+        for (ix = 0; ix < get_FNX_GRID(); ix++)
         {
             t1 = ix * ct.hxxgrid;
-            printf(" %d %f %s\n", ix, zvec[ix] / FNY_GRID / FNZ_GRID, ab);
+            printf(" %d %f %s\n", ix, zvec[ix] / get_FNY_GRID() / get_FNZ_GRID(), ab);
         }
         fflush(NULL);
     }

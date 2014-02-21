@@ -85,7 +85,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 		write(fhand, &i1, sizeof(int));
 		i1 = NPES;
 		write(fhand, &i1, sizeof(int));
-		i1 = P0_BASIS;
+		i1 = get_P0_BASIS();
 		write(fhand, &i1, sizeof(int));
 
 
@@ -179,17 +179,17 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	 * to the global array (file)
 	 * */
 
-	sizes[0] = FNX_GRID;
-	sizes[1] = FNY_GRID;
-	sizes[2] = FNZ_GRID;
+	sizes[0] = get_FNX_GRID();
+	sizes[1] = get_FNY_GRID();
+	sizes[2] = get_FNZ_GRID();
 
-	subsizes[0] = FPX0_GRID;
-	subsizes[1] = FPY0_GRID;
-	subsizes[2] = FPZ0_GRID;
+	subsizes[0] = get_FPX0_GRID();
+	subsizes[1] = get_FPY0_GRID();
+	subsizes[2] = get_FPZ0_GRID();
 
-	starts[0] = pex * FPX0_GRID;
-	starts[1] = pey * FPY0_GRID;
-	starts[2] = pez * FPZ0_GRID;
+	starts[0] = pex * get_FPX0_GRID();
+	starts[1] = pey * get_FPY0_GRID();
+	starts[2] = pez * get_FPZ0_GRID();
 
 	/*int order = MPI_ORDER_FORTRAN;*/
 	int order = MPI_ORDER_C;
@@ -208,11 +208,11 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	disp=0;
 	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
 
-	MPI_File_write_all(mpi_fhand, vh, FP0_BASIS,MPI_DOUBLE, &status);
-	MPI_File_write_all(mpi_fhand, vxc, FP0_BASIS,MPI_DOUBLE, &status);
-	MPI_File_write_all(mpi_fhand, rho, FP0_BASIS,MPI_DOUBLE, &status);
-	MPI_File_write_all(mpi_fhand, vh_old, FP0_BASIS,MPI_DOUBLE, &status);
-	MPI_File_write_all(mpi_fhand, vxc_old, FP0_BASIS,MPI_DOUBLE, &status);
+	MPI_File_write_all(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
+	MPI_File_write_all(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
+	MPI_File_write_all(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
+	MPI_File_write_all(mpi_fhand, vh_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
+	MPI_File_write_all(mpi_fhand, vxc_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
 	MPI_File_close(&mpi_fhand);
 
 	my_barrier();
@@ -289,9 +289,9 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	}
 
 	pe2xyz (pct.gridpe, &pex, &pey, &pez);
-	PNX0 = pex * FPX0_GRID;
-	PNY0 = pey * FPY0_GRID;
-	PNZ0 = pez * FPZ0_GRID;
+	PNX0 = pex * get_FPX0_GRID();
+	PNY0 = pey * get_FPY0_GRID();
+	PNZ0 = pez * get_FPZ0_GRID();
 	for (ix = ixmin; ix < ixmax; ix++)
 		for (iy = iymin; iy < iymax; iy++)
 			for (iz = izmin; iz < izmax; iz++)
@@ -300,29 +300,29 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 				iyy = iy;
 				izz = iz;
 				if (ixx < 0)
-					ixx += FNX_GRID;
+					ixx += get_FNX_GRID();
 				if (iyy < 0)
-					iyy += FNY_GRID;
+					iyy += get_FNY_GRID();
 				if (izz < 0)
-					izz += FNZ_GRID;
+					izz += get_FNZ_GRID();
 
-				if (ixx >= FNX_GRID)
-					ixx -= FNX_GRID;
-				if (iyy >= FNY_GRID)
-					iyy -= FNY_GRID;
-				if (izz >= FNZ_GRID)
-					izz -= FNZ_GRID;
+				if (ixx >= get_FNX_GRID())
+					ixx -= get_FNX_GRID();
+				if (iyy >= get_FNY_GRID())
+					iyy -= get_FNY_GRID();
+				if (izz >= get_FNZ_GRID())
+					izz -= get_FNZ_GRID();
 
-				idx = ixx * FNY_GRID * FNZ_GRID + iyy * FNZ_GRID + izz;
+				idx = ixx * get_FNY_GRID() * get_FNZ_GRID() + iyy * get_FNZ_GRID() + izz;
 				idx1 = (ix - ixmin) * iydim * izdim + (iy - iymin) * izdim + (iz - izmin);
 
 				ixx -= PNX0;
 				iyy -= PNY0;
 				izz -= PNZ0;
-				idx = ixx *FPY0_GRID * FPZ0_GRID + iyy * FPZ0_GRID + izz;
-				if(     ixx >= 0 && ixx < FPX0_GRID &&
-						iyy >= 0 && iyy < FPY0_GRID &&
-						izz >= 0 && izz < FPZ0_GRID  )
+				idx = ixx *get_FPY0_GRID() * get_FPZ0_GRID() + iyy * get_FPZ0_GRID() + izz;
+				if(     ixx >= 0 && ixx < get_FPX0_GRID() &&
+						iyy >= 0 && iyy < get_FPY0_GRID() &&
+						izz >= 0 && izz < get_FPZ0_GRID()  )
 				{
 
 					rho_tem[idx1] = rho[idx];

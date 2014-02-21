@@ -43,8 +43,8 @@ void get_orbit_overlap_region(STATE * states)
             orbit_overlap_region[index].xlow1 = i5;
             orbit_overlap_region[index].xhigh1 = i6;
 
-            i3 = states[st2].ixmin + NX_GRID;
-            i4 = states[st2].ixmax + NX_GRID;
+            i3 = states[st2].ixmin + get_NX_GRID();
+            i4 = states[st2].ixmax + get_NX_GRID();
             i5 = max(i1, i3);
             i6 = min(i2, i4);
 
@@ -52,17 +52,17 @@ void get_orbit_overlap_region(STATE * states)
             {
                 orbit_overlap_region[index].xlow2 = i5;
                 orbit_overlap_region[index].xhigh2 = i6;
-                orbit_overlap_region[index].xshift = NX_GRID;
+                orbit_overlap_region[index].xshift = get_NX_GRID();
             }
             else
             {
-                i3 = states[st2].ixmin - NX_GRID;
-                i4 = states[st2].ixmax - NX_GRID;
+                i3 = states[st2].ixmin - get_NX_GRID();
+                i4 = states[st2].ixmax - get_NX_GRID();
                 i5 = max(i1, i3);
                 i6 = min(i2, i4);
                 orbit_overlap_region[index].xlow2 = i5;
                 orbit_overlap_region[index].xhigh2 = i6;
-                orbit_overlap_region[index].xshift = -NX_GRID;
+                orbit_overlap_region[index].xshift = -get_NX_GRID();
             }
 
             i1 = states[st1].iymin;
@@ -75,8 +75,8 @@ void get_orbit_overlap_region(STATE * states)
             orbit_overlap_region[index].ylow1 = i5;
             orbit_overlap_region[index].yhigh1 = i6;
 
-            i3 = states[st2].iymin + NY_GRID;
-            i4 = states[st2].iymax + NY_GRID;
+            i3 = states[st2].iymin + get_NY_GRID();
+            i4 = states[st2].iymax + get_NY_GRID();
             i5 = max(i1, i3);
             i6 = min(i2, i4);
 
@@ -84,17 +84,17 @@ void get_orbit_overlap_region(STATE * states)
             {
                 orbit_overlap_region[index].ylow2 = i5;
                 orbit_overlap_region[index].yhigh2 = i6;
-                orbit_overlap_region[index].yshift = NY_GRID;
+                orbit_overlap_region[index].yshift = get_NY_GRID();
             }
             else
             {
-                i3 = states[st2].iymin - NY_GRID;
-                i4 = states[st2].iymax - NY_GRID;
+                i3 = states[st2].iymin - get_NY_GRID();
+                i4 = states[st2].iymax - get_NY_GRID();
                 i5 = max(i1, i3);
                 i6 = min(i2, i4);
                 orbit_overlap_region[index].ylow2 = i5;
                 orbit_overlap_region[index].yhigh2 = i6;
-                orbit_overlap_region[index].yshift = -NY_GRID;
+                orbit_overlap_region[index].yshift = -get_NY_GRID();
             }
 
 
@@ -108,8 +108,8 @@ void get_orbit_overlap_region(STATE * states)
             orbit_overlap_region[index].zlow1 = i5;
             orbit_overlap_region[index].zhigh1 = i6;
 
-            i3 = states[st2].izmin + NZ_GRID;
-            i4 = states[st2].izmax + NZ_GRID;
+            i3 = states[st2].izmin + get_NZ_GRID();
+            i4 = states[st2].izmax + get_NZ_GRID();
             i5 = max(i1, i3);
             i6 = min(i2, i4);
 
@@ -117,18 +117,18 @@ void get_orbit_overlap_region(STATE * states)
             {
                 orbit_overlap_region[index].zlow2 = i5;
                 orbit_overlap_region[index].zhigh2 = i6;
-                orbit_overlap_region[index].zshift = NZ_GRID;
+                orbit_overlap_region[index].zshift = get_NZ_GRID();
             }
             else
             {
-                i3 = states[st2].izmin - NZ_GRID;
-                i4 = states[st2].izmax - NZ_GRID;
+                i3 = states[st2].izmin - get_NZ_GRID();
+                i4 = states[st2].izmax - get_NZ_GRID();
                 i5 = max(i1, i3);
                 i6 = min(i2, i4);
 
                 orbit_overlap_region[index].zlow2 = i5;
                 orbit_overlap_region[index].zhigh2 = i6;
-                orbit_overlap_region[index].zshift = -NZ_GRID;
+                orbit_overlap_region[index].zshift = -get_NZ_GRID();
             }
         }
 }

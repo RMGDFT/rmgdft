@@ -49,7 +49,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     int idx1, ix, iy, PNX0, PNY0, PNZ0, NX, NY, NZ;
     int pex, pey, pez, position, ix1, iy1;
 
-    numst = P0_BASIS;
+    numst = get_P0_BASIS();
     /* Wait until everybody gets here */
     my_barrier();
 
@@ -236,17 +236,17 @@ tem1 = my_crtc();
      * to the global array (file)
      * */
 
-    sizes[0] = FNX_GRID;
-    sizes[1] = FNY_GRID;
-    sizes[2] = FNZ_GRID;
+    sizes[0] = get_FNX_GRID();
+    sizes[1] = get_FNY_GRID();
+    sizes[2] = get_FNZ_GRID();
 
-    subsizes[0] = FPX0_GRID;
-    subsizes[1] = FPY0_GRID;
-    subsizes[2] = FPZ0_GRID;
+    subsizes[0] = get_FPX0_GRID();
+    subsizes[1] = get_FPY0_GRID();
+    subsizes[2] = get_FPZ0_GRID();
 
-    starts[0] = pex * FPX0_GRID;
-    starts[1] = pey * FPY0_GRID;
-    starts[2] = pez * FPZ0_GRID;
+    starts[0] = pex * get_FPX0_GRID();
+    starts[1] = pey * get_FPY0_GRID();
+    starts[2] = pez * get_FPZ0_GRID();
 
     /*int order = MPI_ORDER_FORTRAN;*/
     int order = MPI_ORDER_C;
@@ -265,11 +265,11 @@ tem1 = my_crtc();
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
 
-    MPI_File_read(mpi_fhand, vh, FP0_BASIS,MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vxc, FP0_BASIS,MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, rho, FP0_BASIS,MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vh_old, FP0_BASIS,MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vxc_old, FP0_BASIS,MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vh_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vxc_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
 
     my_barrier();

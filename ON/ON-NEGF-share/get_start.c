@@ -48,8 +48,8 @@ void get_index_array(int *pvec, int *dvec, int dim,
 
 
                     pvec[*icount] =
-                        PY0_GRID * PZ0_GRID * (Aix[ix] % PX0_GRID) +
-                        PZ0_GRID * (Aiy[iy] % PY0_GRID) + (Aiz[iz] % PZ0_GRID);
+                        get_PY0_GRID() * get_PZ0_GRID() * (Aix[ix] % get_PX0_GRID()) +
+                        get_PZ0_GRID() * (Aiy[iy] % get_PY0_GRID()) + (Aiz[iz] % get_PZ0_GRID());
 
                     dvec[idx] = TRUE;
 
