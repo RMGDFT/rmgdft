@@ -1518,13 +1518,13 @@ extern "C" void FD_app_cir_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t
     FD_app_cir_sixth_global<float> (rptr, b);
 
 }
-extern "C" double FD_app_del2c_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_del2c(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     return FD_app_del2c<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_del2c_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_del2c_f(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     return FD_app_del2c<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
