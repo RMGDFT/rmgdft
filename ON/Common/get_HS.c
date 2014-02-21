@@ -10,7 +10,8 @@
 #include <float.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 
@@ -56,7 +57,7 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
         /* A operating on psi stored in orbit_tem */
 
         /* Eighth-order finite-differenital method for Laplatian operating on psi stored in orbit_tem */
-        app10_del2(sp->psiR, orbit_tem, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
+        app10_del2(sp->psiR, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
         /*  A |psi > + 0.5 (B V|psi> + V B |psi>) */
 

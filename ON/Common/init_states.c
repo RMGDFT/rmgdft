@@ -29,8 +29,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 #define MAX_NOCC 10
 
 

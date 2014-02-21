@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 void init_state_size(STATE * states)
 {
@@ -49,11 +49,14 @@ void init_state_size(STATE * states)
         printf("\n  States orbital size: x.y.z   \n");
 
     item = 1<<ct.eig_parm.levels;
+        printf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_hxgrid(), get_xside(), item);
+        dprintf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_xside(),get_hxgrid() , item);
+
     for (state = 0; state < ct.num_states; state++)
     {
-        nx_tem = 2.0 * states[state].radius / ct.hxgrid / ct.xside ;
-        ny_tem = 2.0 * states[state].radius / ct.hygrid / ct.yside ;
-        nz_tem = 2.0 * states[state].radius / ct.hzgrid / ct.zside ;
+        nx_tem = 2.0 * states[state].radius / get_hxgrid() / get_xside() ;
+        ny_tem = 2.0 * states[state].radius / get_hygrid() / get_yside() ;
+        nz_tem = 2.0 * states[state].radius / get_hzgrid() / get_zside() ;
         //at coarsest level, the number of grid point in each direction
         //can be any number, at the upper levels, it must be an odd
         //number

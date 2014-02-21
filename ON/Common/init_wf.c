@@ -11,7 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 static void init_wf_gamma(STATE * states);
 

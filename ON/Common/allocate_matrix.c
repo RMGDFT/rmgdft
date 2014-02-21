@@ -29,7 +29,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 void allocate_matrix()

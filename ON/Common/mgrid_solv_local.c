@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-#include "main_on.h"
+#include "main.h"
 
 
 void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work,
@@ -89,9 +89,9 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
 
     /*   my_malloc_init( resid, size, rmg_double_t ); */
 
-    scale = 2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    scale = scale + (2.0 / (gridhy * gridhy * ct.yside * ct.yside));
-    scale = scale + (2.0 / (gridhz * gridhz * ct.zside * ct.zside));
+    scale = 2.0 / (gridhx * gridhx * get_xside() * get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = step / scale;
 
 

@@ -28,7 +28,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include "main_on.h"
+#include "main.h"
 
 void get_mehr(void)
 {
@@ -38,9 +38,9 @@ void get_mehr(void)
     ct.Bc = 0.5;
     ct.Bx = ct.By = ct.Bz = 1.0 / 12.0;
 
-    ihx = 1. / (ct.hxgrid * ct.hxgrid * ct.xside * ct.xside);
-    ihy = 1. / (ct.hygrid * ct.hygrid * ct.yside * ct.yside);
-    ihz = 1. / (ct.hzgrid * ct.hzgrid * ct.zside * ct.zside);
+    ihx = 1. / (get_hxgrid() * get_hxgrid() * get_xside() * get_xside());
+    ihy = 1. / (get_hygrid() * get_hygrid() * get_yside() * get_yside());
+    ihz = 1. / (get_hzgrid() * get_hzgrid() * get_zside() * get_zside());
 
     ct.Ac = (-4. / 3.) * (ihx + ihy + ihz);
 

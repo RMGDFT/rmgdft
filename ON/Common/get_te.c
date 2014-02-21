@@ -19,7 +19,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc, STATE * states)

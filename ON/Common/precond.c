@@ -2,8 +2,8 @@
  **    $Id$    **
 ******************************************************************************/
  
-#include	"main_on.h"
-
+#include	"main.h"
+#include "init_var.h"
 
 
 void precond(double *x)

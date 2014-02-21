@@ -4,7 +4,8 @@
  
 #include <float.h>
 #include <stdio.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 /* 
    	output: matB = (matB)^-1

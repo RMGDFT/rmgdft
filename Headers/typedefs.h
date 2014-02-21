@@ -273,7 +273,55 @@ typedef struct
 
 #include "rmg_control.h"
 
-/* Extern declaration for the processor control structure */
-extern PE_CONTROL pct;
+
+struct ION_ORBIT_OVERLAP
+{
+    short int xlow1;
+    short int xhigh1;
+    short int xlow2;
+    short int xhigh2;
+    short int xshift;
+
+    short int ylow1;
+    short int yhigh1;
+    short int ylow2;
+    short int yhigh2;
+    short int yshift;
+
+    short int zlow1;
+    short int zhigh1;
+    short int zlow2;
+    short int zhigh2;
+    short int zshift;
+
+    short int flag;
+};
+typedef struct ION_ORBIT_OVERLAP ION_ORBIT_OVERLAP;
+
+
+struct ORBIT_ORBIT_OVERLAP
+{
+    short int xlow1;
+    short int xhigh1;
+    short int xlow2;
+    short int xhigh2;
+    short int xshift;
+
+    short int ylow1;
+    short int yhigh1;
+    short int ylow2;
+    short int yhigh2;
+    short int yshift;
+
+    short int zlow1;
+    short int zhigh1;
+    short int zlow2;
+    short int zhigh2;
+    short int zshift;
+
+    short int flag;
+};
+typedef struct ORBIT_ORBIT_OVERLAP ORBIT_ORBIT_OVERLAP;
+
 
 #endif

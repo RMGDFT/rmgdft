@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void interpolate_atom_density(double *rho_tem, double *rho_out, int ixmin, int ixmax,

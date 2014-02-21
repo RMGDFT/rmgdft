@@ -32,7 +32,7 @@
  * SOURCE
  */
 
-#include "main_on.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -58,7 +58,7 @@ rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int 
         if (ct.anisotropy < 1.000001)
         {
 
-            ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+            ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
             cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
             fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
             ecxy = (1.0 / 12.0) * (ihx + ihx);
@@ -113,9 +113,9 @@ rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int 
         {
 
             /* Compute coefficients for this grid spacing */
-            ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-            ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-            ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+            ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+            ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+            ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
             cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
 
@@ -183,7 +183,7 @@ rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int 
     case CUBIC_BC:
 
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
         ihx = 3.0 * ihx / 4.0;
 
         cc = (-22.0 / 3.0) * ihx;
@@ -237,7 +237,7 @@ rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int 
 
     case CUBIC_FC:
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
         ihx = ihx / 2.0;
 
         cc = (-34.0 / 3.0) * ihx;
@@ -295,8 +295,8 @@ rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int 
 
     case HEXAGONAL:
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-        ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
         cc = ((-3.0 / 4.0) * ihz) - ((5.0 / 3.0) * ihx);
         a1 = ((3.0 / 8.0) * ihz) - ((1.0 / 6.0) * ihx);

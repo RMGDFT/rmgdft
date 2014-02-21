@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void init_rho_atom(double *rho)
@@ -37,9 +37,9 @@ void init_rho_atom(double *rho)
     int *map;
 
     my_malloc_init( map, ct.num_ions, int );
-    hxgrid_new = ct.hxxgrid * ct.xside;
-    hygrid_new = ct.hyygrid * ct.yside;
-    hzgrid_new = ct.hzzgrid * ct.zside;
+    hxgrid_new = ct.hxxgrid * get_xside();
+    hygrid_new = ct.hyygrid * get_yside();
+    hzgrid_new = ct.hzzgrid * get_zside();
 
     pe2xyz(pct.gridpe, &pex, &pey, &pez);
 

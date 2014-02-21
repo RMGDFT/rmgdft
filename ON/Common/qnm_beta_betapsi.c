@@ -16,8 +16,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 /*shuchun wang */
 void qnm_beta_betapsi(STATE *state1, int ion2, rmg_double_t * pptr, rmg_double_t * work)
 {

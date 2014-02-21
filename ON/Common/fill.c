@@ -39,7 +39,8 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 static rmg_double_t fd(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);

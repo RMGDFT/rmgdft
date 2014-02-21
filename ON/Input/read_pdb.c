@@ -19,7 +19,7 @@
  * OUTPUT
  *   variables in structure CONTROL c are updated
  *   in most of other file, the name is ct.... 
- *   see main_on.h for structure CONTROL
+ *   see main.h for structure CONTROL
  * PARENTS
  *   main.c
  * CHILDREN
@@ -28,7 +28,7 @@
 
 #include <string.h>
 #include <ctype.h>
-#include "main_on.h"
+#include "main.h"
 
 
 int read_parse_pdb_line (ION * iptr, int ion_index)

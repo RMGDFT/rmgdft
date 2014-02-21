@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void state_corner_xyz(STATE * states)
@@ -19,9 +19,9 @@ void state_corner_xyz(STATE * states)
     int item;
     int max_nx, max_ny, max_nz;
 
-    hgrid[0] = ct.hxgrid * ct.xside;
-    hgrid[1] = ct.hygrid * ct.yside;
-    hgrid[2] = ct.hzgrid * ct.zside;
+    hgrid[0] = get_hxgrid() * get_xside();
+    hgrid[1] = get_hygrid() * get_yside();
+    hgrid[2] = get_hzgrid() * get_zside();
 
 
 

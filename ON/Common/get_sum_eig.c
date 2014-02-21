@@ -16,8 +16,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 
 double get_te_ion_ion()
@@ -108,6 +108,7 @@ double get_Exc(double *rho, double *rhocore)
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         nrho[idx] = rhocore[idx] + rho[idx];
 
+//dprintf("\n get_Exc  %d %d ",get_FP0_BASIS(), ct.vh_pbasis);
 
     /* Evaluate XC energy correction terms */
     switch (ct.xctype)

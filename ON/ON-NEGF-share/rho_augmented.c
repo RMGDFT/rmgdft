@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main_on.h"
+#include "main.h"
 
 /* begin shuchun wang */
 void rho_augmented(rmg_double_t * rho, rmg_double_t * global_mat_X)

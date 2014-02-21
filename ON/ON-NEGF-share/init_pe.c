@@ -30,7 +30,8 @@
  * SOURCE
  */
 
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 void init_pe ( int image )
@@ -52,7 +53,7 @@ void init_pe ( int image )
     /* Infer the number of cpu grids in each image. */
     pct.grids = image / NPES;
     if (NPES * pct.grids != image)
-        error_handler ("MPI processes per image must be a multiple of NPES (PE_X*PE_Y*PE_Z).");
+        error_handler ("MPI processes per image must be a multiple of NPES (pct.pe_x*pct.pe_y*pct.pe_z).");
 
     if ( pct.grids > MAX_GRIDS )
         error_handler ("CPU Grid multiplicity (%d) is more than MAX_GRIDS in params.h.", pct.grids);
@@ -138,30 +139,33 @@ void init_pe ( int image )
     /* Legacy portion of init_pe */
 
     /* XYZ coordinates of this processor */
-dprintf("\n a11111\n");
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
     /* Now wrap them in case we are running with some processors duplicated */
     /* Two should be enough for any case that we might be doing.            */
-    /* Wouldn't ii %= PE_X; be better??? */
-    if (ii >= PE_X)
-        ii -= PE_X;
-    if (ii >= PE_X)
-        ii -= PE_X;
+    /* Wouldn't ii %= pct.pe_x; be better??? */
+    if (ii >= pct.pe_x)
+        ii -= pct.pe_x;
+    if (ii >= pct.pe_x)
+        ii -= pct.pe_x;
 
 
-dprintf("\n b11111 %d %d %d\n", PE_X, PE_Y, PE_Z);
     /* Have each processor figure out who it's neighbors are */
-    XYZ2PE (ii, (jj + 1) % PE_Y, kk, pct.neighbors[NB_N]);
-    XYZ2PE (ii, (jj - 1 + PE_Y) % PE_Y, kk, pct.neighbors[NB_S]);
-    XYZ2PE ((ii + 1) % PE_X, jj, kk, pct.neighbors[NB_E]);
-    XYZ2PE ((ii - 1 + PE_X) % PE_X, jj, kk, pct.neighbors[NB_W]);
-    XYZ2PE (ii, jj, (kk + 1) % PE_Z, pct.neighbors[NB_U]);
-    XYZ2PE (ii, jj, (kk - 1 + PE_Z) % PE_Z, pct.neighbors[NB_D]);
+    XYZ2PE (ii, (jj + 1) % pct.pe_y, kk, pct.neighbors[NB_N]);
+    XYZ2PE (ii, (jj - 1 + pct.pe_y) % pct.pe_y, kk, pct.neighbors[NB_S]);
+    XYZ2PE ((ii + 1) % pct.pe_x, jj, kk, pct.neighbors[NB_E]);
+    XYZ2PE ((ii - 1 + pct.pe_x) % pct.pe_x, jj, kk, pct.neighbors[NB_W]);
+    XYZ2PE (ii, jj, (kk + 1) % pct.pe_z, pct.neighbors[NB_U]);
+    XYZ2PE (ii, jj, (kk - 1 + pct.pe_z) % pct.pe_z, pct.neighbors[NB_D]);
+
+
+ // Set up grids and neighbors using both C and C++ for now
+    set_neighbors(pct.neighbors);
+    set_nodes(pct.gridpe, ii, jj, kk);
+
 
     // Compute grid sizes for each node.
 
-dprintf("\n c11111\n");
 //    find_node_sizes(pct.gridpe, get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(), &pct.get_PX0_GRID(), &pct.get_PY0_GRID(), &pct.get_PZ0_GRID());
  //   find_node_sizes(pct.gridpe, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(), &pct.get_FPX0_GRID(), &pct.get_FPY0_GRID(), &pct.get_FPZ0_GRID());
 
@@ -176,7 +180,6 @@ dprintf("\n c11111\n");
      //                 &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
 
 
-dprintf("\n e11111\n");
     my_barrier ();
 
 }                               /* end init_pe */

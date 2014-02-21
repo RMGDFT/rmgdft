@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void update_orbit_centers(STATE * states)
@@ -59,9 +59,9 @@ void update_orbit_centers(STATE * states)
             x = new_centers[st * 3 + 0];
             y = new_centers[st * 3 + 1];
             z = new_centers[st * 3 + 2];
-            shift_x = (x - states[st].crds[0]) / (ct.hxgrid * ct.xside);
-            shift_y = (y - states[st].crds[1]) / (ct.hygrid * ct.yside);
-            shift_z = (z - states[st].crds[2]) / (ct.hzgrid * ct.zside);
+            shift_x = (x - states[st].crds[0]) / (get_hxgrid() * get_xside());
+            shift_y = (y - states[st].crds[1]) / (get_hygrid() * get_yside());
+            shift_z = (z - states[st].crds[2]) / (get_hzgrid() * get_zside());
 
             if (pct.gridpe == 0)
                 printf
@@ -70,9 +70,9 @@ void update_orbit_centers(STATE * states)
                      states[st].crds[2], x, y, z, shift_x, shift_y, shift_z);
 
 
-            states[st].crds[0] += shift_x * (ct.hxgrid * ct.xside);
-            states[st].crds[1] += shift_y * (ct.hygrid * ct.yside);
-            states[st].crds[2] += shift_z * (ct.hzgrid * ct.zside);
+            states[st].crds[0] += shift_x * (get_hxgrid() * get_xside());
+            states[st].crds[1] += shift_y * (get_hygrid() * get_yside());
+            states[st].crds[2] += shift_z * (get_hzgrid() * get_zside());
 
             states[st].ixmin = states[st].ixmin + shift_x;
             states[st].iymin = states[st].iymin + shift_y;
@@ -195,9 +195,9 @@ int if_update_centers(STATE * states)
             x = new_centers[st * 3 + 0];
             y = new_centers[st * 3 + 1];
             z = new_centers[st * 3 + 2];
-            shift_x = (x - states[st].crds[0]) / (ct.hxgrid * ct.xside);
-            shift_y = (y - states[st].crds[1]) / (ct.hygrid * ct.yside);
-            shift_z = (z - states[st].crds[2]) / (ct.hzgrid * ct.zside);
+            shift_x = (x - states[st].crds[0]) / (get_hxgrid() * get_xside());
+            shift_y = (y - states[st].crds[1]) / (get_hygrid() * get_yside());
+            shift_z = (z - states[st].crds[2]) / (get_hzgrid() * get_zside());
 
             N_moving_orbits += abs(shift_x) * abs(shift_x)
                 + abs(shift_y) * abs(shift_y) + abs(shift_z) * abs(shift_z);

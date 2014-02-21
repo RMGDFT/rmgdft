@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
-#include "main_on.h"
+#include "main.h"
 
 void nlforce_par_omega(rmg_double_t * par_omega_x, rmg_double_t * par_omega_y, rmg_double_t * par_omega_z, int ion, int nh)
 {

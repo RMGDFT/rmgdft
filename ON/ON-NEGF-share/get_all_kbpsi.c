@@ -13,7 +13,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi);

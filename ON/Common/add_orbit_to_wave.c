@@ -14,7 +14,7 @@ wrapper function call in get_wave
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 static int fold_to_unitcell(int, int);
 

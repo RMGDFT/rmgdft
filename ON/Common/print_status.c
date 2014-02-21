@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void print_status(STATE * states, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, rmg_double_t * vh_old, char *msg)

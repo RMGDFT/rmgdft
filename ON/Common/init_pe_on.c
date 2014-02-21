@@ -27,10 +27,10 @@
 
 
 
-#include "main_on.h"
+#include "main.h"
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "init_var.h"
 
 extern int mpi_nprocs;
 extern int mpi_myrank;
@@ -41,7 +41,7 @@ void init_pe_on(void)
 
     int npes, ii, jj, kk;
     int ndims, dims[2], periods[2], reorder, kpdelta, remains[2];
-    int coords[2], item, rank, PE_X, PE_Y, PE_Z;
+    int coords[2], item, rank;
 
 
  /* get total mpi core count  */
@@ -89,52 +89,6 @@ void init_pe_on(void)
 
     /* XYZ coordinates of this processor */
 
-    pe2xyz(pct.coords[1], &ii, &jj, &kk);
-
-
-    PE_X = pct.pe_x;
-    PE_Y = pct.pe_y;
-    PE_Z = pct.pe_z;
-
-    /* Now wrap them in case we are running with some processors duplicated */
-    /* Two should be enough for any case that we might be doing.            */
-    if (ii >= PE_X)
-        ii -= PE_X;
-    if (ii >= PE_X)
-        ii -= PE_X;
-
-
-
-    /* Have each processor figure out who it's neighbors are */
-    xyz2pe(ii, (jj + 1) % PE_Y, kk, &item);
-    coords[1] = item;
-    MPI_Cart_rank(COMM_KP, coords, &rank);
-    pct.neighbors[NB_N] = rank;
-
-    xyz2pe(ii, (jj - 1 + PE_Y) % PE_Y, kk, &item);
-    coords[1] = item;
-    MPI_Cart_rank(COMM_KP, coords, &rank);
-    pct.neighbors[NB_S] = rank;
-
-    xyz2pe((ii + 1) % PE_X, jj, kk, &item);
-    coords[1] = item;
-    MPI_Cart_rank(COMM_KP, coords, &rank);
-    pct.neighbors[NB_E] = rank;
-
-    xyz2pe((ii - 1 + PE_X) % PE_X, jj, kk, &item);
-    coords[1] = item;
-    MPI_Cart_rank(COMM_KP, coords, &rank);
-    pct.neighbors[NB_W] = rank;
-
-    xyz2pe(ii, jj, (kk + 1) % PE_Z, &item);
-    coords[1] = item;
-    MPI_Cart_rank(COMM_KP, coords, &rank);
-    pct.neighbors[NB_U] = rank;
-
-    xyz2pe(ii, jj, (kk - 1 + PE_Z) % PE_Z, &item);
-    coords[1] = item;
-    MPI_Cart_rank(COMM_KP, coords, &rank);
-    pct.neighbors[NB_D] = rank;
 
     my_barrier();
     /* INITIALIZE THE PROCESS GRID */

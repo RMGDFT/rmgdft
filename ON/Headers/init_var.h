@@ -2,52 +2,8 @@
  **    $Id$    **
 ******************************************************************************/
  
-/****f* QMD-MGDFT/md.h *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   
- * INPUTS
- *
- * OUTPUT
- *  
- * PARENTS
- *
- * CHILDREN
- * 
- * SEE ALSO
- *  
- * SOURCE
- */
-
-
 #define ORDER_N 1
 
-
-/* Version information */
-#include "main.h"
-
-
-/* Compile time parameters */
-#include    "params_on.h"
-
-
-/* Constants and symbolic definitions */
-#include    "const_on.h"
-
-
-/** Size of floating point variables used in QMD */
-#include    "common_prototypes.h"
 
 
 int MXLLDA, MXLCOL;
@@ -94,7 +50,23 @@ STATE states_res1[MAX_STATES];
 STATE states_tem[MAX_STATES];
 
 
-#include "overlap.h"
 
-#include "macros.h"
-#include    "prototypes_on.h"
+ORBIT_ORBIT_OVERLAP *orbit_overlap_region;
+ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
+
+rmg_double_t *rho_global;
+rmg_double_t *wave_global;
+
+rmg_double_t *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
+int *num_nonlocal_ion;
+int *ionidx_allproc;
+int max_ion_nonlocal;
+
+int *state_begin;
+int *state_end;
+
+
+int *send_to, *recv_from, num_sendrecv_loop;
+int *send_to1, *recv_from1, num_sendrecv_loop1;
+
+

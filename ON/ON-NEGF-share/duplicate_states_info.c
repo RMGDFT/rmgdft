@@ -2,7 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
  
-#include 	"main_on.h"
+#include 	"main.h"
 
 
 void duplicate_states_info(STATE * states, STATE * states1)

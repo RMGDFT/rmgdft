@@ -20,7 +20,7 @@
  *   Apply the sixth order Laplacian operator on a orthorhombic grid
  * INPUTS
  *   S0_GRID *f:  real array of (dimx+2) * (dimy+2) * ((dimz+2)
- *   see main_on.h for defination of unions S0_GRID and P0_GRID
+ *   see main.h for defination of unions S0_GRID and P0_GRID
  * OUTPUT
  *   P0_GRID *work: real array of dimx * dimy * dimz
  * PARENTS
@@ -32,7 +32,7 @@
 
 
 
-#include "main_on.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 
@@ -62,19 +62,19 @@ void app6_del2(rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int di
     my_malloc_init( dum2, (dimx + 6) * (dimy + 6) * (dimz + 6), rmg_double_t );
     trade_imagesx(f, dum2, dimx, dimy, dimz, 3, CENTRAL_FD);
 
-    h2 = hxgrid * hxgrid * ct.xside * ct.xside;
+    h2 = hxgrid * hxgrid * get_xside() * get_xside();
     t0 = -49.0 / (18.0 * h2);
     t1x =  3.0 / ( 2.0 * h2);
     t2x = -3.0 / (20.0 * h2);
     t3x =  1.0 / (90.0 * h2);
 
-    h2 = hygrid * hygrid * ct.yside * ct.yside;
+    h2 = hygrid * hygrid * get_yside() * get_yside();
     t0 -= 49.0 / (18.0 * h2);
     t1y =  3.0 / ( 2.0 * h2);
     t2y = -3.0 / (20.0 * h2);
     t3y =  1.0 / (90.0 * h2);
 
-    h2 = hzgrid * hzgrid * ct.zside * ct.zside;
+    h2 = hzgrid * hzgrid * get_zside() * get_zside();
     t0 -= 49.0 / (18.0 * h2);
     t1z =  3.0 / ( 2.0 * h2);
     t2z = -3.0 / (20.0 * h2);

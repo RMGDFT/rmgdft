@@ -126,3 +126,24 @@
 
 /* Maximum number of scf threads. Adjust based on hardware resources */
 #define MAX_SCF_THREADS 32
+
+
+#define         MAX_OPTS  16
+
+
+
+/* Maximum number of ions -- just an upper limit on
+ * dynamically allocated data structures. */
+#define         IONS_PER_PE     MAX_IONS
+
+
+/* Number of k-points -- just an upper limit on
+ * dynamically allocated data structures. */
+#define         MAX_KPTS           32
+
+
+/* Size of the linear interpolation grid for the qfunction */
+/* Max. number of states localized on the same ion */
+#define MAX_LOC_ST      20
+
+

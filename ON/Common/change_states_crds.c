@@ -4,7 +4,8 @@
  
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 /* Reads and parses the input control file */

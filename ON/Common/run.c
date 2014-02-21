@@ -24,7 +24,7 @@
  * CHILDREN
  *   
  * SEE ALSO
- *   main_on.h for structure defination
+ *   main.h for structure defination
  * SOURCE
  */
 
@@ -34,8 +34,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 extern rmg_double_t *vh_old, *vxc_old;
 
 

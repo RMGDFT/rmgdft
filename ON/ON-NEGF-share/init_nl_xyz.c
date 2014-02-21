@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 
@@ -48,9 +48,9 @@ void init_nl_xyz (void)
 
 
         L0_NLDIM = sp->nldim;
-        hxgrid = ct.hxgrid * ct.xside;
-        hygrid = ct.hygrid * ct.yside;
-        hzgrid = ct.hzgrid * ct.zside;
+        hxgrid = get_hxgrid() * get_xside();
+        hygrid = get_hygrid() * get_yside();
+        hzgrid = get_hzgrid() * get_zside();
 
         get_start (L0_NLDIM, ct.ions[ion].crds[0], ct.xcstart, hxgrid,
                    &iptr->ixstart, &iptr->nlxcstart);
@@ -59,9 +59,9 @@ void init_nl_xyz (void)
         get_start (L0_NLDIM, ct.ions[ion].crds[2], ct.zcstart, hzgrid,
                    &iptr->izstart, &iptr->nlzcstart);
 
-        iptr->nlxcstart /= ct.xside;
-        iptr->nlycstart /= ct.yside;
-        iptr->nlzcstart /= ct.zside;
+        iptr->nlxcstart /= get_xside();
+        iptr->nlycstart /= get_yside();
+        iptr->nlzcstart /= get_zside();
         iptr->ixend = iptr->ixstart + L0_NLDIM - 1;
         iptr->iyend = iptr->iystart + L0_NLDIM - 1;
         iptr->izend = iptr->izstart + L0_NLDIM - 1;

@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 void precond_mg(double *res, double *work1, double *work2, int istate)
 {
@@ -61,7 +61,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
         pack_ptos(sg_orbit, work1, ixx, iyy, izz);
         pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
 
-        diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
+        diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
         diag = -1.0/diag;
         saxpy(&stopp0, &one, res, &ione, work2, &ione);
@@ -81,7 +81,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
             mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
-                       ct.hxgrid, ct.hygrid, ct.hzgrid, 0, pct.neighbors,
+                       get_hxgrid(), get_hygrid(), get_hzgrid(), 0, pct.neighbors,
                        ct.eig_parm.levels, eig_pre, eig_post, 1, istate, &sp->inum, 1);
 
 

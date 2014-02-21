@@ -20,7 +20,7 @@
  *                rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
  *   drive routine for fast relax.
  * INPUTS
- *   states: all wave functions (see main_on.h)
+ *   states: all wave functions (see main.h)
  *   vxc: exchange-correlation potential
  *   vh:  Hartree potential
  *   vnuc: pseudopotential
@@ -43,7 +43,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 

@@ -21,7 +21,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 #define DELTA		1e-10
 #ifndef M_2_SQRTPI
@@ -187,9 +188,9 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
         L0_LDIM = sp->ldim;
 
-        hxgrid = ct.hxxgrid * ct.xside;
-        hygrid = ct.hyygrid * ct.yside;
-        hzgrid = ct.hzzgrid * ct.zside;
+        hxgrid = ct.hxxgrid * get_xside();
+        hygrid = ct.hyygrid * get_yside();
+        hzgrid = ct.hzzgrid * get_zside();
 
         /* Generate range of indices over which the short-range difference */
         /* potential will be mapped onto the global grid.                  */

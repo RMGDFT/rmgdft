@@ -16,7 +16,8 @@ and add them into Aij.
 #include <stdio.h>
 #include <assert.h>
 
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X)

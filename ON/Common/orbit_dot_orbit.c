@@ -17,8 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 
 void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_double_t *Bij)

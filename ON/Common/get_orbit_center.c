@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void get_orbit_center(STATE *state, rmg_double_t * x, rmg_double_t * y, rmg_double_t * z)
@@ -46,8 +46,8 @@ void get_orbit_center(STATE *state, rmg_double_t * x, rmg_double_t * y, rmg_doub
     *x = *x / sum;
     *y = *y / sum;
     *z = *z / sum;
-    *x = (*x + state->ixmin) * ct.hxgrid * ct.xside;
-    *y = (*y + state->iymin) * ct.hygrid * ct.yside;
-    *z = (*z + state->izmin) * ct.hzgrid * ct.zside;
+    *x = (*x + state->ixmin) * get_hxgrid() * get_xside();
+    *y = (*y + state->iymin) * get_hygrid() * get_yside();
+    *z = (*z + state->izmin) * get_hzgrid() * get_zside();
 
 }

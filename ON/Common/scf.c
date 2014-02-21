@@ -11,8 +11,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 #define DELTA_V_MAX 1.0
 

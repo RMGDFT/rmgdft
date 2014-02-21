@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 #define s      0
@@ -65,9 +65,9 @@ void init_wf_gaussian(STATE * states)
     my_barrier();
 
 
-    hx = ct.hxgrid * ct.xside;
-    hy = ct.hygrid * ct.yside;
-    hz = ct.hzgrid * ct.zside;
+    hx = get_hxgrid() * get_xside();
+    hy = get_hygrid() * get_yside();
+    hz = get_hzgrid() * get_zside();
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {

@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
 {
@@ -21,9 +21,9 @@ rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
 
 
     /* Get lattice vectors */
-    ax = get_NX_GRID() * ct.hxgrid * ct.xside;
-    ay = get_NY_GRID() * ct.hygrid * ct.yside;
-    az = get_NZ_GRID() * ct.hzgrid * ct.zside;
+    ax = get_NX_GRID() * get_hxgrid() * get_xside();
+    ay = get_NY_GRID() * get_hygrid() * get_yside();
+    az = get_NZ_GRID() * get_hzgrid() * get_zside();
 
 
 

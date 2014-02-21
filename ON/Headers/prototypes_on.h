@@ -584,3 +584,40 @@ void diag_eig_maitrix(double *, double *, int *);
 void filter_potential (rmg_double_t *potential, rmg_double_t *r, int rg_points, rmg_double_t rmax, rmg_double_t offset, rmg_double_t parm, rmg_double_t* potential_lgrid, 
 	rmg_double_t *rab, int l_value, rmg_double_t dr, rmg_double_t  gwidth, int lgrid_points, rmg_double_t rcut, rmg_double_t rwidth, rmg_double_t * drpotential_lgrid);
 
+
+rmg_double_t dot_product_orbit_nl (STATE *st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr);
+
+void non_zero_pairs ();
+void non_zero_pairs1 ();
+
+void init_nl_xyz ();
+
+void theta_phi_new (int st1, int st2, rmg_double_t theta_ion, rmg_double_t * st2_psi,
+                    rmg_double_t * state1_psi, int mode, STATE * states);
+
+void print_status (STATE *, rmg_double_t *, rmg_double_t *, rmg_double_t *, rmg_double_t *, char *);
+void print_state_projections (STATE *, char);
+void print_global_function (rmg_double_t *, char, char *);
+void print_state_sum (STATE * states);
+void print_state (STATE * state);
+void print_sum (int size, double *data, char *msg);
+void print_sum_square (int size, double *data, char *msg);
+
+
+void init_comm (STATE * states);
+
+void init_comm_res (STATE * states);
+
+
+void get_orbit_overlap_region (STATE * states);
+
+void get_ion_orbit_overlap_nl (STATE * states);
+
+void duplicate_states_info (STATE * states, STATE * states1);
+
+
+void get_ion_ion_overlap_region_orbit ();
+
+
+void is_state_overlap (STATE * states);
+

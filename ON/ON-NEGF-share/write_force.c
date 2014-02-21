@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "main_on.h"
+#include "main.h"
 
 
 

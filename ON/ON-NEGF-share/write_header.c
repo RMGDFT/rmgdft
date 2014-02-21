@@ -33,7 +33,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 #include "svnrev.h"
 
 
@@ -64,16 +65,11 @@ void write_header(void)
     int kpt, idx;
     time_t tt;
     rmg_double_t t1;
-    int PE_X, PE_Y, PE_Z;
 
     char *timeptr;
     time(&tt);
     timeptr = ctime(&tt);
 
-
-    PE_X = pct.pe_x;
-    PE_Y = pct.pe_y;
-    PE_Z = pct.pe_z;
 
     switch (ct.boundaryflag)
     {
@@ -112,9 +108,9 @@ void write_header(void)
 
 
     printf("\n\n    GRID DISCRETIZATION:");
-    printf("\n        Hx  = %12.6f  bohr", ct.hxgrid * ct.xside);
-    printf("\n        Hy  = %12.6f  bohr", ct.hygrid * ct.yside);
-    printf("\n        Hz  = %12.6f  bohr", ct.hzgrid * ct.zside);
+    printf("\n        Hx  = %12.6f  bohr", get_hxgrid() * get_xside());
+    printf("\n        Hy  = %12.6f  bohr", get_hygrid() * get_yside());
+    printf("\n        Hz  = %12.6f  bohr", get_hzgrid() * get_zside());
     printf("\n        NX  = %d", ct.psi_nxgrid);
     printf("\n        NY  = %d", ct.psi_nygrid);
     printf("\n        NZ  = %d\n", ct.psi_nzgrid);
@@ -128,9 +124,9 @@ void write_header(void)
 
     printf("\n\n    PROCESSOR TOPOLOGY:  Total PE's = %d", NPES);
     printf("\n       PE_KPOINT  = %d", pct.pe_kpoint);
-    printf("\n       PE_X  = %d", PE_X);
-    printf("\n       PE_Y  = %d", PE_Y);
-    printf("\n       PE_Z  = %d\n", PE_Z);
+    printf("\n       pct.pe_x  = %d", pct.pe_x);
+    printf("\n       pct.pe_y  = %d", pct.pe_y);
+    printf("\n       pct.pe_z  = %d\n", pct.pe_z);
 
 
     printf("\n\n    ENERGY CUTOFF  PARAMETER  %12.6f", ct.cparm);
@@ -154,8 +150,8 @@ void write_header(void)
     printf("\n");
     printf("\n    TEST OF MINIMUM IMAGING ASSUMPTION");
     printf("\n          SPEC-PAIR  ENERGY CONTRIBUTION");
-    t1 = (ct.xside < ct.yside) ? ct.xside : ct.yside;
-    t1 = (t1 < ct.zside) ? t1 : ct.zside;
+    t1 = (get_xside() < get_yside()) ? get_xside() : get_yside();
+    t1 = (t1 < get_zside()) ? t1 : get_zside();
     t1 = 0.5 * t1;
     for (i = 0; i < ct.num_species; i++)
     {

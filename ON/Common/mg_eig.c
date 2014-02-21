@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 #include "my_scalapack.h"
 
 /* Flag for projector mixing */
@@ -149,9 +149,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         /*		pack_ptos(sg_orbit, states[st1].psiR, ixx, iyy, izz); 
          */
         /* A operating on psi stored in work2 */
-        /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid); 
+        /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid()); 
          */
-        app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
+        app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
         for (idx = 0; idx < ixx * iyy * izz; idx++)
             states1[st1].psiR[idx] += orbit_tem[idx];

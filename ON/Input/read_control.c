@@ -19,7 +19,7 @@
  * OUTPUT
  *   variables in structure CONTROL c are updated
  *   in most of other file, the name is ct.... 
- *   see main_on.h for structure CONTROL
+ *   see main.h for structure CONTROL
  * PARENTS
  *   md.c
  * CHILDREN
@@ -37,8 +37,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 static void read_orbitals ();
 static void read_kpoints ();
 
@@ -120,7 +120,6 @@ void read_control (char *file)
 
 
 
-    dprintf("\n 11111 \n");
 
     /* Number of states */
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
@@ -130,7 +129,6 @@ void read_control (char *file)
         error_handler("Too many states specified in input file");
     }
 
-    dprintf("\n 21111 \n");
 
     /* Get k-points and weights */
     read_kpoints ();
@@ -152,7 +150,6 @@ void read_control (char *file)
 
 
 
-    dprintf("\n 31111\n ");
     if(NPES < pct.pe_kpoint * pct.nprow * pct.npcol)
     {
         printf("\n NPES = %d", NPES);
@@ -197,7 +194,6 @@ void read_control (char *file)
     get_data ("output_information_for_GW", &ct.flag_gw, INT, "0");
 
 
-    dprintf("\n 41111\n ");
     /* read info about atomic orbital filenames for each species for
      * LCAO start */
     char s[32], fn[MAX_PATH];
@@ -221,13 +217,10 @@ void read_control (char *file)
 
 
     /* read the atomic positions and species */
-    dprintf("\n 51111\n ");
     read_atoms ();
 
-    dprintf("\n 61111\n ");
     read_orbitals ();
 
-    dprintf("\n 71111\n ");
 
     /* Close input file */
     my_free (tptr);

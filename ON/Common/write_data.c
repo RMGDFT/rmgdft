@@ -23,9 +23,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include <time.h>
-#include "main_on.h"
+#include "main.h"
 #include <math.h>
-
+#include "init_var.h"
 #include <mpi.h>
 
 
@@ -232,9 +232,9 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	if (pct.gridpe == 0)
 		close(fhand);
 
-	hxgrid = ct.hxgrid * ct.xside;
-	hygrid = ct.hygrid * ct.yside;
-	hzgrid = ct.hzgrid * ct.zside;
+	hxgrid = get_hxgrid() * get_xside();
+	hygrid = get_hygrid() * get_yside();
+	hzgrid = get_hzgrid() * get_zside();
 
 	for (state = ct.state_begin; state < ct.state_end; state++)
 	{
@@ -267,9 +267,9 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	 */
 
 
-	hxgrid = ct.hxxgrid * ct.xside;
-	hygrid = ct.hyygrid * ct.yside;
-	hzgrid = ct.hzzgrid * ct.zside;
+	hxgrid = ct.hxxgrid * get_xside();
+	hygrid = ct.hyygrid * get_yside();
+	hzgrid = ct.hzzgrid * get_zside();
 
 
 	ixmin = 2 * states[0].ixmin;

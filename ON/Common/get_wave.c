@@ -12,8 +12,8 @@ Get a particular wave st and store it in wave_global
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 #include "my_scalapack.h"
 
 

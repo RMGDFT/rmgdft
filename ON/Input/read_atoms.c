@@ -19,15 +19,15 @@
  * OUTPUT
  *   variables in structure CONTROL c are updated
  *   in most of other file, the name is ct.... 
- *   see main_on.h for structure CONTROL
+ *   see main.h for structure CONTROL
  * PARENTS
  *   main.c
  * CHILDREN
  * 
  * SOURCE */
 
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 void read_atoms (void)
 {
     int st1,ist, ion, args;

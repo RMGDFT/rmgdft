@@ -32,7 +32,7 @@
  * SOURCE
  */
 
-#include "main_on.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -58,9 +58,9 @@ rmg_double_t app_cil_orbital6 (rmg_double_t * a, rmg_double_t * b, int dimx, int
     rptr = a;
 
 
-    ihx = 1.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    ihy = 1.0 / (gridhy * gridhy * ct.yside * ct.yside);
-    ihz = 1.0 / (gridhz * gridhz * ct.zside * ct.zside);
+    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
+    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 

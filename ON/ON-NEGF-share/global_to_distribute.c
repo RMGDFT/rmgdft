@@ -17,7 +17,7 @@ get  global array  get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 
 
 void global_to_distribute(rmg_double_t * global_array, rmg_double_t * distr_array)

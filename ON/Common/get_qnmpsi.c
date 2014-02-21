@@ -17,8 +17,8 @@ modified by Wenchang Lu, 09-24-2005
 #include <stdio.h>
 #include <assert.h>
 
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 /*shuchun wang*/
 void get_qnmpsi(STATE *sp, double *kbpsi_one_state, double *work)

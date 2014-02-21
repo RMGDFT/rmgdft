@@ -20,7 +20,7 @@
  *   Apply the sixth order Laplacian operator on a orthorhombic grid
  * INPUTS
  *   S0_GRID *f:  real array of (dimx+2) * (dimy+2) * ((dimz+2)
- *   see main_on.h for defination of unions S0_GRID and P0_GRID
+ *   see main.h for defination of unions S0_GRID and P0_GRID
  * OUTPUT
  *   P0_GRID *work: real array of dimx * dimy * dimz
  * PARENTS
@@ -32,7 +32,7 @@
 
 
 
-#include "main_on.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 
@@ -61,21 +61,21 @@ void app10_del2(rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int d
     my_malloc_init( dum2, (dimx + 8) * (dimy + 8) * (dimz + 8), rmg_double_t );
     fill_orbit_borders4(dum2, f, dimx, dimy, dimz);
 
-    h2 = hxgrid * hxgrid * ct.xside * ct.xside;
+    h2 = hxgrid * hxgrid * get_xside() * get_xside();
     t0 = -205.0 / (72.0 * h2);
     t1x = 8.0 / (5.0 * h2);
     t2x = -1.0 / (5.0 * h2);
     t3x = 8.0 / (315.0 * h2);
     t4x = -1.0 / (560.0 * h2);
 
-    h2 = hygrid * hygrid * ct.yside * ct.yside;
+    h2 = hygrid * hygrid * get_yside() * get_yside();
     t0 -= 205.0 / (72.0 * h2);
     t1y = 8.0 / (5.0 * h2);
     t2y = -1.0 / (5.0 * h2);
     t3y = 8.0 / (315.0 * h2);
     t4y = -1.0 / (560.0 * h2);
 
-    h2 = hzgrid * hzgrid * ct.zside * ct.zside;
+    h2 = hzgrid * hzgrid * get_zside() * get_zside();
     t0 -= 205.0 / (72.0 * h2);
     t1z = 8.0 / (5.0 * h2);
     t2z = -1.0 / (5.0 * h2);

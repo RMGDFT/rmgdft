@@ -3,7 +3,7 @@
 ******************************************************************************/
  
 #include <stdio.h>
-#include "main_on.h" 
+#include "main.h" 
 
 #define MAX_COL		10
 

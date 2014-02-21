@@ -39,8 +39,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 
 void init_wf_atom(STATE *);
@@ -71,15 +71,15 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     ct.psi_fnzgrid = get_FNZ_GRID();
 
 
-
     my_malloc_init( ct.energies, ct.max_scf_steps, rmg_double_t );
 
     ct.states = states;
+    int ibrav = get_ibrav_type();
+    latgen(&ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
 
     init_parameter(states);
     if(gridpe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
 
-    latgen(&ct.ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
     if(gridpe == 0) printf("\n init latgen done %f sec",my_crtc()-time1 );
 
     init_parameter(states);

@@ -26,7 +26,7 @@
  * CHILDREN
  *   run.c
  * SEE ALSO
- *   main_on.h for structure defination
+ *   main.h for structure defination
  * SOURCE
  */
 
@@ -37,16 +37,17 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 #include "svnrev.h"
 
 
 
-/* Main control structure which is declared extern in main_on.h so any module */
+/* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
 CONTROL ct;
 
-/* PE control structure which is also declared extern in main_on.h */
+/* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
 int mpi_nprocs;
@@ -56,7 +57,6 @@ int mpi_myrank;
 /*Variables from recips.h*/
 double b0[3], b1[3], b2[3];
 double alat;
-
 
 
 int main(int argc, char **argv)
@@ -76,14 +76,6 @@ int main(int argc, char **argv)
     init_IO(argc, argv);
 
 
-    /* Read in the name of the control file from the command line */
-//    strcpy(ct.cfile, argv[1]);
-
-    /* Read in our control information */
- //   read_control();
-
-    /* Read in our pseudopotential information */
-//    read_pseudo();
 
     my_barrier();
 

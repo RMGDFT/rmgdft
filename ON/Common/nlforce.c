@@ -11,8 +11,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 
 void nlforce(rmg_double_t * veff)

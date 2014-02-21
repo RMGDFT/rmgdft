@@ -29,7 +29,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
+#include "main.h"
 
 void init_parameter(STATE * states)
 {
@@ -62,9 +62,9 @@ void init_parameter(STATE * states)
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
 
-        v1 = TWO * PI * ct.kp[kpt].kpt[0] / ct.xside;
-        v2 = TWO * PI * ct.kp[kpt].kpt[1] / ct.yside;
-        v3 = TWO * PI * ct.kp[kpt].kpt[2] / ct.zside;
+        v1 = TWO * PI * ct.kp[kpt].kpt[0] / get_xside();
+        v2 = TWO * PI * ct.kp[kpt].kpt[1] / get_yside();
+        v3 = TWO * PI * ct.kp[kpt].kpt[2] / get_zside();
 
         ct.kp[kpt].kvec[0] = v1;
         ct.kp[kpt].kvec[1] = v2;
@@ -92,23 +92,27 @@ void init_parameter(STATE * states)
     ct.nel = ct.ionic_charge + ct.background_charge;
 
 
-    ct.hmaxgrid = ct.xside * ct.hxgrid;
-    if (ct.yside * ct.hygrid > ct.hmaxgrid)
-        ct.hmaxgrid = ct.yside * ct.hygrid;
-    if (ct.zside * ct.hzgrid > ct.hmaxgrid)
-        ct.hmaxgrid = ct.zside * ct.hzgrid;
+    ct.hmaxgrid = get_xside() * get_hxgrid();
+    if (get_yside() * get_hygrid() > ct.hmaxgrid)
+        ct.hmaxgrid = get_yside() * get_hygrid();
+    if (get_zside() * get_hzgrid() > ct.hmaxgrid)
+        ct.hmaxgrid = get_zside() * get_hzgrid();
 
-    ct.hmingrid = ct.xside * ct.hxgrid;
-    if (ct.yside * ct.hygrid < ct.hmingrid)
-        ct.hmingrid = ct.yside * ct.hygrid;
-    if (ct.zside * ct.hzgrid < ct.hmingrid)
-        ct.hmingrid = ct.zside * ct.hzgrid;
+    ct.hmingrid = get_xside() * get_hxgrid();
+    if (get_yside() * get_hygrid() < ct.hmingrid)
+        ct.hmingrid = get_yside() * get_hygrid();
+    if (get_zside() * get_hzgrid() < ct.hmingrid)
+        ct.hmingrid = get_zside() * get_hzgrid();
 
     ct.anisotropy = ct.hmaxgrid / ct.hmingrid;
+    set_anisotropy(ct.hmaxgrid / ct.hmingrid);
+
 
     if (ct.anisotropy > 1.1)
+    {
+        dprintf("\n ct.hmaxgrid  %f %f ", ct.hmaxgrid, ct.hmingrid);
         error_handler(" Anisotropy too large");
-
+    }
     /* Set discretization array */
     ct.xcstart = ZERO;
     ct.ycstart = ZERO;

@@ -43,7 +43,7 @@
 #define		DF_DENOMINATOR   0.3898815748423097472
 
 
-#include "main_on.h"
+#include "main.h"
 #include <float.h>
 #include <math.h>
 #include <stdio.h>

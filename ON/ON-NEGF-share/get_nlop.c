@@ -21,9 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
 #include "fftw.h"
+#include "init_var.h"
 
+static void init_alloc_nonloc_mem (void);
 void init_derweight();
 void init_weight();
 
@@ -45,6 +47,7 @@ void get_nlop(void)
     fftw_complex *fptr, *fptr_x, *fptr_y, *fptr_z;
     fftw_complex *beptr, *gbptr;
 
+    init_alloc_nonloc_mem ();
 
 
     double time2 = my_crtc();
@@ -304,3 +307,45 @@ void get_nlop(void)
     fflush(NULL);
 
 }                               /* end get_nlop */
+
+
+static void init_alloc_nonloc_mem (void)
+{
+    int ion;
+
+
+    my_malloc (pct.Qindex, ct.num_ions, int *);
+    my_malloc (pct.Qdvec, ct.num_ions, int *);
+    my_malloc (pct.Qidxptrlen, ct.num_ions, int);
+    my_malloc (pct.lptrlen, ct.num_ions, int);
+    my_malloc (pct.ionidx, ct.num_ions, int);
+    my_malloc (pct.prj_per_ion, ct.num_ions, int);
+
+    my_malloc (pct.augfunc, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.dnmI, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.qqq, ct.num_ions, rmg_double_t *);
+
+
+
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+
+
+        pct.Qidxptrlen[ion] = 0;
+        pct.lptrlen[ion] = 0;
+        pct.ionidx[ion] = 0;
+        pct.prj_per_ion[ion] = 0;
+
+        pct.Qindex[ion] = NULL;
+        pct.Qdvec[ion] = NULL;
+
+        pct.augfunc[ion] = NULL;
+        pct.dnmI[ion] = NULL;
+        pct.qqq[ion] = NULL;
+
+    }                           /*end for(ion=0; ion<ct.num_ions; ion++) */
+
+}                               /*end init_alloc_nonloc_mem */
+
+    /******/
+

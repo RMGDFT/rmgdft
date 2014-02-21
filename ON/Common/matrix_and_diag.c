@@ -30,8 +30,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 
 void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int flag)

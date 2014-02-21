@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
-
+#include "main.h"
+#include "init_var.h"
 
 void theta_phi_new(int st1, int st2, rmg_double_t theta_ion, rmg_double_t * st2_psi,
                    rmg_double_t * state1_psi, int mode, STATE * states)

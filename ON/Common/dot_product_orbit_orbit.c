@@ -12,7 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main_on.h"
+#include "main.h"
+#include "init_var.h"
 
 
 void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
