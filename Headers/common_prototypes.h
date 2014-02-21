@@ -39,14 +39,14 @@ void mgrid_solv (rmg_double_t *v_mat, rmg_double_t *f_mat, rmg_double_t *work,
                  int *pre_cyc, int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim);
+                 int pxdim, int pydim, int pzdim, int boundaryflag);
 void mgrid_solv_f (rmg_float_t *v_mat, rmg_float_t *f_mat, rmg_float_t *work,
                  int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy,
                  rmg_double_t gridhz, int level, int *nb_ids, int max_levels,
                  int *pre_cyc, int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim);
+                 int pxdim, int pydim, int pzdim, int boundaryflag);
 void eval_residual (rmg_double_t *mat, rmg_double_t *f_mat, int dimx, int dimy, int dimz,
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t *res);
 void eval_residual_f (rmg_float_t *mat, rmg_float_t *f_mat, int dimx, int dimy, int dimz,

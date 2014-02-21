@@ -156,7 +156,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
                             get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
                             get_FPX_OFFSET(), get_FPY_OFFSET(), get_FPZ_OFFSET(),
-                            get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+                            get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
 
                 /* Transfer solution back to mgresarr array */

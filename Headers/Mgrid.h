@@ -15,6 +15,8 @@ public:
     template <typename RmgType> void solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
                 int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k);
 
+    int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
+
     template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz,
@@ -22,7 +24,7 @@ public:
                  int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim);
+                 int pxdim, int pydim, int pzdim, int boundary_flag);
 
 };
 

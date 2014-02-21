@@ -330,7 +330,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
                         get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
                         get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
-                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
+                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.boundaryflag);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_MGRIDSOLV_TIME, (my_crtc () - time1));
@@ -446,7 +446,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
                         get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
                         get_PX_OFFSET(), get_PY_OFFSET(), get_PZ_OFFSET(),
-                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
+                        get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.boundaryflag);
 
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res[idx] = 0.0;

@@ -1,5 +1,5 @@
 add_library (MG
-mg_sizes.c
+#mg_sizes.c
 get_vh.c
 find_grid_owner.c
 Mgrid.cpp

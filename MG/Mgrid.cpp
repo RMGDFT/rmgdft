@@ -1,17 +1,3 @@
-
-#include "Mgrid.h"
-#include "FiniteDiff.h"
-#include "BlasWrappers.h"
-#include "TradeImages.h"
-#include "common_prototypes.h"
-
-using namespace std;
-
-
-/************************** SVN Revision Information **************************
- **    $Id: mgrid_solv.c 1848 2013-01-27 14:46:54Z ebriggs $    **
-******************************************************************************/
-
 /****f* QMD-MGDFT/mgrid_solv.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
@@ -58,6 +44,16 @@ using namespace std;
  */
 
 
+#include "Mgrid.h"
+#include "FiniteDiff.h"
+#include "BlasWrappers.h"
+#include "TradeImages.h"
+#include "common_prototypes.h"
+
+using namespace std;
+
+
+
 template <typename RmgType>
 void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
@@ -66,7 +62,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim)
+                 int pxdim, int pydim, int pzdim, int boundaryflag)
 {
     int i;
     int cycl;
@@ -139,12 +135,9 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
 
 /* size for next smaller grid */
-//    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, ct.boundaryflag);
-//    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, ct.boundaryflag);
-//    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, ct.boundaryflag);
-    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, PERIODIC);
-    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, PERIODIC);
-    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, PERIODIC);
+    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
+    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
+    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
 
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
 
@@ -165,7 +158,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                     max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,
-                    pxdim, pydim, pzdim);
+                    pxdim, pydim, pzdim, boundaryflag);
 
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -672,6 +665,69 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
 
 
 
+/* Compute 1-D grid sizes for the next multigrid level 
+
+Inputs:
+curdim        = current size of this grid on this node
+global_dim    = global grid dimension
+global_offset = offset of edge of this node grid on the global grid
+global_pdim   = dimension of this node grid
+bctype        = boundary condition
+
+
+Outputs:
+*roffset      = pointer to grid offset (always 0 or 1)
+
+Return value  = size of next grid level
+
+
+*/
+
+int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
+{
+    int skip, new_dim, istart, istop;
+
+    // Default offset is 0
+    *roffset = 0;
+
+    if(bctype == PERIODIC) {
+
+        skip = (2 << curlevel);
+        // First check if we have too many multigrid levels. For periodic boundary
+        // conditions the next level of the global grid must be divisible by 2
+        if ((global_dim % skip) != 0) {
+            rmg_error_handler ("Too many multigrid levels specified.");
+        }
+
+        // Require at least one point in the level
+        new_dim = global_pdim / skip;
+        if(!new_dim) {
+            rmg_error_handler ("Too many multigrid levels specified.");
+        }
+
+        // evenly divisible then we are done
+        if(!(global_pdim % skip)) return new_dim;
+
+        // Check if first point is included and if not subtract
+        istart = skip - global_offset % skip;
+        istop = (global_offset + global_pdim - 1) % skip;
+        if((istart == skip) || (istop == skip)) new_dim++;
+        
+        // Perform offset check
+        if((istart == skip) || (istart == 0)) {
+            return new_dim;
+        }
+        *roffset = 1;
+        
+        return new_dim;
+
+    }
+
+    rmg_error_handler("Boundary condition not programmed."); 
+
+}
+
+
 // C wrappers
 extern "C" void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work,
                  int dimx, int dimy, int dimz,
@@ -680,14 +736,14 @@ extern "C" void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_doub
                  int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim)
+                 int pxdim, int pydim, int pzdim, int boundary_flag)
 {
     Mgrid MG;
     MG.mgrid_solv<double>( v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz,
                    level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
                    gxsize, gysize, gzsize,
                    gxoffset, gyoffset, gzoffset,
-                   pxdim, pydim, pzdim);
+                   pxdim, pydim, pzdim, boundary_flag);
 
 }
 
@@ -698,14 +754,14 @@ extern "C" void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_floa
                  int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim)
+                 int pxdim, int pydim, int pzdim, int boundary_flag)
 {
     Mgrid MG;
     MG.mgrid_solv<float>( v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz,
                    level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
                    gxsize, gysize, gzsize,
                    gxoffset, gyoffset, gzoffset,
-                   pxdim, pydim, pzdim);
+                   pxdim, pydim, pzdim, boundary_flag);
 
 }
 
@@ -752,6 +808,12 @@ extern "C" void solv_pois_f (rmg_float_t * vmat, rmg_float_t * fmat, rmg_float_t
 {
     Mgrid MG;
     MG.solv_pois<float>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+}
+
+extern "C" int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
+{
+    Mgrid MG;
+    MG.MG_SIZE(curdim, curlevel, global_dim, global_offset, global_pdim, roffset, bctype);
 }
 
 extern "C" void solv_pois (rmg_double_t * vmat, rmg_double_t * fmat, rmg_double_t * work,
