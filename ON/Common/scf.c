@@ -26,7 +26,7 @@ double tem1;
 
 void scf(STATE * states, STATE * states1, double *vxc, double *vh,
          double *vnuc, double *rho, double *rhoc, double *rhocore,
-         REAL * vxc_old, REAL * vh_old, int *CONVERGENCE)
+         rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE)
 {
     double time1, time2, time3, time4;
     int numst = ct.num_states;
@@ -132,7 +132,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
    of the old ones (input "vh" and "vxc") and the ones 
    corresponding to the input "rho".
  */
-void update_pot(double *vxc, double *vh, REAL * vxc_old, REAL * vh_old,
+void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * vh_old,
         double *vnuc, double *rho, double *rhoc, double *rhocore,
         int *CONVERGENCE, STATE * states)
 {

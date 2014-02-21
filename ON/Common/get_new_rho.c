@@ -15,19 +15,19 @@
 void get_new_rho(STATE * states, double *rho)
 {
     int ii, idx, ione = 1;
-    REAL t2;
+    rmg_double_t t2;
     register double tcharge;
 
     /* for parallel libraries */
     int n2 = (ct.state_end-ct.state_begin)* ct.num_states;
     int mxllda;
 
-    REAL *psi1, *psi2, *psi3, *psi_p, scale;
+    rmg_double_t *psi1, *psi2, *psi3, *psi_p, scale;
     int i, st1, st2, proc1, proc2;
-    REAL time1, time2, time3;
+    rmg_double_t time1, time2, time3;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
-    REAL *rho_temp;
+    rmg_double_t *rho_temp;
     MPI_Request mr_send, *mr_recv;
 
     int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
@@ -38,7 +38,7 @@ void get_new_rho(STATE * states, double *rho)
     if (pct.gridpe == 0)
         printf(" Compute new density\n");
 
-    my_malloc_init( rho_temp, get_P0_BASIS(), REAL );
+    my_malloc_init( rho_temp, get_P0_BASIS(), rmg_double_t );
 
 #if  	DEBUG
     print_sum_square(get_P0_BASIS(), rho, "rho_sum_square before get_new_rho  ");
@@ -87,7 +87,7 @@ void get_new_rho(STATE * states, double *rho)
    my_calloc(mr_recv, ii, MPI_Request);
 
    psi2 = orbit_tem;
-   my_malloc_init(psi3, ct.max_orbit_size, REAL );
+   my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t );
 
    for (loop = 0; loop < num_sendrecv_loop; loop++)
    {

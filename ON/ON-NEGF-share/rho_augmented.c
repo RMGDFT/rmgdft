@@ -9,15 +9,15 @@
 #include "main_on.h"
 
 /* begin shuchun wang */
-void rho_augmented(REAL * rho, REAL * global_mat_X)
+void rho_augmented(rmg_double_t * rho, rmg_double_t * global_mat_X)
 {
 
     int istate, incx, idx;
     int *ivec, size, idx1, idx2;
     int nh, icount, ncount, i, j, ion;
-    REAL *qnmI, *qtpr;
-    REAL *product, *ptr_product;
-    REAL time1, time2;
+    rmg_double_t *qnmI, *qtpr;
+    rmg_double_t *product, *ptr_product;
+    rmg_double_t time1, time2;
     ION *iptr;
     SPECIES *sp;
     double alfa;
@@ -25,7 +25,7 @@ void rho_augmented(REAL * rho, REAL * global_mat_X)
 
 
     size = ct.num_ions * ct.max_nl * ct.max_nl;
-    my_malloc_init( product, size, REAL );
+    my_malloc_init( product, size, rmg_double_t );
     for (idx = 0; idx < size; idx++)
         product[idx] = 0.0;
 

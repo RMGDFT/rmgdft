@@ -8,7 +8,7 @@
 
 
 
-void fill_orbit_borders4(REAL * sg, REAL * pg, int dimx, int dimy, int dimz)
+void fill_orbit_borders4(rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, ixh, iyh;

@@ -20,8 +20,8 @@ Get a particular wave st and store it in wave_global
 void get_wave(int st, STATE * states)
 {
 	int  j, idx, ione = 1;
-	REAL t2;
-	REAL *wave_temp;
+	rmg_double_t t2;
+	rmg_double_t *wave_temp;
 	register double tcharge;
         double charge_from_wave;
 	int mxllda;
@@ -30,14 +30,14 @@ void get_wave(int st, STATE * states)
 
 	/* for parallel libraries */
 	int n2 = (ct.state_end-ct.state_begin)* ct.num_states;
-	REAL *psi1,  scale;
+	rmg_double_t *psi1,  scale;
 	int i, st1, state_per_proc;
 	state_per_proc = ct.state_per_proc + 2;
 
 	int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
 	int st11;
 
-	my_malloc_init( wave_temp, get_P0_BASIS(), REAL );
+	my_malloc_init( wave_temp, get_P0_BASIS(), rmg_double_t );
 	if (pct.gridpe == 0)
 		printf(" Compute %d th wave\n", st);
 
@@ -86,8 +86,8 @@ void get_wave(int st, STATE * states)
  *  if you dont trust add_orbit_to_wave, 
  *  you can test it with the following trick to get the summation of orbitals as well
  *
-		REAL * psi2;
-		my_malloc(psi2, states[st1].size, REAL);
+		rmg_double_t * psi2;
+		my_malloc(psi2, states[st1].size, rmg_double_t);
 		for(i=0; i< states[st1].size; i++)
 			psi2[i] = 1.0;
 		density_orbit_X_orbit(st1, st1, scale, psi1, psi2, wave_global, 0, states);

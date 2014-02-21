@@ -23,11 +23,11 @@
 
 
 
-void comm_sums (REAL * vect, int *length, MPI_Comm COMM_TEM)
+void comm_sums (rmg_double_t * vect, int *length, MPI_Comm COMM_TEM)
 {
     int sizr, steps, blocks, newsize;
-    REAL *rptr, *rptr1;
-    REAL rptr2[100];
+    rmg_double_t *rptr, *rptr1;
+    rmg_double_t rptr2[100];
 
     /* Check for small vector case and handle on stack */
     if (*length < 100)
@@ -39,7 +39,7 @@ void comm_sums (REAL * vect, int *length, MPI_Comm COMM_TEM)
     }
 
 
-    my_malloc_init( rptr, MAX_PWRK, REAL );
+    my_malloc_init( rptr, MAX_PWRK, rmg_double_t );
     newsize = MAX_PWRK;
     blocks = *length / newsize;
     sizr = (*length % newsize);
@@ -67,11 +67,11 @@ void comm_sums (REAL * vect, int *length, MPI_Comm COMM_TEM)
 }                               /* end global_sums */
 
 
-void global_sums_X (REAL * vect, int *length)
+void global_sums_X (rmg_double_t * vect, int *length)
 {
     int sizr, steps, blocks, newsize;
-    REAL *rptr, *rptr1;
-    REAL rptr2[100];
+    rmg_double_t *rptr, *rptr1;
+    rmg_double_t rptr2[100];
 
     /* Check for small vector case and handle on stack */
     if (*length < 100)
@@ -83,7 +83,7 @@ void global_sums_X (REAL * vect, int *length)
     }
 
 
-    my_malloc_init( rptr, MAX_PWRK, REAL );
+    my_malloc_init( rptr, MAX_PWRK, rmg_double_t );
     newsize = MAX_PWRK;
     blocks = *length / newsize;
     sizr = (*length % newsize);

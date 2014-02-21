@@ -17,8 +17,8 @@
 
 static int fold_to_unitcell(int, int);
 
-void density_orbit_X_orbit(int st1, int st2, REAL scale, REAL * psi1,
-                           REAL * psi2, REAL * rho_global, int mode, STATE * states)
+void density_orbit_X_orbit(int st1, int st2, rmg_double_t scale, rmg_double_t * psi1,
+                           rmg_double_t * psi2, rmg_double_t * rho_global, int mode, STATE * states)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;

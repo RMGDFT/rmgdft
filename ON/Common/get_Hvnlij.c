@@ -27,7 +27,7 @@ void get_Hvnlij(double *Aij)
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
-    REAL *dnmI;
+    rmg_double_t *dnmI;
     SPECIES *sp;
     ION *iptr;
     double tem;

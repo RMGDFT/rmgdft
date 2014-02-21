@@ -91,7 +91,7 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     lwork = 5 * NN + NN * ldc + max(sizemqrleft, qrmem) + 1;
 
 
-    /* my_malloc_init( work, lwork, REAL ); */
+    /* my_malloc_init( work, lwork, rmg_double_t ); */
     work = work_memory;
 
 

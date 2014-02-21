@@ -21,21 +21,21 @@
 
 
 
-void orbit_dot_orbit(STATE * states, STATE * states1, REAL *Aij, REAL *Bij)
+void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_double_t *Bij)
 {
     int i, ii;
     int st1, st2;
-    REAL temp;
-    REAL *psi1;
-    REAL *psi2;
-    REAL *psi3;
+    rmg_double_t temp;
+    rmg_double_t *psi1;
+    rmg_double_t *psi2;
+    rmg_double_t *psi3;
     MPI_Status mstatus;
-    REAL time1;
+    rmg_double_t time1;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
-    REAL sum;
+    rmg_double_t sum;
     int idx;
-    REAL temp2, temp3, temp4;
+    rmg_double_t temp2, temp3, temp4;
     MPI_Request mr_send, *mr_recv;
     int st11;
     double H, S;
@@ -74,7 +74,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, REAL *Aij, REAL *Bij)
     my_calloc(mr_recv, ii, MPI_Request);
 
     psi2 = orbit_tem;
-    my_malloc_init(psi3, ct.max_orbit_size, REAL );
+    my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t );
 
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)

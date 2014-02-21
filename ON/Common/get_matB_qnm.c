@@ -29,7 +29,7 @@ void get_matB_qnm(double *Aij)
     int size, proc, proc1, proc2, idx;
     SPECIES *sp;
     ION *iptr;
-    REAL *qqq;
+    rmg_double_t *qqq;
     double tem;
 
 

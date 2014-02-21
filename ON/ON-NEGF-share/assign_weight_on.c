@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "main_on.h"
 
-void assign_weight_on(SPECIES * sp, fftw_complex * weptr, REAL * rtptr)
+void assign_weight_on(SPECIES * sp, fftw_complex * weptr, rmg_double_t * rtptr)
 {
 
     int idx, ix, iy, iz;

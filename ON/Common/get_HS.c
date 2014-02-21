@@ -24,7 +24,7 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
     int maxst, n2;
     STATE *sp;
     int ione = 1;
-    REAL tem;
+    rmg_double_t tem;
     int ixx, iyy, izz;
 
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;

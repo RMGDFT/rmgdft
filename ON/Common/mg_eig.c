@@ -18,14 +18,14 @@
 /* Flag for projector mixing */
 int firstflag = FALSE;
 static int mix_steps;
-REAL *work1;                    /* Smoothing grids */
+rmg_double_t *work1;                    /* Smoothing grids */
 
 static void get_nonortho_res(STATE *, double *, STATE *);
 extern int it_scf;
 
 
 void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
-            double *vnuc, double *rho, double *rhoc, REAL * vxc_old, REAL * vh_old)
+            double *vnuc, double *rho, double *rhoc, rmg_double_t * vxc_old, rmg_double_t * vh_old)
 {
     int idx, istate, ione = 1;
     double diag, t1, d1, gamma;
@@ -35,14 +35,14 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     char side = 'l', uplo = 'l';
     int n2 = ct.num_states * ct.num_states, numst = ct.num_states;
     int item;
-    REAL alpha1, alpha2;
-    REAL tem;
+    rmg_double_t alpha1, alpha2;
+    rmg_double_t tem;
     int mxllda2;
-    REAL A11, A12, A21, A22, c1, c2, b1, b2;
-    REAL x1r1, x2r1, x3r1, x1r2, x2r2, x3r2, x1r3, x2r3, x3r3;
+    rmg_double_t A11, A12, A21, A22, c1, c2, b1, b2;
+    rmg_double_t x1r1, x2r1, x3r1, x1r2, x2r2, x3r2, x1r3, x2r3, x3r3;
 
 
-    REAL tem_luw = -1.0;
+    rmg_double_t tem_luw = -1.0;
 
 
     int IA =1, JA =1, IB =1, JB=1;
@@ -255,11 +255,11 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     int i,ii,max_ii;
     double time1, time2;
     int idx, st1, st2;
-    REAL theta_ion;
-    REAL *psi_pointer,*psi3,*psi2, *psi1;
+    rmg_double_t theta_ion;
+    rmg_double_t *psi_pointer,*psi3,*psi2, *psi1;
     int loop, state_per_proc, proc1, proc2;
     int num_send, num_recv, num_sendrecv, size1, size2;
-    REAL temp;
+    rmg_double_t temp;
     MPI_Status mstatus;
     MPI_Request  mr_send,*mr_recv;
     int st11;
@@ -267,7 +267,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
     state_per_proc = ct.state_per_proc + 2;
     psi2 = orbit_tem;
-    my_malloc_init(psi3, ct.max_orbit_size, REAL);
+    my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t);
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         for (idx = 0; idx < states[st1].size; idx++)

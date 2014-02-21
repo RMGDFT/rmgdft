@@ -47,18 +47,18 @@
 #define    SMALL  1.e-08
 
 
-void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
+void xcgga(rmg_double_t * rho1, rmg_double_t * vxc, rmg_double_t * exc, int mode)
 {
     int ix, iy, iz, idx;
-    REAL *gx, *gy, *gz, *agx, *agy, *agz, *agg, *d2rho, *nrho;
-    REAL d, s, u, v, kf, us, uu, t, vv, ww;
-    REAL pisq3, ex, vx, ec;
-    REAL zet, rs, g, h, sk, gks2;
-    REAL vcup, vcdn;
-    REAL dvcup, dvcdn;
-    REAL ecrs, eczet, alfc;
-    REAL cpot, cen, xen;
-    REAL dhalf, d1half[3], d2half, vcm0, fac;
+    rmg_double_t *gx, *gy, *gz, *agx, *agy, *agz, *agg, *d2rho, *nrho;
+    rmg_double_t d, s, u, v, kf, us, uu, t, vv, ww;
+    rmg_double_t pisq3, ex, vx, ec;
+    rmg_double_t zet, rs, g, h, sk, gks2;
+    rmg_double_t vcup, vcdn;
+    rmg_double_t dvcup, dvcdn;
+    rmg_double_t ecrs, eczet, alfc;
+    rmg_double_t cpot, cen, xen;
+    rmg_double_t dhalf, d1half[3], d2half, vcm0, fac;
     int ndim, lgga, lpot;
 
 
@@ -66,14 +66,14 @@ void xcgga(REAL * rho1, REAL * vxc, REAL * exc, int mode)
 
 
     /* Grab some memory */
-    my_malloc_init( gx, get_FP0_BASIS(), REAL );
-    my_malloc_init( gy, get_FP0_BASIS(), REAL );
-    my_malloc_init( gz, get_FP0_BASIS(), REAL );
-    my_malloc_init( agx, get_FP0_BASIS(), REAL );
-    my_malloc_init( agy, get_FP0_BASIS(), REAL );
-    my_malloc_init( agz, get_FP0_BASIS(), REAL );
-    my_malloc_init( agg, get_FP0_BASIS(), REAL );
-    my_malloc_init( d2rho, get_FP0_BASIS(), REAL );
+    my_malloc_init( gx, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( gy, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( gz, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( agx, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( agy, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( agz, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( agg, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( d2rho, get_FP0_BASIS(), rmg_double_t );
 
 
     /* Load the density into the smoothing grid */

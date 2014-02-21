@@ -44,7 +44,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     int ipe;
     int numst;
     char newname[MAX_PATH + 200];
-    REAL tem, tem1, tem2, tem3;
+    rmg_double_t tem, tem1, tem2, tem3;
     int idx;
     int idx1, ix, iy, PNX0, PNY0, PNZ0, NX, NY, NZ;
     int pex, pey, pez, position, ix1, iy1;

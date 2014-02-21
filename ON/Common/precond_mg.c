@@ -18,7 +18,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     STATE *sp;
 
     int idx;
-    REAL tem, tem1, tem2;
+    rmg_double_t tem, tem1, tem2;
     int ion, ixx, iyy, izz;
     /* Pre and post smoothings on each level */
 
@@ -51,7 +51,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
     idx = (ixx + 4) * (iyy +4) * (izz+4);
-    my_malloc (work3, idx, REAL);
+    my_malloc (work3, idx, rmg_double_t);
 
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)

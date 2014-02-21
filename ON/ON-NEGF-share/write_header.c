@@ -63,7 +63,7 @@ void write_header(void)
 
     int kpt, idx;
     time_t tt;
-    REAL t1;
+    rmg_double_t t1;
     int PE_X, PE_Y, PE_Z;
 
     char *timeptr;

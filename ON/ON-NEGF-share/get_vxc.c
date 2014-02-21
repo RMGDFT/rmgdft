@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_vxc(REAL *rho, REAL *rhocore, REAL *vxc)
+ *   void get_vxc(rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *vxc)
  *   Top-level driver routine that calls a subfunction to generate
  *   a specific exchange-corrleation potential.
  * INPUTS
@@ -39,11 +39,11 @@
 
 
 
-void get_vxc(REAL * rho, REAL * rhocore, REAL * vxc)
+void get_vxc(rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * vxc)
 {
 
     int idx, ispin, item;
-    REAL *nrho, esum, *exc;
+    rmg_double_t *nrho, esum, *exc;
     int nn, ione = 1;
 
     nn = ct.vh_pbasis;          /*shuchun wang */
@@ -53,10 +53,10 @@ void get_vxc(REAL * rho, REAL * rhocore, REAL * vxc)
 
     /*begin shuchun wang */
     if (ct.spin)
-        my_malloc_init( nrho, ct.spin * ct.vh_pbasis, REAL );
+        my_malloc_init( nrho, ct.spin * ct.vh_pbasis, rmg_double_t );
     if (!ct.spin)
-        my_malloc_init( nrho, ct.vh_pbasis, REAL );
-    my_malloc_init( exc, ct.vh_pbasis, REAL );
+        my_malloc_init( nrho, ct.vh_pbasis, rmg_double_t );
+    my_malloc_init( exc, ct.vh_pbasis, rmg_double_t );
 
     for (ispin = 0; ispin <= ct.spin; ispin++)
     {

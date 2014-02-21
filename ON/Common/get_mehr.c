@@ -33,7 +33,7 @@
 void get_mehr(void)
 {
 
-    REAL ihx, ihy, ihz;
+    rmg_double_t ihx, ihy, ihz;
 
     ct.Bc = 0.5;
     ct.Bx = ct.By = ct.Bz = 1.0 / 12.0;

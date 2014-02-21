@@ -10,10 +10,10 @@
 #include "main_on.h"
 
 
-void print_status(STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh_old, char *msg)
+void print_status(STATE * states, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, rmg_double_t * vh_old, char *msg)
 {
     int i, j;
-    REAL total;
+    rmg_double_t total;
 
     printf("\n print_status ----%s ", msg);
 
@@ -74,7 +74,7 @@ void print_state_sum(STATE * states)
 {
     int st;
     int i;
-    REAL temp;
+    rmg_double_t temp;
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
@@ -90,7 +90,7 @@ void print_state(STATE * state)
 {
     int st;
     int i;
-    REAL temp;
+    rmg_double_t temp;
 
     temp = 0.0;
     for (i = 0; i < state->size; i++)
@@ -137,7 +137,7 @@ void print_states_dot_product(STATE * states)
 {
     int st;
     int i;
-    REAL temp;
+    rmg_double_t temp;
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
         temp = 0.0;
@@ -161,7 +161,7 @@ void print_sum_idx(int size, double *data, char *msg)
 
 void print_orbit_centers(STATE * states)
 {
-    REAL x, y, z;
+    rmg_double_t x, y, z;
     int st;
 
     for (st = ct.state_begin; st < ct.state_end; st++)

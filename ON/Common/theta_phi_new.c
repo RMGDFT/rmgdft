@@ -14,8 +14,8 @@
 #include "main_on.h"
 
 
-void theta_phi_new(int st1, int st2, REAL theta_ion, REAL * st2_psi,
-                   REAL * state1_psi, int mode, STATE * states)
+void theta_phi_new(int st1, int st2, rmg_double_t theta_ion, rmg_double_t * st2_psi,
+                   rmg_double_t * state1_psi, int mode, STATE * states)
 {
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
     int ylow1, yhigh1, ylow2, yhigh2, yshift;

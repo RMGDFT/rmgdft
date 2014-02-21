@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void trade_images2(REAL *f, REAL *w, int dimx, int dimy, int dimz)
+ *   void trade_images2(rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz)
  *   trades boundary information with neighboring PEs (to second neighbor)   
  * INPUTS
  *   f[dimx*dimy*dimz]: its image data are not filled
@@ -42,15 +42,15 @@
 
 #if (MPI)
 
-void trade_images2(REAL * f, REAL * w, int dimx, int dimy, int dimz)
+void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz)
 {
     int ix, iy, iz, idx, idx1;
     int ixs, iys;
     int xlen, ylen, zlen;
     int *nb_ids;
     MPI_Status mrstatus;
-    REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
-    REAL *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
+    rmg_double_t *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+    rmg_double_t *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
 
     int incx = dimy * dimz;
     int incy = dimz;
@@ -58,7 +58,7 @@ void trade_images2(REAL * f, REAL * w, int dimx, int dimy, int dimz)
     int incy2 = dimz + 4;
 
 #if MD_TIMERS
-    REAL d1, time1, time2;
+    rmg_double_t d1, time1, time2;
     time1 = my_crtc();
 #endif
 
@@ -67,14 +67,14 @@ void trade_images2(REAL * f, REAL * w, int dimx, int dimy, int dimz)
     xlen = 2 * (dimy + 4) * (dimz + 4);
 
 
-    my_malloc_init( frdx1, 2 * (xlen + ylen + zlen), REAL );
+    my_malloc_init( frdx1, 2 * (xlen + ylen + zlen), rmg_double_t );
     frdx2 = frdx1 + xlen;
     frdy1 = frdx2 + xlen;
     frdy2 = frdy1 + ylen;
     frdz1 = frdy2 + ylen;
     frdz2 = frdz1 + zlen;
 
-    my_malloc_init( frdx1n, 2 * (xlen + ylen + zlen), REAL );
+    my_malloc_init( frdx1n, 2 * (xlen + ylen + zlen), rmg_double_t );
     frdx2n = frdx1n + xlen;
     frdy1n = frdx2n + xlen;
     frdy2n = frdy1n + ylen;
@@ -260,23 +260,23 @@ void trade_images2(REAL * f, REAL * w, int dimx, int dimy, int dimz)
 
 #else
 
-void trade_images2(REAL * f, REAL * w, int dimx, int dimy, int dimz)
+void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz)
 {
     int ix, iy, iz, idx;
     int ixs, iys;
-    REAL *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+    rmg_double_t *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
 
-    my_malloc_init( frdx1, 2 * (dimy + 4) * (dimz + 4), REAL );
-    my_malloc_init( frdx2, 2 * (dimy + 4) * (dimz + 4), REAL );
+    my_malloc_init( frdx1, 2 * (dimy + 4) * (dimz + 4), rmg_double_t );
+    my_malloc_init( frdx2, 2 * (dimy + 4) * (dimz + 4), rmg_double_t );
 
-    my_malloc_init( frdy1, dimx * 2 * (dimz + 4), REAL );
-    my_malloc_init( frdy2, dimx * 2 * (dimz + 4), REAL );
+    my_malloc_init( frdy1, dimx * 2 * (dimz + 4), rmg_double_t );
+    my_malloc_init( frdy2, dimx * 2 * (dimz + 4), rmg_double_t );
 
-    my_malloc_init( frdz1, dimx * dimy * 4, REAL );
-    my_malloc_init( frdz2, dimx * dimy * 4, REAL );
+    my_malloc_init( frdz1, dimx * dimy * 4, rmg_double_t );
+    my_malloc_init( frdz2, dimx * dimy * 4, rmg_double_t );
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc();
 #endif
 

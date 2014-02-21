@@ -11,8 +11,8 @@
  *   Copyright (C) 2001  Wenchang Lu,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, 
- *             STATE *states, REAL *vnuc, REAL *vxc)
+ *   void init(rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, 
+ *             STATE *states, rmg_double_t *vnuc, rmg_double_t *vxc)
  *   Basic initialization stuff.
  * INPUTS
  *   rhocore: core charge density for non-linear core corection
@@ -45,13 +45,13 @@
 
 void init_wf_atom(STATE *);
 
-void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
-          STATE * states, STATE * states1, REAL * vnuc, REAL * vxc, REAL * vh_old, REAL * vxc_old)
+void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * rhoc,
+          STATE * states, STATE * states1, rmg_double_t * vnuc, rmg_double_t * vxc, rmg_double_t * vh_old, rmg_double_t * vxc_old)
 {
 
     int kpt, ic, idx, ion, ispin, kpt1;
     int flag, level;
-    REAL time1, time2, cut_init;
+    rmg_double_t time1, time2, cut_init;
     double tem, tem1;
 
    int  gridpe = pct.gridpe;
@@ -72,7 +72,7 @@ void init(REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
 
 
-    my_malloc_init( ct.energies, ct.max_scf_steps, REAL );
+    my_malloc_init( ct.energies, ct.max_scf_steps, rmg_double_t );
 
     ct.states = states;
 

@@ -19,7 +19,7 @@ dot_product of (orbit,  non-local projector )
 #include "main_on.h"
 
 
-REAL dot_product_orbit_nl(STATE *st1, int ion2, REAL * psi, REAL * prjptr)
+rmg_double_t dot_product_orbit_nl(STATE *st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -30,7 +30,7 @@ REAL dot_product_orbit_nl(STATE *st1, int ion2, REAL * psi, REAL * prjptr)
     int ix, iy, iz, ix1, ix2, iy1, iy2, iz1, iz2;
     int idx1, idx2;
     int index;
-    REAL tem;
+    rmg_double_t tem;
 
     index = (st1->index - ct.state_begin) * ct.num_ions + ion2;
 

@@ -19,7 +19,7 @@
 #include "main_on.h"
 
 /*shuchun wang */
-void qnm_beta_betapsi(STATE *state1, int ion2, REAL * pptr, REAL * work)
+void qnm_beta_betapsi(STATE *state1, int ion2, rmg_double_t * pptr, rmg_double_t * work)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;

@@ -34,7 +34,7 @@
 
 
 
-void matrix_and_diag(STATE * states, STATE * states1, REAL * vtot_c, int flag)
+void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int flag)
 {
 
     char side = 'l', uplo = 'l';
@@ -42,7 +42,7 @@ void matrix_and_diag(STATE * states, STATE * states1, REAL * vtot_c, int flag)
     int numst = ct.num_states;
     int maxst = numst;
     int level;
-    REAL tem, tem1, tem2;
+    rmg_double_t tem, tem1, tem2;
     int idx, idx1;
     double time1, time2;
 

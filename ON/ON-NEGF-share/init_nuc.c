@@ -55,7 +55,7 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     ION *iptr;
 
     int L0_LDIM;
-    REAL hxgrid, hygrid, hzgrid;
+    rmg_double_t hxgrid, hygrid, hzgrid;
 
     if (pct.gridpe == 0)
     {

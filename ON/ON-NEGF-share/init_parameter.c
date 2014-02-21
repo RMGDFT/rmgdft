@@ -36,7 +36,7 @@ void init_parameter(STATE * states)
 
     int kpt, kst1, state, ion, st1;
     ION *iptr;
-    REAL v1, v2, v3;
+    rmg_double_t v1, v2, v3;
     int ispin;
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
@@ -51,7 +51,7 @@ void init_parameter(STATE * states)
     ct.vh_pzgrid = get_FPZ0_GRID();
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
-    my_malloc_init( ct.vh_ext, ct.vh_pbasis, REAL );
+    my_malloc_init( ct.vh_ext, ct.vh_pbasis, rmg_double_t );
 
 
     ct.vh_nbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();

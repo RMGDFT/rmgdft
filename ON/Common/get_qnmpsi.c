@@ -37,8 +37,8 @@ void get_qnmpsi(STATE *sp, double *kbpsi_one_state, double *work)
      * prj_sum(r) = sum_i nm_weight[i] *beta_i(r)  
      */
 
-    my_malloc_init( qnm_weight, ct.max_nl, REAL );
-    my_malloc_init( prj_sum, ct.max_nlpoints, REAL );
+    my_malloc_init( qnm_weight, ct.max_nl, rmg_double_t );
+    my_malloc_init( prj_sum, ct.max_nlpoints, rmg_double_t );
 
 
     /* Zero out the work array */

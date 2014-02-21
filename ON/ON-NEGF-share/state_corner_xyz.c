@@ -13,8 +13,8 @@
 void state_corner_xyz(STATE * states)
 {
     int ix, iy, iz, state;
-    REAL hgrid[3];
-    REAL tem;
+    rmg_double_t hgrid[3];
+    rmg_double_t tem;
     int ixx, iyy, izz, imin, imax;
     int item;
     int max_nx, max_ny, max_nz;

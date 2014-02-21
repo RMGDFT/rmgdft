@@ -18,7 +18,7 @@
 
 
 
-void genvlocpsi(REAL * psi, int st1, REAL * work1, REAL * vtot_global, STATE * states)
+void genvlocpsi(rmg_double_t * psi, int st1, rmg_double_t * work1, rmg_double_t * vtot_global, STATE * states)
 {
 
     int ix, iy, iz, ixstart, iystart, ixstartp, iystartp;

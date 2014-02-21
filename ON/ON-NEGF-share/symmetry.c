@@ -45,7 +45,7 @@
 static int s[MAX_SYMMETRY][3][3];
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int ftau[MAX_SYMMETRY][3], ityp[MAX_IONS];
-static REAL tau[MAX_IONS][3], xk[MAX_KPTS][3], wk[MAX_KPTS];
+static rmg_double_t tau[MAX_IONS][3], xk[MAX_KPTS][3], wk[MAX_KPTS];
 static int nsym;
 
 
@@ -96,12 +96,12 @@ void init_sym (void)
 
 
 /* Symmetrizes the density */
-void symmetrize_rho (REAL * rho)
+void symmetrize_rho (rmg_double_t * rho)
 {
 
     int idx, ix, iy, iz, xoff, yoff, zoff, nr1, nr2, nr3;
-    REAL *da;
-    REAL t1;
+    rmg_double_t *da;
+    rmg_double_t t1;
     int idx1, incx, incy;
     /* Wait until all processors arrive at this point */
     my_barrier ();
@@ -109,7 +109,7 @@ void symmetrize_rho (REAL * rho)
 
 
     /* Get some memory */
-    my_malloc_init( da, ct.psi_nbasis, REAL );
+    my_malloc_init( da, ct.psi_nbasis, rmg_double_t );
 
     idx = 0;
     for (ix = 0; ix < ct.psi_nxgrid; ix++)
@@ -165,7 +165,7 @@ void symmetrize_rho (REAL * rho)
 
 
     /* Pack density back into correct place */
-    t1 = (REAL) nsym;
+    t1 = (rmg_double_t) nsym;
     t1 = 1.0 / t1;
 
     idx = 0;
@@ -197,7 +197,7 @@ void symmetrize_rho (REAL * rho)
 void symforce (void)
 {
     int ion, nr1, nr2, nr3;
-    REAL celldm[6], force[MAX_IONS][3];
+    rmg_double_t celldm[6], force[MAX_IONS][3];
 
     nr1 = ct.psi_nxgrid;
     nr2 = ct.psi_nygrid;

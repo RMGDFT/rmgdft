@@ -8,14 +8,14 @@
 #include <math.h>
 #include "main_on.h"
 
-void nlforce_par_omega(REAL * par_omega_x, REAL * par_omega_y, REAL * par_omega_z, int ion, int nh)
+void nlforce_par_omega(rmg_double_t * par_omega_x, rmg_double_t * par_omega_y, rmg_double_t * par_omega_z, int ion, int nh)
 {
     int idx, idx1, idx2, size, n, m, max_nl;
-    REAL forces[3];
-    REAL *omega_x, *omega_y, *omega_z, *qqq;
+    rmg_double_t forces[3];
+    rmg_double_t *omega_x, *omega_y, *omega_z, *qqq;
     ION *iptr;
 
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc();
 
     size = ct.max_nl * ct.max_nl;

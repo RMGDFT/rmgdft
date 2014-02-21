@@ -36,10 +36,10 @@
 #include <sys/time.h>
 
 
-REAL timings[LAST_TIME];
+rmg_double_t timings[LAST_TIME];
 
 
-REAL my_crtc (void)
+rmg_double_t my_crtc (void)
 {
     struct timeval t1;
     gettimeofday (&t1, NULL);

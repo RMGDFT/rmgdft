@@ -45,33 +45,27 @@
 /* Constants and symbolic definitions */
 #include    "const_on.h"
 
-/* Fourier transformation structure definition */
-
-//#include    "my_finegrid.h"
-
-
 
 /** Size of floating point variables used in QMD */
-#define     REAL    double
 #include    "common_prototypes.h"
 
 
 int MXLLDA, MXLCOL;
-REAL *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot,
+rmg_double_t *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot,
     *vtot_c;
-REAL *vh_old, *vxc_old;
-REAL *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
+rmg_double_t *vh_old, *vxc_old;
+rmg_double_t *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;
-REAL *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
-REAL *work_matrix_row, *coefficient_matrix_row, *nlarray1;
-REAL *projectors, *projectors_x, *projectors_y, *projectors_z;
-REAL *sg_twovpsi, *sg_res;
+rmg_double_t *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
+rmg_double_t *work_matrix_row, *coefficient_matrix_row, *nlarray1;
+rmg_double_t *projectors, *projectors_x, *projectors_y, *projectors_z;
+rmg_double_t *sg_twovpsi, *sg_res;
 int *nlindex;
-REAL *work_memory;
-REAL *sg_orbit;
-REAL *sg_orbit_res;
-REAL *orbit_tem;
-REAL *vtot_global;
+rmg_double_t *work_memory;
+rmg_double_t *sg_orbit;
+rmg_double_t *sg_orbit_res;
+rmg_double_t *orbit_tem;
+rmg_double_t *vtot_global;
 
 
 int NPES;

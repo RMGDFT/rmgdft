@@ -20,12 +20,12 @@
 #include "main_on.h"
 
 
-void get_orbit_center(STATE *state, REAL * x, REAL * y, REAL * z)
+void get_orbit_center(STATE *state, rmg_double_t * x, rmg_double_t * y, rmg_double_t * z)
 {
     int ix, iy, iz;
     int index;
-    REAL temp;
-    REAL sum;
+    rmg_double_t temp;
+    rmg_double_t sum;
 
     *x = 0.0;
     *y = 0.0;

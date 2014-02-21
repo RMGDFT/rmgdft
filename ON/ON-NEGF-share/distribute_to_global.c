@@ -20,7 +20,7 @@ get  global array  get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()
 #include "main_on.h"
 
 
-void distribute_to_global(REAL * distr_array, REAL * global_array)
+void distribute_to_global(rmg_double_t * distr_array, rmg_double_t * global_array)
 {
 
     int ix, iy, iz, ii, jj, kk;

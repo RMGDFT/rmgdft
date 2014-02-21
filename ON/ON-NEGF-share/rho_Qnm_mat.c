@@ -19,7 +19,7 @@ and add them into Aij.
 #include "main_on.h"
 
 
-void rho_Qnm_mat(double *Aij, REAL * global_mat_X)
+void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X)
 {
     int ion, ip1, ip2, st1, st2, ist;
     double time1, time2;

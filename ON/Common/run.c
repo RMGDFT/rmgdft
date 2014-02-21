@@ -36,12 +36,12 @@
 #include <assert.h>
 #include "main_on.h"
 
-extern REAL *vh_old, *vxc_old;
+extern rmg_double_t *vh_old, *vxc_old;
 
 
 void run(STATE * states, STATE * states1)
 {
-    REAL time1;
+    rmg_double_t time1;
     int MAT_TRANSFER = 0;
 
 
@@ -63,8 +63,8 @@ void run(STATE * states, STATE * states1)
 
     /* Perform some necessary initializations no matter localized or not  
      */
-    my_malloc_init( vxc_old, get_FP0_BASIS(), REAL );
-    my_malloc_init( vh_old, get_FP0_BASIS(), REAL );
+    my_malloc_init( vxc_old, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vh_old, get_FP0_BASIS(), rmg_double_t );
 
     init(vh, rho, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 

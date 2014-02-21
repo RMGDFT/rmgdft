@@ -13,11 +13,11 @@
 #include <assert.h>
 #include "main_on.h"
 
-REAL minimage1(REAL aa[3], REAL bb[3])
+rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
 {
 
     int ix, iy, iz, idx, idxmin, nn = 0;
-    REAL r[27], ax, ay, az, rmin, x, y, z;
+    rmg_double_t r[27], ax, ay, az, rmin, x, y, z;
 
 
     /* Get lattice vectors */
@@ -42,9 +42,9 @@ REAL minimage1(REAL aa[3], REAL bb[3])
                 for (iz = -1; iz <= 1; iz++)
                 {
 
-                    x = aa[0] - bb[0] + (REAL) ix *ax;
-                    y = aa[1] - bb[1] + (REAL) iy *ay;
-                    z = aa[2] - bb[2] + (REAL) iz *az;
+                    x = aa[0] - bb[0] + (rmg_double_t) ix *ax;
+                    y = aa[1] - bb[1] + (rmg_double_t) iy *ay;
+                    z = aa[2] - bb[2] + (rmg_double_t) iz *az;
 
                     r[idx] = (x * x + y * y + z * z);
 

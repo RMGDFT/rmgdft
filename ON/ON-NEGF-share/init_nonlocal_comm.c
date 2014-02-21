@@ -77,10 +77,10 @@ void init_nonlocal_comm(void)
     }
 
 
-    my_malloc_init( kbpsi, size, REAL );
-    my_malloc_init( kbpsi_comm, size, REAL );
-    my_malloc_init( partial_kbpsi_x, size, REAL );
-    my_malloc_init( partial_kbpsi_y, size, REAL );
-    my_malloc_init( partial_kbpsi_z, size, REAL );
+    my_malloc_init( kbpsi, size, rmg_double_t );
+    my_malloc_init( kbpsi_comm, size, rmg_double_t );
+    my_malloc_init( partial_kbpsi_x, size, rmg_double_t );
+    my_malloc_init( partial_kbpsi_y, size, rmg_double_t );
+    my_malloc_init( partial_kbpsi_z, size, rmg_double_t );
 
 }

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   REAL fill (STATE *states, REAL width, REAL nel, REAL mix,
+ *   rmg_double_t fill (STATE *states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix,
  *              int num_st, int occ_flag)
  *   Sets the occupations of the electronic orbitals and stored in
  *   ct.kp[kpt].kstate[st].occupation 
@@ -42,23 +42,23 @@
 #include "main_on.h"
 
 
-static REAL fd(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st);
-static REAL gs(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st);
-static REAL ef(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st);
+static rmg_double_t fd(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);
+static rmg_double_t gs(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);
+static rmg_double_t ef(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);
 
 
 
-REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_flag)
+rmg_double_t fill(STATE * states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix, int num_st, int occ_flag)
 {
 
     const int maxit = 50;
-    const REAL charge_tol = 1.0e-10;
+    const rmg_double_t charge_tol = 1.0e-10;
 
     int iter, st, st1, kpt;
     STATE *sp;
-    REAL mu, dmu, mu1, mu2, f, fmid;
-    REAL(*func) () = NULL;
-    REAL *occ;
+    rmg_double_t mu, dmu, mu1, mu2, f, fmid;
+    rmg_double_t(*func) () = NULL;
+    rmg_double_t *occ;
 
 
     if(nel == 1 && ct.num_kpts == 1)
@@ -103,7 +103,7 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
 
     }                           /* end switch */
 
-    /* my_malloc_init( occ, ct.num_kpts * ct.num_states, REAL ); */
+    /* my_malloc_init( occ, ct.num_kpts * ct.num_states, rmg_double_t ); */
     occ = work_memory;
 
     /* find the root by bisection: this algorithm was adapted
@@ -210,11 +210,11 @@ REAL fill(STATE * states, REAL width, REAL nel, REAL mix, int num_st, int occ_fl
 
 
 
-static REAL fd(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
+static rmg_double_t fd(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st)
 {
     int st, kpt, st1;
     STATE *sp;
-    REAL t1, t2, sumf;
+    rmg_double_t t1, t2, sumf;
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
@@ -255,11 +255,11 @@ static REAL fd(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int nu
 
 
 
-static REAL gs(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
+static rmg_double_t gs(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st)
 {
     int st, kpt, st1;
     STATE *sp;
-    REAL t1, sumf;
+    rmg_double_t t1, sumf;
 
     /* Gaussian occupations:
        f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
@@ -297,11 +297,11 @@ static REAL gs(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int nu
 
 
 
-static REAL ef(REAL mu, REAL * occ, STATE * states, REAL width, REAL nel, int num_st)
+static rmg_double_t ef(rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st)
 {
     int st, kpt, st1;
     STATE *sp;
-    REAL t1, t2, sumf;
+    rmg_double_t t1, t2, sumf;
 
     t2 = 4.0 / sqrt(PI);
 

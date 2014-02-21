@@ -38,13 +38,13 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     int ion;
     int state, i1;
     STATE *sp;
-    REAL *work;
+    rmg_double_t *work;
     char newname[MAX_PATH + 20];
-    REAL tem, tem1, tem2, tem3;
+    rmg_double_t tem, tem1, tem2, tem3;
     int idx, idx1, st;
     int fhand;
     int ione = 1, st1, st2;
-    REAL dis;
+    rmg_double_t dis;
     double hxgrid, hygrid, hzgrid;
     double *rho_tem;
     int ix, iy, iz, ixdim, iydim, izdim;
@@ -282,7 +282,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	iydim = iymax - iymin;
 	izdim = izmax - izmin;
 
-	my_malloc_init( rho_tem, ixdim * iydim * izdim, REAL );
+	my_malloc_init( rho_tem, ixdim * iydim * izdim, rmg_double_t );
 	for(idx = 0; idx < ixdim * iydim * izdim; idx++)
 	{
 		rho_tem[idx] = 0.0;

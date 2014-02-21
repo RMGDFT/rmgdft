@@ -46,8 +46,8 @@ void init_kbr(void)
 
     int isp, idx, ip, it1;
     SPECIES *sp;
-    REAL *work, *workr, Zv, rc, rfil;
-    REAL t1, t2, rcut, scale;
+    rmg_double_t *work, *workr, Zv, rc, rfil;
+    rmg_double_t t1, t2, rcut, scale;
     char name[] = "projectors";
     char newname[20];
     FILE *psp = NULL;
@@ -61,7 +61,7 @@ void init_kbr(void)
     }                           /* end if */
 
 
-    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, REAL );
+    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t );
     workr = work + MAX_RGRID;
 
 
@@ -79,7 +79,7 @@ void init_kbr(void)
             psp = fopen(newname, "w+");
         sp = &ct.sp[isp];
 
-        t1 = 2.0 * scale * (REAL) get_FG_NX() *sp->lradius / ct.hmingrid;
+        t1 = 2.0 * scale * (rmg_double_t) get_FG_NX() *sp->lradius / ct.hmingrid;
         t1 = modf(t1, &t2);
         it1 = (int) t2;
         if (t1 > 0.5)
@@ -136,12 +136,12 @@ void init_kbr(void)
 
 
 
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)get_FG_NX(); */
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)get_FG_NX(); */
         t1 = sp->ldim / get_FG_NX() + 1;
         sp->drlig = sqrt(3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
         if (ct.ibrav == HEXAGONAL)
             sp->drlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
+        t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drlig = sp->drlig / t1;
 
 
@@ -154,7 +154,7 @@ void init_kbr(void)
         for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
         {
 
-            workr[idx] = sp->drlig * ((REAL) idx);
+            workr[idx] = sp->drlig * ((rmg_double_t) idx);
 
         }                       /* end for */
         radiff(sp->localig, sp->drlocalig, workr, MAX_LOCAL_LIG, 0.0);
@@ -213,7 +213,7 @@ void init_kbr(void)
         sp->drnlig = sqrt(3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
         if (ct.ibrav == HEXAGONAL)
             sp->drnlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
+        t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drnlig = sp->drnlig / t1;
 
         for (ip = 0; ip < sp->nbeta; ip++)
@@ -236,7 +236,7 @@ void init_kbr(void)
             for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
             {
 
-                workr[idx] = sp->drnlig * ((REAL) idx);
+                workr[idx] = sp->drnlig * ((rmg_double_t) idx);
 
             }                   /* end for */
             radiff(&sp->betalig[ip][0], &sp->drbetalig[ip][0], workr, MAX_LOCAL_LIG, 0.0);

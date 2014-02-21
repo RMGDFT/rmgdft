@@ -137,8 +137,8 @@ void init_rho_atom(double *rho)
 
     }
 
-    my_malloc_init( rho_tem, ixdim * iydim * izdim, REAL );
-    my_malloc_init( rho_out, ixdim * iydim * izdim, REAL );
+    my_malloc_init( rho_tem, ixdim * iydim * izdim, rmg_double_t );
+    my_malloc_init( rho_out, ixdim * iydim * izdim, rmg_double_t );
 
 
 

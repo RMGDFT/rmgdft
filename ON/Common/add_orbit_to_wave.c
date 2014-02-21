@@ -18,7 +18,7 @@ wrapper function call in get_wave
 
 static int fold_to_unitcell(int, int);
 
-void add_orbit_to_wave(int st1, REAL scale, REAL * psi1, REAL * wave_global, STATE * states)
+void add_orbit_to_wave(int st1, rmg_double_t scale, rmg_double_t * psi1, rmg_double_t * wave_global, STATE * states)
 {
 
     int iyy, izz, iyy1, izz1;

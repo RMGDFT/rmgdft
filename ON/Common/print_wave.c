@@ -19,7 +19,7 @@ void print_wave(int wave_plot, STATE * states, int coarse_level)
     FILE *file, *file1;
     char filename[20];
     char filename1[20];
-    REAL wave_value;
+    rmg_double_t wave_value;
 
 
     if (pct.gridpe == 0) // for printing, only root processor will do it

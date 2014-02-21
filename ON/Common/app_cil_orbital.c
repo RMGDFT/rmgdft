@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    REAL app_cil(REAL *a, REAL *b, int dimx, int dimy, int dimz,
- *                 REAL gridhx, REAL gridhy, REAL gridhz)
+ *    rmg_double_t app_cil(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz,
+ *                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
  *    Applies left hand side (LHS) Mehrstellen operator to function  
  * INPUTS
  *    a[(dimx+2) * (dimy+2) * (dimz+2)]: function to be applied
@@ -37,14 +37,14 @@
 #include <math.h>
 #include <stdlib.h>
 
-REAL app_cil_orbital (REAL * a, REAL * b, int dimx, int dimy, int dimz,
-              REAL gridhx, REAL gridhy, REAL gridhz)
+rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz,
+              rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    REAL ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    REAL ihx, ihy, ihz, a1, a2, a3;
+    rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    rmg_double_t ihx, ihy, ihz, a1, a2, a3;
 
 
 

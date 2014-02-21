@@ -98,12 +98,12 @@ double get_Exc(double *rho, double *rhocore)
     double *work, *nrho, esum;
     int idx;
 
-    REAL tem, tem1, tem2;
+    rmg_double_t tem, tem1, tem2;
 
     /* Grab some memory */
     /* begin shuchun wang */
-    my_malloc_init( work, ct.vh_pbasis, REAL );
-    my_malloc_init( nrho, ct.vh_pbasis, REAL );
+    my_malloc_init( work, ct.vh_pbasis, rmg_double_t );
+    my_malloc_init( nrho, ct.vh_pbasis, rmg_double_t );
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         nrho[idx] = rhocore[idx] + rho[idx];

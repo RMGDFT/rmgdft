@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void app6_del2(REAL *f, REAL *work, int dimx, int dimy, int dimz)
+ *   void app6_del2(rmg_double_t *f, rmg_double_t *work, int dimx, int dimy, int dimz)
  *   Apply the sixth order Laplacian operator on a orthorhombic grid
  * INPUTS
  *   S0_GRID *f:  real array of (dimx+2) * (dimy+2) * ((dimz+2)
@@ -37,19 +37,19 @@
 #include <math.h>
 
 
-void app10_del2(REAL * f, REAL * work, int dimx, int dimy, int dimz,
-                REAL hxgrid, REAL hygrid, REAL hzgrid)
+void app10_del2(rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int dimz,
+                rmg_double_t hxgrid, rmg_double_t hygrid, rmg_double_t hzgrid)
 {
 
     int iz, ix, iy;
-    REAL h2, t0, t1x, t2x, t3x, t4x;
-    REAL t1y, t2y, t3y, t4y;
-    REAL t1z, t2z, t3z, t4z;
-    REAL *dum2;
+    rmg_double_t h2, t0, t1x, t2x, t3x, t4x;
+    rmg_double_t t1y, t2y, t3y, t4y;
+    rmg_double_t t1z, t2z, t3z, t4z;
+    rmg_double_t *dum2;
     int ixs, iys, ix1, iy1;
 
 #if MD_TIMERS
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc();
 #endif
 
@@ -58,7 +58,7 @@ void app10_del2(REAL * f, REAL * work, int dimx, int dimy, int dimz,
     ix1 = dimy * dimz;
     iy1 = dimz;
 
-    my_malloc_init( dum2, (dimx + 8) * (dimy + 8) * (dimz + 8), REAL );
+    my_malloc_init( dum2, (dimx + 8) * (dimy + 8) * (dimz + 8), rmg_double_t );
     fill_orbit_borders4(dum2, f, dimx, dimy, dimz);
 
     h2 = hxgrid * hxgrid * ct.xside * ct.xside;

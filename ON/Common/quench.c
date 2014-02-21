@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void quench(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, 
- *               REAL *rho, REAL *rhocore, REAL *rhoc)
+ *   void quench(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc, 
+ *               rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
  *   For a fixed atomic configuration, quench the electrons to find 
  *   the minimum total energy 
  * INPUTS
@@ -43,8 +43,8 @@
 #include <stdio.h>
 #include "main_on.h"
 
-void quench(STATE * states, STATE * states1, REAL * vxc, REAL * vh,
-            REAL * vnuc, REAL * vh_old, REAL * vxc_old, REAL * rho, REAL * rhoc, REAL * rhocore)
+void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * vh,
+            rmg_double_t * vnuc, rmg_double_t * vh_old, rmg_double_t * vxc_old, rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * rhocore)
 {
     int outcount = 0;
     int state_plot, i;

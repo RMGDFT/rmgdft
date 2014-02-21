@@ -49,21 +49,21 @@ void allocate_matrix()
     ispin = ct.spin + 1;
 
 
-    my_malloc_init( rho, get_FP0_BASIS() * ispin, REAL );
-    my_malloc_init( rhoc, get_FP0_BASIS(), REAL );
-    my_malloc_init( vh, 2*get_FP0_BASIS(), REAL );
+    my_malloc_init( rho, get_FP0_BASIS() * ispin, rmg_double_t );
+    my_malloc_init( rhoc, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vh, 2*get_FP0_BASIS(), rmg_double_t );
     vxc = vh + get_FP0_BASIS();
-    my_malloc_init( vnuc, get_FP0_BASIS(), REAL );
-    my_malloc_init( vtot, get_FP0_BASIS(), REAL );
-    my_malloc_init( vtot_c, get_P0_BASIS(), REAL ); /*shuchun add */
-    my_malloc_init( rhocore, get_FP0_BASIS(), REAL );
-    my_malloc_init( eig_rho, get_FP0_BASIS(), REAL );
-    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), REAL );
-    my_malloc_init( wave_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), REAL );
+    my_malloc_init( vnuc, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vtot, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vtot_c, get_P0_BASIS(), rmg_double_t ); /*shuchun add */
+    my_malloc_init( rhocore, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( eig_rho, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
+    my_malloc_init( wave_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
     rho_global = vtot_global;
-    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, REAL );
+    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, rmg_double_t );
 
-    my_malloc_init( sg_res, S0_BASIS, REAL );
+    my_malloc_init( sg_res, S0_BASIS, rmg_double_t );
 
     sizeofmatrix = MXLLDA * MXLCOL;
 
@@ -72,21 +72,21 @@ void allocate_matrix()
 #endif
 
 
-    my_malloc_init( statearray, sizeofmatrix, REAL );
-    my_malloc_init( l_s, sizeofmatrix, REAL );
-    my_malloc_init( matB, sizeofmatrix, REAL );
-    my_malloc_init( mat_X, sizeofmatrix, REAL );
-    my_malloc_init( Hij, sizeofmatrix, REAL );
-    my_malloc_init( theta, sizeofmatrix, REAL );
-    my_malloc_init( work_dis, sizeofmatrix, REAL );
-    my_malloc_init( work_dis2, sizeofmatrix, REAL );
-    my_malloc_init( zz_dis, sizeofmatrix, REAL );
-    my_malloc_init( cc_dis, sizeofmatrix, REAL ); //transpose of zz_dis
-    my_malloc_init( gamma_dis, sizeofmatrix, REAL );
-    my_malloc_init( uu_dis, sizeofmatrix, REAL );
+    my_malloc_init( statearray, sizeofmatrix, rmg_double_t );
+    my_malloc_init( l_s, sizeofmatrix, rmg_double_t );
+    my_malloc_init( matB, sizeofmatrix, rmg_double_t );
+    my_malloc_init( mat_X, sizeofmatrix, rmg_double_t );
+    my_malloc_init( Hij, sizeofmatrix, rmg_double_t );
+    my_malloc_init( theta, sizeofmatrix, rmg_double_t );
+    my_malloc_init( work_dis, sizeofmatrix, rmg_double_t );
+    my_malloc_init( work_dis2, sizeofmatrix, rmg_double_t );
+    my_malloc_init( zz_dis, sizeofmatrix, rmg_double_t );
+    my_malloc_init( cc_dis, sizeofmatrix, rmg_double_t ); //transpose of zz_dis
+    my_malloc_init( gamma_dis, sizeofmatrix, rmg_double_t );
+    my_malloc_init( uu_dis, sizeofmatrix, rmg_double_t );
     /*added by shuchun wang, it is used to calculate partial_omega/partial_R 
        for nonlocal force */
-    my_malloc_init( mat_Omega, sizeofmatrix, REAL );
+    my_malloc_init( mat_Omega, sizeofmatrix, rmg_double_t );
 
     /*  allocate memory for other uses  */
 
@@ -118,7 +118,7 @@ void allocate_matrix()
     lwork = 5 * NN + NN * ldc + max(sizemqrleft, qrmem) + 1;
 
     item = max(lwork, item1);
-    my_malloc_init( work_memory, item, REAL );
+    my_malloc_init( work_memory, item, rmg_double_t );
 
 
 
