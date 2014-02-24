@@ -38,7 +38,7 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
 
     trade_imagesx (f, rptr, dimx, dimy, dimz, 3, CENTRAL_FD);
 
-    switch (ct.ibrav)
+    switch (get_ibrav_type())
     {
 
     case CUBIC_PRIMITIVE:

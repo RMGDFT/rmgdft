@@ -105,11 +105,10 @@ void init_parameter(STATE * states)
     if (get_zside() * get_hzgrid() < ct.hmingrid)
         ct.hmingrid = get_zside() * get_hzgrid();
 
-    ct.anisotropy = ct.hmaxgrid / ct.hmingrid;
     set_anisotropy(ct.hmaxgrid / ct.hmingrid);
 
 
-    if (ct.anisotropy > 1.1)
+    if (get_anisotropy() > 1.1)
     {
         dprintf("\n ct.hmaxgrid  %f %f ", ct.hmaxgrid, ct.hmingrid);
         error_handler(" Anisotropy too large");

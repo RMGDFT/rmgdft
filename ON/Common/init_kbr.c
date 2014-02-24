@@ -69,9 +69,9 @@ void init_kbr(void)
     /* Loop over species */
     /* Set the scaling factor for determining the radius of the local grids */
     scale = 1.0;
-    if (ct.ibrav == CUBIC_BC)
+    if (get_ibrav_type() == CUBIC_BC)
         scale = 1.1;
-    if (ct.ibrav == CUBIC_FC)
+    if (get_ibrav_type() == CUBIC_FC)
         scale = 1.3;
     for (isp = 0; isp < ct.num_species; isp++)
     {
@@ -140,7 +140,7 @@ void init_kbr(void)
         /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)get_FG_NX(); */
         t1 = sp->ldim / get_FG_NX() + 1;
         sp->drlig = sqrt(3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
+        if (get_ibrav_type() == HEXAGONAL)
             sp->drlig *= 2.0;
         t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drlig = sp->drlig / t1;
@@ -212,7 +212,7 @@ void init_kbr(void)
         }                       /* endif */
 
         sp->drnlig = sqrt(3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
+        if (get_ibrav_type() == HEXAGONAL)
             sp->drnlig *= 2.0;
         t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drnlig = sp->drnlig / t1;

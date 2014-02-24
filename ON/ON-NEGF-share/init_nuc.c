@@ -87,9 +87,9 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     }                           /* end for */
 
         pe2xyz(pct.gridpe, &ii, &jj, &kk);
-        ilow = pct.FPX_OFFSET;
-        jlow = pct.FPY_OFFSET;
-        klow = pct.FPZ_OFFSET;
+        ilow = get_FPX_OFFSET();
+        jlow = get_FPY_OFFSET();
+        klow = get_FPZ_OFFSET();
         ihi = ilow + get_FPX0_GRID() - 1;
         jhi = jlow + get_FPY0_GRID() - 1;
         khi = klow + get_FPZ0_GRID() - 1;
@@ -256,8 +256,8 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
                         {
 
                             pvec[icount] =
-                                get_FPY0_GRID() * get_FPZ0_GRID() * (Aix[ix] - pct.FPX_OFFSET) +
-                                get_FPZ0_GRID() * (Aiy[iy] - pct.FPY_OFFSET) + (Aiz[iz] - pct.FPZ_OFFSET);
+                                get_FPY0_GRID() * get_FPZ0_GRID() * (Aix[ix] - get_FPX_OFFSET()) +
+                                get_FPZ0_GRID() * (Aiy[iy] - get_FPY_OFFSET()) + (Aiz[iz] - get_FPZ_OFFSET());
 
                             x = xc - iptr->crds[0];
                             y = yc - iptr->crds[1];
@@ -369,9 +369,9 @@ static void init_vcomp(double *vc)
     }                           /* end for */
 
 
-    ilow = pct.FPX_OFFSET;
-    jlow = pct.FPY_OFFSET;
-    klow = pct.FPZ_OFFSET;
+    ilow = get_FPX_OFFSET();
+    jlow = get_FPY_OFFSET();
+    klow = get_FPZ_OFFSET();
 
 
     /* Loop over ions */

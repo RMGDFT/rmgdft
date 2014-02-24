@@ -18,7 +18,7 @@ void write_rho_x(rmg_double_t * rho, char *ab)
 
     my_malloc_init( zvec, get_FNX_GRID(), rmg_double_t );
     /* Get this processors offset */
-    poff = pct.FPX_OFFSET;
+    poff = get_FPX_OFFSET();
 
 
 

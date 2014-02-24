@@ -49,14 +49,14 @@ rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int 
 
 
 
-    switch (ct.ibrav)
+    switch (get_ibrav_type())
     {
 
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:
 
 
-        if (ct.anisotropy < 1.000001)
+        if (get_anisotropy() < 1.000001)
         {
 
             ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());

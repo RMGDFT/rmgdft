@@ -119,9 +119,9 @@ void write_header(void)
     printf("\n        get_FG_NY()  = %d", get_FG_NY());
     printf("\n        get_FG_NZ()  = %d\n", get_FG_NZ());
 
-    printf("\n    BRAVAIS LATTICE TYPE IS %s", lattice_type[ct.ibrav]);
+    printf("\n    BRAVAIS LATTICE TYPE IS %s", lattice_type[get_ibrav_type()]);
     printf("\n    Cell volume      = %16.8f", ct.vel * ct.psi_nbasis);
-    printf("\n    Grid anisotropy  = %16.8f", ct.anisotropy);
+    printf("\n    Grid anisotropy  = %16.8f", get_anisotropy());
 
     printf("\n\n    PROCESSOR TOPOLOGY:  Total PE's = %d", NPES);
     printf("\n       PE_KPOINT  = %d", pct.pe_kpoint);
@@ -136,7 +136,7 @@ void write_header(void)
      * points in the cell with a correction for the grid anisotropy.
      */
     t1 = pow(ct.vel, 0.333333333333);
-    t1 = PI / (t1 * ct.anisotropy);
+    t1 = PI / (t1 * get_anisotropy());
     t1 = t1 * t1 / 2.0;
     printf("\n    EQUIVALENT ENERGY CUTOFF  %12.6f Rydbergs", t1);
 

@@ -579,28 +579,28 @@ typedef struct
 
  
     /** Global uniform grid spacing in x */
-    rmg_double_t hxgrid;
+    //rmg_double_t hxgrid;
 
     /** Global uniform grid spacing in y */
-    rmg_double_t hygrid;
+    //rmg_double_t hygrid;
 
     /** Global uniform grid spacing in z */
-    rmg_double_t hzgrid;
+    //rmg_double_t hzgrid;
 
  
 
     /** bravais lattice type */
-    int ibrav;
+    //int ibrav;
 
     /* lengths of the sides of the supercell */
-    rmg_double_t xside;
-    rmg_double_t yside;
-    rmg_double_t zside;
+    //rmg_double_t xside;
+    //rmg_double_t yside;
+    //rmg_double_t zside;
 
  
     /** Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. 
       A value larger than 1.05 can lead to convergence problems. */
-    rmg_double_t anisotropy;
+    //rmg_double_t anisotropy;
 
 
  

@@ -85,8 +85,9 @@ void init_sym (void)
 
     if (ct.boundaryflag != CLUSTER)
     {
+        int ibrav = get_ibrav_type();
         /* Call the symmetry routine */
-        symmetry (&ct.ibrav, &s[0][0][0], &nsym, irg, &irt[0][0],
+        symmetry (&ibrav, &s[0][0][0], &nsym, irg, &irt[0][0],
                   &ftau[0][0], &ct.num_ions, &tau[0][0], ityp,
                   &ct.num_kpts, &xk[0][0], wk, ct.celldm, &nr1, &nr2, &nr3, &wflag);
     }
@@ -220,7 +221,8 @@ void symforce (void)
         force[ion][2] = ct.ions[ion].force[ct.fpt[0]][2];
     }
 
-    fsymforces (&force[0][0], &s[0][0][0], irg, &irt[0][0], &ct.num_ions, &ct.ibrav,
+    int ibrav = get_ibrav_type();
+    fsymforces (&force[0][0], &s[0][0][0], irg, &irt[0][0], &ct.num_ions, &ibrav,
                 &nsym, celldm, &nr1, &nr2, &nr3);
 
     /* Store forces back in c format */

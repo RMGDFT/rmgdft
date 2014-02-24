@@ -175,10 +175,10 @@ void init_pe ( int image )
 
     // Now compute the global grid offset of the first point of the coarse and fine node grids
     //find_node_offsets(pct.gridpe, get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
-      //                &pct.PX_OFFSET, &pct.PY_OFFSET, &pct.PZ_OFFSET);
+      //                &get_PX_OFFSET(), &get_PY_OFFSET(), &get_PZ_OFFSET());
 
     //find_node_offsets(pct.gridpe, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
-     //                 &pct.FPX_OFFSET, &pct.FPY_OFFSET, &pct.FPZ_OFFSET);
+     //                 &get_FPX_OFFSET(), &get_FPY_OFFSET(), &get_FPZ_OFFSET());
 
 
     my_barrier ();

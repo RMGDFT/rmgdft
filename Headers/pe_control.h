@@ -164,30 +164,30 @@ typedef struct
 
  
     /* Grid sizes on each PE */
-    int PX0_GRID;
-    int PY0_GRID;
-    int PZ0_GRID;
+//    int PX0_GRID;
+//    int PY0_GRID;
+//    int PZ0_GRID;
 
     /* Grid offsets on each PE */
-    int PX_OFFSET;
-    int PY_OFFSET;
-    int PZ_OFFSET;
+//    int PX_OFFSET;
+//    int PY_OFFSET;
+//    int PZ_OFFSET;
 
     /* Basis size on each PE */
-    int P0_BASIS;
+//    int P0_BASIS;
 
     /* Fine grid sizes on each PE */
-    int FPX0_GRID;
-    int FPY0_GRID;
-    int FPZ0_GRID;
+//    int FPX0_GRID;
+//    int FPY0_GRID;
+//    int FPZ0_GRID;
 
     /* Fine Grid offsets on each PE */
-    int FPX_OFFSET;
-    int FPY_OFFSET;
-    int FPZ_OFFSET;
+//    int FPX_OFFSET;
+//    int FPY_OFFSET;
+//    int FPZ_OFFSET;
 
     /* Fine grid basis size on each PE */
-    int FP0_BASIS;
+//    int FP0_BASIS;
 
     int instances;
     /** Neighboring processors in three-dimensional space */
@@ -199,9 +199,9 @@ typedef struct
 
  
     /** local grid size for x,y,z **/
-    int nx_grid;
-    int ny_grid;
-    int nz_grid;
+//    int nx_grid;
+//    int ny_grid;
+//    int nz_grid;
 
     /* kpoint index for start and end for a subdomain processors */
     int kstart;

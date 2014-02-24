@@ -32,9 +32,9 @@ void distribute_to_global(rmg_double_t * distr_array, rmg_double_t * global_arra
     incx1 = get_NY_GRID() * get_NZ_GRID();
     incy1 = get_NZ_GRID();
 
-    ii =  pct.PX_OFFSET;
-    jj =  pct.PY_OFFSET;
-    kk =  pct.PZ_OFFSET;
+    ii =  get_PX_OFFSET();
+    jj =  get_PY_OFFSET();
+    kk =  get_PZ_OFFSET();
 
     for (idx1 = 0; idx1 < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx1++)
         global_array[idx1] = 0.0;

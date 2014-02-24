@@ -33,9 +33,9 @@ void global_to_distribute(rmg_double_t * global_array, rmg_double_t * distr_arra
     incy1 = get_NZ_GRID();
 
     pe2xyz(pct.gridpe, &ii, &jj, &kk);
-    ii = pct.PX_OFFSET;
-    jj = pct.PY_OFFSET;
-    kk = pct.PZ_OFFSET;
+    ii = get_PX_OFFSET();
+    jj = get_PY_OFFSET();
+    kk = get_PZ_OFFSET();
 
     idx1 = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
