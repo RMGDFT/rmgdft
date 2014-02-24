@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 extern rmg_double_t *vh_old, *vxc_old;
 

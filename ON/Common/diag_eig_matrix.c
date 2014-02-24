@@ -7,6 +7,8 @@
 #include <float.h>
 #include <assert.h>
 #include "blacs.h"
+#include "main.h"
+#include "prototypes_on.h"
 
 /*
  *

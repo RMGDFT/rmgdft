@@ -90,10 +90,11 @@
 /* Prototypes for function calls*/
 #include "common_prototypes.h" 
 #include "common_prototypes1.h" 
-//#include "common_prototypes.h" 
 
 /* Some definitions needed for using compile time values for global grid sizes */
 #include "fixed_dims.h"
+
+#include "xc.h"
 
 /* Include the  library of exchange and correlation (namely, Libxc) */
 /* #include "../../Common/libxc/include/xc.h"   */

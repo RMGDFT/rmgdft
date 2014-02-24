@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc, STATE * states)

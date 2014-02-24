@@ -38,6 +38,7 @@
 #include <string.h>
 #include <time.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 #include "svnrev.h"
 

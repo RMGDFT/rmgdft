@@ -35,6 +35,7 @@
 #include <time.h>
 #include <math.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void write_pos(void)
 {

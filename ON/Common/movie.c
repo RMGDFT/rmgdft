@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void movie(FILE * mfp)
 {

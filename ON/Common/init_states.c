@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 #define MAX_NOCC 10
 

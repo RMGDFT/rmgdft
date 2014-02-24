@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void write_rho_x(rmg_double_t * rho, char *ab)
 {

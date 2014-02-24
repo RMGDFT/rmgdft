@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 

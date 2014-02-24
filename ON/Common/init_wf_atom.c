@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 void init_wf_atom(STATE * states)

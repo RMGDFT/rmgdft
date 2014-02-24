@@ -32,6 +32,7 @@
 
 
 #include "main.h"
+#include "prototypes_on.h"
 #include <float.h>
 #include <math.h>
 

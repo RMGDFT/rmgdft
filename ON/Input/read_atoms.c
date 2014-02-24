@@ -27,6 +27,7 @@
  * SOURCE */
 
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 void read_atoms (void)
 {

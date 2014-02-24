@@ -25,6 +25,7 @@ This should be called after get_nlop.c
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 

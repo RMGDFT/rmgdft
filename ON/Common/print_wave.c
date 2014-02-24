@@ -13,6 +13,7 @@ print out wave_plot stored in wave_global in coarse grids to file
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 

@@ -26,6 +26,7 @@ index =  (st1 - ct.state_begin) * ct.num_ions + ion2;
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 

@@ -31,6 +31,7 @@
 
 
 #include "main.h"
+#include "prototypes_on.h"
 #include <time.h>
 #include <stdio.h>
 #include <sys/time.h>

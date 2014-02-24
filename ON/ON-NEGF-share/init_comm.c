@@ -33,6 +33,7 @@ recv_from[loop * (ct.num_state_per_proc +2) ]:
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 

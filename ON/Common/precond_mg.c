@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 void precond_mg(double *res, double *work1, double *work2, int istate)
@@ -46,8 +47,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     izz = states[istate].izmax - states[istate].izmin + 1;
 
     stopp0 = ixx * iyy * izz;
-
-
 
 
     idx = (ixx + 4) * (iyy +4) * (izz+4);

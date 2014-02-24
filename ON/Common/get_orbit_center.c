@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 void get_orbit_center(STATE *state, rmg_double_t * x, rmg_double_t * y, rmg_double_t * z)

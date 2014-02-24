@@ -39,6 +39,7 @@
 
 
 #include "main.h"
+#include "prototypes_on.h"
 #include <float.h>
 #include <math.h>
 
@@ -63,7 +64,6 @@ void xcgga(rmg_double_t * rho1, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     pisq3 = THREE * PI * PI;
-
 
     /* Grab some memory */
     my_malloc_init( gx, get_FP0_BASIS(), rmg_double_t );

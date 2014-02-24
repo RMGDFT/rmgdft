@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
 {

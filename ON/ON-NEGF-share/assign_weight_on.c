@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void assign_weight_on(SPECIES * sp, fftw_complex * weptr, rmg_double_t * rtptr)
 {

@@ -14,9 +14,11 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 
+rmg_double_t dot_product_orbit_nl (STATE *st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr);
 void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi);
 
 

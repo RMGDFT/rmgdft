@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "main.h"
+#include "prototypes_on.h"
 
 void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int dimy, int dimz)
 {

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 #include "my_scalapack.h"
 
@@ -174,8 +175,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     time2 = my_crtc();
     rmg_timings(HPSI_TIME, time2 - time1);
 
-    /*  print_sum(pct.psi_size, states1[ct.state_begin].psiR, "states1 sum "); 
-     */
+     
 
     /*
      *    precond(states1[ct.state_begin].psiR);

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 double get_gamma_precond(double *vtot, double small_eig)

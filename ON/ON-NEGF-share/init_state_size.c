@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void init_state_size(STATE * states)
 {
@@ -50,7 +51,6 @@ void init_state_size(STATE * states)
 
     item = 1<<ct.eig_parm.levels;
         printf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_hxgrid(), get_xside(), item);
-        dprintf("\n  States orbital radius %f %f %f %d \n", states[0].radius, get_xside(),get_hxgrid() , item);
 
     for (state = 0; state < ct.num_states; state++)
     {

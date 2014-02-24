@@ -38,6 +38,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 static void read_orbitals ();
 static void read_kpoints ();

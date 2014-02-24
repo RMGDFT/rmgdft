@@ -89,8 +89,6 @@ void get_index_loc (STATE *);
 void get_eig (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc);
 char *get_num (char *str);
 void get_zdens (STATE * states, int state, rmg_double_t * zvec);
-void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc);
-void exclda_pz81 (rmg_double_t * rho, rmg_double_t * exc);
 void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int flag);
 void gram (KPOINT * kpoint, rmg_double_t h, int numst, int maxst, int numpt,
         int maxpt);
@@ -321,7 +319,6 @@ int if_update_centers (STATE * states);
 void write_states_info (char *outfile, STATE * states);
 void read_states_info (char *outfile, STATE * states);
 
-double get_gamma_precond (double *vtot, double small_eig);
 void init_state_size (STATE * states);
 void diag_eig_maitrix(double *, double *, int *);
 
@@ -346,8 +343,6 @@ void get_index_loc (STATE *);
 void get_eig (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc);
 char *get_num (char *str);
 void get_zdens (STATE * states, int state, rmg_double_t * zvec);
-void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc);
-void exclda_pz81 (rmg_double_t * rho, rmg_double_t * exc);
 void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int flag);
 void gram (KPOINT * kpoint, rmg_double_t h, int numst, int maxst, int numpt,
         int maxpt);
@@ -550,9 +545,6 @@ FILE *open_xbs_movie (char *filename);
 
 
 
-rmg_double_t get_te_ion_ion ();
-rmg_double_t get_sum_eig (STATE * states);
-rmg_double_t get_Exc (rmg_double_t * rho, rmg_double_t * rhocore);
 void correct_res (STATE *, rmg_double_t *);
 void get_state_to_proc (STATE * states);
 

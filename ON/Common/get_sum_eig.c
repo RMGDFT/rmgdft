@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 
@@ -108,13 +109,12 @@ double get_Exc(double *rho, double *rhocore)
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         nrho[idx] = rhocore[idx] + rho[idx];
 
-//dprintf("\n get_Exc  %d %d ",get_FP0_BASIS(), ct.vh_pbasis);
 
     /* Evaluate XC energy correction terms */
     switch (ct.xctype)
     {
     case LDA_PZ81:             /* LDA Perdew Zunger 81 */
-        exclda_pz81(nrho, work);
+        exclda_pz81(nrho, work, get_FP0_BASIS());
         break;
 
     case GGA_BLYP:             /* GGA X-Becke C-Lee Yang Parr */

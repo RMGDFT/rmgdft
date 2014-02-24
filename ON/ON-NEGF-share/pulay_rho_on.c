@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 #define     MAX_STEPS   300
 

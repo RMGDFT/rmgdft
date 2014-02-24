@@ -3,7 +3,8 @@
 ******************************************************************************/
  
 #include <stdio.h>
-#include "main.h" 
+#include "main.h"
+#include "prototypes_on.h" 
 
 #define MAX_COL		10
 

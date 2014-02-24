@@ -17,6 +17,7 @@
 #include <assert.h>
 
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 void get_matB_qnm(double *Aij)

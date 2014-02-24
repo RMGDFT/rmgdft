@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 void allocate_masks(STATE * states)

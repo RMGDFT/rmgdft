@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <time.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include <math.h>
 #include "init_var.h"
 #include <mpi.h>

@@ -18,6 +18,7 @@ modified by Wenchang Lu, 09-24-2005
 #include <assert.h>
 
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 /*shuchun wang*/

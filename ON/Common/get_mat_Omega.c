@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 

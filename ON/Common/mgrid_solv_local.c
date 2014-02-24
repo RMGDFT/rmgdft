@@ -50,6 +50,7 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "prototypes_on.h"
 
 
 void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work,

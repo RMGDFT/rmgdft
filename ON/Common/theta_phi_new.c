@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 void theta_phi_new(int st1, int st2, rmg_double_t theta_ion, rmg_double_t * st2_psi,

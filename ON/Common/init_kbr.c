@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 void init_kbr(void)

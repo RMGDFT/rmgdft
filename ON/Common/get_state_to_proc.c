@@ -16,6 +16,7 @@ get_state_to_proc.c
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
 
 void get_state_to_proc(STATE * states)

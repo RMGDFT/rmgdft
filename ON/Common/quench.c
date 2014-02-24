@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * vh,
             rmg_double_t * vnuc, rmg_double_t * vh_old, rmg_double_t * vxc_old, rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * rhocore)

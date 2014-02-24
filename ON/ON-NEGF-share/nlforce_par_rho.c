@@ -7,6 +7,7 @@
 #include <float.h>
 #include <math.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void nlforce_par_rho(rmg_double_t * par_gamma_x, rmg_double_t * par_gamma_y, rmg_double_t * par_gamma_z, int ion, int nh)
 {

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 void update_orbit_centers(STATE * states)

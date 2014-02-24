@@ -3,6 +3,7 @@
 ******************************************************************************/
  
 #include	"main.h"
+#include	"prototypes_on.h"
 #include "init_var.h"
 
 
@@ -33,6 +34,7 @@ void precond(double *x)
         }
         /* compute the preconditioned steepest descent direction
          * -> work1 */
+
         precond_mg(sp, work1, work2, istate);
         app_mask(istate, work1, 0);
 

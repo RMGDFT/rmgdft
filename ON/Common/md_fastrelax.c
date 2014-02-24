@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void md_fastrelax(void)
 {

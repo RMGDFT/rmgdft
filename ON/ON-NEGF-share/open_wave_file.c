@@ -12,6 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 

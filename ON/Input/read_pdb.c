@@ -29,6 +29,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 
 int read_parse_pdb_line (ION * iptr, int ion_index)

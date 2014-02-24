@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "prototypes_on.h"
 
 void init_parameter(STATE * states)
 {

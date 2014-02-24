@@ -28,6 +28,7 @@
 
 
 #include "main.h"
+#include "prototypes_on.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "init_var.h"

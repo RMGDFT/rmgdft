@@ -1,4 +1,4 @@
-/************************** SVN Revision Information **************************
+/************************* SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
  
@@ -34,6 +34,7 @@
 
 
 #include "main.h"
+#include "prototypes_on.h"
 #include <float.h>
 #include <math.h>
 
@@ -72,7 +73,7 @@ void get_vxc(rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * vxc)
         {
         case LDA_PZ81:         /* LDA Perdew Zunger 81 */
 
-            xclda_pz81(nrho, vxc);
+            xclda_pz81(nrho, vxc, nn );
             break;
 
         case GGA_BLYP:         /* GGA X-Becke C-Lee Yang Parr */
