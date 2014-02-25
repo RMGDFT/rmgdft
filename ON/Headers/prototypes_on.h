@@ -200,7 +200,6 @@ void ortho_norm_local (STATE * states);
 void global_sums_int (int *vect, int *length);
 void my_barrier (void);
 void matrix_and_diag (STATE * states, STATE * states1, rmg_double_t * vxc, int flag);
-void get_kbpsi (STATE *sp1, double *kbpsi);
 void precond_mg (double *res, double *work1, double *work2, int istate);
 
 void matS_cholesky_real (STATE * states);
@@ -209,7 +208,7 @@ void print_matrix (double *b, int n, int ldb);
 void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
-void get_all_kbpsi (STATE * states1, STATE * states);
+void get_all_kbpsi (STATE * states1, STATE * states, ION_ORBIT_OVERLAP *, rmg_double_t *, rmg_double_t *);
 void get_Hvnlij (double *Aij);
 void genvlocpsi (rmg_double_t * psi, int st1, rmg_double_t * work1, rmg_double_t * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
@@ -232,15 +231,15 @@ void symrho (rmg_double_t * rho, int *nr1, int *nr2, int *nr3, int *nsym, int *s
         int *irg, int *ftau);
 
 void sgama (int *nrot,int *nat,double *s,double *at,double *bg,double *tau,
-            int *ityp,int *nsym,int *nr1,int *nr2,int *nr3,int *irg,
-            int *irt,double *ftau,double *rtau,int *npk,int *nks,double *xk,
-            double *wk,double *xau,double *rau,bool *invsym, int *wflag);
+        int *ityp,int *nsym,int *nr1,int *nr2,int *nr3,int *irg,
+        int *irt,double *ftau,double *rtau,int *npk,int *nks,double *xk,
+        double *wk,double *xau,double *rau,bool *invsym, int *wflag);
 
 void line_min_three_point (STATE *, STATE *, rmg_double_t, rmg_double_t, rmg_double_t *, rmg_double_t *,
         rmg_double_t *, rmg_double_t *, rmg_double_t *);
 
 void dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2, STATE
-*orbit3, double *H, double *S);
+        *orbit3, double *H, double *S);
 
 void orbit_dot_orbit (STATE * states, STATE * states1, rmg_double_t *Hij_row, rmg_double_t * Bij_row);
 
@@ -248,10 +247,6 @@ void app_mask (int istate, double *u, int level);
 void allocate_masks (STATE * states);
 
 void state_corner_xyz (STATE * states);
-
-void density_orbit_X_orbit (int st1, int st2, rmg_double_t scale, rmg_double_t * psi1,
-        rmg_double_t * psi2, rmg_double_t * rho_global, int mode,
-        STATE * states);
 
 char *get_symbol (int atomic_number);
 
@@ -272,7 +267,9 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, 
         rmg_double_t * xcstart, rmg_double_t * ycstart, rmg_double_t * zcstart);
 void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode);
 rmg_double_t radint1 (rmg_double_t * func, rmg_double_t * r, rmg_double_t * rab, int n);
-void get_all_partial_kbpsi (STATE *states);
+void get_all_partial_kbpsi (STATE *states, ION_ORBIT_OVERLAP *,
+        rmg_double_t *, rmg_double_t *, rmg_double_t *, rmg_double_t *,
+        rmg_double_t *, rmg_double_t *);
 void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, rmg_double_t * global_mat_X);
 void partial_QI (int ion, rmg_double_t * QI_R, ION *iptr);
 void partial_nlop_s (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
@@ -325,7 +322,7 @@ void diag_eig_maitrix(double *, double *, int *);
 
 
 void filter_potential (rmg_double_t *potential, rmg_double_t *r, int rg_points, rmg_double_t rmax, rmg_double_t offset, rmg_double_t parm, rmg_double_t* potential_lgrid, 
-	rmg_double_t *rab, int l_value, rmg_double_t dr, rmg_double_t  gwidth, int lgrid_points, rmg_double_t rcut, rmg_double_t rwidth, rmg_double_t * drpotential_lgrid);
+        rmg_double_t *rab, int l_value, rmg_double_t dr, rmg_double_t  gwidth, int lgrid_points, rmg_double_t rcut, rmg_double_t rwidth, rmg_double_t * drpotential_lgrid);
 
 
 /* Function prototypes */
@@ -437,7 +434,6 @@ void get_mehr (void);
 void make_mask_grid (rmg_double_t rcut, int level, STATE * states);
 void make_mask_grid_state (int level, STATE * states);
 void allocate_func (STATE * states, int inist);
-void allocate_psi (STATE * states, STATE * states1);
 void allocate_matrix ();
 void xyz2pe (int x, int y, int z, int *pe);
 void get_normKB (SPECIES * sp, double *pd);
@@ -454,7 +450,6 @@ void ortho_norm_local (STATE * states);
 void global_sums_int (int *vect, int *length);
 void my_barrier (void);
 void matrix_and_diag (STATE * states, STATE * states1, rmg_double_t * vxc, int flag);
-void get_kbpsi (STATE *sp1, double *kbpsi);
 void precond_mg (double *res, double *work1, double *work2, int istate);
 
 void matS_cholesky_real (STATE * states);
@@ -463,7 +458,6 @@ void print_matrix (double *b, int n, int ldb);
 void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
-void get_all_kbpsi (STATE * states1, STATE * states);
 void get_Hvnlij (double *Aij);
 void genvlocpsi (rmg_double_t * psi, int st1, rmg_double_t * work1, rmg_double_t * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
@@ -486,15 +480,15 @@ void symrho (rmg_double_t * rho, int *nr1, int *nr2, int *nr3, int *nsym, int *s
         int *irg, int *ftau);
 
 void sgama (int *nrot,int *nat,double *s,double *at,double *bg,double *tau,
-            int *ityp,int *nsym,int *nr1,int *nr2,int *nr3,int *irg,
-            int *irt,double *ftau,double *rtau,int *npk,int *nks,double *xk,
-            double *wk,double *xau,double *rau,bool *invsym, int *wflag);
+        int *ityp,int *nsym,int *nr1,int *nr2,int *nr3,int *irg,
+        int *irt,double *ftau,double *rtau,int *npk,int *nks,double *xk,
+        double *wk,double *xau,double *rau,bool *invsym, int *wflag);
 
 void line_min_three_point (STATE *, STATE *, rmg_double_t, rmg_double_t, rmg_double_t *, rmg_double_t *,
         rmg_double_t *, rmg_double_t *, rmg_double_t *);
 
 void dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2, STATE
-*orbit3, double *H, double *S);
+        *orbit3, double *H, double *S);
 
 void orbit_dot_orbit (STATE * states, STATE * states1, rmg_double_t *Hij_row, rmg_double_t * Bij_row);
 
@@ -505,7 +499,7 @@ void state_corner_xyz (STATE * states);
 
 void density_orbit_X_orbit (int st1, int st2, rmg_double_t scale, rmg_double_t * psi1,
         rmg_double_t * psi2, rmg_double_t * rho_global, int mode,
-        STATE * states);
+        STATE * states, ORBIT_ORBIT_OVERLAP *);
 
 char *get_symbol (int atomic_number);
 
@@ -526,7 +520,6 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, 
         rmg_double_t * xcstart, rmg_double_t * ycstart, rmg_double_t * zcstart);
 void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode);
 rmg_double_t radint1 (rmg_double_t * func, rmg_double_t * r, rmg_double_t * rab, int n);
-void get_all_partial_kbpsi (STATE *states);
 void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, rmg_double_t * global_mat_X);
 void partial_QI (int ion, rmg_double_t * QI_R, ION *iptr);
 void partial_nlop_s (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
@@ -574,10 +567,11 @@ void diag_eig_maitrix(double *, double *, int *);
 
 
 void filter_potential (rmg_double_t *potential, rmg_double_t *r, int rg_points, rmg_double_t rmax, rmg_double_t offset, rmg_double_t parm, rmg_double_t* potential_lgrid, 
-	rmg_double_t *rab, int l_value, rmg_double_t dr, rmg_double_t  gwidth, int lgrid_points, rmg_double_t rcut, rmg_double_t rwidth, rmg_double_t * drpotential_lgrid);
+        rmg_double_t *rab, int l_value, rmg_double_t dr, rmg_double_t  gwidth, int lgrid_points, rmg_double_t rcut, rmg_double_t rwidth, rmg_double_t * drpotential_lgrid);
 
 
-rmg_double_t dot_product_orbit_nl (STATE *st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr);
+rmg_double_t dot_product_orbit_nl (STATE *st1, int ion2, rmg_double_t * psi,
+        rmg_double_t * prjptr, ION_ORBIT_OVERLAP *);
 
 void non_zero_pairs ();
 void non_zero_pairs1 ();
@@ -585,7 +579,7 @@ void non_zero_pairs1 ();
 void init_nl_xyz ();
 
 void theta_phi_new (int st1, int st2, rmg_double_t theta_ion, rmg_double_t * st2_psi,
-                    rmg_double_t * state1_psi, int mode, STATE * states);
+        rmg_double_t * state1_psi, int mode, STATE * states);
 
 void print_status (STATE *, rmg_double_t *, rmg_double_t *, rmg_double_t *, rmg_double_t *, char *);
 void print_state_projections (STATE *, char);

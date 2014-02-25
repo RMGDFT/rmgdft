@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <complex.h>
 #include "rmgtypes.h"
 #include "rmg_error.h"
 #include "fftw.h"
@@ -77,14 +78,12 @@ static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
         for (i = 0; i < n; i++)
             p[i].re = p[i].im = 0.0;
     }
-#if 0
-    else if ( strcmp( type, "_Complex double" ) == 0 )
+    else if ( strcmp( type, "complex double" ) == 0 )
     {
         complex double *p = (complex double *) ptr;
         for ( i = 0; i < n; i ++ )
             p[i] = 0.0;
     }
-#endif
     else
     {
         printf ("!!!! warning: requested initialization of data pointed to by '%s' not done.\n", ptr);

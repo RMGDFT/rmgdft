@@ -48,7 +48,9 @@ void nlforce(rmg_double_t * veff)
         rho_nm[idx] = 0.0;
     }
 
-    get_all_partial_kbpsi(states);
+    get_all_partial_kbpsi(states, ion_orbit_overlap_region_nl,
+            projectors_x, projectors_y, projectors_z, partial_kbpsi_x,
+            partial_kbpsi_y, partial_kbpsi_z);
 
     n2 = ct.num_states * ct.num_states;
 

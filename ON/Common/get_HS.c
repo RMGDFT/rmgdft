@@ -82,7 +82,7 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
 
     my_barrier();
 
-    get_all_kbpsi(states, states);
+    get_all_kbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
 
     get_Hvnlij(Hij_00);
 

@@ -18,10 +18,10 @@ dot_product of (orbit,  non-local projector )
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 
 
-rmg_double_t dot_product_orbit_nl(STATE *st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr)
+rmg_double_t dot_product_orbit_nl(STATE *st1, int ion2, rmg_double_t *
+psi, rmg_double_t * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;

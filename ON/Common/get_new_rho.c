@@ -69,7 +69,8 @@ void get_new_rho(STATE * states, double *rho)
            psi2 = states[st2].psiR;
 
            if (state_overlap_or_not[st1 + st2 * ct.num_states] == 1)
-               density_orbit_X_orbit(st1, st2, scale, psi1, psi2, rho_global, 0, states);
+               density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
+                       rho_global, 0, states, orbit_overlap_region);
 
        }
 
@@ -148,7 +149,8 @@ void get_new_rho(STATE * states, double *rho)
                    st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
+                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p,
+                           rho_global, 0, states, orbit_overlap_region);
                }
        }
 
@@ -192,7 +194,8 @@ void get_new_rho(STATE * states, double *rho)
                    st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
+                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p,
+                           rho_global, 0, states, orbit_overlap_region);
                }
 
 
@@ -226,7 +229,8 @@ void get_new_rho(STATE * states, double *rho)
                        st11 = st1 - ct.state_begin;
                        psi1 = states[st1].psiR;
                        scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                       density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
+                       density_orbit_X_orbit(st1, st2, scale, psi1,
+                               psi_p, rho_global, 0, states, orbit_overlap_region);
                    }
            }
 
@@ -242,7 +246,8 @@ void get_new_rho(STATE * states, double *rho)
                    st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p, rho_global, 0, states);
+                   density_orbit_X_orbit(st1, st2, scale, psi1, 
+                               psi_p, rho_global, 0, states, orbit_overlap_region);
                }
 
 

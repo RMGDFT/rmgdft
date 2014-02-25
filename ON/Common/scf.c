@@ -48,7 +48,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     {
         ct.move_centers_at_this_step = 1;
         update_orbit_centers(states);
-        get_all_kbpsi(states, states);
+        get_all_kbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
         duplicate_states_info(states, states1);
         duplicate_states_info(states, states_tem);
     }

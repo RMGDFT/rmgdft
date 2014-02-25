@@ -324,9 +324,14 @@ static void init_alloc_nonloc_mem (void)
 
     my_malloc (pct.augfunc, ct.num_ions, rmg_double_t *);
     my_malloc (pct.dnmI, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.dnmI_x, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.dnmI_x, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.dnmI_x, ct.num_ions, rmg_double_t *);
     my_malloc (pct.qqq, ct.num_ions, rmg_double_t *);
 
 
+    my_malloc (pct.ionidx_loc, ct.num_ions, int);
+    my_malloc (pct.prj_ptr, ct.num_ions, int);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {

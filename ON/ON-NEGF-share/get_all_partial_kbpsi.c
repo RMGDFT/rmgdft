@@ -19,10 +19,13 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 
 
-void get_all_partial_kbpsi(STATE * states)
+void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
+        *ion_orbit_overlap_region_nl, rmg_double_t *projectors_x, 
+        rmg_double_t *projectors_y, rmg_double_t *projectors_z, 
+        rmg_double_t *partial_kbpsi_x,
+        rmg_double_t *partial_kbpsi_y,rmg_double_t *partial_kbpsi_z)
 {
     int st1, idx1, idx2, idx;
     int size;
@@ -63,11 +66,11 @@ void get_all_partial_kbpsi(STATE * states)
             {
                 idx = idx1 + idx2 + ip;
                 partial_kbpsi_x[idx] =
-                    ct.vel * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_x);
+                    ct.vel * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_x, ion_orbit_overlap_region_nl);
                 partial_kbpsi_y[idx] =
-                    ct.vel * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_y);
+                    ct.vel * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_y, ion_orbit_overlap_region_nl);
                 partial_kbpsi_z[idx] =
-                    ct.vel * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_z);
+                    ct.vel * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_z, ion_orbit_overlap_region_nl);
 
                 prjptr_x += ct.max_nlpoints;
                 prjptr_y += ct.max_nlpoints;

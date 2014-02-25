@@ -15,12 +15,12 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 
 static int fold_to_unitcell(int, int);
 
 void density_orbit_X_orbit(int st1, int st2, rmg_double_t scale, rmg_double_t * psi1,
-                           rmg_double_t * psi2, rmg_double_t * rho_global, int mode, STATE * states)
+                           rmg_double_t * psi2, rmg_double_t * rho_global, int mode, 
+                           STATE * states, ORBIT_ORBIT_OVERLAP *orbit_overlap_region)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
