@@ -13,10 +13,12 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
-void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_idx,
+void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigma, int * sigma_idx,
                        complex double ene, complex double * Green_C)
 {
 /*   H00, S00: nC * nC real matrix
@@ -30,7 +32,7 @@ void Sgreen_c_p (REAL * Htri, REAL * Stri, complex double * sigma, int * sigma_i
 
     int info;
     int i, j, nprobe;
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     int ntot, N1, N2; 
     int idx, idx2, ioff, joff;
     

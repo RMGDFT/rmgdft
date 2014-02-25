@@ -28,6 +28,8 @@
 
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include <stdlib.h>
 #include <stdio.h>
 

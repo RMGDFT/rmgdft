@@ -96,7 +96,7 @@ void psubdiag(char*, char*, int, double *, int, double*, int*);
 void matinit(double *, int*, double*, int);
 void matgather(double *, int *, double *, int);
 void DESCINIT(int[],int*,int*,int*,int*,int*,int*,int*,int*,int*);
-void sl_init(int *, int, int);
+void sl_init_on(int *, int, int);
 void distribute_mat(double *, double *);
 void dsymm_dis(char*, char*, int*, double*, double *, double *);
 

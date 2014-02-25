@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
@@ -67,7 +69,7 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 		write (fhand, &i1, sizeof (int));
 		i1 = NPES;
 		write (fhand, &i1, sizeof (int));
-		i1 = P0_BASIS;
+		i1 = get_P0_BASIS();
 		write (fhand, &i1, sizeof (int));
 
 		/* Write current ionic positions to the file */
@@ -139,11 +141,11 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 		my_open (fhand, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
 	}
 
-	write_global_data (fhand, vh, FNX_GRID, FNY_GRID, FNZ_GRID);
+	write_global_data (fhand, vh, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
-	write_global_data (fhand, vxc, FNX_GRID, FNY_GRID, FNZ_GRID);
+	write_global_data (fhand, vxc, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
-	write_global_data (fhand, rho, FNX_GRID, FNY_GRID, FNZ_GRID);
+	write_global_data (fhand, rho, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
 
 	idx = ct.num_states * ct.num_states;
@@ -190,7 +192,7 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
     FILE *file, *file2;
     int ii, jj, kk;
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         /*vtot[idx] = vh[idx] + vxc[idx];*/
         vtot[idx] = vh[idx];
 
@@ -198,43 +200,43 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
     /* apply_potential_drop ( vtot ); */
 
 
-    FPYZ0 = FPY0_GRID * FPZ0_GRID;
+    FPYZ0 = get_FPY0_GRID() * get_FPZ0_GRID();
 
-    for (ix = 0; ix < FPX0_GRID; ix++)
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
-        for (iy = 0; iy < FPY0_GRID; iy++)
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
         {
-            idx = iy + ix * FPY0_GRID;
+            idx = iy + ix * get_FPY0_GRID();
                                                                                                                      
-            for (iz = 0; iz < FPZ0_GRID; iz++)
+            for (iz = 0; iz < get_FPZ0_GRID(); iz++)
             {
-                idx2 = iz + iy * FPZ0_GRID + ix * FPYZ0;
+                idx2 = iz + iy * get_FPZ0_GRID() + ix * FPYZ0;
                 vtot[idx2] += vbias[idx];
             }
         }
     }
 
 
-    FNXY = FNX_GRID * FNY_GRID;
+    FNXY = get_FNX_GRID() * get_FNY_GRID();
     my_malloc_init(vtot_global, FNXY, double);
     my_malloc_init(rho_global, FNXY, double);
 
 
-    ii = pct.FPX_OFFSET;
-    jj = pct.FPY_OFFSET;
-    kk = pct.FPZ_OFFSET;
+    ii = get_FPX_OFFSET();
+    jj = get_FPY_OFFSET();
+    kk = get_FPZ_OFFSET();
 
 
-    for (iz = 0; iz < FPZ0_GRID; iz++)
+    for (iz = 0; iz < get_FPZ0_GRID(); iz++)
     {
-        if ((iz + kk) == (FNZ_GRID/6)-1)           /* for a given iz */
+        if ((iz + kk) == (get_FNZ_GRID()/6)-1)           /* for a given iz */
         {
-            for (ix = 0; ix < FPX0_GRID; ix++)
+            for (ix = 0; ix < get_FPX0_GRID(); ix++)
             {
-                for (iy = 0; iy < FPY0_GRID; iy++)
+                for (iy = 0; iy < get_FPY0_GRID(); iy++)
                 {
-                    idx = ix * FPYZ0 + iy * FPZ0_GRID + iz;
-                    idx2 = (ix + ii) * FNY_GRID + (iy + jj);
+                    idx = ix * FPYZ0 + iy * get_FPZ0_GRID() + iz;
+                    idx2 = (ix + ii) * get_FNY_GRID() + (iy + jj);
                     vtot_global[idx2] = vtot[idx];
                     rho_global[idx2] = rho[idx];
                 }
@@ -251,11 +253,11 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
         file = fopen ("pot.dat", "w");
         file2 = fopen ("rho.dat", "w");
 
-        for (ix = 0; ix < FNX_GRID; ix++)
+        for (ix = 0; ix < get_FNX_GRID(); ix++)
         {
-            for (iy = 0; iy < FNY_GRID; iy++)
+            for (iy = 0; iy < get_FNY_GRID(); iy++)
             {
-                idx = iy + ix * FNY_GRID;
+                idx = iy + ix * get_FNY_GRID();
 
                 fprintf (file, " %d %d %f \n", ix, iy, vtot_global[idx]);
                 fprintf (file2, " %d %d %f \n", ix, iy, rho_global[idx]);

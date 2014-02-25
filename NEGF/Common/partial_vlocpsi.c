@@ -14,9 +14,11 @@ multiplication of (orbit,  local projector )
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-void partial_vlocpsi (STATE st1, int ion2, REAL * psi, REAL * prjptr, REAL *vlpsi)
+void partial_vlocpsi (STATE st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr, rmg_double_t *vlpsi)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -28,7 +30,7 @@ void partial_vlocpsi (STATE st1, int ion2, REAL * psi, REAL * prjptr, REAL *vlps
     int idx1, idx2;
     int index;
 
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc ();
 
 /*    for (idx1=0; idx1 < st1.size; idx1++) vlpsi[idx1] = 0.0;*/

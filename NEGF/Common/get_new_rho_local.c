@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 #include "my_scalapack.h"
 
@@ -15,26 +17,27 @@
 void get_new_rho_local (STATE * states_distribute, double *rho)
 {
     int idx, ione = 1;
-    REAL t2;
+    rmg_double_t t2;
     register double tcharge;
 
     /* for parallel libraries */
 
-    REAL *psi1, *psi2, scale;
+    rmg_double_t *psi1, *psi2, scale;
     int i, st1, st2, proc1, proc2, st11;
-    REAL time1;
+    rmg_double_t time1;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
-    REAL *rho_temp;
+    rmg_double_t *rho_temp;
     int ix, iy; 
     double tem;
     char filename[MAX_PATH];
 
     double *psi, one = 1.0, zero = 0.0;
+    int pbasis = get_P0_BASIS();
     time1 = my_crtc ();
 
-    my_malloc(psi, pct.num_local_orbit * pct.P0_BASIS+1024, double);
-    my_malloc_init( rho_temp, P0_BASIS, REAL );
+    my_malloc(psi, pct.num_local_orbit * pbasis+1024, double);
+    my_malloc_init( rho_temp, pbasis, rmg_double_t );
 
 
 
@@ -49,33 +52,36 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
         int n2 = pct.num_local_orbit * pct.num_local_orbit;
         cublasSetVector( n2, sizeof( double ), mat_local, ione, ct.gpu_host_temp2, ione );
 
-        cublasDgemm (ct.cublas_handle, transN, transN, pct.P0_BASIS, pct.num_local_orbit, pct.num_local_orbit,
-                &one, ct.gpu_states, pct.P0_BASIS, ct.gpu_host_temp2, pct.num_local_orbit, &zero, ct.gpu_host_temp1, pct.P0_BASIS);
+        cublasDgemm (ct.cublas_handle, transN, transN, pbasis, pct.num_local_orbit, pct.num_local_orbit,
+                &one, ct.gpu_states, pbasis, ct.gpu_host_temp2,
+pct.num_local_orbit, &zero, ct.gpu_host_temp1, pbasis);
 
-//        cublasGetVector( pct.P0_BASIS * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp1, ione, psi, ione );
-        cublasDscal (ct.cublas_handle, pct.P0_BASIS, &zero, ct.gpu_host_temp2, ione);
-        rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states, ct.gpu_host_temp2, pct.num_local_orbit, pct.P0_BASIS);
+//        cublasGetVector( get_P0_BASIS() * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp1, ione, psi, ione );
+        cublasDscal (ct.cublas_handle, pbasis, &zero, ct.gpu_host_temp2, ione);
+        rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states,
+ct.gpu_host_temp2, pct.num_local_orbit, pbasis);
 
-        cublasGetVector( pct.P0_BASIS, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
+        cublasGetVector( pbasis, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
 
 #else
 
 
-        dgemm ("N", "N", &pct.P0_BASIS, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
-                states_distribute[0].psiR, &pct.P0_BASIS, mat_local, &pct.num_local_orbit, 
-                &zero, psi, &pct.P0_BASIS);
+        dgemm ("N", "N", &pbasis, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
+                states_distribute[0].psiR, &pbasis, mat_local, &pct.num_local_orbit, 
+                &zero, psi, &pbasis);
 
-        for(idx = 0; idx < pct.P0_BASIS; idx++)rho_temp[idx] = 0.0;
+        for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
 
         for(st1 = 0; st1 < pct.num_local_orbit; st1++)
-            for(idx = 0; idx < pct.P0_BASIS; idx++)
-                rho_temp[idx] += states_distribute[st1].psiR[idx] * psi[st1 * pct.P0_BASIS + idx];
+            for(idx = 0; idx < pbasis; idx++)
+                rho_temp[idx] += states_distribute[st1].psiR[idx] *
+psi[st1 * pbasis + idx];
 #endif
     }
 
 
-    mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
-            PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
+    mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
+            get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
 
     my_free(rho_temp);
     my_free(psi);
@@ -88,7 +94,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
     rmg_timings (GET_NEW_RHO, time1);
 
 #if  	DEBUG
-    print_sum_square (P0_BASIS, rho, "rho_sum_sqare in the end of get_new_rho  ");
+    print_sum_square (pbasis, rho, "rho_sum_sqare in the end of get_new_rho  ");
 #endif
 
 }

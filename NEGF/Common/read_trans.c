@@ -10,6 +10,8 @@
 #include <assert.h>
 #include <ctype.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 char *get_num (char *str);

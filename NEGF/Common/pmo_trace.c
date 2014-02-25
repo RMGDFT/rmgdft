@@ -8,6 +8,8 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 /*
  *

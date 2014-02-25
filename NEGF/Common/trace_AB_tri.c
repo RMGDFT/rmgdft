@@ -7,9 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-double trace_AB_tri(REAL * H_tri, REAL * par_D_tri, int N, int *ni)
+double trace_AB_tri(rmg_double_t * H_tri, rmg_double_t * par_D_tri, int N, int *ni)
 {
 /* Semi_tridiagonal matrix  
  *

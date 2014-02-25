@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -121,7 +123,7 @@ void tri_to_whole_complex_p (complex double * A_tri, complex double * Aii, int N
     }
 
     i = 2 * ndim * ndim;
-    comm_sums((REAL *)Aii, &i, COMM_EN2);
+    comm_sums((rmg_double_t *)Aii, &i, COMM_EN2);
 
 }
 

@@ -39,13 +39,13 @@
 #include <string.h>
 #include <time.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "init_var_negf.h"
+#include "twoParts.h"
 #include "pmo.h"
 #include "svnrev.h"
 
-
-STATE states[MAX_STATES];
-STATE states1[MAX_STATES];
-STATE states_distribute[MAX_STATES];
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
@@ -54,12 +54,6 @@ CONTROL ct;
 complex_energy_integral cei;
 parallel_matrix_operation pmo;
 
-/* Main control for two parts  --Qingzhong */
-CONTROL part1;
-CONTROL part2;
-PE_CONTROL pct1;
-PE_CONTROL pct2;
-
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
@@ -67,6 +61,11 @@ int mpi_nprocs;
 int mpi_myrank;
 
 int total_mem = 0;
+
+/*Variables from recips.h*/
+double b0[3], b1[3], b2[3];
+double alat;
+
 
 int main (int argc, char **argv)
 {
@@ -99,11 +98,6 @@ int main (int argc, char **argv)
     /*  Begin to do the real calculations */
     run (states, states1, states_distribute);
 
-    {
-        char tag[10];
-        sprintf( tag, "%d", ct.runflag );
-        my_alloc_report( tag );
-    }
 
     MPI_Finalize ();
 

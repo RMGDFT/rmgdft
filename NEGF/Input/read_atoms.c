@@ -27,6 +27,8 @@
  * SOURCE */
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 void read_atoms (void)
 {

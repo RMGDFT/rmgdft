@@ -18,9 +18,11 @@
 
 #include "method.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-void rho_nm_mat (double *Aij, REAL * global_mat_X)
+void rho_nm_mat (double *Aij, rmg_double_t * global_mat_X)
 {
     int ion, ip1, ip2, st1, st2, ist;
     MPI_Status mstatus;

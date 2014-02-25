@@ -31,14 +31,16 @@
 
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include <time.h>
 #include <stdio.h>
 
 
-REAL timings[LAST_TIME];
+rmg_double_t timings[LAST_TIME];
 
 #if !HYBRID_MODEL
-void rmg_timings(int what, REAL time)
+void rmg_timings(int what, rmg_double_t time)
 {
 
     timings[what] += time;
@@ -48,14 +50,14 @@ void rmg_timings(int what, REAL time)
 
 #include <sys/time.h>
 
-REAL my_crtc (void)
+rmg_double_t my_crtc (void)
 {
-    REAL val, val1;
+    rmg_double_t val, val1;
     struct timeval t1;
     gettimeofday (&t1, NULL);
-    val1 = (REAL) t1.tv_usec;
+    val1 = (rmg_double_t) t1.tv_usec;
     val1 /= 1000000.0;
-    val = (REAL) t1.tv_sec;
+    val = (rmg_double_t) t1.tv_sec;
     val += val1;
     return val;
 }
@@ -67,9 +69,6 @@ REAL my_crtc (void)
 void write_timings (void)
 {
 
-    int nn;
-
-    nn = ct.num_steps;
 
 /* Write timing information */
     if (pct.gridpe == 0)

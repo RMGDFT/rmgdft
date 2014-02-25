@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 #if USE_DIS_MAT
@@ -21,7 +23,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
     int maxst, n2;
     STATE *sp;
     int ione = 1;
-    REAL tem;
+    rmg_double_t tem;
     int ixx, iyy, izz;
     char msg[100];
     double time1, time2, time3, time4;
@@ -31,7 +33,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
     n2 = ct.num_states * ct.num_states;
     maxst = ct.num_states;
 
-    my_malloc_init( vtot_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
+    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
 
     distribute_to_global (vtot_c, vtot_global);
 
@@ -59,7 +61,7 @@ void get_Hij (STATE * states, STATE * states1, double *vtot_c, double *Aij)
  */
 
         /* Eighth-order finite-differenital method for Laplatian operating on psi stored in orbit_tem */
-        app10_del2 (sp->psiR, orbit_tem, ixx, iyy, izz, ct.hxgrid, ct.hygrid, ct.hzgrid);
+        app10_del2 (sp->psiR, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
 
         for (idx = 0; idx < ixx * iyy * izz; idx++)

@@ -449,7 +449,6 @@ void distribute_mat(int *desca, double *bigmat, double *dismat, int *size);
 void matinit(int *desca, double *dismat, double *globmat, int size);
 int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int size);
 void reduce_and_dist_matrix(int n, rmg_double_t *global_matrix, rmg_double_t *dist_matrix, rmg_double_t *work);
-void print_distribute_mat(double *dismat, int *desca, int size);
 void init_efield (rmg_double_t * vnuc);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, rmg_double_t ***hist, rmg_double_t ***rhist, int special_metric, rmg_double_t weight);
 void mg_restrict_4th (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz);

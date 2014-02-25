@@ -1,13 +1,6 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
- 
-int 	NPES_part1;
-int 	NPES_part2;
-
-int 	MXLLDA_part1; 
-int 	MXLLDA_part2; 
-
 
 struct BOX {
 

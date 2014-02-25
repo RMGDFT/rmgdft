@@ -26,8 +26,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include "salloc.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
@@ -58,32 +59,32 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
     FILE *file;
     int ii, jj, kk;
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx];
 
 
 
 
-    FPYZ0 = FPY0_GRID * FPZ0_GRID;
-    FNXY = FNX_GRID * FNY_GRID;
+    FPYZ0 = get_FPY0_GRID() * get_FPZ0_GRID();
+    FNXY = get_FNX_GRID() * get_FNY_GRID();
     my_malloc_init(vtot_global, FNXY, double);
 
 
-    ii = pct.FPX_OFFSET;
-    jj = pct.FPX_OFFSET;
-    kk = pct.FPX_OFFSET;
+    ii = get_FPX_OFFSET();
+    jj = get_FPX_OFFSET();
+    kk = get_FPX_OFFSET();
 
 
-    for (iz = 0; iz < FPZ0_GRID; iz++)
+    for (iz = 0; iz < get_FPZ0_GRID(); iz++)
     {
-        if ((iz + kk) == (FNZ_GRID/6)-1)           /* for a given iz */
+        if ((iz + kk) == (get_FNZ_GRID()/6)-1)           /* for a given iz */
         {
-            for (ix = 0; ix < FPX0_GRID; ix++)
+            for (ix = 0; ix < get_FPX0_GRID(); ix++)
             {
-                for (iy = 0; iy < FPY0_GRID; iy++)
+                for (iy = 0; iy < get_FPY0_GRID(); iy++)
                 {
-                    idx = ix * FPYZ0 + iy * FPZ0_GRID + iz;
-                    idx2 = (ix + ii) * FNY_GRID + (iy + jj);
+                    idx = ix * FPYZ0 + iy * get_FPZ0_GRID() + iz;
+                    idx2 = (ix + ii) * get_FNY_GRID() + (iy + jj);
                     vtot_global[idx2] = vtot[idx];
                 }
             }
@@ -97,11 +98,11 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
     {          
         file = fopen ("pot_init.dat", "w");
 
-        for (ix = 0; ix < FNX_GRID; ix++)
+        for (ix = 0; ix < get_FNX_GRID(); ix++)
         {
-            for (iy = 0; iy < FNY_GRID; iy++)
+            for (iy = 0; iy < get_FNY_GRID(); iy++)
             {
-                idx = iy + ix * FNY_GRID;
+                idx = iy + ix * get_FNY_GRID();
 
                 fprintf (file, " %d %d %f \n", ix, iy, vtot_global[idx]);
             }

@@ -18,11 +18,13 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
 
-void Sigma_cond_p (complex double *sigma, REAL *HLC, REAL *SLC, REAL eneR, REAL eneI, complex double *green, int iprobe)
+void Sigma_cond_p (complex double *sigma, rmg_double_t *HLC, rmg_double_t *SLC, rmg_double_t eneR, rmg_double_t eneI, complex double *green, int iprobe)
 {
 
     complex double *ch, *ch1;

@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void scale_orbital (STATE * states, STATE *states_distribute)
@@ -28,7 +30,7 @@ void scale_orbital (STATE * states, STATE *states_distribute)
     int st2, idx;
     for (st2 = 0; st2 < pct.num_local_orbit; st2++)
     {
-        for(idx = 0; idx < pct.P0_BASIS; idx++)
+        for(idx = 0; idx < get_P0_BASIS(); idx++)
             states_distribute[st2].psiR[idx] *= 1.0/sqrt(ct.vel);
     }   
 

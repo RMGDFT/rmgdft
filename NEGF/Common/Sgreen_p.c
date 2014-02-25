@@ -14,6 +14,8 @@
 #include <complex.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 

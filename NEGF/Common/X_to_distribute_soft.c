@@ -6,7 +6,7 @@
 
 
 from distributed array FPX0_BASIS * FPY0_BASIS * FPZ0_BASIS
-get  global array  FNX_GRID * FNY_GRID * FNZ_GRID
+get  global array  get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID()
 
 */
 
@@ -16,22 +16,24 @@ get  global array  FNX_GRID * FNY_GRID * FNZ_GRID
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-void X_to_distribute_soft (REAL * global_array, REAL * distr_array)
+void X_to_distribute_soft (rmg_double_t * global_array, rmg_double_t * distr_array)
 {
 
     int ix, iy, iz, ii;
     int idx2, idx1, incx, incx1, incy, incy1;
 
-    incx = FPY0_GRID * FPZ0_GRID;
+    incx = get_FPY0_GRID() * get_FPZ0_GRID();
 
-    ii = pct.FPX_OFFSET;
+    ii = get_FPX_OFFSET();
 
 
-    for (ix = 0; ix < FPX0_GRID; ix++)
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
-        for (iy = 0; iy < FPY0_GRID * FPZ0_GRID; iy++)
+        for (iy = 0; iy < get_FPY0_GRID() * get_FPZ0_GRID(); iy++)
         {
             idx1 = ix * incx + iy;
             idx2 = (ix + ii) * incx + iy;

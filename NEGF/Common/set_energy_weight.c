@@ -24,6 +24,8 @@
 
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -31,15 +33,15 @@
 
 
 /* This function returns a pointer to a block of memory of size nelem. */
-void set_energy_weight (complex double * ene, complex double * weight, REAL EF, int *nenergy)
+void set_energy_weight (complex double * ene, complex double * weight, rmg_double_t EF, int *nenergy)
 {
 
     int nen, nloop, i;
-    REAL tem, emax, emin, rad, theta0, thetamax, thetamin;
-    REAL center;
+    rmg_double_t tem, emax, emin, rad, theta0, thetamax, thetamin;
+    rmg_double_t center;
     complex double  distri;
 
-    REAL KT, DELTA, DELTA2, GAMMA, EB;
+    rmg_double_t KT, DELTA, DELTA2, GAMMA, EB;
     int size,ncircle, nmax_gq1;
     double *xc, *wc;
 

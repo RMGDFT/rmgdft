@@ -232,9 +232,6 @@
 #define CIL_IMAGE_TIME 76
 #define CIL_TIME 77
 
-#define LAST_TIME (80)
-
-
 
 #define INIT_FIREBALL  2
 #define INIT_GAUSSIAN  3
@@ -297,6 +294,55 @@
 #define READ_CONTROL_TIME 72
 
 
+
+/* Some stuff for timing and performance measurements */
+#define INIT_SOFT_TIME (1)
+#define SIGMA_ALL_TIME (3)
+#define GET_DDD_TIME (5)
+#define GET_Hij_TIME (6)
+#define GET_MATB_SOFT_TIME (7)
+#define CHARGE_DEN_MAT_TIME (8)
+#define EQ_PART_TIME (9)
+#define NONEQ_PART_TIME (10)
+#define UPDATE_POT_TIME (13)
+#define GREEN_EQ_TIME (14)
+#define GREEN_NONEQ_TIME (15)
+#define RHO_MUNU_TIME (16)
+#define matB_qnm_TIME (17)
+#define H_psi_TIME (18)
+#define get_allkbpsi_TIME (19)
+#define get_Hnl_TIME (20)
+#define CONFINE_TIME (21)
+#define matrix_inverse_lr_TIME (22)
+#define matrix_inverse_cond_TIME (23)
+#define ORBIT_DOT_ORBIT_O  (24)
+#define MPISUM_EQ_TIME (26)
+
+#define MGRID_VH_TIME (27)
+#define POIS_SOLV_TIME (28)
+#define VH1_TIME (31)
+#define VH2_TIME (32)
+#define VH3_TIME (33)
+#define VH2a_TIME (34)
+#define VH2b_TIME (35)
+#define VH2c_TIME (36)
+#define VH2d_TIME (37)
+
+
+#define NLFORCE_PAR_D (81)
+#define PAR_D_H_AND_S (82)
+#define PAR_D_GHG (83)
+#define PAR_D_VNUC (84)
+#define PAR_D_VNUC_LOC (85)
+#define PAR_D_VNUC_COMM (86)
+#define NLFORCE_GREE_F (87)
+#define PAR_VLOCPSI (88)
+
+
+#define READ_CONTROL_TIME 72
+
+
+#define LAST_TIME     100
 
 
 /******/

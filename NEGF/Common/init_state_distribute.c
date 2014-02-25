@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void init_state_distribute (STATE * states, STATE *states_distribute)
@@ -41,20 +43,20 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     int x_off, y_off, z_off;
     int istart, block_i, st_in_block;
 
-    REAL *psi_old, *psi_new, *psi_whole; 
-    REAL hx_old, hx_new, hy_old, hy_new;
-    REAL x1_old, x1_new, y1_old, y1_new;
+    rmg_double_t *psi_old, *psi_new, *psi_whole; 
+    rmg_double_t hx_old, hx_new, hy_old, hy_new;
+    rmg_double_t x1_old, x1_new, y1_old, y1_new;
 
     max_orbit_nx_ny = max(ct.max_orbit_nx, ct.max_orbit_ny);
-    my_malloc_init( psi_old, max_orbit_nx_ny, REAL );
-    my_malloc_init( psi_new, max_orbit_nx_ny, REAL );
+    my_malloc_init( psi_old, max_orbit_nx_ny, rmg_double_t );
+    my_malloc_init( psi_new, max_orbit_nx_ny, rmg_double_t );
 
     size = ct.max_orbit_nx * ct.max_orbit_ny * ct.max_orbit_nz;
-    my_malloc_init( psi_whole, size, REAL );
-    my_malloc_init( array_tmp, size, REAL );
+    my_malloc_init( psi_whole, size, rmg_double_t );
+    my_malloc_init( array_tmp, size, rmg_double_t );
 
-    hx_new = ct.hxgrid * ct.xside;
-    hy_new = ct.hygrid * ct.yside;
+    hx_new = get_hxgrid() * get_xside();
+    hy_new = get_hygrid() * get_yside();
 
     /* Wait until everybody gets here */
     my_barrier ();
@@ -64,9 +66,9 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
        */
 
 
-    x_off = pct.PX_OFFSET;
-    y_off = pct.PY_OFFSET;
-    z_off = pct.PZ_OFFSET;
+    x_off = get_PX_OFFSET();
+    y_off = get_PY_OFFSET();
+    z_off = get_PZ_OFFSET();
 
     pct.num_local_orbit = 0;
     istart = 0;
@@ -77,48 +79,48 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
 
             st = istart + st_in_block;
 
-            if(states[st].ixmax < x_off || states[st].ixmin > x_off + pct.PX0_GRID) continue;
+            if(states[st].ixmax < x_off || states[st].ixmin > x_off + get_PX0_GRID()) continue;
             if(cei.num_probe >2)    
             {
-                if(states[st].iymax <y_off || states[st].iymin > y_off + pct.PY0_GRID) continue;
+                if(states[st].iymax <y_off || states[st].iymin > y_off + get_PY0_GRID()) continue;
             }
 
             iymin = states[st].iymin;
             iymax = states[st].iymax;
-            if(iymin >= 0 && iymax < NY_GRID)
+            if(iymin >= 0 && iymax < get_NY_GRID())
             {
-                if(states[st].iymax <y_off || states[st].iymin > y_off + pct.PY0_GRID) continue;
+                if(states[st].iymax <y_off || states[st].iymin > y_off + get_PY0_GRID()) continue;
             }
 
             if(iymin < 0)
             {
-                iymin += NY_GRID;
-                if(y_off > states[st].iymax && y_off + pct.PY0_GRID < iymin) continue;
+                iymin += get_NY_GRID();
+                if(y_off > states[st].iymax && y_off + get_PY0_GRID() < iymin) continue;
             }
 
-            if(iymax >= NY_GRID ) 
+            if(iymax >= get_NY_GRID() ) 
             {
-                iymax -= NY_GRID;
-                if(y_off > iymax && y_off + pct.PY0_GRID < iymin) continue;
+                iymax -= get_NY_GRID();
+                if(y_off > iymax && y_off + get_PY0_GRID() < iymin) continue;
             }
 
             izmin = states[st].izmin;
             izmax = states[st].izmax;
-            if(izmin >= 0 && izmax < NZ_GRID)
+            if(izmin >= 0 && izmax < get_NZ_GRID())
             {
-                if(states[st].izmax <z_off || states[st].izmin > z_off + pct.PZ0_GRID) continue;
+                if(states[st].izmax <z_off || states[st].izmin > z_off + get_PZ0_GRID()) continue;
             }
 
             if(izmin < 0)
             {
-                izmin += NZ_GRID;
-                if(z_off > states[st].izmax && z_off + pct.PZ0_GRID < izmin) continue;
+                izmin += get_NZ_GRID();
+                if(z_off > states[st].izmax && z_off + get_PZ0_GRID() < izmin) continue;
             }
 
-            if(izmax >= NZ_GRID ) 
+            if(izmax >= get_NZ_GRID() ) 
             {
-                izmax -= NZ_GRID;
-                if(z_off > izmax && z_off + pct.PZ0_GRID < izmin) continue;
+                izmax -= get_NZ_GRID();
+                if(z_off > izmax && z_off + get_PZ0_GRID() < izmin) continue;
             }
 
 
@@ -134,13 +136,13 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
 
     dprintf("\n pct.num_local_orbit = %d", pct.num_local_orbit);
     double *rptr;
-    size = pct.num_local_orbit * pct.P0_BASIS+1024;
-    my_malloc_init( rptr, size, REAL );
+    size = pct.num_local_orbit * get_P0_BASIS()+1024;
+    my_malloc_init( rptr, size, rmg_double_t );
 
     for (st1 = 0; st1 < pct.num_local_orbit; st1++)
     {
         states_distribute[st1].psiR = rptr;
-        rptr += pct.P0_BASIS;
+        rptr += get_P0_BASIS();
     }
 
 

@@ -9,17 +9,19 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 #define 	LDEBUG 	0
 
-void multi_GHG_munu (REAL *GHG_tri, REAL *GHG_en_tri)
+void multi_GHG_munu (rmg_double_t *GHG_tri, rmg_double_t *GHG_en_tri)
 {
     int iprobe, jprobe, iene;
     int st1, st2, idx_sigma;
     int nC, nL, i, ntot, ion;
     int idx1, idx2, nmax, size;
     complex double ene, weight;
-    REAL wmn, wmn1, wmn2;
+    rmg_double_t wmn, wmn1, wmn2;
     complex double *green_C, *complex_H, *temp_matrix_tri, *temp_matrix1;
     complex double *sigma_sum1, *sigma_sum2, *sigma_L;
     complex double one, zero;

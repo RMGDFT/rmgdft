@@ -15,6 +15,8 @@
 #include <string.h>
 #include "pmo.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 void pmo_init ()
 {

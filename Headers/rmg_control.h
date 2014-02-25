@@ -224,6 +224,7 @@ typedef struct
 
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
+    int max_lpoints;
     int max_nlfpoints;
     int max_Qpoints;
 
@@ -706,6 +707,41 @@ typedef struct
 
     /* output information for GW calculations.  --Xiaohong */
     int flag_gw;
+
+    /*  for negf  */
+
+
+    int metal;
+    int num_blocks;
+    int block_dim[MAX_BLOCKS];
+
+    int num_cond_curve;
+    int *cond_probe1;
+    int *cond_probe2;
+
+    int ion_begin;
+    int ion_end;
+
+
+ /* parameter to define the gate bias */
+    double gbias_begin;
+    double gbias_end;
+    double gate_bias;
+
+    /* parameter to define compensating potential */
+    int vcomp_Lbegin;
+    int vcomp_Lend;
+    int vcomp_Rbegin;
+    int vcomp_Rend;
+
+    /* tag to determine whether to do auto 3Ddos printing for
+ * transmission peaks */
+    int auto_3Ddos;
+
+
+    int plane[5];
+    int simpson_depth;
+    double simpson_tol;
 
 
 } CONTROL;

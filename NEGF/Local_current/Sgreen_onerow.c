@@ -13,6 +13,8 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -30,10 +32,10 @@ void Sgreen_onerow (complex double *Htri, complex double * sigma,
 
     int *ipiv, idx, idx1;
     int i, j, nprobe; 
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     int ni[MAX_BLOCKS], ntot, ndim;
     int N, N1, N2;
-    REAL tem;
+    rmg_double_t tem;
     
 
     N = ct.num_blocks;

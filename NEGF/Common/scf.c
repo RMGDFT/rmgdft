@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "method.h"
 #include "pmo.h"
 #define min(a,b) (((a)>(b)) ? (b) : (a))
@@ -34,7 +36,7 @@ extern int it_scf;
 
 void scf (complex double * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore,
-          REAL * vxc_old, REAL * vh_old, REAL * vbias, int *CONVERGENCE)
+          rmg_double_t * vxc_old, rmg_double_t * vh_old, rmg_double_t * vbias, int *CONVERGENCE)
 {
     double time1, time2;
     int st1, st2, idx, idx1, ione = 1;
@@ -47,14 +49,16 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     int j1, k1, jdiff, kdiff, iprobe, idx_C;
     int idx2, FPYZ0_GRID;
 
+    int fpbasis;
+    fpbasis = get_FP0_BASIS();
 
     time1 = my_crtc ();
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < fpbasis; idx++)
         vtot[idx] = vh[idx] + vxc[idx] -vh_old[idx] - vxc_old[idx];
 
 
 
-    get_vtot_psi(vtot_c, vtot, FG_NX);
+    get_vtot_psi(vtot_c, vtot, get_FG_NX());
 
     get_ddd_update (vtot);
 
@@ -120,7 +124,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
 
     /* Generate new density */
-    scopy (&FP0_BASIS, rho, &ione, rho_old, &ione);
+    scopy (&fpbasis, rho, &ione, rho_old, &ione);
 
     my_barrier ();
     if (ct.runflag == 111 && ct.metal == 1)
@@ -165,7 +169,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     /* modify_rho_y (rho, rho_old); */
 
     tem = 0.0;
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         tem += (rho[idx] - rho_old[idx]) * (rho[idx] - rho_old[idx]);
     }
@@ -175,17 +179,17 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
     if (pct.gridpe == 0)
         printf (" \nSCF CHECKS: <drho>/ion = %12.6e RMS[drho/GRID] = %12.6e\n",
-                tem / ct.num_ions, tem / FP0_BASIS / NPES);
+                tem / ct.num_ions, tem / get_FP0_BASIS() / NPES);
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         tem = rho_old[idx];
         rho_old[idx] = -rho[idx] + rho_old[idx];
         rho[idx] = tem;
     }
 
-    pulay_rho (ct.steps, FP0_BASIS, rho, rho_old, cei.Npulaysave, cei.Npulayrefresh, cei.pulaymix,
+    pulay_rho_on (ct.scf_steps, fpbasis, rho, rho_old, cei.Npulaysave, cei.Npulayrefresh, cei.pulaymix,
             0);
 
 
@@ -219,11 +223,11 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
    of the old ones (input "vh" and "vxc") and the ones 
    corresponding to the input "rho".
    */
-void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double *vnuc, double *vext,
+void update_pot (double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * vh_old, double *vnuc, double *vext,
         double *rho, double *rhoc, double *rhocore, int *CONVERGENCE)
 {
 
-    int n = FP0_BASIS, idx, ione = 1;
+    int n = get_FP0_BASIS(), idx, ione = 1;
 
     double time1, time2;
 
@@ -235,7 +239,7 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
     scopy (&n, vxc, &ione, vxc_old, &ione);
     scopy (&n, vh, &ione, vh_old, &ione);
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
 
         vtot[idx] = vxc[idx] + vh[idx];
@@ -244,7 +248,7 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
     /* Generate exchange-correlation potential */
     get_vxc(rho, rhocore, vxc);
 
-    pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID);
+    pack_vhstod (vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     /* Generate hartree potential */
     //    get_vh (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);
@@ -256,24 +260,24 @@ void update_pot (double *vxc, double *vh, REAL * vxc_old, REAL * vh_old, double 
     /* check convergence */
 
     /* evaluate correction vh+vxc */
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
     }
 
     my_barrier ();
 
-    if (ct.steps < 4 && ct.runflag == 0)
+    if (ct.scf_steps < 4 && ct.runflag == 0)
     {
 
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
         {
             vxc[idx] = vxc_old[idx];
             vh[idx] = vh_old[idx];
         }
     }
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vext[idx];
     }

@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
@@ -38,23 +40,23 @@ void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz
     my_malloc( x_plane, size, double );
 
 
-    x_off = pct.FPX_OFFSET;
-    y_off = pct.FPY_OFFSET;
-    z_off = pct.FPZ_OFFSET;
+    x_off = get_FPX_OFFSET();
+    y_off = get_FPY_OFFSET();
+    z_off = get_FPZ_OFFSET();
 
     for (i = 0; i < fnx; i++)
     {
         for (j = 0; j < fny * fnz; j++)
             x_plane[j] = 0.0;
 
-        if ((i >= x_off) && (i < x_off + pct.FPX0_GRID))
+        if ((i >= x_off) && (i < x_off + get_FPX0_GRID()))
         {
-            for (iy = 0; iy < pct.FPY0_GRID; iy++)
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
-                for (iz = 0; iz < pct.FPZ0_GRID; iz++)
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                 {
                     global_index = (iy + y_off) * fnz + iz + z_off;
-                    local_index = (i - x_off) * pct.FPY0_GRID * pct.FPZ0_GRID + iy * pct.FPZ0_GRID + iz;
+                    local_index = (i - x_off) * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz;
                     x_plane[global_index] = data[local_index];
                 }
             }
@@ -92,24 +94,24 @@ void write_global_data_lead (int file_handle, double *data, int fnx, int fny, in
     my_malloc( x_plane, size, double );
 
 
-    x_off = pct.FPX_OFFSET;
-    y_off = pct.FPY_OFFSET;
-    z_off = pct.FPZ_OFFSET;
+    x_off = get_FPX_OFFSET();
+    y_off = get_FPY_OFFSET();
+    z_off = get_FPZ_OFFSET();
 
     for (i = 0; i < fnx / 3; i++)
     {
         for (j = 0; j < fny * fnz; j++)
             x_plane[j] = 0.0;
 
-        if ((i >= x_off) && (i < x_off + pct.FPX0_GRID))
+        if ((i >= x_off) && (i < x_off + get_FPX0_GRID()))
         {
-            for (iy = 0; iy < pct.FPY0_GRID; iy++)
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
-                for (iz = 0; iz < pct.FPZ0_GRID; iz++)
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                 {
                     global_index = (iy + y_off) * fnz + iz + z_off;
-                    local_index = (i - x_off) * pct.FPY0_GRID * pct.FPZ0_GRID
-                        + iy * pct.FPZ0_GRID + iz;
+                    local_index = (i - x_off) * get_FPY0_GRID() * get_FPZ0_GRID()
+                        + iy * get_FPZ0_GRID() + iz;
                     x_plane[global_index] = data[local_index];
                 }
             }

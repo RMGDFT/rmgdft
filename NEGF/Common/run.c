@@ -37,12 +37,14 @@
 #include <assert.h>
 #include <time.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
-extern REAL *vh_old, *vxc_old;
+extern rmg_double_t *vh_old, *vxc_old;
 
 void run (STATE * states, STATE * states1, STATE *states_distribute)
 {
-	REAL time1, time2;
+	rmg_double_t time1, time2;
 	FILE *file;
 	int ix, iy, iz, idx;
 	int size, iprobe, idx_delta, i, j;
@@ -95,8 +97,8 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 		/* Perform some necessary initializations 
 		 * no matter localized or not  
 		 */
-		my_malloc_init( vxc_old, FP0_BASIS, REAL );
-		my_malloc_init( vh_old, FP0_BASIS, REAL );
+		my_malloc_init( vxc_old, get_FP0_BASIS(), rmg_double_t );
+		my_malloc_init( vh_old, get_FP0_BASIS(), rmg_double_t );
 
 
 		init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
@@ -181,7 +183,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 			/*--------------------------------*/
 
-			my_malloc_init( vbias, FPX0_GRID * FPY0_GRID, double );
+			my_malloc_init( vbias, get_FPX0_GRID() * get_FPY0_GRID(), double );
 			if (ct.runflag == 113) apply_potential_drop( vbias );
 
 

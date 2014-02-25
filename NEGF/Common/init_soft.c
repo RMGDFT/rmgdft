@@ -11,8 +11,8 @@
  *   Copyright (C) 2001  Wenchang Lu,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init(REAL *vh, REAL *rho, REAL *rhocore, REAL *rhoc, 
- *             STATE *states, REAL *vnuc, REAL *vxc)
+ *   void init(rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, 
+ *             STATE *states, rmg_double_t *vnuc, rmg_double_t *vxc)
  *   Basic initialization stuff.
  * INPUTS
  *   rhocore: core charge density for non-linear core corection
@@ -40,21 +40,23 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 
 
 
-void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
-                STATE * states, STATE * states1, REAL * vnuc, REAL * vext, REAL * vxc, REAL * vh_old,
-                REAL * vxc_old, STATE *states_distribute)
+void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * rhoc,
+                STATE * states, STATE * states1, rmg_double_t * vnuc, rmg_double_t * vext, rmg_double_t * vxc, rmg_double_t * vh_old,
+                rmg_double_t * vxc_old, STATE *states_distribute)
 {
 
     int kpt, ic, idx, ion, ispin, kpt1;
     int flag, level;
-    REAL time1, time2, cut_init;
-    REAL tem;
+    rmg_double_t time1, time2, cut_init;
+    rmg_double_t tem;
     int item;
     char *nameL, *nameC, *nameR;
     int st1, iprobe, i;
@@ -63,15 +65,15 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
 
     time1 = my_crtc ();
 
-    ct.psi_nbasis = NX_GRID * NY_GRID * NZ_GRID;
-    ct.psi_nxgrid = NX_GRID;
-    ct.psi_nygrid = NY_GRID;
-    ct.psi_nzgrid = NZ_GRID;
+    ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    ct.psi_nxgrid = get_NX_GRID();
+    ct.psi_nygrid = get_NY_GRID();
+    ct.psi_nzgrid = get_NZ_GRID();
 
-    ct.psi_fnbasis = FNX_GRID * FNY_GRID * FNZ_GRID;
-    ct.psi_fnxgrid = FNX_GRID;
-    ct.psi_fnygrid = FNY_GRID;
-    ct.psi_fnzgrid = FNZ_GRID;
+    ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
+    ct.psi_fnxgrid = get_FNX_GRID();
+    ct.psi_fnygrid = get_FNY_GRID();
+    ct.psi_fnzgrid = get_FNZ_GRID();
 
 
 
@@ -82,7 +84,8 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     init_parameter (states);
 
     /* initialize the lattice basis vectors */
-    latgen (&ct.ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
+    int ibrav = get_ibrav_type();
+    latgen (&ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
 
     init_parameter (states);
 
@@ -156,7 +159,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     scale_orbital(states, states_distribute);
 #if GPU_ENABLED
     init_gpu();
-    cublasSetVector( pct.num_local_orbit * pct.P0_BASIS, sizeof( double ), states_distribute[0].psiR, ione, ct.gpu_states, ione );
+    cublasSetVector( pct.num_local_orbit * get_P0_BASIS(), sizeof( double ), states_distribute[0].psiR, ione, ct.gpu_states, ione );
 
 #endif
         if (pct.gridpe == 0) printf ("completed: read_orbital \n");
@@ -198,7 +201,7 @@ void init_soft (REAL * vh, REAL * rho, REAL * rhocore, REAL * rhoc,
     if (ct.vcomp_Rend > 0) // if ct.vcomp_Rend > 0 means the user turned on the initial compensating potential correction
     {
 	    init_comp (vh);
-	    for (idx = 0; idx < FP0_BASIS; idx++)
+	    for (idx = 0; idx < get_FP0_BASIS(); idx++)
 	    {
 		    vh[idx] = vh[idx] + vcomp[idx]; //add compensating potential to align lead and center part at the very beginning
 	    }

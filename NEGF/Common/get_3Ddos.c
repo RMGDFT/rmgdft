@@ -15,6 +15,8 @@
 #include <complex.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -24,8 +26,8 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     int iene, st1;
     complex double *tot, *tott, *g;
     complex double *sigma;
-    REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
-    REAL de, emin, emax;
+    rmg_double_t *temp_matrix_tri, *temp_matrix, *matrix_product;
+    rmg_double_t de, emin, emax;
 
     complex double *green_C, *ch0, *ch01, *ch10;
     complex double ene, ctem;
@@ -39,12 +41,12 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
-    REAL *Green_store, *rho_energy, *rho_energy2;
+    rmg_double_t *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
     int E_POINTS, kpoint[3];
     double E_imag, KT;
-    int FPYZ = FPY0_GRID * FPZ0_GRID;
+    int FPYZ = get_FPY0_GRID() * get_FPZ0_GRID();
     int nx1, nx2, ny1, ny2, nz1, nz2; 
     int *desca, *descb, numst, numstC;
 
@@ -81,24 +83,24 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     }
 
 
-    my_malloc_init( lcr[0].Htri, ntot, REAL );
-    my_malloc_init( lcr[0].Stri, ntot, REAL );
+    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, REAL );
-        my_malloc_init( lcr[iprobe].S00, idx, REAL );
-        my_malloc_init( lcr[iprobe].H01, idx, REAL );
-        my_malloc_init( lcr[iprobe].S01, idx, REAL );
+        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, REAL );
-        my_malloc_init( lcr[iprobe].SCL, idx, REAL );
+        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
     }
 
 
@@ -151,27 +153,27 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     my_malloc_init( green_C, ntot, complex double );
     st1 = (EPoints + pmo.npe_energy - 1) / pmo.npe_energy;
    
-    my_malloc_init( Green_store, st1 * ntot, REAL );
+    my_malloc_init( Green_store, st1 * ntot, rmg_double_t );
 
 /*===================================================================*/
 
-    nx1 = cei.dos_window_start[0] * FG_NX;
-    nx2 = cei.dos_window_end[0] * FG_NX;
-    ny1 = cei.dos_window_start[1] * FG_NY;
-    ny2 = cei.dos_window_end[1] * FG_NY;
-    nz1 = cei.dos_window_start[2] * FG_NZ;
-    nz2 = cei.dos_window_end[2] * FG_NZ;
+    nx1 = cei.dos_window_start[0] * get_FG_NX();
+    nx2 = cei.dos_window_end[0] * get_FG_NX();
+    ny1 = cei.dos_window_start[1] * get_FG_NY();
+    ny2 = cei.dos_window_end[1] * get_FG_NY();
+    nz1 = cei.dos_window_start[2] * get_FG_NZ();
+    nz2 = cei.dos_window_end[2] * get_FG_NZ();
                                                                                               
                                                                                               
                                                                                               
                                                                                               
-    my_malloc_init( rho_energy, FNX_GRID * FNY_GRID * FNZ_GRID, REAL );
+    my_malloc_init( rho_energy, get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID(), rmg_double_t );
                                                                                               
                                                                                               
                                                                                               
-    xoff = pct.FPX_OFFSET;
-    yoff = pct.FPY_OFFSET;
-    zoff = pct.FPZ_OFFSET;
+    xoff = get_FPX_OFFSET();
+    yoff = get_FPY_OFFSET();
+    zoff = get_FPZ_OFFSET();
 
 
 /*===================================================================*/
@@ -302,14 +304,14 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
         get_new_rho_soft (states, rho);
 
 
-        for (ix = 0; ix < FPX0_GRID; ix++)
+        for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {
-		for (iy = 0; iy < FPY0_GRID; iy++)
+		for (iy = 0; iy < get_FPY0_GRID(); iy++)
 		{
-			for (iz = 0; iz < FPZ0_GRID; iz++)
+			for (iz = 0; iz < get_FPZ0_GRID(); iz++)
 			{
-				idx = iz + iy * FPZ0_GRID + ix * FPYZ;
-				rho_energy[(ix + xoff)* FNY_GRID * FNZ_GRID + (iy + yoff)*  FNZ_GRID + (iz + zoff)] += rho[idx];
+				idx = iz + iy * get_FPZ0_GRID() + ix * FPYZ;
+				rho_energy[(ix + xoff)* get_FNY_GRID() * get_FNZ_GRID() + (iy + yoff)*  get_FNZ_GRID() + (iz + zoff)] += rho[idx];
 			}
 		}
         }
@@ -318,13 +320,13 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
 
 
-    iene = FNX_GRID * FNY_GRID * FNZ_GRID;
+    iene = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
     global_sums (rho_energy, &iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
-        double dx = ct.celldm[0] / NX_GRID;
-        double dy = ct.celldm[0] * ct.celldm[1] / NY_GRID;
-        double dz = ct.celldm[0] * ct.celldm[2] / NZ_GRID;
+        double dx = ct.celldm[0] / get_NX_GRID();
+        double dy = ct.celldm[0] * ct.celldm[1] / get_NY_GRID();
+        double dz = ct.celldm[0] * ct.celldm[2] / get_NZ_GRID();
         double B_A = 0.52917721;
         int count = 0;
         int level = 1; 
@@ -334,20 +336,20 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
         fprintf( file, "Cubfile created from PWScf calculation\n" );
         fprintf( file, "Total SCF Density at Energy %12.9f \n", (EMIN+EMAX)/2 );
         fprintf( file, "1     0.000000    0.000000    0.000000 \n" );//hack the cube file by pretending there is only one atom in the gaussian file
-        fprintf (file, "%d    %12.9f      0.000000    0.000000 \n", NX_GRID/level, level*dx );//dx is the grid spacing in x in bohr
-        fprintf (file, "%d    0.000000    %12.9f      0.000000 \n", NY_GRID/level, level*dy );
-        fprintf (file, "%d    0.000000    0.000000    %12.9f   \n", NZ_GRID/level, level*dz );
+        fprintf (file, "%d    %12.9f      0.000000    0.000000 \n", get_NX_GRID()/level, level*dx );//dx is the grid spacing in x in bohr
+        fprintf (file, "%d    0.000000    %12.9f      0.000000 \n", get_NY_GRID()/level, level*dy );
+        fprintf (file, "%d    0.000000    0.000000    %12.9f   \n", get_NZ_GRID()/level, level*dz );
         fprintf (file, "6     6.000000   10.000000   10.000000   10.000000 \n");//hack file by assigning just one carbon atom at some random position
 
-        for (ix = 0; ix < NX_GRID/level; ix++)
+        for (ix = 0; ix < get_NX_GRID()/level; ix++)
         {
-            for (iy = 0; iy < NY_GRID/level; iy++)
+            for (iy = 0; iy < get_NY_GRID()/level; iy++)
             {
-                for (iz = 0; iz < NZ_GRID/level; iz++)
+                for (iz = 0; iz < get_NZ_GRID()/level; iz++)
                 {
                     count ++;
                     fprintf ( file , " %18.6e",
-                            rho_energy[ix * level * FG_NX * FNY_GRID * FNZ_GRID + iy * level * FG_NY *  FNZ_GRID + iz * level * FG_NZ] );
+                            rho_energy[ix * level * get_FG_NX() * get_FNY_GRID() * get_FNZ_GRID() + iy * level * get_FG_NY() *  get_FNZ_GRID() + iz * level * get_FG_NZ()] );
                     if (count % 6 == 0)
                         fprintf (file, "\n");
                 }

@@ -13,10 +13,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "init_var_negf.h"
 
 #define   SUM_SIZE 	1000
 
-REAL dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2)
+rmg_double_t dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -26,13 +29,13 @@ REAL dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2)
     int incx, incy, incx1, incy1;
     int ix, iy, iz;
     int ix1, ix2, iy1, iy2, idx1, idx2;
-    REAL time1;
+    rmg_double_t time1;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
-    REAL z_sum[SUM_SIZE];
-    REAL *p1, *p2;
-    REAL *psi1, *psi2;
-    REAL result;
+    rmg_double_t z_sum[SUM_SIZE];
+    rmg_double_t *p1, *p2;
+    rmg_double_t *psi1, *psi2;
+    rmg_double_t result;
 
 
     time1 = my_crtc ();

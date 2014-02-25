@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <ctype.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
@@ -68,16 +70,16 @@ void read_LCR ()
 
         if (NULL == (tptr = get_num (tbuf)))
         {
-            printf ("\n probe %d missing the NY_GRID\n", iprobe);
-            error_handler ("need NY_GRID");
+            printf ("\n probe %d missing the get_NY_GRID()\n", iprobe);
+            error_handler ("need get_NY_GRID()");
         }
         else
             lcr[iprobe].NY_GRID = atoi (tptr);
 
         if (NULL == (tptr = get_num (tptr)))
         {
-            printf ("\n probe %d missing the NZ_GRID\n", iprobe);
-            error_handler ("need NZ_GRID");
+            printf ("\n probe %d missing the get_NZ_GRID()\n", iprobe);
+            error_handler ("need get_NZ_GRID()");
         }
         else
             lcr[iprobe].NZ_GRID = atoi (tptr);

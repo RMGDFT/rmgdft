@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 #if USE_DIS_MAT
@@ -15,12 +17,12 @@
 #endif
 
 
-void nlforce_partial_H_part2 (STATE * states, STATE * states1, REAL *GHG, REAL *force)
+void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG, rmg_double_t *force)
 {
     int i, ion, ion1, st1, st2, idx, idx1, idx2;
-    REAL temp;
-    REAL *psi, *psi1, *psi2, *old_psi, *vloc_psi;
-    REAL *vloc_x, *vloc_y, *vloc_z;
+    rmg_double_t temp;
+    rmg_double_t *psi, *psi1, *psi2, *old_psi, *vloc_psi;
+    rmg_double_t *vloc_x, *vloc_y, *vloc_z;
     MPI_Status mstatus;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_sendrecv, num_send, num_recv;

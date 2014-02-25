@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, double gate_bias)
@@ -46,25 +48,25 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
 
 
 
-    x_proc = pct.FPX_OFFSET;
+    x_proc = get_FPX_OFFSET();
 
     printf("\n gate_bias = %f \n", gate_bias);   
     printf("\n gbias_begin = %f and gbias_end = %f  BT = %f \n", gbias_begin, gbias_end, BT);   
 
-    for (ix = 0; ix < FPX0_GRID; ix++)
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
 
         x_locate = (ix + x_proc)/2.0; // everything is based on coarse grid now!
         v_external = gate_bias / (1.0 + exp((gbias_begin - x_locate)/BT)  + exp((x_locate - gbias_end)/BT) ); 
 
 
-            for (iy = 0; iy < FPY0_GRID; iy++)
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                 {
 
-                        vext[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = v_external;
+                        vext[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz] = v_external;
 
 
                 }                   /* end for */

@@ -106,6 +106,9 @@ typedef struct
     /** points to start of DnmI function storage for this ion*/
     //rmg_double_t *dnmI[MAX_IONS];
     rmg_double_t **dnmI;
+    rmg_double_t **dnmI_x;
+    rmg_double_t **dnmI_y;
+    rmg_double_t **dnmI_z;
 
     /** points to start of qqq storage for this ion*/
     //rmg_double_t *qqq[MAX_IONS];
@@ -212,6 +215,7 @@ typedef struct
 
     /* Number of ions centered on this processor */
     int n_ion_center;
+    int n_ion_center_loc;
 
 
     /* Projectors per ion in a given region */
@@ -219,6 +223,7 @@ typedef struct
 
     /* Indices of the ions within non-local range */
     int *ionidx;
+    int *ionidx_loc;
 
     /* Points to start of projectors for this ion in projector space */
     /* All projectors are stored consecutively.                      */
@@ -239,6 +244,8 @@ typedef struct
     int nprow;
     int npcol;
 
+    int num_local_orbit;
+    rmg_double_t *psi1, *psi2;
 
 } PE_CONTROL;
 

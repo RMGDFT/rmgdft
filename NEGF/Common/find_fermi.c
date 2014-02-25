@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "method.h"
 #include "pmo.h"
 
@@ -24,8 +26,8 @@ void find_fermi (complex double * sigma_all)
 {
 
     int fermi_step, st1, st2;
-    REAL tem1, tem2, bias1, bias2, bias1a, bias2a, tchargea;
-    REAL *matrix_SxRHO;
+    rmg_double_t tem1, tem2, bias1, bias2, bias1a, bias2a, tchargea;
+    rmg_double_t *matrix_SxRHO;
     int ntot, i;
     int ione = 1;
 
@@ -40,7 +42,7 @@ void find_fermi (complex double * sigma_all)
         ntot += pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i];
     }
 
-    my_malloc_init( matrix_SxRHO, ntot, REAL );
+    my_malloc_init( matrix_SxRHO, ntot, rmg_double_t );
 
     for (fermi_step = 0; fermi_step < 4; fermi_step++)
     {

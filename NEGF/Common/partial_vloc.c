@@ -23,6 +23,8 @@
 #include <assert.h>
 #include "method.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "fftw.h"
 
 
@@ -31,8 +33,8 @@ void partial_vloc ()
     int ion, idx, overlap, st1;
     int tot_prj, ion1, index;
     int PROJECTOR_SPACE, ix, iy, iz;
-    REAL r, ax[3], bx[3], xc, yc, zc, t1, invdr;
-    REAL *vloc_x, *vloc_y, *vloc_z;
+    rmg_double_t r, ax[3], bx[3], xc, yc, zc, t1, invdr;
+    rmg_double_t *vloc_x, *vloc_y, *vloc_z;
     ION *iptr;
     SPECIES *sp;
 
@@ -67,17 +69,17 @@ void partial_vloc ()
     /*allocate memorry for weight factor of vnuc_x */
     if (vnuc_x != NULL)
         my_free (vnuc_x);
-    my_malloc_init( vnuc_x, PROJECTOR_SPACE, REAL );
+    my_malloc_init( vnuc_x, PROJECTOR_SPACE, rmg_double_t );
 
     /*allocate memorry for weight factor of vnuc_y */
     if (vnuc_y != NULL)
         my_free (vnuc_y);
-    my_malloc_init( vnuc_y, PROJECTOR_SPACE, REAL);
+    my_malloc_init( vnuc_y, PROJECTOR_SPACE, rmg_double_t);
 
     /*allocate memorry for weight factor of vnuc_z */
     if (vnuc_z != NULL)
         my_free (vnuc_z);
-    my_malloc_init( vnuc_z, PROJECTOR_SPACE, REAL);
+    my_malloc_init( vnuc_z, PROJECTOR_SPACE, rmg_double_t);
 
     vloc_x = vnuc_x;
     vloc_y = vnuc_y;
@@ -122,13 +124,13 @@ void partial_vloc ()
 
  
                     idx++;
-                    zc += ct.hzgrid;
+                    zc += get_hzgrid();
                 }/* end for ix*/
  
-                yc += ct.hygrid;
+                yc += get_hygrid();
             }/* end for iy*/
  
-            xc += ct.hxgrid;
+            xc += get_hxgrid();
         }/* end for ix*/
 
         vloc_x += ct.max_lpoints;

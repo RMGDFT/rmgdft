@@ -48,8 +48,12 @@
 #  define		global_sums     global_sums_
 #  define		saxpy		daxpy_
 #  define		daxpy		daxpy_
+#  define		zaxpy		zaxpy_
+#  define		ZAXPY		zaxpy_
 #  define		scopy   	dcopy_
 #  define		dcopy   	dcopy_
+#  define		zcopy   	zcopy_
+#  define		ZCOPY   	zcopy_
 #  define		sdot    	ddot_
 #  define		ddot    	ddot_
 #  define		sscal   	dscal_
@@ -80,11 +84,13 @@
 #  define		dlamch  	dlamch_
 #  define		dgemm  	        dgemm_
 #  define		zgemm  	        zgemm_
+#  define		ZGEMM  	        zgemm_
 #  define		dgetrf 	        dgetrf_
 #  define		dgetri 	        dgetri_
 #  define		dgesv 	        dgesv_
 #  define               sgesv           dgesv_
 #  define		zgesv 	        zgesv_
+#  define		ZGESV 	        zgesv_
 #  define               dgemv           dgemv_
 
 #else

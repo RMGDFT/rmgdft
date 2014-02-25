@@ -15,6 +15,8 @@
 #include <complex.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 double pmo_trace(complex double*, int*);
@@ -29,10 +31,10 @@ void local_current ()
     complex double *green_C;
     complex double *temp_matrix1, *temp_matrix2;
     complex double *Gamma1, *Gamma2, *sigma;
-    REAL de, emin, emax, E_imag, KT, current;
-    REAL *ener1, *cond;
+    rmg_double_t de, emin, emax, E_imag, KT, current;
+    rmg_double_t *ener1, *cond;
     int ntot, ndim, nC, idx_C, *sigma_idx;
-    REAL cons, EF1, EF2, f1, f2;
+    rmg_double_t cons, EF1, EF2, f1, f2;
 
     complex double *ch0, *ch01, *ch10;
     complex double *H10, *S10, *H01, *H00, *S01, *S00;
@@ -133,11 +135,11 @@ void local_current ()
 
     my_malloc_init( H_tri, ntot, complex double );
     my_malloc_init( S_tri, ntot, complex double );
-    my_malloc_init( lcr[0].Htri, ntot, REAL );
-    my_malloc_init( lcr[0].Stri, ntot, REAL );
+    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
 
-    my_malloc_init( lcr[0].Htri_yz, num_offdiag_yz *ntot, REAL );
-    my_malloc_init( lcr[0].Stri_yz, num_offdiag_yz *ntot, REAL );
+    my_malloc_init( lcr[0].Htri_yz, num_offdiag_yz *ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Stri_yz, num_offdiag_yz *ntot, rmg_double_t );
 
     maxrow = 0;
     maxcol = 0;
@@ -159,26 +161,26 @@ void local_current ()
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {	
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, REAL );
-        my_malloc_init( lcr[iprobe].S00, idx, REAL );
-        my_malloc_init( lcr[iprobe].H01, idx, REAL );
-        my_malloc_init( lcr[iprobe].S01, idx, REAL );
+        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
 
-        my_malloc_init( lcr[iprobe].H00_yz, num_offdiag_yz * idx, REAL );
-        my_malloc_init( lcr[iprobe].S00_yz, num_offdiag_yz * idx, REAL );
-        my_malloc_init( lcr[iprobe].H01_yz, num_offdiag_yz * idx, REAL );
-        my_malloc_init( lcr[iprobe].S01_yz, num_offdiag_yz * idx, REAL );
+        my_malloc_init( lcr[iprobe].H00_yz, num_offdiag_yz * idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S00_yz, num_offdiag_yz * idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H01_yz, num_offdiag_yz * idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S01_yz, num_offdiag_yz * idx, rmg_double_t );
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {	
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, REAL );
-        my_malloc_init( lcr[iprobe].SCL, idx, REAL );
+        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
 
-        my_malloc_init( lcr[iprobe].HCL_yz, num_offdiag_yz *idx, REAL );
-        my_malloc_init( lcr[iprobe].SCL_yz, num_offdiag_yz *idx, REAL );
+        my_malloc_init( lcr[iprobe].HCL_yz, num_offdiag_yz *idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].SCL_yz, num_offdiag_yz *idx, rmg_double_t );
     }
 
     read_matrix_pp();
@@ -261,8 +263,8 @@ void local_current ()
 
     /*===================================================================*/
 
-    my_malloc_init( ener1, E_POINTS, REAL );
-    my_malloc_init( cond, E_POINTS, REAL );
+    my_malloc_init( ener1, E_POINTS, rmg_double_t );
+    my_malloc_init( cond, E_POINTS, rmg_double_t );
 
     alpha = 1.0;
     beta = 0.0;

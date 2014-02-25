@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 /* which_part = 0 for conductors 
  *              1 for left lead
@@ -35,27 +37,27 @@ void interpolation_orbit (STATE * states)
     int ixmin_old, ixmin_new, iymin_old, iymin_new;
     int st, st1, st_new, max_orbit_nx_ny;
 
-    REAL *psi_old, *psi_new; 
-    REAL hx_old, hx_new, hy_old, hy_new;
-    REAL x1_old, x1_new, y1_old, y1_new;
+    rmg_double_t *psi_old, *psi_new; 
+    rmg_double_t hx_old, hx_new, hy_old, hy_new;
+    rmg_double_t x1_old, x1_new, y1_old, y1_new;
 
 /*  when the transport calculation use different gird space hx because of the different length
  *  in lead and conductor, interpolate the readin potential and rho to the current grid
  *  numbers of grids for both are same, the hx is only slightly different
  */
 
-    hx_new = ct.hxgrid * ct.xside;
-    hy_new = ct.hygrid * ct.yside;
+    hx_new = get_hxgrid() * get_xside();
+    hy_new = get_hygrid() * get_yside();
 
     max_orbit_nx_ny = max(ct.max_orbit_nx, ct.max_orbit_ny);
-    my_malloc_init( psi_old, max_orbit_nx_ny, REAL );
-    my_malloc_init( psi_new, max_orbit_nx_ny, REAL );
+    my_malloc_init( psi_old, max_orbit_nx_ny, rmg_double_t );
+    my_malloc_init( psi_new, max_orbit_nx_ny, rmg_double_t );
 
 #if 	LDEBUG
     printf ("\n PE: %d  xside %f  %f %f  ", pct.gridpe, lcr[1].xside, lcr[0].xside, lcr[2].xside);
     printf ("\n PE: %d  x_shift %f  %f %f  ", pct.gridpe, lcr[1].x_shift, lcr[0].x_shift,
             lcr[2].x_shift);
-    printf ("\n PE: %d  NX_GRID %d  %d %d  ", pct.gridpe, lcr[1].NX_GRID, lcr[0].NX_GRID,
+    printf ("\n PE: %d  get_NX_GRID() %d  %d %d  ", pct.gridpe, lcr[1].NX_GRID, lcr[0].NX_GRID,
             lcr[2].NX_GRID);
     printf ("\n PE: %d  num_states %d  %d %d  ", pct.gridpe, lcr[1].num_states, lcr[0].num_states,
             lcr[2].num_states);

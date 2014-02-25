@@ -177,6 +177,16 @@ typedef struct
     int n_orbital_same_center;
     int gaussian_orbital_index;
 
+    int whichblock;
+    int istate_in_block;
+
+
+    int ixmin_old;
+    int ixmax_old;
+    int iymin_old;
+    int iymax_old;
+
+
 } STATE;
 
 

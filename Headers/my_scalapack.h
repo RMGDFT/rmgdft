@@ -66,6 +66,8 @@
 #define 	PDSYNGST 	pdsyngst_
 #define 	PDTRSM  	pdtrsm_
 #define 	PDTRAN  	pdtran_
+#define 	PZTRANC  	pztranc_
+#define 	PZHEGVX     pzhegvx_
 
 #endif
 #endif

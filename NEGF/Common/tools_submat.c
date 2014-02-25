@@ -30,9 +30,9 @@ Documentation:
 #include <float.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "my_scalapack.h"
-
-#if USE_DIS_MAT
 
 
 #define globalexit  exit
@@ -65,7 +65,7 @@ Documentation:
 *  ============================================================
 *  =====================================================================
 */
-void sl_init (int *ictxt, int nprow, int npcol)
+void sl_init_on (int *ictxt, int nprow, int npcol)
 {
     int i, iam, nprocs;
     /*char    order='R'; */
@@ -120,58 +120,6 @@ void sl_init (int *ictxt, int nprow, int npcol)
 *     MATINIT generates and distributes matrice a
 *
 */
-void matinit (double *aa, int *desca, double *a, int lda)
-{
-    int i, j, ii, jj, iii, jjj, li, lj, maxli;
-    int iistart, jjstart, limb, ljnb;
-    int mycol, myrow, nprow, npcol;
-    int ictxt = desca[1], mb = desca[4], nb = desca[5], mxllda = desca[8];
-
-
-
-    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
-
-
-    maxli = (lda / (nprow * mb)) + 1;
-
-
-    for (li = 0; li < maxli; li++)
-    {
-
-        iistart = (li * nprow + myrow) * mb;
-        limb = li * mb;
-
-        for (lj = 0; lj < maxli; lj++)
-        {
-
-            jjstart = (lj * npcol + mycol) * nb;
-            ljnb = lj * nb;
-
-            for (i = 0; i < mb; i++)
-            {
-
-                ii = iistart + i;
-                iii = i + limb;
-
-                if (iii < mxllda && ii < lda)
-                {
-
-                    for (j = 0; j < nb; j++)
-                    {
-
-                        jj = jjstart + j;
-                        jjj = j + ljnb;
-
-                        if (jjj < mxllda && jj < lda)
-                            aa[iii + jjj * mxllda] = a[ii + jj * lda];
-                    }
-                }
-
-            }
-        }
-    }
-
-}
 
 
 void diaginit (double *aa, int *desca, double *a, int lda)
@@ -277,115 +225,13 @@ void matgather (double *aa, int *desca, double *a, int lda)
 
 
 
-void distribute_mat (double *bigmat, double *dismat)
-{
-    int desca[DLEN];
-    int ictxt;
-    int nb = NB, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
-    int mycol, myrow, mxllda;
-    int rsrc = 0, csrc = 0, info;
-
-
-    mxllda = MXLLDA;
-    /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, pct.nprow, pct.npcol);
-
-    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
-
-
-    /* If I'm in the process grid, execute the program */
-    if (myrow != -1)
-    {
-
-        /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
-        /* Initialize the array descriptors for the matrices */
-        DESCINIT (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
-        if (info != 0)
-        {
-            printf (" distribute_mat: DESCINIT, info=%d\n", info);
-            fflush (NULL);
-            globalexit (0);
-        }
-
-
-        matinit (dismat, desca, bigmat, ct.num_states);
-/*
- *     RELEASE THE PROCESS GRID
- *     Free the BLACS context
- */
-        Cblacs_gridexit (ictxt);
-
-    }
-
-}
-
-/********************************************************************/
-void print_distribute_mat (double *dismat)
-{
-    int desca[DLEN];
-    int ictxt;
-    int nb = NB, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
-    int mycol, myrow, mxllda;
-    int rsrc = 0, csrc = 0, info;
-    int n2 = ct.num_states * ct.num_states, idx;
-
-
-    mxllda = MXLLDA;
-
-    /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, pct.nprow, pct.npcol);
-
-    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
-
-
-    /* If I'm in the process grid, execute the program */
-    if (myrow != -1)
-    {
-
-        /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
-        /* Initialize the array descriptors for the matrices */
-        DESCINIT (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
-        if (info != 0)
-        {
-            printf (" distribute_mat: DESCINIT, info=%d\n", info);
-            fflush (NULL);
-            globalexit (0);
-        }
-
-    }
-    for (idx = 0; idx < n2; idx++)
-        work_matrix[idx] = 0.;
-    if (myrow != -1)
-        matgather (dismat, desca, work_matrix, numst);
-    global_sums (work_matrix, &n2, pct.grid_comm);
-    if (pct.gridpe == 0)
-    {
-        printf (" Distributed matrix\n");
-        print_matrix (work_matrix, 5, ct.num_states);
-    }
-    if (myrow != -1)
-    {
-/*
- *     RELEASE THE PROCESS GRID
- *     Free the BLACS context
- */
-        Cblacs_gridexit (ictxt);
-
-    }
-
-    fflush (NULL);
-    my_barrier ();
-
-
-}
-
 /********************************************************************/
 
 void get_distributed_mat (double *bigmat, double *dismat)
 {
     int desca[DLEN];
     int ictxt;
-    int nb = NB, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
+    int nb = ct.scalapack_block_factor, npcol = pct.npcol, nprow = pct.nprow, numst = ct.num_states;
     int mycol, myrow, mxllda;
     int rsrc = 0, csrc = 0, info, idx;
     int n2 = ct.num_states * ct.num_states;
@@ -393,7 +239,7 @@ void get_distributed_mat (double *bigmat, double *dismat)
     mxllda = MXLLDA;
 
     /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, pct.nprow, pct.npcol);
+    sl_init_on (&ictxt, pct.nprow, pct.npcol);
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
@@ -437,7 +283,7 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 {
     int desca[DLEN];
     int ictxt;
-    int nb = NB, npcol = pct.npcol, nprow = pct.nprow;
+    int nb = ct.scalapack_block_factor, npcol = pct.npcol, nprow = pct.nprow;
     int mycol, myrow, mxllda;
     int rsrc = 0, csrc = 0, info;
     _fcd char_fcd1;
@@ -447,7 +293,7 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 
     mxllda = MXLLDA;
     /* INITIALIZE THE PROCESS GRID */
-    sl_init (&ictxt, pct.nprow, pct.npcol);
+    sl_init_on (&ictxt, pct.nprow, pct.npcol);
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
@@ -487,7 +333,6 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 
 }
 
-#endif /* USE_DIS_MAT */
 
 
 #if LINUX

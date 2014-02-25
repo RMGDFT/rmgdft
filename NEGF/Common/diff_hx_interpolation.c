@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <string.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 void diff_hx_interpolation (int st, double *xi, double *xi_old, int NX,
                             double hx, double hx_old, double x0, double x0_old)

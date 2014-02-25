@@ -39,6 +39,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void init_psp_soft (void)
@@ -46,8 +48,8 @@ void init_psp_soft (void)
 
     int isp, idx, ip, it1;
     SPECIES *sp;
-    REAL *work, *workr, Zv, rc, rfil;
-    REAL t1, t2, rcut, scale;
+    rmg_double_t *work, *workr, Zv, rc, rfil;
+    rmg_double_t t1, t2, rcut, scale;
     char name[] = "projectors";
     char newname[20];
     FILE *psp = NULL;
@@ -61,17 +63,13 @@ void init_psp_soft (void)
     }                           /* end if */
 
 
-    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, REAL );
+    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t );
     workr = work + MAX_RGRID;
 
 
     /* Loop over species */
     /* Set the scaling factor for determining the radius of the local grids */
     scale = 1.0;
-    if (ct.ibrav == CUBIC_BC)
-        scale = 1.1;
-    if (ct.ibrav == CUBIC_FC)
-        scale = 1.3;
     for (isp = 0; isp < ct.num_species; isp++)
     {
         sprintf (newname, "%s%d.xmgr", name, isp);
@@ -91,7 +89,7 @@ void init_psp_soft (void)
         if (ct.max_lpoints < (sp->ldim_coar * sp->ldim_coar * sp->ldim_coar))
             ct.max_lpoints = sp->ldim_coar * sp->ldim_coar * sp->ldim_coar;
 
-        t1 = 2.0 * scale * (REAL) FG_NX *sp->lradius / ct.hmingrid;
+        t1 = 2.0 * scale * (rmg_double_t) get_FG_NX() *sp->lradius / ct.hmingrid;
         t1 = modf (t1, &t2);
         it1 = (int) t2;
         if (t1 > 0.5)
@@ -150,12 +148,12 @@ void init_psp_soft (void)
 
 
 
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(REAL)FG_NX; */
-        t1 = sp->ldim / FG_NX + 1;
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)get_FG_NX(); */
+        t1 = sp->ldim / get_FG_NX() + 1;
         sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
+        if (get_ibrav_type() == HEXAGONAL)
             sp->drlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
+        t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drlig = sp->drlig / t1;
 
 
@@ -168,7 +166,7 @@ void init_psp_soft (void)
         for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
         {
 
-            workr[idx] = sp->drlig * ((REAL) idx);
+            workr[idx] = sp->drlig * ((rmg_double_t) idx);
 
         }                       /* end for */
         radiff (sp->localig, sp->drlocalig, workr, MAX_LOCAL_LIG, 0.0);
@@ -225,9 +223,9 @@ void init_psp_soft (void)
         }                       /* endif */
 
         sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
-        if (ct.ibrav == HEXAGONAL)
+        if (get_ibrav_type() == HEXAGONAL)
             sp->drnlig *= 2.0;
-        t1 = (REAL) MAX_LOCAL_LIG;
+        t1 = (rmg_double_t) MAX_LOCAL_LIG;
         sp->drnlig = sp->drnlig / t1;
 
         for (ip = 0; ip < sp->nbeta; ip++)
@@ -250,7 +248,7 @@ void init_psp_soft (void)
             for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
             {
 
-                workr[idx] = sp->drnlig * ((REAL) idx);
+                workr[idx] = sp->drnlig * ((rmg_double_t) idx);
 
             }                   /* end for */
             radiff (&sp->betalig[ip][0], &sp->drbetalig[ip][0], workr, MAX_LOCAL_LIG, 0.0);

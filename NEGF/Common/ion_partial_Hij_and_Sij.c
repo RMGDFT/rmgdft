@@ -10,6 +10,8 @@
 
 #include "method.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
@@ -19,8 +21,8 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx, idx1, idx2;
-    REAL *dnmI_R, *dnmI, *qqq, temp;
-    REAL alpha, *partial_kbpsi, *partial_kbpsi_comm;
+    rmg_double_t *dnmI_R, *dnmI, *qqq, temp;
+    rmg_double_t alpha, *partial_kbpsi, *partial_kbpsi_comm;
 
 
     double time1, time2;
@@ -34,7 +36,7 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
     alpha = 1.0 / ct.vel;
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
-    my_malloc_init( partial_kbpsi_comm, size, REAL );
+    my_malloc_init( partial_kbpsi_comm, size, rmg_double_t );
 
     switch (flag)
     {

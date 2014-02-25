@@ -14,9 +14,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "twoParts.h"
 
 
-void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, int level)
+void confine (rmg_double_t * mat, int size_x, int size_y, int size_z, COMPASS compass, int level)
 {
     int i, j, k;
     int x, y, z;
@@ -33,12 +36,12 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
     time1 = my_crtc();
     /* find the offset  */
     pe2xyz (pct.gridpe, &pex, &pey, &pez);
-    xgrid =  FNX_GRID/(1<<level);
-    ygrid =  FNY_GRID/(1<<level);
-    zgrid =  FNZ_GRID/(1<<level);
+    xgrid =  get_FNX_GRID()/(1<<level);
+    ygrid =  get_FNY_GRID()/(1<<level);
+    zgrid =  get_FNZ_GRID()/(1<<level);
     
-    xoff = pex * (xgrid /PE_X );
-    ix = xgrid % PE_X;
+    xoff = pex * (xgrid /get_PE_X() );
+    ix = xgrid % get_PE_X();
     ioffset = 0;
 
     for(idx = 1;idx <= pex;idx++) {
@@ -49,8 +52,8 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
 
 
 
-    yoff = pey * (ygrid /PE_Y );
-    iy = ygrid % PE_Y;
+    yoff = pey * (ygrid /get_PE_Y() );
+    iy = ygrid % get_PE_Y();
     ioffset = 0;
 
     for(idx = 1;idx <= pey;idx++) {
@@ -59,8 +62,8 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
      
     yoff += ioffset;
 
-    zoff = pez * (zgrid /PE_Z );
-    iz = zgrid % PE_Z;
+    zoff = pez * (zgrid /get_PE_Z() );
+    iz = zgrid % get_PE_Z();
     ioffset = 0;
 
     for(idx = 1;idx <= pez;idx++) {
@@ -71,9 +74,9 @@ void confine (REAL * mat, int size_x, int size_y, int size_z, COMPASS compass, i
 
     if(level == 0) 
     {
-        xoff = pct.FPX_OFFSET;
-        yoff = pct.FPY_OFFSET;
-        zoff = pct.FPZ_OFFSET;
+        xoff = get_FPX_OFFSET();
+        yoff = get_FPY_OFFSET();
+        zoff = get_FPZ_OFFSET();
     }
 
     if (compass.type == 1)

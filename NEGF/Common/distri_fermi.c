@@ -23,21 +23,23 @@
  */
 
 
-#include "main.h"
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 /* This function returns a pointer to a block of memory of size nelem. */
-void distri_fermi (complex double ene,  REAL EF, complex double *distri)
+void distri_fermi (complex double ene,  rmg_double_t EF, complex double *distri)
 {
 
-    REAL temR, temI, tem1, tem2;
+    rmg_double_t temR, temI, tem1, tem2;
     
     complex double ctem;
-    REAL KT;
+    rmg_double_t KT;
 
     KT = cei.KT;
     ctem = (ene - EF) / KT;

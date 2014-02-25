@@ -25,8 +25,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include "salloc.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
@@ -61,27 +62,27 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     /* Wait until everybody gets here */
     my_barrier ();
 
-    FPYZ0 = FPZ0_GRID * FPY0_GRID;
-    FNYPZ = FPZ0_GRID * FNY_GRID; 
-    FNYZ = FNY_GRID * FNZ_GRID; 
+    FPYZ0 = get_FPZ0_GRID() * get_FPY0_GRID();
+    FNYPZ = get_FPZ0_GRID() * get_FNY_GRID(); 
+    FNYZ = get_FNY_GRID() * get_FNZ_GRID(); 
 
-    ii = pct.FPX_OFFSET;
-    jj = pct.FPY_OFFSET;
-    kk = pct.FPZ_OFFSET;
+    ii = get_FPX_OFFSET();
+    jj = get_FPY_OFFSET();
+    kk = get_FPZ_OFFSET();
 
 
-    hx_new = ct.xside * ct.hxxgrid;
-    hy_new = ct.yside * ct.hyygrid;
+    hx_new = get_xside() * ct.hxxgrid;
+    hy_new = get_yside() * ct.hyygrid;
     if(pct.gridpe ==0) printf (" hx_new, hy_new  =  %f  %f \n", hx_new, hy_new); 
 
 
 /* =========== Allocate memory & Reading ON2 data ================ */
 
 
-    idx = FNX_GRID * FNY_GRID;
+    idx = get_FNX_GRID() * get_FNY_GRID();
     my_malloc_init(xold_global, idx, double);   
     my_malloc_init(yold_global, idx, double);   
-    idx = FNX_GRID * FNY_GRID * FPZ0_GRID;
+    idx = get_FNX_GRID() * get_FNY_GRID() * get_FPZ0_GRID();
     my_malloc_init(vh_global, idx, double);   
 
 
@@ -89,9 +90,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     for(subsystem = 0; subsystem < cei.num_subsystem; subsystem++)
     {
 
-        NX0 = lcr[subsystem].NX_GRID *FG_NX;
-        NY0 = lcr[subsystem].NY_GRID *FG_NY;
-        NZ0 = lcr[subsystem].NZ_GRID *FG_NZ;
+        NX0 = lcr[subsystem].NX_GRID *get_FG_NX();
+        NY0 = lcr[subsystem].NY_GRID *get_FG_NY();
+        NZ0 = lcr[subsystem].NZ_GRID *get_FG_NZ();
 
         idx = NX0 * NY0 * NZ0;
         /*if(pct.gridpe ==0) printf (" idx +++++  =   %d \n", idx );*/
@@ -146,21 +147,21 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-        x0 = lcr[subsystem].x0 * FG_NX;
-        y0 = lcr[subsystem].y0 * FG_NY;
-        z0 = lcr[subsystem].z0 * FG_NZ;
+        x0 = lcr[subsystem].x0 * get_FG_NX();
+        y0 = lcr[subsystem].y0 * get_FG_NY();
+        z0 = lcr[subsystem].z0 * get_FG_NZ();
         /*if(pct.gridpe ==0) printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
 
 
-        x1 = lcr[subsystem].x1 * FG_NX;
-        y1 = lcr[subsystem].y1 * FG_NY;
-        /*z1 = lcr[subsystem].z1 * FG_NZ;
+        x1 = lcr[subsystem].x1 * get_FG_NX();
+        y1 = lcr[subsystem].y1 * get_FG_NY();
+        /*z1 = lcr[subsystem].z1 * get_FG_NZ();
           if(pct.gridpe ==0) printf (" x1, y1, z1 = %d %d %d %d \n", subsystem, x1, y1, z1 );*/
 
 
-        x2 = lcr[subsystem].x2 * FG_NX;
-        y2 = lcr[subsystem].y2 * FG_NY;
-        z2 = lcr[subsystem].z2 * FG_NZ;
+        x2 = lcr[subsystem].x2 * get_FG_NX();
+        y2 = lcr[subsystem].y2 * get_FG_NY();
+        z2 = lcr[subsystem].z2 * get_FG_NZ();
         /*if(pct.gridpe ==0) printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
 
         x3 = x2 + x1 - x0;
@@ -172,12 +173,12 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         NYZ0 = NY0 * NZ0;
         NXZ0 = NX0 * NZ0;
 
-        hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/FG_NX;
-        x0_old = lcr[subsystem].x_shift + lcr[subsystem].x0 * FG_NX * hx_old ;
+        hx_old = lcr[subsystem].xside/lcr[subsystem].NX_GRID/get_FG_NX();
+        x0_old = lcr[subsystem].x_shift + lcr[subsystem].x0 * get_FG_NX() * hx_old ;
         /*if(pct.gridpe ==0) printf (" x0_old, hx_old = %d %f %f \n", subsystem, x0_old, hx_old);*/
 
-        hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/FG_NY;
-        y0_old = lcr[subsystem].y_shift + lcr[subsystem].y0 * FG_NY * hy_old;
+        hy_old = lcr[subsystem].yside/lcr[subsystem].NY_GRID/get_FG_NY();
+        y0_old = lcr[subsystem].y_shift + lcr[subsystem].y0 * get_FG_NY() * hy_old;
         /*if(pct.gridpe ==0) printf (" y0_old, hy_old = %d %f %f \n", subsystem, y0_old, hy_old);*/
 
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
@@ -189,14 +190,14 @@ void read_potrho (double *vh, int iflag, int data_indicator)
             {
                 for(iy = y2; iy < y3; iy++)
                 {
-                    idx0 = iy + ix * FNY_GRID; 
+                    idx0 = iy + ix * get_FNY_GRID(); 
                     xold_global[idx0] = x0_old + hx_old * (ix - x2);
                     yold_global[idx0] = y0_old + hy_old * (iy - y2);
 
 
-                    for (iz = 0; iz < FPZ0_GRID; iz++)  
+                    for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                     {
-                        idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                        idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                         idx = (iz + kk) + (iy - y2 + y0) * NZ0 + (ix - x2 + x0) * NYZ0; 
 
                         vh_global[idx1]  = array_tmp[idx] + tem * iflag;
@@ -212,13 +213,13 @@ void read_potrho (double *vh, int iflag, int data_indicator)
             {
                 for(iy = y2; iy < y3; iy++)
                 {
-                    idx0 = iy + ix * FNY_GRID; 
+                    idx0 = iy + ix * get_FNY_GRID(); 
                     xold_global[idx0] = x0_old + hx_old * (ix - x2);
                     yold_global[idx0] = y0_old + hy_old * (iy - y2);
 
-                    for (iz = 0; iz < FPZ0_GRID; iz++)  
+                    for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                     {
-                        idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                        idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                         idx = (iz + kk) + (ix - x2 + x0) * NZ0 + (iy - y2 + y0) * NXZ0; 
 
                         vh_global[idx1] = array_tmp[idx] + tem * iflag;
@@ -249,9 +250,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
         x2 = 0;
-        x3 = lcr[3].x2 * FG_NX;
+        x3 = lcr[3].x2 * get_FG_NX();
         y2 = 0;
-        y3 = lcr[1].y2 * FG_NY;
+        y3 = lcr[1].y2 * get_FG_NY();
 
 
         for (iy = y2; iy < y3; iy++)
@@ -262,19 +263,19 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 dis2 = y3 - iy;
                 dis12 = dis1 + dis2;
 
-                idx0 = iy + ix * FNY_GRID; 
+                idx0 = iy + ix * get_FNY_GRID(); 
                 xold_global[idx0] = hx_new * ix;
                 yold_global[idx0] = hy_new * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                 {
 
-                    idx1 = iz + iy * FPZ0_GRID + x3 * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + x3 * FNYPZ; 
                     V1 = vh_global[idx1];
-                    idx1 = iz + y3 * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + y3 * get_FPZ0_GRID() + ix * FNYPZ; 
                     V2 = vh_global[idx1];
 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
                 }
             }
@@ -282,10 +283,10 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * FG_NX;
-        x3 = FNX_GRID; 
+        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * get_FG_NX();
+        x3 = get_FNX_GRID(); 
         y2 = 0;
-        y3 = lcr[2].y2 * FG_NY;
+        y3 = lcr[2].y2 * get_FG_NY();
 
 
         for (iy = y2; iy < y3; iy++)
@@ -296,19 +297,19 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 dis2 = y3 - iy;
                 dis12 = dis1 + dis2;
 
-                idx0 = iy + ix * FNY_GRID; 
+                idx0 = iy + ix * get_FNY_GRID(); 
                 xold_global[idx0] = hx_new * ix;
                 yold_global[idx0] = hy_new * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                 {
 
-                    idx1 = iz + iy * FPZ0_GRID + (x2 - 1) * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + (x2 - 1) * FNYPZ; 
                     V1 = vh_global[idx1];
-                    idx1 = iz + y3 * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + y3 * get_FPZ0_GRID() + ix * FNYPZ; 
                     V2 = vh_global[idx1];
 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
 
                 }
@@ -318,9 +319,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
         x2 = 0;
-        x3 = lcr[4].x2 * FG_NX;
-        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * FG_NY;
-        y3 = FNY_GRID; 
+        x3 = lcr[4].x2 * get_FG_NX();
+        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * get_FG_NY();
+        y3 = get_FNY_GRID(); 
 
 
         for (iy = y2; iy < y3; iy++)
@@ -331,19 +332,19 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 dis2 = iy - (y2 - 1);
                 dis12 = dis1 + dis2;
 
-                idx0 = iy + ix * FNY_GRID; 
+                idx0 = iy + ix * get_FNY_GRID(); 
                 xold_global[idx0] = hx_new * ix;
                 yold_global[idx0] = hy_new * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                 {
 
-                    idx1 = iz + iy * FPZ0_GRID + x3 * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + x3 * FNYPZ; 
                     V1 = vh_global[idx1];
-                    idx1 = iz + (y2 - 1) * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + (y2 - 1) * get_FPZ0_GRID() + ix * FNYPZ; 
                     V2 = vh_global[idx1];
 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
 
                 }
@@ -352,10 +353,10 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-        x2 = (lcr[4].x2 + lcr[4].x1 - lcr[4].x0) * FG_NX;
-        x3 = FNX_GRID; 
-        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * FG_NY;
-        y3 = FNY_GRID; 
+        x2 = (lcr[4].x2 + lcr[4].x1 - lcr[4].x0) * get_FG_NX();
+        x3 = get_FNX_GRID(); 
+        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * get_FG_NY();
+        y3 = get_FNY_GRID(); 
 
 
         for (iy = y2; iy < y3; iy++)
@@ -366,19 +367,19 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 dis2 = iy - (y2 - 1);
                 dis12 = dis1 + dis2;
 
-                idx0 = iy + ix * FNY_GRID; 
+                idx0 = iy + ix * get_FNY_GRID(); 
                 xold_global[idx0] = hx_new * ix;
                 yold_global[idx0] = hy_new * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                 {
 
-                    idx1 = iz + iy * FPZ0_GRID + (x2 - 1) * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + (x2 - 1) * FNYPZ; 
                     V1 = vh_global[idx1];
-                    idx1 = iz + (y2 - 1) * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + (y2 - 1) * get_FPZ0_GRID() + ix * FNYPZ; 
                     V2 = vh_global[idx1];
 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
 
                 }
@@ -401,9 +402,9 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
         x2 = 0;
-        x3 = lcr[3].x2 * FG_NX;
-        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * FG_NY;
-        y3 = FNY_GRID; 
+        x3 = lcr[3].x2 * get_FG_NX();
+        y2 = (lcr[1].y2 + lcr[1].y1 - lcr[1].y0) * get_FG_NY();
+        y3 = get_FNY_GRID(); 
 
 
         for (iy = y2; iy < y3; iy++)
@@ -414,19 +415,19 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 dis2 = iy - (y2 - 1);
                 dis12 = dis1 + dis2;
 
-                idx0 = iy + ix * FNY_GRID; 
+                idx0 = iy + ix * get_FNY_GRID(); 
                 xold_global[idx0] = hx_new * ix;
                 yold_global[idx0] = hy_new * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                 {
 
-                    idx1 = iz + iy * FPZ0_GRID + x3 * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + x3 * FNYPZ; 
                     V1 = vh_global[idx1];
-                    idx1 = iz + (y2 - 1) * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + (y2 - 1) * get_FPZ0_GRID() + ix * FNYPZ; 
                     V2 = vh_global[idx1];
 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
 
                 }
@@ -435,10 +436,10 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 
 
-        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * FG_NX;
-        x3 = FNX_GRID; 
-        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * FG_NY;
-        y3 = FNY_GRID; 
+        x2 = (lcr[3].x2 + lcr[3].x1 - lcr[3].x0) * get_FG_NX();
+        x3 = get_FNX_GRID(); 
+        y2 = (lcr[2].y2 + lcr[2].y1 - lcr[2].y0) * get_FG_NY();
+        y3 = get_FNY_GRID(); 
 
 
         for (iy = y2; iy < y3; iy++)
@@ -449,19 +450,19 @@ void read_potrho (double *vh, int iflag, int data_indicator)
                 dis2 = iy - (y2 - 1);
                 dis12 = dis1 + dis2;
 
-                idx0 = iy + ix * FNY_GRID; 
+                idx0 = iy + ix * get_FNY_GRID(); 
                 xold_global[idx0] = hx_new * ix;
                 yold_global[idx0] = hy_new * iy;
 
-                for (iz = 0; iz < FPZ0_GRID; iz++)  
+                for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
                 {
 
-                    idx1 = iz + iy * FPZ0_GRID + (x2 - 1) * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + (x2 - 1) * FNYPZ; 
                     V1 = vh_global[idx1];
-                    idx1 = iz + (y2 - 1) * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + (y2 - 1) * get_FPZ0_GRID() + ix * FNYPZ; 
                     V2 = vh_global[idx1];
 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1] = (V1 * dis2 + V2 * dis1) / dis12 * iflag; 
 
                 }
@@ -475,38 +476,38 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
     /* ============= Interpolate data along x-axis =================== */
 
-    my_malloc_init(xold,    FNX_GRID, double);   
-    my_malloc_init(vh_old,  FNX_GRID, double);   
-    my_malloc_init(vh_new,  FNX_GRID, double);   
+    my_malloc_init(xold,    get_FNX_GRID(), double);   
+    my_malloc_init(vh_old,  get_FNX_GRID(), double);   
+    my_malloc_init(vh_new,  get_FNX_GRID(), double);   
 
 
-    for (iz = 0; iz < FPZ0_GRID; iz++)  
+    for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
     {
-        for (iy = 0; iy < FNY_GRID; iy++)
+        for (iy = 0; iy < get_FNY_GRID(); iy++)
         {
-            for (ix = 0; ix < FNX_GRID; ix++)
+            for (ix = 0; ix < get_FNX_GRID(); ix++)
             {
-                idx = iy + ix * FNY_GRID; 
+                idx = iy + ix * get_FNY_GRID(); 
                 xold[ix] = xold_global[idx]; 
-                idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                 vh_old[ix] = vh_global[idx1];
             }
 
 
             /* 
-             *           diff_hx_interpolation2 (vh_new,  vh_old,  FNX_GRID, hx_new, xold, 0.0, 0.0); 
+             *           diff_hx_interpolation2 (vh_new,  vh_old,  get_FNX_GRID(), hx_new, xold, 0.0, 0.0); 
              */
 
-            spline(xold, vh_old, FNX_GRID, 0.0, 0.0, vh_new); 
+            spline(xold, vh_old, get_FNX_GRID(), 0.0, 0.0, vh_new); 
 
 
-            for (ix = 0; ix < FNX_GRID; ix++)
+            for (ix = 0; ix < get_FNX_GRID(); ix++)
             {
-                idx = iy + ix * FNY_GRID; 
+                idx = iy + ix * get_FNY_GRID(); 
                 xseed = hx_new * ix;  
 
-                splint(xold, vh_old, vh_new, FNX_GRID, xseed, &sfit);
-                idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                splint(xold, vh_old, vh_new, get_FNX_GRID(), xseed, &sfit);
+                idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                 vh_global[idx1]  = sfit; 
 
             }
@@ -526,36 +527,36 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     if(cei.num_probe >= 3)
     {
 
-        my_malloc_init(yold,    FNY_GRID, double);   
-        my_malloc_init(vh_old,  FNY_GRID, double);   
-        my_malloc_init(vh_new,  FNY_GRID, double);   
+        my_malloc_init(yold,    get_FNY_GRID(), double);   
+        my_malloc_init(vh_old,  get_FNY_GRID(), double);   
+        my_malloc_init(vh_new,  get_FNY_GRID(), double);   
 
 
-        for (iz = 0; iz < FPZ0_GRID; iz++)  
+        for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
         {
-            for (ix = 0; ix < FNX_GRID; ix++)
+            for (ix = 0; ix < get_FNX_GRID(); ix++)
             {
-                for (iy = 0; iy < FNY_GRID; iy++)
+                for (iy = 0; iy < get_FNY_GRID(); iy++)
                 {
-                    idx = iy + ix * FNY_GRID; 
+                    idx = iy + ix * get_FNY_GRID(); 
                     yold[iy] = yold_global[idx]; 
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_old[iy] = vh_global[idx1];
                 }
 
                 /* 
-                   diff_hx_interpolation2 (vh_new,  vh_old,  FNY_GRID, hy_new, yold, 0.0, 0.0); 
+                   diff_hx_interpolation2 (vh_new,  vh_old,  get_FNY_GRID(), hy_new, yold, 0.0, 0.0); 
                    */
 
-                spline(yold, vh_old, FNY_GRID, 0.0, 0.0, vh_new); 
+                spline(yold, vh_old, get_FNY_GRID(), 0.0, 0.0, vh_new); 
 
-                for (iy = 0; iy < FNY_GRID; iy++)
+                for (iy = 0; iy < get_FNY_GRID(); iy++)
                 {
-                    idx = iy + ix * FNY_GRID; 
+                    idx = iy + ix * get_FNY_GRID(); 
                     yseed = hy_new * iy;  
 
-                    splint(yold, vh_old, vh_new, FNY_GRID, yseed, &sfit);
-                    idx1 = iz + iy * FPZ0_GRID + ix * FNYPZ; 
+                    splint(yold, vh_old, vh_new, get_FNY_GRID(), yseed, &sfit);
+                    idx1 = iz + iy * get_FPZ0_GRID() + ix * FNYPZ; 
                     vh_global[idx1]  = sfit; 
 
                 }
@@ -573,15 +574,15 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     /*======================================================================*/
 
 
-    for (iz = 0; iz < FPZ0_GRID; iz++)  
+    for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
     {
-        for (ix = 0; ix < FPX0_GRID; ix++)
+        for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {
-            for (iy = 0; iy < FPY0_GRID; iy++)  
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)  
             {
 
-                idx1 = iz + iy * FPZ0_GRID + ix * FPYZ0;
-                idx  = iz + (iy + jj) * FPZ0_GRID + (ix + ii) * FNYPZ; 
+                idx1 = iz + iy * get_FPZ0_GRID() + ix * FPYZ0;
+                idx  = iz + (iy + jj) * get_FPZ0_GRID() + (ix + ii) * FNYPZ; 
 
                 vh[idx1]  = vh_global[idx];
 

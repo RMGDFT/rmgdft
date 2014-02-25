@@ -14,6 +14,8 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -30,7 +32,7 @@ void PZHEGVX (int *, char *, char *, char *, int*, complex double *, int*, int*,
 
 void lead_bandstructure ()
 {
-    REAL de, emin, emax, E_image, kbt, current;
+    rmg_double_t de, emin, emax, E_image, kbt, current;
 
 
     int nmax, nC, nL, nR;
@@ -96,41 +98,41 @@ void lead_bandstructure ()
     }
 
 
-    my_malloc_init( lcr[0].Htri, ntot, REAL );
-    my_malloc_init( lcr[0].Stri, ntot, REAL );
+    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, REAL );
-        my_malloc_init( lcr[iprobe].S00, idx, REAL );
-        my_malloc_init( lcr[iprobe].H01, idx, REAL );
-        my_malloc_init( lcr[iprobe].S01, idx, REAL );
+        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, REAL );
-        my_malloc_init( lcr[iprobe].SCL, idx, REAL );
+        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
     }
 
 
 
 
-    my_malloc_init( GAP, pmo.nrow * pmo.ncol, REAL );
+    my_malloc_init( GAP, pmo.nrow * pmo.ncol, rmg_double_t );
     my_malloc_init( ICLUSTR, 2* pmo.nrow * pmo.ncol, int );
     my_malloc_init( IFAIL, nL, int );
     my_malloc_init( matH, mxllda * mxlocc, complex double );
     my_malloc_init( matS, mxllda * mxlocc, complex double );
     my_malloc_init( z_vec, mxllda * mxlocc, complex double );
-    my_malloc_init( unitary_matrix, mxllda * mxlocc, REAL );
-    my_malloc_init( temp, mxllda * mxlocc, REAL );
+    my_malloc_init( unitary_matrix, mxllda * mxlocc, rmg_double_t );
+    my_malloc_init( temp, mxllda * mxlocc, rmg_double_t );
 
-    my_malloc_init( ener_band, kpoints[0] * nL, REAL );
+    my_malloc_init( ener_band, kpoints[0] * nL, rmg_double_t );
 
-    my_malloc_init( eig_val, nL, REAL );
+    my_malloc_init( eig_val, nL, rmg_double_t );
 
     pmo_unitary_matrix_double(unitary_matrix, desca);
 

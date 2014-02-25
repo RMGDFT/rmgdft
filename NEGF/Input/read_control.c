@@ -38,12 +38,15 @@
 #include <ctype.h>
 #include <math.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "twoParts.h"
 
 static void read_orbitals ();
 static void read_kpoints ();
 
 
-void read_control (void)
+void read_control (char *file)
 {
     int tmp, mpi_nprocs;
     char *tbuf, *tptr;
@@ -53,7 +56,7 @@ void read_control (void)
 
     /* Open the input file for reading */
 
-    get_data (ct.cfile, NULL, INIT | TAGS, NULL);
+    get_data (file, NULL, INIT | TAGS, NULL);
 
     read_common();
     my_malloc (tptr, MAX_PATH, char);
@@ -172,29 +175,6 @@ void read_control (void)
 
 
 
-    PX0_GRID = NX_GRID/pct.pe_x;
-    PY0_GRID = NY_GRID/pct.pe_y;
-    PZ0_GRID = NZ_GRID/pct.pe_z;
-    P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    S0_BASIS = (PX0_GRID+2) * (PY0_GRID+2) * (PZ0_GRID+2);
-
-    pct.PX0_GRID = PX0_GRID;
-    pct.PY0_GRID = PY0_GRID;
-    pct.PZ0_GRID = PZ0_GRID;
-    pct.P0_BASIS = P0_BASIS;
-
-    FPX0_GRID = PX0_GRID * FG_NX;
-    FPY0_GRID = PY0_GRID * FG_NY;
-    FPZ0_GRID = PZ0_GRID * FG_NZ;
-    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
-
-    pct.FPX0_GRID = FPX0_GRID;
-    pct.FPY0_GRID = FPY0_GRID;
-    pct.FPZ0_GRID = FPZ0_GRID;
-    pct.FP0_BASIS = FP0_BASIS;
-
-
-
     /* read the atomic positions and species */
     read_atoms ();
 
@@ -253,19 +233,19 @@ void read_control (void)
 
 
 
-    potentialCompass.box1.x1 *= FG_NX;
-    potentialCompass.box1.x2 *= FG_NX;
-    potentialCompass.box1.y1 *= FG_NY;
-    potentialCompass.box1.y2 *= FG_NY;
-    potentialCompass.box1.z1 *= FG_NZ;
-    potentialCompass.box1.z2 *= FG_NZ;
+    potentialCompass.box1.x1 *= get_FG_NX();
+    potentialCompass.box1.x2 *= get_FG_NX();
+    potentialCompass.box1.y1 *= get_FG_NY();
+    potentialCompass.box1.y2 *= get_FG_NY();
+    potentialCompass.box1.z1 *= get_FG_NZ();
+    potentialCompass.box1.z2 *= get_FG_NZ();
 
-    chargeDensityCompass.box1.x1 *= FG_NX;
-    chargeDensityCompass.box1.x2 *= FG_NX;
-    chargeDensityCompass.box1.y1 *= FG_NY;
-    chargeDensityCompass.box1.y2 *= FG_NY;
-    chargeDensityCompass.box1.z1 *= FG_NZ;
-    chargeDensityCompass.box1.z2 *= FG_NZ;
+    chargeDensityCompass.box1.x1 *= get_FG_NX();
+    chargeDensityCompass.box1.x2 *= get_FG_NX();
+    chargeDensityCompass.box1.y1 *= get_FG_NY();
+    chargeDensityCompass.box1.y2 *= get_FG_NY();
+    chargeDensityCompass.box1.z1 *= get_FG_NZ();
+    chargeDensityCompass.box1.z2 *= get_FG_NZ();
 
 
 

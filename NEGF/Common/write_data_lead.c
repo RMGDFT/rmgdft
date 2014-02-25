@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -64,21 +66,21 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 			error_handler (" Unable to write file ");
 	}
 
-	if (lcr[1].NY_GRID != NY_GRID)
+	if (lcr[1].NY_GRID != get_NY_GRID())
 		error_handler ("not a lead calculation y");
-	if (lcr[1].NZ_GRID != NZ_GRID)
+	if (lcr[1].NZ_GRID != get_NZ_GRID())
 		error_handler ("not a lead calculation z");
 
-	write_global_data_lead (fhand, vh, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
-			lcr[1].NZ_GRID * FG_NZ);
-	write_global_data_lead (fhand, vxc, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
-			lcr[1].NZ_GRID * FG_NZ);
-	write_global_data_lead (fhand, rho, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
-			lcr[1].NZ_GRID * FG_NZ);
-	write_global_data_lead (fhand, vh_old, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
-			lcr[1].NZ_GRID * FG_NZ);
-	write_global_data_lead (fhand, vxc_old, lcr[1].NX_GRID * FG_NX * 3, lcr[1].NY_GRID * FG_NY,
-			lcr[1].NZ_GRID * FG_NZ);
+	write_global_data_lead (fhand, vh, lcr[1].NX_GRID * get_FG_NX() * 3, lcr[1].NY_GRID * get_FG_NY(),
+			lcr[1].NZ_GRID * get_FG_NZ());
+	write_global_data_lead (fhand, vxc, lcr[1].NX_GRID * get_FG_NX() * 3, lcr[1].NY_GRID * get_FG_NY(),
+			lcr[1].NZ_GRID * get_FG_NZ());
+	write_global_data_lead (fhand, rho, lcr[1].NX_GRID * get_FG_NX() * 3, lcr[1].NY_GRID * get_FG_NY(),
+			lcr[1].NZ_GRID * get_FG_NZ());
+	write_global_data_lead (fhand, vh_old, lcr[1].NX_GRID * get_FG_NX() * 3, lcr[1].NY_GRID * get_FG_NY(),
+			lcr[1].NZ_GRID * get_FG_NZ());
+	write_global_data_lead (fhand, vxc_old, lcr[1].NX_GRID * get_FG_NX() * 3, lcr[1].NY_GRID * get_FG_NY(),
+			lcr[1].NZ_GRID * get_FG_NZ());
 
 
 	if (pct.gridpe == 0) close(fhand);

@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
@@ -30,7 +32,7 @@ void init_loc_xyz ()
 
 
     int L0_NLDIM;
-    REAL hxgrid, hygrid, hzgrid;
+    rmg_double_t hxgrid, hygrid, hzgrid;
 
 
 
@@ -46,9 +48,9 @@ void init_loc_xyz ()
 
 
         L0_NLDIM = sp->ldim_coar;
-        hxgrid = ct.hxgrid * ct.xside;
-        hygrid = ct.hygrid * ct.yside;
-        hzgrid = ct.hzgrid * ct.zside;
+        hxgrid = get_hxgrid() * get_xside();
+        hygrid = get_hygrid() * get_yside();
+        hzgrid = get_hzgrid() * get_zside();
 
         get_start (L0_NLDIM, ct.ions[ion].crds[0], ct.xcstart, hxgrid,
                    &iptr->ixstart_loc, &iptr->xcstart_loc);
@@ -57,9 +59,9 @@ void init_loc_xyz ()
         get_start (L0_NLDIM, ct.ions[ion].crds[2], ct.zcstart, hzgrid,
                    &iptr->izstart_loc, &iptr->zcstart_loc);
 
-        iptr->xcstart_loc /= ct.xside;
-        iptr->ycstart_loc /= ct.yside;
-        iptr->zcstart_loc /= ct.zside;
+        iptr->xcstart_loc /= get_xside();
+        iptr->ycstart_loc /= get_yside();
+        iptr->zcstart_loc /= get_zside();
         iptr->ixend_loc = iptr->ixstart_loc + L0_NLDIM - 1;
         iptr->iyend_loc = iptr->iystart_loc + L0_NLDIM - 1;
         iptr->izend_loc = iptr->izstart_loc + L0_NLDIM - 1;

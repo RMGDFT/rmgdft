@@ -8,10 +8,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 #define 	MAX_ORBIT_ON_ION 	24
 
-void state_minus_state (STATE *state1, STATE *state2, REAL factor);
+void state_minus_state (STATE *state1, STATE *state2, rmg_double_t factor);
 
 
 void ortho_norm_local (STATE *states)
@@ -20,8 +22,8 @@ void ortho_norm_local (STATE *states)
     int n;
     double time1, time2;
     int num_state_on_this_ion;
-    REAL norm;
-    REAL overlap[MAX_ORBIT_ON_ION];
+    rmg_double_t norm;
+    rmg_double_t overlap[MAX_ORBIT_ON_ION];
 
     time1 = my_crtc ();
 
@@ -66,7 +68,7 @@ void ortho_norm_local (STATE *states)
 }
 
 
-void state_minus_state (STATE *orbit1, STATE *orbit2, REAL factor)
+void state_minus_state (STATE *orbit1, STATE *orbit2, rmg_double_t factor)
 {
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
     int ylow1, yhigh1, ylow2, yhigh2, yshift;
@@ -77,8 +79,8 @@ void state_minus_state (STATE *orbit1, STATE *orbit2, REAL factor)
     int ix1, ix2, iy1, iy2, idx1, idx2;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
-    REAL *p1, *p2;
-    REAL *psi1, *psi2;
+    rmg_double_t *p1, *p2;
+    rmg_double_t *psi1, *psi2;
     int mode;
 
     mode = 0;

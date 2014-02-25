@@ -52,6 +52,7 @@
 
 /* Use predefined booleans */
 #include <stdbool.h>
+#include <complex.h>
 
 /* Typedefs */
 #include    "rmgtypedefs.h"

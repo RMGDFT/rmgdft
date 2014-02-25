@@ -14,6 +14,8 @@
 #include <complex.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -28,7 +30,7 @@ void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma
 
     int info;
     int i, nprobe;
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     int ni[MAX_BLOCKS] ;
     int N, N1, N2;
     int j, idx, idx1;

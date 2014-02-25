@@ -8,32 +8,34 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-void print_status (STATE * states, REAL * vh, REAL * vxc, REAL * vnuc, REAL * vh_old, char *msg)
+void print_status (STATE * states, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, rmg_double_t * vh_old, char *msg)
 {
     int i, j;
-    REAL total;
+    rmg_double_t total;
 
     printf ("\n print_status ----%s ", msg);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vh[i];
     printf ("PE: %d, vh total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vxc[i];
     printf ("PE: %d, vxc total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vnuc[i];
     printf ("PE: %d, vnuc total: %22.16f \n", pct.gridpe, total);
 
     total = 0;
-    for (i = 0; i < P0_BASIS; i++)
+    for (i = 0; i < get_P0_BASIS(); i++)
         total += vh_old[i];
     printf ("PE: %d, vh_old total: %22.16f \n", pct.gridpe, total);
 
@@ -57,7 +59,7 @@ void print_state_sum (STATE * states)
 {
     int st;
     int i;
-    REAL temp;
+    rmg_double_t temp;
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
@@ -73,7 +75,7 @@ void print_state (STATE * state)
 {
     int st;
     int i;
-    REAL temp;
+    rmg_double_t temp;
 
     temp = 0.0;
     for (i = 0; i < state->size; i++)
@@ -120,7 +122,7 @@ void print_states_dot_product (STATE * states)
 {
     int st;
     int i;
-    REAL temp;
+    rmg_double_t temp;
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
         temp = 0.0;

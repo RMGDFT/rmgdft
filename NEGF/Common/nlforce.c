@@ -12,25 +12,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 
-void nlforce (REAL * veff)
+void nlforce (rmg_double_t * veff)
 {
     int ion, i, isp, count;
     int nh, size, n2, idx;
-    REAL *rho_nm, *QnmI_R, *forces_tem;
-    REAL *part_rho_nm_x, *part_rho_nm_y, *part_rho_nm_z;
+    rmg_double_t *rho_nm, *QnmI_R, *forces_tem;
+    rmg_double_t *part_rho_nm_x, *part_rho_nm_y, *part_rho_nm_z;
     ION *iptr;
     SPECIES *sp;
 
-    REAL time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc();
 
  
     size = ct.num_ions * ct.max_nl * ct.max_nl;
-    my_malloc_init( rho_nm, 4 * size, REAL );
-    my_malloc_init( forces_tem, ct.num_ions*3, REAL );
+    my_malloc_init( rho_nm, 4 * size, rmg_double_t );
+    my_malloc_init( forces_tem, ct.num_ions*3, rmg_double_t );
     part_rho_nm_x = rho_nm + size;
     part_rho_nm_y = part_rho_nm_x + size;
     part_rho_nm_z = part_rho_nm_y + size;

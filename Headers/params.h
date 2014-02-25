@@ -146,4 +146,7 @@
 /* Max. number of states localized on the same ion */
 #define MAX_LOC_ST      20
 
+#define MAX_BLOCKS      20
+
+
 

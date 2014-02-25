@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 #if NONORTHO
 #if USE_DIS_MAT
@@ -19,17 +21,17 @@
 void get_new_rho_soft (STATE * states, double *rho)
 {
     int idx, ione = 1;
-    REAL t2;
+    rmg_double_t t2;
     register double tcharge;
 
     /* for parallel libraries */
 
-    REAL *psi1, *psi2, scale;
+    rmg_double_t *psi1, *psi2, scale;
     int i, st1, st2, proc1, proc2, st11;
-    REAL time1;
+    rmg_double_t time1;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
-    REAL *rho_temp;
+    rmg_double_t *rho_temp;
     char filename[MAX_PATH];
 
     int ix, iy;
@@ -40,8 +42,8 @@ void get_new_rho_soft (STATE * states, double *rho)
     /*    if (pct.gridpe == 0)
           printf (" Compute new density\n");*/
 
-    my_malloc_init( rho_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
-    my_malloc_init( rho_temp, P0_BASIS, REAL );
+    my_malloc_init( rho_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
+    my_malloc_init( rho_temp, get_P0_BASIS(), rmg_double_t );
 
 
 
@@ -50,7 +52,7 @@ void get_new_rho_soft (STATE * states, double *rho)
 //    for(i = 0; i < pct.num_local_orbit * pct.num_local_orbit; i++) work_matrix[i] = 0.0;
 //    work_matrix[100 * (pct.num_local_orbit +1)] = 10000.0;
 
-    for (idx = 0; idx < NX_GRID * NY_GRID * NZ_GRID; idx++)
+    for (idx = 0; idx < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx++)
     {
         rho_global[idx] = 0.;
     }
@@ -141,24 +143,24 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     }                           /* end of loop  */
 
-    idx = NX_GRID * NY_GRID * NZ_GRID;
+    idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
     global_sums (rho_global, &idx, pct.grid_comm);
     global_to_distribute (rho_global, rho_temp);
 
 
 
-    for(ix = 0; ix < pct.PX0_GRID; ix++)
+    for(ix = 0; ix < get_PX0_GRID(); ix++)
     {
         tem = 0.0;
-        for(iy = 0; iy < pct.PY0_GRID * pct.PZ0_GRID; iy++) tem+= rho_temp[ix * pct.PY0_GRID * pct.PZ0_GRID + iy];
+        for(iy = 0; iy < get_PY0_GRID() * get_PZ0_GRID(); iy++) tem+= rho_temp[ix * get_PY0_GRID() * get_PZ0_GRID() + iy];
         printf ("\n %d   %f  rho_oldwww ", ix, tem);
     }
 
 
     my_free(rho_global);
 
-    mg_prolong_MAX10 (rho, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
-            PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX, 6);
+    mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
+            get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
 
     my_free(rho_temp);
 
@@ -169,7 +171,7 @@ void get_new_rho_soft (STATE * states, double *rho)
     rmg_timings (GET_NEW_RHO, time1);
 
 #if  	DEBUG
-    print_sum_square (P0_BASIS, rho, "rho_sum_sqare in the end of get_new_rho  ");
+    print_sum_square (get_P0_BASIS(), rho, "rho_sum_sqare in the end of get_new_rho  ");
 #endif
 
 }

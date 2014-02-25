@@ -16,11 +16,11 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void mgrid_solv(REAL *v_mat, REAL *f_mat, REAL *Work, 
+ *   void mgrid_solv(rmg_double_t *v_mat, rmg_double_t *f_mat, rmg_double_t *Work, 
  *                   int dimx, int dimy, int dimz,
- *                   REAL gridhx, REAL gridhy, REAL gridhz,
+ *                   rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz,
  *                   int level, int *nb_ids, int max_levels, int *pre_cyc,
- *                   int *post_cyc, int mu_cyc, REAL step)
+ *                   int *post_cyc, int mu_cyc, rmg_double_t step)
  *	solves the Poisson equation: del^2 v = f for v. 
  *      This routine is called recursively for each level of multi-grid.
  * INPUTS
@@ -50,13 +50,16 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "twoParts.h"
 
 
-void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
+void mgrid_solv_negf(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work,
                 int dimx, int dimy, int dimz,
-                REAL gridhx, REAL gridhy, REAL gridhz,
+                rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz,
                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, REAL step, REAL k,
+                 int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim)
@@ -64,17 +67,17 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
     int i;
     int cycl;
     int incx, incy, incz, size, idx;
-    REAL scale;
+    rmg_double_t scale;
     int ione = 1;
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
-    REAL *resid, *newf, *newv, *newwork;
+    rmg_double_t *resid, *newf, *newv, *newwork;
 
     int ncycl;
 
     int iz, ix;
 
-    REAL tem1, tem;
+    rmg_double_t tem1, tem;
     double time1, time2;
 
 
@@ -86,11 +89,11 @@ void mgrid_solv_negf(REAL * v_mat, REAL * f_mat, REAL * work,
 
     resid = work + 2 * size;
 
-    /*   my_malloc_init( resid, size, REAL ); */
+    /*   my_malloc_init( resid, size, rmg_double_t ); */
 
-    scale = 2.0 / (gridhx * gridhx * ct.xside * ct.xside);
-    scale = scale + (2.0 / (gridhy * gridhy * ct.yside * ct.yside));
-    scale = scale + (2.0 / (gridhz * gridhz * ct.zside * ct.zside));
+    scale = 2.0 / (gridhx * gridhx * get_xside() * get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = 1.0 / scale;
 
 

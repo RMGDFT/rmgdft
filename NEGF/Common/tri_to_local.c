@@ -7,10 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
-void tri_to_local (STATE *states_distribute, REAL * A_tri, REAL * Aii_local)
+void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t * Aii_local)
 {
     /* Semi_tridiagonal matrix  
      *
@@ -140,7 +142,7 @@ void tri_to_local (STATE *states_distribute, REAL * A_tri, REAL * Aii_local)
     }
 
     size = ct.num_states * ct.num_states;
-    comm_sums((REAL *)work_matrix, &size, COMM_EN2);
+    comm_sums((rmg_double_t *)work_matrix, &size, COMM_EN2);
 
 
     // global matrix map to local matrix(pct.num_local * pct.num_local);

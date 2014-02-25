@@ -15,6 +15,8 @@
 #include <complex.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
@@ -24,8 +26,8 @@ void get_dos (STATE * states)
     int iene, st1;
     complex double *tot, *tott, *g;
     complex double *sigma;
-    REAL *temp_matrix_tri, *temp_matrix, *matrix_product;
-    REAL de, emin, emax;
+    rmg_double_t *temp_matrix_tri, *temp_matrix, *matrix_product;
+    rmg_double_t de, emin, emax;
 
     complex double *green_C, *ch0, *ch01, *ch10;
     complex double ene, ctem;
@@ -39,12 +41,12 @@ void get_dos (STATE * states)
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
-    REAL *Green_store, *rho_energy, *rho_energy2;
+    rmg_double_t *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
     int E_POINTS, kpoint[3];
     double E_imag, KT;
-    int FPYZ = FPY0_GRID * FPZ0_GRID;
+    int FPYZ = get_FPY0_GRID() * get_FPZ0_GRID();
     int nx1, nx2, ny1, ny2, nz1, nz2; 
     int *desca, *descb, numst, numstC;
 
@@ -80,24 +82,24 @@ void get_dos (STATE * states)
     }
 
 
-    my_malloc_init( lcr[0].Htri, ntot, REAL );
-    my_malloc_init( lcr[0].Stri, ntot, REAL );
+    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, REAL );
-        my_malloc_init( lcr[iprobe].S00, idx, REAL );
-        my_malloc_init( lcr[iprobe].H01, idx, REAL );
-        my_malloc_init( lcr[iprobe].S01, idx, REAL );
+        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, REAL );
-        my_malloc_init( lcr[iprobe].SCL, idx, REAL );
+        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
     }
 
 
@@ -151,29 +153,29 @@ void get_dos (STATE * states)
     /*st1 = (E_POINTS + NPES - 1) / NPES;*/
     st1 = (E_POINTS + pmo.npe_energy - 1) / pmo.npe_energy;
    
-    my_malloc_init( Green_store, st1 * ntot, REAL );
+    my_malloc_init( Green_store, st1 * ntot, rmg_double_t );
 
 /*===================================================================*/
 
-    nx1 = cei.dos_window_start[0] * FG_NX;
-    nx2 = cei.dos_window_end[0] * FG_NX;
-    ny1 = cei.dos_window_start[1] * FG_NY;
-    ny2 = cei.dos_window_end[1] * FG_NY;
-    nz1 = cei.dos_window_start[2] * FG_NZ;
-    nz2 = cei.dos_window_end[2] * FG_NZ;
+    nx1 = cei.dos_window_start[0] * get_FG_NX();
+    nx2 = cei.dos_window_end[0] * get_FG_NX();
+    ny1 = cei.dos_window_start[1] * get_FG_NY();
+    ny2 = cei.dos_window_end[1] * get_FG_NY();
+    nz1 = cei.dos_window_start[2] * get_FG_NZ();
+    nz2 = cei.dos_window_end[2] * get_FG_NZ();
                                                                                               
                                                                                               
                                                                                               
                                                                                               
-    my_malloc_init( rho_energy, E_POINTS * FNX_GRID, REAL );
+    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), rmg_double_t );
     if (cei.num_probe > 2)
-        my_malloc_init( rho_energy2, E_POINTS * FNY_GRID, REAL );
+        my_malloc_init( rho_energy2, E_POINTS * get_FNY_GRID(), rmg_double_t );
                                                                                               
                                                                                               
                                                                                               
-    xoff = pct.FPX_OFFSET;
-    yoff = pct.FPY_OFFSET;
-    zoff = pct.FPZ_OFFSET;
+    xoff = get_FPX_OFFSET();
+    yoff = get_FPY_OFFSET();
+    zoff = get_FPZ_OFFSET();
 
 
 /*===================================================================*/
@@ -306,18 +308,18 @@ void get_dos (STATE * states)
         get_new_rho_soft (states, rho);
 
 
-        for (ix = 0; ix < FPX0_GRID; ix++)
+        for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {
-            for (iy = 0; iy < FPY0_GRID; iy++)
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
                 if((iy + yoff) >= ny1 && (iy + yoff) <= ny2)
                 {
-                    for (iz = 0; iz < FPZ0_GRID; iz++)
+                    for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                     {
                         if((iz + zoff) >= nz1 && (iz + zoff) <= nz2)
                         {
-                            idx = iz + iy * FPZ0_GRID + ix * FPYZ;
-                            rho_energy[iene * FNX_GRID + ix + xoff] += rho[idx];
+                            idx = iz + iy * get_FPZ0_GRID() + ix * FPYZ;
+                            rho_energy[iene * get_FNX_GRID() + ix + xoff] += rho[idx];
                         }
                     }
                 }
@@ -327,18 +329,18 @@ void get_dos (STATE * states)
 
         if (cei.num_probe > 2)
         {
-            for (iy = 0; iy < FPY0_GRID; iy++)
+            for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
-                for (ix = 0; ix < FPX0_GRID; ix++)
+                for (ix = 0; ix < get_FPX0_GRID(); ix++)
                 {
                     if((ix + xoff) >= nx1 && (ix + xoff) <= nx2)
                     {
-                        for (iz = 0; iz < FPZ0_GRID; iz++)
+                        for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                         {
                             if((iz + zoff) >= nz1 && (iz + zoff) <= nz2)
                             {
-                                idx = iz + iy * FPZ0_GRID + ix * FPYZ;
-                                rho_energy2[iene * FNY_GRID + iy + yoff] += rho[idx];
+                                idx = iz + iy * get_FPZ0_GRID() + ix * FPYZ;
+                                rho_energy2[iene * get_FNY_GRID() + iy + yoff] += rho[idx];
                             }
                         }
                     }
@@ -351,11 +353,11 @@ void get_dos (STATE * states)
 
 
 
-    iene = E_POINTS * FNX_GRID;
+    iene = E_POINTS * get_FNX_GRID();
     global_sums (rho_energy, &iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
-        double dx = ct.celldm[0] / NX_GRID;
+        double dx = ct.celldm[0] / get_NX_GRID();
         double x0 = 0.5 * ct.celldm[0];
 
         file = fopen ("dos.dat", "w");
@@ -363,11 +365,11 @@ void get_dos (STATE * states)
         for (iene = 0; iene < E_POINTS; iene++)
         {
 
-            for (ix = 0; ix < NX_GRID; ix++)
+            for (ix = 0; ix < get_NX_GRID(); ix++)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                        ix * dx - x0, emin+iene*de, rho_energy[iene * FNX_GRID + ix * FG_NX]);
+                        ix * dx - x0, emin+iene*de, rho_energy[iene * get_FNX_GRID() + ix * get_FG_NX()]);
             }
             fprintf (file, "\n");
         }
@@ -378,12 +380,12 @@ void get_dos (STATE * states)
     if (cei.num_probe > 2)
     {
 
-        iene = E_POINTS * FNY_GRID;
+        iene = E_POINTS * get_FNY_GRID();
         global_sums (rho_energy2, &iene, pct.grid_comm);
         if (pct.gridpe == 0)
         {
             double y = ct.celldm[1] * ct.celldm[0];
-            double dy = y / NY_GRID;
+            double dy = y / get_NY_GRID();
             double y0 = 0.5 * y;
 
             file = fopen ("dos2.dat", "w");
@@ -391,11 +393,11 @@ void get_dos (STATE * states)
             for (iene = 0; iene < E_POINTS; iene++)
             {
 
-                for (iy = 0; iy < NY_GRID; iy++)
+                for (iy = 0; iy < get_NY_GRID(); iy++)
                 {
 
                     fprintf (file, " %10.6f %10.6f %12.6e\n",
-                            iy * dy - y0, emin+iene*de, rho_energy2[iene * FNY_GRID + iy * FG_NY]);
+                            iy * dy - y0, emin+iene*de, rho_energy2[iene * get_FNY_GRID() + iy * get_FG_NY()]);
                 }
                 fprintf (file, "\n");
             }

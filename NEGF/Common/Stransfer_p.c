@@ -17,6 +17,8 @@
 #include <complex.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 #define 	MAX_STEP 	100
@@ -26,7 +28,7 @@ void Stransfer_p (complex double * tot, complex double * tott,
         complex double *ch0, complex double *ch01, complex double *ch10, int iprobe)
 {
 
-    REAL converge1, converge2;
+    rmg_double_t converge1, converge2;
     complex double *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1, *s2;
     complex double alpha, beta;
     int info;

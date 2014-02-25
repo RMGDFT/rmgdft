@@ -14,13 +14,15 @@ is_atom_overlap.c
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void is_vloc_state_overlap (STATE *states)
 {
 
     int ion, ista;
-    REAL r, r1, r2;
+    rmg_double_t r, r1, r2;
     SPECIES *sp;
     ION *iptr;
 

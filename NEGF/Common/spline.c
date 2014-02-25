@@ -19,8 +19,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include "salloc.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 

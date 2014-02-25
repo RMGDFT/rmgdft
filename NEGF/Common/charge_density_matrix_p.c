@@ -9,6 +9,8 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 #define 	LDEBUG 	0
@@ -22,7 +24,7 @@ void charge_density_matrix_p (complex double * sigma_all)
     complex double weight;
     complex double *green_C, *rho_mn;
     complex double *sigma, *gamma;
-    REAL denominator, numerator, dum, sum, *wmn;
+    rmg_double_t denominator, numerator, dum, sum, *wmn;
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
     complex double *green_C_non;
     int maxrow, maxcol;
@@ -246,7 +248,7 @@ void charge_density_matrix_p (complex double * sigma_all)
             lcr[0].density_matrix_tri[st1] = 0.0;
 
 #if 0
-        my_malloc_init( wmn, cei.num_probe, REAL );
+        my_malloc_init( wmn, cei.num_probe, rmg_double_t );
         for (st1 = 0; st1 < ntot; st1++)
         {
 

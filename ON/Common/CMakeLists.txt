@@ -72,5 +72,5 @@ add_library (ON_Common
  xbsmovie.c
  RmgThread.cpp
 )
-include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
-include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
+include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
+include_directories("${RMG_BINARY_DIR}/ON/Headers/")

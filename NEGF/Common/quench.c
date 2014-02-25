@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void quench(STATE *states, REAL *vxc, REAL *vh, REAL *vnuc, 
- *               REAL *rho, REAL *rhocore, REAL *rhoc)
+ *   void quench(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc, 
+ *               rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
  *   For a fixed atomic configuration, quench the electrons to find 
  *   the minimum total energy 
  * INPUTS
@@ -44,11 +44,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 #include "pmo.h"
 
 
-void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * vxc, REAL * vh, REAL * vnuc, REAL * vext,
-             REAL * vh_old, REAL * vxc_old, REAL * rho, REAL * rhoc, REAL * rhocore, REAL * vbias)
+void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vext,
+             rmg_double_t * vh_old, rmg_double_t * vxc_old, rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * rhocore, rmg_double_t * vbias)
 {
 
     int outcount = 0;
@@ -67,7 +69,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
     time1 = my_crtc ();
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         vxc_old[idx] = vxc[idx];
         vh_old[idx] = vh[idx];
@@ -175,23 +177,23 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
     setback_corner_matrix_S();  
 
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
 
 
 /*  apply_potential_drop( vtot ); */
 
-    FPYZ0_GRID = FPY0_GRID * FPZ0_GRID;
+    FPYZ0_GRID = get_FPY0_GRID() * get_FPZ0_GRID();
 
-    for (i = 0; i < FPX0_GRID; i++)
+    for (i = 0; i < get_FPX0_GRID(); i++)
     {
-        for (j = 0; j < FPY0_GRID; j++)
+        for (j = 0; j < get_FPY0_GRID(); j++)
         {
-            idx = j + i * FPY0_GRID;
+            idx = j + i * get_FPY0_GRID();
 
-            for (k = 0; k < FPZ0_GRID; k++)
+            for (k = 0; k < get_FPZ0_GRID(); k++)
             {
-                idx2 = k + j * FPZ0_GRID + i * FPYZ0_GRID;
+                idx2 = k + j * get_FPZ0_GRID() + i * FPYZ0_GRID;
                 vtot[idx2] += vbias[idx];
             }
         }
@@ -199,7 +201,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
 
 
 
-    get_vtot_psi(vtot_c, vtot, FG_NX);
+    get_vtot_psi(vtot_c, vtot, get_FG_NX());
 
     get_ddd (vtot);
 
@@ -221,11 +223,11 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
 
  
 
-    for (ct.steps = 0; ct.steps < ct.max_scf_steps; ct.steps++)
+    for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
 
         if (pct.gridpe == 0)
-            printf ("\n\n\n ITERATION     %d\n", ct.steps);
+            printf ("\n\n\n ITERATION     %d\n", ct.scf_steps);
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
         {
@@ -237,7 +239,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, REAL * v
 
         }
 
-        if (!ct.steps)
+        if (!ct.scf_steps)
             CONVERGENCE = FALSE;
 
         if (CONVERGENCE)

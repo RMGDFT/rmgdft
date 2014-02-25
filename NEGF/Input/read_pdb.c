@@ -29,6 +29,8 @@
 #include <string.h>
 #include <ctype.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 int read_parse_pdb_line (ION * iptr, int ion_index)

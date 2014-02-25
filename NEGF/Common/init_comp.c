@@ -17,9 +17,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-void init_comp (REAL *vh)
+void init_comp (rmg_double_t *vh)
 {
 
     int ix, iy, iz, i;
@@ -35,9 +37,9 @@ void init_comp (REAL *vh)
     int rb = ct.vcomp_Rbegin * 2;
     int re = ct.vcomp_Rend * 2;
     
-    REAL t1;
-    REAL *zvec;
-    my_malloc_init( zvec, FNX_GRID, REAL );
+    rmg_double_t t1;
+    rmg_double_t *zvec;
+    my_malloc_init( zvec, get_FNX_GRID(), rmg_double_t );
 
     if (pct.gridpe == 0)
     {
@@ -51,29 +53,29 @@ void init_comp (REAL *vh)
     my_barrier();
 
     /* Get this processors offset */
-    pxoff = pct.FPX_OFFSET;
+    pxoff = get_FPX_OFFSET();
     /* Zero out result vector */
-    for (ix = 0; ix < FNX_GRID; ix++)
+    for (ix = 0; ix < get_FNX_GRID(); ix++)
         zvec[ix] = ZERO;
 
 
     /* Loop over this processor */
-    for (ix = 0; ix < FPX0_GRID; ix++)
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
         t1 = 0.0;
-        for (iy = 0; iy < FPY0_GRID; iy++)
-            for (iz = 0; iz < FPZ0_GRID; iz++)
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
+            for (iz = 0; iz < get_FPZ0_GRID(); iz++)
 
-		    t1 += vh[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz];
+		    t1 += vh[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz];
 
 
-	zvec[ix + pxoff] = t1/ FNY_GRID / FNZ_GRID;
+	zvec[ix + pxoff] = t1/ get_FNY_GRID() / get_FNZ_GRID();
 
     }                           /* end for */
 
 
     /* Now sum over all processors */
-    ix = FNX_GRID;
+    ix = get_FNX_GRID();
     global_sums(zvec, &ix, pct.grid_comm);
 
 
@@ -99,7 +101,7 @@ void init_comp (REAL *vh)
     }
     v_reference = v_reference / lb;
 
-    for (ix = 0; ix < FPX0_GRID; ix++)
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
     {
         x_locate = ix + pxoff; // everything is based on FINE grid!
 
@@ -128,13 +130,13 @@ void init_comp (REAL *vh)
             v_comp = 0;
 
 
-        for (iy = 0; iy < FPY0_GRID; iy++)
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
         {
 
-            for (iz = 0; iz < FPZ0_GRID; iz++)
+            for (iz = 0; iz < get_FPZ0_GRID(); iz++)
             {
 
-                vcomp[ix * FPY0_GRID * FPZ0_GRID + iy * FPZ0_GRID + iz] = v_comp;
+                vcomp[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz] = v_comp;
 
 
             }                   /* end for */

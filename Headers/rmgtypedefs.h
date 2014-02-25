@@ -160,6 +160,21 @@ typedef struct
     /*Stores PDB information*/
     PDB_INFO pdb;
 
+
+
+    int ixstart_loc;
+    int iystart_loc;
+    int izstart_loc;
+    int ixend_loc;
+    int iyend_loc;
+    int izend_loc;
+
+    rmg_double_t xcstart_loc;
+    rmg_double_t ycstart_loc;
+    rmg_double_t zcstart_loc;
+
+
+
 } ION;
 
 

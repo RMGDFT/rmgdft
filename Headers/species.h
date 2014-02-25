@@ -39,6 +39,7 @@ typedef struct
      * These used to be L0_LDIM and L0_NLDIM.
      */
     int ldim;
+    int ldim_coar;
     int nldim;
     int nlfdim;
     int qdim;
@@ -225,6 +226,9 @@ typedef struct
 
     /*Atomic charge density on linear grid*/
     rmg_double_t arho_lig[MAX_LOCAL_LIG];
+    
+
+    int localidx;
 
 } SPECIES;
 

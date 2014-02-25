@@ -18,27 +18,29 @@ work_matrix(i,j) = <states[i].psiR | states1[j].psiR>
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 /* For Linux and MPICH 
  * 	#include "/usr/lib/mpich/include/mpi.h"
  */
 
 
 
-void orbit_dot_orbit (STATE * states, STATE * states1, REAL * work_matrix)
+void orbit_dot_orbit (STATE * states, STATE * states1, rmg_double_t * work_matrix)
 {
     int i;
     int st1, st2;
-    REAL temp;
-    REAL *psi1;
-    REAL *psi2;
-    REAL *old_psi;
+    rmg_double_t temp;
+    rmg_double_t *psi1;
+    rmg_double_t *psi2;
+    rmg_double_t *old_psi;
     MPI_Status mstatus;
-    REAL time1;
+    rmg_double_t time1;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_sendrecv, num_send, num_recv;
-    REAL sum;
+    rmg_double_t sum;
     int idx;
-    REAL temp2, temp3, temp4;
+    rmg_double_t temp2, temp3, temp4;
 
 
     state_per_proc = ct.state_per_proc + 2;

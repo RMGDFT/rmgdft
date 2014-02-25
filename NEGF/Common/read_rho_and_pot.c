@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void read_rho_and_pot (char *name, double *vh, double *vxc, 
@@ -38,17 +40,17 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
      * to the global array (file)
      * */
 
-    sizes[0] = FNX_GRID;
-    sizes[1] = FNY_GRID;
-    sizes[2] = FNZ_GRID;
+    sizes[0] = get_FNX_GRID();
+    sizes[1] = get_FNY_GRID();
+    sizes[2] = get_FNZ_GRID();
 
-    subsizes[0] = FPX0_GRID;
-    subsizes[1] = FPY0_GRID;
-    subsizes[2] = FPZ0_GRID;
+    subsizes[0] = get_FPX0_GRID();
+    subsizes[1] = get_FPY0_GRID();
+    subsizes[2] = get_FPZ0_GRID();
 
-    starts[0] = pct.FPX_OFFSET;
-    starts[1] = pct.FPY_OFFSET;
-    starts[2] = pct.FPZ_OFFSET;
+    starts[0] = get_FPX_OFFSET();
+    starts[1] = get_FPY_OFFSET();
+    starts[2] = get_FPZ_OFFSET();
 
     /*int order = MPI_ORDER_FORTRAN;*/
     int order = MPI_ORDER_C;
@@ -67,9 +69,9 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
 
-    MPI_File_read(mpi_fhand, vh, FP0_BASIS,MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vxc, FP0_BASIS,MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, rho, FP0_BASIS,MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
 
     my_barrier();

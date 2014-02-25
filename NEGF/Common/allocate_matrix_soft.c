@@ -32,38 +32,44 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "init_var_negf.h"
 
 
 void allocate_matrix_soft ()
 {
     int ispin, sizeofmatrix, item, item1, item2, lwork;
     int ictxt, nproc, myrow, mycol, icrow, iccol;
-    int izero = 0, ione = 1, itwo = 2, nb = NB, nn = NN;
+    int izero = 0, ione = 1, itwo = 2, nb = ct.scalapack_block_factor, nn = ct.num_states;
     int nprow = pct.nprow, npcol = pct.npcol, npes = NPES;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
 
+    int sbasis;
+
     ispin = ct.spin + 1;
 
-    my_malloc_init( peaks, 100, REAL );
+    sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
+    my_malloc_init( peaks, 100, rmg_double_t );
 
-    my_malloc_init( rho, FP0_BASIS * ispin, REAL );
-    my_malloc_init( rhoc, FP0_BASIS, REAL );
-    my_malloc_init( vh, FP0_BASIS, REAL );
-    my_malloc_init( vnuc, FP0_BASIS, REAL );
-    my_malloc_init( vext, FP0_BASIS, REAL );
-    my_malloc_init( vcomp, FP0_BASIS, REAL );
-    my_malloc_init( vxc, FP0_BASIS * ispin, REAL );
-    my_malloc_init( vtot, FP0_BASIS, REAL );
-    my_malloc_init( vtot_c, P0_BASIS, REAL );
-    my_malloc_init( rhocore, FP0_BASIS, REAL );
-/*  my_malloc_init( nlarray1, P0_BASIS/MAX_FUNC_PE, REAL );*/
-/*  my_malloc_init( vtot_global, NX_GRID * NY_GRID * NZ_GRID, REAL );
+    my_malloc_init( rho, get_FP0_BASIS() * ispin, rmg_double_t );
+    my_malloc_init( rhoc, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vh, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vnuc, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vext, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vcomp, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vxc, get_FP0_BASIS() * ispin, rmg_double_t );
+    my_malloc_init( vtot, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vtot_c, get_P0_BASIS(), rmg_double_t );
+    my_malloc_init( rhocore, get_FP0_BASIS(), rmg_double_t );
+/*  my_malloc_init( nlarray1, get_P0_BASIS()/MAX_FUNC_PE, rmg_double_t );*/
+/*  my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
  * rho_global = vtot_global;
  */
 
-    my_malloc_init( rho_old, FP0_BASIS * ispin, REAL );
+    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, rmg_double_t );
 
-    my_malloc_init( sg_res, S0_BASIS, REAL );
+    my_malloc_init( sg_res, sbasis, rmg_double_t );
 #if USE_DIS_MAT
     sizeofmatrix = MXLLDA * MXLLDA;
 #else
@@ -76,35 +82,35 @@ void allocate_matrix_soft ()
 
 #if NONORTHO
 
-    my_malloc_init( statearray, sizeofmatrix, REAL );
-    my_malloc_init( l_s, sizeofmatrix, REAL );
-    my_malloc_init( matB, sizeofmatrix, REAL );
-    my_malloc_init( mat_X, sizeofmatrix, REAL );
-    my_malloc_init( Hij, sizeofmatrix, REAL );
-    my_malloc_init( theta, sizeofmatrix, REAL );
-/*  my_malloc_init( work_dis, sizeofmatrix, REAL );
- * my_malloc_init( work_dis2, sizeofmatrix, REAL );
- * my_malloc_init( zz_dis, sizeofmatrix, REAL );
- * my_malloc_init( gamma_dis, sizeofmatrix, REAL );
- * my_malloc_init( uu_dis, sizeofmatrix, REAL );
+    my_malloc_init( statearray, sizeofmatrix, rmg_double_t );
+    my_malloc_init( l_s, sizeofmatrix, rmg_double_t );
+    my_malloc_init( matB, sizeofmatrix, rmg_double_t );
+    my_malloc_init( mat_X, sizeofmatrix, rmg_double_t );
+    my_malloc_init( Hij, sizeofmatrix, rmg_double_t );
+    my_malloc_init( theta, sizeofmatrix, rmg_double_t );
+/*  my_malloc_init( work_dis, sizeofmatrix, rmg_double_t );
+ * my_malloc_init( work_dis2, sizeofmatrix, rmg_double_t );
+ * my_malloc_init( zz_dis, sizeofmatrix, rmg_double_t );
+ * my_malloc_init( gamma_dis, sizeofmatrix, rmg_double_t );
+ * my_malloc_init( uu_dis, sizeofmatrix, rmg_double_t );
 */
 
-    my_malloc_init( work_matrix, ct.num_states * ct.num_states, REAL );
+    my_malloc_init( work_matrix, ct.num_states * ct.num_states, rmg_double_t );
 
     /*  allocate memory for other uses  */
 
     item = ct.num_kpts * ct.num_states;
     item1 = max (ct.num_states * ct.num_states, item);
-    item2 = 2 * P0_BASIS + S0_BASIS + item1;
-    item = max (13 * S0_BASIS, item2);
+    item2 = 2 * get_P0_BASIS() + sbasis + item1;
+    item = max (13 * sbasis, item2);
 
 
     nproc = pct.nprow * pct.npcol;
-    locr = ((ct.num_states / NB + 1) / nproc + 1) * NB + NB;
-    lwork = 10 * (locr * 5 + NB);
+    locr = ((ct.num_states / ct.scalapack_block_factor + 1) / nproc + 1) * NB + NB;
+    lwork = 10 * (locr * 5 + ct.scalapack_block_factor);
     item1 = max (lwork, item);
 
-    sl_init (&ictxt, pct.nprow, pct.npcol);
+    sl_init_on (&ictxt, pct.nprow, pct.npcol);
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if (myrow != -1)
         Cblacs_gridexit (ictxt);
@@ -115,10 +121,10 @@ void allocate_matrix_soft ()
     nqc0 = NUMROC (&nn, &nb, &mycol, &iccol, &npcol);
     nrc = NUMROC (&nn, &nb, &myrow, &izero, &npes);
     ldc = max (1, nrc);
-    sizemqrleft = max ((NB * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
+    sizemqrleft = max ((ct.scalapack_block_factor * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
     sizemqrleft *= 2;
-    qrmem = 2 * NN - 2;
-    lwork = 5 * NN + NN * ldc + max (sizemqrleft, qrmem) + 1;
+    qrmem = 2 * ct.num_states - 2;
+    lwork = 5 * ct.num_states + ct.num_states * ldc + max (sizemqrleft, qrmem) + 1;
     item = max (lwork, item1);
 
 

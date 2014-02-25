@@ -18,6 +18,8 @@
 
 #include "method.h"
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
 void get_matB_qnm(double *Aij)
@@ -30,7 +32,7 @@ void get_matB_qnm(double *Aij)
     int size, proc, proc1, proc2, idx;
     SPECIES *sp;
     ION *iptr;
-    REAL *qqq;
+    rmg_double_t *qqq;
     double tem;
 
 

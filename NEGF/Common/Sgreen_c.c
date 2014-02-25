@@ -9,9 +9,11 @@
 #include <assert.h>
 
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
 
 
-void Sgreen_c (REAL * Htri, REAL * Stri, complex double * sigma1, complex double * sigma2,
+void Sgreen_c (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigma1, complex double * sigma2,
                     complex double ene, complex double * Green_C, int nC)
 {
 /*   H00, S00: nC * nC real matrix
@@ -27,7 +29,7 @@ void Sgreen_c (REAL * Htri, REAL * Stri, complex double * sigma1, complex double
     int nmax, *ipiv;
     int ni[MAX_BLOCKS], ntot, ndim;
     int N;
-    REAL tem;
+    rmg_double_t tem;
 
 
     nmax = nC;

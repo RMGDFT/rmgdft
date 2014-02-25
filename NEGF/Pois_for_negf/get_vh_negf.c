@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_vh(REAL *rho, REAL *rhoc, REAL *vh_eig, int sweeps, int maxlevel)
+ *   void get_vh(rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *vh_eig, int sweeps, int maxlevel)
  *   Iterative procedure to obtain the hartree potential.
  *   Uses Mehrstallen finite differencing with multigrid accelerations.
  *   The multigrid scheme uses a standard W-cycle with Jacobi relaxation.
@@ -43,6 +43,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "init_var_negf.h"
+#include "LCR.h"
+#include "twoParts.h"
 
 
 /* Pre and post smoothings on each level */
@@ -50,17 +53,17 @@ static int poi_pre[5] = { 0, 3, 3, 3, 3 };
 static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, REAL rms_target)
+void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target)
 {
 
     int idx, its, nits, sbasis, pbasis;
-    REAL t1, vavgcor, diag;
-    REAL *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    REAL *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
+    rmg_double_t t1, vavgcor, diag;
+    rmg_double_t *mgrhsarr, *mglhsarr, *mgresarr, *work;
+    rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
 
-    REAL time1, time2, time3, time4, time5, time6;
+    rmg_double_t time1, time2, time3, time4, time5, time6;
     time1 = my_crtc ();
 
     time3 = my_crtc();
@@ -75,7 +78,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
 
     /* Grab some memory for our multigrid structures */
-    my_malloc (mgrhsarr, 12 * sbasis, REAL);
+    my_malloc (mgrhsarr, 12 * sbasis, rmg_double_t);
     mglhsarr = mgrhsarr + sbasis;
     mgresarr = mglhsarr + sbasis;
     work = mgresarr + sbasis;
@@ -90,7 +93,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+    pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     /* Transfer rho into smoothing grid */
     pack_ptos (sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
@@ -171,9 +174,9 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
                             ct.hyygrid, ct.hzzgrid,
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
-                            FG_NX*NX_GRID, FG_NY*NY_GRID, FG_NZ*NZ_GRID,
-                            pct.FPX_OFFSET, pct.FPY_OFFSET, pct.FPZ_OFFSET,
-                            pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+                            get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
+                            get_FPX_OFFSET(), get_FPY_OFFSET(), get_FPZ_OFFSET(),
+                            get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
                 time4 = my_crtc ();
                 rmg_timings (MGRID_VH_TIME, (time4 - time3));
@@ -247,7 +250,7 @@ void get_vh_negf (REAL * rho, REAL * rhoc, REAL * vh_eig, int min_sweeps, int ma
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    pack_vhdtos (vh_eig, ct.vh_ext, pct.FPX0_GRID, pct.FPY0_GRID, pct.FPZ0_GRID);
+    pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     /* Release our memory */
     my_free (mgrhsarr);
