@@ -161,7 +161,7 @@ void fastrlx(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t *
             state_corner_xyz(states);
 
             /* determine the overlap regions */
-            is_state_overlap(states);
+            is_state_overlap(states, state_overlap_or_not);
             get_orbit_overlap_region(states);
 
             /* set up the communication matrix */

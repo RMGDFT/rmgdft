@@ -10,7 +10,10 @@
 #include "prototypes_on.h"
 
 /* begin shuchun wang */
-void rho_augmented(rmg_double_t * rho, rmg_double_t * global_mat_X)
+void rho_augmented(rmg_double_t * rho, rmg_double_t * global_mat_X,
+int *state_begin, int *state_end, int *num_nonlocal_ion, rmg_double_t *kbpsi,
+int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
+
 {
 
     int istate, incx, idx;
@@ -30,7 +33,9 @@ void rho_augmented(rmg_double_t * rho, rmg_double_t * global_mat_X)
     for (idx = 0; idx < size; idx++)
         product[idx] = 0.0;
 
-    rho_Qnm_mat(product, global_mat_X);
+    rho_Qnm_mat(product, global_mat_X, state_begin, state_end, num_nonlocal_ion, 
+            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+
     global_sums(product, &size, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)

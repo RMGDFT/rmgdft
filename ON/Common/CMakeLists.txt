@@ -1,6 +1,7 @@
 add_library (ON_Common
  add_orbit_to_wave.c
  allocate_matrix.c
+ allocate_psi.c
  app_cil_orbital6.c
  app_cil_orbital.c
  change_states_crds.c

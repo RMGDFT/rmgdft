@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
+#include "grid.h"
 
 #define DELTA		1e-10
 #ifndef M_2_SQRTPI

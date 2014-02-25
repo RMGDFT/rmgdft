@@ -1,6 +1,5 @@
 add_library (ON_NEGF_share
 allocate_masks.c
-allocate_psi.c
 app10_del2.c
 app6_del2.c
 app_grad6.c

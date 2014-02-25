@@ -15,10 +15,9 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 
 
-void is_state_overlap(STATE * states)
+void is_state_overlap(STATE * states, short int *state_overlap_or_not)
 {
 
     int state1, state2;

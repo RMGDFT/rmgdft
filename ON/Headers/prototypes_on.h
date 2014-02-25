@@ -19,7 +19,7 @@ int open_wave_file (char *filename);
 void get_vtot_psi (rmg_double_t * vtot_psi, rmg_double_t * vtot, int grid_ratio);
 void init_nonlocal_comm();
 void normalize_orbits( STATE *states);
-void init_dimension();
+void init_dimension(int *, int* );
 void precond(double *f);
 int int_max_all(int);
 
@@ -258,8 +258,13 @@ void get_dnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
 void dnm_beta_betapsi (STATE *sp, int ion2, rmg_double_t scale, int ip2, rmg_double_t * prjptr,
         rmg_double_t * work);
 void pack_rho_ctof (rmg_double_t * rho1, rmg_double_t * rho_f);
-void rho_augmented (rmg_double_t * rho, rmg_double_t * global_mat_X);
-void rho_Qnm_mat (double *Aij, rmg_double_t * global_mat_X);
+void rho_augmented (rmg_double_t * rho, rmg_double_t * global_mat_X,
+int *state_begin, int *state_end, int *num_nonlocal_ion, rmg_double_t *kbpsi,
+int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc);
+
+void rho_Qnm_mat (double *Aij, rmg_double_t * global_mat_X,
+int *state_begin, int *state_end, int *num_nonlocal_ion, rmg_double_t *kbpsi,
+int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc);
 void rho_nm_mat (double *Aij, rmg_double_t * global_mat_X);
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, int *ihi,
         int *jlow, int *jhi, int *klow, int *khi, int cdim, int pxgrid,
@@ -511,8 +516,6 @@ void get_dnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
 void dnm_beta_betapsi (STATE *sp, int ion2, rmg_double_t scale, int ip2, rmg_double_t * prjptr,
         rmg_double_t * work);
 void pack_rho_ctof (rmg_double_t * rho1, rmg_double_t * rho_f);
-void rho_augmented (rmg_double_t * rho, rmg_double_t * global_mat_X);
-void rho_Qnm_mat (double *Aij, rmg_double_t * global_mat_X);
 void rho_nm_mat (double *Aij, rmg_double_t * global_mat_X);
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz, int *ilow, int *ihi,
         int *jlow, int *jhi, int *klow, int *khi, int cdim, int pxgrid,
@@ -605,5 +608,5 @@ void duplicate_states_info (STATE * states, STATE * states1);
 void get_ion_ion_overlap_region_orbit ();
 
 
-void is_state_overlap (STATE * states);
+void is_state_overlap (STATE * states, short int *);
 

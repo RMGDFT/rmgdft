@@ -32,9 +32,8 @@
 #include <string.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 
-void init_dimension()
+void init_dimension(int *MXLLDA, int *MXLCOL)
 {
 
     int NNBB, NNBBR, NNBBRB;
@@ -46,10 +45,10 @@ void init_dimension()
     NNBB = (ct.num_states + NB - 1) / NB;
     NNBBR = (NNBB + pct.nprow - 1) / pct.nprow;
     NNBBRB = (NNBBR * NB);
-    MXLLDA = NNBBRB ;
+    *MXLLDA = NNBBRB ;
 
     NNBBR = (NNBB + pct.npcol - 1) / pct.npcol;
-    MXLCOL = NNBBR * NB;
+    *MXLCOL = NNBBR * NB;
 
 }
 

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var.h"
 #include "prototypes_on.h"
 
 
@@ -131,7 +132,7 @@ void update_orbit_centers(STATE * states)
 
     normalize_orbits(states);
 
-    is_state_overlap(states);
+    is_state_overlap(states, state_overlap_or_not);
 
     get_orbit_overlap_region(states);
 

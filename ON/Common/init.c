@@ -124,11 +124,13 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     if(gridpe == 0) printf("\n init_state_corner_xyz  done %f sec",my_crtc()-time1 );
 
     allocate_psi(states, states1);
+
+
     if(gridpe == 0) printf("\n init_allocate_psi  done %f sec",my_crtc()-time1 );
 
     init_states();
 
-    is_state_overlap(states);
+    is_state_overlap(states, state_overlap_or_not);
 
     if(gridpe == 0) printf("\n init_is_state_overlap  done %f sec",my_crtc()-time1 );
 

@@ -58,7 +58,10 @@ void nlforce(rmg_double_t * veff)
             IB, JB, pct.descb, pct.desca[1]);
 
 
-    rho_Qnm_mat(rho_nm, work_matrix_row);
+
+    rho_Qnm_mat(rho_nm, work_matrix_row, state_begin, state_end, num_nonlocal_ion, 
+            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+
     partial_Mat_nm_R(part_rho_nm_x, part_rho_nm_y, part_rho_nm_z, work_matrix_row);
 
     Cpdgemr2d(numst, numst, mat_Omega, IA, JA, pct.desca, work_matrix_row,

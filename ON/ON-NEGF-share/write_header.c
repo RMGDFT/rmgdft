@@ -34,8 +34,8 @@
 #include <time.h>
 #include <math.h>
 #include "main.h"
+#include "grid.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 #include "svnrev.h"
 
 

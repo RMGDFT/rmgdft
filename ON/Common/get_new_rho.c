@@ -290,7 +290,9 @@ void get_new_rho(STATE * states, double *rho)
    time3 = my_crtc();
    rmg_timings(RHO_CTOF_TIME, time3 - time2);
 
-   rho_augmented(rho, work_matrix_row);
+   rho_augmented(rho, work_matrix_row, state_begin, state_end, num_nonlocal_ion, 
+            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+
 
    time2 = my_crtc();
    rmg_timings(RHO_AUG_TIME, time2 - time3);

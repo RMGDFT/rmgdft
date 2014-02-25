@@ -17,11 +17,13 @@ and add them into Aij.
 #include <assert.h>
 
 #include "main.h"
+#include "grid.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 
 
-void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X)
+void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X, int
+*state_begin, int *state_end, int *num_nonlocal_ion, rmg_double_t *kbpsi,
+int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 {
     int ion, ip1, ip2, st1, st2, ist;
     double time1, time2;
