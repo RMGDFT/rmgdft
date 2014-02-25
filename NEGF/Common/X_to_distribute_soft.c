@@ -16,7 +16,7 @@ get  global array  get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID()
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 

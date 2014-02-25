@@ -6,15 +6,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 
-#if USE_DIS_MAT
 
 #include "my_scalapack.h"
 
-#endif
 
 
 void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG, rmg_double_t *force)

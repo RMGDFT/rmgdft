@@ -38,7 +38,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 #include "twoParts.h"
 

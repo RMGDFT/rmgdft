@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 /* which_part = 0 for conductors 

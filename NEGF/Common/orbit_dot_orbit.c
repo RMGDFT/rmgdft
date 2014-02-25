@@ -18,12 +18,13 @@ work_matrix(i,j) = <states[i].psiR | states1[j].psiR>
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 /* For Linux and MPICH 
  * 	#include "/usr/lib/mpich/include/mpi.h"
  */
 
+rmg_double_t  dot_product_orbit_orbit (STATE *, STATE *);
 
 
 void orbit_dot_orbit (STATE * states, STATE * states1, rmg_double_t * work_matrix)

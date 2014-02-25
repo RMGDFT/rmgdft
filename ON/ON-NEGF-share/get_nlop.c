@@ -24,7 +24,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "fftw.h"
-//#include "init_var.h"
+#include "init_var.h"
 
 static void init_alloc_nonloc_mem (void);
 void init_derweight();

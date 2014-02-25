@@ -105,6 +105,7 @@ void init_parameter(STATE * states)
     if (get_zside() * get_hzgrid() < ct.hmingrid)
         ct.hmingrid = get_zside() * get_hzgrid();
 
+
     set_anisotropy(ct.hmaxgrid / ct.hmingrid);
 
 

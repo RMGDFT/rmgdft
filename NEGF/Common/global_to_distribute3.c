@@ -14,7 +14,7 @@ to the distributed array get_FPX0_GRID() * get_FPY0_GRID()
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 

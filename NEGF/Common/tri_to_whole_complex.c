@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 void tri_to_whole_complex (complex double * H_tri, complex double * Hii, int N, int * ni)

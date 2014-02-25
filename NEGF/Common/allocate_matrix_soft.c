@@ -32,9 +32,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 
 
 void allocate_matrix_soft ()
@@ -44,9 +44,11 @@ void allocate_matrix_soft ()
     int izero = 0, ione = 1, itwo = 2, nb = ct.scalapack_block_factor, nn = ct.num_states;
     int nprow = pct.nprow, npcol = pct.npcol, npes = NPES;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
+    
 
     int sbasis;
 
+    int NB = ct.scalapack_block_factor;
     ispin = ct.spin + 1;
 
     sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
@@ -70,17 +72,12 @@ void allocate_matrix_soft ()
     my_malloc_init( rho_old, get_FP0_BASIS() * ispin, rmg_double_t );
 
     my_malloc_init( sg_res, sbasis, rmg_double_t );
-#if USE_DIS_MAT
-    sizeofmatrix = MXLLDA * MXLLDA;
-#else
     sizeofmatrix = ct.num_states * ct.num_states;
-#endif
 
 #if !GAMMA_PT
     sizeofmatrix *= 2.0;
 #endif
 
-#if NONORTHO
 
     my_malloc_init( statearray, sizeofmatrix, rmg_double_t );
     my_malloc_init( l_s, sizeofmatrix, rmg_double_t );
@@ -128,8 +125,6 @@ void allocate_matrix_soft ()
     item = max (lwork, item1);
 
 
-
-#endif /* endif NONORTHO  */
 
 }                               /* end allocate_matrix */
 

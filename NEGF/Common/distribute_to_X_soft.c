@@ -18,7 +18,7 @@ get X  array  get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID()
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 

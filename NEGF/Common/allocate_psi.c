@@ -60,6 +60,7 @@ void allocate_psi(STATE * states, STATE * states1)
         rptr2 += states[st1].size;
     }
 
+    print_sum(states[0].psiR, ct.max_orbit_size, "ssss");
     if (pct.gridpe == 0)
         printf("\n allocate_psi Done! ");
 

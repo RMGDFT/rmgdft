@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 void get_inverse_block (complex double *Hii, complex double *Gii, int *ipiv, int nn)

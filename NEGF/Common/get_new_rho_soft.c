@@ -8,14 +8,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
-#if NONORTHO
-#if USE_DIS_MAT
 #include "my_scalapack.h"
-#endif
-#endif
 
 
 void get_new_rho_soft (STATE * states, double *rho)

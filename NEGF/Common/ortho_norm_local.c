@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 #define 	MAX_ORBIT_ON_ION 	24

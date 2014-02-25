@@ -24,7 +24,7 @@
 
 
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 #include <float.h>
 #include <math.h>

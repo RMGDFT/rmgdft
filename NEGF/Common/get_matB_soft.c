@@ -5,7 +5,7 @@
 #include <float.h>
 #include <stdio.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 /* 
@@ -16,12 +16,8 @@
 
 
 
-
-#if USE_DIS_MAT
-
 #include "my_scalapack.h"
 
-#endif /* USE_DIS_MAT */
 
 
 void get_matB_soft (STATE * states, STATE * states1, double *mat)
@@ -47,8 +43,10 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
 
     my_barrier ();
 
+    
 
     time3 = my_crtc ();
+
 
     orbit_dot_orbit (states, states, mat);
 

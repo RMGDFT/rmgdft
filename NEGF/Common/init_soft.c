@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
 
@@ -81,7 +81,6 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 
 
     ct.states = states;
-    init_parameter (states);
 
     /* initialize the lattice basis vectors */
     int ibrav = get_ibrav_type();

@@ -23,7 +23,7 @@
 #include <assert.h>
 #include "method.h"
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 #include "fftw.h"
 

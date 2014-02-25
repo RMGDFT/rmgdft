@@ -6,15 +6,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 
-#if USE_DIS_MAT
 
 #include "my_scalapack.h"
-
-#endif
 
 
 void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, double *Aij)

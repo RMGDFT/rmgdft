@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 /* This function returns a pointer to a block of memory of size nelem. */

@@ -37,7 +37,7 @@
 #include <assert.h>
 #include <time.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 extern rmg_double_t *vh_old, *vxc_old;

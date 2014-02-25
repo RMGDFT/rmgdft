@@ -14,7 +14,7 @@ multiplication of (orbit,  local projector )
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 

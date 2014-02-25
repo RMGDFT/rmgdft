@@ -39,9 +39,9 @@
 #include <string.h>
 #include <time.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "twoParts.h"
 #include "pmo.h"
 #include "svnrev.h"
