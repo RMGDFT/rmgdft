@@ -87,7 +87,10 @@ psi[st1 * pbasis + idx];
     my_free(psi);
 
     tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
-    rho_augmented (rho, work_matrix);
+    rho_augmented(rho, work_matrix, state_begin, state_end,
+            num_nonlocal_ion,
+            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+
 
     my_barrier ();
     time1 = my_crtc () - time1;

@@ -59,7 +59,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 	init_pe_on ();
 
 
-	init_dimension ();
+	init_dimension (&MXLLDA, &MXLCOL);
 
 	pmo_init();
 	if (ct.runflag == 100)
@@ -176,7 +176,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 
 			if (ct.runflag == 1)
-				get_all_kbpsi (states, states);
+				get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
 
 			/* Wait until everybody gets here */
 			my_barrier ();

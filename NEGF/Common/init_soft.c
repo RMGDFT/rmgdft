@@ -138,7 +138,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     fflush (NULL);
 
 
-    is_state_overlap (states);
+    is_state_overlap (states, state_overlap_or_not);
     get_orbit_overlap_region (states);
     init_comm (states);
 

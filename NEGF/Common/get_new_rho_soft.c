@@ -167,7 +167,10 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     my_free(rho_temp);
 
-    rho_augmented (rho, work_matrix);
+    rho_augmented(rho, work_matrix, state_begin, state_end,
+            num_nonlocal_ion,
+            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+
 
     my_barrier ();
     time1 = my_crtc () - time1;

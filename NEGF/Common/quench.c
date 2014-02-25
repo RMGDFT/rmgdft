@@ -112,7 +112,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
 	my_barrier();
 	if(pct.gridpe==0) dprintf("\n sigma_all done");
-    get_all_kbpsi (states, states);
+    get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
     /* get lcr[0].S00 part */
     get_matB_soft (states, states1, work_matrix);
 
