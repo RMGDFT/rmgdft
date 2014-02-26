@@ -514,6 +514,15 @@ typedef struct
     rmg_double_t *gpu_host_fdbuf2;
     rmg_double_t *gpu_host_work;
 
+
+    cuDoubleComplex *gpu_Htri, *gpu_Gtri;
+    cuDoubleComplex *gpu_Gtem;
+    cuDoubleComplex *gpu_Gii;
+    cuDoubleComplex *gpu_Hii;
+    cuDoubleComplex *gpu_Imatrix;
+    int *gpu_ipiv;
+
+
 #endif    
 
     /* Compression level for some trade images routines */

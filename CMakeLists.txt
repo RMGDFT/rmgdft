@@ -113,6 +113,9 @@ target_link_libraries (rmg-negf NEGF_Pois MG)
 target_link_libraries (rmg-negf NEGF_Pois Finite_diff)
 target_link_libraries (rmg-negf NEGF_Pois)
 target_link_libraries (rmg-negf NEGF_Cudafunc)
+target_link_libraries (rmg-negf NEGF_Common NEGF_Cudafunc)
+target_link_libraries (rmg-negf NEGF_Cudafunc NEGF_Common)
+
 
 
 # Search for an MPI implementation
@@ -286,6 +289,8 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "/usr/local/magma/lib/libmagma.a")
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
 
+target_link_libraries (rmg-negf "/usr/local/magma-1.4.1/lib/libmagma.a")
+
 # configure make_conf.h to pass some of the CMake settings
 # to the source code
 option (RMG_EXPERIMENTAL_FEATURES "Turn ON to enable experimental features." OFF)
@@ -347,6 +352,7 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
+set (RMG_GPU_ENABLED 0)
 option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
 if (RMG_GPU_ENABLED)
     if(CUDA_FOUND)
@@ -378,4 +384,22 @@ configure_file (
   "${PROJECT_BINARY_DIR}/Headers/make_conf.h"
   )
 
+execute_process (
+    COMMAND svn info OUTPUT_VARIABLE foo)
+string(REPLACE "\n" ";" foo2 ${foo})
+list(GET foo2 10 foo3)
+string(REPLACE ":" ";" foo4 ${foo3})
+list(GET foo4 1 CodeRevision)
+list(GET foo2 11 foo3)
+string(REPLACE " " ";" foo4 ${foo3})
+list(GET foo4 3 LastChangeDate)
+execute_process (
+    COMMAND date OUTPUT_VARIABLE foo5)
+string(REPLACE "\n" "" BuildDate ${foo5})
+
+message(${BuildDate})
+configure_file (
+  "${PROJECT_SOURCE_DIR}/svnrev.h.in"
+  "${PROJECT_BINARY_DIR}/Headers/svnrev.h"
+  )
 
