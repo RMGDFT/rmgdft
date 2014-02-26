@@ -263,7 +263,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
             states[kst1].pbasis =P0_BASIS;
             states[kst1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
             states[kst1].istate = st1;
-            states[kst1].vel = ct.vel;
+            states[kst1].vel = get_vel();
 #if MPI
 #if GAMMA_PT
             rptr +=P0_BASIS;

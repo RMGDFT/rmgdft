@@ -233,7 +233,7 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
     rmg_double_t alpha, rzero = 0.0;
     rmg_double_t *nlarray;
     rmg_double_t time1, time2;
-    alpha = ct.vel;
+    alpha = get_vel();
 
     if(pct.num_tot_proj == 0) return;
     P0_BASIS = get_P0_BASIS();
@@ -411,9 +411,9 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
                 for (ip = 0; ip < sp->nh; ip++)
                 {
 
-                    sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
+                    sintR[ipindex] = get_vel() * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
 #if !GAMMA_PT
-                    sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
+                    sintI[ipindex] = get_vel() * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
                     weiptr += P0_BASIS;
@@ -669,9 +669,9 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, 
         for (ip = 0; ip < sp->nh; ip++)
         {
 
-            sintR[ipindex] = ct.vel * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
+            sintR[ipindex] = get_vel() * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
 #if !GAMMA_PT
-            sintI[ipindex] = ct.vel * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
+            sintI[ipindex] = get_vel() * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
 #endif
 
             weiptr += P0_BASIS;

@@ -548,10 +548,10 @@ static void subdiag1_mpi (int istate, STATE * states, rmg_double_t * Aij, rmg_do
 #    endif
 
     for (idx = 0; idx < sp->pbasis; idx++)
-        work1R[idx] = 0.5 * ct.vel * (work1R[idx] - work2R[idx]);
+        work1R[idx] = 0.5 * get_vel() * (work1R[idx] - work2R[idx]);
 
     for (idx = 0; idx < sp->pbasis; idx++)
-        work1I[idx] = 0.5 * ct.vel * (work1I[idx] - work2I[idx]);
+        work1I[idx] = 0.5 * get_vel() * (work1I[idx] - work2I[idx]);
 
 
     /* Compute the complex overlap matrices here */
@@ -582,8 +582,8 @@ static void subdiag1_mpi (int istate, STATE * states, rmg_double_t * Aij, rmg_do
         s3 = QMD_ddot (sp->pbasis, tmp_psiI, ione, work4R, ione);
         s4 = QMD_ddot (sp->pbasis, tmp_psiI, ione, work4I, ione);
 
-        Bij[2 * (sp->istate * ct.num_states + st2)] = ct.vel * (s1 + s4);
-        Bij[2 * (sp->istate * ct.num_states + st2) + 1] = ct.vel * (s2 - s3);
+        Bij[2 * (sp->istate * ct.num_states + st2)] = get_vel() * (s1 + s4);
+        Bij[2 * (sp->istate * ct.num_states + st2) + 1] = get_vel() * (s2 - s3);
 
 
     }                           /* st2 */

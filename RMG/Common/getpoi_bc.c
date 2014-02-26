@@ -134,7 +134,7 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
                 y = bx[1];
                 z = bx[2];
 
-                temp = rho[ix * incx + iy * incy + iz] * ct.vel;
+                temp = rho[ix * incx + iy * incy + iz] * get_vel();
                 q += temp;
 
                 px = px + x * temp;

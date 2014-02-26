@@ -134,7 +134,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     
     idx = 3;
     global_sums (t, &idx, pct.img_comm);
-    t[0] *= ct.vel_f;
+    t[0] *= get_vel_f();
     
     /* get the averaged value over each spin and each fine grid */
     t[1] = sqrt (t[1] / ((rmg_double_t) (nspin * ct.psi_fnbasis)));  

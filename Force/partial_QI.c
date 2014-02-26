@@ -20,7 +20,12 @@ void partial_QI (int ion, rmg_double_t * QI_R, ION * iptr)
     rmg_double_t xc, yc, zc;
     rmg_double_t *QI_x, *QI_y, *QI_z;
     rmg_double_t *qnmlig_tpr, *drqnmlig_tpr;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     SPECIES *sp;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
             lpl);
@@ -88,13 +93,13 @@ void partial_QI (int ion, rmg_double_t * QI_R, ION * iptr)
                 }               /* end if */
 
                 ++idx;
-                zc += ct.hzzgrid;
+                zc += hzzgrid;
 
             }                   /* end for iz */
-            yc += ct.hyygrid;
+            yc += hyygrid;
 
         }                       /* end for iy */
-        xc += ct.hxxgrid;
+        xc += hxxgrid;
 
     }                           /* end for ix */
 

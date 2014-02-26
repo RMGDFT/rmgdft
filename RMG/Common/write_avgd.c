@@ -46,6 +46,9 @@ void write_avgd (rmg_double_t * rho)
 
     rmg_double_t t1;
     rmg_double_t *zvec;
+    rmg_double_t hzzgrid;
+
+    hzzgrid = get_hzzgrid();
 
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
@@ -81,7 +84,7 @@ void write_avgd (rmg_double_t * rho)
 
         }                       /* end for */
 
-        t1 = t1 * ct.vel / ct.hzzgrid;
+        t1 = t1 * get_vel() / hzzgrid;
 
         zvec[iz + poff] = t1;
 
@@ -97,7 +100,7 @@ void write_avgd (rmg_double_t * rho)
         printf ("\n\n Planar average of the electrostatic density\n");
         for (iz = 0; iz < FNZ_GRID; iz++)
         {
-            t1 = iz * ct.hzzgrid;
+            t1 = iz * hzzgrid;
             printf (" %f %f\n", t1, zvec[iz]);
         }
         fflush (NULL);

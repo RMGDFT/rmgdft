@@ -442,6 +442,24 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
     Lattice::recips();
 }                               /* end latgen */
 
+rmg_double_t Lattice::metric (rmg_double_t * crystal)
+{
+    rmg_double_t cartesian[3];          /* cartesian coordinates of point */
+    rmg_double_t distance;
+    int ir;
+    Lattice::to_cartesian (crystal, cartesian);
+
+    distance = 0.0;
+
+    for (ir = 0; ir < 3; ir++)
+        distance += cartesian[ir] * cartesian[ir];
+
+    distance = sqrt (distance);
+
+    return (distance);
+
+}                               /* end metric */
+
 //****/
 
 // lengths of the sides of the supercell
@@ -574,6 +592,16 @@ extern "C" void cross_product (rmg_double_t * a, rmg_double_t * b, rmg_double_t 
 {
     Lattice L;
     L.cross_product(a, b, c);
+}
+extern "C" rmg_double_t metric (rmg_double_t * crystal)
+{
+    Lattice L;
+    return L.metric(crystal);
+}
+extern "C" void recips(void)
+{
+    Lattice L;
+    L.recips();
 }
 extern "C" void latgen (rmg_double_t *celldm, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, rmg_double_t *OMEGAI, int *flag)
 {

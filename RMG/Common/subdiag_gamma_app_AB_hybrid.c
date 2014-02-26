@@ -167,7 +167,7 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
 
 
     for (idx = 0; idx < P0_BASIS; idx++)
-        work1[idx] = 0.5 * ct.vel * (work1[idx] - work3[idx]);
+        work1[idx] = 0.5 * get_vel() * (work1[idx] - work3[idx]);
 
 #if !BATCH_NLS
     my_free (work2);

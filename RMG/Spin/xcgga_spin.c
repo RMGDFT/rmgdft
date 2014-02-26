@@ -62,7 +62,12 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 
     rmg_double_t pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
     rmg_double_t rhotot, arhox, zeta, rs, kf;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
@@ -116,13 +121,13 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 
 
     /* Generate the gradient of the density */
-    app_grad (rho_up, gx_up, gy_up, gz_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin up density */
-    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);    /* spin down density */
+    app_grad (rho_up, gx_up, gy_up, gz_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);    /* spin up density */
+    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);    /* spin down density */
     
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho_up, d2rho_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
-    app6_del2 (rho_dw, d2rho_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_up, d2rho_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid );
+    app6_del2 (rho_dw, d2rho_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid );
 
     
     
@@ -271,8 +276,8 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
      * vxcdw += vxc1dw - div( vxc2dwdw * grad(rhodw) + vxc2dwup * grad(rhoup) )*/ 
 
     /* Generate the gradient of the second term exchange-correlation potential vxc2*/
-    app_grad (vxc2_upup, gx_vuu, gy_vuu, gz_vuu, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
-    app_grad (vxc2_updw, gx_vud, gy_vud, gz_vud, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vxc2_upup, gx_vuu, gy_vuu, gz_vuu, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
+    app_grad (vxc2_updw, gx_vud, gy_vud, gz_vud, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
 

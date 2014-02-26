@@ -53,8 +53,13 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
     rmg_double_t *ec, *vc, *vsigma, *vsigma_c, *sigma;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
 
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
@@ -112,11 +117,11 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
 
 
     /* Generate the gradient of the density */
-    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid );
 
 
     /* Absolute value of grad(rho) \dot grad(rho)*/
@@ -153,7 +158,7 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
 
 
     /* Get gradient of vsigma */
-    app_grad (vsigma, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vsigma, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
      /* Vxc = vrho -2 \div \dot ( vsigma * \grad(rho) ) */

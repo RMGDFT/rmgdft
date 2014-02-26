@@ -88,7 +88,7 @@ void norm_psi1 (STATE * sp, int istate, int kidx)
 #endif
     }
 
-    sum = real_sum_all (ct.vel * sumpsi + sumbeta, pct.grid_comm);
+    sum = real_sum_all (get_vel() * sumpsi + sumbeta, pct.grid_comm);
     sum = 1.0 / sum;
     if (sum < 0.0)
     {

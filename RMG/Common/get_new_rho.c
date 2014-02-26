@@ -225,7 +225,7 @@ void get_new_rho (STATE * states, rmg_double_t * rho)
 
     /* ct.tcharge = real_sum_all (ct.tcharge); */
     ct.tcharge = real_sum_all (ct.tcharge, pct.img_comm);  
-    ct.tcharge = ct.tcharge * ct.vel_f;
+    ct.tcharge = ct.tcharge * get_vel_f();
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */
     t1 = ct.nel / ct.tcharge;

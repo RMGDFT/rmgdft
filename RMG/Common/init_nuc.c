@@ -27,8 +27,13 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
 
     rmg_double_t r, xc, yc, zc, Zv, rc, rc2, rcnorm, t1;
     rmg_double_t x[3], invdr;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     SPECIES *sp;
     ION *iptr;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
@@ -50,7 +55,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     /* Initialize the compensating charge array and the core charge array */
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-        rhoc_f[idx] = ct.background_charge / FP0_BASIS / ct.vel_f / NPES;
+        rhoc_f[idx] = ct.background_charge / FP0_BASIS / get_vel_f() / NPES;
         rhocore_f[idx] = 0.0;
         vnuc_f[idx] = 0.0;
     }
@@ -120,15 +125,15 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
                             icount++;
                         }
 
-                        zc += ct.hzzgrid;
+                        zc += hzzgrid;
 
                     }           /* end for */
 
-                    yc += ct.hyygrid;
+                    yc += hyygrid;
 
                 }               /* end for */
 
-                xc += ct.hxxgrid;
+                xc += hxxgrid;
 
             }                   /* end for */
 
@@ -144,7 +149,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
         ct.crho += rhoc_f[idx];
 
 
-    ct.crho = ct.crho * ct.vel_f;
+    ct.crho = ct.crho * get_vel_f();
     ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
     if (pct.imgpe==0)
@@ -158,10 +163,6 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
             rhocore_f[idx] = 0.0;
         t1 += rhocore_f[idx];
     }
-
-
-    /*t1 = t1 * ct.vel_f;
-    t1 = real_sum_all (t1, pct.grid_comm);*/
 
 
     /* Release our memory */

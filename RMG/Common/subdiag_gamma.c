@@ -401,7 +401,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
 
         // Now deal with the S operator
         time3 = my_crtc ();
-        alpha = ct.vel;
+        alpha = get_vel();
 #if GPU_ENABLED
         cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
@@ -425,7 +425,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         /* Apply B operator on each wavefunction */
 
         time3 = my_crtc ();
-        alpha = ct.vel;
+        alpha = get_vel();
 
 		//subdiag_app_B (states, tmp_array2R);
        // for(idx = 0; idx < 100; idx++) printf("\n iaaa  %d  %f ", idx, tmp_array2R[idx]);
@@ -1057,7 +1057,7 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 
 		// Now deal with the S operator
 		time3 = my_crtc ();
-		alpha = ct.vel;
+		alpha = get_vel();
 #if GPU_ENABLED
 		cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
@@ -1086,7 +1086,7 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 //		subdiag_app_B (states, tmp_array2R);
 
 		time3 = my_crtc ();
-		alpha = ct.vel;
+		alpha = get_vel();
 		rmg_timings (DIAG_APP_B, time3 - time2);
 
 #if GPU_ENABLED
@@ -1692,7 +1692,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 		// Now deal with the S operator
 		time3 = my_crtc ();
-		alpha = ct.vel;
+		alpha = get_vel();
 
 		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
@@ -1717,7 +1717,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 //		subdiag_app_B (states, tmp_array2R);
 
 		time3 = my_crtc ();
-		alpha = ct.vel;
+		alpha = get_vel();
 		rmg_timings (DIAG_APP_B, time3 - time2);
 
 		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );

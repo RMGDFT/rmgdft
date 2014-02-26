@@ -253,7 +253,7 @@ void mulliken (STATE * states)
                 dot_product += awave[i * basis + idx] * awave[i * basis + idx];
 
 
-            dot_product = ct.vel * real_sum_all (dot_product, pct.grid_comm);
+            dot_product = get_vel() * real_sum_all (dot_product, pct.grid_comm);
 
             norm_factor[nindex] = dot_product;
 
@@ -272,7 +272,7 @@ void mulliken (STATE * states)
                     for (idx = 0; idx < basis; idx++)
                         dot_product += awave[i * basis + idx] * awave[j * basis + idx];
 
-                    dot_product = ct.vel * real_sum_all (dot_product, pct.grid_comm);
+                    dot_product = get_vel() * real_sum_all (dot_product, pct.grid_comm);
 
                     if (pct.gridpe == 0)
                         printf ("\n Ion %d:  Dot product between  atomic states %d and %d  is %e",
@@ -303,7 +303,7 @@ void mulliken (STATE * states)
 
 
 
-                overlap[oindex] = ct.vel * real_sum_all (dot_product, pct.grid_comm);
+                overlap[oindex] = get_vel() * real_sum_all (dot_product, pct.grid_comm);
 
                 /*if (pct.gridpe == 0)
                    printf("\n Ion %d: Dot product between state %d and atomic state %d is %e", ion, state, i, overlap[oindex]); */

@@ -128,7 +128,7 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
     for(idx = 0; idx < P0_BASIS; idx++) a_psi[idx] += TWO * work2[idx];
 
     for (idx = 0; idx <P0_BASIS; idx++)
-        a_psi[idx] = 0.5 * ct.vel * a_psi[idx];
+        a_psi[idx] = 0.5 * get_vel() * a_psi[idx];
 
     work2 = &pct.Bns[sp->istate * P0_BASIS];
     for(idx = 0; idx < P0_BASIS; idx++) b_psi[idx] += work2[idx];

@@ -199,28 +199,8 @@ typedef struct
     int nyfgrid;
     int nzfgrid;
 
-    /** The fine uniform grid spacing in x */
-    rmg_double_t hxxgrid;
-
-    /** The fine uniform grid spacing in y */
-    rmg_double_t hyygrid;
-
-    /** The fine uniform grid spacing in z */
-    rmg_double_t hzzgrid;
-
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
-
-    /** Lattice information */
-    rmg_double_t celldm[6];
-
-    /* lattice vectors */
-    rmg_double_t a0[3];
-    rmg_double_t a1[3];
-    rmg_double_t a2[3];
-
-    /** Total cell volume */
-    rmg_double_t omega;
 
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
@@ -234,11 +214,6 @@ typedef struct
 
     /** Minimum grid spacing in any coordinate direction */
     rmg_double_t hmingrid;
-
-
-    /** Volume element associated with each grid point */
-    rmg_double_t vel;
-    rmg_double_t vel_f;
 
 
     /** Physical grid basis size */

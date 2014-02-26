@@ -56,7 +56,7 @@ void get_qqq ()
                     }
                 }
                 sum = real_sum_all (sum, pct.grid_comm);
-                sum = sum * ct.vel_f;
+                sum = sum * get_vel_f();
                 if (fabs (sum) < 1.0e-8)
                     sum = 0.0;
                 if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))

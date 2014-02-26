@@ -88,7 +88,7 @@ void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_d
         {
             states[st1].kidx = ik;
             states[st1].istate = st1;
-            states[st1].vel = ct.vel;
+            states[st1].vel = get_vel();
             states[st1].eig[0] = 0.00;
             states[st1].res = 0.00;
         }

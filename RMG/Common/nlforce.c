@@ -154,9 +154,9 @@ void nlforce (rmg_double_t * veff)
         old_force[index + 1] = iptr->force[fpt0][1];
         old_force[index + 2] = iptr->force[fpt0][2];
 #endif
-        iptr->force[fpt0][0] += ct.vel_f * qforce[index];
-        iptr->force[fpt0][1] += ct.vel_f * qforce[index + 1];
-        iptr->force[fpt0][2] += ct.vel_f * qforce[index + 2];
+        iptr->force[fpt0][0] += get_vel_f() * qforce[index];
+        iptr->force[fpt0][1] += get_vel_f() * qforce[index + 1];
+        iptr->force[fpt0][2] += get_vel_f() * qforce[index + 2];
     }
 
 #if VERBOSE

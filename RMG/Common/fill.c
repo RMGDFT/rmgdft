@@ -33,7 +33,7 @@
  *   scf.c 
  * CHILDREN
  *   functions fd, gs, ef are for Fermi-dirac, Gaussian, 
- *    and error function distribution, respectively.
+ *    and error function distribution, respeget_vel()y.
  * SOURCE
  */
 

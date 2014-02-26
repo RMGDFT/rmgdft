@@ -83,7 +83,7 @@ void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
 
         }                       /* end for */
 
-        t1 = t1 * ct.vel / get_hzgrid() / 4.0 / PI;
+        t1 = t1 * get_vel() / get_hzgrid() / 4.0 / PI;
 
         zvec[iz + poff] = t1;
 

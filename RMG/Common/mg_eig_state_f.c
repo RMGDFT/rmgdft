@@ -128,7 +128,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
     if(ct.eig_parm.mucycles > 1)
         mix_betaxpsi1(sp);
 
-    /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
+    /* Get the non-local operator and S acting on psi (nv and ns, respeget_vel()y) */
 #if !BATCH_NLS
     app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
 

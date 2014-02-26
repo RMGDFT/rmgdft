@@ -39,6 +39,7 @@ void read_common ()
     int tmp, is, ibrav, flag;
     char *tbuf, *tptr;
     rmg_double_t time1;
+    rmg_double_t celldm[6], a0[3], a1[3], a2[3], omega;
     static int run_count = - 1;
     int NX_GRID, NY_GRID, NZ_GRID;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
@@ -275,19 +276,19 @@ void read_common ()
 
     /* Lattice constants */
     /* These should be conditionally read depending on ibrav etc. */
-    require (get_data ("a_length", &ct.celldm[0], DBL, NULL));
-    require (get_data ("b_length", &ct.celldm[1], DBL, NULL));
-    require (get_data ("c_length", &ct.celldm[2], DBL, NULL));
-    require (get_data ("alpha", &ct.celldm[3], DBL, NULL));
-    require (get_data ("beta", &ct.celldm[4], DBL, NULL));
-    require (get_data ("gamma", &ct.celldm[5], DBL, NULL));
+    require (get_data ("a_length", &celldm[0], DBL, NULL));
+    require (get_data ("b_length", &celldm[1], DBL, NULL));
+    require (get_data ("c_length", &celldm[2], DBL, NULL));
+    require (get_data ("alpha", &celldm[3], DBL, NULL));
+    require (get_data ("beta", &celldm[4], DBL, NULL));
+    require (get_data ("gamma", &celldm[5], DBL, NULL));
 
     /*Transform to atomic units, which are used internally if input is in angstrom */
     if (verify ("crds_units", "Angstrom"))
     {
-        ct.celldm[0] *= A_a0;
-        ct.celldm[1] *= A_a0;
-        ct.celldm[2] *= A_a0;
+        celldm[0] *= A_a0;
+        celldm[1] *= A_a0;
+        celldm[2] *= A_a0;
     }
 
     /* Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a */
@@ -296,20 +297,15 @@ void read_common ()
         !verify ("bravais_lattice_type", "Cubic Face Centered") &&
         !verify ("bravais_lattice_type", "Cubic Body Centered"))
     {
-        ct.celldm[1] /= ct.celldm[0];
-        ct.celldm[2] /= ct.celldm[0];
+        celldm[1] /= celldm[0];
+        celldm[2] /= celldm[0];
     }
     
 
     /* initialize the lattice basis vectors */
     flag = 0;
 
-    latgen (ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
-    ct.hxxgrid = get_hxxgrid();
-    ct.hyygrid = get_hyygrid();
-    ct.hzzgrid = get_hzzgrid();
-    ct.vel = get_vel();
-    ct.vel_f = get_vel_f();
+    latgen (celldm, a0, a1, a2, &omega, &flag);
 
     /* Mehrstellen smoothings pre, post, step, vcycles */
     get_data ("kohn_sham_pre_smoothing", &ct.eig_parm.gl_pre, INT, "2");

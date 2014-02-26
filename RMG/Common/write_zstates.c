@@ -88,7 +88,7 @@ void write_zstates (STATE * states)
                 }
             }
 
-            zvec[iz + poff] = t1 * ct.vel / (get_hzgrid() * 4.0 * PI);
+            zvec[iz + poff] = t1 * get_vel() / (get_hzgrid() * 4.0 * PI);
         }
 
         /* Now sum over all processors */

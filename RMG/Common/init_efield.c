@@ -46,6 +46,12 @@ void init_efield (rmg_double_t * vnuc)
     rmg_double_t xoff, yoff, zoff;
     rmg_double_t rx, ry, rz;
     rmg_double_t d_field;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
+
 
     /* normalization of the electric field direction */
     norm_field_0 = sqrt (pow (ct.x_field_0, 2) + pow (ct.y_field_0, 2) + pow (ct.z_field_0, 2));
@@ -74,14 +80,14 @@ void init_efield (rmg_double_t * vnuc)
 /*  we need to add the saw-tooth potential in fine grid */
     for (jx = 0; jx < get_FPX0_GRID(); jx++)
     {
-        rx = jx * ct.hxxgrid * get_xside() + xoff;
+        rx = jx * hxxgrid * get_xside() + xoff;
         for (jy = 0; jy < get_FPY0_GRID(); jy++)
         {
-            ry = jy * ct.hyygrid * get_yside() + yoff;
+            ry = jy * hyygrid * get_yside() + yoff;
             for (jz = 0; jz < get_FPZ0_GRID(); jz++)
             {
                 idx = jx * incix + jy * inciy + jz;
-                rz = jz * ct.hzzgrid * get_zside() + zoff;
+                rz = jz * hzzgrid * get_zside() + zoff;
                 d_field = rx * ct.x_field_0 + ry * ct.y_field_0 + rz * ct.z_field_0;
                 vnuc[idx] += ct.e_field * d_field;
             }

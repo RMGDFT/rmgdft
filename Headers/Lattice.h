@@ -58,6 +58,7 @@ public:
     void to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian);
     void to_cartesian (rmg_double_t *crystal, rmg_double_t *cartesian);
     void recips (void);
+    rmg_double_t metric (rmg_double_t * crystal);
 
 };
 

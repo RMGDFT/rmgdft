@@ -129,7 +129,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
                 /* Apply operator */
                 diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid, APP_CI_FOURTH);
+                            get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
                 /* Generate residual vector */
@@ -150,8 +150,8 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
                 pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
                 mgrid_solv (mglhsarr, sg_res, work,
-                            ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
-                            ct.hyygrid, ct.hzzgrid,
+                            ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, get_hxxgrid(),
+                            get_hyygrid(), get_hzzgrid(),
                             0, get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
                             get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
@@ -199,7 +199,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
             
         /*Get residual*/
         diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid, APP_CI_FOURTH);
+                            get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
 

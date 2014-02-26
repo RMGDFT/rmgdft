@@ -25,8 +25,13 @@ void lcao_get_rho (rmg_double_t * arho_f)
 
     rmg_double_t r, xc, yc, zc;;
     rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     SPECIES *sp;
     ION *iptr;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
@@ -99,15 +104,15 @@ void lcao_get_rho (rmg_double_t * arho_f)
                             icount++;
                         }
 
-                        zc += ct.hzzgrid;
+                        zc += hzzgrid;
 
                     }           /* end for */
 
-                    yc += ct.hyygrid;
+                    yc += hyygrid;
 
                 }               /* end for */
 
-                xc += ct.hxxgrid;
+                xc += hxxgrid;
 
             }                   /* end for */
 
@@ -121,7 +126,7 @@ void lcao_get_rho (rmg_double_t * arho_f)
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
 	t2 += arho_f[idx];
 
-    t2 = ct.vel_f *  real_sum_all (t2, pct.img_comm);
+    t2 = get_vel_f() *  real_sum_all (t2, pct.img_comm);
     
     t1 = ct.nel / t2;
     if (pct.imgpe == 0)

@@ -56,6 +56,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     rmg_double_t ax[3], axs[3], bx[3];
     rmg_double_t shift[4];
     rmg_double_t fx, fy, fz;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     SPECIES *sp;
     ION *iptr;
     rmg_double_t deltac;
@@ -66,6 +67,9 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     time1 = my_crtc ();
 #endif
 
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     my_calloc( Aix, get_FNX_GRID(), int );
     my_calloc( Aiy, get_FNY_GRID(), int );
@@ -199,15 +203,15 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 
                             }   /* end if */
 
-                            xc += ct.hxxgrid;
+                            xc += hxxgrid;
 
                         }       /* end for */
 
-                        yc += ct.hyygrid;
+                        yc += hyygrid;
 
                     }           /* end for */
 
-                    zc += ct.hzzgrid;
+                    zc += hzzgrid;
 
                 }               /* end for */
 
@@ -231,7 +235,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 
                 }               /* end for */
 
-                locsum[ishift] = locsum[ishift] * ct.vel_f;
+                locsum[ishift] = locsum[ishift] * get_vel_f();
                 pptr += get_FP0_BASIS();
 
             }                   /* end for */

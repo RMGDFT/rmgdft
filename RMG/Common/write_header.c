@@ -168,7 +168,7 @@ void write_header (void)
 
     printf ("\n");
     printf ("    Bravais lattice type is %s\n", lattice_type[get_ibrav_type()]);
-    printf ("    Cell volume      = %12.6f a0^3\n", ct.vel * ct.psi_nbasis);
+    printf ("    Cell volume      = %12.6f a0^3\n", get_vel() * ct.psi_nbasis);
     printf ("    Grid anisotropy  = %12.6f\n", get_anisotropy());
 
     printf ("\n");
@@ -208,16 +208,16 @@ void write_header (void)
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
      */
-    t1 = pow (ct.vel, 0.333333333333);
+    t1 = pow (get_vel(), 0.333333333333);
     t1 = PI / (t1 * get_anisotropy());
     t1 = t1 * t1 / 2.0;
     printf ("       Equivalent energy cutoff  %12.6f Ry\n", t1);
 
     printf ("\n");
     printf ("    Basis vectors:\n");
-    printf ("       A1  = %15.6f  %15.6f  %15.6f a0\n", ct.a0[0], ct.a0[1], ct.a0[2]);
-    printf ("       A2  = %15.6f  %15.6f  %15.6f a0\n", ct.a1[0], ct.a1[1], ct.a1[2]);
-    printf ("       A3  = %15.6f  %15.6f  %15.6f a0\n", ct.a2[0], ct.a2[1], ct.a2[2]);
+    printf ("       A1  = %15.6f  %15.6f  %15.6f a0\n", get_a0(0), get_a0(1), get_a0(2));
+    printf ("       A2  = %15.6f  %15.6f  %15.6f a0\n", get_a1(0), get_a1(1), get_a1(2));
+    printf ("       A3  = %15.6f  %15.6f  %15.6f a0\n", get_a2(0), get_a2(1), get_a2(2));
 
 #if 0
     /* check minimum imaging assumption */

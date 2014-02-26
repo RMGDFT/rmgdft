@@ -24,6 +24,7 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
     int *Aix, *Aiy, *Aiz;
     rmg_double_t r, xc, yc, zc, Zv, rc, rcnorm, t1;
     rmg_double_t ax[3], bx[3], x_hat, y_hat, z_hat, rc2, invdr, norm1;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     rmg_double_t fx, fy, fz;
     SPECIES *sp;
     ION *iptr;
@@ -34,6 +35,9 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
     time1 = my_crtc ();
 #endif
 
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     my_calloc( Aix, get_FNX_GRID(), int );
     my_calloc( Aiy, get_FNY_GRID(), int );
@@ -139,15 +143,15 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
 
                         }       /* end if */
 
-                        zc += ct.hzzgrid;
+                        zc += hzzgrid;
 
                     }           /* end for */
 
-                    yc += ct.hyygrid;
+                    yc += hyygrid;
 
                 }               /* end for */
 
-                xc += ct.hxxgrid;
+                xc += hxxgrid;
 
             }                   /* end for */
 
@@ -169,9 +173,9 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
 
         }                       /* end for */
 
-        iptr->force[ct.fpt[0]][0] -= ct.vel_f * real_sum_all (fx, pct.grid_comm);
-        iptr->force[ct.fpt[0]][1] -= ct.vel_f * real_sum_all (fy, pct.grid_comm);
-        iptr->force[ct.fpt[0]][2] -= ct.vel_f * real_sum_all (fz, pct.grid_comm);
+        iptr->force[ct.fpt[0]][0] -= get_vel_f() * real_sum_all (fx, pct.grid_comm);
+        iptr->force[ct.fpt[0]][1] -= get_vel_f() * real_sum_all (fy, pct.grid_comm);
+        iptr->force[ct.fpt[0]][2] -= get_vel_f() * real_sum_all (fz, pct.grid_comm);
 
     }                           /* end for */
 

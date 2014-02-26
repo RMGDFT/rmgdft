@@ -25,9 +25,14 @@ void get_QI (void)
     int *pvec, *ivec, *dvec;
     rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
     rmg_double_t xc, yc, zc;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
     rmg_double_t *qnmlig, *QI_tpr;
     SPECIES *sp;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     // If norm conserving pp just return
     if(ct.norm_conserving_pp) return;
@@ -206,13 +211,13 @@ void get_QI (void)
 
                         idx++;
 
-                        zc += ct.hzzgrid;
+                        zc += hzzgrid;
 
                     }           /* end for iz */
-                    yc += ct.hyygrid;
+                    yc += hyygrid;
 
                 }               /* end for iy */
-                xc += ct.hxxgrid;
+                xc += hxxgrid;
 
             }                   /* end for ix */
 

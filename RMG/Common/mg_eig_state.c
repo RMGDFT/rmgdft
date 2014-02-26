@@ -551,7 +551,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
     time1 = my_crtc ();
 #endif
-    /* Get the non-local operator and S acting on psi (nv and ns, respectively) */
+    /* Get the non-local operator and S acting on psi (nv and ns, respeget_vel()y) */
     app_nls (tmp_psiR, tmp_psiI, nvR, nvI, nsR, nsI, pct.oldsintR_local, pct.oldsintI_local, sp->istate, sp->kidx);
 
 

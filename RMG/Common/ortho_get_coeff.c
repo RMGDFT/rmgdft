@@ -79,7 +79,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rm
 
     sumpsi = Oij[ist1 * ct.num_states + ist2];
 
-    *cR = -1.0 * (ct.vel * sumpsi + sumbeta);
+    *cR = -1.0 * (get_vel() * sumpsi + sumbeta);
 
 }
 
@@ -163,8 +163,8 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rm
 
 
 
-    *cR = ct.vel * sumpsiR + sumbetaR;
-    *cI = ct.vel * sumpsiI + sumbetaI;
+    *cR = get_vel() * sumpsiR + sumbetaR;
+    *cI = get_vel() * sumpsiI + sumbetaI;
 
 }
 
@@ -246,7 +246,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rm
 
 
 
-    *cR = -1.0 * (ct.vel * sumpsi + sumbeta);
+    *cR = -1.0 * (get_vel() * sumpsi + sumbeta);
 
 }
 
@@ -330,8 +330,8 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rm
 
 
 
-    *cR = ct.vel * sumpsiR + sumbetaR;
-    *cI = ct.vel * sumpsiI + sumbetaI;
+    *cR = get_vel() * sumpsiR + sumbetaR;
+    *cI = get_vel() * sumpsiI + sumbetaI;
 
 }
 

@@ -53,8 +53,12 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
     rmg_double_t *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
     rmg_double_t d, grad, vxc1, *vxc2, enxc;
     rmg_double_t kf, pisq3, ex, vx, ec, vc, rs;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
 
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
@@ -83,11 +87,11 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* Generate the gradient of the density */
-    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho, d2rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid );
 
 
     /* Absolute value of grad(rho) */
@@ -220,7 +224,7 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* Get gradient of vxc2 */
-    app_grad (vxc2, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vxc2, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
      /* add the second term gradient correction to xc potential */

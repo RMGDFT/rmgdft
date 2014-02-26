@@ -104,7 +104,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
 #    endif
 
         for (idx = 0; idx < get_P0_BASIS(); idx++)
-            work1[idx] = 0.5 * ct.vel * (work1[idx] - work2[idx]);
+            work1[idx] = 0.5 * get_vel() * (work1[idx] - work2[idx]);
 
 
 
@@ -251,7 +251,7 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
     for(idx = 0; idx < get_P0_BASIS(); idx++) a_psi[idx] += TWO * work2[idx];
 
     for (idx = 0; idx < get_P0_BASIS(); idx++)
-        a_psi[idx] = 0.5 * ct.vel * a_psi[idx];
+        a_psi[idx] = 0.5 * get_vel() * a_psi[idx];
 
     work2 = &pct.Bns[sp->istate * get_P0_BASIS()];
     for(idx = 0; idx < get_P0_BASIS(); idx++) b_psi[idx] += work2[idx];
@@ -387,8 +387,8 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psiR, rmg_double_t * a_psiI
 
         for (idx = 0; idx < get_P0_BASIS(); idx++)
         {
-            work1R[idx] = 0.5 * ct.vel * (work1R[idx] - work2R[idx]);
-            work1I[idx] = 0.5 * ct.vel * (work1I[idx] - work2I[idx]);
+            work1R[idx] = 0.5 * get_vel() * (work1R[idx] - work2R[idx]);
+            work1I[idx] = 0.5 * get_vel() * (work1I[idx] - work2I[idx]);
         }
 
 

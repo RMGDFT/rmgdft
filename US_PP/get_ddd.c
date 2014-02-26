@@ -62,7 +62,7 @@ void get_ddd (rmg_double_t * veff)
                     }
                 }               /*end if (ncount) */
 
-                sum[sum_idx] *= ct.vel_f;
+                sum[sum_idx] *= get_vel_f();
 
                 idx++;
                 sum_idx++;

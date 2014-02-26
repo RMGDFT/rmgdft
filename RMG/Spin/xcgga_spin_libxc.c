@@ -59,8 +59,12 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
     rmg_double_t *ec, *vsigma_upup, *vsigma_updw;
+    rmg_double_t hxxgrid, hyygrid, hzzgrid;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
@@ -143,13 +147,13 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
 
 
     /* Generate the gradient of the density */
-    app_grad (rho_up, gx_up, gy_up, gz_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin up density */
-    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid); /* spin down density */
+    app_grad (rho_up, gx_up, gy_up, gz_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid); /* spin up density */
+    app_grad (rho_dw, gx_dw, gy_dw, gz_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid); /* spin down density */
     
 
     /* Get the Laplacian of the density */
-    app6_del2 (rho_up, d2rho_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
-    app6_del2 (rho_dw, d2rho_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid );
+    app6_del2 (rho_up, d2rho_up, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid );
+    app6_del2 (rho_dw, d2rho_dw, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid );
 
     
     /* pack rho and rho_oppo into the 2D array rhospin */ 
@@ -213,8 +217,8 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     xc_func_end (&func_c); 
 
     /* Get gradient of vsigma_upup and vsigma_updw */
-    app_grad (vsigma_upup, gx_vsigmauu, gy_vsigmauu, gz_vsigmauu, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
-    app_grad (vsigma_updw, gx_vsigmaud, gy_vsigmaud, gz_vsigmaud, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app_grad (vsigma_upup, gx_vsigmauu, gy_vsigmauu, gz_vsigmauu, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
+    app_grad (vsigma_updw, gx_vsigmaud, gy_vsigmaud, gz_vsigmaud, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
      /* Vxc_up = vrho_up - \div \dot ( 2* vsigma_upup * \grad(rho_up) + vsigma_updw * \grad(rho_dw) ) */

@@ -62,7 +62,7 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
 
     FP0_BASIS = get_FP0_BASIS();
 
-    vel = ct.vel_f;
+    vel = get_vel_f();
 
     /* Grab some memory */
     if (ct.spin_flag)
