@@ -91,14 +91,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     ct.md_steps = 0;
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    ct.psi_nxgrid = get_NX_GRID();
-    ct.psi_nygrid = get_NY_GRID();
-    ct.psi_nzgrid = get_NZ_GRID();
-
     ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
-    ct.psi_fnxgrid = get_FNX_GRID();
-    ct.psi_fnygrid = get_FNY_GRID();
-    ct.psi_fnzgrid = get_FNZ_GRID();
 
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
@@ -537,8 +530,8 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
                 it1++;
             sp->mill_dim = it1;
 
-            if ((sp->mill_dim >= ct.psi_nxgrid) || (sp->mill_dim >= ct.psi_nygrid)
-                || (sp->mill_dim >= ct.psi_nzgrid))
+            if ((sp->mill_dim >= get_NX_GRID()) || (sp->mill_dim >= get_NY_GRID())
+                || (sp->mill_dim >= get_NZ_GRID()))
                 error_handler ("Milliken radius exceeds global grid size");
 
             /*Find total number of states -i.e. we only know that we have states s,p, d etc

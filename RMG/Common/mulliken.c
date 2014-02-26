@@ -80,7 +80,7 @@ void mulliken (STATE * states)
 
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          dim, pct.PX0_GRID, pct.PY0_GRID, pct.PZ0_GRID,
-                         ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid, &xcstart, &ycstart, &zcstart);
+                         get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(), &xcstart, &ycstart, &zcstart);
 
 
 

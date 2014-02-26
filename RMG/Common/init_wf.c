@@ -108,19 +108,19 @@ void init_wf (STATE * states)
 
 
         /* Generate x, y, z random number sequences */
-        for (idx = 0; idx < ct.psi_nxgrid; idx++)
+        for (idx = 0; idx < get_NX_GRID(); idx++)
             xrand[idx] = rand0 (&idum) - 0.5;
-        for (idx = 0; idx < ct.psi_nygrid; idx++)
+        for (idx = 0; idx < get_NY_GRID(); idx++)
             yrand[idx] = rand0 (&idum) - 0.5;
-        for (idx = 0; idx < ct.psi_nzgrid; idx++)
+        for (idx = 0; idx < get_NZ_GRID(); idx++)
             zrand[idx] = rand0 (&idum) - 0.5;
 
 #if !GAMMA_PT
-        for (idx = ct.psi_nxgrid; idx < 2 * ct.psi_nxgrid; idx++)
+        for (idx = get_NX_GRID(); idx < 2 * get_NX_GRID(); idx++)
             xrand[idx] = rand0 (&idum) - 0.5;
-        for (idx = ct.psi_nygrid; idx < 2 * ct.psi_nygrid; idx++)
+        for (idx = get_NY_GRID(); idx < 2 * get_NY_GRID(); idx++)
             yrand[idx] = rand0 (&idum) - 0.5;
-        for (idx = ct.psi_nzgrid; idx < 2 * ct.psi_nzgrid; idx++)
+        for (idx = get_NZ_GRID(); idx < 2 * get_NZ_GRID(); idx++)
             zrand[idx] = rand0 (&idum) - 0.5;
 #endif
 
@@ -151,8 +151,8 @@ void init_wf (STATE * states)
                     tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
 #if !GAMMA_PT
                     tmp_psiI[idx] =
-                        xrand[ct.psi_nxgrid + xoff + ix] * yrand[ct.psi_nygrid + yoff +
-                                                                 iy] * zrand[ct.psi_nzgrid + zoff +
+                        xrand[get_NX_GRID() + xoff + ix] * yrand[get_NY_GRID() + yoff +
+                                                                 iy] * zrand[get_NZ_GRID() + zoff +
                                                                              iz];
                     tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
 

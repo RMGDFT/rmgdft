@@ -76,13 +76,13 @@ void lcao_init (void)
 
 	/*Find radii of atomic wavefunctions and charge in terms of number of grid points*/
 	sp->adim_rho  = radius2grid (sp->aradius, ct.hmingrid/ (rmg_double_t) get_FG_NX());
-        if ((sp->adim_rho >= ct.psi_fnxgrid) || (sp->adim_rho >= ct.psi_fnygrid)
-            || (sp->adim_rho >= ct.psi_fnzgrid))
+        if ((sp->adim_rho >= get_FNX_GRID()) || (sp->adim_rho >= get_FNY_GRID())
+            || (sp->adim_rho >= get_FNZ_GRID()))
             error_handler ("LCAO charge radius exceeds global grid size");
 	
 	sp->adim_wave = radius2grid (sp->aradius, ct.hmingrid);
-	if ((sp->adim_wave >= ct.psi_nxgrid) || (sp->adim_wave >= ct.psi_nygrid)
-            || (sp->adim_wave >= ct.psi_nzgrid))
+	if ((sp->adim_wave >= get_NX_GRID()) || (sp->adim_wave >= get_NY_GRID())
+            || (sp->adim_wave >= get_NZ_GRID()))
             error_handler ("LCAO wavefunctions radius exceeds global grid size");
 	
 

@@ -272,14 +272,6 @@ typedef struct
     int vh_pbasis;
 
 
-    /* Wavefunction grid sizes */
-    int psi_nxgrid;
-    int psi_fnxgrid;
-    int psi_nygrid;
-    int psi_fnygrid;
-    int psi_nzgrid;
-    int psi_fnzgrid;
-
     /* Total points for wavefunctions */
     int psi_nbasis;
     int psi_fnbasis;

@@ -55,7 +55,7 @@ void lcao_get_awave (rmg_double_t *psi, ION *iptr, int awave_idx, int l, int m, 
     /* Determine mapping indices or even if a mapping exists */
     map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
 	    sp->adim_wave, PX0_GRID, PY0_GRID, PZ0_GRID,
-	    ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
+	    get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
 	    &xstart, &ystart, &zstart);
 
 

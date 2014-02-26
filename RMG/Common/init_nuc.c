@@ -79,7 +79,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          sp->ldim, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
-                         ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
+                         get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
                          &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
 

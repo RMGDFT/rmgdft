@@ -111,8 +111,8 @@ void init_psp (void)
 
         /*Get ldim */
 	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (rmg_double_t) get_FG_NX());
-        if ((sp->ldim >= ct.psi_fnxgrid) || (sp->ldim >= ct.psi_fnygrid)
-            || (sp->ldim >= ct.psi_fnzgrid))
+        if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID())
+            || (sp->ldim >= get_FNZ_GRID()))
             error_handler ("local potential radius exceeds global grid size");
 
 
@@ -130,8 +130,8 @@ void init_psp (void)
 	sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
         sp->nlfdim = ct.nxfgrid * sp->nldim;
         
-	if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
-            || (sp->nldim >= ct.psi_nzgrid))
+	if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID())
+            || (sp->nldim >= get_NZ_GRID()))
             error_handler ("Non-local potential radius exceeds global grid size");
 
         /*Get drnlig */

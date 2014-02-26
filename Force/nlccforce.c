@@ -112,7 +112,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
             /* Determine mapping indices or even if a mapping exists */
             map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                              sp->ldim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
-                             ct.psi_fnxgrid, ct.psi_fnygrid, ct.psi_fnzgrid,
+                             get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
                              &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
 
 

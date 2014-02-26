@@ -72,9 +72,9 @@ void init_sym (void)
     if (ct.num_ions >= MAX_IONS)
         error_handler ("Too many ions, increase MAX_IONS in params.h");
 
-    nr1 = ct.psi_nxgrid;
-    nr2 = ct.psi_nygrid;
-    nr3 = ct.psi_nzgrid;
+    nr1 = get_NX_GRID();
+    nr2 = get_NY_GRID();
+    nr3 = get_NZ_GRID();
 
     /* Only have PE zero output symmetry information */
     wflag = pct.gridpe;
@@ -141,9 +141,9 @@ void symmetrize_rho (FP0_GRID * rho)
     my_malloc (da, 1, DENS_ARRAY);
 
 
-    for (ix = 0; ix < ct.psi_fnxgrid; ix++)
-        for (iy = 0; iy < ct.psi_fnygrid; iy++)
-            for (iz = 0; iz < ct.psi_fnzgrid; iz++)
+    for (ix = 0; ix < get_FNX_GRID(); ix++)
+        for (iy = 0; iy < get_FNY_GRID(); iy++)
+            for (iz = 0; iz < get_FNZ_GRID(); iz++)
                 da->s[iz][iy][ix] = 0.0;
 
 
@@ -164,14 +164,14 @@ void symmetrize_rho (FP0_GRID * rho)
 
 
     /* Call global sums to give everyone the full array */
-    idx = ct.psi_fnxgrid * ct.psi_fnygrid * ct.psi_fnzgrid;
+    idx = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
     global_sums (&da->s[0][0][0], &idx, pct.grid_comm);
 
 
     /* Do the symmetrization on this processor */
-    nr1 = ct.psi_fnxgrid;
-    nr2 = ct.psi_fnygrid;
-    nr3 = ct.psi_fnzgrid;
+    nr1 = get_FNX_GRID();
+    nr2 = get_FNY_GRID();
+    nr3 = get_FNZ_GRID();
 
     symrho (&da->s[0][0][0], &nr1, &nr2, &nr3, &nsym, &s[0][0][0], irg, &ftau[0][0]);
 
@@ -200,9 +200,9 @@ void symforce (void)
     int ion, nr1, nr2, nr3;
     rmg_double_t celldm[6], force[MAX_IONS][3];
 
-    nr1 = ct.psi_nxgrid;
-    nr2 = ct.psi_nygrid;
-    nr3 = ct.psi_nzgrid;
+    nr1 = get_NX_GRID();
+    nr2 = get_NY_GRID();
+    nr3 = get_NZ_GRID();
 
     celldm[0] = ct.celldm[0];
     celldm[1] = ct.celldm[1];

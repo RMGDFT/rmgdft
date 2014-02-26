@@ -162,9 +162,9 @@ void write_header (void)
     printf ("        Hx  = %12.6f a0\n", get_hxgrid() * get_xside());
     printf ("        Hy  = %12.6f a0\n", get_hygrid() * get_yside());
     printf ("        Hz  = %12.6f a0\n", get_hzgrid() * get_zside());
-    printf ("        NX  = %d\n", ct.psi_nxgrid);
-    printf ("        NY  = %d\n", ct.psi_nygrid);
-    printf ("        NZ  = %d\n", ct.psi_nzgrid);
+    printf ("        NX  = %d\n", get_NX_GRID());
+    printf ("        NY  = %d\n", get_NY_GRID());
+    printf ("        NZ  = %d\n", get_NZ_GRID());
 
     printf ("\n");
     printf ("    Bravais lattice type is %s\n", lattice_type[get_ibrav_type()]);

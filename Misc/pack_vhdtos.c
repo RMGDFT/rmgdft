@@ -69,9 +69,9 @@ void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int di
     syhi = sylo + dimy - 1;
     szhi = szlo + dimz - 1;
 
-    dxlo = pex * 2 * dimx - ct.psi_nxgrid / 2;
-    dylo = pey * 2 * dimy - ct.psi_nygrid / 2;
-    dzlo = pez * 2 * dimz - ct.psi_nzgrid / 2;
+    dxlo = pex * 2 * dimx - get_NX_GRID() / 2;
+    dylo = pey * 2 * dimy - get_NY_GRID() / 2;
+    dzlo = pez * 2 * dimz - get_NZ_GRID() / 2;
     dxhi = dxlo + 2 * dimx - 1;
     dyhi = dylo + 2 * dimy - 1;
     dzhi = dzlo + 2 * dimz - 1;

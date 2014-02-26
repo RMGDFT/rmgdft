@@ -79,7 +79,7 @@ void get_nlop (void)
         /* Determine mapping indices or even if a mapping exists */
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                          sp->nldim, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(),
-                         ct.psi_nxgrid, ct.psi_nygrid, ct.psi_nzgrid,
+                         get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
                          &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -89,9 +89,9 @@ void get_nlop (void)
         vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
         /*Substract vector between left bottom corner of the box and center of the box */
-        vect[0] -= (sp->nldim / 2) / (rmg_double_t) ct.psi_nxgrid;
-        vect[1] -= (sp->nldim / 2) / (rmg_double_t) ct.psi_nygrid;
-        vect[2] -= (sp->nldim / 2) / (rmg_double_t) ct.psi_nzgrid;
+        vect[0] -= (sp->nldim / 2) / (rmg_double_t) get_NX_GRID();
+        vect[1] -= (sp->nldim / 2) / (rmg_double_t) get_NY_GRID();
+        vect[2] -= (sp->nldim / 2) / (rmg_double_t) get_NZ_GRID();
 
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
@@ -229,8 +229,8 @@ void get_nlop (void)
 
             /*See if this processor owns current ion */
             if (pct.gridpe ==
-                claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.psi_nxgrid, ct.psi_nygrid,
-                           ct.psi_nzgrid))
+                claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(),
+                           get_NZ_GRID()))
             {
                 if (pct.num_owned_ions >= MAX_NONLOC_IONS)
                     error_handler ("Too many owned ions, pct.owned_ions_list will overflow");
@@ -350,8 +350,8 @@ void get_nlop (void)
 
         /*See if this processor owns current ion */
         owner =
-            claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.psi_nxgrid, ct.psi_nygrid,
-                       ct.psi_nzgrid);
+            claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(),
+                       get_NZ_GRID());
 	Dprintf ("Owner of ion %d nlion %d is PE %d", ion, nlion, owner); 
         
 	owned = 0;
