@@ -85,7 +85,7 @@ void modify_rho (rmg_double_t * rho, rmg_double_t * rho_old)
         tcharge = 0.0;
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             tcharge += rho[idx];
-        ct.tcharge = real_sum_all (tcharge, pct.grid_comm) * ct.vel_f;
+        ct.tcharge = real_sum_all (tcharge, pct.grid_comm) * get_vel_f();
         if (pct.gridpe == 0)
             printf ("total charge %10.4f = %10.4f + %10.4f\n",
                     ct.tcharge, ct.tcharge - ct.nel, ct.nel);
@@ -136,16 +136,16 @@ void modify_rho (rmg_double_t * rho, rmg_double_t * rho_old)
             }
         }
 
-        t2 = real_sum_all (total_charge, pct.grid_comm) * ct.vel_f;
-        t_fixed = real_sum_all (tcharge_fixed, pct.grid_comm) * ct.vel_f;
+        t2 = real_sum_all (total_charge, pct.grid_comm) * get_vel_f();
+        t_fixed = real_sum_all (tcharge_fixed, pct.grid_comm) * get_vel_f();
 
         if (pct.gridpe == 0)
             printf ("total charge %10.4f + %10.4f = %10.4f = %10.4f + %10.4f\n",
                     t2, t_fixed, t2 + t_fixed, t2 + t_fixed - ct.nel, ct.nel);
 
         /*
-           t2 = (ct.nel - t_fixed) / (t2 * ct.vel_f);
-           t2 = 1.0 / ct.vel_f;
+           t2 = (ct.nel - t_fixed) / (t2 * get_vel_f());
+           t2 = 1.0 / get_vel_f();
 
            for (i = 0; i < get_FPX0_GRID(); i++)
            {

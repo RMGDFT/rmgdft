@@ -33,8 +33,8 @@ void split_matrix_lead (int iprobe)
 
     int nstart_block, subsystem, idx0, llda, locc;
 
-    blength = ct.celldm[1] * ct.celldm[0];
-    clength = ct.celldm[2] * ct.celldm[0];
+    blength = get_celldm(1) * get_celldm(0);
+    clength = get_celldm(2) * get_celldm(0);
 
     desca = &pmo.desc_lead[(iprobe -1) * DLEN];
 

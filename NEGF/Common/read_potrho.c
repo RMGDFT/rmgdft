@@ -71,8 +71,8 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     kk = get_FPZ_OFFSET();
 
 
-    hx_new = get_xside() * ct.hxxgrid;
-    hy_new = get_yside() * ct.hyygrid;
+    hx_new = get_xside() * get_hxxgrid();
+    hy_new = get_yside() * get_hyygrid();
     if(pct.gridpe ==0) printf (" hx_new, hy_new  =  %f  %f \n", hx_new, hy_new); 
 
 

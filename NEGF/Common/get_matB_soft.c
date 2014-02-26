@@ -68,7 +68,8 @@ void get_matB_soft (STATE * states, STATE * states1, double *mat)
     global_sums (mat, &n2, pct.grid_comm);
 
 
-    dscal (&n2, &ct.vel, mat, &ione);
+    double vel = get_vel();
+    dscal (&n2, &vel, mat, &ione);
 
     /* symmetrize the mat */
 

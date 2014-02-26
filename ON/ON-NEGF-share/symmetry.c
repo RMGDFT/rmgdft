@@ -41,7 +41,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 
-
+#if !GAMMA_PT
 
 static int s[MAX_SYMMETRY][3][3];
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
@@ -57,9 +57,9 @@ void init_sym (void)
     int nr1, nr2, nr3;
     int ion, kpt, wflag;
 
-    nr1 = ct.psi_nxgrid;
-    nr2 = ct.psi_nygrid;
-    nr3 = ct.psi_nzgrid;
+    nr1 = get_NX_GRID();
+    nr2 = get_NY_GRID();
+    nr3 = get_NZ_GRID();
 
     /* Only have PE zero output symmetry information */
     wflag = pct.gridpe;
@@ -114,11 +114,11 @@ void symmetrize_rho (rmg_double_t * rho)
     my_malloc_init( da, ct.psi_nbasis, rmg_double_t );
 
     idx = 0;
-    for (ix = 0; ix < ct.psi_nxgrid; ix++)
+    for (ix = 0; ix < get_NX_GRID(); ix++)
     {
-        for (iy = 0; iy < ct.psi_nygrid; iy++)
+        for (iy = 0; iy < get_NY_GRID(); iy++)
         {
-            for (iz = 0; iz < ct.psi_nzgrid; iz++)
+            for (iz = 0; iz < get_NZ_GRID(); iz++)
             {
                 da[idx] = 0.0;
                 idx++;
@@ -154,14 +154,14 @@ void symmetrize_rho (rmg_double_t * rho)
     }
 
     /* Call global sums to give everyone the full array */
-    idx = ct.psi_nxgrid * ct.psi_nygrid * ct.psi_nzgrid;
+    idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
     global_sums (da, &idx, pct.grid_comm);
 
 
     /* Do the symmetrization on this processor */
-    nr1 = ct.psi_nxgrid;
-    nr2 = ct.psi_nygrid;
-    nr3 = ct.psi_nzgrid;
+    nr1 = get_NX_GRID();
+    nr2 = get_NY_GRID();
+    nr3 = get_NZ_GRID();
 
     symrho (da, &nr1, &nr2, &nr3, &nsym, &s[0][0][0], irg, &ftau[0][0]);
 
@@ -201,13 +201,13 @@ void symforce (void)
     int ion, nr1, nr2, nr3;
     rmg_double_t celldm[6], force[MAX_IONS][3];
 
-    nr1 = ct.psi_nxgrid;
-    nr2 = ct.psi_nygrid;
-    nr3 = ct.psi_nzgrid;
+    nr1 = get_NX_GRID();
+    nr2 = get_NY_GRID();
+    nr3 = get_NZ_GRID();
 
-    celldm[0] = ct.celldm[0];
-    celldm[1] = ct.celldm[1];
-    celldm[2] = ct.celldm[2];
+    celldm[0] = get_celldm(0);
+    celldm[1] = get_celldm(1);
+    celldm[2] = get_celldm(2);
     celldm[3] = 0.0;
     celldm[4] = 0.0;
     celldm[5] = 0.0;
@@ -237,4 +237,5 @@ void symforce (void)
 
 }                               /* end symforce */
 
+#endif
 /******/

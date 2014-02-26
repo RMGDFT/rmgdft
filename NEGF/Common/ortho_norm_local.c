@@ -59,7 +59,7 @@ void ortho_norm_local (STATE *states)
 
     for (j = ct.state_begin; j < ct.state_end; j++)
     {
-        norm = 1.0 / (sqrt (ct.vel));
+        norm = 1.0 / (sqrt (get_vel()));
         sscal (&states[j].size, &norm, states[j].psiR, &ione);
     }
 

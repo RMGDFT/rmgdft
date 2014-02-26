@@ -102,8 +102,8 @@ void init_kbr(void)
         sp->nldim = it1;
         sp->nlfdim = ct.nxfgrid * it1;
 
-        if ((sp->nldim >= ct.psi_nxgrid) || (sp->nldim >= ct.psi_nygrid)
-            || (sp->nldim >= ct.psi_nzgrid))
+        if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID())
+            || (sp->nldim >= get_NZ_GRID()))
             error_handler("local potential radius exceeds global grid size");
 
         if (ct.max_nlpoints < (sp->nldim * sp->nldim * sp->nldim))

@@ -154,7 +154,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
     /* Keep in memory vh*rho_new before updating vh */
     tem = ddot(&n, rho, &ione, vh, &ione);
-    ct.Evhold_rho = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
+    ct.Evhold_rho = 0.5 * get_vel_f() * real_sum_all(tem, pct.grid_comm);
 
 
     /* Generate hartree potential */
@@ -165,10 +165,10 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
     /* Compute quantities function of rho only */
     tem = ddot(&n, rho, &ione, vh, &ione);
-    ct.Evh_rho = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
+    ct.Evh_rho = 0.5 * get_vel_f() * real_sum_all(tem, pct.grid_comm);
 
     tem = ddot(&n, rhoc, &ione, vh, &ione);
-    ct.Evh_rhoc = 0.5 * ct.vel_f * real_sum_all(tem, pct.grid_comm);
+    ct.Evh_rhoc = 0.5 * get_vel_f() * real_sum_all(tem, pct.grid_comm);
 
 
 
@@ -186,7 +186,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
     }
     idx = 2;
     global_sums(t, &idx, pct.grid_comm);
-    t[0] *= ct.vel_f;
+    t[0] *= get_vel_f();
     t[0] /= (double) ct.num_ions;
     t[1] = sqrt(t[1] / ((double) (ct.vh_nbasis)));
 

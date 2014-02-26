@@ -81,9 +81,9 @@ void nlforce_par_Q(REAL * veff, REAL * rho_nm, int ion, int nh, double *forces)
 
 /*    size = 3;
  *   global_sums(forces, &size);
- *   iptr->force[ct.fpt[0]][0] += ct.vel_f * forces[0];
- *   iptr->force[ct.fpt[0]][1] += ct.vel_f * forces[1];
- *   iptr->force[ct.fpt[0]][2] += ct.vel_f * forces[2];
+ *   iptr->force[ct.fpt[0]][0] += get_vel_f() * forces[0];
+ *   iptr->force[ct.fpt[0]][1] += get_vel_f() * forces[1];
+ *   iptr->force[ct.fpt[0]][2] += get_vel_f() * forces[2];
 */
 
     time2 = my_crtc();

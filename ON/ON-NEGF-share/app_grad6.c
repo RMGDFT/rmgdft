@@ -43,17 +43,17 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
 
     case CUBIC_PRIMITIVE:
     case ORTHORHOMBIC_PRIMITIVE:
-        t1x = 3.0 / ( 4.0 * ct.hxxgrid * get_xside());
-        t2x =-3.0 / (20.0 * ct.hxxgrid * get_xside());
-        t3x = 1.0 / (60.0 * ct.hxxgrid * get_xside());
+        t1x = 3.0 / ( 4.0 * get_hxxgrid() * get_xside());
+        t2x =-3.0 / (20.0 * get_hxxgrid() * get_xside());
+        t3x = 1.0 / (60.0 * get_hxxgrid() * get_xside());
 
-        t1y = 3.0 / ( 4.0 * ct.hyygrid * get_yside());
-        t2y =-3.0 / (20.0 * ct.hyygrid * get_yside());
-        t3y = 1.0 / (60.0 * ct.hyygrid * get_yside());
+        t1y = 3.0 / ( 4.0 * get_hyygrid() * get_yside());
+        t2y =-3.0 / (20.0 * get_hyygrid() * get_yside());
+        t3y = 1.0 / (60.0 * get_hyygrid() * get_yside());
 
-        t1z = 3.0 / ( 4.0 * ct.hzzgrid * get_zside());
-        t2z =-3.0 / (20.0 * ct.hzzgrid * get_zside());
-        t3z = 1.0 / (60.0 * ct.hzzgrid * get_zside());
+        t1z = 3.0 / ( 4.0 * get_hzzgrid() * get_zside());
+        t2z =-3.0 / (20.0 * get_hzzgrid() * get_zside());
+        t3z = 1.0 / (60.0 * get_hzzgrid() * get_zside());
 
         for (ix = 3; ix < dimx + 3; ix++)
         {

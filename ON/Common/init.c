@@ -62,21 +62,13 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     flag = 0;
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    ct.psi_nxgrid = get_NX_GRID();
-    ct.psi_nygrid = get_NY_GRID();
-    ct.psi_nzgrid = get_NZ_GRID();
 
     ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
-    ct.psi_fnxgrid = get_FNX_GRID();
-    ct.psi_fnygrid = get_FNY_GRID();
-    ct.psi_fnzgrid = get_FNZ_GRID();
 
 
     my_malloc_init( ct.energies, ct.max_scf_steps, rmg_double_t );
 
     ct.states = states;
-    int ibrav = get_ibrav_type();
-    latgen(&ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
 
     init_parameter(states);
     if(gridpe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );

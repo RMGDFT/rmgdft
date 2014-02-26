@@ -66,14 +66,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     time1 = my_crtc ();
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    ct.psi_nxgrid = get_NX_GRID();
-    ct.psi_nygrid = get_NY_GRID();
-    ct.psi_nzgrid = get_NZ_GRID();
-
     ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
-    ct.psi_fnxgrid = get_FNX_GRID();
-    ct.psi_fnygrid = get_FNY_GRID();
-    ct.psi_fnzgrid = get_FNZ_GRID();
 
 
 
@@ -83,8 +76,6 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     ct.states = states;
 
     /* initialize the lattice basis vectors */
-    int ibrav = get_ibrav_type();
-    latgen (&ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
 
     init_parameter (states);
 

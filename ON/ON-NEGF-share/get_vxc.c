@@ -49,7 +49,7 @@ void get_vxc(rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * vxc)
 
     nn = ct.vh_pbasis;          /*shuchun wang */
     esum = ddot(&nn, vxc, &ione, rho, &ione);
-    ct.Evxcold_rho = ct.vel_f * real_sum_all(esum, pct.grid_comm);
+    ct.Evxcold_rho = get_vel_f() * real_sum_all(esum, pct.grid_comm);
 
 
     /*begin shuchun wang */

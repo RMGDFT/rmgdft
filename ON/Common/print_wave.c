@@ -28,9 +28,9 @@ void print_wave(int wave_plot, STATE * states, int coarse_level)
 
     if (pct.gridpe == 0) // for printing, only root processor will do it
     {
-        double dx = ct.celldm[0] / get_NX_GRID();
-        double dy = ct.celldm[0] * ct.celldm[1] / get_NY_GRID();
-        double dz = ct.celldm[0] * ct.celldm[2] / get_NZ_GRID();
+        double dx = get_celldm(0) / get_NX_GRID();
+        double dy = get_celldm(0) * get_celldm(1) / get_NY_GRID();
+        double dz = get_celldm(0) * get_celldm(2) / get_NZ_GRID();
 
         int count = 0;
 

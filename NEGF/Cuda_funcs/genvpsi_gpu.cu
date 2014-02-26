@@ -1,6 +1,3 @@
-#include "arch.h"
-
-#if GPU_ENABLED
 
 __global__ void genvpsi_kernel(const double *psi, const double *veff, double *psiv, const int TILE_DIM,
         const int num_local_orbital, const int p0basis)
@@ -38,4 +35,3 @@ extern "C" void genvpsi_gpu(const double *psi, const double *veff, double *psiv,
 
 }
 
-#endif

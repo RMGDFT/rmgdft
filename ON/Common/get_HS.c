@@ -91,8 +91,9 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
     get_matB_qnm(Bij_00);          /* shuchun wang */
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
-    sscal (&n2, &ct.vel, Hij_00, &ione);
-    sscal (&n2, &ct.vel, Bij_00, &ione);
+    double vel = get_vel();
+    sscal (&n2, &vel, Hij_00, &ione);
+    sscal (&n2, &vel, Bij_00, &ione);
 
     Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Aij, IB, JB,
             pct.desca, pct.desca[1]);

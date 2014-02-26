@@ -84,7 +84,7 @@ void xcgga(rmg_double_t * rho1, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* Get the Laplacian of the density */
-    app6_del2(rho1, d2rho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+    app6_del2(rho1, d2rho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_hxxgrid(), get_hyygrid(), get_hzzgrid());
 
 
     /* Absolute value of grad(rho) */

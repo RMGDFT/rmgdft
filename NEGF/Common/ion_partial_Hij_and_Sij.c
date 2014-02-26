@@ -33,7 +33,7 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
         Hij[idx] = Sij[idx] = 0.0;
     }
 
-    alpha = 1.0 / ct.vel;
+    alpha = 1.0 / get_vel();
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
     my_malloc_init( partial_kbpsi_comm, size, rmg_double_t );

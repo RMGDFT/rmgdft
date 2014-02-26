@@ -109,7 +109,8 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
     global_sums (Aij, &n2, pct.grid_comm);     /* sum up Aij contributions */
 
-    dscal (&n2, &ct.vel, Aij, &ione);
+    double vel = get_vel();
+    dscal (&n2, &vel, Aij, &ione);
 
     if (pct.gridpe == 0)
     {

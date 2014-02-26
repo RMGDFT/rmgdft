@@ -40,7 +40,7 @@ void get_matB_qnm(double *Aij)
     time1 = my_crtc();
 
 
-    alpha = 1. / ct.vel;
+    alpha = 1. / get_vel();
 
 
     /* Loop over states on this proce onle 

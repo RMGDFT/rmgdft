@@ -39,8 +39,8 @@ void split_matrix_center ()
         ntot += pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i];
     }
 
-    blength = ct.celldm[1] * ct.celldm[0];
-    clength = ct.celldm[2] * ct.celldm[0];
+    blength = get_celldm(1) * get_celldm(0);
+    clength = get_celldm(2) * get_celldm(0);
 
     desca = &pmo.desc_cond[0];
 

@@ -38,9 +38,9 @@ void init_rho_atom(double *rho)
     int *map;
 
     my_malloc_init( map, ct.num_ions, int );
-    hxgrid_new = ct.hxxgrid * get_xside();
-    hygrid_new = ct.hyygrid * get_yside();
-    hzgrid_new = ct.hzzgrid * get_zside();
+    hxgrid_new = get_hxxgrid() * get_xside();
+    hygrid_new = get_hyygrid() * get_yside();
+    hzgrid_new = get_hzzgrid() * get_zside();
 
     pe2xyz(pct.gridpe, &pex, &pey, &pez);
 

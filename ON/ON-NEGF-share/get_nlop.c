@@ -169,9 +169,9 @@ void get_nlop(void)
         vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
         /*Substract vector between left bottom corner of the box and center of the box */
-        vect[0] -= (sp->nldim / 2) / (rmg_double_t) ct.psi_nxgrid;
-        vect[1] -= (sp->nldim / 2) / (rmg_double_t) ct.psi_nygrid;
-        vect[2] -= (sp->nldim / 2) / (rmg_double_t) ct.psi_nzgrid;
+        vect[0] -= (sp->nldim / 2) / (rmg_double_t) get_NX_GRID();
+        vect[1] -= (sp->nldim / 2) / (rmg_double_t) get_NY_GRID();
+        vect[2] -= (sp->nldim / 2) / (rmg_double_t) get_NZ_GRID();
 
         /*The vector we are looking for should be */
         to_cartesian (vect, nlcrds);

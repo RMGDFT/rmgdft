@@ -303,7 +303,7 @@ void get_new_rho(STATE * states, double *rho)
    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
 
 
-   ct.tcharge *= ct.vel_f;
+   ct.tcharge *= get_vel_f();
    t2 = ct.nel / ct.tcharge;
    int iii = get_FP0_BASIS();
    sscal(&iii, &t2, &rho[0], &ione);

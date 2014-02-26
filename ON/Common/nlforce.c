@@ -118,9 +118,9 @@ void nlforce(rmg_double_t * veff)
     {
 
         iptr = &ct.ions[ion];
-        iptr->force[ct.fpt[0]][0] += ct.vel_f * forces_tem[ion*3];
-        iptr->force[ct.fpt[0]][1] += ct.vel_f * forces_tem[ion*3+1];
-        iptr->force[ct.fpt[0]][2] += ct.vel_f * forces_tem[ion*3+2];
+        iptr->force[ct.fpt[0]][0] += get_vel_f() * forces_tem[ion*3];
+        iptr->force[ct.fpt[0]][1] += get_vel_f() * forces_tem[ion*3+1];
+        iptr->force[ct.fpt[0]][2] += get_vel_f() * forces_tem[ion*3+2];
     }
 
 

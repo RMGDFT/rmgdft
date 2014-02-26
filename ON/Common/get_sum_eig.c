@@ -154,7 +154,7 @@ double get_Exc(double *rho, double *rhocore)
     my_free(work);
 
 
-    esum = ct.vel_f * real_sum_all(esum, pct.grid_comm);
+    esum = get_vel_f() * real_sum_all(esum, pct.grid_comm);
     /* end shuchun wang */
 
     return esum;

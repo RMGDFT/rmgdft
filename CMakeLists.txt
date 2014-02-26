@@ -213,6 +213,19 @@ if(CUDA_FOUND)
   target_link_libraries(rmg-negf ${CUDA_CUDA_LIBRARY})
   target_link_libraries(rmg-negf ${CUDA_cublas_LIBRARY})
   include_directories(${CUDA_INCLUDE_DIRS})
+
+
+SET(CUDA_NVCC_FLAGS "-arch=sm_13" CACHE STRING "nvcc flags" FORCE)
+ 
+#HW capability 1.3
+SET (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+SET(LIB_TYPE STATIC) #set the lib type
+CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
+${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
+${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
+  target_link_libraries(rmg-negf TestLib)
+ADD_DEPENDENCIES(rmg-negf TestLib)
+ 
 endif(CUDA_FOUND)
 
 # These are hard coded for now
@@ -352,7 +365,7 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
-set (RMG_GPU_ENABLED 0)
+set (RMG_GPU_ENABLED 1)
 option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
 if (RMG_GPU_ENABLED)
     if(CUDA_FOUND)

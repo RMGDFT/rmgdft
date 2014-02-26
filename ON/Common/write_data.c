@@ -268,9 +268,9 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	 */
 
 
-	hxgrid = ct.hxxgrid * get_xside();
-	hygrid = ct.hyygrid * get_yside();
-	hzgrid = ct.hzzgrid * get_zside();
+	hxgrid = get_hxxgrid() * get_xside();
+	hygrid = get_hyygrid() * get_yside();
+	hzgrid = get_hzzgrid() * get_zside();
 
 
 	ixmin = 2 * states[0].ixmin;

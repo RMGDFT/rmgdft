@@ -1,6 +1,3 @@
-#include "arch.h"
-
-#if GPU_ENABLED
 
 #define THREAD_PER_BLOCK 32
 #define THREAD_PER_BLOCKX 32
@@ -66,6 +63,5 @@ extern "C" void rho_psi_times_psi(const double *psi1, const double *psi2, double
 }
 
 
-#endif
 
 

@@ -119,10 +119,10 @@ void get_wave(int st, STATE * states)
 	charge_from_wave = real_sum_all(tcharge, pct.grid_comm);
 
 
-	charge_from_wave *= ct.vel;
+	charge_from_wave *= get_vel();
 
 	if (pct.gridpe == 0)
-		printf("\n total charge from %d wave = %f  with ct.vel = %f \n", st, charge_from_wave, ct.vel);
+		printf("\n total charge from %d wave = %f  with get_vel() = %f \n", st, charge_from_wave, get_vel());
 
         my_free(wave_temp);
 }

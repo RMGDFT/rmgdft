@@ -41,9 +41,6 @@ void init_parameter(STATE * states)
     int ispin;
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    ct.psi_nxgrid = get_NX_GRID();
-    ct.psi_nygrid = get_NY_GRID();
-    ct.psi_nzgrid = get_NZ_GRID();
 
 
     /* Set hartree boundary condition stuff */

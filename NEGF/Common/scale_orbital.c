@@ -31,12 +31,12 @@ void scale_orbital (STATE * states, STATE *states_distribute)
     for (st2 = 0; st2 < pct.num_local_orbit; st2++)
     {
         for(idx = 0; idx < get_P0_BASIS(); idx++)
-            states_distribute[st2].psiR[idx] *= 1.0/sqrt(ct.vel);
+            states_distribute[st2].psiR[idx] *= 1.0/sqrt(get_vel());
     }   
 
     for(st2 = ct.state_begin; st2 < ct.state_end; st2++)
     for(idx = 0; idx < states[st2].size; idx++)
-        states[st2].psiR[idx] *= 1.0/sqrt(ct.vel);
+        states[st2].psiR[idx] *= 1.0/sqrt(get_vel());
 }   
 
 

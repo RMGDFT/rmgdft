@@ -134,7 +134,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
                 /* Apply operator */
                 diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+                            get_hxxgrid(), get_hyygrid(), get_hzzgrid());
                 diag = -1.0 / diag;
 
                 time5 = my_crtc();
@@ -170,8 +170,8 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
                  
                 mgrid_solv_negf (mglhsarr, sg_res, work,
-                            ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, ct.hxxgrid,
-                            ct.hyygrid, ct.hzzgrid,
+                            ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, get_hxxgrid(),
+                            get_hyygrid(), get_hzzgrid(),
                             0, pct.neighbors, ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
                             get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
@@ -214,7 +214,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
         /* Apply operator */
         diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                ct.hxxgrid, ct.hyygrid, ct.hzzgrid);
+                get_hxxgrid(), get_hyygrid(), get_hzzgrid());
         diag = -1.0 / diag;
 
         /* Generate residual vector */

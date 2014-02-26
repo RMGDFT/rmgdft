@@ -324,9 +324,9 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     global_sums (rho_energy, &iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
-        double dx = ct.celldm[0] / get_NX_GRID();
-        double dy = ct.celldm[0] * ct.celldm[1] / get_NY_GRID();
-        double dz = ct.celldm[0] * ct.celldm[2] / get_NZ_GRID();
+        double dx = get_celldm(0) / get_NX_GRID();
+        double dy = get_celldm(0) * get_celldm(1) / get_NY_GRID();
+        double dz = get_celldm(0) * get_celldm(2) / get_NZ_GRID();
         double B_A = 0.52917721;
         int count = 0;
         int level = 1; 

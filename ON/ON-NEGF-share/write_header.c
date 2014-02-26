@@ -112,15 +112,15 @@ void write_header(void)
     printf("\n        Hx  = %12.6f  bohr", get_hxgrid() * get_xside());
     printf("\n        Hy  = %12.6f  bohr", get_hygrid() * get_yside());
     printf("\n        Hz  = %12.6f  bohr", get_hzgrid() * get_zside());
-    printf("\n        NX  = %d", ct.psi_nxgrid);
-    printf("\n        NY  = %d", ct.psi_nygrid);
-    printf("\n        NZ  = %d\n", ct.psi_nzgrid);
+    printf("\n        NX  = %d", get_NX_GRID());
+    printf("\n        NY  = %d", get_NY_GRID());
+    printf("\n        NZ  = %d\n", get_NZ_GRID());
     printf("\n        get_FG_NX()  = %d", get_FG_NX());
     printf("\n        get_FG_NY()  = %d", get_FG_NY());
     printf("\n        get_FG_NZ()  = %d\n", get_FG_NZ());
 
     printf("\n    BRAVAIS LATTICE TYPE IS %s", lattice_type[get_ibrav_type()]);
-    printf("\n    Cell volume      = %16.8f", ct.vel * ct.psi_nbasis);
+    printf("\n    Cell volume      = %16.8f", get_vel() * ct.psi_nbasis);
     printf("\n    Grid anisotropy  = %16.8f", get_anisotropy());
 
     printf("\n\n    PROCESSOR TOPOLOGY:  Total PE's = %d", NPES);
@@ -135,16 +135,17 @@ void write_header(void)
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
      */
-    t1 = pow(ct.vel, 0.333333333333);
+    t1 = pow(get_vel(), 0.333333333333);
     t1 = PI / (t1 * get_anisotropy());
     t1 = t1 * t1 / 2.0;
     printf("\n    EQUIVALENT ENERGY CUTOFF  %12.6f Rydbergs", t1);
 
 
     printf("\n\n    Basis vectors:");
-    printf("\n       A1  = %15.6f,  %15.6f,  %15.6f", ct.a0[0], ct.a0[1], ct.a0[2]);
-    printf("\n       A2  = %15.6f,  %15.6f,  %15.6f", ct.a1[0], ct.a1[1], ct.a1[2]);
-    printf("\n       A3  = %15.6f,  %15.6f,  %15.6f\n\n", ct.a2[0], ct.a2[1], ct.a2[2]);
+
+//    printf("\n       A1  = %15.6f,  %15.6f,  %15.6f", ct.a0[0], ct.a0[1], ct.a0[2]);
+//    printf("\n       A2  = %15.6f,  %15.6f,  %15.6f", ct.a1[0], ct.a1[1], ct.a1[2]);
+//    printf("\n       A3  = %15.6f,  %15.6f,  %15.6f\n\n", ct.a2[0], ct.a2[1], ct.a2[2]);
 
 #if 0
     /* check minimum imaging assumption */

@@ -264,8 +264,8 @@ void get_cond_dos_test (STATE * states)
     global_sums (rho_energy, &iene);
     if (pct.gridpe == 0)
     {
-        double dx = ct.celldm[0] / get_NX_GRID();
-        double x0 = 0.5 * ct.celldm[0];
+        double dx = get_celldm(0] / get_NX_GRID();
+        double x0 = 0.5 * get_celldm(0];
 
         file = fopen ("dos.dat", "w");
         fprintf (file, "#     x[a0]      E[eV]          dos\n\n");

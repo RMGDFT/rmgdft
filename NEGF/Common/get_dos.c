@@ -357,8 +357,8 @@ void get_dos (STATE * states)
     global_sums (rho_energy, &iene, pct.grid_comm);
     if (pct.gridpe == 0)
     {
-        double dx = ct.celldm[0] / get_NX_GRID();
-        double x0 = 0.5 * ct.celldm[0];
+        double dx = get_celldm(0) / get_NX_GRID();
+        double x0 = 0.5 * get_celldm(0);
 
         file = fopen ("dos.dat", "w");
         fprintf (file, "#     x[a0]      E[eV]          dos\n\n");
@@ -384,7 +384,7 @@ void get_dos (STATE * states)
         global_sums (rho_energy2, &iene, pct.grid_comm);
         if (pct.gridpe == 0)
         {
-            double y = ct.celldm[1] * ct.celldm[0];
+            double y = get_celldm(1) * get_celldm(0);
             double dy = y / get_NY_GRID();
             double y0 = 0.5 * y;
 

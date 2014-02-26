@@ -97,7 +97,7 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
     /* Initialize the compensating charge array and the core charge
        array */
-    t1 = ct.background_charge / (double) get_FP0_BASIS() / ct.vel_f / NPES;
+    t1 = ct.background_charge / (double) get_FP0_BASIS() / get_vel_f() / NPES;
     
     printf("\n bg_begin = %f and bg_end = %f  BT = %f  t1=%f \n", ct.bg_begin, ct.bg_end, ct.BT, t1);   
 
@@ -189,9 +189,9 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
 
         L0_LDIM = sp->ldim;
 
-        hxgrid = ct.hxxgrid * get_xside();
-        hygrid = ct.hyygrid * get_yside();
-        hzgrid = ct.hzzgrid * get_zside();
+        hxgrid = get_hxxgrid() * get_xside();
+        hygrid = get_hyygrid() * get_yside();
+        hzgrid = get_hzzgrid() * get_zside();
 
         /* Generate range of indices over which the short-range difference */
         /* potential will be mapped onto the global grid.                  */
@@ -390,19 +390,19 @@ static void init_vcomp(double *vc)
         for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {
 
-            point[0] = (ix + ilow) * ct.hxxgrid;
+            point[0] = (ix + ilow) * get_hxxgrid();
             istart = get_FPZ0_GRID() * get_FPY0_GRID() * ix;
 
             for (iy = 0; iy < get_FPY0_GRID(); iy++)
             {
 
-                point[1] = (iy + jlow) * ct.hyygrid;
+                point[1] = (iy + jlow) * get_hyygrid();
                 jstart = istart + get_FPZ0_GRID() * iy;
 
                 for (iz = 0; iz < get_FPZ0_GRID(); iz++)
                 {
 
-                    point[2] = (iz + klow) * ct.hzzgrid;
+                    point[2] = (iz + klow) * get_hzzgrid();
 
                     r = minimage1(point, iptr->crds);
 
@@ -439,7 +439,7 @@ static double get_charge(double *rho1)
 
     }                           /* end for */
     charge = real_sum_all(charge, pct.grid_comm);
-    charge *= ct.vel_f;
+    charge *= get_vel_f();
 
     return charge;
 }
