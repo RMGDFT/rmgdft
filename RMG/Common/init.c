@@ -59,7 +59,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 {
 
     int kpt, kpt1, kst1, ic, idx, state, ion, st1, it1, P0_BASIS, FP0_BASIS;
-    int species, i, ibrav;
+    int species, i;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
@@ -76,7 +76,6 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
     time1 = my_crtc ();
 
-    ibrav = get_ibrav_type();
     P0_BASIS = get_P0_BASIS();
     FP0_BASIS = get_FP0_BASIS();
     PX0_GRID = get_PX0_GRID();
@@ -138,14 +137,11 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
 
     /* initialize the lattice basis vectors */
-    flag = 0;
-    latgen (&ibrav, ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
-
-    /* initialize the lattice basis vectors */
-
+//    flag = 0;
+//    latgen (ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
 
     /* initialize the reciprocal lattice vectors */
-    recips ();
+//    recips ();
 
     /* Initialize some k-point stuff */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)

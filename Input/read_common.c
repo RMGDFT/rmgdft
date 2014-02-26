@@ -36,7 +36,7 @@
 
 void read_common ()
 {
-    int tmp, is, ibrav;
+    int tmp, is, ibrav, flag;
     char *tbuf, *tptr;
     rmg_double_t time1;
     static int run_count = - 1;
@@ -301,7 +301,15 @@ void read_common ()
     }
     
 
+    /* initialize the lattice basis vectors */
+    flag = 0;
 
+    latgen (ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
+    ct.hxxgrid = get_hxxgrid();
+    ct.hyygrid = get_hyygrid();
+    ct.hzzgrid = get_hzzgrid();
+    ct.vel = get_vel();
+    ct.vel_f = get_vel_f();
 
     /* Mehrstellen smoothings pre, post, step, vcycles */
     get_data ("kohn_sham_pre_smoothing", &ct.eig_parm.gl_pre, INT, "2");

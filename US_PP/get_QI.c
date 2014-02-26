@@ -36,6 +36,7 @@ void get_QI (void)
     aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
             lpl);
 
+
     alloc = ct.max_Qpoints;
     my_malloc (pvec, 2 * alloc, int);
     dvec = pvec + alloc;

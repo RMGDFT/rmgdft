@@ -4,14 +4,14 @@ pack_ptos.c
 get_index.c
 global_sums.c
 real_sum_all.c
-to_cartesian.c
+#to_cartesian.c
 minimage.c
 pack_stop.c
-recips.c
+#recips.c
 get_vtot_psi.c
-to_crystal.c
+#to_crystal.c
 trade_imagesx_async.c
-cross_product.c
+#cross_product.c
 my_mpi.c
 metric.c
 pack_vhstod.c
@@ -19,7 +19,7 @@ int_sum_all.c
 blaswrappers.c
 set_bc.c
 cgen_prolong.c
-latgen.c
+#latgen.c
 pack_vhdtos.c
 mg_restrict_6.c
 ATL_assert.c
@@ -30,6 +30,7 @@ rmg_alloc.c
 ions.c
 BaseGrid.cpp
 BaseThread.cpp
+Lattice.cpp
 TradeImages.cpp
 transition.cpp
 )

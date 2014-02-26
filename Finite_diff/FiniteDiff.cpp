@@ -1363,7 +1363,7 @@ template <typename RmgType>
 void FD_app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, numgrid, tid, ibrav;
+    int ix, iy, iz, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
@@ -1423,7 +1423,6 @@ void FD_app_cir_fourth_global (RmgType * rptr, RmgType * b)
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
-    rmg_double_t rz, rzps, rzms, rzpps;
     rmg_double_t c000, c100;
 
     incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);

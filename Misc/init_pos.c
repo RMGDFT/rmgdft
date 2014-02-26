@@ -65,16 +65,16 @@ void init_pos ()
 
             for (ir = 0; ir < 3; ir++)
             {
-                iptr->xtal[ir] = iptr->crds[0] * b0[ir]
-                    + iptr->crds[1] * b1[ir] + iptr->crds[2] * b2[ir];
+                iptr->xtal[ir] = iptr->crds[0] * get_b0(ir)
+                    + iptr->crds[1] * get_b1(ir) + iptr->crds[2] * get_b2(ir);
             }                   /* end for ir */
 
             if (ibrav == HEXAGONAL)
             {
 
-                iptr->xtal[0] = (iptr->crds[0] - iptr->crds[1] / SR3) / ct.celldm[0];
-                iptr->xtal[1] = iptr->crds[1] / (SR3 / 2.0) / ct.celldm[0];
-                iptr->xtal[2] = iptr->crds[2] * b2[2];
+                iptr->xtal[0] = (iptr->crds[0] - iptr->crds[1] / SR3) / get_celldm(0);
+                iptr->xtal[1] = iptr->crds[1] / (SR3 / 2.0) / get_celldm(0);
+                iptr->xtal[2] = iptr->crds[2] * get_b2(2);
 
                 if (iptr->xtal[0] < 0.0)
                     iptr->xtal[0] += 1.0;
@@ -105,8 +105,8 @@ void init_pos ()
             iptr = &ct.ions[i];
             for (ir = 0; ir < 3; ir++)
             {
-                iptr->crds[ir] = iptr->xtal[0] * ct.a0[ir]
-                    + iptr->xtal[1] * ct.a1[ir] + iptr->xtal[2] * ct.a2[ir];
+                iptr->crds[ir] = iptr->xtal[0] * get_a0(ir)
+                    + iptr->xtal[1] * get_a1(ir) + iptr->xtal[2] * get_a2(ir);
             }                   /* end for ir */
 
         }                       /* end for i */

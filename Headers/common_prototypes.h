@@ -177,6 +177,19 @@ rmg_double_t get_zside(void);
 rmg_double_t get_hxgrid(void);
 rmg_double_t get_hygrid(void);
 rmg_double_t get_hzgrid(void);
+rmg_double_t get_hxxgrid(void);
+rmg_double_t get_hyygrid(void);
+rmg_double_t get_hzzgrid(void);
+rmg_double_t get_vel(void);
+rmg_double_t get_vel_f(void);
+rmg_double_t get_celldm(int which);
+rmg_double_t get_a0(int which);
+rmg_double_t get_a1(int which);
+rmg_double_t get_a2(int which);
+rmg_double_t get_b0(int which);
+rmg_double_t get_b1(int which);
+rmg_double_t get_b2(int which);
+
 
 void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);

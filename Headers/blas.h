@@ -79,7 +79,6 @@
 #  define		symrho  	symrho_
 #  define		fsymforces  	fsymforces_
 #  define		symmetry 	symmetry_
-#  define		latgen 		latgen_
 #  define		fgram   	dfgram_
 #  define		dlamch  	dlamch_
 #  define		dgemm  	        dgemm_

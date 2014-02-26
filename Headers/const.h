@@ -57,6 +57,8 @@
 #define		twoPI       6.28318530718
 #define		threePI     9.42477796077
 #define		fourPI     12.56637061436
+#define         SQRT2       1.414213562373
+#define         SQRT3       1.732050807569
 
 
 /* Physical constants and conversion factors obtained from NIST
