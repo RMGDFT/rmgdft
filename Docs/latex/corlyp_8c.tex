@@ -1,0 +1,134 @@
+\hypertarget{corlyp_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-X\-C/corlyp.c File Reference}
+\label{corlyp_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-X\-C/corlyp.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-X\-C/corlyp.\-c}}
+}
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}rmgtypes.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}rmg\-\_\-alloc.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}xc.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{corlyp_8c_a34961a046133dbbf9e99f7077377a262}{aa}~0.\-049180
+\item 
+\#define \hyperlink{corlyp_8c_afe4fb267f5fd876bc5f069b0a76054e4}{bb}~0.\-1320
+\item 
+\#define \hyperlink{corlyp_8c_ab4f83dc456530b76524da0756cc48dad}{cc}~0.\-25330
+\item 
+\#define \hyperlink{corlyp_8c_ad00e18ad511504c9caeaf5638622f9aa}{dd}~0.\-3490
+\item 
+\#define \hyperlink{corlyp_8c_a8f9aca421a560153a31ebb326da34216}{c1}~(-\/4$\ast$\hyperlink{gga__k__dk_8c_a74b87337454200d4d33f80c4663dc5e5}{aa})
+\item 
+\#define \hyperlink{corlyp_8c_a029b8c811cc05eaa3f86df139d8fe4e5}{c2}~\hyperlink{corlyp_8c_ad00e18ad511504c9caeaf5638622f9aa}{dd}
+\item 
+\#define \hyperlink{corlyp_8c_afcc397a4b15ce38bc6de2695d5422606}{c3}~(2$\ast$\hyperlink{gga__k__dk_8c_a65ba841e01d6db7733e90a5b7f9e6f80}{bb})
+\item 
+\#define \hyperlink{corlyp_8c_ade0eb41f3b0fc120faa64b38ad6aef19}{c4}~\hyperlink{gga__xc__b97_8c_ae63dbdd6b4b8cda4464c5c403ae8e7ff}{cc}
+\item 
+\#define \hyperlink{corlyp_8c_a3daf8162d25584c3bdcc96fd983bc61e}{c5}~4.\-557799860
+\item 
+\#define \hyperlink{corlyp_8c_a101fda1fdb848294fe7d5b360d6c9e0a}{c6}~(1.\-0/72.\-0)
+\item 
+\#define \hyperlink{corlyp_8c_a499febbb91bdb7d9432cb1905d0f2b57}{c7}~(1.\-0/18.\-0)
+\item 
+\#define \hyperlink{corlyp_8c_a124e7badfbd3cfad8874e40ff8fff666}{c8}~0.\-1250
+\item 
+\#define \hyperlink{corlyp_8c_a00ac896df24dadf130ec1b9725adc9a0}{t13}~(1.\-0/3.\-0)
+\item 
+\#define \hyperlink{corlyp_8c_a413306f1406e40c688072d8fe6d00a8f}{t53}~(5$\ast$\hyperlink{corlyp_8c_a00ac896df24dadf130ec1b9725adc9a0}{t13})
+\item 
+\#define \hyperlink{corlyp_8c_a9e3a203f31420d02c0da911c7bd3ed08}{t43}~(4$\ast$\hyperlink{corlyp_8c_a00ac896df24dadf130ec1b9725adc9a0}{t13})
+\item 
+\#define \hyperlink{corlyp_8c_a86d2879ff9d982aa8d1e3f866383fd16}{t83}~(2$\ast$\hyperlink{corlyp_8c_a9e3a203f31420d02c0da911c7bd3ed08}{t43})
+\item 
+\#define \hyperlink{corlyp_8c_aad0aa5a8b823cd084ce85623f4081418}{t89}~(8.\-0/9.\-0)
+\item 
+\#define \hyperlink{corlyp_8c_ae9b7e9de6596d2e5039f1d4e2fc9df1d}{c9}~(\hyperlink{corlyp_8c_a9e3a203f31420d02c0da911c7bd3ed08}{t43}+\hyperlink{corlyp_8c_aad0aa5a8b823cd084ce85623f4081418}{t89})
+\item 
+\#define \hyperlink{corlyp_8c_a361b1d0588e13a7b5994f24b40138ec0}{zero}~0.\-0
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{corlyp_8c_a25e869fae16999796783a99c90f8d13a}{corlyp} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dp, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dm, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dp1, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dm1, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dp2, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dm2, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcp0, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcm0, int $\ast$ndm)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{corlyp_8c_a34961a046133dbbf9e99f7077377a262}{\index{corlyp.\-c@{corlyp.\-c}!aa@{aa}}
+\index{aa@{aa}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{aa}]{\setlength{\rightskip}{0pt plus 5cm}\#define aa~0.\-049180}}\label{corlyp_8c_a34961a046133dbbf9e99f7077377a262}
+\hypertarget{corlyp_8c_afe4fb267f5fd876bc5f069b0a76054e4}{\index{corlyp.\-c@{corlyp.\-c}!bb@{bb}}
+\index{bb@{bb}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{bb}]{\setlength{\rightskip}{0pt plus 5cm}\#define bb~0.\-1320}}\label{corlyp_8c_afe4fb267f5fd876bc5f069b0a76054e4}
+\hypertarget{corlyp_8c_a8f9aca421a560153a31ebb326da34216}{\index{corlyp.\-c@{corlyp.\-c}!c1@{c1}}
+\index{c1@{c1}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c1}]{\setlength{\rightskip}{0pt plus 5cm}\#define c1~(-\/4$\ast${\bf aa})}}\label{corlyp_8c_a8f9aca421a560153a31ebb326da34216}
+\hypertarget{corlyp_8c_a029b8c811cc05eaa3f86df139d8fe4e5}{\index{corlyp.\-c@{corlyp.\-c}!c2@{c2}}
+\index{c2@{c2}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c2}]{\setlength{\rightskip}{0pt plus 5cm}\#define c2~{\bf dd}}}\label{corlyp_8c_a029b8c811cc05eaa3f86df139d8fe4e5}
+\hypertarget{corlyp_8c_afcc397a4b15ce38bc6de2695d5422606}{\index{corlyp.\-c@{corlyp.\-c}!c3@{c3}}
+\index{c3@{c3}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c3}]{\setlength{\rightskip}{0pt plus 5cm}\#define c3~(2$\ast${\bf bb})}}\label{corlyp_8c_afcc397a4b15ce38bc6de2695d5422606}
+\hypertarget{corlyp_8c_ade0eb41f3b0fc120faa64b38ad6aef19}{\index{corlyp.\-c@{corlyp.\-c}!c4@{c4}}
+\index{c4@{c4}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c4}]{\setlength{\rightskip}{0pt plus 5cm}\#define c4~{\bf cc}}}\label{corlyp_8c_ade0eb41f3b0fc120faa64b38ad6aef19}
+\hypertarget{corlyp_8c_a3daf8162d25584c3bdcc96fd983bc61e}{\index{corlyp.\-c@{corlyp.\-c}!c5@{c5}}
+\index{c5@{c5}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c5}]{\setlength{\rightskip}{0pt plus 5cm}\#define c5~4.\-557799860}}\label{corlyp_8c_a3daf8162d25584c3bdcc96fd983bc61e}
+\hypertarget{corlyp_8c_a101fda1fdb848294fe7d5b360d6c9e0a}{\index{corlyp.\-c@{corlyp.\-c}!c6@{c6}}
+\index{c6@{c6}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c6}]{\setlength{\rightskip}{0pt plus 5cm}\#define c6~(1.\-0/72.\-0)}}\label{corlyp_8c_a101fda1fdb848294fe7d5b360d6c9e0a}
+\hypertarget{corlyp_8c_a499febbb91bdb7d9432cb1905d0f2b57}{\index{corlyp.\-c@{corlyp.\-c}!c7@{c7}}
+\index{c7@{c7}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c7}]{\setlength{\rightskip}{0pt plus 5cm}\#define c7~(1.\-0/18.\-0)}}\label{corlyp_8c_a499febbb91bdb7d9432cb1905d0f2b57}
+\hypertarget{corlyp_8c_a124e7badfbd3cfad8874e40ff8fff666}{\index{corlyp.\-c@{corlyp.\-c}!c8@{c8}}
+\index{c8@{c8}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c8}]{\setlength{\rightskip}{0pt plus 5cm}\#define c8~0.\-1250}}\label{corlyp_8c_a124e7badfbd3cfad8874e40ff8fff666}
+\hypertarget{corlyp_8c_ae9b7e9de6596d2e5039f1d4e2fc9df1d}{\index{corlyp.\-c@{corlyp.\-c}!c9@{c9}}
+\index{c9@{c9}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{c9}]{\setlength{\rightskip}{0pt plus 5cm}\#define c9~({\bf t43}+{\bf t89})}}\label{corlyp_8c_ae9b7e9de6596d2e5039f1d4e2fc9df1d}
+\hypertarget{corlyp_8c_ab4f83dc456530b76524da0756cc48dad}{\index{corlyp.\-c@{corlyp.\-c}!cc@{cc}}
+\index{cc@{cc}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{cc}]{\setlength{\rightskip}{0pt plus 5cm}\#define cc~0.\-25330}}\label{corlyp_8c_ab4f83dc456530b76524da0756cc48dad}
+\hypertarget{corlyp_8c_ad00e18ad511504c9caeaf5638622f9aa}{\index{corlyp.\-c@{corlyp.\-c}!dd@{dd}}
+\index{dd@{dd}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{dd}]{\setlength{\rightskip}{0pt plus 5cm}\#define dd~0.\-3490}}\label{corlyp_8c_ad00e18ad511504c9caeaf5638622f9aa}
+\hypertarget{corlyp_8c_a00ac896df24dadf130ec1b9725adc9a0}{\index{corlyp.\-c@{corlyp.\-c}!t13@{t13}}
+\index{t13@{t13}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{t13}]{\setlength{\rightskip}{0pt plus 5cm}\#define t13~(1.\-0/3.\-0)}}\label{corlyp_8c_a00ac896df24dadf130ec1b9725adc9a0}
+\hypertarget{corlyp_8c_a9e3a203f31420d02c0da911c7bd3ed08}{\index{corlyp.\-c@{corlyp.\-c}!t43@{t43}}
+\index{t43@{t43}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{t43}]{\setlength{\rightskip}{0pt plus 5cm}\#define t43~(4$\ast${\bf t13})}}\label{corlyp_8c_a9e3a203f31420d02c0da911c7bd3ed08}
+\hypertarget{corlyp_8c_a413306f1406e40c688072d8fe6d00a8f}{\index{corlyp.\-c@{corlyp.\-c}!t53@{t53}}
+\index{t53@{t53}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{t53}]{\setlength{\rightskip}{0pt plus 5cm}\#define t53~(5$\ast${\bf t13})}}\label{corlyp_8c_a413306f1406e40c688072d8fe6d00a8f}
+\hypertarget{corlyp_8c_a86d2879ff9d982aa8d1e3f866383fd16}{\index{corlyp.\-c@{corlyp.\-c}!t83@{t83}}
+\index{t83@{t83}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{t83}]{\setlength{\rightskip}{0pt plus 5cm}\#define t83~(2$\ast${\bf t43})}}\label{corlyp_8c_a86d2879ff9d982aa8d1e3f866383fd16}
+\hypertarget{corlyp_8c_aad0aa5a8b823cd084ce85623f4081418}{\index{corlyp.\-c@{corlyp.\-c}!t89@{t89}}
+\index{t89@{t89}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{t89}]{\setlength{\rightskip}{0pt plus 5cm}\#define t89~(8.\-0/9.\-0)}}\label{corlyp_8c_aad0aa5a8b823cd084ce85623f4081418}
+\hypertarget{corlyp_8c_a361b1d0588e13a7b5994f24b40138ec0}{\index{corlyp.\-c@{corlyp.\-c}!zero@{zero}}
+\index{zero@{zero}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{zero}]{\setlength{\rightskip}{0pt plus 5cm}\#define zero~0.\-0}}\label{corlyp_8c_a361b1d0588e13a7b5994f24b40138ec0}
+
+
+\subsection{Function Documentation}
+\hypertarget{corlyp_8c_a25e869fae16999796783a99c90f8d13a}{\index{corlyp.\-c@{corlyp.\-c}!corlyp@{corlyp}}
+\index{corlyp@{corlyp}!corlyp.c@{corlyp.\-c}}
+\subsubsection[{corlyp}]{\setlength{\rightskip}{0pt plus 5cm}void corlyp (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dp, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dm, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dp1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dm1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dp2, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dm2, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcp0, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcm0, }
+\item[{int $\ast$}]{ndm}
+\end{DoxyParamCaption}
+)}}\label{corlyp_8c_a25e869fae16999796783a99c90f8d13a}

@@ -1,0 +1,44 @@
+\hypertarget{gga__x__sogga11_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-x\-\_\-sogga11.c File Reference}
+\label{gga__x__sogga11_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-x\-\_\-sogga11.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-x\-\_\-sogga11.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}work\-\_\-gga\-\_\-x.\-c\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{gga__x__sogga11_8c_aa7a42b6a54b9f3902c2ba350be5eadda}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}~151 /$\ast$ Second-\/order generalized gradient approximation 2011 $\ast$/
+\item 
+\#define \hyperlink{gga__x__sogga11_8c_a0db319dea2f3bb2ab101b45788ff5cf8}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}~426 /$\ast$ Hybrid based on S\-O\-G\-G\-A11 form $\ast$/
+\item 
+\#define \hyperlink{gga__x__sogga11_8c_a51567a30f19872c575cede7b2b86b03e}{func}~\hyperlink{struct_x_c}{X\-C}(gga\-\_\-x\-\_\-sogga11\-\_\-enhance)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+const \hyperlink{gga__x__sogga11_8c_a7924f1c1821b20cc7464c5448269d2a4}{X\-C} (func\-\_\-info\-\_\-type)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{gga__x__sogga11_8c_a51567a30f19872c575cede7b2b86b03e}{\index{gga\-\_\-x\-\_\-sogga11.\-c@{gga\-\_\-x\-\_\-sogga11.\-c}!func@{func}}
+\index{func@{func}!gga_x_sogga11.c@{gga\-\_\-x\-\_\-sogga11.\-c}}
+\subsubsection[{func}]{\setlength{\rightskip}{0pt plus 5cm}\#define func~{\bf X\-C}(gga\-\_\-x\-\_\-sogga11\-\_\-enhance)}}\label{gga__x__sogga11_8c_a51567a30f19872c575cede7b2b86b03e}
+\hypertarget{gga__x__sogga11_8c_aa7a42b6a54b9f3902c2ba350be5eadda}{\index{gga\-\_\-x\-\_\-sogga11.\-c@{gga\-\_\-x\-\_\-sogga11.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}!gga_x_sogga11.c@{gga\-\_\-x\-\_\-sogga11.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11~151 /$\ast$ Second-\/order generalized gradient approximation 2011 $\ast$/}}\label{gga__x__sogga11_8c_aa7a42b6a54b9f3902c2ba350be5eadda}
+\hypertarget{gga__x__sogga11_8c_a0db319dea2f3bb2ab101b45788ff5cf8}{\index{gga\-\_\-x\-\_\-sogga11.\-c@{gga\-\_\-x\-\_\-sogga11.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}!gga_x_sogga11.c@{gga\-\_\-x\-\_\-sogga11.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X~426 /$\ast$ Hybrid based on S\-O\-G\-G\-A11 form $\ast$/}}\label{gga__x__sogga11_8c_a0db319dea2f3bb2ab101b45788ff5cf8}
+
+
+\subsection{Function Documentation}
+\hypertarget{gga__x__sogga11_8c_a7924f1c1821b20cc7464c5448269d2a4}{\index{gga\-\_\-x\-\_\-sogga11.\-c@{gga\-\_\-x\-\_\-sogga11.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!gga_x_sogga11.c@{gga\-\_\-x\-\_\-sogga11.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}const {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__x__sogga11_8c_a7924f1c1821b20cc7464c5448269d2a4}

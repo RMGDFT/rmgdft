@@ -1,0 +1,54 @@
+\hypertarget{init__soft_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-N\-E\-G\-F/\-Common/init\-\_\-soft.c File Reference}
+\label{init__soft_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-N\-E\-G\-F/\-Common/init\-\_\-soft.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-N\-E\-G\-F/\-Common/init\-\_\-soft.\-c}}
+}
+{\ttfamily \#include $<$float.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}init\-\_\-var.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}L\-C\-R.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}pmo.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{init__soft_8c_ac6afabdc09a49a433ee19d8a9486056d}{min}(\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}, \hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b})~(((\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a})$>$(\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b})) ? (\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}) \-: (\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}))
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{init__soft_8c_a27130c7c129146d756ea637d09f1293c}{init\-\_\-soft} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a87a16b1e9c2f7f452cb26d0e5c11e25b}{vh}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a591b660d2f8ec39665ed0237c56502b9}{rhocore}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a5e9e67f3a37119e4c22c096a300ca7a3}{rhoc}, \hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{md_8h_a286ebf6b996d2b1827eb9a889dfc83d7}{states}, \hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{md_8h_a10867c0650687df1688d9455980e10a9}{states1}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a46d07cd58431537b88a42087aa4e15f0}{vnuc}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{main__ne_8h_a23285842c367fe54ba908a40911332c4}{vext}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a48f792faf570d41e1d58b4a4e1bce251}{vxc}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a529fecb50178c983cd3d1c1229594615}{vh\-\_\-old}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_aecacb1a1e17375e2295ea93f64010f77}{vxc\-\_\-old}, \hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{init__var_8h_a07200ddd8743e66a8107f734f3a1013f}{states\-\_\-distribute})
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{init__soft_8c_ac6afabdc09a49a433ee19d8a9486056d}{\index{init\-\_\-soft.\-c@{init\-\_\-soft.\-c}!min@{min}}
+\index{min@{min}!init_soft.c@{init\-\_\-soft.\-c}}
+\subsubsection[{min}]{\setlength{\rightskip}{0pt plus 5cm}\#define min(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf a}, }
+\item[{}]{{\bf b}}
+\end{DoxyParamCaption}
+)~((({\bf a})$>$({\bf b})) ? ({\bf b}) \-: ({\bf a}))}}\label{init__soft_8c_ac6afabdc09a49a433ee19d8a9486056d}
+
+
+\subsection{Function Documentation}
+\hypertarget{init__soft_8c_a27130c7c129146d756ea637d09f1293c}{\index{init\-\_\-soft.\-c@{init\-\_\-soft.\-c}!init\-\_\-soft@{init\-\_\-soft}}
+\index{init\-\_\-soft@{init\-\_\-soft}!init_soft.c@{init\-\_\-soft.\-c}}
+\subsubsection[{init\-\_\-soft}]{\setlength{\rightskip}{0pt plus 5cm}void init\-\_\-soft (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vh, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rho, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rhocore, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rhoc, }
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states, }
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vnuc, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vext, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vxc, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vh\-\_\-old, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vxc\-\_\-old, }
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states\-\_\-distribute}
+\end{DoxyParamCaption}
+)}}\label{init__soft_8c_a27130c7c129146d756ea637d09f1293c}

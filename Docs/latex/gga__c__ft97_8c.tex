@@ -1,0 +1,110 @@
+\hypertarget{gga__c__ft97_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-c\-\_\-ft97.c File Reference}
+\label{gga__c__ft97_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-c\-\_\-ft97.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-c\-\_\-ft97.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}work\-\_\-gga\-\_\-c.\-c\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{gga__c__ft97_8c_a2bc5895e3a2180d0f74a64c55c0e972a}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97}~88 /$\ast$ Filatov \& Thiel correlation $\ast$/
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{gga__c__ft97_8c_a942908bb13972daa2be468c125980ff8}{func\-\_\-kssp0} (\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} rs, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$kssp0, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dkssp0)
+\item 
+void \hyperlink{gga__c__ft97_8c_aaf6c9f93f7512cc180e618414c0c44df}{func\-\_\-fssp} (\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} rs, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gr, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$fssp, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dfsspdrs, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dfsspdgr)
+\item 
+void \hyperlink{gga__c__ft97_8c_af3773bed2e5dfbe33007421eb0214a81}{func\-\_\-factor} (\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} rs, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$fa, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dfa)
+\item 
+void \hyperlink{gga__c__ft97_8c_a5e643731f721aefa121876a6c6a10c54}{func\-\_\-kss0} (\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} rs, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$kss0, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dkss0)
+\item 
+void \hyperlink{gga__c__ft97_8c_a9f0727102a853327c12b7a76d7b13bf1}{func\-\_\-fss} (\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} rs, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gr, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$fss, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dfssdrs, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dfssdgr)
+\item 
+void \hyperlink{gga__c__ft97_8c_ae333239bbf3bbe83e57f7b870119cb36}{func\-\_\-eab} (\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} mu, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$eab, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$deabdmu)
+\item 
+const \hyperlink{gga__c__ft97_8c_a7924f1c1821b20cc7464c5448269d2a4}{X\-C} (func\-\_\-info\-\_\-type)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{gga__c__ft97_8c_a2bc5895e3a2180d0f74a64c55c0e972a}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-F\-T97~88 /$\ast$ Filatov \& Thiel correlation $\ast$/}}\label{gga__c__ft97_8c_a2bc5895e3a2180d0f74a64c55c0e972a}
+
+
+\subsection{Function Documentation}
+\hypertarget{gga__c__ft97_8c_ae333239bbf3bbe83e57f7b870119cb36}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!func\-\_\-eab@{func\-\_\-eab}}
+\index{func\-\_\-eab@{func\-\_\-eab}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{func\-\_\-eab}]{\setlength{\rightskip}{0pt plus 5cm}void func\-\_\-eab (
+\begin{DoxyParamCaption}
+\item[{{\bf F\-L\-O\-A\-T}}]{mu, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{eab, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{deabdmu}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_ae333239bbf3bbe83e57f7b870119cb36}
+\hypertarget{gga__c__ft97_8c_af3773bed2e5dfbe33007421eb0214a81}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!func\-\_\-factor@{func\-\_\-factor}}
+\index{func\-\_\-factor@{func\-\_\-factor}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{func\-\_\-factor}]{\setlength{\rightskip}{0pt plus 5cm}void func\-\_\-factor (
+\begin{DoxyParamCaption}
+\item[{{\bf F\-L\-O\-A\-T}}]{rs, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{fa, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dfa}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_af3773bed2e5dfbe33007421eb0214a81}
+\hypertarget{gga__c__ft97_8c_a9f0727102a853327c12b7a76d7b13bf1}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!func\-\_\-fss@{func\-\_\-fss}}
+\index{func\-\_\-fss@{func\-\_\-fss}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{func\-\_\-fss}]{\setlength{\rightskip}{0pt plus 5cm}void func\-\_\-fss (
+\begin{DoxyParamCaption}
+\item[{{\bf F\-L\-O\-A\-T}}]{rs, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gr, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{fss, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dfssdrs, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dfssdgr}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_a9f0727102a853327c12b7a76d7b13bf1}
+\hypertarget{gga__c__ft97_8c_aaf6c9f93f7512cc180e618414c0c44df}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!func\-\_\-fssp@{func\-\_\-fssp}}
+\index{func\-\_\-fssp@{func\-\_\-fssp}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{func\-\_\-fssp}]{\setlength{\rightskip}{0pt plus 5cm}void func\-\_\-fssp (
+\begin{DoxyParamCaption}
+\item[{{\bf F\-L\-O\-A\-T}}]{rs, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gr, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{fssp, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dfsspdrs, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dfsspdgr}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_aaf6c9f93f7512cc180e618414c0c44df}
+\hypertarget{gga__c__ft97_8c_a5e643731f721aefa121876a6c6a10c54}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!func\-\_\-kss0@{func\-\_\-kss0}}
+\index{func\-\_\-kss0@{func\-\_\-kss0}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{func\-\_\-kss0}]{\setlength{\rightskip}{0pt plus 5cm}void func\-\_\-kss0 (
+\begin{DoxyParamCaption}
+\item[{{\bf F\-L\-O\-A\-T}}]{rs, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{kss0, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dkss0}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_a5e643731f721aefa121876a6c6a10c54}
+\hypertarget{gga__c__ft97_8c_a942908bb13972daa2be468c125980ff8}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!func\-\_\-kssp0@{func\-\_\-kssp0}}
+\index{func\-\_\-kssp0@{func\-\_\-kssp0}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{func\-\_\-kssp0}]{\setlength{\rightskip}{0pt plus 5cm}void func\-\_\-kssp0 (
+\begin{DoxyParamCaption}
+\item[{{\bf F\-L\-O\-A\-T}}]{rs, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{kssp0, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dkssp0}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_a942908bb13972daa2be468c125980ff8}
+\hypertarget{gga__c__ft97_8c_a7924f1c1821b20cc7464c5448269d2a4}{\index{gga\-\_\-c\-\_\-ft97.\-c@{gga\-\_\-c\-\_\-ft97.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!gga_c_ft97.c@{gga\-\_\-c\-\_\-ft97.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}const {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__c__ft97_8c_a7924f1c1821b20cc7464c5448269d2a4}

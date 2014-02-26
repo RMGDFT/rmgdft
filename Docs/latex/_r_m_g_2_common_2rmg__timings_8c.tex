@@ -1,0 +1,118 @@
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Common/rmg\-\_\-timings.c File Reference}
+\label{_r_m_g_2_common_2rmg__timings_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+}
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+{\ttfamily \#include $<$time.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$sys/time.\-h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{_r_m_g_2_common_2rmg__timings_8c_ad4f27297656ff44dfb8462b0ca3503a3}{printf\-\_\-timing\-\_\-line1}(\-\_\-title\-\_\-, \-\_\-index\-\_\-)
+\item 
+\#define \hyperlink{_r_m_g_2_common_2rmg__timings_8c_a0410bd8caff885fdb81716d28f30cbae}{printf\-\_\-timing\-\_\-line2}(\-\_\-title\-\_\-, \-\_\-index\-\_\-)
+\item 
+\#define \hyperlink{_r_m_g_2_common_2rmg__timings_8c_a7e4d08e7d1828f45e3cdbbb750dd793f}{printf\-\_\-timing\-\_\-line3}(\-\_\-title\-\_\-, \-\_\-index\-\_\-)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_r_m_g_2_common_2rmg__timings_8c_a2b5436615ee6e5514aff74049dfbf90d}{rmg\-\_\-timings} (int what, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} time)
+\item 
+\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{_r_m_g_2_common_2rmg__timings_8c_abcd139c75cd146453d016098f35f220e}{my\-\_\-crtc} (void)
+\item 
+void \hyperlink{_r_m_g_2_common_2rmg__timings_8c_a7b71b575505e37ce0fef82cdcf9e19cf}{write\-\_\-timings} (void)
+\item 
+void \hyperlink{_r_m_g_2_common_2rmg__timings_8c_a029db71f0531d893cead30db529bec37}{reset\-\_\-timers} (void)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{_r_m_g_2_common_2rmg__timings_8c_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings} \mbox{[}\hyperlink{_t_d_d_f_t_2_headers_2const_8h_a051c673542f854e03481832ab29ae3a2}{L\-A\-S\-T\-\_\-\-T\-I\-M\-E}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_ad4f27297656ff44dfb8462b0ca3503a3}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!printf\-\_\-timing\-\_\-line1@{printf\-\_\-timing\-\_\-line1}}
+\index{printf\-\_\-timing\-\_\-line1@{printf\-\_\-timing\-\_\-line1}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{printf\-\_\-timing\-\_\-line1}]{\setlength{\rightskip}{0pt plus 5cm}\#define printf\-\_\-timing\-\_\-line1(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-title\-\_\-, }
+\item[{}]{\-\_\-index\-\_\-}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_ad4f27297656ff44dfb8462b0ca3503a3}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{printf}(\_title\_ \textcolor{stringliteral}{"%12.2f (%5.1f%%)\(\backslash\)n"}, \(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_],\(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_] / total\_time *100.0 );
+\end{DoxyCode}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_a0410bd8caff885fdb81716d28f30cbae}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!printf\-\_\-timing\-\_\-line2@{printf\-\_\-timing\-\_\-line2}}
+\index{printf\-\_\-timing\-\_\-line2@{printf\-\_\-timing\-\_\-line2}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{printf\-\_\-timing\-\_\-line2}]{\setlength{\rightskip}{0pt plus 5cm}\#define printf\-\_\-timing\-\_\-line2(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-title\-\_\-, }
+\item[{}]{\-\_\-index\-\_\-}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_a0410bd8caff885fdb81716d28f30cbae}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{printf}(\_title\_ \textcolor{stringliteral}{"%12.2f (%5.1f%%)    %12.2f\(\backslash\)n"}, \(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_],\(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_] / total\_time *100.0, \(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_] / md\_steps)
+\end{DoxyCode}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_a7e4d08e7d1828f45e3cdbbb750dd793f}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!printf\-\_\-timing\-\_\-line3@{printf\-\_\-timing\-\_\-line3}}
+\index{printf\-\_\-timing\-\_\-line3@{printf\-\_\-timing\-\_\-line3}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{printf\-\_\-timing\-\_\-line3}]{\setlength{\rightskip}{0pt plus 5cm}\#define printf\-\_\-timing\-\_\-line3(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-title\-\_\-, }
+\item[{}]{\-\_\-index\-\_\-}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_a7e4d08e7d1828f45e3cdbbb750dd793f}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{printf}(\_title\_ \textcolor{stringliteral}{"%12.2f (%5.1f%%)    %12.2f     %12.2f\(\backslash\)n"}, \(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_],\(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_] / total\_time *100.0, \(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_] / md\_steps, \(\backslash\)
+                                                       \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings}[\_index\_] / total\_scf\_steps)
+\end{DoxyCode}
+
+
+\subsection{Function Documentation}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_abcd139c75cd146453d016098f35f220e}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!my\-\_\-crtc@{my\-\_\-crtc}}
+\index{my\-\_\-crtc@{my\-\_\-crtc}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{my\-\_\-crtc}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} my\-\_\-crtc (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_abcd139c75cd146453d016098f35f220e}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_a029db71f0531d893cead30db529bec37}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!reset\-\_\-timers@{reset\-\_\-timers}}
+\index{reset\-\_\-timers@{reset\-\_\-timers}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{reset\-\_\-timers}]{\setlength{\rightskip}{0pt plus 5cm}void reset\-\_\-timers (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_a029db71f0531d893cead30db529bec37}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_a2b5436615ee6e5514aff74049dfbf90d}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!rmg\-\_\-timings@{rmg\-\_\-timings}}
+\index{rmg\-\_\-timings@{rmg\-\_\-timings}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{rmg\-\_\-timings}]{\setlength{\rightskip}{0pt plus 5cm}void rmg\-\_\-timings (
+\begin{DoxyParamCaption}
+\item[{int}]{what, }
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{time}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_a2b5436615ee6e5514aff74049dfbf90d}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_a7b71b575505e37ce0fef82cdcf9e19cf}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!write\-\_\-timings@{write\-\_\-timings}}
+\index{write\-\_\-timings@{write\-\_\-timings}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{write\-\_\-timings}]{\setlength{\rightskip}{0pt plus 5cm}void write\-\_\-timings (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_r_m_g_2_common_2rmg__timings_8c_a7b71b575505e37ce0fef82cdcf9e19cf}
+
+
+\subsection{Variable Documentation}
+\hypertarget{_r_m_g_2_common_2rmg__timings_8c_ad1413c63d6a297ca28efdb6d2f41fbc6}{\index{R\-M\-G/\-Common/rmg\-\_\-timings.\-c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}!timings@{timings}}
+\index{timings@{timings}!RMG/Common/rmg_timings.c@{R\-M\-G/\-Common/rmg\-\_\-timings.\-c}}
+\subsubsection[{timings}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} timings\mbox{[}{\bf L\-A\-S\-T\-\_\-\-T\-I\-M\-E}\mbox{]}}}\label{_r_m_g_2_common_2rmg__timings_8c_ad1413c63d6a297ca28efdb6d2f41fbc6}

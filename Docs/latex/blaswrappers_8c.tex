@@ -1,0 +1,185 @@
+\hypertarget{blaswrappers_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Misc/blaswrappers.c File Reference}
+\label{blaswrappers_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Misc/blaswrappers.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Misc/blaswrappers.\-c}}
+}
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{blaswrappers_8c_a561819d91960c97e4d708de90b41c818}{Q\-M\-D\-\_\-daxpy} (int n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int incy)
+\item 
+void \hyperlink{blaswrappers_8c_a437c528d440417beb366884a494b7916}{Q\-M\-D\-\_\-dscal} (int n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int incx)
+\item 
+void \hyperlink{blaswrappers_8c_aa1119e8ce13a78306e648c9c4d8accab}{Q\-M\-D\-\_\-dcopy} (int n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int incy)
+\item 
+\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{blaswrappers_8c_a2ce5b5dc93e455af6330ccff9908d7ef}{Q\-M\-D\-\_\-ddot} (int n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int incy)
+\item 
+void \hyperlink{blaswrappers_8c_aeffcddeea2c0f7df8cb4a3099d306615}{Q\-M\-D\-\_\-dswap} (int n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int incy)
+\item 
+void \hyperlink{blaswrappers_8c_a9ff89e02f37998dd6da3fcc17e3da6cd}{my\-\_\-copy} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$in, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$out, int length)
+\item 
+void \hyperlink{blaswrappers_8c_a01db4f9ba0e64fafeedbc4b482f8ab8e}{my\-\_\-scal} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vect, int length)
+\item 
+void \hyperlink{blaswrappers_8c_a30e5ac235b33c7689568831fd0fc5a8b}{my\-\_\-axpy} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$in, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$out, int length)
+\item 
+void \hyperlink{blaswrappers_8c_accf8f9d0d1bd5a03942551fbf3f11cb5}{my\-\_\-swap} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vec1, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vec2, int length)
+\item 
+void \hyperlink{blaswrappers_8c_a5d51a4e4e128293190234928756d063d}{Q\-M\-D\-\_\-saxpy} (int n, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} alpha, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$y, int incy)
+\item 
+void \hyperlink{blaswrappers_8c_ace12e606aed43eb6aa3cd90ea980d42f}{Q\-M\-D\-\_\-sscal} (int n, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} alpha, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$x, int incx)
+\item 
+void \hyperlink{blaswrappers_8c_a92d63b05902db74fbc94e5e78c3fc320}{Q\-M\-D\-\_\-scopy} (int n, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$y, int incy)
+\item 
+\hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} \hyperlink{blaswrappers_8c_a612492caf6838326a0b9f64ce4eff583}{Q\-M\-D\-\_\-sdot} (int n, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$y, int incy)
+\item 
+void \hyperlink{blaswrappers_8c_a9ccede1c34ea54e6c1161b394f841663}{Q\-M\-D\-\_\-sswap} (int n, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$x, int incx, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$y, int incy)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{blaswrappers_8c_a30e5ac235b33c7689568831fd0fc5a8b}{\index{blaswrappers.\-c@{blaswrappers.\-c}!my\-\_\-axpy@{my\-\_\-axpy}}
+\index{my\-\_\-axpy@{my\-\_\-axpy}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{my\-\_\-axpy}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-axpy (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{in, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{out, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a30e5ac235b33c7689568831fd0fc5a8b}
+\hypertarget{blaswrappers_8c_a9ff89e02f37998dd6da3fcc17e3da6cd}{\index{blaswrappers.\-c@{blaswrappers.\-c}!my\-\_\-copy@{my\-\_\-copy}}
+\index{my\-\_\-copy@{my\-\_\-copy}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{my\-\_\-copy}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-copy (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{in, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{out, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a9ff89e02f37998dd6da3fcc17e3da6cd}
+\hypertarget{blaswrappers_8c_a01db4f9ba0e64fafeedbc4b482f8ab8e}{\index{blaswrappers.\-c@{blaswrappers.\-c}!my\-\_\-scal@{my\-\_\-scal}}
+\index{my\-\_\-scal@{my\-\_\-scal}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{my\-\_\-scal}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-scal (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vect, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a01db4f9ba0e64fafeedbc4b482f8ab8e}
+\hypertarget{blaswrappers_8c_accf8f9d0d1bd5a03942551fbf3f11cb5}{\index{blaswrappers.\-c@{blaswrappers.\-c}!my\-\_\-swap@{my\-\_\-swap}}
+\index{my\-\_\-swap@{my\-\_\-swap}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{my\-\_\-swap}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-swap (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vec1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vec2, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_accf8f9d0d1bd5a03942551fbf3f11cb5}
+\hypertarget{blaswrappers_8c_a561819d91960c97e4d708de90b41c818}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-daxpy@{Q\-M\-D\-\_\-daxpy}}
+\index{Q\-M\-D\-\_\-daxpy@{Q\-M\-D\-\_\-daxpy}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-daxpy}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-daxpy (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a561819d91960c97e4d708de90b41c818}
+\hypertarget{blaswrappers_8c_aa1119e8ce13a78306e648c9c4d8accab}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-dcopy@{Q\-M\-D\-\_\-dcopy}}
+\index{Q\-M\-D\-\_\-dcopy@{Q\-M\-D\-\_\-dcopy}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-dcopy}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-dcopy (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_aa1119e8ce13a78306e648c9c4d8accab}
+\hypertarget{blaswrappers_8c_a2ce5b5dc93e455af6330ccff9908d7ef}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-ddot@{Q\-M\-D\-\_\-ddot}}
+\index{Q\-M\-D\-\_\-ddot@{Q\-M\-D\-\_\-ddot}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-ddot}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} Q\-M\-D\-\_\-ddot (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a2ce5b5dc93e455af6330ccff9908d7ef}
+\hypertarget{blaswrappers_8c_a437c528d440417beb366884a494b7916}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-dscal@{Q\-M\-D\-\_\-dscal}}
+\index{Q\-M\-D\-\_\-dscal@{Q\-M\-D\-\_\-dscal}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-dscal}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-dscal (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a437c528d440417beb366884a494b7916}
+\hypertarget{blaswrappers_8c_aeffcddeea2c0f7df8cb4a3099d306615}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-dswap@{Q\-M\-D\-\_\-dswap}}
+\index{Q\-M\-D\-\_\-dswap@{Q\-M\-D\-\_\-dswap}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-dswap}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-dswap (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_aeffcddeea2c0f7df8cb4a3099d306615}
+\hypertarget{blaswrappers_8c_a5d51a4e4e128293190234928756d063d}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-saxpy@{Q\-M\-D\-\_\-saxpy}}
+\index{Q\-M\-D\-\_\-saxpy@{Q\-M\-D\-\_\-saxpy}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-saxpy}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-saxpy (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-float\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a5d51a4e4e128293190234928756d063d}
+\hypertarget{blaswrappers_8c_a92d63b05902db74fbc94e5e78c3fc320}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-scopy@{Q\-M\-D\-\_\-scopy}}
+\index{Q\-M\-D\-\_\-scopy@{Q\-M\-D\-\_\-scopy}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-scopy}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-scopy (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a92d63b05902db74fbc94e5e78c3fc320}
+\hypertarget{blaswrappers_8c_a612492caf6838326a0b9f64ce4eff583}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-sdot@{Q\-M\-D\-\_\-sdot}}
+\index{Q\-M\-D\-\_\-sdot@{Q\-M\-D\-\_\-sdot}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-sdot}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-float\-\_\-t} Q\-M\-D\-\_\-sdot (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a612492caf6838326a0b9f64ce4eff583}
+\hypertarget{blaswrappers_8c_ace12e606aed43eb6aa3cd90ea980d42f}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-sscal@{Q\-M\-D\-\_\-sscal}}
+\index{Q\-M\-D\-\_\-sscal@{Q\-M\-D\-\_\-sscal}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-sscal}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-sscal (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-float\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_ace12e606aed43eb6aa3cd90ea980d42f}
+\hypertarget{blaswrappers_8c_a9ccede1c34ea54e6c1161b394f841663}{\index{blaswrappers.\-c@{blaswrappers.\-c}!Q\-M\-D\-\_\-sswap@{Q\-M\-D\-\_\-sswap}}
+\index{Q\-M\-D\-\_\-sswap@{Q\-M\-D\-\_\-sswap}!blaswrappers.c@{blaswrappers.\-c}}
+\subsubsection[{Q\-M\-D\-\_\-sswap}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-sswap (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{x, }
+\item[{int}]{incx, }
+\item[{{\bf rmg\-\_\-float\-\_\-t} $\ast$}]{y, }
+\item[{int}]{incy}
+\end{DoxyParamCaption}
+)}}\label{blaswrappers_8c_a9ccede1c34ea54e6c1161b394f841663}

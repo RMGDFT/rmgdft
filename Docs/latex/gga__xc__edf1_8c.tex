@@ -1,0 +1,192 @@
+\hypertarget{gga__xc__edf1_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-xc\-\_\-edf1.c File Reference}
+\label{gga__xc__edf1_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-xc\-\_\-edf1.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-xc\-\_\-edf1.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{gga__xc__edf1_8c_a17e8a9a4c845c76c1a0c5c8131ca5b7b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}~165 /$\ast$ Empirical functionals from Adamson, Gill, and Pople $\ast$/
+\item 
+\#define \hyperlink{gga__xc__edf1_8c_a2a3641f86d5872f3d9fcacfa3e689dcc}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}~141 /$\ast$ P\-B\-E reparametrization \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} vd\-W $\ast$/
+\item 
+\#define \hyperlink{gga__xc__edf1_8c_aebb3a9fa95f808b5d63fa7bc57f05726}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}~194 /$\ast$ Functional \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} organometallic chemistry $\ast$/
+\item 
+\#define \hyperlink{gga__xc__edf1_8c_a85b3aa1445487b607fc790830badfe7e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}~195 /$\ast$ Functional \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} barrier heights $\ast$/
+\item 
+\#define \hyperlink{gga__xc__edf1_8c_a87cb6740a8ee65ed2d5d36c35ad9e631}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}~150 /$\ast$ Second-\/order generalized gradient approximation $\ast$/
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a3d5b8c140df0c17907118ded7241841c}{mix\-\_\-init} (p, 4, funcs\-\_\-id, \hyperlink{hyb__gga__xc__o3lyp_8c_ae75dc74623008b7c1a88e886467f75e2}{funcs\-\_\-coef})
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_abc082a52776ce5ec073dc681eb27be0e}{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}1\mbox{]}, 0.\-0035, 6.\-0)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a83b120b2b68f2e8ad47fae04bc8cdffe}{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}2\mbox{]}, 0.\-0042, 6.\-0)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a07b5c8590ef83d7075fe51e12a97271d}{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}3\mbox{]}, 0.\-055, 0.\-158, 0.\-25, 0.\-3505)
+\item 
+const \hyperlink{gga__xc__edf1_8c_a7924f1c1821b20cc7464c5448269d2a4}{X\-C} (func\-\_\-info\-\_\-type)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a9fa462eff9c792f1a8593fccdec34910}{mix\-\_\-init} (p, 2, funcs\-\_\-id, \hyperlink{hyb__gga__xc__o3lyp_8c_ae75dc74623008b7c1a88e886467f75e2}{funcs\-\_\-coef})
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a70e567e67d6b8e109c86a8ac8d1f8155}{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}0\mbox{]}, 1.\-04804, 0.\-175519)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a8d74285b972ee046a1b69a6461f078b7}{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}1\mbox{]}, 1.\-04804, 0.\-175519)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_acc543e3c17160a61dc440eaafd3824de}{mix\-\_\-init} (p, 3, funcs\-\_\-id, \hyperlink{hyb__gga__xc__o3lyp_8c_ae75dc74623008b7c1a88e886467f75e2}{funcs\-\_\-coef})
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_addf8b19a403565ecb369528cf1e64708}{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}0\mbox{]}, 1.\-0, 1.\-292/\hyperlink{util_8h_a9ef028f982d71c06bd6f4927367b3ec3}{X\-\_\-\-F\-A\-C\-T\-O\-R\-\_\-\-C}, 0.\-006)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_ade88db1ed75834b3f7888cd68f6ea619}{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}0\mbox{]}, 1.\-05151, 1.\-8497564/\hyperlink{util_8h_a9ef028f982d71c06bd6f4927367b3ec3}{X\-\_\-\-F\-A\-C\-T\-O\-R\-\_\-\-C}, 0.\-006)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_ab2500bbaddbeeb3ec3d4b263fad0445c}{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}0\mbox{]}, 0.\-552, 10.\-0/81.\-0)
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__xc__edf1_8c_a91246b723bf992af3f89894df515e680}{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}1\mbox{]}, 0.\-552, 10.\-0/81.\-0)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{gga__xc__edf1_8c_a2a3641f86d5872f3d9fcacfa3e689dcc}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W~141 /$\ast$ P\-B\-E reparametrization {\bf for} vd\-W $\ast$/}}\label{gga__xc__edf1_8c_a2a3641f86d5872f3d9fcacfa3e689dcc}
+\hypertarget{gga__xc__edf1_8c_a87cb6740a8ee65ed2d5d36c35ad9e631}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A~150 /$\ast$ Second-\/order generalized gradient approximation $\ast$/}}\label{gga__xc__edf1_8c_a87cb6740a8ee65ed2d5d36c35ad9e631}
+\hypertarget{gga__xc__edf1_8c_a17e8a9a4c845c76c1a0c5c8131ca5b7b}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1~165 /$\ast$ Empirical functionals from Adamson, Gill, and Pople $\ast$/}}\label{gga__xc__edf1_8c_a17e8a9a4c845c76c1a0c5c8131ca5b7b}
+\hypertarget{gga__xc__edf1_8c_aebb3a9fa95f808b5d63fa7bc57f05726}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P~194 /$\ast$ Functional {\bf for} organometallic chemistry $\ast$/}}\label{gga__xc__edf1_8c_aebb3a9fa95f808b5d63fa7bc57f05726}
+\hypertarget{gga__xc__edf1_8c_a85b3aa1445487b607fc790830badfe7e}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2~195 /$\ast$ Functional {\bf for} barrier heights $\ast$/}}\label{gga__xc__edf1_8c_a85b3aa1445487b607fc790830badfe7e}
+
+
+\subsection{Function Documentation}
+\hypertarget{gga__xc__edf1_8c_a07b5c8590ef83d7075fe51e12a97271d}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params@{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params}}
+\index{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params@{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}3\mbox{]}, }
+\item[{0.}]{055, }
+\item[{0.}]{158, }
+\item[{0.}]{25, }
+\item[{0.}]{3505}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a07b5c8590ef83d7075fe51e12a97271d}
+\hypertarget{gga__xc__edf1_8c_abc082a52776ce5ec073dc681eb27be0e}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}1\mbox{]}, }
+\item[{0.}]{0035, }
+\item[{6.}]{0}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_abc082a52776ce5ec073dc681eb27be0e}
+\hypertarget{gga__xc__edf1_8c_a83b120b2b68f2e8ad47fae04bc8cdffe}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}2\mbox{]}, }
+\item[{0.}]{0042, }
+\item[{6.}]{0}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a83b120b2b68f2e8ad47fae04bc8cdffe}
+\hypertarget{gga__xc__edf1_8c_addf8b19a403565ecb369528cf1e64708}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}0\mbox{]}, }
+\item[{1.}]{0, }
+\item[{1.\-292/}]{X\-\_\-\-F\-A\-C\-T\-O\-R\-\_\-\-C, }
+\item[{0.}]{006}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_addf8b19a403565ecb369528cf1e64708}
+\hypertarget{gga__xc__edf1_8c_ade88db1ed75834b3f7888cd68f6ea619}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}0\mbox{]}, }
+\item[{1.}]{05151, }
+\item[{1.\-8497564/}]{X\-\_\-\-F\-A\-C\-T\-O\-R\-\_\-\-C, }
+\item[{0.}]{006}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_ade88db1ed75834b3f7888cd68f6ea619}
+\hypertarget{gga__xc__edf1_8c_a70e567e67d6b8e109c86a8ac8d1f8155}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}0\mbox{]}, }
+\item[{1.}]{04804, }
+\item[{0.}]{175519}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a70e567e67d6b8e109c86a8ac8d1f8155}
+\hypertarget{gga__xc__edf1_8c_ab2500bbaddbeeb3ec3d4b263fad0445c}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}0\mbox{]}, }
+\item[{0.}]{552, }
+\item[{10.\-0/81.}]{0}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_ab2500bbaddbeeb3ec3d4b263fad0445c}
+\hypertarget{gga__xc__edf1_8c_a8d74285b972ee046a1b69a6461f078b7}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}1\mbox{]}, }
+\item[{1.}]{04804, }
+\item[{0.}]{175519}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a8d74285b972ee046a1b69a6461f078b7}
+\hypertarget{gga__xc__edf1_8c_a91246b723bf992af3f89894df515e680}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}1\mbox{]}, }
+\item[{0.}]{552, }
+\item[{10.\-0/81.}]{0}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a91246b723bf992af3f89894df515e680}
+\hypertarget{gga__xc__edf1_8c_a3d5b8c140df0c17907118ded7241841c}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!mix\-\_\-init@{mix\-\_\-init}}
+\index{mix\-\_\-init@{mix\-\_\-init}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{mix\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() mix\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{p}]{, }
+\item[{4}]{, }
+\item[{funcs\-\_\-id}]{, }
+\item[{{\bf funcs\-\_\-coef}}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a3d5b8c140df0c17907118ded7241841c}
+\hypertarget{gga__xc__edf1_8c_a9fa462eff9c792f1a8593fccdec34910}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!mix\-\_\-init@{mix\-\_\-init}}
+\index{mix\-\_\-init@{mix\-\_\-init}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{mix\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() mix\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{p}]{, }
+\item[{2}]{, }
+\item[{funcs\-\_\-id}]{, }
+\item[{{\bf funcs\-\_\-coef}}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a9fa462eff9c792f1a8593fccdec34910}
+\hypertarget{gga__xc__edf1_8c_acc543e3c17160a61dc440eaafd3824de}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!mix\-\_\-init@{mix\-\_\-init}}
+\index{mix\-\_\-init@{mix\-\_\-init}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{mix\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() mix\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{p}]{, }
+\item[{3}]{, }
+\item[{funcs\-\_\-id}]{, }
+\item[{{\bf funcs\-\_\-coef}}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_acc543e3c17160a61dc440eaafd3824de}
+\hypertarget{gga__xc__edf1_8c_a7924f1c1821b20cc7464c5448269d2a4}{\index{gga\-\_\-xc\-\_\-edf1.\-c@{gga\-\_\-xc\-\_\-edf1.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!gga_xc_edf1.c@{gga\-\_\-xc\-\_\-edf1.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}const {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__xc__edf1_8c_a7924f1c1821b20cc7464c5448269d2a4}

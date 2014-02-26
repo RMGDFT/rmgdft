@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['fftw_5fcomplex',['FFTW_COMPLEX',['../fftw_8h.html#abddf046c439aa5a1a3bd6c3d8572220e',1,'fftw.h']]],
+  ['fftw_5fdie_5ftype_5ffunction',['fftw_die_type_function',['../fftw_8h.html#a8fe09f555e83ac358492263ba774ace1',1,'fftw.h']]],
+  ['fftw_5ffree_5ftype_5ffunction',['fftw_free_type_function',['../fftw_8h.html#a47495e794ac6adf8be21c421e8e7d158',1,'fftw.h']]],
+  ['fftw_5fgeneric_5fcodelet',['fftw_generic_codelet',['../fftw_8h.html#aed0b70c1d43fc9aeb6e2f042dbf50cc3',1,'fftw.h']]],
+  ['fftw_5fhc2hc_5fcodelet',['fftw_hc2hc_codelet',['../fftw_8h.html#a20286dacdac70b9e31a87ddf6033edd1',1,'fftw.h']]],
+  ['fftw_5fhc2real_5fcodelet',['fftw_hc2real_codelet',['../fftw_8h.html#a514b28683e654ea4f6fc38f629948a44',1,'fftw.h']]],
+  ['fftw_5fmalloc_5ftype_5ffunction',['fftw_malloc_type_function',['../fftw_8h.html#a3ecd98de8dd9ce2500aa24a350df7605',1,'fftw.h']]],
+  ['fftw_5fnotw_5fcodelet',['fftw_notw_codelet',['../fftw_8h.html#a20c8a8b382f86bd89bf9c317cb95ec87',1,'fftw.h']]],
+  ['fftw_5fplan',['fftw_plan',['../fftw_8h.html#a4bd55d67f7b6fd1a3951c3ec0b677b8c',1,'fftw.h']]],
+  ['fftw_5fplan_5fnode',['fftw_plan_node',['../fftw_8h.html#a5a57076cc01d385442d34098af60d05c',1,'fftw.h']]],
+  ['fftw_5frader_5fcodelet',['fftw_rader_codelet',['../fftw_8h.html#a9aa0fdc32f89b096a22eba88a1ff7d01',1,'fftw.h']]],
+  ['fftw_5frader_5fdata',['fftw_rader_data',['../fftw_8h.html#a939ac58907009c6eaba954fc42796bc3',1,'fftw.h']]],
+  ['fftw_5freal',['fftw_real',['../fftw_8h.html#a8a2fb05c0a5d5f1c295ef2e7268c7476',1,'fftw_real():&#160;fftw.h'],['../fftw_8h.html#a8bbeb05895c1c9b04c7f53c5604be805',1,'FFTW_REAL():&#160;fftw.h']]],
+  ['fftw_5freal2hc_5fcodelet',['fftw_real2hc_codelet',['../fftw_8h.html#a3c41702364fac67d283ac370b659a2ee',1,'fftw.h']]],
+  ['fftw_5frgeneric_5fcodelet',['fftw_rgeneric_codelet',['../fftw_8h.html#ac9542258fc716bdd4c91d08d270cd873',1,'fftw.h']]],
+  ['fftw_5ftwiddle',['fftw_twiddle',['../fftw_8h.html#a726c4a427d2f70038050e3048b783cb2',1,'fftw.h']]],
+  ['fftw_5ftwiddle_5fcodelet',['fftw_twiddle_codelet',['../fftw_8h.html#a79213ac601712388802d76366c1da781',1,'fftw.h']]],
+  ['fftwnd_5fplan',['fftwnd_plan',['../fftw_8h.html#a1b1865a188e0d2baeeba4b6edde64c07',1,'fftw.h']]]
+];

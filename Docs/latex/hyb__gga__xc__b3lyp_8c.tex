@@ -1,0 +1,112 @@
+\hypertarget{hyb__gga__xc__b3lyp_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.c File Reference}
+\label{hyb__gga__xc__b3lyp_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{hyb__gga__xc__b3lyp_8c_ad07b689d1cc7ec357263021c30999f46}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}~401 /$\ast$ The original (A\-C\-M) hybrid of Becke    $\ast$/
+\item 
+\#define \hyperlink{hyb__gga__xc__b3lyp_8c_a0f607168069b60ceb8362df0dd9089a9}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}~402 /$\ast$ The (in)famous B3\-L\-Y\-P                  $\ast$/
+\item 
+\#define \hyperlink{hyb__gga__xc__b3lyp_8c_ad1b8a3976e27335a13cc853275889db2}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}~403 /$\ast$ Perdew 86 hybrid similar to B3\-P\-W91    $\ast$/
+\item 
+\#define \hyperlink{hyb__gga__xc__b3lyp_8c_a60669b414f9f809fb4bac41826d682c8}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W}~415 /$\ast$ mixture with the m\-P\-W functional       $\ast$/
+\item 
+\#define \hyperlink{hyb__gga__xc__b3lyp_8c_a6d06145ff56d4e562271de61d4540905}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P}~419 /$\ast$ mixture of m\-P\-W and L\-Y\-P                $\ast$/
+\item 
+\#define \hyperlink{hyb__gga__xc__b3lyp_8c_ac65b42ff8fc9fe977b8917931e0fea48}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04}~437 /$\ast$ B3\-L\-Y\-P with R\-C04 L\-D\-A                   $\ast$/
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{hyb__gga__xc__b3lyp_8c_a05b6455d5923c59ffbebd819d1400160}{hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+const \hyperlink{hyb__gga__xc__b3lyp_8c_a7924f1c1821b20cc7464c5448269d2a4}{X\-C} (func\-\_\-info\-\_\-type)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{hyb__gga__xc__b3lyp_8c_a12fcc9b6eb3698113e2462d642e8212c}{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{hyb__gga__xc__b3lyp_8c_a29520d95690d84e6a7e6d8bb33da4106}{hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{hyb__gga__xc__b3lyp_8c_a769c53df0b6354513b6378226a2b5c75}{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{hyb__gga__xc__b3lyp_8c_aa13956db6f76c70d1c0e42169c3dd63d}{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{hyb__gga__xc__b3lyp_8c_a83b02d08ab3b85adf624085f86f54b77}{hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a0f607168069b60ceb8362df0dd9089a9}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P~402 /$\ast$ The (in)famous B3\-L\-Y\-P                  $\ast$/}}\label{hyb__gga__xc__b3lyp_8c_a0f607168069b60ceb8362df0dd9089a9}
+\hypertarget{hyb__gga__xc__b3lyp_8c_ad1b8a3976e27335a13cc853275889db2}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86~403 /$\ast$ Perdew 86 hybrid similar to B3\-P\-W91    $\ast$/}}\label{hyb__gga__xc__b3lyp_8c_ad1b8a3976e27335a13cc853275889db2}
+\hypertarget{hyb__gga__xc__b3lyp_8c_ad07b689d1cc7ec357263021c30999f46}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91~401 /$\ast$ The original (A\-C\-M) hybrid of Becke    $\ast$/}}\label{hyb__gga__xc__b3lyp_8c_ad07b689d1cc7ec357263021c30999f46}
+\hypertarget{hyb__gga__xc__b3lyp_8c_ac65b42ff8fc9fe977b8917931e0fea48}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-B3\-L\-Y\-P\-\_\-\-R\-C04~437 /$\ast$ B3\-L\-Y\-P with R\-C04 L\-D\-A                   $\ast$/}}\label{hyb__gga__xc__b3lyp_8c_ac65b42ff8fc9fe977b8917931e0fea48}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a6d06145ff56d4e562271de61d4540905}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-L\-Y\-P~419 /$\ast$ mixture of m\-P\-W and L\-Y\-P                $\ast$/}}\label{hyb__gga__xc__b3lyp_8c_a6d06145ff56d4e562271de61d4540905}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a60669b414f9f809fb4bac41826d682c8}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W3\-P\-W~415 /$\ast$ mixture with the m\-P\-W functional       $\ast$/}}\label{hyb__gga__xc__b3lyp_8c_a60669b414f9f809fb4bac41826d682c8}
+
+
+\subsection{Function Documentation}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a12fcc9b6eb3698113e2462d642e8212c}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_a12fcc9b6eb3698113e2462d642e8212c}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a29520d95690d84e6a7e6d8bb33da4106}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-b3p86\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_a29520d95690d84e6a7e6d8bb33da4106}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a05b6455d5923c59ffbebd819d1400160}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-b3pw91\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_a05b6455d5923c59ffbebd819d1400160}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a83b02d08ab3b85adf624085f86f54b77}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-mb3lyp\-\_\-rc04\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_a83b02d08ab3b85adf624085f86f54b77}
+\hypertarget{hyb__gga__xc__b3lyp_8c_aa13956db6f76c70d1c0e42169c3dd63d}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-mpw3lyp\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_aa13956db6f76c70d1c0e42169c3dd63d}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a769c53df0b6354513b6378226a2b5c75}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init@{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-mpw3pw\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_a769c53df0b6354513b6378226a2b5c75}
+\hypertarget{hyb__gga__xc__b3lyp_8c_a7924f1c1821b20cc7464c5448269d2a4}{\index{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!hyb_gga_xc_b3lyp.c@{hyb\-\_\-gga\-\_\-xc\-\_\-b3lyp.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}const {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{hyb__gga__xc__b3lyp_8c_a7924f1c1821b20cc7464c5448269d2a4}

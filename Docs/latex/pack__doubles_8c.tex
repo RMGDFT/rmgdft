@@ -1,0 +1,145 @@
+\hypertarget{pack__doubles_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Common/pack\-\_\-doubles.c File Reference}
+\label{pack__doubles_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Common/pack\-\_\-doubles.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Common/pack\-\_\-doubles.\-c}}
+}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{pack__doubles_8c_a23eb5e058a210efdde3d64e69679fafa}{B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N}~1
+\item 
+\#define \hyperlink{pack__doubles_8c_a8782a401fbf55261460863fc2f8df1ce}{L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N}~2
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{pack__doubles_8c_a2429f5bb65c89146483c7749db0b4209}{pack\-\_\-doublesc} (double $\ast$inb, unsigned $\ast$outb, int count, int precision)
+\item 
+void \hyperlink{pack__doubles_8c_ac86f23c908c5efa34d790f3de3df30e3}{unpack\-\_\-doublesc} (double $\ast$outb, unsigned $\ast$inb, int count, int precision)
+\item 
+int \hyperlink{pack__doubles_8c_a39906112fde1ab40ca78fa4b18f8a12e}{pack\-\_\-doublesf} (double $\ast$inb, unsigned $\ast$outb, int $\ast$count, int $\ast$precision)
+\item 
+void \hyperlink{pack__doubles_8c_a9749f47795c06d82e673bbc82c51988e}{unpack\-\_\-doublesf} (double $\ast$outb, unsigned $\ast$inb, int $\ast$count, int $\ast$precision)
+\item 
+int \hyperlink{pack__doubles_8c_a9e9fe55dcda986b229cd36fd047810a7}{pack\-\_\-doublesf\-\_\-} (double $\ast$inb, unsigned $\ast$outb, int $\ast$count, int $\ast$precision)
+\item 
+void \hyperlink{pack__doubles_8c_a9f87da7579644f1d71c64358706803ec}{unpack\-\_\-doublesf\-\_\-} (double $\ast$outb, unsigned $\ast$inb, int $\ast$count, int $\ast$precision)
+\item 
+int \hyperlink{pack__doubles_8c_a4e0db603b95e1928db222b4c71283d75}{pack\-\_\-doublesf\-\_\-\-\_\-} (double $\ast$inb, unsigned $\ast$outb, int $\ast$count, int $\ast$precision)
+\item 
+void \hyperlink{pack__doubles_8c_a86dc811849f9f6adb828016903402b1b}{unpack\-\_\-doublesf\-\_\-\-\_\-} (double $\ast$outb, unsigned $\ast$inb, int $\ast$count, int $\ast$precision)
+\item 
+int \hyperlink{pack__doubles_8c_aa788da8b60b04a83e7d9b65c3222cc70}{pack\-\_\-doubles\-\_\-int} (double $\ast$inb, unsigned $\ast$outb, int count, int precision)
+\item 
+void \hyperlink{pack__doubles_8c_a7913e1691840e0a2d4733e43b6008315}{unpack\-\_\-doubles\-\_\-int} (double $\ast$outb, unsigned $\ast$inb, int count, int precision)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{pack__doubles_8c_a23eb5e058a210efdde3d64e69679fafa}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N@{B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N}}
+\index{B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N@{B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define B\-I\-G\-\_\-\-E\-N\-D\-I\-A\-N~1}}\label{pack__doubles_8c_a23eb5e058a210efdde3d64e69679fafa}
+\hypertarget{pack__doubles_8c_a8782a401fbf55261460863fc2f8df1ce}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N@{L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N}}
+\index{L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N@{L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\-I\-T\-T\-L\-E\-\_\-\-E\-N\-D\-I\-A\-N~2}}\label{pack__doubles_8c_a8782a401fbf55261460863fc2f8df1ce}
+
+
+\subsection{Function Documentation}
+\hypertarget{pack__doubles_8c_aa788da8b60b04a83e7d9b65c3222cc70}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!pack\-\_\-doubles\-\_\-int@{pack\-\_\-doubles\-\_\-int}}
+\index{pack\-\_\-doubles\-\_\-int@{pack\-\_\-doubles\-\_\-int}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{pack\-\_\-doubles\-\_\-int}]{\setlength{\rightskip}{0pt plus 5cm}int pack\-\_\-doubles\-\_\-int (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{inb, }
+\item[{unsigned $\ast$}]{outb, }
+\item[{int}]{count, }
+\item[{int}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_aa788da8b60b04a83e7d9b65c3222cc70}
+\hypertarget{pack__doubles_8c_a2429f5bb65c89146483c7749db0b4209}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!pack\-\_\-doublesc@{pack\-\_\-doublesc}}
+\index{pack\-\_\-doublesc@{pack\-\_\-doublesc}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{pack\-\_\-doublesc}]{\setlength{\rightskip}{0pt plus 5cm}int pack\-\_\-doublesc (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{inb, }
+\item[{unsigned $\ast$}]{outb, }
+\item[{int}]{count, }
+\item[{int}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a2429f5bb65c89146483c7749db0b4209}
+\hypertarget{pack__doubles_8c_a39906112fde1ab40ca78fa4b18f8a12e}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!pack\-\_\-doublesf@{pack\-\_\-doublesf}}
+\index{pack\-\_\-doublesf@{pack\-\_\-doublesf}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{pack\-\_\-doublesf}]{\setlength{\rightskip}{0pt plus 5cm}int pack\-\_\-doublesf (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{inb, }
+\item[{unsigned $\ast$}]{outb, }
+\item[{int $\ast$}]{count, }
+\item[{int $\ast$}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a39906112fde1ab40ca78fa4b18f8a12e}
+\hypertarget{pack__doubles_8c_a9e9fe55dcda986b229cd36fd047810a7}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!pack\-\_\-doublesf\-\_\-@{pack\-\_\-doublesf\-\_\-}}
+\index{pack\-\_\-doublesf\-\_\-@{pack\-\_\-doublesf\-\_\-}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{pack\-\_\-doublesf\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}int pack\-\_\-doublesf\-\_\- (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{inb, }
+\item[{unsigned $\ast$}]{outb, }
+\item[{int $\ast$}]{count, }
+\item[{int $\ast$}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a9e9fe55dcda986b229cd36fd047810a7}
+\hypertarget{pack__doubles_8c_a4e0db603b95e1928db222b4c71283d75}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!pack\-\_\-doublesf\-\_\-\-\_\-@{pack\-\_\-doublesf\-\_\-\-\_\-}}
+\index{pack\-\_\-doublesf\-\_\-\-\_\-@{pack\-\_\-doublesf\-\_\-\-\_\-}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{pack\-\_\-doublesf\-\_\-\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}int pack\-\_\-doublesf\-\_\-\-\_\- (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{inb, }
+\item[{unsigned $\ast$}]{outb, }
+\item[{int $\ast$}]{count, }
+\item[{int $\ast$}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a4e0db603b95e1928db222b4c71283d75}
+\hypertarget{pack__doubles_8c_a7913e1691840e0a2d4733e43b6008315}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!unpack\-\_\-doubles\-\_\-int@{unpack\-\_\-doubles\-\_\-int}}
+\index{unpack\-\_\-doubles\-\_\-int@{unpack\-\_\-doubles\-\_\-int}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{unpack\-\_\-doubles\-\_\-int}]{\setlength{\rightskip}{0pt plus 5cm}void unpack\-\_\-doubles\-\_\-int (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{outb, }
+\item[{unsigned $\ast$}]{inb, }
+\item[{int}]{count, }
+\item[{int}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a7913e1691840e0a2d4733e43b6008315}
+\hypertarget{pack__doubles_8c_ac86f23c908c5efa34d790f3de3df30e3}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!unpack\-\_\-doublesc@{unpack\-\_\-doublesc}}
+\index{unpack\-\_\-doublesc@{unpack\-\_\-doublesc}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{unpack\-\_\-doublesc}]{\setlength{\rightskip}{0pt plus 5cm}void unpack\-\_\-doublesc (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{outb, }
+\item[{unsigned $\ast$}]{inb, }
+\item[{int}]{count, }
+\item[{int}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_ac86f23c908c5efa34d790f3de3df30e3}
+\hypertarget{pack__doubles_8c_a9749f47795c06d82e673bbc82c51988e}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!unpack\-\_\-doublesf@{unpack\-\_\-doublesf}}
+\index{unpack\-\_\-doublesf@{unpack\-\_\-doublesf}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{unpack\-\_\-doublesf}]{\setlength{\rightskip}{0pt plus 5cm}void unpack\-\_\-doublesf (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{outb, }
+\item[{unsigned $\ast$}]{inb, }
+\item[{int $\ast$}]{count, }
+\item[{int $\ast$}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a9749f47795c06d82e673bbc82c51988e}
+\hypertarget{pack__doubles_8c_a9f87da7579644f1d71c64358706803ec}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!unpack\-\_\-doublesf\-\_\-@{unpack\-\_\-doublesf\-\_\-}}
+\index{unpack\-\_\-doublesf\-\_\-@{unpack\-\_\-doublesf\-\_\-}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{unpack\-\_\-doublesf\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}void unpack\-\_\-doublesf\-\_\- (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{outb, }
+\item[{unsigned $\ast$}]{inb, }
+\item[{int $\ast$}]{count, }
+\item[{int $\ast$}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a9f87da7579644f1d71c64358706803ec}
+\hypertarget{pack__doubles_8c_a86dc811849f9f6adb828016903402b1b}{\index{pack\-\_\-doubles.\-c@{pack\-\_\-doubles.\-c}!unpack\-\_\-doublesf\-\_\-\-\_\-@{unpack\-\_\-doublesf\-\_\-\-\_\-}}
+\index{unpack\-\_\-doublesf\-\_\-\-\_\-@{unpack\-\_\-doublesf\-\_\-\-\_\-}!pack_doubles.c@{pack\-\_\-doubles.\-c}}
+\subsubsection[{unpack\-\_\-doublesf\-\_\-\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}void unpack\-\_\-doublesf\-\_\-\-\_\- (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{outb, }
+\item[{unsigned $\ast$}]{inb, }
+\item[{int $\ast$}]{count, }
+\item[{int $\ast$}]{precision}
+\end{DoxyParamCaption}
+)}}\label{pack__doubles_8c_a86dc811849f9f6adb828016903402b1b}

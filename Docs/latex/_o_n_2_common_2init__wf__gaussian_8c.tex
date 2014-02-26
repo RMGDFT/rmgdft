@@ -1,0 +1,104 @@
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.c File Reference}
+\label{_o_n_2_common_2init__wf__gaussian_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+}
+{\ttfamily \#include $<$sys/types.\-h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\-h$>$}\\*
+{\ttfamily \#include $<$fcntl.\-h$>$}\\*
+{\ttfamily \#include $<$float.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}prototypes\-\_\-on.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}~0
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a202a282799ace8d7de6aa1f699ef546d}{px}~1
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a7284a3e64f3c6d8d549a591c5208aedd}{py}~2
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a3dc06ac98e72b809b5ff6daf0a442c37}{pz}~3
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a0c54aec6149b1f1099791b761426bab9}{dxy}~4
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a0ceba3a3b85dc623120c551aea24f199}{dxz}~5
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a0e9d498bd792592e3310f8bc02aa6c1e}{dyz}~6
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a995c87ddc9ecb823e147aca4352ef2d1}{dx2y2}~7
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a7c91c0a086e887eb41c7bc49b66e0ee2}{dz2}~8
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a74d3c3c85d450f9238a162d015c0b407}{ss}~9
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a09dff3d9a89874939fa7cc9d056b114c}{s1}~10
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a092c271df24e68f76adc2fc6f292015a}{px1}~11
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_abe713f4f977cda00e417d1f7394e9ee5}{py1}~12
+\item 
+\#define \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_ac9ba3f8741b991ebf72677b995195eed}{pz1}~13
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_o_n_2_common_2init__wf__gaussian_8c_a8a4c604318cf17d277e49f8fe156cf4f}{init\-\_\-wf\-\_\-gaussian} (\hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{md_8h_a286ebf6b996d2b1827eb9a889dfc83d7}{states})
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a995c87ddc9ecb823e147aca4352ef2d1}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!dx2y2@{dx2y2}}
+\index{dx2y2@{dx2y2}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{dx2y2}]{\setlength{\rightskip}{0pt plus 5cm}\#define dx2y2~7}}\label{_o_n_2_common_2init__wf__gaussian_8c_a995c87ddc9ecb823e147aca4352ef2d1}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a0c54aec6149b1f1099791b761426bab9}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!dxy@{dxy}}
+\index{dxy@{dxy}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{dxy}]{\setlength{\rightskip}{0pt plus 5cm}\#define dxy~4}}\label{_o_n_2_common_2init__wf__gaussian_8c_a0c54aec6149b1f1099791b761426bab9}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a0ceba3a3b85dc623120c551aea24f199}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!dxz@{dxz}}
+\index{dxz@{dxz}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{dxz}]{\setlength{\rightskip}{0pt plus 5cm}\#define dxz~5}}\label{_o_n_2_common_2init__wf__gaussian_8c_a0ceba3a3b85dc623120c551aea24f199}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a0e9d498bd792592e3310f8bc02aa6c1e}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!dyz@{dyz}}
+\index{dyz@{dyz}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{dyz}]{\setlength{\rightskip}{0pt plus 5cm}\#define dyz~6}}\label{_o_n_2_common_2init__wf__gaussian_8c_a0e9d498bd792592e3310f8bc02aa6c1e}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a7c91c0a086e887eb41c7bc49b66e0ee2}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!dz2@{dz2}}
+\index{dz2@{dz2}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{dz2}]{\setlength{\rightskip}{0pt plus 5cm}\#define dz2~8}}\label{_o_n_2_common_2init__wf__gaussian_8c_a7c91c0a086e887eb41c7bc49b66e0ee2}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a202a282799ace8d7de6aa1f699ef546d}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!px@{px}}
+\index{px@{px}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{px}]{\setlength{\rightskip}{0pt plus 5cm}\#define px~1}}\label{_o_n_2_common_2init__wf__gaussian_8c_a202a282799ace8d7de6aa1f699ef546d}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a092c271df24e68f76adc2fc6f292015a}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!px1@{px1}}
+\index{px1@{px1}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{px1}]{\setlength{\rightskip}{0pt plus 5cm}\#define px1~11}}\label{_o_n_2_common_2init__wf__gaussian_8c_a092c271df24e68f76adc2fc6f292015a}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a7284a3e64f3c6d8d549a591c5208aedd}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!py@{py}}
+\index{py@{py}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{py}]{\setlength{\rightskip}{0pt plus 5cm}\#define py~2}}\label{_o_n_2_common_2init__wf__gaussian_8c_a7284a3e64f3c6d8d549a591c5208aedd}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_abe713f4f977cda00e417d1f7394e9ee5}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!py1@{py1}}
+\index{py1@{py1}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{py1}]{\setlength{\rightskip}{0pt plus 5cm}\#define py1~12}}\label{_o_n_2_common_2init__wf__gaussian_8c_abe713f4f977cda00e417d1f7394e9ee5}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a3dc06ac98e72b809b5ff6daf0a442c37}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!pz@{pz}}
+\index{pz@{pz}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{pz}]{\setlength{\rightskip}{0pt plus 5cm}\#define pz~3}}\label{_o_n_2_common_2init__wf__gaussian_8c_a3dc06ac98e72b809b5ff6daf0a442c37}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_ac9ba3f8741b991ebf72677b995195eed}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!pz1@{pz1}}
+\index{pz1@{pz1}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{pz1}]{\setlength{\rightskip}{0pt plus 5cm}\#define pz1~13}}\label{_o_n_2_common_2init__wf__gaussian_8c_ac9ba3f8741b991ebf72677b995195eed}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!s@{s}}
+\index{s@{s}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{s}]{\setlength{\rightskip}{0pt plus 5cm}\#define s~0}}\label{_o_n_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a09dff3d9a89874939fa7cc9d056b114c}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!s1@{s1}}
+\index{s1@{s1}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{s1}]{\setlength{\rightskip}{0pt plus 5cm}\#define s1~10}}\label{_o_n_2_common_2init__wf__gaussian_8c_a09dff3d9a89874939fa7cc9d056b114c}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a74d3c3c85d450f9238a162d015c0b407}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!ss@{ss}}
+\index{ss@{ss}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{ss}]{\setlength{\rightskip}{0pt plus 5cm}\#define ss~9}}\label{_o_n_2_common_2init__wf__gaussian_8c_a74d3c3c85d450f9238a162d015c0b407}
+
+
+\subsection{Function Documentation}
+\hypertarget{_o_n_2_common_2init__wf__gaussian_8c_a8a4c604318cf17d277e49f8fe156cf4f}{\index{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}!init\-\_\-wf\-\_\-gaussian@{init\-\_\-wf\-\_\-gaussian}}
+\index{init\-\_\-wf\-\_\-gaussian@{init\-\_\-wf\-\_\-gaussian}!ON/Common/init_wf_gaussian.c@{O\-N/\-Common/init\-\_\-wf\-\_\-gaussian.\-c}}
+\subsubsection[{init\-\_\-wf\-\_\-gaussian}]{\setlength{\rightskip}{0pt plus 5cm}void init\-\_\-wf\-\_\-gaussian (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states}
+\end{DoxyParamCaption}
+)}}\label{_o_n_2_common_2init__wf__gaussian_8c_a8a4c604318cf17d277e49f8fe156cf4f}

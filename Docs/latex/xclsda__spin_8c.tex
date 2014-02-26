@@ -1,0 +1,78 @@
+\hypertarget{xclsda__spin_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Spin/xclsda\-\_\-spin.c File Reference}
+\label{xclsda__spin_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Spin/xclsda\-\_\-spin.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-R\-M\-G/\-Spin/xclsda\-\_\-spin.\-c}}
+}
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}common\-\_\-prototypes.\-h\char`\"{}}\\*
+{\ttfamily \#include $<$float.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{xclsda__spin_8c_a9bdd976e97cd44fd0a6d3a22b2d3d0fb}{crs}~1.\-91915829267751281
+\item 
+\#define \hyperlink{xclsda__spin_8c_a09c78d2f8feb311dd9fc969a0bf84979}{S\-M\-A\-L\-L}~1.e-\/10
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{xclsda__spin_8c_a46756946cfd9f07b84633ab597fe847b}{xclsda\-\_\-spin} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{main_8c_a40bb1aad06de4959123460c0f6f21170}{rho\-\_\-oppo}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a48f792faf570d41e1d58b4a4e1bce251}{vxc}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$exc)
+\item 
+void \hyperlink{xclsda__spin_8c_ab65ef6b1c152c659658eec80ec8532e6}{slater\-\_\-spin} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} arhox, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} zeta, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ex, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vx\-\_\-oppo)
+\item 
+void \hyperlink{xclsda__spin_8c_a338039873ff73e2bce75c353036d0b27}{pz\-\_\-spin} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} rs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} zeta, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vc, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vc\-\_\-oppo)
+\item 
+void \hyperlink{xclsda__spin_8c_a2538bed46af07c5c66388c76cc56992a}{pz\-\_\-polarized} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} rs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vc)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{xclsda__spin_8c_a9bdd976e97cd44fd0a6d3a22b2d3d0fb}{\index{xclsda\-\_\-spin.\-c@{xclsda\-\_\-spin.\-c}!crs@{crs}}
+\index{crs@{crs}!xclsda_spin.c@{xclsda\-\_\-spin.\-c}}
+\subsubsection[{crs}]{\setlength{\rightskip}{0pt plus 5cm}\#define crs~1.\-91915829267751281}}\label{xclsda__spin_8c_a9bdd976e97cd44fd0a6d3a22b2d3d0fb}
+\hypertarget{xclsda__spin_8c_a09c78d2f8feb311dd9fc969a0bf84979}{\index{xclsda\-\_\-spin.\-c@{xclsda\-\_\-spin.\-c}!S\-M\-A\-L\-L@{S\-M\-A\-L\-L}}
+\index{S\-M\-A\-L\-L@{S\-M\-A\-L\-L}!xclsda_spin.c@{xclsda\-\_\-spin.\-c}}
+\subsubsection[{S\-M\-A\-L\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\-M\-A\-L\-L~1.e-\/10}}\label{xclsda__spin_8c_a09c78d2f8feb311dd9fc969a0bf84979}
+
+
+\subsection{Function Documentation}
+\hypertarget{xclsda__spin_8c_a2538bed46af07c5c66388c76cc56992a}{\index{xclsda\-\_\-spin.\-c@{xclsda\-\_\-spin.\-c}!pz\-\_\-polarized@{pz\-\_\-polarized}}
+\index{pz\-\_\-polarized@{pz\-\_\-polarized}!xclsda_spin.c@{xclsda\-\_\-spin.\-c}}
+\subsubsection[{pz\-\_\-polarized}]{\setlength{\rightskip}{0pt plus 5cm}void pz\-\_\-polarized (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{rs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vc}
+\end{DoxyParamCaption}
+)}}\label{xclsda__spin_8c_a2538bed46af07c5c66388c76cc56992a}
+\hypertarget{xclsda__spin_8c_a338039873ff73e2bce75c353036d0b27}{\index{xclsda\-\_\-spin.\-c@{xclsda\-\_\-spin.\-c}!pz\-\_\-spin@{pz\-\_\-spin}}
+\index{pz\-\_\-spin@{pz\-\_\-spin}!xclsda_spin.c@{xclsda\-\_\-spin.\-c}}
+\subsubsection[{pz\-\_\-spin}]{\setlength{\rightskip}{0pt plus 5cm}void pz\-\_\-spin (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{rs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{zeta, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vc, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vc\-\_\-oppo}
+\end{DoxyParamCaption}
+)}}\label{xclsda__spin_8c_a338039873ff73e2bce75c353036d0b27}
+\hypertarget{xclsda__spin_8c_ab65ef6b1c152c659658eec80ec8532e6}{\index{xclsda\-\_\-spin.\-c@{xclsda\-\_\-spin.\-c}!slater\-\_\-spin@{slater\-\_\-spin}}
+\index{slater\-\_\-spin@{slater\-\_\-spin}!xclsda_spin.c@{xclsda\-\_\-spin.\-c}}
+\subsubsection[{slater\-\_\-spin}]{\setlength{\rightskip}{0pt plus 5cm}void slater\-\_\-spin (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{arhox, }
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{zeta, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ex, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vx\-\_\-oppo}
+\end{DoxyParamCaption}
+)}}\label{xclsda__spin_8c_ab65ef6b1c152c659658eec80ec8532e6}
+\hypertarget{xclsda__spin_8c_a46756946cfd9f07b84633ab597fe847b}{\index{xclsda\-\_\-spin.\-c@{xclsda\-\_\-spin.\-c}!xclsda\-\_\-spin@{xclsda\-\_\-spin}}
+\index{xclsda\-\_\-spin@{xclsda\-\_\-spin}!xclsda_spin.c@{xclsda\-\_\-spin.\-c}}
+\subsubsection[{xclsda\-\_\-spin}]{\setlength{\rightskip}{0pt plus 5cm}void xclsda\-\_\-spin (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rho, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rho\-\_\-oppo, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vxc, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{exc}
+\end{DoxyParamCaption}
+)}}\label{xclsda__spin_8c_a46756946cfd9f07b84633ab597fe847b}

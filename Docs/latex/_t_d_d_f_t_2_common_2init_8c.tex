@@ -1,0 +1,58 @@
+\hypertarget{_t_d_d_f_t_2_common_2init_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-T\-D\-D\-F\-T/\-Common/init.c File Reference}
+\label{_t_d_d_f_t_2_common_2init_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-T\-D\-D\-F\-T/\-Common/init.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-T\-D\-D\-F\-T/\-Common/init.\-c}}
+}
+{\ttfamily \#include $<$float.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{_t_d_d_f_t_2_common_2init_8c_ac6afabdc09a49a433ee19d8a9486056d}{min}(\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}, \hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b})~(((\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a})$>$(\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b})) ? (\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}) \-: (\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}))
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_t_d_d_f_t_2_common_2init_8c_a2aa3d1bad85dcac1b9985df54c3db360}{init\-\_\-wf\-\_\-atom} (\hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$)
+\item 
+void \hyperlink{_t_d_d_f_t_2_common_2init_8c_a1c3b30cbbb16ec9eb5b87ee844d265ff}{init} (\hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a87a16b1e9c2f7f452cb26d0e5c11e25b}{vh}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a591b660d2f8ec39665ed0237c56502b9}{rhocore}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a5e9e67f3a37119e4c22c096a300ca7a3}{rhoc}, \hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{md_8h_a286ebf6b996d2b1827eb9a889dfc83d7}{states}, \hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{md_8h_a10867c0650687df1688d9455980e10a9}{states1}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a46d07cd58431537b88a42087aa4e15f0}{vnuc}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a48f792faf570d41e1d58b4a4e1bce251}{vxc}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_a529fecb50178c983cd3d1c1229594615}{vh\-\_\-old}, \hyperlink{md_8h_a4b654506f18b8bfd61ad2a29a7e38c25}{R\-E\-A\-L} $\ast$\hyperlink{md_8h_aecacb1a1e17375e2295ea93f64010f77}{vxc\-\_\-old})
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{_t_d_d_f_t_2_common_2init_8c_ac6afabdc09a49a433ee19d8a9486056d}{\index{T\-D\-D\-F\-T/\-Common/init.\-c@{T\-D\-D\-F\-T/\-Common/init.\-c}!min@{min}}
+\index{min@{min}!TDDFT/Common/init.c@{T\-D\-D\-F\-T/\-Common/init.\-c}}
+\subsubsection[{min}]{\setlength{\rightskip}{0pt plus 5cm}\#define min(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf a}, }
+\item[{}]{{\bf b}}
+\end{DoxyParamCaption}
+)~((({\bf a})$>$({\bf b})) ? ({\bf b}) \-: ({\bf a}))}}\label{_t_d_d_f_t_2_common_2init_8c_ac6afabdc09a49a433ee19d8a9486056d}
+
+
+\subsection{Function Documentation}
+\hypertarget{_t_d_d_f_t_2_common_2init_8c_a1c3b30cbbb16ec9eb5b87ee844d265ff}{\index{T\-D\-D\-F\-T/\-Common/init.\-c@{T\-D\-D\-F\-T/\-Common/init.\-c}!init@{init}}
+\index{init@{init}!TDDFT/Common/init.c@{T\-D\-D\-F\-T/\-Common/init.\-c}}
+\subsubsection[{init}]{\setlength{\rightskip}{0pt plus 5cm}void init (
+\begin{DoxyParamCaption}
+\item[{{\bf R\-E\-A\-L} $\ast$}]{vh, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{rho, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{rhocore, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{rhoc, }
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states, }
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states1, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{vnuc, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{vxc, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{vh\-\_\-old, }
+\item[{{\bf R\-E\-A\-L} $\ast$}]{vxc\-\_\-old}
+\end{DoxyParamCaption}
+)}}\label{_t_d_d_f_t_2_common_2init_8c_a1c3b30cbbb16ec9eb5b87ee844d265ff}
+\hypertarget{_t_d_d_f_t_2_common_2init_8c_a2aa3d1bad85dcac1b9985df54c3db360}{\index{T\-D\-D\-F\-T/\-Common/init.\-c@{T\-D\-D\-F\-T/\-Common/init.\-c}!init\-\_\-wf\-\_\-atom@{init\-\_\-wf\-\_\-atom}}
+\index{init\-\_\-wf\-\_\-atom@{init\-\_\-wf\-\_\-atom}!TDDFT/Common/init.c@{T\-D\-D\-F\-T/\-Common/init.\-c}}
+\subsubsection[{init\-\_\-wf\-\_\-atom}]{\setlength{\rightskip}{0pt plus 5cm}void init\-\_\-wf\-\_\-atom (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_t_d_d_f_t_2_common_2init_8c_a2aa3d1bad85dcac1b9985df54c3db360}

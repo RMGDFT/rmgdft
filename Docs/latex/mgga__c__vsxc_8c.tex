@@ -1,0 +1,119 @@
+\hypertarget{mgga__c__vsxc_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/mgga\-\_\-c\-\_\-vsxc.c File Reference}
+\label{mgga__c__vsxc_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/mgga\-\_\-c\-\_\-vsxc.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/mgga\-\_\-c\-\_\-vsxc.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}work\-\_\-mgga\-\_\-c.\-c\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structmgga__c__m06l__params}{mgga\-\_\-c\-\_\-m06l\-\_\-params}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_ad36f9a4340ab39ff9eb2c3cc64938c0b}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}~232 /$\ast$ V\-Sxc from Van Voorhis and Scuseria (correlation part) $\ast$/
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_ad58e1ee727d4b2249efab9d2ac2bf1ad}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05}~237 /$\ast$ M05 functional of Minnesota $\ast$/
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_a38f784b454b6d31e46ef8041239b7265}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X}~238 /$\ast$ M05-\/2\-X functional of Minnesota $\ast$/
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_ab2d9a857312b8324aad60fc510dda1d8}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L}~233 /$\ast$ M06-\/Local functional of Minnesota $\ast$/
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_ab6ab0c9b3035d336c04cb206089c585b}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F}~234 /$\ast$ M06-\/H\-F functional of Minnesota $\ast$/
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_ac0af32cc00a601597e1e40ba38902449}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06}~235 /$\ast$ M06 functional of Minnesota $\ast$/
+\item 
+\#define \hyperlink{mgga__c__vsxc_8c_a71392a0ae274f3a3cc8d068c443e4791}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X}~236 /$\ast$ M06-\/2\-X functional of Minnesota $\ast$/
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{mgga__c__vsxc_8c_a988fa7201a18c72bd8cae79913209b90}{func\-\_\-init} (p-\/$>$\hyperlink{mgga__x__m08_8c_a3574da1cf18aea4c4b90bed4e9b26c80}{func\-\_\-aux}\mbox{[}0\mbox{]}, \hyperlink{src_2xc__funcs_8h_a1178d2f975163b8b0b1f966f2c745cfc}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D}, \hyperlink{lib_2libxc_2src_2xc_8h_a5a2a8b8e71eb26e7ee6380135df06f72}{X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D})
+\item 
+\hyperlink{mgga__c__vsxc_8c_a2b7691fc2a19cff75897f89bd05dd7a5}{assert} (p!=N\-U\-L\-L \&\&p-\/$>$\hyperlink{mgga__x__tpss_8c_a41000f175dc0115080e2a682cc06dbe9}{params}==N\-U\-L\-L)
+\item 
+\hyperlink{mgga__c__vsxc_8c_a0c936016c0c5a4a5786cac304bac5e3f}{switch} (p-\/$>$info-\/$>$number)
+\item 
+\hyperlink{mgga__c__vsxc_8c_acf61b19cc45f972d6377ed08366219f7}{X\-C} (func\-\_\-info\-\_\-type)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+p \hyperlink{mgga__c__vsxc_8c_ade9cb15ee3657e9ea82233bec4cdb406}{n\-\_\-func\-\_\-aux} = 1
+\item 
+p \hyperlink{mgga__c__vsxc_8c_a309a6e33749b5abfe6642b5638d31460}{func\-\_\-aux} = (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type) $\ast$$\ast$) malloc(1$\ast$sizeof(\hyperlink{struct_x_c}{X\-C}(func\-\_\-type) $\ast$))
+\item 
+\hyperlink{structmgga__c__m06l__params}{mgga\-\_\-c\-\_\-m06l\-\_\-params} $\ast$ \hyperlink{mgga__c__vsxc_8c_a41000f175dc0115080e2a682cc06dbe9}{params} = malloc(sizeof(\hyperlink{structmgga__c__m06l__params}{mgga\-\_\-c\-\_\-m06l\-\_\-params}))
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{mgga__c__vsxc_8c_ad58e1ee727d4b2249efab9d2ac2bf1ad}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05~237 /$\ast$ M05 functional of Minnesota $\ast$/}}\label{mgga__c__vsxc_8c_ad58e1ee727d4b2249efab9d2ac2bf1ad}
+\hypertarget{mgga__c__vsxc_8c_a38f784b454b6d31e46ef8041239b7265}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M05\-\_\-2\-X~238 /$\ast$ M05-\/2\-X functional of Minnesota $\ast$/}}\label{mgga__c__vsxc_8c_a38f784b454b6d31e46ef8041239b7265}
+\hypertarget{mgga__c__vsxc_8c_ac0af32cc00a601597e1e40ba38902449}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06~235 /$\ast$ M06 functional of Minnesota $\ast$/}}\label{mgga__c__vsxc_8c_ac0af32cc00a601597e1e40ba38902449}
+\hypertarget{mgga__c__vsxc_8c_a71392a0ae274f3a3cc8d068c443e4791}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-2\-X~236 /$\ast$ M06-\/2\-X functional of Minnesota $\ast$/}}\label{mgga__c__vsxc_8c_a71392a0ae274f3a3cc8d068c443e4791}
+\hypertarget{mgga__c__vsxc_8c_ab6ab0c9b3035d336c04cb206089c585b}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-H\-F~234 /$\ast$ M06-\/H\-F functional of Minnesota $\ast$/}}\label{mgga__c__vsxc_8c_ab6ab0c9b3035d336c04cb206089c585b}
+\hypertarget{mgga__c__vsxc_8c_ab2d9a857312b8324aad60fc510dda1d8}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-M06\-\_\-\-L~233 /$\ast$ M06-\/Local functional of Minnesota $\ast$/}}\label{mgga__c__vsxc_8c_ab2d9a857312b8324aad60fc510dda1d8}
+\hypertarget{mgga__c__vsxc_8c_ad36f9a4340ab39ff9eb2c3cc64938c0b}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C~232 /$\ast$ V\-Sxc from Van Voorhis and Scuseria (correlation part) $\ast$/}}\label{mgga__c__vsxc_8c_ad36f9a4340ab39ff9eb2c3cc64938c0b}
+
+
+\subsection{Function Documentation}
+\hypertarget{mgga__c__vsxc_8c_a2b7691fc2a19cff75897f89bd05dd7a5}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!assert@{assert}}
+\index{assert@{assert}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{assert}]{\setlength{\rightskip}{0pt plus 5cm}assert (
+\begin{DoxyParamCaption}
+\item[{p!}]{ = {\ttfamily NULL~\&\&p-\/$>${\bf params}==NULL}}
+\end{DoxyParamCaption}
+)}}\label{mgga__c__vsxc_8c_a2b7691fc2a19cff75897f89bd05dd7a5}
+\hypertarget{mgga__c__vsxc_8c_a988fa7201a18c72bd8cae79913209b90}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!func\-\_\-init@{func\-\_\-init}}
+\index{func\-\_\-init@{func\-\_\-init}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{func\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() func\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$}]{func\-\_\-aux\mbox{[}0\mbox{]}, }
+\item[{{\bf X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D}}]{, }
+\item[{{\bf X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D}}]{}
+\end{DoxyParamCaption}
+)}}\label{mgga__c__vsxc_8c_a988fa7201a18c72bd8cae79913209b90}
+\hypertarget{mgga__c__vsxc_8c_a0c936016c0c5a4a5786cac304bac5e3f}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!switch@{switch}}
+\index{switch@{switch}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{switch}]{\setlength{\rightskip}{0pt plus 5cm}switch (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$info-\/$>$}]{number}
+\end{DoxyParamCaption}
+)}}\label{mgga__c__vsxc_8c_a0c936016c0c5a4a5786cac304bac5e3f}
+\hypertarget{mgga__c__vsxc_8c_acf61b19cc45f972d6377ed08366219f7}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{mgga__c__vsxc_8c_acf61b19cc45f972d6377ed08366219f7}
+
+
+\subsection{Variable Documentation}
+\hypertarget{mgga__c__vsxc_8c_a309a6e33749b5abfe6642b5638d31460}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!func\-\_\-aux@{func\-\_\-aux}}
+\index{func\-\_\-aux@{func\-\_\-aux}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{func\-\_\-aux}]{\setlength{\rightskip}{0pt plus 5cm}p func\-\_\-aux\mbox{[}0\mbox{]} = ({\bf X\-C}(func\-\_\-type) $\ast$$\ast$) malloc(1$\ast$sizeof({\bf X\-C}(func\-\_\-type) $\ast$))}}\label{mgga__c__vsxc_8c_a309a6e33749b5abfe6642b5638d31460}
+\hypertarget{mgga__c__vsxc_8c_ade9cb15ee3657e9ea82233bec4cdb406}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!n\-\_\-func\-\_\-aux@{n\-\_\-func\-\_\-aux}}
+\index{n\-\_\-func\-\_\-aux@{n\-\_\-func\-\_\-aux}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{n\-\_\-func\-\_\-aux}]{\setlength{\rightskip}{0pt plus 5cm}p n\-\_\-func\-\_\-aux = 1}}\label{mgga__c__vsxc_8c_ade9cb15ee3657e9ea82233bec4cdb406}
+\hypertarget{mgga__c__vsxc_8c_a41000f175dc0115080e2a682cc06dbe9}{\index{mgga\-\_\-c\-\_\-vsxc.\-c@{mgga\-\_\-c\-\_\-vsxc.\-c}!params@{params}}
+\index{params@{params}!mgga_c_vsxc.c@{mgga\-\_\-c\-\_\-vsxc.\-c}}
+\subsubsection[{params}]{\setlength{\rightskip}{0pt plus 5cm}params = malloc(sizeof({\bf mgga\-\_\-c\-\_\-m06l\-\_\-params}))}}\label{mgga__c__vsxc_8c_a41000f175dc0115080e2a682cc06dbe9}

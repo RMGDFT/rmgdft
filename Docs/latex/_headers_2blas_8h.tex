@@ -1,0 +1,529 @@
+\hypertarget{_headers_2blas_8h}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/blas.h File Reference}
+\label{_headers_2blas_8h}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/blas.\-h@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/blas.\-h}}
+}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_headers_2blas_8h_a9ff89e02f37998dd6da3fcc17e3da6cd}{my\-\_\-copy} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$in, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$out, int length)
+\item 
+void \hyperlink{_headers_2blas_8h_a01db4f9ba0e64fafeedbc4b482f8ab8e}{my\-\_\-scal} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vect, int length)
+\item 
+void \hyperlink{_headers_2blas_8h_a30e5ac235b33c7689568831fd0fc5a8b}{my\-\_\-axpy} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$in, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$out, int length)
+\item 
+void \hyperlink{_headers_2blas_8h_accf8f9d0d1bd5a03942551fbf3f11cb5}{my\-\_\-swap} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vec1, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vec2, int length)
+\item 
+void \hyperlink{_headers_2blas_8h_ab7bf9336e94edcec5b978cf494bbed40}{fsymforces} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a49a389c53ad83899d80e3267c66994df}{force}, int $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}, int $\ast$irg, int $\ast$irt, int $\ast$nat, int $\ast$ibrav, int $\ast$nsym, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$celldm, int $\ast$nr1, int $\ast$nr2, int $\ast$nr3)
+\item 
+int \hyperlink{_headers_2blas_8h_a7ca138503a8358dc3d91e4eb82a6f606}{ilaenv} (int $\ast$ispec, char $\ast$name, char $\ast$opts, int $\ast$n1, int $\ast$n2, int $\ast$n3, int $\ast$n4)
+\item 
+void \hyperlink{_headers_2blas_8h_a22fd0e1a3395bf7d94b58266e20e9335}{saxpy} (int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int $\ast$incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int $\ast$incy)
+\item 
+void \hyperlink{_headers_2blas_8h_ae5a123ad4ee41bdcf2bdc15ab0fbe2c2}{sscal} (int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int $\ast$incx)
+\item 
+void \hyperlink{_headers_2blas_8h_a2c6ea44062483762947f3c4dbcc26c46}{scopy} (int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int $\ast$incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int $\ast$incy)
+\item 
+\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{_headers_2blas_8h_aee2930018f2ac88d8c5731f3f84a05ad}{sdot} (int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int $\ast$incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int $\ast$incy)
+\item 
+\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{_headers_2blas_8h_a81eba181146ce4611525b7075eae2d69}{snrm2} (int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int $\ast$incx)
+\item 
+void \hyperlink{_headers_2blas_8h_a0754a55266eaf0a9717bd674a3e95a4a}{ssyrk} (char $\ast$uplo, char $\ast$trans, int $\ast$n, int $\ast$k, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$alpha, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$A, int $\ast$\hyperlink{lib_2libxc_2src_2xc_8h_abc3dabe7e163004331772f350e7dcbb7}{lda}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$beta, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{lda__c__2d__prm_8c_ae658f8809217a0d2c20837508fe543b9}{c}, int $\ast$ldc)
+\item 
+void \hyperlink{_headers_2blas_8h_a9583c2c90ce6d32be0713c6b937134c7}{sswap} (int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$x, int $\ast$incx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$y, int $\ast$incy)
+\item 
+void \hyperlink{_headers_2blas_8h_a69c1663e491b2052112ca273394ea4ac}{xbecke} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_a71729f52320926b2723634a38936f249}{d}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$u, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$v, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ex, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vx)
+\item 
+void \hyperlink{_headers_2blas_8h_a11318251922101fc55ae4ae0253afccd}{corlyp\-\_\-f90} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dp, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dm, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dp1, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dm1, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dp2, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dm2, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcp0, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcm0, int $\ast$ndm)
+\item 
+void \hyperlink{_headers_2blas_8h_a0f333926213bf0b7474d9f583d747b9f}{corlsd} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$rs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$zet, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcup, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcdn, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ecrs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$eczet, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$alfc)
+\item 
+void \hyperlink{_headers_2blas_8h_a4cbb88c5c1d0e5fa1d0d62218907cd91}{corgga} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$rs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$zet, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$t, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$uu, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vv, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ww, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$h, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dvcup, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dvcdn, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$fk, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$sk, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$g, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ecrs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$eczet)
+\item 
+void \hyperlink{_headers_2blas_8h_a0ef298cc4c4e8086bc5cd75f45097b0f}{corpbe} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$rs, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$zet, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$t, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$uu, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vv, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ww, int $\ast$lgga, int $\ast$lpot, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ec, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcup, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vcdn, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$h, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$dvcup, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$D\-V\-C\-D\-N)
+\item 
+void \hyperlink{_headers_2blas_8h_a5a568cad980eda012623a7efa6b07f0a}{cpotrf} (char $\ast$uplo, int $\ast$n, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}, int $\ast$\hyperlink{lib_2libxc_2src_2xc_8h_abc3dabe7e163004331772f350e7dcbb7}{lda}, int $\ast$info)
+\item 
+void \hyperlink{_headers_2blas_8h_a7e8086c8b43a4408a1eab80a54bf69f1}{exch} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_a71729f52320926b2723634a38936f249}{d}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$u, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$v, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ex, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vx)
+\item 
+void \hyperlink{_headers_2blas_8h_a5761ddf2cf02097ac10c03979a54dc40}{exchpbe} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_a71729f52320926b2723634a38936f249}{d}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$u, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$v, int $\ast$lgga, int $\ast$lpot, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$ex, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$vx)
+\item 
+void \hyperlink{_headers_2blas_8h_ab95abc03a60d3fb052f72bd95b60f0f6}{symmetry} (int $\ast$ibrav, int $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}, int $\ast$nsym, int $\ast$irg, int $\ast$irt, int $\ast$ftau, int $\ast$nat, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$tau, int $\ast$ityp, int $\ast$nks, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$xk, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$wk, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$celldm, int $\ast$nr1, int $\ast$nr2, int $\ast$nr3, int $\ast$wflag)
+\item 
+void \hyperlink{_headers_2blas_8h_a6ad9b97b91c31ccdab8b8a7bc65c7699}{symrho} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, int $\ast$nr1, int $\ast$nr2, int $\ast$nr3, int $\ast$nsym, int $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_ac9562ee4ecb3b8aeebeb04656e7e57a9}{s}, int $\ast$irg, int $\ast$ftau)
+\item 
+void \hyperlink{_headers_2blas_8h_aa7fe52b40c0c8eaf6d2f30e93dbc9893}{ssyev} (char $\ast$jobz, char $\ast$uplo, int $\ast$numm, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_a74d3c3c85d450f9238a162d015c0b407}{ss}, int $\ast$numn, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2mg__eig_8c_afa4d5695ba7e2e1cd04f9e56f0b03cd2}{work1}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$work2, int $\ast$lwork, int $\ast$info)
+\item 
+void \hyperlink{_headers_2blas_8h_a460b4d2b8093faaeab3159ba18c98ab1}{cheev} (char $\ast$jobz, char $\ast$uplo, int $\ast$numm, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2init__wf__gaussian_8c_a74d3c3c85d450f9238a162d015c0b407}{ss}, int $\ast$numn, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{_t_d_d_f_t_2_common_2mg__eig_8c_afa4d5695ba7e2e1cd04f9e56f0b03cd2}{work1}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$work2, int $\ast$lwork, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$info)
+\item 
+void \hyperlink{_headers_2blas_8h_a64bb90929154aa9c9c9e0d075ad76787}{spotri} (char $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_aee67b2bb073a43949119d348fdbb4999}{dgemm} (char $\ast$, char $\ast$, int $\ast$, int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_a2c50bfd3ff5c127fc2d480c550999d5c}{zgemm} (char $\ast$, char $\ast$, int $\ast$, int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_a652493c13adc95cffdcb8d0e8626a782}{dgetrf} (int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_aacf921edb37f6b2260b78b5b5bf9214f}{dgetri} (int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_a2af1f02258c3d00dfb0b7a353903cb64}{dgesv} (int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_a3094eb628237c928d28d5f1ab1529580}{zgesv} (int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, int $\ast$)
+\item 
+void \hyperlink{_headers_2blas_8h_a86a1bb07b1db2570fabe108823ca19c4}{dgemv} (char $\ast$, int $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$, int $\ast$)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{_headers_2blas_8h_a460b4d2b8093faaeab3159ba18c98ab1}{\index{Headers/blas.\-h@{Headers/blas.\-h}!cheev@{cheev}}
+\index{cheev@{cheev}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{cheev}]{\setlength{\rightskip}{0pt plus 5cm}void cheev (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{jobz, }
+\item[{char $\ast$}]{uplo, }
+\item[{int $\ast$}]{numm, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ss, }
+\item[{int $\ast$}]{numn, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{work1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{work2, }
+\item[{int $\ast$}]{lwork, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{info}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a460b4d2b8093faaeab3159ba18c98ab1}
+\hypertarget{_headers_2blas_8h_a4cbb88c5c1d0e5fa1d0d62218907cd91}{\index{Headers/blas.\-h@{Headers/blas.\-h}!corgga@{corgga}}
+\index{corgga@{corgga}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{corgga}]{\setlength{\rightskip}{0pt plus 5cm}void corgga (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{zet, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{t, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{uu, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vv, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ww, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{h, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dvcup, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dvcdn, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{fk, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{sk, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{g, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ecrs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{eczet}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a4cbb88c5c1d0e5fa1d0d62218907cd91}
+\hypertarget{_headers_2blas_8h_a0f333926213bf0b7474d9f583d747b9f}{\index{Headers/blas.\-h@{Headers/blas.\-h}!corlsd@{corlsd}}
+\index{corlsd@{corlsd}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{corlsd}]{\setlength{\rightskip}{0pt plus 5cm}void corlsd (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{zet, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcup, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcdn, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ecrs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{eczet, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{alfc}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a0f333926213bf0b7474d9f583d747b9f}
+\hypertarget{_headers_2blas_8h_a11318251922101fc55ae4ae0253afccd}{\index{Headers/blas.\-h@{Headers/blas.\-h}!corlyp\-\_\-f90@{corlyp\-\_\-f90}}
+\index{corlyp\-\_\-f90@{corlyp\-\_\-f90}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{corlyp\-\_\-f90}]{\setlength{\rightskip}{0pt plus 5cm}void corlyp\-\_\-f90 (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dp, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dm, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dp1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dm1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dp2, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dm2, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcp0, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcm0, }
+\item[{int $\ast$}]{ndm}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a11318251922101fc55ae4ae0253afccd}
+\hypertarget{_headers_2blas_8h_a0ef298cc4c4e8086bc5cd75f45097b0f}{\index{Headers/blas.\-h@{Headers/blas.\-h}!corpbe@{corpbe}}
+\index{corpbe@{corpbe}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{corpbe}]{\setlength{\rightskip}{0pt plus 5cm}void corpbe (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rs, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{zet, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{t, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{uu, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vv, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ww, }
+\item[{int $\ast$}]{lgga, }
+\item[{int $\ast$}]{lpot, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ec, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcup, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vcdn, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{h, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{dvcup, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{D\-V\-C\-D\-N}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a0ef298cc4c4e8086bc5cd75f45097b0f}
+\hypertarget{_headers_2blas_8h_a5a568cad980eda012623a7efa6b07f0a}{\index{Headers/blas.\-h@{Headers/blas.\-h}!cpotrf@{cpotrf}}
+\index{cpotrf@{cpotrf}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{cpotrf}]{\setlength{\rightskip}{0pt plus 5cm}void cpotrf (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{uplo, }
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{a, }
+\item[{int $\ast$}]{lda, }
+\item[{int $\ast$}]{info}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a5a568cad980eda012623a7efa6b07f0a}
+\hypertarget{_headers_2blas_8h_aee67b2bb073a43949119d348fdbb4999}{\index{Headers/blas.\-h@{Headers/blas.\-h}!dgemm@{dgemm}}
+\index{dgemm@{dgemm}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{dgemm}]{\setlength{\rightskip}{0pt plus 5cm}void dgemm (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{char $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_aee67b2bb073a43949119d348fdbb4999}
+\hypertarget{_headers_2blas_8h_a86a1bb07b1db2570fabe108823ca19c4}{\index{Headers/blas.\-h@{Headers/blas.\-h}!dgemv@{dgemv}}
+\index{dgemv@{dgemv}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{dgemv}]{\setlength{\rightskip}{0pt plus 5cm}void dgemv (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a86a1bb07b1db2570fabe108823ca19c4}
+\hypertarget{_headers_2blas_8h_a2af1f02258c3d00dfb0b7a353903cb64}{\index{Headers/blas.\-h@{Headers/blas.\-h}!dgesv@{dgesv}}
+\index{dgesv@{dgesv}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{dgesv}]{\setlength{\rightskip}{0pt plus 5cm}void dgesv (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a2af1f02258c3d00dfb0b7a353903cb64}
+\hypertarget{_headers_2blas_8h_a652493c13adc95cffdcb8d0e8626a782}{\index{Headers/blas.\-h@{Headers/blas.\-h}!dgetrf@{dgetrf}}
+\index{dgetrf@{dgetrf}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{dgetrf}]{\setlength{\rightskip}{0pt plus 5cm}void dgetrf (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a652493c13adc95cffdcb8d0e8626a782}
+\hypertarget{_headers_2blas_8h_aacf921edb37f6b2260b78b5b5bf9214f}{\index{Headers/blas.\-h@{Headers/blas.\-h}!dgetri@{dgetri}}
+\index{dgetri@{dgetri}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{dgetri}]{\setlength{\rightskip}{0pt plus 5cm}void dgetri (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_aacf921edb37f6b2260b78b5b5bf9214f}
+\hypertarget{_headers_2blas_8h_a7e8086c8b43a4408a1eab80a54bf69f1}{\index{Headers/blas.\-h@{Headers/blas.\-h}!exch@{exch}}
+\index{exch@{exch}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{exch}]{\setlength{\rightskip}{0pt plus 5cm}void exch (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{d, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{s, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{u, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{v, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ex, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vx}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a7e8086c8b43a4408a1eab80a54bf69f1}
+\hypertarget{_headers_2blas_8h_a5761ddf2cf02097ac10c03979a54dc40}{\index{Headers/blas.\-h@{Headers/blas.\-h}!exchpbe@{exchpbe}}
+\index{exchpbe@{exchpbe}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{exchpbe}]{\setlength{\rightskip}{0pt plus 5cm}void exchpbe (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{d, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{s, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{u, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{v, }
+\item[{int $\ast$}]{lgga, }
+\item[{int $\ast$}]{lpot, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ex, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vx}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a5761ddf2cf02097ac10c03979a54dc40}
+\hypertarget{_headers_2blas_8h_ab7bf9336e94edcec5b978cf494bbed40}{\index{Headers/blas.\-h@{Headers/blas.\-h}!fsymforces@{fsymforces}}
+\index{fsymforces@{fsymforces}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{fsymforces}]{\setlength{\rightskip}{0pt plus 5cm}void fsymforces (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{force, }
+\item[{int $\ast$}]{s, }
+\item[{int $\ast$}]{irg, }
+\item[{int $\ast$}]{irt, }
+\item[{int $\ast$}]{nat, }
+\item[{int $\ast$}]{ibrav, }
+\item[{int $\ast$}]{nsym, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{celldm, }
+\item[{int $\ast$}]{nr1, }
+\item[{int $\ast$}]{nr2, }
+\item[{int $\ast$}]{nr3}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_ab7bf9336e94edcec5b978cf494bbed40}
+\hypertarget{_headers_2blas_8h_a7ca138503a8358dc3d91e4eb82a6f606}{\index{Headers/blas.\-h@{Headers/blas.\-h}!ilaenv@{ilaenv}}
+\index{ilaenv@{ilaenv}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{ilaenv}]{\setlength{\rightskip}{0pt plus 5cm}int ilaenv (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{ispec, }
+\item[{char $\ast$}]{name, }
+\item[{char $\ast$}]{opts, }
+\item[{int $\ast$}]{n1, }
+\item[{int $\ast$}]{n2, }
+\item[{int $\ast$}]{n3, }
+\item[{int $\ast$}]{n4}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a7ca138503a8358dc3d91e4eb82a6f606}
+\hypertarget{_headers_2blas_8h_a30e5ac235b33c7689568831fd0fc5a8b}{\index{Headers/blas.\-h@{Headers/blas.\-h}!my\-\_\-axpy@{my\-\_\-axpy}}
+\index{my\-\_\-axpy@{my\-\_\-axpy}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{my\-\_\-axpy}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-axpy (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{in, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{out, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a30e5ac235b33c7689568831fd0fc5a8b}
+\hypertarget{_headers_2blas_8h_a9ff89e02f37998dd6da3fcc17e3da6cd}{\index{Headers/blas.\-h@{Headers/blas.\-h}!my\-\_\-copy@{my\-\_\-copy}}
+\index{my\-\_\-copy@{my\-\_\-copy}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{my\-\_\-copy}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-copy (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{in, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{out, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a9ff89e02f37998dd6da3fcc17e3da6cd}
+\hypertarget{_headers_2blas_8h_a01db4f9ba0e64fafeedbc4b482f8ab8e}{\index{Headers/blas.\-h@{Headers/blas.\-h}!my\-\_\-scal@{my\-\_\-scal}}
+\index{my\-\_\-scal@{my\-\_\-scal}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{my\-\_\-scal}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-scal (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vect, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a01db4f9ba0e64fafeedbc4b482f8ab8e}
+\hypertarget{_headers_2blas_8h_accf8f9d0d1bd5a03942551fbf3f11cb5}{\index{Headers/blas.\-h@{Headers/blas.\-h}!my\-\_\-swap@{my\-\_\-swap}}
+\index{my\-\_\-swap@{my\-\_\-swap}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{my\-\_\-swap}]{\setlength{\rightskip}{0pt plus 5cm}void my\-\_\-swap (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vec1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vec2, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_accf8f9d0d1bd5a03942551fbf3f11cb5}
+\hypertarget{_headers_2blas_8h_a22fd0e1a3395bf7d94b58266e20e9335}{\index{Headers/blas.\-h@{Headers/blas.\-h}!saxpy@{saxpy}}
+\index{saxpy@{saxpy}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{saxpy}]{\setlength{\rightskip}{0pt plus 5cm}void saxpy (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int $\ast$}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int $\ast$}]{incy}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a22fd0e1a3395bf7d94b58266e20e9335}
+\hypertarget{_headers_2blas_8h_a2c6ea44062483762947f3c4dbcc26c46}{\index{Headers/blas.\-h@{Headers/blas.\-h}!scopy@{scopy}}
+\index{scopy@{scopy}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{scopy}]{\setlength{\rightskip}{0pt plus 5cm}void scopy (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int $\ast$}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int $\ast$}]{incy}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a2c6ea44062483762947f3c4dbcc26c46}
+\hypertarget{_headers_2blas_8h_aee2930018f2ac88d8c5731f3f84a05ad}{\index{Headers/blas.\-h@{Headers/blas.\-h}!sdot@{sdot}}
+\index{sdot@{sdot}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{sdot}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} sdot (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int $\ast$}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int $\ast$}]{incy}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_aee2930018f2ac88d8c5731f3f84a05ad}
+\hypertarget{_headers_2blas_8h_a81eba181146ce4611525b7075eae2d69}{\index{Headers/blas.\-h@{Headers/blas.\-h}!snrm2@{snrm2}}
+\index{snrm2@{snrm2}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{snrm2}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} snrm2 (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int $\ast$}]{incx}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a81eba181146ce4611525b7075eae2d69}
+\hypertarget{_headers_2blas_8h_a64bb90929154aa9c9c9e0d075ad76787}{\index{Headers/blas.\-h@{Headers/blas.\-h}!spotri@{spotri}}
+\index{spotri@{spotri}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{spotri}]{\setlength{\rightskip}{0pt plus 5cm}void spotri (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a64bb90929154aa9c9c9e0d075ad76787}
+\hypertarget{_headers_2blas_8h_ae5a123ad4ee41bdcf2bdc15ab0fbe2c2}{\index{Headers/blas.\-h@{Headers/blas.\-h}!sscal@{sscal}}
+\index{sscal@{sscal}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{sscal}]{\setlength{\rightskip}{0pt plus 5cm}void sscal (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int $\ast$}]{incx}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_ae5a123ad4ee41bdcf2bdc15ab0fbe2c2}
+\hypertarget{_headers_2blas_8h_a9583c2c90ce6d32be0713c6b937134c7}{\index{Headers/blas.\-h@{Headers/blas.\-h}!sswap@{sswap}}
+\index{sswap@{sswap}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{sswap}]{\setlength{\rightskip}{0pt plus 5cm}void sswap (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{x, }
+\item[{int $\ast$}]{incx, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{y, }
+\item[{int $\ast$}]{incy}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a9583c2c90ce6d32be0713c6b937134c7}
+\hypertarget{_headers_2blas_8h_aa7fe52b40c0c8eaf6d2f30e93dbc9893}{\index{Headers/blas.\-h@{Headers/blas.\-h}!ssyev@{ssyev}}
+\index{ssyev@{ssyev}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{ssyev}]{\setlength{\rightskip}{0pt plus 5cm}void ssyev (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{jobz, }
+\item[{char $\ast$}]{uplo, }
+\item[{int $\ast$}]{numm, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ss, }
+\item[{int $\ast$}]{numn, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{work1, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{work2, }
+\item[{int $\ast$}]{lwork, }
+\item[{int $\ast$}]{info}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_aa7fe52b40c0c8eaf6d2f30e93dbc9893}
+\hypertarget{_headers_2blas_8h_a0754a55266eaf0a9717bd674a3e95a4a}{\index{Headers/blas.\-h@{Headers/blas.\-h}!ssyrk@{ssyrk}}
+\index{ssyrk@{ssyrk}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{ssyrk}]{\setlength{\rightskip}{0pt plus 5cm}void ssyrk (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{uplo, }
+\item[{char $\ast$}]{trans, }
+\item[{int $\ast$}]{n, }
+\item[{int $\ast$}]{k, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{alpha, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{A, }
+\item[{int $\ast$}]{lda, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{beta, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{c, }
+\item[{int $\ast$}]{ldc}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a0754a55266eaf0a9717bd674a3e95a4a}
+\hypertarget{_headers_2blas_8h_ab95abc03a60d3fb052f72bd95b60f0f6}{\index{Headers/blas.\-h@{Headers/blas.\-h}!symmetry@{symmetry}}
+\index{symmetry@{symmetry}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{symmetry}]{\setlength{\rightskip}{0pt plus 5cm}void symmetry (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{ibrav, }
+\item[{int $\ast$}]{s, }
+\item[{int $\ast$}]{nsym, }
+\item[{int $\ast$}]{irg, }
+\item[{int $\ast$}]{irt, }
+\item[{int $\ast$}]{ftau, }
+\item[{int $\ast$}]{nat, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{tau, }
+\item[{int $\ast$}]{ityp, }
+\item[{int $\ast$}]{nks, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{xk, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{wk, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{celldm, }
+\item[{int $\ast$}]{nr1, }
+\item[{int $\ast$}]{nr2, }
+\item[{int $\ast$}]{nr3, }
+\item[{int $\ast$}]{wflag}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_ab95abc03a60d3fb052f72bd95b60f0f6}
+\hypertarget{_headers_2blas_8h_a6ad9b97b91c31ccdab8b8a7bc65c7699}{\index{Headers/blas.\-h@{Headers/blas.\-h}!symrho@{symrho}}
+\index{symrho@{symrho}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{symrho}]{\setlength{\rightskip}{0pt plus 5cm}void symrho (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{rho, }
+\item[{int $\ast$}]{nr1, }
+\item[{int $\ast$}]{nr2, }
+\item[{int $\ast$}]{nr3, }
+\item[{int $\ast$}]{nsym, }
+\item[{int $\ast$}]{s, }
+\item[{int $\ast$}]{irg, }
+\item[{int $\ast$}]{ftau}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a6ad9b97b91c31ccdab8b8a7bc65c7699}
+\hypertarget{_headers_2blas_8h_a69c1663e491b2052112ca273394ea4ac}{\index{Headers/blas.\-h@{Headers/blas.\-h}!xbecke@{xbecke}}
+\index{xbecke@{xbecke}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{xbecke}]{\setlength{\rightskip}{0pt plus 5cm}void xbecke (
+\begin{DoxyParamCaption}
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{d, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{s, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{u, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{v, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{ex, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{vx}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a69c1663e491b2052112ca273394ea4ac}
+\hypertarget{_headers_2blas_8h_a2c50bfd3ff5c127fc2d480c550999d5c}{\index{Headers/blas.\-h@{Headers/blas.\-h}!zgemm@{zgemm}}
+\index{zgemm@{zgemm}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{zgemm}]{\setlength{\rightskip}{0pt plus 5cm}void zgemm (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{char $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a2c50bfd3ff5c127fc2d480c550999d5c}
+\hypertarget{_headers_2blas_8h_a3094eb628237c928d28d5f1ab1529580}{\index{Headers/blas.\-h@{Headers/blas.\-h}!zgesv@{zgesv}}
+\index{zgesv@{zgesv}!Headers/blas.h@{Headers/blas.\-h}}
+\subsubsection[{zgesv}]{\setlength{\rightskip}{0pt plus 5cm}void zgesv (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{, }
+\item[{int $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{_headers_2blas_8h_a3094eb628237c928d28d5f1ab1529580}

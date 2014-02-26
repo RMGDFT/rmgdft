@@ -1,0 +1,85 @@
+\hypertarget{xc-regression_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/testsuite/xc-\/regression.c File Reference}
+\label{xc-regression_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/testsuite/xc-\/regression.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/testsuite/xc-\/regression.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$string.\-h$>$}\\*
+{\ttfamily \#include $<$xc.\-h$>$}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structvalues__t}{values\-\_\-t}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structvalues__t}{values\-\_\-t} \hyperlink{xc-regression_8c_aae2ee2c76d89f2a35ccf2ee100e04df6}{values\-\_\-t}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{xc-regression_8c_af0b756d219cc621ec493e3e0207295bd}{get\-\_\-point} (xc\-\_\-func\-\_\-type $\ast$\hyperlink{test_8c_a200d039021b3e9762ab6babd44bf5805}{func}, \hyperlink{structvalues__t}{values\-\_\-t} $\ast$p)
+\item 
+void \hyperlink{xc-regression_8c_abaaca43e77b5916482d352d1792aeb62}{values\-\_\-t\-\_\-copy} (\hyperlink{structvalues__t}{values\-\_\-t} $\ast$dest, \hyperlink{structvalues__t}{values\-\_\-t} $\ast$src)
+\item 
+void \hyperlink{xc-regression_8c_aad37c63766d9e3872e9e0fd079f8f2d8}{add\-\_\-values} (int $\ast$n\-\_\-p1, \hyperlink{structvalues__t}{values\-\_\-t} $\ast$$\ast$p1, int n\-\_\-add, int \hyperlink{macros_8h_a9ea237347839348e994103e6e7d8bab7}{where}, double $\ast$trial\-\_\-add)
+\item 
+void \hyperlink{xc-regression_8c_a91905469de04a523a10b9897e672fde2}{print\-\_\-values} (char $\ast$desc, int \hyperlink{xc-consistency_8c_a336d0e46bcbdfc54f68dd6f1b655f6c1}{nspin}, int n\-\_\-val, double $\ast$val)
+\item 
+int \hyperlink{xc-regression_8c_a0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+
+
+\subsection{Typedef Documentation}
+\hypertarget{xc-regression_8c_aae2ee2c76d89f2a35ccf2ee100e04df6}{\index{xc-\/regression.\-c@{xc-\/regression.\-c}!values\-\_\-t@{values\-\_\-t}}
+\index{values\-\_\-t@{values\-\_\-t}!xc-regression.c@{xc-\/regression.\-c}}
+\subsubsection[{values\-\_\-t}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf values\-\_\-t}  {\bf values\-\_\-t}}}\label{xc-regression_8c_aae2ee2c76d89f2a35ccf2ee100e04df6}
+
+
+\subsection{Function Documentation}
+\hypertarget{xc-regression_8c_aad37c63766d9e3872e9e0fd079f8f2d8}{\index{xc-\/regression.\-c@{xc-\/regression.\-c}!add\-\_\-values@{add\-\_\-values}}
+\index{add\-\_\-values@{add\-\_\-values}!xc-regression.c@{xc-\/regression.\-c}}
+\subsubsection[{add\-\_\-values}]{\setlength{\rightskip}{0pt plus 5cm}void add\-\_\-values (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{n\-\_\-p1, }
+\item[{{\bf values\-\_\-t} $\ast$$\ast$}]{p1, }
+\item[{int}]{n\-\_\-add, }
+\item[{int}]{where, }
+\item[{double $\ast$}]{trial\-\_\-add}
+\end{DoxyParamCaption}
+)}}\label{xc-regression_8c_aad37c63766d9e3872e9e0fd079f8f2d8}
+\hypertarget{xc-regression_8c_af0b756d219cc621ec493e3e0207295bd}{\index{xc-\/regression.\-c@{xc-\/regression.\-c}!get\-\_\-point@{get\-\_\-point}}
+\index{get\-\_\-point@{get\-\_\-point}!xc-regression.c@{xc-\/regression.\-c}}
+\subsubsection[{get\-\_\-point}]{\setlength{\rightskip}{0pt plus 5cm}void get\-\_\-point (
+\begin{DoxyParamCaption}
+\item[{xc\-\_\-func\-\_\-type $\ast$}]{func, }
+\item[{{\bf values\-\_\-t} $\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{xc-regression_8c_af0b756d219cc621ec493e3e0207295bd}
+\hypertarget{xc-regression_8c_a0ddf1224851353fc92bfbff6f499fa97}{\index{xc-\/regression.\-c@{xc-\/regression.\-c}!main@{main}}
+\index{main@{main}!xc-regression.c@{xc-\/regression.\-c}}
+\subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)}}\label{xc-regression_8c_a0ddf1224851353fc92bfbff6f499fa97}
+\hypertarget{xc-regression_8c_a91905469de04a523a10b9897e672fde2}{\index{xc-\/regression.\-c@{xc-\/regression.\-c}!print\-\_\-values@{print\-\_\-values}}
+\index{print\-\_\-values@{print\-\_\-values}!xc-regression.c@{xc-\/regression.\-c}}
+\subsubsection[{print\-\_\-values}]{\setlength{\rightskip}{0pt plus 5cm}void print\-\_\-values (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{desc, }
+\item[{int}]{nspin, }
+\item[{int}]{n\-\_\-val, }
+\item[{double $\ast$}]{val}
+\end{DoxyParamCaption}
+)}}\label{xc-regression_8c_a91905469de04a523a10b9897e672fde2}
+\hypertarget{xc-regression_8c_abaaca43e77b5916482d352d1792aeb62}{\index{xc-\/regression.\-c@{xc-\/regression.\-c}!values\-\_\-t\-\_\-copy@{values\-\_\-t\-\_\-copy}}
+\index{values\-\_\-t\-\_\-copy@{values\-\_\-t\-\_\-copy}!xc-regression.c@{xc-\/regression.\-c}}
+\subsubsection[{values\-\_\-t\-\_\-copy}]{\setlength{\rightskip}{0pt plus 5cm}void values\-\_\-t\-\_\-copy (
+\begin{DoxyParamCaption}
+\item[{{\bf values\-\_\-t} $\ast$}]{dest, }
+\item[{{\bf values\-\_\-t} $\ast$}]{src}
+\end{DoxyParamCaption}
+)}}\label{xc-regression_8c_abaaca43e77b5916482d352d1792aeb62}

@@ -1,0 +1,1004 @@
+\hypertarget{include_2xc__funcs_8h}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/include/xc\-\_\-funcs.h File Reference}
+\label{include_2xc__funcs_8h}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/include/xc\-\_\-funcs.\-h@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/include/xc\-\_\-funcs.\-h}}
+}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac6d8edd91c125ded0712359d5cb44faf}{X\-C\-\_\-\-L\-D\-A\-\_\-\-X}~1  /$\ast$ Exchange                                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_acc632e8a2d94079d08e94576fb788b24}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R}~2  /$\ast$ Wigner parametrization                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2c93bd0e5aa665479d13b458d577a903}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A}~3  /$\ast$ Random Phase Approximation                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa855147f404745a0bc7753d13d6bce96}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L}~4  /$\ast$ Hedin \& Lundqvist                                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ace61743fad0b6166bbc41db84044b0ba}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L}~5  /$\ast$ Gunnarson \& Lundqvist                                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa8065fcbbb5fd6945784ab1331e32659}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A}~6  /$\ast$ Slater Xalpha                                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5232b10ed6a9cccaf515e58c729c273c}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N}~7  /$\ast$ Vosko, Wilk, \& Nussair                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_abeac08a318b30f02fc4547442ea1cf37}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A}~8  /$\ast$ Vosko, Wilk, \& Nussair (R\-P\-A)                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a90e79df37ac0c5a8d5d73aa651c7d1ae}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z}~9  /$\ast$ Perdew \& Zunger                                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a81a13667216537f332ced741d4034eee}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D}~10  /$\ast$ Perdew \& Zunger (Modified)                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a389c9724e8656c7d9c2e8fa6c9b44055}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z}~11  /$\ast$ Ortiz \& Ballone (P\-Z)                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a3bf7743235e038da1320ddfb3f2bfd6e}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W}~12  /$\ast$ Perdew \& Wang                                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1178d2f975163b8b0b1f966f2c745cfc}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D}~13  /$\ast$ Perdew \& Wang (Modified)                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aab750270d7db2a1f6651d7b5be15d68f}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W}~14  /$\ast$ Ortiz \& Ballone (P\-W)                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_acd7e97e861c13750c72cc62bff295f62}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B}~15  /$\ast$ Attacalite et al                                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a903750cf1d128fc615182515bdbdf808}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M}~16  /$\ast$ Pittalis, Rasanen \& Marques correlation in 2\-D              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a03679fd1f3a49b3a5c7bec6ffd4b6861}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H}~17  /$\ast$ von Barth \& Hedin                                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac141edc5aedd1e96b6b937b4f3f68382}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C}~18  /$\ast$ Casula, Sorella, and Senatore 1\-D correlation               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad93049b07134a0bb5bd9e338d1c7a37b}{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D}~19  /$\ast$ Exchange in 2\-D                                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a381b9cf26cf902eec24b4febc2536ffb}{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93}~20  /$\ast$ Teter 93 parametrization                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5c45a51afe1815fb77799f1fe22fa341}{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}~21  /$\ast$ Exchange in 1\-D                                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad185c1eb97ceb89cb204a5161eabfba4}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1}~22  /$\ast$ Modified L\-S\-D (\hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} 1) of Proynov and Salahub            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_afd4841468df01fa70ab4b33275ecf00c}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2}~23  /$\ast$ Modified L\-S\-D (\hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} 2) of Proynov and Salahub            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a623138acf6af9ac4fc83c48d8e92258b}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S}~24  /$\ast$ Gombas parametrization                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac8e5ee4ea9f8c6832eb9def1c3db9963}{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A}~25  /$\ast$ Perdew \& Wang fit of the R\-P\-A                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a18f637a24b6787ec6352fc702676a45e}{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F}~50  /$\ast$ Thomas-\/Fermi kinetic energy functional                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4ed22e222c9e024cd56738c4e1dd4290}{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P}~51  /$\ast$ Lee and Parr Gaussian ansatz                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac9228894b5730f213491957f8121b94e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E}~101  /$\ast$ Perdew, Burke \& Ernzerhof exchange                         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a64fa27fcc50551fc84d343d08b5fbac1}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R}~102  /$\ast$ Perdew, Burke \& Ernzerhof exchange (revised)               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a8c76e37d486c942f64156b416781bd9d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86}~103  /$\ast$ Becke 86 Xalfa,beta,gamma                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a106b4b643ab65a7a2e8d9504ad4f951d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N}~104  /$\ast$ Herman et al original G\-G\-A                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2dd72909dfeee102890124c79138c666}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C}~105  /$\ast$ Becke 86 Xalfa,beta,gamma (with mod. grad. correction)     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aeb75932f7b7c0f6c72e3d3956841c5fb}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}~106  /$\ast$ Becke 88                                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_abec987b07191131966f15dc67b91fdc8}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96}~107  /$\ast$ Gill 96                                                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_acfee0fe0e90120f38443ad1fc79bc4e0}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86}~108  /$\ast$ Perdew \& Wang 86                                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5fb49006fd5b549e0d976b6c3ac94c4e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91}~109  /$\ast$ Perdew \& Wang 91                                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac60c25eddcd27885f425456b1dd536c2}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X}~110  /$\ast$ Handy \& Cohen O\-P\-T\-X 01                                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a8d27430a8f1e24770fed9b9b937e8d98}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1}~111  /$\ast$ de\-Pristo \& Kress 87 (\hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} R1)                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5a353cc0b3a8e77ada49197242d8f364}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2}~112  /$\ast$ de\-Pristo \& Kress 87 (\hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} R2)                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_abaa934f769823aa61fc2b88a951d4a68}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93}~113  /$\ast$ Lacks \& Gordon 93                                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a7a33af0647233c07a545469aa8775c44}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A}~114  /$\ast$ Filatov \& Thiel 97 (\hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} A)                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2e396bef0fb980caf8ed4ef74a05f5f8}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B}~115  /$\ast$ Filatov \& Thiel 97 (\hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} B)                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aecf15c19828d33ebf8073f50daa562ba}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}~116  /$\ast$ Perdew, Burke \& Ernzerhof exchange (solids)                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_abceb75470d7a21c76eada8fa1553433d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E}~117  /$\ast$ Hammer, Hansen \& Norskov (P\-B\-E-\/like)                        $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a3b15743231d0f2546d474c877154a855}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C}~118  /$\ast$ Wu \& Cohen                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a95f08c8de5ac82c6dc6b74175fbb50b8}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91}~119  /$\ast$ Modified form of P\-W91 by Adamo \& Barone                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_af0013d37850e4b4582771043d235f4fe}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05}~120  /$\ast$ Armiento \& Mattsson 05 exchange                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1150628aab54108ea03cda7680d0e785}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A}~121  /$\ast$ Madsen (P\-B\-E-\/like)                                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a86d6511dde2747a3d6ba21a85f87c0f4}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E}~122  /$\ast$ Adamo \& Barone modification to P\-B\-E                         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa43b6f3eb909f7db8638decb569f95a2}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E}~123  /$\ast$ x\-P\-B\-E reparametrization by Xu \& Goddard                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a78dc2e356e42fc36ee490948ac925e5d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C}~124  /$\ast$ Becke 86 M\-G\-C \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} 2\-D systems                                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad68b73a2715aeabb223c4414ee92f32b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N}~125  /$\ast$ Bayesian best fit \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} the enhancement factor               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aca62fe7c4569ac5badce9d2cf32960a0}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R}~126  /$\ast$ J\-S\-J\-R reparametrization by Pedroza, Silva \& Capelle         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_abc2f5b2412c7fef6558130b6d67f6bc9}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88}~127  /$\ast$ Becke 88 in 2\-D                                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aaa576dad5741cb785d17c295efc2a03f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86}~128  /$\ast$ Becke 86 Xalfa,beta,gamma                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2bc886bf41fd6eac2fc1d615ff7b6311}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E}~129  /$\ast$ Perdew, Burke \& Ernzerhof exchange in 2\-D                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ae7690b74f2899dc017f92ee9865b7d1d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E}~130  /$\ast$ Perdew, Burke \& Ernzerhof correlation                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a9e32b2e925d5478db50681b12290488d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P}~131  /$\ast$ Lee, Yang \& Parr                                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac85bdacea18f062d22da48e6bb5059f6}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86}~132  /$\ast$ Perdew 86                                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4fa845d4229170fb04606d30093564c4}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}~133  /$\ast$ Perdew, Burke \& Ernzerhof correlation S\-O\-L                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad5b481c7d03a5ee1a5822a37d4c1ba79}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91}~134  /$\ast$ Perdew \& Wang 91                                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2f20fa836c3532b7db21a6b7f991dfd6}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05}~135  /$\ast$ Armiento \& Mattsson 05 correlation                         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1641099b89ec5c8153201ed9db20fa7d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E}~136  /$\ast$ x\-P\-B\-E reparametrization by Xu \& Goddard                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a295b1e306741b51c435c2349e2d990db}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M}~137  /$\ast$ Langreth and Mehl correlation                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5310c2b15f678f29d23033bcafa7f3db}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X}~138  /$\ast$ J\-R\-G\-X reparametrization by Pedroza, Silva \& Capelle         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a381ab39bb8f2269dda561a5a9e1ff760}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}~139  /$\ast$ Becke 88 reoptimized to be used with vd\-W functional of Dion et al$\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a3563921856f4841b54cf82a96c91c333}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W}~140  /$\ast$ P\-B\-E reparametrization \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} vd\-W                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2a3641f86d5872f3d9fcacfa3e689dcc}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}~141  /$\ast$ P\-B\-E reparametrization \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} vd\-W                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa20772498b7eee0c49b671b4719e4dd4}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2}~142  /$\ast$ Regularized P\-B\-E                                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a0d2519ab75e24635a84382608a8584f1}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2}~143  /$\ast$ Regularized P\-B\-E                                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_abab6c6cde012451ffc2a2705c5368517}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86}~144  /$\ast$ refitted Perdew \& Wang 86                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_afa74abe20dc6dc6c18ef6a52a0184a9c}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1}~145  /$\ast$ Keal and Tozer \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} 1                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5c15041f7e5d37500c2680ff61001893}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2}~146  /$\ast$ Keal and Tozer \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} 2                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a7d7786f275aaebef893d9576ecbc9116}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L}~147  /$\ast$ Wilson \& Levy                                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a641e5ade7cb8b20e3850aad0a4b14326}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I}~148  /$\ast$ Wilson \& Ivanov                                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a37b9a96850288975f67f645f516242f0}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}~149  /$\ast$ Modified Becke 88 \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} proton transfer                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a87cb6740a8ee65ed2d5d36c35ad9e631}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}~150  /$\ast$ Second-\/order generalized gradient approximation            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa7a42b6a54b9f3902c2ba350be5eadda}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}~151  /$\ast$ Second-\/order generalized gradient approximation 2011       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aaf729902e5635b2a19621804e328a5a2}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11}~152  /$\ast$ Second-\/order generalized gradient approximation 2011       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aebe2155095ecfdd5e418bdbfe358f53d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0}~153  /$\ast$ Wilson \& Ivanov initial \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a788cdc51df821d56d91e47a4362d09c2}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1}~154  /$\ast$ Tozer and Handy v. 1                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a191cb15a749cf4cd8df054efbd9a3750}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2}~155  /$\ast$ Tozer and Handy v. 2                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a34d352178f97d96b85a78ea6d6512956}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3}~156  /$\ast$ Tozer and Handy v. 3                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_af3ad802fd34dfa9af1d476450083e84e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4}~157  /$\ast$ Tozer and Handy v. 4                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a8cd8df363e09dc9e75b24d7049db2089}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X}~158  /$\ast$ C09x to be used with the Vd\-W of Rutgers-\/Chalmers           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a42599a162c1257a9a8ec6b3d7b678f7e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}~159  /$\ast$ To be used with hyb\-\_\-gga\-\_\-x\-\_\-\-S\-O\-G\-G\-A11-\/\hyperlink{neb__relax_8c_a207fd5507206d307cd63f95374fcd00d}{X}                        $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5ee549ce459624505194c09938b79e68}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B}~160  /$\ast$ van Leeuwen \& Baerends                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1945799c85ccfb89052393cb7b5d7a47}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93}~161  /$\ast$ H\-C\-T\-H functional fitted to  93 molecules                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4a75320183d396b02293590ff23c0773}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120}~162  /$\ast$ H\-C\-T\-H functional fitted to 120 molecules                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4512e830bb6d9bb2f97e8653ecf3d21a}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147}~163  /$\ast$ H\-C\-T\-H functional fitted to 147 molecules                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aff88153e6253b33ab043e6b3eee0c50e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407}~164  /$\ast$ H\-C\-T\-H functional fitted to 147 molecules                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a17e8a9a4c845c76c1a0c5c8131ca5b7b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}~165  /$\ast$ Empirical functionals from Adamson, Gill, and Pople        $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a7f9887c76428d4a24ea46a2874853c10}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P}~166  /$\ast$ X\-L\-Y\-P functional                                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_adf83b753a0f4a6085696d29ba4ce7f05}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}~167  /$\ast$ Becke 97                                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_acc1c63f7572930fe04fa883ef4f1f033}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}~168  /$\ast$ Becke 97-\/1                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad8b19a39ed60ac751a7dc9a1790b8bee}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}~169  /$\ast$ Becke 97-\/2                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a6361f3afcf9ef45a6c8c7fab773e951d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D}~170  /$\ast$ Grimme functional to be used with C6 vd\-W term              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ab138b7d89a5b16b4ba25ffdbe4c26b9e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}~171  /$\ast$ Boese-\/Martin \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} Kinetics                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_af5b605f870d1cb6207c860709a211e1b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}~172  /$\ast$ Becke 97-\/3                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa2ec9961eb3a8685117d4625429ce980}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W}~173  /$\ast$ Functionals fitted \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} water                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a0b545854ac20a42c4a76c48421312f18}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W}~174  /$\ast$ Functionals fitted \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} water                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a977f559851d46681c6f714916efcc81f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W}~175  /$\ast$ Functionals fitted \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} water                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a6399bd0394f41a035afb0ab2eb8ec2e1}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}~176  /$\ast$ Schmider-\/Becke 98 parameterization 1a                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a879641e5ca88e5e4930e2d0ffb69b4b6}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}~177  /$\ast$ Schmider-\/Becke 98 parameterization 1b                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a66579a335e02e32efc0f563248132505}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}~178  /$\ast$ Schmider-\/Becke 98 parameterization 1c                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a824817e910e84c11028460e6dbb2fe5b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}~179  /$\ast$ Schmider-\/Becke 98 parameterization 2a                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a15eb9660595d13633dd54343884de1b2}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}~180  /$\ast$ Schmider-\/Becke 98 parameterization 2b                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a66eb76a64ec8da2b566dbcafbc37c2e0}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}~181  /$\ast$ Schmider-\/Becke 98 parameterization 2c                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a77217c47b065013836e1ebbe56016449}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M}~182  /$\ast$ van Leeuwen \& Baerends modified                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a94e14fe7b113bc798ee4071cee0b5634}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2}~183  /$\ast$ Exchange form based on Ou-\/Yang and Levy v.\-2                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1833315cb89dc39b5183d325706245f2}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E}~184  /$\ast$ mu fixed from the semiclassical neutral atom               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a09bbc82d11cba8b8c18c3c1dcdfa7a63}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E}~185  /$\ast$ mu fixed from the semiclassical neutral atom               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa75574be6443d10d685b1c3bb2d2eaab}{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E}~186  /$\ast$ mu fixed from the semiclassical neutral atom               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5209d06bae93686ae9b2d12d7d8bf963}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1}~187  /$\ast$ Tran and Wesolowski set 1 (Table I\-I)                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a59e5f72949271f7a6834f6a98612e071}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2}~188  /$\ast$ Tran and Wesolowski set 2 (Table I\-I)                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a0360da3bd6ac67870efee8e300fcb087}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3}~189  /$\ast$ Tran and Wesolowski set 3 (Table I\-I)                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2e56c1719467374d869c37f1377cc26d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4}~190  /$\ast$ Tran and Wesolowski set 4 (Table I\-I)                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a72eb68e749fe4d433ab9303b2fc9799f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S}~191  /$\ast$ Haas, Tran, Blaha, and Schwarz                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a469fc5d4a089390f44481e1b53c1153b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y}~192  /$\ast$ Constantin et al based on the Airy gas                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a84bcde7d8cce89234c1571d1d775fd6b}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G}~193  /$\ast$ Local Airy Gas                                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aebb3a9fa95f808b5d63fa7bc57f05726}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}~194  /$\ast$ Functional \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} organometallic chemistry                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a85b3aa1445487b607fc790830badfe7e}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}~195  /$\ast$ Functional \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} barrier heights                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad63ba4464950c90f52cec64361fa5195}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L}~196  /$\ast$ Tozer and Handy v. F\-L                                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a84eede752a80714e4bd07c12cdf860be}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C}~197  /$\ast$ Tozer and Handy v. F\-C                                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a7ee3a7427a15ec57b17292098b89955f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O}~198  /$\ast$ Tozer and Handy v. F\-C\-F\-O                                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a73c06a0c691970d7559eaee47d14d8e4}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O}~199  /$\ast$ Tozer and Handy v. F\-C\-O                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa80fb68aa2dad61f4069d2d76c78272a}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W}~500  /$\ast$ von Weiszaecker functional                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aed7e6a443f2bb3682db0ae32fa1f7791}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2}~501  /$\ast$ Second-\/order gradient expansion (l = 1/9)                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a87934d9c607d25e365c0d10e49251eae}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N}~502  /$\ast$ T\-F-\/lambda-\/v\-W form by Golden (l = 13/45)                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2b49dab54d82989589e4a7ff48b2ad0d}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65}~503  /$\ast$ T\-F-\/lambda-\/v\-W form by Yonei and Tomishima (l = 1/5)         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a932f3bcc810e9dbce5727b5fa2696232}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N}~504  /$\ast$ T\-F-\/lambda-\/v\-W form by Baltin (l = 5/9)                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a3c567270301856deb802fb177cb1f777}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B}~505  /$\ast$ T\-F-\/lambda-\/v\-W form by Lieb (l = 0.\-185909191)                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_afa0dd2f156caf2f64736849a98bf80c8}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1}~506  /$\ast$ gamma-\/T\-Fv\-W form by Acharya et al \mbox{[}g = 1 -\/ 1.\-412/\hyperlink{lda__c__2d__prm_8c_a67af716b12fead5a86898ad074a0b959}{N}$^\wedge$(1/3)\mbox{]}   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ae20f00d34e6a735e14d2e16cdacf207f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2}~507  /$\ast$ gamma-\/T\-Fv\-W form by Acharya et al \mbox{[}g = 1 -\/ 1.\-332/\hyperlink{lda__c__2d__prm_8c_a67af716b12fead5a86898ad074a0b959}{N}$^\wedge$(1/3)\mbox{]}   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a181d346b3ba348e2340508b4e3527fdc}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R}~508  /$\ast$ gamma-\/T\-Fv\-W form by Gázquez and Robles                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a95be14dbcccd5b41eb7f6fd0c4278399}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A}~509  /$\ast$ gamma-\/T\-Fv\-W form by Ludeña                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4f8a1a41a016a31c49214755ce801e37}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85}~510  /$\ast$ gamma-\/T\-Fv\-W form by Ghosh and Parr                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4af902e20b191ab47707df320535a282}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N}~511  /$\ast$ Pearson                                                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a8c2719b7810bd9a936a2bae429718bac}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1}~512  /$\ast$ Ou-\/Yang and Levy v.\-1                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac4012af77952447119c2776363ba6ca3}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2}~513  /$\ast$ Ou-\/Yang and Levy v.\-2                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a204cb4f3f1148b3cee7d3a09ba3c119f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}~514  /$\ast$ Fuentealba \& Reyes (B88 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version})                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a31a650cd02036afaa7f0f480bb35a1eb}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86}~515  /$\ast$ Fuentealba \& Reyes (P\-W86 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version})                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2f6bd954ca978452a62403d1d1217dc7}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K}~516  /$\ast$ De\-Pristo and Kress                                         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aab571055ab5c0cfa5d4805d8bde1f947}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W}~517  /$\ast$ Perdew                                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a498769dde5b6987440be4eb7d503d872}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K}~518  /$\ast$ Vitos, Skriver, and Kollar                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4813d45a77e8bab6fd1e4ea8a6a330de}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S}~519  /$\ast$ Vitos, Johansson, Kollar, and Skriver                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a9d288bd3da800a017d467558dfc726e1}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F}~520  /$\ast$ Ernzerhof                                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aaeb0a147c4a83c56d029afa1a35b69df}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94}~521  /$\ast$ Lembarki \& Chermette                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a652d6ae1fb5e132f31211b5ff5e94756}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}~522  /$\ast$ Lee, Lee \& Parr                                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a948334dad04f87e14ad3357383ea4675}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}~523  /$\ast$ Thakkar 1992                                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_af7e153f86aaf66a0537df4dd4f38f6c8}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H}~524  /$\ast$ short-\/range \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} of the P\-B\-E                             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a54047986350e8bb0bd2160f573007037}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}~525  /$\ast$ H\-J\-S screened exchange P\-B\-E \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a5c1ce526bf807676d1abd9a84db4741c}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}~526  /$\ast$ H\-J\-S screened exchange P\-B\-E\-\_\-\-S\-O\-L \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a6b4d51bc2dd50c896be3f3e3e31cec35}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88}~527  /$\ast$ H\-J\-S screened exchange B88 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                          $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a86ca58b4f55671c7c417cf175cffff4a}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X}~528  /$\ast$ H\-J\-S screened exchange B97x \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad07b689d1cc7ec357263021c30999f46}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}~401  /$\ast$ The original hybrid proposed by Becke                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a0f607168069b60ceb8362df0dd9089a9}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}~402  /$\ast$ The (in)famous B3\-L\-Y\-P                                       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad1b8a3976e27335a13cc853275889db2}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}~403  /$\ast$ Perdew 86 hybrid similar to B3\-P\-W91                         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a7a32eee3942780a41f456c340cc76882}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P}~404  /$\ast$ hybrid using the optx functional                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a419a2d24d40288f28658c6a984713ccb}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K}~405  /$\ast$ mixture of m\-P\-W91 and P\-W91 optimized \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} kinetics           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac0cdef4f91a3d99d47c668a38d164380}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H}~406  /$\ast$ aka P\-B\-E0 or P\-B\-E1\-P\-B\-E                                        $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a15bd525fd417ddc373908fbf8c820556}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}~407  /$\ast$ Becke 97                                                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad65ad5f9a2bce6bfb75a40f69b904eaa}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}~408  /$\ast$ Becke 97-\/1                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ada34aac78b421efb212eefe25a67e158}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}~410  /$\ast$ Becke 97-\/2                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac9a4a23b478f8051b2b332a5342d46a9}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P}~411  /$\ast$ maybe the best hybrid                                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4238bef462a07c383d6028f8f1578b9c}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C}~412  /$\ast$ Becke 1-\/parameter mixture of W\-C and P\-B\-E                    $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1e7669a43d036744943d75797cff0542}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}~413  /$\ast$ Boese-\/Martin \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} Kinetics                                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ac76f39ae350552f914796e7b2670fc7a}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}~414  /$\ast$ Becke 97-\/3                                                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a9686c885769e0d03f8677fba26ac1c88}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W}~415  /$\ast$ mixture with the m\-P\-W functional                            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a735765122f7b60d439e54d93fe727518}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P}~416  /$\ast$ Becke 1-\/parameter mixture of B88 and L\-Y\-P                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aae498cf8db04128dd2abe9066cd3372e}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91}~417  /$\ast$ Becke 1-\/parameter mixture of B88 and P\-W91                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a28a565148397dbac709256c23ea099ac}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W}~418  /$\ast$ Becke 1-\/parameter mixture of m\-P\-W91 and P\-W91                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_acfd6bd3698e742817e075db92d5c4a9c}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P}~419  /$\ast$ mixture of m\-P\-W and L\-Y\-P                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a8751ea04a40885f7b35cfa86bf8847ab}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}~420  /$\ast$ Schmider-\/Becke 98 parameterization 1a                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a9a2dc29b7a83521d972f943504c79b71}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}~421  /$\ast$ Schmider-\/Becke 98 parameterization 1b                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a634b61e8cbed9ec572dc915021c46a1c}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}~422  /$\ast$ Schmider-\/Becke 98 parameterization 1c                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a38279d29c1fcbb9560570c1f0c615ed4}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}~423  /$\ast$ Schmider-\/Becke 98 parameterization 2a                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2d597d49f7c1ac690b42a49f087993ad}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}~424  /$\ast$ Schmider-\/Becke 98 parameterization 2b                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ae5124278259308a2269ebbc2b7ff162e}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}~425  /$\ast$ Schmider-\/Becke 98 parameterization 2c                      $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a0db319dea2f3bb2ab101b45788ff5cf8}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}~426  /$\ast$ Hybrid based on S\-O\-G\-G\-A11 form                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1800524e36f827c7ca797bcc74b1f708}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03}~427  /$\ast$ the 2003 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} of the screened hybrid H\-S\-E                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad1a8857f2c84c73bca745febdc0f7f22}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06}~428  /$\ast$ the 2006 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} of the screened hybrid H\-S\-E                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a8c3b4a89b7796b8aad590cccaf75f49a}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}~429  /$\ast$ H\-J\-S hybrid screened exchange P\-B\-E \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aab0bae7e61844516bf499628fc118dd2}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}~430  /$\ast$ H\-J\-S hybrid screened exchange P\-B\-E\-\_\-\-S\-O\-L \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aa6e92a8824f1f4d3291bd1ca14efd82f}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88}~431  /$\ast$ H\-J\-S hybrid screened exchange B88 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                   $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a82eb33982f768bc5c63aa4e7936f7812}{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X}~432  /$\ast$ H\-J\-S hybrid screened exchange B97x \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}                  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a4ebdf13d12b1e26a5a1c6e9db4a150f2}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A}~201  /$\ast$ Local tau approximation of Ernzerhof \& Scuseria            $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ab5327004a914090943d3431ccf0c15ea}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S}~202  /$\ast$ Perdew, Tao, Staroverov \& Scuseria exchange                $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a68466e78de8da309e74a55cea6a9b602}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L}~203  /$\ast$ Zhao, Truhlar exchange                                     $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2327e15614ebd7c1cce9a2439b246145}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4}~204  /$\ast$ G\-V\-T4 from Van Voorhis and Scuseria (exchange part)         $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a1f89b6efad819057aed0143c06723646}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H}~205  /$\ast$ tau-\/H\-C\-T\-H from Boese and Handy                              $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a2e7f19ef8aa6c5ca6f82dea5166e7b8b}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89}~206  /$\ast$ Becke-\/Roussel 89                                           $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a24f0f6b1b02f8830937d45c3f68e4dee}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06}~207  /$\ast$ Becke \& Johnson correction to Becke-\/Roussel 89             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_aba7e2f94d2987ce7fb2677aa57a54b8d}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09}~208  /$\ast$ Tran \& Blaha correction to Becke \& Johnson                 $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad0e37c6722adea35bf84ff4af49c6119}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09}~209  /$\ast$ Rasanen, Pittalis, and Proetto correction to Becke \& Johnson  $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a7d48b5316306f03066f2aa1ea950a5d8}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07}~210  /$\ast$ Pittalis, Rasanen, Helbig, Gross Exchange Functional       $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a927ea0dd7bda9e554ab383e40886dd59}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10}~211  /$\ast$ P\-R\-G\-H07 with P\-R\-P10 correction                               $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_a891a9fd10cb0ccf08ce142c2754b89e8}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S}~231  /$\ast$ Perdew, Tao, Staroverov \& Scuseria correlation             $\ast$/
+\item 
+\#define \hyperlink{include_2xc__funcs_8h_ad36f9a4340ab39ff9eb2c3cc64938c0b}{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}~232  /$\ast$ V\-Sxc from Van Voorhis and Scuseria (correlation part)      $\ast$/
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{include_2xc__funcs_8h_a2f20fa836c3532b7db21a6b7f991dfd6}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-M05~135  /$\ast$ Armiento \& Mattsson 05 correlation                         $\ast$/}}\label{include_2xc__funcs_8h_a2f20fa836c3532b7db21a6b7f991dfd6}
+\hypertarget{include_2xc__funcs_8h_aa75574be6443d10d685b1c3bb2d2eaab}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-A\-P\-B\-E~186  /$\ast$ mu fixed from the semiclassical neutral atom               $\ast$/}}\label{include_2xc__funcs_8h_aa75574be6443d10d685b1c3bb2d2eaab}
+\hypertarget{include_2xc__funcs_8h_a295b1e306741b51c435c2349e2d990db}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-M~137  /$\ast$ Langreth and Mehl correlation                              $\ast$/}}\label{include_2xc__funcs_8h_a295b1e306741b51c435c2349e2d990db}
+\hypertarget{include_2xc__funcs_8h_a9e32b2e925d5478db50681b12290488d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-L\-Y\-P~131  /$\ast$ Lee, Yang \& Parr                                           $\ast$/}}\label{include_2xc__funcs_8h_a9e32b2e925d5478db50681b12290488d}
+\hypertarget{include_2xc__funcs_8h_ac85bdacea18f062d22da48e6bb5059f6}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P86~132  /$\ast$ Perdew 86                                                  $\ast$/}}\label{include_2xc__funcs_8h_ac85bdacea18f062d22da48e6bb5059f6}
+\hypertarget{include_2xc__funcs_8h_ae7690b74f2899dc017f92ee9865b7d1d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E~130  /$\ast$ Perdew, Burke \& Ernzerhof correlation                      $\ast$/}}\label{include_2xc__funcs_8h_ae7690b74f2899dc017f92ee9865b7d1d}
+\hypertarget{include_2xc__funcs_8h_a5310c2b15f678f29d23033bcafa7f3db}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-J\-R\-G\-X~138  /$\ast$ J\-R\-G\-X reparametrization by Pedroza, Silva \& Capelle         $\ast$/}}\label{include_2xc__funcs_8h_a5310c2b15f678f29d23033bcafa7f3db}
+\hypertarget{include_2xc__funcs_8h_a4fa845d4229170fb04606d30093564c4}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L~133  /$\ast$ Perdew, Burke \& Ernzerhof correlation S\-O\-L                  $\ast$/}}\label{include_2xc__funcs_8h_a4fa845d4229170fb04606d30093564c4}
+\hypertarget{include_2xc__funcs_8h_ad5b481c7d03a5ee1a5822a37d4c1ba79}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-P\-W91~134  /$\ast$ Perdew \& Wang 91                                           $\ast$/}}\label{include_2xc__funcs_8h_ad5b481c7d03a5ee1a5822a37d4c1ba79}
+\hypertarget{include_2xc__funcs_8h_a0d2519ab75e24635a84382608a8584f1}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-R\-G\-E2~143  /$\ast$ Regularized P\-B\-E                                            $\ast$/}}\label{include_2xc__funcs_8h_a0d2519ab75e24635a84382608a8584f1}
+\hypertarget{include_2xc__funcs_8h_aaf729902e5635b2a19621804e328a5a2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11~152  /$\ast$ Second-\/order generalized gradient approximation 2011       $\ast$/}}\label{include_2xc__funcs_8h_aaf729902e5635b2a19621804e328a5a2}
+\hypertarget{include_2xc__funcs_8h_a42599a162c1257a9a8ec6b3d7b678f7e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X~159  /$\ast$ To be used with hyb\-\_\-gga\-\_\-x\-\_\-\-S\-O\-G\-G\-A11-\/{\bf X}                        $\ast$/}}\label{include_2xc__funcs_8h_a42599a162c1257a9a8ec6b3d7b678f7e}
+\hypertarget{include_2xc__funcs_8h_a641e5ade7cb8b20e3850aad0a4b14326}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I~148  /$\ast$ Wilson \& Ivanov                                            $\ast$/}}\label{include_2xc__funcs_8h_a641e5ade7cb8b20e3850aad0a4b14326}
+\hypertarget{include_2xc__funcs_8h_aebe2155095ecfdd5e418bdbfe358f53d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-I0~153  /$\ast$ Wilson \& Ivanov initial {\bf version}                            $\ast$/}}\label{include_2xc__funcs_8h_aebe2155095ecfdd5e418bdbfe358f53d}
+\hypertarget{include_2xc__funcs_8h_a7d7786f275aaebef893d9576ecbc9116}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-W\-L~147  /$\ast$ Wilson \& Levy                                              $\ast$/}}\label{include_2xc__funcs_8h_a7d7786f275aaebef893d9576ecbc9116}
+\hypertarget{include_2xc__funcs_8h_a1641099b89ec5c8153201ed9db20fa7d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-C\-\_\-\-X\-P\-B\-E~136  /$\ast$ x\-P\-B\-E reparametrization by Xu \& Goddard                     $\ast$/}}\label{include_2xc__funcs_8h_a1641099b89ec5c8153201ed9db20fa7d}
+\hypertarget{include_2xc__funcs_8h_afa0dd2f156caf2f64736849a98bf80c8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R1~506  /$\ast$ gamma-\/T\-Fv\-W form by Acharya et al \mbox{[}g = 1 -\/ 1.\-412/{\bf N}$^\wedge$(1/3)\mbox{]}   $\ast$/}}\label{include_2xc__funcs_8h_afa0dd2f156caf2f64736849a98bf80c8}
+\hypertarget{include_2xc__funcs_8h_ae20f00d34e6a735e14d2e16cdacf207f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-B\-S\-R2~507  /$\ast$ gamma-\/T\-Fv\-W form by Acharya et al \mbox{[}g = 1 -\/ 1.\-332/{\bf N}$^\wedge$(1/3)\mbox{]}   $\ast$/}}\label{include_2xc__funcs_8h_ae20f00d34e6a735e14d2e16cdacf207f}
+\hypertarget{include_2xc__funcs_8h_a09bbc82d11cba8b8c18c3c1dcdfa7a63}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-A\-P\-B\-E~185  /$\ast$ mu fixed from the semiclassical neutral atom               $\ast$/}}\label{include_2xc__funcs_8h_a09bbc82d11cba8b8c18c3c1dcdfa7a63}
+\hypertarget{include_2xc__funcs_8h_a932f3bcc810e9dbce5727b5fa2696232}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-B\-A\-L\-T\-I\-N~504  /$\ast$ T\-F-\/lambda-\/v\-W form by Baltin (l = 5/9)                      $\ast$/}}\label{include_2xc__funcs_8h_a932f3bcc810e9dbce5727b5fa2696232}
+\hypertarget{include_2xc__funcs_8h_a2f6bd954ca978452a62403d1d1217dc7}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-D\-K~516  /$\ast$ De\-Pristo and Kress                                         $\ast$/}}\label{include_2xc__funcs_8h_a2f6bd954ca978452a62403d1d1217dc7}
+\hypertarget{include_2xc__funcs_8h_a9d288bd3da800a017d467558dfc726e1}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-E\-R\-N\-Z\-E\-R\-H\-O\-F~520  /$\ast$ Ernzerhof                                                  $\ast$/}}\label{include_2xc__funcs_8h_a9d288bd3da800a017d467558dfc726e1}
+\hypertarget{include_2xc__funcs_8h_a204cb4f3f1148b3cee7d3a09ba3c119f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88~514  /$\ast$ Fuentealba \& Reyes (B88 {\bf version})                           $\ast$/}}\label{include_2xc__funcs_8h_a204cb4f3f1148b3cee7d3a09ba3c119f}
+\hypertarget{include_2xc__funcs_8h_a31a650cd02036afaa7f0f480bb35a1eb}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-P\-W86~515  /$\ast$ Fuentealba \& Reyes (P\-W86 {\bf version})                          $\ast$/}}\label{include_2xc__funcs_8h_a31a650cd02036afaa7f0f480bb35a1eb}
+\hypertarget{include_2xc__funcs_8h_aed7e6a443f2bb3682db0ae32fa1f7791}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-E2~501  /$\ast$ Second-\/order gradient expansion (l = 1/9)                  $\ast$/}}\label{include_2xc__funcs_8h_aed7e6a443f2bb3682db0ae32fa1f7791}
+\hypertarget{include_2xc__funcs_8h_a87934d9c607d25e365c0d10e49251eae}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-O\-L\-D\-E\-N~502  /$\ast$ T\-F-\/lambda-\/v\-W form by Golden (l = 13/45)                    $\ast$/}}\label{include_2xc__funcs_8h_a87934d9c607d25e365c0d10e49251eae}
+\hypertarget{include_2xc__funcs_8h_a4f8a1a41a016a31c49214755ce801e37}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-P85~510  /$\ast$ gamma-\/T\-Fv\-W form by Ghosh and Parr                          $\ast$/}}\label{include_2xc__funcs_8h_a4f8a1a41a016a31c49214755ce801e37}
+\hypertarget{include_2xc__funcs_8h_a181d346b3ba348e2340508b4e3527fdc}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-G\-R~508  /$\ast$ gamma-\/T\-Fv\-W form by Gázquez and Robles                     $\ast$/}}\label{include_2xc__funcs_8h_a181d346b3ba348e2340508b4e3527fdc}
+\hypertarget{include_2xc__funcs_8h_aaeb0a147c4a83c56d029afa1a35b69df}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-C94~521  /$\ast$ Lembarki \& Chermette                                       $\ast$/}}\label{include_2xc__funcs_8h_aaeb0a147c4a83c56d029afa1a35b69df}
+\hypertarget{include_2xc__funcs_8h_a3c567270301856deb802fb177cb1f777}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-I\-E\-B~505  /$\ast$ T\-F-\/lambda-\/v\-W form by Lieb (l = 0.\-185909191)                $\ast$/}}\label{include_2xc__funcs_8h_a3c567270301856deb802fb177cb1f777}
+\hypertarget{include_2xc__funcs_8h_a652d6ae1fb5e132f31211b5ff5e94756}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P~522  /$\ast$ Lee, Lee \& Parr                                            $\ast$/}}\label{include_2xc__funcs_8h_a652d6ae1fb5e132f31211b5ff5e94756}
+\hypertarget{include_2xc__funcs_8h_a95be14dbcccd5b41eb7f6fd0c4278399}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-U\-D\-E\-N\-A~509  /$\ast$ gamma-\/T\-Fv\-W form by Ludeña                                 $\ast$/}}\label{include_2xc__funcs_8h_a95be14dbcccd5b41eb7f6fd0c4278399}
+\hypertarget{include_2xc__funcs_8h_a8c2719b7810bd9a936a2bae429718bac}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L1~512  /$\ast$ Ou-\/Yang and Levy v.\-1                                       $\ast$/}}\label{include_2xc__funcs_8h_a8c2719b7810bd9a936a2bae429718bac}
+\hypertarget{include_2xc__funcs_8h_ac4012af77952447119c2776363ba6ca3}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-O\-L2~513  /$\ast$ Ou-\/Yang and Levy v.\-2                                       $\ast$/}}\label{include_2xc__funcs_8h_ac4012af77952447119c2776363ba6ca3}
+\hypertarget{include_2xc__funcs_8h_a4af902e20b191ab47707df320535a282}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-A\-R\-S\-O\-N~511  /$\ast$ Pearson                                                    $\ast$/}}\label{include_2xc__funcs_8h_a4af902e20b191ab47707df320535a282}
+\hypertarget{include_2xc__funcs_8h_aab571055ab5c0cfa5d4805d8bde1f947}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-P\-E\-R\-D\-E\-W~517  /$\ast$ Perdew                                                     $\ast$/}}\label{include_2xc__funcs_8h_aab571055ab5c0cfa5d4805d8bde1f947}
+\hypertarget{include_2xc__funcs_8h_a948334dad04f87e14ad3357383ea4675}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R~523  /$\ast$ Thakkar 1992                                               $\ast$/}}\label{include_2xc__funcs_8h_a948334dad04f87e14ad3357383ea4675}
+\hypertarget{include_2xc__funcs_8h_a5209d06bae93686ae9b2d12d7d8bf963}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W1~187  /$\ast$ Tran and Wesolowski set 1 (Table I\-I)                       $\ast$/}}\label{include_2xc__funcs_8h_a5209d06bae93686ae9b2d12d7d8bf963}
+\hypertarget{include_2xc__funcs_8h_a59e5f72949271f7a6834f6a98612e071}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W2~188  /$\ast$ Tran and Wesolowski set 2 (Table I\-I)                       $\ast$/}}\label{include_2xc__funcs_8h_a59e5f72949271f7a6834f6a98612e071}
+\hypertarget{include_2xc__funcs_8h_a0360da3bd6ac67870efee8e300fcb087}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W3~189  /$\ast$ Tran and Wesolowski set 3 (Table I\-I)                       $\ast$/}}\label{include_2xc__funcs_8h_a0360da3bd6ac67870efee8e300fcb087}
+\hypertarget{include_2xc__funcs_8h_a2e56c1719467374d869c37f1377cc26d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-W4~190  /$\ast$ Tran and Wesolowski set 4 (Table I\-I)                       $\ast$/}}\label{include_2xc__funcs_8h_a2e56c1719467374d869c37f1377cc26d}
+\hypertarget{include_2xc__funcs_8h_a4813d45a77e8bab6fd1e4ea8a6a330de}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-J\-K\-S~519  /$\ast$ Vitos, Johansson, Kollar, and Skriver                      $\ast$/}}\label{include_2xc__funcs_8h_a4813d45a77e8bab6fd1e4ea8a6a330de}
+\hypertarget{include_2xc__funcs_8h_a498769dde5b6987440be4eb7d503d872}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-S\-K~518  /$\ast$ Vitos, Skriver, and Kollar                                 $\ast$/}}\label{include_2xc__funcs_8h_a498769dde5b6987440be4eb7d503d872}
+\hypertarget{include_2xc__funcs_8h_aa80fb68aa2dad61f4069d2d76c78272a}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-V\-W~500  /$\ast$ von Weiszaecker functional                                 $\ast$/}}\label{include_2xc__funcs_8h_aa80fb68aa2dad61f4069d2d76c78272a}
+\hypertarget{include_2xc__funcs_8h_a2b49dab54d82989589e4a7ff48b2ad0d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-Y\-T65~503  /$\ast$ T\-F-\/lambda-\/v\-W form by Yonei and Tomishima (l = 1/5)         $\ast$/}}\label{include_2xc__funcs_8h_a2b49dab54d82989589e4a7ff48b2ad0d}
+\hypertarget{include_2xc__funcs_8h_aaa576dad5741cb785d17c295efc2a03f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86~128  /$\ast$ Becke 86 Xalfa,beta,gamma                                  $\ast$/}}\label{include_2xc__funcs_8h_aaa576dad5741cb785d17c295efc2a03f}
+\hypertarget{include_2xc__funcs_8h_a78dc2e356e42fc36ee490948ac925e5d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B86\-\_\-\-M\-G\-C~124  /$\ast$ Becke 86 M\-G\-C {\bf for} 2\-D systems                                $\ast$/}}\label{include_2xc__funcs_8h_a78dc2e356e42fc36ee490948ac925e5d}
+\hypertarget{include_2xc__funcs_8h_abc2f5b2412c7fef6558130b6d67f6bc9}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-B88~127  /$\ast$ Becke 88 in 2\-D                                             $\ast$/}}\label{include_2xc__funcs_8h_abc2f5b2412c7fef6558130b6d67f6bc9}
+\hypertarget{include_2xc__funcs_8h_a2bc886bf41fd6eac2fc1d615ff7b6311}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-B\-E~129  /$\ast$ Perdew, Burke \& Ernzerhof exchange in 2\-D                   $\ast$/}}\label{include_2xc__funcs_8h_a2bc886bf41fd6eac2fc1d615ff7b6311}
+\hypertarget{include_2xc__funcs_8h_a469fc5d4a089390f44481e1b53c1153b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-I\-R\-Y~192  /$\ast$ Constantin et al based on the Airy gas                     $\ast$/}}\label{include_2xc__funcs_8h_a469fc5d4a089390f44481e1b53c1153b}
+\hypertarget{include_2xc__funcs_8h_af0013d37850e4b4582771043d235f4fe}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-M05~120  /$\ast$ Armiento \& Mattsson 05 exchange                            $\ast$/}}\label{include_2xc__funcs_8h_af0013d37850e4b4582771043d235f4fe}
+\hypertarget{include_2xc__funcs_8h_a1833315cb89dc39b5183d325706245f2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-A\-P\-B\-E~184  /$\ast$ mu fixed from the semiclassical neutral atom               $\ast$/}}\label{include_2xc__funcs_8h_a1833315cb89dc39b5183d325706245f2}
+\hypertarget{include_2xc__funcs_8h_a8c76e37d486c942f64156b416781bd9d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86~103  /$\ast$ Becke 86 Xalfa,beta,gamma                                  $\ast$/}}\label{include_2xc__funcs_8h_a8c76e37d486c942f64156b416781bd9d}
+\hypertarget{include_2xc__funcs_8h_a2dd72909dfeee102890124c79138c666}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B86\-\_\-\-M\-G\-C~105  /$\ast$ Becke 86 Xalfa,beta,gamma (with mod. grad. correction)     $\ast$/}}\label{include_2xc__funcs_8h_a2dd72909dfeee102890124c79138c666}
+\hypertarget{include_2xc__funcs_8h_aeb75932f7b7c0f6c72e3d3956841c5fb}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88~106  /$\ast$ Becke 88                                                   $\ast$/}}\label{include_2xc__funcs_8h_aeb75932f7b7c0f6c72e3d3956841c5fb}
+\hypertarget{include_2xc__funcs_8h_ad68b73a2715aeabb223c4414ee92f32b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B\-A\-Y\-E\-S\-I\-A\-N~125  /$\ast$ Bayesian best fit {\bf for} the enhancement factor               $\ast$/}}\label{include_2xc__funcs_8h_ad68b73a2715aeabb223c4414ee92f32b}
+\hypertarget{include_2xc__funcs_8h_a8cd8df363e09dc9e75b24d7049db2089}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-C09\-X~158  /$\ast$ C09x to be used with the Vd\-W of Rutgers-\/Chalmers           $\ast$/}}\label{include_2xc__funcs_8h_a8cd8df363e09dc9e75b24d7049db2089}
+\hypertarget{include_2xc__funcs_8h_a8d27430a8f1e24770fed9b9b937e8d98}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R1~111  /$\ast$ de\-Pristo \& Kress 87 ({\bf version} R1)                           $\ast$/}}\label{include_2xc__funcs_8h_a8d27430a8f1e24770fed9b9b937e8d98}
+\hypertarget{include_2xc__funcs_8h_a5a353cc0b3a8e77ada49197242d8f364}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-D\-K87\-\_\-\-R2~112  /$\ast$ de\-Pristo \& Kress 87 ({\bf version} R2)                           $\ast$/}}\label{include_2xc__funcs_8h_a5a353cc0b3a8e77ada49197242d8f364}
+\hypertarget{include_2xc__funcs_8h_a7a33af0647233c07a545469aa8775c44}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-A~114  /$\ast$ Filatov \& Thiel 97 ({\bf version} A)                             $\ast$/}}\label{include_2xc__funcs_8h_a7a33af0647233c07a545469aa8775c44}
+\hypertarget{include_2xc__funcs_8h_a2e396bef0fb980caf8ed4ef74a05f5f8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-F\-T97\-\_\-\-B~115  /$\ast$ Filatov \& Thiel 97 ({\bf version} B)                             $\ast$/}}\label{include_2xc__funcs_8h_a2e396bef0fb980caf8ed4ef74a05f5f8}
+\hypertarget{include_2xc__funcs_8h_abec987b07191131966f15dc67b91fdc8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-G96~107  /$\ast$ Gill 96                                                    $\ast$/}}\label{include_2xc__funcs_8h_abec987b07191131966f15dc67b91fdc8}
+\hypertarget{include_2xc__funcs_8h_a106b4b643ab65a7a2e8d9504ad4f951d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-E\-R\-M\-A\-N~104  /$\ast$ Herman et al original G\-G\-A                                  $\ast$/}}\label{include_2xc__funcs_8h_a106b4b643ab65a7a2e8d9504ad4f951d}
+\hypertarget{include_2xc__funcs_8h_a6b4d51bc2dd50c896be3f3e3e31cec35}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B88~527  /$\ast$ H\-J\-S screened exchange B88 {\bf version}                          $\ast$/}}\label{include_2xc__funcs_8h_a6b4d51bc2dd50c896be3f3e3e31cec35}
+\hypertarget{include_2xc__funcs_8h_a86ca58b4f55671c7c417cf175cffff4a}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-B97\-X~528  /$\ast$ H\-J\-S screened exchange B97x {\bf version}                         $\ast$/}}\label{include_2xc__funcs_8h_a86ca58b4f55671c7c417cf175cffff4a}
+\hypertarget{include_2xc__funcs_8h_a54047986350e8bb0bd2160f573007037}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E~525  /$\ast$ H\-J\-S screened exchange P\-B\-E {\bf version}                          $\ast$/}}\label{include_2xc__funcs_8h_a54047986350e8bb0bd2160f573007037}
+\hypertarget{include_2xc__funcs_8h_a5c1ce526bf807676d1abd9a84db4741c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L~526  /$\ast$ H\-J\-S screened exchange P\-B\-E\-\_\-\-S\-O\-L {\bf version}                      $\ast$/}}\label{include_2xc__funcs_8h_a5c1ce526bf807676d1abd9a84db4741c}
+\hypertarget{include_2xc__funcs_8h_a72eb68e749fe4d433ab9303b2fc9799f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-H\-T\-B\-S~191  /$\ast$ Haas, Tran, Blaha, and Schwarz                             $\ast$/}}\label{include_2xc__funcs_8h_a72eb68e749fe4d433ab9303b2fc9799f}
+\hypertarget{include_2xc__funcs_8h_afa74abe20dc6dc6c18ef6a52a0184a9c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-K\-T1~145  /$\ast$ Keal and Tozer {\bf version} 1                                   $\ast$/}}\label{include_2xc__funcs_8h_afa74abe20dc6dc6c18ef6a52a0184a9c}
+\hypertarget{include_2xc__funcs_8h_a84bcde7d8cce89234c1571d1d775fd6b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-A\-G~193  /$\ast$ Local Airy Gas                                             $\ast$/}}\label{include_2xc__funcs_8h_a84bcde7d8cce89234c1571d1d775fd6b}
+\hypertarget{include_2xc__funcs_8h_a5ee549ce459624505194c09938b79e68}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B~160  /$\ast$ van Leeuwen \& Baerends                                     $\ast$/}}\label{include_2xc__funcs_8h_a5ee549ce459624505194c09938b79e68}
+\hypertarget{include_2xc__funcs_8h_a77217c47b065013836e1ebbe56016449}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-B\-M~182  /$\ast$ van Leeuwen \& Baerends modified                            $\ast$/}}\label{include_2xc__funcs_8h_a77217c47b065013836e1ebbe56016449}
+\hypertarget{include_2xc__funcs_8h_abaa934f769823aa61fc2b88a951d4a68}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-L\-G93~113  /$\ast$ Lacks \& Gordon 93                                          $\ast$/}}\label{include_2xc__funcs_8h_abaa934f769823aa61fc2b88a951d4a68}
+\hypertarget{include_2xc__funcs_8h_a37b9a96850288975f67f645f516242f0}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88~149  /$\ast$ Modified Becke 88 {\bf for} proton transfer                      $\ast$/}}\label{include_2xc__funcs_8h_a37b9a96850288975f67f645f516242f0}
+\hypertarget{include_2xc__funcs_8h_a86d6511dde2747a3d6ba21a85f87c0f4}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-P\-B\-E~122  /$\ast$ Adamo \& Barone modification to P\-B\-E                         $\ast$/}}\label{include_2xc__funcs_8h_a86d6511dde2747a3d6ba21a85f87c0f4}
+\hypertarget{include_2xc__funcs_8h_a95f08c8de5ac82c6dc6b74175fbb50b8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-m\-P\-W91~119  /$\ast$ Modified form of P\-W91 by Adamo \& Barone                    $\ast$/}}\label{include_2xc__funcs_8h_a95f08c8de5ac82c6dc6b74175fbb50b8}
+\hypertarget{include_2xc__funcs_8h_a94e14fe7b113bc798ee4071cee0b5634}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-L2~183  /$\ast$ Exchange form based on Ou-\/Yang and Levy v.\-2                $\ast$/}}\label{include_2xc__funcs_8h_a94e14fe7b113bc798ee4071cee0b5634}
+\hypertarget{include_2xc__funcs_8h_a381ab39bb8f2269dda561a5a9e1ff760}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W~139  /$\ast$ Becke 88 reoptimized to be used with vd\-W functional of Dion et al$\ast$/}}\label{include_2xc__funcs_8h_a381ab39bb8f2269dda561a5a9e1ff760}
+\hypertarget{include_2xc__funcs_8h_a2a3641f86d5872f3d9fcacfa3e689dcc}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-P\-B\-E\-\_\-\-V\-D\-W~141  /$\ast$ P\-B\-E reparametrization {\bf for} vd\-W                              $\ast$/}}\label{include_2xc__funcs_8h_a2a3641f86d5872f3d9fcacfa3e689dcc}
+\hypertarget{include_2xc__funcs_8h_ac60c25eddcd27885f425456b1dd536c2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-X~110  /$\ast$ Handy \& Cohen O\-P\-T\-X 01                                      $\ast$/}}\label{include_2xc__funcs_8h_ac60c25eddcd27885f425456b1dd536c2}
+\hypertarget{include_2xc__funcs_8h_ac9228894b5730f213491957f8121b94e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E~101  /$\ast$ Perdew, Burke \& Ernzerhof exchange                         $\ast$/}}\label{include_2xc__funcs_8h_ac9228894b5730f213491957f8121b94e}
+\hypertarget{include_2xc__funcs_8h_aca62fe7c4569ac5badce9d2cf32960a0}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-J\-S\-J\-R~126  /$\ast$ J\-S\-J\-R reparametrization by Pedroza, Silva \& Capelle         $\ast$/}}\label{include_2xc__funcs_8h_aca62fe7c4569ac5badce9d2cf32960a0}
+\hypertarget{include_2xc__funcs_8h_a64fa27fcc50551fc84d343d08b5fbac1}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-R~102  /$\ast$ Perdew, Burke \& Ernzerhof exchange (revised)               $\ast$/}}\label{include_2xc__funcs_8h_a64fa27fcc50551fc84d343d08b5fbac1}
+\hypertarget{include_2xc__funcs_8h_aecf15c19828d33ebf8073f50daa562ba}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L~116  /$\ast$ Perdew, Burke \& Ernzerhof exchange (solids)                $\ast$/}}\label{include_2xc__funcs_8h_aecf15c19828d33ebf8073f50daa562ba}
+\hypertarget{include_2xc__funcs_8h_a1150628aab54108ea03cda7680d0e785}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-A~121  /$\ast$ Madsen (P\-B\-E-\/like)                                          $\ast$/}}\label{include_2xc__funcs_8h_a1150628aab54108ea03cda7680d0e785}
+\hypertarget{include_2xc__funcs_8h_a3563921856f4841b54cf82a96c91c333}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-B\-E\-K1\-\_\-\-V\-D\-W~140  /$\ast$ P\-B\-E reparametrization {\bf for} vd\-W                              $\ast$/}}\label{include_2xc__funcs_8h_a3563921856f4841b54cf82a96c91c333}
+\hypertarget{include_2xc__funcs_8h_acfee0fe0e90120f38443ad1fc79bc4e0}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W86~108  /$\ast$ Perdew \& Wang 86                                           $\ast$/}}\label{include_2xc__funcs_8h_acfee0fe0e90120f38443ad1fc79bc4e0}
+\hypertarget{include_2xc__funcs_8h_a5fb49006fd5b549e0d976b6c3ac94c4e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-P\-W91~109  /$\ast$ Perdew \& Wang 91                                           $\ast$/}}\label{include_2xc__funcs_8h_a5fb49006fd5b549e0d976b6c3ac94c4e}
+\hypertarget{include_2xc__funcs_8h_aa20772498b7eee0c49b671b4719e4dd4}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-G\-E2~142  /$\ast$ Regularized P\-B\-E                                            $\ast$/}}\label{include_2xc__funcs_8h_aa20772498b7eee0c49b671b4719e4dd4}
+\hypertarget{include_2xc__funcs_8h_abceb75470d7a21c76eada8fa1553433d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-B\-E~117  /$\ast$ Hammer, Hansen \& Norskov (P\-B\-E-\/like)                        $\ast$/}}\label{include_2xc__funcs_8h_abceb75470d7a21c76eada8fa1553433d}
+\hypertarget{include_2xc__funcs_8h_abab6c6cde012451ffc2a2705c5368517}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-W86~144  /$\ast$ refitted Perdew \& Wang 86                                  $\ast$/}}\label{include_2xc__funcs_8h_abab6c6cde012451ffc2a2705c5368517}
+\hypertarget{include_2xc__funcs_8h_a87cb6740a8ee65ed2d5d36c35ad9e631}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A~150  /$\ast$ Second-\/order generalized gradient approximation            $\ast$/}}\label{include_2xc__funcs_8h_a87cb6740a8ee65ed2d5d36c35ad9e631}
+\hypertarget{include_2xc__funcs_8h_aa7a42b6a54b9f3902c2ba350be5eadda}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11~151  /$\ast$ Second-\/order generalized gradient approximation 2011       $\ast$/}}\label{include_2xc__funcs_8h_aa7a42b6a54b9f3902c2ba350be5eadda}
+\hypertarget{include_2xc__funcs_8h_a3b15743231d0f2546d474c877154a855}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-C~118  /$\ast$ Wu \& Cohen                                                 $\ast$/}}\label{include_2xc__funcs_8h_a3b15743231d0f2546d474c877154a855}
+\hypertarget{include_2xc__funcs_8h_af7e153f86aaf66a0537df4dd4f38f6c8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-W\-P\-B\-E\-H~524  /$\ast$ short-\/range {\bf version} of the P\-B\-E                             $\ast$/}}\label{include_2xc__funcs_8h_af7e153f86aaf66a0537df4dd4f38f6c8}
+\hypertarget{include_2xc__funcs_8h_aa43b6f3eb909f7db8638decb569f95a2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-X\-P\-B\-E~123  /$\ast$ x\-P\-B\-E reparametrization by Xu \& Goddard                     $\ast$/}}\label{include_2xc__funcs_8h_aa43b6f3eb909f7db8638decb569f95a2}
+\hypertarget{include_2xc__funcs_8h_adf83b753a0f4a6085696d29ba4ce7f05}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97~167  /$\ast$ Becke 97                                                   $\ast$/}}\label{include_2xc__funcs_8h_adf83b753a0f4a6085696d29ba4ce7f05}
+\hypertarget{include_2xc__funcs_8h_acc1c63f7572930fe04fa883ef4f1f033}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1~168  /$\ast$ Becke 97-\/1                                                 $\ast$/}}\label{include_2xc__funcs_8h_acc1c63f7572930fe04fa883ef4f1f033}
+\hypertarget{include_2xc__funcs_8h_ad8b19a39ed60ac751a7dc9a1790b8bee}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2~169  /$\ast$ Becke 97-\/2                                                 $\ast$/}}\label{include_2xc__funcs_8h_ad8b19a39ed60ac751a7dc9a1790b8bee}
+\hypertarget{include_2xc__funcs_8h_af5b605f870d1cb6207c860709a211e1b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3~172  /$\ast$ Becke 97-\/3                                                 $\ast$/}}\label{include_2xc__funcs_8h_af5b605f870d1cb6207c860709a211e1b}
+\hypertarget{include_2xc__funcs_8h_a6361f3afcf9ef45a6c8c7fab773e951d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-D~170  /$\ast$ Grimme functional to be used with C6 vd\-W term              $\ast$/}}\label{include_2xc__funcs_8h_a6361f3afcf9ef45a6c8c7fab773e951d}
+\hypertarget{include_2xc__funcs_8h_ab138b7d89a5b16b4ba25ffdbe4c26b9e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K~171  /$\ast$ Boese-\/Martin {\bf for} Kinetics                                  $\ast$/}}\label{include_2xc__funcs_8h_ab138b7d89a5b16b4ba25ffdbe4c26b9e}
+\hypertarget{include_2xc__funcs_8h_a17e8a9a4c845c76c1a0c5c8131ca5b7b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-E\-D\-F1~165  /$\ast$ Empirical functionals from Adamson, Gill, and Pople        $\ast$/}}\label{include_2xc__funcs_8h_a17e8a9a4c845c76c1a0c5c8131ca5b7b}
+\hypertarget{include_2xc__funcs_8h_a4a75320183d396b02293590ff23c0773}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-120~162  /$\ast$ H\-C\-T\-H functional fitted to 120 molecules                    $\ast$/}}\label{include_2xc__funcs_8h_a4a75320183d396b02293590ff23c0773}
+\hypertarget{include_2xc__funcs_8h_a4512e830bb6d9bb2f97e8653ecf3d21a}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-147~163  /$\ast$ H\-C\-T\-H functional fitted to 147 molecules                    $\ast$/}}\label{include_2xc__funcs_8h_a4512e830bb6d9bb2f97e8653ecf3d21a}
+\hypertarget{include_2xc__funcs_8h_aff88153e6253b33ab043e6b3eee0c50e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-407~164  /$\ast$ H\-C\-T\-H functional fitted to 147 molecules                    $\ast$/}}\label{include_2xc__funcs_8h_aff88153e6253b33ab043e6b3eee0c50e}
+\hypertarget{include_2xc__funcs_8h_a1945799c85ccfb89052393cb7b5d7a47}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-C\-T\-H\-\_\-93~161  /$\ast$ H\-C\-T\-H functional fitted to  93 molecules                    $\ast$/}}\label{include_2xc__funcs_8h_a1945799c85ccfb89052393cb7b5d7a47}
+\hypertarget{include_2xc__funcs_8h_a5c15041f7e5d37500c2680ff61001893}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-K\-T2~146  /$\ast$ Keal and Tozer {\bf version} 2                                   $\ast$/}}\label{include_2xc__funcs_8h_a5c15041f7e5d37500c2680ff61001893}
+\hypertarget{include_2xc__funcs_8h_aebb3a9fa95f808b5d63fa7bc57f05726}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P~194  /$\ast$ Functional {\bf for} organometallic chemistry                    $\ast$/}}\label{include_2xc__funcs_8h_aebb3a9fa95f808b5d63fa7bc57f05726}
+\hypertarget{include_2xc__funcs_8h_a85b3aa1445487b607fc790830badfe7e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-O\-H\-L\-Y\-P2~195  /$\ast$ Functional {\bf for} barrier heights                             $\ast$/}}\label{include_2xc__funcs_8h_a85b3aa1445487b607fc790830badfe7e}
+\hypertarget{include_2xc__funcs_8h_a0b545854ac20a42c4a76c48421312f18}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-M\-P\-W\-L\-Y\-P1\-W~174  /$\ast$ Functionals fitted {\bf for} water                               $\ast$/}}\label{include_2xc__funcs_8h_a0b545854ac20a42c4a76c48421312f18}
+\hypertarget{include_2xc__funcs_8h_aa2ec9961eb3a8685117d4625429ce980}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E1\-W~173  /$\ast$ Functionals fitted {\bf for} water                               $\ast$/}}\label{include_2xc__funcs_8h_aa2ec9961eb3a8685117d4625429ce980}
+\hypertarget{include_2xc__funcs_8h_a977f559851d46681c6f714916efcc81f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-L\-Y\-P1\-W~175  /$\ast$ Functionals fitted {\bf for} water                               $\ast$/}}\label{include_2xc__funcs_8h_a977f559851d46681c6f714916efcc81f}
+\hypertarget{include_2xc__funcs_8h_a6399bd0394f41a035afb0ab2eb8ec2e1}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a~176  /$\ast$ Schmider-\/Becke 98 parameterization 1a                      $\ast$/}}\label{include_2xc__funcs_8h_a6399bd0394f41a035afb0ab2eb8ec2e1}
+\hypertarget{include_2xc__funcs_8h_a879641e5ca88e5e4930e2d0ffb69b4b6}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b~177  /$\ast$ Schmider-\/Becke 98 parameterization 1b                      $\ast$/}}\label{include_2xc__funcs_8h_a879641e5ca88e5e4930e2d0ffb69b4b6}
+\hypertarget{include_2xc__funcs_8h_a66579a335e02e32efc0f563248132505}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c~178  /$\ast$ Schmider-\/Becke 98 parameterization 1c                      $\ast$/}}\label{include_2xc__funcs_8h_a66579a335e02e32efc0f563248132505}
+\hypertarget{include_2xc__funcs_8h_a824817e910e84c11028460e6dbb2fe5b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a~179  /$\ast$ Schmider-\/Becke 98 parameterization 2a                      $\ast$/}}\label{include_2xc__funcs_8h_a824817e910e84c11028460e6dbb2fe5b}
+\hypertarget{include_2xc__funcs_8h_a15eb9660595d13633dd54343884de1b2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b~180  /$\ast$ Schmider-\/Becke 98 parameterization 2b                      $\ast$/}}\label{include_2xc__funcs_8h_a15eb9660595d13633dd54343884de1b2}
+\hypertarget{include_2xc__funcs_8h_a66eb76a64ec8da2b566dbcafbc37c2e0}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c~181  /$\ast$ Schmider-\/Becke 98 parameterization 2c                      $\ast$/}}\label{include_2xc__funcs_8h_a66eb76a64ec8da2b566dbcafbc37c2e0}
+\hypertarget{include_2xc__funcs_8h_a788cdc51df821d56d91e47a4362d09c2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H1~154  /$\ast$ Tozer and Handy v. 1                                       $\ast$/}}\label{include_2xc__funcs_8h_a788cdc51df821d56d91e47a4362d09c2}
+\hypertarget{include_2xc__funcs_8h_a191cb15a749cf4cd8df054efbd9a3750}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H2~155  /$\ast$ Tozer and Handy v. 2                                       $\ast$/}}\label{include_2xc__funcs_8h_a191cb15a749cf4cd8df054efbd9a3750}
+\hypertarget{include_2xc__funcs_8h_a34d352178f97d96b85a78ea6d6512956}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H3~156  /$\ast$ Tozer and Handy v. 3                                       $\ast$/}}\label{include_2xc__funcs_8h_a34d352178f97d96b85a78ea6d6512956}
+\hypertarget{include_2xc__funcs_8h_af3ad802fd34dfa9af1d476450083e84e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H4~157  /$\ast$ Tozer and Handy v. 4                                       $\ast$/}}\label{include_2xc__funcs_8h_af3ad802fd34dfa9af1d476450083e84e}
+\hypertarget{include_2xc__funcs_8h_a84eede752a80714e4bd07c12cdf860be}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C~197  /$\ast$ Tozer and Handy v. F\-C                                      $\ast$/}}\label{include_2xc__funcs_8h_a84eede752a80714e4bd07c12cdf860be}
+\hypertarget{include_2xc__funcs_8h_a7ee3a7427a15ec57b17292098b89955f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-F\-O~198  /$\ast$ Tozer and Handy v. F\-C\-F\-O                                    $\ast$/}}\label{include_2xc__funcs_8h_a7ee3a7427a15ec57b17292098b89955f}
+\hypertarget{include_2xc__funcs_8h_a73c06a0c691970d7559eaee47d14d8e4}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-C\-O~199  /$\ast$ Tozer and Handy v. F\-C\-O                                     $\ast$/}}\label{include_2xc__funcs_8h_a73c06a0c691970d7559eaee47d14d8e4}
+\hypertarget{include_2xc__funcs_8h_ad63ba4464950c90f52cec64361fa5195}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-T\-H\-\_\-\-F\-L~196  /$\ast$ Tozer and Handy v. F\-L                                      $\ast$/}}\label{include_2xc__funcs_8h_ad63ba4464950c90f52cec64361fa5195}
+\hypertarget{include_2xc__funcs_8h_a7f9887c76428d4a24ea46a2874853c10}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X\-L\-Y\-P~166  /$\ast$ X\-L\-Y\-P functional                                            $\ast$/}}\label{include_2xc__funcs_8h_a7f9887c76428d4a24ea46a2874853c10}
+\hypertarget{include_2xc__funcs_8h_a0db319dea2f3bb2ab101b45788ff5cf8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-S\-O\-G\-G\-A11\-\_\-\-X~426  /$\ast$ Hybrid based on S\-O\-G\-G\-A11 form                               $\ast$/}}\label{include_2xc__funcs_8h_a0db319dea2f3bb2ab101b45788ff5cf8}
+\hypertarget{include_2xc__funcs_8h_a735765122f7b60d439e54d93fe727518}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-L\-Y\-P~416  /$\ast$ Becke 1-\/parameter mixture of B88 and L\-Y\-P                   $\ast$/}}\label{include_2xc__funcs_8h_a735765122f7b60d439e54d93fe727518}
+\hypertarget{include_2xc__funcs_8h_aae498cf8db04128dd2abe9066cd3372e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-P\-W91~417  /$\ast$ Becke 1-\/parameter mixture of B88 and P\-W91                  $\ast$/}}\label{include_2xc__funcs_8h_aae498cf8db04128dd2abe9066cd3372e}
+\hypertarget{include_2xc__funcs_8h_a4238bef462a07c383d6028f8f1578b9c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B1\-W\-C~412  /$\ast$ Becke 1-\/parameter mixture of W\-C and P\-B\-E                    $\ast$/}}\label{include_2xc__funcs_8h_a4238bef462a07c383d6028f8f1578b9c}
+\hypertarget{include_2xc__funcs_8h_a0f607168069b60ceb8362df0dd9089a9}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-L\-Y\-P~402  /$\ast$ The (in)famous B3\-L\-Y\-P                                       $\ast$/}}\label{include_2xc__funcs_8h_a0f607168069b60ceb8362df0dd9089a9}
+\hypertarget{include_2xc__funcs_8h_ad1b8a3976e27335a13cc853275889db2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P86~403  /$\ast$ Perdew 86 hybrid similar to B3\-P\-W91                         $\ast$/}}\label{include_2xc__funcs_8h_ad1b8a3976e27335a13cc853275889db2}
+\hypertarget{include_2xc__funcs_8h_ad07b689d1cc7ec357263021c30999f46}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B3\-P\-W91~401  /$\ast$ The original hybrid proposed by Becke                      $\ast$/}}\label{include_2xc__funcs_8h_ad07b689d1cc7ec357263021c30999f46}
+\hypertarget{include_2xc__funcs_8h_a15bd525fd417ddc373908fbf8c820556}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97~407  /$\ast$ Becke 97                                                   $\ast$/}}\label{include_2xc__funcs_8h_a15bd525fd417ddc373908fbf8c820556}
+\hypertarget{include_2xc__funcs_8h_ad65ad5f9a2bce6bfb75a40f69b904eaa}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-1~408  /$\ast$ Becke 97-\/1                                                 $\ast$/}}\label{include_2xc__funcs_8h_ad65ad5f9a2bce6bfb75a40f69b904eaa}
+\hypertarget{include_2xc__funcs_8h_ada34aac78b421efb212eefe25a67e158}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-2~410  /$\ast$ Becke 97-\/2                                                 $\ast$/}}\label{include_2xc__funcs_8h_ada34aac78b421efb212eefe25a67e158}
+\hypertarget{include_2xc__funcs_8h_ac76f39ae350552f914796e7b2670fc7a}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-3~414  /$\ast$ Becke 97-\/3                                                 $\ast$/}}\label{include_2xc__funcs_8h_ac76f39ae350552f914796e7b2670fc7a}
+\hypertarget{include_2xc__funcs_8h_a1e7669a43d036744943d75797cff0542}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-B97\-\_\-\-K~413  /$\ast$ Boese-\/Martin {\bf for} Kinetics                                  $\ast$/}}\label{include_2xc__funcs_8h_a1e7669a43d036744943d75797cff0542}
+\hypertarget{include_2xc__funcs_8h_aa6e92a8824f1f4d3291bd1ca14efd82f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B88~431  /$\ast$ H\-J\-S hybrid screened exchange B88 {\bf version}                   $\ast$/}}\label{include_2xc__funcs_8h_aa6e92a8824f1f4d3291bd1ca14efd82f}
+\hypertarget{include_2xc__funcs_8h_a82eb33982f768bc5c63aa4e7936f7812}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-B97\-X~432  /$\ast$ H\-J\-S hybrid screened exchange B97x {\bf version}                  $\ast$/}}\label{include_2xc__funcs_8h_a82eb33982f768bc5c63aa4e7936f7812}
+\hypertarget{include_2xc__funcs_8h_a8c3b4a89b7796b8aad590cccaf75f49a}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E~429  /$\ast$ H\-J\-S hybrid screened exchange P\-B\-E {\bf version}                   $\ast$/}}\label{include_2xc__funcs_8h_a8c3b4a89b7796b8aad590cccaf75f49a}
+\hypertarget{include_2xc__funcs_8h_aab0bae7e61844516bf499628fc118dd2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-J\-S\-\_\-\-P\-B\-E\-\_\-\-S\-O\-L~430  /$\ast$ H\-J\-S hybrid screened exchange P\-B\-E\-\_\-\-S\-O\-L {\bf version}               $\ast$/}}\label{include_2xc__funcs_8h_aab0bae7e61844516bf499628fc118dd2}
+\hypertarget{include_2xc__funcs_8h_a1800524e36f827c7ca797bcc74b1f708}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E03~427  /$\ast$ the 2003 {\bf version} of the screened hybrid H\-S\-E                $\ast$/}}\label{include_2xc__funcs_8h_a1800524e36f827c7ca797bcc74b1f708}
+\hypertarget{include_2xc__funcs_8h_ad1a8857f2c84c73bca745febdc0f7f22}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-H\-S\-E06~428  /$\ast$ the 2006 {\bf version} of the screened hybrid H\-S\-E                $\ast$/}}\label{include_2xc__funcs_8h_ad1a8857f2c84c73bca745febdc0f7f22}
+\hypertarget{include_2xc__funcs_8h_a419a2d24d40288f28658c6a984713ccb}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-K~405  /$\ast$ mixture of m\-P\-W91 and P\-W91 optimized {\bf for} kinetics           $\ast$/}}\label{include_2xc__funcs_8h_a419a2d24d40288f28658c6a984713ccb}
+\hypertarget{include_2xc__funcs_8h_a28a565148397dbac709256c23ea099ac}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W1\-P\-W~418  /$\ast$ Becke 1-\/parameter mixture of m\-P\-W91 and P\-W91                $\ast$/}}\label{include_2xc__funcs_8h_a28a565148397dbac709256c23ea099ac}
+\hypertarget{include_2xc__funcs_8h_acfd6bd3698e742817e075db92d5c4a9c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-L\-Y\-P~419  /$\ast$ mixture of m\-P\-W and L\-Y\-P                                     $\ast$/}}\label{include_2xc__funcs_8h_acfd6bd3698e742817e075db92d5c4a9c}
+\hypertarget{include_2xc__funcs_8h_a9686c885769e0d03f8677fba26ac1c88}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-m\-P\-W3\-P\-W~415  /$\ast$ mixture with the m\-P\-W functional                            $\ast$/}}\label{include_2xc__funcs_8h_a9686c885769e0d03f8677fba26ac1c88}
+\hypertarget{include_2xc__funcs_8h_a7a32eee3942780a41f456c340cc76882}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-O3\-L\-Y\-P~404  /$\ast$ hybrid using the optx functional                           $\ast$/}}\label{include_2xc__funcs_8h_a7a32eee3942780a41f456c340cc76882}
+\hypertarget{include_2xc__funcs_8h_ac0cdef4f91a3d99d47c668a38d164380}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-P\-B\-E\-H~406  /$\ast$ aka P\-B\-E0 or P\-B\-E1\-P\-B\-E                                        $\ast$/}}\label{include_2xc__funcs_8h_ac0cdef4f91a3d99d47c668a38d164380}
+\hypertarget{include_2xc__funcs_8h_a8751ea04a40885f7b35cfa86bf8847ab}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1a~420  /$\ast$ Schmider-\/Becke 98 parameterization 1a                      $\ast$/}}\label{include_2xc__funcs_8h_a8751ea04a40885f7b35cfa86bf8847ab}
+\hypertarget{include_2xc__funcs_8h_a9a2dc29b7a83521d972f943504c79b71}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1b~421  /$\ast$ Schmider-\/Becke 98 parameterization 1b                      $\ast$/}}\label{include_2xc__funcs_8h_a9a2dc29b7a83521d972f943504c79b71}
+\hypertarget{include_2xc__funcs_8h_a634b61e8cbed9ec572dc915021c46a1c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-1c~422  /$\ast$ Schmider-\/Becke 98 parameterization 1c                      $\ast$/}}\label{include_2xc__funcs_8h_a634b61e8cbed9ec572dc915021c46a1c}
+\hypertarget{include_2xc__funcs_8h_a38279d29c1fcbb9560570c1f0c615ed4}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2a~423  /$\ast$ Schmider-\/Becke 98 parameterization 2a                      $\ast$/}}\label{include_2xc__funcs_8h_a38279d29c1fcbb9560570c1f0c615ed4}
+\hypertarget{include_2xc__funcs_8h_a2d597d49f7c1ac690b42a49f087993ad}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2b~424  /$\ast$ Schmider-\/Becke 98 parameterization 2b                      $\ast$/}}\label{include_2xc__funcs_8h_a2d597d49f7c1ac690b42a49f087993ad}
+\hypertarget{include_2xc__funcs_8h_ae5124278259308a2269ebbc2b7ff162e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-S\-B98\-\_\-2c~425  /$\ast$ Schmider-\/Becke 98 parameterization 2c                      $\ast$/}}\label{include_2xc__funcs_8h_ae5124278259308a2269ebbc2b7ff162e}
+\hypertarget{include_2xc__funcs_8h_ac9a4a23b478f8051b2b332a5342d46a9}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P}}
+\index{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P@{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-X3\-L\-Y\-P~411  /$\ast$ maybe the best hybrid                                      $\ast$/}}\label{include_2xc__funcs_8h_ac9a4a23b478f8051b2b332a5342d46a9}
+\hypertarget{include_2xc__funcs_8h_ac141edc5aedd1e96b6b937b4f3f68382}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-1\-D\-\_\-\-C\-S\-C~18  /$\ast$ Casula, Sorella, and Senatore 1\-D correlation               $\ast$/}}\label{include_2xc__funcs_8h_ac141edc5aedd1e96b6b937b4f3f68382}
+\hypertarget{include_2xc__funcs_8h_acd7e97e861c13750c72cc62bff295f62}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-A\-M\-G\-B~15  /$\ast$ Attacalite et al                                           $\ast$/}}\label{include_2xc__funcs_8h_acd7e97e861c13750c72cc62bff295f62}
+\hypertarget{include_2xc__funcs_8h_a903750cf1d128fc615182515bdbdf808}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-2\-D\-\_\-\-P\-R\-M~16  /$\ast$ Pittalis, Rasanen \& Marques correlation in 2\-D              $\ast$/}}\label{include_2xc__funcs_8h_a903750cf1d128fc615182515bdbdf808}
+\hypertarget{include_2xc__funcs_8h_ace61743fad0b6166bbc41db84044b0ba}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-L~5  /$\ast$ Gunnarson \& Lundqvist                                      $\ast$/}}\label{include_2xc__funcs_8h_ace61743fad0b6166bbc41db84044b0ba}
+\hypertarget{include_2xc__funcs_8h_a623138acf6af9ac4fc83c48d8e92258b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-G\-O\-M\-B\-A\-S~24  /$\ast$ Gombas parametrization                                     $\ast$/}}\label{include_2xc__funcs_8h_a623138acf6af9ac4fc83c48d8e92258b}
+\hypertarget{include_2xc__funcs_8h_aa855147f404745a0bc7753d13d6bce96}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-H\-L~4  /$\ast$ Hedin \& Lundqvist                                          $\ast$/}}\label{include_2xc__funcs_8h_aa855147f404745a0bc7753d13d6bce96}
+\hypertarget{include_2xc__funcs_8h_ad185c1eb97ceb89cb204a5161eabfba4}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L1~22  /$\ast$ Modified L\-S\-D ({\bf version} 1) of Proynov and Salahub            $\ast$/}}\label{include_2xc__funcs_8h_ad185c1eb97ceb89cb204a5161eabfba4}
+\hypertarget{include_2xc__funcs_8h_afd4841468df01fa70ab4b33275ecf00c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-M\-L2~23  /$\ast$ Modified L\-S\-D ({\bf version} 2) of Proynov and Salahub            $\ast$/}}\label{include_2xc__funcs_8h_afd4841468df01fa70ab4b33275ecf00c}
+\hypertarget{include_2xc__funcs_8h_aab750270d7db2a1f6651d7b5be15d68f}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-W~14  /$\ast$ Ortiz \& Ballone (P\-W)                                       $\ast$/}}\label{include_2xc__funcs_8h_aab750270d7db2a1f6651d7b5be15d68f}
+\hypertarget{include_2xc__funcs_8h_a389c9724e8656c7d9c2e8fa6c9b44055}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-O\-B\-\_\-\-P\-Z~11  /$\ast$ Ortiz \& Ballone (P\-Z)                                       $\ast$/}}\label{include_2xc__funcs_8h_a389c9724e8656c7d9c2e8fa6c9b44055}
+\hypertarget{include_2xc__funcs_8h_a3bf7743235e038da1320ddfb3f2bfd6e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W~12  /$\ast$ Perdew \& Wang                                              $\ast$/}}\label{include_2xc__funcs_8h_a3bf7743235e038da1320ddfb3f2bfd6e}
+\hypertarget{include_2xc__funcs_8h_a1178d2f975163b8b0b1f966f2c745cfc}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-M\-O\-D~13  /$\ast$ Perdew \& Wang (Modified)                                   $\ast$/}}\label{include_2xc__funcs_8h_a1178d2f975163b8b0b1f966f2c745cfc}
+\hypertarget{include_2xc__funcs_8h_ac8e5ee4ea9f8c6832eb9def1c3db9963}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-W\-\_\-\-R\-P\-A~25  /$\ast$ Perdew \& Wang fit of the R\-P\-A                               $\ast$/}}\label{include_2xc__funcs_8h_ac8e5ee4ea9f8c6832eb9def1c3db9963}
+\hypertarget{include_2xc__funcs_8h_a90e79df37ac0c5a8d5d73aa651c7d1ae}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z~9  /$\ast$ Perdew \& Zunger                                            $\ast$/}}\label{include_2xc__funcs_8h_a90e79df37ac0c5a8d5d73aa651c7d1ae}
+\hypertarget{include_2xc__funcs_8h_a81a13667216537f332ced741d4034eee}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-P\-Z\-\_\-\-M\-O\-D~10  /$\ast$ Perdew \& Zunger (Modified)                                 $\ast$/}}\label{include_2xc__funcs_8h_a81a13667216537f332ced741d4034eee}
+\hypertarget{include_2xc__funcs_8h_a2c93bd0e5aa665479d13b458d577a903}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-R\-P\-A~3  /$\ast$ Random Phase Approximation                                 $\ast$/}}\label{include_2xc__funcs_8h_a2c93bd0e5aa665479d13b458d577a903}
+\hypertarget{include_2xc__funcs_8h_a03679fd1f3a49b3a5c7bec6ffd4b6861}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-v\-B\-H~17  /$\ast$ von Barth \& Hedin                                          $\ast$/}}\label{include_2xc__funcs_8h_a03679fd1f3a49b3a5c7bec6ffd4b6861}
+\hypertarget{include_2xc__funcs_8h_a5232b10ed6a9cccaf515e58c729c273c}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N~7  /$\ast$ Vosko, Wilk, \& Nussair                                     $\ast$/}}\label{include_2xc__funcs_8h_a5232b10ed6a9cccaf515e58c729c273c}
+\hypertarget{include_2xc__funcs_8h_abeac08a318b30f02fc4547442ea1cf37}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-V\-W\-N\-\_\-\-R\-P\-A~8  /$\ast$ Vosko, Wilk, \& Nussair (R\-P\-A)                               $\ast$/}}\label{include_2xc__funcs_8h_abeac08a318b30f02fc4547442ea1cf37}
+\hypertarget{include_2xc__funcs_8h_acc632e8a2d94079d08e94576fb788b24}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-W\-I\-G\-N\-E\-R~2  /$\ast$ Wigner parametrization                                     $\ast$/}}\label{include_2xc__funcs_8h_acc632e8a2d94079d08e94576fb788b24}
+\hypertarget{include_2xc__funcs_8h_aa8065fcbbb5fd6945784ab1331e32659}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A@{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-C\-\_\-\-X\-A\-L\-P\-H\-A~6  /$\ast$ Slater Xalpha                                              $\ast$/}}\label{include_2xc__funcs_8h_aa8065fcbbb5fd6945784ab1331e32659}
+\hypertarget{include_2xc__funcs_8h_a4ed22e222c9e024cd56738c4e1dd4290}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P@{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P@{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-L\-P~51  /$\ast$ Lee and Parr Gaussian ansatz                               $\ast$/}}\label{include_2xc__funcs_8h_a4ed22e222c9e024cd56738c4e1dd4290}
+\hypertarget{include_2xc__funcs_8h_a18f637a24b6787ec6352fc702676a45e}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F@{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F@{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-K\-\_\-\-T\-F~50  /$\ast$ Thomas-\/Fermi kinetic energy functional                     $\ast$/}}\label{include_2xc__funcs_8h_a18f637a24b6787ec6352fc702676a45e}
+\hypertarget{include_2xc__funcs_8h_ac6d8edd91c125ded0712359d5cb44faf}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-X@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-X@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-X}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-X~1  /$\ast$ Exchange                                                   $\ast$/}}\label{include_2xc__funcs_8h_ac6d8edd91c125ded0712359d5cb44faf}
+\hypertarget{include_2xc__funcs_8h_a5c45a51afe1815fb77799f1fe22fa341}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D~21  /$\ast$ Exchange in 1\-D                                             $\ast$/}}\label{include_2xc__funcs_8h_a5c45a51afe1815fb77799f1fe22fa341}
+\hypertarget{include_2xc__funcs_8h_ad93049b07134a0bb5bd9e338d1c7a37b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-2\-D~19  /$\ast$ Exchange in 2\-D                                             $\ast$/}}\label{include_2xc__funcs_8h_ad93049b07134a0bb5bd9e338d1c7a37b}
+\hypertarget{include_2xc__funcs_8h_a381b9cf26cf902eec24b4febc2536ffb}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-C\-\_\-\-T\-E\-T\-E\-R93~20  /$\ast$ Teter 93 parametrization                                   $\ast$/}}\label{include_2xc__funcs_8h_a381b9cf26cf902eec24b4febc2536ffb}
+\hypertarget{include_2xc__funcs_8h_a891a9fd10cb0ccf08ce142c2754b89e8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-T\-P\-S\-S~231  /$\ast$ Perdew, Tao, Staroverov \& Scuseria correlation             $\ast$/}}\label{include_2xc__funcs_8h_a891a9fd10cb0ccf08ce142c2754b89e8}
+\hypertarget{include_2xc__funcs_8h_ad36f9a4340ab39ff9eb2c3cc64938c0b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-C\-\_\-\-V\-S\-X\-C~232  /$\ast$ V\-Sxc from Van Voorhis and Scuseria (correlation part)      $\ast$/}}\label{include_2xc__funcs_8h_ad36f9a4340ab39ff9eb2c3cc64938c0b}
+\hypertarget{include_2xc__funcs_8h_a7d48b5316306f03066f2aa1ea950a5d8}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07~210  /$\ast$ Pittalis, Rasanen, Helbig, Gross Exchange Functional       $\ast$/}}\label{include_2xc__funcs_8h_a7d48b5316306f03066f2aa1ea950a5d8}
+\hypertarget{include_2xc__funcs_8h_a927ea0dd7bda9e554ab383e40886dd59}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-2\-D\-\_\-\-P\-R\-H\-G07\-\_\-\-P\-R\-P10~211  /$\ast$ P\-R\-G\-H07 with P\-R\-P10 correction                               $\ast$/}}\label{include_2xc__funcs_8h_a927ea0dd7bda9e554ab383e40886dd59}
+\hypertarget{include_2xc__funcs_8h_a24f0f6b1b02f8830937d45c3f68e4dee}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-J06~207  /$\ast$ Becke \& Johnson correction to Becke-\/Roussel 89             $\ast$/}}\label{include_2xc__funcs_8h_a24f0f6b1b02f8830937d45c3f68e4dee}
+\hypertarget{include_2xc__funcs_8h_a2e7f19ef8aa6c5ca6f82dea5166e7b8b}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-B\-R89~206  /$\ast$ Becke-\/Roussel 89                                           $\ast$/}}\label{include_2xc__funcs_8h_a2e7f19ef8aa6c5ca6f82dea5166e7b8b}
+\hypertarget{include_2xc__funcs_8h_a2327e15614ebd7c1cce9a2439b246145}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-G\-V\-T4~204  /$\ast$ G\-V\-T4 from Van Voorhis and Scuseria (exchange part)         $\ast$/}}\label{include_2xc__funcs_8h_a2327e15614ebd7c1cce9a2439b246145}
+\hypertarget{include_2xc__funcs_8h_a4ebdf13d12b1e26a5a1c6e9db4a150f2}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-L\-T\-A~201  /$\ast$ Local tau approximation of Ernzerhof \& Scuseria            $\ast$/}}\label{include_2xc__funcs_8h_a4ebdf13d12b1e26a5a1c6e9db4a150f2}
+\hypertarget{include_2xc__funcs_8h_a68466e78de8da309e74a55cea6a9b602}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-M06\-L~203  /$\ast$ Zhao, Truhlar exchange                                     $\ast$/}}\label{include_2xc__funcs_8h_a68466e78de8da309e74a55cea6a9b602}
+\hypertarget{include_2xc__funcs_8h_ad0e37c6722adea35bf84ff4af49c6119}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-R\-P\-P09~209  /$\ast$ Rasanen, Pittalis, and Proetto correction to Becke \& Johnson  $\ast$/}}\label{include_2xc__funcs_8h_ad0e37c6722adea35bf84ff4af49c6119}
+\hypertarget{include_2xc__funcs_8h_a1f89b6efad819057aed0143c06723646}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-A\-U\-\_\-\-H\-C\-T\-H~205  /$\ast$ tau-\/H\-C\-T\-H from Boese and Handy                              $\ast$/}}\label{include_2xc__funcs_8h_a1f89b6efad819057aed0143c06723646}
+\hypertarget{include_2xc__funcs_8h_aba7e2f94d2987ce7fb2677aa57a54b8d}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-B09~208  /$\ast$ Tran \& Blaha correction to Becke \& Johnson                 $\ast$/}}\label{include_2xc__funcs_8h_aba7e2f94d2987ce7fb2677aa57a54b8d}
+\hypertarget{include_2xc__funcs_8h_ab5327004a914090943d3431ccf0c15ea}{\index{include/xc\-\_\-funcs.\-h@{include/xc\-\_\-funcs.\-h}!X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S}}
+\index{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S@{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S}!include/xc_funcs.h@{include/xc\-\_\-funcs.\-h}}
+\subsubsection[{X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-M\-G\-G\-A\-\_\-\-X\-\_\-\-T\-P\-S\-S~202  /$\ast$ Perdew, Tao, Staroverov \& Scuseria exchange                $\ast$/}}\label{include_2xc__funcs_8h_ab5327004a914090943d3431ccf0c15ea}

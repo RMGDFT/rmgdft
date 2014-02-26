@@ -1,0 +1,77 @@
+\hypertarget{lda__x__1d_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/lda\-\_\-x\-\_\-1d.c File Reference}
+\label{lda__x__1d_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/lda\-\_\-x\-\_\-1d.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/lda\-\_\-x\-\_\-1d.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}work\-\_\-lda.\-c\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structlda__x__1d__params}{lda\-\_\-x\-\_\-1d\-\_\-params}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{lda__x__1d_8c_a5c45a51afe1815fb77799f1fe22fa341}{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}~21 /$\ast$ Exchange in 1\-D     $\ast$/
+\item 
+\#define \hyperlink{lda__x__1d_8c_a03f0a010fcaa2c990084d98f9d137a10}{X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S}~1
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_x_c}{X\-C}() \hyperlink{lda__x__1d_8c_a4482ed1b0da7d17b4f0dec1081d43282}{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params} (p, 1, 1.\-0)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lda__x__1d_8c_a3f8a347ebad9ac00636d099269e7314f}{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int interaction, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{gga__k__dk_8c_a65ba841e01d6db7733e90a5b7f9e6f80}{bb})
+\item 
+const \hyperlink{lda__x__1d_8c_a7924f1c1821b20cc7464c5448269d2a4}{X\-C} (func\-\_\-info\-\_\-type)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+p \hyperlink{lda__x__1d_8c_a4053a494dc195caa75bc61d14be1d9fa}{params} = malloc(sizeof(\hyperlink{structlda__x__1d__params}{lda\-\_\-x\-\_\-1d\-\_\-params}))
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{lda__x__1d_8c_a03f0a010fcaa2c990084d98f9d137a10}{\index{lda\-\_\-x\-\_\-1d.\-c@{lda\-\_\-x\-\_\-1d.\-c}!X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S@{X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S}}
+\index{X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S@{X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S}!lda_x_1d.c@{lda\-\_\-x\-\_\-1d.\-c}}
+\subsubsection[{X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-D\-I\-M\-E\-N\-S\-I\-O\-N\-S~1}}\label{lda__x__1d_8c_a03f0a010fcaa2c990084d98f9d137a10}
+\hypertarget{lda__x__1d_8c_a5c45a51afe1815fb77799f1fe22fa341}{\index{lda\-\_\-x\-\_\-1d.\-c@{lda\-\_\-x\-\_\-1d.\-c}!X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}}
+\index{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D@{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}!lda_x_1d.c@{lda\-\_\-x\-\_\-1d.\-c}}
+\subsubsection[{X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-L\-D\-A\-\_\-\-X\-\_\-1\-D~21 /$\ast$ Exchange in 1\-D     $\ast$/}}\label{lda__x__1d_8c_a5c45a51afe1815fb77799f1fe22fa341}
+
+
+\subsection{Function Documentation}
+\hypertarget{lda__x__1d_8c_a4482ed1b0da7d17b4f0dec1081d43282}{\index{lda\-\_\-x\-\_\-1d.\-c@{lda\-\_\-x\-\_\-1d.\-c}!lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}}
+\index{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}!lda_x_1d.c@{lda\-\_\-x\-\_\-1d.\-c}}
+\subsubsection[{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}{\bf X\-C}() lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{p}]{, }
+\item[{1}]{, }
+\item[{1.}]{0}
+\end{DoxyParamCaption}
+)}}\label{lda__x__1d_8c_a4482ed1b0da7d17b4f0dec1081d43282}
+\hypertarget{lda__x__1d_8c_a3f8a347ebad9ac00636d099269e7314f}{\index{lda\-\_\-x\-\_\-1d.\-c@{lda\-\_\-x\-\_\-1d.\-c}!lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}}
+\index{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}!lda_x_1d.c@{lda\-\_\-x\-\_\-1d.\-c}}
+\subsubsection[{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{interaction, }
+\item[{{\bf F\-L\-O\-A\-T}}]{bb}
+\end{DoxyParamCaption}
+)}}\label{lda__x__1d_8c_a3f8a347ebad9ac00636d099269e7314f}
+\hypertarget{lda__x__1d_8c_a7924f1c1821b20cc7464c5448269d2a4}{\index{lda\-\_\-x\-\_\-1d.\-c@{lda\-\_\-x\-\_\-1d.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!lda_x_1d.c@{lda\-\_\-x\-\_\-1d.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}const {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{lda__x__1d_8c_a7924f1c1821b20cc7464c5448269d2a4}
+
+
+\subsection{Variable Documentation}
+\hypertarget{lda__x__1d_8c_a4053a494dc195caa75bc61d14be1d9fa}{\index{lda\-\_\-x\-\_\-1d.\-c@{lda\-\_\-x\-\_\-1d.\-c}!params@{params}}
+\index{params@{params}!lda_x_1d.c@{lda\-\_\-x\-\_\-1d.\-c}}
+\subsubsection[{params}]{\setlength{\rightskip}{0pt plus 5cm}p params = malloc(sizeof({\bf lda\-\_\-x\-\_\-1d\-\_\-params}))}}\label{lda__x__1d_8c_a4053a494dc195caa75bc61d14be1d9fa}

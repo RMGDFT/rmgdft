@@ -1,0 +1,84 @@
+\hypertarget{mix__func_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/mix\-\_\-func.c File Reference}
+\label{mix__func_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/mix\-\_\-func.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/mix\-\_\-func.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{mix__func_8c_a4ee7269e73b0c5274b5ff2f6152c8d0e}{is\-\_\-mgga}(id)~((id) == \hyperlink{lib_2libxc_2src_2xc_8h_a7ab96da4446805264d5dfa05bd92cb93}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A} $|$$|$ (id) == \hyperlink{lib_2libxc_2src_2xc_8h_a73f77cb9a54e4a8d0f50bd084a227efb}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A})
+\item 
+\#define \hyperlink{mix__func_8c_af323a5820e2b21afa69d10b997985360}{is\-\_\-gga}(id)~((id) == \hyperlink{lib_2libxc_2src_2xc_8h_add9d3d208b857e4765ba52e54f58d7ca}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A}  $|$$|$ (id) == \hyperlink{lib_2libxc_2src_2xc_8h_a3b90794c146f789faf59ca1b4c52bc6e}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A} $|$$|$ \hyperlink{mix__func_8c_a4ee7269e73b0c5274b5ff2f6152c8d0e}{is\-\_\-mgga}(id))
+\item 
+\#define \hyperlink{mix__func_8c_a0891e688c1d239bd365dc48612af5b16}{is\-\_\-lda}(id)~((id) == \hyperlink{lib_2libxc_2src_2xc_8h_a6785fec827314ebcffaf14d703e8e85d}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A}  $|$$|$ \hyperlink{mix__func_8c_af323a5820e2b21afa69d10b997985360}{is\-\_\-gga}(is))
+\item 
+\#define \hyperlink{mix__func_8c_aa6da95bd28388fa61a87d9eb0f05a58b}{safe\-\_\-free}(pt)~\hyperlink{lda__c__1d__csc_8c_ad6e60c3bc68d50b896592eb4937d184f}{if}(pt != N\-U\-L\-L) free(pt)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{mix__func_8c_abce663458e17c43fc84107ca80ea758c}{mix\-\_\-func} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$\hyperlink{test_8c_a200d039021b3e9762ab6babd44bf5805}{func}, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vlapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vtau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigma2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapl2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2tau2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhosigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rholapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhotau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmalapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmatau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapltau)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{mix__func_8c_af323a5820e2b21afa69d10b997985360}{\index{mix\-\_\-func.\-c@{mix\-\_\-func.\-c}!is\-\_\-gga@{is\-\_\-gga}}
+\index{is\-\_\-gga@{is\-\_\-gga}!mix_func.c@{mix\-\_\-func.\-c}}
+\subsubsection[{is\-\_\-gga}]{\setlength{\rightskip}{0pt plus 5cm}\#define is\-\_\-gga(
+\begin{DoxyParamCaption}
+\item[{}]{id}
+\end{DoxyParamCaption}
+)~((id) == {\bf X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A}  $|$$|$ (id) == {\bf X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A} $|$$|$ {\bf is\-\_\-mgga}(id))}}\label{mix__func_8c_af323a5820e2b21afa69d10b997985360}
+\hypertarget{mix__func_8c_a0891e688c1d239bd365dc48612af5b16}{\index{mix\-\_\-func.\-c@{mix\-\_\-func.\-c}!is\-\_\-lda@{is\-\_\-lda}}
+\index{is\-\_\-lda@{is\-\_\-lda}!mix_func.c@{mix\-\_\-func.\-c}}
+\subsubsection[{is\-\_\-lda}]{\setlength{\rightskip}{0pt plus 5cm}\#define is\-\_\-lda(
+\begin{DoxyParamCaption}
+\item[{}]{id}
+\end{DoxyParamCaption}
+)~((id) == {\bf X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A}  $|$$|$ {\bf is\-\_\-gga}(is))}}\label{mix__func_8c_a0891e688c1d239bd365dc48612af5b16}
+\hypertarget{mix__func_8c_a4ee7269e73b0c5274b5ff2f6152c8d0e}{\index{mix\-\_\-func.\-c@{mix\-\_\-func.\-c}!is\-\_\-mgga@{is\-\_\-mgga}}
+\index{is\-\_\-mgga@{is\-\_\-mgga}!mix_func.c@{mix\-\_\-func.\-c}}
+\subsubsection[{is\-\_\-mgga}]{\setlength{\rightskip}{0pt plus 5cm}\#define is\-\_\-mgga(
+\begin{DoxyParamCaption}
+\item[{}]{id}
+\end{DoxyParamCaption}
+)~((id) == {\bf X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A} $|$$|$ (id) == {\bf X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A})}}\label{mix__func_8c_a4ee7269e73b0c5274b5ff2f6152c8d0e}
+\hypertarget{mix__func_8c_aa6da95bd28388fa61a87d9eb0f05a58b}{\index{mix\-\_\-func.\-c@{mix\-\_\-func.\-c}!safe\-\_\-free@{safe\-\_\-free}}
+\index{safe\-\_\-free@{safe\-\_\-free}!mix_func.c@{mix\-\_\-func.\-c}}
+\subsubsection[{safe\-\_\-free}]{\setlength{\rightskip}{0pt plus 5cm}\#define safe\-\_\-free(
+\begin{DoxyParamCaption}
+\item[{}]{pt}
+\end{DoxyParamCaption}
+)~{\bf if}(pt != N\-U\-L\-L) free(pt)}}\label{mix__func_8c_aa6da95bd28388fa61a87d9eb0f05a58b}
+
+
+\subsection{Function Documentation}
+\hypertarget{mix__func_8c_abce663458e17c43fc84107ca80ea758c}{\index{mix\-\_\-func.\-c@{mix\-\_\-func.\-c}!mix\-\_\-func@{mix\-\_\-func}}
+\index{mix\-\_\-func@{mix\-\_\-func}!mix_func.c@{mix\-\_\-func.\-c}}
+\subsubsection[{mix\-\_\-func}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mix\-\_\-func (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{func, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vlapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vtau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigma2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapl2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2tau2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhosigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rholapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhotau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmalapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmatau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapltau}
+\end{DoxyParamCaption}
+)}}\label{mix__func_8c_abce663458e17c43fc84107ca80ea758c}

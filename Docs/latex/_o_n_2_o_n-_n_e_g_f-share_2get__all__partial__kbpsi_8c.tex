@@ -1,0 +1,32 @@
+\hypertarget{_o_n_2_o_n-_n_e_g_f-share_2get__all__partial__kbpsi_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-O\-N/\-O\-N-\/\-N\-E\-G\-F-\/share/get\-\_\-all\-\_\-partial\-\_\-kbpsi.c File Reference}
+\label{_o_n_2_o_n-_n_e_g_f-share_2get__all__partial__kbpsi_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-O\-N/\-O\-N-\/\-N\-E\-G\-F-\/share/get\-\_\-all\-\_\-partial\-\_\-kbpsi.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-O\-N/\-O\-N-\/\-N\-E\-G\-F-\/share/get\-\_\-all\-\_\-partial\-\_\-kbpsi.\-c}}
+}
+{\ttfamily \#include $<$float.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}main.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}prototypes\-\_\-on.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_o_n_2_o_n-_n_e_g_f-share_2get__all__partial__kbpsi_8c_a7e293b1e3959161efadaf4419339f00f}{get\-\_\-all\-\_\-partial\-\_\-kbpsi} (\hyperlink{struct_s_t_a_t_e}{S\-T\-A\-T\-E} $\ast$\hyperlink{md_8h_a286ebf6b996d2b1827eb9a889dfc83d7}{states}, \hyperlink{struct_i_o_n___o_r_b_i_t___o_v_e_r_l_a_p}{I\-O\-N\-\_\-\-O\-R\-B\-I\-T\-\_\-\-O\-V\-E\-R\-L\-A\-P} $\ast$\hyperlink{overlap_8h_a3f6f41aad9960000a7629ce965eba61d}{ion\-\_\-orbit\-\_\-overlap\-\_\-region\-\_\-nl}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a7b60e48fe4b479cc787dc60db07bddeb}{projectors\-\_\-x}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a0425c80068250bf9782b4ad1be2ee128}{projectors\-\_\-y}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{md_8h_a04cd90c8d8f0571b91b0f0096ea38e67}{projectors\-\_\-z}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{overlap_8h_a117ec3d74e2a63425e7939f42e9fe35f}{partial\-\_\-kbpsi\-\_\-x}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{overlap_8h_acd5b56478de35e171d6c4636c8f214fa}{partial\-\_\-kbpsi\-\_\-y}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{overlap_8h_a3862e2c1d647f8eeda152e38b661ff54}{partial\-\_\-kbpsi\-\_\-z})
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{_o_n_2_o_n-_n_e_g_f-share_2get__all__partial__kbpsi_8c_a7e293b1e3959161efadaf4419339f00f}{\index{O\-N/\-O\-N-\/\-N\-E\-G\-F-\/share/get\-\_\-all\-\_\-partial\-\_\-kbpsi.\-c@{O\-N/\-O\-N-\/\-N\-E\-G\-F-\/share/get\-\_\-all\-\_\-partial\-\_\-kbpsi.\-c}!get\-\_\-all\-\_\-partial\-\_\-kbpsi@{get\-\_\-all\-\_\-partial\-\_\-kbpsi}}
+\index{get\-\_\-all\-\_\-partial\-\_\-kbpsi@{get\-\_\-all\-\_\-partial\-\_\-kbpsi}!ON/ON-NEGF-share/get_all_partial_kbpsi.c@{O\-N/\-O\-N-\/\-N\-E\-G\-F-\/share/get\-\_\-all\-\_\-partial\-\_\-kbpsi.\-c}}
+\subsubsection[{get\-\_\-all\-\_\-partial\-\_\-kbpsi}]{\setlength{\rightskip}{0pt plus 5cm}void get\-\_\-all\-\_\-partial\-\_\-kbpsi (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-T\-A\-T\-E} $\ast$}]{states, }
+\item[{{\bf I\-O\-N\-\_\-\-O\-R\-B\-I\-T\-\_\-\-O\-V\-E\-R\-L\-A\-P} $\ast$}]{ion\-\_\-orbit\-\_\-overlap\-\_\-region\-\_\-nl, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{projectors\-\_\-x, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{projectors\-\_\-y, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{projectors\-\_\-z, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{partial\-\_\-kbpsi\-\_\-x, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{partial\-\_\-kbpsi\-\_\-y, }
+\item[{{\bf rmg\-\_\-double\-\_\-t} $\ast$}]{partial\-\_\-kbpsi\-\_\-z}
+\end{DoxyParamCaption}
+)}}\label{_o_n_2_o_n-_n_e_g_f-share_2get__all__partial__kbpsi_8c_a7e293b1e3959161efadaf4419339f00f}

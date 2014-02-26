@@ -1,0 +1,119 @@
+\hypertarget{gga__x__b88_8c}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-x\-\_\-b88.c File Reference}
+\label{gga__x__b88_8c}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-x\-\_\-b88.\-c@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/gga\-\_\-x\-\_\-b88.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}util.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}work\-\_\-gga\-\_\-x.\-c\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structgga__x__b88__params}{gga\-\_\-x\-\_\-b88\-\_\-params}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{gga__x__b88_8c_aeb75932f7b7c0f6c72e3d3956841c5fb}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}~106 /$\ast$ Becke 88 $\ast$/
+\item 
+\#define \hyperlink{gga__x__b88_8c_a381ab39bb8f2269dda561a5a9e1ff760}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}~139 /$\ast$ Becke 88 reoptimized to be used with vd\-W functional of Dion et al$\ast$/
+\item 
+\#define \hyperlink{gga__x__b88_8c_a37b9a96850288975f67f645f516242f0}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}~149 /$\ast$ Modified Becke 88 \hyperlink{lda__c__2d__amgb_8c_a983a72d7910e4f792e1689ccd13e1f0a}{for} proton transfer $\ast$/
+\item 
+\#define \hyperlink{gga__x__b88_8c_a652d6ae1fb5e132f31211b5ff5e94756}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}~522 /$\ast$ Lee, Lee \& Parr $\ast$/
+\item 
+\#define \hyperlink{gga__x__b88_8c_a204cb4f3f1148b3cee7d3a09ba3c119f}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}~514 /$\ast$ Fuentealba \& Reyes (B88 \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version}) $\ast$/
+\item 
+\#define \hyperlink{gga__x__b88_8c_a948334dad04f87e14ad3357383ea4675}{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}~523 /$\ast$ Thakkar 1992 $\ast$/
+\item 
+\#define \hyperlink{gga__x__b88_8c_a51567a30f19872c575cede7b2b86b03e}{func}~\hyperlink{struct_x_c}{X\-C}(\hyperlink{util_8h_af4c5194132fcc36165fb479ad1b05e3e}{gga\-\_\-x\-\_\-b88\-\_\-enhance})
+\item 
+\#define \hyperlink{gga__x__b88_8c_a28726f1cb011e45c0d23d3cd39b12fc9}{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{gga__x__b88_8c_a0c936016c0c5a4a5786cac304bac5e3f}{switch} (p-\/$>$info-\/$>$number)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__x__b88_8c_ac5be00653c3c48176e85c31e7cbbdd87}{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} beta, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gamma)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{gga__x__b88_8c_af4c5194132fcc36165fb479ad1b05e3e}{gga\-\_\-x\-\_\-b88\-\_\-enhance} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int order, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} x, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$f, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$dfdx, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$d2fdx2)
+\item 
+const \hyperlink{gga__x__b88_8c_a7924f1c1821b20cc7464c5448269d2a4}{X\-C} (func\-\_\-info\-\_\-type)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+p \hyperlink{gga__x__b88_8c_a4053a494dc195caa75bc61d14be1d9fa}{params} = malloc(sizeof(\hyperlink{structgga__x__b88__params}{gga\-\_\-x\-\_\-b88\-\_\-params}))
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{gga__x__b88_8c_a51567a30f19872c575cede7b2b86b03e}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!func@{func}}
+\index{func@{func}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{func}]{\setlength{\rightskip}{0pt plus 5cm}\#define func~{\bf X\-C}({\bf gga\-\_\-x\-\_\-b88\-\_\-enhance})}}\label{gga__x__b88_8c_a51567a30f19872c575cede7b2b86b03e}
+\hypertarget{gga__x__b88_8c_a204cb4f3f1148b3cee7d3a09ba3c119f}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-F\-R\-\_\-\-B88~514 /$\ast$ Fuentealba \& Reyes (B88 {\bf version}) $\ast$/}}\label{gga__x__b88_8c_a204cb4f3f1148b3cee7d3a09ba3c119f}
+\hypertarget{gga__x__b88_8c_a652d6ae1fb5e132f31211b5ff5e94756}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-L\-L\-P~522 /$\ast$ Lee, Lee \& Parr $\ast$/}}\label{gga__x__b88_8c_a652d6ae1fb5e132f31211b5ff5e94756}
+\hypertarget{gga__x__b88_8c_a948334dad04f87e14ad3357383ea4675}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R@{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-K\-\_\-\-T\-H\-A\-K\-K\-A\-R~523 /$\ast$ Thakkar 1992 $\ast$/}}\label{gga__x__b88_8c_a948334dad04f87e14ad3357383ea4675}
+\hypertarget{gga__x__b88_8c_aeb75932f7b7c0f6c72e3d3956841c5fb}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-B88~106 /$\ast$ Becke 88 $\ast$/}}\label{gga__x__b88_8c_aeb75932f7b7c0f6c72e3d3956841c5fb}
+\hypertarget{gga__x__b88_8c_a37b9a96850288975f67f645f516242f0}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-M\-B88~149 /$\ast$ Modified Becke 88 {\bf for} proton transfer $\ast$/}}\label{gga__x__b88_8c_a37b9a96850288975f67f645f516242f0}
+\hypertarget{gga__x__b88_8c_a381ab39bb8f2269dda561a5a9e1ff760}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-\_\-\-O\-P\-T\-B88\-\_\-\-V\-D\-W~139 /$\ast$ Becke 88 reoptimized to be used with vd\-W functional of Dion et al$\ast$/}}\label{gga__x__b88_8c_a381ab39bb8f2269dda561a5a9e1ff760}
+\hypertarget{gga__x__b88_8c_a28726f1cb011e45c0d23d3cd39b12fc9}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L@{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L}}
+\index{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L@{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C\-\_\-\-F\-U\-N\-C\-T\-I\-O\-N\-A\-L}}\label{gga__x__b88_8c_a28726f1cb011e45c0d23d3cd39b12fc9}
+
+
+\subsection{Function Documentation}
+\hypertarget{gga__x__b88_8c_af4c5194132fcc36165fb479ad1b05e3e}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!gga\-\_\-x\-\_\-b88\-\_\-enhance@{gga\-\_\-x\-\_\-b88\-\_\-enhance}}
+\index{gga\-\_\-x\-\_\-b88\-\_\-enhance@{gga\-\_\-x\-\_\-b88\-\_\-enhance}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-b88\-\_\-enhance}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-b88\-\_\-enhance (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{order, }
+\item[{{\bf F\-L\-O\-A\-T}}]{x, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{f, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{dfdx, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{d2fdx2}
+\end{DoxyParamCaption}
+)}}\label{gga__x__b88_8c_af4c5194132fcc36165fb479ad1b05e3e}
+\hypertarget{gga__x__b88_8c_ac5be00653c3c48176e85c31e7cbbdd87}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{beta, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gamma}
+\end{DoxyParamCaption}
+)}}\label{gga__x__b88_8c_ac5be00653c3c48176e85c31e7cbbdd87}
+\hypertarget{gga__x__b88_8c_a0c936016c0c5a4a5786cac304bac5e3f}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!switch@{switch}}
+\index{switch@{switch}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{switch}]{\setlength{\rightskip}{0pt plus 5cm}switch (
+\begin{DoxyParamCaption}
+\item[{p-\/$>$info-\/$>$}]{number}
+\end{DoxyParamCaption}
+)}}\label{gga__x__b88_8c_a0c936016c0c5a4a5786cac304bac5e3f}
+\hypertarget{gga__x__b88_8c_a7924f1c1821b20cc7464c5448269d2a4}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}const {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-info\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{gga__x__b88_8c_a7924f1c1821b20cc7464c5448269d2a4}
+
+
+\subsection{Variable Documentation}
+\hypertarget{gga__x__b88_8c_a4053a494dc195caa75bc61d14be1d9fa}{\index{gga\-\_\-x\-\_\-b88.\-c@{gga\-\_\-x\-\_\-b88.\-c}!params@{params}}
+\index{params@{params}!gga_x_b88.c@{gga\-\_\-x\-\_\-b88.\-c}}
+\subsubsection[{params}]{\setlength{\rightskip}{0pt plus 5cm}p params = malloc(sizeof({\bf gga\-\_\-x\-\_\-b88\-\_\-params}))}}\label{gga__x__b88_8c_a4053a494dc195caa75bc61d14be1d9fa}

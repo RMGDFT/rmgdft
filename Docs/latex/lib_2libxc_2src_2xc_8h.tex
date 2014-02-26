@@ -1,0 +1,842 @@
+\hypertarget{lib_2libxc_2src_2xc_8h}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/xc.h File Reference}
+\label{lib_2libxc_2src_2xc_8h}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/xc.\-h@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/lib/libxc/src/xc.\-h}}
+}
+{\ttfamily \#include $<$xc\-\_\-version.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}xc\-\_\-config.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}xc\-\_\-funcs.\-h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_x_c}{X\-C}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a57a380a7ee312050cf7aad55ebf940d9}{X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D}~1
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a5a2a8b8e71eb26e7ee6380135df06f72}{X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D}~2
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_ac916a307b5fad11695bc5f9d200efc11}{X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}~0
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a5898f4ff97127fbdcfc564b1ccbd681d}{X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}~1
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_aad6df6f7453580833baf5cd7151634cc}{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E}~0
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_aeabb44bc4bca5ba88ebc3071c5053e1a}{X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}~1
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_ae633222b48b7cd1573c1ba2605b03515}{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}~2
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a1c7da79f0c5b40ec07aa18b959635e1d}{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C}~3
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a16dcc76c001492b54fd2b9e0639d59c8}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N}~-\/1
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a6785fec827314ebcffaf14d703e8e85d}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A}~1
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_add9d3d208b857e4765ba52e54f58d7ca}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A}~2
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a7ab96da4446805264d5dfa05bd92cb93}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A}~4
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a5f590c5273e10ca4fa1851a6ddfde890}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A}~8
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_af358385f7edd838684d3f73cf92bb170}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P}~16
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a3b90794c146f789faf59ca1b4c52bc6e}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A}~32
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a73f77cb9a54e4a8d0f50bd084a227efb}{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A}~64
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_ad6022cd0620b5a8cfa5483407fc618d7}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C}~(1 $<$$<$  0) /$\ast$    1 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a9ccb83c0506b93c207cd2e4f080715ed}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C}~(1 $<$$<$  1) /$\ast$    2 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a90910651aeb4f44be491fb5fe6d64af0}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C}~(1 $<$$<$  2) /$\ast$    4 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a2c96824b2ede41ff606565250ea7a513}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C}~(1 $<$$<$  3) /$\ast$    8 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_aeb3bd9a5b20fe3d4e7360bbab49a183a}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C}~(1 $<$$<$  4) /$\ast$   16 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_acb6eb4d29125b1faaeab7b1b34ecb48d}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D}~(1 $<$$<$  5) /$\ast$   32 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a5739abe64c08f6bba75d77797503d850}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D}~(1 $<$$<$  6) /$\ast$   64 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_ad767fa0d2122d656faa1901e0ba458a1}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D}~(1 $<$$<$  7) /$\ast$  128 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a9068e0ee37601f8fb5125659ec4b80cb}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M}~(1 $<$$<$  8) /$\ast$  256 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a6606f31f0f3289c3045626bae9d7ceec}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E}~(1 $<$$<$  9) /$\ast$  512 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_affb880f267b8cee8bd94ca25b0012a01}{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T}~(1 $<$$<$ 10) /$\ast$ 1024 $\ast$/
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a33a9e5d8e3b8db63f97f2985571e2aaa}{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T}~0
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_a74bce0ef8374aaf45494fa69e660913f}{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N}~1
+\item 
+\#define \hyperlink{lib_2libxc_2src_2xc_8h_ac71ae4ef037aed58656c6cbe415c0373}{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B}~160
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{version} (int $\ast$major, int $\ast$minor)
+\item 
+struct \hyperlink{lib_2libxc_2src_2xc_8h_a07e9bbaeba8e3ced55bb5305cc1e8fbf}{X\-C} (func\-\_\-type)
+\item 
+int \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a4023e7767f7b16bede5106d0fbf5d22b}{functional\-\_\-get\-\_\-number} (const char $\ast$name)
+\item 
+char $\ast$\hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a4d791456d3df3827f416b8c5d7e3f0ff}{functional\-\_\-get\-\_\-name} (int number)
+\item 
+int \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a87582e4a18377cf7fe00e79f5ceb303b}{family\-\_\-from\-\_\-id} (int id, int $\ast$family, int $\ast$number)
+\item 
+int \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a4e6e57e15a383adb6cf059474b2e2294}{func\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int functional, int \hyperlink{xc-consistency_8c_a336d0e46bcbdfc54f68dd6f1b655f6c1}{nspin})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a7a2cb359c04c23f1a8c151475caf7f96}{func\-\_\-end} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+int \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a5869dbbcbc527141070b09220b1b20b6}{lda\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, const \hyperlink{struct_x_c}{X\-C}(func\-\_\-info\-\_\-type)$\ast$info, int \hyperlink{xc-consistency_8c_a336d0e46bcbdfc54f68dd6f1b655f6c1}{nspin})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_adc553b8323142d6acbe106134b70eb5f}{lda\-\_\-end} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_abc3dabe7e163004331772f350e7dcbb7}{lda} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v3rho3)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a30c4d2f98e0044c437e5012243671cef}{lda\-\_\-exc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a3c16478b9c62cdc0720ab885581e4e61}{lda\-\_\-exc\-\_\-vxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ac7920ba584bcb2a393d5d4962c8796ea}{lda\-\_\-vxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_af2310eff34105a2c3db25a909cb5ca68}{lda\-\_\-fxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ad511710e9b1feaa2c63e2397450ae51e}{lda\-\_\-kxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v3rho3)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a9c237f33def8367e3b4db4b5c22f5682}{lda\-\_\-x\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} alpha, int relativistic, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} omega)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a3f8a347ebad9ac00636d099269e7314f}{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int interaction, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{gga__k__dk_8c_a65ba841e01d6db7733e90a5b7f9e6f80}{bb})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a9e2b0b3bd865b7c874c8e40f88012a77}{lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int interaction, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{gga__k__dk_8c_a65ba841e01d6db7733e90a5b7f9e6f80}{bb})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a89267d956e01b4d1d9b68494a41385f5}{lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} alpha)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a5cc07b99d1e5d3af5a717299381dcdc5}{lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{lda__c__2d__prm_8c_a67af716b12fead5a86898ad074a0b959}{N})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_abb0409d6a69d608f741ab22a241cc05c}{lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int spin\-\_\-interpolation)
+\item 
+int \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ab61379126a4a59c45de0d0ab0d83a79a}{gga\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, const \hyperlink{struct_x_c}{X\-C}(func\-\_\-info\-\_\-type)$\ast$info, int \hyperlink{xc-consistency_8c_a336d0e46bcbdfc54f68dd6f1b655f6c1}{nspin})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a589b0764f9a2ef8fd159988e10c0397a}{gga\-\_\-end} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ac5493ba53eb15d36f3f8278612b25084}{gga} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhosigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigma2)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_aebd7a767d371c0a7d66fb34b0ccee56e}{gga\-\_\-exc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ac21dfeeae8aac990759d1abacc0f9ee6}{gga\-\_\-exc\-\_\-vxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a37de5b0d82d445b6b934c62dc73ce3f1}{gga\-\_\-vxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_aaf17955f2a2acd668888494c3798c23e}{gga\-\_\-fxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhosigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigma2)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_aacacebf4b1f6b94e644857920de75d74}{gga\-\_\-lb\-\_\-modified} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} r, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ac5be00653c3c48176e85c31e7cbbdd87}{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} beta, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gamma)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a59642efec2bcb7a5947011b49d9dd7eb}{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} kappa, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} mu)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a4592f50019d1b426a86a92e35b74876f}{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} kappa, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} mu)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a7877ab7eec86ee007c8fe179c037bd8a}{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gamma)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a5e9fd459534dd3ebc42e19409de642f0}{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} A, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} B, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{lda__c__2d__prm_8c_ae658f8809217a0d2c20837508fe543b9}{c}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{gga__xc__th_8c_a71729f52320926b2723634a38936f249}{d})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ae10fc3fda7b754a77046bf2ee580b5a2}{gga\-\_\-lb\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int modified, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} threshold, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} ip, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} qtot)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ada20f5d42fc55483cecd5446b6f4c181}{gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gamma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} lambda, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{lda__c__2d__prm_8c_a67af716b12fead5a86898ad074a0b959}{N})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a03a658812abd7425548e8ff1e65d3661}{gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} beta)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a482c3366a8fb92c2b88442d2a2af08c7}{gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} omega)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a0ce0544b445816c0323f7bea3205b9c8}{gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} omega)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a0b5a7905f0d1da353e6c6b0843c44213}{hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} omega)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a38a9fb15e77c1fdfd5223ae48c669c3b}{gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int \hyperlink{gga__x__ityh_8c_af9524caadc948bd870cdcdbc5f0dfc1f}{func\-\_\-id}, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} omega)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_af47c09ef360bab8a864f19d7c54ec44d}{gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} A, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} B, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} C, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} D, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} E)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a8cd9c81ecff3332c21c444ebe9a3bfb4}{gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} gamma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} delta)
+\item 
+\hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ad52296f3371203185498277c4a29d744}{hyb\-\_\-exx\-\_\-coef} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+int \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_af12ba322886b730df05f17d5b4813d78}{mgga\-\_\-init} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, const \hyperlink{struct_x_c}{X\-C}(func\-\_\-info\-\_\-type)$\ast$info, int \hyperlink{xc-consistency_8c_a336d0e46bcbdfc54f68dd6f1b655f6c1}{nspin})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_acc48557d07a8f58e84f6ca7053dfa29b}{mgga\-\_\-end} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_aa1d0f668d66d65d0e56496ba0c11e137}{mgga} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vlapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vtau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigma2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapl2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2tau2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhosigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rholapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhotau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmalapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmatau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapltau)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a5cb3c0b71d4f5d8ad79c1a89ab1d4903}{mgga\-\_\-exc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a9b3e1a769de0b362b4cebc6331cd0556}{mgga\-\_\-exc\-\_\-vxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vlapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vtau)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ac64a10afbfe61b5e18066599f6fb7f10}{mgga\-\_\-vxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vlapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vtau)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_ac31130d9701d5fc6cfba9bdb1c969e3b}{mgga\-\_\-fxc} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigma2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapl2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2tau2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhosigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rholapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhotau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmalapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmatau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapltau)
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_a2097462816ca0cfaa571fd779bf52c00}{mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params} (\hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$p, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} \hyperlink{lda__c__2d__prm_8c_ae658f8809217a0d2c20837508fe543b9}{c})
+\item 
+void \hyperlink{struct_x_c}{X\-C}() \hyperlink{lib_2libxc_2src_2xc_8h_abce663458e17c43fc84107ca80ea758c}{mix\-\_\-func} (const \hyperlink{struct_x_c}{X\-C}(func\-\_\-type)$\ast$\hyperlink{test_8c_a200d039021b3e9762ab6babd44bf5805}{func}, int np, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$\hyperlink{md_8h_a52b35cee8a5db846ce98f4904e1c8b13}{rho}, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$sigma, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$lapl, const \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$tau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$zk, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vrho, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vsigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vlapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$vtau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rho2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigma2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapl2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2tau2, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhosigma, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rholapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2rhotau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmalapl, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2sigmatau, \hyperlink{src_2xc__config_8h_ae8690abbffa85934d64d545920e2b108}{F\-L\-O\-A\-T} $\ast$v2lapltau)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{lib_2libxc_2src_2xc_8h_aeabb44bc4bca5ba88ebc3071c5053e1a}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N@{X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}}
+\index{X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N@{X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N~1}}\label{lib_2libxc_2src_2xc_8h_aeabb44bc4bca5ba88ebc3071c5053e1a}
+\hypertarget{lib_2libxc_2src_2xc_8h_aad6df6f7453580833baf5cd7151634cc}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E@{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E}}
+\index{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E@{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E~0}}\label{lib_2libxc_2src_2xc_8h_aad6df6f7453580833baf5cd7151634cc}
+\hypertarget{lib_2libxc_2src_2xc_8h_ae633222b48b7cd1573c1ba2605b03515}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N@{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}}
+\index{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N@{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-E\-X\-C\-H\-A\-N\-G\-E\-\_\-\-C\-O\-R\-R\-E\-L\-A\-T\-I\-O\-N~2}}\label{lib_2libxc_2src_2xc_8h_ae633222b48b7cd1573c1ba2605b03515}
+\hypertarget{lib_2libxc_2src_2xc_8h_add9d3d208b857e4765ba52e54f58d7ca}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-G\-G\-A~2}}\label{lib_2libxc_2src_2xc_8h_add9d3d208b857e4765ba52e54f58d7ca}
+\hypertarget{lib_2libxc_2src_2xc_8h_a3b90794c146f789faf59ca1b4c52bc6e}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-G\-G\-A~32}}\label{lib_2libxc_2src_2xc_8h_a3b90794c146f789faf59ca1b4c52bc6e}
+\hypertarget{lib_2libxc_2src_2xc_8h_a73f77cb9a54e4a8d0f50bd084a227efb}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-H\-Y\-B\-\_\-\-M\-G\-G\-A~64}}\label{lib_2libxc_2src_2xc_8h_a73f77cb9a54e4a8d0f50bd084a227efb}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5f590c5273e10ca4fa1851a6ddfde890}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-C\-A~8}}\label{lib_2libxc_2src_2xc_8h_a5f590c5273e10ca4fa1851a6ddfde890}
+\hypertarget{lib_2libxc_2src_2xc_8h_a6785fec827314ebcffaf14d703e8e85d}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-L\-D\-A~1}}\label{lib_2libxc_2src_2xc_8h_a6785fec827314ebcffaf14d703e8e85d}
+\hypertarget{lib_2libxc_2src_2xc_8h_a7ab96da4446805264d5dfa05bd92cb93}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-M\-G\-G\-A~4}}\label{lib_2libxc_2src_2xc_8h_a7ab96da4446805264d5dfa05bd92cb93}
+\hypertarget{lib_2libxc_2src_2xc_8h_af358385f7edd838684d3f73cf92bb170}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-O\-E\-P~16}}\label{lib_2libxc_2src_2xc_8h_af358385f7edd838684d3f73cf92bb170}
+\hypertarget{lib_2libxc_2src_2xc_8h_a16dcc76c001492b54fd2b9e0639d59c8}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N}}
+\index{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N@{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-A\-M\-I\-L\-Y\-\_\-\-U\-N\-K\-N\-O\-W\-N~-\/1}}\label{lib_2libxc_2src_2xc_8h_a16dcc76c001492b54fd2b9e0639d59c8}
+\hypertarget{lib_2libxc_2src_2xc_8h_acb6eb4d29125b1faaeab7b1b34ecb48d}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-1\-D~(1 $<$$<$  5) /$\ast$   32 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_acb6eb4d29125b1faaeab7b1b34ecb48d}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5739abe64c08f6bba75d77797503d850}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-2\-D~(1 $<$$<$  6) /$\ast$   64 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_a5739abe64c08f6bba75d77797503d850}
+\hypertarget{lib_2libxc_2src_2xc_8h_ad767fa0d2122d656faa1901e0ba458a1}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-3\-D~(1 $<$$<$  7) /$\ast$  128 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_ad767fa0d2122d656faa1901e0ba458a1}
+\hypertarget{lib_2libxc_2src_2xc_8h_affb880f267b8cee8bd94ca25b0012a01}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-D\-E\-V\-E\-L\-O\-P\-M\-E\-N\-T~(1 $<$$<$ 10) /$\ast$ 1024 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_affb880f267b8cee8bd94ca25b0012a01}
+\hypertarget{lib_2libxc_2src_2xc_8h_ad6022cd0620b5a8cfa5483407fc618d7}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-E\-X\-C~(1 $<$$<$  0) /$\ast$    1 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_ad6022cd0620b5a8cfa5483407fc618d7}
+\hypertarget{lib_2libxc_2src_2xc_8h_a90910651aeb4f44be491fb5fe6d64af0}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-F\-X\-C~(1 $<$$<$  2) /$\ast$    4 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_a90910651aeb4f44be491fb5fe6d64af0}
+\hypertarget{lib_2libxc_2src_2xc_8h_a2c96824b2ede41ff606565250ea7a513}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-K\-X\-C~(1 $<$$<$  3) /$\ast$    8 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_a2c96824b2ede41ff606565250ea7a513}
+\hypertarget{lib_2libxc_2src_2xc_8h_aeb3bd9a5b20fe3d4e7360bbab49a183a}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-L\-X\-C~(1 $<$$<$  4) /$\ast$   16 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_aeb3bd9a5b20fe3d4e7360bbab49a183a}
+\hypertarget{lib_2libxc_2src_2xc_8h_a9ccb83c0506b93c207cd2e4f080715ed}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-A\-V\-E\-\_\-\-V\-X\-C~(1 $<$$<$  1) /$\ast$    2 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_a9ccb83c0506b93c207cd2e4f080715ed}
+\hypertarget{lib_2libxc_2src_2xc_8h_a9068e0ee37601f8fb5125659ec4b80cb}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-H\-Y\-B\-\_\-\-C\-A\-M~(1 $<$$<$  8) /$\ast$  256 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_a9068e0ee37601f8fb5125659ec4b80cb}
+\hypertarget{lib_2libxc_2src_2xc_8h_a6606f31f0f3289c3045626bae9d7ceec}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E}}
+\index{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E@{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-F\-L\-A\-G\-S\-\_\-\-S\-T\-A\-B\-L\-E~(1 $<$$<$  9) /$\ast$  512 $\ast$/}}\label{lib_2libxc_2src_2xc_8h_a6606f31f0f3289c3045626bae9d7ceec}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac71ae4ef037aed58656c6cbe415c0373}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B}}
+\index{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B@{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-G\-G\-A\-\_\-\-X\-C\-\_\-\-L\-B~160}}\label{lib_2libxc_2src_2xc_8h_ac71ae4ef037aed58656c6cbe415c0373}
+\hypertarget{lib_2libxc_2src_2xc_8h_a1c7da79f0c5b40ec07aa18b959635e1d}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C@{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C}}
+\index{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C@{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-K\-I\-N\-E\-T\-I\-C~3}}\label{lib_2libxc_2src_2xc_8h_a1c7da79f0c5b40ec07aa18b959635e1d}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac916a307b5fad11695bc5f9d200efc11}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C@{X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}}
+\index{X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C@{X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-N\-O\-N\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C~0}}\label{lib_2libxc_2src_2xc_8h_ac916a307b5fad11695bc5f9d200efc11}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5a2a8b8e71eb26e7ee6380135df06f72}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D@{X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D}}
+\index{X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D@{X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-P\-O\-L\-A\-R\-I\-Z\-E\-D~2}}\label{lib_2libxc_2src_2xc_8h_a5a2a8b8e71eb26e7ee6380135df06f72}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5898f4ff97127fbdcfc564b1ccbd681d}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C@{X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}}
+\index{X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C@{X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-R\-E\-L\-A\-T\-I\-V\-I\-S\-T\-I\-C~1}}\label{lib_2libxc_2src_2xc_8h_a5898f4ff97127fbdcfc564b1ccbd681d}
+\hypertarget{lib_2libxc_2src_2xc_8h_a74bce0ef8374aaf45494fa69e660913f}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N@{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N}}
+\index{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N@{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-A\-N\-S\-I\-O\-N~1}}\label{lib_2libxc_2src_2xc_8h_a74bce0ef8374aaf45494fa69e660913f}
+\hypertarget{lib_2libxc_2src_2xc_8h_a33a9e5d8e3b8db63f97f2985571e2aaa}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T@{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T}}
+\index{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T@{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-T\-A\-U\-\_\-\-E\-X\-P\-L\-I\-C\-I\-T~0}}\label{lib_2libxc_2src_2xc_8h_a33a9e5d8e3b8db63f97f2985571e2aaa}
+\hypertarget{lib_2libxc_2src_2xc_8h_a57a380a7ee312050cf7aad55ebf940d9}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D@{X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D}}
+\index{X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D@{X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-C\-\_\-\-U\-N\-P\-O\-L\-A\-R\-I\-Z\-E\-D~1}}\label{lib_2libxc_2src_2xc_8h_a57a380a7ee312050cf7aad55ebf940d9}
+
+
+\subsection{Function Documentation}
+\hypertarget{lib_2libxc_2src_2xc_8h_a87582e4a18377cf7fe00e79f5ceb303b}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!family\-\_\-from\-\_\-id@{family\-\_\-from\-\_\-id}}
+\index{family\-\_\-from\-\_\-id@{family\-\_\-from\-\_\-id}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{family\-\_\-from\-\_\-id}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf X\-C}() family\-\_\-from\-\_\-id (
+\begin{DoxyParamCaption}
+\item[{int}]{id, }
+\item[{int $\ast$}]{family, }
+\item[{int $\ast$}]{number}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a87582e4a18377cf7fe00e79f5ceb303b}
+\hypertarget{lib_2libxc_2src_2xc_8h_a7a2cb359c04c23f1a8c151475caf7f96}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!func\-\_\-end@{func\-\_\-end}}
+\index{func\-\_\-end@{func\-\_\-end}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{func\-\_\-end}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() func\-\_\-end (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a7a2cb359c04c23f1a8c151475caf7f96}
+\hypertarget{lib_2libxc_2src_2xc_8h_a4e6e57e15a383adb6cf059474b2e2294}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!func\-\_\-init@{func\-\_\-init}}
+\index{func\-\_\-init@{func\-\_\-init}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{func\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf X\-C}() func\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{functional, }
+\item[{int}]{nspin}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a4e6e57e15a383adb6cf059474b2e2294}
+\hypertarget{lib_2libxc_2src_2xc_8h_a4d791456d3df3827f416b8c5d7e3f0ff}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!functional\-\_\-get\-\_\-name@{functional\-\_\-get\-\_\-name}}
+\index{functional\-\_\-get\-\_\-name@{functional\-\_\-get\-\_\-name}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{functional\-\_\-get\-\_\-name}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ {\bf X\-C}() functional\-\_\-get\-\_\-name (
+\begin{DoxyParamCaption}
+\item[{int}]{number}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a4d791456d3df3827f416b8c5d7e3f0ff}
+\hypertarget{lib_2libxc_2src_2xc_8h_a4023e7767f7b16bede5106d0fbf5d22b}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!functional\-\_\-get\-\_\-number@{functional\-\_\-get\-\_\-number}}
+\index{functional\-\_\-get\-\_\-number@{functional\-\_\-get\-\_\-number}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{functional\-\_\-get\-\_\-number}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf X\-C}() functional\-\_\-get\-\_\-number (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a4023e7767f7b16bede5106d0fbf5d22b}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac5493ba53eb15d36f3f8278612b25084}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga@{gga}}
+\index{gga@{gga}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhosigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigma2}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ac5493ba53eb15d36f3f8278612b25084}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5e9fd459534dd3ebc42e19409de642f0}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params@{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params}}
+\index{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params@{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-c\-\_\-lyp\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{A, }
+\item[{{\bf F\-L\-O\-A\-T}}]{B, }
+\item[{{\bf F\-L\-O\-A\-T}}]{c, }
+\item[{{\bf F\-L\-O\-A\-T}}]{d}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a5e9fd459534dd3ebc42e19409de642f0}
+\hypertarget{lib_2libxc_2src_2xc_8h_a589b0764f9a2ef8fd159988e10c0397a}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-end@{gga\-\_\-end}}
+\index{gga\-\_\-end@{gga\-\_\-end}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-end}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-end (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a589b0764f9a2ef8fd159988e10c0397a}
+\hypertarget{lib_2libxc_2src_2xc_8h_aebd7a767d371c0a7d66fb34b0ccee56e}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-exc@{gga\-\_\-exc}}
+\index{gga\-\_\-exc@{gga\-\_\-exc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-exc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-exc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_aebd7a767d371c0a7d66fb34b0ccee56e}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac21dfeeae8aac990759d1abacc0f9ee6}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-exc\-\_\-vxc@{gga\-\_\-exc\-\_\-vxc}}
+\index{gga\-\_\-exc\-\_\-vxc@{gga\-\_\-exc\-\_\-vxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-exc\-\_\-vxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-exc\-\_\-vxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_ac21dfeeae8aac990759d1abacc0f9ee6}
+\hypertarget{lib_2libxc_2src_2xc_8h_aaf17955f2a2acd668888494c3798c23e}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-fxc@{gga\-\_\-fxc}}
+\index{gga\-\_\-fxc@{gga\-\_\-fxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-fxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-fxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhosigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigma2}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_aaf17955f2a2acd668888494c3798c23e}
+\hypertarget{lib_2libxc_2src_2xc_8h_ab61379126a4a59c45de0d0ab0d83a79a}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-init@{gga\-\_\-init}}
+\index{gga\-\_\-init@{gga\-\_\-init}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf X\-C}() gga\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{const {\bf X\-C}(func\-\_\-info\-\_\-type)$\ast$}]{info, }
+\item[{int}]{nspin}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ab61379126a4a59c45de0d0ab0d83a79a}
+\hypertarget{lib_2libxc_2src_2xc_8h_ada20f5d42fc55483cecd5446b6f4c181}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params@{gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params}}
+\index{gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params@{gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-k\-\_\-tflw\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gamma, }
+\item[{{\bf F\-L\-O\-A\-T}}]{lambda, }
+\item[{{\bf F\-L\-O\-A\-T}}]{N}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ada20f5d42fc55483cecd5446b6f4c181}
+\hypertarget{lib_2libxc_2src_2xc_8h_aacacebf4b1f6b94e644857920de75d74}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-lb\-\_\-modified@{gga\-\_\-lb\-\_\-modified}}
+\index{gga\-\_\-lb\-\_\-modified@{gga\-\_\-lb\-\_\-modified}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-lb\-\_\-modified}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-lb\-\_\-modified (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{{\bf F\-L\-O\-A\-T}}]{r, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_aacacebf4b1f6b94e644857920de75d74}
+\hypertarget{lib_2libxc_2src_2xc_8h_ae10fc3fda7b754a77046bf2ee580b5a2}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-lb\-\_\-set\-\_\-params@{gga\-\_\-lb\-\_\-set\-\_\-params}}
+\index{gga\-\_\-lb\-\_\-set\-\_\-params@{gga\-\_\-lb\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-lb\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-lb\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{modified, }
+\item[{{\bf F\-L\-O\-A\-T}}]{threshold, }
+\item[{{\bf F\-L\-O\-A\-T}}]{ip, }
+\item[{{\bf F\-L\-O\-A\-T}}]{qtot}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ae10fc3fda7b754a77046bf2ee580b5a2}
+\hypertarget{lib_2libxc_2src_2xc_8h_a37de5b0d82d445b6b934c62dc73ce3f1}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-vxc@{gga\-\_\-vxc}}
+\index{gga\-\_\-vxc@{gga\-\_\-vxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-vxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-vxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_a37de5b0d82d445b6b934c62dc73ce3f1}
+\hypertarget{lib_2libxc_2src_2xc_8h_a03a658812abd7425548e8ff1e65d3661}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-2d\-\_\-b88\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{beta}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a03a658812abd7425548e8ff1e65d3661}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac5be00653c3c48176e85c31e7cbbdd87}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-b88\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{beta, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gamma}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ac5be00653c3c48176e85c31e7cbbdd87}
+\hypertarget{lib_2libxc_2src_2xc_8h_a0ce0544b445816c0323f7bea3205b9c8}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-hjs\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{omega}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a0ce0544b445816c0323f7bea3205b9c8}
+\hypertarget{lib_2libxc_2src_2xc_8h_a38a9fb15e77c1fdfd5223ae48c669c3b}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-ityh\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{func\-\_\-id, }
+\item[{{\bf F\-L\-O\-A\-T}}]{omega}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a38a9fb15e77c1fdfd5223ae48c669c3b}
+\hypertarget{lib_2libxc_2src_2xc_8h_a8cd9c81ecff3332c21c444ebe9a3bfb4}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-kt\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gamma, }
+\item[{{\bf F\-L\-O\-A\-T}}]{delta}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a8cd9c81ecff3332c21c444ebe9a3bfb4}
+\hypertarget{lib_2libxc_2src_2xc_8h_a7877ab7eec86ee007c8fe179c037bd8a}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-optx\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{a, }
+\item[{{\bf F\-L\-O\-A\-T}}]{b, }
+\item[{{\bf F\-L\-O\-A\-T}}]{gamma}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a7877ab7eec86ee007c8fe179c037bd8a}
+\hypertarget{lib_2libxc_2src_2xc_8h_a59642efec2bcb7a5947011b49d9dd7eb}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-pbe\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{kappa, }
+\item[{{\bf F\-L\-O\-A\-T}}]{mu}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a59642efec2bcb7a5947011b49d9dd7eb}
+\hypertarget{lib_2libxc_2src_2xc_8h_a4592f50019d1b426a86a92e35b74876f}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-rpbe\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{kappa, }
+\item[{{\bf F\-L\-O\-A\-T}}]{mu}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a4592f50019d1b426a86a92e35b74876f}
+\hypertarget{lib_2libxc_2src_2xc_8h_af47c09ef360bab8a864f19d7c54ec44d}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-ssb\-\_\-sw\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{A, }
+\item[{{\bf F\-L\-O\-A\-T}}]{B, }
+\item[{{\bf F\-L\-O\-A\-T}}]{C, }
+\item[{{\bf F\-L\-O\-A\-T}}]{D, }
+\item[{{\bf F\-L\-O\-A\-T}}]{E}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_af47c09ef360bab8a864f19d7c54ec44d}
+\hypertarget{lib_2libxc_2src_2xc_8h_a482c3366a8fb92c2b88442d2a2af08c7}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params}}
+\index{gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params@{gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() gga\-\_\-x\-\_\-wpbeh\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{omega}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a482c3366a8fb92c2b88442d2a2af08c7}
+\hypertarget{lib_2libxc_2src_2xc_8h_ad52296f3371203185498277c4a29d744}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!hyb\-\_\-exx\-\_\-coef@{hyb\-\_\-exx\-\_\-coef}}
+\index{hyb\-\_\-exx\-\_\-coef@{hyb\-\_\-exx\-\_\-coef}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{hyb\-\_\-exx\-\_\-coef}]{\setlength{\rightskip}{0pt plus 5cm}{\bf F\-L\-O\-A\-T} {\bf X\-C}() hyb\-\_\-exx\-\_\-coef (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ad52296f3371203185498277c4a29d744}
+\hypertarget{lib_2libxc_2src_2xc_8h_a0b5a7905f0d1da353e6c6b0843c44213}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params@{hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params}}
+\index{hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params@{hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() hyb\-\_\-gga\-\_\-xc\-\_\-hse\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{omega}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a0b5a7905f0d1da353e6c6b0843c44213}
+\hypertarget{lib_2libxc_2src_2xc_8h_abc3dabe7e163004331772f350e7dcbb7}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda@{lda}}
+\index{lda@{lda}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v3rho3}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_abc3dabe7e163004331772f350e7dcbb7}
+\hypertarget{lib_2libxc_2src_2xc_8h_a9e2b0b3bd865b7c874c8e40f88012a77}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params}}
+\index{lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-c\-\_\-1d\-\_\-csc\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{interaction, }
+\item[{{\bf F\-L\-O\-A\-T}}]{bb}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a9e2b0b3bd865b7c874c8e40f88012a77}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5cc07b99d1e5d3af5a717299381dcdc5}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params}}
+\index{lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-c\-\_\-2d\-\_\-prm\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{N}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a5cc07b99d1e5d3af5a717299381dcdc5}
+\hypertarget{lib_2libxc_2src_2xc_8h_abb0409d6a69d608f741ab22a241cc05c}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params}}
+\index{lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-c\-\_\-vwn\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{spin\-\_\-interpolation}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_abb0409d6a69d608f741ab22a241cc05c}
+\hypertarget{lib_2libxc_2src_2xc_8h_a89267d956e01b4d1d9b68494a41385f5}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params}}
+\index{lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params@{lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-c\-\_\-xalpha\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{alpha}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a89267d956e01b4d1d9b68494a41385f5}
+\hypertarget{lib_2libxc_2src_2xc_8h_adc553b8323142d6acbe106134b70eb5f}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-end@{lda\-\_\-end}}
+\index{lda\-\_\-end@{lda\-\_\-end}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-end}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-end (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_adc553b8323142d6acbe106134b70eb5f}
+\hypertarget{lib_2libxc_2src_2xc_8h_a30c4d2f98e0044c437e5012243671cef}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-exc@{lda\-\_\-exc}}
+\index{lda\-\_\-exc@{lda\-\_\-exc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-exc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-exc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_a30c4d2f98e0044c437e5012243671cef}
+\hypertarget{lib_2libxc_2src_2xc_8h_a3c16478b9c62cdc0720ab885581e4e61}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-exc\-\_\-vxc@{lda\-\_\-exc\-\_\-vxc}}
+\index{lda\-\_\-exc\-\_\-vxc@{lda\-\_\-exc\-\_\-vxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-exc\-\_\-vxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-exc\-\_\-vxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_a3c16478b9c62cdc0720ab885581e4e61}
+\hypertarget{lib_2libxc_2src_2xc_8h_af2310eff34105a2c3db25a909cb5ca68}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-fxc@{lda\-\_\-fxc}}
+\index{lda\-\_\-fxc@{lda\-\_\-fxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-fxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-fxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_af2310eff34105a2c3db25a909cb5ca68}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5869dbbcbc527141070b09220b1b20b6}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-init@{lda\-\_\-init}}
+\index{lda\-\_\-init@{lda\-\_\-init}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf X\-C}() lda\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{const {\bf X\-C}(func\-\_\-info\-\_\-type)$\ast$}]{info, }
+\item[{int}]{nspin}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a5869dbbcbc527141070b09220b1b20b6}
+\hypertarget{lib_2libxc_2src_2xc_8h_ad511710e9b1feaa2c63e2397450ae51e}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-kxc@{lda\-\_\-kxc}}
+\index{lda\-\_\-kxc@{lda\-\_\-kxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-kxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-kxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v3rho3}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_ad511710e9b1feaa2c63e2397450ae51e}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac7920ba584bcb2a393d5d4962c8796ea}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-vxc@{lda\-\_\-vxc}}
+\index{lda\-\_\-vxc@{lda\-\_\-vxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-vxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-vxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_ac7920ba584bcb2a393d5d4962c8796ea}
+\hypertarget{lib_2libxc_2src_2xc_8h_a3f8a347ebad9ac00636d099269e7314f}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}}
+\index{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-x\-\_\-1d\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{interaction, }
+\item[{{\bf F\-L\-O\-A\-T}}]{bb}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a3f8a347ebad9ac00636d099269e7314f}
+\hypertarget{lib_2libxc_2src_2xc_8h_a9c237f33def8367e3b4db4b5c22f5682}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!lda\-\_\-x\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-set\-\_\-params}}
+\index{lda\-\_\-x\-\_\-set\-\_\-params@{lda\-\_\-x\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{lda\-\_\-x\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() lda\-\_\-x\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{alpha, }
+\item[{int}]{relativistic, }
+\item[{{\bf F\-L\-O\-A\-T}}]{omega}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a9c237f33def8367e3b4db4b5c22f5682}
+\hypertarget{lib_2libxc_2src_2xc_8h_aa1d0f668d66d65d0e56496ba0c11e137}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga@{mgga}}
+\index{mgga@{mgga}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vlapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vtau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigma2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapl2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2tau2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhosigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rholapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhotau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmalapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmatau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapltau}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_aa1d0f668d66d65d0e56496ba0c11e137}
+\hypertarget{lib_2libxc_2src_2xc_8h_acc48557d07a8f58e84f6ca7053dfa29b}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-end@{mgga\-\_\-end}}
+\index{mgga\-\_\-end@{mgga\-\_\-end}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-end}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga\-\_\-end (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_acc48557d07a8f58e84f6ca7053dfa29b}
+\hypertarget{lib_2libxc_2src_2xc_8h_a5cb3c0b71d4f5d8ad79c1a89ab1d4903}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-exc@{mgga\-\_\-exc}}
+\index{mgga\-\_\-exc@{mgga\-\_\-exc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-exc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga\-\_\-exc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_a5cb3c0b71d4f5d8ad79c1a89ab1d4903}
+\hypertarget{lib_2libxc_2src_2xc_8h_a9b3e1a769de0b362b4cebc6331cd0556}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-exc\-\_\-vxc@{mgga\-\_\-exc\-\_\-vxc}}
+\index{mgga\-\_\-exc\-\_\-vxc@{mgga\-\_\-exc\-\_\-vxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-exc\-\_\-vxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga\-\_\-exc\-\_\-vxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vlapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vtau}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_a9b3e1a769de0b362b4cebc6331cd0556}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac31130d9701d5fc6cfba9bdb1c969e3b}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-fxc@{mgga\-\_\-fxc}}
+\index{mgga\-\_\-fxc@{mgga\-\_\-fxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-fxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga\-\_\-fxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigma2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapl2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2tau2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhosigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rholapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhotau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmalapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmatau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapltau}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_ac31130d9701d5fc6cfba9bdb1c969e3b}
+\hypertarget{lib_2libxc_2src_2xc_8h_af12ba322886b730df05f17d5b4813d78}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-init@{mgga\-\_\-init}}
+\index{mgga\-\_\-init@{mgga\-\_\-init}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf X\-C}() mgga\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{const {\bf X\-C}(func\-\_\-info\-\_\-type)$\ast$}]{info, }
+\item[{int}]{nspin}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_af12ba322886b730df05f17d5b4813d78}
+\hypertarget{lib_2libxc_2src_2xc_8h_ac64a10afbfe61b5e18066599f6fb7f10}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-vxc@{mgga\-\_\-vxc}}
+\index{mgga\-\_\-vxc@{mgga\-\_\-vxc}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-vxc}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga\-\_\-vxc (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vlapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vtau}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{lib_2libxc_2src_2xc_8h_ac64a10afbfe61b5e18066599f6fb7f10}
+\hypertarget{lib_2libxc_2src_2xc_8h_a2097462816ca0cfaa571fd779bf52c00}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params@{mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params}}
+\index{mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params@{mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mgga\-\_\-x\-\_\-tb09\-\_\-set\-\_\-params (
+\begin{DoxyParamCaption}
+\item[{{\bf X\-C}(func\-\_\-type)$\ast$}]{p, }
+\item[{{\bf F\-L\-O\-A\-T}}]{c}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a2097462816ca0cfaa571fd779bf52c00}
+\hypertarget{lib_2libxc_2src_2xc_8h_abce663458e17c43fc84107ca80ea758c}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!mix\-\_\-func@{mix\-\_\-func}}
+\index{mix\-\_\-func@{mix\-\_\-func}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{mix\-\_\-func}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() mix\-\_\-func (
+\begin{DoxyParamCaption}
+\item[{const {\bf X\-C}(func\-\_\-type)$\ast$}]{func, }
+\item[{int}]{np, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{rho, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{sigma, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{lapl, }
+\item[{const {\bf F\-L\-O\-A\-T} $\ast$}]{tau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{zk, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vrho, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vsigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vlapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{vtau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rho2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigma2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapl2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2tau2, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhosigma, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rholapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2rhotau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmalapl, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2sigmatau, }
+\item[{{\bf F\-L\-O\-A\-T} $\ast$}]{v2lapltau}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_abce663458e17c43fc84107ca80ea758c}
+\hypertarget{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!version@{version}}
+\index{version@{version}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{version}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf X\-C}() version (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{major, }
+\item[{int $\ast$}]{minor}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_ae27961c418f057b2fb049720b1229055}
+\hypertarget{lib_2libxc_2src_2xc_8h_a07e9bbaeba8e3ced55bb5305cc1e8fbf}{\index{lib/libxc/src/xc.\-h@{lib/libxc/src/xc.\-h}!X\-C@{X\-C}}
+\index{X\-C@{X\-C}!lib/libxc/src/xc.h@{lib/libxc/src/xc.\-h}}
+\subsubsection[{X\-C}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf X\-C} (
+\begin{DoxyParamCaption}
+\item[{func\-\_\-type}]{}
+\end{DoxyParamCaption}
+)}}\label{lib_2libxc_2src_2xc_8h_a07e9bbaeba8e3ced55bb5305cc1e8fbf}

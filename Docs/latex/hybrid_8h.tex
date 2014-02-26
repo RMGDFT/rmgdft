@@ -1,0 +1,159 @@
+\hypertarget{hybrid_8h}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/hybrid.h File Reference}
+\label{hybrid_8h}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/hybrid.\-h@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/hybrid.\-h}}
+}
+{\ttfamily \#include $<$semaphore.\-h$>$}\\*
+{\ttfamily \#include $<$mpi.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}typedefs.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}rmgtypes.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}rmgtypedefs.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}rmgthreads.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{hybrid_8h_a932e8654907cce8a2b350f121d9d4a59}{H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G}~1
+\item 
+\#define \hyperlink{hybrid_8h_a092f7a41e1fa4afaba38f210c6c245ae}{H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P}~2
+\item 
+\#define \hyperlink{hybrid_8h_a037be231dbde0e9ab8269a6d463e157f}{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A}~3
+\item 
+\#define \hyperlink{hybrid_8h_a25d49492c2486e9cb3637927b9126ece}{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B}~4
+\item 
+\#define \hyperlink{hybrid_8h_a70f42c61b4ce3aea64abe186b255104b}{H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E}~5
+\item 
+\#define \hyperlink{hybrid_8h_afae90598bbaf7d1eebfa8e704464c84a}{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B}~6
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{hybrid_8h_a914bfaf45df11acdffa736328c3164ea}{scf\-\_\-barrier\-\_\-init} (int nthreads)
+\item 
+void \hyperlink{hybrid_8h_ad09a3eb274e641afdf8af238367bdf43}{scf\-\_\-barrier\-\_\-wait} (void)
+\item 
+void \hyperlink{hybrid_8h_a9653a3d0a7adc82cfab8ae8ed57e3da2}{scf\-\_\-barrier\-\_\-destroy} (void)
+\item 
+int \hyperlink{hybrid_8h_af1961383267052f565052f0a610cbfe1}{get\-\_\-thread\-\_\-basetag} (void)
+\item 
+int \hyperlink{hybrid_8h_a634b8fbad18cfcdcae649b0fe7218e97}{get\-\_\-thread\-\_\-tid} (void)
+\item 
+\hyperlink{struct_s_c_f___t_h_r_e_a_d___c_o_n_t_r_o_l}{S\-C\-F\-\_\-\-T\-H\-R\-E\-A\-D\-\_\-\-C\-O\-N\-T\-R\-O\-L} $\ast$ \hyperlink{hybrid_8h_a994522062fb9cd984a9dc6d6497907f8}{get\-\_\-thread\-\_\-control} (void)
+\item 
+void \hyperlink{hybrid_8h_ae0feff13fc183527410d1c326d4d31dd}{wait\-\_\-for\-\_\-threads} (int jobs)
+\item 
+void \hyperlink{hybrid_8h_ad527db45427f02e0be2f84cfe06cc923}{wake\-\_\-threads} (int jobs)
+\item 
+void \hyperlink{hybrid_8h_a753514fd6716d4a57e765978e0c3caed}{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L} (int nthreads)
+\item 
+void \hyperlink{hybrid_8h_ab252a5e763e5da125ec92b598948d560}{enter\-\_\-threaded\-\_\-region} (void)
+\item 
+void \hyperlink{hybrid_8h_a45e7e2550e4fca3df840e4a17fce6525}{leave\-\_\-threaded\-\_\-region} (void)
+\item 
+int \hyperlink{hybrid_8h_a66fb96c5f69ce4278d0f42358d7eb506}{is\-\_\-loop\-\_\-over\-\_\-states} (void)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{hybrid_8h_a70f42c61b4ce3aea64abe186b255104b}{\index{hybrid.\-h@{hybrid.\-h}!H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E@{H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E}}
+\index{H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E@{H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-Y\-B\-R\-I\-D\-\_\-\-B\-E\-T\-A\-X\-\_\-\-P\-S\-I1\-\_\-\-C\-A\-L\-C\-U\-L\-A\-T\-E~5}}\label{hybrid_8h_a70f42c61b4ce3aea64abe186b255104b}
+\hypertarget{hybrid_8h_a932e8654907cce8a2b350f121d9d4a59}{\index{hybrid.\-h@{hybrid.\-h}!H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G@{H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G}}
+\index{H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G@{H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-Y\-B\-R\-I\-D\-\_\-\-E\-I\-G~1}}\label{hybrid_8h_a932e8654907cce8a2b350f121d9d4a59}
+\hypertarget{hybrid_8h_a092f7a41e1fa4afaba38f210c6c245ae}{\index{hybrid.\-h@{hybrid.\-h}!H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P}}
+\index{H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-Y\-B\-R\-I\-D\-\_\-\-S\-K\-I\-P~2}}\label{hybrid_8h_a092f7a41e1fa4afaba38f210c6c245ae}
+\hypertarget{hybrid_8h_a037be231dbde0e9ab8269a6d463e157f}{\index{hybrid.\-h@{hybrid.\-h}!H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A}}
+\index{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A~3}}\label{hybrid_8h_a037be231dbde0e9ab8269a6d463e157f}
+\hypertarget{hybrid_8h_afae90598bbaf7d1eebfa8e704464c84a}{\index{hybrid.\-h@{hybrid.\-h}!H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B}}
+\index{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-A\-B~6}}\label{hybrid_8h_afae90598bbaf7d1eebfa8e704464c84a}
+\hypertarget{hybrid_8h_a25d49492c2486e9cb3637927b9126ece}{\index{hybrid.\-h@{hybrid.\-h}!H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B}}
+\index{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B@{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-Y\-B\-R\-I\-D\-\_\-\-S\-U\-B\-D\-I\-A\-G\-\_\-\-A\-P\-P\-\_\-\-B~4}}\label{hybrid_8h_a25d49492c2486e9cb3637927b9126ece}
+
+
+\subsection{Function Documentation}
+\hypertarget{hybrid_8h_ab252a5e763e5da125ec92b598948d560}{\index{hybrid.\-h@{hybrid.\-h}!enter\-\_\-threaded\-\_\-region@{enter\-\_\-threaded\-\_\-region}}
+\index{enter\-\_\-threaded\-\_\-region@{enter\-\_\-threaded\-\_\-region}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{enter\-\_\-threaded\-\_\-region}]{\setlength{\rightskip}{0pt plus 5cm}void enter\-\_\-threaded\-\_\-region (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_ab252a5e763e5da125ec92b598948d560}
+\hypertarget{hybrid_8h_af1961383267052f565052f0a610cbfe1}{\index{hybrid.\-h@{hybrid.\-h}!get\-\_\-thread\-\_\-basetag@{get\-\_\-thread\-\_\-basetag}}
+\index{get\-\_\-thread\-\_\-basetag@{get\-\_\-thread\-\_\-basetag}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{get\-\_\-thread\-\_\-basetag}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-thread\-\_\-basetag (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_af1961383267052f565052f0a610cbfe1}
+\hypertarget{hybrid_8h_a994522062fb9cd984a9dc6d6497907f8}{\index{hybrid.\-h@{hybrid.\-h}!get\-\_\-thread\-\_\-control@{get\-\_\-thread\-\_\-control}}
+\index{get\-\_\-thread\-\_\-control@{get\-\_\-thread\-\_\-control}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{get\-\_\-thread\-\_\-control}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-C\-F\-\_\-\-T\-H\-R\-E\-A\-D\-\_\-\-C\-O\-N\-T\-R\-O\-L}$\ast$ get\-\_\-thread\-\_\-control (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a994522062fb9cd984a9dc6d6497907f8}
+\hypertarget{hybrid_8h_a634b8fbad18cfcdcae649b0fe7218e97}{\index{hybrid.\-h@{hybrid.\-h}!get\-\_\-thread\-\_\-tid@{get\-\_\-thread\-\_\-tid}}
+\index{get\-\_\-thread\-\_\-tid@{get\-\_\-thread\-\_\-tid}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{get\-\_\-thread\-\_\-tid}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-thread\-\_\-tid (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a634b8fbad18cfcdcae649b0fe7218e97}
+\hypertarget{hybrid_8h_a753514fd6716d4a57e765978e0c3caed}{\index{hybrid.\-h@{hybrid.\-h}!init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L@{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L}}
+\index{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L@{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L}]{\setlength{\rightskip}{0pt plus 5cm}void init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L (
+\begin{DoxyParamCaption}
+\item[{int}]{nthreads}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a753514fd6716d4a57e765978e0c3caed}
+\hypertarget{hybrid_8h_a66fb96c5f69ce4278d0f42358d7eb506}{\index{hybrid.\-h@{hybrid.\-h}!is\-\_\-loop\-\_\-over\-\_\-states@{is\-\_\-loop\-\_\-over\-\_\-states}}
+\index{is\-\_\-loop\-\_\-over\-\_\-states@{is\-\_\-loop\-\_\-over\-\_\-states}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{is\-\_\-loop\-\_\-over\-\_\-states}]{\setlength{\rightskip}{0pt plus 5cm}int is\-\_\-loop\-\_\-over\-\_\-states (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a66fb96c5f69ce4278d0f42358d7eb506}
+\hypertarget{hybrid_8h_a45e7e2550e4fca3df840e4a17fce6525}{\index{hybrid.\-h@{hybrid.\-h}!leave\-\_\-threaded\-\_\-region@{leave\-\_\-threaded\-\_\-region}}
+\index{leave\-\_\-threaded\-\_\-region@{leave\-\_\-threaded\-\_\-region}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{leave\-\_\-threaded\-\_\-region}]{\setlength{\rightskip}{0pt plus 5cm}void leave\-\_\-threaded\-\_\-region (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a45e7e2550e4fca3df840e4a17fce6525}
+\hypertarget{hybrid_8h_a9653a3d0a7adc82cfab8ae8ed57e3da2}{\index{hybrid.\-h@{hybrid.\-h}!scf\-\_\-barrier\-\_\-destroy@{scf\-\_\-barrier\-\_\-destroy}}
+\index{scf\-\_\-barrier\-\_\-destroy@{scf\-\_\-barrier\-\_\-destroy}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{scf\-\_\-barrier\-\_\-destroy}]{\setlength{\rightskip}{0pt plus 5cm}void scf\-\_\-barrier\-\_\-destroy (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a9653a3d0a7adc82cfab8ae8ed57e3da2}
+\hypertarget{hybrid_8h_a914bfaf45df11acdffa736328c3164ea}{\index{hybrid.\-h@{hybrid.\-h}!scf\-\_\-barrier\-\_\-init@{scf\-\_\-barrier\-\_\-init}}
+\index{scf\-\_\-barrier\-\_\-init@{scf\-\_\-barrier\-\_\-init}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{scf\-\_\-barrier\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void scf\-\_\-barrier\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{int}]{nthreads}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_a914bfaf45df11acdffa736328c3164ea}
+\hypertarget{hybrid_8h_ad09a3eb274e641afdf8af238367bdf43}{\index{hybrid.\-h@{hybrid.\-h}!scf\-\_\-barrier\-\_\-wait@{scf\-\_\-barrier\-\_\-wait}}
+\index{scf\-\_\-barrier\-\_\-wait@{scf\-\_\-barrier\-\_\-wait}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{scf\-\_\-barrier\-\_\-wait}]{\setlength{\rightskip}{0pt plus 5cm}void scf\-\_\-barrier\-\_\-wait (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_ad09a3eb274e641afdf8af238367bdf43}
+\hypertarget{hybrid_8h_ae0feff13fc183527410d1c326d4d31dd}{\index{hybrid.\-h@{hybrid.\-h}!wait\-\_\-for\-\_\-threads@{wait\-\_\-for\-\_\-threads}}
+\index{wait\-\_\-for\-\_\-threads@{wait\-\_\-for\-\_\-threads}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{wait\-\_\-for\-\_\-threads}]{\setlength{\rightskip}{0pt plus 5cm}void wait\-\_\-for\-\_\-threads (
+\begin{DoxyParamCaption}
+\item[{int}]{jobs}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_ae0feff13fc183527410d1c326d4d31dd}
+\hypertarget{hybrid_8h_ad527db45427f02e0be2f84cfe06cc923}{\index{hybrid.\-h@{hybrid.\-h}!wake\-\_\-threads@{wake\-\_\-threads}}
+\index{wake\-\_\-threads@{wake\-\_\-threads}!hybrid.h@{hybrid.\-h}}
+\subsubsection[{wake\-\_\-threads}]{\setlength{\rightskip}{0pt plus 5cm}void wake\-\_\-threads (
+\begin{DoxyParamCaption}
+\item[{int}]{jobs}
+\end{DoxyParamCaption}
+)}}\label{hybrid_8h_ad527db45427f02e0be2f84cfe06cc923}

@@ -1,0 +1,236 @@
+\hypertarget{_base_thread_8cpp}{\section{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Misc/\-Base\-Thread.cpp File Reference}
+\label{_base_thread_8cpp}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Misc/\-Base\-Thread.\-cpp@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Misc/\-Base\-Thread.\-cpp}}
+}
+{\ttfamily \#include \char`\"{}Base\-Thread.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}rmg\-\_\-error.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}const.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_base_thread_8cpp_ae0feff13fc183527410d1c326d4d31dd}{wait\-\_\-for\-\_\-threads} (int jobs)
+\item 
+void \hyperlink{_base_thread_8cpp_ad527db45427f02e0be2f84cfe06cc923}{wake\-\_\-threads} (int jobs)
+\item 
+void \hyperlink{_base_thread_8cpp_a914bfaf45df11acdffa736328c3164ea}{scf\-\_\-barrier\-\_\-init} (int nthreads)
+\item 
+void \hyperlink{_base_thread_8cpp_ad09a3eb274e641afdf8af238367bdf43}{scf\-\_\-barrier\-\_\-wait} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a9653a3d0a7adc82cfab8ae8ed57e3da2}{scf\-\_\-barrier\-\_\-destroy} (void)
+\item 
+int \hyperlink{_base_thread_8cpp_af1961383267052f565052f0a610cbfe1}{get\-\_\-thread\-\_\-basetag} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_aae51e14d437ed8fa82f23597a6a00a7d}{set\-\_\-thread\-\_\-basetag} (int \hyperlink{_base_thread_8cpp_a8cc3dd191f714ba4ae35b2d3ac5b557a}{tid}, int tag)
+\item 
+\hyperlink{class_base_thread}{Base\-Thread} $\ast$ \hyperlink{_base_thread_8cpp_a61fa2052281ea67f00fd5125102492d3}{get\-\_\-thread\-\_\-control} (void)
+\item 
+int \hyperlink{_base_thread_8cpp_a634b8fbad18cfcdcae649b0fe7218e97}{get\-\_\-thread\-\_\-tid} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a753514fd6716d4a57e765978e0c3caed}{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L} (int nthreads)
+\item 
+void \hyperlink{_base_thread_8cpp_aaedb00814f5630a394f44bd19b193bd1}{set\-\_\-cpu\-\_\-affinity} (int \hyperlink{_base_thread_8cpp_a8cc3dd191f714ba4ae35b2d3ac5b557a}{tid})
+\item 
+void \hyperlink{_base_thread_8cpp_ab252a5e763e5da125ec92b598948d560}{enter\-\_\-threaded\-\_\-region} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a45e7e2550e4fca3df840e4a17fce6525}{leave\-\_\-threaded\-\_\-region} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_ad08df23bfff7f4d8e317a78b33191d3c}{R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a3b29cebee12e8780e3e6600bd314a580}{R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a00f4d93c8bb4376aeef9738bf17e8f11}{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a2a621b964b6ffbbc62766c9f4307b434}{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_a2b5436615ee6e5514aff74049dfbf90d}{rmg\-\_\-timings} (int what, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} time)
+\item 
+int \hyperlink{_base_thread_8cpp_a66fb96c5f69ce4278d0f42358d7eb506}{is\-\_\-loop\-\_\-over\-\_\-states} (void)
+\item 
+void \hyperlink{_base_thread_8cpp_aa1d13ba7811b7feea1922c7adcde3ba7}{set\-\_\-pptr} (int \hyperlink{_base_thread_8cpp_a8cc3dd191f714ba4ae35b2d3ac5b557a}{tid}, void $\ast$p)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_base_thread}{Base\-Thread} $\ast$ \hyperlink{_base_thread_8cpp_a6197bd63e99f9c0638885291cf79dc11}{thread\-\_\-controls} \mbox{[}\hyperlink{params__negf_8h_a431aee8e625c8160b4443c87854213c4}{M\-A\-X\-\_\-\-S\-C\-F\-\_\-\-T\-H\-R\-E\-A\-D\-S}\mbox{]}
+\item 
+\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{timings} \mbox{[}\hyperlink{_t_d_d_f_t_2_headers_2const_8h_a051c673542f854e03481832ab29ae3a2}{L\-A\-S\-T\-\_\-\-T\-I\-M\-E}\mbox{]}
+\item 
+int \hyperlink{_base_thread_8cpp_a8cc3dd191f714ba4ae35b2d3ac5b557a}{tid}
+\item 
+pthread\-\_\-t \hyperlink{_base_thread_8cpp_ab528ae722f5ece073201ae9af166b71e}{pthread\-\_\-tid}
+\item 
+void $\ast$ \hyperlink{_base_thread_8cpp_a0efa4c962a593cd28c774a89b9ff5569}{pptr}
+\item 
+sem\-\_\-t \hyperlink{_base_thread_8cpp_a2113e02c524052b88563ff33d6b124ce}{this\-\_\-sync}
+\item 
+int \hyperlink{_base_thread_8cpp_a4962250f673b4b154402bb2f0b699a7e}{basetag}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{_base_thread_8cpp_ab252a5e763e5da125ec92b598948d560}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!enter\-\_\-threaded\-\_\-region@{enter\-\_\-threaded\-\_\-region}}
+\index{enter\-\_\-threaded\-\_\-region@{enter\-\_\-threaded\-\_\-region}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{enter\-\_\-threaded\-\_\-region}]{\setlength{\rightskip}{0pt plus 5cm}void enter\-\_\-threaded\-\_\-region (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_ab252a5e763e5da125ec92b598948d560}
+\hypertarget{_base_thread_8cpp_af1961383267052f565052f0a610cbfe1}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!get\-\_\-thread\-\_\-basetag@{get\-\_\-thread\-\_\-basetag}}
+\index{get\-\_\-thread\-\_\-basetag@{get\-\_\-thread\-\_\-basetag}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{get\-\_\-thread\-\_\-basetag}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-thread\-\_\-basetag (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_af1961383267052f565052f0a610cbfe1}
+\hypertarget{_base_thread_8cpp_a61fa2052281ea67f00fd5125102492d3}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!get\-\_\-thread\-\_\-control@{get\-\_\-thread\-\_\-control}}
+\index{get\-\_\-thread\-\_\-control@{get\-\_\-thread\-\_\-control}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{get\-\_\-thread\-\_\-control}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Base\-Thread}$\ast$ get\-\_\-thread\-\_\-control (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a61fa2052281ea67f00fd5125102492d3}
+\hypertarget{_base_thread_8cpp_a634b8fbad18cfcdcae649b0fe7218e97}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!get\-\_\-thread\-\_\-tid@{get\-\_\-thread\-\_\-tid}}
+\index{get\-\_\-thread\-\_\-tid@{get\-\_\-thread\-\_\-tid}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{get\-\_\-thread\-\_\-tid}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-thread\-\_\-tid (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a634b8fbad18cfcdcae649b0fe7218e97}
+\hypertarget{_base_thread_8cpp_a753514fd6716d4a57e765978e0c3caed}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L@{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L}}
+\index{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L@{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L}]{\setlength{\rightskip}{0pt plus 5cm}void init\-\_\-\-H\-Y\-B\-R\-I\-D\-\_\-\-M\-O\-D\-E\-L (
+\begin{DoxyParamCaption}
+\item[{int}]{nthreads}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a753514fd6716d4a57e765978e0c3caed}
+\hypertarget{_base_thread_8cpp_a66fb96c5f69ce4278d0f42358d7eb506}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!is\-\_\-loop\-\_\-over\-\_\-states@{is\-\_\-loop\-\_\-over\-\_\-states}}
+\index{is\-\_\-loop\-\_\-over\-\_\-states@{is\-\_\-loop\-\_\-over\-\_\-states}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{is\-\_\-loop\-\_\-over\-\_\-states}]{\setlength{\rightskip}{0pt plus 5cm}int is\-\_\-loop\-\_\-over\-\_\-states (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a66fb96c5f69ce4278d0f42358d7eb506}
+\hypertarget{_base_thread_8cpp_a45e7e2550e4fca3df840e4a17fce6525}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!leave\-\_\-threaded\-\_\-region@{leave\-\_\-threaded\-\_\-region}}
+\index{leave\-\_\-threaded\-\_\-region@{leave\-\_\-threaded\-\_\-region}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{leave\-\_\-threaded\-\_\-region}]{\setlength{\rightskip}{0pt plus 5cm}void leave\-\_\-threaded\-\_\-region (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a45e7e2550e4fca3df840e4a17fce6525}
+\hypertarget{_base_thread_8cpp_ad08df23bfff7f4d8e317a78b33191d3c}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock}}
+\index{R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock}]{\setlength{\rightskip}{0pt plus 5cm}void R\-M\-G\-\_\-\-M\-P\-I\-\_\-lock (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_ad08df23bfff7f4d8e317a78b33191d3c}
+\hypertarget{_base_thread_8cpp_a00f4d93c8bb4376aeef9738bf17e8f11}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock}}
+\index{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock}]{\setlength{\rightskip}{0pt plus 5cm}void R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-lock (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a00f4d93c8bb4376aeef9738bf17e8f11}
+\hypertarget{_base_thread_8cpp_a2a621b964b6ffbbc62766c9f4307b434}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock}}
+\index{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock}]{\setlength{\rightskip}{0pt plus 5cm}void R\-M\-G\-\_\-\-M\-P\-I\-\_\-thread\-\_\-order\-\_\-unlock (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a2a621b964b6ffbbc62766c9f4307b434}
+\hypertarget{_base_thread_8cpp_a3b29cebee12e8780e3e6600bd314a580}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock}}
+\index{R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock@{R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock}]{\setlength{\rightskip}{0pt plus 5cm}void R\-M\-G\-\_\-\-M\-P\-I\-\_\-unlock (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a3b29cebee12e8780e3e6600bd314a580}
+\hypertarget{_base_thread_8cpp_a2b5436615ee6e5514aff74049dfbf90d}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!rmg\-\_\-timings@{rmg\-\_\-timings}}
+\index{rmg\-\_\-timings@{rmg\-\_\-timings}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{rmg\-\_\-timings}]{\setlength{\rightskip}{0pt plus 5cm}void rmg\-\_\-timings (
+\begin{DoxyParamCaption}
+\item[{int}]{what, }
+\item[{{\bf rmg\-\_\-double\-\_\-t}}]{time}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a2b5436615ee6e5514aff74049dfbf90d}
+\hypertarget{_base_thread_8cpp_a9653a3d0a7adc82cfab8ae8ed57e3da2}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!scf\-\_\-barrier\-\_\-destroy@{scf\-\_\-barrier\-\_\-destroy}}
+\index{scf\-\_\-barrier\-\_\-destroy@{scf\-\_\-barrier\-\_\-destroy}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{scf\-\_\-barrier\-\_\-destroy}]{\setlength{\rightskip}{0pt plus 5cm}void scf\-\_\-barrier\-\_\-destroy (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a9653a3d0a7adc82cfab8ae8ed57e3da2}
+\hypertarget{_base_thread_8cpp_a914bfaf45df11acdffa736328c3164ea}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!scf\-\_\-barrier\-\_\-init@{scf\-\_\-barrier\-\_\-init}}
+\index{scf\-\_\-barrier\-\_\-init@{scf\-\_\-barrier\-\_\-init}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{scf\-\_\-barrier\-\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void scf\-\_\-barrier\-\_\-init (
+\begin{DoxyParamCaption}
+\item[{int}]{nthreads}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_a914bfaf45df11acdffa736328c3164ea}
+\hypertarget{_base_thread_8cpp_ad09a3eb274e641afdf8af238367bdf43}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!scf\-\_\-barrier\-\_\-wait@{scf\-\_\-barrier\-\_\-wait}}
+\index{scf\-\_\-barrier\-\_\-wait@{scf\-\_\-barrier\-\_\-wait}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{scf\-\_\-barrier\-\_\-wait}]{\setlength{\rightskip}{0pt plus 5cm}void scf\-\_\-barrier\-\_\-wait (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_ad09a3eb274e641afdf8af238367bdf43}
+\hypertarget{_base_thread_8cpp_aaedb00814f5630a394f44bd19b193bd1}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!set\-\_\-cpu\-\_\-affinity@{set\-\_\-cpu\-\_\-affinity}}
+\index{set\-\_\-cpu\-\_\-affinity@{set\-\_\-cpu\-\_\-affinity}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{set\-\_\-cpu\-\_\-affinity}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-cpu\-\_\-affinity (
+\begin{DoxyParamCaption}
+\item[{int}]{tid}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_aaedb00814f5630a394f44bd19b193bd1}
+\hypertarget{_base_thread_8cpp_aa1d13ba7811b7feea1922c7adcde3ba7}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!set\-\_\-pptr@{set\-\_\-pptr}}
+\index{set\-\_\-pptr@{set\-\_\-pptr}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{set\-\_\-pptr}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-pptr (
+\begin{DoxyParamCaption}
+\item[{int}]{tid, }
+\item[{void $\ast$}]{p}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_aa1d13ba7811b7feea1922c7adcde3ba7}
+\hypertarget{_base_thread_8cpp_aae51e14d437ed8fa82f23597a6a00a7d}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!set\-\_\-thread\-\_\-basetag@{set\-\_\-thread\-\_\-basetag}}
+\index{set\-\_\-thread\-\_\-basetag@{set\-\_\-thread\-\_\-basetag}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{set\-\_\-thread\-\_\-basetag}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-thread\-\_\-basetag (
+\begin{DoxyParamCaption}
+\item[{int}]{tid, }
+\item[{int}]{tag}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_aae51e14d437ed8fa82f23597a6a00a7d}
+\hypertarget{_base_thread_8cpp_ae0feff13fc183527410d1c326d4d31dd}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!wait\-\_\-for\-\_\-threads@{wait\-\_\-for\-\_\-threads}}
+\index{wait\-\_\-for\-\_\-threads@{wait\-\_\-for\-\_\-threads}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{wait\-\_\-for\-\_\-threads}]{\setlength{\rightskip}{0pt plus 5cm}void wait\-\_\-for\-\_\-threads (
+\begin{DoxyParamCaption}
+\item[{int}]{jobs}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_ae0feff13fc183527410d1c326d4d31dd}
+\hypertarget{_base_thread_8cpp_ad527db45427f02e0be2f84cfe06cc923}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!wake\-\_\-threads@{wake\-\_\-threads}}
+\index{wake\-\_\-threads@{wake\-\_\-threads}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{wake\-\_\-threads}]{\setlength{\rightskip}{0pt plus 5cm}void wake\-\_\-threads (
+\begin{DoxyParamCaption}
+\item[{int}]{jobs}
+\end{DoxyParamCaption}
+)}}\label{_base_thread_8cpp_ad527db45427f02e0be2f84cfe06cc923}
+
+
+\subsection{Variable Documentation}
+\hypertarget{_base_thread_8cpp_a4962250f673b4b154402bb2f0b699a7e}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!basetag@{basetag}}
+\index{basetag@{basetag}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{basetag}]{\setlength{\rightskip}{0pt plus 5cm}int basetag}}\label{_base_thread_8cpp_a4962250f673b4b154402bb2f0b699a7e}
+\hypertarget{_base_thread_8cpp_a0efa4c962a593cd28c774a89b9ff5569}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!pptr@{pptr}}
+\index{pptr@{pptr}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{pptr}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ pptr}}\label{_base_thread_8cpp_a0efa4c962a593cd28c774a89b9ff5569}
+\hypertarget{_base_thread_8cpp_ab528ae722f5ece073201ae9af166b71e}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!pthread\-\_\-tid@{pthread\-\_\-tid}}
+\index{pthread\-\_\-tid@{pthread\-\_\-tid}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{pthread\-\_\-tid}]{\setlength{\rightskip}{0pt plus 5cm}pthread\-\_\-t pthread\-\_\-tid}}\label{_base_thread_8cpp_ab528ae722f5ece073201ae9af166b71e}
+\hypertarget{_base_thread_8cpp_a2113e02c524052b88563ff33d6b124ce}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!this\-\_\-sync@{this\-\_\-sync}}
+\index{this\-\_\-sync@{this\-\_\-sync}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{this\-\_\-sync}]{\setlength{\rightskip}{0pt plus 5cm}sem\-\_\-t this\-\_\-sync}}\label{_base_thread_8cpp_a2113e02c524052b88563ff33d6b124ce}
+\hypertarget{_base_thread_8cpp_a6197bd63e99f9c0638885291cf79dc11}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!thread\-\_\-controls@{thread\-\_\-controls}}
+\index{thread\-\_\-controls@{thread\-\_\-controls}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{thread\-\_\-controls}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Base\-Thread}$\ast$ thread\-\_\-controls\mbox{[}{\bf M\-A\-X\-\_\-\-S\-C\-F\-\_\-\-T\-H\-R\-E\-A\-D\-S}\mbox{]}}}\label{_base_thread_8cpp_a6197bd63e99f9c0638885291cf79dc11}
+\hypertarget{_base_thread_8cpp_a8cc3dd191f714ba4ae35b2d3ac5b557a}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!tid@{tid}}
+\index{tid@{tid}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{tid}]{\setlength{\rightskip}{0pt plus 5cm}int tid}}\label{_base_thread_8cpp_a8cc3dd191f714ba4ae35b2d3ac5b557a}
+\hypertarget{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}{\index{Base\-Thread.\-cpp@{Base\-Thread.\-cpp}!timings@{timings}}
+\index{timings@{timings}!BaseThread.cpp@{Base\-Thread.\-cpp}}
+\subsubsection[{timings}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} timings\mbox{[}{\bf L\-A\-S\-T\-\_\-\-T\-I\-M\-E}\mbox{]}}}\label{_base_thread_8cpp_ad1413c63d6a297ca28efdb6d2f41fbc6}
