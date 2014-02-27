@@ -230,6 +230,8 @@ endif(CUDA_FOUND)
 
 #include_directories(rmg "/usr/local/magma/include")
 add_dependencies(rmg libxc)
+add_dependencies(rmg-on libxc)
+add_dependencies(rmg-negf libxc)
 include(ExternalProject)
 ExternalProject_Add ( libxc
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/lib/libxc
@@ -242,8 +244,6 @@ ExternalProject_Add ( libxc
 target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
 target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/codes/lib/libxc/lib64/lib64/libxc.a")
 target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
-#include_directories(rmg "/usr/local/magma/include")
-
 
 
 
