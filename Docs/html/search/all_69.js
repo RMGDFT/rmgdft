@@ -71,6 +71,7 @@ var searchData=
   ['init_5fflag',['init_flag',['../class_base_thread.html#a3c8dc8ffd63c883ad689cbb2204c38f3',1,'BaseThread']]],
   ['init_5fgaussian',['INIT_GAUSSIAN',['../_headers_2const_8h.html#a7b09ec3ca1efee26c077495fa78a40c2',1,'INIT_GAUSSIAN():&#160;const.h'],['../_t_d_d_f_t_2_headers_2const_8h.html#a7b09ec3ca1efee26c077495fa78a40c2',1,'INIT_GAUSSIAN():&#160;const.h']]],
   ['init_5fglobal_5fsums',['init_global_sums',['../common__prototypes_8h.html#aa6e3e06fa6f680e92233a6cfb08090b6',1,'common_prototypes.h']]],
+  ['init_5fgpu',['init_gpu',['../common__prototypes_8h.html#a7fca3c04c6e79abd49b511a325180a55',1,'common_prototypes.h']]],
   ['init_5fgpu_2ec',['init_gpu.c',['../_n_e_g_f_2_common_2init__gpu_8c.html',1,'']]],
   ['init_5fgpu_2ec',['init_gpu.c',['../_r_m_g_2_common_2init__gpu_8c.html',1,'']]],
   ['init_5fhybrid_5fmodel',['init_HYBRID_MODEL',['../hybrid_8h.html#a753514fd6716d4a57e765978e0c3caed',1,'init_HYBRID_MODEL(int nthreads):&#160;BaseThread.cpp'],['../_base_thread_8cpp.html#a753514fd6716d4a57e765978e0c3caed',1,'init_HYBRID_MODEL(int nthreads):&#160;BaseThread.cpp']]],

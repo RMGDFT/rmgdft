@@ -136,7 +136,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="keywordtype">int</span> <a class="code" href="common__prototypes1_8h.html#a66fb96c5f69ce4278d0f42358d7eb506">is_loop_over_states</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#if GPU_ENABLED</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor"></span>cudaStream_t *get_thread_cstream(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor"></span>cudaStream_t *<a class="code" href="hybrid_8h.html#a7b4834d5f1898fda304b61f7069ee2ae">get_thread_cstream</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="hybrid_8h_html_ab252a5e763e5da125ec92b598948d560"><div class="ttname"><a href="hybrid_8h.html#ab252a5e763e5da125ec92b598948d560">enter_threaded_region</a></div><div class="ttdeci">void enter_threaded_region(void)</div><div class="ttdef"><b>Definition:</b> BaseThread.cpp:412</div></div>
@@ -151,6 +151,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="hybrid_8h_html_a45e7e2550e4fca3df840e4a17fce6525"><div class="ttname"><a href="hybrid_8h.html#a45e7e2550e4fca3df840e4a17fce6525">leave_threaded_region</a></div><div class="ttdeci">void leave_threaded_region(void)</div><div class="ttdef"><b>Definition:</b> BaseThread.cpp:418</div></div>
 <div class="ttc" id="rmgtypes_8h_html"><div class="ttname"><a href="rmgtypes_8h.html">rmgtypes.h</a></div></div>
 <div class="ttc" id="hybrid_8h_html_a994522062fb9cd984a9dc6d6497907f8"><div class="ttname"><a href="hybrid_8h.html#a994522062fb9cd984a9dc6d6497907f8">get_thread_control</a></div><div class="ttdeci">SCF_THREAD_CONTROL * get_thread_control(void)</div><div class="ttdef"><b>Definition:</b> BaseThread.cpp:378</div></div>
+<div class="ttc" id="hybrid_8h_html_a7b4834d5f1898fda304b61f7069ee2ae"><div class="ttname"><a href="hybrid_8h.html#a7b4834d5f1898fda304b61f7069ee2ae">get_thread_cstream</a></div><div class="ttdeci">cudaStream_t * get_thread_cstream(void)</div></div>
 <div class="ttc" id="hybrid_8h_html_a634b8fbad18cfcdcae649b0fe7218e97"><div class="ttname"><a href="hybrid_8h.html#a634b8fbad18cfcdcae649b0fe7218e97">get_thread_tid</a></div><div class="ttdeci">int get_thread_tid(void)</div><div class="ttdef"><b>Definition:</b> BaseThread.cpp:384</div></div>
 <div class="ttc" id="hybrid_8h_html_ad09a3eb274e641afdf8af238367bdf43"><div class="ttname"><a href="hybrid_8h.html#ad09a3eb274e641afdf8af238367bdf43">scf_barrier_wait</a></div><div class="ttdeci">void scf_barrier_wait(void)</div><div class="ttdef"><b>Definition:</b> BaseThread.cpp:354</div></div>
 <div class="ttc" id="hybrid_8h_html_af1961383267052f565052f0a610cbfe1"><div class="ttname"><a href="hybrid_8h.html#af1961383267052f565052f0a610cbfe1">get_thread_basetag</a></div><div class="ttdeci">int get_thread_basetag(void)</div><div class="ttdef"><b>Definition:</b> BaseThread.cpp:366</div></div>
@@ -159,7 +160,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Feb 26 2014 15:20:30 for RMG by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Feb 26 2014 21:07:18 for RMG by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

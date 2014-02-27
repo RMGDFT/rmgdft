@@ -298,17 +298,38 @@ static int \hyperlink{class_base_grid_ae6b32024676eb5c27fcb4abad5982f8d}{anisotr
 \index{set\-\_\-grids@{set\-\_\-grids}!BaseGrid@{Base\-Grid}}
 \subsubsection[{set\-\_\-grids}]{\setlength{\rightskip}{0pt plus 5cm}void Base\-Grid\-::set\-\_\-grids (
 \begin{DoxyParamCaption}
-\item[{int}]{N\-X\-\_\-\-G\-R\-I\-D, }
-\item[{int}]{N\-Y\-\_\-\-G\-R\-I\-D, }
-\item[{int}]{N\-Z\-\_\-\-G\-R\-I\-D, }
-\item[{int}]{P\-E\-\_\-\-X, }
-\item[{int}]{P\-E\-\_\-\-Y, }
-\item[{int}]{P\-E\-\_\-\-Z, }
-\item[{int}]{F\-G\-\_\-\-N\-X, }
-\item[{int}]{F\-G\-\_\-\-N\-Y, }
-\item[{int}]{F\-G\-\_\-\-N\-Z}
+\item[{int}]{new\-N\-X\-\_\-\-G\-R\-I\-D, }
+\item[{int}]{new\-N\-Y\-\_\-\-G\-R\-I\-D, }
+\item[{int}]{new\-N\-Z\-\_\-\-G\-R\-I\-D, }
+\item[{int}]{new\-P\-E\-\_\-\-X, }
+\item[{int}]{new\-P\-E\-\_\-\-Y, }
+\item[{int}]{new\-P\-E\-\_\-\-Z, }
+\item[{int}]{new\-F\-G\-\_\-\-N\-X, }
+\item[{int}]{new\-F\-G\-\_\-\-N\-Y, }
+\item[{int}]{new\-F\-G\-\_\-\-N\-Z}
 \end{DoxyParamCaption}
 )}}\label{class_base_grid_a3744544e59df25db3d80c35595f281ca}
+Used to set up global coarse grid dimensions, M\-P\-I node dimensions and the ratio of the fine grid to the coarse in each coordinate dimension. 
+\begin{DoxyParams}{Parameters}
+{\em new\-N\-X\-\_\-\-G\-R\-I\-D} & Global coarse grid X dimension \\
+\hline
+{\em new\-N\-Y\-\_\-\-G\-R\-I\-D} & Global coarse grid Y dimension \\
+\hline
+{\em new\-N\-Z\-\_\-\-G\-R\-I\-D} & Global coarse grid Z dimension \\
+\hline
+{\em new\-P\-E\-\_\-\-X} & M\-P\-I grid X dimension \\
+\hline
+{\em new\-P\-E\-\_\-\-Y} & M\-P\-I grid Y dimension \\
+\hline
+{\em new\-P\-E\-\_\-\-Z} & M\-P\-I grid Z dimension \\
+\hline
+{\em new\-F\-G\-\_\-\-N\-X} & Ratio of fine grid to coarse in the X dimension \\
+\hline
+{\em new\-F\-G\-\_\-\-N\-Y} & Ratio of fine grid to coarse in the Y dimension \\
+\hline
+{\em new\-F\-G\-\_\-\-N\-Z} & Ratio of fine grid to coarse in the Z dimension \\
+\hline
+\end{DoxyParams}
 \hypertarget{class_base_grid_abe6a6ae80d9d773dde291b98aec1fb23}{\index{Base\-Grid@{Base\-Grid}!set\-\_\-ibrav\-\_\-type@{set\-\_\-ibrav\-\_\-type}}
 \index{set\-\_\-ibrav\-\_\-type@{set\-\_\-ibrav\-\_\-type}!BaseGrid@{Base\-Grid}}
 \subsubsection[{set\-\_\-ibrav\-\_\-type}]{\setlength{\rightskip}{0pt plus 5cm}void Base\-Grid\-::set\-\_\-ibrav\-\_\-type (
@@ -323,6 +344,11 @@ static int \hyperlink{class_base_grid_ae6b32024676eb5c27fcb4abad5982f8d}{anisotr
 \item[{int $\ast$}]{list}
 \end{DoxyParamCaption}
 )}}\label{class_base_grid_a88467229662ad58dde8166613d26a831}
+This functions is used to set the values contained in \hyperlink{class_base_grid_a25b59964f1818bf084e0a44ee83067e0}{Base\-Grid\-::neighbors}\mbox{[}\mbox{]} which is an integer array of dimension 6. The array holds the M\-P\-I rank of the 6 nearest neighbor nodes of the current node. 
+\begin{DoxyParams}{Parameters}
+{\em list} & integer array of dimension 6 containing the list of neighbor nodes to be set into \hyperlink{class_base_grid_a25b59964f1818bf084e0a44ee83067e0}{Base\-Grid\-::neighbors}\mbox{[}\mbox{]}. \\
+\hline
+\end{DoxyParams}
 \hypertarget{class_base_grid_af86e576ee359e3c9745169bd7a2cceec}{\index{Base\-Grid@{Base\-Grid}!set\-\_\-nodes@{set\-\_\-nodes}}
 \index{set\-\_\-nodes@{set\-\_\-nodes}!BaseGrid@{Base\-Grid}}
 \subsubsection[{set\-\_\-nodes}]{\setlength{\rightskip}{0pt plus 5cm}void Base\-Grid\-::set\-\_\-nodes (

@@ -2,7 +2,17 @@
 \label{common__prototypes_8h}\index{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/common\-\_\-prototypes.\-h@{/mnt/ssd2/briggs/\-Projects/\-R\-M\-G\-\_\-\-R\-E\-L\-E\-A\-S\-E1/codes/\-Headers/common\-\_\-prototypes.\-h}}
 }
 {\ttfamily \#include \char`\"{}make\-\_\-conf.\-h\char`\"{}}\\*
+{\ttfamily \#include $<$cuda.\-h$>$}\\*
+{\ttfamily \#include $<$cuda\-\_\-runtime.\-h$>$}\\*
+{\ttfamily \#include $<$cublas\-\_\-v2.\-h$>$}\\*
 {\ttfamily \#include \char`\"{}rmgtypedefs.\-h\char`\"{}}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{common__prototypes_8h_a00e10b0092e8e387535a28c9b7c9af4d}{my\-\_\-fopen}(\-\_\-fhandle\-\_\-, \-\_\-filename\-\_\-, \-\_\-mode\-\_\-)
+\item 
+\#define \hyperlink{common__prototypes_8h_ae73787759872090919ea3ec4f85a5d95}{my\-\_\-open}(\-\_\-fhandle\-\_\-, \-\_\-filename\-\_\-, \-\_\-flags\-\_\-, \-\_\-mode\-\_\-)
+\end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
@@ -109,9 +119,9 @@ void \hyperlink{common__prototypes_8h_ab4c742b129db3d9a21559d288f2b6b07}{app\-\_
 void \hyperlink{common__prototypes_8h_a1ac13a9da076196bf6592474c4f632ee}{app\-\_\-cir\-\_\-beta\-\_\-sixth} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a}, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, int dimx, int dimy, int dimz)
 \item 
 int \hyperlink{common__prototypes_8h_ac61f21b774991ae9bb72ddfd2ebd2475}{find\-\_\-node\-\_\-offsets} (int gridpe, int nxgrid, int nygrid, int nzgrid, int $\ast$pxoffset, int $\ast$pyoffset, int $\ast$pzoffset)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a1d26e58923714fa03d19a80ddf137713}{find\-\_\-node\-\_\-sizes} (int gridpe, int nxgrid, int nygrid, int nzgrid, int $\ast$pxsize, int $\ast$pysize, int $\ast$pzsize)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 void \hyperlink{common__prototypes_8h_af114ac3b5e4a7a7edc9eba6e0ef94af7}{read\-\_\-common} ()
 \item 
 void \hyperlink{common__prototypes_8h_a067eafdf2a4ceab01093fa456e453ab5}{trade\-\_\-images} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$mat, int dimx, int dimy, int dimz, int $\ast$nb\-\_\-ids, int type)
@@ -127,77 +137,77 @@ void \hyperlink{common__prototypes_8h_ad9bf22087fd69e8b65c51c27c06c9448}{trade\-
 void \hyperlink{common__prototypes_8h_ac20f76106ec4420ff44510f1ba8dbaa6}{trade\-\_\-imagesx\-\_\-central\-\_\-async} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$f, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$w, int dimx, int dimy, int dimz, int images)
 \item 
 void \hyperlink{common__prototypes_8h_a571ed6c422f08f7cd8cf5dd76ddda0d9}{pe2xyz} (int pe, int $\ast$x, int $\ast$y, int $\ast$z)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a6c24fe52cb4feddf03dd0b26494ac1a3}{radius2grid} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} radius, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} mingrid\-\_\-spacing)
 \item 
 int \hyperlink{common__prototypes_8h_af8198fbd32f9362680b88c62bc2f4560}{get\-\_\-\-P\-E\-\_\-\-X} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_ad2a8d4f422f0342d3e19b02fe471629a}{get\-\_\-\-P\-E\-\_\-\-Y} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_acd6a1022f528f0b2c48f29235e58857d}{get\-\_\-\-P\-E\-\_\-\-Z} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a2412dc51842114dc2a8e050dd0e3cdb2}{get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a16af0e1d2a409fc51b48acdd9ff004c4}{get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a64f8314436b3c57095f6036cc630da2e}{get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_ab7acf076f9d96bf20148b74352a991cc}{get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a1f2912297c67b9e334caea765971cf5c}{get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a1cec7a176047f7df70a85793163bc8eb}{get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a24829e49b2b294f0432294d9ddb7d4ee}{get\-\_\-\-F\-G\-\_\-\-N\-X} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a5ec9b97ef3b02059211ef36108a42c05}{get\-\_\-\-F\-G\-\_\-\-N\-Y} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a89961bb781ff3fdd8d1d5cd43d563cae}{get\-\_\-\-F\-G\-\_\-\-N\-Z} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_ae2db32edc9fc165cbab41c66dfebb089}{get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a75032dcf11f9a85820b1c4d0431104a7}{get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a9e88caff9cbc1987eec4371ee0c01289}{get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a4f20cf27f3b0a197912b4e5420cab0f8}{get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a166b8d7460553abe5830ec2e3d0a46c6}{get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a2d0ac2632226153148b2d7410547c40f}{get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_ae276d956341a5c666c590f9cae9dd7f9}{get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a98634d1c56c7be648543c49fe9f5a5c0}{get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a1b5f5a7f7ee2f408935f3a62dd87a8a1}{get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a3eac69c3d8a20d97b3992ce684bf5b61}{get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_ad020db6f674f773704a4ced86a81a906}{get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a5639353b4290adba6110f8b681c8f325}{get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_abba530c0cd455c5413ae3cc7908cd808}{get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_a27177e67f84cc37ae83be5b2ec64bf2c}{get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 void \hyperlink{common__prototypes_8h_a972a474b32764c9180514be4501336b1}{set\-\_\-anisotropy} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{gga__xc__th_8c_abf59cc952e724dd76e644ff9480786d9}{a})
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{common__prototypes_8h_a8f44f0e20ece5fb69b67792c3edb1e5a}{get\-\_\-anisotropy} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 void \hyperlink{common__prototypes_8h_a28d70ae3d2c96eaf44d0c6f2def65c80}{set\-\_\-neighbors} (int $\ast$list)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int $\ast$ \hyperlink{common__prototypes_8h_adab210ebe45f26efeec79c52f4a6b855}{get\-\_\-neighbors} (void)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 void \hyperlink{common__prototypes_8h_aa39ebf59fa3b2f13471bd31619478834}{set\-\_\-grids} (int \hyperlink{md_8h_a0b64e31818a5b10c718d239d57547297}{N\-X\-\_\-\-G\-R\-I\-D}, int \hyperlink{md_8h_a04d33c24633e10ea77b3cf801b26ba2b}{N\-Y\-\_\-\-G\-R\-I\-D}, int \hyperlink{md_8h_ae0f334640739ab144a8e99da2deeb2dd}{N\-Z\-\_\-\-G\-R\-I\-D}, int \hyperlink{_t_d_d_f_t_2_headers_2params_8h_a77c32c65ec068e061a696f2d3bb8f771}{P\-E\-\_\-\-X}, int \hyperlink{_t_d_d_f_t_2_headers_2params_8h_a175426da2b8ae7a00d6ef1839feb7915}{P\-E\-\_\-\-Y}, int \hyperlink{_t_d_d_f_t_2_headers_2params_8h_adaa2c019c7ca8fdbb44a8f7e15be1113}{P\-E\-\_\-\-Z}, int \hyperlink{my__finegrid_8h_a4e459c3a4764cb108d22cf1fb6d74b50}{F\-G\-\_\-\-N\-X}, int \hyperlink{my__finegrid_8h_a0a323ea534dd6660be1010b6e3c3e1a9}{F\-G\-\_\-\-N\-Y}, int \hyperlink{my__finegrid_8h_acd0d90baff042c05bded2f6da3a8243c}{F\-G\-\_\-\-N\-Z})
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 void \hyperlink{common__prototypes_8h_a8d68b7a96dda6f689756f34abe64d2e0}{set\-\_\-nodes} (int newgridpe, int ii, int jj, int kk)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 int \hyperlink{common__prototypes_8h_aa9b921e368bda5d1a264ce2570815281}{get\-\_\-ibrav\-\_\-type} (void)
 \item 
 void \hyperlink{common__prototypes_8h_ac0144c0843aed32b5c647a30a2833bcb}{set\-\_\-ibrav\-\_\-type} (int ibrav)
-\item 
+\begin{DoxyCompactList}\small\item\em C interface function. \end{DoxyCompactList}\item 
 \hyperlink{struct_i_o_n}{I\-O\-N} $\ast$ \hyperlink{common__prototypes_8h_a2129f9daaa50a85dbe23de1623d11745}{get\-\_\-ion} (int ion)
 \item 
 \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{common__prototypes_8h_a28c7823b5de443328f4ca7f849e4a480}{get\-\_\-xside} (void)
@@ -265,7 +275,67 @@ void \hyperlink{common__prototypes_8h_a32554439a357cc11bf10d4f8c46d6397}{F\-D\-\
 \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{common__prototypes_8h_ac9ac5b11538c7cd7a2f76e0d8266ca55}{F\-D\-\_\-app\-\_\-del2c\-\_\-rmg\-\_\-double} (\hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$rptr, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, int dimx, int dimy, int dimz, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} gridhx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} gridhy, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} gridhz)
 \item 
 \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} \hyperlink{common__prototypes_8h_a0f8fcd48c564d3686622f6517364206f}{F\-D\-\_\-app\-\_\-del2c\-\_\-rmg\-\_\-float} (\hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$rptr, \hyperlink{rmgtypes_8h_a85d7e5ed6ecdc3ef683b13b62079c5b5}{rmg\-\_\-float\-\_\-t} $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, int dimx, int dimy, int dimz, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} gridhx, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} gridhy, \hyperlink{rmgtypes_8h_aaa16921c14f121c56eaa42390a340db8}{rmg\-\_\-double\-\_\-t} gridhz)
+\item 
+void \hyperlink{common__prototypes_8h_a7fca3c04c6e79abd49b511a325180a55}{init\-\_\-gpu} (void)
+\item 
+void \hyperlink{common__prototypes_8h_af639cca1b276a3b1259777a80df176cb}{finalize\-\_\-gpu} (void)
+\item 
+double \hyperlink{common__prototypes_8h_a2b483c1e8f48f80ad8e237379cdd5367}{app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu} (const float $\ast$psi, float $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, const double gridhx, const double gridhy, const double gridhz, const double xside, const double yside, const double zside, cuda\-Stream\-\_\-t cstream)
+\item 
+void \hyperlink{common__prototypes_8h_a275cb09680011a2f6b9d6cd550ee47d9}{app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu} (const float $\ast$psi, float $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, cuda\-Stream\-\_\-t cstream)
+\item 
+double \hyperlink{common__prototypes_8h_aa54b9c9ec43c64b96af8644419ee78f0}{app\-\_\-cil\-\_\-sixth\-\_\-gpu} (const double $\ast$psi, double $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, const double gridhx, const double gridhy, const double gridhz, const double xside, const double yside, const double zside, cuda\-Stream\-\_\-t cstream)
+\item 
+void \hyperlink{common__prototypes_8h_aed1afef99d33a837af657111e74f2f8c}{app\-\_\-cir\-\_\-sixth\-\_\-gpu} (const double $\ast$psi, double $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, cuda\-Stream\-\_\-t cstream)
+\item 
+void \hyperlink{common__prototypes_8h_a3c2542b339850314ad918001b36ba986}{app\-\_\-cir\-\_\-fourth\-\_\-gpu} (const double $\ast$psi, double $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, cuda\-Stream\-\_\-t cstream)
+\item 
+double \hyperlink{common__prototypes_8h_a728d07707af5659f3237f9ed0db24bdd}{app\-\_\-cil\-\_\-fourth\-\_\-gpu} (const double $\ast$psi, double $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, const double gridhx, const double gridhy, const double gridhz, const double xside, const double yside, const double zside, cuda\-Stream\-\_\-t cstream)
+\item 
+double \hyperlink{common__prototypes_8h_a897c0763f1b068981ee5daf2d054a304}{app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu} (const float $\ast$psi, float $\ast$\hyperlink{gga__xc__th_8c_a5dd9476685b5767af6e72579b9d3b42e}{b}, const int dimx, const int dimy, const int dimz, const double gridhx, const double gridhy, const double gridhz, const double xside, const double yside, const double zside, cuda\-Stream\-\_\-t cstream)
 \end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{common__prototypes_8h_a00e10b0092e8e387535a28c9b7c9af4d}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!my\-\_\-fopen@{my\-\_\-fopen}}
+\index{my\-\_\-fopen@{my\-\_\-fopen}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{my\-\_\-fopen}]{\setlength{\rightskip}{0pt plus 5cm}\#define my\-\_\-fopen(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-fhandle\-\_\-, }
+\item[{}]{\-\_\-filename\-\_\-, }
+\item[{}]{\-\_\-mode\-\_\-}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a00e10b0092e8e387535a28c9b7c9af4d}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{do} \{\(\backslash\)
+    \_fhandle\_ = fopen(\_filename\_, \_mode\_);\hyperlink{lda__c__1d__csc_8c_ad6e60c3bc68d50b896592eb4937d184f}{\(\backslash\)}
+\hyperlink{lda__c__1d__csc_8c_ad6e60c3bc68d50b896592eb4937d184f}{    if} (\_fhandle\_ == NULL)\hyperlink{rmg__error_8c_a169cdc3e195e91bd41b7a82099fe62e1}{\(\backslash\)}
+\hyperlink{rmg__error_8c_a169cdc3e195e91bd41b7a82099fe62e1}{        error\_handler}(\textcolor{stringliteral}{"macro my\_fopen: can't fopen file %s"}, \_filename\_);
+      \hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{\(\backslash\)}
+\hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{    printf}(\textcolor{stringliteral}{"\(\backslash\)nfopening file '%s' mode '%s'\(\backslash\)n"}, \_filename\_, \_mode\_);\(\backslash\)
+\} \textcolor{keywordflow}{while} (0)
+\end{DoxyCode}
+\hypertarget{common__prototypes_8h_ae73787759872090919ea3ec4f85a5d95}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!my\-\_\-open@{my\-\_\-open}}
+\index{my\-\_\-open@{my\-\_\-open}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{my\-\_\-open}]{\setlength{\rightskip}{0pt plus 5cm}\#define my\-\_\-open(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-fhandle\-\_\-, }
+\item[{}]{\-\_\-filename\-\_\-, }
+\item[{}]{\-\_\-flags\-\_\-, }
+\item[{}]{\-\_\-mode\-\_\-}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_ae73787759872090919ea3ec4f85a5d95}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{do} \{\(\backslash\)
+    \_fhandle\_ = open(\_filename\_, \_flags\_, \_mode\_);\hyperlink{lda__c__1d__csc_8c_ad6e60c3bc68d50b896592eb4937d184f}{\(\backslash\)}
+\hyperlink{lda__c__1d__csc_8c_ad6e60c3bc68d50b896592eb4937d184f}{    if} (\_fhandle\_ < 0)\hyperlink{rmg__error_8c_a169cdc3e195e91bd41b7a82099fe62e1}{\(\backslash\)}
+\hyperlink{rmg__error_8c_a169cdc3e195e91bd41b7a82099fe62e1}{        error\_handler}(\textcolor{stringliteral}{"macro my\_open: can't open file %s"}, \_filename\_);
+      \hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{\(\backslash\)}
+\hyperlink{macros_8h_a220f2ffc186a36dbf3eb4e83c13cfc7b}{    printf}(\textcolor{stringliteral}{"\(\backslash\)nopening file '%s' flags '%s' mode '%s'\(\backslash\)n"}, \_filename\_, #\_flags\_, #\_mode\_);\(\backslash\)
+\} \textcolor{keywordflow}{while} (0)
+\end{DoxyCode}
 
 
 \subsection{Function Documentation}
@@ -355,6 +425,42 @@ void \hyperlink{common__prototypes_8h_a32554439a357cc11bf10d4f8c46d6397}{F\-D\-\
 \item[{{\bf rmg\-\_\-double\-\_\-t}}]{gridhz}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ae4d50e1b148cc2e900e194366dd3fa8f}
+\hypertarget{common__prototypes_8h_a897c0763f1b068981ee5daf2d054a304}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu@{app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu}}
+\index{app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu@{app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}double app\-\_\-cil\-\_\-fourth\-\_\-f\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const float $\ast$}]{psi, }
+\item[{float $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{const double}]{gridhx, }
+\item[{const double}]{gridhy, }
+\item[{const double}]{gridhz, }
+\item[{const double}]{xside, }
+\item[{const double}]{yside, }
+\item[{const double}]{zside, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a897c0763f1b068981ee5daf2d054a304}
+\hypertarget{common__prototypes_8h_a728d07707af5659f3237f9ed0db24bdd}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cil\-\_\-fourth\-\_\-gpu@{app\-\_\-cil\-\_\-fourth\-\_\-gpu}}
+\index{app\-\_\-cil\-\_\-fourth\-\_\-gpu@{app\-\_\-cil\-\_\-fourth\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cil\-\_\-fourth\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}double app\-\_\-cil\-\_\-fourth\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const double $\ast$}]{psi, }
+\item[{double $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{const double}]{gridhx, }
+\item[{const double}]{gridhy, }
+\item[{const double}]{gridhz, }
+\item[{const double}]{xside, }
+\item[{const double}]{yside, }
+\item[{const double}]{zside, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a728d07707af5659f3237f9ed0db24bdd}
 \hypertarget{common__prototypes_8h_ad5090063acb5b31cd3161c46258f7e24}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cil\-\_\-sixth@{app\-\_\-cil\-\_\-sixth}}
 \index{app\-\_\-cil\-\_\-sixth@{app\-\_\-cil\-\_\-sixth}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{app\-\_\-cil\-\_\-sixth}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} app\-\_\-cil\-\_\-sixth (
@@ -383,6 +489,42 @@ void \hyperlink{common__prototypes_8h_a32554439a357cc11bf10d4f8c46d6397}{F\-D\-\
 \item[{{\bf rmg\-\_\-double\-\_\-t}}]{gridhz}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a5e1bb48d41ae833320d978b7e4999f8d}
+\hypertarget{common__prototypes_8h_a2b483c1e8f48f80ad8e237379cdd5367}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu@{app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu}}
+\index{app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu@{app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}double app\-\_\-cil\-\_\-sixth\-\_\-f\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const float $\ast$}]{psi, }
+\item[{float $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{const double}]{gridhx, }
+\item[{const double}]{gridhy, }
+\item[{const double}]{gridhz, }
+\item[{const double}]{xside, }
+\item[{const double}]{yside, }
+\item[{const double}]{zside, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a2b483c1e8f48f80ad8e237379cdd5367}
+\hypertarget{common__prototypes_8h_aa54b9c9ec43c64b96af8644419ee78f0}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cil\-\_\-sixth\-\_\-gpu@{app\-\_\-cil\-\_\-sixth\-\_\-gpu}}
+\index{app\-\_\-cil\-\_\-sixth\-\_\-gpu@{app\-\_\-cil\-\_\-sixth\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cil\-\_\-sixth\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}double app\-\_\-cil\-\_\-sixth\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const double $\ast$}]{psi, }
+\item[{double $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{const double}]{gridhx, }
+\item[{const double}]{gridhy, }
+\item[{const double}]{gridhz, }
+\item[{const double}]{xside, }
+\item[{const double}]{yside, }
+\item[{const double}]{zside, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_aa54b9c9ec43c64b96af8644419ee78f0}
 \hypertarget{common__prototypes_8h_a57a14f9e4e044f9b3b7fd880c76338bb}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cilr@{app\-\_\-cilr}}
 \index{app\-\_\-cilr@{app\-\_\-cilr}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{app\-\_\-cilr}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} app\-\_\-cilr (
@@ -591,6 +733,18 @@ void \hyperlink{common__prototypes_8h_a32554439a357cc11bf10d4f8c46d6397}{F\-D\-\
 \item[{int}]{dimz}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a04d652ab64d0563ad36e59e18bf671fd}
+\hypertarget{common__prototypes_8h_a3c2542b339850314ad918001b36ba986}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cir\-\_\-fourth\-\_\-gpu@{app\-\_\-cir\-\_\-fourth\-\_\-gpu}}
+\index{app\-\_\-cir\-\_\-fourth\-\_\-gpu@{app\-\_\-cir\-\_\-fourth\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cir\-\_\-fourth\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}void app\-\_\-cir\-\_\-fourth\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const double $\ast$}]{psi, }
+\item[{double $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a3c2542b339850314ad918001b36ba986}
 \hypertarget{common__prototypes_8h_a0489ffcf1685cca6d1d68550d0c5ce25}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cir\-\_\-hex@{app\-\_\-cir\-\_\-hex}}
 \index{app\-\_\-cir\-\_\-hex@{app\-\_\-cir\-\_\-hex}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{app\-\_\-cir\-\_\-hex}]{\setlength{\rightskip}{0pt plus 5cm}void app\-\_\-cir\-\_\-hex (
@@ -644,6 +798,30 @@ nothing
 \item[{int}]{dimz}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ac48733a777b643756fa6df73a3c0f2e3}
+\hypertarget{common__prototypes_8h_a275cb09680011a2f6b9d6cd550ee47d9}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu@{app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu}}
+\index{app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu@{app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}void app\-\_\-cir\-\_\-sixth\-\_\-f\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const float $\ast$}]{psi, }
+\item[{float $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a275cb09680011a2f6b9d6cd550ee47d9}
+\hypertarget{common__prototypes_8h_aed1afef99d33a837af657111e74f2f8c}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-cir\-\_\-sixth\-\_\-gpu@{app\-\_\-cir\-\_\-sixth\-\_\-gpu}}
+\index{app\-\_\-cir\-\_\-sixth\-\_\-gpu@{app\-\_\-cir\-\_\-sixth\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{app\-\_\-cir\-\_\-sixth\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}void app\-\_\-cir\-\_\-sixth\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{const double $\ast$}]{psi, }
+\item[{double $\ast$}]{b, }
+\item[{const int}]{dimx, }
+\item[{const int}]{dimy, }
+\item[{const int}]{dimz, }
+\item[{cuda\-Stream\-\_\-t}]{cstream}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_aed1afef99d33a837af657111e74f2f8c}
 \hypertarget{common__prototypes_8h_a2b6466b7fe246d8b94efd41e80b00a2e}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!app\-\_\-del2c@{app\-\_\-del2c}}
 \index{app\-\_\-del2c@{app\-\_\-del2c}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{app\-\_\-del2c}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} app\-\_\-del2c (
@@ -818,6 +996,13 @@ nothing
 \item[{{\bf rmg\-\_\-double\-\_\-t}}]{gridhz}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a0f8fcd48c564d3686622f6517364206f}
+\hypertarget{common__prototypes_8h_af639cca1b276a3b1259777a80df176cb}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!finalize\-\_\-gpu@{finalize\-\_\-gpu}}
+\index{finalize\-\_\-gpu@{finalize\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{finalize\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}void finalize\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_af639cca1b276a3b1259777a80df176cb}
 \hypertarget{common__prototypes_8h_ac61f21b774991ae9bb72ddfd2ebd2475}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!find\-\_\-node\-\_\-offsets@{find\-\_\-node\-\_\-offsets}}
 \index{find\-\_\-node\-\_\-offsets@{find\-\_\-node\-\_\-offsets}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{find\-\_\-node\-\_\-offsets}]{\setlength{\rightskip}{0pt plus 5cm}int find\-\_\-node\-\_\-offsets (
@@ -831,6 +1016,10 @@ nothing
 \item[{int $\ast$}]{pzoffset}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ac61f21b774991ae9bb72ddfd2ebd2475}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a1d26e58923714fa03d19a80ddf137713}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!find\-\_\-node\-\_\-sizes@{find\-\_\-node\-\_\-sizes}}
 \index{find\-\_\-node\-\_\-sizes@{find\-\_\-node\-\_\-sizes}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{find\-\_\-node\-\_\-sizes}]{\setlength{\rightskip}{0pt plus 5cm}int find\-\_\-node\-\_\-sizes (
@@ -844,6 +1033,10 @@ nothing
 \item[{int $\ast$}]{pzsize}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a1d26e58923714fa03d19a80ddf137713}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a702f5e7892e031e1de4b31a2302bd613}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-a0@{get\-\_\-a0}}
 \index{get\-\_\-a0@{get\-\_\-a0}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-a0}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} get\-\_\-a0 (
@@ -872,6 +1065,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a8f44f0e20ece5fb69b67792c3edb1e5a}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a45fe5543f3424b7cf26c950053348643}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-b0@{get\-\_\-b0}}
 \index{get\-\_\-b0@{get\-\_\-b0}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-b0}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} get\-\_\-b0 (
@@ -907,6 +1104,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a24829e49b2b294f0432294d9ddb7d4ee}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a5ec9b97ef3b02059211ef36108a42c05}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-G\-\_\-\-N\-Y@{get\-\_\-\-F\-G\-\_\-\-N\-Y}}
 \index{get\-\_\-\-F\-G\-\_\-\-N\-Y@{get\-\_\-\-F\-G\-\_\-\-N\-Y}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-G\-\_\-\-N\-Y}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-G\-\_\-\-N\-Y (
@@ -914,6 +1115,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a5ec9b97ef3b02059211ef36108a42c05}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a89961bb781ff3fdd8d1d5cd43d563cae}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-G\-\_\-\-N\-Z@{get\-\_\-\-F\-G\-\_\-\-N\-Z}}
 \index{get\-\_\-\-F\-G\-\_\-\-N\-Z@{get\-\_\-\-F\-G\-\_\-\-N\-Z}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-G\-\_\-\-N\-Z}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-G\-\_\-\-N\-Z (
@@ -921,6 +1126,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a89961bb781ff3fdd8d1d5cd43d563cae}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_ab7acf076f9d96bf20148b74352a991cc}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-N\-X\-\_\-\-G\-R\-I\-D (
@@ -928,6 +1137,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ab7acf076f9d96bf20148b74352a991cc}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a1f2912297c67b9e334caea765971cf5c}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-N\-Y\-\_\-\-G\-R\-I\-D (
@@ -935,6 +1148,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a1f2912297c67b9e334caea765971cf5c}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a1cec7a176047f7df70a85793163bc8eb}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-N\-Z\-\_\-\-G\-R\-I\-D (
@@ -942,6 +1159,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a1cec7a176047f7df70a85793163bc8eb}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_ad020db6f674f773704a4ced86a81a906}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S@{get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S}}
 \index{get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S@{get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P0\-\_\-\-B\-A\-S\-I\-S (
@@ -949,6 +1170,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ad020db6f674f773704a4ced86a81a906}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a5639353b4290adba6110f8b681c8f325}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P\-X0\-\_\-\-G\-R\-I\-D (
@@ -956,6 +1181,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a5639353b4290adba6110f8b681c8f325}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_ae276d956341a5c666c590f9cae9dd7f9}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T}}
 \index{get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T (
@@ -963,6 +1192,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ae276d956341a5c666c590f9cae9dd7f9}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_abba530c0cd455c5413ae3cc7908cd808}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P\-Y0\-\_\-\-G\-R\-I\-D (
@@ -970,6 +1203,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_abba530c0cd455c5413ae3cc7908cd808}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a98634d1c56c7be648543c49fe9f5a5c0}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T}}
 \index{get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T (
@@ -977,6 +1214,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a98634d1c56c7be648543c49fe9f5a5c0}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a27177e67f84cc37ae83be5b2ec64bf2c}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P\-Z0\-\_\-\-G\-R\-I\-D (
@@ -984,6 +1225,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a27177e67f84cc37ae83be5b2ec64bf2c}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a1b5f5a7f7ee2f408935f3a62dd87a8a1}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T}}
 \index{get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-F\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T (
@@ -991,6 +1236,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a1b5f5a7f7ee2f408935f3a62dd87a8a1}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a461b30cb7735aa169064f6a81456d6c2}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-hxgrid@{get\-\_\-hxgrid}}
 \index{get\-\_\-hxgrid@{get\-\_\-hxgrid}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-hxgrid}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} get\-\_\-hxgrid (
@@ -1054,6 +1303,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_adab210ebe45f26efeec79c52f4a6b855}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a2412dc51842114dc2a8e050dd0e3cdb2}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D@{get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D@{get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-N\-X\-\_\-\-G\-R\-I\-D (
@@ -1061,6 +1314,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a2412dc51842114dc2a8e050dd0e3cdb2}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a16af0e1d2a409fc51b48acdd9ff004c4}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D@{get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D@{get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-N\-Y\-\_\-\-G\-R\-I\-D (
@@ -1068,6 +1325,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a16af0e1d2a409fc51b48acdd9ff004c4}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a64f8314436b3c57095f6036cc630da2e}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D@{get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D@{get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-N\-Z\-\_\-\-G\-R\-I\-D (
@@ -1075,6 +1336,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a64f8314436b3c57095f6036cc630da2e}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a3eac69c3d8a20d97b3992ce684bf5b61}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S@{get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S}}
 \index{get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S@{get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P0\-\_\-\-B\-A\-S\-I\-S (
@@ -1082,6 +1347,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a3eac69c3d8a20d97b3992ce684bf5b61}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_af8198fbd32f9362680b88c62bc2f4560}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-E\-\_\-\-X@{get\-\_\-\-P\-E\-\_\-\-X}}
 \index{get\-\_\-\-P\-E\-\_\-\-X@{get\-\_\-\-P\-E\-\_\-\-X}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-E\-\_\-\-X}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-E\-\_\-\-X (
@@ -1089,6 +1358,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_af8198fbd32f9362680b88c62bc2f4560}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_ad2a8d4f422f0342d3e19b02fe471629a}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-E\-\_\-\-Y@{get\-\_\-\-P\-E\-\_\-\-Y}}
 \index{get\-\_\-\-P\-E\-\_\-\-Y@{get\-\_\-\-P\-E\-\_\-\-Y}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-E\-\_\-\-Y}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-E\-\_\-\-Y (
@@ -1096,6 +1369,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ad2a8d4f422f0342d3e19b02fe471629a}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_acd6a1022f528f0b2c48f29235e58857d}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-E\-\_\-\-Z@{get\-\_\-\-P\-E\-\_\-\-Z}}
 \index{get\-\_\-\-P\-E\-\_\-\-Z@{get\-\_\-\-P\-E\-\_\-\-Z}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-E\-\_\-\-Z}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-E\-\_\-\-Z (
@@ -1103,6 +1380,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_acd6a1022f528f0b2c48f29235e58857d}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_ae2db32edc9fc165cbab41c66dfebb089}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-X0\-\_\-\-G\-R\-I\-D (
@@ -1110,6 +1391,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ae2db32edc9fc165cbab41c66dfebb089}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a4f20cf27f3b0a197912b4e5420cab0f8}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T}}
 \index{get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-X\-\_\-\-O\-F\-F\-S\-E\-T (
@@ -1117,6 +1402,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a4f20cf27f3b0a197912b4e5420cab0f8}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a75032dcf11f9a85820b1c4d0431104a7}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-Y0\-\_\-\-G\-R\-I\-D (
@@ -1124,6 +1413,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a75032dcf11f9a85820b1c4d0431104a7}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a166b8d7460553abe5830ec2e3d0a46c6}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T}}
 \index{get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-Y\-\_\-\-O\-F\-F\-S\-E\-T (
@@ -1131,6 +1424,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a166b8d7460553abe5830ec2e3d0a46c6}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a9e88caff9cbc1987eec4371ee0c01289}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D}}
 \index{get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D@{get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-Z0\-\_\-\-G\-R\-I\-D (
@@ -1138,6 +1435,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a9e88caff9cbc1987eec4371ee0c01289}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a2d0ac2632226153148b2d7410547c40f}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T}}
 \index{get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T@{get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T}]{\setlength{\rightskip}{0pt plus 5cm}int get\-\_\-\-P\-Z\-\_\-\-O\-F\-F\-S\-E\-T (
@@ -1145,6 +1446,10 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a2d0ac2632226153148b2d7410547c40f}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a8bf0edc2e455133f332ea9839988913d}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!get\-\_\-vel@{get\-\_\-vel}}
 \index{get\-\_\-vel@{get\-\_\-vel}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{get\-\_\-vel}]{\setlength{\rightskip}{0pt plus 5cm}{\bf rmg\-\_\-double\-\_\-t} get\-\_\-vel (
@@ -1187,6 +1492,13 @@ nothing
 \item[{void}]{}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_aa6e3e06fa6f680e92233a6cfb08090b6}
+\hypertarget{common__prototypes_8h_a7fca3c04c6e79abd49b511a325180a55}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!init\-\_\-gpu@{init\-\_\-gpu}}
+\index{init\-\_\-gpu@{init\-\_\-gpu}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
+\subsubsection[{init\-\_\-gpu}]{\setlength{\rightskip}{0pt plus 5cm}void init\-\_\-gpu (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}\label{common__prototypes_8h_a7fca3c04c6e79abd49b511a325180a55}
 \hypertarget{common__prototypes_8h_a58facc19b80d70200cd45435e9d12dca}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!mg\-\_\-prolong@{mg\-\_\-prolong}}
 \index{mg\-\_\-prolong@{mg\-\_\-prolong}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{mg\-\_\-prolong}]{\setlength{\rightskip}{0pt plus 5cm}void mg\-\_\-prolong (
@@ -1344,6 +1656,10 @@ nothing
 \item[{int $\ast$}]{z}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a571ed6c422f08f7cd8cf5dd76ddda0d9}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a561819d91960c97e4d708de90b41c818}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!Q\-M\-D\-\_\-daxpy@{Q\-M\-D\-\_\-daxpy}}
 \index{Q\-M\-D\-\_\-daxpy@{Q\-M\-D\-\_\-daxpy}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{Q\-M\-D\-\_\-daxpy}]{\setlength{\rightskip}{0pt plus 5cm}void Q\-M\-D\-\_\-daxpy (
@@ -1454,6 +1770,10 @@ nothing
 \item[{{\bf rmg\-\_\-double\-\_\-t}}]{a}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a972a474b32764c9180514be4501336b1}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_aa39ebf59fa3b2f13471bd31619478834}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!set\-\_\-grids@{set\-\_\-grids}}
 \index{set\-\_\-grids@{set\-\_\-grids}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{set\-\_\-grids}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-grids (
@@ -1469,6 +1789,10 @@ nothing
 \item[{int}]{F\-G\-\_\-\-N\-Z}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_aa39ebf59fa3b2f13471bd31619478834}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_ac0144c0843aed32b5c647a30a2833bcb}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!set\-\_\-ibrav\-\_\-type@{set\-\_\-ibrav\-\_\-type}}
 \index{set\-\_\-ibrav\-\_\-type@{set\-\_\-ibrav\-\_\-type}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{set\-\_\-ibrav\-\_\-type}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-ibrav\-\_\-type (
@@ -1476,6 +1800,10 @@ nothing
 \item[{int}]{ibrav}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_ac0144c0843aed32b5c647a30a2833bcb}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a28d70ae3d2c96eaf44d0c6f2def65c80}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!set\-\_\-neighbors@{set\-\_\-neighbors}}
 \index{set\-\_\-neighbors@{set\-\_\-neighbors}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{set\-\_\-neighbors}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-neighbors (
@@ -1483,6 +1811,10 @@ nothing
 \item[{int $\ast$}]{list}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a28d70ae3d2c96eaf44d0c6f2def65c80}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_a8d68b7a96dda6f689756f34abe64d2e0}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!set\-\_\-nodes@{set\-\_\-nodes}}
 \index{set\-\_\-nodes@{set\-\_\-nodes}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{set\-\_\-nodes}]{\setlength{\rightskip}{0pt plus 5cm}void set\-\_\-nodes (
@@ -1493,6 +1825,10 @@ nothing
 \item[{int}]{kk}
 \end{DoxyParamCaption}
 )}}\label{common__prototypes_8h_a8d68b7a96dda6f689756f34abe64d2e0}
+
+
+C interface function. 
+
 \hypertarget{common__prototypes_8h_af59acdd682f2eac22586672d98467c17}{\index{common\-\_\-prototypes.\-h@{common\-\_\-prototypes.\-h}!solv\-\_\-pois@{solv\-\_\-pois}}
 \index{solv\-\_\-pois@{solv\-\_\-pois}!common_prototypes.h@{common\-\_\-prototypes.\-h}}
 \subsubsection[{solv\-\_\-pois}]{\setlength{\rightskip}{0pt plus 5cm}void solv\-\_\-pois (

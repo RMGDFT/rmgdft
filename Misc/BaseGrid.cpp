@@ -84,6 +84,9 @@ using namespace std;
 
     }
 
+    /// This functions is used to set the values contained in BaseGrid::neighbors[] which is an integer array of dimension 6.
+    /// The array holds the MPI rank of the 6 nearest neighbor nodes of the current node.
+    /// @param list integer array of dimension 6 containing the list of neighbor nodes to be set into BaseGrid::neighbors[].
     void BaseGrid::set_neighbors(int *list)
     {
         int idx;
@@ -361,189 +364,223 @@ int BaseGrid::anisotropy_first=0;
 
 
 
-// C interfaces for use during transition
+/// C interface function
 extern "C" int get_PE_X(void)
 {
   BaseGrid G;
   return G.PE_X;
 }
+/// C interface function
 extern "C" int get_PE_Y(void)
 {
   BaseGrid G;
   return G.PE_Y;
 }
+/// C interface function
 extern "C" int get_PE_Z(void)
 {
   BaseGrid G;
   return G.PE_Z;
 }
+/// C interface function
 extern "C" int get_NX_GRID(void)
 {
   BaseGrid G;
   return G.NX_GRID;
 }
+/// C interface function
 extern "C" int get_NY_GRID(void)
 {
   BaseGrid G;
   return G.NY_GRID;
 }
+/// C interface function
 extern "C" int get_NZ_GRID(void)
 {
   BaseGrid G;
   return G.NZ_GRID;
 }
+/// C interface function
 extern "C" int get_FNX_GRID(void)
 {
   BaseGrid G;
   return G.FNX_GRID;
 }
+/// C interface function
 extern "C" int get_FNY_GRID(void)
 {
   BaseGrid G;
   return G.FNY_GRID;
 }
+/// C interface function
 extern "C" int get_FNZ_GRID(void)
 {
   BaseGrid G;
   return G.FNZ_GRID;
 }
+/// C interface function
 extern "C" int get_FG_NX(void)
 {
   BaseGrid G;
   return G.FG_NX;
 }
+/// C interface function
 extern "C" int get_FG_NY(void)
 {
   BaseGrid G;
   return G.FG_NY;
 }
+/// C interface function
 extern "C" int get_FG_NZ(void)
 {
   BaseGrid G;
   return G.FG_NZ;
 }
+/// C interface function
 extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_NX, int newFG_NY, int newFG_NZ)
 {
   BaseGrid G;
   G.set_grids(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, newFG_NX, newFG_NY, newFG_NZ);
 }
+/// C interface function
 extern "C" void set_nodes(int newgridpe, int ii, int jj, int kk)
 {
   BaseGrid G;
   G.set_nodes(newgridpe, ii, jj, kk);
 }
+/// C interface function
 extern "C" void set_neighbors(int *newneighbors)
 {
   BaseGrid G;
   G.set_neighbors(newneighbors);
 }
+/// C interface function
 extern "C" void set_anisotropy(rmg_double_t newanisotropy)
 {
   BaseGrid G;
   G.set_anisotropy(newanisotropy);
 }
-
+/// C interface function
 extern "C" void set_ibrav_type(int newtype)
 {
   BaseGrid G;
   G.set_ibrav_type(newtype);
 }
+/// C interface function
 extern "C" int get_ibrav_type(int newtype)
 {
   BaseGrid G;
   return G.get_ibrav_type();
 }
-
+/// C interface function
 extern "C" int get_PX0_GRID(void)
 {
   BaseGrid G;
   return G.get_PX0_GRID();
 }
+/// C interface function
 extern "C" int get_PY0_GRID(void)
 {
   BaseGrid G;
   return G.get_PY0_GRID();
 }
+/// C interface function
 extern "C" int get_PZ0_GRID(void)
 {
   BaseGrid G;
   return G.get_PZ0_GRID();
 }
+/// C interface function
 extern "C" int get_PX_OFFSET(void)
 {
   BaseGrid G;
   return G.get_PX_OFFSET();
 }
+/// C interface function
 extern "C" int get_PY_OFFSET(void)
 {
   BaseGrid G;
   return G.get_PY_OFFSET();
 }
+/// C interface function
 extern "C" int get_PZ_OFFSET(void)
 {
   BaseGrid G;
   return G.get_PZ_OFFSET();
 }
+/// C interface function
 extern "C" int get_FPX_OFFSET(void)
 {
   BaseGrid G;
   return G.get_FPX_OFFSET();
 }
+/// C interface function
 extern "C" int get_FPY_OFFSET(void)
 {
   BaseGrid G;
   return G.get_FPY_OFFSET();
 }
+/// C interface function
 extern "C" int get_FPZ_OFFSET(void)
 {
   BaseGrid G;
   return G.get_FPZ_OFFSET();
 }
+/// C interface function
 extern "C" int get_P0_BASIS(void)
 {
   BaseGrid G;
   return G.get_P0_BASIS();
 }
+/// C interface function
 extern "C" int get_FP0_BASIS(void)
 {
   BaseGrid G;
   return G.get_FP0_BASIS();
 }
+/// C interface function
 extern "C" int get_FPX0_GRID(void)
 {
   BaseGrid G;
   return G.get_FPX0_GRID();
 }
+/// C interface function
 extern "C" int get_FPY0_GRID(void)
 {
   BaseGrid G;
   return G.get_FPY0_GRID();
 }
+/// C interface function
 extern "C" int get_FPZ0_GRID(void)
 {
   BaseGrid G;
   return G.get_FPZ0_GRID();
 }
+/// C interface function
 extern "C" rmg_double_t get_anisotropy(void)
 {
   BaseGrid G;
   return G.get_anisotropy();
 }
+/// C interface function
 extern "C" void pe2xyz(int pe, int *x, int *y, int *z)
 {
   BaseGrid G;
   G.pe2xyz(pe, x, y, z);
 }
+/// C interface function
 extern "C" int *get_neighbors(void)
 {
   BaseGrid G;
   return G.get_neighbors();
 }
+/// C interface function
 extern "C" int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
 {
   BaseGrid G;
   return G.find_node_sizes(gridpe, nxgrid, nygrid, nzgrid, pxsize, pysize, pzsize);
 }
+/// C interface function
 extern "C" int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
 {
   BaseGrid G;

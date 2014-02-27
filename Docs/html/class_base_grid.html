@@ -663,55 +663,55 @@ Static Public Attributes</h2></td></tr>
           <td class="memname">void BaseGrid::set_grids </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>NX_GRID</em>, </td>
+          <td class="paramname"><em>newNX_GRID</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>NY_GRID</em>, </td>
+          <td class="paramname"><em>newNY_GRID</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>NZ_GRID</em>, </td>
+          <td class="paramname"><em>newNZ_GRID</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>PE_X</em>, </td>
+          <td class="paramname"><em>newPE_X</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>PE_Y</em>, </td>
+          <td class="paramname"><em>newPE_Y</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>PE_Z</em>, </td>
+          <td class="paramname"><em>newPE_Z</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>FG_NX</em>, </td>
+          <td class="paramname"><em>newFG_NX</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>FG_NY</em>, </td>
+          <td class="paramname"><em>newFG_NY</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>FG_NZ</em>&#160;</td>
+          <td class="paramname"><em>newFG_NZ</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -720,6 +720,21 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Used to set up global coarse grid dimensions, MPI node dimensions and the ratio of the fine grid to the coarse in each coordinate dimension. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">newNX_GRID</td><td>Global coarse grid X dimension </td></tr>
+    <tr><td class="paramname">newNY_GRID</td><td>Global coarse grid Y dimension </td></tr>
+    <tr><td class="paramname">newNZ_GRID</td><td>Global coarse grid Z dimension </td></tr>
+    <tr><td class="paramname">newPE_X</td><td>MPI grid X dimension </td></tr>
+    <tr><td class="paramname">newPE_Y</td><td>MPI grid Y dimension </td></tr>
+    <tr><td class="paramname">newPE_Z</td><td>MPI grid Z dimension </td></tr>
+    <tr><td class="paramname">newFG_NX</td><td>Ratio of fine grid to coarse in the X dimension </td></tr>
+    <tr><td class="paramname">newFG_NY</td><td>Ratio of fine grid to coarse in the Y dimension </td></tr>
+    <tr><td class="paramname">newFG_NZ</td><td>Ratio of fine grid to coarse in the Z dimension </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -752,6 +767,13 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>This functions is used to set the values contained in <a class="el" href="class_base_grid.html#a25b59964f1818bf084e0a44ee83067e0">BaseGrid::neighbors</a>[] which is an integer array of dimension 6. The array holds the MPI rank of the 6 nearest neighbor nodes of the current node. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">list</td><td>integer array of dimension 6 containing the list of neighbor nodes to be set into <a class="el" href="class_base_grid.html#a25b59964f1818bf084e0a44ee83067e0">BaseGrid::neighbors</a>[]. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1481,7 +1503,7 @@ Static Public Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Feb 26 2014 15:20:32 for RMG by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Feb 26 2014 21:07:20 for RMG by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
