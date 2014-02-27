@@ -14,6 +14,7 @@
 cmake_minimum_required (VERSION 2.6) 
 project (RMG C CXX Fortran) 
 
+set (RMG_GPU_ENABLED 0)
 
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
@@ -230,7 +231,7 @@ endif(CUDA_FOUND)
 
 # These are hard coded for now
 target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/libxc.a")
-target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/codes/lib/libxc/lib64/libxc.a")
+target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/libxc.a")
 target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/libxc.a")
 #include_directories(rmg "/usr/local/magma/include")
 
@@ -365,7 +366,6 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
-set (RMG_GPU_ENABLED 1)
 option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
 if (RMG_GPU_ENABLED)
     if(CUDA_FOUND)

@@ -53,9 +53,6 @@ void init_parameter(STATE * states)
 
 
     ct.vh_nbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
-    ct.vh_nxgrid = get_FNX_GRID();
-    ct.vh_nygrid = get_FNY_GRID();
-    ct.vh_nzgrid = get_FNZ_GRID();
     /* Initialize some k-point stuff */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {

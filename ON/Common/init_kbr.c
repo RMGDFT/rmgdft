@@ -89,7 +89,7 @@ void init_kbr(void)
             it1++;
         sp->ldim = it1;
 
-        if ((sp->ldim >= ct.vh_nxgrid) || (sp->ldim >= ct.vh_nygrid) || (sp->ldim >= ct.vh_nzgrid))
+        if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID()) || (sp->ldim >= get_FNZ_GRID()))
             error_handler("local potential radius exceeds global grid size");
 
         t1 = 2.0 * scale * sp->nlradius / ct.hmingrid;
