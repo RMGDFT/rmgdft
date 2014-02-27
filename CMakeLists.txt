@@ -242,7 +242,7 @@ ExternalProject_Add ( libxc
 )
 # These are hard coded for now
 target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
-target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/codes/lib/libxc/lib64/lib64/libxc.a")
+target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
 target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
 
 
