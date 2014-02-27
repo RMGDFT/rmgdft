@@ -38,7 +38,7 @@
 #include <math.h>
 #include "rmgtypes.h"
 #include "const.h"
-#include "xc.h"
+#include "rmg_xc.h"
 
 #define MA  -0.4582E0
 #define MB  -0.0480E0

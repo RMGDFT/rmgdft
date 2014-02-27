@@ -43,7 +43,7 @@ cc    subroutine corlyp_f90(dp,dm,dp1,dm1,dp2,dm2,ec,vcp0,vcm0,ndm,tpot)
 #include <stdlib.h>
 #include "rmgtypes.h"
 #include "rmg_alloc.h"
-#include "xc.h"
+#include "rmg_xc.h"
 
 
 /*

@@ -14,15 +14,15 @@ using namespace std;
 
 
     /// Used to set up global coarse grid dimensions, MPI node dimensions and the ratio of the fine grid to the coarse in each coordinate dimension.
-    /// @param newNX_GRID Global coarse grid X dimension
-    /// @param newNY_GRID Global coarse grid Y dimension
-    /// @param newNZ_GRID Global coarse grid Z dimension
-    /// @param newPE_X MPI grid X dimension
-    /// @param newPE_Y MPI grid Y dimension
-    /// @param newPE_Z MPI grid Z dimension
-    /// @param newFG_NX Ratio of fine grid to coarse in the X dimension
-    /// @param newFG_NY Ratio of fine grid to coarse in the Y dimension
-    /// @param newFG_NZ Ratio of fine grid to coarse in the Z dimension
+    /// @param newNX_GRID New global coarse grid X dimension
+    /// @param newNY_GRID New global coarse grid Y dimension
+    /// @param newNZ_GRID New global coarse grid Z dimension
+    /// @param newPE_X New MPI grid X dimension
+    /// @param newPE_Y New MPI grid Y dimension
+    /// @param newPE_Z New MPI grid Z dimension
+    /// @param newFG_NX New ratio of fine grid to coarse in the X dimension
+    /// @param newFG_NY New ratio of fine grid to coarse in the Y dimension
+    /// @param newFG_NZ New ratio of fine grid to coarse in the Z dimension
     void BaseGrid::set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_NX, int newFG_NY, int newFG_NZ)
     {
 
@@ -301,19 +301,25 @@ using namespace std;
     }
 
 
-/* Global coarse grid dimensions */
+/// Global coarse grid X dimension
 int BaseGrid::NX_GRID;
+/// Global coarse grid Y dimension
 int BaseGrid::NY_GRID;
+/// Global coarse grid Z dimension
 int BaseGrid::NZ_GRID;
 
-/* Fine grid/coarse grid ratio */
+/// Fine/coarse grid ratio along the x-axis
 int BaseGrid::FG_NX;
+/// Fine/coarse grid ratio along the y-axis
 int BaseGrid::FG_NY;
+/// Fine/coarse grid ratio along the z-axis
 int BaseGrid::FG_NZ;
 
-/* Global fine grid dimensions */
+/// Global fine grid X dimension
 int BaseGrid::FNX_GRID;
+/// Global fine grid Y dimension
 int BaseGrid::FNY_GRID;
+/// Global fine grid Z dimension
 int BaseGrid::FNZ_GRID;
 
 /* Node (PE) dimensions */
@@ -321,9 +327,11 @@ int BaseGrid::PE_X;
 int BaseGrid::PE_Y;
 int BaseGrid::PE_Z;
 
-/* Grid sizes on each PE */
+/// Coarse grid size in the X-dimension on each PE
 int BaseGrid::PX0_GRID;
+/// Coarse grid size in the Y-dimension on each PE
 int BaseGrid::PY0_GRID;
+/// Coarse grid size in the Z-dimension on each PE
 int BaseGrid::PZ0_GRID;
 
 /* Grid offsets on each PE */
