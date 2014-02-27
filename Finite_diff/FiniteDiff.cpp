@@ -1,6 +1,7 @@
 
 #include "fixed_dims.h"
 #include "BaseGrid.h"
+#include "Lattice.h"
 #include "FiniteDiff.h"
 #include <cmath>
 #include <complex>
@@ -8,13 +9,10 @@
 using namespace std;
 
 extern "C" {
-  rmg_double_t get_xside(void);
-  rmg_double_t get_yside(void);
-  rmg_double_t get_zside(void);
+  void rmg_error_handler(const char *message);
   int get_PX0_GRID(void);
   int get_PY0_GRID(void);
   int get_PZ0_GRID(void);
-  void rmg_error_handler(const char *message);
 }
 
 template <typename RmgType>
@@ -26,15 +24,16 @@ rmg_double_t FD_app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
     rmg_double_t ihx, ihy, ihz;
+    Lattice L;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
     incxr = dimz * dimy;
     incyr = dimz;
 
-    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
-    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
-    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+    ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
+    ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 
@@ -139,6 +138,7 @@ rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t 
     rmg_double_t td1, td2, td3, td4, td5, td6, td7, td8, tdx;
 
     BaseGrid G;
+    Lattice L;
 
     ibrav = G.get_ibrav_type();
 
@@ -147,9 +147,9 @@ rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t 
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
 
-    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
-    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
-    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+    ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
+    ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 
@@ -863,6 +863,7 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
     int ixs, iys, ixms, ixps, iyms, iyps;
 
     BaseGrid G;
+    Lattice L;
 
     ibrav = G.get_ibrav_type();
 
@@ -878,10 +879,10 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
         if (G.get_anisotropy() < 1.0000001)
         {
 
-            cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
-            cc = cc - 2.0 / (gridhy * gridhy * get_yside() * get_yside());
-            cc = cc - 2.0 / (gridhz * gridhz * get_zside() * get_zside());
-            fcx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+            cc = -2.0 / (gridhx * gridhx * L.xside * L.xside);
+            cc = cc - 2.0 / (gridhy * gridhy * L.yside * L.yside);
+            cc = cc - 2.0 / (gridhz * gridhz * L.zside * L.zside);
+            fcx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -955,12 +956,12 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
         else
         {
 
-            cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
-            cc = cc - 2.0 / (gridhy * gridhy * get_yside() * get_yside());
-            cc = cc - 2.0 / (gridhz * gridhz * get_zside() * get_zside());
-            fcx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
-            fcy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
-            fcz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+            cc = -2.0 / (gridhx * gridhx * L.xside * L.xside);
+            cc = cc - 2.0 / (gridhy * gridhy * L.yside * L.yside);
+            cc = cc - 2.0 / (gridhz * gridhz * L.zside * L.zside);
+            fcx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+            fcy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
+            fcz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -998,8 +999,8 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
 
     case CUBIC_BC:
 
-        cc = -2.0 / (gridhx * gridhx * get_xside() * get_xside());
-        fc = 1.0 / (4.0 * gridhx * gridhx * get_xside() * get_xside());
+        cc = -2.0 / (gridhx * gridhx * L.xside * L.xside);
+        fc = 1.0 / (4.0 * gridhx * gridhx * L.xside * L.xside);
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -1036,8 +1037,8 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
 
     case CUBIC_FC:
 
-        cc = -6.0 / (gridhx * gridhx * get_xside() * get_xside());
-        fc = 1.0 / (2.0 * gridhx * gridhx * get_xside() * get_xside());
+        cc = -6.0 / (gridhx * gridhx * L.xside * L.xside);
+        fc = 1.0 / (2.0 * gridhx * gridhx * L.xside * L.xside);
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -1078,10 +1079,10 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
 
     case HEXAGONAL:
 
-        cc = -4.0 / (gridhx * gridhx * get_xside() * get_xside());
-        cc = cc - 2.0 / (gridhz * gridhz * get_zside() * get_zside());
-        fc1 = 2.0 / (3.0 * gridhx * gridhx * get_xside() * get_xside());
-        fc2 = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+        cc = -4.0 / (gridhx * gridhx * L.xside * L.xside);
+        cc = cc - 2.0 / (gridhz * gridhz * L.zside * L.zside);
+        fc1 = 2.0 / (3.0 * gridhx * gridhx * L.xside * L.xside);
+        fc2 = 1.0 / (gridhz * gridhz * L.zside * L.zside);
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -1138,6 +1139,7 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
     rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
     rmg_double_t ihx, ihy, ihz;
     BaseGrid G;
+    Lattice L;
 
     ibrav = G.get_ibrav_type();
 
@@ -1145,9 +1147,9 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
         rmg_error_handler("Grid symmetry not programmed yet in FD_app_cil_fourth_standard.\n");
     }
 
-    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
-    ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
-    ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+    ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
+    ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
 
 
     incx = (dimz + 2) * (dimy + 2);
@@ -1159,7 +1161,7 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
     if (G.get_anisotropy() < 1.000001)
     {
 
-        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+        ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
         cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
         fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
         ecxy = (1.0 / 12.0) * (ihx + ihx);
@@ -1214,9 +1216,9 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
     {
 
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
-        ihy = 1.0 / (gridhy * gridhy * get_yside() * get_yside());
-        ihz = 1.0 / (gridhz * gridhz * get_zside() * get_zside());
+        ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+        ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
+        ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
 
         cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
 
@@ -1298,13 +1300,14 @@ rmg_double_t FD_app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t
     int incyr, incxr;
     rmg_double_t c000, c100, c110;
     rmg_double_t ihx;
+    Lattice L;
 
     incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
     incy = FIXED_ZDIM + 2;
     incxr = FIXED_ZDIM * FIXED_YDIM;
     incyr = FIXED_ZDIM;
 
-    ihx = 1.0 / (gridhx * gridhx * get_xside() * get_xside());
+    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
     c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
     c100 = (5.0 / 6.0) * ihx + (c000 / 8.0);
     c110 = (1.0 / 12.0) * (ihx + ihx);

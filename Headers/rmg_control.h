@@ -250,18 +250,6 @@ typedef struct
     rmg_double_t zcstart;
 
 
-    /* Hartree potential offset from wavefunction grid */
-    int vh_xoffset;
-    int vh_yoffset;
-    int vh_zoffset;
-
-
-    /* Hartree potential grid sizes */
-    int vh_nxgrid;
-    int vh_nygrid;
-    int vh_nzgrid;
-
-
     /* Hartree potential grid sizes per domain */
     int vh_pxgrid;
     int vh_pygrid;
