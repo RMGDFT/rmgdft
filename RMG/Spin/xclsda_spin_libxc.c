@@ -5,7 +5,7 @@
 #include "common_prototypes.h"
 #include <float.h>
 #include <math.h> 
-#include "../../lib/libxc/include/xc.h"   
+#include "../../lib/libxc/lib64/include/xc.h"
 /* include Libxc's header file */
 
 

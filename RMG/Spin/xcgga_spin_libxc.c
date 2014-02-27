@@ -42,7 +42,7 @@
 #include "main.h"
 #include <float.h>
 #include <math.h>
-#include "../../lib/libxc/include/xc.h"   
+#include "../../lib/libxc/lib64/include/xc.h"
 /* include Libxc's header file */
 
 #define SMALL 1.e-8
