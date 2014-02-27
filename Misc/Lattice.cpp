@@ -86,7 +86,7 @@
  */
 
 #include <math.h>
-#include <BaseGrid.h>
+#include "BaseGrid.h"
 #include "Lattice.h"
 #include "rmg_error.h"
 

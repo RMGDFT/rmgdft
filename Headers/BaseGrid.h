@@ -3,9 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
-#include "const.h"
 #include "rmgtypes.h"
-#include "grid.h"
 #include "rmg_error.h"
 
 class BaseGrid {
