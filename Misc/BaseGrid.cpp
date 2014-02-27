@@ -1,7 +1,10 @@
-/*
-    Used to access grid and node related data.
-
-*/
+/**
+ * @file
+ *
+ *
+ * @section DESCRIPTION
+ * Used to access grid and node related data.
+ */
 
 #include "BaseGrid.h"
 
@@ -10,6 +13,16 @@ using namespace std;
 
 
 
+    /// Used to set up global coarse grid dimensions, MPI node dimensions and the ratio of the fine grid to the coarse in each coordinate dimension.
+    /// @param newNX_GRID Global coarse grid X dimension
+    /// @param newNY_GRID Global coarse grid Y dimension
+    /// @param newNZ_GRID Global coarse grid Z dimension
+    /// @param newPE_X MPI grid X dimension
+    /// @param newPE_Y MPI grid Y dimension
+    /// @param newPE_Z MPI grid Z dimension
+    /// @param newFG_NX Ratio of fine grid to coarse in the X dimension
+    /// @param newFG_NY Ratio of fine grid to coarse in the Y dimension
+    /// @param newFG_NZ Ratio of fine grid to coarse in the Z dimension
     void BaseGrid::set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_NX, int newFG_NY, int newFG_NZ)
     {
 
