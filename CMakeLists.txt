@@ -15,6 +15,8 @@ cmake_minimum_required (VERSION 2.6)
 project (RMG C CXX Fortran) 
 
 
+set (RMG_GPU_ENABLED 0)
+
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
@@ -376,7 +378,6 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
-set (RMG_GPU_ENABLED 1)
 option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
 if (RMG_GPU_ENABLED)
     if(CUDA_FOUND)
@@ -410,18 +411,18 @@ configure_file (
 
 execute_process (
     COMMAND svn info OUTPUT_VARIABLE foo)
-string(REPLACE "\n" ";" foo2 ${foo})
-list(GET foo2 10 foo3)
+string(REPLACE "Last Changed" ";" foo2 ${foo})
+list(GET foo2 2 foo3)
 string(REPLACE ":" ";" foo4 ${foo3})
 list(GET foo4 1 CodeRevision)
-list(GET foo2 11 foo3)
+
+list(GET foo2 3 foo3)
 string(REPLACE " " ";" foo4 ${foo3})
-list(GET foo4 3 LastChangeDate)
+list(GET foo4 2 LastChangeDate)
 execute_process (
     COMMAND date OUTPUT_VARIABLE foo5)
 string(REPLACE "\n" "" BuildDate ${foo5})
 
-message(${BuildDate})
 configure_file (
   "${PROJECT_SOURCE_DIR}/svnrev.h.in"
   "${PROJECT_BINARY_DIR}/Headers/svnrev.h"
