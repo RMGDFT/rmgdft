@@ -82,7 +82,7 @@ public:
     void wait_for_threads(int jobs);
     void wake_threads(int jobs);
     void scf_barrier_init(int nthreads);
-    void scf_barrier_wait(void);
+    void thread_barrier_wait(void);
     void scf_barrier_destroy(void);
     void scf_tsd_init(void);
     void scf_tsd_set_value(void *s);

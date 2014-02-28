@@ -57,16 +57,16 @@ void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm co
   if(*length < MAX_FIXED_VECTOR) {
 
       QMD_dcopy(*length, vect, 1, &fixed_vector1[*length * tid], 1);
-      scf_barrier_wait();
+      thread_barrier_wait();
       if(tid == 0)
           MPI_Allreduce(fixed_vector1, fixed_vector2, *length * ct.THREADS_PER_NODE, MPI_DOUBLE, MPI_SUM, comm);
-      scf_barrier_wait();
+      thread_barrier_wait();
       QMD_dcopy(*length,  &fixed_vector2[*length * tid], 1, vect, 1);
 
       return;
   }
 
-  scf_barrier_wait();
+  thread_barrier_wait();
   pthread_mutex_lock(&global_sums_vector_lock);
       if(global_sums_vector_state == 0) {
           my_malloc (global_sums_vector, *length * ct.THREADS_PER_NODE, rmg_double_t);
@@ -78,7 +78,7 @@ void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm co
   QMD_dcopy(*length, vect, 1, &global_sums_vector[*length * tid], 1);
   
   // Wait until everyone gets here
-  scf_barrier_wait();
+  thread_barrier_wait();
 
   pthread_mutex_lock(&global_sums_vector_lock);
       if(global_sums_vector_state == 1) {
@@ -89,7 +89,7 @@ void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm co
   QMD_dcopy(*length,  &tvector[*length * tid], 1, vect, 1);
 
   // Must wait until all threads have copied the data to vect before freeing memory
-  scf_barrier_wait();
+  thread_barrier_wait();
 
   pthread_mutex_lock(&global_sums_vector_lock);
       // ensures that the memory is only freed once

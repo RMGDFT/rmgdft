@@ -98,7 +98,7 @@ int int_sum_all_threaded(int x, int tid,  MPI_Comm comm) {
 
 
   // Wait until everyone gets here
-  scf_barrier_wait();
+  thread_barrier_wait();
 
   // Data is all loaded now and we only want one thread to do the MPI call
   // Might have some contention here for high core counts

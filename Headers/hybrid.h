@@ -30,7 +30,7 @@
 
 
 void scf_barrier_init(int nthreads);
-void scf_barrier_wait(void);
+void thread_barrier_wait(void);
 void scf_barrier_destroy(void);
 
 

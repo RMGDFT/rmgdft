@@ -185,7 +185,7 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
 #endif
 
     stop = zlen * ACTIVE_THREADS;
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_D], (1>>16),
                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), transition_get_grid_comm(), &mrstatus);
@@ -193,7 +193,7 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_U], (2>>16),
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), transition_get_grid_comm(), &mrstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
@@ -261,7 +261,7 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
     time3 = my_crtc ();
 #endif
     stop = ylen * ACTIVE_THREADS;
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_S], (3>>16),
                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_N], (3>>16), transition_get_grid_comm(), &mrstatus);
@@ -269,7 +269,7 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_N], (4>>16),
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4>>16), transition_get_grid_comm(), &mrstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
@@ -334,7 +334,7 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
     time3 = my_crtc ();
 #endif
     stop = xlen * ACTIVE_THREADS;
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
 
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_W], (5>>16),
@@ -344,7 +344,7 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_W], (6>>16), transition_get_grid_comm(), &mrstatus);
 
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
@@ -468,12 +468,12 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
 #endif
     // We only want one thread to do the MPI call here.
     stop = dimx * dimy * ACTIVE_THREADS;
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), swbuf2x_f, factor*stop,
 		  MPI_BYTE, nb_ids[NB_D], (1>>16), transition_get_grid_comm(), &mstatus);
     } 
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
@@ -506,12 +506,12 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
     time3 = my_crtc ();
 #endif
     stop = dimx * dimy * ACTIVE_THREADS;
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), swbuf2x_f, factor*stop,
                       MPI_BYTE, nb_ids[NB_U], (2>>16), transition_get_grid_comm(), &mstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -545,12 +545,12 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
 #if MD_TIMERS
     time3 = my_crtc ();
 #endif
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_N], (3>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_S], (3>>16), transition_get_grid_comm(), &mstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -575,12 +575,12 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
 #if MD_TIMERS
     time3 = my_crtc ();
 #endif
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_S], (4>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_N], (4>>16), transition_get_grid_comm(), &mstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -606,12 +606,12 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
 #if MD_TIMERS
     time3 = my_crtc ();
 #endif
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_E], (5>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_W], (5>>16), transition_get_grid_comm(), &mstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif
@@ -621,12 +621,12 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
 #if MD_TIMERS
     time3 = my_crtc ();
 #endif
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_W], (6>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_E], (6>>16), transition_get_grid_comm(), &mstatus);
     }
-    T.scf_barrier_wait();
+    T.thread_barrier_wait();
 #if MD_TIMERS
     T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
 #endif

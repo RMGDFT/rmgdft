@@ -187,7 +187,7 @@ void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Corners
@@ -304,7 +304,7 @@ void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -386,7 +386,7 @@ void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -432,7 +432,7 @@ void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy
         retval = MPI_Waitall(26, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     // Unpack yz-plane edges
@@ -638,7 +638,7 @@ void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy
         retval = MPI_Waitall(26, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -777,7 +777,7 @@ void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, 
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -818,7 +818,7 @@ void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, 
         retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     /* Unpack z-planes */
@@ -897,7 +897,7 @@ void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, 
         retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -1011,7 +1011,7 @@ void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Corners
@@ -1103,7 +1103,7 @@ void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -1185,7 +1185,7 @@ void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -1213,7 +1213,7 @@ void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
         retval = MPI_Waitall(26, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     // Unpack yz-plane edges
@@ -1380,7 +1380,7 @@ void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
         retval = MPI_Waitall(26, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -1773,7 +1773,7 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Corners
@@ -1889,7 +1889,7 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -1971,7 +1971,7 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -2017,7 +2017,7 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
         retval = MPI_Waitall(26, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     // Unpack yz-plane edges
@@ -2222,7 +2222,7 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
         retval = MPI_Waitall(26, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -2361,7 +2361,7 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -2402,7 +2402,7 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
         retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     /* Unpack z-planes */
@@ -2481,7 +2481,7 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
         retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -2595,7 +2595,7 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Corners
@@ -2687,7 +2687,7 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -2769,7 +2769,7 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
 
 
     // Send them
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -2797,7 +2797,7 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
         retval = MPI_Waitall(26, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     // Unpack yz-plane edges
@@ -2964,7 +2964,7 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
         retval = MPI_Waitall(26, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -3096,7 +3096,7 @@ void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dim
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -3118,7 +3118,7 @@ void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dim
         retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     /* Unpack z-planes */
@@ -3197,7 +3197,7 @@ void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dim
         retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();
@@ -3329,7 +3329,7 @@ void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz
     }                           /* end for */
 
 
-    scf_barrier_wait();
+    thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -3351,7 +3351,7 @@ void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz
         retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 
     /* Unpack z-planes */
@@ -3430,7 +3430,7 @@ void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz
         retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS)  error_handler("Error in MPI_Waitall.\n");
     }
-    scf_barrier_wait();
+    thread_barrier_wait();
 
 #if MD_TIMERS
     time2 = my_crtc ();

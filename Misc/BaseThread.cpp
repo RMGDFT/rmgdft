@@ -87,7 +87,7 @@ void BaseThread::scf_barrier_init(int nthreads) {
 }
 
 // Blocks all threads until nthreads specified in the init call have reached this point
-void BaseThread::scf_barrier_wait(void) {
+void BaseThread::thread_barrier_wait(void) {
     if(!BaseThread::in_threaded_region) return;
     pthread_barrier_wait(&BaseThread::scf_barrier);
 }
@@ -351,10 +351,10 @@ extern "C" void scf_barrier_init(int nthreads)
     B.scf_barrier_init(nthreads);
 }
 
-extern "C" void scf_barrier_wait(void) 
+extern "C" void thread_barrier_wait(void) 
 {
     BaseThread B(0);
-    B.scf_barrier_wait();
+    B.thread_barrier_wait();
 }
 
 extern "C" void scf_barrier_destroy(void) 

@@ -165,7 +165,6 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
         time1 = my_crtc ();
 #endif
 
-        //scf_barrier_wait();
         /* Apply Mehrstellen left hand operators */
         diag = app_cil_driver (tmp_psi, work2, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 

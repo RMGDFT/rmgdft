@@ -53,7 +53,7 @@ void diag_eig_matrix(double *eig_matrix, double *eig, int *desca);
 rmg_double_t mask_function (rmg_double_t x);
 void apply_mask_function (rmg_double_t *f, rmg_double_t * r, int rg_points, rmg_double_t rmax, rmg_double_t offset);
 void backout_mask_function (rmg_double_t *f, rmg_double_t dr, int lg_points, rmg_double_t rmax);
-void scf_barrier_wait(void);
+void thread_barrier_wait(void);
 int is_loop_over_states(void);
 void cgen_prolong(rmg_double_t coef[], rmg_double_t fraction, int order);
 void xbsmovie (FILE *movie);

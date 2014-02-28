@@ -74,7 +74,7 @@ void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip,
 REAL mask_function (REAL x);
 void apply_mask_function (REAL *f, REAL * r, int rg_points, REAL rmax, REAL offset);
 void backout_mask_function (REAL *f, REAL dr, int lg_points, REAL rmax);
-void scf_barrier_wait(void);
+void thread_barrier_wait(void);
 int is_loop_over_states(void);
 void cgen_prolong(REAL coef[], REAL fraction, int order);
 void init_derweight (void);

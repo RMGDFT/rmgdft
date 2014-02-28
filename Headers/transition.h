@@ -4,7 +4,7 @@ extern "C"
 {
 rmg_double_t my_crtc (void);
 MPI_Comm transition_get_grid_comm(void);
-void scf_barrier_wait(void);
+void thread_barrier_wait(void);
 }
 #endif
 
