@@ -49,7 +49,6 @@ del_space.c
 get_new_rho.c
 wvfn_residual.c
 init_img_topo.c
-subdiag_gamma_app_AB.c
 mulliken.c
 write_avgd.c
 bsplines.c

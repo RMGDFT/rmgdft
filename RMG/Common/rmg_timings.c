@@ -34,26 +34,11 @@
 #include <time.h>
 #include <stdio.h>
 
-#if HYBRID_MODEL
 #include "hybrid.h"
-#endif
 
 
 
 rmg_double_t timings[LAST_TIME];
-
-// For the hybrid model case we need to lock the timings array with a mutex and do some
-// adjustments to the timings to account for multiple threads so the function is defined
-// in hybrid.c instead of here.
-#if !HYBRID_MODEL
-void rmg_timings (int what, rmg_double_t time)
-{
-
-    timings[what] += time;
-}                               /* end rmg_timings */
-#endif
-
-
 
 
 #include <sys/time.h>

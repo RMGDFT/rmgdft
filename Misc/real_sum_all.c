@@ -36,15 +36,13 @@
 #include "main.h"
 
 
-#if HYBRID_MODEL
-    #include <hybrid.h>
-    #include <pthread.h>
-    volatile rmg_double_t real_sum_all_vector[MAX_SCF_THREADS];
-    volatile  rmg_double_t recvbuf[MAX_SCF_THREADS];
-    volatile int real_sum_all_vector_state = 0;
-    pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
-    static rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid, MPI_Comm comm);
-#endif
+#include <hybrid.h>
+#include <pthread.h>
+volatile rmg_double_t real_sum_all_vector[MAX_SCF_THREADS];
+volatile  rmg_double_t recvbuf[MAX_SCF_THREADS];
+volatile int real_sum_all_vector_state = 0;
+pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
+static rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid, MPI_Comm comm);
 
 
 
@@ -60,14 +58,12 @@ rmg_double_t real_sum_all (rmg_double_t x, MPI_Comm comm)
     time0 = my_crtc ();
 #endif
 	
-#if HYBRID_MODEL
     // If we are not in a pthreads parallel region get_thread_tid will return a negative
     // value so in that case we just fall through to the regular routine.
     tid = get_thread_tid();
     if(tid >= 0) {
         return real_sum_all_threaded(x, tid, comm);
     }
-#endif
 
     inreg = x;
 
@@ -85,7 +81,6 @@ rmg_double_t real_sum_all (rmg_double_t x, MPI_Comm comm)
 }                               /* end real_sum_all */
 
 
-#if HYBRID_MODEL
 
 // Used to sum a block of data from a set of threads operating in parallel
 rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid,  MPI_Comm comm) {
@@ -122,4 +117,3 @@ rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid,  MPI_Comm comm) {
 
 }
 
-#endif

@@ -108,12 +108,9 @@ void TradeImages::CPP_trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy,
     time1 = my_crtc ();
 #endif
     tid = 0;
-#if HYBRID_MODEL
-//    basetag = T.get_thread_basetag();
     tid = T.get_thread_tid();
     if(tid < 0) tid = 0;
     if(T.is_loop_over_states()) ACTIVE_THREADS = T.get_threads_per_node();
-#endif
 
     swbuf1x_f = (RmgType *)TradeImages::swbuf1x;
     swbuf2x_f = (RmgType *)TradeImages::swbuf2x;
@@ -432,11 +429,9 @@ void TradeImages::CPP_trade_images (RmgType * mat, int dimx, int dimy, int dimz,
         rmg_error_handler("Not enough memory. This should never happen.");
 
 
-#if HYBRID_MODEL
     tid = T.get_thread_tid();
     if(tid < 0) tid = 0;
     if(T.is_loop_over_states()) ACTIVE_THREADS = T.get_threads_per_node();
-#endif
 
 
 /* precalc some boundaries */

@@ -58,11 +58,9 @@
 #include "main.h"
 
 
-#if HYBRID_MODEL
-    #include "hybrid.h"
-    #include <pthread.h>
+#include "hybrid.h"
+#include <pthread.h>
 static pthread_mutex_t vtot_sync_mutex = PTHREAD_MUTEX_INITIALIZER;
-#endif
 
 
 extern STATE *states;
@@ -396,15 +394,11 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             t1 = 1.8 * ct.potential_acceleration_constant_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
 
-#if HYBRID_MODEL
             pthread_mutex_lock(&vtot_sync_mutex);
-#endif
             for(idx = 0;idx <P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi[idx] * (tmp_psi[idx] - saved_psi[idx]);
             }
-#if HYBRID_MODEL
             pthread_mutex_unlock(&vtot_sync_mutex);
-#endif
 
         }
 
@@ -454,15 +448,11 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
             pack_stop_axpy (sg_twovpsi, res, 1.0, dimx, dimy, dimz);
             t1 = ct.potential_acceleration_poisson_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
-#if HYBRID_MODEL
             pthread_mutex_lock(&vtot_sync_mutex);
-#endif
             for(idx = 0;idx <P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * res[idx];
             }
-#if HYBRID_MODEL
             pthread_mutex_unlock(&vtot_sync_mutex);
-#endif
         }
 
 

@@ -17,10 +17,7 @@ int GRID_MAX1;
 int GRID_MAX2;
 
 
-#if HYBRID_MODEL
 #include "hybrid.h"
-#endif
-
 #include <pthread.h>
 
 
@@ -84,11 +81,9 @@ void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy
         error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
     corner_node_stride = ct.THREADS_PER_NODE * MAX_IMG3; 
     tim = 2 * images;
@@ -672,11 +667,9 @@ void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, 
         error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
     tim = 2 * images;
 
@@ -931,11 +924,9 @@ void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
     time1 = my_crtc ();
 #endif
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
     corner_node_stride = ct.THREADS_PER_NODE * MAX_IMG3;
 
@@ -1410,11 +1401,9 @@ void RMG_MPI_trade(rmg_double_t *buf, int count, int type, int pe_x_offset, int 
     pe_y_offset++;
     pe_z_offset++;
 
-#if HYBRID_MODEL
     // Tag is based on tid in the lower 8 bits which gives us up to 256 threads
     tid = get_thread_tid();
     if(tid == -1) tid = 0;
-#endif
 
 
     ntag = (tag<<8) + tid;
@@ -1441,11 +1430,9 @@ void RMG_MPI_trade_f(rmg_float_t *buf, int count, int type, int pe_x_offset, int
     pe_y_offset++;
     pe_z_offset++;
 
-#if HYBRID_MODEL
     // Tag is based on tid in the lower 8 bits which gives us up to 256 threads
     tid = get_thread_tid();
     if(tid == -1) tid = 0;
-#endif
 
 
     ntag = (tag<<8) + tid;
@@ -1680,11 +1667,9 @@ void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy
         error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
     corner_node_stride = ct.THREADS_PER_NODE * MAX_IMG3; 
     tim = 2 * images;
@@ -2266,11 +2251,9 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
         error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
     tim = 2 * images;
 
@@ -2525,11 +2508,9 @@ void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
     time1 = my_crtc ();
 #endif
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
     corner_node_stride = ct.THREADS_PER_NODE * MAX_IMG3;
 
@@ -3009,11 +2990,9 @@ void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dim
     time1 = my_crtc ();
 #endif
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
 
     incx = (dimy + 2) * (dimz + 2);
@@ -3244,11 +3223,9 @@ void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz
     time1 = my_crtc ();
 #endif
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;
     if(is_loop_over_states()) ACTIVE_THREADS = ct.THREADS_PER_NODE;
-#endif
 
 
     incx = (dimy + 2) * (dimz + 2);

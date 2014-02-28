@@ -6,7 +6,6 @@
 #include "main.h"
 #include "common_prototypes.h"
 
-#if HYBRID_MODEL
 #if GAMMA_PT
 #include "hybrid.h"
 #include <pthread.h>
@@ -77,12 +76,8 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
 
     P0_BASIS = get_P0_BASIS();
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;  // OK in this case
-#else
-    tid = 0;
-#endif
 
     sbasis = sp->sbasis;
 
@@ -256,5 +251,4 @@ void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi)
 
 }                               /* subdiag_app_B_one */
 
-#endif
 #endif

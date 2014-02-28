@@ -20,7 +20,6 @@
 #include "rmgtypedefs.h"
 #include "rmgthreads.h"
 
-#if HYBRID_MODEL
 
 #define HYBRID_EIG 1
 #define HYBRID_SKIP 2
@@ -47,5 +46,4 @@ int is_loop_over_states(void);
 
 #if GPU_ENABLED
 cudaStream_t *get_thread_cstream(void);
-#endif
 #endif

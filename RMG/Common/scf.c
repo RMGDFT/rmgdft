@@ -47,10 +47,8 @@
 #include "common_prototypes.h"
 #include "main.h"
 
-#if HYBRID_MODEL
 #include "hybrid.h"
 #include <pthread.h>
-#endif
 
 
 static int firststep = TRUE;
@@ -162,10 +160,9 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
 
     /*Generate the Dnm_I */
     get_ddd (vtot);
-#if MPI
 
     time1 = my_crtc ();
-#if HYBRID_MODEL
+
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
         betaxpsi (states);
 #if BATCH_NLS
@@ -202,24 +199,6 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
 
     }
 
-#else
-    /* Update the wavefunctions */
-    for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
-        betaxpsi (states);
-#if BATCH_NLS
-#if MD_TIMERS
-        time4 = my_crtc ();
-#endif
-        app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
-#if MD_TIMERS
-        rmg_timings (MG_EIG_NLS_TIME, (my_crtc () - time4));
-#endif
-#endif
-        for (st1 = 0; st1 < ct.num_kpts * ct.num_states; st1++) {
-            mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
-        }
-    }
-#endif
 
     time2 = my_crtc ();
     rmg_timings (EIG_TIME, (time2 - time1));
@@ -288,7 +267,6 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     if  (!firststep)
 	ct.efermi = fill (states, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
 
-#endif
 
 
 

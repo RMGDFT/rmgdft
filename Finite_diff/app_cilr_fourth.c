@@ -27,12 +27,8 @@ rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double
     rmg_double_t c000, c100;
     int tid;
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid < 0) tid = 0;  // OK in this case
-#else
-    tid = 0;
-#endif
 
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);

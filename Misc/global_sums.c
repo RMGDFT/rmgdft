@@ -40,9 +40,7 @@ static rmg_double_t *fixed_vector1 = NULL;
 static rmg_double_t *fixed_vector2 = NULL;
 #define MAX_FIXED_VECTOR 512
 
-#if MPI
 
-#if HYBRID_MODEL
 
 #include <hybrid.h>
 #include <pthread.h>
@@ -55,8 +53,6 @@ static void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_
 
 void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm comm)
 {
-
-  rmg_double_t *rptr, *rptr1;
 
   if(*length < MAX_FIXED_VECTOR) {
 
@@ -107,7 +103,6 @@ void global_sums_threaded (rmg_double_t *vect, int *length, int tid, MPI_Comm co
 
 }
 
-#endif
 
 
 void init_global_sums(void) {
@@ -134,13 +129,11 @@ void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
     time0 = my_crtc ();
 #endif
 
-#if HYBRID_MODEL
     tid = get_thread_tid();
     if(tid >= 0) {
         global_sums_threaded(vect, length, tid, comm);
         return;
     }
-#endif
 
     /* Check for small vector case and handle on stack */
     if (*length < 100)
@@ -184,18 +177,3 @@ void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
 #endif
 }                               /* end global_sums */
 
-
-
-#else
-
-
-
-void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
-{
-    return;
-}
-
-#endif
-
-
-/******/

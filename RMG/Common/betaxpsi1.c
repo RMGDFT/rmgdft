@@ -9,9 +9,7 @@
 #include "main.h"
 #include "common_prototypes.h"
 
-#if HYBRID_MODEL
 #include "hybrid.h"
-#endif
 
 #if GPU_ENABLED
 #include <cuda.h>
@@ -312,11 +310,7 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
-#if HYBRID_MODEL
     my_calloc (nlarrayR, 2 * alloc * ct.THREADS_PER_NODE, rmg_double_t);
-#else
-    my_calloc (nlarrayR, 2 * alloc, rmg_double_t);
-#endif
     nlarrayI = nlarrayR + alloc;
 
 
@@ -351,7 +345,6 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
 
             // Parallelized over threads here.
             start_state = 0;
-#if HYBRID_MODEL
             enter_threaded_region();
             scf_barrier_init(ct.THREADS_PER_NODE);
             istop = ct.num_states / ct.THREADS_PER_NODE;
@@ -377,7 +370,6 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
             leave_threaded_region();
             start_state = istop;
 
-#endif
 
             // Handle the remainder of the states in serial fashion. If
             // not running in hybrid mode then start_state is 0.

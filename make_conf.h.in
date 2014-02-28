@@ -1,8 +1,5 @@
 /****** Compile-time options for real-space code are set here  ******/
 
-/* To enable MPI/PThreads hybrid model, experimental for now */ 
-#define HYBRID_MODEL ${HYBRID_MODEL}
-
 /* Gamma point only set to 1, otherwise, 0 */
 #define GAMMA_PT ${GAMMA_PT}
 

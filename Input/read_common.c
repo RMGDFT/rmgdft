@@ -76,8 +76,6 @@ void read_common ()
     set_grids(NX_GRID, NY_GRID, NZ_GRID, PE_X, PE_Y, PE_Z, FG_NX, FG_NY, FG_NZ);
 
     get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "1");
-    if(!HYBRID_MODEL)
-        ct.THREADS_PER_NODE = 1;
 
     FNX_GRID = NX_GRID * FG_NX;
     FNY_GRID = NY_GRID * FG_NY;

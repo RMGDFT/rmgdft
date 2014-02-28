@@ -177,10 +177,8 @@ void write_header (void)
     printf ("       PE_Y  = %d\n", get_PE_Y());
     printf ("       PE_Z  = %d\n", get_PE_Z());
 
-#if HYBRID_MODEL
     printf ("\n");
     printf ("    Using hybrid model with %d threads per PE\n", ct.THREADS_PER_NODE);
-#endif
 
     printf ("\n");
     printf ("    Fine grid (for charge density):\n");

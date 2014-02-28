@@ -40,10 +40,8 @@
 #include <sys/types.h>
 #include <time.h>
 #include <sys/stat.h>
-#if HYBRID_MODEL
 #include <pthread.h>
 #include "hybrid.h"
-#endif
 
 void init_IO (int argc, char **argv)
 {
@@ -55,14 +53,7 @@ void init_IO (int argc, char **argv)
 
     /* Set start of program time */
     timer = time (NULL);
-#if HYBRID_MODEL
     MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
-#else
-
-    /* Initialize MPI, we need it for error_handler, amongst others */
-    MPI_Init (&argc, &argv);
-
-#endif
 
     /* get this cores mpi rank */
     MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);
@@ -264,7 +255,6 @@ void init_IO (int argc, char **argv)
 
 #endif
 
-#if HYBRID_MODEL
   if(provided < ct.mpi_threadlevel) {
 
       printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
@@ -285,6 +275,5 @@ void init_IO (int argc, char **argv)
   init_trade_imagesx_async();
 #endif
 
-#endif
     return;
 }

@@ -9,9 +9,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#if HYBRID_MODEL
 #include "hybrid.h"
-#endif
 
 
 void app_cir_beta_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
