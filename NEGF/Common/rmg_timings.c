@@ -40,12 +40,12 @@
 rmg_double_t timings[LAST_TIME];
 
 #if !HYBRID_MODEL
-void rmg_timings(int what, rmg_double_t time)
-{
+//void rmg_timings(int what, rmg_double_t time)
+////{
 
-    timings[what] += time;
+ //   timings[what] += time;
 
-}                               /* end rmg_timings */
+//}                               /* end rmg_timings */
 #endif
 
 #include <sys/time.h>
