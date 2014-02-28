@@ -250,17 +250,6 @@ using namespace std;
 	    rmg_error_handler("Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPZ0_GRID;
     }
-    int BaseGrid::get_ibrav_type(void)
-    {
-	if(!BaseGrid::ibrav_first)
-	    rmg_error_handler("Lattice type not initialized. Please call set_ibrav first");
-	return ibrav;
-    }
-    void BaseGrid::set_ibrav_type(int value)
-    {
-	BaseGrid::ibrav = value;
-        BaseGrid::ibrav_first = 1;
-    }
     void BaseGrid::set_anisotropy(rmg_double_t a)
     {
         if(BaseGrid::anisotropy_first) return;
@@ -355,9 +344,6 @@ int BaseGrid::FPZ_OFFSET;
 /* Fine grid basis size on each PE */
 int BaseGrid::FP0_BASIS;
 
-/* Grid bravais lattice type */
-int BaseGrid::ibrav;
-
 /* MPI stuff */
 int BaseGrid::gridpe;
 int BaseGrid::neighbors[6];
@@ -365,7 +351,6 @@ int BaseGrid::neighbors[6];
 /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
 rmg_double_t BaseGrid::anisotropy;
 
-int BaseGrid::ibrav_first=0;
 int BaseGrid::neighbor_first=0;
 int BaseGrid::grid_first=0;
 int BaseGrid::anisotropy_first=0;
@@ -467,18 +452,6 @@ extern "C" void set_anisotropy(rmg_double_t newanisotropy)
 {
   BaseGrid G;
   G.set_anisotropy(newanisotropy);
-}
-/// C interface function
-extern "C" void set_ibrav_type(int newtype)
-{
-  BaseGrid G;
-  G.set_ibrav_type(newtype);
-}
-/// C interface function
-extern "C" int get_ibrav_type(int newtype)
-{
-  BaseGrid G;
-  return G.get_ibrav_type();
 }
 /// C interface function
 extern "C" int get_PX0_GRID(void)

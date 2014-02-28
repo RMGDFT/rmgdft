@@ -118,9 +118,8 @@ void Lattice::to_cartesian (rmg_double_t *crystal, rmg_double_t *cartesian)
 void Lattice::to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian)
 {
     int ir;
-    BaseGrid G;
 
-    if (G.ibrav == HEXAGONAL)
+    if (Lattice::ibrav == HEXAGONAL)
     {
 
         crystal[0] = (cartesian[0] - cartesian[1] / SQRT3) / Lattice::celldm[0];
@@ -141,7 +140,7 @@ void Lattice::to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian)
             crystal[2] -= 1.0;
 
     }
-    else if (G.ibrav == CUBIC_PRIMITIVE)
+    else if (Lattice::ibrav == CUBIC_PRIMITIVE)
     {
 
         crystal[0] = cartesian[0] / Lattice::celldm[0];
@@ -162,7 +161,7 @@ void Lattice::to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian)
             crystal[2] -= 1.0;
 
     }
-    else if (G.ibrav == ORTHORHOMBIC_PRIMITIVE)
+    else if (Lattice::ibrav == ORTHORHOMBIC_PRIMITIVE)
     {
 
         crystal[0] = cartesian[0] / Lattice::celldm[0];
@@ -239,7 +238,7 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
         Lattice::a2[ir] = 0.0;
     }
 
-    switch (G.ibrav)
+    switch (Lattice::ibrav)
     {
 
         case CUBIC_PRIMITIVE:
@@ -378,7 +377,7 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
 
         default:
 
-            printf ("ibrav is set to %d", G.ibrav);
+            printf ("ibrav is set to %d", Lattice::ibrav);
             rmg_error_handler ("bravais lattice not programmed.");
 
 
@@ -462,6 +461,9 @@ rmg_double_t Lattice::metric (rmg_double_t * crystal)
 
 //****/
 
+// Grid bravais lattice type 
+int Lattice::ibrav;
+
 // lengths of the sides of the supercell
 rmg_double_t Lattice::xside;
 rmg_double_t Lattice::yside;
@@ -505,7 +507,16 @@ rmg_double_t Lattice::hyygrid;
 // The fine uniform grid spacing in z
 rmg_double_t Lattice::hzzgrid;
 
-
+/// C interface function
+extern "C" void set_ibrav_type(int newtype)
+{
+  Lattice::ibrav = newtype;
+}
+/// C interface function
+extern "C" int get_ibrav_type(int newtype)
+{
+  return Lattice::ibrav;
+}
 extern "C" rmg_double_t get_xside(void)
 {
     return Lattice::xside;

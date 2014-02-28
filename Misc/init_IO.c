@@ -277,7 +277,6 @@ void init_IO (int argc, char **argv)
   init_HYBRID_MODEL(ct.THREADS_PER_NODE);
 
   // Allocate storage for trade_images and global sums routines
-printf("\n PX0_GRID %f", get_xside());
   init_TradeImages();
   init_global_sums();
 

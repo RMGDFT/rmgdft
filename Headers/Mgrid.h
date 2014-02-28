@@ -2,6 +2,7 @@
 #define RMG_Mgrid_H 1
 
 #include "BaseGrid.h"
+#include "Lattice.h"
 
 class Mgrid {
 

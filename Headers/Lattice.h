@@ -8,6 +8,10 @@
 class Lattice {
 
 public:
+
+    // Grid bravais lattice type 
+    static int ibrav;
+
     // lengths of the sides of the supercell
     static rmg_double_t xside;
     static rmg_double_t yside;

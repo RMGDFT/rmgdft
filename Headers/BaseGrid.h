@@ -55,9 +55,6 @@ public:
     /* Fine grid basis size on each PE */
     static int FP0_BASIS;
 
-    /* Grid bravais lattice type */
-    static int ibrav;
-
     /* MPI specific info */
     static int gridpe;
     static int neighbors[6];
@@ -66,7 +63,6 @@ public:
     static rmg_double_t anisotropy;
 
     /* Initialiazation flags */
-    static int ibrav_first;
     static int neighbor_first;
     static int grid_first;
     static int anisotropy_first;
@@ -92,8 +88,6 @@ public:
     int get_FPX0_GRID(void);
     int get_FPY0_GRID(void);
     int get_FPZ0_GRID(void);
-    int get_ibrav_type(void);
-    void set_ibrav_type(int value);
     void set_anisotropy(rmg_double_t a);
     rmg_double_t get_anisotropy(void);
     void pe2xyz(int pe, int *x, int *y, int *z);

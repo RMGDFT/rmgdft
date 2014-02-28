@@ -140,7 +140,7 @@ rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t 
     BaseGrid G;
     Lattice L;
 
-    ibrav = G.get_ibrav_type();
+    ibrav = L.ibrav;
 
     incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
     incy = FIXED_ZDIM + 4;
@@ -865,7 +865,7 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
     BaseGrid G;
     Lattice L;
 
-    ibrav = G.get_ibrav_type();
+    ibrav = L.ibrav;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -1141,7 +1141,7 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
     BaseGrid G;
     Lattice L;
 
-    ibrav = G.get_ibrav_type();
+    ibrav = L.ibrav;
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         rmg_error_handler("Grid symmetry not programmed yet in FD_app_cil_fourth_standard.\n");
@@ -1372,8 +1372,9 @@ void FD_app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy
     int incyr, incxr;
     rmg_double_t c000, c100;
     BaseGrid G;
+    Lattice L;
 
-    ibrav = G.get_ibrav_type();
+    ibrav = L.ibrav;
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         rmg_error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
