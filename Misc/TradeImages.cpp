@@ -428,10 +428,10 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
 
 #if ASYNC_TRADES
-//    if(type == CENTRAL_FD) {
-//        TradeImages::trade_images1_central_async (mat, dimx, dimy, dimz);
-//        return;
-//    }
+    if(type == CENTRAL_FD) {
+        TradeImages::trade_images1_central_async (mat, dimx, dimy, dimz);
+        return;
+    }
 #endif
 
 #if MD_TIMERS

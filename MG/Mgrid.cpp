@@ -83,7 +83,8 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = step / scale;
 
-    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
+//    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
+    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, FULL_FD);
 
 
     for (idx = 0; idx < size; idx++)
