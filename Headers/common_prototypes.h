@@ -199,20 +199,6 @@ void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, 
 void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images);
 
 
-// This set is used for the C++ interface
-void FD_app_cir_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz);
-void FD_app_cir_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz);
-void FD_app_cir_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b);
-void FD_app_cir_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b);
-rmg_double_t FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-rmg_double_t FD_app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-rmg_double_t FD_app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-rmg_double_t FD_app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-rmg_double_t FD_app_del2c_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-rmg_double_t FD_app_del2c_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-
-
-
 
 #if GPU_ENABLED
 void init_gpu (void);

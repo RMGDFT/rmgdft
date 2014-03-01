@@ -13,6 +13,7 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     void *allocp;
     RmgType *rptr;
     TradeImages T;
+    FiniteDiff FD;
 
     P0_BASIS = get_P0_BASIS();
     numgrid = dimx * dimy * dimz;
@@ -24,10 +25,10 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     if(order == APP_CI_FOURTH) {
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
         if(numgrid == P0_BASIS) {
-            FD_app_cir_fourth_global (rptr, b);
+            FD.app_cir_fourth_global (rptr, b);
         }
         else {
-            FD_app_cir_fourth_standard (rptr, b, dimx, dimy, dimz);
+            FD.app_cir_fourth_standard (rptr, b, dimx, dimy, dimz);
         }
         my_free(rptr);
         return;
@@ -35,10 +36,10 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     if(order == APP_CI_SIXTH) {
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
         if(numgrid == P0_BASIS) {
-            FD_app_cir_sixth_global (rptr, b);
+            FD.app_cir_sixth_global (rptr, b);
         }
         else {
-            FD_app_cir_sixth_standard (rptr, b, dimx, dimy, dimz);
+            FD.app_cir_sixth_standard (rptr, b, dimx, dimy, dimz);
         }
         my_free(rptr);
         return;

@@ -16,7 +16,7 @@ extern "C" {
 }
 
 template <typename RmgType>
-rmg_double_t FD_app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+rmg_double_t FiniteDiff::app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr;
@@ -124,7 +124,7 @@ rmg_double_t FD_app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int
 
 // Version with loop dimensions set at compile time
 template <typename RmgType>
-rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
 
@@ -536,7 +536,7 @@ rmg_double_t FD_app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t 
 
 
 template <typename RmgType>
-void FD_app_cir_sixth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
+void FiniteDiff::app_cir_sixth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
@@ -611,7 +611,7 @@ void FD_app_cir_sixth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy,
 
 
 template <typename RmgType>
-void FD_app_cir_sixth_global (RmgType * rptr, RmgType * b)
+void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
 {
 
     int ix, iy, iz;
@@ -853,7 +853,7 @@ void FD_app_cir_sixth_global (RmgType * rptr, RmgType * b)
 
 
 template <typename RmgType>
-rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
@@ -1130,7 +1130,7 @@ rmg_double_t FD_app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dim
 
 
 template <typename RmgType>
-rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ibrav;
@@ -1144,7 +1144,7 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
     ibrav = L.ibrav;
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler("Grid symmetry not programmed yet in FD_app_cil_fourth_standard.\n");
+        rmg_error_handler("Grid symmetry not programmed yet in app_cil_fourth_standard.\n");
     }
 
     ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
@@ -1291,7 +1291,7 @@ rmg_double_t FD_app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, 
 
 
 template <typename RmgType>
-rmg_double_t FD_app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+rmg_double_t FiniteDiff::app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ix, iy, iz;
@@ -1363,7 +1363,7 @@ rmg_double_t FD_app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t
 
 
 template <typename RmgType>
-void FD_app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
+void FiniteDiff::app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, ibrav;
@@ -1420,7 +1420,7 @@ void FD_app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy
 }
 
 template <typename RmgType>
-void FD_app_cir_fourth_global (RmgType * rptr, RmgType * b)
+void FiniteDiff::app_cir_fourth_global (RmgType * rptr, RmgType * b)
 {
 
     int ix, iy, iz;
@@ -1471,119 +1471,137 @@ void FD_app_cir_fourth_global (RmgType * rptr, RmgType * b)
 }
 
 // Wrappers to call these from C
-extern "C" double FD_app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
-
-    return FD_app_cil_sixth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_cil_sixth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_cil_sixth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-}
-
-extern "C" double FD_app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    return FD_app_cil_sixth_global<double> (rptr, b, gridhx, gridhy, gridhz);
-
-}
-extern "C" double FD_app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    return FD_app_cil_sixth_global<float> (rptr, b, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_cil_sixth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
 
-extern "C" void FD_app_cir_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
+extern "C" double app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    FD_app_cir_sixth_standard<double> (rptr, b, dimx, dimy, dimz);
+    FiniteDiff FD; 
+    return FD.app_cil_sixth_global<double> (rptr, b, gridhx, gridhy, gridhz);
 
 }
-extern "C" void FD_app_cir_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
+extern "C" double app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    FD_app_cir_sixth_standard<float> (rptr, b, dimx, dimy, dimz);
+    FiniteDiff FD; 
+    return FD.app_cil_sixth_global<float> (rptr, b, gridhx, gridhy, gridhz);
 
 }
-extern "C" void FD_app_cir_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
+
+extern "C" void app_cir_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
 {
 
-    FD_app_cir_sixth_global<double> (rptr, b);
+    FiniteDiff FD; 
+    FD.app_cir_sixth_standard<double> (rptr, b, dimx, dimy, dimz);
 
 }
-extern "C" void FD_app_cir_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
+extern "C" void app_cir_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
 {
 
-    FD_app_cir_sixth_global<float> (rptr, b);
+    FiniteDiff FD; 
+    FD.app_cir_sixth_standard<float> (rptr, b, dimx, dimy, dimz);
+
+}
+extern "C" void app_cir_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
+{
+
+    FiniteDiff FD; 
+    FD.app_cir_sixth_global<double> (rptr, b);
+
+}
+extern "C" void app_cir_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
+{
+
+    FiniteDiff FD; 
+    FD.app_cir_sixth_global<float> (rptr, b);
 
 }
 extern "C" double app_del2c(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_del2c<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_del2c<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
 extern "C" double app_del2c_f(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_del2c<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_del2c<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_del2c_rmg_complex(complex<double> *rptr, complex<double> *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_del2c_rmg_complex(complex<double> *rptr, complex<double> *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_del2c<complex <double> > (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_del2c<complex <double> > (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_cil_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_cil_fourth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_cil_fourth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_cil_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_cil_fourth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_cil_fourth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_cil_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_cil_fourth_global<double> (rptr, b, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_cil_fourth_global<double> (rptr, b, gridhx, gridhy, gridhz);
 
 }
-extern "C" double FD_app_cil_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    return FD_app_cil_fourth_global<float> (rptr, b, gridhx, gridhy, gridhz);
+    FiniteDiff FD; 
+    return FD.app_cil_fourth_global<float> (rptr, b, gridhx, gridhy, gridhz);
 
 }
-extern "C" void FD_app_cir_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
+extern "C" void app_cir_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
 {
 
-    FD_app_cir_fourth_standard<double> (rptr, b, dimx, dimy, dimz);
+    FiniteDiff FD; 
+    FD.app_cir_fourth_standard<double> (rptr, b, dimx, dimy, dimz);
 
 }
-extern "C" void FD_app_cir_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
+extern "C" void app_cir_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
 {
 
-    FD_app_cir_fourth_standard<float> (rptr, b, dimx, dimy, dimz);
+    FiniteDiff FD; 
+    FD.app_cir_fourth_standard<float> (rptr, b, dimx, dimy, dimz);
 
 }
-extern "C" void FD_app_cir_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
+extern "C" void app_cir_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
 {
 
-    FD_app_cir_fourth_global<double> (rptr, b);
+    FiniteDiff FD; 
+    FD.app_cir_fourth_global<double> (rptr, b);
 
 }
-extern "C" void FD_app_cir_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
+extern "C" void app_cir_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
 {
 
-    FD_app_cir_fourth_global<float> (rptr, b);
+    FiniteDiff FD; 
+    FD.app_cir_fourth_global<float> (rptr, b);
 
 }

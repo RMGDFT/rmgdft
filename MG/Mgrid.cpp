@@ -611,11 +611,12 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, RmgType * res)
 {
     int size, idx;
+    FiniteDiff FD;
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)
         res[idx] = 0.0;
-    FD_app_del2c (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FD.app_del2c (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     for (idx = 0; idx < size; idx++)
         res[idx] = f_mat[idx] - res[idx];
@@ -632,11 +633,12 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
     int size, idx;
     rmg_double_t scale;
     rmg_double_t diag;
+    FiniteDiff FD;
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)
         work[idx] = ZERO;
-    diag = -FD_app_del2c (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    diag = -FD.app_del2c (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     scale = step / diag;
     

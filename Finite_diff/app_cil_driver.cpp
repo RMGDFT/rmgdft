@@ -14,6 +14,7 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
     void *allocp;
     RmgType *rptr;
     TradeImages T;
+    FiniteDiff FD;
 
     P0_BASIS = get_P0_BASIS();
     numgrid = dimx * dimy * dimz;
@@ -25,10 +26,10 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
     if(order == APP_CI_FOURTH) {
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
         if(numgrid == P0_BASIS) {
-            cc = FD_app_cil_fourth_global (rptr, b, gridhx, gridhy, gridhz);
+            cc = FD.app_cil_fourth_global (rptr, b, gridhx, gridhy, gridhz);
         }
         else {
-            cc = FD_app_cil_fourth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            cc = FD.app_cil_fourth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         }
         my_free(rptr);
         return cc;
@@ -36,10 +37,10 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
     if(order == APP_CI_SIXTH) {
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
         if(numgrid == P0_BASIS) {
-            cc = FD_app_cil_sixth_global (rptr, b, gridhx, gridhy, gridhz);
+            cc = FD.app_cil_sixth_global (rptr, b, gridhx, gridhy, gridhz);
         }
         else {
-            cc = FD_app_cil_sixth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            cc = FD.app_cil_sixth_standard (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         }
 
         my_free(rptr);
