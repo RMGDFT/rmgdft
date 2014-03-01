@@ -14,3 +14,7 @@ MPI_Comm transition_get_grid_comm(void)
 {
     return pct.grid_comm;
 }
+extern "C" int transition_get_gridpe(void)
+{
+    return pct.gridpe;
+}

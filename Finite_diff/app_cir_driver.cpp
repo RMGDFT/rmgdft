@@ -22,7 +22,7 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     rptr = (RmgType *)allocp;
 
     if(order == APP_CI_FOURTH) {
-        T.CPP_trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_FD);
+        T.trade_imagesx_async (a, rptr, dimx, dimy, dimz, 1);
         if(numgrid == P0_BASIS) {
             FD_app_cir_fourth_global (rptr, b);
         }
@@ -33,7 +33,7 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
         return;
     }
     if(order == APP_CI_SIXTH) {
-        T.CPP_trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
+        T.trade_imagesx_async (a, rptr, dimx, dimy, dimz, 2);
         if(numgrid == P0_BASIS) {
             FD_app_cir_sixth_global (rptr, b);
         }

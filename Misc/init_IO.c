@@ -270,10 +270,4 @@ void init_IO (int argc, char **argv)
   init_TradeImages();
   init_global_sums();
 
-#if ASYNC_TRADES
-  // set up memory sections for async trade images
-  init_trade_imagesx_async();
-#endif
-
-    return;
 }

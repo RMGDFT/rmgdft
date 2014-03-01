@@ -7,7 +7,6 @@ real_sum_all.c
 minimage.c
 pack_stop.c
 get_vtot_psi.c
-trade_imagesx_async.c
 my_mpi.c
 pack_vhstod.c
 int_sum_all.c
