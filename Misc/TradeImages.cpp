@@ -9,6 +9,13 @@
 
 using namespace std;
 
+
+// Force instantiation of float and double versions.
+template void TradeImages::trade_images<rmg_float_t>(rmg_float_t*, int, int, int, int);
+template void TradeImages::trade_images<rmg_double_t>(rmg_double_t*, int, int, int, int);
+template void TradeImages::trade_imagesx<rmg_float_t>(rmg_float_t*, rmg_float_t*, int, int, int, int, int);
+template void TradeImages::trade_imagesx<rmg_double_t>(rmg_double_t*, rmg_double_t*, int, int, int, int, int);
+
 extern "C"
 {
 rmg_double_t my_crtc (void);
@@ -2602,51 +2609,6 @@ extern "C"  void trade_imagesx_f (rmg_float_t * f, rmg_float_t * w, int dimx, in
     TradeImages T;
     T.trade_imagesx<float>(f, w, dimx, dimy, dimz, images, type);
 }
-
-extern "C"  void trade_imagesx_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images)
-{
-    TradeImages T;
-    T.trade_imagesx_async<double>(f, w, dimx, dimy, dimz, images);
-}
-extern "C"  void trade_imagesx_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images)
-{
-    TradeImages T;
-    T.trade_imagesx_async<float>(f, w, dimx, dimy, dimz, images);
-}
-
-extern "C"  void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images)
-{
-    TradeImages T;
-    T.trade_imagesx_central_async<double>(f, w, dimx, dimy, dimz, images);
-}
-extern "C"  void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images)
-{
-    TradeImages T;
-    T.trade_imagesx_central_async<float>(f, w, dimx, dimy, dimz, images);
-}
-
-extern "C"  void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz)
-{
-    TradeImages T;
-    T.trade_images1_async<double>(f, dimx, dimy, dimz);
-}
-extern "C"  void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
-{
-    TradeImages T;
-    T.trade_images1_async<float>(f, dimx, dimy, dimz);
-}
-
-extern "C"  void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz)
-{
-    TradeImages T;
-    T.trade_images1_central_async<double>(f, dimx, dimy, dimz);
-}
-extern "C"  void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dimz)
-{
-    TradeImages T;
-    T.trade_images1_central_async<float>(f, dimx, dimy, dimz);
-}
-
 extern "C" void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int type)
 {
     TradeImages T;
@@ -2657,16 +2619,5 @@ extern "C" void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, 
 {
     TradeImages T;
     T.trade_images<float>(mat, dimx, dimy, dimz, type);
-}
-
-extern "C" void CPP_RMG_MPI_trade( rmg_double_t *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req)
-{
-    TradeImages T;
-    T.RMG_MPI_trade<double>(buf, count, type, pe_x_offset, pe_y_offset, pe_z_offset, comm, tag, req);
-}
-extern "C" void CPP_RMG_MPI_trade_f( rmg_float_t *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req)
-{
-    TradeImages T;
-    T.RMG_MPI_trade<float>(buf, count, type, pe_x_offset, pe_y_offset, pe_z_offset, comm, tag, req);
 }
 
