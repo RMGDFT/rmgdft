@@ -292,7 +292,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images (sg_psi, dimx, dimy, dimz, get_neighbors(), FULL_FD);
+            trade_images (sg_psi, dimx, dimy, dimz, FULL_FD);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
@@ -416,7 +416,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
             /* Pack delta_rho into multigrid array */
             pack_ptos (sg_psi, res, dimx, dimy, dimz);
-            trade_images (sg_psi, dimx, dimy, dimz, get_neighbors(), FULL_FD);
+            trade_images (sg_psi, dimx, dimy, dimz, FULL_FD);
             /* Smooth it once and store the smoothed charge in res */
             app_smooth1 (sg_psi, res, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 
@@ -733,7 +733,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #endif
 
             time1 = my_crtc ();
-            trade_images (sg_psiR, dimx, dimy, dimz, get_neighbors(), FULL_FD);
+            trade_images (sg_psiR, dimx, dimy, dimz, FULL_FD);
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 
             /* Smooth it once and store the smoothed residual in work1 */
@@ -779,7 +779,7 @@ void mg_eig_state (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images (sg_psiI, dimx, dimy, dimz, get_neighbors(), FULL_FD);
+            trade_images (sg_psiI, dimx, dimy, dimz, FULL_FD);
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
 #endif

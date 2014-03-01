@@ -122,12 +122,6 @@ int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
 int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxsize, int *pysize, int *pzsize);
 void read_common();
-void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
-void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
-void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
-void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz);
-void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images);
-void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images);
 void pe2xyz(int pe, int *x, int *y, int *z);
 int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing);
 int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
@@ -191,14 +185,18 @@ rmg_double_t get_b1(int which);
 rmg_double_t get_b2(int which);
 
 
-void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
-void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int type);
+void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int type);
 void trade_imagesx (rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (rmg_double_t *f, rmg_double_t *w, int dimx, int dimy, int dimz, int images);
 void trade_imagesx_async_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (rmg_double_t * f, int dimx, int dimy, int dimz);
 void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
+void trade_images1_central_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
+void trade_images1_central_async (rmg_double_t * f, int dimx, int dimy, int dimz);
+void trade_imagesx_central_async_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images);
+void trade_imagesx_central_async (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images);
 
 
 // This set is used for the C++ interface

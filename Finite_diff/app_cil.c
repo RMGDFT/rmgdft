@@ -47,7 +47,6 @@ rmg_double_t app_cil (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, in
 
     int iz, ix, iy, incx, incy, incxr, incyr, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    int *neighbors;
 
     rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
     rmg_double_t ihx, ihy, ihz, a1, a2, a3;
@@ -55,10 +54,9 @@ rmg_double_t app_cil (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, in
     double time1, time2;
 
     ibrav = get_ibrav_type();
-    neighbors = get_neighbors();
 
     time1 = my_crtc();
-    trade_images (a, dimx, dimy, dimz, neighbors, FULL_FD);
+    trade_images (a, dimx, dimy, dimz, FULL_FD);
     time2 = my_crtc();
     rmg_timings (CIL_IMAGE_TIME, (time2 - time1));
 

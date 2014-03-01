@@ -405,7 +405,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
 template <typename RmgType>
-void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
+void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type)
 {
     int i, j, ione=1;
     int incx, incy, incz;
@@ -413,6 +413,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     int ix, iz, iys2;
     int alloc, alloc1, toffset;
     int ACTIVE_THREADS = 1, factor;
+    int *nb_ids;
+    BaseGrid G;
     BaseThread T(0);
 
     factor = sizeof(RmgType);
@@ -425,6 +427,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     swbuf1x_f = (RmgType *)TradeImages::swbuf1x;
     swbuf2x_f = (RmgType *)TradeImages::swbuf2x;
+
+    nb_ids = G.get_neighbors();
 
 
 #if ASYNC_TRADES
@@ -2643,16 +2647,16 @@ extern "C"  void trade_images1_central_async_f (rmg_float_t * f, int dimx, int d
     T.trade_images1_central_async<float>(f, dimx, dimy, dimz);
 }
 
-extern "C" void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
+extern "C" void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int type)
 {
     TradeImages T;
-    T.trade_images<double>(mat, dimx, dimy, dimz, nb_ids, type);
+    T.trade_images<double>(mat, dimx, dimy, dimz, type);
 }
 
-extern "C" void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type)
+extern "C" void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int type)
 {
     TradeImages T;
-    T.trade_images<float>(mat, dimx, dimy, dimz, nb_ids, type);
+    T.trade_images<float>(mat, dimx, dimy, dimz, type);
 }
 
 extern "C" void CPP_RMG_MPI_trade( rmg_double_t *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req)

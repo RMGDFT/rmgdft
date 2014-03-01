@@ -39,7 +39,7 @@ public:
     TradeImages(void);
     template <typename RmgType> void RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);
-    template <typename RmgType> void trade_images (RmgType * mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+    template <typename RmgType> void trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type);
     template <typename RmgType> void trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_images1_central_async (RmgType * f, int dimx, int dimy, int dimz);

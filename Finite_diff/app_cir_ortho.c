@@ -47,10 +47,7 @@ void app_cir_ortho (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
     int ixs, iys, ixms, ixps, iyms, iyps, iyps1, iyps2;
     int incy, incx;
     int incyr, incxr;
-    int *neighbors;
     rmg_double_t Bc, Bf;
-
-    neighbors = get_neighbors();
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -58,7 +55,7 @@ void app_cir_ortho (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
     incxr = dimz * dimy;
 
 
-    trade_images (a, dimx, dimy, dimz, neighbors, CENTRAL_FD);
+    trade_images (a, dimx, dimy, dimz, CENTRAL_FD);
 
 
     Bc = 0.5;
