@@ -50,7 +50,7 @@ using namespace std;
         int rem;
 
        if(!BaseGrid::grid_first)
-            rmg_error_handler("Grids must be initialized before nodes. Please call set_grids first");
+            rmg_error_handler (__FILE__, __LINE__, "Grids must be initialized before nodes. Please call set_grids first");
 
         BaseGrid::gridpe = newgridpe;
 
@@ -169,85 +169,85 @@ using namespace std;
     int BaseGrid::get_PX0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PX0_GRID;
     }
     int BaseGrid::get_PY0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PY0_GRID;
     }
     int BaseGrid::get_PZ0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PZ0_GRID;
     }
     int BaseGrid::get_PX_OFFSET(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PX_OFFSET;
     }
     int BaseGrid::get_PY_OFFSET(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PY_OFFSET;
     }
     int BaseGrid::get_PZ_OFFSET(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PZ_OFFSET;
     }
     int BaseGrid::get_FPX_OFFSET(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPX_OFFSET;
     }
     int BaseGrid::get_FPY_OFFSET(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPY_OFFSET;
     }
     int BaseGrid::get_FPZ_OFFSET(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPZ_OFFSET;
     }
     int BaseGrid::get_P0_BASIS(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::P0_BASIS;
     }
     int BaseGrid::get_FP0_BASIS(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FP0_BASIS;
     }
     int BaseGrid::get_FPX0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPX0_GRID;
     }
     int BaseGrid::get_FPY0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPY0_GRID;
     }
     int BaseGrid::get_FPZ0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
-	    rmg_error_handler("Grids not initialized. Please call set_grids first");
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPZ0_GRID;
     }
     void BaseGrid::set_anisotropy(rmg_double_t a)
@@ -259,7 +259,7 @@ using namespace std;
     rmg_double_t BaseGrid::get_anisotropy(void)
     {
 	if(!BaseGrid::anisotropy_first)
-	    rmg_error_handler("Anisotropy not initialized. Please call set_anisotropy first");
+	    rmg_error_handler (__FILE__, __LINE__, "Anisotropy not initialized. Please call set_anisotropy first");
 	return BaseGrid::anisotropy;
     }
 
@@ -284,7 +284,7 @@ using namespace std;
     int *BaseGrid::get_neighbors(void)
     {
 	if(!BaseGrid::neighbor_first)
-	    rmg_error_handler("Neighbor list not initialized. Please call set_neighbors first");
+	    rmg_error_handler (__FILE__, __LINE__, "Neighbor list not initialized. Please call set_neighbors first");
 
 	return BaseGrid::neighbors;
     }

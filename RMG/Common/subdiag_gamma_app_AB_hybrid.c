@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "common_prototypes.h"
+#include "BaseThread.h"
 
 #if GAMMA_PT
 #include "hybrid.h"
@@ -35,7 +36,7 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
     istop = ct.num_states / ct.THREADS_PER_NODE;
     istop = istop * ct.THREADS_PER_NODE;     
     for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
-        SCF_THREAD_CONTROL thread_control[MAX_SCF_THREADS];
+        SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
         for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_A;
             thread_control[ist].sp = &states[st1 + ist];
@@ -187,7 +188,7 @@ void subdiag_app_B (STATE * states, rmg_double_t * b_psi)
     istop = ct.num_states / ct.THREADS_PER_NODE;
     istop = istop * ct.THREADS_PER_NODE;
     for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
-        SCF_THREAD_CONTROL thread_control[MAX_SCF_THREADS];
+        SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
         for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_B;
             thread_control[ist].sp = &states[st1 + ist];

@@ -37,9 +37,10 @@
 
 
 #include <hybrid.h>
+#include "BaseThread.h"
 #include <pthread.h>
-volatile int int_sum_all_vector[MAX_SCF_THREADS];
-volatile int recvbuf[MAX_SCF_THREADS];
+volatile int int_sum_all_vector[MAX_RMG_THREADS];
+volatile int recvbuf[MAX_RMG_THREADS];
 volatile int int_sum_all_vector_state = 0;
 pthread_mutex_t int_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
 static int int_sum_all_threaded(int x, int tid, MPI_Comm comm);

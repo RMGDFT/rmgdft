@@ -9,7 +9,6 @@
 #include <cmath>
 #include <complex>
 
-
 using namespace std;
 
 #define ASYNC_MODE      0
@@ -96,11 +95,11 @@ TradeImages::TradeImages(void)
          }
          retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T.get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
          if(retval != MPI_SUCCESS) {
-             rmg_error_handler("Error in MPI_Alloc_mem.\n");
+             rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
          }
          retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T.get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
          if(retval != MPI_SUCCESS) {
-             rmg_error_handler("Error in MPI_Alloc_mem.\n");
+             rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
          }
 
 
@@ -175,7 +174,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     alloc = 2 * (xlen + ylen + zlen) * T.get_threads_per_node();
     // Verify that the required memory will fit into the statically allocated storage
     if(alloc > TradeImages::max_alloc)
-        rmg_error_handler("Not enough memory. This should never happen.");
+        rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
 
 
     nb_ids = G.get_neighbors();
@@ -443,7 +442,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
         alloc = alloc1;
     alloc = alloc * T.get_threads_per_node();
     if(alloc > TradeImages::max_alloc)
-        rmg_error_handler("Not enough memory. This should never happen.");
+        rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
 
 
     tid = T.get_thread_tid();
@@ -743,55 +742,55 @@ void TradeImages::init_trade_imagesx_async(void)
     // Allocate memory buffers using MPI_Alloc_mem
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdx1);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdx2);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdy1);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdy2);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdz1);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdz2);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdx1n);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdx2n);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdy1n);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdy2n);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdz1n);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &TradeImages::frdz2n);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     retval = MPI_Alloc_mem(sizeof(complex<double>) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &TradeImages::yzpsms_r);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     TradeImages::yzpsps_r = TradeImages::yzpsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
     TradeImages::yzmsms_r = TradeImages::yzpsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
@@ -803,7 +802,7 @@ void TradeImages::init_trade_imagesx_async(void)
 
     retval = MPI_Alloc_mem(sizeof(complex<double>) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &TradeImages::xypsms_r);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     TradeImages::xypsps_r = TradeImages::xypsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
     TradeImages::xymsms_r = TradeImages::xypsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
@@ -815,7 +814,7 @@ void TradeImages::init_trade_imagesx_async(void)
 
     retval = MPI_Alloc_mem(sizeof(complex<double>) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &TradeImages::xzpsms_r);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
     TradeImages::xzpsps_r = TradeImages::xzpsms_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
     TradeImages::xzmsms_r = TradeImages::xzpsps_r + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
@@ -827,12 +826,12 @@ void TradeImages::init_trade_imagesx_async(void)
 
     retval = MPI_Alloc_mem(sizeof(complex<double>) * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &TradeImages::m0_r);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
 
     retval = MPI_Alloc_mem(sizeof(complex<double>) * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &TradeImages::m0_s);
     if(retval != MPI_SUCCESS) {
-        rmg_error_handler("Error in MPI_Alloc_mem.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
 }
 
@@ -900,7 +899,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
 
     if(images > MAX_TRADE_IMAGES) {
-       rmg_error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
     tid = T.get_thread_tid();
@@ -1251,7 +1250,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -1455,7 +1454,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -1495,7 +1494,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
 
 
     if(images > MAX_TRADE_IMAGES) {
-       rmg_error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
     tid = T.get_thread_tid();
@@ -1647,7 +1646,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -1726,7 +1725,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -2085,7 +2084,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -2252,7 +2251,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -2416,7 +2415,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     // Wait for all the recvs to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 
@@ -2495,7 +2494,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     // Finally wait for all the sends to finish
     if(tid == 0) {
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
-        if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
+        if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
 

@@ -46,6 +46,7 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
+#include "BaseThread.h"
 
 #include "hybrid.h"
 #include <pthread.h>
@@ -175,7 +176,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
         istop = ct.num_kpts * ct.num_states / ct.THREADS_PER_NODE;
         istop = istop * ct.THREADS_PER_NODE;
         for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
-          SCF_THREAD_CONTROL thread_control[MAX_SCF_THREADS];
+          SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
           for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;

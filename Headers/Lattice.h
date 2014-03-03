@@ -5,7 +5,7 @@
 #include "rmgtypes.h"
 #include "rmg_error.h"
 
-class Lattice {
+class Lattice : public RmgError {
 
 public:
 

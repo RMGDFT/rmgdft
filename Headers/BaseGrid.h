@@ -19,7 +19,7 @@
 #include <iostream>
 #include <cstdio>
 
-class BaseGrid {
+class BaseGrid : public RmgError {
 
 public:
     /* Global coarse grid dimensions */

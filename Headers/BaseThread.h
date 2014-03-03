@@ -14,11 +14,18 @@
 #endif
 #include "params.h"
 #include "rmgtypes.h"
+#include "rmg_error.h"
+
+// Maximum number of Rmg threads. Adjust based on hardware resources.
+#define MAX_RMG_THREADS 32
+
 
 // Project specific thread function
 void *run_threads(void *s);
 
-class BaseThread {
+#ifdef __cplusplus
+
+class BaseThread : public RmgError {
 
 private:
 
@@ -34,7 +41,7 @@ private:
     static pthread_mutex_t mpi_mutex;
 
     static pthread_attr_t thread_attrs;
-    static pthread_t threads[MAX_SCF_THREADS];
+    static pthread_t threads[MAX_RMG_THREADS];
     static volatile int in_threaded_region;
 
     // These are used to ensure thread ordering
@@ -107,4 +114,5 @@ public:
 
 };
 
+#endif
 #endif

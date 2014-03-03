@@ -28,6 +28,7 @@ Documentation:
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "BaseThread.h"
 #include "grid.h"
 #include "main.h"
 
@@ -433,7 +434,7 @@ void matsum (double *tmat, double *dismat, double *globmat, int size)
 {
     int idx, jdx;
     int istop, len;
-    int col, row, nprow, npcol, dist_length[MAX_SCF_THREADS];
+    int col, row, nprow, npcol, dist_length[MAX_RMG_THREADS];
 
     nprow = pct.scalapack_nprow;
     npcol = pct.scalapack_npcol;

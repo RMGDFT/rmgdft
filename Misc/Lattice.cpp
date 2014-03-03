@@ -330,19 +330,19 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
         case ORTHORHOMBIC_BASE_CENTRED:
 
             /* not programmed */
-            rmg_error_handler ("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case ORTHORHOMBIC_BC:
 
             /* not programmed */
-            rmg_error_handler ("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case ORTHORHOMBIC_FC:
 
             /* not programmed */
-            rmg_error_handler ("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case MONOCLINIC_PRIMITIVE:
@@ -356,7 +356,7 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
 
         case MONOCLINIC_BASE_CENTRED:
             /* not programmed */
-            rmg_error_handler ("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
         case TRICLINIC_PRIMITIVE:
@@ -378,7 +378,7 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
         default:
 
             printf ("ibrav is set to %d", Lattice::ibrav);
-            rmg_error_handler ("bravais lattice not programmed.");
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
 
 
     }                           /* end switch (*ibrav) */

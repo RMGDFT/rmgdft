@@ -4,7 +4,6 @@
 #include "rmg_alloc.h"
 #include "rmg_error.h"
 
-
 template <typename RmgType>
 rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
 {
@@ -15,6 +14,7 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
     RmgType *rptr;
     TradeImages T;
     FiniteDiff FD;
+    RmgError Err;
 
     P0_BASIS = get_P0_BASIS();
     numgrid = dimx * dimy * dimz;
@@ -47,7 +47,7 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
         return cc;
     }
 
-    rmg_error_handler("APP_CIL order not programmed yet in app_cil_driver.\n");
+    Err.rmg_error_handler (__FILE__, __LINE__, "APP_CIL order not programmed yet in app_cil_driver.\n");
 
 }
 

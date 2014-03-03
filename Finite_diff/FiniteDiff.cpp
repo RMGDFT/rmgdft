@@ -1,15 +1,14 @@
 
+using namespace std;
 #include "fixed_dims.h"
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
+#include <stdexcept>
 #include <cmath>
 #include <complex>
 
-using namespace std;
-
 extern "C" {
-  void rmg_error_handler(const char *message);
   int get_PX0_GRID(void);
   int get_PY0_GRID(void);
   int get_PZ0_GRID(void);
@@ -1118,7 +1117,7 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
         break;
 
     default:
-        rmg_error_handler ("Lattice type not implemented");
+        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
 
     }                           /* end switch */
 
@@ -1127,6 +1126,86 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
     return cc;
 
 }                               /* end app_del2c */
+
+
+template <typename RmgType>
+rmg_double_t FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+               rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+{
+
+    int iz, ix, iy;
+    rmg_double_t h2, t0, t1x, t2x;
+    rmg_double_t t1y, t2y;
+    rmg_double_t t1z, t2z;
+    double t3x,t3y,t3z;
+    int ixs, iys, ix1, iy1;
+    Lattice L;
+
+    ixs = (dimy + 6) * (dimz + 6);
+    iys = (dimz + 6);
+    ix1 = dimy * dimz;
+    iy1 = dimz;
+
+    h2 = gridhx * gridhx * L.xside * L.xside;
+    t0 = -49.0 / (18.0 * h2);
+    t1x =  3.0 / ( 2.0 * h2);
+    t2x = -3.0 / (20.0 * h2);
+    t3x =  1.0 / (90.0 * h2);
+
+    h2 = gridhy * gridhy * L.yside * L.yside;
+    t0 -= 49.0 / (18.0 * h2);
+    t1y =  3.0 / ( 2.0 * h2);
+    t2y = -3.0 / (20.0 * h2);
+    t3y =  1.0 / (90.0 * h2);
+
+    h2 = gridhz * gridhz * L.zside * L.zside;
+    t0 -= 49.0 / (18.0 * h2);
+    t1z =  3.0 / ( 2.0 * h2);
+    t2z = -3.0 / (20.0 * h2);
+    t3z =  1.0 / (90.0 * h2);
+
+
+
+    for (ix = 3; ix < dimx + 3; ix++)
+    {
+
+        for (iy = 3; iy < dimy + 3; iy++)
+        {
+
+            for (iz = 3; iz < dimz + 3; iz++)
+            {
+
+                b[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
+                    t0 * a[ix * ixs + iy * iys + iz] +
+                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
+                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
+                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
+                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
+                    t3x * a[(ix - 3) * ixs + iy * iys + iz] +
+                    t3x * a[(ix + 3) * ixs + iy * iys + iz] +
+                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
+                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
+                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
+                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
+                    t3y * a[ix * ixs + (iy - 3) * iys + iz] +
+                    t3y * a[ix * ixs + (iy + 3) * iys + iz] +
+                    t1z * a[ix * ixs + iy * iys + iz - 1] +
+                    t1z * a[ix * ixs + iy * iys + iz + 1] +
+                    t2z * a[ix * ixs + iy * iys + iz - 2] +
+                    t2z * a[ix * ixs + iy * iys + iz + 2] +
+                    t3z * a[ix * ixs + iy * iys + iz - 3] +
+                    t3z * a[ix * ixs + iy * iys + iz + 3];
+
+            }                   /* end for */
+        }                       /* end for */
+    }                           /* end for */
+
+    /* Return the diagonal component of the operator */
+    return t0;
+
+
+}                               /* end app6_del2 */
+
 
 
 template <typename RmgType>
@@ -1144,7 +1223,7 @@ rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, i
     ibrav = L.ibrav;
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler("Grid symmetry not programmed yet in app_cil_fourth_standard.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth_standard.\n");
     }
 
     ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
@@ -1377,7 +1456,7 @@ void FiniteDiff::app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx,
     ibrav = L.ibrav;
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler("Grid symmetry not programmed yet in app_cir_fourth.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cir_fourth.\n");
     }
 
     incx = (dimz + 2) * (dimy + 2);

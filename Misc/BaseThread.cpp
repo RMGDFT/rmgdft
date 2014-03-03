@@ -5,7 +5,7 @@ using namespace std;
 
 
 // Main thread control structure
-BaseThread *thread_controls[MAX_SCF_THREADS];
+BaseThread *thread_controls[MAX_RMG_THREADS];
 
 // Constructor
 BaseThread::BaseThread(int nthreads)
@@ -14,8 +14,8 @@ BaseThread::BaseThread(int nthreads)
     int thread, retval, ncpus;
     BaseThread *s;
 
-    if(nthreads > MAX_SCF_THREADS)
-        rmg_error_handler("Too many threads requested. Change MAX_SCF_THREADS and recompile if needed.");
+    if(nthreads > MAX_RMG_THREADS)
+        rmg_error_handler (__FILE__, __LINE__, "Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
 
     if(!BaseThread::init_flag) {
 
@@ -69,7 +69,7 @@ void BaseThread::wake_threads(int jobs) {
 
     if(jobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
-        rmg_error_handler("More jobs than available threads scheduled\n");
+        rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
     }
 
     pthread_mutex_lock(&BaseThread::job_mutex);
@@ -209,7 +209,7 @@ void BaseThread::RMG_MPI_thread_order_lock(void) {
    tid = get_thread_tid();
 
    if(tid < 0) {
-       rmg_error_handler("\nError in RMG_MPI_thread_order_lock. Terminating.\n");
+       rmg_error_handler (__FILE__, __LINE__, "\nError in RMG_MPI_thread_order_lock. Terminating.\n");
    }
 
    while(1) {
@@ -273,7 +273,7 @@ int BaseThread::is_loop_over_states(void)
 int BaseThread::get_threads_per_node(void)
 {
     if(BaseThread::THREADS_PER_NODE == 0)
-        rmg_error_handler("Threads not initialized yet");
+        rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
     return BaseThread::THREADS_PER_NODE;
 }
 
@@ -317,7 +317,7 @@ sem_t BaseThread::thread_sem;
 pthread_mutex_t BaseThread::mpi_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_attr_t BaseThread::thread_attrs;
-pthread_t BaseThread::threads[MAX_SCF_THREADS];
+pthread_t BaseThread::threads[MAX_RMG_THREADS];
 volatile int BaseThread::in_threaded_region = 0;
 
 // These are used to ensure thread ordering

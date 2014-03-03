@@ -124,10 +124,6 @@
 /* Maximum number of images for finite difference routines */
 #define MAX_TRADE_IMAGES 5
 
-/* Maximum number of scf threads. Adjust based on hardware resources */
-#define MAX_SCF_THREADS 32
-
-
 #define         MAX_OPTS  16
 
 

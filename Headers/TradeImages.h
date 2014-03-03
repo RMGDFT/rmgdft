@@ -14,7 +14,7 @@
 
 #include "BaseThread.h"
 
-class TradeImages {
+class TradeImages : public RmgError {
 
 
 private:

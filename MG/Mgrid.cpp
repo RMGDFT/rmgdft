@@ -398,7 +398,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
             break;
 
         default:
-            rmg_error_handler ("Lattice type not programmed");
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not programmed");
 
     }                           /* end switch */
 
@@ -699,13 +699,13 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
         // First check if we have too many multigrid levels. For periodic boundary
         // conditions the next level of the global grid must be divisible by 2
         if ((global_dim % skip) != 0) {
-            rmg_error_handler ("Too many multigrid levels specified.");
+            rmg_error_handler (__FILE__, __LINE__, "Too many multigrid levels specified.");
         }
 
         // Require at least one point in the level
         new_dim = global_pdim / skip;
         if(!new_dim) {
-            rmg_error_handler ("Too many multigrid levels specified.");
+            rmg_error_handler (__FILE__, __LINE__, "Too many multigrid levels specified.");
         }
 
         // evenly divisible then we are done
@@ -726,7 +726,7 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
 
     }
 
-    rmg_error_handler("Boundary condition not programmed."); 
+    rmg_error_handler (__FILE__, __LINE__, "Boundary condition not programmed."); 
 
 }
 

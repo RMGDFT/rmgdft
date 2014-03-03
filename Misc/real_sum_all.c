@@ -38,8 +38,9 @@
 
 #include <hybrid.h>
 #include <pthread.h>
-volatile rmg_double_t real_sum_all_vector[MAX_SCF_THREADS];
-volatile  rmg_double_t recvbuf[MAX_SCF_THREADS];
+#include "BaseThread.h"
+volatile rmg_double_t real_sum_all_vector[MAX_RMG_THREADS];
+volatile  rmg_double_t recvbuf[MAX_RMG_THREADS];
 volatile int real_sum_all_vector_state = 0;
 pthread_mutex_t real_sum_all_vector_lock = PTHREAD_MUTEX_INITIALIZER;
 static rmg_double_t real_sum_all_threaded(rmg_double_t x, int tid, MPI_Comm comm);

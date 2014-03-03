@@ -14,6 +14,7 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     RmgType *rptr;
     TradeImages T;
     FiniteDiff FD;
+    RmgError Err;
 
     P0_BASIS = get_P0_BASIS();
     numgrid = dimx * dimy * dimz;
@@ -45,7 +46,7 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
         return;
     }
 
-    rmg_error_handler("APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
+    Err.rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
 
 }
 
