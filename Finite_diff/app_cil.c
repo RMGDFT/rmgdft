@@ -40,6 +40,9 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include "FiniteDiff.h"
+#include "TradeImages.h"
+
 
 rmg_double_t app_cil (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz,
               rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
@@ -56,7 +59,7 @@ rmg_double_t app_cil (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, in
     ibrav = get_ibrav_type();
 
     time1 = my_crtc();
-    trade_images (a, dimx, dimy, dimz, FULL_FD);
+    trade_images (a, dimx, dimy, dimz, FULL_TRADE);
     time2 = my_crtc();
     rmg_timings (CIL_IMAGE_TIME, (time2 - time1));
 

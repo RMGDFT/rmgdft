@@ -8,6 +8,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include <float.h>
+#include "TradeImages.h"
 
 void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
 {
@@ -57,7 +58,7 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
         cc[i][3] = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
     }
 
-    trade_imagesx (rho, rho_c, dimx, dimy, dimz, 2, FULL_FD);
+    trade_imagesx (rho, rho_c, dimx, dimy, dimz, 2, FULL_TRADE);
 
     for (i = 2; i < PX0_GRID + 2; i++)
     {

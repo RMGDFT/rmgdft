@@ -83,8 +83,8 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
     scale = step / scale;
 
-//    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_FD);
-    T.trade_images (f_mat, dimx, dimy, dimz, FULL_FD);
+//    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_TRADE);
+    T.trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
 
 
     for (idx = 0; idx < size; idx++)
@@ -109,10 +109,10 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
         /* trade boundary info */
         if ((level == max_levels) && (cycl == pre_cyc[level]-1)) {
-            T.trade_images (v_mat, dimx, dimy, dimz, FULL_FD);
+            T.trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
         }
         else {
-            T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_FD);
+            T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
         }
 
     }
@@ -132,7 +132,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
 /* evaluate residual */
     eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-    T.trade_images (resid, dimx, dimy, dimz, FULL_FD);
+    T.trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
 
 /* size for next smaller grid */
@@ -169,7 +169,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
         /* re-solve on this grid level */
 
-        T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_FD);
+        T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
@@ -178,7 +178,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
             /* trade boundary info */
-            T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_FD);
+            T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
 
         }                       /* end for */
 
@@ -187,7 +187,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
         {
 
             eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-            T.trade_images (resid, dimx, dimy, dimz, FULL_FD);
+            T.trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end if */
 

@@ -232,7 +232,7 @@ rmg_double_t special_dot_product(rmg_double_t *a, rmg_double_t *b, rmg_double_t 
     rmg_double_t rvalue = 0.0, a_value;
     int incx, incy;
    
-    trade_imagesx (b, b_trade, length_x, length_y, length_z, 1, FULL_FD);
+    trade_imagesx (b, b_trade, length_x, length_y, length_z, 1, FULL_TRADE);
 
     incy = length_z + 2;
     incx = incy * (length_y + 2);

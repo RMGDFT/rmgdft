@@ -1,10 +1,23 @@
 #ifndef RMG_BaseGrid_H
 #define RMG_BaseGrid_H 1
 
-#include <iostream>
-#include <cstdio>
 #include "rmgtypes.h"
 #include "rmg_error.h"
+
+
+/* Neighbor list indices */
+#define NB_N 0
+#define NB_S 1
+#define NB_E 2
+#define NB_W 3
+#define NB_U 4
+#define NB_D 5
+#define NB_SELF 7
+
+#ifdef __cplusplus
+
+#include <iostream>
+#include <cstdio>
 
 class BaseGrid {
 
@@ -97,4 +110,5 @@ public:
     int *get_neighbors(void);
 };
 
+#endif
 #endif

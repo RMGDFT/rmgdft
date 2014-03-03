@@ -56,7 +56,8 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
-
+#include "FiniteDiff.h"
+#include "TradeImages.h"
 
 #include "hybrid.h"
 #include <pthread.h>
@@ -303,7 +304,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 #if MD_TIMERS
             time1 = my_crtc ();
 #endif
-            trade_images_f (sg_psi_f, dimx, dimy, dimz, FULL_FD);
+            trade_images_f (sg_psi_f, dimx, dimy, dimz, FULL_TRADE);
 
 #if MD_TIMERS
             rmg_timings (MG_EIG_TRADE_TIME, (my_crtc () - time1));
@@ -427,7 +428,7 @@ void mg_eig_state_f (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
             /* Pack delta_rho into multigrid array */
             pack_ptos_f (sg_psi_f, res_f, dimx, dimy, dimz);
-            trade_images_f (sg_psi_f, dimx, dimy, dimz, FULL_FD);
+            trade_images_f (sg_psi_f, dimx, dimy, dimz, FULL_TRADE);
             /* Smooth it once and store the smoothed charge in res */
             app_smooth1_f (sg_psi_f, res_f, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID());
 

@@ -11,6 +11,8 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include "FiniteDiff.h"
+
 
 
 void app_cir_beta_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, int order)

@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "hybrid.h"
+#include "FiniteDiff.h"
+#include "TradeImages.h"
 
 // Compilers can generate much better code if they know the loop dimensions at compile
 // as opposed to run time. Therefore since most of the finite difference stencils
@@ -46,7 +48,7 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
 
 
     my_malloc (rptr, sbasis + 64, rmg_double_t);
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_FD);
+    trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
 
     // first check for fixed dim case
 //    numgrid = dimx * dimy * dimz;

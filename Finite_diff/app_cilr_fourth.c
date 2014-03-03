@@ -12,6 +12,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include "hybrid.h"
+#include "FiniteDiff.h"
+#include "TradeImages.h"
 
 
 rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
@@ -48,7 +50,7 @@ rmg_double_t app_cilr_fourth (rmg_double_t *psi, rmg_double_t *a_psi, rmg_double
     }
 
 
-    trade_imagesx (psi, rptr, dimx, dimy, dimz, 1, FULL_FD);
+    trade_imagesx (psi, rptr, dimx, dimy, dimz, 1, FULL_TRADE);
 
 
     incx = (dimz + 2) * (dimy + 2);

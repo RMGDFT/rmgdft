@@ -39,6 +39,9 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include "FiniteDiff.h"
+#include "TradeImages.h"
+
 
 void app_cir_ortho (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
@@ -55,7 +58,7 @@ void app_cir_ortho (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int 
     incxr = dimz * dimy;
 
 
-    trade_images (a, dimx, dimy, dimz, CENTRAL_FD);
+    trade_images (a, dimx, dimy, dimz, CENTRAL_TRADE);
 
 
     Bc = 0.5;

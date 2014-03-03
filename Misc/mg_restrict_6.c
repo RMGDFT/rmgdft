@@ -37,6 +37,7 @@
 #include "common_prototypes.h"
 #include <float.h>
 #include <math.h>
+#include <TradeImages.h>
 
 
 
@@ -53,7 +54,7 @@ void mg_restrict_6 (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy
     rmg_double_t *sg_full;
 
     my_malloc (sg_full, (dimx + 10) * (dimy + 10) * (dimz + 10), rmg_double_t);
-    trade_imagesx (full, sg_full, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), 5, FULL_FD);
+    trade_imagesx (full, sg_full, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), 5, FULL_TRADE);
 
     incy = dimz + 10;
     incx = (dimz + 10) * (dimy + 10);

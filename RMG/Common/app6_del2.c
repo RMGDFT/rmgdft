@@ -60,7 +60,7 @@ void app6_del2 (rmg_double_t *rho, rmg_double_t * work, int dimx, int dimy, int 
 
     my_malloc(f, (dimx+4) * (dimy+4 ) * (dimz+4), rmg_double_t);
 
-    trade_imagesx (rho, f, dimx, dimy, dimz, 2, CENTRAL_FD);
+    trade_imagesx (rho, f, dimx, dimy, dimz, 2, CENTRAL_TRADE);
 
     h2 = gridhx * gridhx * get_xside() * get_xside();
     t0 = -30.0 / (12.0 * h2);

@@ -99,7 +99,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
 
     if (flag_local == 0)
     {
-        trade_images(f_mat, dimx, dimy, dimz, FULL_FD);
+        trade_images(f_mat, dimx, dimy, dimz, FULL_TRADE);
     }
 
     for (idx = 0; idx < size; idx++)
@@ -147,7 +147,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
         }
         else
         {
-            trade_images(v_mat, dimx, dimy, dimz, FULL_FD);
+            trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
         }
     }
 
@@ -180,7 +180,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
     }
     else
     {
-        trade_images(resid, dimx, dimy, dimz, FULL_FD);
+        trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
     }
 
 /* size for next smaller grid */
@@ -227,7 +227,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
         }
         else
         {
-            trade_images(newv, dx2, dy2, dz2, FULL_FD);
+            trade_images(newv, dx2, dy2, dz2, FULL_TRADE);
         }
 
         mg_prolong(resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -251,7 +251,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
 
         if (flag_local == 0)
         {
-            trade_images(v_mat, dimx, dimy, dimz, FULL_FD);
+            trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
         }
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
@@ -274,7 +274,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
             }
             else
             {
-                trade_images(v_mat, dimx, dimy, dimz, FULL_FD);
+                trade_images(v_mat, dimx, dimy, dimz, FULL_TRADE);
             }
         }                       /* end for */
 
@@ -297,7 +297,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
             }
             else
             {
-                trade_images(resid, dimx, dimy, dimz, FULL_FD);
+                trade_images(resid, dimx, dimy, dimz, FULL_TRADE);
             }                   /* end if flag_local */
 
         }                       /* end if */

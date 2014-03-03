@@ -12,6 +12,13 @@
 
 using namespace std;
 
+#define ASYNC_MODE      0
+#define SYNC_MODE       1
+
+/* Type of async request passed to the mpi trade_images manager */
+#define RMG_MPI_ISEND 1
+#define RMG_MPI_IRECV 2
+
 
 // Force instantiation of float, double and complex versions.
 template void TradeImages::trade_images<rmg_float_t>(rmg_float_t*, int, int, int, int);
@@ -136,7 +143,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     if(TradeImages::mode == ASYNC_MODE) {
-        if(type == CENTRAL_FD) {
+        if(type == CENTRAL_TRADE) {
             TradeImages::trade_imagesx_central_async (f, w, dimx, dimy, dimz, images);
             return;
         }
@@ -146,11 +153,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         }
     }
 
-
-#if MD_TIMERS
-    rmg_double_t time1, time2, time3;
-    time1 = my_crtc ();
-#endif
     tid = 0;
     tid = T.get_thread_tid();
     if(tid < 0) tid = 0;
@@ -224,10 +226,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     }                           /* end for */
 
 
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
-
     stop = zlen * ACTIVE_THREADS;
     T.thread_barrier_wait();
     if(tid == 0) {
@@ -238,10 +236,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), transition_get_grid_comm(), &mrstatus);
     }
     T.thread_barrier_wait();
-
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
 
     /* Unpack them */
     c1 = dimz + images;
@@ -301,9 +295,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     }                           /* end for */
 
 
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
     stop = ylen * ACTIVE_THREADS;
     T.thread_barrier_wait();
     if(tid == 0) {
@@ -314,10 +305,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4>>16), transition_get_grid_comm(), &mrstatus);
     }
     T.thread_barrier_wait();
-
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
 
     /* Unpack them */
     c1 = (dimy + images) * incy;
@@ -374,9 +361,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     }                           /* end for */
 
 
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
     stop = xlen * ACTIVE_THREADS;
     T.thread_barrier_wait();
     if(tid == 0) {
@@ -389,10 +373,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
     }
     T.thread_barrier_wait();
-
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
 
 
     /* Unpack them */
@@ -419,11 +399,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
     }                           /* end for */
 
-
-#if MD_TIMERS
-    time2 = my_crtc ();
-    T.rmg_timings (IMAGE_TIME, (time2 - time1));
-#endif
 
 } // end trade_imagesx
 
@@ -456,16 +431,11 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     nb_ids = G.get_neighbors();
 
     if(TradeImages::mode == ASYNC_MODE) {
-        if(type == CENTRAL_FD) {
+        if(type == CENTRAL_TRADE) {
             TradeImages::trade_images1_central_async (mat, dimx, dimy, dimz);
             return;
         }
     }
-
-#if MD_TIMERS
-    rmg_double_t time1, time2, time3;
-    time1 = my_crtc ();
-#endif
 
     alloc = 4 * (dimx + 2) * (dimy + 2);
     alloc1 = 4 * (dimy + 2) * (dimz + 2);
@@ -510,9 +480,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
         }
     }
 
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
     // We only want one thread to do the MPI call here.
     stop = dimx * dimy * ACTIVE_THREADS;
     T.thread_barrier_wait();
@@ -521,10 +488,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 		  MPI_BYTE, nb_ids[NB_D], (1>>16), transition_get_grid_comm(), &mstatus);
     } 
     T.thread_barrier_wait();
-
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -549,9 +512,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     }
 
 
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
     stop = dimx * dimy * ACTIVE_THREADS;
     T.thread_barrier_wait();
     if(tid == 0) {
@@ -559,9 +519,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
                       MPI_BYTE, nb_ids[NB_U], (2>>16), transition_get_grid_comm(), &mstatus);
     }
     T.thread_barrier_wait();
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
 
 
     idx = 0;
@@ -589,18 +546,13 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
             idx++;
         }
     }
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
+
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_N], (3>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_S], (3>>16), transition_get_grid_comm(), &mstatus);
     }
     T.thread_barrier_wait();
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
 
     idx = 0;
     for (ix = 0; ix < dimx; ix++) {
@@ -619,18 +571,15 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
             idx++;
         }
     }
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
+
+
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_S], (4>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_N], (4>>16), transition_get_grid_comm(), &mstatus);
     }
     T.thread_barrier_wait();
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
+
 
     idx = 0;
     for (ix = 0; ix < dimx; ix++) {
@@ -650,33 +599,24 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     stop = (dimy + 2) * (dimz + 2);
 
     QMD_copy (stop, &mat[xmax], ione, &swbuf1x_f[tid * stop], ione);
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
+
+
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_E], (5>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_W], (5>>16), transition_get_grid_comm(), &mstatus);
     }
     T.thread_barrier_wait();
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
-    QMD_copy (stop, &swbuf2x_f[tid * stop], ione, mat, ione);
 
+    QMD_copy (stop, &swbuf2x_f[tid * stop], ione, mat, ione);
     QMD_copy (stop, &mat[incx], ione, &swbuf1x_f[tid * stop], ione);
-#if MD_TIMERS
-    time3 = my_crtc ();
-#endif
+
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_W], (6>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_E], (6>>16), transition_get_grid_comm(), &mstatus);
     }
     T.thread_barrier_wait();
-#if MD_TIMERS
-    T.rmg_timings (TRADE_MPI_TIME, (my_crtc () - time3));
-#endif
     QMD_copy (stop, &swbuf2x_f[tid * stop], ione, &mat[xmax + incx], ione);
 
 
@@ -685,11 +625,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 //    if ((ct.boundaryflag == CLUSTER) || (ct.boundaryflag == SURFACE))
 //        set_bc (mat, dimx, dimy, dimz, 1, 0.0);
 
-
-#  if MD_TIMERS
-    time2 = my_crtc ();
-    T.rmg_timings (IMAGE_TIME, (time2 - time1));
-#  endif
 
 }
 
@@ -963,11 +898,6 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
     THREADS_PER_NODE = T.get_threads_per_node();
 
-
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
     if(images > MAX_TRADE_IMAGES) {
        rmg_error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
@@ -1529,11 +1459,6 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     }
     T.thread_barrier_wait();
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-    T.rmg_timings (IMAGE_TIME, (time2 - time1));
-#endif
-
 } // end trade_imagesx_async
 
 
@@ -1568,12 +1493,6 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     BaseThread T(0);
     THREADS_PER_NODE = T.get_threads_per_node();
 
-
-
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
     if(images > MAX_TRADE_IMAGES) {
        rmg_error_handler ("Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
@@ -1811,11 +1730,6 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     }
     T.thread_barrier_wait();
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-    T.rmg_timings (IMAGE_TIME, (time2 - time1));
-#endif
-
 } // end trade_imagesx_central_async
 
 
@@ -1883,11 +1797,6 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     int ACTIVE_THREADS = 1, THREADS_PER_NODE;
     BaseThread T(0);
     THREADS_PER_NODE = T.get_threads_per_node();
-
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
     tid = T.get_thread_tid();
     if(tid < 0) tid = 0;
@@ -2347,11 +2256,6 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     }
     T.thread_barrier_wait();
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-    T.rmg_timings (IMAGE_TIME, (time2 - time1));
-#endif
-
 } // end trade_images1_async
 
 
@@ -2385,12 +2289,6 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
 
     BaseThread T(0);
     THREADS_PER_NODE = T.get_threads_per_node();
-
-
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
     tid = T.get_thread_tid();
     if(tid < 0) tid = 0;
@@ -2600,11 +2498,6 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
         if(retval != MPI_SUCCESS) rmg_error_handler("Error in MPI_Waitall.\n");
     }
     T.thread_barrier_wait();
-
-#if MD_TIMERS
-    time2 = my_crtc ();
-    T.rmg_timings (IMAGE_TIME, (time2 - time1));
-#endif
 
 } // end trade_images1_central_async
 

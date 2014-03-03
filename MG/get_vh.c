@@ -54,6 +54,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "macros.h"
+#include "FiniteDiff.h"
 
 //#include "hybrid.h"
 

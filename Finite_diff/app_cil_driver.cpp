@@ -24,7 +24,7 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
     rptr = (RmgType *)allocp;
 
     if(order == APP_CI_FOURTH) {
-        T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_FD);
+        T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_TRADE);
         if(numgrid == P0_BASIS) {
             cc = FD.app_cil_fourth_global (rptr, b, gridhx, gridhy, gridhz);
         }
@@ -35,7 +35,7 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
         return cc;
     }
     if(order == APP_CI_SIXTH) {
-        T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_FD);
+        T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
         if(numgrid == P0_BASIS) {
             cc = FD.app_cil_sixth_global (rptr, b, gridhx, gridhy, gridhz);
         }

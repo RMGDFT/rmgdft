@@ -2,13 +2,17 @@
 #define RMG_TradeImages_H 1
 
 #include <mpi.h>
-#include "const.h"
 #include "BaseGrid.h"
-#include "BaseThread.h"
 #include "rmg_error.h"
 
-#define ASYNC_MODE      0
-#define SYNC_MODE       1
+
+/* Type of image trading */
+#define FULL_TRADE 1
+#define CENTRAL_TRADE 2
+
+#if __cplusplus
+
+#include "BaseThread.h"
 
 class TradeImages {
 
@@ -59,4 +63,5 @@ public:
 
 };
 
+#endif
 #endif

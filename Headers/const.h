@@ -105,15 +105,6 @@
 #define		PZ_STATE    3
 
 
-/* Neighbor list indices */
-#define NB_N 0
-#define NB_S 1
-#define NB_E 2
-#define NB_W 3
-#define NB_U 4
-#define NB_D 5
-#define NB_SELF 7
-
 /* relax method flags */
 #define		FASTRELAX  0
 #define		FIRE       1
@@ -391,19 +382,6 @@
 /* The real or imaginary part of a wavefunction */
 #define PSI_rmg_double_t     0
 #define PSI_IMAG     1
-
-/* Type of async request passed to the mpi trade_images manager */
-#define RMG_MPI_ISEND 1
-#define RMG_MPI_IRECV 2
-
-
-/* Types of finite differencing */
-#define FULL_FD 1
-#define CENTRAL_FD 2
-
-/* Order of finite differencing for driver routines */
-#define APP_CI_FOURTH 4
-#define APP_CI_SIXTH 6
 
 /* subspace diagonalization types */
 #define SUBDIAG_LAPACK 0

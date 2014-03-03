@@ -39,7 +39,8 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-
+#include "FiniteDiff.h"
+#include "TradeImages.h"
 
 
 
@@ -58,7 +59,7 @@ void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int di
     incxr = dimz * dimy;
 
 
-    trade_images (a, dimx, dimy, dimz, FULL_FD);
+    trade_images (a, dimx, dimy, dimz, FULL_TRADE);
 
 
     Bc = 2.0 / 3.0;

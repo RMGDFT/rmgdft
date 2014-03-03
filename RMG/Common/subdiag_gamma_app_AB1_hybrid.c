@@ -34,10 +34,10 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
 // in app_cilr
 //
     if(ct.kohn_sham_fd_order == APP_CI_FOURTH) 
-        trade_imagesx (vtot_eig, vtot_eig_s, dimx, dimy, dimz, 1, FULL_FD);
+        trade_imagesx (vtot_eig, vtot_eig_s, dimx, dimy, dimz, 1, FULL_TRADE);
 
     if(ct.kohn_sham_fd_order == APP_CI_SIXTH) 
-        trade_imagesx (vtot_eig, vtot_eig_s, dimx, dimy, dimz, 2, FULL_FD);
+        trade_imagesx (vtot_eig, vtot_eig_s, dimx, dimy, dimz, 2, FULL_TRADE);
 
     time1 = my_crtc();
     app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.newsintR_local);
@@ -104,10 +104,10 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
         if(ct.scf_steps > 0) 
         {
             if(ct.kohn_sham_fd_order == APP_CI_FOURTH) 
-                trade_imagesx (sp->dvhxc, vtot_eig_s, dimx, dimy, dimz, 1, FULL_FD);
+                trade_imagesx (sp->dvhxc, vtot_eig_s, dimx, dimy, dimz, 1, FULL_TRADE);
 
             if(ct.kohn_sham_fd_order == APP_CI_SIXTH) 
-                trade_imagesx (sp->dvhxc, vtot_eig_s, dimx, dimy, dimz, 2, FULL_FD);
+                trade_imagesx (sp->dvhxc, vtot_eig_s, dimx, dimy, dimz, 2, FULL_TRADE);
         }
     }
 

@@ -36,7 +36,7 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
     my_malloc_init( rptr, (dimx + 6) * (dimy + 6) * (dimz + 6), double );
 
 
-    trade_imagesx (f, rptr, dimx, dimy, dimz, 3, CENTRAL_FD);
+    trade_imagesx (f, rptr, dimx, dimy, dimz, 3, CENTRAL_TRADE);
 
     switch (get_ibrav_type())
     {

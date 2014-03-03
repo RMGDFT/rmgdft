@@ -58,7 +58,7 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
 
 
     time1 = my_crtc ();
-    trade_imagesx (rho, rptr, dimx, dimy, dimz, 2, CENTRAL_FD);
+    trade_imagesx (rho, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
 
     switch (ibrav)
     {
