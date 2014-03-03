@@ -222,9 +222,6 @@ RMG/Headers/make_conf.h:
 	@echo "/* Use Magma libs. */" >> RMG/Headers/make_conf.h;
 	@echo "#define MAGMA_LIBS 0" >> RMG/Headers/make_conf.h;
 	@echo "";
-	@echo "/* Use Async trade_images. */" >> RMG/Headers/make_conf.h;
-	@echo "#define ASYNC_TRADES 0" >> RMG/Headers/make_conf.h;
-	@echo "";
 	@echo "/* Number of OMP threads to use (internal only). If 0 then none will be used. */" >> RMG/Headers/make_conf.h;
 	@echo "#define RMG_OMP_THREADS 0" >> RMG/Headers/make_conf.h;
 	@echo "";

@@ -7,18 +7,25 @@
 #include "BaseThread.h"
 #include "rmg_error.h"
 
+#define ASYNC_MODE      0
+#define SYNC_MODE       1
 
 class TradeImages {
 
 
 private:
-    static rmg_double_t *swbuf1x;
-    static rmg_double_t *swbuf2x;
-    static int max_alloc;
 
-    // Rank of target node based on offsets from current node
+    /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
+    static int mode;
+
+    /// Rank of target node based on offsets from current node. Used by asynchronous comm routines.
     static int target_node[3][3][3];
 
+    static int max_alloc;
+
+    /// Buffers allocated via MPI_Allocmem
+    static rmg_double_t *swbuf1x;
+    static rmg_double_t *swbuf2x;
     static rmg_double_t *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
     static rmg_double_t *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
     static rmg_double_t *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
@@ -42,6 +49,8 @@ private:
 
 public:
     TradeImages(void);
+    void set_synchronous_mode(void);
+    void set_asynchronous_mode(void);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);
     template <typename RmgType> void trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type);
 

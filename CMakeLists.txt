@@ -389,13 +389,6 @@ else (RMG_MAGMA_LIBS)
     set (MAGMA_LIBS 0)
 endif(RMG_MAGMA_LIBS)
 
-option (RMG_ASYNC_TRADES "Use asynchronous trade images." ON)
-if (RMG_ASYNC_TRADES)
-    set (ASYNC_TRADES 1)
-else (RMG_ASYNC_TRADES)
-    set (ASYNC_TRADES 0)
-endif(RMG_ASYNC_TRADES)
-
 # Send the configure file to the build directory
 configure_file (
   "${PROJECT_SOURCE_DIR}/make_conf.h.in"

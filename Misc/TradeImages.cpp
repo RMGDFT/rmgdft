@@ -18,8 +18,8 @@ template void TradeImages::trade_images<rmg_float_t>(rmg_float_t*, int, int, int
 template void TradeImages::trade_images<rmg_double_t>(rmg_double_t*, int, int, int, int);
 template void TradeImages::trade_imagesx<rmg_float_t>(rmg_float_t*, rmg_float_t*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<rmg_double_t>(rmg_double_t*, rmg_double_t*, int, int, int, int, int);
-template void TradeImages::trade_imagesx<complex<float>>(complex <float>*, complex <float>*, int, int, int, int, int);
-template void TradeImages::trade_imagesx<complex<double>>(complex <double>*, complex <double>*, int, int, int, int, int);
+template void TradeImages::trade_imagesx<complex<float> >(complex <float>*, complex <float>*, int, int, int, int, int);
+template void TradeImages::trade_imagesx<complex<double> >(complex <double>*, complex <double>*, int, int, int, int, int);
 
 extern "C"
 {
@@ -41,6 +41,8 @@ int TradeImages::max_alloc;
 
 // Rank of target node based on offsets from current node
 int TradeImages::target_node[3][3][3];
+int TradeImages::mode;
+
 
 rmg_double_t *TradeImages::frdx1, *TradeImages::frdx2, *TradeImages::frdy1, *TradeImages::frdy2, *TradeImages::frdz1, *TradeImages::frdz2;
 rmg_double_t *TradeImages::frdx1n, *TradeImages::frdx2n, *TradeImages::frdy1n, *TradeImages::frdy2n, *TradeImages::frdz1n, *TradeImages::frdz2n;
@@ -106,6 +108,15 @@ TradeImages::TradeImages(void)
 
 }
 
+void TradeImages::set_synchronous_mode(void)
+{
+    TradeImages::mode = SYNC_MODE;
+}
+void TradeImages::set_asynchronous_mode(void)
+{
+    TradeImages::mode = ASYNC_MODE;
+}
+
 template <typename RmgType>
 void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type)
 {
@@ -123,16 +134,18 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
     factor = sizeof(RmgType);
 
-#if ASYNC_TRADES
-    if(type == CENTRAL_FD) {
-        TradeImages::trade_imagesx_central_async (f, w, dimx, dimy, dimz, images);
-        return;
+
+    if(TradeImages::mode == ASYNC_MODE) {
+        if(type == CENTRAL_FD) {
+            TradeImages::trade_imagesx_central_async (f, w, dimx, dimy, dimz, images);
+            return;
+        }
+        else {
+            TradeImages::trade_imagesx_async (f, w, dimx, dimy, dimz, images);
+            return;
+        }
     }
-    else {
-        TradeImages::trade_imagesx_async (f, w, dimx, dimy, dimz, images);
-        return;
-    }
-#endif
+
 
 #if MD_TIMERS
     rmg_double_t time1, time2, time3;
@@ -442,13 +455,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     nb_ids = G.get_neighbors();
 
-
-#if ASYNC_TRADES
-    if(type == CENTRAL_FD) {
-        TradeImages::trade_images1_central_async (mat, dimx, dimy, dimz);
-        return;
+    if(TradeImages::mode == ASYNC_MODE) {
+        if(type == CENTRAL_FD) {
+            TradeImages::trade_images1_central_async (mat, dimx, dimy, dimz);
+            return;
+        }
     }
-#endif
 
 #if MD_TIMERS
     rmg_double_t time1, time2, time3;

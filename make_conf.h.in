@@ -25,5 +25,3 @@
 /* Use Magma libs. */
 #define MAGMA_LIBS ${MAGMA_LIBS}
 
-/* Use Async trade_images. */
-#define ASYNC_TRADES ${ASYNC_TRADES}
