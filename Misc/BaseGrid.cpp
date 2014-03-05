@@ -166,6 +166,63 @@ using namespace std;
 
     }
 
+    int BaseGrid::get_PE_X(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::PE_X;
+    }
+    int BaseGrid::get_PE_Y(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::PE_Y;
+    }
+    int BaseGrid::get_PE_Z(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::PE_Z;
+    }
+
+    int BaseGrid::get_NX_GRID(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::NX_GRID;
+    }
+    int BaseGrid::get_NY_GRID(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::NY_GRID;
+    }
+    int BaseGrid::get_NZ_GRID(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::NZ_GRID;
+    }
+
+    int BaseGrid::get_FNX_GRID(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::FNX_GRID;
+    }
+    int BaseGrid::get_FNY_GRID(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::FNY_GRID;
+    }
+    int BaseGrid::get_FNZ_GRID(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+	return BaseGrid::FNZ_GRID;
+    }
+
     int BaseGrid::get_PX0_GRID(void)
     {
 	if(!BaseGrid::grid_first)
@@ -289,6 +346,13 @@ using namespace std;
 	return BaseGrid::neighbors;
     }
 
+    int BaseGrid::get_gridpe(void)
+    {
+	if(!BaseGrid::neighbor_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Neighbor list not initialized. Please call set_neighbors first");
+        return BaseGrid::gridpe;
+    }
+
 
 /// Global coarse grid X dimension
 int BaseGrid::NX_GRID;
@@ -361,55 +425,55 @@ int BaseGrid::anisotropy_first=0;
 extern "C" int get_PE_X(void)
 {
   BaseGrid G;
-  return G.PE_X;
+  return G.get_PE_X();
 }
 /// C interface function
 extern "C" int get_PE_Y(void)
 {
   BaseGrid G;
-  return G.PE_Y;
+  return G.get_PE_Y();
 }
 /// C interface function
 extern "C" int get_PE_Z(void)
 {
   BaseGrid G;
-  return G.PE_Z;
+  return G.get_PE_Z();
 }
 /// C interface function
 extern "C" int get_NX_GRID(void)
 {
   BaseGrid G;
-  return G.NX_GRID;
+  return G.get_NX_GRID();
 }
 /// C interface function
 extern "C" int get_NY_GRID(void)
 {
   BaseGrid G;
-  return G.NY_GRID;
+  return G.get_NY_GRID();
 }
 /// C interface function
 extern "C" int get_NZ_GRID(void)
 {
   BaseGrid G;
-  return G.NZ_GRID;
+  return G.get_NZ_GRID();
 }
 /// C interface function
 extern "C" int get_FNX_GRID(void)
 {
   BaseGrid G;
-  return G.FNX_GRID;
+  return G.get_FNX_GRID();
 }
 /// C interface function
 extern "C" int get_FNY_GRID(void)
 {
   BaseGrid G;
-  return G.FNY_GRID;
+  return G.get_FNY_GRID();
 }
 /// C interface function
 extern "C" int get_FNZ_GRID(void)
 {
   BaseGrid G;
-  return G.FNZ_GRID;
+  return G.get_FNZ_GRID();
 }
 /// C interface function
 extern "C" int get_FG_NX(void)

@@ -95,9 +95,6 @@
 #include "common_prototypes.h" 
 #include "common_prototypes1.h" 
 
-/* Some definitions needed for using compile time values for global grid sizes */
-#include "fixed_dims.h"
-
 #include "rmg_xc.h"
 
 /* Include the  library of exchange and correlation (namely, Libxc) */

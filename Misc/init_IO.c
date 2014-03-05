@@ -268,6 +268,8 @@ void init_IO (int argc, char **argv)
 
   // Allocate storage for trade_images and global sums routines
   init_TradeImages();
+  set_MPI_comm(pct.grid_comm);
+
   init_global_sums();
 
 }

@@ -1,6 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
 
 /****f* QMD-MGDFT/app_cir_bcc.c *****
  * NAME
@@ -31,19 +28,17 @@
  */
 
 
-#include "const.h"
-#include "common_prototypes.h"
-#include "rmg_alloc.h"
-
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
+#include "BaseGrid.h"
+#include "Lattice.h"
 #include "FiniteDiff.h"
-#include "TradeImages.h"
+#include <cmath>
+#include <complex>
 
 
+using namespace std;
 
-void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
+template <typename RmgType>
+void FiniteDiff::app_cir_bcc (RmgType * a, RmgType * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
@@ -56,9 +51,6 @@ void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int di
     incx = (dimz + 2) * (dimy + 2);
     incyr = dimz;
     incxr = dimz * dimy;
-
-
-    trade_images (a, dimx, dimy, dimz, FULL_TRADE);
 
 
     Bc = 2.0 / 3.0;

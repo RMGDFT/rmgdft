@@ -3,9 +3,10 @@
 
 #include "BaseGrid.h"
 #include "Lattice.h"
+#include "const.h"
 #include "rmg_error.h"
 
-class Mgrid : public RmgError {
+class Mgrid {
 
 public:
     template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);

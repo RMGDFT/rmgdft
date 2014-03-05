@@ -1,129 +1,16 @@
 
-using namespace std;
-#include "fixed_dims.h"
+#include <cmath>
+#include <complex>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
-#include <stdexcept>
-#include <cmath>
-#include <complex>
+#include "rmg_error.h"
 
-extern "C" {
-  int get_PX0_GRID(void);
-  int get_PY0_GRID(void);
-  int get_PZ0_GRID(void);
-}
+using namespace std;
+
 
 template <typename RmgType>
-rmg_double_t FiniteDiff::app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    int iz, ix, iy, incx, incy, incxr, incyr;
-    int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    rmg_double_t ihx, ihy, ihz;
-    Lattice L;
-
-    incx = (dimz + 4) * (dimy + 4);
-    incy = dimz + 4;
-    incxr = dimz * dimy;
-    incyr = dimz;
-
-    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
-    ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
-    ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
-
-    cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
-
-    fcx = (31.0 / 232.0) * cc + (49.0 / 60.0) * ihx;
-    fcy = (31.0 / 232.0) * cc + (49.0 / 60.0) * ihy;
-    fcz = (31.0 / 232.0) * cc + (49.0 / 60.0) * ihz;
-
-    ecxy = (-31.0 / 464.0) * cc - (1.0 / 10.0) * ihz;
-    ecxz = (-31.0 / 464.0) * cc - (1.0 / 10.0) * ihy;
-    ecyz = (-31.0 / 464.0) * cc - (1.0 / 10.0) * ihx;
-
-    cor = (1.0 / 144.0) * (ihx + ihy + ihz);
-
-    fc2x = (1.0 / 120.0) * (ihy + ihz);
-    fc2y = (1.0 / 120.0) * (ihx + ihz);
-    fc2z = (1.0 / 120.0) * (ihx + ihy);
-
-    tcx = (-1.0 / 240.0) * ihx;
-    tcy = (-1.0 / 240.0) * ihy;
-    tcz = (-1.0 / 240.0) * ihz;
-
-    for (ix = 2; ix < dimx + 2; ix++)
-    {
-        ixs = ix * incx;
-        ixms = (ix - 1) * incx;
-        ixps = (ix + 1) * incx;
-        ixmms = (ix - 2) * incx;
-        ixpps = (ix + 2) * incx;
-
-        for (iy = 2; iy < dimy + 2; iy++)
-        {
-            iys = iy * incy;
-            iyms = (iy - 1) * incy;
-            iyps = (iy + 1) * incy;
-            iymms = (iy - 2) * incy;
-            iypps = (iy + 2) * incy;
-
-            for (iz = 2; iz < dimz + 2; iz++)
-            {
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = cc * rptr[ixs + iys + iz] +
-                    fcx * (rptr[ixms + iys + iz] + rptr[ixps + iys + iz]) +
-                    fcy * (rptr[ixs + iyms + iz] + rptr[ixs + iyps + iz]) +
-                    fcz * (rptr[ixs + iys + (iz - 1)] + rptr[ixs + iys + (iz + 1)]);
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    ecxz * (rptr[ixms + iys + (iz - 1)] + rptr[ixps + iys + (iz - 1)] +
-                            rptr[ixms + iys + (iz + 1)] + rptr[ixps + iys + (iz + 1)]) +
-                    ecyz * (rptr[ixs + iyms + (iz - 1)] + rptr[ixs + iyps + (iz - 1)] +
-                            rptr[ixs + iyms + (iz + 1)] + rptr[ixs + iyps + (iz + 1)]) +
-                    ecxy * (rptr[ixms + iyms + iz] + rptr[ixms + iyps + iz] +
-                            rptr[ixps + iyms + iz] + rptr[ixps + iyps + iz]);
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    cor * (rptr[ixms + iyms + (iz - 1)] + rptr[ixps + iyms + (iz - 1)] +
-                           rptr[ixms + iyps + (iz - 1)] + rptr[ixps + iyps + (iz - 1)] +
-                           rptr[ixms + iyms + (iz + 1)] + rptr[ixps + iyms + (iz + 1)] +
-                           rptr[ixms + iyps + (iz + 1)] + rptr[ixps + iyps + (iz + 1)]);
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    fc2x * (rptr[ixmms + iys + iz] + rptr[ixpps + iys + iz]) +
-                    fc2y * (rptr[ixs + iymms + iz] + rptr[ixs + iypps + iz]) +
-                    fc2z * (rptr[ixs + iys + (iz - 2)] + rptr[ixs + iys + (iz + 2)]);
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    tcx * (rptr[ixps + iypps + iz] + rptr[ixps + iymms + iz] +
-                           rptr[ixms + iypps + iz] + rptr[ixms + iymms + iz] +
-                           rptr[ixps + iys + (iz + 2)] + rptr[ixps + iys + (iz - 2)] +
-                           rptr[ixms + iys + (iz + 2)] + rptr[ixms + iys + (iz - 2)]) +
-                    tcy * (rptr[ixpps + iyps + iz] + rptr[ixmms + iyps + iz] +
-                           rptr[ixpps + iyms + iz] + rptr[ixmms + iyms + iz] +
-                           rptr[ixs + iyps + (iz + 2)] + rptr[ixs + iyps + (iz - 2)] +
-                           rptr[ixs + iyms + (iz + 2)] + rptr[ixs + iyms + (iz - 2)]) +
-                    tcz * (rptr[ixpps + iys + (iz + 1)] + rptr[ixmms + iys + (iz + 1)] +
-                           rptr[ixpps + iys + (iz - 1)] + rptr[ixmms + iys + (iz - 1)] +
-                           rptr[ixs + iypps + (iz + 1)] + rptr[ixs + iymms + (iz + 1)] +
-                           rptr[ixs + iypps + (iz - 1)] + rptr[ixs + iymms + (iz - 1)]);
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-    return cc;
-}
-
-
-
-// Version with loop dimensions set at compile time
-template <typename RmgType>
-rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+rmg_double_t FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
 
@@ -139,16 +26,16 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
     BaseGrid G;
     Lattice L;
 
-    ibrav = L.ibrav;
+    ibrav = L.get_ibrav_type();
 
-    incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
-    incy = FIXED_ZDIM + 4;
-    incxr = FIXED_ZDIM * FIXED_YDIM;
-    incyr = FIXED_ZDIM;
+    incx = (dimz + 4) * (dimy + 4);
+    incy = dimz + 4;
+    incxr = dimz * dimy;
+    incyr = dimz;
 
-    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
-    ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
-    ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
+    ihx = 1.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+    ihy = 1.0 / (gridhy * gridhy * L.get_yside() * L.get_yside());
+    ihz = 1.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
 
     cc = (-116.0 / 90.0) * (ihx + ihy + ihz);
 
@@ -171,9 +58,9 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
     tcz = (-1.0 / 240.0) * ihz;
 
     // Handle the general case first
-    if((FIXED_ZDIM % 4) || (ibrav != CUBIC_PRIMITIVE)) {
+    if((dimz % 4) || (ibrav != CUBIC_PRIMITIVE)) {
 
-        for (ix = 2; ix < FIXED_XDIM + 2; ix++)
+        for (ix = 2; ix < dimx + 2; ix++)
         {
             ixs = ix * incx;
             ixms = (ix - 1) * incx;
@@ -181,7 +68,7 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
             ixmms = (ix - 2) * incx;
             ixpps = (ix + 2) * incx;
 
-            for (iy = 2; iy < FIXED_YDIM + 2; iy++)
+            for (iy = 2; iy < dimy + 2; iy++)
             {
                 iys = iy * incy;
                 iyms = (iy - 1) * incy;
@@ -189,7 +76,7 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
                 iymms = (iy - 2) * incy;
                 iypps = (iy + 2) * incy;
 
-                for (iz = 2; iz < FIXED_ZDIM + 2; iz++)
+                for (iz = 2; iz < dimz + 2; iz++)
                 {
 
                     b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] = cc * rptr[ixs + iys + iz] +
@@ -242,7 +129,7 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
 
     // Optimized case for dimz divisible by 4 and cubic primitive grid
 
-    for (ix = 2; ix < FIXED_XDIM + 2; ix++)
+    for (ix = 2; ix < dimx + 2; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
@@ -250,7 +137,7 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
         ixmms = (ix - 2) * incx;
         ixpps = (ix + 2) * incx;
 
-        for (iy = 2; iy < FIXED_YDIM + 2; iy++)
+        for (iy = 2; iy < dimy + 2; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
@@ -331,7 +218,7 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
 
 
 
-            for (iz = 2; iz < FIXED_ZDIM + 2; iz+=4)
+            for (iz = 2; iz < dimz + 2; iz+=4)
             {
 
                 tdx =   rptr[ixps + iys + iz + 6] +
@@ -535,13 +422,14 @@ rmg_double_t FiniteDiff::app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_
 
 
 template <typename RmgType>
-void FiniteDiff::app_cir_sixth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
+void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
+    rmg_double_t rz, rzps, rzms, rzpps;
     rmg_double_t c000, c100, c110, c200;
 
     incx = (dimz + 4) * (dimy + 4);
@@ -553,88 +441,12 @@ void FiniteDiff::app_cir_sixth_standard (RmgType * rptr, RmgType * b, int dimx, 
     c100 = 13.0 / 180.0;
     c110 = 1.0 / 144.0;
     c200 = -1.0 / 240.0;
-    for (ix = 2; ix < dimx + 2; ix++)
-    {
-        ixs = ix * incx;
-        ixms = (ix - 1) * incx;
-        ixps = (ix + 1) * incx;
-        ixmms = (ix - 2) * incx;
-        ixpps = (ix + 2) * incx;
-
-        for (iy = 2; iy < dimy + 2; iy++)
-        {
-            iys = iy * incy;
-            iyms = (iy - 1) * incy;
-            iyps = (iy + 1) * incy;
-            iymms = (iy - 2) * incy;
-            iypps = (iy + 2) * incy;
-
-            for (iz = 2; iz < dimz + 2; iz++)
-            {
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] =
-                    c100 * (rptr[ixs + iys + (iz - 1)] +
-                            rptr[ixs + iys + (iz + 1)] +
-                            rptr[ixms + iys + iz] +
-                            rptr[ixps + iys + iz] +
-                            rptr[ixs + iyms + iz] +
-                            rptr[ixs + iyps + iz]) + c000 * rptr[ixs + iys + iz];
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    c110 * (rptr[ixps + iyps + iz] +
-                            rptr[ixps + iyms + iz] +
-                            rptr[ixms + iyps + iz] +
-                            rptr[ixms + iyms + iz] +
-                            rptr[ixps + iys + (iz + 1)] +
-                            rptr[ixps + iys + (iz - 1)] +
-                            rptr[ixms + iys + (iz + 1)] +
-                            rptr[ixms + iys + (iz - 1)] +
-                            rptr[ixs + iyps + (iz + 1)] +
-                            rptr[ixs + iyps + (iz - 1)] +
-                            rptr[ixs + iyms + (iz + 1)] + rptr[ixs + iyms + (iz - 1)]);
-
-                b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] +=
-                    c200 * (rptr[ixs + iys + (iz - 2)] +
-                            rptr[ixs + iys + (iz + 2)] +
-                            rptr[ixmms + iys + iz] +
-                            rptr[ixpps + iys + iz] +
-                            rptr[ixs + iymms + iz] + rptr[ixs + iypps + iz]);
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-}
-
-
-template <typename RmgType>
-void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
-{
-
-    int ix, iy, iz;
-    int ixs, iys, ixms, ixps, iyms, iyps;
-    int incy, incx, ixmms, ixpps, iymms, iypps;
-    int incyr, incxr;
-    rmg_double_t rz, rzps, rzms, rzpps;
-    rmg_double_t c000, c100, c110, c200;
-
-    incx = (FIXED_ZDIM + 4) * (FIXED_YDIM + 4);
-    incy = FIXED_ZDIM + 4;
-    incxr = FIXED_ZDIM * FIXED_YDIM;
-    incyr = FIXED_ZDIM;
-
-    c000 = 61.0 / 120.0;
-    c100 = 13.0 / 180.0;
-    c110 = 1.0 / 144.0;
-    c200 = -1.0 / 240.0;
 
 
     // Handle the general case first
-    if(FIXED_ZDIM % 4) {
+    if(dimz % 4) {
 
-        for (ix = 2; ix < FIXED_XDIM + 2; ix++)
+        for (ix = 2; ix < dimx + 2; ix++)
         {
             ixs = ix * incx;
             ixms = (ix - 1) * incx;
@@ -642,7 +454,7 @@ void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
             ixmms = (ix - 2) * incx;
             ixpps = (ix + 2) * incx;
 
-            for (iy = 2; iy < FIXED_YDIM + 2; iy++)
+            for (iy = 2; iy < dimy + 2; iy++)
             {
                 iys = iy * incy;
                 iyms = (iy - 1) * incy;
@@ -650,7 +462,7 @@ void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
                 iymms = (iy - 2) * incy;
                 iypps = (iy + 2) * incy;
 
-                for (iz = 2; iz < FIXED_ZDIM + 2; iz++)
+                for (iz = 2; iz < dimz + 2; iz++)
                 {
 
                     b[(ix - 2) * incxr + (iy - 2) * incyr + (iz - 2)] =
@@ -692,7 +504,7 @@ void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
 
 
     // Optimized case for dimz divisible by 4
-    for (ix = 2; ix < FIXED_XDIM + 2; ix++)
+    for (ix = 2; ix < dimx + 2; ix++)
     {
         ixs = ix * incx;
         ixms = (ix - 1) * incx;
@@ -700,7 +512,7 @@ void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
         ixmms = (ix - 2) * incx;
         ixpps = (ix + 2) * incx;
 
-        for (iy = 2; iy < FIXED_YDIM + 2; iy++)
+        for (iy = 2; iy < dimy + 2; iy++)
         {
             iys = iy * incy;
             iyms = (iy - 1) * incy;
@@ -721,7 +533,7 @@ void FiniteDiff::app_cir_sixth_global (RmgType * rptr, RmgType * b)
                    rptr[ixs + iyms + 1];
 
 
-            for (iz = 2; iz < FIXED_ZDIM + 2; iz+=4)
+            for (iz = 2; iz < dimz + 2; iz+=4)
             {
 
                 // Forward set of edges
@@ -864,7 +676,8 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
     BaseGrid G;
     Lattice L;
 
-    ibrav = L.ibrav;
+    ibrav = L.get_ibrav_type();
+
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -878,10 +691,10 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
         if (G.get_anisotropy() < 1.0000001)
         {
 
-            cc = -2.0 / (gridhx * gridhx * L.xside * L.xside);
-            cc = cc - 2.0 / (gridhy * gridhy * L.yside * L.yside);
-            cc = cc - 2.0 / (gridhz * gridhz * L.zside * L.zside);
-            fcx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+            cc = -2.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+            cc = cc - 2.0 / (gridhy * gridhy * L.get_yside() * L.get_yside());
+            cc = cc - 2.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
+            fcx = 1.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -955,12 +768,12 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
         else
         {
 
-            cc = -2.0 / (gridhx * gridhx * L.xside * L.xside);
-            cc = cc - 2.0 / (gridhy * gridhy * L.yside * L.yside);
-            cc = cc - 2.0 / (gridhz * gridhz * L.zside * L.zside);
-            fcx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
-            fcy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
-            fcz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
+            cc = -2.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+            cc = cc - 2.0 / (gridhy * gridhy * L.get_yside() * L.get_yside());
+            cc = cc - 2.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
+            fcx = 1.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+            fcy = 1.0 / (gridhy * gridhy * L.get_yside() * L.get_yside());
+            fcz = 1.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -998,8 +811,8 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
 
     case CUBIC_BC:
 
-        cc = -2.0 / (gridhx * gridhx * L.xside * L.xside);
-        fc = 1.0 / (4.0 * gridhx * gridhx * L.xside * L.xside);
+        cc = -2.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+        fc = 1.0 / (4.0 * gridhx * gridhx * L.get_xside() * L.get_xside());
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -1036,8 +849,8 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
 
     case CUBIC_FC:
 
-        cc = -6.0 / (gridhx * gridhx * L.xside * L.xside);
-        fc = 1.0 / (2.0 * gridhx * gridhx * L.xside * L.xside);
+        cc = -6.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+        fc = 1.0 / (2.0 * gridhx * gridhx * L.get_xside() * L.get_xside());
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -1078,10 +891,10 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
 
     case HEXAGONAL:
 
-        cc = -4.0 / (gridhx * gridhx * L.xside * L.xside);
-        cc = cc - 2.0 / (gridhz * gridhz * L.zside * L.zside);
-        fc1 = 2.0 / (3.0 * gridhx * gridhx * L.xside * L.xside);
-        fc2 = 1.0 / (gridhz * gridhz * L.zside * L.zside);
+        cc = -4.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+        cc = cc - 2.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
+        fc1 = 2.0 / (3.0 * gridhx * gridhx * L.get_xside() * L.get_xside());
+        fc2 = 1.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
 
         for (ix = 1; ix <= dimx; ix++)
         {
@@ -1146,19 +959,19 @@ rmg_double_t FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy,
     ix1 = dimy * dimz;
     iy1 = dimz;
 
-    h2 = gridhx * gridhx * L.xside * L.xside;
+    h2 = gridhx * gridhx * L.get_xside() * L.get_xside();
     t0 = -49.0 / (18.0 * h2);
     t1x =  3.0 / ( 2.0 * h2);
     t2x = -3.0 / (20.0 * h2);
     t3x =  1.0 / (90.0 * h2);
 
-    h2 = gridhy * gridhy * L.yside * L.yside;
+    h2 = gridhy * gridhy * L.get_yside() * L.get_yside();
     t0 -= 49.0 / (18.0 * h2);
     t1y =  3.0 / ( 2.0 * h2);
     t2y = -3.0 / (20.0 * h2);
     t3y =  1.0 / (90.0 * h2);
 
-    h2 = gridhz * gridhz * L.zside * L.zside;
+    h2 = gridhz * gridhz * L.get_zside() * L.get_zside();
     t0 -= 49.0 / (18.0 * h2);
     t1z =  3.0 / ( 2.0 * h2);
     t2z = -3.0 / (20.0 * h2);
@@ -1209,7 +1022,7 @@ rmg_double_t FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy,
 
 
 template <typename RmgType>
-rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+rmg_double_t FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     int ibrav;
@@ -1220,15 +1033,16 @@ rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, i
     BaseGrid G;
     Lattice L;
 
-    ibrav = L.ibrav;
+    ibrav = L.get_ibrav_type();
+
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth_standard.\n");
+        rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
     }
 
-    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
-    ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
-    ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
+    ihx = 1.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+    ihy = 1.0 / (gridhy * gridhy * L.get_yside() * L.get_yside());
+    ihz = 1.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
 
 
     incx = (dimz + 2) * (dimy + 2);
@@ -1240,7 +1054,7 @@ rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, i
     if (G.get_anisotropy() < 1.000001)
     {
 
-        ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
+        ihx = 1.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
         cc = (-4.0 / 3.0) * (ihx + ihx + ihx);
         fcx = (5.0 / 6.0) * ihx + (cc / 8.0);
         ecxy = (1.0 / 12.0) * (ihx + ihx);
@@ -1295,9 +1109,9 @@ rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, i
     {
 
         /* Compute coefficients for this grid spacing */
-        ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
-        ihy = 1.0 / (gridhy * gridhy * L.yside * L.yside);
-        ihz = 1.0 / (gridhz * gridhz * L.zside * L.zside);
+        ihx = 1.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+        ihy = 1.0 / (gridhy * gridhy * L.get_yside() * L.get_yside());
+        ihz = 1.0 / (gridhz * gridhz * L.get_zside() * L.get_zside());
 
         cc = (-4.0 / 3.0) * (ihx + ihy + ihz);
 
@@ -1368,81 +1182,8 @@ rmg_double_t FiniteDiff::app_cil_fourth_standard (RmgType * rptr, RmgType * b, i
 }                               /* end app_cil */
 
 
-
 template <typename RmgType>
-rmg_double_t FiniteDiff::app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    int ix, iy, iz;
-    int ixs, iys, ixms, ixps, iyms, iyps;
-    int incy, incx;
-    int incyr, incxr;
-    rmg_double_t c000, c100, c110;
-    rmg_double_t ihx;
-    Lattice L;
-
-    incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
-    incy = FIXED_ZDIM + 2;
-    incxr = FIXED_ZDIM * FIXED_YDIM;
-    incyr = FIXED_ZDIM;
-
-    ihx = 1.0 / (gridhx * gridhx * L.xside * L.xside);
-    c000 = (-4.0 / 3.0) * (ihx + ihx + ihx);
-    c100 = (5.0 / 6.0) * ihx + (c000 / 8.0);
-    c110 = (1.0 / 12.0) * (ihx + ihx);
-
-
-    // Handle the general case first
-    for (ix = 1; ix < FIXED_XDIM + 1; ix++)
-    {
-        ixs = ix * incx;
-        ixms = (ix - 1) * incx;
-        ixps = (ix + 1) * incx;
-
-        for (iy = 1; iy < FIXED_YDIM + 1; iy++)
-        {
-            iys = iy * incy;
-            iyms = (iy - 1) * incy;
-            iyps = (iy + 1) * incy;
-
-            for (iz = 1; iz < FIXED_ZDIM + 1; iz++)
-            {
-
-                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                    c100 * (rptr[ixs + iys + (iz - 1)] +
-                            rptr[ixs + iys + (iz + 1)] +
-                            rptr[ixms + iys + iz] +
-                            rptr[ixps + iys + iz] +
-                            rptr[ixs + iyms + iz] +
-                            rptr[ixs + iyps + iz]) + c000 * rptr[ixs + iys + iz];
-
-                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                    c110 * (rptr[ixps + iyps + iz] +
-                            rptr[ixps + iyms + iz] +
-                            rptr[ixms + iyps + iz] +
-                            rptr[ixms + iyms + iz] +
-                            rptr[ixps + iys + (iz + 1)] +
-                            rptr[ixps + iys + (iz - 1)] +
-                            rptr[ixms + iys + (iz + 1)] +
-                            rptr[ixms + iys + (iz - 1)] +
-                            rptr[ixs + iyps + (iz + 1)] +
-                            rptr[ixs + iyps + (iz - 1)] +
-                            rptr[ixs + iyms + (iz + 1)] + rptr[ixs + iyms + (iz - 1)]);
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-
-    return c000;
-
-}
-
-
-template <typename RmgType>
-void FiniteDiff::app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
+void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, ibrav;
@@ -1453,7 +1194,8 @@ void FiniteDiff::app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx,
     BaseGrid G;
     Lattice L;
 
-    ibrav = L.ibrav;
+    ibrav = L.get_ibrav_type();
+
 
     if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cir_fourth.\n");
@@ -1498,113 +1240,34 @@ void FiniteDiff::app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx,
 
 }
 
-template <typename RmgType>
-void FiniteDiff::app_cir_fourth_global (RmgType * rptr, RmgType * b)
-{
-
-    int ix, iy, iz;
-    int ixs, iys, ixms, ixps, iyms, iyps;
-    int incy, incx;
-    int incyr, incxr;
-    rmg_double_t c000, c100;
-
-    incx = (FIXED_ZDIM + 2) * (FIXED_YDIM + 2);
-    incy = FIXED_ZDIM + 2;
-    incxr = FIXED_ZDIM * FIXED_YDIM;
-    incyr = FIXED_ZDIM;
-
-    c000 = 0.5;
-    c100 = 1.0 / 12.0;
-
-
-    for (ix = 1; ix < FIXED_XDIM + 1; ix++)
-    {
-        ixs = ix * incx;
-        ixms = (ix - 1) * incx;
-        ixps = (ix + 1) * incx;
-
-        for (iy = 1; iy < FIXED_YDIM + 1; iy++)
-        {
-            iys = iy * incy;
-            iyms = (iy - 1) * incy;
-            iyps = (iy + 1) * incy;
-
-            for (iz = 1; iz < FIXED_ZDIM + 1; iz++)
-            {
-
-                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                    c100 * (rptr[ixs + iys + (iz - 1)] +
-                            rptr[ixs + iys + (iz + 1)] +
-                            rptr[ixms + iys + iz] +
-                            rptr[ixps + iys + iz] +
-                            rptr[ixs + iyms + iz] +
-                            rptr[ixs + iyps + iz]) + 
-                    c000 * rptr[ixs + iys + iz];
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-}
 
 // Wrappers to call these from C
-extern "C" double app_cil_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_sixth_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
     FiniteDiff FD; 
-    return FD.app_cil_sixth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    return FD.app_cil_sixth<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double app_cil_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_sixth_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     FiniteDiff FD; 
-    return FD.app_cil_sixth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-}
-
-extern "C" double app_cil_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    FiniteDiff FD; 
-    return FD.app_cil_sixth_global<double> (rptr, b, gridhx, gridhy, gridhz);
-
-}
-extern "C" double app_cil_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
-{
-
-    FiniteDiff FD; 
-    return FD.app_cil_sixth_global<float> (rptr, b, gridhx, gridhy, gridhz);
+    return FD.app_cil_sixth<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
 
-extern "C" void app_cir_sixth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
+extern "C" void app_cir_sixth_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
 {
 
     FiniteDiff FD; 
-    FD.app_cir_sixth_standard<double> (rptr, b, dimx, dimy, dimz);
+    FD.app_cir_sixth<double> (rptr, b, dimx, dimy, dimz);
 
 }
-extern "C" void app_cir_sixth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
+extern "C" void app_cir_sixth_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
 {
 
     FiniteDiff FD; 
-    FD.app_cir_sixth_standard<float> (rptr, b, dimx, dimy, dimz);
-
-}
-extern "C" void app_cir_sixth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
-{
-
-    FiniteDiff FD; 
-    FD.app_cir_sixth_global<double> (rptr, b);
-
-}
-extern "C" void app_cir_sixth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
-{
-
-    FiniteDiff FD; 
-    FD.app_cir_sixth_global<float> (rptr, b);
+    FD.app_cir_sixth<float> (rptr, b, dimx, dimy, dimz);
 
 }
 extern "C" double app_del2c(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
@@ -1628,59 +1291,31 @@ extern "C" double app_del2c_rmg_complex(complex<double> *rptr, complex<double> *
     return FD.app_del2c<complex <double> > (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double app_cil_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_fourth_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     FiniteDiff FD; 
-    return FD.app_cil_fourth_standard<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    return FD.app_cil_fourth<double> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double app_cil_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" double app_cil_fourth_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
     FiniteDiff FD; 
-    return FD.app_cil_fourth_standard<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    return FD.app_cil_fourth<float> (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
 }
-extern "C" double app_cil_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" void app_cir_fourth_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
 {
 
     FiniteDiff FD; 
-    return FD.app_cil_fourth_global<double> (rptr, b, gridhx, gridhy, gridhz);
+    FD.app_cir_fourth<double> (rptr, b, dimx, dimy, dimz);
 
 }
-extern "C" double app_cil_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+extern "C" void app_cir_fourth_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
 {
 
     FiniteDiff FD; 
-    return FD.app_cil_fourth_global<float> (rptr, b, gridhx, gridhy, gridhz);
-
-}
-extern "C" void app_cir_fourth_standard_rmg_double(rmg_double_t *rptr, rmg_double_t *b, int dimx, int dimy, int dimz)
-{
-
-    FiniteDiff FD; 
-    FD.app_cir_fourth_standard<double> (rptr, b, dimx, dimy, dimz);
-
-}
-extern "C" void app_cir_fourth_standard_rmg_float(rmg_float_t *rptr, rmg_float_t *b, int dimx, int dimy, int dimz)
-{
-
-    FiniteDiff FD; 
-    FD.app_cir_fourth_standard<float> (rptr, b, dimx, dimy, dimz);
-
-}
-extern "C" void app_cir_fourth_global_rmg_double(rmg_double_t *rptr, rmg_double_t *b)
-{
-
-    FiniteDiff FD; 
-    FD.app_cir_fourth_global<double> (rptr, b);
-
-}
-extern "C" void app_cir_fourth_global_rmg_float(rmg_float_t *rptr, rmg_float_t *b)
-{
-
-    FiniteDiff FD; 
-    FD.app_cir_fourth_global<float> (rptr, b);
+    FD.app_cir_fourth<float> (rptr, b, dimx, dimy, dimz);
 
 }

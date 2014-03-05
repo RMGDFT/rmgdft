@@ -69,11 +69,6 @@
 
 
 
-
-/* Some definitions needed for using compile time values for global grid sizes */
-#include "fixed_dims.h"
-
-
 /* Occupation flags */
 #define OCC_NONE 0
 #define OCC_FD 1

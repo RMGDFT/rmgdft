@@ -6,17 +6,7 @@
 #include <unistd.h>
 #include <mpi.h>
 
-class RmgError {
-
-public:
-    void rmg_error_handler(const char *filename, int line, char const *message)
-    {
-        printf("%s at LINE %d in %s.\n", message, line, filename);
-        fflush (NULL);
-        sleep (2);
-        MPI_Abort( MPI_COMM_WORLD, 0 );
-    }
-};
+void rmg_error_handler(const char *filename, int line, char const *message);
 
 #else
 void rmg_error_handler(char *message);

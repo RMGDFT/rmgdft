@@ -398,9 +398,9 @@ extern "C" int get_thread_tid(void)
 
 extern "C" void init_HYBRID_MODEL(int nthreads)
 {
-    BaseThread *B;
+    BaseThread B(nthreads);
     // This is not a leak. We want B to live forever
-    B = new BaseThread(nthreads);
+    //B = new BaseThread(nthreads);
 }
 
 extern "C" void set_cpu_affinity(int tid)

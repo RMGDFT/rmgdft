@@ -14,6 +14,9 @@ app_cilr_fourth.c
 FiniteDiff.cpp
 app_cil_driver.cpp
 app_cir_driver.cpp
+app_cir_fcc.cpp
+app_cir_bcc.cpp
+app_cir_hex.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 

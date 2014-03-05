@@ -5,25 +5,27 @@
 #define APP_CI_FOURTH 4
 #define APP_CI_SIXTH 6
 
+// Uncomment when generating doxygen docs.
+//#define __cplusplus
 #ifdef __cplusplus
+template <typename RmgType>
+void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
+template <typename RmgType>
+rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order);
+
 
 #include "rmg_error.h"
-class FiniteDiff : public RmgError {
+
+class FiniteDiff {
 
 private:
 
 public:
     template <typename RmgType>
-    rmg_double_t app_cil_sixth_standard (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+    rmg_double_t app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 
     template <typename RmgType>
-    rmg_double_t app_cil_sixth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-
-    template <typename RmgType>
-    void app_cir_sixth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
-
-    template <typename RmgType>
-    void app_cir_sixth_global (RmgType * rptr, RmgType * b);
+    void app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
     rmg_double_t app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
@@ -32,16 +34,21 @@ public:
     rmg_double_t app6_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 
     template <typename RmgType>
-    rmg_double_t app_cil_fourth_global (RmgType * rptr, RmgType * b, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+    rmg_double_t app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 
     template <typename RmgType>
-    rmg_double_t app_cil_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+    void app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
-    void app_cir_fourth_global (RmgType * rptr, RmgType * b);
+    void app_cir_fcc (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
-    void app_cir_fourth_standard (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
+    void app_cir_bcc (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
+
+    template <typename RmgType>
+    void app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
+
+
 };
 #endif
 

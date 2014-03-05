@@ -34,7 +34,6 @@
 
 #include "const.h"
 #include "common_prototypes.h"
-#include "fixed_dims.h"
 #include "rmg_alloc.h"
 
 #include <float.h>

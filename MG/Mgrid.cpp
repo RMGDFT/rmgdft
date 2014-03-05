@@ -73,14 +73,15 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     int ixoff, iyoff, izoff;
     RmgType *resid, *newf, *newv, *newwork;
     TradeImages T;
+    Lattice L;
 
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     resid = work + 2 * size;
 
-    scale = 2.0 / (gridhx * gridhx * get_xside() * get_xside());
-    scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
-    scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
+    scale = 2.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * L.get_yside() * L.get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * L.get_zside() * L.get_zside()));
     scale = step / scale;
 
 //    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_TRADE);
@@ -139,7 +140,6 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
     dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
     dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
-
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
 
 /* set storage pointers in the current workspace */
@@ -206,7 +206,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
     rmg_double_t scale, face, corner, edge;
     Lattice L;
 
-    ibrav = L.ibrav;
+    ibrav = L.get_ibrav_type();
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -668,18 +668,18 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
 
 
 
-/* Compute 1-D grid sizes for the next multigrid level 
+/** Compute 1-D grid sizes for the next multigrid level 
 
-Inputs:
-curdim        = current size of this grid on this node
-global_dim    = global grid dimension
-global_offset = offset of edge of this node grid on the global grid
-global_pdim   = dimension of this node grid
-bctype        = boundary condition
+Inputs:<br>
+curdim        = current size of this grid on this node<br>
+global_dim    = global grid dimension<br>
+global_offset = offset of edge of this node grid on the global grid<br>
+global_pdim   = dimension of this node grid<br>
+bctype        = boundary condition<br>
 
 
-Outputs:
-*roffset      = pointer to grid offset (always 0 or 1)
+Outputs:<br>
+*roffset      = pointer to grid offset (always 0 or 1)<br>
 
 Return value  = size of next grid level
 

@@ -1,8 +1,4 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/app_cir_bcc.c *****
+/****f* QMD-MGDFT/app_cir_hex.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
  *   Quantum molecular dynamics package.
@@ -16,8 +12,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    void app_cir_bcc(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz)
- *    Applies the Mehrstellen RHS operator to a matrix for BCC lattice 
+ *    void app_cir_hex(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz)
+ *    Applies the Mehrstellen RHS operator to a matrix for HEX lattice 
  * INPUTS
  *    a[(dimx+2) * (dimy+2) * (dimz+2)]: the matrix to be applied
  *    dimx, dimy, dimz: array dimentions in x, y, z direction
@@ -30,39 +26,46 @@
  * SOURCE
  */
 
+/** 
+ *
+ *    Applies the Mehrstellen RHS operator to matrix a dimensioned
+ *      a[(dimx+2)][(dimy+2)][(dimz+2)]
+ *    
+ *    Returns result in matrix b dimensioned
+ *      b[dimx][dimy][dimz] 
+ *      
+ *    For hexagonal grids.
+ *
+ * @return nothing
+ */
 
-#include "const.h"
-#include "common_prototypes.h"
-#include "rmg_alloc.h"
-
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
+#include "BaseGrid.h"
+#include "Lattice.h"
 #include "FiniteDiff.h"
-#include "TradeImages.h"
+#include <cmath>
+#include <complex>
 
 
+using namespace std;
 
-void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
+template <typename RmgType>
+void FiniteDiff::app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int ixs, iys;
     int incy, incx;
     int incyr, incxr;
-    rmg_double_t Bc, Bf;
+    rmg_double_t Bc, Bf, Bz;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
     incyr = dimz;
     incxr = dimz * dimy;
 
-
-    trade_images (a, dimx, dimy, dimz, FULL_TRADE);
-
-
-    Bc = 2.0 / 3.0;
+    Bc = 7.0 / 12.0;
     Bf = 1.0 / 24.0;
+    Bz = 1.0 / 12.0;
     for (ix = 1; ix <= dimx; ix++)
     {
         ixs = ix * incx;
@@ -74,14 +77,14 @@ void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int di
 
                 b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
                     Bc * a[ixs + iys + iz] +
-                    Bf * a[(ix - 1) * incx + (iy - 1) * incy + iz - 1] +
-                    Bf * a[(ix - 1) * incx + iy * incy + iz] +
-                    Bf * a[ix * incx + (iy - 1) * incy + iz] +
-                    Bf * a[ix * incx + iy * incy + iz - 1] +
-                    Bf * a[ix * incx + iy * incy + iz + 1] +
-                    Bf * a[ix * incx + (iy + 1) * incy + iz] +
-                    Bf * a[(ix + 1) * incx + iy * incy + iz] +
-                    Bf * a[(ix + 1) * incx + (iy + 1) * incy + iz + 1];
+                    Bz * a[ixs + iys + iz - 1] +
+                    Bz * a[ixs + iys + iz + 1] +
+                    Bf * a[(ix + 1) * incx + iys + iz] +
+                    Bf * a[(ix + 1) * incx + (iy - 1) * incy + iz] +
+                    Bf * a[ixs + (iy - 1) * incy + iz] +
+                    Bf * a[(ix - 1) * incx + iys + iz] +
+                    Bf * a[(ix - 1) * incx + (iy + 1) * incy + iz] +
+                    Bf * a[ixs + (iy + 1) * incy + iz];
 
 
             }                   /* end for */
@@ -90,7 +93,6 @@ void app_cir_bcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int di
 
     }                           /* end for */
 
-
-}                               /* end app_cir_bcc */
+}                               /* end app_cir_hex */
 
 /******/

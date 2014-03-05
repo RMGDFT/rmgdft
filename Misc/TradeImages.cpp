@@ -3,8 +3,6 @@
 ******************************************************************************/
 
 #include "TradeImages.h"
-#include "transition.h"
-#include "common_prototypes.h"
 #include "BlasWrappers.h"
 #include <cmath>
 #include <complex>
@@ -27,10 +25,6 @@ template void TradeImages::trade_imagesx<rmg_double_t>(rmg_double_t*, rmg_double
 template void TradeImages::trade_imagesx<complex<float> >(complex <float>*, complex <float>*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<complex<double> >(complex <double>*, complex <double>*, int, int, int, int, int);
 
-extern "C"
-{
-rmg_double_t my_crtc (void);
-}
 
 /*
  * INPUTS
@@ -47,8 +41,12 @@ int TradeImages::max_alloc;
 
 // Rank of target node based on offsets from current node
 int TradeImages::target_node[3][3][3];
+
+// Sync/Async flag
 int TradeImages::mode;
 
+// MPI communicator to use
+MPI_Comm TradeImages::comm;
 
 rmg_double_t *TradeImages::frdx1, *TradeImages::frdx2, *TradeImages::frdy1, *TradeImages::frdy2, *TradeImages::frdz1, *TradeImages::frdz2;
 rmg_double_t *TradeImages::frdx1n, *TradeImages::frdx2n, *TradeImages::frdy1n, *TradeImages::frdy2n, *TradeImages::frdz1n, *TradeImages::frdz2n;
@@ -103,8 +101,6 @@ TradeImages::TradeImages(void)
          }
 
 
-         //my_malloc(swbuf1x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, rmg_double_t);
-         //my_malloc(swbuf2x, 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * ct.THREADS_PER_NODE, rmg_double_t);
          max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T.get_threads_per_node();
 
          TradeImages::init_trade_imagesx_async();        
@@ -121,6 +117,10 @@ void TradeImages::set_synchronous_mode(void)
 void TradeImages::set_asynchronous_mode(void)
 {
     TradeImages::mode = ASYNC_MODE;
+}
+void TradeImages::set_MPI_comm(MPI_Comm comm)
+{
+    TradeImages::comm = comm;
 }
 
 template <typename RmgType>
@@ -229,10 +229,10 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_D], (1>>16),
-                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), transition_get_grid_comm(), &mrstatus);
+                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), TradeImages::comm, &mrstatus);
 
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_U], (2>>16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), transition_get_grid_comm(), &mrstatus);
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), TradeImages::comm, &mrstatus);
     }
     T.thread_barrier_wait();
 
@@ -298,10 +298,10 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_S], (3>>16),
-                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_N], (3>>16), transition_get_grid_comm(), &mrstatus);
+                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_N], (3>>16), TradeImages::comm, &mrstatus);
 
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_N], (4>>16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4>>16), transition_get_grid_comm(), &mrstatus);
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4>>16), TradeImages::comm, &mrstatus);
     }
     T.thread_barrier_wait();
 
@@ -365,10 +365,10 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     if(tid == 0) {
 
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_W], (5>>16),
-                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_E], (5>>16), transition_get_grid_comm(), &mrstatus);
+                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_E], (5>>16), TradeImages::comm, &mrstatus);
 
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_E], (6>>16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_W], (6>>16), transition_get_grid_comm(), &mrstatus);
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_W], (6>>16), TradeImages::comm, &mrstatus);
 
     }
     T.thread_barrier_wait();
@@ -484,7 +484,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), swbuf2x_f, factor*stop,
-		  MPI_BYTE, nb_ids[NB_D], (1>>16), transition_get_grid_comm(), &mstatus);
+		  MPI_BYTE, nb_ids[NB_D], (1>>16), TradeImages::comm, &mstatus);
     } 
     T.thread_barrier_wait();
 
@@ -515,7 +515,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), swbuf2x_f, factor*stop,
-                      MPI_BYTE, nb_ids[NB_U], (2>>16), transition_get_grid_comm(), &mstatus);
+                      MPI_BYTE, nb_ids[NB_U], (2>>16), TradeImages::comm, &mstatus);
     }
     T.thread_barrier_wait();
 
@@ -549,7 +549,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_N], (3>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_S], (3>>16), transition_get_grid_comm(), &mstatus);
+                  MPI_BYTE, nb_ids[NB_S], (3>>16), TradeImages::comm, &mstatus);
     }
     T.thread_barrier_wait();
 
@@ -575,7 +575,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_S], (4>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_N], (4>>16), transition_get_grid_comm(), &mstatus);
+                  MPI_BYTE, nb_ids[NB_N], (4>>16), TradeImages::comm, &mstatus);
     }
     T.thread_barrier_wait();
 
@@ -603,7 +603,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_E], (5>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_W], (5>>16), transition_get_grid_comm(), &mstatus);
+                  MPI_BYTE, nb_ids[NB_W], (5>>16), TradeImages::comm, &mstatus);
     }
     T.thread_barrier_wait();
 
@@ -613,7 +613,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     T.thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_W], (6>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_E], (6>>16), transition_get_grid_comm(), &mstatus);
+                  MPI_BYTE, nb_ids[NB_E], (6>>16), TradeImages::comm, &mstatus);
     }
     T.thread_barrier_wait();
     QMD_copy (stop, &swbuf2x_f[tid * stop], ione, &mat[xmax + incx], ione);
@@ -688,7 +688,7 @@ void TradeImages::init_trade_imagesx_async(void)
 
     THREADS_PER_NODE = T.get_threads_per_node();
 
-    printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
+    //printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
 
     grid_xp = G.get_FPX0_GRID() + 2*MAX_TRADE_IMAGES;
     grid_yp = G.get_FPY0_GRID() + 2*MAX_TRADE_IMAGES;
@@ -720,19 +720,19 @@ void TradeImages::init_trade_imagesx_async(void)
      }
 
     // Set up the target node array
-    pe2xyz(transition_get_gridpe(), &pe_x, &pe_y, &pe_z);
+    G.pe2xyz(G.get_gridpe(), &pe_x, &pe_y, &pe_z);
     for(ix = -1;ix <= 1;ix++) {
 
-        t_pe_x = (pe_x + ix + G.PE_X) % G.PE_X;
+        t_pe_x = (pe_x + ix + G.get_PE_X()) % G.get_PE_X();
 
         for(iy = -1;iy <= 1;iy++) {
 
-            t_pe_y = (pe_y + iy + G.PE_Y) % G.PE_Y;
+            t_pe_y = (pe_y + iy + G.get_PE_Y()) % G.get_PE_Y();
 
             for(iz = -1;iz <= 1;iz++) {
 
-                t_pe_z = (pe_z + iz + G.PE_Z) % G.PE_Z;
-                TradeImages::target_node[ix+1][iy+1][iz+1] = t_pe_x*G.PE_Y*G.PE_Z + t_pe_y*G.PE_Z + t_pe_z;
+                t_pe_z = (pe_z + iz + G.get_PE_Z()) % G.get_PE_Z();
+                TradeImages::target_node[ix+1][iy+1][iz+1] = t_pe_x*G.get_PE_Y()*G.get_PE_Z() + t_pe_y*G.get_PE_Z() + t_pe_z;
 
             }
         }
@@ -927,44 +927,44 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     if(tid == 0) {
 
         // Corner nodes
-      TradeImages::RMG_MPI_trade( &m0_r_f[0*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, -1, -1, transition_get_grid_comm(), 18, &TradeImages::rreqs[18]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[1*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, -1, 1, transition_get_grid_comm(), 19, &TradeImages::rreqs[19]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[2*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, 1, -1, transition_get_grid_comm(), 20, &TradeImages::rreqs[20]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[3*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, 1, 1, transition_get_grid_comm(), 21, &TradeImages::rreqs[21]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[4*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, -1, -1, transition_get_grid_comm(), 22, &TradeImages::rreqs[22]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[5*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, -1, 1, transition_get_grid_comm(), 23, &TradeImages::rreqs[23]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[6*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, 1, -1, transition_get_grid_comm(), 24, &TradeImages::rreqs[24]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[7*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, 1, 1, transition_get_grid_comm(), 25, &TradeImages::rreqs[25]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[0*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, -1, -1, TradeImages::comm, 18, &TradeImages::rreqs[18]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[1*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, -1, 1, TradeImages::comm, 19, &TradeImages::rreqs[19]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[2*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, 1, -1, TradeImages::comm, 20, &TradeImages::rreqs[20]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[3*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, -1, 1, 1, TradeImages::comm, 21, &TradeImages::rreqs[21]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[4*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, -1, -1, TradeImages::comm, 22, &TradeImages::rreqs[22]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[5*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, -1, 1, TradeImages::comm, 23, &TradeImages::rreqs[23]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[6*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, 1, -1, TradeImages::comm, 24, &TradeImages::rreqs[24]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[7*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_IRECV, 1, 1, 1, TradeImages::comm, 25, &TradeImages::rreqs[25]);
 
         // The z planes
-      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, transition_get_grid_comm(), 0, &TradeImages::rreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, transition_get_grid_comm(), 1, &TradeImages::rreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, TradeImages::comm, 0, &TradeImages::rreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, TradeImages::comm, 1, &TradeImages::rreqs[1]);
 
         // The y planes
-      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, transition_get_grid_comm(), 2, &TradeImages::rreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, transition_get_grid_comm(), 3, &TradeImages::rreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, TradeImages::comm, 2, &TradeImages::rreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, TradeImages::comm, 3, &TradeImages::rreqs[3]);
 
         // The x planes
-      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::rreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::rreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, TradeImages::comm, 4, &TradeImages::rreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, TradeImages::comm, 5, &TradeImages::rreqs[5]);
 
         // And the yz-plane edges
-      TradeImages::RMG_MPI_trade(yzpsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, -1, transition_get_grid_comm(), 6, &TradeImages::rreqs[6]);
-      TradeImages::RMG_MPI_trade(yzpsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, 1, transition_get_grid_comm(), 7, &TradeImages::rreqs[7]);
-      TradeImages::RMG_MPI_trade(yzmsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, -1, transition_get_grid_comm(), 8, &TradeImages::rreqs[8]);
-      TradeImages::RMG_MPI_trade(yzmsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, 1, transition_get_grid_comm(), 9, &TradeImages::rreqs[9]);
+      TradeImages::RMG_MPI_trade(yzpsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, -1, TradeImages::comm, 6, &TradeImages::rreqs[6]);
+      TradeImages::RMG_MPI_trade(yzpsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, 1, TradeImages::comm, 7, &TradeImages::rreqs[7]);
+      TradeImages::RMG_MPI_trade(yzmsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, -1, TradeImages::comm, 8, &TradeImages::rreqs[8]);
+      TradeImages::RMG_MPI_trade(yzmsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, 1, TradeImages::comm, 9, &TradeImages::rreqs[9]);
 
         // And the xy-plane edges
-      TradeImages::RMG_MPI_trade(xypsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, -1, 0, transition_get_grid_comm(), 10, &TradeImages::rreqs[10]);
-      TradeImages::RMG_MPI_trade(xypsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, 1, 0, transition_get_grid_comm(), 11, &TradeImages::rreqs[11]);
-      TradeImages::RMG_MPI_trade(xymsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, -1, 0, transition_get_grid_comm(), 12, &TradeImages::rreqs[12]);
-      TradeImages::RMG_MPI_trade(xymsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, 1, 0, transition_get_grid_comm(), 13, &TradeImages::rreqs[13]);
+      TradeImages::RMG_MPI_trade(xypsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, -1, 0, TradeImages::comm, 10, &TradeImages::rreqs[10]);
+      TradeImages::RMG_MPI_trade(xypsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, 1, 0, TradeImages::comm, 11, &TradeImages::rreqs[11]);
+      TradeImages::RMG_MPI_trade(xymsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, -1, 0, TradeImages::comm, 12, &TradeImages::rreqs[12]);
+      TradeImages::RMG_MPI_trade(xymsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, 1, 0, TradeImages::comm, 13, &TradeImages::rreqs[13]);
 
         // And the xz-plane edges
-      TradeImages::RMG_MPI_trade(xzpsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, -1, transition_get_grid_comm(), 14, &TradeImages::rreqs[14]);
-      TradeImages::RMG_MPI_trade(xzpsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, 1, transition_get_grid_comm(), 15, &TradeImages::rreqs[15]);
-      TradeImages::RMG_MPI_trade(xzmsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, -1, transition_get_grid_comm(), 16, &TradeImages::rreqs[16]);
-      TradeImages::RMG_MPI_trade(xzmsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, 1, transition_get_grid_comm(), 17, &TradeImages::rreqs[17]);
+      TradeImages::RMG_MPI_trade(xzpsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, -1, TradeImages::comm, 14, &TradeImages::rreqs[14]);
+      TradeImages::RMG_MPI_trade(xzpsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, 1, TradeImages::comm, 15, &TradeImages::rreqs[15]);
+      TradeImages::RMG_MPI_trade(xzmsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, -1, TradeImages::comm, 16, &TradeImages::rreqs[16]);
+      TradeImages::RMG_MPI_trade(xzmsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, 1, TradeImages::comm, 17, &TradeImages::rreqs[17]);
 
     }
 
@@ -1012,14 +1012,14 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     if(tid == 0) {
 
         // Corners
-      TradeImages::RMG_MPI_trade( &m0_s_f[0*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, 1, 1, transition_get_grid_comm(), 18, &TradeImages::sreqs[18]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[1*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, 1, -1, transition_get_grid_comm(), 19, &TradeImages::sreqs[19]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[2*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, -1, 1, transition_get_grid_comm(), 20, &TradeImages::sreqs[20]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[3*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, -1, -1, transition_get_grid_comm(), 21, &TradeImages::sreqs[21]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[4*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, 1, 1, transition_get_grid_comm(), 22, &TradeImages::sreqs[22]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[5*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, 1, -1, transition_get_grid_comm(), 23, &TradeImages::sreqs[23]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[6*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, -1, 1, transition_get_grid_comm(), 24, &TradeImages::sreqs[24]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[7*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, -1, -1, transition_get_grid_comm(), 25, &TradeImages::sreqs[25]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[0*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, 1, 1, TradeImages::comm, 18, &TradeImages::sreqs[18]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[1*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, 1, -1, TradeImages::comm, 19, &TradeImages::sreqs[19]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[2*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, -1, 1, TradeImages::comm, 20, &TradeImages::sreqs[20]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[3*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, 1, -1, -1, TradeImages::comm, 21, &TradeImages::sreqs[21]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[4*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, 1, 1, TradeImages::comm, 22, &TradeImages::sreqs[22]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[5*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, 1, -1, TradeImages::comm, 23, &TradeImages::sreqs[23]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[6*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, -1, 1, TradeImages::comm, 24, &TradeImages::sreqs[24]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[7*corner_node_stride], ACTIVE_THREADS * img3, RMG_MPI_ISEND, -1, -1, -1, TradeImages::comm, 25, &TradeImages::sreqs[25]);
 
     }
 
@@ -1128,16 +1128,16 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     if(tid == 0) {
 
         // Send z planes
-      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, transition_get_grid_comm(), 0, &TradeImages::sreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, transition_get_grid_comm(), 1, &TradeImages::sreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, TradeImages::comm, 0, &TradeImages::sreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, TradeImages::comm, 1, &TradeImages::sreqs[1]);
 
         // Send the north and south planes
-      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, transition_get_grid_comm(), 2, &TradeImages::sreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, transition_get_grid_comm(), 3, &TradeImages::sreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, TradeImages::comm, 2, &TradeImages::sreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, TradeImages::comm, 3, &TradeImages::sreqs[3]);
 
         // Send the east and west planes
-      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::sreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::sreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, TradeImages::comm, 4, &TradeImages::sreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, TradeImages::comm, 5, &TradeImages::sreqs[5]);
 
     }
 
@@ -1210,22 +1210,22 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     if(tid == 0) {
 
         // Send yz-plane edges
-      TradeImages::RMG_MPI_trade(yzpsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, 1, transition_get_grid_comm(), 6, &TradeImages::sreqs[6]);
-      TradeImages::RMG_MPI_trade(yzpsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, -1, transition_get_grid_comm(), 7, &TradeImages::sreqs[7]);
-      TradeImages::RMG_MPI_trade(yzmsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, 1, transition_get_grid_comm(), 8, &TradeImages::sreqs[8]);
-      TradeImages::RMG_MPI_trade(yzmsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, -1, transition_get_grid_comm(), 9, &TradeImages::sreqs[9]);
+      TradeImages::RMG_MPI_trade(yzpsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, 1, TradeImages::comm, 6, &TradeImages::sreqs[6]);
+      TradeImages::RMG_MPI_trade(yzpsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, -1, TradeImages::comm, 7, &TradeImages::sreqs[7]);
+      TradeImages::RMG_MPI_trade(yzmsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, 1, TradeImages::comm, 8, &TradeImages::sreqs[8]);
+      TradeImages::RMG_MPI_trade(yzmsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, -1, TradeImages::comm, 9, &TradeImages::sreqs[9]);
 
         // Send xy-plane edges
-      TradeImages::RMG_MPI_trade(xypsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, 1, 0, transition_get_grid_comm(), 10, &TradeImages::sreqs[10]);
-      TradeImages::RMG_MPI_trade(xypsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, -1, 0, transition_get_grid_comm(), 11, &TradeImages::sreqs[11]);
-      TradeImages::RMG_MPI_trade(xymsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, 1, 0, transition_get_grid_comm(), 12, &TradeImages::sreqs[12]);
-      TradeImages::RMG_MPI_trade(xymsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, -1, 0, transition_get_grid_comm(), 13, &TradeImages::sreqs[13]);
+      TradeImages::RMG_MPI_trade(xypsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, 1, 0, TradeImages::comm, 10, &TradeImages::sreqs[10]);
+      TradeImages::RMG_MPI_trade(xypsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, -1, 0, TradeImages::comm, 11, &TradeImages::sreqs[11]);
+      TradeImages::RMG_MPI_trade(xymsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, 1, 0, TradeImages::comm, 12, &TradeImages::sreqs[12]);
+      TradeImages::RMG_MPI_trade(xymsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, -1, 0, TradeImages::comm, 13, &TradeImages::sreqs[13]);
 
         // Send xz-plane edges
-      TradeImages::RMG_MPI_trade(xzpsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, 1, transition_get_grid_comm(), 14, &TradeImages::sreqs[14]);
-      TradeImages::RMG_MPI_trade(xzpsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, -1, transition_get_grid_comm(), 15, &TradeImages::sreqs[15]);
-      TradeImages::RMG_MPI_trade(xzmsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, 1, transition_get_grid_comm(), 16, &TradeImages::sreqs[16]);
-      TradeImages::RMG_MPI_trade(xzmsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, -1, transition_get_grid_comm(), 17, &TradeImages::sreqs[17]);
+      TradeImages::RMG_MPI_trade(xzpsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, 1, TradeImages::comm, 14, &TradeImages::sreqs[14]);
+      TradeImages::RMG_MPI_trade(xzpsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, -1, TradeImages::comm, 15, &TradeImages::sreqs[15]);
+      TradeImages::RMG_MPI_trade(xzmsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, 1, TradeImages::comm, 16, &TradeImages::sreqs[16]);
+      TradeImages::RMG_MPI_trade(xzmsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, -1, TradeImages::comm, 17, &TradeImages::sreqs[17]);
 
     }
 
@@ -1517,16 +1517,16 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     if(tid == 0) {
 
         // The z planes
-      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, transition_get_grid_comm(), 0, &TradeImages::rreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, transition_get_grid_comm(), 1, &TradeImages::rreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, TradeImages::comm, 0, &TradeImages::rreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, TradeImages::comm, 1, &TradeImages::rreqs[1]);
 
         // The y planes
-      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, transition_get_grid_comm(), 2, &TradeImages::rreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, transition_get_grid_comm(), 3, &TradeImages::rreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, TradeImages::comm, 2, &TradeImages::rreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, TradeImages::comm, 3, &TradeImages::rreqs[3]);
 
         // The x planes
-      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::rreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::rreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, TradeImages::comm, 4, &TradeImages::rreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, TradeImages::comm, 5, &TradeImages::rreqs[5]);
 
     }
 
@@ -1611,16 +1611,16 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     if(tid == 0) {
 
         // Send z planes
-      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, transition_get_grid_comm(), 0, &TradeImages::sreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, transition_get_grid_comm(), 1, &TradeImages::sreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, TradeImages::comm, 0, &TradeImages::sreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, TradeImages::comm, 1, &TradeImages::sreqs[1]);
 
         // Send the north and south planes
-      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, transition_get_grid_comm(), 2, &TradeImages::sreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, transition_get_grid_comm(), 3, &TradeImages::sreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, TradeImages::comm, 2, &TradeImages::sreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, TradeImages::comm, 3, &TradeImages::sreqs[3]);
 
         // Send the east and west planes
-      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::sreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::sreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, TradeImages::comm, 4, &TradeImages::sreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, TradeImages::comm, 5, &TradeImages::sreqs[5]);
 
     }
 
@@ -1818,44 +1818,44 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     if(tid == 0) {
 
         // Corner nodes
-      TradeImages::RMG_MPI_trade( &m0_r_f[0*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, -1, -1, transition_get_grid_comm(), 18, &TradeImages::rreqs[18]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[1*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, -1, 1, transition_get_grid_comm(), 19, &TradeImages::rreqs[19]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[2*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, 1, -1, transition_get_grid_comm(), 20, &TradeImages::rreqs[20]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[3*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, 1, 1, transition_get_grid_comm(), 21, &TradeImages::rreqs[21]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[4*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, -1, -1, transition_get_grid_comm(), 22, &TradeImages::rreqs[22]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[5*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, -1, 1, transition_get_grid_comm(), 23, &TradeImages::rreqs[23]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[6*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, 1, -1, transition_get_grid_comm(), 24, &TradeImages::rreqs[24]);
-      TradeImages::RMG_MPI_trade( &m0_r_f[7*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, 1, 1, transition_get_grid_comm(), 25, &TradeImages::rreqs[25]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[0*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, -1, -1, TradeImages::comm, 18, &TradeImages::rreqs[18]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[1*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, -1, 1, TradeImages::comm, 19, &TradeImages::rreqs[19]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[2*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, 1, -1, TradeImages::comm, 20, &TradeImages::rreqs[20]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[3*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, -1, 1, 1, TradeImages::comm, 21, &TradeImages::rreqs[21]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[4*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, -1, -1, TradeImages::comm, 22, &TradeImages::rreqs[22]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[5*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, -1, 1, TradeImages::comm, 23, &TradeImages::rreqs[23]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[6*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, 1, -1, TradeImages::comm, 24, &TradeImages::rreqs[24]);
+      TradeImages::RMG_MPI_trade( &m0_r_f[7*corner_node_stride], ACTIVE_THREADS, RMG_MPI_IRECV, 1, 1, 1, TradeImages::comm, 25, &TradeImages::rreqs[25]);
 
         // The z planes
-      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, transition_get_grid_comm(), 0, &TradeImages::rreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, transition_get_grid_comm(), 1, &TradeImages::rreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, TradeImages::comm, 0, &TradeImages::rreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, TradeImages::comm, 1, &TradeImages::rreqs[1]);
 
         // The y planes
-      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, transition_get_grid_comm(), 2, &TradeImages::rreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, transition_get_grid_comm(), 3, &TradeImages::rreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, TradeImages::comm, 2, &TradeImages::rreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, TradeImages::comm, 3, &TradeImages::rreqs[3]);
 
         // The x planes
-      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::rreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::rreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, TradeImages::comm, 4, &TradeImages::rreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, TradeImages::comm, 5, &TradeImages::rreqs[5]);
 
         // And the yz-plane edges
-      TradeImages::RMG_MPI_trade(yzpsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, -1, transition_get_grid_comm(), 6, &TradeImages::rreqs[6]);
-      TradeImages::RMG_MPI_trade(yzpsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, 1, transition_get_grid_comm(), 7, &TradeImages::rreqs[7]);
-      TradeImages::RMG_MPI_trade(yzmsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, -1, transition_get_grid_comm(), 8, &TradeImages::rreqs[8]);
-      TradeImages::RMG_MPI_trade(yzmsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, 1, transition_get_grid_comm(), 9, &TradeImages::rreqs[9]);
+      TradeImages::RMG_MPI_trade(yzpsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, -1, TradeImages::comm, 6, &TradeImages::rreqs[6]);
+      TradeImages::RMG_MPI_trade(yzpsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, 1, 1, TradeImages::comm, 7, &TradeImages::rreqs[7]);
+      TradeImages::RMG_MPI_trade(yzmsms_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, -1, TradeImages::comm, 8, &TradeImages::rreqs[8]);
+      TradeImages::RMG_MPI_trade(yzmsps_r_f, ACTIVE_THREADS * yzlen, RMG_MPI_IRECV, 0, -1, 1, TradeImages::comm, 9, &TradeImages::rreqs[9]);
 
         // And the xy-plane edges
-      TradeImages::RMG_MPI_trade(xypsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, -1, 0, transition_get_grid_comm(), 10, &TradeImages::rreqs[10]);
-      TradeImages::RMG_MPI_trade(xypsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, 1, 0, transition_get_grid_comm(), 11, &TradeImages::rreqs[11]);
-      TradeImages::RMG_MPI_trade(xymsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, -1, 0, transition_get_grid_comm(), 12, &TradeImages::rreqs[12]);
-      TradeImages::RMG_MPI_trade(xymsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, 1, 0, transition_get_grid_comm(), 13, &TradeImages::rreqs[13]);
+      TradeImages::RMG_MPI_trade(xypsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, -1, 0, TradeImages::comm, 10, &TradeImages::rreqs[10]);
+      TradeImages::RMG_MPI_trade(xypsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, 1, 1, 0, TradeImages::comm, 11, &TradeImages::rreqs[11]);
+      TradeImages::RMG_MPI_trade(xymsms_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, -1, 0, TradeImages::comm, 12, &TradeImages::rreqs[12]);
+      TradeImages::RMG_MPI_trade(xymsps_r_f, ACTIVE_THREADS * xylen, RMG_MPI_IRECV, -1, 1, 0, TradeImages::comm, 13, &TradeImages::rreqs[13]);
 
         // And the xz-plane edges
-      TradeImages::RMG_MPI_trade(xzpsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, -1, transition_get_grid_comm(), 14, &TradeImages::rreqs[14]);
-      TradeImages::RMG_MPI_trade(xzpsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, 1, transition_get_grid_comm(), 15, &TradeImages::rreqs[15]);
-      TradeImages::RMG_MPI_trade(xzmsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, -1, transition_get_grid_comm(), 16, &TradeImages::rreqs[16]);
-      TradeImages::RMG_MPI_trade(xzmsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, 1, transition_get_grid_comm(), 17, &TradeImages::rreqs[17]);
+      TradeImages::RMG_MPI_trade(xzpsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, -1, TradeImages::comm, 14, &TradeImages::rreqs[14]);
+      TradeImages::RMG_MPI_trade(xzpsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, 1, 0, 1, TradeImages::comm, 15, &TradeImages::rreqs[15]);
+      TradeImages::RMG_MPI_trade(xzmsms_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, -1, TradeImages::comm, 16, &TradeImages::rreqs[16]);
+      TradeImages::RMG_MPI_trade(xzmsps_r_f, ACTIVE_THREADS * xzlen, RMG_MPI_IRECV, -1, 0, 1, TradeImages::comm, 17, &TradeImages::rreqs[17]);
 
     }
 
@@ -1888,14 +1888,14 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     if(tid == 0) {
 
         // Corners
-      TradeImages::RMG_MPI_trade( &m0_s_f[0*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, 1, 1, transition_get_grid_comm(), 18, &TradeImages::sreqs[18]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[1*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, 1, -1, transition_get_grid_comm(), 19, &TradeImages::sreqs[19]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[2*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, -1, 1, transition_get_grid_comm(), 20, &TradeImages::sreqs[20]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[3*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, -1, -1, transition_get_grid_comm(), 21, &TradeImages::sreqs[21]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[4*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, 1, 1, transition_get_grid_comm(), 22, &TradeImages::sreqs[22]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[5*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, 1, -1, transition_get_grid_comm(), 23, &TradeImages::sreqs[23]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[6*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, -1, 1, transition_get_grid_comm(), 24, &TradeImages::sreqs[24]);
-      TradeImages::RMG_MPI_trade( &m0_s_f[7*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, -1, -1, transition_get_grid_comm(), 25, &TradeImages::sreqs[25]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[0*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, 1, 1, TradeImages::comm, 18, &TradeImages::sreqs[18]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[1*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, 1, -1, TradeImages::comm, 19, &TradeImages::sreqs[19]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[2*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, -1, 1, TradeImages::comm, 20, &TradeImages::sreqs[20]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[3*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, 1, -1, -1, TradeImages::comm, 21, &TradeImages::sreqs[21]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[4*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, 1, 1, TradeImages::comm, 22, &TradeImages::sreqs[22]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[5*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, 1, -1, TradeImages::comm, 23, &TradeImages::sreqs[23]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[6*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, -1, 1, TradeImages::comm, 24, &TradeImages::sreqs[24]);
+      TradeImages::RMG_MPI_trade( &m0_s_f[7*corner_node_stride], ACTIVE_THREADS, RMG_MPI_ISEND, -1, -1, -1, TradeImages::comm, 25, &TradeImages::sreqs[25]);
 
     }
 
@@ -1980,16 +1980,16 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     if(tid == 0) {
 
         // Send z planes
-      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, transition_get_grid_comm(), 0, &TradeImages::sreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, transition_get_grid_comm(), 1, &TradeImages::sreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, TradeImages::comm, 0, &TradeImages::sreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, TradeImages::comm, 1, &TradeImages::sreqs[1]);
 
         // Send the north and south planes
-      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, transition_get_grid_comm(), 2, &TradeImages::sreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, transition_get_grid_comm(), 3, &TradeImages::sreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, TradeImages::comm, 2, &TradeImages::sreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, TradeImages::comm, 3, &TradeImages::sreqs[3]);
 
         // Send the east and west planes
-      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::sreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::sreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, TradeImages::comm, 4, &TradeImages::sreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, TradeImages::comm, 5, &TradeImages::sreqs[5]);
 
     }
 
@@ -2062,22 +2062,22 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     if(tid == 0) {
 
         // Send yz-plane edges
-      TradeImages::RMG_MPI_trade(yzpsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, 1, transition_get_grid_comm(), 6, &TradeImages::sreqs[6]);
-      TradeImages::RMG_MPI_trade(yzpsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, -1, transition_get_grid_comm(), 7, &TradeImages::sreqs[7]);
-      TradeImages::RMG_MPI_trade(yzmsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, 1, transition_get_grid_comm(), 8, &TradeImages::sreqs[8]);
-      TradeImages::RMG_MPI_trade(yzmsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, -1, transition_get_grid_comm(), 9, &TradeImages::sreqs[9]);
+      TradeImages::RMG_MPI_trade(yzpsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, 1, TradeImages::comm, 6, &TradeImages::sreqs[6]);
+      TradeImages::RMG_MPI_trade(yzpsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, -1, -1, TradeImages::comm, 7, &TradeImages::sreqs[7]);
+      TradeImages::RMG_MPI_trade(yzmsms_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, 1, TradeImages::comm, 8, &TradeImages::sreqs[8]);
+      TradeImages::RMG_MPI_trade(yzmsps_s_f, ACTIVE_THREADS * yzlen, RMG_MPI_ISEND, 0, 1, -1, TradeImages::comm, 9, &TradeImages::sreqs[9]);
 
         // Send xy-plane edges
-      TradeImages::RMG_MPI_trade(xypsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, 1, 0, transition_get_grid_comm(), 10, &TradeImages::sreqs[10]);
-      TradeImages::RMG_MPI_trade(xypsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, -1, 0, transition_get_grid_comm(), 11, &TradeImages::sreqs[11]);
-      TradeImages::RMG_MPI_trade(xymsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, 1, 0, transition_get_grid_comm(), 12, &TradeImages::sreqs[12]);
-      TradeImages::RMG_MPI_trade(xymsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, -1, 0, transition_get_grid_comm(), 13, &TradeImages::sreqs[13]);
+      TradeImages::RMG_MPI_trade(xypsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, 1, 0, TradeImages::comm, 10, &TradeImages::sreqs[10]);
+      TradeImages::RMG_MPI_trade(xypsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, -1, -1, 0, TradeImages::comm, 11, &TradeImages::sreqs[11]);
+      TradeImages::RMG_MPI_trade(xymsms_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, 1, 0, TradeImages::comm, 12, &TradeImages::sreqs[12]);
+      TradeImages::RMG_MPI_trade(xymsps_s_f, ACTIVE_THREADS * xylen, RMG_MPI_ISEND, 1, -1, 0, TradeImages::comm, 13, &TradeImages::sreqs[13]);
 
         // Send xz-plane edges
-      TradeImages::RMG_MPI_trade(xzpsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, 1, transition_get_grid_comm(), 14, &TradeImages::sreqs[14]);
-      TradeImages::RMG_MPI_trade(xzpsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, -1, transition_get_grid_comm(), 15, &TradeImages::sreqs[15]);
-      TradeImages::RMG_MPI_trade(xzmsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, 1, transition_get_grid_comm(), 16, &TradeImages::sreqs[16]);
-      TradeImages::RMG_MPI_trade(xzmsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, -1, transition_get_grid_comm(), 17, &TradeImages::sreqs[17]);
+      TradeImages::RMG_MPI_trade(xzpsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, 1, TradeImages::comm, 14, &TradeImages::sreqs[14]);
+      TradeImages::RMG_MPI_trade(xzpsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, -1, 0, -1, TradeImages::comm, 15, &TradeImages::sreqs[15]);
+      TradeImages::RMG_MPI_trade(xzmsms_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, 1, TradeImages::comm, 16, &TradeImages::sreqs[16]);
+      TradeImages::RMG_MPI_trade(xzmsps_s_f, ACTIVE_THREADS * xzlen, RMG_MPI_ISEND, 1, 0, -1, TradeImages::comm, 17, &TradeImages::sreqs[17]);
 
     }
 
@@ -2305,16 +2305,16 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     if(tid == 0) {
 
         // The z planes
-      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, transition_get_grid_comm(), 0, &TradeImages::rreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, transition_get_grid_comm(), 1, &TradeImages::rreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz2n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, 1, TradeImages::comm, 0, &TradeImages::rreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz1n_f, ACTIVE_THREADS * zlen, RMG_MPI_IRECV, 0, 0, -1, TradeImages::comm, 1, &TradeImages::rreqs[1]);
 
         // The y planes
-      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, transition_get_grid_comm(), 2, &TradeImages::rreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, transition_get_grid_comm(), 3, &TradeImages::rreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy2n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, 1, 0, TradeImages::comm, 2, &TradeImages::rreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy1n_f, ACTIVE_THREADS * ylen, RMG_MPI_IRECV, 0, -1, 0, TradeImages::comm, 3, &TradeImages::rreqs[3]);
 
         // The x planes
-      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::rreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::rreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx2n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, 1, 0, 0, TradeImages::comm, 4, &TradeImages::rreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx1n_f, ACTIVE_THREADS * xlen, RMG_MPI_IRECV, -1, 0, 0, TradeImages::comm, 5, &TradeImages::rreqs[5]);
 
     }
 
@@ -2399,16 +2399,16 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     if(tid == 0) {
 
         // Send z planes
-      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, transition_get_grid_comm(), 0, &TradeImages::sreqs[0]);
-      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, transition_get_grid_comm(), 1, &TradeImages::sreqs[1]);
+      TradeImages::RMG_MPI_trade(frdz1_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, -1, TradeImages::comm, 0, &TradeImages::sreqs[0]);
+      TradeImages::RMG_MPI_trade(frdz2_f, ACTIVE_THREADS * zlen, RMG_MPI_ISEND, 0, 0, 1, TradeImages::comm, 1, &TradeImages::sreqs[1]);
 
         // Send the north and south planes
-      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, transition_get_grid_comm(), 2, &TradeImages::sreqs[2]);
-      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, transition_get_grid_comm(), 3, &TradeImages::sreqs[3]);
+      TradeImages::RMG_MPI_trade(frdy1_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, -1, 0, TradeImages::comm, 2, &TradeImages::sreqs[2]);
+      TradeImages::RMG_MPI_trade(frdy2_f, ACTIVE_THREADS * ylen, RMG_MPI_ISEND, 0, 1, 0, TradeImages::comm, 3, &TradeImages::sreqs[3]);
 
         // Send the east and west planes
-      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, transition_get_grid_comm(), 4, &TradeImages::sreqs[4]);
-      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, transition_get_grid_comm(), 5, &TradeImages::sreqs[5]);
+      TradeImages::RMG_MPI_trade(frdx1_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, -1, 0, 0, TradeImages::comm, 4, &TradeImages::sreqs[4]);
+      TradeImages::RMG_MPI_trade(frdx2_f, ACTIVE_THREADS * xlen, RMG_MPI_ISEND, 1, 0, 0, TradeImages::comm, 5, &TradeImages::sreqs[5]);
 
     }
 
@@ -2507,7 +2507,11 @@ extern "C" void init_TradeImages(void)
     TradeImages *T;
     T = new TradeImages();
 }
-
+extern "C" void set_MPI_comm(MPI_Comm comm)
+{
+    TradeImages T;
+    T.set_MPI_comm(comm);
+}
 extern "C"  void trade_imagesx (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images, int type)
 {
     TradeImages T;

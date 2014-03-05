@@ -9,15 +9,11 @@ template <typename RmgType>
 void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order)
 {
 
-    int P0_BASIS, numgrid, sbasis;
+    int sbasis;
     void *allocp;
     RmgType *rptr;
     TradeImages T;
     FiniteDiff FD;
-    RmgError Err;
-
-    P0_BASIS = get_P0_BASIS();
-    numgrid = dimx * dimy * dimz;
 
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
     my_malloc (allocp, sbasis + 64, double);
@@ -25,28 +21,18 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
 
     if(order == APP_CI_FOURTH) {
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_TRADE);
-        if(numgrid == P0_BASIS) {
-            FD.app_cir_fourth_global (rptr, b);
-        }
-        else {
-            FD.app_cir_fourth_standard (rptr, b, dimx, dimy, dimz);
-        }
-        my_free(rptr);
-        return;
+        FD.app_cir_fourth (rptr, b, dimx, dimy, dimz);
     }
-    if(order == APP_CI_SIXTH) {
+    else if(order == APP_CI_SIXTH) {
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
-        if(numgrid == P0_BASIS) {
-            FD.app_cir_sixth_global (rptr, b);
-        }
-        else {
-            FD.app_cir_sixth_standard (rptr, b, dimx, dimy, dimz);
-        }
-        my_free(rptr);
-        return;
+        FD.app_cir_sixth (rptr, b, dimx, dimy, dimz);
+    }
+    else {
+        rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
     }
 
-    Err.rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
+    my_free(rptr);
+    return;
 
 }
 

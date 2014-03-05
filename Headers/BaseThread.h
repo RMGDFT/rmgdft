@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <mpi.h>
+
 #if GPU_ENABLED
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -25,7 +26,7 @@ void *run_threads(void *s);
 
 #ifdef __cplusplus
 
-class BaseThread : public RmgError {
+class BaseThread {
 
 private:
 
@@ -53,6 +54,7 @@ private:
 
     // Base tag
     int basetag;
+
 
 public:
 

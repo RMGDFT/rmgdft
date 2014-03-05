@@ -1,4 +1,11 @@
 add_library (Misc
+RmgTimer.cpp
+BaseGrid.cpp
+BaseThread.cpp
+Lattice.cpp
+TradeImages.cpp
+rmg_error.cpp
+transition.cpp
 init_IO.c
 pack_ptos.c
 get_index.c
@@ -21,10 +28,5 @@ init_pos.c
 rmg_error.c
 rmg_alloc.c
 ions.c
-BaseGrid.cpp
-BaseThread.cpp
-Lattice.cpp
-TradeImages.cpp
-transition.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")

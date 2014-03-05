@@ -14,13 +14,19 @@
 
 #include "BaseThread.h"
 
-class TradeImages : public RmgError {
+class TradeImages {
 
 
 private:
 
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
     static int mode;
+
+    /// MPI communicator to use
+    static MPI_Comm comm;
+
+    // rank of this node in comm
+    static int gridpe;
 
     /// Rank of target node based on offsets from current node. Used by asynchronous comm routines.
     static int target_node[3][3][3];
@@ -55,6 +61,8 @@ public:
     TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);
+    void set_MPI_comm(MPI_Comm comm);
+    void set_gridpe(int gridpe);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);
     template <typename RmgType> void trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type);
 

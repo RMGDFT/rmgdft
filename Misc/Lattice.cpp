@@ -90,6 +90,8 @@
 #include "Lattice.h"
 #include "rmg_error.h"
 
+#define         SQRT2       1.414213562373
+#define         SQRT3       1.732050807569
 
 
 using namespace std;
@@ -218,7 +220,7 @@ void Lattice::recips (void)
 
 
 // If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0)
-void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
+void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, int *flag)
 {
 
     int ir;
@@ -389,10 +391,10 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
     *OMEGAI = fabs (*OMEGAI);
 
     /* Generate volume element */
-    t1 = (rmg_double_t) (G.NX_GRID * G.NY_GRID * G.NZ_GRID);
+    t1 = (rmg_double_t) (G.get_NX_GRID() * G.get_NY_GRID() * G.get_NZ_GRID());
     Lattice::vel = *OMEGAI / t1;
 
-    t1 = (rmg_double_t) (G.FNX_GRID * G.FNY_GRID * G.FNZ_GRID);
+    t1 = (rmg_double_t) (G.get_FNX_GRID() * G.get_FNY_GRID() * G.get_FNZ_GRID());
     Lattice::vel_f = *OMEGAI / t1;
 
     /* Calculate length of supercell */
@@ -416,15 +418,15 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
 
     /* Calculate grid size in crystal coordinates */
 
-    t1 = (rmg_double_t) G.NX_GRID;
+    t1 = (rmg_double_t) G.get_NX_GRID();
     Lattice::hxgrid = 1.0 / t1;
     Lattice::hxxgrid = Lattice::hxgrid / (rmg_double_t) G.FG_NX;
 
-    t1 = (rmg_double_t) G.NY_GRID;
+    t1 = (rmg_double_t) G.get_NY_GRID();
     Lattice::hygrid = 1.0 / t1;
     Lattice::hyygrid = Lattice::hygrid / (rmg_double_t) G.FG_NY;
 
-    t1 = (rmg_double_t) G.NZ_GRID;
+    t1 = (rmg_double_t) G.get_NZ_GRID();
     Lattice::hzgrid = 1.0 / t1;
     Lattice::hzzgrid = Lattice::hzgrid / (rmg_double_t) G.FG_NZ;
 
@@ -439,6 +441,17 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, int *flag)
     }                           /* end if */
 
     Lattice::recips();
+
+    a0[0] = Lattice::a0[0];
+    a0[1] = Lattice::a0[1];
+    a0[2] = Lattice::a0[2];
+    a1[0] = Lattice::a1[0];
+    a1[1] = Lattice::a1[1];
+    a1[2] = Lattice::a1[2];
+    a2[0] = Lattice::a2[0];
+    a2[1] = Lattice::a2[1];
+    a2[2] = Lattice::a2[2];
+
 }                               /* end latgen */
 
 rmg_double_t Lattice::metric (rmg_double_t * crystal)
@@ -458,6 +471,28 @@ rmg_double_t Lattice::metric (rmg_double_t * crystal)
     return (distance);
 
 }                               /* end metric */
+
+
+int Lattice::get_ibrav_type(void)
+{
+    return Lattice::ibrav;
+}
+void Lattice::set_ibrav_type(int newtype)
+{
+  Lattice::ibrav = newtype;
+}
+rmg_double_t Lattice::get_xside(void)
+{
+    return Lattice::xside;
+}
+rmg_double_t Lattice::get_yside(void)
+{
+    return Lattice::yside;
+}
+rmg_double_t Lattice::get_zside(void)
+{
+    return Lattice::zside;
+}
 
 //****/
 
@@ -510,24 +545,29 @@ rmg_double_t Lattice::hzzgrid;
 /// C interface function
 extern "C" void set_ibrav_type(int newtype)
 {
-  Lattice::ibrav = newtype;
+  Lattice L;
+  L.set_ibrav_type(newtype);
 }
 /// C interface function
-extern "C" int get_ibrav_type(int newtype)
+extern "C" int get_ibrav_type(void)
 {
-  return Lattice::ibrav;
+  Lattice L;
+  return L.get_ibrav_type();
 }
 extern "C" rmg_double_t get_xside(void)
 {
-    return Lattice::xside;
+    Lattice L;
+    return L.get_xside();
 }
 extern "C" rmg_double_t get_yside(void)
 {
-    return Lattice::yside;
+    Lattice L;
+    return L.get_yside();
 }
 extern "C" rmg_double_t get_zside(void)
 {
-    return Lattice::zside;
+    Lattice L;
+    return L.get_zside();
 }
 extern "C" rmg_double_t get_hxgrid(void)
 {
@@ -617,16 +657,6 @@ extern "C" void recips(void)
 extern "C" void latgen (rmg_double_t *celldm, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, rmg_double_t *OMEGAI, int *flag)
 {
     Lattice L;
-    L.latgen(celldm, OMEGAI, flag);
-    a0[0] = Lattice::a0[0];
-    a0[1] = Lattice::a0[1];
-    a0[2] = Lattice::a0[2];
-    a1[0] = Lattice::a1[0];
-    a1[1] = Lattice::a1[1];
-    a1[2] = Lattice::a1[2];
-    a2[0] = Lattice::a2[0];
-    a2[1] = Lattice::a2[1];
-    a2[2] = Lattice::a2[2];
-
+    L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
 }
 
