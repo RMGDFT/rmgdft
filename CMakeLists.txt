@@ -16,6 +16,7 @@ project (RMG C CXX Fortran)
 
 
 set (RMG_GPU_ENABLED 1)
+set (CRAY_XK 1)
 
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
@@ -130,7 +131,7 @@ if(MPI_CXX_FOUND)
   target_link_libraries (rmg-negf ${MPI_CXX_LIBRARIES})
 else (MPI_CXX_FOUND)
     include(CMakeForceCompiler)
-  CMAKE_FORCE_CXX_COMPILER(c++ ${CMAKE_CXX_COMPILER_ID})
+  CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
 endif (MPI_CXX_FOUND)
 if(MPI_C_FOUND)
   include_directories(${MPI_C_INCLUDE_PATH})
@@ -193,6 +194,7 @@ if(NOT RMG_MATH_LIBS)
         target_link_libraries (rmg-negf ${LAPACK_LIBRARIES})
     endif (LAPACK_FOUND)
 
+    if(NOT CRAY_XK)
     target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
     target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
     target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
@@ -204,6 +206,7 @@ if(NOT RMG_MATH_LIBS)
     target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
     target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
     target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+    endif(NOT CRAY_XK)
 
 endif(NOT RMG_MATH_LIBS)
 
@@ -242,14 +245,16 @@ add_dependencies(rmg-on libxc)
 add_dependencies(rmg-negf libxc)
 include(ExternalProject)
 ExternalProject_Add ( libxc
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}/lib/libxc
-  CONFIGURE_COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc/configure --prefix=${PROJECT_SOURCE_DIR}/lib/libxc/lib64
-  PREFIX ${PROJECT_SOURCE_DIR}/lib/libxc/lib64
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3
+  CONFIGURE_COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure
+--prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
+  PREFIX ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
   BUILD_COMMAND make
   BUILD_IN_SOURCE 1
 )
 # These are hard coded for now
-target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
+target_link_libraries (rmg
+"${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
 target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
 target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
 
@@ -271,7 +276,7 @@ include_directories("${RMG_SOURCE_DIR}/Headers/")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
-include_directories("${PROJECT_SOURCE_DIR}/lib/libxc/lib64/include/")
+include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/include/")
 #include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 #include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
 #include_directories("/opt/openmpi/include")
