@@ -247,8 +247,7 @@ add_dependencies(rmg-negf libxc)
 include(ExternalProject)
 ExternalProject_Add ( libxc
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3
-  CONFIGURE_COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure
---prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
+  CONFIGURE_COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64 --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib
   PREFIX ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
   BUILD_COMMAND make
   BUILD_IN_SOURCE 1
