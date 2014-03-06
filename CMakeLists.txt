@@ -16,7 +16,7 @@ project (RMG C CXX Fortran)
 
 
 set (RMG_GPU_ENABLED 1)
-set (CRAY_XK 1)
+#set (CRAY_XK 1)
 
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
@@ -216,7 +216,9 @@ endif(NOT RMG_MATH_LIBS)
 find_package(CUDA REQUIRED)
 if(CUDA_FOUND)
   target_link_libraries(rmg ${CUDA_CUDART_LIBRARY})
-  target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
+  if(NOT CRAY_XK)
+      target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
+  endif(NOT CRAY_XK)
   target_link_libraries(rmg ${CUDA_cublas_LIBRARY})
   target_link_libraries(rmg-on ${CUDA_CUDART_LIBRARY})
   #target_link_libraries(rmg-on ${CUDA_CUDA_LIBRARY})
