@@ -39,7 +39,7 @@ if (${UNIX})
     endif(CMAKE_USE_PTHREADS_INIT)
 endif(${UNIX})
 
-# Custom cmake module for FFTW
+# Load custom cmake modules for FFTW and Magma
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
@@ -148,6 +148,15 @@ include_directories(${FFTW_INCLUDES})
 target_link_libraries (rmg ${FFTW_LIBRARIES})
 target_link_libraries (rmg-on ${FFTW_LIBRARIES})
 target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
+
+# Look for the magma libraries
+find_package(MAGMA)
+if(MAGMA_FOUND)
+    target_link_libraries (rmg ${MAGMA_LIBRARIES})
+    target_link_libraries (rmg-on ${MAGMA_LIBRARIES})
+    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES})
+endif(MAGMA_FOUND)
+
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
