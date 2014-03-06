@@ -16,11 +16,13 @@ if(NOT MAGMA_INCLUDES)
 endif(NOT MAGMA_INCLUDES)
 
 find_library (MAGMA_LIBRARIES NAMES magma PATH_SUFFIXES magma)
+find_library (MAGMABLAS_LIBRARIES NAMES magmablas PATH_SUFFIXES magmablas)
 
 # handle the QUIETLY and REQUIRED arguments and set MAGMA_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES MAGMA_INCLUDES)
+find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES
+MAGMA_INCLUDES MAGMABLAS_LIBRARIES)
 
-mark_as_advanced (MAGMA_LIBRARIES MAGMA_INCLUDES)
+mark_as_advanced (MAGMA_LIBRARIES MAGMA_INCLUDES MAGMABLAS_LIBRARIES)
 

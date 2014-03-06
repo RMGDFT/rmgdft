@@ -16,7 +16,8 @@ project (RMG C CXX Fortran)
 
 
 set (RMG_GPU_ENABLED 1)
-#set (CRAY_XK 1)
+set (CRAY_XK 1)
+set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2)
 
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
@@ -142,7 +143,6 @@ else(MPI_C_FOUND)
   CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 endif (MPI_C_FOUND)
 
-set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3)
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDES})
 target_link_libraries (rmg ${FFTW_LIBRARIES})
@@ -215,7 +215,6 @@ endif(NOT RMG_MATH_LIBS)
 # Look for GPU libraries. Only CUDA supported for now
 find_package(CUDA REQUIRED)
 if(CUDA_FOUND)
-  target_link_libraries(rmg ${CUDA_CUDART_LIBRARY})
   if(NOT CRAY_XK)
       target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
   endif(NOT CRAY_XK)
@@ -336,10 +335,6 @@ if(MAGMA_FOUND)
     target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
 endif(MAGMA_FOUND)
 
-if(CRAY_XK)
-    target_link_libraries (rmg-negf "/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2/lib/libmagma.a")
-    target_link_libraries (rmg-negf "/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2/lib/libmagmablas.a")
-endif(CRAY_XK)
 
 # configure make_conf.h to pass some of the CMake settings
 # to the source code
