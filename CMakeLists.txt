@@ -276,7 +276,7 @@ include_directories("${RMG_SOURCE_DIR}/Headers/")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
-include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/include/")
+include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/include/")
 #include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 #include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
 #include_directories("/opt/openmpi/include")
