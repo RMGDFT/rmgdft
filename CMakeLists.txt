@@ -149,14 +149,6 @@ target_link_libraries (rmg ${FFTW_LIBRARIES})
 target_link_libraries (rmg-on ${FFTW_LIBRARIES})
 target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
 
-# Look for the magma libraries
-find_package(MAGMA)
-if(MAGMA_FOUND)
-    target_link_libraries (rmg ${MAGMA_LIBRARIES})
-    target_link_libraries (rmg-on ${MAGMA_LIBRARIES})
-    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES})
-endif(MAGMA_FOUND)
-
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
@@ -224,7 +216,7 @@ endif(NOT RMG_MATH_LIBS)
 find_package(CUDA REQUIRED)
 if(CUDA_FOUND)
   target_link_libraries(rmg ${CUDA_CUDART_LIBRARY})
-  #target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
+  target_link_libraries(rmg ${CUDA_CUDA_LIBRARY})
   target_link_libraries(rmg ${CUDA_cublas_LIBRARY})
   target_link_libraries(rmg-on ${CUDA_CUDART_LIBRARY})
   #target_link_libraries(rmg-on ${CUDA_CUDA_LIBRARY})
@@ -334,6 +326,14 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "/usr/local/magma/lib/libmagma.a")
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
+
+# Look for the magma libraries
+find_package(MAGMA)
+if(MAGMA_FOUND)
+    target_link_libraries (rmg ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
+    target_link_libraries (rmg-on ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
+    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
+endif(MAGMA_FOUND)
 
 if(CRAY_XK)
     target_link_libraries (rmg-negf "/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2/lib/libmagma.a")
