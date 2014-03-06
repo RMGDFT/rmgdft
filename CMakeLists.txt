@@ -255,8 +255,8 @@ ExternalProject_Add ( libxc
 # These are hard coded for now
 target_link_libraries (rmg
 "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
-target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
-target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc/lib64/lib64/libxc.a")
+target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
+target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
 
 
 
@@ -326,7 +326,10 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "/usr/local/magma/lib/libmagma.a")
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
 
-target_link_libraries (rmg-negf "/usr/local/magma-1.4.1/lib/libmagma.a")
+if(CRAY_XK)
+    target_link_libraries (rmg-negf "/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2/lib/libmagma.a")
+    target_link_libraries (rmg-negf "/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2/lib/libmagmablas.a")
+endif(CRAY_XK)
 
 # configure make_conf.h to pass some of the CMake settings
 # to the source code
