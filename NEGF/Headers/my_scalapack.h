@@ -129,7 +129,6 @@ void PSSYMM(_fcd, _fcd, int*, int*, double*,
 		               double*, int*, int*, int*,
 			                      double*, int*, int*, int*,
 					                     double*, double*, int*, int*, int*);
-
 void PSUBDIAG(char*, char*, int, double *, int, double*, int*);
 
 
@@ -147,4 +146,6 @@ void dsymm_dis(char*, char*, int*, double*, double *, double *);
 
 /* bolck size, it is defined in init_dimensions.c */ 
 int NB;
+
+
 

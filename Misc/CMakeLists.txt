@@ -1,10 +1,8 @@
 add_library (Misc
-RmgTimer.cpp
 BaseGrid.cpp
 BaseThread.cpp
 Lattice.cpp
 TradeImages.cpp
-rmg_error.cpp
 transition.cpp
 init_IO.c
 pack_ptos.c
@@ -26,6 +24,7 @@ ATL_assert.c
 mg_prolong_MAX10.c
 init_pos.c
 rmg_error.c
+rmg_error.cpp
 rmg_alloc.c
 ions.c
 )

@@ -35,6 +35,7 @@ struct complex_energy_integral
     int Npulaysave;
     int Npulayrefresh;
     double pulaymix;
+    int probe_noneq;
 };
 typedef struct  complex_energy_integral complex_energy_integral;
 

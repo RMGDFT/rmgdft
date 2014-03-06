@@ -86,7 +86,8 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(include_HEADERS) COPYING TODO compile config.guess \
 	config.sub depcomp install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ac_prog_sed.m4 \
+	$(top_srcdir)/m4/acx.m4 \
 	$(top_srcdir)/m4/ax_f90_module_extension.m4 \
 	$(top_srcdir)/m4/fc_integer.m4 $(top_srcdir)/m4/fcflags.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \

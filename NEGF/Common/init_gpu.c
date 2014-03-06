@@ -55,7 +55,7 @@ void rmg_printout_devices( )
 		cuDeviceTotalMem( &totalMem, dev );
 		cuDeviceGetAttribute( &clock,
 				CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
-		printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
+		if(idevice < 10) printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
 				idevice, name, clock/1000.f, totalMem/1024.f/1024.f );
 	}
 }

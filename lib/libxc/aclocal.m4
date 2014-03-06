@@ -1069,6 +1069,7 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+m4_include([m4/ac_prog_sed.m4])
 m4_include([m4/acx.m4])
 m4_include([m4/ax_f90_module_extension.m4])
 m4_include([m4/fc_integer.m4])

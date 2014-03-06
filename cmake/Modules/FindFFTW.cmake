@@ -10,7 +10,7 @@ if (FFTW_INCLUDES)
   set (FFTW_FIND_QUIETLY TRUE)
 endif (FFTW_INCLUDES)
 
-find_path (FFTW_INCLUDES fftw.h)
+find_path (FFTW_INCLUDES dfftw.h)
 
 find_library (FFTW_LIBRARIES NAMES dfftw)
 

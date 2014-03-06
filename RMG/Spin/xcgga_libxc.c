@@ -42,7 +42,8 @@
 #include "main.h"
 #include <float.h>
 #include <math.h>
-#include "../../lib/libxc/lib64/include/xc.h"   
+//#include "../../lib/libxc/lib64/include/xc.h"   
+#include "xc.h"   
 /* include Libxc's header file */
 
 void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode)
