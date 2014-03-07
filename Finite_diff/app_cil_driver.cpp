@@ -3,6 +3,7 @@
 #include "common_prototypes.h"
 #include "rmg_alloc.h"
 #include "rmg_error.h"
+#include "RmgTimer.h"
 
 using namespace std;
 
@@ -10,13 +11,13 @@ template <typename RmgType>
 rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
 {
 
+    RmgTimer RT(__func__);
     int sbasis;
     rmg_double_t cc;
     void *allocp;
     RmgType *rptr;
     TradeImages T;
     FiniteDiff FD;
-
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
     my_malloc (allocp, sbasis + 64, double);
     rptr = (RmgType *)allocp;

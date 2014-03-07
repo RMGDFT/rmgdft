@@ -1,5 +1,6 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
+#include "RmgTimer.h"
 #include "common_prototypes.h"
 #include "rmg_alloc.h"
 #include "rmg_error.h"
@@ -9,6 +10,7 @@ template <typename RmgType>
 void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order)
 {
 
+    RmgTimer RT(__func__);
     int sbasis;
     void *allocp;
     RmgType *rptr;

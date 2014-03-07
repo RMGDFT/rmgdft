@@ -24,26 +24,38 @@
 /// Controls grid and nodes
 class BaseGrid {
 
-private:
-    /* Node (PE) dimensions */
-    static int PE_X;
-    static int PE_Y;
-    static int PE_Z;
-
+protected:
     /* Global coarse grid dimensions */
     static int NX_GRID;
     static int NY_GRID;
     static int NZ_GRID;
 
-    /* Global fine grid dimensions */
-    static int FNX_GRID;
-    static int FNY_GRID;
-    static int FNZ_GRID;
+    /* Node (PE) dimensions */
+    static int PE_X;
+    static int PE_Y;
+    static int PE_Z;
 
     /* Grid sizes on each PE */
     static int PX0_GRID;
     static int PY0_GRID;
     static int PZ0_GRID;
+
+    /* Basis size on each PE */
+    static int P0_BASIS;
+
+    /* Fine grid basis size on each PE */
+    static int FP0_BASIS;
+
+    /* MPI specific info */
+    static int gridpe;
+    static int neighbors[6];
+
+private:
+
+    /* Global fine grid dimensions */
+    static int FNX_GRID;
+    static int FNY_GRID;
+    static int FNZ_GRID;
 
     /* Grid offsets on each PE */
     static int PX_OFFSET;
@@ -59,16 +71,6 @@ private:
     static int FPX_OFFSET;
     static int FPY_OFFSET;
     static int FPZ_OFFSET;
-
-    /* Basis size on each PE */
-    static int P0_BASIS;
-
-    /* Fine grid basis size on each PE */
-    static int FP0_BASIS;
-
-    /* MPI specific info */
-    static int gridpe;
-    static int neighbors[6];
 
     /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
     static rmg_double_t anisotropy;

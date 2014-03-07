@@ -1,4 +1,6 @@
 add_library (Misc
+RmgTimer.cpp
+#FineGrid.cpp
 BaseGrid.cpp
 BaseThread.cpp
 Lattice.cpp

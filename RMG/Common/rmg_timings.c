@@ -35,7 +35,7 @@
 #include <stdio.h>
 
 #include "hybrid.h"
-
+#include "RmgTimer.h"
 
 
 rmg_double_t timings[LAST_TIME];
@@ -233,6 +233,8 @@ void write_timings (void)
                 (rmg_double_t) ct.total_scf_steps / (rmg_double_t) ct.md_steps);
     }
 
+
+//    CompatRmgTimerPrint();
 
 }                               /* end write_timings */
 
