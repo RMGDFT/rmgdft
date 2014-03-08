@@ -48,6 +48,7 @@
 #include "FiniteDiff.h"
 #include "BlasWrappers.h"
 #include "TradeImages.h"
+#include "RmgTimer.h"
 #include "common_prototypes.h"
 
 using namespace std;
@@ -64,6 +65,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
 {
+    RmgTimer RT("Mgrid solv total time");
     int i;
     int cycl;
     int size, idx;

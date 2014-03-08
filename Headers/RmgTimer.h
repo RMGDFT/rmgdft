@@ -15,14 +15,15 @@
 #include "BaseThread.h"
 using namespace std;
 
+
 class RmgTimer {
 
 private:
     volatile double start_time;
     volatile double end_time;
     const char *sname;
-    static std::unordered_map<std::string, double> timings[MAX_RMG_THREADS+1];  // Time the main thread in the last slot
-
+    // Time the main thread in the zeroth slot
+    static std::unordered_map<std::string, double> timings[MAX_RMG_THREADS+1];
 
 public:
     RmgTimer(const char *fname);

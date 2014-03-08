@@ -234,7 +234,7 @@ void write_timings (void)
     }
 
 
-//    CompatRmgTimerPrint();
+    CompatRmgTimerPrint();
 
 }                               /* end write_timings */
 
