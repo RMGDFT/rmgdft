@@ -16,8 +16,10 @@ project (RMG C CXX Fortran)
 
 
 set (RMG_GPU_ENABLED 1)
-set (CRAY_XK 1)
-set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2)
+set (CRAY_XK 0)
+set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
+/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
+${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
@@ -254,10 +256,11 @@ ExternalProject_Add ( libxc
   BUILD_IN_SOURCE 1
 )
 # These are hard coded for now
-target_link_libraries (rmg
-"${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
-target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
-target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
+find_package(LIBXC REQUIRED)
+include_directories("${LIBXC_INCLUDES}")
+target_link_libraries (rmg ${LIBXC_LIBRARIES})
+target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
+target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
 
 
 
@@ -277,7 +280,6 @@ include_directories("${RMG_SOURCE_DIR}/Headers/")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
-include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/include/")
 #include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 #include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
 #include_directories("/opt/openmpi/include")
