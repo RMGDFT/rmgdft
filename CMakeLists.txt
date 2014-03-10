@@ -263,10 +263,10 @@ endif(NOT LIBXC_FOUND)
 
 
 find_package(LIBXC REQUIRED)
-include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/include/")
-target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
-target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
-target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
+include_directories("${LIBXC_INCLUDES}")
+target_link_libraries (rmg ${LIBXC_LIBRARIES})
+target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
+target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
 
 
 
