@@ -16,7 +16,7 @@ project (RMG C CXX Fortran)
 
 
 set (RMG_GPU_ENABLED 1)
-set (CRAY_XK 0)
+set (CRAY_XK 1)
 set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
@@ -251,6 +251,8 @@ add_dependencies(rmg-negf libxc)
 find_package(LIBXC)
 if(NOT LIBXC_FOUND)
     execute_process(
+    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+    execute_process(
     COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure
         --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
         --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib
@@ -260,6 +262,7 @@ if(NOT LIBXC_FOUND)
 endif(NOT LIBXC_FOUND)
 
 
+find_package(LIBXC REQUIRED)
 include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/include/")
 target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
 target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
