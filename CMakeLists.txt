@@ -247,20 +247,23 @@ endif(CUDA_FOUND)
 add_dependencies(rmg libxc)
 add_dependencies(rmg-on libxc)
 add_dependencies(rmg-negf libxc)
-include(ExternalProject)
-ExternalProject_Add ( libxc
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3
-  CONFIGURE_COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64 --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib
-  PREFIX ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
-  BUILD_COMMAND make
-  BUILD_IN_SOURCE 1
-)
-# These are hard coded for now
-find_package(LIBXC REQUIRED)
-include_directories("${LIBXC_INCLUDES}")
-target_link_libraries (rmg ${LIBXC_LIBRARIES})
-target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
-target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
+
+find_package(LIBXC)
+if(NOT LIBXC_FOUND)
+    execute_process(
+    COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure
+        --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
+        --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+    execute_process(COMMAND make install
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+endif(NOT LIBXC_FOUND)
+
+
+include_directories("${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/include/")
+target_link_libraries (rmg "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
+target_link_libraries (rmg-on "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
+target_link_libraries (rmg-negf "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib/libxc.a")
 
 
 
