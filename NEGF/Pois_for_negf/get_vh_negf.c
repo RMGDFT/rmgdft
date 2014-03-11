@@ -42,9 +42,25 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
-#include "init_var.h"
-#include "LCR.h"
+//#include "main.h"
+
+#include "grid.h"
+#include "const.h"
+#include "params.h"
+#include "rmgtypes.h"
+#include "rmg_alloc.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "macros.h"
+#include "FiniteDiff.h"
+
+
+
+
+//#include "init_var.h"
+//#include "LCR.h"
 #include "twoParts.h"
 
 
@@ -78,14 +94,14 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
 
     /* Grab some memory for our multigrid structures */
-    my_malloc (mgrhsarr, 12 * sbasis, rmg_double_t);
-    mglhsarr = mgrhsarr + sbasis;
-    mgresarr = mglhsarr + sbasis;
-    work = mgresarr + sbasis;
-    sg_rho = work + 4 * sbasis;
-    sg_vh = sg_rho + sbasis;
-    sg_res = sg_vh + sbasis;
-    nrho = sg_res + sbasis;
+    my_malloc (mgrhsarr, sbasis, rmg_double_t);
+    my_malloc (mglhsarr, sbasis, rmg_double_t);
+    my_malloc (mgresarr, sbasis, rmg_double_t);
+    my_malloc (work, 4*sbasis, rmg_double_t);
+    my_malloc (sg_rho, sbasis, rmg_double_t);
+    my_malloc (sg_vh, sbasis, rmg_double_t);
+    my_malloc (sg_res, sbasis, rmg_double_t);
+    my_malloc (nrho, sbasis, rmg_double_t);
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
@@ -95,13 +111,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
         nrho[idx] = 0.0;
     pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
-    /* Transfer rho into smoothing grid */
-    pack_ptos (sg_rho, nrho, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
-
-    /* Apply CI right hand side to rho and store result in work array */
-    app_cir_driver (sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
-
+    app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
 
     /* Multiply through by 4PI */
@@ -127,14 +137,9 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 	     * when there is no need to apply it, when this loop is called second, third, etc time. */
             if ( (cycles) || (!its))
             {
-                /* Transfer vh into smoothing grid */
-                time5 = my_crtc();
-                pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-                time6 = my_crtc();
-                rmg_timings (VH2a_TIME, (time6 - time5));
-
+        
                 /* Apply operator */
-                diag = app_cil_driver (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
@@ -173,7 +178,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
                 mgrid_solv_negf (mglhsarr, sg_res, work,
                             ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, get_hxxgrid(),
                             get_hyygrid(), get_hzzgrid(),
-                            0, pct.neighbors, ct.poi_parm.levels, poi_pre,
+                            0, get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
                             get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
                             get_FPX_OFFSET(), get_FPY_OFFSET(), get_FPZ_OFFSET(),
@@ -192,7 +197,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
                 /* Update vh */
                 t1 = ONE;
-                saxpy (&pbasis, &t1, mgresarr, &incx, ct.vh_ext, &incx);
+                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }
             else
@@ -200,7 +205,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-                saxpy (&pbasis, &t1, mgresarr, &incx, ct.vh_ext, &incx);
+                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }                   /* end if */
 
@@ -210,12 +215,8 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
         time4 = my_crtc();
         /*Get residual*/
-        /* Transfer vh into smoothing grid */
-        pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
-
-        /* Apply operator */
-        diag = app_cil_driver (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
+        diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
 
         /* Generate residual vector */
@@ -254,6 +255,13 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
     pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
     /* Release our memory */
+    my_free (nrho);
+    my_free (sg_res);
+    my_free (sg_vh);
+    my_free (sg_rho);
+    my_free (work);
+    my_free (mgresarr);
+    my_free (mglhsarr);
     my_free (mgrhsarr);
 
     time2 = my_crtc ();
