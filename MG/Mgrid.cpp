@@ -818,7 +818,7 @@ extern "C" void solv_pois_f (rmg_float_t * vmat, rmg_float_t * fmat, rmg_float_t
 extern "C" int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
 {
     Mgrid MG;
-    MG.MG_SIZE(curdim, curlevel, global_dim, global_offset, global_pdim, roffset, bctype);
+    return MG.MG_SIZE(curdim, curlevel, global_dim, global_offset, global_pdim, roffset, bctype);
 }
 
 extern "C" void solv_pois (rmg_double_t * vmat, rmg_double_t * fmat, rmg_double_t * work,
