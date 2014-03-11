@@ -100,7 +100,8 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
 
     /* Apply CI right hand side to rho and store result in work array */
-    app_cir (sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+    app_cir_driver (sg_rho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
+
 
 
     /* Multiply through by 4PI */
@@ -133,8 +134,8 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
                 rmg_timings (VH2a_TIME, (time6 - time5));
 
                 /* Apply operator */
-                diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            get_hxxgrid(), get_hyygrid(), get_hzzgrid());
+                diag = app_cil_driver (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                            get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
                 time5 = my_crtc();
@@ -213,8 +214,8 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
         pack_ptos (sg_vh, ct.vh_ext, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
 
         /* Apply operator */
-        diag = app_cil (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                get_hxxgrid(), get_hyygrid(), get_hzzgrid());
+        diag = app_cil_driver (sg_vh, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
 
         /* Generate residual vector */
