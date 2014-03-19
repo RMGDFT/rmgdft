@@ -9,7 +9,6 @@
 
 #if GAMMA_PT
 #include "hybrid.h"
-#include <pthread.h>
 void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig);
 void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi);
 
@@ -29,9 +28,6 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
 
     P0_BASIS = get_P0_BASIS();
 
-    enter_threaded_region();
-    scf_barrier_init(ct.THREADS_PER_NODE);
-
     // Each thread applies the operator to one wavefunction
     istop = ct.num_states / ct.THREADS_PER_NODE;
     istop = istop * ct.THREADS_PER_NODE;     
@@ -47,15 +43,9 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
         }
 
         // Thread tasks are set up so wake them
-        wake_threads(ct.THREADS_PER_NODE);
-
-        // Then wait for them to finish this task
-        wait_for_threads(ct.THREADS_PER_NODE);
+        run_thread_tasks(ct.THREADS_PER_NODE);
 
     }
-
-    scf_barrier_destroy();
-    leave_threaded_region();
 
     // Process any remaining orbitals serially
     for(st1 = istop;st1 < ct.num_states;st1++) {
@@ -181,9 +171,6 @@ void subdiag_app_B (STATE * states, rmg_double_t * b_psi)
 
     P0_BASIS = get_P0_BASIS();
 
-    enter_threaded_region();
-    scf_barrier_init(ct.THREADS_PER_NODE);
-
     // Each thread applies the operator to one wavefunction
     istop = ct.num_states / ct.THREADS_PER_NODE;
     istop = istop * ct.THREADS_PER_NODE;
@@ -197,15 +184,9 @@ void subdiag_app_B (STATE * states, rmg_double_t * b_psi)
         }
 
         // Thread tasks are set up so wake them
-        wake_threads(ct.THREADS_PER_NODE);
-
-        // Then wait for them to finish this task
-        wait_for_threads(ct.THREADS_PER_NODE);
+        run_thread_tasks(ct.THREADS_PER_NODE);
 
     }
-
-    scf_barrier_destroy();
-    leave_threaded_region();
 
     // Process any remaining orbitals serially
     for(st1 = istop;st1 < ct.num_states;st1++) {

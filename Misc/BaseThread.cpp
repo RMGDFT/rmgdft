@@ -7,6 +7,15 @@ using namespace std;
 // Main thread control structure
 BaseThread *thread_controls[MAX_RMG_THREADS];
 
+// Condition variable and mutex for threads
+std::mutex BaseThread::thread_mutex;
+std::condition_variable BaseThread::thread_cv;
+
+// Condition variable and mutex for main
+std::mutex BaseThread::main_mutex;
+std::condition_variable BaseThread::main_cv;
+
+
 // Constructor
 BaseThread::BaseThread(int nthreads)
 {
@@ -25,16 +34,9 @@ BaseThread::BaseThread(int nthreads)
         ncpus = sysconf( _SC_NPROCESSORS_ONLN );
         printf("Hybrid mode with %d threads and %d cores per node.\n", nthreads, ncpus);
 
-        sem_init(&BaseThread::thread_sem, 0, 0);
-        pthread_attr_init( &BaseThread::thread_attrs );
-        pthread_attr_setscope( &BaseThread::thread_attrs, PTHREAD_SCOPE_SYSTEM );
-        pthread_attr_setschedpolicy( &BaseThread::thread_attrs, SCHED_RR);
-
-        // Create the thread specific data key
-        pthread_key_create(&BaseThread::scf_thread_control_key, NULL);
-
-        // Create the main sync barrier
-        pthread_barrier_init(&BaseThread::run_barrier, NULL, BaseThread::THREADS_PER_NODE);
+//       pthread_attr_init( &BaseThread::thread_attrs );
+//        pthread_attr_setscope( &BaseThread::thread_attrs, PTHREAD_SCOPE_SYSTEM );
+//        pthread_attr_setschedpolicy( &BaseThread::thread_attrs, SCHED_RR);
 
         BaseThread::init_flag = 1;
 
@@ -43,9 +45,7 @@ BaseThread::BaseThread(int nthreads)
 
             thread_controls[thread] = new BaseThread(nthreads);
             thread_controls[thread]->tid = thread;
-            sem_init(&thread_controls[thread]->this_sync, 0, 0);
-            retval = pthread_create(&threads[thread], &BaseThread::thread_attrs, 
-                     &run_threads, (void *)thread_controls[thread]);
+            threads[thread] = new boost::thread(run_threads, (void *)thread_controls[thread]);
 
         }
 
@@ -53,17 +53,10 @@ BaseThread::BaseThread(int nthreads)
 
 }
 
-// Called when the main thread of execution is waiting for a set of threads to finish
-void BaseThread::wait_for_threads(int jobs) {
-    int idx;
-    for(idx = 0;idx < jobs;idx++) {
-        sem_wait(&BaseThread::thread_sem);
-    }
-}
 
 // Wakes jobs sleeping threads starting from tid=0 and counting up
 // jobs must be less than THREADS_PER_NODE
-void BaseThread::wake_threads(int jobs) {
+void BaseThread::run_thread_tasks(int jobs) {
 
     int thread;
 
@@ -72,46 +65,33 @@ void BaseThread::wake_threads(int jobs) {
         rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
     }
 
-    pthread_mutex_lock(&BaseThread::job_mutex);
-    pthread_mutex_unlock(&BaseThread::job_mutex);
-
-    for(thread = 0;thread < jobs;thread++) {
-        sem_post(&thread_controls[thread]->this_sync);
-    }
-
+    BaseThread::scf_barrier = new boost::barrier(jobs);
+    std::unique_lock<std::mutex> lk(BaseThread::thread_mutex);
+    BaseThread::in_threaded_region = true;
+    BaseThread::jobs = jobs;
+    BaseThread::thread_cv.notify_all();
+    BaseThread::main_cv.wait(lk, [] {return BaseThread::jobs == 0;});
+    BaseThread::in_threaded_region = false;
+    delete(BaseThread::scf_barrier);
+ 
 }
 
-// Initialization function for barriers
-void BaseThread::scf_barrier_init(int nthreads) {
-    pthread_barrier_init(&BaseThread::scf_barrier, NULL, nthreads);
+void BaseThread::thread_sleep(void)
+{
+    std::unique_lock<std::mutex> lk(BaseThread::thread_mutex);
+    if(BaseThread::jobs > 0) {
+        BaseThread::jobs--;
+        BaseThread::main_cv.notify_one();
+    }
+    BaseThread::thread_cv.wait(lk);
 }
 
 // Blocks all threads until nthreads specified in the init call have reached this point
 void BaseThread::thread_barrier_wait(void) {
+    int nt = BaseThread::THREADS_PER_NODE;
     if(!BaseThread::in_threaded_region) return;
-    pthread_barrier_wait(&BaseThread::scf_barrier);
+    BaseThread::scf_barrier->wait();
 }
-
-// Termination function
-void BaseThread::scf_barrier_destroy(void) {
-    pthread_barrier_destroy(&scf_barrier);
-}
-// Initializes the key and sets a value into it
-
-void BaseThread::scf_tsd_init(void) {
- pthread_key_create(&scf_thread_control_key, NULL);
-}
-
-// Sets a value into the key
-void BaseThread::scf_tsd_set_value(void *s) {
-     pthread_setspecific(scf_thread_control_key, s);
-}
-
-// Deletes the key
-void BaseThread::scf_tsd_delete(void) {
- pthread_key_delete(BaseThread::scf_thread_control_key);
-}
-
 
 // Reads the basetag from the thread specific data. Returns 0 if we are not in
 // a parallel region. Meant to be called from a thread.
@@ -119,7 +99,7 @@ int BaseThread::get_thread_basetag(void) {
 
     BaseThread *ss;
     if(!BaseThread::in_threaded_region) return 0;
-    ss = (BaseThread *)pthread_getspecific(BaseThread::scf_thread_control_key);
+    ss = rmg_get_tsd();
     if(!ss) return 0;
 
     return ss->basetag;
@@ -136,7 +116,7 @@ void BaseThread::set_thread_basetag(int tid, int tag)
 BaseThread *BaseThread::get_thread_control(void) {
     BaseThread *ss;
     if(!BaseThread::in_threaded_region) return NULL;
-    ss = (BaseThread *)pthread_getspecific(BaseThread::scf_thread_control_key);
+    ss = rmg_get_tsd();
     if(!ss) return NULL;
     return ss;
 }
@@ -148,7 +128,7 @@ int BaseThread::get_thread_tid(void) {
     BaseThread *ss;
 
     if(!BaseThread::in_threaded_region) return -1;
-    ss = (BaseThread *)pthread_getspecific(BaseThread::scf_thread_control_key);
+    ss = rmg_get_tsd();
     if(!ss) return -1;
 
     return ss->tid;
@@ -171,6 +151,7 @@ int BaseThread::get_thread_tid(void) {
 // does not attemp to schedule
 void BaseThread::set_cpu_affinity(int tid)
 {
+#if __linux__
     int s;
     cpu_set_t cpuset;
     pthread_t thread;
@@ -186,78 +167,29 @@ void BaseThread::set_cpu_affinity(int tid)
 
     thread = pthread_self();
     pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-
-}
-
-void BaseThread::enter_threaded_region(void) {
-    BaseThread::in_threaded_region = 1;
-}
-void BaseThread::leave_threaded_region(void) {
-    BaseThread::in_threaded_region = 0;
+#endif
 }
 
 void BaseThread::RMG_MPI_lock(void) {
-    pthread_mutex_lock(&BaseThread::mpi_mutex);
+    BaseThread::mpi_mutex.lock();
 }
 
 void BaseThread::RMG_MPI_unlock(void) {
-    pthread_mutex_unlock(&BaseThread::mpi_mutex);
-}
-
-void BaseThread::RMG_MPI_thread_order_lock(void) {
-   int tid, i1, ntid;
-   tid = get_thread_tid();
-
-   if(tid < 0) {
-       rmg_error_handler (__FILE__, __LINE__, "\nError in RMG_MPI_thread_order_lock. Terminating.\n");
-   }
-
-   while(1) {
-
-       // Acquire the lock
-       pthread_mutex_lock(&BaseThread::thread_order_mutex);
-
-       // See if it's our turn
-       i1 = BaseThread::mpi_thread_order_counter % BaseThread::THREADS_PER_NODE;
-       if(i1 == tid) {
-           // Raise priority of next thread
-           ntid = i1 + 1;
-           if(ntid < BaseThread::THREADS_PER_NODE) {
-               pthread_setschedprio(BaseThread::threads[ntid], -19);
-           }
-           return;
-       }
-
-       pthread_mutex_unlock(&BaseThread::thread_order_mutex);
-       sched_yield();
-
-   }
-
-}
-
-void BaseThread::RMG_MPI_thread_order_unlock(void) {
-
-  int tid;
-  tid = get_thread_tid();
-
-  BaseThread::mpi_thread_order_counter++;
-  pthread_setschedprio(BaseThread::threads[tid], -1);
-  pthread_mutex_unlock(&BaseThread::thread_order_mutex);
-
+    BaseThread::mpi_mutex.unlock();
 }
 
 extern rmg_double_t timings[LAST_TIME];
-pthread_mutex_t BaseThread::timings_mutex = PTHREAD_MUTEX_INITIALIZER;
+std::mutex BaseThread::timings_mutex;
 void BaseThread::rmg_timings (int what, rmg_double_t time)
 {
-    pthread_mutex_lock(&BaseThread::timings_mutex);
+    BaseThread::timings_mutex.lock();
     if(BaseThread::in_threaded_region) {
         timings[what] += time / BaseThread::THREADS_PER_NODE;
     }
     else {
         timings[what] += time;
     }
-    pthread_mutex_unlock(&BaseThread::timings_mutex);
+    BaseThread::timings_mutex.unlock();
 }                               /* end rmg_timings */
 
 
@@ -265,7 +197,7 @@ int BaseThread::is_loop_over_states(void)
 {
     BaseThread *ss;
     if(!BaseThread::in_threaded_region) return 0;
-    ss = (BaseThread *)pthread_getspecific(BaseThread::scf_thread_control_key);
+    ss = rmg_get_tsd();
     if(!ss) return 0;
     return 1;
 }
@@ -291,9 +223,6 @@ int BaseThread::THREADS_PER_NODE=1;
 // Thread ID number assigned by us
 int tid;
 
-// Pthread identifier
-pthread_t pthread_tid;
-
 // Pointer to project specific data structure
 void *pptr;
 
@@ -302,65 +231,47 @@ void *pptr;
     void *cstream;
 #endif
 
-// Used to implement a local barrier for all threads inside of the run_threads function
-pthread_barrier_t BaseThread::run_barrier;
-
 // Used to implement a local barrier inside of the scf loops
-pthread_barrier_t BaseThread::scf_barrier;
-pthread_mutex_t BaseThread::job_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// These are used to synchronize the main process and the worker threads
-sem_t BaseThread::thread_sem;
+boost::barrier *BaseThread::scf_barrier;
 
 // This is used when running with MPI_THREAD_SERIALIZED to ensure 
 // proper serialization
-pthread_mutex_t BaseThread::mpi_mutex = PTHREAD_MUTEX_INITIALIZER;
+std::mutex BaseThread::mpi_mutex;
 
-pthread_attr_t BaseThread::thread_attrs;
-pthread_t BaseThread::threads[MAX_RMG_THREADS];
-volatile int BaseThread::in_threaded_region = 0;
+boost::thread *BaseThread::threads[MAX_RMG_THREADS];
+std::atomic<int> BaseThread::jobs (0);
+std::atomic<bool> BaseThread::in_threaded_region (false);
 
 // These are used to ensure thread ordering
 volatile int BaseThread::mpi_thread_order_counter = 0;
-pthread_mutex_t BaseThread::thread_order_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// Used for accessing thread specific data
-pthread_key_t BaseThread::scf_thread_control_key;
-
-// Synchronization semaphore for this instance
-sem_t this_sync;
+std::mutex BaseThread::thread_order_mutex;
 
 // Basetag
 int basetag;
 
-extern "C" void wait_for_threads(int jobs)
+
+// Non member functions used for handling thread specific data
+static boost::thread_specific_ptr<BaseThread> my_ptr;
+void rmg_set_tsd(BaseThread *p)
 {
-    BaseThread B(0);
-    B.wait_for_threads(jobs);
+    if(!my_ptr.get()) {
+       my_ptr.reset(p);
+    }
+}
+BaseThread *rmg_get_tsd(void) {
+    return my_ptr.get();
 }
 
-extern "C" void wake_threads(int jobs)
+extern "C" void run_thread_tasks(int jobs)
 {
     BaseThread B(0);
-    B.wake_threads(jobs);
-}
-
-extern "C" void scf_barrier_init(int nthreads) 
-{
-    BaseThread B(0);
-    B.scf_barrier_init(nthreads);
+    B.run_thread_tasks(jobs);
 }
 
 extern "C" void thread_barrier_wait(void) 
 {
     BaseThread B(0);
     B.thread_barrier_wait();
-}
-
-extern "C" void scf_barrier_destroy(void) 
-{
-    BaseThread B(0);
-    B.scf_barrier_destroy();
 }
 
 extern "C" int get_thread_basetag(void)
@@ -409,18 +320,6 @@ extern "C" void set_cpu_affinity(int tid)
     B.set_cpu_affinity(tid);
 }
 
-extern "C" void enter_threaded_region(void)
-{
-    BaseThread B(0);
-    B.enter_threaded_region();
-}
-
-extern "C" void leave_threaded_region(void)
-{
-    BaseThread B(0);
-    B.leave_threaded_region();
-}
-
 extern "C" void RMG_MPI_lock(void)
 {
     BaseThread B(0);
@@ -431,18 +330,6 @@ extern "C" void RMG_MPI_unlock(void)
 {
     BaseThread B(0);
     B.RMG_MPI_unlock();
-}
-
-extern "C" void RMG_MPI_thread_order_lock(void) 
-{
-   BaseThread B(0);
-   B.RMG_MPI_thread_order_lock(); 
-}
-
-extern "C" void RMG_MPI_thread_order_unlock(void) 
-{
-   BaseThread B(0);
-   B.RMG_MPI_thread_order_unlock(); 
 }
 
 extern "C" void rmg_timings (int what, rmg_double_t time)

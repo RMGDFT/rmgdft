@@ -29,8 +29,8 @@ void *run_threads(void *v) {
 
     s->set_cpu_affinity(s->tid);
 
-    s->pthread_tid = pthread_self();
-    pthread_setspecific(s->scf_thread_control_key, (void *)s);
+    // Set up thread local storage
+    rmg_set_tsd(s);
 
     // Get the control structure
     ss = (SCF_THREAD_CONTROL *)s->pptr;
@@ -42,9 +42,6 @@ void *run_threads(void *v) {
         exit(-1);
     }
 #endif
-
-    // Wait until everyone gets here
-    pthread_barrier_wait(&s->run_barrier);
 
 #if 0
     while(1) {

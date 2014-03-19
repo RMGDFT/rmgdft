@@ -29,8 +29,9 @@ void *run_threads(void *v) {
 
     s->set_cpu_affinity(s->tid);
 
-    s->pthread_tid = pthread_self();
-    pthread_setspecific(s->scf_thread_control_key, (void *)s);
+    // Set up thread local storage
+    rmg_set_tsd(s);
+
 
     // Get the control structure
     ss = (SCF_THREAD_CONTROL *)s->pptr;
@@ -43,13 +44,10 @@ void *run_threads(void *v) {
     }
 #endif
 
-    // Wait until everyone gets here
-    pthread_barrier_wait(&s->run_barrier);
-
     while(1) {
 
-        // We sleep forever or until we get a signal that wakes us up
-        sem_wait(&s->this_sync);
+        // We sleep until main wakes us up
+        s->thread_sleep();
 
         // Get the control structure
         ss = (SCF_THREAD_CONTROL *)s->pptr;
@@ -78,9 +76,6 @@ void *run_threads(void *v) {
             default:
                break;
         }
-
-        // Let the main thread know that we are done
-        sem_post(&s->thread_sem);
 
     }
 

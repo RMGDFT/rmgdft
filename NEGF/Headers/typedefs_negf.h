@@ -1323,9 +1323,6 @@ typedef struct
     rmg_double_t *gpu_host_temp2;
 #endif
 
-    /* Thread identifier from pthread_self. Needed to send signals */
-    pthread_t pthread_tid;
-
     /* Assigned job */
     int job;
 

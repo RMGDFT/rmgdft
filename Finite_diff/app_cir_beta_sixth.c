@@ -10,8 +10,6 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include <pthread.h>
-#include "hybrid.h"
 
 
 // This is B operator applied on projector |beta>

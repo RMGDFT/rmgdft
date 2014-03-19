@@ -8,8 +8,6 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include <pthread.h>
-#include "hybrid.h"
 #include "FiniteDiff.h"
 #include "TradeImages.h"
 

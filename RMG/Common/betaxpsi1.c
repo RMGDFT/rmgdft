@@ -345,8 +345,6 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
 
             // Parallelized over threads here.
             start_state = 0;
-            enter_threaded_region();
-            scf_barrier_init(ct.THREADS_PER_NODE);
             istop = ct.num_states / ct.THREADS_PER_NODE;
             istop = istop * ct.THREADS_PER_NODE;
 
@@ -361,13 +359,8 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
             }
 
             // Thread tasks are set up so wake them
-            wake_threads(ct.THREADS_PER_NODE);
+            run_thread_tasks(ct.THREADS_PER_NODE);
 
-            // Then wait for them to finish this task
-            wait_for_threads(ct.THREADS_PER_NODE);
-
-            scf_barrier_destroy();
-            leave_threaded_region();
             start_state = istop;
 
 

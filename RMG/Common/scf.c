@@ -49,7 +49,6 @@
 #include "BaseThread.h"
 
 #include "hybrid.h"
-#include <pthread.h>
 
 
 static int firststep = TRUE;
@@ -170,8 +169,6 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
         app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
 #endif
 
-        enter_threaded_region();
-        scf_barrier_init(ct.THREADS_PER_NODE);
         /* Update the wavefunctions */
         istop = ct.num_kpts * ct.num_states / ct.THREADS_PER_NODE;
         istop = istop * ct.THREADS_PER_NODE;
@@ -184,14 +181,10 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
               set_pptr(ist, &thread_control[ist]);
           }
 
-          // Thread tasks are set up so wake them
-          wake_threads(ct.THREADS_PER_NODE);
+          // Thread tasks are set up so run them
+          run_thread_tasks(ct.THREADS_PER_NODE);
 
-          // Then wait for them to finish this task
-          wait_for_threads(ct.THREADS_PER_NODE);
         }
-        scf_barrier_destroy();
-        leave_threaded_region();
 
         // Process any remaining states in serial fashion
         for(st1 = istop;st1 < ct.num_kpts * ct.num_states;st1++) {

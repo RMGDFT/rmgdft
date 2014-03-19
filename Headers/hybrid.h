@@ -29,19 +29,14 @@
 #define HYBRID_SUBDIAG_APP_AB 6
 
 
-void scf_barrier_init(int nthreads);
 void thread_barrier_wait(void);
-void scf_barrier_destroy(void);
 
 
 int get_thread_basetag(void);
 int get_thread_tid(void);
 SCF_THREAD_CONTROL *get_thread_control(void);
-void wait_for_threads(int jobs);
-void wake_threads(int jobs);
+void run_thread_tasks(int jobs);
 void init_HYBRID_MODEL(int nthreads);
-void enter_threaded_region(void);
-void leave_threaded_region(void);
 int is_loop_over_states(void);
 
 #if GPU_ENABLED
