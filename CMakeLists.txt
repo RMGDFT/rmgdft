@@ -15,8 +15,11 @@ cmake_minimum_required (VERSION 2.6)
 project (RMG C CXX Fortran) 
 
 
+if(DEFINED ENV{CRAY_LIBSCI})
+    set (CRAY_XK 1)
 #set (RMG_GPU_ENABLED 1)
-#set (CRAY_XK 1)
+endif()
+
 set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
