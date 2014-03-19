@@ -15,8 +15,8 @@ cmake_minimum_required (VERSION 2.6)
 project (RMG C CXX Fortran) 
 
 
-set (RMG_GPU_ENABLED 1)
-set (CRAY_XK 1)
+#set (RMG_GPU_ENABLED 1)
+#set (CRAY_XK 1)
 set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
@@ -151,6 +151,12 @@ target_link_libraries (rmg ${FFTW_LIBRARIES})
 target_link_libraries (rmg-on ${FFTW_LIBRARIES})
 target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
 
+find_package(Boost REQUIRED COMPONENTS thread system)
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries (rmg ${Boost_LIBRARIES})
+target_link_libraries (rmg-on ${Boost_LIBRARIES})
+target_link_libraries (rmg-negf ${Boost_LIBRARIES})
+
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
@@ -183,32 +189,33 @@ endif(MKLROOT)
 # MKL includes blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
 if(NOT RMG_MATH_LIBS)
-    find_package(BLAS REQUIRED)
-    if(BLAS_FOUND)
-        target_link_libraries (rmg ${BLAS_LIBRARIES})
-        target_link_libraries (rmg-on ${BLAS_LIBRARIES})
-        target_link_libraries (rmg-negf ${BLAS_LIBRARIES})
-    endif (BLAS_FOUND)
-
-    find_package(LAPACK REQUIRED)
-    if(LAPACK_FOUND)
-        target_link_libraries (rmg ${LAPACK_LIBRARIES})
-        target_link_libraries (rmg-on ${LAPACK_LIBRARIES})
-        target_link_libraries (rmg-negf ${LAPACK_LIBRARIES})
-    endif (LAPACK_FOUND)
 
     if(NOT CRAY_XK)
-    target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
-    target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
-    target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
 
-    target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
-    target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
-    target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+        find_package(BLAS REQUIRED)
+        if(BLAS_FOUND)
+            target_link_libraries (rmg ${BLAS_LIBRARIES})
+            target_link_libraries (rmg-on ${BLAS_LIBRARIES})
+            target_link_libraries (rmg-negf ${BLAS_LIBRARIES})
+        endif (BLAS_FOUND)
 
-    target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
-    target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
-    target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+        find_package(LAPACK REQUIRED)
+        if(LAPACK_FOUND)
+            target_link_libraries (rmg ${LAPACK_LIBRARIES})
+            target_link_libraries (rmg-on ${LAPACK_LIBRARIES})
+            target_link_libraries (rmg-negf ${LAPACK_LIBRARIES})
+        endif (LAPACK_FOUND)
+        target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
+        target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
+        target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+
+        target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
+        target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
+        target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+
+        target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
+        target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
+        target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
     endif(NOT CRAY_XK)
 
 endif(NOT RMG_MATH_LIBS)
