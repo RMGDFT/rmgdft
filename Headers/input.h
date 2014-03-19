@@ -59,9 +59,9 @@ extern node_t Root;
 
 /* Node/Item functionality with default behavior for "this" */
 item_t	*newItem( flags_t type, void *value );
-bool	 pushItem( item_t *new, node_t *here );
+bool	 pushItem( item_t *cnew, node_t *here );
 #define	 push( DATA ) pushItem( DATA, this )
-bool	 appendItem( item_t *new, node_t *here );
+bool	 appendItem( item_t *cnew, node_t *here );
 #define	 append( DATA ) appendItem( DATA, this )
 item_t	*popItem( node_t *here );
 #define	 pop() popItem ( this )
@@ -72,7 +72,7 @@ void	 fcatItem( FILE *stream, item_t *item );
 #define  DcatItem( ITEM ) DEBUG ? fcatItem ( stderr, ITEM ), fflush(NULL): 0
 
 node_t	*newNode( char *name, item_t *item );
-node_t	*linkNode( node_t *new );
+node_t	*linkNode( node_t *cnew );
 node_t	*unlinkNode( void );
 bool	 killNode( node_t *node );
 bool	 findNode( char *name );
