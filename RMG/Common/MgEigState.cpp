@@ -53,6 +53,10 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
     hygrid = sp->hygrid;
     hzgrid = sp->hzgrid;
     levels = ct.eig_parm.levels;
+    if ((ct.runflag == 0) && (ct.scf_steps < 2)) {
+        levels = 0;
+    }
+
     sb_step = 1.0;
     pbasis = sp->pbasis;
     sbasis = sp->sbasis;
