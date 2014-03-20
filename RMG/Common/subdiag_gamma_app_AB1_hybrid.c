@@ -21,7 +21,7 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
     rmg_double_t *vtot_eig_s;
     int ione = 1;
 #if !BATCH_NLS
-    error_handler("set BATCJ_NLS 1, other mode not programmed here");
+    error_handler("set BATCH_NLS 1, other mode not programmed here");
 #endif
     
     P0_BASIS = get_P0_BASIS();
