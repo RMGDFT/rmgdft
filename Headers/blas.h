@@ -45,7 +45,7 @@
 #ifdef LINUX 
 
 #define                 sger            dger_
-#  define		global_sums     global_sums_
+//#  define		global_sums     global_sums_
 #  define		saxpy		daxpy_
 #  define		daxpy		daxpy_
 #  define		zaxpy		zaxpy_

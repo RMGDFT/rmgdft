@@ -7,12 +7,12 @@ Lattice.cpp
 TradeImages.cpp
 transition.cpp
 init_IO.c
-pack_ptos.c
 get_index.c
 global_sums.c
 real_sum_all.c
 minimage.c
-pack_stop.c
+pack_stop.cpp
+pack_ptos.cpp
 get_vtot_psi.c
 my_mpi.c
 pack_vhstod.c

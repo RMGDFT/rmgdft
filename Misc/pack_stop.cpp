@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: pack_stop.c 2093 2014-02-06 01:02:40Z ebriggs $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/pack_stop.c *****
@@ -31,13 +31,15 @@
  */
 
 
-#include "main.h"
-#include "common_prototypes.h"
-#include <float.h>
-#include <math.h>
+#include "make_conf.h"
+#include "rmgtypes.h"
+#include "auxiliary.h"
+#include "BlasWrappers.h"
 
+using namespace std;
 
-void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz)
+template <typename RmgType>
+void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, ixh, iyh;
@@ -58,7 +60,7 @@ void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int di
         {
 
             iyh = iy + 1;
-            QMD_dcopy (dimz, &sg[ixh * incxs + iyh * incys + 1], ione, &pg[ix * incx + iy * incy],
+            QMD_copy (dimz, &sg[ixh * incxs + iyh * incys + 1], ione, &pg[ix * incx + iy * incy],
                        ione);
 
         }                       /* end for */
@@ -68,34 +70,12 @@ void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int di
 }                               /* end pack_stop */
 
 
-void pack_stop_f (rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz)
+extern "C" void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz)
 {
+    CPP_pack_stop<rmg_double_t> (sg, pg, dimx, dimy, dimz);
+}
 
-    int ix, iy, ixh, iyh;
-    int incx, incy, incxs, incys;
-    int ione = 1;
-    incy = dimz;
-    incx = dimy * dimz;
-    incys = dimz + 2;
-    incxs = (dimy + 2) * (dimz + 2);
-
-
-    /* Transfer pg into smoothing grid */
-    for (ix = 0; ix < dimx; ix++)
-    {
-
-        ixh = ix + 1;
-        for (iy = 0; iy < dimy; iy++)
-        {
-
-            iyh = iy + 1;
-            QMD_scopy (dimz, &sg[ixh * incxs + iyh * incys + 1], ione, &pg[ix * incx + iy * incy],
-                       ione);
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-}                               /* end pack_stop */
-
-/******/
+extern "C" void pack_stop_f (rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz)
+{
+    CPP_pack_stop<rmg_float_t> (sg, pg, dimx, dimy, dimz);
+}

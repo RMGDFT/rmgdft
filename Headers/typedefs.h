@@ -42,13 +42,6 @@
 #include "mpi.h"
 #include "my_scalapack.h"
 
-#if MPI
-typedef struct
-{
-    int count;
-} QMD_sem_t;
-#endif
-
 
 #include "pe_control.h"
 

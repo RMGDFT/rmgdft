@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: genvpsi.c 2012 2013-05-13 17:22:57Z ebriggs $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/genvpsi.c *****
@@ -37,13 +37,20 @@
  */
 
 
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
-#include "main.h"
+#include "make_conf.h"
+#include "rmgtypes.h"
+#include "common_prototypes.h"
+#include "auxiliary.h"
 
+#define TWO 2.0
 
-void genvpsi (rmg_double_t * psi, rmg_double_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
+using namespace std;
+
+template void CPP_genvpsi<double>(double*, double*, double*, double*, double*, double, int, int, int);
+template void CPP_genvpsi<float>(float*, float*, double*, double*, double*, double, int, int, int);
+
+template <typename RmgType>
+void CPP_genvpsi (RmgType * psi, RmgType * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
               rmg_double_t kmag, int dimx, int dimy, int dimz)
 {
 
@@ -89,49 +96,17 @@ void genvpsi (rmg_double_t * psi, rmg_double_t * sg_twovpsi, rmg_double_t * vtot
 }                               /* end genvpsi */
 
 
-void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
+extern "C" void genvpsi (rmg_double_t * psi, rmg_double_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
               rmg_double_t kmag, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz;
-    int incx, incy;
-    int incx1, incy1;
+    CPP_genvpsi<double>(psi, sg_twovpsi, vtot, vnl, kd, kmag, dimx, dimy, dimz);
 
-    incy = dimz;
-    incx = (dimy) * (dimz);
+}
+extern "C" void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * vnl, rmg_double_t * kd,
+              rmg_double_t kmag, int dimx, int dimy, int dimz)
+{
 
-    incy1 = dimz;
-    incx1 = dimy * dimz;
+    CPP_genvpsi<float>(psi, sg_twovpsi, vtot, vnl, kd, kmag, dimx, dimy, dimz);
 
-    /* Generate 2 * V * psi */
-    for (ix = 0; ix < dimx; ix++)
-    {
-
-        for (iy = 0; iy < dimy; iy++)
-        {
-
-            for (iz = 0; iz < dimz; iz++)
-            {
-#if GAMMA_PT
-                sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
-                    TWO * psi[ix * incx1 + iy * incy1 + iz] *
-                    vtot[ix * incx1 + iy * incy1 + iz];
-
-#else
-                sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
-                    TWO * psi[ix * incx1 + iy * incy1 + iz] *
-                    (vtot[ix * incx1 + iy * incy1 + iz] + 0.5 * kmag) +
-                    TWO * kd[ix * incx1 + iy * incy1 + iz] +
-                    TWO * vnl[ix * incx1 + iy * incy1 + iz];
-#endif
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-
-}                               /* end genvpsi */
-
-/******/
+}

@@ -1,4 +1,7 @@
 add_library (RMG_Common
+pack_stop_axpy.cpp
+genvpsi.cpp
+MgEigState.cpp
 rmg_timings.c
 write_occ.c
 betaxpsi.c
@@ -18,14 +21,12 @@ get_te.c
 init_efield.c
 lcao_init.c
 nlforce.c
-mg_eig_state_f.c
 pack_rho_ctof.c
 sortpsi.c
 write_force.c
-mg_eig_state_driver.c
 getpoi_bc.c
 nlforce_par_gamma.c
-app_smooth1.c
+app_smooth1.cpp
 fill.c
 rand0.c
 get_extrapolation_constants.c
@@ -40,7 +41,6 @@ norm_psi1.c
 quench.c
 get_psioverlaps.c
 read_data.c
-genvpsi.c
 mix_rho.c
 cholesky.c
 get_pdos.c
@@ -64,7 +64,7 @@ init_nuc.c
 partial_betaxpsi.c
 gramsch.c
 neb_relax.c
-app_smooth.c
+app_smooth.cpp
 moldyn.c
 write_data.c
 xbsmovie.c
@@ -85,8 +85,9 @@ init.c
 nlforce_par_Q.c
 init_fftw_wisdom.c
 lcao_get_awave.c
-mg_eig_state.c
 subdiag_nongamma.c
+mg_eig_state.c
+mg_eig_state_f.c
 lcao_get_rho.c
 destroy_fftw_wisdom.c
 rmg_lbfgs.c
@@ -111,7 +112,6 @@ ortho_get_coeff.c
 assign_derweight.c
 partial_gamma.c
 init_states.c
-pack_stop_axpy.c
 fire.c
 mg_prolong_6.c
 reinit_ionic_pp.c

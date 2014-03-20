@@ -295,11 +295,6 @@ void get_milliken (STATE *states);
 void bandstructure( STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc );
 void output_wave( STATE *states, int kpt, int fhand );
 
-void QMD_sem_init (QMD_sem_t *sem);
-void QMD_sem_destroy (QMD_sem_t *sem);
-void QMD_sem_wait (QMD_sem_t *sem);
-void QMD_sem_post (QMD_sem_t *sem);
-
 
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
