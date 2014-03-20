@@ -94,16 +94,18 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
 
     // Copy double precision ns into temp single precision array */
-    for(idx = 0;idx < pbasis;idx++)
+    for(idx = 0;idx < pbasis;idx++) {
         work1_t[idx] = (RmgType)ns[idx];
+    }
   
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     CPP_app_cir_driver<RmgType> (work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
     // Copy double precision psi into single precison array
-    for(idx = 0;idx < pbasis;idx++)
+    for(idx = 0;idx < pbasis;idx++) {
         tmp_psi_t[idx] = (RmgType)tmp_psi[idx];
+    }
 
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
@@ -123,9 +125,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
 
         /* Apply Mehrstellen left hand operators */
-        CPP_app_cil_driver<RmgType> (tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
-
-
+        diag = CPP_app_cil_driver<RmgType> (tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         diag = -1.0 / diag;
 
 
@@ -148,8 +148,8 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
         for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 
 
-        t1 = -ONE;
-        QMD_axpy (pbasis, (RmgType)t1, work2_t, ione, work1_t, ione);
+        RmgType tscal = -ONE;
+        QMD_axpy (pbasis, tscal, work2_t, ione, work1_t, ione);
 
         /* If this is the first time through compute the eigenvalue */
         if ((cycles == 0) || (potential_acceleration != 0)) 
@@ -372,40 +372,39 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
     }
 
     /* Release our memory */
+    delete [] res_t;
+    delete [] tmp_psi_t;
+    delete [] nvtot_psi;
+    delete [] saved_psi;
+    delete [] res2;
+
+#if !BATCH_NLS
+    delete [] nv;
+    delete [] ns;
+#endif
+
+    delete [] sg_twovpsi_t;
+    delete [] res;
+    delete [] sg_psi_t;
+
     delete [] work1;
     delete [] work1_t;
     delete [] work2_t;
     delete [] res2_t;
 
 
-    delete [] res_t;
-    delete [] tmp_psi_t;
-    delete [] nvtot_psi;
-    delete [] saved_psi;
-    delete [] res2;
-#if !BATCH_NLS
-    delete [] nv;
-    delete [] ns;
-#endif
-    delete [] sg_twovpsi_t;
-    delete [] res;
-    delete [] sg_psi_t;
 
 
 } // end MgEigState
 
-#if 0
 extern "C" void mg_eig_state(STATE *sp, int tid, rmg_double_t *vtot_psi)
 {
-    //MgEigState<rmg_double_t> (sp, tid, vtot_psi);
-    mg_eig_state(sp, tid, vtot_psi);
+    MgEigState<rmg_double_t> (sp, tid, vtot_psi);
 }
 extern "C" void mg_eig_state_f(STATE *sp, int tid, rmg_double_t *vtot_psi)
 {
-    //MgEigState<rmg_float_t> (sp, tid, vtot_psi);
-    mg_eig_state_f(sp, tid, vtot_psi);
+    MgEigState<rmg_float_t> (sp, tid, vtot_psi);
 }
-#endif
 
 extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision)
 {
@@ -419,13 +418,12 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_ps
 
     if(precision == sizeof(rmg_double_t)) {
 
-//        MgEigState<rmg_double_t> (sp, tid, vtot_psi);
-          mg_eig_state(sp, tid, vtot_psi);
+        MgEigState<rmg_double_t> (sp, tid, vtot_psi);
 
     }
     else {
-//        MgEigState<rmg_float_t> (sp, tid, vtot_psi);
-          mg_eig_state_f(sp, tid, vtot_psi);
+
+        MgEigState<rmg_float_t> (sp, tid, vtot_psi);
 
     }
 

@@ -86,8 +86,6 @@ nlforce_par_Q.c
 init_fftw_wisdom.c
 lcao_get_awave.c
 subdiag_nongamma.c
-mg_eig_state.c
-mg_eig_state_f.c
 lcao_get_rho.c
 destroy_fftw_wisdom.c
 rmg_lbfgs.c
