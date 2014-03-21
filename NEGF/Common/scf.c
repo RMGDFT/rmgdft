@@ -248,7 +248,7 @@ void update_pot (double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t *
     /* Generate exchange-correlation potential */
     get_vxc(rho, rhocore, vxc);
 
-    pack_vhstod (vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+    pack_vhstod (vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
     /* Generate hartree potential */
     //    get_vh (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);

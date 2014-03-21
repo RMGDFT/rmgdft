@@ -109,7 +109,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+    pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
     app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
@@ -252,7 +252,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+    pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
     /* Release our memory */
     my_free (nrho);
