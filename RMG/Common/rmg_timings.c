@@ -235,7 +235,7 @@ void write_timings (void)
 #endif
 
 
-    fclose(ct.logfile);
+    if(pct.imgpe == 0) fclose(ct.logfile);
     CompatRmgTimerPrint(ct.logname);
 
 }                               /* end write_timings */

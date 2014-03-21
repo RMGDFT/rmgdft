@@ -66,9 +66,10 @@ void RmgTimer::PrintTimings(const char *outfile) {
     BaseThread T(0);
     BaseGrid G;
     std::ofstream logfile;
-    logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
     if(G.get_gridpe() == 0) {
+
+        logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
         // Have to do some manipulations to compute thread min/max/average and get things properly sorted
         std::map <std::string, double> tmain;
@@ -98,24 +99,24 @@ void RmgTimer::PrintTimings(const char *outfile) {
             }
         }
 
-        logfile << "\n\n";
+        logfile << endl << endl;
         logfile << std::fixed << std::setprecision(2);
-        logfile << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------\n";
+        logfile << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------" << endl;
         for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
             std::size_t found = it->first.find_first_of(":");
             if(found != std::string::npos) {
                 logfile << "  ";
-                logfile << setw(maxlen+14) << left << it->first << right << it->second << "\n";
+                logfile << setw(maxlen+14) << left << it->first << right << it->second << endl;
             }
             else {
-                logfile << "\n";
-                logfile << setw(maxlen+16) << left << it->first << right <<  it->second << "\n";
-                logfile << "-----------------------------------------------------------------------------\n";
+                logfile << endl;
+                logfile << setw(maxlen+16) << left << it->first << right <<  it->second << endl;
+                logfile << "-----------------------------------------------------------------------------" << endl;
             }
         }
 
-        logfile << "\n\n";
-        logfile << "------------------------- TIMING INFORMATION FOR THREADS  -------------------\n\n";
+        logfile << endl << endl;
+        logfile << "------------------------- TIMING INFORMATION FOR THREADS  -------------------" << endl << endl;
         logfile << "                                           Min            Max            Avg";
 
         auto it1 = tmin.cbegin();
@@ -129,20 +130,24 @@ void RmgTimer::PrintTimings(const char *outfile) {
                 << setw(16) << right << it1->second
                 << setw(15) << right << it2->second
                 << setw(15) << right
-                << it3->second/T.get_threads_per_node() << "\n";
+                << it3->second/T.get_threads_per_node() << endl;
             }
             else {
-                logfile << "\n";
+                logfile << endl;
                 logfile << setw(maxlen) << left << it1->first
                 << setw(18) << right << it1->second
                 << setw(15) << right << it2->second
                 << setw(15) << right << it3->second/T.get_threads_per_node() 
-                << "\n-----------------------------------------------------------------------------\n";
+                << endl
+                << "-----------------------------------------------------------------------------"
+                << endl;
             }
             it1++;
             it2++;
             it3++;
         }
+
+        logfile.close();
 
     }
 
