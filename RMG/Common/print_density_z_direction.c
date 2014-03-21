@@ -12,7 +12,6 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
-#if MPI
 
 
 /*Input parameters: grid_x - global x grid coordinate (0 <= grid_x < PE_X*px0_grid) 
@@ -125,9 +124,3 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, 
 }
 
  /*EOF*/
-#else
-void print_density_z_direction (rmg_double_t * density, int px0_grid, int py0_grid, int pz0_grid)
-{
-    error_handler ("This function is implemented for parallel mpi machines only");
-}
-#endif

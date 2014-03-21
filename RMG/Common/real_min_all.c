@@ -39,11 +39,6 @@
 rmg_double_t real_min_all (rmg_double_t x, MPI_Comm comm)
 {
 
-#ifndef MPI
-
-    return x;
-
-#else
     rmg_double_t inreg;
     rmg_double_t outreg;
 
@@ -52,10 +47,6 @@ rmg_double_t real_min_all (rmg_double_t x, MPI_Comm comm)
     MPI_Allreduce (&inreg, &outreg, 1, MPI_DOUBLE, MPI_MIN, comm);
 
     return outreg;
-
-
-#endif
-
 
 }                               /* end real_sum_all */
 

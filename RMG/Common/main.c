@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "RmgTimer.h"
 #include "../Headers/main.h"
 #include "../Headers/common_prototypes.h"
 
@@ -97,6 +98,7 @@ PE_CONTROL pct;
 int main (int argc, char **argv)
 {
 
+    void *RT = BeginRmgTimer("Main");
     char *tptr;
 
 #if GPU_ENABLED
@@ -130,9 +132,15 @@ int main (int argc, char **argv)
         ct.mpi_threadlevel = atoi(tptr);
     }
 
+    void *RT1 = BeginRmgTimer("Main: init");
     initialize (argc, argv);
+    EndRmgTimer(RT1);
 
+    RT1 = BeginRmgTimer("Main: run");
     run ();
+    EndRmgTimer(RT1);
+
+    EndRmgTimer(RT);
 
     report ();
 
@@ -209,6 +217,7 @@ void initialize(int argc, char **argv)
     /* Wait until everybody gets here */
     /* MPI_Barrier(MPI_COMM_WORLD); */
     MPI_Barrier(pct.img_comm);
+
 
 }
 

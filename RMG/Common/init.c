@@ -194,7 +194,6 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     // ct.poi_parm.sb_step = 1.0;
     ct.eig_parm.sb_step = 1.0;
 
-#if MPI
     /* Set state pointers and initialize state data */
 #if GAMMA_PT
   #if GPU_ENABLED
@@ -230,7 +229,6 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     }
 #endif
 
-#endif
 
     kpt1 = ct.num_kpts;
     if (verify ("calculation_mode", "Band Structure Only"))
@@ -257,13 +255,11 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
             states[kst1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
             states[kst1].istate = st1;
             states[kst1].vel = get_vel();
-#if MPI
 #if GAMMA_PT
             rptr +=P0_BASIS;
             rptr1 +=P0_BASIS;
 #else
             rptr += 2 *P0_BASIS;
-#endif
 #endif
             kst1++;
         }

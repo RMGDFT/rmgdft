@@ -79,6 +79,9 @@ typedef struct
     /** HAndle of the output log file. Constructed from command line argument */
     FILE *logfile;
 
+    /** Actual path to the log file */
+    char logname[MAX_PATH];
+
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[MAX_PATH];
 

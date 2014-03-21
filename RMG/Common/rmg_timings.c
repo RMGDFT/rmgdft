@@ -73,6 +73,7 @@ rmg_double_t my_crtc (void)
 /* Outputs timing information */
 void write_timings (void)
 {
+#if 0
     rmg_double_t total_time, FLOPS, TOTAL_FLOPS=0.0;
     int i, md_steps, total_scf_steps, ithread;
 
@@ -224,7 +225,6 @@ void write_timings (void)
     printf_timing_line3 (" GLOBAL_SUMS_TIME      ", GLOBAL_SUMS_TIME);
     printf_timing_line3 (" Gather                ", GATHER_TIME);
 #endif
-
     if (ct.md_steps)
     {
         printf ("\n\n");
@@ -232,9 +232,11 @@ void write_timings (void)
         printf (" Average: %.1f SCF steps per MD step\n\n",
                 (rmg_double_t) ct.total_scf_steps / (rmg_double_t) ct.md_steps);
     }
+#endif
 
 
-    CompatRmgTimerPrint();
+    fclose(ct.logfile);
+    CompatRmgTimerPrint(ct.logname);
 
 }                               /* end write_timings */
 

@@ -223,6 +223,7 @@ void init_IO (int argc, char **argv)
         /* open and save logfile handle, printf is stdout before here */
         my_fopen (ct.logfile, logname, "w");
     }
+    strncpy(ct.logname, logname, MAX_PATH);
 
     MPI_Comm_size (pct.img_comm, &status);
     printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));

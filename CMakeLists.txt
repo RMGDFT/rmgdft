@@ -14,6 +14,12 @@
 cmake_minimum_required (VERSION 2.6) 
 project (RMG C CXX Fortran) 
 
+# Detect system type
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    # Linux specific code
+    SET(OperatingSystem "Linux")
+    SET(RMG_SYSTEM_COMPILER_FLAG "-DLINUX=1")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(DEFINED ENV{CRAY_LIBSCI})
     set (CRAY_XK 1)
@@ -283,8 +289,8 @@ target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 #    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_C_FLAGS "-Wall -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_CXX_FLAGS "-Wall -O3 -std=c++11 -g -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_CXX_FLAGS "-Wall -O3 -std=c++11 -g ${RMG_SYSTEM_COMPILER_FLAG} -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
 endif()

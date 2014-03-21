@@ -24,11 +24,11 @@ private:
 public:
     RmgTimer(const char *what);
     ~RmgTimer(void);
-    void PrintTimings(void);
+    void PrintTimings(const char *outfile);
 
 };
 #else
-void CompatRmgTimerPrint(void);
+void CompatRmgTimerPrint(const char *outfile);
 void *BeginRmgTimer(const char *what);
 void EndRmgTimer(void *ptr);
 #endif
