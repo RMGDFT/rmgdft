@@ -34,10 +34,6 @@ BaseThread::BaseThread(int nthreads)
         ncpus = sysconf( _SC_NPROCESSORS_ONLN );
         printf("Hybrid mode with %d threads and %d cores per node.\n", nthreads, ncpus);
 
-//       pthread_attr_init( &BaseThread::thread_attrs );
-//        pthread_attr_setscope( &BaseThread::thread_attrs, PTHREAD_SCOPE_SYSTEM );
-//        pthread_attr_setschedpolicy( &BaseThread::thread_attrs, SCHED_RR);
-
         BaseThread::init_flag = 1;
 
         // Create a set of long lived threads

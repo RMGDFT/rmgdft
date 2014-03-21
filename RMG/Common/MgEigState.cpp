@@ -14,15 +14,18 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 
-static pthread_mutex_t vtot_sync_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern STATE *states;
 
 using namespace std;
 
+static std::mutex vtot_sync_mutex;
+
 template <typename RmgType>
 void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 {
+
+    RmgTimer RT("Mg_eig");
 
     int idx, cycles, P0_BASIS;
     int nits, pbasis, sbasis;
@@ -304,11 +307,11 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             t1 = 1.8 * ct.potential_acceleration_constant_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
 
-            pthread_mutex_lock(&vtot_sync_mutex);
+            vtot_sync_mutex.lock();
             for(idx = 0;idx <P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi_t[idx] * (tmp_psi_t[idx] - saved_psi[idx]);
             }
-            pthread_mutex_unlock(&vtot_sync_mutex);
+            vtot_sync_mutex.unlock();
 
         }
 
@@ -358,11 +361,11 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             CPP_pack_stop_axpy<RmgType> (sg_twovpsi_t, res_t, 1.0, dimx, dimy, dimz);
             t1 = ct.potential_acceleration_poisson_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
-            pthread_mutex_lock(&vtot_sync_mutex);
+            vtot_sync_mutex.lock();
             for(idx = 0;idx <P0_BASIS;idx++) {
                vtot_psi[idx] = vtot_psi[idx] + t1 * res_t[idx];
             }
-            pthread_mutex_unlock(&vtot_sync_mutex);
+            vtot_sync_mutex.unlock();
         }
 
 

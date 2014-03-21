@@ -127,7 +127,7 @@ void TradeImages::set_MPI_comm(MPI_Comm comm)
 template <typename RmgType>
 void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type)
 {
-    RmgTimer RT(__func__);
+    RmgTimer RT("  Trade images: trade_imagesx");
     RmgTimer RT1("Trade images total time");
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
@@ -408,7 +408,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 template <typename RmgType>
 void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type)
 {
-    RmgTimer RT(__func__);
+    RmgTimer RT("  Trade images: trade_images");
     RmgTimer RT1("Trade images total time");
     int i, j, ione=1;
     int incx, incy, incz;

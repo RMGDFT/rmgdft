@@ -65,7 +65,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
 {
-    RmgTimer RT("Mgrid solv total time");
+    RmgTimer RT("Mgrid_solv");
     int i;
     int cycl;
     int size, idx;

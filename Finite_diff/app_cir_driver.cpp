@@ -10,7 +10,7 @@ template <typename RmgType>
 void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order)
 {
 
-    RmgTimer RT("App_cir total time");
+    RmgTimer RT("App_cir");
     int sbasis;
     void *allocp;
     RmgType *rptr;
@@ -22,13 +22,13 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     rptr = (RmgType *)allocp;
 
     if(order == APP_CI_FOURTH) {
-        RmgTimer *RT1 = new RmgTimer("App_cir trade images time");
+        RmgTimer *RT1 = new RmgTimer("  App_cir trade images time");
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_TRADE);
         delete(RT1);
         FD.app_cir_fourth (rptr, b, dimx, dimy, dimz);
     }
     else if(order == APP_CI_SIXTH) {
-        RmgTimer *RT1 = new RmgTimer("App_cir trade images time");
+        RmgTimer *RT1 = new RmgTimer("  App_cir trade images time");
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
         delete(RT1);
         FD.app_cir_sixth (rptr, b, dimx, dimy, dimz);
