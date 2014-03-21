@@ -192,6 +192,10 @@ void read_common ()
     get_data ("calculation_mode", &ct.forceflag, OPT, "Quench Electrons");
 
 
+
+/* do spin polarized calculation? */
+    get_data ("spin_polarization", &ct.spin_flag, BOOL, "false");
+
     get_data ("equal_initial_density", &ct.init_equal_density_flag, BOOL, "false");
     /* Initialized spin up and down charge density equally? */
 
