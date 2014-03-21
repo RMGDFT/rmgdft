@@ -20,4 +20,8 @@ void CPP_app_smooth (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
 template <typename RmgType>
 void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
 
+void CPP_pack_dtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag);
+
+void CPP_pack_stod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag);
+
 #endif

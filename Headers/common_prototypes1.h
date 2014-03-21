@@ -185,7 +185,7 @@ void gram (KPOINT *kpoint, rmg_double_t h, int numst, int maxst, int numpt,
            int maxpt);
 int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
 rmg_double_t get_ke (STATE *sp, int tid);
-void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target);
+void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target, int boundaryflag);
 char *get_symbol (int atomic_number);
 void global_sums (rmg_double_t *vect, int *length, MPI_Comm comm);
 void init_derweight (void);
@@ -237,8 +237,8 @@ void pack_stop_f (rmg_float_t *sg, rmg_float_t *pg, int dimx, int dimy, int dimz
 void pack_stop_axpy (rmg_double_t *sg, rmg_double_t *pg, rmg_double_t alpha, int dimx, int dimy, int dimz);
 void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, rmg_double_t alpha, int dimx, int dimy, int dimz);
 void pack_ptos_trade (rmg_double_t *sg, rmg_double_t *pg, int dimx, int dimy, int dimz);
-void pack_vhstod (rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz);
-void pack_vhdtos (rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz);
+void pack_vhstod (rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz, int boundaryflag);
+void pack_vhdtos (rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz, int boundaryflag);
 double radint (double *f, double *r, int n, double al);
 rmg_double_t radint1 (rmg_double_t *f, rmg_double_t *r, rmg_double_t *dr_di, int n);
 void radiff (double *f, double *df, double *r, int n, double al);

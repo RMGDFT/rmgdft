@@ -1,8 +1,8 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: pack_vhstod.c 2147 2014-02-26 18:46:25Z ebriggs $    **
 ******************************************************************************/
 
-/****f* QMD-MGDFT/pack_vhdtos.c *****
+/****f* QMD-MGDFT/pack_vhstod.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
  *   Quantum molecular dynamics package.
@@ -16,29 +16,30 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_vhdtos(rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz)
+ *   void pack_vhstod(rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz)
  *   Used to pack grids when computing the hartree potential 
- *   For periodic system, s = d
- *   For surface system, s[x,y,1:Nz] = d[x,y,Nz/2+1:Nz/2+Nz)
- *   FOr cluster system: s[1:Nx, 1:Ny, 1:Nz] = d[Nx/2+1:Nx/2+Nx, ...]
+ *   For periodic system, d = s
+ *   For surface system,  d[x,y,Nz/2+1:Nz/2+Nz] = s[x,y,1:Nz]
+ *   FOr cluster system:  d[Nx/2+1:Nx/2+Nx, ...] = s[1:Nx, 1:Ny, 1:Nz] 
  * INPUTS
- *   d[ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid]
- *     see init.c for ct.vh_pxgrid, ...
+ *   s[dmix*dimy*dimz]
  *   dimx, dimy, dimz: dimension of the wave function grid
  * OUTPUT
- *   s[dimx*dimy*dimz] array in the wave function grid
+ *   d[ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid]
+ *       see init.c for ct.vh_pxgrid, ...
+ *       array in the hatree potential grid
  * PARENTS
  *   get_vh.c
  * CHILDREN
  *   nothing
  * SOURCE
  */
-#include "main.h"
-#include "common_prototypes.h"
-#include <float.h>
-#include <math.h>
 
-void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz)
+#include "const.h"
+#include "BaseGrid.h"
+
+/* This function is used to pack grids when computing the hartree potential */
+void CPP_pack_stod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
     int ix, iy, iz;
     int pex, pey, pez;
@@ -49,19 +50,18 @@ void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int di
     int loidx, hiidx;
     int hix, hiy, hiz;
     int hincx, hincy;
+    BaseGrid G;
 
-    Dprintf ("Checking boundaryflag value of %d", ct.boundaryflag);
-
-    if (ct.boundaryflag == PERIODIC)
+    if (boundaryflag == PERIODIC)
     {
 
         for (ix = 0; ix < (dimx * dimy * dimz); ix++)
-            s[ix] = d[ix];
+            d[ix] = s[ix];
         return;
 
     }                           /* end if */
 
-    pe2xyz (pct.gridpe, &pex, &pey, &pez);
+    G.pe2xyz (G.get_gridpe(), &pex, &pey, &pez);
     sxlo = pex * dimx;
     sylo = pey * dimy;
     szlo = pez * dimz;
@@ -69,16 +69,16 @@ void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int di
     syhi = sylo + dimy - 1;
     szhi = szlo + dimz - 1;
 
-    dxlo = pex * 2 * dimx - get_NX_GRID() / 2;
-    dylo = pey * 2 * dimy - get_NY_GRID() / 2;
-    dzlo = pez * 2 * dimz - get_NZ_GRID() / 2;
+    dxlo = pex * 2 * dimx - G.get_NX_GRID() / 2;
+    dylo = pey * 2 * dimy - G.get_NY_GRID() / 2;
+    dzlo = pez * 2 * dimz - G.get_NZ_GRID() / 2;
     dxhi = dxlo + 2 * dimx - 1;
     dyhi = dylo + 2 * dimy - 1;
     dzhi = dzlo + 2 * dimz - 1;
     hincy = 2 * dimz;
     hincx = 4 * dimy * dimz;
 
-    if (ct.boundaryflag == SURFACE)
+    if (boundaryflag == SURFACE)
     {
 
         dxlo = sxlo;
@@ -112,7 +112,7 @@ void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int di
                     hiidx = hix * hincx + hiy * hincy + hiz;
 
                     /* Yes there is a mapping so transfer the data */
-                    s[loidx] = d[hiidx];
+                    d[hiidx] = s[loidx];
 
                 }               /* end if */
 
@@ -124,6 +124,10 @@ void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int di
 
     }                           /* end for */
 
-}                               /* end pack_vhdtos */
+}                               /* end pack_stod */
 
-/******/
+
+extern "C" void pack_vhstod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag)
+{
+    CPP_pack_stod (s, d, dimx, dimy, dimz, boundaryflag);
+}

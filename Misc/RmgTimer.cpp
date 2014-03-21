@@ -1,8 +1,14 @@
 
-#include "RmgTimer.h"
-#include "BaseGrid.h"
+#include <sys/time.h>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <functional>
 #include <string>
 #include <iomanip>
+#include "RmgTimer.h"
+
+using namespace std;
 
 volatile double start_time;
 volatile double end_time;
@@ -11,11 +17,11 @@ std::unordered_map<std::string, double> RmgTimer::timings[MAX_RMG_THREADS+1];
 
 
 
-RmgTimer::RmgTimer(const char *fname) 
+RmgTimer::RmgTimer(const char *what) 
 {
     struct timeval t1;
     gettimeofday (&t1, NULL);
-    sname = fname;
+    sname = what;
     start_time = t1.tv_sec + 1e-6 * t1.tv_usec;
 }
 
@@ -137,11 +143,13 @@ void RmgTimer::PrintTimings(void) {
         }
 
     }
+
 }
 
+
 // Temporary until C to C++ migration is completed. Use carefully!
-extern "C" void *BeginRmgTimer(const char *fname) {
-    RmgTimer *RT = new RmgTimer(fname);
+extern "C" void *BeginRmgTimer(const char *what) {
+    RmgTimer *RT = new RmgTimer(what);
     return (void *)RT;
 }
 extern "C" void EndRmgTimer(void *ptr) {

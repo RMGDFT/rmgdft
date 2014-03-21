@@ -38,6 +38,9 @@
 
 using namespace std;
 
+template void CPP_pack_stop<double>(double*, double*, int, int, int);
+template void CPP_pack_stop<float>(float*, float*, int, int, int);
+
 template <typename RmgType>
 void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 {

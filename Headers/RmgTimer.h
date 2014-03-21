@@ -6,14 +6,10 @@
 
 #if __cplusplus
 
-#include <sys/time.h>
-#include <stdio.h>
-#include <string>
-#include <iostream>
-#include <functional>
 #include <unordered_map>
+#include <fstream>
 #include "BaseThread.h"
-using namespace std;
+#include "BaseGrid.h"
 
 
 class RmgTimer {
@@ -26,14 +22,14 @@ private:
     static std::unordered_map<std::string, double> timings[MAX_RMG_THREADS+1];
 
 public:
-    RmgTimer(const char *fname);
+    RmgTimer(const char *what);
     ~RmgTimer(void);
     void PrintTimings(void);
 
 };
 #else
 void CompatRmgTimerPrint(void);
-void *BeginRmgTimer(const char *fname);
+void *BeginRmgTimer(const char *what);
 void EndRmgTimer(void *ptr);
 #endif
 

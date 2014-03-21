@@ -123,6 +123,11 @@ void TradeImages::set_MPI_comm(MPI_Comm comm)
 {
     TradeImages::comm = comm;
 }
+MPI_Comm TradeImages::get_MPI_comm(void)
+{
+    return TradeImages::comm;
+}
+
 
 template <typename RmgType>
 void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type)

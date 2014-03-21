@@ -1,6 +1,8 @@
 add_library (Misc
+pack_dtos.cpp
+pack_stod.cpp
 RmgTimer.cpp
-#FineGrid.cpp
+FineGrid.cpp
 BaseGrid.cpp
 BaseThread.cpp
 Lattice.cpp
@@ -15,12 +17,10 @@ pack_stop.cpp
 pack_ptos.cpp
 get_vtot_psi.c
 my_mpi.c
-pack_vhstod.c
 int_sum_all.c
 blaswrappers.c
 set_bc.c
 cgen_prolong.c
-pack_vhdtos.c
 mg_restrict_6.c
 ATL_assert.c
 mg_prolong_MAX10.c

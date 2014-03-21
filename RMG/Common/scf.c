@@ -108,7 +108,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
 	
 	/* Generate hartree potential */
         RT1 = BeginRmgTimer("Scf steps: Hartree");
-        get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+        get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
         EndRmgTimer(RT1);
 
      }  	
@@ -116,7 +116,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     {
     	/* Generate hartree potential */
         RT1 = BeginRmgTimer("Scf steps: Hartree");
-    	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+    	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
         EndRmgTimer(RT1);
     }
 

@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: get_vh.c 2174 2014-03-03 15:34:10Z ebriggs $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/get_vh.c *****
@@ -38,25 +38,24 @@
 
 
 
-#include <float.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "grid.h"
+#include "TradeImages.h"
+#include "FiniteDiff.h"
+#include "Mgrid.h"
+#include "BlasWrappers.h"
+#include "FineGrid.h"
+#include "auxiliary.h"
 #include "const.h"
-#include "params.h"
-#include "rmgtypes.h"
-#include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
-#include "macros.h"
-#include "FiniteDiff.h"
-
-//#include "hybrid.h"
+#include "rmg_alloc.h"
+#include "rmg_error.h"
+#include "RmgTimer.h"
 
 
 /* Pre and post smoothings on each level */
@@ -64,38 +63,42 @@ static int poi_pre[5] = { 0, 3, 3, 3, 3 };
 static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target)
+void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target, int boundaryflag)
 {
 
-    int idx, its, nits, sbasis, pbasis;
+    int idx, its;
     rmg_double_t t1, vavgcor, diag;
     rmg_double_t *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
+    rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
+    BaseGrid G;
+    FineGrid FG(2);
+    Lattice L;
+    Mgrid MG;
+    TradeImages T;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
+    int dimx = FG.get_PE_GRIDX(), dimy = FG.get_PE_GRIDY(), dimz = FG.get_PE_GRIDZ();
 
     /*Taken from ON code, seems to help a lot with convergence*/
     poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
 
     k_vh = 0.0;
 
-    nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
-    sbasis = (ct.vh_pxgrid + 2) * (ct.vh_pygrid + 2) * (ct.vh_pzgrid + 2);
-    pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
+    int nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
 
     /* Grab some memory for our multigrid structures */
-    my_malloc (mgrhsarr, sbasis, rmg_double_t);
-    my_malloc (mglhsarr, sbasis, rmg_double_t);
-    my_malloc (mgresarr, sbasis, rmg_double_t);
-    my_malloc (work, 4*sbasis, rmg_double_t);
-    my_malloc (sg_rho, sbasis, rmg_double_t);
-    my_malloc (sg_vh, sbasis, rmg_double_t);
-    my_malloc (sg_res, sbasis, rmg_double_t);
-    my_malloc (nrho, sbasis, rmg_double_t);
+    mgrhsarr = new rmg_double_t[sbasis];
+    mglhsarr = new  rmg_double_t[sbasis];
+    mgresarr = new  rmg_double_t[sbasis];
+    work = new  rmg_double_t[4*sbasis];
+    sg_rho = new  rmg_double_t[sbasis];
+    sg_vh = new  rmg_double_t[sbasis];
+    sg_res = new  rmg_double_t[sbasis];
+    nrho = new  rmg_double_t[sbasis];
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
@@ -103,14 +106,15 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+    CPP_pack_stod (work, nrho, G.get_FPX0_GRID(), G.get_FPY0_GRID(), G.get_FPZ0_GRID(), boundaryflag);
 
-    app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
+    CPP_app_cir_driver<double> (nrho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
+
 
 
     /* Multiply through by 4PI */
     t1 = -FOUR * PI;
-    QMD_dscal (pbasis, t1, mgrhsarr, incx);
+    for(idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * mgrhsarr[idx];
 
     its = 0;
 
@@ -129,8 +133,8 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
             {
 
                 /* Apply operator */
-                diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
+                diag = CPP_app_cil_driver (ct.vh_ext, mglhsarr, dimx, dimy, dimz,
+                            L.hxxgrid, L.hyygrid, L.hzzgrid, APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
                 /* Generate residual vector */
@@ -148,24 +152,24 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
             {
 
                 /* Transfer res into smoothing grid */
-                pack_ptos (sg_res, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 
-                mgrid_solv (mglhsarr, sg_res, work,
-                            ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, get_hxxgrid(),
-                            get_hyygrid(), get_hzzgrid(),
-                            0, get_neighbors(), ct.poi_parm.levels, poi_pre,
+                MG.mgrid_solv<double> (mglhsarr, sg_res, work,
+                            dimx, dimy, dimz, L.hxxgrid,
+                            L.hyygrid, L.hzzgrid,
+                            0, G.get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
-                            get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
-                            get_FPX_OFFSET(), get_FPY_OFFSET(), get_FPZ_OFFSET(),
-                            get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+                            G.FG_NX*G.get_NX_GRID(), G.FG_NY*G.get_NY_GRID(), G.FG_NZ*G.get_NZ_GRID(),
+                            G.get_FPX_OFFSET(), G.get_FPY_OFFSET(), G.get_FPZ_OFFSET(),
+                            G.get_FPX0_GRID(), G.get_FPY0_GRID(), G.get_FPZ0_GRID(), ct.boundaryflag);
 
 
                 /* Transfer solution back to mgresarr array */
-                pack_stop (mglhsarr, mgresarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid);
+                CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
 
                 /* Update vh */
                 t1 = ONE;
-                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_axpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }
             else
@@ -173,7 +177,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-                QMD_daxpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_axpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
 
             }                   /* end if */
 
@@ -185,7 +189,7 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += ct.vh_ext[idx];
 
-                vavgcor = real_sum_all (vavgcor, pct.grid_comm);
+                vavgcor = real_sum_all (vavgcor, T.get_MPI_comm());
                 t1 = (rmg_double_t) ct.psi_fnbasis;
                 vavgcor = vavgcor / t1;
 
@@ -199,8 +203,8 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
         }                       /* end for */
             
         /*Get residual*/
-        diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
-                            get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
+        diag = CPP_app_cil_driver<double> (ct.vh_ext, mglhsarr, dimx, dimy, dimz,
+                            L.hxxgrid, L.hyygrid, L.hzzgrid, APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
 
@@ -222,30 +226,31 @@ void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int
         its ++;
     }                           /* end for */
 
-    printf ("\n");
-    progress_tag ();
-    printf ("Executed %3d sweeps, residual is %15.8e, rms is %15.8e\n", its, residual, ct.rms);
+//    printf ("\n");
+//    progress_tag ();
+//    printf ("Executed %3d sweeps, residual is %15.8e, rms is %15.8e\n", its, residual, ct.rms);
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    pack_vhdtos (vh_eig, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+    CPP_pack_dtos (vh_eig, ct.vh_ext, G.get_FPX0_GRID(), G.get_FPY0_GRID(), G.get_FPZ0_GRID(), boundaryflag);
 
     /* Release our memory */
-    my_free (nrho);
-    my_free (sg_res);
-    my_free (sg_vh);
-    my_free (sg_rho);
-    my_free (work);
-    my_free (mgresarr);
-    my_free (mglhsarr);
-    my_free (mgrhsarr);
+    delete [] nrho;
+    delete [] sg_res;
+    delete [] sg_vh;
+    delete [] sg_rho;
+    delete [] work;
+    delete [] mgresarr;
+    delete [] mglhsarr;
+    delete [] mgrhsarr;
 
-    time2 = my_crtc ();
-    rmg_timings (HARTREE_TIME, (time2 - time1));
-
-}                               /* end get_vh */
+} // end CPP_get_vh
 
 
+extern "C" void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target, int boundaryflag) 
+{
+    CPP_get_vh (rho, rhoc, vh_eig, min_sweeps, max_sweeps, maxlevel, rms_target, boundaryflag);
+}
 
 /******/
