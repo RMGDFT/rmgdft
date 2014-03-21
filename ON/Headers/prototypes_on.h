@@ -1,4 +1,4 @@
-void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target);
+void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 rmg_double_t app_cil_orbital (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz,
               rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 rmg_double_t app_cil_orbital6 (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz,
@@ -120,8 +120,8 @@ void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int di
 void pack_stop_axpy (rmg_double_t * sg, rmg_double_t * pg, rmg_double_t alpha, int dimx, int dimy,
         int dimz);
 void pack_ptos_trade (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz);
-void pack_vhstod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz);
-void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz);
+void pack_vhstod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundarflag);
+void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundarflag);
 double radint (double *f, double *r, int n, double al);
 void radiff (double *f, double *df, double *r, int n, double al);
 void ra2diff (double *f, double *df, double *r, int n, double al);
@@ -374,8 +374,8 @@ void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int di
 void pack_stop_axpy (rmg_double_t * sg, rmg_double_t * pg, rmg_double_t alpha, int dimx, int dimy,
         int dimz);
 void pack_ptos_trade (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz);
-void pack_vhstod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz);
-void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz);
+void pack_vhstod (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag);
+void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag);
 double radint (double *f, double *r, int n, double al);
 void radiff (double *f, double *df, double *r, int n, double al);
 void ra2diff (double *f, double *df, double *r, int n, double al);

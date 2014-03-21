@@ -150,7 +150,7 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     {
         read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
     if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
     }
     if (ct.runflag == 0)
     {
@@ -226,8 +226,8 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
 #endif
 
         get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vh_old[idx] = vh[idx];
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -247,8 +247,8 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
             rho[idx] = rhoc[idx];
 
         get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0);
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             vh_old[idx] = vh[idx];
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
