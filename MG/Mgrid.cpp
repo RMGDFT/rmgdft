@@ -65,7 +65,10 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
 {
-    RmgTimer RT("Mgrid_solv");
+    RmgTimer RT0("Mgrid_solv");
+    std::string timername = "Mgrid_solv: level " + std::to_string(level);
+    RmgTimer RT1(timername.c_str());
+
     int i;
     int cycl;
     int size, idx;

@@ -2,6 +2,7 @@
 #include "RmgTimer.h"
 #include "BaseGrid.h"
 #include <string>
+#include <iomanip>
 
 volatile double start_time;
 volatile double end_time;
@@ -61,16 +62,91 @@ void RmgTimer::PrintTimings(void) {
 
     if(G.get_gridpe() == 0) {
 
-        for(tid=0;tid <= T.get_threads_per_node();tid++) {
+        // Have to do some manipulations to compute thread min/max/average and get things properly sorted
+        std::map <std::string, double> tmain;
+        std::map <std::string, double> tmin;
+        std::map <std::string, double> tmax;
+        std::map <std::string, double> tavg;
 
-            for(auto it = RmgTimer::timings[tid].cbegin(); it != RmgTimer::timings[tid].cend(); ++it)
-            {
-                cout << "  Time spent by thread " << tid << " in " << it->first << " = " << it->second << "\n";
+        // Reset main thread (tid=0) into an ordered map
+        for(auto it = RmgTimer::timings[0].cbegin(); it != RmgTimer::timings[0].cend(); ++it) {
+            tmain[it->first] = it->second;
+        }
+
+        size_t maxlen = 0;
+        for(auto it = RmgTimer::timings[1].cbegin(); it != RmgTimer::timings[1].cend(); ++it) {
+            tmin[it->first] = 99999999999.0;
+            tmax[it->first] = 0.0;
+            tavg[it->first] = 0.0;
+            if(maxlen < it->first.length()) maxlen = it->first.length();
+        }
+        maxlen += 2; 
+
+        for(tid=1;tid <= T.get_threads_per_node();tid++) {
+            for(auto it = RmgTimer::timings[tid].cbegin(); it != RmgTimer::timings[tid].cend(); ++it) {
+                if(it->second < tmin[it->first]) tmin[it->first] = it->second;
+                if(it->second > tmax[it->first]) tmax[it->first] = it->second;
+                tavg[it->first] += it->second;
             }
+        }
 
+        cout << "\n\n";
+        cout << std::fixed << std::setprecision(2);
+        cout << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------\n";
+        for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
+            std::size_t found = it->first.find_first_of(":");
+            if(found != std::string::npos) {
+                cout << "  ";
+                cout << setw(maxlen+14) << left << it->first << right << it->second << "\n";
+            }
+            else {
+                cout << "\n";
+                cout << setw(maxlen+16) << left << it->first << right <<  it->second << "\n";
+                cout << "-----------------------------------------------------------------------------\n";
+            }
+        }
+
+        cout << "\n\n";
+        cout << "------------------------- TIMING INFORMATION FOR THREADS  -------------------\n\n";
+        cout << "                                           Min            Max            Avg";
+
+        auto it1 = tmin.cbegin();
+        auto it2 = tmax.cbegin();
+        auto it3 = tavg.cbegin();
+        while(it1 != tmin.cend()) {
+            std::size_t found = it1->first.find_first_of(":");
+            if(found != std::string::npos) {
+                cout << "  ";
+                cout << setw(maxlen) << left << it1->first
+                << setw(16) << right << it1->second
+                << setw(15) << right << it2->second
+                << setw(15) << right
+                << it3->second/T.get_threads_per_node() << "\n";
+            }
+            else {
+                cout << "\n";
+                cout << setw(maxlen) << left << it1->first
+                << setw(18) << right << it1->second
+                << setw(15) << right << it2->second
+                << setw(15) << right << it3->second/T.get_threads_per_node() 
+                << "\n-----------------------------------------------------------------------------\n";
+            }
+            it1++;
+            it2++;
+            it3++;
         }
 
     }
+}
+
+// Temporary until C to C++ migration is completed. Use carefully!
+extern "C" void *BeginRmgTimer(const char *fname) {
+    RmgTimer *RT = new RmgTimer(fname);
+    return (void *)RT;
+}
+extern "C" void EndRmgTimer(void *ptr) {
+    RmgTimer *RT = (RmgTimer *)ptr;
+    delete(RT);
 }
 
 extern "C" void CompatRmgTimerPrint(void) {

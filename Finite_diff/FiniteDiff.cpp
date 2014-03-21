@@ -4,6 +4,7 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
+#include "RmgTimer.h"
 #include "rmg_error.h"
 
 using namespace std;
@@ -13,7 +14,7 @@ template <typename RmgType>
 rmg_double_t FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-
+    RmgTimer RT("App_cil: computation");
     int iz, ix, iy, incx, incy, incxr, incyr, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
@@ -425,6 +426,7 @@ template <typename RmgType>
 void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
+    RmgTimer RT("App_cir: computation");
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
@@ -1025,6 +1027,7 @@ template <typename RmgType>
 rmg_double_t FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
+    RmgTimer RT("App_cil: computation");
     int ibrav;
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
@@ -1186,6 +1189,7 @@ template <typename RmgType>
 void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
+    RmgTimer RT("App_cir: computation");
     int ix, iy, iz, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;

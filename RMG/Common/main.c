@@ -56,28 +56,9 @@ void finish (void);
 
 /* Global MPI stuff. Overridden by input params */
 int NPES=1;
-int PE_X=1;
-int PE_Y=1;
-int PE_Z=1;
-
-/* Global coarse grid dimesions. Set by input file */
-int NX_GRID;
-int NY_GRID;
-int NZ_GRID;
-
-/* Global fine grid dimensions */
-int FNX_GRID;
-int FNY_GRID;
-int FNZ_GRID;
-
-/* Fine/coarse grid ratios */
-int FG_NX;
-int FG_NY;
-int FG_NZ;
 
 /* State storage pointer (memory allocated dynamically in rd_cont */
 STATE *states;
-
 
 
 /* Electronic charge density or charge density of own spin in polarized case */
@@ -111,14 +92,6 @@ CONTROL ct;
 
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
-
-/*Other global variables will be defined here, so that they can be defined
- * in header files as extern as it should be. Otherwise compiler
- * on Origin complains that the variables are multiply defined*/
-
-/*Variables from recips.h*/
-double b0[3], b1[3], b2[3];
-double alat;
 
 
 int main (int argc, char **argv)

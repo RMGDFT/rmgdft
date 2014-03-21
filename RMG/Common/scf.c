@@ -47,6 +47,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "BaseThread.h"
+#include "RmgTimer.h"
 
 #include "hybrid.h"
 
@@ -57,6 +58,8 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
           rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc )
 {
 
+    void *RT = BeginRmgTimer("Scf steps");
+    void *RT1;
     int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1), istop, vcycle, P0_BASIS, FP0_BASIS;
     bool CONVERGED = false;
     rmg_double_t t3;
@@ -93,8 +96,9 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     time1 = my_crtc (); 
  
     /* Generate exchange-correlation potential */
+    RT1 = BeginRmgTimer("Scf steps: Get vxc");
     get_vxc (rho, rho_oppo, rhocore, vxc);
-    rmg_timings (SCF_XC_TIME, (my_crtc () - time1));
+    EndRmgTimer(RT1);
 
     if (ct.spin_flag)        
     {
@@ -103,12 +107,17 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
 		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 	
 	/* Generate hartree potential */
+        RT1 = BeginRmgTimer("Scf steps: Hartree");
         get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+        EndRmgTimer(RT1);
+
      }  	
     else
     {
     	/* Generate hartree potential */
+        RT1 = BeginRmgTimer("Scf steps: Hartree");
     	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
+        EndRmgTimer(RT1);
     }
 
 
@@ -161,15 +170,18 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     /*Generate the Dnm_I */
     get_ddd (vtot);
 
-    time1 = my_crtc ();
-
     for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
+
+        RT1 = BeginRmgTimer("Scf steps: Beta x psi");
         betaxpsi (states);
+        EndRmgTimer(RT1);
+
 #if BATCH_NLS
         app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
 #endif
 
         /* Update the wavefunctions */
+        RT1 = BeginRmgTimer("Scf steps: Mg_eig");
         istop = ct.num_kpts * ct.num_states / ct.THREADS_PER_NODE;
         istop = istop * ct.THREADS_PER_NODE;
         for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
@@ -190,6 +202,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
         for(st1 = istop;st1 < ct.num_kpts * ct.num_states;st1++) {
             mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
         }
+        EndRmgTimer(RT1);
 
     }
 
@@ -198,12 +211,9 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     rmg_timings (EIG_TIME, (time2 - time1));
 
     /*wavefunctions have changed, projectors have to be recalculated */
-    time1 = my_crtc ();
+    RT1 = BeginRmgTimer("Scf steps: Beta x psi");
     betaxpsi (states);
-    rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
-
-
-
+    EndRmgTimer(RT1);
 
 
 
@@ -215,32 +225,44 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
 #if GAMMA_PT
     /* do diagonalizations if requested, if not orthogonalize */
-    if (diag_this_step)
+    if (diag_this_step) {
+        RT1 = BeginRmgTimer("Scf steps: Diagonalization");
         subdiag_gamma (ct.kp[0].kstate, vh, vnuc, vxc);
-    else
+        EndRmgTimer(RT1);
+    }
+    else {
+        RT1 = BeginRmgTimer("Scf steps: Orthogonalization");
         ortho (states, 0);
+        EndRmgTimer(RT1);
+    }
 #else
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =0; kpt < ct.num_kpts; kpt++) {
+        RT1 = BeginRmgTimer("Scf steps: Orthogonalization");
         ortho (&states[kpt *ct.num_states], kpt);
+        EndRmgTimer(RT1);
+    }
     
     if (diag_this_step)
     {
 	/*Projectores need to be updated prior to subspace diagonalization*/
-        time1 = my_crtc ();
-	
+        RT1 = BeginRmgTimer("Scf steps: Beta x psi");
         betaxpsi (states);
+        EndRmgTimer(RT1);
         
-        rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
-        
-        for (ik = 0; ik < ct.num_kpts; ik++)
+        for (ik = 0; ik < ct.num_kpts; ik++) {
+            RT1 = BeginRmgTimer("Scf steps: Diagonalization");
             subdiag_nongamma (ct.kp[ik].kstate, vh, vnuc, vxc);
+            EndRmgTimer(RT1);
+        }
     }
 #endif
     
     
     /*wavefunctions have changed, projectors have to be recalculated */
     time1 = my_crtc ();
+    RT1 = BeginRmgTimer("Scf steps: Beta x psi");
     betaxpsi (states);
+    EndRmgTimer(RT1);
     
     /*Get oldsintR*/
     if (diag_this_step)
@@ -275,7 +297,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
         firststep = FALSE;
 
     /* Generate new density */
-    time1 = my_crtc ();
+    RT1 = BeginRmgTimer("Scf steps: Get rho");
     get_new_rho (states, new_rho);
 
     /*Takes care of mixing and checks whether the charge density is negative*/
@@ -284,8 +306,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     if (ct.spin_flag)
 	get_rho_oppo (rho,  rho_oppo);
     
-    time2 = my_crtc ();
-    rmg_timings (RHO_TIME, (time2 - time1));
+    EndRmgTimer(RT1);
 
 
     /* If sorting is requested then sort the states. */
@@ -312,6 +333,7 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     rmg_timings (SCF_TIME, (my_crtc () - time3));
     printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time3);
 
+    EndRmgTimer(RT);
     return CONVERGED;
 }                               /* end scf */
 

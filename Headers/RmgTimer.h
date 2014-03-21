@@ -33,6 +33,8 @@ public:
 };
 #else
 void CompatRmgTimerPrint(void);
+void *BeginRmgTimer(const char *fname);
+void EndRmgTimer(void *ptr);
 #endif
 
 #endif

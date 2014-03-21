@@ -107,7 +107,9 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
   
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
+    RmgTimer *RT1 = new RmgTimer("Mg_eig: app_cir");
     CPP_app_cir_driver<RmgType> (work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    delete(RT1);
 
     // Copy double precision psi into single precison array
     for(idx = 0;idx < pbasis;idx++) {
@@ -132,7 +134,10 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
 
         /* Apply Mehrstellen left hand operators */
+        RT1 = new RmgTimer("Mg_eig: app_cil");
         diag = CPP_app_cil_driver<RmgType> (tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        delete(RT1);
+
         diag = -1.0 / diag;
 
 
@@ -151,7 +156,9 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
 
         /* B operating on 2*V*psi stored in work1 */
+        RT1 = new RmgTimer("Mg_eig: app_cir");
         CPP_app_cir_driver<RmgType> (sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        delete(RT1);
         for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 
 
@@ -245,14 +252,14 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             }
 
             /* Do multigrid step with solution returned in sg_twovpsi */
+            RT1 = new RmgTimer("Mg_eig: mgrid_solv");
             MG.mgrid_solv (sg_twovpsi_t, work1_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
                         G.get_NX_GRID(), G.get_NY_GRID(), G.get_NZ_GRID(),
                         G.get_PX_OFFSET(), G.get_PY_OFFSET(), G.get_PZ_OFFSET(),
                         G.get_PX0_GRID(), G.get_PY0_GRID(), G.get_PZ0_GRID(), ct.boundaryflag);
-
-
+            delete(RT1);
 
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.
@@ -348,12 +355,15 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             eig_pre[0] = 2;
             eig_post[0] = 2;
             levels=1;
+
+            RT1 = new RmgTimer("Mg_eig: mgrid_solv");
             MG.mgrid_solv (sg_twovpsi_t, res_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, G.get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
                         G.get_NX_GRID(), G.get_NY_GRID(), G.get_NZ_GRID(),
                         G.get_PX_OFFSET(), G.get_PY_OFFSET(), G.get_PZ_OFFSET(),
                         G.get_PX0_GRID(), G.get_PY0_GRID(), G.get_PZ0_GRID(), ct.boundaryflag);
+            delete(RT1);
 
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res_t[idx] = 0.0;

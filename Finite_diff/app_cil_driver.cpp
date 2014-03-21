@@ -23,13 +23,13 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
     rptr = (RmgType *)allocp;
 
     if(order == APP_CI_FOURTH) {
-        RmgTimer *RT1 = new RmgTimer("  App_cil trade images time");
+        RmgTimer *RT1 = new RmgTimer("App_cil: trade images time");
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 1, FULL_TRADE);
         delete(RT1);
         cc = FD.app_cil_fourth (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_SIXTH) {
-        RmgTimer *RT1 = new RmgTimer("  App_cil trade images time");
+        RmgTimer *RT1 = new RmgTimer("App_cil: trade images time");
         T.trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
         delete(RT1);
         cc = FD.app_cil_sixth (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
