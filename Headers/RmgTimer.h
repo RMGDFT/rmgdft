@@ -18,17 +18,18 @@ private:
     volatile double start_time;
     volatile double end_time;
     const char *sname;
-    // Time the main thread in the zeroth slot
-    static std::unordered_map<std::string, double> timings[MAX_RMG_THREADS+1];
 
 public:
     RmgTimer(const char *what);
     ~RmgTimer(void);
-    void PrintTimings(const char *outfile);
+    std::unordered_map<std::string, double> *get_map(void);
+
+    // The main thread of execution is timed in the zeroth slot. Data structure public
+    // is public so that the main program can implement it's own output routines.
+    static std::unordered_map<std::string, double> timings[MAX_RMG_THREADS+1];
 
 };
 #else
-void CompatRmgTimerPrint(const char *outfile);
 void *BeginRmgTimer(const char *what);
 void EndRmgTimer(void *ptr);
 #endif

@@ -36,6 +36,7 @@
 extern "C" {
 #endif
 
+void CompatRmgTimerPrint(const char *outfile, int steps);
 void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, rmg_double_t *sintI, int kpt, rmg_double_t *weiptr_base);
 void get_te (rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc, rmg_double_t *vh, rmg_double_t *vxc,
              STATE *states, int ii_flag);

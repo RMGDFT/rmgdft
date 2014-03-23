@@ -1,4 +1,5 @@
 add_library (RMG_Common
+RmgPrintTimings.cpp
 pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp

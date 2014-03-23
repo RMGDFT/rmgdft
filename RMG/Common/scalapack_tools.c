@@ -29,6 +29,7 @@ Documentation:
 #include <stdlib.h>
 #include <math.h>
 #include "BaseThread.h"
+#include "RmgTimer.h"
 #include "grid.h"
 #include "main.h"
 
@@ -568,37 +569,28 @@ void reduce_and_dist_matrix(int n, rmg_double_t *global_matrix, rmg_double_t *di
 {
 
     int stop;
-
-    rmg_double_t time1, time2;
-
+    void *RT = BeginRmgTimer("Diagonalization: reduce and distribute");
     stop = n * n;
-    time1 = my_crtc();
 
     if(ct.scalapack_global_sums) {
 
         /*Sum matrix over all processors */
-//        global_sums (global_matrix, &stop, pct.grid_comm);
+        void *RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
         MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-
-        time2 = my_crtc ();
-        rmg_timings (DIAG_GLOB_SUMS, time2 - time1);
+        EndRmgTimer(RT1);
 
         /*Distribute global matrix A */
         if (pct.scalapack_pe)
             distribute_mat (pct.desca, global_matrix, dist_matrix, &n);
 
-        time1 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time1 - time2);
-
     }
     else {
 
         matsum (work, dist_matrix, global_matrix, n);
-        time2 = my_crtc ();
-        rmg_timings (DIAG_DISTMAT, time2 - time1);
 
     }
 
+    EndRmgTimer(RT);
 }
 
 static void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node)

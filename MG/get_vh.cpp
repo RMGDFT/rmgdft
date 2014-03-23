@@ -72,8 +72,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
     rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
-    BaseGrid G;
-    FineGrid FG(2);
+    FineGrid FG(2);     // Hartree potential is on a double density grid
     Lattice L;
     Mgrid MG;
     TradeImages T;
@@ -106,7 +105,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
 
     for (idx = 0; idx < sbasis; idx++)
         nrho[idx] = 0.0;
-    CPP_pack_stod (work, nrho, G.get_FPX0_GRID(), G.get_FPY0_GRID(), G.get_FPZ0_GRID(), boundaryflag);
+    CPP_pack_stod (work, nrho, dimx, dimy, dimz, boundaryflag);
 
     CPP_app_cir_driver<double> (nrho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
 
@@ -155,13 +154,13 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
                 CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 
                 MG.mgrid_solv<double> (mglhsarr, sg_res, work,
-                            dimx, dimy, dimz, L.hxxgrid,
-                            L.hyygrid, L.hzzgrid,
-                            0, G.get_neighbors(), ct.poi_parm.levels, poi_pre,
+                            dimx, dimy, dimz, 
+                            L.hxxgrid, L.hyygrid, L.hzzgrid,
+                            0, FG.get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
-                            G.FG_NX*G.get_NX_GRID(), G.FG_NY*G.get_NY_GRID(), G.FG_NZ*G.get_NZ_GRID(),
-                            G.get_FPX_OFFSET(), G.get_FPY_OFFSET(), G.get_FPZ_OFFSET(),
-                            G.get_FPX0_GRID(), G.get_FPY0_GRID(), G.get_FPZ0_GRID(), ct.boundaryflag);
+                            FG.get_GLOBAL_GRIDX(), FG.get_GLOBAL_GRIDY(), FG.get_GLOBAL_GRIDZ(),
+                            FG.get_PE_OFFSETX(), FG.get_PE_OFFSETY(), FG.get_PE_OFFSETZ(),
+                            FG.get_PE_GRIDX(), FG.get_PE_GRIDY(), FG.get_PE_GRIDZ(), ct.boundaryflag);
 
 
                 /* Transfer solution back to mgresarr array */
@@ -233,7 +232,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    CPP_pack_dtos (vh_eig, ct.vh_ext, G.get_FPX0_GRID(), G.get_FPY0_GRID(), G.get_FPZ0_GRID(), boundaryflag);
+    CPP_pack_dtos (vh_eig, ct.vh_ext, dimx, dimy, dimz, boundaryflag);
 
     /* Release our memory */
     delete [] nrho;

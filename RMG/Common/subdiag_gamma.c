@@ -51,6 +51,7 @@
 #include "main.h"
 #include "common_prototypes.h"
 #include "blas.h"
+#include "RmgTimer.h"
 
 
 #if GPU_ENABLED
@@ -205,13 +206,14 @@ void init_subdiag(void)
     }
 
 
-    rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
 
 }
 
 void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
+
+    void *RT = BeginRmgTimer("Diagonalization");
 
 #if GPU_ENABLED
       cuCtxSynchronize();
@@ -231,6 +233,8 @@ void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_
             subdiag_gamma_scalapack(states, vh, vnuc, vxc);
     }
 
+    EndRmgTimer(RT);
+ 
 }
 
 void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
@@ -244,6 +248,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     char *uplo = "l", *jobz = "v";
     ION *iptr;
     SPECIES *sp;
+    void *RT;
 
     int info = 0;
     rmg_double_t time1, time2, time3;
@@ -351,7 +356,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         }
 
     }
-    rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
     /********************* Scalapack should be initialized ******************************/
 
 
@@ -368,12 +372,11 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         /*Apply AB operator on each wavefunction 
 	 tmp_arrayR:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
 	 tmp_array2R:  B|psi> + B|beta>qnm<beta|psi> */
-
+        RT = BeginRmgTimer("Diagonalization: apply operators");
 	subdiag_app_AB (states, tmp_arrayR, tmp_array2R, vtot_eig);
+        EndRmgTimer(RT);
 
-        time3 = my_crtc ();
-        rmg_timings (DIAG_APP_A, time3 - time2);
-
+        RT = BeginRmgTimer("Diagonalization: matrix setup");
 #if GPU_ENABLED
 
         cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_arrayR, ione, ct.gpu_temp, ione );
@@ -390,18 +393,16 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_arrayR, &pbasis, &beta, global_matrix, &num_states);
 #endif
+        EndRmgTimer(RT);
 
-
-        time2 = my_crtc ();
-        rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce and distribute Aij
         reduce_and_dist_matrix(num_states, global_matrix, distAij, distTij);
 
 
         // Now deal with the S operator
-        time3 = my_crtc ();
         alpha = get_vel();
+        RT = BeginRmgTimer("Diagonalization: matrix setup");
 #if GPU_ENABLED
         cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
         cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
@@ -415,21 +416,15 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                pct.ns, &pbasis, &beta, global_matrix, &num_states);
 #endif
-
-        time2 = my_crtc ();
-        rmg_timings (DIAG_DGEMM, time2 - time3);
+        EndRmgTimer(RT);
 
         // Reduce and distribute Sij
         reduce_and_dist_matrix(num_states, global_matrix, distSij, distTij);
 
-        /* Apply B operator on each wavefunction */
-
-        time3 = my_crtc ();
         alpha = get_vel();
 
-		//subdiag_app_B (states, tmp_array2R);
-       // for(idx = 0; idx < 100; idx++) printf("\n iaaa  %d  %f ", idx, tmp_array2R[idx]);
 
+        RT = BeginRmgTimer("Diagonalization: matrix setup");
 #if GPU_ENABLED
         cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 
@@ -444,14 +439,11 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
         dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
                tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
 #endif
+        EndRmgTimer(RT);
 
-
-        time2 = my_crtc ();
-        rmg_timings (DIAG_DGEMM, time2 - time3);
 
         // Reduce and distribute Bij
         reduce_and_dist_matrix(num_states, global_matrix, distBij, distTij);
-
 
 
     }
@@ -476,7 +468,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     if (pct.scalapack_pe)
         distribute_mat (pct.desca, global_matrix, distCij, &num_states);
 
-    rmg_timings (DIAG_DISTMAT, my_crtc () - time2);
 
     time2 = my_crtc ();
 
@@ -562,6 +553,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
 
 
 #if 1
+        RT = BeginRmgTimer("Diagonalization: scalapack");
         /****************** Find Matrix of Eigenvectors *****************************/
         /* Using lwork=-1, pdsyev should return minimum required size for the work array */
         {
@@ -630,6 +622,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
             my_free (iwork);
 
         }
+        EndRmgTimer(RT);
 #endif
 
 
@@ -645,17 +638,11 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
             global_matrix[idx] = 0.0;
 
 
-    rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
-
-
-
 
     /*Finally, sum global_matrix over all PEs */
-    time3 = my_crtc ();
-
-//    global_sums (global_matrix, &stop, pct.grid_comm);
+    RT = BeginRmgTimer("Diagonalization: MPI_Allreduce");
     MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.scalapack_comm);
-    rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
+    EndRmgTimer(RT);
 
 
 
@@ -678,7 +665,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
 	for (st1 = 0; st1 < ct.num_states; st1++)
 		states[st1].eig[0] = eigs[st1];
 
-	rmg_timings (DIAG_BCAST_EIGS, (my_crtc () - time2));
     }
 
 
@@ -686,7 +672,8 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
 
     time2 = my_crtc ();
 
-    /* Do the orbital update in here */
+    /* Do the orbital update here */
+    RT = BeginRmgTimer("Diagonalization: update orbitals");
 #if GAMMA_PT
 #if GPU_ENABLED
 
@@ -708,9 +695,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
 #else
     subdiag2_mpi (global_matrix, states->psiR);
 #endif
-
-
-    rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
+    EndRmgTimer(RT);
 
 
     /* release our temporary storage */
@@ -721,8 +706,6 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     my_free (work1R);
     my_free (eigs);
     my_free (vtot_eig);
-
-    rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 }
 
@@ -863,61 +846,7 @@ static void print_dist_matrix (rmg_double_t * dist_matrix, int global_size, int 
 }
 
 
-
-/*This works with distributed matrices*/
-static void symmetrize_matrix (rmg_double_t * matrix, rmg_double_t * unity_matrix, int size, int *desca,
-		int local_size)
-{
-	int stop, ione = 1;
-	rmg_double_t *temp_unity_matrix, *temp_matrix;
-	rmg_double_t alpha[] = { 0.5, 0.0 };
-	rmg_double_t beta[] = { 0.5, 0.0 };
-	char *trans = "n";
-#if GAMMA_PT
-	char *trans2 = "t";
-#else
-	char *trans2 = "c";
 #endif
-
-	stop = local_size;
-#if !GAMMA_PT
-	stop *= 2;
-#endif
-
-
-	/*Get memory */
-	my_malloc (temp_matrix, stop, rmg_double_t);
-	my_calloc (temp_unity_matrix, stop, rmg_double_t);
-
-	/*Copy matrix into temp_matrix */
-	QMD_dcopy (stop, matrix, ione, temp_matrix, ione);
-
-	/*Local copy of unity matrix, this is done so that the unitary matrix that was passed here does not change */
-	QMD_dcopy (stop, unity_matrix, ione, temp_unity_matrix, ione);
-
-
-	/*Symmetric (or Hermitian) matrix will be obtained as
-	 * A = 0.5(I*A + A^T)*/
-
-#if GAMMA_PT
-	PDGEMM (trans, trans2, &size, &size, &size, alpha,
-			temp_unity_matrix, &ione, &ione, desca, temp_matrix, &ione, &ione, desca, beta, matrix,
-			&ione, &ione, desca);
-#else
-	PZGEMM (trans, trans2, &size, &size, &size, alpha,
-			temp_unity_matrix, &ione, &ione, desca, temp_matrix, &ione, &ione, desca, beta, matrix,
-			&ione, &ione, desca);
-#endif
-
-
-	/*Release memory */
-	my_free (temp_matrix);
-	my_free (temp_unity_matrix);
-
-}
-
-#endif
-
 
 
 #if GAMMA_PT
@@ -932,6 +861,7 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 	char *uplo = "l", *jobz = "v";
 	ION *iptr;
 	SPECIES *sp;
+        void *RT1;
 
 	int info = 0;
 	rmg_double_t time1, time2, time3;
@@ -988,7 +918,6 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 
 	/*************************** ScaLapack initialization *************************************/
 
-	time2 = my_crtc ();
 
 	/*This holds number of doubles on each PE */
 	dist_stop = stop;
@@ -1006,7 +935,6 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		distCij[idx] = 0.0; 
 	}
 
-	rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
 	/********************* Scalapack should be initialized ******************************/
 
 
@@ -1018,14 +946,16 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		rmg_double_t alpha = 1.0;
 		rmg_double_t beta = 0.0;
 
-		time2 = my_crtc ();
 
-		/*Apply A operator on each wavefunction 
-		 * S operator is also applied, the result is returned in tmp_array2R*/
+                /*Apply AB operator on each wavefunction 
+                 tmp_arrayR:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
+                 tmp_array2R:  B|psi> + B|beta>qnm<beta|psi> */
+                RT1 = BeginRmgTimer("Diagonalization: apply operators");
 		subdiag_app_AB (states, tmp_arrayR, tmp_array2R, vtot_eig);
+                EndRmgTimer(RT1);
 
-		time3 = my_crtc ();
-		rmg_timings (DIAG_APP_A, time3 - time2);
+
+                RT1 = BeginRmgTimer("Diagonalization: matrix setup");
 
 #if GPU_ENABLED
 
@@ -1043,21 +973,21 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
 				tmp_arrayR, &pbasis, &beta, global_matrix, &num_states);
 #endif
+                EndRmgTimer(RT1);
 
-
-		time2 = my_crtc ();
-		rmg_timings (DIAG_DGEMM, time2 - time3);
 
 		// Reduce Aij
 		//global_sums (global_matrix, &stop, pct.grid_comm);
+                RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
+                EndRmgTimer(RT1);
 		QMD_dcopy (stop, global_matrix, ione, distAij, ione);
 
 
 		// Now deal with the S operator
-		time3 = my_crtc ();
 		alpha = get_vel();
+
+                RT1 = BeginRmgTimer("Diagonalization: matrix setup");
 #if GPU_ENABLED
 		cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), pct.ns, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
@@ -1071,24 +1001,19 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
 				pct.ns, &pbasis, &beta, global_matrix, &num_states);
 #endif
+                EndRmgTimer(RT1);
 
-		time2 = my_crtc ();
-		rmg_timings (DIAG_DGEMM, time2 - time3);
 
 		// Reduce Sij
-		//global_sums (global_matrix, &stop, pct.grid_comm);
+                RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
+                EndRmgTimer(RT1);
 		QMD_dcopy (stop, global_matrix, ione, distSij, ione);
 
-		/* Apply B operator on each wavefunction */
-		time2 = my_crtc ();
-//		subdiag_app_B (states, tmp_array2R);
-
-		time3 = my_crtc ();
 		alpha = get_vel();
-		rmg_timings (DIAG_APP_B, time3 - time2);
 
+
+                RT1 = BeginRmgTimer("Diagonalization: matrix setup");
 #if GPU_ENABLED
 		cublasSetVector( pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 
@@ -1103,15 +1028,14 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		dgemm (trans, trans2, &num_states, &num_states, &pbasis, &alpha, states[0].psiR, &pbasis,
 				tmp_array2R, &pbasis, &beta, global_matrix, &num_states);
 #endif
+                EndRmgTimer(RT1);
 
-
-		time2 = my_crtc ();
-		rmg_timings (DIAG_DGEMM, time2 - time3);
 
 		// Reduce Bij
 		//global_sums (global_matrix, &stop, pct.grid_comm);
+                RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
+                EndRmgTimer(RT1);
 		QMD_dcopy (stop, global_matrix, ione, distBij, ione);
 
 
@@ -1167,6 +1091,8 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 
 
 #if 1
+        RT1 = BeginRmgTimer("Diagonalization: lapack");
+
 	/****************** Find Matrix of Eigenvectors *****************************/
 	/* Using lwork=-1, pdsyev should return minimum required size for the work array */
 	{
@@ -1227,23 +1153,11 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 		my_free (iwork);
 
 	}
+        EndRmgTimer(RT1);
 #endif
 
-
-	rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
-
-
-
-
-	/*Finally, sum global_matrix over all PEs */
-	time3 = my_crtc ();
-
-	rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time3);
-
-
-	time2 = my_crtc ();
-
-	/* Do the orbital update in here */
+	/* Do the orbital update here */
+        RT1 = BeginRmgTimer("Diagonalization: update orbitals");
 #if GPU_ENABLED
 
 	cublasSetVector( num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, ct.gpu_global_matrix, ione );
@@ -1261,18 +1175,14 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 #else
 	subdiag2_mpi (global_matrix, states->psiR, tmp_arrayR);
 #endif
-
-
-	rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
+        EndRmgTimer(RT1);
 
 
 	/* release our temporary storage */
-
 	my_free (work1R);
 	my_free (eigs);
 	my_free (vtot_eig);
 
-	rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 } // end subdiag_gamma_lapack
 
@@ -1583,6 +1493,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 	char *uplo = "l", *jobz = "V";
 	ION *iptr;
 	SPECIES *sp;
+        void *RT1;
 
 	int info = 0;
 	rmg_double_t time1, time2, time3;
@@ -1648,7 +1559,6 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 	//        distCij[idx] = 0.0; 
 	//    }
 
-	rmg_timings (DIAG_SCALAPACK_INIT, my_crtc () - time2);
 	/********************* Scalapack should be initialized ******************************/
 
 
@@ -1665,11 +1575,9 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
                 /*Apply AB operator on each wavefunction 
                  tmp_arrayR:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
                  tmp_array2R:  B|psi> + B|beta>qnm<beta|psi> */
-
+                RT1 = BeginRmgTimer("Diagonalization: apply operators");
                 subdiag_app_AB (states, tmp_arrayR, tmp_array2R, vtot_eig);
-
-		time3 = my_crtc ();
-		rmg_timings (DIAG_APP_A, time3 - time2);
+                EndRmgTimer(RT1);
 
 
 		/*Global matrix will hold global A matrix */
@@ -1680,14 +1588,11 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 				&beta,  ct.gpu_global_matrix, num_states );
 		cublasGetVector(num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
-		time2 = my_crtc ();
-		rmg_timings (DIAG_DGEMM, time2 - time3);
 
 		// Reduce Aij and store it on the GPU
-		//global_sums (global_matrix, &stop, pct.grid_comm);
+                RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
-		//QMD_dcopy (stop, global_matrix, ione, distAij, ione);
+                EndRmgTimer(RT1);
 		cublasSetVector(num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, gpuAij, ione );
 
 		// Now deal with the S operator
@@ -1702,23 +1607,15 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 		cublasGetVector(num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
 
-		time2 = my_crtc ();
-		rmg_timings (DIAG_DGEMM, time2 - time3);
 
 		// Reduce Sij and store it on the GPU
-		//global_sums (global_matrix, &stop, pct.grid_comm);
+                RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
+                EndRmgTimer(RT1);
 		cublasSetVector(num_states * num_states, sizeof( rmg_double_t ), global_matrix, ione, gpuSij, ione );
-		//QMD_dcopy (stop, global_matrix, ione, distSij, ione);
 
-		/* Apply B operator on each wavefunction */
-		time2 = my_crtc ();
-//		subdiag_app_B (states, tmp_array2R);
 
-		time3 = my_crtc ();
 		alpha = get_vel();
-		rmg_timings (DIAG_APP_B, time3 - time2);
 
 		cublasSetVector(pbasis * num_states, sizeof( rmg_double_t ), tmp_array2R, ione, ct.gpu_temp, ione );
 		cublasDgemm(ct.cublas_handle, cu_transT, cu_transN, num_states, num_states, pbasis,
@@ -1727,13 +1624,11 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 				&beta,  ct.gpu_global_matrix, num_states );
 		cublasGetVector(num_states * num_states, sizeof( rmg_double_t ), ct.gpu_global_matrix, ione, global_matrix, ione );
 
-		time2 = my_crtc ();
-		rmg_timings (DIAG_DGEMM, time2 - time3);
 
 		// Reduce Bij and leave in global_matrix
-		//        global_sums (global_matrix, &stop, pct.grid_comm);
+                RT1 = BeginRmgTimer("Diagonalization: MPI_Allreduce");
 		MPI_Allreduce(MPI_IN_PLACE, global_matrix, stop, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-		rmg_timings (DIAG_GLOB_SUMS, my_crtc () - time2);
+                EndRmgTimer(RT1);
 
 
 
@@ -1844,11 +1739,8 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 	}
 
 
-	rmg_timings (DIAG_MATRIX_TIME, (my_crtc () - time2));
 
 	/* Do the orbital update here. All data is already on the GPU */
-	time2 = my_crtc ();
-
 	alpha1 = 1.0;
 	beta1 = 0.0;
 	custat = cublasDgemm(ct.cublas_handle, cu_transN, cu_transN, pbasis, num_states, num_states,
@@ -1861,15 +1753,12 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 	cublasGetVector(pbasis * num_states, sizeof( rmg_double_t ), ct.gpu_temp, ione, states->psiR, ione );
 
 
-	rmg_timings (DIAG_WAVEUP_TIME, (my_crtc () - time2));
-
 
 	/* release our temporary storage */
 	my_free (work1R);
 	my_free (eigs);
 	my_free (vtot_eig);
 
-	rmg_timings (DIAG_TIME, (my_crtc () - time1));
 
 } // end subdiag_gamma_magma
 
