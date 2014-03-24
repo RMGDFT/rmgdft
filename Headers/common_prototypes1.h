@@ -251,6 +251,7 @@ int assign_species (CONTROL * c, char *buf);
 
 void read_pseudo (void);
 rmg_double_t real_sum_all (rmg_double_t x, MPI_Comm comm);
+rmg_double_t double_sum_all (rmg_double_t x, MPI_Comm comm);
 rmg_double_t real_min_all (rmg_double_t x, MPI_Comm comm);
 
 

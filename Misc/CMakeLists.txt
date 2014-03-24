@@ -1,4 +1,5 @@
 add_library (Misc
+RmgSumAll.cpp
 pack_dtos.cpp
 pack_stod.cpp
 RmgTimer.cpp
@@ -11,13 +12,13 @@ transition.cpp
 init_IO.c
 get_index.c
 global_sums.c
-real_sum_all.c
+#real_sum_all.c
 minimage.c
 pack_stop.cpp
 pack_ptos.cpp
 get_vtot_psi.c
 my_mpi.c
-int_sum_all.c
+#int_sum_all.c
 blaswrappers.c
 set_bc.c
 cgen_prolong.c
