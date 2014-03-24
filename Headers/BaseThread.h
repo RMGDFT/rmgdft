@@ -2,9 +2,6 @@
 #define RMG_BaseThread_H 1
 
 
-#if __linux__
-#include <pthread.h>
-#endif
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
