@@ -209,7 +209,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
-   get_vtot_psi(vtot_c, vtot, get_FG_NX());
+   get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
     
     if (t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;

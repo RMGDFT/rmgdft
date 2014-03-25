@@ -157,12 +157,12 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
 /*===================================================================*/
 
-    nx1 = cei.dos_window_start[0] * get_FG_NX();
-    nx2 = cei.dos_window_end[0] * get_FG_NX();
-    ny1 = cei.dos_window_start[1] * get_FG_NY();
-    ny2 = cei.dos_window_end[1] * get_FG_NY();
-    nz1 = cei.dos_window_start[2] * get_FG_NZ();
-    nz2 = cei.dos_window_end[2] * get_FG_NZ();
+    nx1 = cei.dos_window_start[0] * get_FG_RATIO();
+    nx2 = cei.dos_window_end[0] * get_FG_RATIO();
+    ny1 = cei.dos_window_start[1] * get_FG_RATIO();
+    ny2 = cei.dos_window_end[1] * get_FG_RATIO();
+    nz1 = cei.dos_window_start[2] * get_FG_RATIO();
+    nz2 = cei.dos_window_end[2] * get_FG_RATIO();
                                                                                               
                                                                                               
                                                                                               
@@ -349,7 +349,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
                 {
                     count ++;
                     fprintf ( file , " %18.6e",
-                            rho_energy[ix * level * get_FG_NX() * get_FNY_GRID() * get_FNZ_GRID() + iy * level * get_FG_NY() *  get_FNZ_GRID() + iz * level * get_FG_NZ()] );
+                            rho_energy[ix * level * get_FG_RATIO() * get_FNY_GRID() * get_FNZ_GRID() + iy * level * get_FG_RATIO() *  get_FNZ_GRID() + iz * level * get_FG_RATIO()] );
                     if (count % 6 == 0)
                         fprintf (file, "\n");
                 }

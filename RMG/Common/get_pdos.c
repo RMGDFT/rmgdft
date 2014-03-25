@@ -138,7 +138,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 		    bspline_interp_full (work_temp, rho_temp);
 		    break;
 	    case 2:
-		    mg_prolong_MAX10 (rho_temp, work_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
+		    mg_prolong_MAX10 (rho_temp, work_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
 		    break;
 
 	    default:
@@ -273,7 +273,7 @@ for (ix = 0; ix < get_FPX0_GRID(); ix++)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                        ix * dx - x0, Emin+iene*de, rho_energy[iene * get_FNX_GRID() + ix * get_FG_NX()]);
+                        ix * dx - x0, Emin+iene*de, rho_energy[iene * get_FNX_GRID() + ix * get_FG_RATIO()]);
             }
             fprintf (file, "\n");
         }

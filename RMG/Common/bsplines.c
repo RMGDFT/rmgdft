@@ -2322,9 +2322,9 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
         cspacing_z = 1.0 / (rmg_double_t) (cmax_z - 1);
 
         /*Fine grid spacing */
-        fspacing_x = cspacing_x / get_FG_NX();
-        fspacing_y = cspacing_y / get_FG_NX();
-        fspacing_z = cspacing_z / get_FG_NX();
+        fspacing_x = cspacing_x / get_FG_RATIO();
+        fspacing_y = cspacing_y / get_FG_RATIO();
+        fspacing_z = cspacing_z / get_FG_RATIO();
 
         offset_x = ct.interp_trade * cspacing_x;
         offset_y = ct.interp_trade * cspacing_y;

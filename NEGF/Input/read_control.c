@@ -233,19 +233,19 @@ void read_control (char *file)
 
 
 
-    potentialCompass.box1.x1 *= get_FG_NX();
-    potentialCompass.box1.x2 *= get_FG_NX();
-    potentialCompass.box1.y1 *= get_FG_NY();
-    potentialCompass.box1.y2 *= get_FG_NY();
-    potentialCompass.box1.z1 *= get_FG_NZ();
-    potentialCompass.box1.z2 *= get_FG_NZ();
+    potentialCompass.box1.x1 *= get_FG_RATIO();
+    potentialCompass.box1.x2 *= get_FG_RATIO();
+    potentialCompass.box1.y1 *= get_FG_RATIO();
+    potentialCompass.box1.y2 *= get_FG_RATIO();
+    potentialCompass.box1.z1 *= get_FG_RATIO();
+    potentialCompass.box1.z2 *= get_FG_RATIO();
 
-    chargeDensityCompass.box1.x1 *= get_FG_NX();
-    chargeDensityCompass.box1.x2 *= get_FG_NX();
-    chargeDensityCompass.box1.y1 *= get_FG_NY();
-    chargeDensityCompass.box1.y2 *= get_FG_NY();
-    chargeDensityCompass.box1.z1 *= get_FG_NZ();
-    chargeDensityCompass.box1.z2 *= get_FG_NZ();
+    chargeDensityCompass.box1.x1 *= get_FG_RATIO();
+    chargeDensityCompass.box1.x2 *= get_FG_RATIO();
+    chargeDensityCompass.box1.y1 *= get_FG_RATIO();
+    chargeDensityCompass.box1.y2 *= get_FG_RATIO();
+    chargeDensityCompass.box1.z1 *= get_FG_RATIO();
+    chargeDensityCompass.box1.z2 *= get_FG_RATIO();
 
 
 

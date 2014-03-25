@@ -48,7 +48,7 @@ void init_qfunct (void)
 
         sp = &ct.sp[isp];
 
-        t1 = 2.0 * scale * (rmg_double_t) get_FG_NX() *sp->qradius / ct.hmingrid;
+        t1 = 2.0 * scale * (rmg_double_t) get_FG_RATIO() *sp->qradius / ct.hmingrid;
 /*		t1=2.0 *  scale * sp->qradius / ct.hmingrid;*/
         t1 = modf (t1, &t2);
         it1 = (int) t2;
@@ -70,7 +70,7 @@ void init_qfunct (void)
         my_malloc (sp->drqnmlig, num * MAX_QLIG, rmg_double_t);
         idx = 0;
 
-        t1 = sp->qdim / get_FG_NX() + 1;
+        t1 = sp->qdim / get_FG_RATIO() + 1;
         sp->drqlig = 2.0 * sqrt (THREE) * (t1 + 1.0) * ct.hmaxgrid / TWO;
         if (ibrav == HEXAGONAL)
             sp->drqlig *= 2.0;

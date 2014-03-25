@@ -83,12 +83,10 @@ private:
 public:
 
     /* Fine grid/coarse grid ratio */
-    static int FG_NX;
-    static int FG_NY;
-    static int FG_NZ;
+    static int FG_RATIO;
 
     /* Function prototypes */
-    void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_NX, int FG_NY, int FG_NZ);
+    void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_RATIO);
     void set_nodes(int newgridpe, int ii, int jj, int kk);
     void set_neighbors(int *list);
     int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
@@ -101,6 +99,14 @@ public:
     int get_NX_GRID(void);
     int get_NY_GRID(void);
     int get_NZ_GRID(void);
+
+    double get_hxgrid(void);
+    double get_hygrid(void);
+    double get_hzgrid(void);
+
+    double get_hxxgrid(void);
+    double get_hyygrid(void);
+    double get_hzzgrid(void);
 
     int get_FNX_GRID(void);
     int get_FNY_GRID(void);

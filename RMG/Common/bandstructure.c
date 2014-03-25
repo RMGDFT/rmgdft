@@ -75,7 +75,7 @@ void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_d
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     get_ddd (vtot);
-    get_vtot_psi (vtot_psi, vtot, get_FG_NX());
+    get_vtot_psi (vtot_psi, vtot, get_FG_RATIO());
 
     /*  loop for k point */
     for (ik = 0; ik < ct.num_kpts; ik++)

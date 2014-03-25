@@ -40,7 +40,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <pthread.h>
 #include "hybrid.h"
 
 void init_IO (int argc, char **argv)

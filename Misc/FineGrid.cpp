@@ -14,6 +14,9 @@ using namespace std;
 int GLOBAL_GRIDX;
 int GLOBAL_GRIDY;
 int GLOBAL_GRIDZ;
+double GLOBAL_HXGRID;
+double GLOBAL_HYGRID;
+double GLOBAL_HZGRID;
 int PE_GRIDX;
 int PE_GRIDY;
 int PE_GRIDZ;
@@ -22,17 +25,22 @@ int PE_OFFSETY;
 int PE_OFFSETZ;
 int GLOBAL_BASIS;
 int PE_BASIS;
+int DENSITY;
 
     FineGrid::FineGrid(int density)
     {
+        DENSITY = density;
         GLOBAL_GRIDX = density * BaseGrid::NX_GRID; 
         GLOBAL_GRIDY = density * BaseGrid::NY_GRID; 
         GLOBAL_GRIDZ = density * BaseGrid::NZ_GRID; 
+        GLOBAL_HXGRID = 1.0 / ((double)(BaseGrid::NX_GRID * density));
+        GLOBAL_HYGRID = 1.0 / ((double)(BaseGrid::NY_GRID * density));
+        GLOBAL_HZGRID = 1.0 / ((double)(BaseGrid::NZ_GRID * density));
         PE_GRIDX = density * BaseGrid::PX0_GRID; 
         PE_GRIDY = density * BaseGrid::PY0_GRID; 
         PE_GRIDZ = density * BaseGrid::PZ0_GRID; 
         PE_BASIS = density * density * density * BaseGrid::P0_BASIS;
-        GLOBAL_BASIS = density * density * density * BaseGrid::FP0_BASIS;
+        GLOBAL_BASIS = GLOBAL_GRIDX * GLOBAL_GRIDY * GLOBAL_GRIDZ;
 
         BaseGrid::find_node_offsets(BaseGrid::gridpe, GLOBAL_GRIDX, GLOBAL_GRIDY, GLOBAL_GRIDZ,
                           &PE_OFFSETX, &PE_OFFSETY, &PE_OFFSETZ);

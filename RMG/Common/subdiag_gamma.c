@@ -302,7 +302,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     my_malloc (vtot, FP0_BASIS, rmg_double_t);
     for (idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
-    get_vtot_psi (vtot_eig, vtot, get_FG_NX());
+    get_vtot_psi (vtot_eig, vtot, get_FG_RATIO());
 
     /*Release memory for vtot, do it already here since vtot is on fine grid */
     my_free (vtot);
@@ -907,7 +907,7 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 	my_malloc (vtot, FP0_BASIS, rmg_double_t);
 	for (idx = 0; idx < FP0_BASIS; idx++)
 		vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
-	get_vtot_psi (vtot_eig, vtot, get_FG_NX());
+	get_vtot_psi (vtot_eig, vtot, get_FG_RATIO());
 
 	/*Release memory for vtot, do it already here since vtot is on fine grid */
 	my_free (vtot);
@@ -1537,7 +1537,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 	my_malloc (vtot, get_FP0_BASIS(), rmg_double_t);
 	for (idx = 0; idx < get_FP0_BASIS(); idx++)
 		vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
-	get_vtot_psi (vtot_eig, vtot, get_FG_NX());
+	get_vtot_psi (vtot_eig, vtot, get_FG_RATIO());
 
 	/*Release memory for vtot, do it already here since vtot is on fine grid */
 	my_free (vtot);

@@ -201,7 +201,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
 
 
-    get_vtot_psi(vtot_c, vtot, get_FG_NX());
+    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
 
     get_ddd (vtot);
 

@@ -416,20 +416,6 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t
 
     Lattice::zside = sqrt (distance);
 
-    /* Calculate grid size in crystal coordinates */
-
-    t1 = (rmg_double_t) G.get_NX_GRID();
-    Lattice::hxgrid = 1.0 / t1;
-    Lattice::hxxgrid = Lattice::hxgrid / (rmg_double_t) G.FG_NX;
-
-    t1 = (rmg_double_t) G.get_NY_GRID();
-    Lattice::hygrid = 1.0 / t1;
-    Lattice::hyygrid = Lattice::hygrid / (rmg_double_t) G.FG_NY;
-
-    t1 = (rmg_double_t) G.get_NZ_GRID();
-    Lattice::hzgrid = 1.0 / t1;
-    Lattice::hzzgrid = Lattice::hzgrid / (rmg_double_t) G.FG_NZ;
-
     if (*flag)
     {
         for (ir = 0; ir < 3; ir++)
@@ -524,24 +510,6 @@ rmg_double_t Lattice::omega;
 rmg_double_t Lattice::vel;
 rmg_double_t Lattice::vel_f;
 
-// Global uniform grid spacing in x
-rmg_double_t Lattice::hxgrid;
-
-// Global uniform grid spacing in y
-rmg_double_t Lattice::hygrid;
-
-// Global uniform grid spacing in z
-rmg_double_t Lattice::hzgrid;
-
-// The fine uniform grid spacing in x
-rmg_double_t Lattice::hxxgrid;
-
-// The fine uniform grid spacing in y
-rmg_double_t Lattice::hyygrid;
-
-// The fine uniform grid spacing in z
-rmg_double_t Lattice::hzzgrid;
-
 /// C interface function
 extern "C" void set_ibrav_type(int newtype)
 {
@@ -568,30 +536,6 @@ extern "C" rmg_double_t get_zside(void)
 {
     Lattice L;
     return L.get_zside();
-}
-extern "C" rmg_double_t get_hxgrid(void)
-{
-    return Lattice::hxgrid;
-}
-extern "C" rmg_double_t get_hygrid(void)
-{
-    return Lattice::hygrid;
-}
-extern "C" rmg_double_t get_hzgrid(void)
-{
-    return Lattice::hzgrid;
-}
-extern "C" rmg_double_t get_hxxgrid(void)
-{
-    return Lattice::hxxgrid;
-}
-extern "C" rmg_double_t get_hyygrid(void)
-{
-    return Lattice::hyygrid;
-}
-extern "C" rmg_double_t get_hzzgrid(void)
-{
-    return Lattice::hzzgrid;
 }
 extern "C" rmg_double_t get_vel(void)
 {

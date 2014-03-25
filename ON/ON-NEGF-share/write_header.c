@@ -115,9 +115,7 @@ void write_header(void)
     printf("\n        NX  = %d", get_NX_GRID());
     printf("\n        NY  = %d", get_NY_GRID());
     printf("\n        NZ  = %d\n", get_NZ_GRID());
-    printf("\n        get_FG_NX()  = %d", get_FG_NX());
-    printf("\n        get_FG_NY()  = %d", get_FG_NY());
-    printf("\n        get_FG_NZ()  = %d\n", get_FG_NZ());
+    printf("\n        FG_RATIO  = %d", get_FG_RATIO());
 
     printf("\n    BRAVAIS LATTICE TYPE IS %s", lattice_type[get_ibrav_type()]);
     printf("\n    Cell volume      = %16.8f", get_vel() * ct.psi_nbasis);

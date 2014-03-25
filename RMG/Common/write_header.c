@@ -182,9 +182,7 @@ void write_header (void)
 
     printf ("\n");
     printf ("    Fine grid (for charge density):\n");
-    printf ("       FG_NX / CG_NX  = %d\n", get_FG_NX());
-    printf ("       FG_NY / CG_NY  = %d\n", get_FG_NY());
-    printf ("       FG_NZ / CG_NZ  = %d\n", get_FG_NZ());
+    printf ("       FG / CG  = %d\n", get_FG_RATIO());
     printf ("    Interpolation type:\n");
     if (!ct.interp_flag)
         printf ("       Cubic interpolation\n");

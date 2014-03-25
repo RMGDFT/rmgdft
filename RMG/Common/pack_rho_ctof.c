@@ -16,14 +16,14 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
     int pbasis, dimx, dimy, dimz, in, jn, kn;
     int ifxs, ifys;
     int icxs, icys, alloc;
-    int PX0_GRID, PY0_GRID, PZ0_GRID, FG_NX;
+    int PX0_GRID, PY0_GRID, PZ0_GRID, FG_RATIO;
     rmg_double_t tmp1, tmp2, tmp3, frac, cc[10][4];
     rmg_double_t *rho_c, sum_rho, sum_rhof, coef;
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
-    FG_NX = get_FG_NX();
+    FG_RATIO = get_FG_RATIO();
 
     alloc = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
     my_malloc(rho_c, alloc, rmg_double_t);
@@ -49,9 +49,9 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
     sum_rho = real_sum_all (sum_rho, pct.grid_comm);
     sum_rho *= get_vel();
 
-    for (i = 0; i < FG_NX; i++)
+    for (i = 0; i < FG_RATIO; i++)
     {
-        frac = (rmg_double_t) i / (rmg_double_t) FG_NX;
+        frac = (rmg_double_t) i / (rmg_double_t) FG_RATIO;
         cc[i][0] = -frac * (1.0 - frac) * (2.0 - frac) / 6.0;
         cc[i][1] = (1.0 + frac) * (1.0 - frac) * (2.0 - frac) / 2.0;
         cc[i][2] = (1.0 + frac) * frac * (2.0 - frac) / 2.0;
@@ -66,7 +66,7 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
         {
             for (k = 2; k < PZ0_GRID + 2; k++)
             {
-                rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2)] =
+                rho_f[(FG_RATIO * (i - 2))*ifxs + (FG_RATIO * (j - 2))*ifys + FG_RATIO * (k - 2)] =
                     rho_c[i*icxs + j*icys + k];
                 ++num;
             }
@@ -80,7 +80,7 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
             for (k = 2; k < PZ0_GRID + 2; k++)
             {
 
-                for (in = 1; in < FG_NX; in++)
+                for (in = 1; in < FG_RATIO; in++)
                 {
                     tmp1 = 0.0;
                     tmp2 = 0.0;
@@ -95,9 +95,9 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
                         ++basis1;
                     }
 
-                    rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2)] = tmp1;
-                    rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2) + in)*ifys + FG_NX * (k - 2)] = tmp2;
-                    rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2) + in] = tmp3;
+                    rho_f[(FG_RATIO * (i - 2) + in)*ifxs + (FG_RATIO * (j - 2))*ifys + FG_RATIO * (k - 2)] = tmp1;
+                    rho_f[(FG_RATIO * (i - 2))*ifxs + (FG_RATIO * (j - 2) + in)*ifys + FG_RATIO * (k - 2)] = tmp2;
+                    rho_f[(FG_RATIO * (i - 2))*ifxs + (FG_RATIO * (j - 2))*ifys + FG_RATIO * (k - 2) + in] = tmp3;
                     num += 3;
                 }
 
@@ -112,9 +112,9 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
             for (k = 2; k < PZ0_GRID + 2; k++)
             {
 
-                for (in = 1; in < FG_NX; in++)
+                for (in = 1; in < FG_RATIO; in++)
                 {
-                    for (jn = 1; jn < FG_NX; jn++)
+                    for (jn = 1; jn < FG_RATIO; jn++)
                     {
 
                         tmp1 = 0.0;
@@ -136,9 +136,9 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
                             }
                             ++basis1;
                         }
-                        rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2) + jn)*ifys + FG_NX * (k - 2)] = tmp1;
-                        rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2))*ifys + FG_NX * (k - 2) + jn] = tmp2;
-                        rho_f[(FG_NX * (i - 2))*ifxs + (FG_NX * (j - 2) + in)*ifys + FG_NX * (k - 2) + jn] = tmp3;
+                        rho_f[(FG_RATIO * (i - 2) + in)*ifxs + (FG_RATIO * (j - 2) + jn)*ifys + FG_RATIO * (k - 2)] = tmp1;
+                        rho_f[(FG_RATIO * (i - 2) + in)*ifxs + (FG_RATIO * (j - 2))*ifys + FG_RATIO * (k - 2) + jn] = tmp2;
+                        rho_f[(FG_RATIO * (i - 2))*ifxs + (FG_RATIO * (j - 2) + in)*ifys + FG_RATIO * (k - 2) + jn] = tmp3;
                         num += 3;
                     }
                 }
@@ -154,11 +154,11 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
             for (k = 2; k < PZ0_GRID + 2; k++)
             {
 
-                for (in = 1; in < FG_NX; in++)
+                for (in = 1; in < FG_RATIO; in++)
                 {
-                    for (jn = 1; jn < FG_NX; jn++)
+                    for (jn = 1; jn < FG_RATIO; jn++)
                     {
-                        for (kn = 1; kn < FG_NX; kn++)
+                        for (kn = 1; kn < FG_RATIO; kn++)
                         {
 
                             tmp1 = 0.0;
@@ -179,7 +179,7 @@ void pack_rho_ctof (rmg_double_t * rho, rmg_double_t * rho_f)
                                 }
                                 ++basis1;
                             }
-                            rho_f[(FG_NX * (i - 2) + in)*ifxs + (FG_NX * (j - 2) + jn)*ifys + FG_NX * (k - 2) + kn] = tmp1;
+                            rho_f[(FG_RATIO * (i - 2) + in)*ifxs + (FG_RATIO * (j - 2) + jn)*ifys + FG_RATIO * (k - 2) + kn] = tmp1;
                             num += 1;
 
                         }

@@ -55,24 +55,6 @@ public:
     static rmg_double_t vel;
     static rmg_double_t vel_f;
 
-    // Global uniform grid spacing in x
-    static rmg_double_t hxgrid;
-
-    // Global uniform grid spacing in y
-    static rmg_double_t hygrid;
-
-    // Global uniform grid spacing in z
-    static rmg_double_t hzgrid;
-
-    // The fine uniform grid spacing in x
-    static rmg_double_t hxxgrid;
-
-    // The fine uniform grid spacing in y
-    static rmg_double_t hyygrid;
-
-    // The fine uniform grid spacing in z
-    static rmg_double_t hzzgrid;
-
     void latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, int *flag);
 
     void cross_product (rmg_double_t * a, rmg_double_t * b, rmg_double_t * c);

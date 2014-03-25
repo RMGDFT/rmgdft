@@ -86,7 +86,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 
 
 
-    deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) get_FG_NX();
+    deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) get_FG_RATIO();
     shift[0] = -TWO * deltac;
     shift[1] = TWO * deltac;
     shift[2] = -deltac;

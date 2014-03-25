@@ -133,7 +133,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
 
                 /* Apply operator */
                 diag = CPP_app_cil_driver (ct.vh_ext, mglhsarr, dimx, dimy, dimz,
-                            L.hxxgrid, L.hyygrid, L.hzzgrid, APP_CI_FOURTH);
+                            FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
                 /* Generate residual vector */
@@ -155,7 +155,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
 
                 MG.mgrid_solv<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz, 
-                            L.hxxgrid, L.hyygrid, L.hzzgrid,
+                            FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(),
                             0, FG.get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
                             FG.get_GLOBAL_GRIDX(), FG.get_GLOBAL_GRIDY(), FG.get_GLOBAL_GRIDZ(),
@@ -203,7 +203,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
             
         /*Get residual*/
         diag = CPP_app_cil_driver<double> (ct.vh_ext, mglhsarr, dimx, dimy, dimz,
-                            L.hxxgrid, L.hyygrid, L.hzzgrid, APP_CI_FOURTH);
+                            FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
 

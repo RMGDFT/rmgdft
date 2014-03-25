@@ -159,7 +159,7 @@ void get_new_rho_soft (STATE * states, double *rho)
     my_free(rho_global);
 
     mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
-            get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_NX(), 6);
+            get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
 
     my_free(rho_temp);
 

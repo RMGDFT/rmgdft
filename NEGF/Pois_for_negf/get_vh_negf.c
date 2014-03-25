@@ -180,7 +180,7 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
                             get_hyygrid(), get_hzzgrid(),
                             0, get_neighbors(), ct.poi_parm.levels, poi_pre,
                             poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
-                            get_FG_NX()*get_NX_GRID(), get_FG_NY()*get_NY_GRID(), get_FG_NZ()*get_NZ_GRID(),
+                            get_FG_RATIO()*get_NX_GRID(), get_FG_RATIO()*get_NY_GRID(), get_FG_RATIO()*get_NZ_GRID(),
                             get_FPX_OFFSET(), get_FPY_OFFSET(), get_FPZ_OFFSET(),
                             get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 

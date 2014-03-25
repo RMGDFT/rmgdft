@@ -308,7 +308,7 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 vtot[idx] = vh_old[idx] + vxc_old[idx] + vnuc[idx];
 
-            get_vtot_psi(vtot_c, vtot, get_FG_NX());
+            get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
             get_ddd(vtot);
 
             flag = 0;

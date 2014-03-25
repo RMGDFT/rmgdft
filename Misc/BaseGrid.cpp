@@ -20,10 +20,8 @@ using namespace std;
     /// @param newPE_X New MPI grid X dimension
     /// @param newPE_Y New MPI grid Y dimension
     /// @param newPE_Z New MPI grid Z dimension
-    /// @param newFG_NX New ratio of fine grid to coarse in the X dimension
-    /// @param newFG_NY New ratio of fine grid to coarse in the Y dimension
-    /// @param newFG_NZ New ratio of fine grid to coarse in the Z dimension
-    void BaseGrid::set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_NX, int newFG_NY, int newFG_NZ)
+    /// @param newFG_RATIO New ratio of fine grid to coarse
+    void BaseGrid::set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
     {
 
         BaseGrid::NX_GRID = newNX_GRID;
@@ -34,13 +32,11 @@ using namespace std;
         BaseGrid::PE_Y = newPE_Y;
         BaseGrid::PE_Z = newPE_Z;
 
-        BaseGrid::FG_NX = newFG_NX;
-        BaseGrid::FG_NY = newFG_NY;
-        BaseGrid::FG_NZ = newFG_NZ;
+        BaseGrid::FG_RATIO = newFG_RATIO;
 
-        BaseGrid::FNX_GRID = newNX_GRID * newFG_NX;
-        BaseGrid::FNY_GRID = newNY_GRID * newFG_NY;
-        BaseGrid::FNZ_GRID = newNZ_GRID * newFG_NZ;
+        BaseGrid::FNX_GRID = newNX_GRID * newFG_RATIO;
+        BaseGrid::FNY_GRID = newNY_GRID * newFG_RATIO;
+        BaseGrid::FNZ_GRID = newNZ_GRID * newFG_RATIO;
 
         BaseGrid::grid_first = 1;
     }
@@ -204,6 +200,45 @@ using namespace std;
 	return BaseGrid::NZ_GRID;
     }
 
+    double BaseGrid::get_hxgrid(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+        return 1.0 / ((rmg_double_t)BaseGrid::NX_GRID);
+    }
+    double BaseGrid::get_hygrid(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+        return 1.0 / ((rmg_double_t)BaseGrid::NY_GRID);
+    }
+    double BaseGrid::get_hzgrid(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+        return 1.0 / ((rmg_double_t)BaseGrid::NZ_GRID);
+    }
+
+    double BaseGrid::get_hxxgrid(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+        return 1.0 / ((rmg_double_t)(BaseGrid::NX_GRID * BaseGrid::FG_RATIO));
+    }
+    double BaseGrid::get_hyygrid(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+        return 1.0 / ((rmg_double_t)(BaseGrid::NY_GRID * BaseGrid::FG_RATIO));
+    }
+    double BaseGrid::get_hzzgrid(void)
+    {
+	if(!BaseGrid::grid_first)
+	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
+        return 1.0 / ((rmg_double_t)(BaseGrid::NZ_GRID * BaseGrid::FG_RATIO));
+    }
+
+
     int BaseGrid::get_FNX_GRID(void)
     {
 	if(!BaseGrid::grid_first)
@@ -361,12 +396,8 @@ int BaseGrid::NY_GRID;
 /// Global coarse grid Z dimension
 int BaseGrid::NZ_GRID;
 
-/// Fine/coarse grid ratio along the x-axis
-int BaseGrid::FG_NX;
-/// Fine/coarse grid ratio along the y-axis
-int BaseGrid::FG_NY;
-/// Fine/coarse grid ratio along the z-axis
-int BaseGrid::FG_NZ;
+/// Fine/coarse grid ratio
+int BaseGrid::FG_RATIO;
 
 /// Global fine grid X dimension
 int BaseGrid::FNX_GRID;
@@ -458,6 +489,42 @@ extern "C" int get_NZ_GRID(void)
   return G.get_NZ_GRID();
 }
 /// C interface function
+extern "C" rmg_double_t get_hxgrid(void)
+{
+    BaseGrid G;
+    return G.get_hxgrid();
+}
+/// C interface function
+extern "C" rmg_double_t get_hygrid(void)
+{
+    BaseGrid G;
+    return G.get_hygrid();
+}
+/// C interface function
+extern "C" rmg_double_t get_hzgrid(void)
+{
+    BaseGrid G;
+    return G.get_hzgrid();
+}
+/// C interface function
+extern "C" rmg_double_t get_hxxgrid(void)
+{
+    BaseGrid G;
+    return G.get_hxxgrid();
+}
+/// C interface function
+extern "C" rmg_double_t get_hyygrid(void)
+{
+    BaseGrid G;
+    return G.get_hyygrid();
+}
+/// C interface function
+extern "C" rmg_double_t get_hzzgrid(void)
+{
+    BaseGrid G;
+    return G.get_hzzgrid();
+}
+/// C interface function
 extern "C" int get_FNX_GRID(void)
 {
   BaseGrid G;
@@ -476,28 +543,16 @@ extern "C" int get_FNZ_GRID(void)
   return G.get_FNZ_GRID();
 }
 /// C interface function
-extern "C" int get_FG_NX(void)
+extern "C" int get_FG_RATIO(void)
 {
   BaseGrid G;
-  return G.FG_NX;
+  return G.FG_RATIO;
 }
 /// C interface function
-extern "C" int get_FG_NY(void)
+extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
 {
   BaseGrid G;
-  return G.FG_NY;
-}
-/// C interface function
-extern "C" int get_FG_NZ(void)
-{
-  BaseGrid G;
-  return G.FG_NZ;
-}
-/// C interface function
-extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_NX, int newFG_NY, int newFG_NZ)
-{
-  BaseGrid G;
-  G.set_grids(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, newFG_NX, newFG_NY, newFG_NZ);
+  G.set_grids(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, newFG_RATIO);
 }
 /// C interface function
 extern "C" void set_nodes(int newgridpe, int ii, int jj, int kk)

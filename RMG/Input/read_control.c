@@ -342,9 +342,9 @@ void read_control (char *file)
 
     /* Cutoff parameter */
     get_data ("energy_cutoff_parameter", &ct.cparm, DBL, "1.75");
-    ct.qcparm = ct.cparm / (rmg_double_t) get_FG_NX();
+    ct.qcparm = ct.cparm / (rmg_double_t) get_FG_RATIO();
     ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
-    ct.cparm /= (rmg_double_t) get_FG_NX(); 
+    ct.cparm /= (rmg_double_t) get_FG_RATIO(); 
     
     // Norm conserving pseudo potential flag
     get_data ("norm_conserving_pp", &ct.norm_conserving_pp, BOOL, "false");
