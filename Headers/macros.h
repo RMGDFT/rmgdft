@@ -61,9 +61,6 @@
     sleep (2), \
 	MPI_Abort( MPI_COMM_WORLD, 0 )
 
-#define where() printf("\nPE: %d file %s line %d\n\n", pct.gridpe, __FILE__, __LINE__), fflush(NULL)
-#define Where() fprintf( stderr, "\nPE: %d file %s line %d\n\n", pct.gridpe, __FILE__, __LINE__), fflush(NULL)
-
 
 #define progress_tag() printf("[ %3d %3d %4d %8.0f ] %s: ", \
                               ct.md_steps, ct.scf_steps, ct.total_scf_steps, \
