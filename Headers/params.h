@@ -116,9 +116,6 @@
 /* The number of possible point symmetries */
 #define MAX_SYMMETRY	48
 
-/* Maximum number of images for finite difference routines */
-#define MAX_TRADE_IMAGES 5
-
 #define         MAX_OPTS  16
 
 

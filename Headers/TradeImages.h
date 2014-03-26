@@ -10,6 +10,9 @@
 #define FULL_TRADE 1
 #define CENTRAL_TRADE 2
 
+/* Maximum number of images for finite difference routines */
+#define MAX_TRADE_IMAGES 5
+
 #if __cplusplus
 
 #include "BaseThread.h"

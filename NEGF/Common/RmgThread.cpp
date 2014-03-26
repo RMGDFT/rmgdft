@@ -37,10 +37,6 @@ void *run_threads(void *v) {
 
 #if GPU_ENABLED
     cudaSetDevice(ct.cu_dev); 
-    if(cudaSuccess != (cuerr = cudaStreamCreate((cudaStream_t *)&s->cstream))) {
-        fprintf (stderr, "Error: cudaStreamCreate failed for: threads setup\n");
-        exit(-1);
-    }
 #endif
 
 #if 0

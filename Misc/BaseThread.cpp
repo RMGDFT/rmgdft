@@ -130,17 +130,6 @@ int BaseThread::get_thread_tid(void) {
     return ss->tid;
 }
 
-#if GPU_ENABLED
-// Gets thread cstream
-//cudaStream_t *BaseThread::get_thread_cstream(void) {
-
-//    BaseThread *ss;
-//    if(!in_threaded_region) return &ct.cuda_stream;  // Return main process stream
-//    ss = (BaseThread *)pthread_getspecific(scf_thread_control_key);
-//    if(!ss) return NULL;
-//    return &ss->cstream;
-//}
-#endif
 
 // Used for positioning and setting processor affinity. For now assumes that
 // THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
@@ -221,11 +210,6 @@ int tid;
 // Pointer to project specific data structure
 void *pptr;
 
-#if GPU_ENABLED
-    // Cuda device stream
-    void *cstream;
-#endif
-
 // Used to implement a local barrier inside of the scf loops
 boost::barrier *BaseThread::scf_barrier;
 
@@ -292,15 +276,6 @@ extern "C" int get_thread_tid(void)
     BaseThread B(0);
     return B.get_thread_tid();
 }
-
-
-#if GPU_ENABLED
-//extern "C" cudaStream_t *get_thread_cstream(void)
-//{
-//    BaseThread B(0);
-//    return B.get_thread_cstream();
-//}
-#endif
 
 extern "C" void init_HYBRID_MODEL(int nthreads)
 {

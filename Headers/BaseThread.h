@@ -2,11 +2,6 @@
 #define RMG_BaseThread_H 1
 
 
-#if GPU_ENABLED
-#include <cuda.h>
-#include <cuda_runtime.h>
-#endif
-#include "params.h"
 #include "rmg_error.h"
 
 // Maximum number of Rmg threads. Adjust based on hardware resources.
@@ -74,11 +69,6 @@ public:
     // Pointer to project specific data structure
     void *pptr;
 
-#if GPU_ENABLED
-    // Cuda device stream
-    void *cstream;
-#endif
-
     BaseThread(int nthreads);
     void run_thread_tasks(int jobs);
     void thread_barrier_wait(void);
@@ -86,7 +76,6 @@ public:
     void set_thread_basetag(int tid, int tag);
     BaseThread *get_thread_control(void);
     int get_thread_tid(void);
-    //cudaStream_t *get_thread_cstream(void);
     void set_cpu_affinity(int tid);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);

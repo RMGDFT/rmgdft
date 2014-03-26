@@ -39,6 +39,3 @@ void run_thread_tasks(int jobs);
 void init_HYBRID_MODEL(int nthreads);
 int is_loop_over_states(void);
 
-#if GPU_ENABLED
-cudaStream_t *get_thread_cstream(void);
-#endif
