@@ -49,12 +49,10 @@
 #include "BlasWrappers.h"
 #include "FineGrid.h"
 #include "auxiliary.h"
-#include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
-#include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
 
@@ -63,7 +61,7 @@ using namespace std;
 #define MAX_MG_LEVELS 8
 
 
-double CPP_get_vh (double * rho, double * rhoc, double * vh_eig, 
+double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_eig, 
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
                  double rms_target, int boundaryflag)
@@ -144,7 +142,7 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
             {
 
                 /* Apply operator */
-                diag = CPP_app_cil_driver (ct.vh_ext, mglhsarr, dimx, dimy, dimz,
+                diag = CPP_app_cil_driver (vhartree, mglhsarr, dimx, dimy, dimz,
                             FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
@@ -172,7 +170,7 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
                             poi_post, mucycles, ct.poi_parm.sb_step, k_vh,
                             FG.get_GLOBAL_GRIDX(), FG.get_GLOBAL_GRIDY(), FG.get_GLOBAL_GRIDZ(),
                             FG.get_PE_OFFSETX(), FG.get_PE_OFFSETY(), FG.get_PE_OFFSETZ(),
-                            FG.get_PE_GRIDX(), FG.get_PE_GRIDY(), FG.get_PE_GRIDZ(), ct.boundaryflag);
+                            FG.get_PE_GRIDX(), FG.get_PE_GRIDY(), FG.get_PE_GRIDZ(), boundaryflag);
 
 
                 /* Transfer solution back to mgresarr array */
@@ -180,7 +178,7 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
 
                 /* Update vh */
                 t1 = ONE;
-                QMD_axpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_axpy (pbasis, t1, mgresarr, incx, vhartree, incx);
 
             }
             else
@@ -188,17 +186,17 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
 
                 /* Update vh */
                 t1 = -ct.poi_parm.gl_step * diag;
-                QMD_axpy (pbasis, t1, mgresarr, incx, ct.vh_ext, incx);
+                QMD_axpy (pbasis, t1, mgresarr, incx, vhartree, incx);
 
             }                   /* end if */
 
-            if (ct.boundaryflag == PERIODIC)
+            if (boundaryflag == PERIODIC)
             {
 
                 /* Evaluate the average potential */
                 vavgcor = 0.0;
                 for (idx = 0; idx < pbasis; idx++)
-                    vavgcor += ct.vh_ext[idx];
+                    vavgcor += vhartree[idx];
 
                 vavgcor = real_sum_all (vavgcor, T.get_MPI_comm());
                 t1 = (double) ct.psi_fnbasis;
@@ -207,14 +205,14 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
 
                 /* Make sure that the average value is zero */
                 for (idx = 0; idx < pbasis; idx++)
-                    ct.vh_ext[idx] -= vavgcor;
+                    vhartree[idx] -= vavgcor;
 
             }                   /* end if */
 
         }                       /* end for */
             
         /*Get residual*/
-        diag = CPP_app_cil_driver<double> (ct.vh_ext, mglhsarr, dimx, dimy, dimz,
+        diag = CPP_app_cil_driver<double> (vhartree, mglhsarr, dimx, dimy, dimz,
                             FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
@@ -241,7 +239,7 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
-    CPP_pack_dtos (vh_eig, ct.vh_ext, dimx, dimy, dimz, boundaryflag);
+    CPP_pack_dtos (vh_eig, vhartree, dimx, dimy, dimz, boundaryflag);
 
     /* Release our memory */
     delete [] nrho;
@@ -258,9 +256,3 @@ double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
 } // end CPP_get_vh
 
 
-//extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag) 
-//{
-//    CPP_get_vh (rho, rhoc, vh_eig, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, ct.poi_parm.gl_pst, rms_target, boundaryflag);
-//}
-
-/******/

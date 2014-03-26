@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_vhdtos(rmg_double_t *s, rmg_double_t *d, int dimx, int dimy, int dimz)
+ *   void pack_vhdtos(double *s, double *d, int dimx, int dimy, int dimz)
  *   Used to pack grids when computing the hartree potential 
  *   For periodic system, s = d
  *   For surface system, s[x,y,1:Nz] = d[x,y,Nz/2+1:Nz/2+Nz)
@@ -37,7 +37,7 @@
 #include "const.h"
 #include "BaseGrid.h"
 
-void CPP_pack_dtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag)
+void CPP_pack_dtos (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
     int ix, iy, iz;
     int pex, pey, pez;
@@ -124,7 +124,7 @@ void CPP_pack_dtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int 
 
 }                               /* end pack_vhdtos */
 
-extern "C" void pack_vhdtos (rmg_double_t * s, rmg_double_t * d, int dimx, int dimy, int dimz, int boundaryflag)
+extern "C" void pack_vhdtos (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
     CPP_pack_dtos(s, d, dimx, dimy, dimz, boundaryflag);
 }

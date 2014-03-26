@@ -204,38 +204,38 @@ using namespace std;
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((rmg_double_t)BaseGrid::NX_GRID);
+        return 1.0 / ((double)BaseGrid::NX_GRID);
     }
     double BaseGrid::get_hygrid(void)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((rmg_double_t)BaseGrid::NY_GRID);
+        return 1.0 / ((double)BaseGrid::NY_GRID);
     }
     double BaseGrid::get_hzgrid(void)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((rmg_double_t)BaseGrid::NZ_GRID);
+        return 1.0 / ((double)BaseGrid::NZ_GRID);
     }
 
     double BaseGrid::get_hxxgrid(void)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((rmg_double_t)(BaseGrid::NX_GRID * BaseGrid::FG_RATIO));
+        return 1.0 / ((double)(BaseGrid::NX_GRID * BaseGrid::FG_RATIO));
     }
     double BaseGrid::get_hyygrid(void)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((rmg_double_t)(BaseGrid::NY_GRID * BaseGrid::FG_RATIO));
+        return 1.0 / ((double)(BaseGrid::NY_GRID * BaseGrid::FG_RATIO));
     }
     double BaseGrid::get_hzzgrid(void)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((rmg_double_t)(BaseGrid::NZ_GRID * BaseGrid::FG_RATIO));
+        return 1.0 / ((double)(BaseGrid::NZ_GRID * BaseGrid::FG_RATIO));
     }
 
 
@@ -342,13 +342,13 @@ using namespace std;
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::FPZ0_GRID;
     }
-    void BaseGrid::set_anisotropy(rmg_double_t a)
+    void BaseGrid::set_anisotropy(double a)
     {
         if(BaseGrid::anisotropy_first) return;
         BaseGrid::anisotropy = a;
         anisotropy_first = 1;
     }
-    rmg_double_t BaseGrid::get_anisotropy(void)
+    double BaseGrid::get_anisotropy(void)
     {
 	if(!BaseGrid::anisotropy_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Anisotropy not initialized. Please call set_anisotropy first");
@@ -444,7 +444,7 @@ int BaseGrid::gridpe;
 int BaseGrid::neighbors[6];
 
 /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
-rmg_double_t BaseGrid::anisotropy;
+double BaseGrid::anisotropy;
 
 int BaseGrid::neighbor_first=0;
 int BaseGrid::grid_first=0;
@@ -489,37 +489,37 @@ extern "C" int get_NZ_GRID(void)
   return G.get_NZ_GRID();
 }
 /// C interface function
-extern "C" rmg_double_t get_hxgrid(void)
+extern "C" double get_hxgrid(void)
 {
     BaseGrid G;
     return G.get_hxgrid();
 }
 /// C interface function
-extern "C" rmg_double_t get_hygrid(void)
+extern "C" double get_hygrid(void)
 {
     BaseGrid G;
     return G.get_hygrid();
 }
 /// C interface function
-extern "C" rmg_double_t get_hzgrid(void)
+extern "C" double get_hzgrid(void)
 {
     BaseGrid G;
     return G.get_hzgrid();
 }
 /// C interface function
-extern "C" rmg_double_t get_hxxgrid(void)
+extern "C" double get_hxxgrid(void)
 {
     BaseGrid G;
     return G.get_hxxgrid();
 }
 /// C interface function
-extern "C" rmg_double_t get_hyygrid(void)
+extern "C" double get_hyygrid(void)
 {
     BaseGrid G;
     return G.get_hyygrid();
 }
 /// C interface function
-extern "C" rmg_double_t get_hzzgrid(void)
+extern "C" double get_hzzgrid(void)
 {
     BaseGrid G;
     return G.get_hzzgrid();
@@ -567,7 +567,7 @@ extern "C" void set_neighbors(int *newneighbors)
   G.set_neighbors(newneighbors);
 }
 /// C interface function
-extern "C" void set_anisotropy(rmg_double_t newanisotropy)
+extern "C" void set_anisotropy(double newanisotropy)
 {
   BaseGrid G;
   G.set_anisotropy(newanisotropy);
@@ -657,7 +657,7 @@ extern "C" int get_FPZ0_GRID(void)
   return G.get_FPZ0_GRID();
 }
 /// C interface function
-extern "C" rmg_double_t get_anisotropy(void)
+extern "C" double get_anisotropy(void)
 {
   BaseGrid G;
   return G.get_anisotropy();

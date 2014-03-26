@@ -157,6 +157,8 @@ void initialize(int argc, char **argv)
 
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
+    void *RT = BeginRmgTimer("Pre-init");
+
 
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/
@@ -187,7 +189,7 @@ void initialize(int argc, char **argv)
     my_barrier ();
 
     /* Record the rime it took from the start of run until we hit init */
-    rmg_timings ( PREINIT_TIME, my_crtc () - ct.time0);
+    EndRmgTimer(RT);
 
     /* Perform any necessary initializations */
     init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
@@ -224,7 +226,6 @@ void initialize(int argc, char **argv)
 void run (void)
 {
 
-    rmg_double_t time2;
 
     /* Dispatch to the correct driver routine */
     switch (ct.forceflag)
@@ -256,10 +257,6 @@ void run (void)
         error_handler ("Undefined MD method");
 
     }
-
-    time2 = my_crtc ();
-
-    rmg_timings (FINISH_TIME, (my_crtc () - time2));
 
 }                               /* end run */
 

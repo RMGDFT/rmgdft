@@ -31,17 +31,17 @@ private:
     static int max_alloc;
 
     /// Buffers allocated via MPI_Allocmem
-    static rmg_double_t *swbuf1x;
-    static rmg_double_t *swbuf2x;
-    static rmg_double_t *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
-    static rmg_double_t *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
-    static rmg_double_t *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
-    static rmg_double_t *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
-    static rmg_double_t *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
-    static rmg_double_t *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
-    static rmg_double_t *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
-    static rmg_double_t *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
-    static rmg_double_t *m0_s, *m0_r;
+    static double *swbuf1x;
+    static double *swbuf2x;
+    static double *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+    static double *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
+    static double *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
+    static double *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
+    static double *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
+    static double *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
+    static double *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
+    static double *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
+    static double *m0_s, *m0_r;
 
     static MPI_Request sreqs[26];
     static MPI_Request rreqs[26];

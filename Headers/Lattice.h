@@ -29,45 +29,45 @@ private:
     static int ibrav;
 
     // lengths of the sides of the supercell
-    static rmg_double_t xside;
-    static rmg_double_t yside;
-    static rmg_double_t zside;
+    static double xside;
+    static double yside;
+    static double zside;
 
 public:
 
     // lattice vectors
-    static rmg_double_t a0[3];
-    static rmg_double_t a1[3];
-    static rmg_double_t a2[3];
+    static double a0[3];
+    static double a1[3];
+    static double a2[3];
 
     // reciprocal lattice vectors
-    static rmg_double_t b0[3];
-    static rmg_double_t b1[3];
-    static rmg_double_t b2[3];
+    static double b0[3];
+    static double b1[3];
+    static double b2[3];
 
     // cell dimensions
-    static rmg_double_t celldm[6];
+    static double celldm[6];
 
     // Total cell volume
-    static rmg_double_t omega;
+    static double omega;
 
     // Volume elements on coarse and fine grids
-    static rmg_double_t vel;
-    static rmg_double_t vel_f;
+    static double vel;
+    static double vel_f;
 
-    void latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, int *flag);
+    void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, int *flag);
 
-    void cross_product (rmg_double_t * a, rmg_double_t * b, rmg_double_t * c);
-    void to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian);
-    void to_cartesian (rmg_double_t *crystal, rmg_double_t *cartesian);
+    void cross_product (double * a, double * b, double * c);
+    void to_crystal (double *crystal, double *cartesian);
+    void to_cartesian (double *crystal, double *cartesian);
     void recips (void);
     int get_ibrav_type(void);
     void set_ibrav_type(int newtype);
-    rmg_double_t metric (rmg_double_t * crystal);
+    double metric (double * crystal);
 
-    rmg_double_t get_xside(void);
-    rmg_double_t get_yside(void);
-    rmg_double_t get_zside(void);
+    double get_xside(void);
+    double get_yside(void);
+    double get_zside(void);
 
 };
 

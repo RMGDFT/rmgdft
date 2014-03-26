@@ -2,17 +2,11 @@
 #define RMG_BaseThread_H 1
 
 
-#include <signal.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <mpi.h>
-
 #if GPU_ENABLED
 #include <cuda.h>
 #include <cuda_runtime.h>
 #endif
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_error.h"
 
 // Maximum number of Rmg threads. Adjust based on hardware resources.
@@ -96,7 +90,7 @@ public:
     void set_cpu_affinity(int tid);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);
-    void rmg_timings (int what, rmg_double_t time);
+    void rmg_timings (int what, double time);
     void set_pptr(int tid, void *p);
     int is_loop_over_states(void);
     int get_threads_per_node(void);

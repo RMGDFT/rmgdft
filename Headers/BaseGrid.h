@@ -1,7 +1,6 @@
 #ifndef RMG_BaseGrid_H
 #define RMG_BaseGrid_H 1
 
-#include "rmgtypes.h"
 #include "rmg_error.h"
 
 
@@ -73,7 +72,7 @@ private:
     static int FPZ_OFFSET;
 
     /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
-    static rmg_double_t anisotropy;
+    static double anisotropy;
 
     /* Initialiazation flags */
     static int neighbor_first;
@@ -131,8 +130,8 @@ public:
     int get_FPY0_GRID(void);
     int get_FPZ0_GRID(void);
 
-    void set_anisotropy(rmg_double_t a);
-    rmg_double_t get_anisotropy(void);
+    void set_anisotropy(double a);
+    double get_anisotropy(void);
     void pe2xyz(int pe, int *x, int *y, int *z);
 
     // Returns a pointer to the neighbors structure which contains the rank

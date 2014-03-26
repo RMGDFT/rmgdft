@@ -127,8 +127,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 
 
     /* Interpolate onto fine grid, result will be stored in rho*/
-    time1 = my_crtc ();
-
+    void *RT = BeginRmgTimer("Pdos interpolation time");
     switch (ct.interp_flag)
     {
 	    case 0:
@@ -148,8 +147,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 
 
     } 
-
-    rmg_timings (INTERPOLATION_TIME, my_crtc () - time1);
+    EndRmgTimer(RT);
 
 
 

@@ -174,9 +174,9 @@ void BaseThread::RMG_MPI_unlock(void) {
     BaseThread::mpi_mutex.unlock();
 }
 
-extern rmg_double_t timings[LAST_TIME];
+extern double timings[LAST_TIME];
 std::mutex BaseThread::timings_mutex;
-void BaseThread::rmg_timings (int what, rmg_double_t time)
+void BaseThread::rmg_timings (int what, double time)
 {
     BaseThread::timings_mutex.lock();
     if(BaseThread::in_threaded_region) {
@@ -187,7 +187,6 @@ void BaseThread::rmg_timings (int what, rmg_double_t time)
     }
     BaseThread::timings_mutex.unlock();
 }                               /* end rmg_timings */
-
 
 int BaseThread::is_loop_over_states(void)
 {
@@ -328,7 +327,8 @@ extern "C" void RMG_MPI_unlock(void)
     B.RMG_MPI_unlock();
 }
 
-extern "C" void rmg_timings (int what, rmg_double_t time)
+
+extern "C" void rmg_timings (int what, double time)
 {
     if(BaseThread::init_flag)
     {

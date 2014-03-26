@@ -19,10 +19,10 @@ using namespace std;
 
 
 // Force instantiation of float, double and complex versions.
-template void TradeImages::trade_images<rmg_float_t>(rmg_float_t*, int, int, int, int);
-template void TradeImages::trade_images<rmg_double_t>(rmg_double_t*, int, int, int, int);
-template void TradeImages::trade_imagesx<rmg_float_t>(rmg_float_t*, rmg_float_t*, int, int, int, int, int);
-template void TradeImages::trade_imagesx<rmg_double_t>(rmg_double_t*, rmg_double_t*, int, int, int, int, int);
+template void TradeImages::trade_images<float>(float*, int, int, int, int);
+template void TradeImages::trade_images<double>(double*, int, int, int, int);
+template void TradeImages::trade_imagesx<float>(float*, float*, int, int, int, int, int);
+template void TradeImages::trade_imagesx<double>(double*, double*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<complex<float> >(complex <float>*, complex <float>*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<complex<double> >(complex <double>*, complex <double>*, int, int, int, int, int);
 
@@ -36,8 +36,8 @@ template void TradeImages::trade_imagesx<complex<double> >(complex <double>*, co
  *    This array is completely filled, i.e. the original data is filled in and then 
  *    the image data are added*/
 
-rmg_double_t *TradeImages::swbuf1x = NULL;
-rmg_double_t *TradeImages::swbuf2x = NULL;
+double *TradeImages::swbuf1x = NULL;
+double *TradeImages::swbuf2x = NULL;
 int TradeImages::max_alloc;
 
 // Rank of target node based on offsets from current node
@@ -49,15 +49,15 @@ int TradeImages::mode;
 // MPI communicator to use
 MPI_Comm TradeImages::comm;
 
-rmg_double_t *TradeImages::frdx1, *TradeImages::frdx2, *TradeImages::frdy1, *TradeImages::frdy2, *TradeImages::frdz1, *TradeImages::frdz2;
-rmg_double_t *TradeImages::frdx1n, *TradeImages::frdx2n, *TradeImages::frdy1n, *TradeImages::frdy2n, *TradeImages::frdz1n, *TradeImages::frdz2n;
-rmg_double_t *TradeImages::yzpsms_r, *TradeImages::yzpsps_r, *TradeImages::yzmsms_r, *TradeImages::yzmsps_r;
-rmg_double_t *TradeImages::yzpsms_s, *TradeImages::yzpsps_s, *TradeImages::yzmsms_s, *TradeImages::yzmsps_s;
-rmg_double_t *TradeImages::xzpsms_r, *TradeImages::xzpsps_r, *TradeImages::xzmsms_r, *TradeImages::xzmsps_r;
-rmg_double_t *TradeImages::xzpsms_s, *TradeImages::xzpsps_s, *TradeImages::xzmsms_s, *TradeImages::xzmsps_s;
-rmg_double_t *TradeImages::xypsms_r, *TradeImages::xypsps_r, *TradeImages::xymsms_r, *TradeImages::xymsps_r;
-rmg_double_t *TradeImages::xypsms_s, *TradeImages::xypsps_s, *TradeImages::xymsms_s, *TradeImages::xymsps_s;
-rmg_double_t *TradeImages::m0_s, *TradeImages::m0_r;
+double *TradeImages::frdx1, *TradeImages::frdx2, *TradeImages::frdy1, *TradeImages::frdy2, *TradeImages::frdz1, *TradeImages::frdz2;
+double *TradeImages::frdx1n, *TradeImages::frdx2n, *TradeImages::frdy1n, *TradeImages::frdy2n, *TradeImages::frdz1n, *TradeImages::frdz2n;
+double *TradeImages::yzpsms_r, *TradeImages::yzpsps_r, *TradeImages::yzmsms_r, *TradeImages::yzmsps_r;
+double *TradeImages::yzpsms_s, *TradeImages::yzpsps_s, *TradeImages::yzmsms_s, *TradeImages::yzmsps_s;
+double *TradeImages::xzpsms_r, *TradeImages::xzpsps_r, *TradeImages::xzmsms_r, *TradeImages::xzmsps_r;
+double *TradeImages::xzpsms_s, *TradeImages::xzpsps_s, *TradeImages::xzmsms_s, *TradeImages::xzmsps_s;
+double *TradeImages::xypsms_r, *TradeImages::xypsps_r, *TradeImages::xymsms_r, *TradeImages::xymsps_r;
+double *TradeImages::xypsms_s, *TradeImages::xypsps_s, *TradeImages::xymsms_s, *TradeImages::xymsps_s;
+double *TradeImages::m0_s, *TradeImages::m0_r;
 
 MPI_Request TradeImages::TradeImages::sreqs[26];
 MPI_Request TradeImages::TradeImages::rreqs[26];
@@ -2508,28 +2508,4 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     T.thread_barrier_wait();
 
 } // end trade_images1_central_async
-
-#if 0
-// C interfaces for transitional usage
-extern "C" void init_TradeImages(void)
-{
-    TradeImages *T;
-    T = new TradeImages();
-}
-extern "C" void set_MPI_comm(MPI_Comm comm)
-{
-    TradeImages T;
-    T.set_MPI_comm(comm);
-}
-extern "C"  void trade_imagesx (rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz, int images, int type)
-{
-    TradeImages T;
-    T.trade_imagesx<double>(f, w, dimx, dimy, dimz, images, type);
-}
-extern "C" void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int type)
-{
-    TradeImages T;
-    T.trade_images<double>(mat, dimx, dimy, dimz, type);
-}
-#endif
 

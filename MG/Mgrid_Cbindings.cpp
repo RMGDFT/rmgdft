@@ -14,7 +14,7 @@
 
 using namespace std;
 
-double CPP_get_vh (double * rho, double * rhoc, double * vh_eig,
+double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_eig,
                  int min_sweeps, int max_sweeps, int maxlevel,
                  int global_presweeps, int global_postsweeps, int mucycles, 
                  double rms_target, int boundaryflag);
@@ -79,6 +79,14 @@ extern "C" void solv_pois (double * vmat, double * fmat, double * work,
 
 extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)
 {
-    CPP_get_vh (rho, rhoc, vh_eig, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target, boundaryflag);
+
+    CPP_get_vh (rho, rhoc, ct.vh_ext, vh_eig, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target, boundaryflag);
+
+    /* Pack the portion of the hartree potential used by the wavefunctions
+     * back into the wavefunction hartree array. */
+    FineGrid FG(2);
+    int dimx = FG.get_PE_GRIDX(), dimy = FG.get_PE_GRIDY(), dimz = FG.get_PE_GRIDZ();
+    CPP_pack_dtos (vh_eig, ct.vh_ext, dimx, dimy, dimz, boundaryflag);
+
 }
 
