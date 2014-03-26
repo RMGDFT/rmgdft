@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_vh(rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *vh_eig, int sweeps, int maxlevel)
+ *   void get_vh(double *rho, double *rhoc, double *vh_eig, int sweeps, int maxlevel)
  *   Iterative procedure to obtain the hartree potential.
  *   Uses Mehrstallen finite differencing with multigrid accelerations.
  *   The multigrid scheme uses a standard W-cycle with Jacobi relaxation.
@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <iostream>
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
@@ -57,47 +58,58 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 
+using namespace std;
 
-/* Pre and post smoothings on each level */
-static int poi_pre[5] = { 0, 3, 3, 3, 3 };
-static int poi_post[5] = { 0, 3, 3, 3, 3 };
+#define MAX_MG_LEVELS 8
 
 
-void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target, int boundaryflag)
+double CPP_get_vh (double * rho, double * rhoc, double * vh_eig, 
+                 int min_sweeps, int max_sweeps, int maxlevel, 
+                 int global_presweeps, int global_postsweeps, int mucycles, 
+                 double rms_target, int boundaryflag)
 {
 
     int idx, its;
-    rmg_double_t t1, vavgcor, diag;
-    rmg_double_t *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
+    double t1, vavgcor, diag;
+    double *mgrhsarr, *mglhsarr, *mgresarr, *work;
+    double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
     FineGrid FG(2);     // Hartree potential is on a double density grid
     Lattice L;
     Mgrid MG(&L);
     TradeImages T;
+    int global_basis = FG.get_GLOBAL_BASIS();
+
+    /* Pre and post smoothings on each level */
+    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
+    int poi_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
+
+    if(maxlevel >= MAX_MG_LEVELS)
+       rmg_error_handler(__FILE__, __LINE__, "Too many multigrid levels requested.");
 
     int dimx = FG.get_PE_GRIDX(), dimy = FG.get_PE_GRIDY(), dimz = FG.get_PE_GRIDZ();
 
-    /*Taken from ON code, seems to help a lot with convergence*/
-    poi_pre[maxlevel] = ct.poi_parm.coarsest_steps;
+    // Solve to a high degree of precision on the coarsest level
+    poi_pre[maxlevel] = 25;
 
+    // Multigrid solver can handle both poisson and helmholtz set k_vh=0 for poisson
     k_vh = 0.0;
 
-    int nits = ct.poi_parm.gl_pre + ct.poi_parm.gl_pst;
+    int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
 
     /* Grab some memory for our multigrid structures */
-    mgrhsarr = new rmg_double_t[sbasis];
-    mglhsarr = new  rmg_double_t[sbasis];
-    mgresarr = new  rmg_double_t[sbasis];
-    work = new  rmg_double_t[4*sbasis];
-    sg_rho = new  rmg_double_t[sbasis];
-    sg_vh = new  rmg_double_t[sbasis];
-    sg_res = new  rmg_double_t[sbasis];
-    nrho = new  rmg_double_t[sbasis];
+    mgrhsarr = new double[sbasis];
+    mglhsarr = new  double[sbasis];
+    mgresarr = new  double[sbasis];
+    work = new  double[4*sbasis];
+    sg_rho = new  double[sbasis];
+    sg_vh = new  double[sbasis];
+    sg_res = new  double[sbasis];
+    nrho = new  double[sbasis];
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)
@@ -127,7 +139,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
 
 
 	    /*At the end of this force loop, laplacian operator is reapplied to evalute the residual. Therefore,
-	     * when there is no need to apply it, when this loop is called second, third, etc time. */
+	     * there is no need to reapply it, when this loop is called second, third, etc time. */
             if ( (cycles) || (!its))
             {
 
@@ -147,7 +159,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
             }
 
             /* Pre and Post smoothings and multigrid */
-            if (cycles == ct.poi_parm.gl_pre)
+            if (cycles == global_presweeps)
             {
 
                 /* Transfer res into smoothing grid */
@@ -156,8 +168,8 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
                 MG.mgrid_solv<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz, 
                             FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(),
-                            0, FG.get_neighbors(), ct.poi_parm.levels, poi_pre,
-                            poi_post, ct.poi_parm.mucycles, ct.poi_parm.sb_step, k_vh,
+                            0, FG.get_neighbors(), maxlevel, poi_pre,
+                            poi_post, mucycles, ct.poi_parm.sb_step, k_vh,
                             FG.get_GLOBAL_GRIDX(), FG.get_GLOBAL_GRIDY(), FG.get_GLOBAL_GRIDZ(),
                             FG.get_PE_OFFSETX(), FG.get_PE_OFFSETY(), FG.get_PE_OFFSETZ(),
                             FG.get_PE_GRIDX(), FG.get_PE_GRIDY(), FG.get_PE_GRIDZ(), ct.boundaryflag);
@@ -189,7 +201,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
                     vavgcor += ct.vh_ext[idx];
 
                 vavgcor = real_sum_all (vavgcor, T.get_MPI_comm());
-                t1 = (rmg_double_t) ct.psi_fnbasis;
+                t1 = (double) ct.psi_fnbasis;
                 vavgcor = vavgcor / t1;
 
 
@@ -216,18 +228,15 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
 
         }                   /* end for */
 
-        residual = sqrt (real_sum_all(residual, pct.grid_comm) / ct.psi_fnbasis);
+        residual = sqrt (real_sum_all(residual, pct.grid_comm) / global_basis);
 
-       
-	//printf("\n get_vh sweep %3d, rms residual is %10.5e", its, residual);
+        //cout << "\n get_vh sweep " << its << " rms residual is " << residual;
 
 	    
         its ++;
     }                           /* end for */
 
-//    printf ("\n");
-//    progress_tag ();
-//    printf ("Executed %3d sweeps, residual is %15.8e, rms is %15.8e\n", its, residual, ct.rms);
+    // cout << "get_vh: executed " << its << " sweeps, residual is " << residual << endl;
 
 
     /* Pack the portion of the hartree potential used by the wavefunctions
@@ -244,12 +253,14 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
     delete [] mglhsarr;
     delete [] mgrhsarr;
 
+    return residual;
+
 } // end CPP_get_vh
 
 
-extern "C" void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target, int boundaryflag) 
-{
-    CPP_get_vh (rho, rhoc, vh_eig, min_sweeps, max_sweeps, maxlevel, rms_target, boundaryflag);
-}
+//extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag) 
+//{
+//    CPP_get_vh (rho, rhoc, vh_eig, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, ct.poi_parm.gl_pst, rms_target, boundaryflag);
+//}
 
 /******/

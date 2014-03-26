@@ -46,18 +46,18 @@ bool FiniteDiff::check_anisotropy(double hx, double hy, double hz, double limit)
 }
 
 template <typename RmgType>
-rmg_double_t FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+double FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
     RmgTimer RT("App_cil: computation");
     int iz, ix, iy, incx, incy, incxr, incyr, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    rmg_double_t ihx, ihy, ihz;
-    rmg_double_t rz, rzms, rzps, rzpps;
-    rmg_double_t rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
-    rmg_double_t td1, td2, td3, td4, td5, td6, td7, td8, tdx;
+    double ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
+    double fc2x, fc2y, fc2z, tcx, tcy, tcz;
+    double ihx, ihy, ihz;
+    double rz, rzms, rzps, rzpps;
+    double rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
+    double td1, td2, td3, td4, td5, td6, td7, td8, tdx;
 
 
     ibrav = L->get_ibrav_type();
@@ -464,8 +464,8 @@ void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy,
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    rmg_double_t rz, rzps, rzms, rzpps;
-    rmg_double_t c000, c100, c110, c200;
+    double rz, rzps, rzms, rzpps;
+    double c000, c100, c110, c200;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -699,13 +699,13 @@ void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy,
 
 
 template <typename RmgType>
-rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
-                rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+                double gridhx, double gridhy, double gridhz)
 {
 
     int ix, iy, iz, ibrav;
     int incy, incx;
-    rmg_double_t cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
+    double cc = 0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
     ibrav = L->get_ibrav_type();
@@ -974,14 +974,14 @@ rmg_double_t FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy
 
 
 template <typename RmgType>
-rmg_double_t FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
-               rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+               double gridhx, double gridhy, double gridhz)
 {
 
     int iz, ix, iy;
-    rmg_double_t h2, t0, t1x, t2x;
-    rmg_double_t t1y, t2y;
-    rmg_double_t t1z, t2z;
+    double h2, t0, t1x, t2x;
+    double t1y, t2y;
+    double t1z, t2z;
     double t3x,t3y,t3z;
     int ixs, iys, ix1, iy1;
 
@@ -1053,15 +1053,15 @@ rmg_double_t FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy,
 
 
 template <typename RmgType>
-rmg_double_t FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
     RmgTimer RT("App_cil: computation");
     int ibrav;
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    rmg_double_t ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
-    rmg_double_t ihx, ihy, ihz;
+    double ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    double ihx, ihy, ihz;
 
     ibrav = L->get_ibrav_type();
 
@@ -1221,7 +1221,7 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx;
     int incyr, incxr;
-    rmg_double_t c000, c100;
+    double c000, c100;
 
     ibrav = L->get_ibrav_type();
 
@@ -1270,7 +1270,7 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 }
 
 
-//extern "C" double app_del2c_rmg_complex(complex<double> *rptr, complex<double> *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, Lattice *lptr)
+//extern "C" double app_del2c_rmg_complex(complex<double> *rptr, complex<double> *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, Lattice *lptr)
 //{
 //
 //   FiniteDiff FD(lptr); 

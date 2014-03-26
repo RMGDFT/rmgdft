@@ -1,28 +1,26 @@
 #include "TradeImages.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
-#include "common_prototypes.h"
-#include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
 
 using namespace std;
 
+template double CPP_app_cil_driver<float>(float *, float *, int, int, int, double, double, double, int);
+template double CPP_app_cil_driver<double>(double *, double *, int, int, int, double, double, double, int);
+
 template <typename RmgType>
-rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
+double CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
 
     RmgTimer RT("App_cil");
     int sbasis;
-    rmg_double_t cc;
-    void *allocp;
-    RmgType *rptr;
+    double cc;
     TradeImages T;
     Lattice L;
     FiniteDiff FD(&L);
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-    my_malloc (allocp, sbasis + 64, double);
-    rptr = (RmgType *)allocp;
+    RmgType *rptr = new RmgType[sbasis + 64];
 
     if(order == APP_CI_FOURTH) {
         RmgTimer *RT1 = new RmgTimer("App_cil: trade images");
@@ -40,16 +38,8 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
         rmg_error_handler (__FILE__, __LINE__, "APP_CIL order not programmed yet in app_cil_driver.\n");
     }
 
-    my_free(rptr);
+    delete [] rptr;
     return cc;
 
 }
 
-extern "C" rmg_double_t app_cil_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
-{
-    return CPP_app_cil_driver<double>(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
-}
-extern "C" rmg_double_t app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, int order)
-{
-    return CPP_app_cil_driver<float>(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
-}

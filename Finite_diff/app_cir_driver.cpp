@@ -1,11 +1,11 @@
 #include "TradeImages.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
-#include "RmgTimer.h"
-#include "common_prototypes.h"
-#include "rmg_alloc.h"
 #include "rmg_error.h"
+#include "RmgTimer.h"
 
+template void CPP_app_cir_driver<float>(float *, float *, int, int, int, int);
+template void CPP_app_cir_driver<double>(double *, double *, int, int, int, int);
 
 template <typename RmgType>
 void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order)
@@ -13,15 +13,11 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
 
     RmgTimer RT("App_cir");
     int sbasis;
-    void *allocp;
-    RmgType *rptr;
     TradeImages T;
     Lattice L;
     FiniteDiff FD(&L);;
-
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-    my_malloc (allocp, sbasis + 64, double);
-    rptr = (RmgType *)allocp;
+    RmgType *rptr = new RmgType[sbasis + 64];
 
     if(order == APP_CI_FOURTH) {
         RmgTimer *RT1 = new RmgTimer("App_cir: trade images");
@@ -39,16 +35,8 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
         rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
     }
 
-    my_free(rptr);
+    delete [] rptr;
     return;
 
 }
 
-extern "C" void app_cir_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, int order)
-{
-    CPP_app_cir_driver<double>(a, b, dimx, dimy, dimz, order);
-}
-extern "C" void app_cir_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, int order)
-{
-    CPP_app_cir_driver<float>(a, b, dimx, dimy, dimz, order);
-}

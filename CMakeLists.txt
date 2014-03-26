@@ -60,7 +60,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
 target_link_libraries (rmg Finite_diff RMG_Common)
-target_link_libraries (rmg RMG_Common Finite_diff)
+target_link_libraries (rmg Misc RMG_Common Finite_diff)
 target_link_libraries (rmg RMG_Common Force)
 target_link_libraries (rmg Force RMG_Common)
 target_link_libraries (rmg Input RMG_Input)
@@ -82,7 +82,7 @@ target_link_libraries (rmg US_PP Force)
 
 
 target_link_libraries (rmg-on Finite_diff ON_Common)
-target_link_libraries (rmg-on ON_Common Finite_diff)
+target_link_libraries (rmg-on Misc ON_Common Finite_diff)
 target_link_libraries (rmg-on ON_Common ON_NEGF_share)
 target_link_libraries (rmg-on Misc ON_NEGF_share)
 target_link_libraries (rmg-on ON_Common Force)
@@ -101,7 +101,8 @@ target_link_libraries (rmg-on Force US_PP)
 target_link_libraries (rmg-on US_PP Force)
 target_link_libraries (rmg-on US_PP Misc)
 
-target_link_libraries (rmg-negf NEGF_Common Finite_diff)
+target_link_libraries (rmg-negf Finite_diff NEGF_Common)
+target_link_libraries (rmg-negf Misc NEGF_Common Finite_diff)
 target_link_libraries (rmg-negf NEGF_Common ON_NEGF_share)
 target_link_libraries (rmg-negf Misc ON_NEGF_share)
 target_link_libraries (rmg-negf NEGF_Common Force)
