@@ -36,6 +36,9 @@ private:
     // Basis size on each PE 
     int PE_BASIS;
 
+    // Density of the grid relative to the BaseGrid
+    int DENSITY;
+
 public:
 
     /* Function prototypes */

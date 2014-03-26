@@ -8,6 +8,8 @@
 // Uncomment when generating doxygen docs.
 //#define __cplusplus
 #ifdef __cplusplus
+#include "Lattice.h"
+
 template <typename RmgType>
 void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
 template <typename RmgType>
@@ -19,8 +21,13 @@ rmg_double_t CPP_app_cil_driver (RmgType * a, RmgType * b, int dimx, int dimy, i
 class FiniteDiff {
 
 private:
+    Lattice *L;
 
 public:
+    FiniteDiff(Lattice *lptr);
+
+    bool check_anisotropy(double hx, double hy, double hz, double limit);
+
     template <typename RmgType>
     rmg_double_t app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 

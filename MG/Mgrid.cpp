@@ -616,7 +616,8 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, RmgType * res)
 {
     int size, idx;
-    FiniteDiff FD;
+    Lattice L;
+    FiniteDiff FD(&L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)
@@ -638,7 +639,8 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
     int size, idx;
     rmg_double_t scale;
     rmg_double_t diag;
-    FiniteDiff FD;
+    Lattice L;
+    FiniteDiff FD(&L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)

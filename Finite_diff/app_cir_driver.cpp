@@ -1,4 +1,5 @@
 #include "TradeImages.h"
+#include "Lattice.h"
 #include "FiniteDiff.h"
 #include "RmgTimer.h"
 #include "common_prototypes.h"
@@ -15,7 +16,8 @@ void CPP_app_cir_driver (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
     void *allocp;
     RmgType *rptr;
     TradeImages T;
-    FiniteDiff FD;
+    Lattice L;
+    FiniteDiff FD(&L);;
 
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
     my_malloc (allocp, sbasis + 64, double);
