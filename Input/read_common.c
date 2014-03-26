@@ -44,7 +44,7 @@ void read_common ()
     int NX_GRID, NY_GRID, NZ_GRID;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
     int PE_X, PE_Y, PE_Z;
-    int FG_NX, FG_NY, FG_NZ;
+    int FG_RATIO;
 
     run_count ++;
     time1 = my_crtc ();
@@ -68,18 +68,16 @@ void read_common ()
     NZ_GRID = strtol(tbuf, &tbuf, 10);
 
 
-    get_data("potential_grid_refinement",  &FG_NX, INT, "2");
-    FG_NY = FG_NX;
-    FG_NZ = FG_NX;
+    get_data("potential_grid_refinement",  &FG_RATIO, INT, "2");
 
     // Set up grid and node data
-    set_grids(NX_GRID, NY_GRID, NZ_GRID, PE_X, PE_Y, PE_Z, FG_NX, FG_NY, FG_NZ);
+    set_grids(NX_GRID, NY_GRID, NZ_GRID, PE_X, PE_Y, PE_Z, FG_RATIO);
 
     get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "1");
 
-    FNX_GRID = NX_GRID * FG_NX;
-    FNY_GRID = NY_GRID * FG_NY;
-    FNZ_GRID = NZ_GRID * FG_NZ;
+    FNX_GRID = NX_GRID * FG_RATIO;
+    FNY_GRID = NY_GRID * FG_RATIO;
+    FNZ_GRID = NZ_GRID * FG_RATIO;
 
    if(NPES != (PE_X*PE_Y*PE_Z))
         error_handler ("NPES %d  not equal to PE_X*PE_Y*PE_Z!i %d %d %d", NPES, PE_X, PE_Y, PE_Z);
@@ -340,9 +338,9 @@ void read_common ()
 
     /* Cutoff parameter */
     get_data ("energy_cutoff_parameter", &ct.cparm, DBL, "1.75");
-    ct.qcparm = ct.cparm / (rmg_double_t) FG_NX;
+    ct.qcparm = ct.cparm / (rmg_double_t) FG_RATIO;
     ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
-    ct.cparm /= (rmg_double_t) FG_NX; 
+    ct.cparm /= (rmg_double_t) FG_RATIO; 
     
     /*Blocking factor for scalapack*/
     get_data ("scalapack_block_factor", &ct.scalapack_block_factor, INT, "32");

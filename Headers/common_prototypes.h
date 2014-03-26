@@ -158,7 +158,7 @@ void set_anisotropy(rmg_double_t a);
 rmg_double_t get_anisotropy(void);
 void set_neighbors(int *list);
 int *get_neighbors(void);
-void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_NX, int FG_NY, int FG_NZ);
+void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_RATIO);
 void set_nodes(int newgridpe, int ii, int jj, int kk);
 int get_ibrav_type(void);
 void set_ibrav_type(int ibrav);
