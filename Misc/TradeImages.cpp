@@ -2509,7 +2509,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
 
 } // end trade_images1_central_async
 
-
+#if 0
 // C interfaces for transitional usage
 extern "C" void init_TradeImages(void)
 {
@@ -2526,20 +2526,10 @@ extern "C"  void trade_imagesx (rmg_double_t * f, rmg_double_t * w, int dimx, in
     TradeImages T;
     T.trade_imagesx<double>(f, w, dimx, dimy, dimz, images, type);
 }
-extern "C"  void trade_imagesx_f (rmg_float_t * f, rmg_float_t * w, int dimx, int dimy, int dimz, int images, int type)
-{
-    TradeImages T;
-    T.trade_imagesx<float>(f, w, dimx, dimy, dimz, images, type);
-}
 extern "C" void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int type)
 {
     TradeImages T;
     T.trade_images<double>(mat, dimx, dimy, dimz, type);
 }
-
-extern "C" void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int type)
-{
-    TradeImages T;
-    T.trade_images<float>(mat, dimx, dimy, dimz, type);
-}
+#endif
 

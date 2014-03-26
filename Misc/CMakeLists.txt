@@ -1,4 +1,5 @@
 add_library (Misc
+TradeImages_Cbindings.cpp
 RmgSumAll.cpp
 pack_dtos.cpp
 pack_stod.cpp
