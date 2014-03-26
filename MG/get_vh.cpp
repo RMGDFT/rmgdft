@@ -74,7 +74,7 @@ void CPP_get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig,
     double k_vh;
     FineGrid FG(2);     // Hartree potential is on a double density grid
     Lattice L;
-    Mgrid MG;
+    Mgrid MG(&L);
     TradeImages T;
 
     int dimx = FG.get_PE_GRIDX(), dimy = FG.get_PE_GRIDY(), dimz = FG.get_PE_GRIDZ();

@@ -1,7 +1,6 @@
 
 #include <cmath>
 #include <complex>
-#include "BaseGrid.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "RmgTimer.h"

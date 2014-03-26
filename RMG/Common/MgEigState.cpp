@@ -43,7 +43,8 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
     RmgType *sg_twovpsi_t, *work1_t;
     BaseGrid G;
     TradeImages T;
-    Mgrid MG;
+    Lattice L;
+    Mgrid MG(&L);
 
 
     P0_BASIS = G.get_P0_BASIS();

@@ -49,10 +49,19 @@
 #include "BlasWrappers.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
-#include "common_prototypes.h"
 
 using namespace std;
 
+template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+
+Lattice *Lptr;
+
+Mgrid::Mgrid(Lattice *lptr)
+{
+    Lptr = lptr;
+}
 
 
 template <typename RmgType>
@@ -78,15 +87,14 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     int ixoff, iyoff, izoff;
     RmgType *resid, *newf, *newv, *newwork;
     TradeImages T;
-    Lattice L;
 
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     resid = work + 2 * size;
 
-    scale = 2.0 / (gridhx * gridhx * L.get_xside() * L.get_xside());
-    scale = scale + (2.0 / (gridhy * gridhy * L.get_yside() * L.get_yside()));
-    scale = scale + (2.0 / (gridhz * gridhz * L.get_zside() * L.get_zside()));
+    scale = 2.0 / (gridhx * gridhx * Lptr->get_xside() * Lptr->get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * Lptr->get_yside() * Lptr->get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * Lptr->get_zside() * Lptr->get_zside()));
     scale = step / scale;
 
 //    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_TRADE);
@@ -209,9 +217,8 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
     int incy, incx, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
     rmg_double_t scale, face, corner, edge;
-    Lattice L;
 
-    ibrav = L.get_ibrav_type();
+    ibrav = Lptr->get_ibrav_type();
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -616,8 +623,7 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, RmgType * res)
 {
     int size, idx;
-    Lattice L;
-    FiniteDiff FD(&L);
+    FiniteDiff FD(L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)
@@ -639,8 +645,7 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
     int size, idx;
     rmg_double_t scale;
     rmg_double_t diag;
-    Lattice L;
-    FiniteDiff FD(&L);
+    FiniteDiff FD(L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)
@@ -737,98 +742,3 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
 
 }
 
-
-// C wrappers
-extern "C" void mgrid_solv (rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * work,
-                 int dimx, int dimy, int dimz,
-                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz,
-                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim, int boundary_flag)
-{
-    Mgrid MG;
-    MG.mgrid_solv<double>( v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz,
-                   level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
-                   gxsize, gysize, gzsize,
-                   gxoffset, gyoffset, gzoffset,
-                   pxdim, pydim, pzdim, boundary_flag);
-
-}
-
-extern "C" void mgrid_solv_f (rmg_float_t * v_mat, rmg_float_t * f_mat, rmg_float_t * work,
-                 int dimx, int dimy, int dimz,
-                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz,
-                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim, int boundary_flag)
-{
-    Mgrid MG;
-    MG.mgrid_solv<float>( v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz,
-                   level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
-                   gxsize, gysize, gzsize,
-                   gxoffset, gyoffset, gzoffset,
-                   pxdim, pydim, pzdim, boundary_flag);
-
-}
-
-extern "C" void mg_restrict_f (rmg_float_t * full, rmg_float_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
-{
-    Mgrid MG;
-    MG.mg_restrict<float>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
-}
-
-extern "C" void mg_restrict (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
-{
-    Mgrid MG;
-    MG.mg_restrict<double>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
-}
-
-extern "C" void mg_prolong_f (rmg_float_t * full, rmg_float_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
-{
-    Mgrid MG;
-    MG.mg_prolong<float>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
-}
-
-extern "C" void mg_prolong (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
-{
-    Mgrid MG;
-    MG.mg_prolong<double>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
-}
-
-extern "C" void eval_residual_f (rmg_float_t * mat, rmg_float_t * f_mat, int dimx, int dimy, int dimz,
-                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_float_t * res)
-{
-    Mgrid MG;
-    MG.eval_residual<float>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res);
-}
-
-extern "C" void eval_residual (rmg_double_t * mat, rmg_double_t * f_mat, int dimx, int dimy, int dimz,
-                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t * res)
-{
-    Mgrid MG;
-    MG.eval_residual<double>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res);
-}
-
-extern "C" void solv_pois_f (rmg_float_t * vmat, rmg_float_t * fmat, rmg_float_t * work,
-                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
-{
-    Mgrid MG;
-    MG.solv_pois<float>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
-}
-
-extern "C" int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
-{
-    Mgrid MG;
-    return MG.MG_SIZE(curdim, curlevel, global_dim, global_offset, global_pdim, roffset, bctype);
-}
-
-extern "C" void solv_pois (rmg_double_t * vmat, rmg_double_t * fmat, rmg_double_t * work,
-                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
-{
-    Mgrid MG;
-    MG.solv_pois<double>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
-}
