@@ -1,7 +1,6 @@
 
 #include "BaseThread.h"
-#include "common_prototypes.h"
-#include <mpi.h>
+#include "RmgSumAll.h"
 #include <typeinfo>
 
 

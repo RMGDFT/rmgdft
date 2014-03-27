@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: get_vh.c 2174 2014-03-03 15:34:10Z ebriggs $    **
-******************************************************************************/
-
 /****f* QMD-MGDFT/get_vh.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
@@ -38,40 +34,44 @@
 
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include <iostream>
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
-#include "BlasWrappers.h"
 #include "FineGrid.h"
+#include "RmgSumAll.h"
 #include "auxiliary.h"
-#include "rmgtypedefs.h"
-#include "typedefs.h"
-#include "common_prototypes.h"
-#include "common_prototypes1.h"
 #include "rmg_error.h"
-#include "RmgTimer.h"
 
 using namespace std;
 
 #define MAX_MG_LEVELS 8
 
 
-double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_eig, 
+/// Poisson solver that uses compact implicit (Mehrstellen) and multigrid techniques.
+/// @param rho Charge density. When using periodic boundary conditions the cell must be charge neutral.
+/// @param vhartree Hartree potential corresponding to rho.
+/// @param min_sweeps Minimum number of top level sweeps to perform.
+/// @param max_sweeps Maximum number of top level sweeps to perform.
+/// @param max_level Maximum number of multigrid levels to use.
+/// @param global_presweeps Number of presweeps to use on the finest (0th) grid level.
+/// @param global_postsweeps Number of postsweeps to use on the finest (0th) grid level.
+/// @param mucycles Number of mu cycles (also known as W-cycles) to use in the multigrid solver.
+/// @param rms_target Value for the root mean square residual at which to stop.
+/// @param global_step Time step for the jacobi iteration on the finest (0th) grid level.
+/// @param coarse_step Time step for the jacobi iteration on the coarse grid levels.
+/// @param boundaryflag Type of boundary condition. Periodic is implemented internally.
+double CPP_get_vh (double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
-                 double rms_target, int boundaryflag)
+                 double rms_target, double global_step, double coarse_step, int boundaryflag)
 {
 
-    int idx, its;
+    int idx, its, cycles;
     double t1, vavgcor, diag;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
-    int incx = 1, cycles;
     double k_vh;
     FineGrid FG(2);     // Hartree potential is on a double density grid
     Lattice L;
@@ -109,15 +109,7 @@ double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_ei
     sg_res = new  double[sbasis];
     nrho = new  double[sbasis];
 
-    /* Subtract off compensating charges from rho */
-    for (idx = 0; idx < pbasis; idx++)
-        work[idx] = rho[idx] - rhoc[idx];
-
-    for (idx = 0; idx < sbasis; idx++)
-        nrho[idx] = 0.0;
-    CPP_pack_stod (work, nrho, dimx, dimy, dimz, boundaryflag);
-
-    CPP_app_cir_driver<double> (nrho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
+    CPP_app_cir_driver<double> (rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
 
 
 
@@ -167,7 +159,7 @@ double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_ei
                             dimx, dimy, dimz, 
                             FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(),
                             0, FG.get_neighbors(), maxlevel, poi_pre,
-                            poi_post, mucycles, ct.poi_parm.sb_step, k_vh,
+                            poi_post, mucycles, coarse_step, k_vh,
                             FG.get_GLOBAL_GRIDX(), FG.get_GLOBAL_GRIDY(), FG.get_GLOBAL_GRIDZ(),
                             FG.get_PE_OFFSETX(), FG.get_PE_OFFSETY(), FG.get_PE_OFFSETZ(),
                             FG.get_PE_GRIDX(), FG.get_PE_GRIDY(), FG.get_PE_GRIDZ(), boundaryflag);
@@ -178,15 +170,15 @@ double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_ei
 
                 /* Update vh */
                 t1 = ONE;
-                QMD_axpy (pbasis, t1, mgresarr, incx, vhartree, incx);
+                for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
 
             }
             else
             {
 
                 /* Update vh */
-                t1 = -ct.poi_parm.gl_step * diag;
-                QMD_axpy (pbasis, t1, mgresarr, incx, vhartree, incx);
+                t1 = - global_step * diag;
+                for(int i = 0;i < pbasis;i++) vhartree[i] = vhartree[i] + t1 * mgresarr[i];
 
             }                   /* end if */
 
@@ -198,8 +190,8 @@ double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_ei
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += vhartree[idx];
 
-                vavgcor = real_sum_all (vavgcor, T.get_MPI_comm());
-                t1 = (double) ct.psi_fnbasis;
+                vavgcor =  RmgSumAll(vavgcor, T.get_MPI_comm());
+                t1 = (double) global_basis;
                 vavgcor = vavgcor / t1;
 
 
@@ -226,7 +218,7 @@ double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_ei
 
         }                   /* end for */
 
-        residual = sqrt (real_sum_all(residual, pct.grid_comm) / global_basis);
+        residual = sqrt (RmgSumAll(residual, T.get_MPI_comm()) / global_basis);
 
         //cout << "\n get_vh sweep " << its << " rms residual is " << residual;
 
@@ -234,12 +226,8 @@ double CPP_get_vh (double * rho, double * rhoc, double *vhartree, double * vh_ei
         its ++;
     }                           /* end for */
 
-    // cout << "get_vh: executed " << its << " sweeps, residual is " << residual << endl;
-
-
-    /* Pack the portion of the hartree potential used by the wavefunctions
-     * back into the wavefunction hartree array. */
-    CPP_pack_dtos (vh_eig, vhartree, dimx, dimy, dimz, boundaryflag);
+//    if(FG.get_gridpe() == 0)
+//        cout << "get_vh: executed " << its << " sweeps, residual is " << residual << endl;
 
     /* Release our memory */
     delete [] nrho;
