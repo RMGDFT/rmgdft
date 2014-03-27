@@ -41,7 +41,7 @@ using namespace std;
         BaseGrid::grid_first = 1;
     }
 
-    void BaseGrid::set_nodes(int newgridpe, int ii, int jj, int kk)
+    void BaseGrid::set_nodes(int newgridpe)
     {
         int rem;
 
@@ -49,6 +49,17 @@ using namespace std;
             rmg_error_handler (__FILE__, __LINE__, "Grids must be initialized before nodes. Please call set_grids first");
 
         BaseGrid::gridpe = newgridpe;
+
+        /// Have each node figure out who it's neighbors are
+        int ii, jj, kk;
+        BaseGrid::pe2xyz (BaseGrid::gridpe, &ii, &jj, &kk);
+        neighbors[NB_N] = BaseGrid::xyz2pe (ii, (jj + 1) % BaseGrid::PE_Y, kk);
+        neighbors[NB_S] = BaseGrid::xyz2pe (ii, (jj - 1 + BaseGrid::PE_Y) % get_PE_Y(), kk);
+        neighbors[NB_E] = BaseGrid::xyz2pe ((ii + 1) % BaseGrid::PE_X, jj, kk);
+        neighbors[NB_W] = BaseGrid::xyz2pe ((ii - 1 + BaseGrid::PE_X) % BaseGrid::PE_X, jj, kk);
+        neighbors[NB_U] = BaseGrid::xyz2pe (ii, jj, (kk + 1) % BaseGrid::PE_Z);
+        neighbors[NB_D] = BaseGrid::xyz2pe (ii, jj, (kk - 1 + BaseGrid::PE_Z) % BaseGrid::PE_Z);
+        BaseGrid::neighbor_first = 1;
 
         // Compute grid sizes for each node.
         BaseGrid::PX0_GRID = BaseGrid::NX_GRID / BaseGrid::PE_X;
@@ -77,22 +88,7 @@ using namespace std;
         BaseGrid::find_node_offsets(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID,
                           &BaseGrid::FPX_OFFSET, &BaseGrid::FPY_OFFSET, &BaseGrid::FPZ_OFFSET);
 
-
-    }
-
-    /// This functions is used to set the values contained in BaseGrid::neighbors[] which is an integer array of dimension 6.
-    /// The array holds the MPI rank of the 6 nearest neighbor nodes of the current node.
-    /// @param list integer array of dimension 6 containing the list of neighbor nodes to be set into BaseGrid::neighbors[].
-    void BaseGrid::set_neighbors(int *list)
-    {
-        int idx;
-
-        if(BaseGrid::neighbor_first) return;
-
-        for(idx = 0;idx < 6;idx++)
-            BaseGrid::neighbors[idx] = list[idx];
-
-        BaseGrid::neighbor_first = 1;
+                 
 
     }
 
@@ -371,6 +367,11 @@ using namespace std;
 
     }                             
 
+    int BaseGrid::xyz2pe(int x, int y, int z)
+    {
+        return  x * BaseGrid::PE_Y * BaseGrid::PE_Z + y * BaseGrid::PE_Z + z;
+    }
+
     // Returns a pointer to the neighbors structure which contains the rank
     // of neighboring processors in three-dimensional space.
     int *BaseGrid::get_neighbors(void)
@@ -555,16 +556,10 @@ extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int ne
   G.set_grids(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, newFG_RATIO);
 }
 /// C interface function
-extern "C" void set_nodes(int newgridpe, int ii, int jj, int kk)
+extern "C" void set_nodes(int newgridpe)
 {
   BaseGrid G;
-  G.set_nodes(newgridpe, ii, jj, kk);
-}
-/// C interface function
-extern "C" void set_neighbors(int *newneighbors)
-{
-  BaseGrid G;
-  G.set_neighbors(newneighbors);
+  G.set_nodes(newgridpe);
 }
 /// C interface function
 extern "C" void set_anisotropy(double newanisotropy)

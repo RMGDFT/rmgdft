@@ -175,29 +175,7 @@ void init_pe ( int image )
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
     Dprintf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
-    /* Legacy portion of init_pe */
-
-    /* XYZ coordinates of this processor */
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-
-    /* Now wrap them in case we are running with some processors duplicated */
-    /* Two should be enough for any case that we might be doing.            */
-    /* Wouldn't ii %= PE_X; be better??? */
-    if (ii >= get_PE_X())
-        ii -= get_PE_X();
-    if (ii >= get_PE_X())
-        ii -= get_PE_X();
-
-    /* Have each processor figure out who it's neighbors are */
-    XYZ2PE (ii, (jj + 1) % get_PE_Y(), kk, neighbors[NB_N]);
-    XYZ2PE (ii, (jj - 1 + get_PE_Y()) % get_PE_Y(), kk, neighbors[NB_S]);
-    XYZ2PE ((ii + 1) % get_PE_X(), jj, kk, neighbors[NB_E]);
-    XYZ2PE ((ii - 1 + get_PE_X()) % get_PE_X(), jj, kk, neighbors[NB_W]);
-    XYZ2PE (ii, jj, (kk + 1) % get_PE_Z(), neighbors[NB_U]);
-    XYZ2PE (ii, jj, (kk - 1 + get_PE_Z()) % get_PE_Z(), neighbors[NB_D]);
-
-    // Set up grids and neighbors using both C and C++ for now
-    set_neighbors(neighbors);
-    set_nodes(pct.gridpe, ii, jj, kk);
+    // Set up grids and neighbors
+    set_nodes(pct.gridpe);
 
 }                               /* end init_pe */

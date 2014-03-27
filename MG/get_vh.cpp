@@ -42,6 +42,7 @@
 #include "FineGrid.h"
 #include "RmgSumAll.h"
 #include "auxiliary.h"
+#include "vhartree.h"
 #include "rmg_error.h"
 
 using namespace std;
@@ -202,7 +203,7 @@ double CPP_get_vh (double * rho, double *vhartree,
             }                   /* end if */
 
         }                       /* end for */
-            
+
         /*Get residual*/
         diag = CPP_app_cil_driver<double> (vhartree, mglhsarr, dimx, dimy, dimz,
                             FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);

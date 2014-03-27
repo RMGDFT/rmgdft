@@ -3,6 +3,7 @@
 #include "Mgrid.h"
 #include "BlasWrappers.h"
 #include "FineGrid.h"
+#include "vhartree.h"
 #include "auxiliary.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -13,11 +14,6 @@
 #include "rmg_error.h"
 
 using namespace std;
-
-double CPP_get_vh (double * rho, double *vhartree, 
-                 int min_sweeps, int max_sweeps, int maxlevel,
-                 int global_presweeps, int global_postsweeps, int mucycles, 
-                 double rms_target, double global_step, double coarse_step, int boundaryflag);
 
 
 // C wrappers
@@ -89,9 +85,10 @@ extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sw
     for (idx = 0; idx < pbasis; idx++)
         rho_neutral[idx] = rho[idx] - rhoc[idx];
 
-    CPP_get_vh (rho_neutral, ct.vh_ext, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, 
+    double residual = CPP_get_vh (rho_neutral, ct.vh_ext, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, 
                 ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target, 
                 ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag);
+    //cout << "Hartree residual = " << residual << endl;
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */

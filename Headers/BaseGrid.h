@@ -86,8 +86,7 @@ public:
 
     /* Function prototypes */
     void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_RATIO);
-    void set_nodes(int newgridpe, int ii, int jj, int kk);
-    void set_neighbors(int *list);
+    void set_nodes(int newgridpe);
     int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
     int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
 
@@ -133,6 +132,7 @@ public:
     void set_anisotropy(double a);
     double get_anisotropy(void);
     void pe2xyz(int pe, int *x, int *y, int *z);
+    int xyz2pe(int x, int y, int z);
 
     // Returns a pointer to the neighbors structure which contains the rank
     // of neighboring processors in three-dimensional space.
