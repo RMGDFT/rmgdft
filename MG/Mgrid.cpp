@@ -57,12 +57,19 @@ template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, do
 template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 Lattice *Lptr;
+int level_flag;
 
 Mgrid::Mgrid(Lattice *lptr)
 {
     Lptr = lptr;
+    level_flag = 0;
 }
 
+Mgrid::~Mgrid(void)
+{
+    if(level_flag)
+        cout << "Warning: too many multigrid levels were requested " << level_flag << " times." << endl;
+}
 
 template <typename RmgType>
 void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
@@ -143,17 +150,24 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
     }                           /* end if */
 
+/* size for next smaller grid */
+    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
+    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
+    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
+    siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
+
+    // If dx2, dy2 or dz2 is negative then it means that too many multigrid levels were requested so we just return and continue processing.
+    // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
+    if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
+        level_flag++;
+        return;
+    }
 
 /* evaluate residual */
     eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
     T.trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
 
-/* size for next smaller grid */
-    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
-    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
-    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
-    siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
 
 /* set storage pointers in the current workspace */
     newv = &work[0];
@@ -711,13 +725,13 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
         // First check if we have too many multigrid levels. For periodic boundary
         // conditions the next level of the global grid must be divisible by 2
         if ((global_dim % skip) != 0) {
-            rmg_error_handler (__FILE__, __LINE__, "Too many multigrid levels specified.");
+            return -1;
         }
 
         // Require at least one point in the level
         new_dim = global_pdim / skip;
         if(!new_dim) {
-            rmg_error_handler (__FILE__, __LINE__, "Too many multigrid levels specified.");
+            return -1;
         }
 
         // evenly divisible then we are done
@@ -738,6 +752,7 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
 
     }
 
+    throw 30;
     rmg_error_handler (__FILE__, __LINE__, "Boundary condition not programmed."); 
 
 }

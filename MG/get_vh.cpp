@@ -153,6 +153,7 @@ double CPP_get_vh (double * rho, double *vhartree,
             if (cycles == global_presweeps)
             {
 
+
                 /* Transfer res into smoothing grid */
                 CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 

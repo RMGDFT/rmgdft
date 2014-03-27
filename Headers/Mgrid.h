@@ -9,9 +9,11 @@ class Mgrid {
 
 private:
     Lattice *L;
+    int level_flag;
 
 public:
     Mgrid(Lattice *lptr);
+   ~Mgrid(void);
 
     template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
