@@ -4,8 +4,25 @@
 
 
 /*
- *
+ *   Copyright (C) 2014   Wenchang Lu, Jerzy Bernholc
+ *   All rights reserved.
  */
+//  
+//  
+//  find the new energy points with 5-point Simpson rule
+//  input:   
+//        tot_energy_point: current number of energy points
+//        cond:  value of integrand, dimension of tot_energy_point*2
+//        ener1: original energy points , dimension of
+//        tot_energy_point*2
+//        simpson_tol:  tol control
+//  output:
+//        energy_insert_index:  index of the inserted energy points in
+//                              new array, dimension of tot_energy_point
+//        ener1_temp:  the new energy points  dimension of
+//        tot_energy_point
+//        EP_final:  number of new points     
+
 
 #include <float.h>
 #include <math.h>
@@ -30,8 +47,9 @@ double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, 
 
     double *cond_work, *ener_work;
 
-    my_malloc_init(cond_work, tot_energy_point, double);
-    my_malloc_init(ener_work, tot_energy_point, double);
+
+    cond_work = (double *)malloc(tot_energy_point* sizeof(double));
+    ener_work = (double *)malloc(tot_energy_point* sizeof(double));
 
 
     if(tot_energy_point % 4 != 1) 
@@ -112,7 +130,7 @@ double find_new_energy_point(double *cond, double *ener1, int tot_energy_point, 
     cond[tot_energy_point+ EP-1] = cond_work[tot_energy_point-1];
 
     *EP_final = EP;
-    my_free(cond_work);
-    my_free(ener_work);
+    free(cond_work);
+    free(ener_work);
     return max_tol;
 }

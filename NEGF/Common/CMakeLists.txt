@@ -10,6 +10,7 @@ distri_fermi.c
 dot_product_orbit_orbit.c
 find_fermi.c
 find_new_energy_point.c
+find_new_energy_point_sharp_peak.c
 gauleg.c
 get_3Ddos.c
 get_cond_frommatrix.c

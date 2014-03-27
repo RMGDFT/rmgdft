@@ -80,7 +80,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 #endif
 
 		/* allocate memory for matrixs  */
-		get_cond_frommatrix ();
+		//get_cond_frommatrix ();
 		get_cond_frommatrix_kyz ();
 
 		time2 = my_crtc ();

@@ -72,8 +72,13 @@ void read_control (char *file)
     get_data ("start_mode", &ct.runflag, OPT, "Random Start");
 
 
+   char energy_point_opts[] ="None\n"
+                            "Simpson\n"
+                            "Sharp Peaks";
+    get_data ("energy_point_insert", NULL, INIT | OPT, energy_point_opts);
 
-
+    /* Read in the initial run flag */
+    get_data ("energy_point_insert", &cei.energy_point_insert, OPT, "None");
 
     get_data ("Simpson_depth", &ct.simpson_depth, INT, "0");
     get_data ("Simpson_tol", &ct.simpson_tol, DBL, "0.001");
