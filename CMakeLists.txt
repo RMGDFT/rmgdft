@@ -240,7 +240,7 @@ endif(NOT RMG_MATH_LIBS)
 
 
 # Look for GPU libraries. Only CUDA supported for now
-find_package(CUDA REQUIRED)
+find_package(CUDA)
 if(CUDA_FOUND)
   if(NOT CRAY_XK)
       target_link_libraries(rmg ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
