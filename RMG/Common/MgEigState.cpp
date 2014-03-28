@@ -44,7 +44,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
     BaseGrid G;
     TradeImages T;
     Lattice L;
-    Mgrid MG(&L);
+    Mgrid MG(&L, &T);
 
 
     P0_BASIS = G.get_P0_BASIS(1);
@@ -109,7 +109,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     RmgTimer *RT1 = new RmgTimer("Mg_eig: app_cir");
-    CPP_app_cir_driver<RmgType> (work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    CPP_app_cir_driver<RmgType> (&L, &T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
     delete(RT1);
 
     // Copy double precision psi into single precison array
@@ -136,7 +136,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
         /* Apply Mehrstellen left hand operators */
         RT1 = new RmgTimer("Mg_eig: app_cil");
-        diag = CPP_app_cil_driver<RmgType> (tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        diag = CPP_app_cil_driver<RmgType> (&L, &T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         delete(RT1);
 
         diag = -1.0 / diag;
@@ -158,7 +158,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
         /* B operating on 2*V*psi stored in work1 */
         RT1 = new RmgTimer("Mg_eig: app_cir");
-        CPP_app_cir_driver<RmgType> (sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        CPP_app_cir_driver<RmgType> (&L, &T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
         for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 

@@ -8,6 +8,7 @@ BaseGrid.cpp
 BaseGrid_Cbindings.cpp
 BaseThread.cpp
 Lattice.cpp
+Lattice_Cbindings.cpp
 TradeImages.cpp
 transition.cpp
 init_IO.c

@@ -45,7 +45,7 @@ void FiniteDiff::app_cir_fcc (RmgType * a, RmgType * b, int dimx, int dimy, int 
     int incy, incx;
     int incyr, incxr;
 
-    rmg_double_t Bc, Bf;
+    double Bc, Bf;
 
 
     incy = dimz + 2;

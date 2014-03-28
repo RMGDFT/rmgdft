@@ -56,7 +56,7 @@ void FiniteDiff::app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int 
     int ixs, iys;
     int incy, incx;
     int incyr, incxr;
-    rmg_double_t Bc, Bf, Bz;
+    double Bc, Bf, Bz;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);

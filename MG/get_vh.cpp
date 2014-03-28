@@ -64,7 +64,7 @@ using namespace std;
 /// @param coarse_step Time step for the jacobi iteration on the coarse grid levels.
 /// @param boundaryflag Type of boundary condition. Periodic is implemented internally.
 /// @param density Density of the grid relative to the default grid
-double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
+double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
                  double rms_target, double global_step, double coarse_step, int boundaryflag, int density)
@@ -75,9 +75,7 @@ double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     double k_vh;
-    Lattice L;
-    Mgrid MG(&L);
-    TradeImages T;
+    Mgrid MG(L, T);
 
     int global_basis = G->get_GLOBAL_BASIS(density);
 
@@ -111,7 +109,7 @@ double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
     sg_res = new  double[sbasis];
     nrho = new  double[sbasis];
 
-    CPP_app_cir_driver<double> (rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
+    CPP_app_cir_driver<double> (L, T, rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
 
 
 
@@ -136,7 +134,7 @@ double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
             {
 
                 /* Apply operator */
-                diag = CPP_app_cil_driver (vhartree, mglhsarr, dimx, dimy, dimz,
+                diag = CPP_app_cil_driver (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
@@ -193,7 +191,7 @@ double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += vhartree[idx];
 
-                vavgcor =  RmgSumAll(vavgcor, T.get_MPI_comm());
+                vavgcor =  RmgSumAll(vavgcor, T->get_MPI_comm());
                 t1 = (double) global_basis;
                 vavgcor = vavgcor / t1;
 
@@ -207,7 +205,7 @@ double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
         }                       /* end for */
 
         /*Get residual*/
-        diag = CPP_app_cil_driver<double> (vhartree, mglhsarr, dimx, dimy, dimz,
+        diag = CPP_app_cil_driver<double> (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
@@ -221,7 +219,7 @@ double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
 
         }                   /* end for */
 
-        residual = sqrt (RmgSumAll(residual, T.get_MPI_comm()) / global_basis);
+        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
 
         //cout << "\n get_vh sweep " << its << " rms residual is " << residual;
 

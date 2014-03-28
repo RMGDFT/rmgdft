@@ -27,8 +27,6 @@ template double FiniteDiff::app_del2c<float>(float *, float *, int, int, int, do
 template double FiniteDiff::app_del2c<double>(double *, double *, int, int, int, double, double, double);
 
 
-Lattice *L;
-
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
     L = lptr;

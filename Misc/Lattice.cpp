@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void latgen (int *ibrav, rmg_double_t *celldm, rmg_double_t *A0I, rmg_double_t *A1I, rmg_double_t *A2I, 
- *                rmg_double_t *OMEGAI, int *flag)
+ *   void latgen (int *ibrav, double *celldm, double *A0I, double *A1I, double *A2I, 
+ *                double *OMEGAI, int *flag)
  *   sets up the crystallographic vectors a0, a1, and a2.
  * INPUTS
  *   ibrav: bravais lattice type
@@ -86,7 +86,6 @@
  */
 
 #include <math.h>
-#include "BaseGrid.h"
 #include "Lattice.h"
 #include "rmg_error.h"
 
@@ -97,14 +96,14 @@
 using namespace std;
 
 
-void Lattice::cross_product (rmg_double_t * a, rmg_double_t * b, rmg_double_t * c)
+void Lattice::cross_product (double * a, double * b, double * c)
 {
     c[0] = a[1] * b[2] - a[2] * b[1];
     c[1] = -(a[0] * b[2] - a[2] * b[0]);
     c[2] = a[0] * b[1] - a[1] * b[0];
 }                               /* end cross_product */
 
-void Lattice::to_cartesian (rmg_double_t *crystal, rmg_double_t *cartesian)
+void Lattice::to_cartesian (double *crystal, double *cartesian)
 {
     int ir;
 
@@ -117,7 +116,7 @@ void Lattice::to_cartesian (rmg_double_t *crystal, rmg_double_t *cartesian)
 
 }                               /* end to_cartesian */
 
-void Lattice::to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian)
+void Lattice::to_crystal (double *crystal, double *cartesian)
 {
     int ir;
 
@@ -220,14 +219,13 @@ void Lattice::recips (void)
 
 
 // If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0)
-void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, int *flag)
+void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, int *flag)
 {
 
     int ir;
-    rmg_double_t term, term1, term2, cbya, sine, singam, alat;
-    rmg_double_t distance, t1;
-    rmg_double_t cvec[3];
-    BaseGrid G;
+    double term, term1, term2, cbya, sine, singam, alat;
+    double distance, t1;
+    double cvec[3];
 
     /* Initialise the appropriate variables */
 
@@ -389,13 +387,7 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t
     *OMEGAI = cvec[0] * Lattice::a2[0] + cvec[1] * Lattice::a2[1] + cvec[2] * Lattice::a2[2];
 
     *OMEGAI = fabs (*OMEGAI);
-
-    /* Generate volume element */
-    t1 = (rmg_double_t) (G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1));
-    Lattice::vel = *OMEGAI / t1;
-
-    t1 = (rmg_double_t) (G.get_NX_GRID(G.get_default_FG_RATIO()) * G.get_NY_GRID(G.get_default_FG_RATIO()) * G.get_NZ_GRID(G.get_default_FG_RATIO()));
-    Lattice::vel_f = *OMEGAI / t1;
+    Lattice::omega = *OMEGAI;
 
     /* Calculate length of supercell */
     distance = 0.0;
@@ -440,10 +432,10 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t
 
 }                               /* end latgen */
 
-rmg_double_t Lattice::metric (rmg_double_t * crystal)
+double Lattice::metric (double * crystal)
 {
-    rmg_double_t cartesian[3];          /* cartesian coordinates of point */
-    rmg_double_t distance;
+    double cartesian[3];          /* cartesian coordinates of point */
+    double distance;
     int ir;
     Lattice::to_cartesian (crystal, cartesian);
 
@@ -467,15 +459,15 @@ void Lattice::set_ibrav_type(int newtype)
 {
   Lattice::ibrav = newtype;
 }
-rmg_double_t Lattice::get_xside(void)
+double Lattice::get_xside(void)
 {
     return Lattice::xside;
 }
-rmg_double_t Lattice::get_yside(void)
+double Lattice::get_yside(void)
 {
     return Lattice::yside;
 }
-rmg_double_t Lattice::get_zside(void)
+double Lattice::get_zside(void)
 {
     return Lattice::zside;
 }
@@ -486,121 +478,23 @@ rmg_double_t Lattice::get_zside(void)
 int Lattice::ibrav;
 
 // lengths of the sides of the supercell
-rmg_double_t Lattice::xside;
-rmg_double_t Lattice::yside;
-rmg_double_t Lattice::zside;
+double Lattice::xside;
+double Lattice::yside;
+double Lattice::zside;
 
 // lattice vectors
-rmg_double_t Lattice::a0[3];
-rmg_double_t Lattice::a1[3];
-rmg_double_t Lattice::a2[3];
+double Lattice::a0[3];
+double Lattice::a1[3];
+double Lattice::a2[3];
 
 // reciprocal lattice vectors
-rmg_double_t Lattice::b0[3];
-rmg_double_t Lattice::b1[3];
-rmg_double_t Lattice::b2[3];      
+double Lattice::b0[3];
+double Lattice::b1[3];
+double Lattice::b2[3];      
 
 // cell dimensions
-rmg_double_t Lattice::celldm[6];
+double Lattice::celldm[6];
 
 // Total cell volume */
-rmg_double_t Lattice::omega;
-
-// Volume elements on coarse and fine grids
-rmg_double_t Lattice::vel;
-rmg_double_t Lattice::vel_f;
-
-/// C interface function
-extern "C" void set_ibrav_type(int newtype)
-{
-  Lattice L;
-  L.set_ibrav_type(newtype);
-}
-/// C interface function
-extern "C" int get_ibrav_type(void)
-{
-  Lattice L;
-  return L.get_ibrav_type();
-}
-extern "C" rmg_double_t get_xside(void)
-{
-    Lattice L;
-    return L.get_xside();
-}
-extern "C" rmg_double_t get_yside(void)
-{
-    Lattice L;
-    return L.get_yside();
-}
-extern "C" rmg_double_t get_zside(void)
-{
-    Lattice L;
-    return L.get_zside();
-}
-extern "C" rmg_double_t get_vel(void)
-{
-    return Lattice::vel;
-}
-extern "C" rmg_double_t get_vel_f(void)
-{
-    return Lattice::vel_f;
-}
-extern "C" rmg_double_t get_celldm(int which)
-{
-    return Lattice::celldm[which];
-}
-extern "C" rmg_double_t get_a0(int which)
-{
-    return Lattice::a0[which];
-}
-extern "C" rmg_double_t get_a1(int which)
-{
-    return Lattice::a1[which];
-}
-extern "C" rmg_double_t get_a2(int which)
-{
-    return Lattice::a2[which];
-}
-extern "C" rmg_double_t get_b0(int which)
-{
-    return Lattice::b0[which];
-}
-extern "C" rmg_double_t get_b1(int which)
-{
-    return Lattice::b1[which];
-}
-extern "C" rmg_double_t get_b2(int which)
-{
-    return Lattice::b2[which];
-}
-extern "C" void to_crystal (rmg_double_t *crystal, rmg_double_t *cartesian)
-{
-    Lattice L;
-    L.to_crystal(crystal, cartesian);
-}
-extern "C" void to_cartesian (rmg_double_t *crystal, rmg_double_t *cartesian)
-{
-    Lattice L;
-    L.to_cartesian(crystal, cartesian);
-}
-extern "C" void cross_product (rmg_double_t * a, rmg_double_t * b, rmg_double_t * c)
-{
-    Lattice L;
-    L.cross_product(a, b, c);
-}
-extern "C" rmg_double_t metric (rmg_double_t * crystal)
-{
-    Lattice L;
-    return L.metric(crystal);
-}
-extern "C" void recips(void)
-{
-    Lattice L;
-    L.recips();
-}
-extern "C" void latgen (rmg_double_t *celldm, rmg_double_t *a0, rmg_double_t *a1, rmg_double_t *a2, rmg_double_t *OMEGAI, int *flag)
-{
-    Lattice L;
-    L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
-}
+double Lattice::omega;
 

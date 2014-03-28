@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void pack_stop(rmg_double_t *sg, rmg_double_t *pg, int dimx, int dimy, int dimz)
+ *   void pack_stop(double *sg, double *pg, int dimx, int dimy, int dimz)
  *   pack smoothing grids sg to processor grids pg
  * INPUTS
  *   sg[(dimx+2)*(dimy+2)*(dimz+2)]: array with images
@@ -31,12 +31,9 @@
  */
 
 
-#include "make_conf.h"
-#include "rmgtypes.h"
 #include "auxiliary.h"
 #include "BlasWrappers.h"
 
-using namespace std;
 
 template void CPP_pack_stop<double>(double*, double*, int, int, int);
 template void CPP_pack_stop<float>(float*, float*, int, int, int);
@@ -73,12 +70,12 @@ void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 }                               /* end pack_stop */
 
 
-extern "C" void pack_stop (rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz)
+extern "C" void pack_stop (double * sg, double * pg, int dimx, int dimy, int dimz)
 {
-    CPP_pack_stop<rmg_double_t> (sg, pg, dimx, dimy, dimz);
+    CPP_pack_stop<double> (sg, pg, dimx, dimy, dimz);
 }
 
-extern "C" void pack_stop_f (rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz)
+extern "C" void pack_stop_f (float * sg, float * pg, int dimx, int dimy, int dimz)
 {
-    CPP_pack_stop<rmg_float_t> (sg, pg, dimx, dimy, dimz);
+    CPP_pack_stop<float> (sg, pg, dimx, dimy, dimz);
 }

@@ -1,6 +1,5 @@
 
-#include "make_conf.h"
-#include "rmgtypes.h"
+#include "auxiliary.h"
 #include "BlasWrappers.h"
 
 
@@ -38,12 +37,12 @@ void CPP_pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 }                               /* end pack_ptos_f */
 
 
-extern "C" void pack_ptos(rmg_double_t * sg, rmg_double_t * pg, int dimx, int dimy, int dimz)
+extern "C" void pack_ptos(double * sg, double * pg, int dimx, int dimy, int dimz)
 {
-    CPP_pack_ptos<rmg_double_t> (sg, pg, dimx, dimy, dimz);
+    CPP_pack_ptos<double> (sg, pg, dimx, dimy, dimz);
 }
 
-extern "C" void pack_ptos_f(rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz)
+extern "C" void pack_ptos_f(float * sg, float * pg, int dimx, int dimy, int dimz)
 {
-    CPP_pack_ptos<rmg_float_t> (sg, pg, dimx, dimy, dimz);
+    CPP_pack_ptos<float> (sg, pg, dimx, dimy, dimz);
 }

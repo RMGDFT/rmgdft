@@ -13,8 +13,6 @@
 #define NB_D 5
 #define NB_SELF 7
 
-// Uncomment when generating doxygen docs
-//#define __cplusplus
 #ifdef __cplusplus
 
 #include <iostream>

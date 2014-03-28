@@ -9,6 +9,10 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 
+BaseGrid Rmg_G;
+TradeImages Rmg_T;
+Lattice Rmg_L;
+
 extern "C"
 MPI_Comm transition_get_grid_comm(void)
 {

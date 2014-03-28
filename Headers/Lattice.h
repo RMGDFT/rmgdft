@@ -1,7 +1,7 @@
 #ifndef RMG_Lattice_H
 #define RMG_Lattice_H 1
 
-#include "rmgtypes.h"
+//#include "rmgtypes.h"
 #include "rmg_error.h"
 
 
@@ -50,10 +50,6 @@ public:
 
     // Total cell volume
     static double omega;
-
-    // Volume elements on coarse and fine grids
-    static double vel;
-    static double vel_f;
 
     void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, int *flag);
 

@@ -56,12 +56,11 @@ template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, do
 
 template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
-Lattice *Lptr;
-int level_flag;
 
-Mgrid::Mgrid(Lattice *lptr)
+Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
 {
-    Lptr = lptr;
+    L = lptr;
+    T = tptr;
     level_flag = 0;
 }
 
@@ -74,9 +73,9 @@ Mgrid::~Mgrid(void)
 template <typename RmgType>
 void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
-                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz,
+                 double gridhx, double gridhy, double gridhz,
                  int level, int *nb_ids, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, rmg_double_t step, rmg_double_t k,
+                 int *post_cyc, int mu_cyc, double step, double k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
@@ -93,19 +92,18 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
     RmgType *resid, *newf, *newv, *newwork;
-    TradeImages T;
 
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     resid = work + 2 * size;
 
-    scale = 2.0 / (gridhx * gridhx * Lptr->get_xside() * Lptr->get_xside());
-    scale = scale + (2.0 / (gridhy * gridhy * Lptr->get_yside() * Lptr->get_yside()));
-    scale = scale + (2.0 / (gridhz * gridhz * Lptr->get_zside() * Lptr->get_zside()));
+    scale = 2.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
+    scale = scale + (2.0 / (gridhy * gridhy * L->get_yside() * L->get_yside()));
+    scale = scale + (2.0 / (gridhz * gridhz * L->get_zside() * L->get_zside()));
     scale = step / scale;
 
 //    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_TRADE);
-    T.trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
+    T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
 
 
     for (idx = 0; idx < size; idx++)
@@ -130,10 +128,10 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
         /* trade boundary info */
         if ((level == max_levels) && (cycl == pre_cyc[level]-1)) {
-            T.trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
+            T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
         }
         else {
-            T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
         }
 
     }
@@ -165,7 +163,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
 /* evaluate residual */
     eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-    T.trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
+    T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
 
 
@@ -196,7 +194,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
         /* re-solve on this grid level */
 
-        T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+        T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
 
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
@@ -205,7 +203,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
 
             /* trade boundary info */
-            T.trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
 
         }                       /* end for */
 
@@ -214,7 +212,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
         {
 
             eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-            T.trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
+            T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end if */
 
@@ -230,9 +228,9 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
     int ix, iy, iz, ibrav;
     int incy, incx, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
-    rmg_double_t scale, face, corner, edge;
+    double scale, face, corner, edge;
 
-    ibrav = Lptr->get_ibrav_type();
+    ibrav = L->get_ibrav_type();
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
@@ -634,7 +632,7 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
 
 template <typename RmgType>
 void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, int dimz,
-                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, RmgType * res)
+                    double gridhx, double gridhy, double gridhz, RmgType * res)
 {
     int size, idx;
     FiniteDiff FD(L);
@@ -654,11 +652,11 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
 
 template <typename RmgType>
 void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
-                int dimx, int dimy, int dimz, rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz, rmg_double_t step, rmg_double_t k)
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k)
 {
     int size, idx;
-    rmg_double_t scale;
-    rmg_double_t diag;
+    double scale;
+    double diag;
     FiniteDiff FD(L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -752,7 +750,6 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
 
     }
 
-    throw 30;
     rmg_error_handler (__FILE__, __LINE__, "Boundary condition not programmed."); 
 
 }
