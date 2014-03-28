@@ -28,6 +28,7 @@ endif()
 
 set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
+/usr/lib64/mpi/gcc/openmpi/
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
@@ -215,17 +216,18 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (rmg-on ${LAPACK_LIBRARIES})
             target_link_libraries (rmg-negf ${LAPACK_LIBRARIES})
         endif (LAPACK_FOUND)
-        target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
-        target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
-        target_link_libraries (rmg "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+        find_package(SCALAPACK REQUIRED)
+        target_link_libraries (rmg ${BLACS_LIBRARIES})
+        target_link_libraries (rmg ${BLACSCINIT_LIBRARIES})
+        target_link_libraries (rmg ${SCALAPACK_LIBRARIES})
 
-        target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
-        target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
-        target_link_libraries (rmg-on "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+        target_link_libraries (rmg-on ${BLACS_LIBRARIES})
+        target_link_libraries (rmg-on ${BLACSCINIT_LIBRARIES})
+        target_link_libraries (rmg-on ${SCALAPACK_LIBRARIES})
 
-        target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacs.so")
-        target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libmpiblacsCinit.so")
-        target_link_libraries (rmg-negf "/usr/lib64/mpi/gcc/openmpi/lib64/libscalapack.so")
+        target_link_libraries (rmg-negf ${BLACS_LIBRARIES})     
+        target_link_libraries (rmg-negf ${BLACSCINIT_LIBRARIES})
+        target_link_libraries (rmg-negf ${SCALAPACK_LIBRARIES})
     endif(NOT CRAY_XK)
 
 endif(NOT RMG_MATH_LIBS)
