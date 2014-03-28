@@ -26,30 +26,30 @@ class Lattice {
 private:
 
     // Grid bravais lattice type 
-    static int ibrav;
+    int ibrav;
 
     // lengths of the sides of the supercell
-    static double xside;
-    static double yside;
-    static double zside;
+    double xside;
+    double yside;
+    double zside;
 
 public:
 
     // lattice vectors
-    static double a0[3];
-    static double a1[3];
-    static double a2[3];
+    double a0[3];
+    double a1[3];
+    double a2[3];
 
     // reciprocal lattice vectors
-    static double b0[3];
-    static double b1[3];
-    static double b2[3];
+    double b0[3];
+    double b1[3];
+    double b2[3];
 
     // cell dimensions
-    static double celldm[6];
+    double celldm[6];
 
     // Total cell volume
-    static double omega;
+    double omega;
 
     void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, int *flag);
 
@@ -60,6 +60,14 @@ public:
     int get_ibrav_type(void);
     void set_ibrav_type(int newtype);
     double metric (double * crystal);
+    double get_omega(void);
+    double get_celldm(int which);
+    double get_a0(int which);
+    double get_a1(int which);
+    double get_a2(int which);
+    double get_b0(int which);
+    double get_b1(int which);
+    double get_b2(int which);
 
     double get_xside(void);
     double get_yside(void);

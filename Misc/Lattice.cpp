@@ -224,7 +224,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
     int ir;
     double term, term1, term2, cbya, sine, singam, alat;
-    double distance, t1;
+    double distance;
     double cvec[3];
 
     /* Initialise the appropriate variables */
@@ -459,6 +459,40 @@ void Lattice::set_ibrav_type(int newtype)
 {
   Lattice::ibrav = newtype;
 }
+double Lattice::get_omega(void)
+{
+    return Lattice::omega;
+}
+double Lattice::get_celldm(int which)
+{
+    return Lattice::celldm[which];
+}
+
+double Lattice::get_a0(int which)
+{
+    return Lattice::a0[which];
+}
+double Lattice::get_a1(int which)
+{
+    return Lattice::a1[which];
+}
+double Lattice::get_a2(int which)
+{
+    return Lattice::a2[which];
+}
+double Lattice::get_b0(int which)
+{
+    return Lattice::b0[which];
+}
+double Lattice::get_b1(int which)
+{
+    return Lattice::b1[which];
+}
+double Lattice::get_b2(int which)
+{
+    return Lattice::b2[which];
+}
+
 double Lattice::get_xside(void)
 {
     return Lattice::xside;
@@ -473,28 +507,4 @@ double Lattice::get_zside(void)
 }
 
 //****/
-
-// Grid bravais lattice type 
-int Lattice::ibrav;
-
-// lengths of the sides of the supercell
-double Lattice::xside;
-double Lattice::yside;
-double Lattice::zside;
-
-// lattice vectors
-double Lattice::a0[3];
-double Lattice::a1[3];
-double Lattice::a2[3];
-
-// reciprocal lattice vectors
-double Lattice::b0[3];
-double Lattice::b1[3];
-double Lattice::b2[3];      
-
-// cell dimensions
-double Lattice::celldm[6];
-
-// Total cell volume */
-double Lattice::omega;
 

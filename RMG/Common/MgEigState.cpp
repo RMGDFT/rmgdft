@@ -22,7 +22,7 @@ using namespace std;
 static std::mutex vtot_sync_mutex;
 
 template <typename RmgType>
-void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
+void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, rmg_double_t * vtot_psi)
 {
 
     RmgTimer RT("Mg_eig");
@@ -41,13 +41,10 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
     rmg_double_t hxgrid, hygrid, hzgrid, sb_step;
     rmg_double_t tarr[8];
     RmgType *sg_twovpsi_t, *work1_t;
-    BaseGrid G;
-    TradeImages T;
-    Lattice L;
-    Mgrid MG(&L, &T);
+    Mgrid MG(L, T);
 
 
-    P0_BASIS = G.get_P0_BASIS(1);
+    P0_BASIS = G->get_P0_BASIS(1);
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = sp->dimx;
@@ -109,7 +106,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     RmgTimer *RT1 = new RmgTimer("Mg_eig: app_cir");
-    CPP_app_cir_driver<RmgType> (&L, &T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    CPP_app_cir_driver<RmgType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
     delete(RT1);
 
     // Copy double precision psi into single precison array
@@ -136,7 +133,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
         /* Apply Mehrstellen left hand operators */
         RT1 = new RmgTimer("Mg_eig: app_cil");
-        diag = CPP_app_cil_driver<RmgType> (&L, &T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        diag = CPP_app_cil_driver<RmgType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         delete(RT1);
 
         diag = -1.0 / diag;
@@ -158,7 +155,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
         /* B operating on 2*V*psi stored in work1 */
         RT1 = new RmgTimer("Mg_eig: app_cir");
-        CPP_app_cir_driver<RmgType> (&L, &T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        CPP_app_cir_driver<RmgType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
         for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 
@@ -235,13 +232,13 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             /* Pack the residual data into multigrid array */
             CPP_pack_ptos<RmgType> (sg_psi_t, res_t, dimx, dimy, dimz);
 
-            T.trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+            T->trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
 
 
             /* Smooth it once and store the smoothed residual in work1 */
             t1 = 145.0;
 
-            CPP_app_smooth<RmgType> (sg_psi_t, work1_t, G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1));
+            CPP_app_smooth<RmgType> (sg_psi_t, work1_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
 
             if(potential_acceleration) {
@@ -257,9 +254,9 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             MG.mgrid_solv (sg_twovpsi_t, work1_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
-                        G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1),
-                        G.get_PX_OFFSET(1), G.get_PY_OFFSET(1), G.get_PZ_OFFSET(1),
-                        G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1), ct.boundaryflag);
+                        G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                        G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
             delete(RT1);
 
             /* The correction is in a smoothing grid so we use this
@@ -338,16 +335,16 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
             /* Pack delta_rho into multigrid array */
             CPP_pack_ptos<RmgType> (sg_psi_t, res_t, dimx, dimy, dimz);
-            T.trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+            T->trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
             /* Smooth it once and store the smoothed charge in res */
-            CPP_app_smooth1<RmgType> (sg_psi_t, res_t, G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1));
+            CPP_app_smooth1<RmgType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
             for(idx = 0;idx <P0_BASIS;idx++) {
                 t2 += res_t[idx];
             }
-            t2 = real_sum_all(t2, pct.grid_comm) / (G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1));
+            t2 = real_sum_all(t2, pct.grid_comm) / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res_t[idx] -= t2;
             }
@@ -360,10 +357,10 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             RT1 = new RmgTimer("Mg_eig: mgrid_solv");
             MG.mgrid_solv (sg_twovpsi_t, res_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, G.get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
-                        G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1),
-                        G.get_PX_OFFSET(1), G.get_PY_OFFSET(1), G.get_PZ_OFFSET(1),
-                        G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1), ct.boundaryflag);
+                        hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
+                        G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                        G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
             delete(RT1);
 
             for(idx = 0;idx <P0_BASIS;idx++) {
@@ -415,13 +412,15 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
 
 } // end MgEigState
 
+#include "transition.h"
+
 extern "C" void mg_eig_state(STATE *sp, int tid, rmg_double_t *vtot_psi)
 {
-    MgEigState<rmg_double_t> (sp, tid, vtot_psi);
+    MgEigState<rmg_double_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 extern "C" void mg_eig_state_f(STATE *sp, int tid, rmg_double_t *vtot_psi)
 {
-    MgEigState<rmg_float_t> (sp, tid, vtot_psi);
+    MgEigState<rmg_float_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 
 extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision)
@@ -436,12 +435,12 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_ps
 
     if(precision == sizeof(rmg_double_t)) {
 
-        MgEigState<rmg_double_t> (sp, tid, vtot_psi);
+        MgEigState<rmg_double_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
     }
     else {
 
-        MgEigState<rmg_float_t> (sp, tid, vtot_psi);
+        MgEigState<rmg_float_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
     }
 

@@ -22,6 +22,8 @@ class TradeImages {
 
 private:
 
+    BaseGrid *G;
+
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
     static int mode;
 
@@ -61,7 +63,7 @@ public:
     /// MPI communicator to use
     static MPI_Comm comm;
 
-    TradeImages(void);
+    TradeImages(BaseGrid *BG);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);
     void set_MPI_comm(MPI_Comm comm);

@@ -10,7 +10,7 @@
 #include "typedefs.h"
 
 BaseGrid Rmg_G;
-TradeImages Rmg_T;
+TradeImages *Rmg_T;
 Lattice Rmg_L;
 
 extern "C"

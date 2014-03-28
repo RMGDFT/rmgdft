@@ -63,17 +63,18 @@ MPI_Request TradeImages::TradeImages::sreqs[26];
 MPI_Request TradeImages::TradeImages::rreqs[26];
 
 // Constructor
-TradeImages::TradeImages(void)
+TradeImages::TradeImages(BaseGrid *BG)
 {
+
+    this->G = BG;
 
     if((swbuf1x == NULL) && (swbuf2x == NULL)) {
         int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2, retval;
-        BaseGrid G;
         BaseThread T(0);
 
-        grid_xp = G.get_PX0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-        grid_yp = G.get_PY0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-        grid_zp = G.get_PZ0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+        grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+        grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+        grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
         if(grid_xp > grid_yp) {
             grid_max1 = grid_xp;
             if(grid_yp > grid_zp) {
@@ -144,7 +145,6 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     RmgType *swbuf1x_f, *swbuf2x_f;
     int ACTIVE_THREADS = 1;
     BaseThread T(0);
-    BaseGrid G;
 
     factor = sizeof(RmgType);
 
@@ -185,7 +185,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
 
 
-    nb_ids = G.get_neighbors();
+    nb_ids = this->G->get_neighbors();
 
     /* Load up w with the basic stuff */
     for (ix = 0; ix < dimx; ix++)
@@ -422,7 +422,6 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     int alloc, alloc1, toffset;
     int ACTIVE_THREADS = 1, factor;
     int *nb_ids;
-    BaseGrid G;
     BaseThread T(0);
 
     factor = sizeof(RmgType);
@@ -436,7 +435,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     swbuf1x_f = (RmgType *)TradeImages::swbuf1x;
     swbuf2x_f = (RmgType *)TradeImages::swbuf2x;
 
-    nb_ids = G.get_neighbors();
+    nb_ids = this->G->get_neighbors();
 
     if(TradeImages::mode == ASYNC_MODE) {
         if(type == CENTRAL_TRADE) {
@@ -693,15 +692,14 @@ void TradeImages::init_trade_imagesx_async(void)
     int t_pe_x, t_pe_y, t_pe_z;
     int grid_xp, grid_yp, grid_zp;
     BaseThread T(0);
-    BaseGrid G;
 
     THREADS_PER_NODE = T.get_threads_per_node();
 
     //printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
 
-    grid_xp = G.get_PX0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-    grid_yp = G.get_PY0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-    grid_zp = G.get_PZ0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     if(grid_xp > grid_yp) {
         GRID_MAX1 = grid_xp;
         if(grid_yp > grid_zp) {
@@ -729,19 +727,19 @@ void TradeImages::init_trade_imagesx_async(void)
      }
 
     // Set up the target node array
-    G.pe2xyz(G.get_gridpe(), &pe_x, &pe_y, &pe_z);
+    this->G->pe2xyz(this->G->get_gridpe(), &pe_x, &pe_y, &pe_z);
     for(ix = -1;ix <= 1;ix++) {
 
-        t_pe_x = (pe_x + ix + G.get_PE_X()) % G.get_PE_X();
+        t_pe_x = (pe_x + ix + this->G->get_PE_X()) % this->G->get_PE_X();
 
         for(iy = -1;iy <= 1;iy++) {
 
-            t_pe_y = (pe_y + iy + G.get_PE_Y()) % G.get_PE_Y();
+            t_pe_y = (pe_y + iy + this->G->get_PE_Y()) % this->G->get_PE_Y();
 
             for(iz = -1;iz <= 1;iz++) {
 
-                t_pe_z = (pe_z + iz + G.get_PE_Z()) % G.get_PE_Z();
-                TradeImages::target_node[ix+1][iy+1][iz+1] = t_pe_x*G.get_PE_Y()*G.get_PE_Z() + t_pe_y*G.get_PE_Z() + t_pe_z;
+                t_pe_z = (pe_z + iz + this->G->get_PE_Z()) % this->G->get_PE_Z();
+                TradeImages::target_node[ix+1][iy+1][iz+1] = t_pe_x*this->G->get_PE_Y()*this->G->get_PE_Z() + t_pe_y*this->G->get_PE_Z() + t_pe_z;
 
             }
         }
