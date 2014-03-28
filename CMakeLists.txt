@@ -216,18 +216,24 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (rmg-on ${LAPACK_LIBRARIES})
             target_link_libraries (rmg-negf ${LAPACK_LIBRARIES})
         endif (LAPACK_FOUND)
+
         find_package(SCALAPACK REQUIRED)
-        target_link_libraries (rmg ${BLACS_LIBRARIES})
-        target_link_libraries (rmg ${BLACSCINIT_LIBRARIES})
         target_link_libraries (rmg ${SCALAPACK_LIBRARIES})
-
-        target_link_libraries (rmg-on ${BLACS_LIBRARIES})
-        target_link_libraries (rmg-on ${BLACSCINIT_LIBRARIES})
         target_link_libraries (rmg-on ${SCALAPACK_LIBRARIES})
-
-        target_link_libraries (rmg-negf ${BLACS_LIBRARIES})     
-        target_link_libraries (rmg-negf ${BLACSCINIT_LIBRARIES})
         target_link_libraries (rmg-negf ${SCALAPACK_LIBRARIES})
+
+
+        find_package(BLACS)
+        if(BLACS_FOUND)
+            target_link_libraries (rmg ${BLACS_LIBRARIES})
+            target_link_libraries (rmg ${BLACSCINIT_LIBRARIES})
+
+            target_link_libraries (rmg-on ${BLACS_LIBRARIES})
+            target_link_libraries (rmg-on ${BLACSCINIT_LIBRARIES})
+
+            target_link_libraries (rmg-negf ${BLACS_LIBRARIES})     
+            target_link_libraries (rmg-negf ${BLACSCINIT_LIBRARIES})
+        endif(BLACS_FOUND)
     endif(NOT CRAY_XK)
 
 endif(NOT RMG_MATH_LIBS)
