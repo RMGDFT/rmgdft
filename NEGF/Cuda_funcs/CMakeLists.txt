@@ -1,4 +1,4 @@
-CUDA_ADD_LIBRARY (NEGF_Cudafunc
+ADD_LIBRARY (NEGF_Cudafunc
 matrix_inverse_anyprobe_cuda.c
 matrix_inverse_cuda.c
 rho_munu_cuda.c
