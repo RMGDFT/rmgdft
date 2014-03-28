@@ -47,7 +47,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
     Mgrid MG(&L);
 
 
-    P0_BASIS = G.get_P0_BASIS();
+    P0_BASIS = G.get_P0_BASIS(1);
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = sp->dimx;
@@ -241,7 +241,7 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             /* Smooth it once and store the smoothed residual in work1 */
             t1 = 145.0;
 
-            CPP_app_smooth<RmgType> (sg_psi_t, work1_t, G.get_PX0_GRID(), G.get_PY0_GRID(), G.get_PZ0_GRID());
+            CPP_app_smooth<RmgType> (sg_psi_t, work1_t, G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1));
 
 
             if(potential_acceleration) {
@@ -257,9 +257,9 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             MG.mgrid_solv (sg_twovpsi_t, work1_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
-                        G.get_NX_GRID(), G.get_NY_GRID(), G.get_NZ_GRID(),
-                        G.get_PX_OFFSET(), G.get_PY_OFFSET(), G.get_PZ_OFFSET(),
-                        G.get_PX0_GRID(), G.get_PY0_GRID(), G.get_PZ0_GRID(), ct.boundaryflag);
+                        G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1),
+                        G.get_PX_OFFSET(1), G.get_PY_OFFSET(1), G.get_PZ_OFFSET(1),
+                        G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1), ct.boundaryflag);
             delete(RT1);
 
             /* The correction is in a smoothing grid so we use this
@@ -340,14 +340,14 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             CPP_pack_ptos<RmgType> (sg_psi_t, res_t, dimx, dimy, dimz);
             T.trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
             /* Smooth it once and store the smoothed charge in res */
-            CPP_app_smooth1<RmgType> (sg_psi_t, res_t, G.get_PX0_GRID(), G.get_PY0_GRID(), G.get_PZ0_GRID());
+            CPP_app_smooth1<RmgType> (sg_psi_t, res_t, G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1));
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
             for(idx = 0;idx <P0_BASIS;idx++) {
                 t2 += res_t[idx];
             }
-            t2 = real_sum_all(t2, pct.grid_comm) / (G.get_NX_GRID() * G.get_NY_GRID() * G.get_NZ_GRID());
+            t2 = real_sum_all(t2, pct.grid_comm) / (G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1));
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res_t[idx] -= t2;
             }
@@ -361,9 +361,9 @@ void MgEigState (STATE * sp, int tid, rmg_double_t * vtot_psi)
             MG.mgrid_solv (sg_twovpsi_t, res_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
                         hygrid, hzgrid, 0, G.get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
-                        G.get_NX_GRID(), G.get_NY_GRID(), G.get_NZ_GRID(),
-                        G.get_PX_OFFSET(), G.get_PY_OFFSET(), G.get_PZ_OFFSET(),
-                        G.get_PX0_GRID(), G.get_PY0_GRID(), G.get_PZ0_GRID(), ct.boundaryflag);
+                        G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1),
+                        G.get_PX_OFFSET(1), G.get_PY_OFFSET(1), G.get_PZ_OFFSET(1),
+                        G.get_PX0_GRID(1), G.get_PY0_GRID(1), G.get_PZ0_GRID(1), ct.boundaryflag);
             delete(RT1);
 
             for(idx = 0;idx <P0_BASIS;idx++) {

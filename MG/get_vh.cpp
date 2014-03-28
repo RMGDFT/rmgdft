@@ -39,7 +39,6 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
-#include "FineGrid.h"
 #include "RmgSumAll.h"
 #include "auxiliary.h"
 #include "vhartree.h"
@@ -51,6 +50,7 @@ using namespace std;
 
 
 /// Poisson solver that uses compact implicit (Mehrstellen) and multigrid techniques.
+/// @param G Grid object that defines the layout of the 3-D grid and the MPI domains
 /// @param rho Charge density. When using periodic boundary conditions the cell must be charge neutral.
 /// @param vhartree Hartree potential corresponding to rho.
 /// @param min_sweeps Minimum number of top level sweeps to perform.
@@ -63,10 +63,11 @@ using namespace std;
 /// @param global_step Time step for the jacobi iteration on the finest (0th) grid level.
 /// @param coarse_step Time step for the jacobi iteration on the coarse grid levels.
 /// @param boundaryflag Type of boundary condition. Periodic is implemented internally.
-double CPP_get_vh (double * rho, double *vhartree,
+/// @param density Density of the grid relative to the default grid
+double CPP_get_vh (BaseGrid *G, double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
-                 double rms_target, double global_step, double coarse_step, int boundaryflag)
+                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density)
 {
 
     int idx, its, cycles;
@@ -74,11 +75,11 @@ double CPP_get_vh (double * rho, double *vhartree,
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     double k_vh;
-    FineGrid FG(2);     // Hartree potential is on a double density grid
     Lattice L;
     Mgrid MG(&L);
     TradeImages T;
-    int global_basis = FG.get_GLOBAL_BASIS();
+
+    int global_basis = G->get_GLOBAL_BASIS(density);
 
     /* Pre and post smoothings on each level */
     int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
@@ -87,7 +88,7 @@ double CPP_get_vh (double * rho, double *vhartree,
     if(maxlevel >= MAX_MG_LEVELS)
        rmg_error_handler(__FILE__, __LINE__, "Too many multigrid levels requested.");
 
-    int dimx = FG.get_PE_GRIDX(), dimy = FG.get_PE_GRIDY(), dimz = FG.get_PE_GRIDZ();
+    int dimx = G->get_PX0_GRID(density), dimy = G->get_PY0_GRID(density), dimz = G->get_PZ0_GRID(density);
 
     // Solve to a high degree of precision on the coarsest level
     poi_pre[maxlevel] = 25;
@@ -136,7 +137,7 @@ double CPP_get_vh (double * rho, double *vhartree,
 
                 /* Apply operator */
                 diag = CPP_app_cil_driver (vhartree, mglhsarr, dimx, dimy, dimz,
-                            FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);
+                            G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
                 /* Generate residual vector */
@@ -159,12 +160,12 @@ double CPP_get_vh (double * rho, double *vhartree,
 
                 MG.mgrid_solv<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz, 
-                            FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(),
-                            0, FG.get_neighbors(), maxlevel, poi_pre,
+                            G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
+                            0, G->get_neighbors(), maxlevel, poi_pre,
                             poi_post, mucycles, coarse_step, k_vh,
-                            FG.get_GLOBAL_GRIDX(), FG.get_GLOBAL_GRIDY(), FG.get_GLOBAL_GRIDZ(),
-                            FG.get_PE_OFFSETX(), FG.get_PE_OFFSETY(), FG.get_PE_OFFSETZ(),
-                            FG.get_PE_GRIDX(), FG.get_PE_GRIDY(), FG.get_PE_GRIDZ(), boundaryflag);
+                            G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
+                            G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),
+                            G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
 
 
                 /* Transfer solution back to mgresarr array */
@@ -207,7 +208,7 @@ double CPP_get_vh (double * rho, double *vhartree,
 
         /*Get residual*/
         diag = CPP_app_cil_driver<double> (vhartree, mglhsarr, dimx, dimy, dimz,
-                            FG.get_hxxgrid(), FG.get_hyygrid(), FG.get_hzzgrid(), APP_CI_FOURTH);
+                            G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
 
@@ -228,7 +229,7 @@ double CPP_get_vh (double * rho, double *vhartree,
         its ++;
     }                           /* end for */
 
-//    if(FG.get_gridpe() == 0)
+//    if(G->get_gridpe() == 0)
 //        cout << "get_vh: executed " << its << " sweeps, residual is " << residual << endl;
 
     /* Release our memory */

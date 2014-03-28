@@ -391,10 +391,10 @@ void Lattice::latgen (rmg_double_t * celldm, rmg_double_t * OMEGAI, rmg_double_t
     *OMEGAI = fabs (*OMEGAI);
 
     /* Generate volume element */
-    t1 = (rmg_double_t) (G.get_NX_GRID() * G.get_NY_GRID() * G.get_NZ_GRID());
+    t1 = (rmg_double_t) (G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1));
     Lattice::vel = *OMEGAI / t1;
 
-    t1 = (rmg_double_t) (G.get_FNX_GRID() * G.get_FNY_GRID() * G.get_FNZ_GRID());
+    t1 = (rmg_double_t) (G.get_NX_GRID(G.get_default_FG_RATIO()) * G.get_NY_GRID(G.get_default_FG_RATIO()) * G.get_NZ_GRID(G.get_default_FG_RATIO()));
     Lattice::vel_f = *OMEGAI / t1;
 
     /* Calculate length of supercell */

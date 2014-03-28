@@ -2,7 +2,6 @@
 #include "FiniteDiff.h"
 #include "Mgrid.h"
 #include "BlasWrappers.h"
-#include "FineGrid.h"
 #include "vhartree.h"
 #include "auxiliary.h"
 #include "const.h"
@@ -75,8 +74,8 @@ extern "C" void solv_pois (double * vmat, double * fmat, double * work,
 
 extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)
 {
-    FineGrid FG(2);
-    int dimx = FG.get_PE_GRIDX(), dimy = FG.get_PE_GRIDY(), dimz = FG.get_PE_GRIDZ();
+    BaseGrid G;
+    int dimx = G.get_PX0_GRID(G.get_default_FG_RATIO()), dimy = G.get_PY0_GRID(G.get_default_FG_RATIO()), dimz = G.get_PZ0_GRID(G.get_default_FG_RATIO());
     int pbasis = dimx * dimy * dimz;
     int idx;
     double *rho_neutral = new double[pbasis];
@@ -85,9 +84,9 @@ extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sw
     for (idx = 0; idx < pbasis; idx++)
         rho_neutral[idx] = rho[idx] - rhoc[idx];
 
-    double residual = CPP_get_vh (rho_neutral, ct.vh_ext, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, 
+    double residual = CPP_get_vh (&G, rho_neutral, ct.vh_ext, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, 
                 ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target, 
-                ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag);
+                ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, G.get_default_FG_RATIO());
     //cout << "Hartree residual = " << residual << endl;
 
     /* Pack the portion of the hartree potential used by the wavefunctions

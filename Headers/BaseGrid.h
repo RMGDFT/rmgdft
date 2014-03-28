@@ -42,34 +42,16 @@ protected:
     /* Basis size on each PE */
     static int P0_BASIS;
 
-    /* Fine grid basis size on each PE */
-    static int FP0_BASIS;
-
     /* MPI specific info */
     static int gridpe;
     static int neighbors[6];
 
 private:
 
-    /* Global fine grid dimensions */
-    static int FNX_GRID;
-    static int FNY_GRID;
-    static int FNZ_GRID;
-
     /* Grid offsets on each PE */
     static int PX_OFFSET;
     static int PY_OFFSET;
     static int PZ_OFFSET;
-
-    /* Fine grid sizes on each PE */
-    static int FPX0_GRID;
-    static int FPY0_GRID;
-    static int FPZ0_GRID;
-
-    /* Fine Grid offsets on each PE */
-    static int FPX_OFFSET;
-    static int FPY_OFFSET;
-    static int FPZ_OFFSET;
 
     /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
     static double anisotropy;
@@ -81,53 +63,39 @@ private:
 
 public:
 
-    /* Fine grid/coarse grid ratio */
-    static int FG_RATIO;
+    /* Fine grid/coarse default ratio */
+    static int default_FG_RATIO;
 
     /* Function prototypes */
-    void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int FG_RATIO);
+    void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int default_FG_RATIO);
     void set_nodes(int newgridpe);
-    int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
-    int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
+    void find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
+    void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
+
+    int get_default_FG_RATIO(void);
 
     int get_PE_X(void);
     int get_PE_Y(void);
     int get_PE_Z(void);
 
-    int get_NX_GRID(void);
-    int get_NY_GRID(void);
-    int get_NZ_GRID(void);
+    int get_NX_GRID(int density);
+    int get_NY_GRID(int density);
+    int get_NZ_GRID(int density);
 
-    double get_hxgrid(void);
-    double get_hygrid(void);
-    double get_hzgrid(void);
+    double get_hxgrid(int density);
+    double get_hygrid(int density);
+    double get_hzgrid(int density);
 
-    double get_hxxgrid(void);
-    double get_hyygrid(void);
-    double get_hzzgrid(void);
+    int get_PX0_GRID(int density);
+    int get_PY0_GRID(int density);
+    int get_PZ0_GRID(int density);
 
-    int get_FNX_GRID(void);
-    int get_FNY_GRID(void);
-    int get_FNZ_GRID(void);
+    int get_PX_OFFSET(int density);
+    int get_PY_OFFSET(int density);
+    int get_PZ_OFFSET(int density);
 
-    int get_PX0_GRID(void);
-    int get_PY0_GRID(void);
-    int get_PZ0_GRID(void);
-
-    int get_PX_OFFSET(void);
-    int get_PY_OFFSET(void);
-    int get_PZ_OFFSET(void);
-
-    int get_FPX_OFFSET(void);
-    int get_FPY_OFFSET(void);
-    int get_FPZ_OFFSET(void);
-
-    int get_P0_BASIS(void);
-    int get_FP0_BASIS(void);
-
-    int get_FPX0_GRID(void);
-    int get_FPY0_GRID(void);
-    int get_FPZ0_GRID(void);
+    int get_P0_BASIS(int density);
+    int get_GLOBAL_BASIS(int density);
 
     void set_anisotropy(double a);
     double get_anisotropy(void);

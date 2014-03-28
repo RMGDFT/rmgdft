@@ -32,12 +32,7 @@ using namespace std;
         BaseGrid::PE_Y = newPE_Y;
         BaseGrid::PE_Z = newPE_Z;
 
-        BaseGrid::FG_RATIO = newFG_RATIO;
-
-        BaseGrid::FNX_GRID = newNX_GRID * newFG_RATIO;
-        BaseGrid::FNY_GRID = newNY_GRID * newFG_RATIO;
-        BaseGrid::FNZ_GRID = newNZ_GRID * newFG_RATIO;
-
+        BaseGrid::default_FG_RATIO = newFG_RATIO;
         BaseGrid::grid_first = 1;
     }
 
@@ -76,27 +71,27 @@ using namespace std;
 
         // Adjust if needed
         BaseGrid::find_node_sizes(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID, &BaseGrid::PX0_GRID, &BaseGrid::PY0_GRID, &BaseGrid::PZ0_GRID);
-        BaseGrid::find_node_sizes(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID, &BaseGrid::FPX0_GRID, &BaseGrid::FPY0_GRID, &BaseGrid::FPZ0_GRID);
+        //BaseGrid::find_node_sizes(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID, &BaseGrid::FPX0_GRID, &BaseGrid::FPY0_GRID, &BaseGrid::FPZ0_GRID);
 
         BaseGrid::P0_BASIS = BaseGrid::PX0_GRID * BaseGrid::PY0_GRID * BaseGrid::PZ0_GRID;
-        BaseGrid::FP0_BASIS = BaseGrid::FPX0_GRID * BaseGrid::FPY0_GRID * BaseGrid::FPZ0_GRID;
+        //BaseGrid::FP0_BASIS = BaseGrid::FPX0_GRID * BaseGrid::FPY0_GRID * BaseGrid::FPZ0_GRID;
 
         // Now compute the global grid offset of the first point of the coarse and fine node grids
         BaseGrid::find_node_offsets(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID,
                           &BaseGrid::PX_OFFSET, &BaseGrid::PY_OFFSET, &BaseGrid::PZ_OFFSET);
 
-        BaseGrid::find_node_offsets(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID,
-                          &BaseGrid::FPX_OFFSET, &BaseGrid::FPY_OFFSET, &BaseGrid::FPZ_OFFSET);
+        //BaseGrid::find_node_offsets(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID,
+        //                  &BaseGrid::FPX_OFFSET, &BaseGrid::FPY_OFFSET, &BaseGrid::FPZ_OFFSET);
 
                  
 
     }
 
-    int BaseGrid::find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
+    void BaseGrid::find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
     {
 
 	int ii, jj, kk;
-	int idx, ix, iy, iz, mfac;
+	int ix, iy, iz, mfac;
 
 	BaseGrid::pe2xyz (gridpe, &ii, &jj, &kk);
 
@@ -116,7 +111,7 @@ using namespace std;
 	if(kk < iz) *pzsize += mfac;
     }
 
-    int BaseGrid::find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
+    void BaseGrid::find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
     {
 
 	int ii, jj, kk;
@@ -158,6 +153,10 @@ using namespace std;
 
     }
 
+    int BaseGrid::get_default_FG_RATIO(void)
+    {
+        return BaseGrid::default_FG_RATIO;
+    }
     int BaseGrid::get_PE_X(void)
     {
 	if(!BaseGrid::grid_first)
@@ -177,166 +176,92 @@ using namespace std;
 	return BaseGrid::PE_Z;
     }
 
-    int BaseGrid::get_NX_GRID(void)
+    int BaseGrid::get_NX_GRID(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::NX_GRID;
+	return density * BaseGrid::NX_GRID;
     }
-    int BaseGrid::get_NY_GRID(void)
+    int BaseGrid::get_NY_GRID(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::NY_GRID;
+	return density * BaseGrid::NY_GRID;
     }
-    int BaseGrid::get_NZ_GRID(void)
+    int BaseGrid::get_NZ_GRID(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::NZ_GRID;
-    }
-
-    double BaseGrid::get_hxgrid(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((double)BaseGrid::NX_GRID);
-    }
-    double BaseGrid::get_hygrid(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((double)BaseGrid::NY_GRID);
-    }
-    double BaseGrid::get_hzgrid(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((double)BaseGrid::NZ_GRID);
+	return density * BaseGrid::NZ_GRID;
     }
 
-    double BaseGrid::get_hxxgrid(void)
+    double BaseGrid::get_hxgrid(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((double)(BaseGrid::NX_GRID * BaseGrid::FG_RATIO));
+        return 1.0 / ((double)(density * BaseGrid::NX_GRID));
     }
-    double BaseGrid::get_hyygrid(void)
+    double BaseGrid::get_hygrid(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((double)(BaseGrid::NY_GRID * BaseGrid::FG_RATIO));
+        return 1.0 / ((double)(density * BaseGrid::NY_GRID));
     }
-    double BaseGrid::get_hzzgrid(void)
+    double BaseGrid::get_hzgrid(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-        return 1.0 / ((double)(BaseGrid::NZ_GRID * BaseGrid::FG_RATIO));
+        return 1.0 / ((double)(density * BaseGrid::NZ_GRID));
     }
 
 
-    int BaseGrid::get_FNX_GRID(void)
+    int BaseGrid::get_PX0_GRID(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FNX_GRID;
+	return density * BaseGrid::PX0_GRID;
     }
-    int BaseGrid::get_FNY_GRID(void)
+    int BaseGrid::get_PY0_GRID(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FNY_GRID;
+	return density * BaseGrid::PY0_GRID;
     }
-    int BaseGrid::get_FNZ_GRID(void)
+    int BaseGrid::get_PZ0_GRID(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FNZ_GRID;
+	return density * BaseGrid::PZ0_GRID;
     }
-
-    int BaseGrid::get_PX0_GRID(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::PX0_GRID;
-    }
-    int BaseGrid::get_PY0_GRID(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::PY0_GRID;
-    }
-    int BaseGrid::get_PZ0_GRID(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::PZ0_GRID;
-    }
-    int BaseGrid::get_PX_OFFSET(void)
+    int BaseGrid::get_PX_OFFSET(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PX_OFFSET;
     }
-    int BaseGrid::get_PY_OFFSET(void)
+    int BaseGrid::get_PY_OFFSET(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PY_OFFSET;
     }
-    int BaseGrid::get_PZ_OFFSET(void)
+    int BaseGrid::get_PZ_OFFSET(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PZ_OFFSET;
     }
-    int BaseGrid::get_FPX_OFFSET(void)
+    int BaseGrid::get_P0_BASIS(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FPX_OFFSET;
+	return density * density * density * BaseGrid::P0_BASIS;
     }
-    int BaseGrid::get_FPY_OFFSET(void)
+    int BaseGrid::get_GLOBAL_BASIS(int density)
     {
 	if(!BaseGrid::grid_first)
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FPY_OFFSET;
-    }
-    int BaseGrid::get_FPZ_OFFSET(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FPZ_OFFSET;
-    }
-    int BaseGrid::get_P0_BASIS(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::P0_BASIS;
-    }
-    int BaseGrid::get_FP0_BASIS(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FP0_BASIS;
-    }
-    int BaseGrid::get_FPX0_GRID(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FPX0_GRID;
-    }
-    int BaseGrid::get_FPY0_GRID(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FPY0_GRID;
-    }
-    int BaseGrid::get_FPZ0_GRID(void)
-    {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
-	return BaseGrid::FPZ0_GRID;
+	return density * density * density * BaseGrid::NX_GRID * BaseGrid::NY_GRID * BaseGrid::NZ_GRID;
     }
     void BaseGrid::set_anisotropy(double a)
     {
@@ -397,15 +322,8 @@ int BaseGrid::NY_GRID;
 /// Global coarse grid Z dimension
 int BaseGrid::NZ_GRID;
 
-/// Fine/coarse grid ratio
-int BaseGrid::FG_RATIO;
-
-/// Global fine grid X dimension
-int BaseGrid::FNX_GRID;
-/// Global fine grid Y dimension
-int BaseGrid::FNY_GRID;
-/// Global fine grid Z dimension
-int BaseGrid::FNZ_GRID;
+/// Default ratio of fine grid to coarse grid
+int BaseGrid::default_FG_RATIO;
 
 /* Node (PE) dimensions */
 int BaseGrid::PE_X;
@@ -427,19 +345,6 @@ int BaseGrid::PZ_OFFSET;
 /* Basis size on each PE */
 int BaseGrid::P0_BASIS;
 
-/* Fine grid sizes on each PE */
-int BaseGrid::FPX0_GRID;
-int BaseGrid::FPY0_GRID;
-int BaseGrid::FPZ0_GRID;
-
-/* Fine Grid offsets on each PE */
-int BaseGrid::FPX_OFFSET;
-int BaseGrid::FPY_OFFSET;
-int BaseGrid::FPZ_OFFSET;
-
-/* Fine grid basis size on each PE */
-int BaseGrid::FP0_BASIS;
-
 /* MPI stuff */
 int BaseGrid::gridpe;
 int BaseGrid::neighbors[6];
@@ -452,233 +357,3 @@ int BaseGrid::grid_first=0;
 int BaseGrid::anisotropy_first=0;
 
 
-
-/// C interface function
-extern "C" int get_PE_X(void)
-{
-  BaseGrid G;
-  return G.get_PE_X();
-}
-/// C interface function
-extern "C" int get_PE_Y(void)
-{
-  BaseGrid G;
-  return G.get_PE_Y();
-}
-/// C interface function
-extern "C" int get_PE_Z(void)
-{
-  BaseGrid G;
-  return G.get_PE_Z();
-}
-/// C interface function
-extern "C" int get_NX_GRID(void)
-{
-  BaseGrid G;
-  return G.get_NX_GRID();
-}
-/// C interface function
-extern "C" int get_NY_GRID(void)
-{
-  BaseGrid G;
-  return G.get_NY_GRID();
-}
-/// C interface function
-extern "C" int get_NZ_GRID(void)
-{
-  BaseGrid G;
-  return G.get_NZ_GRID();
-}
-/// C interface function
-extern "C" double get_hxgrid(void)
-{
-    BaseGrid G;
-    return G.get_hxgrid();
-}
-/// C interface function
-extern "C" double get_hygrid(void)
-{
-    BaseGrid G;
-    return G.get_hygrid();
-}
-/// C interface function
-extern "C" double get_hzgrid(void)
-{
-    BaseGrid G;
-    return G.get_hzgrid();
-}
-/// C interface function
-extern "C" double get_hxxgrid(void)
-{
-    BaseGrid G;
-    return G.get_hxxgrid();
-}
-/// C interface function
-extern "C" double get_hyygrid(void)
-{
-    BaseGrid G;
-    return G.get_hyygrid();
-}
-/// C interface function
-extern "C" double get_hzzgrid(void)
-{
-    BaseGrid G;
-    return G.get_hzzgrid();
-}
-/// C interface function
-extern "C" int get_FNX_GRID(void)
-{
-  BaseGrid G;
-  return G.get_FNX_GRID();
-}
-/// C interface function
-extern "C" int get_FNY_GRID(void)
-{
-  BaseGrid G;
-  return G.get_FNY_GRID();
-}
-/// C interface function
-extern "C" int get_FNZ_GRID(void)
-{
-  BaseGrid G;
-  return G.get_FNZ_GRID();
-}
-/// C interface function
-extern "C" int get_FG_RATIO(void)
-{
-  BaseGrid G;
-  return G.FG_RATIO;
-}
-/// C interface function
-extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
-{
-  BaseGrid G;
-  G.set_grids(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, newFG_RATIO);
-}
-/// C interface function
-extern "C" void set_nodes(int newgridpe)
-{
-  BaseGrid G;
-  G.set_nodes(newgridpe);
-}
-/// C interface function
-extern "C" void set_anisotropy(double newanisotropy)
-{
-  BaseGrid G;
-  G.set_anisotropy(newanisotropy);
-}
-/// C interface function
-extern "C" int get_PX0_GRID(void)
-{
-  BaseGrid G;
-  return G.get_PX0_GRID();
-}
-/// C interface function
-extern "C" int get_PY0_GRID(void)
-{
-  BaseGrid G;
-  return G.get_PY0_GRID();
-}
-/// C interface function
-extern "C" int get_PZ0_GRID(void)
-{
-  BaseGrid G;
-  return G.get_PZ0_GRID();
-}
-/// C interface function
-extern "C" int get_PX_OFFSET(void)
-{
-  BaseGrid G;
-  return G.get_PX_OFFSET();
-}
-/// C interface function
-extern "C" int get_PY_OFFSET(void)
-{
-  BaseGrid G;
-  return G.get_PY_OFFSET();
-}
-/// C interface function
-extern "C" int get_PZ_OFFSET(void)
-{
-  BaseGrid G;
-  return G.get_PZ_OFFSET();
-}
-/// C interface function
-extern "C" int get_FPX_OFFSET(void)
-{
-  BaseGrid G;
-  return G.get_FPX_OFFSET();
-}
-/// C interface function
-extern "C" int get_FPY_OFFSET(void)
-{
-  BaseGrid G;
-  return G.get_FPY_OFFSET();
-}
-/// C interface function
-extern "C" int get_FPZ_OFFSET(void)
-{
-  BaseGrid G;
-  return G.get_FPZ_OFFSET();
-}
-/// C interface function
-extern "C" int get_P0_BASIS(void)
-{
-  BaseGrid G;
-  return G.get_P0_BASIS();
-}
-/// C interface function
-extern "C" int get_FP0_BASIS(void)
-{
-  BaseGrid G;
-  return G.get_FP0_BASIS();
-}
-/// C interface function
-extern "C" int get_FPX0_GRID(void)
-{
-  BaseGrid G;
-  return G.get_FPX0_GRID();
-}
-/// C interface function
-extern "C" int get_FPY0_GRID(void)
-{
-  BaseGrid G;
-  return G.get_FPY0_GRID();
-}
-/// C interface function
-extern "C" int get_FPZ0_GRID(void)
-{
-  BaseGrid G;
-  return G.get_FPZ0_GRID();
-}
-/// C interface function
-extern "C" double get_anisotropy(void)
-{
-  BaseGrid G;
-  return G.get_anisotropy();
-}
-/// C interface function
-extern "C" void pe2xyz(int pe, int *x, int *y, int *z)
-{
-  BaseGrid G;
-  G.pe2xyz(pe, x, y, z);
-}
-/// C interface function
-extern "C" int *get_neighbors(void)
-{
-  BaseGrid G;
-  return G.get_neighbors();
-}
-/// C interface function
-extern "C" int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
-{
-  BaseGrid G;
-  return G.find_node_sizes(gridpe, nxgrid, nygrid, nzgrid, pxsize, pysize, pzsize);
-}
-/// C interface function
-extern "C" int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
-{
-  BaseGrid G;
-  return G.find_node_offsets(gridpe, nxgrid, nygrid, nzgrid, pxoffset, pyoffset, pzoffset);
-
-}

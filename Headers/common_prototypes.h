@@ -117,17 +117,13 @@ void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int di
 void app_cir_beta_fourth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz);
 void app_cir_beta_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz);
 
-int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
+void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxoffset, int *pyoffset, int *pzoffset);
-int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
+void find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxsize, int *pysize, int *pzsize);
 void read_common();
 void pe2xyz(int pe, int *x, int *y, int *z);
 int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing);
-int find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
-                      int *pxoffset, int *pyoffset, int *pzoffset);
-int find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
-                      int *pxsize, int *pysize, int *pzsize);
 
 
 int get_PE_X(void);

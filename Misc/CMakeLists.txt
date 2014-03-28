@@ -1,11 +1,11 @@
 add_library (Misc
-FineGrid.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll.cpp
 pack_dtos.cpp
 pack_stod.cpp
 RmgTimer.cpp
 BaseGrid.cpp
+BaseGrid_Cbindings.cpp
 BaseThread.cpp
 Lattice.cpp
 TradeImages.cpp

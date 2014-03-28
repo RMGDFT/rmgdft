@@ -71,9 +71,9 @@ TradeImages::TradeImages(void)
         BaseGrid G;
         BaseThread T(0);
 
-        grid_xp = G.get_FPX0_GRID() + 2*MAX_TRADE_IMAGES;
-        grid_yp = G.get_FPY0_GRID() + 2*MAX_TRADE_IMAGES;
-        grid_zp = G.get_FPZ0_GRID() + 2*MAX_TRADE_IMAGES;
+        grid_xp = G.get_PX0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+        grid_yp = G.get_PY0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+        grid_zp = G.get_PZ0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
         if(grid_xp > grid_yp) {
             grid_max1 = grid_xp;
             if(grid_yp > grid_zp) {
@@ -699,9 +699,9 @@ void TradeImages::init_trade_imagesx_async(void)
 
     //printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
 
-    grid_xp = G.get_FPX0_GRID() + 2*MAX_TRADE_IMAGES;
-    grid_yp = G.get_FPY0_GRID() + 2*MAX_TRADE_IMAGES;
-    grid_zp = G.get_FPZ0_GRID() + 2*MAX_TRADE_IMAGES;
+    grid_xp = G.get_PX0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_yp = G.get_PY0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_zp = G.get_PZ0_GRID(G.get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     if(grid_xp > grid_yp) {
         GRID_MAX1 = grid_xp;
         if(grid_yp > grid_zp) {
