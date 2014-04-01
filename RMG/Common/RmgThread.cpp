@@ -1,4 +1,3 @@
-#include "BaseGrid.h"
 #include "BaseThread.h"
 #include "RmgThread.h"
 #include "rmg_error.h"
@@ -21,7 +20,6 @@ void *run_threads(void *v) {
     BaseThread *s;
     SCF_THREAD_CONTROL *ss;
     s = (BaseThread *)v;
-    BaseGrid G;    
 
 #if GPU_ENABLED
     cudaError_t cuerr;
