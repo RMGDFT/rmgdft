@@ -4,7 +4,6 @@ TradeImages_Cbindings.cpp
 RmgSumAll.cpp
 pack_dtos.cpp
 pack_stod.cpp
-RmgTimer.cpp
 BaseGrid_Cbindings.cpp
 Lattice_Cbindings.cpp
 transition.cpp

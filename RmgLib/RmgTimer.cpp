@@ -13,12 +13,14 @@ using namespace std;
 volatile double start_time;
 volatile double end_time;
 const char *sname;
+bool RmgTimer::enabled = true;
 std::unordered_map<std::string, double> RmgTimer::timings[MAX_RMG_THREADS+1];
 
 
 
 RmgTimer::RmgTimer(const char *what) 
 {
+    if(!RmgTimer::enabled) return;
     struct timeval t1;
     gettimeofday (&t1, NULL);
     sname = what;
@@ -27,6 +29,7 @@ RmgTimer::RmgTimer(const char *what)
 
 RmgTimer::~RmgTimer(void) 
 {
+    if(!RmgTimer::enabled) return;
     if(!sname) return;  // Bit of a hack for the temporary C interfaces
     struct timeval t1;
     gettimeofday (&t1, NULL);
@@ -58,6 +61,15 @@ RmgTimer::~RmgTimer(void)
     }
 }
 
+void RmgTimer::enable(void)
+{
+    RmgTimer::enabled = true;
+}
+void RmgTimer::disable(void)
+{
+    RmgTimer::enabled = false;
+}
+
 unordered_map<std::string, double> *RmgTimer::get_map(void)
 {
     return RmgTimer::timings;
@@ -66,11 +78,13 @@ unordered_map<std::string, double> *RmgTimer::get_map(void)
 // Temporary until C to C++ migration is completed. Use carefully!
 extern "C" void *BeginRmgTimer(const char *what) 
 {
+    if(!RmgTimer::enabled) return NULL;
     RmgTimer *RT = new RmgTimer(what);
     return (void *)RT;
 }
 extern "C" void EndRmgTimer(void *ptr) 
 {
+    if(!RmgTimer::enabled) return;
     RmgTimer *RT = (RmgTimer *)ptr;
     delete(RT);
 }

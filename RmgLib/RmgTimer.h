@@ -22,6 +22,10 @@ private:
 public:
     RmgTimer(const char *what);
     ~RmgTimer(void);
+    void enable(void);
+    void disable(void);
+    static bool enabled;
+
     std::unordered_map<std::string, double> *get_map(void);
 
     // The main thread of execution is timed in the zeroth slot. Data structure public

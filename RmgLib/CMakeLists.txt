@@ -11,4 +11,5 @@ BaseGrid.h
 app_cir_driver.cpp
 app_cil_driver.cpp
 FiniteDiff.cpp
+RmgTimer.cpp
 )
