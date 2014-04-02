@@ -1,4 +1,5 @@
 #include "transition.h"
+#include "common_prototypes.h"
 
 /// C interface function
 extern "C" void set_ibrav_type(int newtype)
@@ -84,4 +85,19 @@ extern "C" void latgen (double *celldm, double *a0, double *a1, double *a2, doub
 {
     Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
 }
+extern "C" double get_anisotropy(void)
+{
+    double hmaxgrid = get_xside() * get_hxgrid();
+    if (get_yside() * get_hygrid() > hmaxgrid)
+        hmaxgrid = get_yside() * get_hygrid();
+    if (get_zside() * get_hzgrid() > hmaxgrid)
+        hmaxgrid = get_zside() * get_hzgrid();
 
+    double hmingrid = get_xside() * get_hxgrid();
+    if (get_yside() * get_hygrid() < hmingrid)
+        hmingrid = get_yside() * get_hygrid();
+    if (get_zside() * get_hzgrid() < hmingrid)
+        hmingrid = get_zside() * get_hzgrid();
+
+    return hmaxgrid / hmingrid;
+}

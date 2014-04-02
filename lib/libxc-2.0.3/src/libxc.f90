@@ -1,8 +1,8 @@
-# 1 "/home/micael/devel/libxc/svn/tags/2.0.3/src/libxc_master.F90"
+# 1 "./libxc_master.F90"
 # 1 "<command-line>"
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 # 1 "<command-line>" 2
-# 1 "/home/micael/devel/libxc/svn/tags/2.0.3/src/libxc_master.F90"
+# 1 "./libxc_master.F90"
 !! Copyright (C) 2003-2006 M. Marques, A. Castro, A. Rubio, G. Bertsch
 !!
 !! This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 !! 02110-1301, USA.
 !!
 !! $Id: libxc.f90 3550 2007-11-19 14:32:49Z marques $
-# 27 "/home/micael/devel/libxc/svn/tags/2.0.3/src/libxc_master.F90"
+# 27 "./libxc_master.F90"
 !-------------------------------------------------------------------
 module xc_f90_types_m
 

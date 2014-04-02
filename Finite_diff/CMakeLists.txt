@@ -11,10 +11,7 @@ app_cir.c
 app_cir_beta_sixth.c
 app_cir_driver.c
 app_cilr_fourth.c
-FiniteDiff.cpp
 FiniteDiff_Cbindings.cpp
-app_cil_driver.cpp
-app_cir_driver.cpp
 app_cir_fcc.cpp
 app_cir_bcc.cpp
 app_cir_hex.cpp

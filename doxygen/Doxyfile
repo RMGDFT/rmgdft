@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = RMG
+PROJECT_NAME           = RMGPM
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -44,7 +44,7 @@ PROJECT_NUMBER         =
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Density functional code using real space grids as a basis."
+PROJECT_BRIEF          = "RMGPM is parallel multigrid solver library used by the RMG electronic structure code"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
@@ -58,7 +58,7 @@ PROJECT_LOGO           =
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = /mnt/ssd2/briggs/Projects/RMG_RELEASE1/codes/Docs
+OUTPUT_DIRECTORY       = /mnt/ssd2/briggs/Projects/RMG_RELEASE1/Docs
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and
@@ -412,7 +412,7 @@ EXTRACT_ALL            = YES
 # be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 
 # If the EXTRACT_PACKAGE tag is set to YES all members with package or internal
 # scope will be included in the documentation.
@@ -821,10 +821,27 @@ RECURSIVE              = YES
 
 EXCLUDE                = ../ON \
                          ../NEGF \
+                         ../Force \
+                         ../RMG \
                          ../TDDFT \
+                         ../lib \
                          ../cmake \
-                         ../CMakeFiles \
-                         ../lib
+                         ../US_PP \
+                         ../XC \
+                         ../Input \
+                         ../Headers/rmgtypedefs.h \
+                         ../Headers/species.h \
+                         ../Headers/pe_control.h \
+                         ../Headers/fftw.h \
+                         ../Headers/rmg_control.h \
+                         ../Headers/typedefs.h \
+                         ../Headers/input.h \
+                         ../Headers/common_prototypes.h \
+                         ../Headers/common_prototypes1.h \
+                         ../Headers/rmg_xc.h \
+                         ../Headers/RmgTimer.h \
+                         ../Misc/RmgTimer.cpp \
+                         ../Headers/rmgthreads.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1398,7 +1415,7 @@ DISABLE_INDEX          = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 
 # The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values that
 # doxygen will group on one line in the generated HTML documentation.
@@ -1941,7 +1958,7 @@ ENABLE_PREPROCESSING   = YES
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES then
 # the macro expansion is limited to the macros specified with the PREDEFINED and
@@ -1949,7 +1966,7 @@ MACRO_EXPANSION        = NO
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_ONLY_PREDEF     = NO
+EXPAND_ONLY_PREDEF     = YES
 
 # If the SEARCH_INCLUDES tag is set to YES the includes files in the
 # INCLUDE_PATH will be searched if a #include is found.
@@ -2064,7 +2081,7 @@ PERL_PATH              = /usr/bin/perl
 # powerful graphs.
 # The default value is: YES.
 
-CLASS_DIAGRAMS         = YES
+CLASS_DIAGRAMS         = NO
 
 # You can define message sequence charts within doxygen comments using the \msc
 # command. Doxygen will then run the mscgen tool (see:

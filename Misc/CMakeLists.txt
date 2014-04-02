@@ -5,12 +5,8 @@ RmgSumAll.cpp
 pack_dtos.cpp
 pack_stod.cpp
 RmgTimer.cpp
-BaseGrid.cpp
 BaseGrid_Cbindings.cpp
-BaseThread.cpp
-Lattice.cpp
 Lattice_Cbindings.cpp
-TradeImages.cpp
 transition.cpp
 init_IO.c
 get_index.c

@@ -170,7 +170,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     if (get_zside() * get_hzgrid() < ct.hmingrid)
         ct.hmingrid = get_zside() * get_hzgrid();
 
-    set_anisotropy(ct.hmaxgrid / ct.hmingrid);
+    //set_anisotropy(ct.hmaxgrid / ct.hmingrid);
 
     if ((ct.hmaxgrid / ct.hmingrid) > 1.1)
     {

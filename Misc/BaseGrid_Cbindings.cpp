@@ -91,11 +91,6 @@ extern "C" void set_nodes(int newgridpe)
   Rmg_G.set_nodes(newgridpe);
 }
 /// C interface function
-extern "C" void set_anisotropy(double newanisotropy)
-{
-  Rmg_G.set_anisotropy(newanisotropy);
-}
-/// C interface function
 extern "C" int get_PX0_GRID(void)
 {
   return Rmg_G.get_PX0_GRID(1);
@@ -173,11 +168,6 @@ extern "C" int get_FPY0_GRID(void)
 extern "C" int get_FPZ0_GRID(void)
 {
   return Rmg_G.get_PZ0_GRID(Rmg_G.default_FG_RATIO);
-}
-/// C interface function
-extern "C" double get_anisotropy(void)
-{
-  return Rmg_G.get_anisotropy();
 }
 /// C interface function
 extern "C" void pe2xyz(int pe, int *x, int *y, int *z)

@@ -32,10 +32,10 @@ set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
+# Main codes
 add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-negf NEGF/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-
 
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
@@ -60,12 +60,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
-target_link_libraries (rmg Finite_diff RMG_Common)
+target_link_libraries (rmg RmgLib)
+target_link_libraries (rmg Finite_diff RMG_Common RmgLib)
 target_link_libraries (rmg Misc RMG_Common Finite_diff)
 target_link_libraries (rmg RMG_Common Force)
 target_link_libraries (rmg Force RMG_Common)
 target_link_libraries (rmg Input RMG_Input)
-target_link_libraries (rmg MG RMG_Common)
+target_link_libraries (rmg MG RMG_Common RmgLib)
 target_link_libraries (rmg Misc)
 target_link_libraries (rmg Finite_diff Misc)
 target_link_libraries (rmg Misc Finite_diff)
@@ -82,14 +83,15 @@ target_link_libraries (rmg Force US_PP)
 target_link_libraries (rmg US_PP Force)
 
 
-target_link_libraries (rmg-on Finite_diff ON_Common)
+target_link_libraries (rmg-on RmgLib)
+target_link_libraries (rmg-on Finite_diff ON_Common RmgLib)
 target_link_libraries (rmg-on Misc ON_Common Finite_diff)
 target_link_libraries (rmg-on ON_Common ON_NEGF_share)
 target_link_libraries (rmg-on Misc ON_NEGF_share)
 target_link_libraries (rmg-on ON_Common Force)
 target_link_libraries (rmg-on Force ON_Common)
 target_link_libraries (rmg-on Input ON_Input)
-target_link_libraries (rmg-on MG ON_Common)
+target_link_libraries (rmg-on MG ON_Common RmgLib)
 target_link_libraries (rmg-on Misc)
 target_link_libraries (rmg-on Finite_diff Misc)
 target_link_libraries (rmg-on Misc Finite_diff)
@@ -102,14 +104,15 @@ target_link_libraries (rmg-on Force US_PP)
 target_link_libraries (rmg-on US_PP Force)
 target_link_libraries (rmg-on US_PP Misc)
 
-target_link_libraries (rmg-negf Finite_diff NEGF_Common)
+target_link_libraries (rmg-negf RmgLib)
+target_link_libraries (rmg-negf Finite_diff NEGF_Common RmgLib)
 target_link_libraries (rmg-negf Misc NEGF_Common Finite_diff)
 target_link_libraries (rmg-negf NEGF_Common ON_NEGF_share)
 target_link_libraries (rmg-negf Misc ON_NEGF_share)
 target_link_libraries (rmg-negf NEGF_Common Force)
 target_link_libraries (rmg-negf Force NEGF_Common)
 target_link_libraries (rmg-negf Input NEGF_Input)
-target_link_libraries (rmg-negf MG NEGF_Common)
+target_link_libraries (rmg-negf MG NEGF_Common RmgLib)
 target_link_libraries (rmg-negf Misc)
 target_link_libraries (rmg-negf Finite_diff Misc)
 target_link_libraries (rmg-negf Misc Finite_diff)
@@ -126,7 +129,7 @@ target_link_libraries (rmg-negf US_PP Force)
 target_link_libraries (rmg-negf US_PP Misc)
 target_link_libraries (rmg-negf NEGF_Lcurrent)
 target_link_libraries (rmg-negf NEGF_Pois Misc)
-target_link_libraries (rmg-negf NEGF_Pois MG)
+target_link_libraries (rmg-negf NEGF_Pois MG RmgLib)
 target_link_libraries (rmg-negf NEGF_Pois Finite_diff)
 target_link_libraries (rmg-negf Misc NEGF_Pois)
 target_link_libraries (rmg-negf NEGF_Cudafunc)
@@ -310,6 +313,7 @@ set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 
 # include files
 include_directories("${RMG_SOURCE_DIR}/Headers/")
+include_directories("${RMG_SOURCE_DIR}/RmgLib/")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
@@ -319,6 +323,7 @@ include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
 
 
 # Common code subdirectories
+add_subdirectory (RmgLib) 
 add_subdirectory (Finite_diff) 
 add_subdirectory (Force) 
 add_subdirectory (Input) 
