@@ -13,4 +13,5 @@ app_cil_driver.cpp
 FiniteDiff.cpp
 RmgTimer.cpp
 RmgSumAll.cpp
+rmg_error.cpp
 )
