@@ -47,7 +47,6 @@ void read_common ()
     int FG_RATIO;
 
     run_count ++;
-    time1 = my_crtc ();
     
 
     my_malloc (tptr, MAX_PATH, char);
@@ -414,6 +413,5 @@ void read_common ()
     /* Clean up malloc'ed memory */
     my_free (tptr);
     
-    rmg_timings (READ_CONTROL_TIME, (my_crtc () - time1));
 
 }                               /* end read_control */

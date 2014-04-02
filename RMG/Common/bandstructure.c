@@ -109,7 +109,6 @@ void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_d
                 mg_eig_state (&states[st1], 0, vtot_psi);
 
             time2 = my_crtc ();
-            rmg_timings (EIG_TIME, (time2 - time1));
 
             betaxpsi1 (states, ik);
 

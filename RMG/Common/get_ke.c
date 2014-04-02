@@ -82,7 +82,6 @@ rmg_double_t get_ke (STATE * sp, int tid)
 
 #if 1
     time2 = my_crtc ();
-    rmg_timings (MG_EIGTIME, (time2 - time1));
 #endif
 
     return KE;
@@ -142,7 +141,6 @@ rmg_double_t get_ke (STATE * sp, int tid)
 
 #if 1
     time2 = my_crtc ();
-    rmg_timings (MG_EIGTIME, (time2 - time1));
 #endif
 
     return KE;

@@ -43,9 +43,6 @@ private:
     static volatile int mpi_thread_order_counter;
     static std::mutex thread_order_mutex;
 
-    // Used for timing information
-    static std::mutex timings_mutex;
-
     // Base tag
     int basetag;
 
@@ -79,7 +76,6 @@ public:
     void set_cpu_affinity(int tid);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);
-    void rmg_timings (int what, double time);
     void set_pptr(int tid, void *p);
     int is_loop_over_states(void);
     int get_threads_per_node(void);

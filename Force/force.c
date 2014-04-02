@@ -62,7 +62,6 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
 #endif
 
     int Zi;
-    time3 = my_crtc ();
 
 #if VERBOSE
     my_malloc (old_force, 3 * ct.num_ions, rmg_double_t);
@@ -166,14 +165,11 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     }
 #endif
 
-    time1 = my_crtc ();
 
     /* Add in the non-local stuff */
     nlforce (vtott);
 
 
-    time2 = my_crtc ();
-    rmg_timings (NLFORCE_TIME, (time2 - time1));
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -246,7 +242,6 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     my_free (old_force);
 #endif
 
-    rmg_timings (FORCE_TIME, (my_crtc () - time3));
 
 }                               /* end force */
 

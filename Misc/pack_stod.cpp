@@ -35,8 +35,8 @@
  * SOURCE
  */
 
-#include "const.h"
 #include "BaseGrid.h"
+#include "boundary_conditions.h"
 
 /* This function is used to pack grids when computing the hartree potential */
 void CPP_pack_stod (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)

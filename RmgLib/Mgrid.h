@@ -3,7 +3,6 @@
 
 #include "Lattice.h"
 #include "TradeImages.h"
-#include "const.h"
 #include "rmg_error.h"
 
 class Mgrid {

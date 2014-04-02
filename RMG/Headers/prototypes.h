@@ -244,7 +244,6 @@ void init_sym (void);
 void symmetrize_rho (FP0_GRID *rho);
 #endif
 void symforce (void);
-void rmg_timings (int what, rmg_double_t time);
 rmg_double_t minimage (ION *ip1, ION *ip2, rmg_double_t *xtal_r);
 rmg_double_t my_crtc (void);
 FILE *open_xbs_movie (char *filename);

@@ -97,6 +97,9 @@
 
 #include "rmg_xc.h"
 
+// Boundary condition flags
+#include "boundary_conditions.h"
+
 /* Include the  library of exchange and correlation (namely, Libxc) */
 /* #include "../../Common/libxc/include/xc.h"   */
 

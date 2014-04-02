@@ -55,7 +55,6 @@ void ortho_ncpp(STATE *states)
 
     } /* end for */
 
-    rmg_timings (ORTHO_TIME, (my_crtc () - time1));
 
 } /* end ortho_full */
 

@@ -49,6 +49,7 @@
 #include "BlasWrappers.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
+#include "boundary_conditions.h"
 
 using namespace std;
 
@@ -188,7 +189,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-        scale = ONE;
+        scale = 1.0;
 
         QMD_axpy (size, scale, resid, ione, v_mat, ione);
 
@@ -247,7 +248,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
         case ORTHORHOMBIC_PRIMITIVE:
         case HEXAGONAL:
 
-            scale = ONE / 64.0;
+            scale = 1.0 / 64.0;
             for (ix = 1; ix <= dx2; ix++)
             {
 
@@ -313,7 +314,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
         case CUBIC_BC:
 
-            scale = ONE / 52.0;
+            scale = 1.0 / 52.0;
 
             for (ix = 1; ix <= dx2; ix++)
             {
@@ -367,7 +368,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
         case 20:
 
-            scale = ONE / 80.0;
+            scale = 1.0 / 80.0;
             for (ix = 1; ix <= dx2; ix++)
             {
 
@@ -661,7 +662,7 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
     for (idx = 0; idx < size; idx++)
-        work[idx] = ZERO;
+        work[idx] = 0.0;
     diag = -FD.app_del2c (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     scale = step / diag;

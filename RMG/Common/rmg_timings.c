@@ -1,8 +1,6 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
 ******************************************************************************/
-
-/****f* QMD-MGDFT/rmg_timings.c *****
+/*
  * NAME
  *   Ab initio real space code with multigrid acceleration
  *   Quantum molecular dynamics package.

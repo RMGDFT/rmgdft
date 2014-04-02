@@ -47,10 +47,6 @@ void iiforce (void)
     rmg_double_t xtal_r[3], crd_r[3];
     ION *iptr1, *iptr2;
     rmg_double_t tx, ty, tz;
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
 
     n1 = 2.0 / sqrt (PI);
@@ -114,11 +110,6 @@ void iiforce (void)
         }                       /* end for */
 
     }                           /* end for */
-
-#if MD_TIMERS
-    time2 = my_crtc ();
-    rmg_timings (IIFORCE_TIME, (time2 - time1));
-#endif
 
 }                               /* end iiforce */
 

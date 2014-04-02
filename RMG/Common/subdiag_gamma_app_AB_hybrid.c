@@ -23,7 +23,6 @@ void subdiag_app_A (STATE * states, rmg_double_t * a_psi, rmg_double_t * s_psi, 
 #if BATCH_NLS
     time1 = my_crtc();
     app_nls_batch (states, pct.nv, s_psi, pct.Bns, pct.newsintR_local);
-    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #endif
 
     P0_BASIS = get_P0_BASIS();
@@ -92,7 +91,6 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
                    sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #   if MD_TIMERS
-    rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #   endif
 
 
@@ -104,7 +102,6 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
 #if !BATCH_NLS
     app_nls (tmp_psi, NULL, work2, NULL, s_psi, NULL, pct.newsintR_local, NULL, sp->istate, kidx);
 #   if MD_TIMERS
-    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 #   endif
 
 #else
@@ -132,7 +129,6 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
 
 
 #   if MD_TIMERS
-        rmg_timings (DIAG_GENVPSI_TIME, (my_crtc () - time1));
 #   endif
 
 #   if MD_TIMERS
@@ -143,7 +139,6 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
     app_cir_driver (sg_twovpsi, work1, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.kohn_sham_fd_order);
     for(idx = 0; idx <  P0_BASIS; idx++) work1[idx] += TWO * work2[idx];
 #   if MD_TIMERS
-       rmg_timings (DIAG_APPCIR_TIME, (my_crtc () - time1));
 #   endif
 
     /* Pack psi into smoothing array */
@@ -226,7 +221,6 @@ void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi)
     /*B operating on S|psi> and store in work3 */
     app_cir_driver (work2, work1, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), ct.kohn_sham_fd_order);
 #   if MD_TIMERS
-        rmg_timings (DIAG_APPCIR_TIME2, (my_crtc () - time1));
 #   endif
 
     my_free (work2);

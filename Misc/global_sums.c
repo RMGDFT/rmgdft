@@ -123,11 +123,6 @@ void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
     int sizr, steps, blocks, newsize, tid;
     rmg_double_t *rptr, *rptr1;
     rmg_double_t rptr2[100];
-#if MD_TIMERS
-    rmg_double_t time0;
-
-    time0 = my_crtc ();
-#endif
 
     tid = get_thread_tid();
     if(tid >= 0) {
@@ -141,11 +136,7 @@ void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
         sizr = *length;
         QMD_dcopy (sizr, vect, 1, rptr2, 1);
        	MPI_Allreduce (rptr2, vect, sizr, MPI_DOUBLE, MPI_SUM, comm);
-
 		
-#if MD_TIMERS
-        rmg_timings (GLOBAL_SUMS_TIME, my_crtc () - time0);
-#endif
         return;
     }
 
@@ -172,8 +163,5 @@ void global_sums (rmg_double_t * vect, int *length, MPI_Comm comm)
 
     my_free (rptr);
 
-#if MD_TIMERS
-    rmg_timings (GLOBAL_SUMS_TIME, my_crtc () - time0);
-#endif
 }                               /* end global_sums */
 

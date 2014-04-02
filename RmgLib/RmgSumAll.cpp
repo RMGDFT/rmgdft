@@ -11,6 +11,10 @@ volatile int vector_state = 0;
 double RmgSumAllVector[2*MAX_RMG_THREADS];
 double RecvBuf[2*MAX_RMG_THREADS];
 
+template int RmgSumAll<int>(int, MPI_Comm);
+template float RmgSumAll<float>(float, MPI_Comm);
+template double RmgSumAll<double>(double, MPI_Comm);
+
 template <typename RmgType>
 RmgType RmgSumAll (RmgType x, MPI_Comm comm)
 {

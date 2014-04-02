@@ -39,11 +39,9 @@ void read_control (char *file)
     int tmp, is;
     char *tbuf, *tptr;
     float ftmp;
-    rmg_double_t time1;
     static int run_count = - 1;
 
     run_count ++;
-    time1 = my_crtc ();
     
     get_data (file, NULL, INIT | TAGS, NULL);
 
@@ -602,6 +600,5 @@ void read_control (char *file)
     /* Clean up malloc'ed memory */
     my_free (tptr);
     
-    rmg_timings (READ_CONTROL_TIME, (my_crtc () - time1));
 
 }                               /* end read_control */

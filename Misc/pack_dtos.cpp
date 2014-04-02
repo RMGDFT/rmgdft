@@ -34,8 +34,8 @@
  * SOURCE
  */
 
-#include "const.h"
 #include "BaseGrid.h"
+#include "boundary_conditions.h"
 
 void CPP_pack_dtos (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {

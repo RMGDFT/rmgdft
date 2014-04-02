@@ -583,7 +583,6 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 #endif
 
 
-    rmg_timings (INIT_TIME, (my_crtc () - time1));
 
 
 }                               /* end init */

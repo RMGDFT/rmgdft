@@ -1,6 +1,5 @@
 #include "BaseThread.h"
 #include "rmg_error.h"
-#include "const.h"
 using namespace std;
 
 
@@ -162,20 +161,6 @@ void BaseThread::RMG_MPI_lock(void) {
 void BaseThread::RMG_MPI_unlock(void) {
     BaseThread::mpi_mutex.unlock();
 }
-
-extern double timings[LAST_TIME];
-std::mutex BaseThread::timings_mutex;
-void BaseThread::rmg_timings (int what, double time)
-{
-    BaseThread::timings_mutex.lock();
-    if(BaseThread::in_threaded_region) {
-        timings[what] += time / BaseThread::THREADS_PER_NODE;
-    }
-    else {
-        timings[what] += time;
-    }
-    BaseThread::timings_mutex.unlock();
-}                               /* end rmg_timings */
 
 int BaseThread::is_loop_over_states(void)
 {

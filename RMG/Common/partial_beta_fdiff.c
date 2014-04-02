@@ -146,8 +146,6 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
 
     my_free (rptr);
 
-    /*time2 = my_crtc();
-       rmg_timings(APPGRAD_TIME, (time2 - time1)); */
 
 
 

@@ -1,7 +1,7 @@
 add_library (Misc
 BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
-RmgSumAll.cpp
+RmgSumAll_Cbindings.cpp
 pack_dtos.cpp
 pack_stod.cpp
 BaseGrid_Cbindings.cpp

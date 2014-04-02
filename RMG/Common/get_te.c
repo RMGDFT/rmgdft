@@ -156,7 +156,6 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     for (idx = 0; idx < FP0_BASIS; idx++)
         esum[2] += rho[idx] * vxc[idx];
 
-    rmg_timings (GET_TE_XC_TIME, (my_crtc () - time2));
 
 
     /*Sum emergies over all processors */
@@ -215,7 +214,6 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
             ct.II += loc_sum;
         }
 
-        rmg_timings (GET_TE_II_TIME, (my_crtc () - time2));
 
     }
 
@@ -251,6 +249,5 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     /* Release our memory */
     my_free (exc);
 
-    rmg_timings (GET_TE_TIME, (my_crtc () - time1));
 
 }                               /* end get_te */

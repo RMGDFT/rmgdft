@@ -41,7 +41,6 @@ void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi,
 
     time1 = my_crtc();
     app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.newsintR_local);
-    rmg_timings (DIAG_NL_TIME, (my_crtc () - time1));
 
     // Each thread applies the operator to one wavefunction
     istop = ct.num_states / ct.THREADS_PER_NODE;
@@ -107,7 +106,6 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
             sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
 
 #   if MD_TIMERS
-    rmg_timings (DIAG_APPCIL_TIME, (my_crtc () - time1));
 #   endif
 
 

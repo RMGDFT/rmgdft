@@ -30,10 +30,6 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
     ION *iptr;
     rmg_double_t *rx, *ry, *rz;
     rmg_double_t *urx, *ury, *urz;
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -187,10 +183,6 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
     my_free (rx);
 
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-    rmg_timings (LFORCE_TIME, (time2 - time1));
-#endif
 
 }                               /* end lforce */
 

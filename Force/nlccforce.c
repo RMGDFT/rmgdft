@@ -62,10 +62,6 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     rmg_double_t deltac;
     rmg_double_t *locsum, *rx, *ry, *rz, *prjptr, *pptr;
     rmg_double_t sumxc2, sumxyc;
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
-#endif
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -288,10 +284,6 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     my_free (prjptr);
     my_free (locsum);
 
-#if MD_TIMERS
-    time2 = my_crtc ();
-    rmg_timings (NLCCFORCE_TIME, (time2 - time1));
-#endif
 
 }                               /* end nlccforce */
 

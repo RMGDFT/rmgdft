@@ -40,14 +40,12 @@ void ortho (STATE * states, int kpt)
         norm_psi1 (st1, ist1, kpt);
     }
 #if MD_TIMERS
-    rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2));
     time2 = my_crtc ();
 #endif
 
     size =get_P0_BASIS();
     get_psi_overlaps(st->psiR, Oij, ct.num_states, ct.num_states, size, size);
 #if MD_TIMERS
-    rmg_timings (ORTHO_GET_OVERLAPS, (my_crtc () - time2));
     time2 = my_crtc ();
 #endif
 
@@ -64,7 +62,6 @@ void ortho (STATE * states, int kpt)
         for (ist2 = ist1 + 1; ist2 < ct.num_states; ist2++)
             ortho_get_coeff (st1, &st[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2], Oij);
 #if MD_TIMERS
-        rmg_timings (ORTHO_GET_COEFF, (my_crtc () - time2));
         time2 = my_crtc ();
 #endif
 
@@ -80,7 +77,6 @@ void ortho (STATE * states, int kpt)
         }
 
 #if MD_TIMERS
-        rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time2));
         time2 = my_crtc ();
 #endif
 
@@ -104,7 +100,6 @@ void ortho (STATE * states, int kpt)
         norm_psi1 (st1, ist1, kpt);
 
 #if MD_TIMERS
-        rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));
 #endif
     }                       /*end for ist1 */
 
@@ -114,7 +109,6 @@ void ortho (STATE * states, int kpt)
     my_free (cI);
     my_free (cR);
 
-    rmg_timings (ORTHO_TIME, (my_crtc () - time1));
 
 }                               /*end ortho_full */
 
@@ -154,7 +148,6 @@ void ortho (STATE * states, int kpt)
 #endif
         norm_psi1 (st1, ist1, kpt);
 #if MD_TIMERS
-        rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time2));
         time2 = my_crtc ();
 #endif
 
@@ -163,7 +156,6 @@ void ortho (STATE * states, int kpt)
             ortho_get_coeff (st1, &st[ist2], ist1, ist2, kpt, &cR[ist2], &cI[ist2]);
 
 #if MD_TIMERS
-        rmg_timings (ORTHO_GET_COEFF, (my_crtc () - time2));
         time2 = my_crtc ();
 #endif
 
@@ -179,7 +171,6 @@ void ortho (STATE * states, int kpt)
         }
 
 #if MD_TIMERS
-        rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time2));
         time2 = my_crtc ();
 #endif
 
@@ -188,7 +179,6 @@ void ortho (STATE * states, int kpt)
             update_waves (st1, &st[ist2], ist1, ist2, kpt, cR[ist2], cI[ist2]);
 
 #if MD_TIMERS
-        rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time2));
 #endif
     }                       /*end for ist1 */
 
@@ -196,7 +186,6 @@ void ortho (STATE * states, int kpt)
     my_free (cR);
     my_free (cI);
 
-    rmg_timings (ORTHO_TIME, (my_crtc () - time1));
 
 }                               /*end ortho_full */
 #endif

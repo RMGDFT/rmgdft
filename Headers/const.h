@@ -132,11 +132,6 @@
 #define		T_NOSE_CHAIN    0
 #define		T_AND_SCALE     1
 
-/* Boundary condition flags */
-#define		PERIODIC        0
-#define		CLUSTER         1
-#define		SURFACE         2
-
 /* Exchange-correlation flags */
 #define       	LDA_PZ81        0
 #define       	GGA_BLYP        1

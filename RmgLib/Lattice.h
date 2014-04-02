@@ -1,7 +1,6 @@
 #ifndef RMG_Lattice_H
 #define RMG_Lattice_H 1
 
-//#include "rmgtypes.h"
 #include "rmg_error.h"
 
 

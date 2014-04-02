@@ -43,6 +43,9 @@
 #include "auxiliary.h"
 #include "vhartree.h"
 #include "rmg_error.h"
+#include "boundary_conditions.h"
+
+#define         PI          3.14159265359
 
 using namespace std;
 
@@ -114,7 +117,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
 
     /* Multiply through by 4PI */
-    t1 = -FOUR * PI;
+    t1 = -4.0 * PI;
     for(idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * mgrhsarr[idx];
 
     its = 0;
@@ -170,7 +173,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
 
                 /* Update vh */
-                t1 = ONE;
+                t1 = 1.0;
                 for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
 
             }

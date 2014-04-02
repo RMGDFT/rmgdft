@@ -48,9 +48,7 @@ void read_pseudo (void)
     int max_nlprojectors = 0, nlc;
     SPECIES *sp;
     char tbuf[MAX_CHAR], *tptr, *endptr;
-    rmg_double_t time1;
 
-    time1 = my_crtc ();
     ct.max_l = 0;
 
 
@@ -457,8 +455,6 @@ void read_pseudo (void)
 
     /* Set the maximum number of non-local projecters needed */
     ct.max_nl = max_nlprojectors;
-
-    rmg_timings (READ_PSEUDO_TIME, (my_crtc () - time1));
 
 }                               /* end read_pseudo */
 

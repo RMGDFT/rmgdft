@@ -165,7 +165,6 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
     my_free (rptr);
 
     time2 = my_crtc ();
-    rmg_timings (APPGRAD_TIME, (time2 - time1));
 
 
 

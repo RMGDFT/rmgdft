@@ -65,16 +65,6 @@ extern "C" void RMG_MPI_unlock(void)
     B.RMG_MPI_unlock();
 }
 
-
-extern "C" void rmg_timings (int what, double time)
-{
-    if(BaseThread::init_flag)
-    {
-        BaseThread B(0);
-        B.rmg_timings(what, time);
-    }
-}
-
 extern "C" int is_loop_over_states(void) 
 {
     BaseThread B(0);

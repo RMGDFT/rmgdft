@@ -87,7 +87,6 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
 #endif
 
 #if MD_TIMERS
-   rmg_timings (ORTHO_GET_OVERLAPS, (my_crtc () - time1));
    time1 = my_crtc();
 #endif
 
@@ -97,7 +96,6 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
 
 
 #if MD_TIMERS
-   rmg_timings (ORTHO_GLOB_SUM, (my_crtc () - time1));
    time1 = my_crtc();
 #endif
 
@@ -111,7 +109,6 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
 #endif
 
 #if MD_TIMERS
-   rmg_timings (ORTHO_CHOLESKY, (my_crtc () - time1));
    time1 = my_crtc();
 #endif
 
@@ -179,7 +176,6 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
 #endif
 
 #if MD_TIMERS
-   rmg_timings (ORTHO_UPDATE_WAVES, (my_crtc () - time1));
    time1 = my_crtc();
 #endif
 
@@ -188,7 +184,6 @@ void gram(KPOINT *kpt, rmg_double_t vel, int numst, int maxst, int numpt, int ma
    QMD_dscal(idx, tmp, c, ione);
 
 #if MD_TIMERS
-   rmg_timings (ORTHO_NORM_PSI, (my_crtc () - time1));
    time1 = my_crtc();
 #endif
 

@@ -208,7 +208,6 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
 
 
     time2 = my_crtc ();
-    rmg_timings (EIG_TIME, (time2 - time1));
 
     /*wavefunctions have changed, projectors have to be recalculated */
     RT1 = BeginRmgTimer("Scf steps: Beta x psi");
@@ -270,7 +269,6 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     else 
 	mix_betaxpsi(1);
     
-    rmg_timings (SCF_BETAXPSI, (my_crtc () - time1));
 
 
     if (ct.spin_flag)
@@ -330,7 +328,6 @@ bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * 
     	my_free (rho_tot);
     }
 
-    rmg_timings (SCF_TIME, (my_crtc () - time3));
     printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time3);
 
     EndRmgTimer(RT);
