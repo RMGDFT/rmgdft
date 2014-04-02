@@ -47,6 +47,11 @@ rmg_double_t my_crtc (void)
     return t1.tv_sec + 1e-6 * t1.tv_usec;
 }
 
+void rmg_timings (int what, rmg_double_t time)
+{
+
+    timings[what] += time;
+}                               /* end rmg_timings */
 
 
 /* Outputs timing information */
