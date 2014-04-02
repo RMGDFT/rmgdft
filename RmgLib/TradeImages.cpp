@@ -70,7 +70,7 @@ TradeImages::TradeImages(BaseGrid *BG)
 
     if((swbuf1x == NULL) && (swbuf2x == NULL)) {
         int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2, retval;
-        BaseThread T(0);
+        BaseThread *T = BaseThread::getBaseThread(0);
 
         grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
         grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
@@ -93,17 +93,17 @@ TradeImages::TradeImages(BaseGrid *BG)
                   grid_max2 = grid_zp;
               }
          }
-         retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T.get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
+         retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
          if(retval != MPI_SUCCESS) {
              rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
          }
-         retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T.get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
+         retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
          if(retval != MPI_SUCCESS) {
              rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
          }
 
 
-         max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T.get_threads_per_node();
+         max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T->get_threads_per_node();
 
          TradeImages::init_trade_imagesx_async();        
 
@@ -144,7 +144,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     RmgType *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
     RmgType *swbuf1x_f, *swbuf2x_f;
     int ACTIVE_THREADS = 1;
-    BaseThread T(0);
+    BaseThread *T = BaseThread::getBaseThread(0);
 
     factor = sizeof(RmgType);
 
@@ -161,9 +161,9 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     }
 
     tid = 0;
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid < 0) tid = 0;
-    if(T.is_loop_over_states()) ACTIVE_THREADS = T.get_threads_per_node();
+    if(T->is_loop_over_states()) ACTIVE_THREADS = T->get_threads_per_node();
 
     swbuf1x_f = (RmgType *)TradeImages::swbuf1x;
     swbuf2x_f = (RmgType *)TradeImages::swbuf2x;
@@ -179,7 +179,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     ylen = dimx * images * (dimz + tim);
     xlen = images * (dimy + tim) * (dimz + tim);
 
-    alloc = 2 * (xlen + ylen + zlen) * T.get_threads_per_node();
+    alloc = 2 * (xlen + ylen + zlen) * T->get_threads_per_node();
     // Verify that the required memory will fit into the statically allocated storage
     if(alloc > TradeImages::max_alloc)
         rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
@@ -234,7 +234,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     stop = zlen * ACTIVE_THREADS;
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_D], (1>>16),
                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), TradeImages::comm, &mrstatus);
@@ -242,7 +242,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_U], (2>>16),
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), TradeImages::comm, &mrstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
     /* Unpack them */
     c1 = dimz + images;
@@ -303,7 +303,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     stop = ylen * ACTIVE_THREADS;
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_S], (3>>16),
                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_N], (3>>16), TradeImages::comm, &mrstatus);
@@ -311,7 +311,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_N], (4>>16),
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4>>16), TradeImages::comm, &mrstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
     /* Unpack them */
     c1 = (dimy + images) * incy;
@@ -369,7 +369,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     stop = xlen * ACTIVE_THREADS;
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_W], (5>>16),
@@ -379,7 +379,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_W], (6>>16), TradeImages::comm, &mrstatus);
 
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     /* Unpack them */
@@ -422,7 +422,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     int alloc, alloc1, toffset;
     int ACTIVE_THREADS = 1, factor;
     int *nb_ids;
-    BaseThread T(0);
+    BaseThread *T = BaseThread::getBaseThread(0);
 
     factor = sizeof(RmgType);
 
@@ -448,14 +448,14 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     alloc1 = 4 * (dimy + 2) * (dimz + 2);
     if(alloc1 > alloc)
         alloc = alloc1;
-    alloc = alloc * T.get_threads_per_node();
+    alloc = alloc * T->get_threads_per_node();
     if(alloc > TradeImages::max_alloc)
         rmg_error_handler (__FILE__, __LINE__, "Not enough memory. This should never happen.");
 
 
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid < 0) tid = 0;
-    if(T.is_loop_over_states()) ACTIVE_THREADS = T.get_threads_per_node();
+    if(T->is_loop_over_states()) ACTIVE_THREADS = T->get_threads_per_node();
 
 
 /* precalc some boundaries */
@@ -489,12 +489,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     // We only want one thread to do the MPI call here.
     stop = dimx * dimy * ACTIVE_THREADS;
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), swbuf2x_f, factor*stop,
 		  MPI_BYTE, nb_ids[NB_D], (1>>16), TradeImages::comm, &mstatus);
     } 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -520,12 +520,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
 
     stop = dimx * dimy * ACTIVE_THREADS;
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), swbuf2x_f, factor*stop,
                       MPI_BYTE, nb_ids[NB_U], (2>>16), TradeImages::comm, &mstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     idx = 0;
@@ -554,12 +554,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
         }
     }
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_N], (3>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_S], (3>>16), TradeImages::comm, &mstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
     idx = 0;
     for (ix = 0; ix < dimx; ix++) {
@@ -580,12 +580,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     }
 
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_S], (4>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_N], (4>>16), TradeImages::comm, &mstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     idx = 0;
@@ -608,22 +608,22 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     QMD_copy (stop, &mat[xmax], ione, &swbuf1x_f[tid * stop], ione);
 
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_E], (5>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_W], (5>>16), TradeImages::comm, &mstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
     QMD_copy (stop, &swbuf2x_f[tid * stop], ione, mat, ione);
     QMD_copy (stop, &mat[incx], ione, &swbuf1x_f[tid * stop], ione);
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_W], (6>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[NB_E], (6>>16), TradeImages::comm, &mstatus);
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     QMD_copy (stop, &swbuf2x_f[tid * stop], ione, &mat[xmax + incx], ione);
 
 
@@ -654,7 +654,7 @@ template <typename RmgType>
 void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req)
 {
     int tid=0, ntag, target, factor;
-    BaseThread T(0);
+    BaseThread *T = BaseThread::getBaseThread(0);
 
     factor = sizeof(RmgType);
 
@@ -664,7 +664,7 @@ void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offs
     pe_z_offset++;
 
     // Tag is based on tid in the lower 8 bits which gives us up to 256 threads
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid == -1) tid = 0;
 
 
@@ -691,9 +691,9 @@ void TradeImages::init_trade_imagesx_async(void)
     int pe_x, pe_y, pe_z;
     int t_pe_x, t_pe_y, t_pe_z;
     int grid_xp, grid_yp, grid_zp;
-    BaseThread T(0);
+    BaseThread *T = BaseThread::getBaseThread(0);
 
-    THREADS_PER_NODE = T.get_threads_per_node();
+    THREADS_PER_NODE = T->get_threads_per_node();
 
     //printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
 
@@ -900,18 +900,18 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     m0_r_f = (RmgType *)TradeImages::m0_r;
 
     int ACTIVE_THREADS = 1, THREADS_PER_NODE;
-    BaseThread T(0);
+    BaseThread *T = BaseThread::getBaseThread(0);
 
-    THREADS_PER_NODE = T.get_threads_per_node();
+    THREADS_PER_NODE = T->get_threads_per_node();
 
 
     if(images > MAX_TRADE_IMAGES) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid < 0) tid = 0;
-    if(T.is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(T->is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
 
     corner_node_stride = THREADS_PER_NODE * MAX_IMG3; 
     tim = 2 * images;
@@ -1015,7 +1015,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
 
     // Send them
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Corners
@@ -1131,7 +1131,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     }                           /* end for */
 
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -1213,7 +1213,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
 
     // Send them
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -1259,7 +1259,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     // Unpack yz-plane edges
@@ -1463,7 +1463,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 } // end trade_imagesx_async
 
@@ -1496,17 +1496,17 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
 
     int ACTIVE_THREADS = 1, THREADS_PER_NODE;
 
-    BaseThread T(0);
-    THREADS_PER_NODE = T.get_threads_per_node();
+    BaseThread *T = BaseThread::getBaseThread(0);
+    THREADS_PER_NODE = T->get_threads_per_node();
 
 
     if(images > MAX_TRADE_IMAGES) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
 
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid < 0) tid = 0;
-    if(T.is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(T->is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
 
     tim = 2 * images;
 
@@ -1614,7 +1614,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     }                           /* end for */
 
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -1655,7 +1655,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     /* Unpack z-planes */
@@ -1734,7 +1734,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 } // end trade_imagesx_central_async
 
@@ -1801,12 +1801,12 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     m0_r_f = (RmgType *)TradeImages::m0_r;
 
     int ACTIVE_THREADS = 1, THREADS_PER_NODE;
-    BaseThread T(0);
-    THREADS_PER_NODE = T.get_threads_per_node();
+    BaseThread *T = BaseThread::getBaseThread(0);
+    THREADS_PER_NODE = T->get_threads_per_node();
 
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid < 0) tid = 0;
-    if(T.is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(T->is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
 
     corner_node_stride = THREADS_PER_NODE * MAX_IMG3;
 
@@ -1891,7 +1891,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
 
 
     // Send them
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Corners
@@ -1983,7 +1983,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     }                           /* end for */
 
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -2065,7 +2065,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
 
 
     // Send them
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -2093,7 +2093,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     // Unpack yz-plane edges
@@ -2260,7 +2260,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 } // end trade_images1_async
 
@@ -2293,12 +2293,12 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     frdz1n_f = (RmgType *)TradeImages::frdz1n;
     frdz2n_f = (RmgType *)TradeImages::frdz2n;
 
-    BaseThread T(0);
-    THREADS_PER_NODE = T.get_threads_per_node();
+    BaseThread *T = BaseThread::getBaseThread(0);
+    THREADS_PER_NODE = T->get_threads_per_node();
 
-    tid = T.get_thread_tid();
+    tid = T->get_thread_tid();
     if(tid < 0) tid = 0;
-    if(T.is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
+    if(T->is_loop_over_states()) ACTIVE_THREADS = THREADS_PER_NODE;
 
 
     incx = (dimy + 2) * (dimz + 2);
@@ -2402,7 +2402,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     }                           /* end for */
 
 
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
     if(tid == 0) {
 
         // Send z planes
@@ -2424,7 +2424,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 
     /* Unpack z-planes */
@@ -2503,7 +2503,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T.thread_barrier_wait();
+    T->thread_barrier_wait();
 
 } // end trade_images1_central_async
 

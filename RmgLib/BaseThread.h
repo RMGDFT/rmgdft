@@ -20,37 +20,46 @@ void *run_threads(void *s);
 #include <condition_variable>
 #include <boost/thread.hpp>
 #include <boost/thread/tss.hpp>
+#include "BaseThreadControl.h"
 
+// Singleton class used to manage a thread pool
 class BaseThread {
 
 private:
 
     // Threads to use on each MPI node
-    static int THREADS_PER_NODE;
+    int THREADS_PER_NODE;
 
     // Used to implement a local barrier inside of the scf loops
-    static boost::barrier *scf_barrier;
+    boost::barrier *scf_barrier;
 
     // This is used when running with MPI_THREAD_SERIALIZED to ensure 
     // proper serialization
-    static std::mutex mpi_mutex;
+    std::mutex mpi_mutex;
 
-    static boost::thread *threads[MAX_RMG_THREADS];
-    static std::atomic<int> jobs;
-    static std::atomic<bool> in_threaded_region;
+    boost::thread *threads[MAX_RMG_THREADS];
+    std::atomic<int> jobs;
+    std::atomic<bool> in_threaded_region;
 
     // These are used to ensure thread ordering
-    static volatile int mpi_thread_order_counter;
-    static std::mutex thread_order_mutex;
+    volatile int mpi_thread_order_counter;
+    std::mutex thread_order_mutex;
 
     // Base tag
     int basetag;
 
+    // Initialization flag and mutex to protect it
+    static int init_flag;
+    static std::mutex init_mutex;
+
+    static BaseThread *instance;
+
+    // Private constructur
+    BaseThread(int nthreads);
 
 public:
 
-    // Initialization flag
-    static int init_flag;
+    static BaseThread *getBaseThread(int nthreads);
 
     // Condition variable and mutex for threads
     static std::mutex thread_mutex;
@@ -66,12 +75,11 @@ public:
     // Pointer to project specific data structure
     void *pptr;
 
-    BaseThread(int nthreads);
     void run_thread_tasks(int jobs);
     void thread_barrier_wait(void);
     int get_thread_basetag(void);
     void set_thread_basetag(int tid, int tag);
-    BaseThread *get_thread_control(void);
+    BaseThreadControl *get_thread_control(void);
     int get_thread_tid(void);
     void set_cpu_affinity(int tid);
     void RMG_MPI_lock(void);
@@ -83,8 +91,8 @@ public:
 
 };
 
-void rmg_set_tsd(BaseThread *p);
-BaseThread *rmg_get_tsd(void);
+void rmg_set_tsd(BaseThreadControl *p);
+BaseThreadControl *rmg_get_tsd(void);
 
 #endif
 #endif

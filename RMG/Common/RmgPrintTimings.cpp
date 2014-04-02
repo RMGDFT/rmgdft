@@ -13,7 +13,7 @@ using namespace std;
 void RmgPrintTimings(const char *outfile, int steps) {
 
     int tid;
-    BaseThread T(0);
+    BaseThread *T = BaseThread::getBaseThread(0);
     BaseGrid G;
     RmgTimer RT("Print timings");
 
@@ -43,7 +43,7 @@ void RmgPrintTimings(const char *outfile, int steps) {
         }
         maxlen += 2;
 
-        for(tid=1;tid <= T.get_threads_per_node();tid++) {
+        for(tid=1;tid <= T->get_threads_per_node();tid++) {
             for(auto it = RT.timings[tid].cbegin(); it != RT.timings[tid].cend(); ++it) {
                 if(it->second < tmin[it->first]) tmin[it->first] = it->second;
                 if(it->second > tmax[it->first]) tmax[it->first] = it->second;
@@ -83,14 +83,14 @@ void RmgPrintTimings(const char *outfile, int steps) {
                 << setw(16) << right << it1->second
                 << setw(15) << right << it2->second
                 << setw(15) << right
-                << it3->second/T.get_threads_per_node() << endl;
+                << it3->second/T->get_threads_per_node() << endl;
             }
             else {
                 logfile << endl;
                 logfile << setw(maxlen) << left << it1->first
                 << setw(18) << right << it1->second
                 << setw(15) << right << it2->second
-                << setw(15) << right << it3->second/T.get_threads_per_node()
+                << setw(15) << right << it3->second/T->get_threads_per_node()
                 << endl
                 << "-----------------------------------------------------------------------------"
                 << endl;

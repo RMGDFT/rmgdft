@@ -36,15 +36,16 @@ RmgTimer::~RmgTimer(void)
     end_time = t1.tv_sec + 1e-6 * t1.tv_usec;
 
     int tid;
-    BaseThread T(0), *Tptr;
-    Tptr = T.get_thread_control();
+    BaseThread *T = BaseThread::getBaseThread(0);
+    BaseThreadControl *Tptr;
+    Tptr = T->get_thread_control();
 
     // if Tptr is null that means we are being called from the main program
     if(!Tptr) {
         tid = 0;
     }
     else {
-        tid = T.get_thread_tid();
+        tid = T->get_thread_tid();
         if(tid < 0) {
             tid = 0;
         }

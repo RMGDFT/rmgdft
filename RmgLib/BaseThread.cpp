@@ -1,10 +1,14 @@
 #include "BaseThread.h"
 #include "rmg_error.h"
+#include "BaseThreadControl.h"
+
 using namespace std;
 
+// Init flag
+int BaseThread::init_flag=0;
 
 // Main thread control structure
-BaseThread *thread_controls[MAX_RMG_THREADS];
+BaseThreadControl thread_controls[MAX_RMG_THREADS];
 
 // Condition variable and mutex for threads
 std::mutex BaseThread::thread_mutex;
@@ -14,13 +18,17 @@ std::condition_variable BaseThread::thread_cv;
 std::mutex BaseThread::main_mutex;
 std::condition_variable BaseThread::main_cv;
 
+// Mutex used during initialization
+std::mutex  BaseThread::init_mutex;
+
+// Pointer to the singleton
+BaseThread *BaseThread::instance = NULL;
 
 // Constructor
 BaseThread::BaseThread(int nthreads)
 {
 
-    int thread, retval, ncpus;
-    BaseThread *s;
+    int thread, ncpus;
 
     if(nthreads > MAX_RMG_THREADS)
         rmg_error_handler (__FILE__, __LINE__, "Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
@@ -38,9 +46,8 @@ BaseThread::BaseThread(int nthreads)
         // Create a set of long lived threads
         for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) {
 
-            thread_controls[thread] = new BaseThread(nthreads);
-            thread_controls[thread]->tid = thread;
-            threads[thread] = new boost::thread(run_threads, (void *)thread_controls[thread]);
+            thread_controls[thread].tid = thread;
+            threads[thread] = new boost::thread(run_threads, (void *)&thread_controls[thread]);
 
         }
 
@@ -48,12 +55,18 @@ BaseThread::BaseThread(int nthreads)
 
 }
 
+BaseThread *BaseThread::getBaseThread(int nthreads)
+{
+    if(!BaseThread::init_flag) {
+        BaseThread::instance = new BaseThread(nthreads);
+    }
+    return BaseThread::instance;
+
+}
 
 // Wakes jobs sleeping threads starting from tid=0 and counting up
 // jobs must be less than THREADS_PER_NODE
 void BaseThread::run_thread_tasks(int jobs) {
-
-    int thread;
 
     if(jobs > BaseThread::THREADS_PER_NODE) {
         // If this happens it is a bug
@@ -65,7 +78,7 @@ void BaseThread::run_thread_tasks(int jobs) {
     BaseThread::in_threaded_region = true;
     BaseThread::jobs = jobs;
     BaseThread::thread_cv.notify_all();
-    BaseThread::main_cv.wait(lk, [] {return BaseThread::jobs == 0;});
+    BaseThread::main_cv.wait(lk, [&] {return BaseThread::jobs == 0;});
     BaseThread::in_threaded_region = false;
     delete(BaseThread::scf_barrier);
  
@@ -83,7 +96,6 @@ void BaseThread::thread_sleep(void)
 
 // Blocks all threads until nthreads specified in the init call have reached this point
 void BaseThread::thread_barrier_wait(void) {
-    int nt = BaseThread::THREADS_PER_NODE;
     if(!BaseThread::in_threaded_region) return;
     BaseThread::scf_barrier->wait();
 }
@@ -92,7 +104,7 @@ void BaseThread::thread_barrier_wait(void) {
 // a parallel region. Meant to be called from a thread.
 int BaseThread::get_thread_basetag(void) {
 
-    BaseThread *ss;
+    BaseThreadControl *ss;
     if(!BaseThread::in_threaded_region) return 0;
     ss = rmg_get_tsd();
     if(!ss) return 0;
@@ -104,12 +116,12 @@ int BaseThread::get_thread_basetag(void) {
 // Sets a basetag value. Meant to be called from the main program.
 void BaseThread::set_thread_basetag(int tid, int tag)
 {
-    thread_controls[tid]->basetag = tag;
+    thread_controls[tid].basetag = tag;
 }
 
 // Gets the threads control structure pointer
-BaseThread *BaseThread::get_thread_control(void) {
-    BaseThread *ss;
+BaseThreadControl *BaseThread::get_thread_control(void) {
+    BaseThreadControl *ss;
     if(!BaseThread::in_threaded_region) return NULL;
     ss = rmg_get_tsd();
     if(!ss) return NULL;
@@ -120,7 +132,7 @@ BaseThread *BaseThread::get_thread_control(void) {
 // a parallel region
 int BaseThread::get_thread_tid(void) {
 
-    BaseThread *ss;
+    BaseThreadControl *ss;
 
     if(!BaseThread::in_threaded_region) return -1;
     ss = rmg_get_tsd();
@@ -164,7 +176,7 @@ void BaseThread::RMG_MPI_unlock(void) {
 
 int BaseThread::is_loop_over_states(void)
 {
-    BaseThread *ss;
+    BaseThreadControl *ss;
     if(!BaseThread::in_threaded_region) return 0;
     ss = rmg_get_tsd();
     if(!ss) return 0;
@@ -180,49 +192,19 @@ int BaseThread::get_threads_per_node(void)
 
 void BaseThread::set_pptr(int tid, void *p)
 {
-    thread_controls[tid]->pptr = p;
+    thread_controls[tid].pptr = p;
 }
-
-// Init flag
-int BaseThread::init_flag=0;
-
-// Threads to use on each MPI node. Default is 1
-int BaseThread::THREADS_PER_NODE=1;
-
-// Thread ID number assigned by us
-int tid;
-
-// Pointer to project specific data structure
-void *pptr;
-
-// Used to implement a local barrier inside of the scf loops
-boost::barrier *BaseThread::scf_barrier;
-
-// This is used when running with MPI_THREAD_SERIALIZED to ensure 
-// proper serialization
-std::mutex BaseThread::mpi_mutex;
-
-boost::thread *BaseThread::threads[MAX_RMG_THREADS];
-std::atomic<int> BaseThread::jobs (0);
-std::atomic<bool> BaseThread::in_threaded_region (false);
-
-// These are used to ensure thread ordering
-volatile int BaseThread::mpi_thread_order_counter = 0;
-std::mutex BaseThread::thread_order_mutex;
-
-// Basetag
-int basetag;
 
 
 // Non member functions used for handling thread specific data
-static boost::thread_specific_ptr<BaseThread> my_ptr;
-void rmg_set_tsd(BaseThread *p)
+static boost::thread_specific_ptr<BaseThreadControl> my_ptr;
+void rmg_set_tsd(BaseThreadControl *p)
 {
     if(!my_ptr.get()) {
        my_ptr.reset(p);
     }
 }
-BaseThread *rmg_get_tsd(void) {
+BaseThreadControl *rmg_get_tsd(void) {
     return my_ptr.get();
 }
 
