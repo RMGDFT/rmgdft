@@ -15,7 +15,7 @@ double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b,
 
     RmgTimer RT("App_cil");
     int sbasis;
-    double cc;
+    double cc = 0.0;
     FiniteDiff FD(L);
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
     RmgType *rptr = new RmgType[sbasis + 64];

@@ -1,6 +1,8 @@
 #include "make_conf.h"
 #include "rmgtypes.h"
 #include "auxiliary.h"
+#include "packfuncs.h"
+
 
 using namespace std;
 

@@ -43,6 +43,7 @@
 #include "auxiliary.h"
 #include "vhartree.h"
 #include "rmg_error.h"
+#include "packfuncs.h"
 #include "boundary_conditions.h"
 
 #define         PI          3.14159265359

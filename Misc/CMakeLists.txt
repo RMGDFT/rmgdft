@@ -11,8 +11,6 @@ init_IO.c
 get_index.c
 global_sums.c
 minimage.c
-pack_stop.cpp
-pack_ptos.cpp
 get_vtot_psi.c
 my_mpi.c
 blaswrappers.c

@@ -31,7 +31,7 @@
  */
 
 
-#include "auxiliary.h"
+#include "packfuncs.h"
 #include "BlasWrappers.h"
 
 

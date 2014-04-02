@@ -14,4 +14,7 @@ FiniteDiff.cpp
 RmgTimer.cpp
 RmgSumAll.cpp
 rmg_error.cpp
+get_vh.cpp
+pack_stop.cpp
+pack_ptos.cpp
 )

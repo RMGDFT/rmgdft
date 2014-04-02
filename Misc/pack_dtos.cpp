@@ -36,6 +36,8 @@
 
 #include "BaseGrid.h"
 #include "boundary_conditions.h"
+#include "packfuncs.h"
+
 
 void CPP_pack_dtos (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {

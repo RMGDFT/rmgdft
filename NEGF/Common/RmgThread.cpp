@@ -17,15 +17,16 @@ using namespace std;
 void *run_threads(void *v) {
 
     int retval;
-    BaseThread *s;
+    BaseThreadControl *s;
     SCF_THREAD_CONTROL *ss;
-    s = (BaseThread *)v;
+    s = (BaseThreadControl *)v;
+    BaseThread *T = BaseThread::getBaseThread(0);
 
 #if GPU_ENABLED
     cudaError_t cuerr;
 #endif
 
-    s->set_cpu_affinity(s->tid);
+    T->set_cpu_affinity(s->tid);
 
     // Set up thread local storage
     rmg_set_tsd(s);

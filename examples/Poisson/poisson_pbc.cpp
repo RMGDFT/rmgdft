@@ -44,8 +44,7 @@ void *run_threads(void *v) {
 
 int main(int argc, char **argv)
 {
-    int provided, my_rank, npes, neighbors[6];
-    int ii, jj, kk;
+    int provided, my_rank, npes;
     int nthreads = 1, flag = 0;
     double celldim[6], a0[3], a1[3], a2[3], omega;
 
@@ -109,7 +108,7 @@ int main(int argc, char **argv)
 
 
     // nthreads won't do anything in this example program but should set it to 1 so as to not waste resources
-    BaseThread B(nthreads);
+    BaseThread *B = BaseThread::getBaseThread(nthreads);
 
 
     // Setup for grids and threads must be completed before we create a TradeImages object

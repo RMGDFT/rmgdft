@@ -13,6 +13,8 @@
 #include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
+#include "packfuncs.h"
+
 
 
 extern STATE *states;

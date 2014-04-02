@@ -1,6 +1,8 @@
 
 #include "auxiliary.h"
 #include "BlasWrappers.h"
+#include "packfuncs.h"
+
 
 
 template <typename RmgType>

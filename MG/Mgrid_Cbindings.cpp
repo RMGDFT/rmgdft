@@ -12,6 +12,8 @@
 #include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "transition.h"
+#include "packfuncs.h"
+
 
 using namespace std;
 
