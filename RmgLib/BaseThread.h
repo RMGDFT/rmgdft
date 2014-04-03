@@ -48,10 +48,10 @@ private:
     // Base tag
     int basetag;
 
-    // Initialization flag and mutex to protect it
+    // Initialization flag
     static int init_flag;
-    static std::mutex init_mutex;
 
+    // Points to the single instance
     static BaseThread *instance;
 
     // Private constructur

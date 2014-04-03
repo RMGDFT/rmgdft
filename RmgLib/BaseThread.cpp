@@ -18,9 +18,6 @@ std::condition_variable BaseThread::thread_cv;
 std::mutex BaseThread::main_mutex;
 std::condition_variable BaseThread::main_cv;
 
-// Mutex used during initialization
-std::mutex  BaseThread::init_mutex;
-
 // Pointer to the singleton
 BaseThread *BaseThread::instance = NULL;
 
