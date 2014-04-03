@@ -1,6 +1,7 @@
 add_library (RmgLib
 TradeImages.cpp
 Lattice.cpp
+#RmgLib.cpp
 BaseThread.cpp
 BaseGrid.cpp
 Mgrid.cpp
