@@ -25,31 +25,31 @@ private:
     BaseGrid *G;
 
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
-    static int mode;
+    int mode;
 
     // rank of this node in comm
-    static int gridpe;
+    int gridpe;
 
     /// Rank of target node based on offsets from current node. Used by asynchronous comm routines.
-    static int target_node[3][3][3];
+    int target_node[3][3][3];
 
-    static int max_alloc;
+    int max_alloc;
 
     /// Buffers allocated via MPI_Allocmem
-    static double *swbuf1x;
-    static double *swbuf2x;
-    static double *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
-    static double *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
-    static double *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
-    static double *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
-    static double *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
-    static double *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
-    static double *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
-    static double *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
-    static double *m0_s, *m0_r;
+    double *swbuf1x;
+    double *swbuf2x;
+    double *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
+    double *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
+    double *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
+    double *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
+    double *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
+    double *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
+    double *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
+    double *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
+    double *m0_s, *m0_r;
 
-    static MPI_Request sreqs[26];
-    static MPI_Request rreqs[26];
+    MPI_Request sreqs[26];
+    MPI_Request rreqs[26];
 
     void init_trade_imagesx_async(void);
     template <typename RmgType> void RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
@@ -61,9 +61,10 @@ private:
 
 public:
     /// MPI communicator to use
-    static MPI_Comm comm;
+    MPI_Comm comm;
 
     TradeImages(BaseGrid *BG);
+    ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);
     void set_MPI_comm(MPI_Comm comm);
