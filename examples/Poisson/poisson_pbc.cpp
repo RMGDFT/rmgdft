@@ -82,20 +82,13 @@ int main(int argc, char **argv)
     // Print Header
     if(my_rank == 0) cout << header;
 
-    // Instantiate and initialize a grid object
-    BaseGrid G;
-
-    // Currently must call this before G.set_nodes and before instantiation
-    // of a Lattice object. Will eventually rework the initialization and combine some of these calls. 
-    // For this excample we have set set the fine and coarse grids to the same density but during an
-    // electronic structure calculation a more typical scenario is to use the coarse grid for the
-    // wavefunctions and the fine grid for the density.
-    G.set_grids(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, 1);
+    // Instantiate and initialize a grid object with a default fine/coarse ratio of 1
+    BaseGrid *G = new BaseGrid(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, 1);
 
     // Finish setting up the grid object
-    G.set_nodes(my_rank);    
+    G->set_nodes(my_rank);    
 
-    int pbasis = G.get_P0_BASIS(1);
+    int pbasis = G->get_P0_BASIS(1);
 
     // Set up a simple cubic cell 20.0 AU per side
     Lattice L;
@@ -111,7 +104,7 @@ int main(int argc, char **argv)
 
 
     // Setup for grids and threads must be completed before we create a TradeImages object
-    TradeImages T(&G);
+    TradeImages T(G);
     T.set_MPI_comm(MPI_COMM_WORLD);
 
     // Allocate some arrays to hold the charge and the potential
@@ -128,17 +121,17 @@ int main(int argc, char **argv)
     // uniform background charge density that simulates the electrons and neutralizes the overall cell.
     int ix, iy, iz, incx, incy;
     double beta=2.0, factor=1.0, rsquared, grid_spacing, vel, totalcharge = 0.0;
-    incx = G.get_PY0_GRID(1) * G.get_PZ0_GRID(1);
-    incy = G.get_PZ0_GRID(1);
-    int icx = G.get_PX0_GRID(1)/2;
-    int icy = G.get_PY0_GRID(1)/2;
-    int icz = G.get_PZ0_GRID(1)/2;
-    grid_spacing = G.get_hxgrid(1) * L.get_xside();      // Cubic so isotropic in all directions
-    vel = L.get_omega() / G.get_GLOBAL_BASIS(1);
+    incx = G->get_PY0_GRID(1) * G->get_PZ0_GRID(1);
+    incy = G->get_PZ0_GRID(1);
+    int icx = G->get_PX0_GRID(1)/2;
+    int icy = G->get_PY0_GRID(1)/2;
+    int icz = G->get_PZ0_GRID(1)/2;
+    grid_spacing = G->get_hxgrid(1) * L.get_xside();      // Cubic so isotropic in all directions
+    vel = L.get_omega() / G->get_GLOBAL_BASIS(1);
 
-    for(ix = 0;ix < G.get_PX0_GRID(1);ix++) {
-        for(iy = 0;iy < G.get_PY0_GRID(1);iy++) {
-            for(iz = 0;iz < G.get_PZ0_GRID(1);iz++) {
+    for(ix = 0;ix < G->get_PX0_GRID(1);ix++) {
+        for(iy = 0;iy < G->get_PY0_GRID(1);iy++) {
+            for(iz = 0;iz < G->get_PZ0_GRID(1);iz++) {
 
                 rsquared = grid_spacing * grid_spacing * double((ix-icx)*(ix-icx) + (iy-icy)*(iy-icy) + (iz-icz)*(iz-icz));
                 rho[ix*incx + iy*incy + iz] = factor * exp(-beta*rsquared);
@@ -186,15 +179,18 @@ int main(int argc, char **argv)
         double residual;
 
         // Reinitialize hartree potential to zero before entering solver.
-        for(int idx = 0;idx < G.get_PX0_GRID(1) * G.get_PY0_GRID(1) * G.get_PZ0_GRID(1);idx++) vh[idx] = 0.0;
-
-        residual = CPP_get_vh (&G, &L, &T, rho, vh, min_sweeps, max_sweeps, levels, global_presweeps,
-                global_postsweeps, mucycles, rms_target,
-                global_step, coarse_step, boundaryflag, 1);
+        for(int idx = 0;idx < G->get_PX0_GRID(1) * G->get_PY0_GRID(1) * G->get_PZ0_GRID(1);idx++) vh[idx] = 0.0;
 
         if(my_rank == 0)
-            cout << "Solved poissons equation with " << levels << " multigrid levels." << " RMS residual = " << residual << endl;
+            cout << "Solving poissons equation with " << levels << " multigrid levels. Max " << max_sweeps << " sweeps or RMS target < " << rms_target << endl << "  ";
 
+
+        residual = CPP_get_vh (G, &L, &T, rho, vh, min_sweeps, max_sweeps, levels, global_presweeps,
+                global_postsweeps, mucycles, rms_target,
+                global_step, coarse_step, boundaryflag, 1, true);
+
+        if(my_rank == 0)
+            cout << endl;
     }
 
     if(my_rank == 0) cout << endl;
