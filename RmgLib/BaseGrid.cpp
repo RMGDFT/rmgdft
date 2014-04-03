@@ -21,7 +21,7 @@ using namespace std;
     /// @param newPE_Y New MPI grid Y dimension
     /// @param newPE_Z New MPI grid Z dimension
     /// @param newFG_RATIO New ratio of fine grid to coarse
-    void BaseGrid::set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
+    BaseGrid::BaseGrid(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
     {
 
         BaseGrid::NX_GRID = newNX_GRID;
@@ -33,15 +33,12 @@ using namespace std;
         BaseGrid::PE_Z = newPE_Z;
 
         BaseGrid::default_FG_RATIO = newFG_RATIO;
-        BaseGrid::grid_first = 1;
+        BaseGrid::neighbor_first = 0;
     }
 
     void BaseGrid::set_nodes(int newgridpe)
     {
         int rem;
-
-       if(!BaseGrid::grid_first)
-            rmg_error_handler (__FILE__, __LINE__, "Grids must be initialized before nodes. Please call set_grids first");
 
         BaseGrid::gridpe = newgridpe;
 
@@ -70,18 +67,13 @@ using namespace std;
         if(rem && (kk < rem)) BaseGrid::PZ0_GRID++;
 
         // Adjust if needed
-        BaseGrid::find_node_sizes(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID, &BaseGrid::PX0_GRID, &BaseGrid::PY0_GRID, &BaseGrid::PZ0_GRID);
-        //BaseGrid::find_node_sizes(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID, &BaseGrid::FPX0_GRID, &BaseGrid::FPY0_GRID, &BaseGrid::FPZ0_GRID);
+        BaseGrid::find_node_sizes(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID, &this->PX0_GRID, &this->PY0_GRID, &this->PZ0_GRID);
 
         BaseGrid::P0_BASIS = BaseGrid::PX0_GRID * BaseGrid::PY0_GRID * BaseGrid::PZ0_GRID;
-        //BaseGrid::FP0_BASIS = BaseGrid::FPX0_GRID * BaseGrid::FPY0_GRID * BaseGrid::FPZ0_GRID;
 
         // Now compute the global grid offset of the first point of the coarse and fine node grids
         BaseGrid::find_node_offsets(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID,
-                          &BaseGrid::PX_OFFSET, &BaseGrid::PY_OFFSET, &BaseGrid::PZ_OFFSET);
-
-        //BaseGrid::find_node_offsets(gridpe, BaseGrid::FNX_GRID, BaseGrid::FNY_GRID, BaseGrid::FNZ_GRID,
-        //                  &BaseGrid::FPX_OFFSET, &BaseGrid::FPY_OFFSET, &BaseGrid::FPZ_OFFSET);
+                          &this->PX_OFFSET, &this->PY_OFFSET, &this->PZ_OFFSET);
 
                  
 
@@ -159,108 +151,74 @@ using namespace std;
     }
     int BaseGrid::get_PE_X(void)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PE_X;
     }
     int BaseGrid::get_PE_Y(void)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PE_Y;
     }
     int BaseGrid::get_PE_Z(void)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PE_Z;
     }
 
     int BaseGrid::get_NX_GRID(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * BaseGrid::NX_GRID;
     }
     int BaseGrid::get_NY_GRID(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * BaseGrid::NY_GRID;
     }
     int BaseGrid::get_NZ_GRID(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * BaseGrid::NZ_GRID;
     }
 
     double BaseGrid::get_hxgrid(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
         return 1.0 / ((double)(density * BaseGrid::NX_GRID));
     }
     double BaseGrid::get_hygrid(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
         return 1.0 / ((double)(density * BaseGrid::NY_GRID));
     }
     double BaseGrid::get_hzgrid(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
         return 1.0 / ((double)(density * BaseGrid::NZ_GRID));
     }
 
 
     int BaseGrid::get_PX0_GRID(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * BaseGrid::PX0_GRID;
     }
     int BaseGrid::get_PY0_GRID(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * BaseGrid::PY0_GRID;
     }
     int BaseGrid::get_PZ0_GRID(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * BaseGrid::PZ0_GRID;
     }
     int BaseGrid::get_PX_OFFSET(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PX_OFFSET;
     }
     int BaseGrid::get_PY_OFFSET(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PY_OFFSET;
     }
     int BaseGrid::get_PZ_OFFSET(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return BaseGrid::PZ_OFFSET;
     }
     int BaseGrid::get_P0_BASIS(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * density * density * BaseGrid::P0_BASIS;
     }
     int BaseGrid::get_GLOBAL_BASIS(int density)
     {
-	if(!BaseGrid::grid_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * density * density * BaseGrid::NX_GRID * BaseGrid::NY_GRID * BaseGrid::NZ_GRID;
     }
     void BaseGrid::pe2xyz(int pe, int *x, int *y, int *z)
@@ -300,43 +258,5 @@ using namespace std;
 	    rmg_error_handler (__FILE__, __LINE__, "Neighbor list not initialized. Please call set_neighbors first");
         return BaseGrid::gridpe;
     }
-
-
-/// Global coarse grid X dimension
-int BaseGrid::NX_GRID;
-/// Global coarse grid Y dimension
-int BaseGrid::NY_GRID;
-/// Global coarse grid Z dimension
-int BaseGrid::NZ_GRID;
-
-/// Default ratio of fine grid to coarse grid
-int BaseGrid::default_FG_RATIO;
-
-/* Node (PE) dimensions */
-int BaseGrid::PE_X;
-int BaseGrid::PE_Y;
-int BaseGrid::PE_Z;
-
-/// Coarse grid size in the X-dimension on each PE
-int BaseGrid::PX0_GRID;
-/// Coarse grid size in the Y-dimension on each PE
-int BaseGrid::PY0_GRID;
-/// Coarse grid size in the Z-dimension on each PE
-int BaseGrid::PZ0_GRID;
-
-/* Grid offsets on each PE */
-int BaseGrid::PX_OFFSET;
-int BaseGrid::PY_OFFSET;
-int BaseGrid::PZ_OFFSET;
-
-/* Basis size on each PE */
-int BaseGrid::P0_BASIS;
-
-/* MPI stuff */
-int BaseGrid::gridpe;
-int BaseGrid::neighbors[6];
-
-int BaseGrid::neighbor_first=0;
-int BaseGrid::grid_first=0;
 
 

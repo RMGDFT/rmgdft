@@ -25,12 +25,12 @@ extern "C" double get_zside(void)
 }
 extern "C" double get_vel(void)
 {
-    double t1 = (double) (Rmg_G.get_NX_GRID(1) * Rmg_G.get_NY_GRID(1) * Rmg_G.get_NZ_GRID(1));
+    double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     return Rmg_L.get_omega() / t1;
 }
 extern "C" double get_vel_f(void)
 {
-    double t1 = (double) (Rmg_G.get_NX_GRID(Rmg_G.get_default_FG_RATIO()) * Rmg_G.get_NY_GRID(Rmg_G.get_default_FG_RATIO()) * Rmg_G.get_NZ_GRID(Rmg_G.get_default_FG_RATIO()));
+    double t1 = (double) (Rmg_G->get_NX_GRID(Rmg_G->get_default_FG_RATIO()) * Rmg_G->get_NY_GRID(Rmg_G->get_default_FG_RATIO()) * Rmg_G->get_NZ_GRID(Rmg_G->get_default_FG_RATIO()));
     return Rmg_L.get_omega() / t1;
 }
 extern "C" double get_celldm(int which)

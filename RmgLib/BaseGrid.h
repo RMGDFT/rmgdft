@@ -23,45 +23,45 @@ class BaseGrid {
 
 protected:
     /* Global coarse grid dimensions */
-    static int NX_GRID;
-    static int NY_GRID;
-    static int NZ_GRID;
+    int NX_GRID;
+    int NY_GRID;
+    int NZ_GRID;
 
     /* Node (PE) dimensions */
-    static int PE_X;
-    static int PE_Y;
-    static int PE_Z;
+    int PE_X;
+    int PE_Y;
+    int PE_Z;
 
     /* Grid sizes on each PE */
-    static int PX0_GRID;
-    static int PY0_GRID;
-    static int PZ0_GRID;
+    int PX0_GRID;
+    int PY0_GRID;
+    int PZ0_GRID;
 
     /* Basis size on each PE */
-    static int P0_BASIS;
+    int P0_BASIS;
 
     /* MPI specific info */
-    static int gridpe;
-    static int neighbors[6];
+    int gridpe;
+    int neighbors[6];
 
 private:
 
     /* Grid offsets on each PE */
-    static int PX_OFFSET;
-    static int PY_OFFSET;
-    static int PZ_OFFSET;
+    int PX_OFFSET;
+    int PY_OFFSET;
+    int PZ_OFFSET;
 
-    /* Initialiazation flags */
-    static int neighbor_first;
-    static int grid_first;
+    /* Secondary initialiazation flags */
+    int neighbor_first;
 
 public:
 
+    BaseGrid(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int default_FG_RATIO);
+
     /* Fine grid/coarse default ratio */
-    static int default_FG_RATIO;
+    int default_FG_RATIO;
 
     /* Function prototypes */
-    void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int default_FG_RATIO);
     void set_nodes(int newgridpe);
     void find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
     void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);

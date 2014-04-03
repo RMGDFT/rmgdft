@@ -2,12 +2,12 @@
  **    $Id: pack_vhstod.c 2147 2014-02-26 18:46:25Z ebriggs $    **
 ******************************************************************************/
 
-/****f* QMD-MGDFT/pack_vhstod.c *****
+/****f* QMD-MG->FT/pack_vhstod.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
  *   Quantum molecular dynamics package.
  *   Version: 2.1.5
- * COPYRIGHT
+ * COPYRIG->T
  *   Copyright (C) 1995  Emil Briggs
  *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
  *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
@@ -41,7 +41,7 @@
 
 
 /* This function is used to pack grids when computing the hartree potential */
-void CPP_pack_stod (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
+void CPP_pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
 {
     int ix, iy, iz;
     int pex, pey, pez;
@@ -52,7 +52,6 @@ void CPP_pack_stod (double * s, double * d, int dimx, int dimy, int dimz, int bo
     int loidx, hiidx;
     int hix, hiy, hiz;
     int hincx, hincy;
-    BaseGrid G;
 
     if (boundaryflag == PERIODIC)
     {
@@ -63,7 +62,7 @@ void CPP_pack_stod (double * s, double * d, int dimx, int dimy, int dimz, int bo
 
     }                           /* end if */
 
-    G.pe2xyz (G.get_gridpe(), &pex, &pey, &pez);
+    G->pe2xyz (G->get_gridpe(), &pex, &pey, &pez);
     sxlo = pex * dimx;
     sylo = pey * dimy;
     szlo = pez * dimz;
@@ -71,9 +70,9 @@ void CPP_pack_stod (double * s, double * d, int dimx, int dimy, int dimz, int bo
     syhi = sylo + dimy - 1;
     szhi = szlo + dimz - 1;
 
-    dxlo = pex * 2 * dimx - G.get_NX_GRID(1) / 2;
-    dylo = pey * 2 * dimy - G.get_NY_GRID(1) / 2;
-    dzlo = pez * 2 * dimz - G.get_NZ_GRID(1) / 2;
+    dxlo = pex * 2 * dimx - G->get_NX_GRID(1) / 2;
+    dylo = pey * 2 * dimy - G->get_NY_GRID(1) / 2;
+    dzlo = pez * 2 * dimz - G->get_NZ_GRID(1) / 2;
     dxhi = dxlo + 2 * dimx - 1;
     dyhi = dylo + 2 * dimy - 1;
     dzhi = dzlo + 2 * dimz - 1;
@@ -129,7 +128,3 @@ void CPP_pack_stod (double * s, double * d, int dimx, int dimy, int dimz, int bo
 }                               /* end pack_stod */
 
 
-extern "C" void pack_vhstod (double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag)
-{
-    CPP_pack_stod (s, d, dimx, dimy, dimz, boundaryflag);
-}

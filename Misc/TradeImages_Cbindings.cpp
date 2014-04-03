@@ -8,7 +8,7 @@ using namespace std;
 // C interfaces for transitional usage
 extern "C" void init_TradeImages(void)
 {
-    Rmg_T = new TradeImages(&Rmg_G);
+    Rmg_T = new TradeImages(Rmg_G);
 }
 extern "C" void set_MPI_comm(MPI_Comm comm)
 {

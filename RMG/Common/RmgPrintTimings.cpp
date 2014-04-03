@@ -10,16 +10,15 @@
 
 using namespace std;
 
-void RmgPrintTimings(const char *outfile, int steps) {
+void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
     int tid;
     BaseThread *T = BaseThread::getBaseThread(0);
-    BaseGrid G;
     RmgTimer RT("Print timings");
 
     std::ofstream logfile;
 
-    if(G.get_gridpe() == 0) {
+    if(G->get_gridpe() == 0) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
@@ -107,8 +106,9 @@ void RmgPrintTimings(const char *outfile, int steps) {
 }
 
 #include "main.h"
+#include "transition.h"
 extern "C" void CompatRmgTimerPrint(const char *outfile, int steps)
 {
-    RmgPrintTimings(outfile, steps);
+    RmgPrintTimings(Rmg_G, outfile, steps);
 }
 

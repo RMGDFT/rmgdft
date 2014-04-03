@@ -418,11 +418,11 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
 
 extern "C" void mg_eig_state(STATE *sp, int tid, rmg_double_t *vtot_psi)
 {
-    MgEigState<rmg_double_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+    MgEigState<rmg_double_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 extern "C" void mg_eig_state_f(STATE *sp, int tid, rmg_double_t *vtot_psi)
 {
-    MgEigState<rmg_float_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+    MgEigState<rmg_float_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 
 extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision)
@@ -437,12 +437,12 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_ps
 
     if(precision == sizeof(rmg_double_t)) {
 
-        MgEigState<rmg_double_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+        MgEigState<rmg_double_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
     }
     else {
 
-        MgEigState<rmg_float_t> (&Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+        MgEigState<rmg_float_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
     }
 

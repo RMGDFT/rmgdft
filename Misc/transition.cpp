@@ -9,7 +9,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 
-BaseGrid Rmg_G;
+BaseGrid *Rmg_G;
 TradeImages *Rmg_T;
 Lattice Rmg_L;
 

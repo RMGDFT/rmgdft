@@ -5,10 +5,8 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
-#include "RmgLib.h"
 
-extern RmgLib *Rmg_Lib;
-extern BaseGrid Rmg_G;
+extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 
