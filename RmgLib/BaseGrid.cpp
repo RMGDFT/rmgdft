@@ -263,19 +263,6 @@ using namespace std;
 	    rmg_error_handler (__FILE__, __LINE__, "Grids not initialized. Please call set_grids first");
 	return density * density * density * BaseGrid::NX_GRID * BaseGrid::NY_GRID * BaseGrid::NZ_GRID;
     }
-    void BaseGrid::set_anisotropy(double a)
-    {
-        if(BaseGrid::anisotropy_first) return;
-        BaseGrid::anisotropy = a;
-        anisotropy_first = 1;
-    }
-    double BaseGrid::get_anisotropy(void)
-    {
-	if(!BaseGrid::anisotropy_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Anisotropy not initialized. Please call set_anisotropy first");
-	return BaseGrid::anisotropy;
-    }
-
     void BaseGrid::pe2xyz(int pe, int *x, int *y, int *z)
     {
 
@@ -349,11 +336,7 @@ int BaseGrid::P0_BASIS;
 int BaseGrid::gridpe;
 int BaseGrid::neighbors[6];
 
-/* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
-double BaseGrid::anisotropy;
-
 int BaseGrid::neighbor_first=0;
 int BaseGrid::grid_first=0;
-int BaseGrid::anisotropy_first=0;
 
 

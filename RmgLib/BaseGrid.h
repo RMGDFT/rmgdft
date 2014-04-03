@@ -51,13 +51,9 @@ private:
     static int PY_OFFSET;
     static int PZ_OFFSET;
 
-    /* Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. A value larger than 1.05 can lead to convergence problems. */
-    static double anisotropy;
-
     /* Initialiazation flags */
     static int neighbor_first;
     static int grid_first;
-    static int anisotropy_first;
 
 public:
 
@@ -95,8 +91,6 @@ public:
     int get_P0_BASIS(int density);
     int get_GLOBAL_BASIS(int density);
 
-    void set_anisotropy(double a);
-    double get_anisotropy(void);
     void pe2xyz(int pe, int *x, int *y, int *z);
     int xyz2pe(int x, int y, int z);
 
