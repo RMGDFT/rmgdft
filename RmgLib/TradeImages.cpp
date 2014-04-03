@@ -43,48 +43,46 @@ TradeImages::TradeImages(BaseGrid *BG)
 
     this->G = BG;
 
-    if((swbuf1x == NULL) && (swbuf2x == NULL)) {
-        int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2, retval;
-        BaseThread *T = BaseThread::getBaseThread(0);
+    int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2, retval;
+    BaseThread *T = BaseThread::getBaseThread(0);
 
-        grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-        grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-        grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
-        if(grid_xp > grid_yp) {
-            grid_max1 = grid_xp;
-            if(grid_yp > grid_zp) {
-                grid_max2 = grid_yp;
-            }
-            else {
-                grid_max2 = grid_zp;
-            }
-         }
-         else {
-            grid_max1 = grid_yp;
-              if(grid_xp > grid_zp) {
-                  grid_max2 = grid_xp;
-              }
-              else {
-                  grid_max2 = grid_zp;
-              }
-         }
-         retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
-         if(retval != MPI_SUCCESS) {
-             rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
-         }
-         retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
-         if(retval != MPI_SUCCESS) {
-             rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
-         }
+    grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    if(grid_xp > grid_yp) {
+        grid_max1 = grid_xp;
+        if(grid_yp > grid_zp) {
+            grid_max2 = grid_yp;
+        }
+        else {
+            grid_max2 = grid_zp;
+        }
+     }
+     else {
+        grid_max1 = grid_yp;
+          if(grid_xp > grid_zp) {
+              grid_max2 = grid_xp;
+          }
+          else {
+              grid_max2 = grid_zp;
+          }
+     }
+     retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
+     if(retval != MPI_SUCCESS) {
+         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+     }
+     retval = MPI_Alloc_mem(6 * sizeof(complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
+     if(retval != MPI_SUCCESS) {
+         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+     }
 
 
-         max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T->get_threads_per_node();
+     TradeImages::max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T->get_threads_per_node();
 
-         TradeImages::mode = ASYNC_MODE;
-         TradeImages::init_trade_imagesx_async();        
+     TradeImages::mode = ASYNC_MODE;
+     TradeImages::init_trade_imagesx_async();        
 
-         return;
-    }
+     return;
 
 }
 

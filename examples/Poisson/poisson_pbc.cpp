@@ -48,6 +48,9 @@ int main(int argc, char **argv)
     int nthreads = 1, flag = 0;
     double celldim[6], a0[3], a1[3], a2[3], omega;
 
+    // nthreads won't do anything in this example program but should set it to 1 so as to not waste resources
+    BaseThread *B = BaseThread::getBaseThread(nthreads);
+
     // Set physical grid dimensions but let user override on command line
     int GRIDX = 64, GRIDY = 64, GRIDZ = 64;
     if(argc) {
@@ -88,7 +91,6 @@ int main(int argc, char **argv)
     // electronic structure calculation a more typical scenario is to use the coarse grid for the
     // wavefunctions and the fine grid for the density.
     G.set_grids(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, 1);
-    G.set_anisotropy(1.0);
 
     // Finish setting up the grid object
     G.set_nodes(my_rank);    
@@ -106,9 +108,6 @@ int main(int argc, char **argv)
     celldim[5] = 0.0;
     L.latgen(celldim, a0, a1, a2, &omega, &flag);
 
-
-    // nthreads won't do anything in this example program but should set it to 1 so as to not waste resources
-    BaseThread *B = BaseThread::getBaseThread(nthreads);
 
 
     // Setup for grids and threads must be completed before we create a TradeImages object
@@ -135,7 +134,7 @@ int main(int argc, char **argv)
     int icy = G.get_PY0_GRID(1)/2;
     int icz = G.get_PZ0_GRID(1)/2;
     grid_spacing = G.get_hxgrid(1) * L.get_xside();      // Cubic so isotropic in all directions
-    vel = omega / G.get_GLOBAL_BASIS(1);
+    vel = L.get_omega() / G.get_GLOBAL_BASIS(1);
 
     for(ix = 0;ix < G.get_PX0_GRID(1);ix++) {
         for(iy = 0;iy < G.get_PY0_GRID(1);iy++) {
@@ -186,15 +185,15 @@ int main(int argc, char **argv)
 
         double residual;
 
-        if(my_rank == 0)
-            cout << "Solving poissons equation with " << levels << " multigrid levels." << endl;
-
         // Reinitialize hartree potential to zero before entering solver.
         for(int idx = 0;idx < G.get_PX0_GRID(1) * G.get_PY0_GRID(1) * G.get_PZ0_GRID(1);idx++) vh[idx] = 0.0;
 
         residual = CPP_get_vh (&G, &L, &T, rho, vh, min_sweeps, max_sweeps, levels, global_presweeps,
                 global_postsweeps, mucycles, rms_target,
                 global_step, coarse_step, boundaryflag, 1);
+
+        if(my_rank == 0)
+            cout << "Solved poissons equation with " << levels << " multigrid levels." << " RMS residual = " << residual << endl;
 
     }
 
