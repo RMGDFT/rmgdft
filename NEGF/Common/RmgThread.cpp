@@ -38,6 +38,8 @@ void *run_threads(void *v) {
     cudaSetDevice(ct.cu_dev); 
 #endif
 
+    // Quick hack fix
+    sleep(1000000);
 #if 0
     while(1) {
 
