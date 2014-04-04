@@ -7,6 +7,7 @@
 #include <mpi.h>
 
 void rmg_error_handler(const char *filename, int line, char const *message);
+void RmgRegisterErrorHandler(void (*func)(const char *filename, int line, char const *message));
 
 #else
 void rmg_error_handler(char *message);
