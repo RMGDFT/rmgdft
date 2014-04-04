@@ -3,6 +3,8 @@
 #include "const.h"
 
 
+void *run_threads(void *v);
+
 // Non member functions used for handling thread specific data
 extern "C" void run_thread_tasks(int jobs)
 {
@@ -37,6 +39,8 @@ extern "C" int get_thread_tid(void)
 extern "C" void init_HYBRID_MODEL(int nthreads)
 {
     BaseThread *B = BaseThread::getBaseThread(nthreads);
+    B->RegisterThreadFunction(run_threads);
+
     // This is not a leak. We want B to live forever
     //B = new BaseThread(nthreads);
 }

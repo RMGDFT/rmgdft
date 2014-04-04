@@ -21,6 +21,9 @@ std::condition_variable BaseThread::main_cv;
 // Pointer to the singleton
 BaseThread *BaseThread::instance = NULL;
 
+// Pointer to the thread function
+void *(*BaseThread::funcptr)(void *s) = NULL;
+
 // Constructor
 BaseThread::BaseThread(int nthreads)
 {
@@ -35,18 +38,11 @@ BaseThread::BaseThread(int nthreads)
         BaseThread::THREADS_PER_NODE = nthreads;
 
         // Should work on linux and AIX
+#if __linux__
         ncpus = sysconf( _SC_NPROCESSORS_ONLN );
         printf("Hybrid mode with %d threads and %d cores per node.\n", nthreads, ncpus);
-
+#endif
         BaseThread::init_flag = 1;
-
-        // Create a set of long lived threads
-        for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) {
-
-            thread_controls[thread].tid = thread;
-            threads[thread] = new boost::thread(run_threads, (void *)&thread_controls[thread]);
-
-        }
 
     }
 
@@ -59,6 +55,22 @@ BaseThread *BaseThread::getBaseThread(int nthreads)
     }
     return BaseThread::instance;
 
+}
+
+void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s))
+{
+    int thread;
+
+    BaseThread::funcptr = funcptr;
+
+    // Create a set of long lived threads
+    for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) {
+
+        thread_controls[thread].tid = thread;
+        threads[thread] = new boost::thread(BaseThread::funcptr, (void *)&thread_controls[thread]);
+
+    }
+    
 }
 
 // Wakes jobs sleeping threads starting from tid=0 and counting up

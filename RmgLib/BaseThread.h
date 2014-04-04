@@ -8,10 +8,6 @@
 #define MAX_RMG_THREADS 32
 
 
-// Project specific thread function
-void *run_threads(void *s);
-
-
 #ifdef __cplusplus
 
 #include <thread>
@@ -54,12 +50,17 @@ private:
     // Points to the single instance
     static BaseThread *instance;
 
+    // Thread function pointer
+    static void *(*funcptr)(void *);
+
     // Private constructur
     BaseThread(int nthreads);
 
 public:
 
     static BaseThread *getBaseThread(int nthreads);
+
+    void RegisterThreadFunction(void *(*funcptr)(void *));
 
     // Condition variable and mutex for threads
     static std::mutex thread_mutex;
