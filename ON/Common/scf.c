@@ -54,22 +54,6 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
-    /* Update the wavefunctions */
-    time3 = my_crtc();
-
-
-    if(ct.scf_steps < ct.freeze_orbital_step)
-    {
-        steps = ct.scf_steps;
-        mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
-    }
-    else
-    {
-        steps = ct.scf_steps - ct.freeze_orbital_step;
-        if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
-    }
-    time4 = my_crtc();
-    rmg_timings(MG_TIME, time4 - time3);
 
 
 
@@ -118,6 +102,23 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
     get_te(rho, rhoc, rhocore, vh, vxc, states);
 
+    /* Update the orbitals */
+
+    time3 = my_crtc();
+
+
+    if(ct.scf_steps < ct.freeze_orbital_step)
+    {
+        steps = ct.scf_steps;
+        mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
+    }
+    else
+    {
+        steps = ct.scf_steps - ct.freeze_orbital_step;
+        if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
+    }
+    time4 = my_crtc();
+    rmg_timings(MG_TIME, time4 - time3);
 
     time2 = my_crtc();
     rmg_timings(SCF_TIME, time2 - time1);

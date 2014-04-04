@@ -145,42 +145,6 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     allocate_masks(states);
     if(gridpe == 0) printf("\n init_allocate mask done %f sec",my_crtc()-time1 );
 
-    /* If not an initial run read data from files */
-    if (ct.runflag == 1)
-    {
-        read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
-    if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-    }
-    if (ct.runflag == 0)
-    {
-
-        /* Set initial states to random start */
-        for (ispin = 0; ispin <= ct.spin; ispin++)
-            for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-            {
-                kpt1 = kpt + ispin * ct.num_kpts;
-                init_wf(&states[kpt1 * ct.num_states]);
-            }
-
-    if(gridpe == 0) printf("\n init_wf done %f sec",my_crtc()-time1 );
-    }
-
-    if (ct.runflag == INIT_GAUSSIAN)
-    {
-
-        /* Set initial states to random start */
-        for (ispin = 0; ispin <= ct.spin; ispin++)
-            for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-            {
-                kpt1 = kpt + ispin * ct.num_kpts;
-                init_wf_gaussian(&states[kpt1 * ct.num_states]);
-            }
-
-    if(gridpe == 0) printf("\n init_wf_gaussian done %f sec",my_crtc()-time1 );
-    }
-
-
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state(level, states);
 
@@ -196,74 +160,6 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     init_nuc(vnuc, rhoc, rhocore);
     if(gridpe == 0) printf("\n init_nuc done %f sec",my_crtc()-time1 );
 
-    if (ct.runflag == INIT_FIREBALL)
-    {
-        init_wf_atom(states);
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vh[idx] = ZERO;
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vxc[idx] = ZERO;
-
-        init_rho_atom(rho);
-    if(gridpe == 0) printf("\n init_rho_atom done %f sec",my_crtc()-time1 );
-
-#if DEBUG
-        tem = 0.0;
-        tem1 = 0.0;
-
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-
-        {
-            tem += rho[idx];
-            tem1 += rhoc[idx];
-        }
-        tem = real_sum_all(tem, pct.grid_comm);
-        tem1 = real_sum_all(tem1, pct.grid_comm);
-        if (pct.gridpe == 0)
-            printf("\n %f %f initial rho sum ", tem, tem1);
-        write_rho_x(rho, "rhoooo");
-        write_rho_x(rhoc, "rhoccc");
-#endif
-
-        get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vh_old[idx] = vh[idx];
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vxc_old[idx] = vxc[idx];
-    if(gridpe == 0) printf("\n init_vpot done %f sec",my_crtc()-time1 );
-
-    }
-
-    if (ct.runflag == 0 | ct.runflag == INIT_GAUSSIAN)
-    {
-        /* Set the initial hartree potential to a constant */
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vh[idx] = ZERO;
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vxc[idx] = ZERO;
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            rho[idx] = rhoc[idx];
-
-        get_vxc(rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vh_old[idx] = vh[idx];
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vxc_old[idx] = vxc[idx];
-    if(gridpe == 0) printf("\n init_vpot_0 done %f sec",my_crtc()-time1 );
-
-        if (ct.spin == 1)
-        {
-            for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            {
-                rho[idx + get_FP0_BASIS()] = 0.4 * rho[idx];
-                rho[idx] = 0.6 * rho[idx];
-            }
-        }
-    }
 
 
     /* Initialize Non-local operators */
@@ -275,56 +171,82 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     get_nlop();
     if(pct.gridpe == 0) printf("\n pe %d init_get_lop done %f sec",pct.gridpe, my_crtc()-time1 );
 
-	fflush(NULL);
+    fflush(NULL);
 
     my_barrier();
     if(pct.gridpe == 0) printf("\n pe %d my_barrier %f sec",pct.gridpe, my_crtc()-time1 );
-	fflush(NULL);
+    fflush(NULL);
 
     init_nonlocal_comm();
     if(pct.gridpe == 0) printf("\n pe %d init_nonlocal_comm done %f sec",pct.gridpe,my_crtc()-time1 );
-	fflush(NULL);
+    fflush(NULL);
 
     /* Initialize qfuction in Cartesin coordinates */
     init_qfunct();
     if(gridpe == 0) printf("\n init_qfunct done %f sec",my_crtc()-time1 );
-	fflush(NULL);
+    fflush(NULL);
     get_QI();
     if(gridpe == 0) printf("\n init_get_QI done %f sec",my_crtc()-time1 );
-	fflush(NULL);
+    fflush(NULL);
 
     /* Get the qqq */
     get_qqq();
     if(gridpe == 0) printf("\n init_get_qqq done %f sec",my_crtc()-time1 );
-	fflush(NULL);
+    fflush(NULL);
 
-
-    /* If diagonalization is requested do a subspace diagonalization */
-    for (ispin = 0; ispin <= ct.spin; ispin++)
+    for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
+    switch(ct.runflag)
     {
-        for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-        {
-            kpt1 = kpt + ispin * ct.num_kpts;
+        case 0:
+            init_wf(states);
+
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
-                vtot[idx] = vh_old[idx] + vxc_old[idx] + vnuc[idx];
+                rho[idx] = rhoc[idx];
+            break;
+        case INIT_FIREBALL:
+            init_wf_atom(states);
+            init_rho_atom(rho);
+            printf("\n init_rho_atom done %f sec",my_crtc()-time1 );
+            break;
 
-            get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
-            get_ddd(vtot);
+        case INIT_GAUSSIAN:
+            init_wf_gaussian(states);
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
+                rho[idx] = rhoc[idx];
+            break;
 
-            flag = 0;
-            matrix_and_diag(ct.kp[kpt1].kstate, states1, vtot_c, flag);
-    if(gridpe == 0) printf("\n init_matrix_and_diag done %f sec",my_crtc()-time1 );
-        }
-        if (pct.gridpe == 0)
-            write_eigs(states);
-    if(gridpe == 0) printf("\n init_write_eigs done %f sec",my_crtc()-time1 );
+        case 1:
+            time1 = my_crtc();
+            read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
+            if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
+            pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+            break;
+
     }
+
+    if(ct.runflag !=1) 
+    {
+        get_vxc(rho, rhocore, vxc);
+        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+            vh_old[idx] = vh[idx];
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+            vxc_old[idx] = vxc[idx];
+    }
+
+
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
+
+    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+    get_ddd(vtot);
+
 
     time2 = my_crtc();
     rmg_timings(INIT_TIME, (time2 - time1));
     my_barrier();
-    if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
-	fflush(NULL);
+    fflush(NULL);
 
 
 #if	DEBUG
@@ -333,7 +255,7 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     print_sum(pct.psi_size, states[ct.state_begin].psiR, "init.c states sum ");
 #endif
 
-/* some utilities, used in debuging */
+    /* some utilities, used in debuging */
 
     if (pct.gridpe > 100000)
     {
