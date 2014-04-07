@@ -1,47 +1,38 @@
-/****f* QMD-MGDFT/mgrid_solv.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void mgrid_solv(RmgType *v_mat, RmgType *f_mat, RmgType *work, 
- *                   int dimx, int dimy, int dimz,
- *                   RmgType gridhx, RmgType gridhy, RmgType gridhz,
- *                   int level, int *nb_ids, int max_levels, int *pre_cyc,
- *                   int *post_cyc, int mu_cyc, RmgType step)
- *	solves the Poisson equation: del^2 v = f for v. 
- *      This routine is called recursively for each level of multi-grid.
- * INPUTS
- *   f_mat[(xdim+2)*(dimy+2)*(dimz+2)]: the charge density (or residual) data
- *   work: workspace, dimensioned at least as large as the above matricies
- *   dimx,dimy,dimz:  size of the data arrays
- *   gridhx:  grid spacing for the x plane
- *   gridhy:  grid spacing for the y plane
- *   gridhz:  grid spacing for the z plane
- *   level:   indicates current level of multigrid
- *   nb_ids:  PE neighbor list
- *   max_levels:  maximum multigrid level
- *   pre_cyc: 
- *   post_cyc: number of post-smoothing
- *   mu_cyc:   number of iteration on the same level
- *   step:  time step
- *   k: When zero the call to solv_pois solves poissons equation. When non-zero helmholtz type
- * OUTPUT
- *   v_mat[(xdim+2)*(dimy+2)*(dimz+2)]: array to contain the solution
- * PARENTS
- *   get_vh.c mg_eig_state.c
- * CHILDREN
- *   trade_images.c solv_pois.c eval_residual.c mg_restrict.c mg_prolong.c solv_pois.c
- * SOURCE
- */
+/*
+ *
+ * Copyright (c) 1995, Emil Briggs
+ * Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
+ *                     Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
+ * Copyright (C) 2001  Emil Briggs, Wenchang Lu,
+ *                     Marco Buongiorno Nardelli,Charles Brabec, 
+ *                     Mark Wensell,Dan Sullivan, Chris Rapcewicz,
+ *                     Jerzy Bernholc
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+*/
+
 
 
 #include "Mgrid.h"
