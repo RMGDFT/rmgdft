@@ -161,7 +161,7 @@ void init_pe ( int image )
 
 
  // Set up grids and neighbors using both C and C++ for now
-    set_nodes(pct.gridpe);
+    set_rank(pct.gridpe);
 
 
     // Compute grid sizes for each node.

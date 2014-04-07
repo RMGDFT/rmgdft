@@ -757,7 +757,7 @@ void TradeImages::init_trade_imagesx_async(void)
      }
 
     // Set up the target node array
-    this->G->pe2xyz(this->G->get_gridpe(), &pe_x, &pe_y, &pe_z);
+    this->G->pe2xyz(this->G->get_rank(), &pe_x, &pe_y, &pe_z);
     for(ix = -1;ix <= 1;ix++) {
 
         t_pe_x = (pe_x + ix + this->G->get_PE_X()) % this->G->get_PE_X();

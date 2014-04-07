@@ -62,7 +62,7 @@ void CPP_pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int
 
     }                           /* end if */
 
-    G->pe2xyz (G->get_gridpe(), &pex, &pey, &pez);
+    G->pe2xyz (G->get_rank(), &pex, &pey, &pez);
     sxlo = pex * dimx;
     sylo = pey * dimy;
     szlo = pez * dimz;

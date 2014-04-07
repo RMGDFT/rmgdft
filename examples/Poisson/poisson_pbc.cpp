@@ -46,6 +46,7 @@ int main(int argc, char **argv)
 {
     int provided, my_rank, npes;
     int nthreads = 1, flag = 0;
+    int default_grid_density = 1;
     double celldim[6], a0[3], a1[3], a2[3], omega;
 
     // nthreads won't do anything in this example program but should set it to 1 so as to not waste resources
@@ -83,10 +84,7 @@ int main(int argc, char **argv)
     if(my_rank == 0) cout << header;
 
     // Instantiate and initialize a grid object with a default fine/coarse ratio of 1
-    BaseGrid *G = new BaseGrid(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, 1);
-
-    // Finish setting up the grid object
-    G->set_nodes(my_rank);    
+    BaseGrid *G = new BaseGrid(GRIDX, GRIDY, GRIDZ, NODES_X, NODES_Y, NODES_Z, my_rank, default_grid_density);
 
     int pbasis = G->get_P0_BASIS(1);
 

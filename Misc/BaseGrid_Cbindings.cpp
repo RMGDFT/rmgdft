@@ -84,12 +84,12 @@ extern "C" int get_FG_RATIO(void)
 /// C interface function
 extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
 {
-  Rmg_G = new BaseGrid(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, newFG_RATIO);
+  Rmg_G = new BaseGrid(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, 0, newFG_RATIO);
 }
 /// C interface function
-extern "C" void set_nodes(int newgridpe)
+extern "C" void set_rank(int newrank)
 {
-  Rmg_G->set_nodes(newgridpe);
+  Rmg_G->set_rank(newrank);
 }
 /// C interface function
 extern "C" int get_PX0_GRID(void)
@@ -125,7 +125,7 @@ extern "C" int get_PZ_OFFSET(void)
 extern "C" int get_FPX_OFFSET(void)
 {
   int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
-  Rmg_G->find_node_offsets(Rmg_G->get_gridpe(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
+  Rmg_G->find_node_offsets(Rmg_G->get_rank(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
                           &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
   return FPX_OFFSET;
 }
@@ -133,7 +133,7 @@ extern "C" int get_FPX_OFFSET(void)
 extern "C" int get_FPY_OFFSET(void)
 {
   int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
-  Rmg_G->find_node_offsets(Rmg_G->get_gridpe(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
+  Rmg_G->find_node_offsets(Rmg_G->get_rank(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
                           &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
   return FPY_OFFSET;
 }
@@ -141,7 +141,7 @@ extern "C" int get_FPY_OFFSET(void)
 extern "C" int get_FPZ_OFFSET(void)
 {
   int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
-  Rmg_G->find_node_offsets(Rmg_G->get_gridpe(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
+  Rmg_G->find_node_offsets(Rmg_G->get_rank(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
                           &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
   return FPZ_OFFSET;
 }

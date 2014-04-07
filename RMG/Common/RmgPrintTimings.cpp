@@ -18,7 +18,7 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
     std::ofstream logfile;
 
-    if(G->get_gridpe() == 0) {
+    if(G->get_rank() == 0) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 

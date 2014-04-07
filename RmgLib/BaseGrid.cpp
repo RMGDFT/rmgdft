@@ -47,7 +47,7 @@ using namespace std;
     /// @param newPE_Y New MPI grid Y dimension
     /// @param newPE_Z New MPI grid Z dimension
     /// @param newFG_RATIO New ratio of fine grid to coarse
-    BaseGrid::BaseGrid(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int newFG_RATIO)
+    BaseGrid::BaseGrid(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int newPE_X, int newPE_Y, int newPE_Z, int new_rank, int newFG_RATIO)
     {
 
         BaseGrid::NX_GRID = newNX_GRID;
@@ -59,25 +59,25 @@ using namespace std;
         BaseGrid::PE_Z = newPE_Z;
 
         BaseGrid::default_FG_RATIO = newFG_RATIO;
-        BaseGrid::neighbor_first = 0;
+
+        BaseGrid::set_rank(new_rank);
     }
 
-    void BaseGrid::set_nodes(int newgridpe)
+    void BaseGrid::set_rank(int new_rank)
     {
         int rem;
 
-        BaseGrid::gridpe = newgridpe;
+        BaseGrid::rank = new_rank;
 
         /// Have each node figure out who it's neighbors are
         int ii, jj, kk;
-        BaseGrid::pe2xyz (BaseGrid::gridpe, &ii, &jj, &kk);
+        BaseGrid::pe2xyz (BaseGrid::rank, &ii, &jj, &kk);
         neighbors[NB_N] = BaseGrid::xyz2pe (ii, (jj + 1) % BaseGrid::PE_Y, kk);
         neighbors[NB_S] = BaseGrid::xyz2pe (ii, (jj - 1 + BaseGrid::PE_Y) % get_PE_Y(), kk);
         neighbors[NB_E] = BaseGrid::xyz2pe ((ii + 1) % BaseGrid::PE_X, jj, kk);
         neighbors[NB_W] = BaseGrid::xyz2pe ((ii - 1 + BaseGrid::PE_X) % BaseGrid::PE_X, jj, kk);
         neighbors[NB_U] = BaseGrid::xyz2pe (ii, jj, (kk + 1) % BaseGrid::PE_Z);
         neighbors[NB_D] = BaseGrid::xyz2pe (ii, jj, (kk - 1 + BaseGrid::PE_Z) % BaseGrid::PE_Z);
-        BaseGrid::neighbor_first = 1;
 
         // Compute grid sizes for each node.
         BaseGrid::PX0_GRID = BaseGrid::NX_GRID / BaseGrid::PE_X;
@@ -93,25 +93,25 @@ using namespace std;
         if(rem && (kk < rem)) BaseGrid::PZ0_GRID++;
 
         // Adjust if needed
-        BaseGrid::find_node_sizes(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID, &this->PX0_GRID, &this->PY0_GRID, &this->PZ0_GRID);
+        BaseGrid::find_node_sizes(rank, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID, &this->PX0_GRID, &this->PY0_GRID, &this->PZ0_GRID);
 
         BaseGrid::P0_BASIS = BaseGrid::PX0_GRID * BaseGrid::PY0_GRID * BaseGrid::PZ0_GRID;
 
         // Now compute the global grid offset of the first point of the coarse and fine node grids
-        BaseGrid::find_node_offsets(gridpe, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID,
+        BaseGrid::find_node_offsets(rank, BaseGrid::NX_GRID, BaseGrid::NY_GRID, BaseGrid::NZ_GRID,
                           &this->PX_OFFSET, &this->PY_OFFSET, &this->PZ_OFFSET);
 
                  
 
     }
 
-    void BaseGrid::find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
+    void BaseGrid::find_node_sizes(int rank, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize)
     {
 
 	int ii, jj, kk;
 	int ix, iy, iz, mfac;
 
-	BaseGrid::pe2xyz (gridpe, &ii, &jj, &kk);
+	BaseGrid::pe2xyz (rank, &ii, &jj, &kk);
 
 	mfac = nxgrid / BaseGrid::NX_GRID;
 	*pxsize = mfac * (BaseGrid::NX_GRID / BaseGrid::PE_X);
@@ -129,13 +129,13 @@ using namespace std;
 	if(kk < iz) *pzsize += mfac;
     }
 
-    void BaseGrid::find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
+    void BaseGrid::find_node_offsets(int rank, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset)
     {
 
 	int ii, jj, kk;
 	int idx, ix, iy, iz, ioffset, mfac;
 
-	BaseGrid::pe2xyz (gridpe, &ii, &jj, &kk);
+	BaseGrid::pe2xyz (rank, &ii, &jj, &kk);
 
 	// Now compute the global grid offset of the first point of the node grid
 	mfac = nxgrid / BaseGrid::NX_GRID;
@@ -272,17 +272,12 @@ using namespace std;
     // of neighboring processors in three-dimensional space.
     int *BaseGrid::get_neighbors(void)
     {
-	if(!BaseGrid::neighbor_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Neighbor list not initialized. Please call set_neighbors first");
-
 	return BaseGrid::neighbors;
     }
 
-    int BaseGrid::get_gridpe(void)
+    int BaseGrid::get_rank(void)
     {
-	if(!BaseGrid::neighbor_first)
-	    rmg_error_handler (__FILE__, __LINE__, "Neighbor list not initialized. Please call set_neighbors first");
-        return BaseGrid::gridpe;
+        return BaseGrid::rank;
     }
 
 

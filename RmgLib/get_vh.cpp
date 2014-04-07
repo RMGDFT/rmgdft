@@ -231,7 +231,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
         its ++;
     }                           /* end for */
 
-    if((G->get_gridpe() == 0) && print_status)
+    if((G->get_rank() == 0) && print_status)
         cout << "get_vh: executed " << its << " sweeps, residual is " << residual << endl;
 
     /* Release our memory */

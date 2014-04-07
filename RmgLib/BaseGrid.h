@@ -70,7 +70,7 @@ protected:
     int P0_BASIS;
 
     /* MPI specific info */
-    int gridpe;
+    int rank;
     int neighbors[6];
 
 private:
@@ -80,20 +80,17 @@ private:
     int PY_OFFSET;
     int PZ_OFFSET;
 
-    /* Secondary initialiazation flags */
-    int neighbor_first;
-
 public:
 
-    BaseGrid(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int default_FG_RATIO);
+    BaseGrid(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE_Z, int rank, int default_FG_RATIO);
 
     /* Fine grid/coarse default ratio */
     int default_FG_RATIO;
 
     /* Function prototypes */
-    void set_nodes(int newgridpe);
-    void find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
-    void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
+    void set_rank(int new_rank);
+    void find_node_sizes(int rank, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
+    void find_node_offsets(int rank, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
 
     int get_default_FG_RATIO(void);
 
@@ -128,7 +125,7 @@ public:
     int *get_neighbors(void);
 
     // Returns the rank of this process
-    int get_gridpe(void);
+    int get_rank(void);
 
 };
 

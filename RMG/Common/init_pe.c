@@ -176,6 +176,6 @@ void init_pe ( int image )
     Dprintf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
     // Set up grids and neighbors
-    set_nodes(pct.gridpe);
+    set_rank(pct.gridpe);
 
 }                               /* end init_pe */
