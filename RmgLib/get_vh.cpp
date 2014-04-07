@@ -40,7 +40,6 @@
 #include "FiniteDiff.h"
 #include "Mgrid.h"
 #include "RmgSumAll.h"
-#include "auxiliary.h"
 #include "vhartree.h"
 #include "rmg_error.h"
 #include "packfuncs.h"

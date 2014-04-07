@@ -37,7 +37,6 @@
 
 #include "Mgrid.h"
 #include "FiniteDiff.h"
-#include "BlasWrappers.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "boundary_conditions.h"
@@ -182,7 +181,11 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         scale = 1.0;
 
-        QMD_axpy (size, scale, resid, ione, v_mat, ione);
+        for(int idx = 0;idx < size;idx++)
+        {
+            v_mat[idx] += resid[idx];
+        }
+
 
         /* re-solve on this grid level */
 

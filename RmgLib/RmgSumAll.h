@@ -1,5 +1,5 @@
-#ifndef RMG_BlasWrappers_h
-#define RMG_BlasWrappers_h
+#ifndef RMG_RmgSumAll_h
+#define RMG_RmgSumAll_h
 
 #include <mpi.h>
 

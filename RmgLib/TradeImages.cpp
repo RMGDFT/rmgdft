@@ -34,7 +34,6 @@
 */
 
 #include "TradeImages.h"
-#include "BlasWrappers.h"
 #include "RmgTimer.h"
 #include <cmath>
 #include <complex>
@@ -165,7 +164,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 {
     RmgTimer RT("Trade images: trade_imagesx");
     RmgTimer RT1("Trade images");
-    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
+    int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
     int xlen, ylen, zlen, stop, tid;
     int *nb_ids, factor;
@@ -228,7 +227,8 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-            QMD_copy (dimz, &f[iys], ione, &w[iys2 + images], ione);
+            for(int idx = 0;idx < dimz;idx++)
+                  w[iys2 + images + idx] = f[iys + idx];
 
         }                       /* end for */
 
@@ -445,7 +445,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 {
     RmgTimer RT("Trade images: trade_images");
     RmgTimer RT1("Trade images");
-    int i, j, ione=1;
+    int i, j;
     int incx, incy, incz;
     int xmax, ymax, zmax;
     int ix, iz, iys2;
@@ -635,7 +635,9 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     stop = (dimy + 2) * (dimz + 2);
 
-    QMD_copy (stop, &mat[xmax], ione, &swbuf1x_f[tid * stop], ione);
+    for(int idx = 0;idx < stop;idx++)
+        swbuf1x_f[tid * stop + idx] = mat[xmax + idx];
+
 
 
     T->thread_barrier_wait();
@@ -645,8 +647,11 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     }
     T->thread_barrier_wait();
 
-    QMD_copy (stop, &swbuf2x_f[tid * stop], ione, mat, ione);
-    QMD_copy (stop, &mat[incx], ione, &swbuf1x_f[tid * stop], ione);
+    for(int idx = 0;idx < stop;idx++)
+        mat[idx] = swbuf2x_f[tid * stop + idx];
+
+    for(int idx = 0;idx < stop;idx++)
+       swbuf1x_f[tid * stop + idx] = mat[incx + idx];
 
     T->thread_barrier_wait();
     if(tid == 0) {
@@ -654,7 +659,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
                   MPI_BYTE, nb_ids[NB_E], (6>>16), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait();
-    QMD_copy (stop, &swbuf2x_f[tid * stop], ione, &mat[xmax + incx], ione);
+    for(int idx = 0;idx < stop;idx++)
+        mat[xmax + incx + idx] = swbuf2x_f[tid * stop + idx];
 
 
     /* For clusters set the boundaries to zero -- this is wrong for the hartree
@@ -875,7 +881,7 @@ void TradeImages::init_trade_imagesx_async(void)
 template <typename RmgType>
 void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
 {
-    int ix, iy, iz, ix1, iy1, iz1, incx, incy, incx0, incy0, index, tim, ione = 1;
+    int ix, iy, iz, ix1, iy1, iz1, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, c2, c3, idx, idx1, img3;
     int xlen, ylen, zlen, yzlen, xylen, xzlen;
     int tid=0, corner_node_stride, node_idx, retval;
@@ -1277,7 +1283,9 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-            QMD_copy (dimz, &f[iys], ione, &w[iys2 + images], ione);
+            for(int idx = 0;idx < dimz;idx++)
+                w[iys2 + images + idx] = f[iys + idx];
+
 
         }                       /* end for */
 
@@ -1503,7 +1511,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 template <typename RmgType>
 void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
 {
-    int ix, iy, iz, incx, incy, incx0, incy0, index, tim, ione = 1;
+    int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, idx;
     int xlen, ylen, zlen;
     int tid=0, retval;
@@ -1673,7 +1681,9 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
             iys = ixs + iy * incy0;
             iys2 = ixs2 + (iy + images) * incy;
 
-            QMD_copy (dimz, &f[iys], ione, &w[iys2 + images], ione);
+            for(int idx = 0;idx < dimz;idx++)
+                w[iys2 + images + idx] = f[iys + idx];
+
 
         }                       /* end for */
 
