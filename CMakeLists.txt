@@ -37,9 +37,6 @@ add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Ba
 add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-negf NEGF/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 
-# Examples
-add_executable(poisson_pbc examples/Poisson/poisson_pbc.cpp)
-
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
     message( SEND_ERROR "RMG requires a 64 bit architechture." )
@@ -139,7 +136,6 @@ target_link_libraries (rmg-negf NEGF_Cudafunc)
 target_link_libraries (rmg-negf NEGF_Common NEGF_Cudafunc)
 target_link_libraries (rmg-negf NEGF_Cudafunc NEGF_Common)
 
-target_link_libraries (poisson_pbc RmgLib)
 
 # Search for an MPI implementation
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
@@ -173,7 +169,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries (rmg ${Boost_LIBRARIES})
 target_link_libraries (rmg-on ${Boost_LIBRARIES})
 target_link_libraries (rmg-negf ${Boost_LIBRARIES})
-target_link_libraries (poisson_pbc ${Boost_LIBRARIES})
 
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.

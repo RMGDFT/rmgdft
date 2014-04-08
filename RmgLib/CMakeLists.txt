@@ -49,5 +49,8 @@ src/get_vh.cpp
 src/packfuncs.cpp
 )
 
-add_library (RmgLib SHARED ${RmgLibSources})
-add_library (RmgLibStatic STATIC ${RmgLibSources})
+add_library (RmgLibShared SHARED ${RmgLibSources})
+add_library (RmgLib STATIC ${RmgLibSources})
+add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
+target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLib)
+
