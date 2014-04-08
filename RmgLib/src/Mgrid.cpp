@@ -79,7 +79,6 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     int cycl;
     int size, idx;
     RmgType scale;
-    int ione = 1;
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
     RmgType *resid, *newf, *newv, *newwork;
@@ -746,6 +745,7 @@ int Mgrid::MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset,
     }
 
     rmg_error_handler (__FILE__, __LINE__, "Boundary condition not programmed."); 
+    return -1;
 
 }
 

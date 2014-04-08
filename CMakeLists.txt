@@ -318,6 +318,7 @@ set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 # include files
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_SOURCE_DIR}/RmgLib/")
+include_directories("${RMG_SOURCE_DIR}/RmgLib/include")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")

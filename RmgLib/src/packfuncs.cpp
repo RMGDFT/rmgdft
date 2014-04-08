@@ -43,7 +43,6 @@ void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 
     int ix, iy, ixh, iyh;
     int incx, incy, incxs, incys;
-    int ione = 1;
     incy = dimz;
     incx = dimy * dimz;
     incys = dimz + 2;
@@ -74,7 +73,6 @@ void CPP_pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 
     int ix, iy, ixh, iyh;
     int incx, incy, incxs, incys;
-    int ione = 1;
     incy = dimz;
     incx = dimy * dimz;
     incys = dimz + 2;

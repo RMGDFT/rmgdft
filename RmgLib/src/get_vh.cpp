@@ -74,7 +74,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 {
 
     int idx, its, cycles;
-    double t1, vavgcor, diag;
+    double t1, vavgcor, diag=0.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     double k_vh;
