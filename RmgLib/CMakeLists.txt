@@ -1,13 +1,13 @@
 
+
+option (SEPARATE_BUILD OFF)
+
+if (SEPARATE_BUILD)
 cmake_minimum_required (VERSION 2.6)
 project(RmgLib)
 set (PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include})
 include_directories("${PROJECT_INCLUDE_DIR}")
 include_directories("${PROJECT_BINARY_DIR}/include")
-
-option (SEPARATE_BUILD OFF)
-
-if (SEPARATE_BUILD)
     if (SEPARATE_BUILD STREQUAL "ON")
         find_package(Boost REQUIRED COMPONENTS thread system)
         include_directories(${Boost_INCLUDE_DIRS})
@@ -52,5 +52,6 @@ src/packfuncs.cpp
 add_library (RmgLibShared SHARED ${RmgLibSources})
 add_library (RmgLib STATIC ${RmgLibSources})
 add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
-target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLib)
+#target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLib)
+target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLib)
 
