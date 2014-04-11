@@ -41,7 +41,14 @@ void *rmg_calloc(int n, size_t size )
 void rmg_free( void *ptr )
 {
 
-    free( ptr );
+    if(ptr != NULL)
+    {
+         free( ptr );
+    }
+    else
+    {
+           rmg_error_handler("don't try to free null pointer");
+    }
 
 }
 

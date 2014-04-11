@@ -14,7 +14,7 @@ void rmg_free( void *ptr );
 void my_free( void *ptr );
 
 
-#define my_free rmg_free
+#define my_free(_ptr_) {rmg_free(_ptr_); _ptr_ = NULL;}
 #define my_malloc( _ptr_, _nobj_, _type_ ) \
         _ptr_ = rmg_malloc((int) _nobj_, sizeof(_type_))
 
