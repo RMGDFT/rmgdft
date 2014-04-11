@@ -252,6 +252,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         Lattice::a0[ir] = 0.0;
         Lattice::a1[ir] = 0.0;
         Lattice::a2[ir] = 0.0;
+        Lattice::celldm[ir] = celldm[ir];
     }
 
     switch (Lattice::ibrav)

@@ -54,13 +54,13 @@ void get_nlop (void)
     my_malloc (Aiy2, get_FNY_GRID(), int);
     my_malloc (Aiz2, get_FNZ_GRID(), int);
 
+    reset_pct_arrays (ct.num_ions);
 
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
         /*Release memory and reset other parameters for given ion */
-        reset_pct_arrays (ion);
 
         /* Generate ion pointer */
         iptr = &ct.ions[ion];
@@ -533,16 +533,35 @@ void get_nlop (void)
 
 
 /*Resets pct projector arrays, deallocates memory*/
-static void reset_pct_arrays (int ion)
+static void reset_pct_arrays (int num_ions)
 {
 
-    pct.idxptrlen[ion] = 0;
+    int ion;
+    for(ion = 0; ion < num_ions; ion++)
+    {
+        pct.idxptrlen[ion] = 0;
 
-    if (pct.idxflag[ion])
-	my_free (pct.idxflag[ion]);
+        if (pct.idxflag[ion])
+            my_free (pct.idxflag[ion]);
 
-    if (pct.nlindex[ion])
-	my_free (pct.nlindex[ion]);
+        if (pct.nlindex[ion])
+            my_free (pct.nlindex[ion]);
+#if FDIFF_BETA
+        if (pct.weight_derx[ion])
+            my_free (pct.weight_derx[ion]);
+        if (pct.weight_dery[ion])
+            my_free (pct.weight_dery[ion]);
+        if (pct.weight_derz[ion])
+            my_free (pct.weight_derz[ion]);
+#endif
+
+
+#if !GAMMA_PT
+        if (pct.phaseptr[ion])
+            my_free (pct.phaseptr[ion]);
+#endif
+    }
+
 
 
     if (pct.weight != NULL) {
@@ -576,22 +595,7 @@ static void reset_pct_arrays (int ion)
 #endif
     }
 
-#if FDIFF_BETA
-    if (pct.weight_derx[ion])
-        my_free (pct.weight_derx[ion]);
-    if (pct.weight_dery[ion])
-        my_free (pct.weight_dery[ion]);
-    if (pct.weight_derz[ion])
-        my_free (pct.weight_derz[ion]);
-#endif
-
-
-#if !GAMMA_PT
-    if (pct.phaseptr[ion])
-        my_free (pct.phaseptr[ion]);
-#endif
 
 }
-
 
 /******/
