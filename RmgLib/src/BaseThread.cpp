@@ -47,6 +47,9 @@ std::condition_variable BaseThread::thread_cv;
 std::mutex BaseThread::main_mutex;
 std::condition_variable BaseThread::main_cv;
 
+std::mutex BaseThread::mpi_mutex;
+std::mutex BaseThread::thread_order_mutex;
+
 // Pointer to the singleton
 BaseThread *BaseThread::instance = NULL;
 

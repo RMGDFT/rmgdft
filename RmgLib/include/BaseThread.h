@@ -60,7 +60,7 @@ private:
 
     // This is used when running with MPI_THREAD_SERIALIZED to ensure 
     // proper serialization
-    std::mutex mpi_mutex;
+    static std::mutex mpi_mutex;
 
     boost::thread *threads[MAX_RMG_THREADS];
     std::atomic<int> jobs;
@@ -68,7 +68,7 @@ private:
 
     // These are used to ensure thread ordering
     volatile int mpi_thread_order_counter;
-    std::mutex thread_order_mutex;
+    static std::mutex thread_order_mutex;
 
     // Base tag
     int basetag;
