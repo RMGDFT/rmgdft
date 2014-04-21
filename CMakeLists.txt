@@ -27,6 +27,8 @@ if(DEFINED ENV{CRAY_LIBSCI})
 endif()
 
 set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
+/usr/local/apps/fftw/intel101_hydra/2.1.5
+/usr/local/apps/mvapich2/220b-intel140
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 /usr/lib64/mpi/gcc/openmpi/
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
@@ -140,6 +142,7 @@ target_link_libraries (rmg-negf NEGF_Cudafunc NEGF_Common)
 # Search for an MPI implementation
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
 find_package(MPI REQUIRED)
+  include_directories(${MPI_INCLUDE_PATH})
 if(MPI_CXX_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_CXX_LIBRARIES})
@@ -147,7 +150,9 @@ if(MPI_CXX_FOUND)
   target_link_libraries (rmg-negf ${MPI_CXX_LIBRARIES})
 else (MPI_CXX_FOUND)
     include(CMakeForceCompiler)
-  CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
+    if(CRAY_XK)
+	CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
+    endif(CRAY_XK)	
 endif (MPI_CXX_FOUND)
 if(MPI_C_FOUND)
   include_directories(${MPI_C_INCLUDE_PATH})
