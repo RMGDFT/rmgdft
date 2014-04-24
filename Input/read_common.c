@@ -129,7 +129,8 @@ void read_common ()
                                             "GGA BLYP\n"
                                             "GGA XB CP\n"
                                             "GGA XP CP\n"
-                                            "GGA PBE";
+                                            "GGA PBE\n"
+                                            "MGGA TB09";
     get_data ("exchange_correlation_type", NULL, INIT | OPT, exchange_correlation_type_opts);
 
     /* Exchange correlation potential type flag */

@@ -87,6 +87,8 @@ rmg_double_t *vnuc;
 rmg_double_t *vxc;
 
 
+
+rmg_double_t *tau;
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
 CONTROL ct;
@@ -176,6 +178,8 @@ void initialize(int argc, char **argv)
     my_malloc (vh, FP0_BASIS, rmg_double_t);
     my_malloc (vnuc, FP0_BASIS, rmg_double_t);
     my_malloc (vxc, FP0_BASIS, rmg_double_t);
+    if (ct.xctype == MGGA_TB09) 
+    	my_malloc (tau, FP0_BASIS, rmg_double_t);
 
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
     if(ct.spin_flag)
@@ -232,7 +236,10 @@ void run (void)
     {
 
     case MD_QUENCH:            /* Quench the electrons */
-        relax (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+    	if (ct.xctype == MGGA_TB09)
+        	relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
+	else 
+        	relax (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
@@ -296,6 +303,8 @@ void report ()
     /* Release the memory for density of opposite spin */
     if (ct.spin_flag)
     	my_free (rho_oppo);
+    if (ct.xctype == MGGA_TB09) 
+    	my_free (tau);
 
     /* Write timing information */
     write_timings ();

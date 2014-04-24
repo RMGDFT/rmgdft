@@ -505,6 +505,11 @@ void init_trade_imagesx_async(void);
 void  get_rho_oppo (rmg_double_t * rho, rmg_double_t * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
+
+/* Meta-GGA */
+
+
+
 #endif
 #if __cplusplus
 }

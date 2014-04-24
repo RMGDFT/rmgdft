@@ -292,6 +292,10 @@ void write_header (void)
         printf ("    XC using GGA with PBE\n");
         break;
 
+    case MGGA_TB09:
+        printf ("    XC using meta-GGA with TB09\n");
+        break;
+
     default:
         error_handler ("Unknown exchange-correlation functional");
 
