@@ -237,9 +237,9 @@ if(NOT RMG_MATH_LIBS)
         endif(BLACS_FOUND)
 
         find_package(SCALAPACK REQUIRED)
-        target_link_libraries (rmg ${SCALAPACK_LIBRARIES})
-        target_link_libraries (rmg-on ${SCALAPACK_LIBRARIES})
-        target_link_libraries (rmg-negf ${SCALAPACK_LIBRARIES})
+        target_link_libraries (rmg ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
+        target_link_libraries (rmg-on ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
+        target_link_libraries (rmg-negf ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
 
     endif(NOT CRAY_XK)
 
