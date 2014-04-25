@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 #include "common_prototypes.h"
 
@@ -22,7 +23,7 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * 
     my_malloc (tem_array, idx, rmg_double_t);
     my_malloc (Btem_array, idx, rmg_double_t);
     for(ix = 0; ix < nldim * nldim * nldim; ix++) 
-        tem_array[ix] = beptr[ix].re;
+        tem_array[ix] = creal(beptr[ix]);
 
     app_cir_beta_driver (tem_array, Btem_array, nldim, nldim, 
             nldim, ct.kohn_sham_fd_order);
@@ -44,11 +45,11 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * 
                 if (dvec[idx])
                 {
                     idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-                    rtptr[pidx[docount]] = beptr[idx1].re;
+                    rtptr[pidx[docount]] = creal(beptr[idx1]);
                     Bweight[pidx[docount]] = Btem_array[idx1];
-                    if (beptr[idx1].im > 1.0e-8)
+                    if (cimag(beptr[idx1]) > 1.0e-8)
                     {
-                        printf ("beptr[%d].im=%e\n", idx1, beptr[idx1].im);
+                        printf ("beptr[%d].im=%e\n", idx1, cimag(beptr[idx1]));
                         error_handler ("something wrong with the fourier transformation");
                     }
                     docount++;

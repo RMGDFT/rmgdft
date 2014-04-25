@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "grid.h"
 #include "const.h"
 #include "params.h"
@@ -18,17 +19,17 @@
 
 void init_derweight_p (SPECIES * sp,
                        fftw_complex * rtptr_x,
-                       fftw_complex * rtptr_y, fftw_complex * rtptr_z, int ip, fftwnd_plan p1)
+                       fftw_complex * rtptr_y, fftw_complex * rtptr_z, int ip, fftw_plan p1)
 {
 #if !FDIFF_BETA
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
     rmg_double_t r, rsq, r3, rsqd, ax[3], bx[3], x, y, z, xc, yc, zc, cc, t1, t2, invdr;
     rmg_double_t hxx, hyy, hzz;
-    fftw_complex *weptr1x, *weptr1y, *weptr1z, *gwptr;
-    fftw_complex *weptr2x, *weptr2y, *weptr2z;
-    fftw_complex *weptr3x, *weptr3y, *weptr3z;
-    fftw_complex *r1x, *r1y, *r1z, *r2x, *r2y, *r2z, *r3x, *r3y, *r3z;
+    double complex *weptr1x, *weptr1y, *weptr1z, *gwptr;
+    double complex *weptr2x, *weptr2y, *weptr2z;
+    double complex *weptr3x, *weptr3y, *weptr3z;
+    double complex *r1x, *r1y, *r1z, *r2x, *r2y, *r2z, *r3x, *r3y, *r3z;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -106,32 +107,18 @@ void init_derweight_p (SPECIES * sp,
                 rsqd = rsq + 1.0e-20;
 
 
-                weptr1x[idx].re = cc * ((t2 * (rsq - x * x) / r3) + (x * x * t1 / rsqd));
-                weptr1y[idx].re = cc * ((-t2 * x * y / r3) + (x * y * t1 / rsqd));
-                weptr1z[idx].re = cc * ((-t2 * x * z / r3) + (x * z * t1 / rsqd));;
+                weptr1x[idx] = cc * ((t2 * (rsq - x * x) / r3) + (x * x * t1 / rsqd)) + 0.0I;
+                weptr1y[idx] = cc * ((-t2 * x * y / r3) + (x * y * t1 / rsqd)) + 0.0I;
+                weptr1z[idx] = cc * ((-t2 * x * z / r3) + (x * z * t1 / rsqd)) + 0.0I;
 
-                weptr2x[idx].re = cc * ((-t2 * x * z / r3) + (x * z * t1 / rsqd));
-                weptr2y[idx].re = cc * ((-t2 * y * z / r3) + (y * z * t1 / rsqd));
-                weptr2z[idx].re = cc * ((t2 * (rsq - z * z) / r3) + (z * z * t1 / rsqd));
+                weptr2x[idx] = cc * ((-t2 * x * z / r3) + (x * z * t1 / rsqd)) + 0.0I;
+                weptr2y[idx] = cc * ((-t2 * y * z / r3) + (y * z * t1 / rsqd)) + 0.0I;
+                weptr2z[idx] = cc * ((t2 * (rsq - z * z) / r3) + (z * z * t1 / rsqd)) + 0.0I;
 
-                weptr3x[idx].re = cc * ((-t2 * x * y / r3) + (x * y * t1 / rsqd));
-                weptr3y[idx].re = cc * ((t2 * (rsq - y * y) / r3) + (y * y * t1 / rsqd));
-                weptr3z[idx].re = cc * ((-t2 * y * z / r3) + (y * z * t1 / rsqd));
+                weptr3x[idx] = cc * ((-t2 * x * y / r3) + (x * y * t1 / rsqd)) + 0.0I;
+                weptr3y[idx] = cc * ((t2 * (rsq - y * y) / r3) + (y * y * t1 / rsqd)) + 0.0I;
+                weptr3z[idx] = cc * ((-t2 * y * z / r3) + (y * z * t1 / rsqd)) + 0.0I;
 
-
-
-
-                weptr1x[idx].im = 0.0;
-                weptr1y[idx].im = 0.0;
-                weptr1z[idx].im = 0.0;
-
-                weptr2x[idx].im = 0.0;
-                weptr2y[idx].im = 0.0;
-                weptr2z[idx].im = 0.0;
-
-                weptr3x[idx].im = 0.0;
-                weptr3y[idx].im = 0.0;
-                weptr3z[idx].im = 0.0;
 
                 idx++;
 
@@ -141,34 +128,34 @@ void init_derweight_p (SPECIES * sp,
 
     }                           /* end for */
 
-    fftwnd_one (p1, weptr1x, gwptr);
+    fftw_execute_dft (p1, weptr1x, gwptr);
     pack_gftoc (sp, gwptr, r1x);
 
-    fftwnd_one (p1, weptr1y, gwptr);
+    fftw_execute_dft (p1, weptr1y, gwptr);
     pack_gftoc (sp, gwptr, r1y);
 
-    fftwnd_one (p1, weptr1z, gwptr);
+    fftw_execute_dft (p1, weptr1z, gwptr);
     pack_gftoc (sp, gwptr, r1z);
 
 
 
-    fftwnd_one (p1, weptr2x, gwptr);
+    fftw_execute_dft (p1, weptr2x, gwptr);
     pack_gftoc (sp, gwptr, r2x);
 
-    fftwnd_one (p1, weptr2y, gwptr);
+    fftw_execute_dft (p1, weptr2y, gwptr);
     pack_gftoc (sp, gwptr, r2y);
 
-    fftwnd_one (p1, weptr2z, gwptr);
+    fftw_execute_dft (p1, weptr2z, gwptr);
     pack_gftoc (sp, gwptr, r2z);
 
 
-    fftwnd_one (p1, weptr3x, gwptr);
+    fftw_execute_dft (p1, weptr3x, gwptr);
     pack_gftoc (sp, gwptr, r3x);
 
-    fftwnd_one (p1, weptr3y, gwptr);
+    fftw_execute_dft (p1, weptr3y, gwptr);
     pack_gftoc (sp, gwptr, r3y);
 
-    fftwnd_one (p1, weptr3z, gwptr);
+    fftw_execute_dft (p1, weptr3z, gwptr);
     pack_gftoc (sp, gwptr, r3z);
 
 

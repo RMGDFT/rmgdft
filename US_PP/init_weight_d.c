@@ -6,17 +6,18 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 #include "common_prototypes.h"
 
-void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
+void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
     rmg_double_t r, ax[3], bx[3], xc, yc, zc, t1, t2, rsq1, invdr;
     rmg_double_t cc, hxx, hyy, hzz;
-    fftw_complex *weptr1, *weptr2, *weptr3, *weptr4, *weptr5, *gwptr;
-    fftw_complex *r1, *r2, *r3, *r4, *r5;
+    double complex *weptr1, *weptr2, *weptr3, *weptr4, *weptr5, *gwptr;
+    double complex *r1, *r2, *r3, *r4, *r5;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -25,7 +26,7 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-    my_malloc (weptr1, 6 * size, fftw_complex);
+    weptr1 = fftw_alloc_complex(6 * size);
     if (weptr1 == NULL)
         error_handler ("can't allocate memory\n");
 
@@ -74,16 +75,11 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
                 rsq1 = r * r + 1.0e-20;
                 t1 = linint (&sp->betalig[ip][0], r, invdr);
                 t1 = t1 * t2;
-                weptr1[idx].re = cc * t1 * bx[0] * bx[1] / rsq1;
-                weptr2[idx].re = cc * t1 * bx[0] * bx[2] / rsq1;
-                weptr3[idx].re = cc * t1 * (t2 * bx[2] * bx[2] - rsq1 / t2) / (2.0 * rsq1);
-                weptr4[idx].re = cc * t1 * bx[1] * bx[2] / rsq1;
-                weptr5[idx].re = cc * t1 * (bx[0] * bx[0] - bx[1] * bx[1]) / (2.0 * rsq1);
-                weptr1[idx].im = 0.0;
-                weptr2[idx].im = 0.0;
-                weptr3[idx].im = 0.0;
-                weptr4[idx].im = 0.0;
-                weptr5[idx].im = 0.0;
+                weptr1[idx] = cc * t1 * bx[0] * bx[1] / rsq1 + 0.0I;
+                weptr2[idx] = cc * t1 * bx[0] * bx[2] / rsq1 + 0.0I;
+                weptr3[idx] = cc * t1 * (t2 * bx[2] * bx[2] - rsq1 / t2) / (2.0 * rsq1) + 0.0I;
+                weptr4[idx] = cc * t1 * bx[1] * bx[2] / rsq1 + 0.0I;
+                weptr5[idx] = cc * t1 * (bx[0] * bx[0] - bx[1] * bx[1]) / (2.0 * rsq1) + 0.0I;
 
                 idx++;
             }                   /* end for */
@@ -92,21 +88,21 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
 
     }                           /* end for */
 
-    fftwnd_one (p1, weptr1, gwptr);
+    fftw_execute_dft (p1, weptr1, gwptr);
     pack_gftoc (sp, gwptr, r1);
 
-    fftwnd_one (p1, weptr2, gwptr);
+    fftw_execute_dft (p1, weptr2, gwptr);
     pack_gftoc (sp, gwptr, r2);
 
-    fftwnd_one (p1, weptr3, gwptr);
+    fftw_execute_dft (p1, weptr3, gwptr);
     pack_gftoc (sp, gwptr, r3);
 
-    fftwnd_one (p1, weptr4, gwptr);
+    fftw_execute_dft (p1, weptr4, gwptr);
     pack_gftoc (sp, gwptr, r4);
 
-    fftwnd_one (p1, weptr5, gwptr);
+    fftw_execute_dft (p1, weptr5, gwptr);
     pack_gftoc (sp, gwptr, r5);
 
-    my_free (weptr1);
+    fftw_free (weptr1);
 
 }

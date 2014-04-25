@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
-#include "fftw.h"
+#include "fftw3.h"
 
 void init_derweight();
 void init_weight();
@@ -35,7 +35,7 @@ void get_nlop(void)
     double *beta, *beta_x, *beta_y, *beta_z;
     SPECIES *sp;
     ION *iptr;
-    fftwnd_plan p1, p2;
+    fftw_plan p1, p2;
     int overlap;
     int coarse_size, st1;
     double *fftw_phase_sin,*fftw_phase_cos;

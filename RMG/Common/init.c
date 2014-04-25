@@ -345,7 +345,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
     /*Setup some fftw stuff */
     /*Setup fftw wisdom */
-    init_fftw_wisdom ();
+    //init_fftw_wisdom ();
 
     Dprintf ("Get memory for fourier transform phase");
     for (ion = 0; ion < ct.num_ions; ion++)

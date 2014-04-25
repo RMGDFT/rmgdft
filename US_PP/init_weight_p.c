@@ -6,17 +6,18 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 #include "common_prototypes.h"
 
-void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
+void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
     rmg_double_t r, ax[3], bx[3], xc, yc, zc, cc, t1, invdr;
     rmg_double_t hxx, hyy, hzz;
-    fftw_complex *weptr1, *weptr2, *weptr3, *gwptr;
-    fftw_complex *r1, *r2, *r3;
+    double complex *weptr1, *weptr2, *weptr3, *gwptr;
+    double complex *r1, *r2, *r3;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -25,7 +26,7 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-    my_malloc (weptr1, 4 * size, fftw_complex);
+    weptr1 = fftw_alloc_complex(4 * size);
     if (weptr1 == NULL)
         error_handler ("can't allocate memory\n");
 
@@ -68,12 +69,9 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
-                weptr1[idx].re = cc * bx[0] * t1 / r;
-                weptr2[idx].re = cc * bx[2] * t1 / r;
-                weptr3[idx].re = cc * bx[1] * t1 / r;
-                weptr1[idx].im = 0.0;
-                weptr2[idx].im = 0.0;
-                weptr3[idx].im = 0.0;
+                weptr1[idx] = cc * bx[0] * t1 / r + 0.0I;
+                weptr2[idx] = cc * bx[2] * t1 / r + 0.0I;
+                weptr3[idx] = cc * bx[1] * t1 / r + 0.0I;
 
                 idx++;
 
@@ -83,15 +81,15 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
 
     }                           /* end for */
 
-    fftwnd_one (p1, weptr1, gwptr);
+    fftw_execute_dft (p1, weptr1, gwptr);
     pack_gftoc (sp, gwptr, r1);
 
-    fftwnd_one (p1, weptr2, gwptr);
+    fftw_execute_dft (p1, weptr2, gwptr);
     pack_gftoc (sp, gwptr, r2);
 
-    fftwnd_one (p1, weptr3, gwptr);
+    fftw_execute_dft (p1, weptr3, gwptr);
     pack_gftoc (sp, gwptr, r3);
 
-    my_free (weptr1);
+    fftw_free (weptr1);
 
 }

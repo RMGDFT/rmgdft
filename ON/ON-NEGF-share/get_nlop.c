@@ -21,9 +21,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <complex.h>
+#include <fftw3.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "fftw.h"
 #include "init_var.h"
 
 static void init_alloc_nonloc_mem (void);
@@ -38,7 +39,7 @@ void get_nlop(void)
     double *beta, *beta_x, *beta_y, *beta_z;
     SPECIES *sp;
     ION *iptr;
-    fftwnd_plan p1, p2;
+    fftw_plan p1, p2;
     int overlap;
     int coarse_size, st1;
     double *fftw_phase_sin,*fftw_phase_cos;
@@ -124,16 +125,16 @@ void get_nlop(void)
     my_malloc_init( projectors_z, PROJECTOR_SPACE, rmg_double_t );
 
 
-    for (isp = 0; isp < ct.num_species; isp++)
-    {
-        sp = &ct.sp[isp];
-
-        p2 = fftw3d_create_plan(sp->nldim, sp->nldim, sp->nldim,
-                FFTW_BACKWARD, FFTW_MEASURE | FFTW_USE_WISDOM);
-        sp->backward_wisdom = fftw_export_wisdom_to_string();
-        fftwnd_destroy_plan(p2);
-        fftw_forget_wisdom();
-    }
+//    for (isp = 0; isp < ct.num_species; isp++)
+//    {
+//        sp = &ct.sp[isp];
+//
+//        p2 = fftw3d_create_plan(sp->nldim, sp->nldim, sp->nldim,
+//                FFTW_BACKWARD, FFTW_MEASURE | FFTW_USE_WISDOM);
+//        sp->backward_wisdom = fftw_export_wisdom_to_string();
+//        fftwnd_destroy_plan(p2);
+//        fftw_forget_wisdom();
+//    }
 
     for (ion = 0; ion < ct.num_ions; ion++)
         pct.prj_per_ion[ion] = ct.sp[ct.ions[ion].species].num_projectors;
@@ -150,6 +151,7 @@ void get_nlop(void)
     prjcount = 0;
     for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
+
         ion = pct.ionidx[ion1];
         /* Generate ion pointer */
         iptr = &ct.ions[ion];
@@ -157,9 +159,9 @@ void get_nlop(void)
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
-        fftw_import_wisdom_from_string(sp->backward_wisdom);
-        p2 = fftw3d_create_plan(sp->nldim, sp->nldim, sp->nldim, FFTW_BACKWARD, FFTW_USE_WISDOM);
-        fftw_forget_wisdom();
+//        fftw_import_wisdom_from_string(sp->backward_wisdom);
+        p2 = fftw_plan_dft_3d(sp->nldim, sp->nldim, sp->nldim, gbptr, beptr, FFTW_BACKWARD, FFTW_ESTIMATE);
+//        fftw_forget_wisdom();
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
         /*xtal vector between ion and left bottom corner of the box */
@@ -197,17 +199,14 @@ void get_nlop(void)
             /*Apply the phase factor   */
             for (idx = 0; idx < coarse_size; idx++)
             {
-                gbptr[idx].re =
-                    fptr[idx].re *fftw_phase_cos[idx] +
-                    fptr[idx].im * fftw_phase_sin[idx];
-                gbptr[idx].im =
-                    fptr[idx].im * fftw_phase_cos[idx] -
-                    fptr[idx].re * fftw_phase_sin[idx];
+                gbptr[idx] =
+                    (creal(fptr[idx]) *fftw_phase_cos[idx] + cimag(fptr[idx]) * fftw_phase_sin[idx]) +
+                    (cimag(fptr[idx]) * fftw_phase_cos[idx] * 1.0I - creal(fptr[idx]) * fftw_phase_sin[idx] * 1.0I);
             }
 
 
             /*Do the backwards transform */
-            fftwnd_one (p2, gbptr, beptr);
+            fftw_execute_dft (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
             assign_weight_on (sp, beptr, &beta[prjcount]);
 
@@ -215,17 +214,14 @@ void get_nlop(void)
             /*Apply the phase factor   */
             for (idx = 0; idx < coarse_size; idx++)
             {
-                gbptr[idx].re =
-                    fptr_x[idx].re *fftw_phase_cos[idx] +
-                    fptr_x[idx].im * fftw_phase_sin[idx];
-                gbptr[idx].im =
-                    fptr_x[idx].im * fftw_phase_cos[idx] -
-                    fptr_x[idx].re * fftw_phase_sin[idx];
+                gbptr[idx] =
+                    (creal(fptr_x[idx]) *fftw_phase_cos[idx] + cimag(fptr_x[idx]) * fftw_phase_sin[idx]) +
+                    (cimag(fptr_x[idx]) * fftw_phase_cos[idx] * 1.0I - creal(fptr_x[idx]) * fftw_phase_sin[idx] * 1.0I);
             }
 
 
             /*Do the backwards transform */
-            fftwnd_one (p2, gbptr, beptr);
+            fftw_execute_dft (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
             assign_weight_on (sp, beptr, &beta_x[prjcount]);
 
@@ -234,17 +230,14 @@ void get_nlop(void)
             /*Apply the phase factor   */
             for (idx = 0; idx < coarse_size; idx++)
             {
-                gbptr[idx].re =
-                    fptr_y[idx].re *fftw_phase_cos[idx] +
-                    fptr_y[idx].im * fftw_phase_sin[idx];
-                gbptr[idx].im =
-                    fptr_y[idx].im * fftw_phase_cos[idx] -
-                    fptr_y[idx].re * fftw_phase_sin[idx];
+                gbptr[idx] =
+                    (creal(fptr_y[idx]) *fftw_phase_cos[idx] + cimag(fptr_y[idx]) * fftw_phase_sin[idx]) +
+                    (cimag(fptr_y[idx]) * fftw_phase_cos[idx] * 1.0I - creal(fptr_y[idx]) * fftw_phase_sin[idx] * 1.0I);
             }
 
 
             /*Do the backwards transform */
-            fftwnd_one (p2, gbptr, beptr);
+            fftw_execute_dft (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
             assign_weight_on (sp, beptr, &beta_y[prjcount]);
 
@@ -254,17 +247,14 @@ void get_nlop(void)
             /*Apply the phase factor   */
             for (idx = 0; idx < coarse_size; idx++)
             {
-                gbptr[idx].re =
-                    fptr_z[idx].re *fftw_phase_cos[idx] +
-                    fptr_z[idx].im * fftw_phase_sin[idx];
-                gbptr[idx].im =
-                    fptr_z[idx].im * fftw_phase_cos[idx] -
-                    fptr_z[idx].re * fftw_phase_sin[idx];
+                gbptr[idx] =
+                    (creal(fptr_z[idx]) *fftw_phase_cos[idx] + cimag(fptr_z[idx]) * fftw_phase_sin[idx]) +
+                    (cimag(fptr_z[idx]) * fftw_phase_cos[idx] * 1.0I - creal(fptr_z[idx]) * fftw_phase_sin[idx] * 1.0I);
             }
 
 
             /*Do the backwards transform */
-            fftwnd_one (p2, gbptr, beptr);
+            fftw_execute_dft (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
             assign_weight_on (sp, beptr, &beta_z[prjcount]);
 
@@ -281,14 +271,14 @@ void get_nlop(void)
 
         }                       /* end for ip */
 
-        fftwnd_destroy_plan(p2);
+        fftw_destroy_plan(p2);
 
     }                           /* end for ion */
 
-    for (isp = 0; isp < ct.num_species; isp++)
-    {
-        fftw_free(ct.sp[isp].backward_wisdom);
-    }
+//    for (isp = 0; isp < ct.num_species; isp++)
+//    {
+//        fftw_free(ct.sp[isp].backward_wisdom);
+//    }
 
     my_free(beptr);
     my_free(fftw_phase_sin);

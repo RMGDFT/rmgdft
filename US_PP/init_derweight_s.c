@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "grid.h"
 #include "const.h"
 #include "params.h"
@@ -18,14 +19,14 @@
 
 void init_derweight_s (SPECIES * sp,
                        fftw_complex * rtptr_x,
-                       fftw_complex * rtptr_y, fftw_complex * rtptr_z, int ip, fftwnd_plan p1)
+                       fftw_complex * rtptr_y, fftw_complex * rtptr_z, int ip, fftw_plan p1)
 {
 #if !FDIFF_BETA
 
     int idx, ix, iy, iz, size, ibegin, iend;
     rmg_double_t r, ax[3], bx[3], xc, yc, zc;
     rmg_double_t invdr, t1, hxx, hyy, hzz;
-    fftw_complex *weptrx, *weptry, *weptrz, *gwptr;
+    double complex *weptrx, *weptry, *weptrz, *gwptr;
 
 
 
@@ -73,12 +74,9 @@ void init_derweight_s (SPECIES * sp,
                 t1 = linint (&sp->drbetalig[ip][0], r, invdr);
 
 
-                weptrx[idx].re = sqrt (1.0 / (4.0 * PI)) * t1 * bx[0] / r;
-                weptry[idx].re = sqrt (1.0 / (4.0 * PI)) * t1 * bx[1] / r;
-                weptrz[idx].re = sqrt (1.0 / (4.0 * PI)) * t1 * bx[2] / r;
-                weptrx[idx].im = 0.0;
-                weptry[idx].im = 0.0;
-                weptrz[idx].im = 0.0;
+                weptrx[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[0] / r + 0.0I;
+                weptry[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[1] / r + 0.0I;
+                weptrz[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[2] / r + 0.0I;
 
                 idx++;
             }                   /* end for */
@@ -88,13 +86,13 @@ void init_derweight_s (SPECIES * sp,
     }                           /* end for */
 
     /*Fourier transform and restricting G-space for all three derivatives */
-    fftwnd_one (p1, weptrx, gwptr);
+    fftw_execute_dft (p1, weptrx, gwptr);
     pack_gftoc (sp, gwptr, rtptr_x);
 
-    fftwnd_one (p1, weptry, gwptr);
+    fftw_execute_dft (p1, weptry, gwptr);
     pack_gftoc (sp, gwptr, rtptr_y);
 
-    fftwnd_one (p1, weptrz, gwptr);
+    fftw_execute_dft (p1, weptrz, gwptr);
     pack_gftoc (sp, gwptr, rtptr_z);
 
     my_free (weptrx);

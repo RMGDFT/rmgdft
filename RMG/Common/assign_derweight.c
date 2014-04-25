@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 
 void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * rtptr)
@@ -28,10 +29,10 @@ void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t
                 if (dvec[idx])
                 {
                     idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-                    rtptr[docount] = beptr[idx1].re;
-                    if (beptr[idx1].im > 1.0e-8)
+                    rtptr[docount] = creal(beptr[idx1]);
+                    if (cimag(beptr[idx1]) > 1.0e-8)
                     {
-                        printf ("beptr[%d].im=%e\n", idx1, beptr[idx1].im);
+                        printf ("beptr[%d].im=%e\n", idx1, cimag(beptr[idx1]));
                         error_handler ("something wrong with the fourier transformation");
                     }
                     docount++;

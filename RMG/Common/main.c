@@ -289,7 +289,7 @@ void report ()
 
 
     /*Destroy wisdom that may have been allocated previously */
-    destroy_fftw_wisdom ();
+    //destroy_fftw_wisdom ();
 
 
     if (ct.write_memory_report)

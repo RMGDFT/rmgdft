@@ -88,9 +88,9 @@ void charge_density_matrix_p (complex double * sigma_all);
 void pulay_rho (int step0, int N, double *xm, double *fm, int NsavedSteps,
         int Nrefresh, double scale, int preconditioning);
 void get_inverse_block_p (complex double *Hii, complex double *Gii, int *ipiv, int *desca );
-void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip, fftwnd_plan p1);
-void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip, fftwnd_plan p1);
-void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip, fftwnd_plan p1);
+void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip, fftw_plan p1);
+void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip, fftw_plan p1);
+void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip, fftw_plan p1);
 void confine (rmg_double_t * mat, int size_x, int size_y, int size_z, COMPASS compass, int grid_type);
 void distribute_to_global (rmg_double_t * distr_array, rmg_double_t * global_array);
 void distribute_to_global2 (double *distr_array, double *global_array);
@@ -108,17 +108,17 @@ void init_derweight_s (SPECIES *sp,
         fftw_complex *rtptr_x, 
         fftw_complex *rtptr_y,
         fftw_complex *rtptr_z, 
-        int ip, fftwnd_plan p1);
+        int ip, fftw_plan p1);
 void init_derweight_p (SPECIES *sp, 
         fftw_complex *rtptr_x, 
         fftw_complex *rtptr_y,
         fftw_complex *rtptr_z, 
-        int ip, fftwnd_plan p1);
+        int ip, fftw_plan p1);
 void init_derweight_d (SPECIES *sp, 
         fftw_complex *rtptr_x, 
         fftw_complex *rtptr_y,
         fftw_complex *rtptr_z, 
-        int ip, fftwnd_plan p1);
+        int ip, fftw_plan p1);
 void matrix_inverse_p (complex double * H_tri, complex double * G_tri);
 
 

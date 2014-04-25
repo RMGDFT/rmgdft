@@ -5,13 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
+#include <fftw3.h>
+#include <omp.h>
 #include "main.h"
-#include "fftw.h"
 void init_fftw_wisdom (void)
 {
+//fftw_plan_with_nthreads(omp_get_max_threads());
+#if 0
     int is;
-    fftwnd_plan p2;
-    /*fftwnd_plan p1; */
+    fftw_plan p2;
+    /*fftw_plan p1; */
     for (is = 0; is < ct.num_species; is++)
     {
         /*Backward wisdom */
@@ -23,10 +26,12 @@ void init_fftw_wisdom (void)
             error_handler ("Error when getting forward_wisdom");
 
 
-        fftwnd_destroy_plan (p2);
+        fftw_destroy_plan (p2);
         fftw_forget_wisdom ();
     }
 
     /*Setup this local variable to 1, to say that wisdom was succesfully allocated */
     ct.fftw_wisdom_setup = 1;
+#endif
+    ct.fftw_wisdom_setup = 0;
 }

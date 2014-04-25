@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 
 /*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
@@ -18,7 +19,8 @@ void init_derweight (void)
 #if !FDIFF_BETA
     int ip, prjcount, isp, size;
     SPECIES *sp;
-    fftwnd_plan p1;
+    fftw_plan p1;
+    double complex *in, *out;
 
 
     /* Loop over species */
@@ -39,10 +41,12 @@ void init_derweight (void)
         sp->forward_derbeta_y = sp->forward_derbeta_x + sp->num_projectors * size;
         sp->forward_derbeta_z = sp->forward_derbeta_y + sp->num_projectors * size;
 
+        in = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        out = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        if(!in || !out)
+            error_handler ("can't allocate memory\n");
 
-
-
-        p1 = fftw3d_create_plan (sp->nlfdim, sp->nlfdim, sp->nlfdim, FFTW_FORWARD, FFTW_MEASURE);
+        p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 
 
         prjcount = 0;
@@ -90,7 +94,9 @@ void init_derweight (void)
 
         }                       /*end for */
 
-        fftwnd_destroy_plan (p1);
+        fftw_destroy_plan (p1);
+        fftw_free(out);
+        fftw_free(in);
 
 
     }                           /* end for */

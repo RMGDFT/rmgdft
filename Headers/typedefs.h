@@ -38,7 +38,7 @@
 #include <cublas_v2.h>
 #endif
 
-#include "fftw.h"
+#include "fftw3.h"
 #include "mpi.h"
 #include "my_scalapack.h"
 

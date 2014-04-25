@@ -59,7 +59,7 @@
 #include    "const.h"
 
 /* Fourier transformation structure definition */
-#include    "fftw.h"
+#include    "fftw3.h"
 
 #include    "my_finegrid.h"  /*shuchun*/
 
@@ -411,9 +411,9 @@ void 	density_orbit_X_orbit(int st1, int st2, REAL scale,  REAL *psi1, REAL *psi
 
 
 /*begin shuchun wang */
-void get_nlop_soft_s(ION *iptr, REAL *rtptr, int ip, fftwnd_plan p1, fftwnd_plan p2);
-void get_nlop_soft_p(ION *iptr, REAL *rtptr, int ip, fftwnd_plan p1, fftwnd_plan p2);
-void get_nlop_soft_d(ION *iptr, REAL *rtptr, int ip, fftwnd_plan p1, fftwnd_plan p2);
+void get_nlop_soft_s(ION *iptr, REAL *rtptr, int ip, fftw_plan p1, fftw_plan p2);
+void get_nlop_soft_p(ION *iptr, REAL *rtptr, int ip, fftw_plan p1, fftw_plan p2);
+void get_nlop_soft_d(ION *iptr, REAL *rtptr, int ip, fftw_plan p1, fftw_plan p2);
 void get_matB_qnm(double *Aij);
 void pack_vtot_ftoc(REAL *vtot, REAL *vtot_c);
 void get_qnmpsi(STATE *sp, double *kbpsi_one_state, double *work);

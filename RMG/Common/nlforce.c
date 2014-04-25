@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 
 /*Set this to 1 to write out true NL force and the part
@@ -20,7 +21,8 @@ void nlforce (rmg_double_t * veff)
     SPECIES *sp;
     ION *iptr;
     int num_ions;
-    fftwnd_plan p2;
+    fftw_plan p2;
+    complex *in, *out;
     rmg_double_t *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
     rmg_double_t *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
     int fpt0;
@@ -97,10 +99,10 @@ void nlforce (rmg_double_t * veff)
             sp = &ct.sp[iptr->species];
 
 #if !FDIFF_BETA
-            fftw_import_wisdom_from_string (sp->backward_wisdom);
-            p2 = fftw3d_create_plan (sp->nldim, sp->nldim, sp->nldim,
-                                     FFTW_BACKWARD, FFTW_USE_WISDOM);
-            fftw_forget_wisdom ();
+            in = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            out = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out,
+                                     FFTW_BACKWARD, FFTW_ESTIMATE);
 #else
             p2 = NULL;
 #endif
@@ -111,7 +113,9 @@ void nlforce (rmg_double_t * veff)
 
             /*Release memery for plans */
 #if !FDIFF_BETA
-            fftwnd_destroy_plan (p2);
+            fftw_destroy_plan (p2);
+            fftw_free(out);
+            fftw_free(in);
 #endif
 
 

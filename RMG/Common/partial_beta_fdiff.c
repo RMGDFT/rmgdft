@@ -65,7 +65,7 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
                 {
 
                     index2 = (ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2;
-                    rptr[index] = beptr[index2].re;
+                    rptr[index] = creal(beptr[index2]);
 
                 }               /*end else */
 

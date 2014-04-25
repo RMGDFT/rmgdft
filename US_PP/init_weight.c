@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 
 /*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
@@ -15,8 +16,8 @@ void init_weight (void)
 
     int ip, prjcount, isp, size;
     SPECIES *sp;
-    fftwnd_plan p1;
-
+    fftw_plan p1;
+    double complex *in, *out;
 
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
@@ -66,7 +67,8 @@ void init_weight (void)
         size = sp->nldim * sp->nldim * sp->nldim;
 
         /*This array will store forward fourier transform on the coarse grid for all betas */
-        my_malloc (sp->forward_beta, sp->num_projectors * size, fftw_complex);
+        sp->forward_beta = fftw_alloc_complex(sp->num_projectors * size);
+//        my_malloc (sp->forward_beta, sp->num_projectors * size, fftw_complex);
 
         if (sp->forward_beta == NULL)
             error_handler ("Could not get memory to store forward fourier transform");
@@ -74,8 +76,12 @@ void init_weight (void)
 
 
         /*This is something we need to do only once per species, so do not use wisdom */
-        p1 = fftw3d_create_plan (sp->nlfdim, sp->nlfdim, sp->nlfdim, FFTW_FORWARD, FFTW_MEASURE);
-
+        in = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        out = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        if(!in || !out)
+            error_handler ("can't allocate memory\n");
+        p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        
 
         prjcount = 0;
         /* Loop over radial projectors */
@@ -113,7 +119,9 @@ void init_weight (void)
 
         }                       /*end for */
 
-        fftwnd_destroy_plan (p1);
+        fftw_destroy_plan (p1);
+        fftw_free(out);
+        fftw_free(in);
 
 
     }                           /* end for */

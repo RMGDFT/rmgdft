@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "common_prototypes.h"
 #include "main.h"
 
@@ -20,10 +21,11 @@ void get_weight (void)
 #endif
     SPECIES *sp;
     ION *iptr;
-    fftwnd_plan p2;
+    fftw_plan p2;
     /*Pointer to the result of forward transform on the coarse grid */
-    fftw_complex *fptr;
-    fftw_complex *beptr, *gbptr;
+    double complex *fptr;
+    double complex *beptr, *gbptr;
+    double complex *in, *out;
 
     P0_BASIS = get_P0_BASIS();
 
@@ -33,7 +35,8 @@ void get_weight (void)
 
     /*Get memory to store the phase factor applied to the forward Fourier transform 
      * and to store the backwards transform*/
-    my_malloc (beptr, 2 * max_size, fftw_complex);
+    beptr = fftw_alloc_complex(2 * max_size);
+//    my_malloc (beptr, 2 * max_size, fftw_complex);
     if (beptr == NULL)
         error_handler ("can't allocate memory\n");
 
@@ -64,15 +67,18 @@ void get_weight (void)
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
+        in = fftw_alloc_complex(sp->nldim * sp->nldim * sp->nldim);
+        out = fftw_alloc_complex(sp->nldim * sp->nldim * sp->nldim);
+
         /*Number of grid points on which fourier transform is done (in the corse grid) */
         coarse_size = sp->nldim * sp->nldim * sp->nldim;
 
 
 
-        fftw_import_wisdom_from_string (sp->backward_wisdom);
-        p2 = fftw3d_create_plan (sp->nldim, sp->nldim, sp->nldim, FFTW_BACKWARD,
-                FFTW_USE_WISDOM);
-        fftw_forget_wisdom ();
+        //fftw_import_wisdom_from_string (sp->backward_wisdom);
+        p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD,
+                FFTW_ESTIMATE);
+        //fftw_forget_wisdom ();
 
 
         /*Calculate the phase factor */
@@ -98,17 +104,14 @@ void get_weight (void)
             /*Apply the phase factor */
             for (idx = 0; idx < coarse_size; idx++)
             {
-                gbptr[idx].re =
-                    fptr[idx].re * iptr->fftw_phase_cos[idx] +
-                    fptr[idx].im * iptr->fftw_phase_sin[idx];
-                gbptr[idx].im =
-                    fptr[idx].im * iptr->fftw_phase_cos[idx] -
-                    fptr[idx].re * iptr->fftw_phase_sin[idx];
+                gbptr[idx] =
+                    (creal(fptr[idx]) * iptr->fftw_phase_cos[idx] + cimag(fptr[idx]) * iptr->fftw_phase_sin[idx]) +
+                    (cimag(fptr[idx]) * iptr->fftw_phase_cos[idx] * 1.0I - creal(fptr[idx]) * iptr->fftw_phase_sin[idx] * 1.0I);
             }
 
 
             /*Do the backwards transform */
-            fftwnd_one (p2, gbptr, beptr);
+            fftw_execute_dft (p2, gbptr, beptr);
             /*This takes and stores the part of beta that is useful for this PE */
             assign_weight (sp, ion, beptr, rtptr, Bweight);
 
@@ -136,7 +139,10 @@ void get_weight (void)
         }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 
 
-        fftwnd_destroy_plan (p2);
+        fftw_destroy_plan (p2);
+        fftw_free(out);
+        fftw_free(in);
+
 
 
     }                           /* end for */
@@ -144,7 +150,7 @@ void get_weight (void)
 #if FDIFF_BETA
     my_free (r1);
 #endif
-    my_free (beptr);
+    fftw_free (beptr);
 
 
 }                               /* end get_weight */

@@ -276,11 +276,11 @@ void get_all_partial_kbpsi (STATE *states, ION_ORBIT_OVERLAP *,
 void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, rmg_double_t * global_mat_X);
 void partial_QI (int ion, rmg_double_t * QI_R, ION *iptr);
 void partial_nlop_s (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
-        int ip, fftwnd_plan p1, fftwnd_plan p2);
+        int ip, fftw_plan p1, fftw_plan p2);
 void partial_nlop_p (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
-        int ip, fftwnd_plan p1, fftwnd_plan p2);
+        int ip, fftw_plan p1, fftw_plan p2);
 void partial_nlop_d (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
-        int ip, fftwnd_plan p1, fftwnd_plan p2);
+        int ip, fftw_plan p1, fftw_plan p2);
 void get_mat_Omega (STATE * states, double Omega[]);
 void md_fastrelax(void);
 void change_states_crds (STATE * states);
@@ -522,11 +522,11 @@ rmg_double_t radint1 (rmg_double_t * func, rmg_double_t * r, rmg_double_t * rab,
 void partial_Mat_nm_R (double *partial_x, double *partial_y, double *partial_z, rmg_double_t * global_mat_X);
 void partial_QI (int ion, rmg_double_t * QI_R, ION *iptr);
 void partial_nlop_s (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
-        int ip, fftwnd_plan p1, fftwnd_plan p2);
+        int ip, fftw_plan p1, fftw_plan p2);
 void partial_nlop_p (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
-        int ip, fftwnd_plan p1, fftwnd_plan p2);
+        int ip, fftw_plan p1, fftw_plan p2);
 void partial_nlop_d (ION * iptr, rmg_double_t * betax, rmg_double_t * betay, rmg_double_t * betaz,
-        int ip, fftwnd_plan p1, fftwnd_plan p2);
+        int ip, fftw_plan p1, fftw_plan p2);
 void get_mat_Omega (STATE * states, double Omega[]);
 void md_fastrelax(void);
 void change_states_crds (STATE * states);

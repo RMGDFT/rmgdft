@@ -6,25 +6,27 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 #include "common_prototypes.h"
 
-void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
+void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
 
     int idx, ix, iy, iz, size, ibegin, iend;
     rmg_double_t r, ax[3], xc, yc, zc;
     rmg_double_t invdr, t1, hxx, hyy, hzz;
-    fftw_complex *weptr, *gwptr;
+    double complex *weptr, *gwptr;
 
 
 
     /* nlfdim is size of the non-local box in the double grid */
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-    my_malloc (weptr, 2 * size, fftw_complex);
+    weptr = fftw_alloc_complex(2 * size);
     if (weptr == NULL)
         error_handler ("can't allocate memory\n");
+
     gwptr = weptr + size;
 
     hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
@@ -56,8 +58,7 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
 
                 r = metric (ax);
                 t1 = linint (&sp->betalig[ip][0], r, invdr);
-                weptr[idx].re = sqrt (1.0 / (4.0 * PI)) * t1;
-                weptr[idx].im = 0.0;
+                weptr[idx] = sqrt (1.0 / (4.0 * PI)) * t1 + 0.0I;
 
                 idx++;
             }                   /* end for */
@@ -66,8 +67,8 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftwnd_plan p1)
 
     }                           /* end for */
 
-    fftwnd_one (p1, weptr, gwptr);
+    fftw_execute_dft (p1, weptr, gwptr);
     pack_gftoc (sp, gwptr, rtptr);
 
-    my_free (weptr);
+    fftw_free (weptr);
 }

@@ -5,7 +5,7 @@
 #include <complex.h>
 #include "rmgtypes.h"
 #include "rmg_error.h"
-#include "fftw.h"
+#include "fftw3.h"
 
 
 static void rmg_alloc_initialize (void *ptr, size_t n, char *type);
@@ -82,8 +82,11 @@ static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
     else if (strcmp (type, "fftw_complex") == 0)
     {
         fftw_complex *p = (fftw_complex *) ptr;
-        for (i = 0; i < n; i++)
-            p[i].re = p[i].im = 0.0;
+        for (i = 0; i < n; i++) {
+            double *p1 = (double *)p;
+            p1[0] = p1[1] = 0.0;
+            p++;
+        }
     }
     else if ( strcmp( type, "complex double" ) == 0 )
     {

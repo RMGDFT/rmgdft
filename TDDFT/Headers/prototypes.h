@@ -65,11 +65,11 @@ void global_to_distribute(REAL * global_array, REAL * distr_array);
 void diag_eig_matrix(double *eig_matrix, double *eig, int *desca);
 void init_weight (void);
 void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftwnd_plan p1);
+                    fftw_plan p1);
 void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftwnd_plan p1);
+                    fftw_plan p1);
 void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftwnd_plan p1);
+                    fftw_plan p1);
 
 REAL mask_function (REAL x);
 void apply_mask_function (REAL *f, REAL * r, int rg_points, REAL rmax, REAL offset);
@@ -80,13 +80,13 @@ void cgen_prolong(REAL coef[], REAL fraction, int order);
 void init_derweight (void);
 void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftwnd_plan p1);
+                       fftw_plan p1);
 void init_derweight_p (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftwnd_plan p1);
+                       fftw_plan p1);
 void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftwnd_plan p1);
+                       fftw_plan p1);
 void xbsmovie (FILE *movie);
 void find_phase (int nldim, REAL *nlcdrs, REAL *phase_sin,
                  REAL *phase_cos);

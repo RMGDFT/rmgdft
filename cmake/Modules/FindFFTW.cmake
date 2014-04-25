@@ -1,23 +1,23 @@
 # - Find FFTW
-# Find the native FFTW includes and library
+# Find the native FFTW3 includes and library
 #
-#  FFTW_INCLUDES    - where to find fftw.h
-#  FFTW_LIBRARIES   - List of libraries when using FFTW.
-#  FFTW_FOUND       - True if FFTW found.
+#  FFTW_INCLUDES    - where to find fftw3.h
+#  FFTW_LIBRARIES   - List of libraries when using FFTW3.
+#  FFTW_FOUND       - True if FFTW3 found.
 
 if (FFTW_INCLUDES)
   # Already in cache, be silent
   set (FFTW_FIND_QUIETLY TRUE)
 endif (FFTW_INCLUDES)
 
-find_path (FFTW_INCLUDES fftw.h)
+find_path (FFTW_INCLUDES fftw3.h)
 if(NOT FFTW_INCLUDES)
-    find_path (FFTW_INCLUDES dfftw.h)
+    find_path (FFTW_INCLUDES dfftw3.h)
 endif(NOT FFTW_INCLUDES)
 
-find_library (FFTW_LIBRARIES NAMES dfftw)
+find_library (FFTW_LIBRARIES NAMES dfftw3)
 if(NOT FFTW_LIBRARIES)
-    find_library (FFTW_LIBRARIES NAMES fftw)
+    find_library (FFTW_LIBRARIES NAMES fftw3)
 endif(NOT FFTW_LIBRARIES)
 
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if

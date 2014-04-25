@@ -5,9 +5,10 @@
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 
-void pack_gftoc (SPECIES * sp, fftw_complex * gwptr, fftw_complex * gbptr)
+void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
 {
 
     int idx1, idx2, i, j, k, size;
@@ -53,8 +54,7 @@ void pack_gftoc (SPECIES * sp, fftw_complex * gwptr, fftw_complex * gbptr)
                 }
                 idx1 = i1 * sp->nldim * sp->nldim + j1 * sp->nldim + k1;
                 idx2 = i2 * sp->nlfdim * sp->nlfdim + j2 * sp->nlfdim + k2;
-                gbptr[idx1].re = gwptr[idx2].re / (double) size;
-                gbptr[idx1].im = gwptr[idx2].im / (double) size;
+                gbptr[idx1] =  gwptr[idx2] / (double) size;
             }
         }
     }

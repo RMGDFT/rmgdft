@@ -6,10 +6,11 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include "main.h"
 
 void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_double_t * beta_z, ION * iptr,
-                    fftwnd_plan p2)
+                    fftw_plan p2)
 {
 
 #if !FDIFF_BETA
@@ -17,8 +18,8 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
     SPECIES *sp;
     rmg_double_t *rtptr_x, *rtptr_y, *rtptr_z;
     /*Pointer to the result of forward transform on the coarse grid */
-    fftw_complex *fptr_x, *fptr_y, *fptr_z;
-    fftw_complex *beptr, *gbptr;
+    complex *fptr_x, *fptr_y, *fptr_z;
+    complex *beptr, *gbptr;
 
 
 
@@ -60,16 +61,15 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
         /*Apply the phase factor */
         for (idx = 0; idx < coarse_size; idx++)
         {
-            gbptr[idx].re =
-                fptr_x[idx].re * iptr->fftw_phase_cos[idx] +
-                fptr_x[idx].im * iptr->fftw_phase_sin[idx];
-            gbptr[idx].im =
-                fptr_x[idx].im * iptr->fftw_phase_cos[idx] -
-                fptr_x[idx].re * iptr->fftw_phase_sin[idx];
+            gbptr[idx] =
+                (creal(fptr_x[idx]) * iptr->fftw_phase_cos[idx] +
+                cimag(fptr_x[idx]) * iptr->fftw_phase_sin[idx]) +
+                (cimag(fptr_x[idx]) * iptr->fftw_phase_cos[idx] -
+                creal(fptr_x[idx]) * iptr->fftw_phase_sin[idx]) * 1.0I;
         }
 
         /*Do the backwards transform */
-        fftwnd_one (p2, gbptr, beptr);
+        fftw_execute_dft (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
         assign_derweight (sp, ion, beptr, rtptr_x);
 
@@ -78,16 +78,15 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
         /*Apply the phase factor */
         for (idx = 0; idx < coarse_size; idx++)
         {
-            gbptr[idx].re =
-                fptr_y[idx].re * iptr->fftw_phase_cos[idx] +
-                fptr_y[idx].im * iptr->fftw_phase_sin[idx];
-            gbptr[idx].im =
-                fptr_y[idx].im * iptr->fftw_phase_cos[idx] -
-                fptr_y[idx].re * iptr->fftw_phase_sin[idx];
+            gbptr[idx] =
+                (creal(fptr_y[idx]) * iptr->fftw_phase_cos[idx] +
+                cimag(fptr_y[idx]) * iptr->fftw_phase_sin[idx]) +
+                (cimag(fptr_y[idx]) * iptr->fftw_phase_cos[idx] -
+                creal(fptr_y[idx]) * iptr->fftw_phase_sin[idx]) * 1.0I;
         }
 
         /*Do the backwards transform */
-        fftwnd_one (p2, gbptr, beptr);
+        fftw_execute_dft (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
         assign_derweight (sp, ion, beptr, rtptr_y);
 
@@ -96,16 +95,15 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
         /*Apply the phase factor */
         for (idx = 0; idx < coarse_size; idx++)
         {
-            gbptr[idx].re =
-                fptr_z[idx].re * iptr->fftw_phase_cos[idx] +
-                fptr_z[idx].im * iptr->fftw_phase_sin[idx];
-            gbptr[idx].im =
-                fptr_z[idx].im * iptr->fftw_phase_cos[idx] -
-                fptr_z[idx].re * iptr->fftw_phase_sin[idx];
+            gbptr[idx] =
+                (creal(fptr_z[idx]) * iptr->fftw_phase_cos[idx] +
+                cimag(fptr_z[idx]) * iptr->fftw_phase_sin[idx]) +
+                (cimag(fptr_z[idx]) * iptr->fftw_phase_cos[idx] -
+                creal(fptr_z[idx]) * iptr->fftw_phase_sin[idx]) * 1.0I;
         }
 
         /*Do the backwards transform */
-        fftwnd_one (p2, gbptr, beptr);
+        fftw_execute_dft (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
         assign_derweight (sp, ion, beptr, rtptr_z);
 

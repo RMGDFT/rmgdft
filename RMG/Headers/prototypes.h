@@ -215,13 +215,13 @@ void global_sums (rmg_double_t *vect, int *length, MPI_Comm comm);
 void init_derweight (void);
 void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftwnd_plan p1);
+                       fftw_plan p1);
 void init_derweight_p (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftwnd_plan p1);
+                       fftw_plan p1);
 void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftwnd_plan p1);
+                       fftw_plan p1);
 void init_fftw_wisdom (void);
 void init_kbr (void);
 void init_IO ( int argc, char **argv );
@@ -231,11 +231,11 @@ void init_pegrid (void);
 STATE *init_states (void);
 void init_weight (void);
 void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftwnd_plan p1);
+                    fftw_plan p1);
 void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftwnd_plan p1);
+                    fftw_plan p1);
 void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftwnd_plan p1);
+                    fftw_plan p1);
 void init_wf (STATE *states);
 void init_nuc (rmg_double_t *vnuc, rmg_double_t *rhoc, rmg_double_t *rhocore);
 void init_pos (void);
@@ -421,7 +421,7 @@ void get_gamma (rmg_double_t * gammaR, int ion, int nh);
 void partial_gamma (int ion, rmg_double_t * par_gammaR, rmg_double_t * par_omegaR, int nion, int nh,
                     rmg_double_t * newsintR_x, rmg_double_t * newsintR_y, rmg_double_t * newsintR_z,
                     rmg_double_t * newsintI_x, rmg_double_t * newsintI_y, rmg_double_t * newsintI_z);
-void partial_betaxpsi (int ion, fftwnd_plan p2, rmg_double_t *newsintR_x,
+void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t *newsintR_x,
                        rmg_double_t *newsintR_y, rmg_double_t *newsintR_z,
                        rmg_double_t *newsintI_x, rmg_double_t *newsintI_y,
                        rmg_double_t *newsintI_z, ION *iptr);
@@ -450,7 +450,7 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t *density,
                                 int px0_grid, int py0_grid, int pz0_grid,
                                 rmg_double_t zside);
 void get_derweight (int ion, rmg_double_t *beta_x, rmg_double_t *beta_y, rmg_double_t *beta_z,
-                    ION *iptr, fftwnd_plan p2);
+                    ION *iptr, fftw_plan p2);
 void partial_beta_fdiff (fftw_complex *beptr, int nldim, rmg_double_t *beta_x,
                          rmg_double_t *beta_y, rmg_double_t *beta_z);
 
@@ -505,11 +505,6 @@ void init_trade_imagesx_async(void);
 void  get_rho_oppo (rmg_double_t * rho, rmg_double_t * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
-
-/* Meta-GGA */
-
-
-
 #endif
 #if __cplusplus
 }

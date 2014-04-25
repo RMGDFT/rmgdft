@@ -25,7 +25,7 @@
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
-#include "fftw.h"
+#include "fftw3.h"
 
 
 void partial_vloc ()
