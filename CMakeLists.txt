@@ -210,7 +210,17 @@ if(NOT RMG_MATH_LIBS)
 
     if(NOT CRAY_XK)
 
-        find_package(BLAS REQUIRED)
+        # First look for openblas
+        SET(OPEN_BLAS_SEARCH_PATHS  /lib/ /lib64/  /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/OpenBLAS/lib $ENV{OPENBLAS_HOME}/lib )
+        FIND_LIBRARY(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
+        IF (OPENBLAS)
+            set(BLAS_FOUND TRUE)
+            set(BLAS_LIBRARIES ${OPENBLAS})
+            set(BLAS_blas_LIBRARY ${OPENBLAS})
+        ELSE (OPENBLAS)
+            find_package(BLAS REQUIRED)
+        ENDIF (OPENBLAS)
+
         if(BLAS_FOUND)
             target_link_libraries (rmg ${BLAS_LIBRARIES})
             target_link_libraries (rmg-on ${BLAS_LIBRARIES})
