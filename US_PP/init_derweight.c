@@ -41,8 +41,9 @@ void init_derweight (void)
         sp->forward_derbeta_y = sp->forward_derbeta_x + sp->num_projectors * size;
         sp->forward_derbeta_z = sp->forward_derbeta_y + sp->num_projectors * size;
 
-        in = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
-        out = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+
         if(!in || !out)
             error_handler ("can't allocate memory\n");
 

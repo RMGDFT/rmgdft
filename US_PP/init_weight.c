@@ -67,7 +67,8 @@ void init_weight (void)
         size = sp->nldim * sp->nldim * sp->nldim;
 
         /*This array will store forward fourier transform on the coarse grid for all betas */
-        sp->forward_beta = fftw_alloc_complex(sp->num_projectors * size);
+        sp->forward_beta = (double complex *)fftw_malloc(sizeof(double complex) * sp->num_projectors * size);
+
 //        my_malloc (sp->forward_beta, sp->num_projectors * size, fftw_complex);
 
         if (sp->forward_beta == NULL)
@@ -76,8 +77,9 @@ void init_weight (void)
 
 
         /*This is something we need to do only once per species, so do not use wisdom */
-        in = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
-        out = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+
         if(!in || !out)
             error_handler ("can't allocate memory\n");
         p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);

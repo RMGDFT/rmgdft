@@ -99,8 +99,8 @@ void nlforce (rmg_double_t * veff)
             sp = &ct.sp[iptr->species];
 
 #if !FDIFF_BETA
-            in = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
-            out = fftw_alloc_complex(sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
             p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out,
                                      FFTW_BACKWARD, FFTW_ESTIMATE);
 #else

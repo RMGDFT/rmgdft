@@ -35,7 +35,8 @@ void get_weight (void)
 
     /*Get memory to store the phase factor applied to the forward Fourier transform 
      * and to store the backwards transform*/
-    beptr = fftw_alloc_complex(2 * max_size);
+    beptr = (double complex *)fftw_malloc(sizeof(double complex) * 2 * max_size);
+
 //    my_malloc (beptr, 2 * max_size, fftw_complex);
     if (beptr == NULL)
         error_handler ("can't allocate memory\n");
@@ -67,8 +68,9 @@ void get_weight (void)
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
-        in = fftw_alloc_complex(sp->nldim * sp->nldim * sp->nldim);
-        out = fftw_alloc_complex(sp->nldim * sp->nldim * sp->nldim);
+        in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nldim * sp->nldim * sp->nldim);
+        out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nldim * sp->nldim * sp->nldim);
+
 
         /*Number of grid points on which fourier transform is done (in the corse grid) */
         coarse_size = sp->nldim * sp->nldim * sp->nldim;

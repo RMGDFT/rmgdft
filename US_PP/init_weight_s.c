@@ -23,7 +23,8 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     /* nlfdim is size of the non-local box in the double grid */
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-    weptr = fftw_alloc_complex(2 * size);
+    weptr = (double complex *)fftw_malloc(sizeof(double complex) * 2 * size);
+
     if (weptr == NULL)
         error_handler ("can't allocate memory\n");
 

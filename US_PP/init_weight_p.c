@@ -26,7 +26,8 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-    weptr1 = fftw_alloc_complex(4 * size);
+    weptr1 = (double complex *)fftw_malloc(sizeof(double complex) * 4 * size);
+
     if (weptr1 == NULL)
         error_handler ("can't allocate memory\n");
 
