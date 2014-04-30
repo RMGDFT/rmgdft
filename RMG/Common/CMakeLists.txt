@@ -14,7 +14,6 @@ fastrelax.c
 mix_betaxpsi.c
 open_restart_file.c
 scalapack_tools.c
-get_xc.c
 ortho.c
 lbfgs_init.c
 finish_release_mem.c
@@ -99,7 +98,6 @@ ranv.c
 init_wf.c
 print_density_z_direction.c
 get_derweight.c
-get_vxc.c
 get_ke.c
 lcao_get_psi.c
 set_pbc.c

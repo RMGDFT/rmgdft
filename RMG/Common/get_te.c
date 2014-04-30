@@ -131,7 +131,7 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
 
 
     /* Evaluate XC energy and potential */
-    get_xc(nrho, nrho_oppo, vxc, exc, ct.xctype);
+    get_vxc_exc(nrho, nrho_oppo, vxc, exc, ct.xctype);
 
 
     esum[1] = 0.0;

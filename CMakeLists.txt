@@ -345,13 +345,13 @@ add_subdirectory (Input)
 add_subdirectory (MG) 
 add_subdirectory (Misc) 
 add_subdirectory (US_PP) 
-add_subdirectory (XC) 
+add_subdirectory (XC_useLIBXC) 
 
 # Target specific code subdirectories
 add_subdirectory (RMG/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
-add_subdirectory (RMG/Spin/XC EXCLUDE_FROM_ALL) 
+add_subdirectory (RMG/Spin/XC_notuseLIBXC EXCLUDE_FROM_ALL) 
 
 add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
