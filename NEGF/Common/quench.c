@@ -87,7 +87,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
     idx1 = 0;
 //    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = 1;
+    iprobe = cei.probe_noneq;
     {
         idx = (lcr[iprobe].nenergy + pmo.npe_energy - 1) / pmo.npe_energy;
  

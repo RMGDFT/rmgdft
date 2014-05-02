@@ -76,7 +76,7 @@ void sigma_all_energy_point (complex double * sigma_all)
 
     idx_sigma = 0;
 //    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = 1;
+    iprobe = cei.probe_noneq;
     {
 
         /*   parallel for the processor on energy grid */
@@ -178,7 +178,7 @@ void sigma_all_energy_point (complex double * sigma_all)
     /*  Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
 
 //    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = 1;
+    iprobe = cei.probe_noneq;
     {
         j = 0;
         for (idx_delta = 1; idx_delta <= cei.num_probe; idx_delta++)

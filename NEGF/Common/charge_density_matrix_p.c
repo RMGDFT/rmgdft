@@ -60,7 +60,7 @@ void charge_density_matrix_p (complex double * sigma_all)
 
     idx_sigma = 0;
     // for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = 1;
+    iprobe = cei.probe_noneq;
     {
         for (st1 = 0; st1 < ntot; st1++)
         {
@@ -70,7 +70,7 @@ void charge_density_matrix_p (complex double * sigma_all)
     }
 
     //for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = 1;
+    iprobe = cei.probe_noneq;
     {
         /*   parallel for the processor on energy grid */
         for (iene = pmo.myblacs; iene < lcr[iprobe].nenergy; iene += pmo.npe_energy)
@@ -152,7 +152,7 @@ void charge_density_matrix_p (complex double * sigma_all)
 
         /*   Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
         // for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-        iprobe = 1;
+        iprobe = cei.probe_noneq;
         {
             j = 0;	
             for (idx_delta = 1; idx_delta <= cei.num_probe; idx_delta++)
@@ -331,7 +331,7 @@ void charge_density_matrix_p (complex double * sigma_all)
 
         for (st1 = 0; st1 < ntot; st1++)
         {
-            iprobe = 1;
+            iprobe = cei.probe_noneq;
             sum = lcr[iprobe].density_matrix_tri[st1];	
 
             for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
