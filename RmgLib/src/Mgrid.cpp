@@ -35,6 +35,7 @@
 
 
 
+#include <complex>
 #include "Mgrid.h"
 #include "FiniteDiff.h"
 #include "TradeImages.h"
@@ -46,6 +47,10 @@ using namespace std;
 template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv<complex <double> >(complex<double>*, complex<double>*, complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+
+//template void Mgrid::mgrid_solv<complex <float> >(complex<float>*, complex<float>*, complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 
 Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
@@ -78,7 +83,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     int i;
     int cycl;
     int size, idx;
-    RmgType scale;
+    double scale;
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
     RmgType *resid, *newf, *newv, *newwork;
@@ -222,7 +227,8 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
     int ix, iy, iz, ibrav;
     int incy, incx, incy2, incx2;
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
-    double scale, face, corner, edge;
+    double scale;
+    RmgType face, corner, edge;
 
     ibrav = L->get_ibrav_type();
 

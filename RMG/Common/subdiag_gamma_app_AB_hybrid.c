@@ -87,8 +87,8 @@ void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, r
     time1 = my_crtc ();
 #   endif
     /* A operating on psi stored in work3 */
-    app_cil_driver (tmp_psi, work3, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), sp->hxgrid,
-                   sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
+    app_cil_driver (tmp_psi, work3, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_hxgrid(),
+                   get_hygrid(), get_hzgrid(), ct.kohn_sham_fd_order);
 
 #   if MD_TIMERS
 #   endif

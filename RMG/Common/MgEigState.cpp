@@ -49,12 +49,12 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
     P0_BASIS = G->get_P0_BASIS(1);
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
-    dimx = sp->dimx;
-    dimy = sp->dimy;
-    dimz = sp->dimz;
-    hxgrid = sp->hxgrid;
-    hygrid = sp->hygrid;
-    hzgrid = sp->hzgrid;
+    dimx = G->get_PX0_GRID(1);
+    dimy = G->get_PY0_GRID(1);
+    dimz = G->get_PZ0_GRID(1);
+    hxgrid = G->get_hxgrid(1);
+    hygrid = G->get_hygrid(1);
+    hzgrid = G->get_hzgrid(1);
     levels = ct.eig_parm.levels;
     if ((ct.runflag == 0) && (ct.scf_steps < 2)) {
         levels = 0;

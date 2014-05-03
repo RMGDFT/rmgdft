@@ -102,8 +102,8 @@ void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, 
     }
 
     /* A operating on psi stored in work3 */
-    app_cilr_driver (tmp_psi, a_psi, b_psi, vtot_eig_s, dimx, dimy, dimz, sp->hxgrid,
-            sp->hygrid, sp->hzgrid, ct.kohn_sham_fd_order);
+    app_cilr_driver (tmp_psi, a_psi, b_psi, vtot_eig_s, dimx, dimy, dimz, get_hxgrid(),
+            get_hygrid(), get_hzgrid(), ct.kohn_sham_fd_order);
 
 #   if MD_TIMERS
 #   endif

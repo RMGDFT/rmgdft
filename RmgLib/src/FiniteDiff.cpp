@@ -53,6 +53,7 @@ template void FiniteDiff::app_cir_fourth<double>(double *, double *, int, int, i
 
 template double FiniteDiff::app_del2c<float>(float *, float *, int, int, int, double, double, double);
 template double FiniteDiff::app_del2c<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app_del2c<complex <double> >(complex<double> *, complex<double> *, int, int, int, double, double, double);
 
 
 FiniteDiff::FiniteDiff(Lattice *lptr)

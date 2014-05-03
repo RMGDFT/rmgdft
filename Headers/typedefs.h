@@ -55,48 +55,34 @@ typedef struct
     int firstflag;
 
     /** Current estimate of the eigenvalue for this orbital (state). */
-    rmg_double_t eig[2];
+    double eig[2];
 
     /** Previous estimate */
-    rmg_double_t oldeig[2];
+    double oldeig[2];
 
     /** Wavefunction residual error computed by multigrid solver */
-    rmg_double_t res;
+    double res;
 
     /** Points to the storage area for the real part of the orbital */
-    rmg_double_t *psiR;
+    double *psiR;
     /** Points to the storage area for the imaginary part of the orbital */
-    rmg_double_t *psiI;
+    double *psiI;
 
 
     /** Nuclear potential */
-    rmg_double_t *vnuc;
+    double *vnuc;
     /** Hartree potential */
-    rmg_double_t *vh;
+    double *vh;
     /** Exchange correlation potential */
-    rmg_double_t *vxc;
+    double *vxc;
     /** Total potential */
-    rmg_double_t *vtot;
+    double *vtot;
 
     /** dvhxc */
-    rmg_double_t *dvhxc;
+    double *dvhxc;
 
     /** Core charge for non-linear core corrections */
-    rmg_double_t *rhocore;
-
-    /** Grid dimension in the x-coordinate direction on this processor */
-    int dimx;
-    /** Grid dimension in the y-coordinate direction on this processor */
-    int dimy;
-    /** Grid dimension in the z-coordinate direction on this processor */
-    int dimz;
-
-
-    /** Grid spacings */
-    rmg_double_t hxgrid;
-    rmg_double_t hygrid;
-    rmg_double_t hzgrid;
-
+    double *rhocore;
 
     /** Total basis size on each processor (dimx*dimy*dimz) */
     int pbasis;
@@ -109,12 +95,12 @@ typedef struct
 
 
     /** Volume element associated with each real space grid point */
-    rmg_double_t vel;
+    double vel;
 
 
     /** Occupation of the orbital */
-    rmg_double_t occupation[2];
-//    rmg_double_t oldeig;
+    double occupation[2];
+//    double oldeig;
 
     /* The offsets and the sizes of the grid that the orbital
      * is defined on relative to the global grid. These will
@@ -138,8 +124,8 @@ typedef struct
 
     /* Actual Physical coordinates at current time step */
     int pe;
-    rmg_double_t crds[3];
-    rmg_double_t radius;
+    double crds[3];
+    double radius;
     int movable;
     int frozen;
     int index;
@@ -189,9 +175,9 @@ typedef struct
 typedef struct
 {
     char name[4];
-    rmg_double_t valence;
-    rmg_double_t mass;
-    rmg_double_t rc;
+    double valence;
+    double mass;
+    double rc;
     int nlccflag;
     int maxl;
     int local;
@@ -208,25 +194,25 @@ typedef struct
     int N;
 
     /* ionic target temperature in Kelvin */
-    rmg_double_t temp;
+    double temp;
 
     /* ionic target kinetic energy */
-    rmg_double_t k0;
+    double k0;
 
     /* randomize velocity flag */
     int randomvel;
 
     /* Nose oscillation frequency */
-    rmg_double_t fNose;
+    double fNose;
 
     /* number of thermostats used */
     int m;
 
     /* thermostat positions,velocities,masses and forces */
-    rmg_double_t xx[10];
-    rmg_double_t xv[10];
-    rmg_double_t xq[10];
-    rmg_double_t xf[4][10];
+    double xx[10];
+    double xv[10];
+    double xq[10];
+    double xf[4][10];
 
 } FINITE_T_PARM;
 
@@ -241,34 +227,34 @@ typedef struct
     int kidx;
 
     /** The k-point */
-    rmg_double_t kpt[3];
+    double kpt[3];
 
     /** The corresponding vector */
-    rmg_double_t kvec[3];
+    double kvec[3];
 
     /** The weight associated with the k-point */
-    rmg_double_t kweight;
+    double kweight;
 
     /** The magnitude of the k-vector */
-    rmg_double_t kmag;
+    double kmag;
 
     /* The orbital structure for this k-point */
     STATE *kstate;
 
 
     /* Mean min, and max wavefunction residuals for occupied space */
-    rmg_double_t meanres;
-    rmg_double_t minres;
-    rmg_double_t maxres;
+    double meanres;
+    double minres;
+    double maxres;
 
     /* Total energies */
-    rmg_double_t ES;
-    rmg_double_t NUC;
-    rmg_double_t KE;
-    rmg_double_t XC;
-    rmg_double_t NL;
-    rmg_double_t II;
-    rmg_double_t TOTAL;
+    double ES;
+    double NUC;
+    double KE;
+    double XC;
+    double NL;
+    double II;
+    double TOTAL;
 
 } KPOINT;
 

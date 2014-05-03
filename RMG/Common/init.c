@@ -242,12 +242,6 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
             states[kst1].psiR = rptr;
             states[kst1].psiI = rptr +P0_BASIS;
             states[kst1].dvhxc = rptr1;
-            states[kst1].hxgrid = get_hxgrid();
-            states[kst1].hygrid = get_hygrid();
-            states[kst1].hzgrid = get_hzgrid();
-            states[kst1].dimx = PX0_GRID;
-            states[kst1].dimy = PY0_GRID;
-            states[kst1].dimz = PZ0_GRID;
             states[kst1].vxc = vxc;
             states[kst1].vh = vh;
             states[kst1].vnuc = vnuc;
