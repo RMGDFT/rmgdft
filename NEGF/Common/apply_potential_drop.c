@@ -359,17 +359,17 @@ void apply_potential_drop (rmg_double_t *vbias)
 
 
 
-                if(pct.gridpe ==0)
-                {
-                    for (i = 0; i < get_FNX_GRID(); i++)
-                    {
-                        for (j = 0; j < get_FNY_GRID(); j++)
-                        {
-                            idx = j + i * get_FNY_GRID();
-                            printf (" hello  %f \n", vtemp[idx] );
-                        }
-                    }
-                }
+              //  if(pct.gridpe ==0)
+              //  {
+              //      for (i = 0; i < get_FNX_GRID(); i++)
+              //      {
+              //          for (j = 0; j < get_FNY_GRID(); j++)
+              //          {
+              //              idx = j + i * get_FNY_GRID();
+              //              printf (" hello  %f \n", vtemp[idx] );
+              //          }
+              //      }
+              // }
 
 
 

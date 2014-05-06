@@ -59,8 +59,8 @@ void charge_density_matrix_p (complex double * sigma_all)
     time3 = my_crtc ();
 
     idx_sigma = 0;
-    // for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     iprobe = cei.probe_noneq;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         for (st1 = 0; st1 < ntot; st1++)
         {
@@ -69,9 +69,10 @@ void charge_density_matrix_p (complex double * sigma_all)
         }
     }
 
-    //for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = cei.probe_noneq;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
+        if(cei.probe_noneq > 0)  iprobe = cei.probe_noneq;
+
         /*   parallel for the processor on energy grid */
         for (iene = pmo.myblacs; iene < lcr[iprobe].nenergy; iene += pmo.npe_energy)
         {
@@ -98,8 +99,13 @@ void charge_density_matrix_p (complex double * sigma_all)
 
             Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene, green_C);
 
+
             for (st1 = 0; st1 < ntot; st1++)
+            {
+
                 lcr[iprobe].density_matrix_tri[st1] += cimag( weight * green_C[st1]);
+            }
+
 
         }                       /* end for energy points */
 
@@ -109,6 +115,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         rmg_timings (MPISUM_EQ_TIME, (time6 - time5));
 
 
+        if(cei.probe_noneq > 0) break;
         //        if (ct.runflag == 111 | ct.runflag == 112 |ct.runflag ==1121)
         //           break;
 
@@ -151,9 +158,9 @@ void charge_density_matrix_p (complex double * sigma_all)
         my_malloc_init( rho_mn, ntot, complex double );
 
         /*   Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
-        // for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-        iprobe = cei.probe_noneq;
+        for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
+            if(cei.probe_noneq > 0) iprobe = cei.probe_noneq;
             j = 0;	
             for (idx_delta = 1; idx_delta <= cei.num_probe; idx_delta++)
             {
@@ -229,6 +236,8 @@ void charge_density_matrix_p (complex double * sigma_all)
                     j++;	
                 }     /* if statement ends here */	
             }     /* idx_delta loop ends here */
+
+            if(cei.probe_noneq > 0) break;
         }      /* iprobe loop ends here */
 
         my_free( green_C_non );
@@ -247,7 +256,6 @@ void charge_density_matrix_p (complex double * sigma_all)
         for (st1 = 0; st1 < ntot; st1++)
             lcr[0].density_matrix_tri[st1] = 0.0;
 
-#if 0
         my_malloc_init( wmn, cei.num_probe, rmg_double_t );
         for (st1 = 0; st1 < ntot; st1++)
         {
@@ -293,11 +301,9 @@ void charge_density_matrix_p (complex double * sigma_all)
             }   /* nprobe loop ends here    */
 
 
-            /*
-               if(pct.gridpe == 0) 
-               printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
-               printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
-             */
+     //       if(pct.gridpe == 0) 
+     //           printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
+      //      printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
 
             /* Finally, calculates density matrix */ 
 
@@ -314,36 +320,30 @@ void charge_density_matrix_p (complex double * sigma_all)
                 lcr[0].density_matrix_tri[st1] += wmn[iprobe - 1] * sum;
             }   
 
-            /*		
-                    lcr[0].density_matrix_tri[st1] = 
-                    wmn[1] * (lcr[1].density_matrix_tri[st1] - lcr[2].lcr_ne[0].density_matrix_ne_tri[st1]) 
-                    + wmn[0] * (lcr[2].density_matrix_tri[st1] - lcr[1].lcr_ne[0].density_matrix_ne_tri[st1]);
-             */
-
-
 
         } /* st1 loop ends here */
         my_free( wmn );
-#endif
 
 
         /* =================== Non-equilibrium part ends here ================= */
 
-        for (st1 = 0; st1 < ntot; st1++)
-        {
-            iprobe = cei.probe_noneq;
-            sum = lcr[iprobe].density_matrix_tri[st1];	
-
-            for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
-            {
-
-                sum -= lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri[st1];
-
-            }  
-            lcr[0].density_matrix_tri[st1] =  sum;
-        }   
-
+        //        for (st1 = 0; st1 < ntot; st1++)
+        //        {
+        //           iprobe = cei.probe_noneq;
+        //          sum = lcr[iprobe].density_matrix_tri[st1];	
+        //
+        //           for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
+        //          {
+        //
+        //               sum -= lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri[st1];
+        //
+        //           }  
+        //          lcr[0].density_matrix_tri[st1] =  sum;
+        //     }   
+        //
     }     /* if (ct.runflag == 113) statement ends here */ 
+
+
     for (st1 = 0; st1 < ntot; st1++)
         lcr[0].density_matrix_tri[st1] /= PI;
 

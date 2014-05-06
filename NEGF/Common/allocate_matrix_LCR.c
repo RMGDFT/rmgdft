@@ -118,16 +118,39 @@ void allocate_matrix_LCR ()
     }
     else
     {
-       // for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	iprobe = cei.probe_noneq;
+        if(cei.probe_noneq == 0) 
         {
-            my_malloc_init( lcr[iprobe].density_matrix_tri, ntot, rmg_double_t );
-            for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
-            {	
-                my_malloc_init( lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, rmg_double_t );
+            for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+            {
+                my_malloc_init( lcr[iprobe].density_matrix_tri, ntot, rmg_double_t );
+                for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
+                {	
+                    my_malloc_init( lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, rmg_double_t );
+                }
             }
+
         }
 
+        else
+
+        {
+
+            my_malloc_init( lcr[1].density_matrix_tri, ntot, rmg_double_t );
+            for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
+            {	
+                my_malloc_init( lcr[1].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, rmg_double_t );
+            }
+
+            for (iprobe = 2; iprobe <= cei.num_probe; iprobe++)
+            {
+                lcr[iprobe].density_matrix_tri = lcr[1].density_matrix_tri;
+                for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
+                {	
+                    lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri = 
+                        lcr[1].lcr_ne[idx_delta - 1].density_matrix_ne_tri;
+                }
+            }
+        }
     }
 
 

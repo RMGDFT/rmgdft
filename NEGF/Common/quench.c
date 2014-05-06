@@ -86,23 +86,28 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
 
     idx1 = 0;
-//    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     iprobe = cei.probe_noneq;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
+        if(cei.probe_noneq > 0) iprobe = cei.probe_noneq;
         idx = (lcr[iprobe].nenergy + pmo.npe_energy - 1) / pmo.npe_energy;
- 
+
         for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)               /* check */
         {
             idx += (lcr[iprobe].lcr_ne[idx_delta - 1].nenergy_ne + pmo.npe_energy - 1) / pmo.npe_energy;
         }
         for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)                       /* check */
         {
-        
-        idx_C = cei.probe_in_block[jprobe-1];
+
+            idx_C = cei.probe_in_block[jprobe-1];
             nL = pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
             idx1 += idx * nL;
         }	
+
+        if(cei.probe_noneq > 0) break;
     }
+
+
 
 
     my_malloc_init( sigma_all, idx1, complex double );
@@ -110,19 +115,19 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     if (ct.runflag != 111)
         sigma_all_energy_point (sigma_all);
 
-	my_barrier();
-	if(pct.gridpe==0) dprintf("\n sigma_all done");
+    my_barrier();
+    if(pct.gridpe==0) dprintf("\n sigma_all done");
     get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
     /* get lcr[0].S00 part */
     get_matB_soft (states, states1, work_matrix);
 
-/*******************************************/
+    /*******************************************/
 
 
 
     whole_to_tri_p (lcr[0].Stri, work_matrix, ct.num_blocks, ct.block_dim);
 
-/* ========= interaction between leads is zero ========== */
+    /* ========= interaction between leads is zero ========== */
     zero_lead_image(lcr[0].Stri);
 
 
@@ -181,7 +186,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
 
 
-/*  apply_potential_drop( vtot ); */
+    /*  apply_potential_drop( vtot ); */
 
     FPYZ0_GRID = get_FPY0_GRID() * get_FPZ0_GRID();
 
@@ -213,15 +218,15 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     whole_to_tri_p (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
 
 
-/* ========= interaction between L3-L4 is zero ========== */
+    /* ========= interaction between L3-L4 is zero ========== */
 
-      zero_lead_image(lcr[0].Htri);  
+    zero_lead_image(lcr[0].Htri);  
 
-/* corner elements keep unchanged */
+    /* corner elements keep unchanged */
     setback_corner_matrix_H();  
 
 
- 
+
 
     for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
@@ -266,7 +271,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     }                           /* end for */
 
 
-   /* added by shuchun for force calculation */
+    /* added by shuchun for force calculation */
     if (ct.forceflag !=0 )
     {
         /* Calculate the force */

@@ -75,10 +75,10 @@ void sigma_all_energy_point (complex double * sigma_all)
     /*  Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
 
     idx_sigma = 0;
-//    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = cei.probe_noneq;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
 
+        if(cei.probe_noneq > 0) iprobe = cei.probe_noneq;
         /*   parallel for the processor on energy grid */
         for (iene = pmo.myblacs; iene < lcr[iprobe].nenergy; iene += pmo.npe_energy)
         {
@@ -156,7 +156,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                     ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
-                Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
+                Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
 
                 /*-------------------------------------------------------------------*/
 
@@ -172,14 +172,17 @@ void sigma_all_energy_point (complex double * sigma_all)
 
         }                       /* end for energy points */
 
+        if(cei.probe_noneq > 0) break;
+
     }                           /* end for iprobe */
 
 
     /*  Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
 
-//    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    iprobe = cei.probe_noneq;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
+
+        if(cei.probe_noneq >0) iprobe = cei.probe_noneq;
         j = 0;
         for (idx_delta = 1; idx_delta <= cei.num_probe; idx_delta++)
         {
@@ -253,7 +256,7 @@ void sigma_all_energy_point (complex double * sigma_all)
                             ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
-                        Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
+                        Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
 
 
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -272,6 +275,8 @@ void sigma_all_energy_point (complex double * sigma_all)
             }            /* if statement ends here */
 
         }               /* idx_delta loop ends here */
+
+        if(cei.probe_noneq >0) break;
 
     }        /* iprobe loop ends here */
 
