@@ -104,7 +104,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     for (idx = 0; idx < size; idx++)
     {
 
-        v_mat[idx] = -scale * f_mat[idx];
+        v_mat[idx] = -(RmgType)scale * f_mat[idx];
 
     }                           /* end for */
 
@@ -298,7 +298,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
 
                         half[ix * incx2 + iy * incy2 + iz] =
-                            scale * (8.0 * full[x0 * incx + y0 * incy + z0] + 4.0 * face + 2.0 * edge +
+                            (RmgType)scale * ((RmgType)8.0 * full[x0 * incx + y0 * incy + z0] + (RmgType)4.0 * face + (RmgType)2.0 * edge +
                                      corner);
 
 
@@ -353,8 +353,8 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
 
                         half[ix * incx2 + iy * incy2 + iz] =
-                            scale * (8.0 * full[x0 * incx + y0 * incy + z0] + 4.0 * corner +
-                                     2.0 * face);
+                            (RmgType)scale * ((RmgType)8.0 * full[x0 * incx + y0 * incy + z0] + (RmgType)4.0 * corner +
+                                     (RmgType)2.0 * face);
 
 
                     }               /* end for */
@@ -410,7 +410,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
 
                         half[ix * incx2 + iy * incy2 + iz] =
-                            scale * (8.0 * full[x0 * incx + y0 * incy + z0] + 5.0 * edge + 2.0 * face);
+                            (RmgType)scale * ((RmgType)8.0 * full[x0 * incx + y0 * incy + z0] + (RmgType)5.0 * edge + (RmgType)2.0 * face);
 
 
                     }               /* end for */
@@ -479,14 +479,14 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz - 1] +
-                    0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz + 1] +
-                    0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz - 1] +
-                    0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz + 1] +
-                    0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz - 1] +
-                    0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz + 1] +
-                    0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz - 1] +
-                    0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz + 1];
+                    (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz - 1] +
+                    (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz + 1] +
+                    (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz - 1] +
+                    (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz + 1] +
+                    (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz - 1] +
+                    (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz + 1] +
+                    (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz - 1] +
+                    (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz + 1];
 
             }                   /* end for */
 
@@ -506,8 +506,8 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.5 * full[ix * incx + iy * incy + iz - 1] +
-                    0.5 * full[ix * incx + iy * incy + iz + 1];
+                    (RmgType)0.5 * full[ix * incx + iy * incy + iz - 1] +
+                    (RmgType)0.5 * full[ix * incx + iy * incy + iz + 1];
 
             }                   /* end for */
 
@@ -527,8 +527,8 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.5 * full[ix * incx + (iy - 1) * incy + iz] +
-                    0.5 * full[ix * incx + (iy + 1) * incy + iz];
+                    (RmgType)0.5 * full[ix * incx + (iy - 1) * incy + iz] +
+                    (RmgType)0.5 * full[ix * incx + (iy + 1) * incy + iz];
 
             }                   /* end for */
 
@@ -548,8 +548,8 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.5 * full[(ix - 1) * incx + iy * incy + iz] +
-                    0.5 * full[(ix + 1) * incx + iy * incy + iz];
+                    (RmgType)0.5 * full[(ix - 1) * incx + iy * incy + iz] +
+                    (RmgType)0.5 * full[(ix + 1) * incx + iy * incy + iz];
 
             }                   /* end for */
 
@@ -569,10 +569,10 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.25 * full[ix * incx + (iy - 1) * incy + iz - 1] +
-                    0.25 * full[ix * incx + (iy - 1) * incy + iz + 1] +
-                    0.25 * full[ix * incx + (iy + 1) * incy + iz - 1] +
-                    0.25 * full[ix * incx + (iy + 1) * incy + iz + 1];
+                    (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz - 1] +
+                    (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz + 1] +
+                    (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz - 1] +
+                    (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz + 1];
 
             }                   /* end for */
 
@@ -592,10 +592,10 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.25 * full[(ix - 1) * incx + iy * incy + iz - 1] +
-                    0.25 * full[(ix - 1) * incx + iy * incy + iz + 1] +
-                    0.25 * full[(ix + 1) * incx + iy * incy + iz - 1] +
-                    0.25 * full[(ix + 1) * incx + iy * incy + iz + 1];
+                    (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz - 1] +
+                    (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz + 1] +
+                    (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz - 1] +
+                    (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz + 1];
 
             }                   /* end for */
 
@@ -615,10 +615,10 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
             {
 
                 full[ix * incx + iy * incy + iz] =
-                    0.25 * full[(ix - 1) * incx + (iy - 1) * incy + iz] +
-                    0.25 * full[(ix + 1) * incx + (iy - 1) * incy + iz] +
-                    0.25 * full[(ix - 1) * incx + (iy + 1) * incy + iz] +
-                    0.25 * full[(ix + 1) * incx + (iy + 1) * incy + iz];
+                    (RmgType)0.25 * full[(ix - 1) * incx + (iy - 1) * incy + iz] +
+                    (RmgType)0.25 * full[(ix + 1) * incx + (iy - 1) * incy + iz] +
+                    (RmgType)0.25 * full[(ix - 1) * incx + (iy + 1) * incy + iz] +
+                    (RmgType)0.25 * full[(ix + 1) * incx + (iy + 1) * incy + iz];
 
             }                   /* end for */
 
@@ -672,7 +672,7 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
         for (idx = 0; idx < size; idx++)
         {
 
-            vmat[idx] += scale * (work[idx] - k*vmat[idx] - fmat[idx]);
+            vmat[idx] += (RmgType)scale * (work[idx] - (RmgType)k*vmat[idx] - fmat[idx]);
 
         }                           /* end for */
 
@@ -682,7 +682,7 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
         for (idx = 0; idx < size; idx++)
         {
 
-            vmat[idx] += scale * (work[idx] - fmat[idx]);
+            vmat[idx] += (RmgType)scale * (work[idx] - fmat[idx]);
 
         }                           /* end for */
 

@@ -52,6 +52,7 @@ using namespace std;
 template void TradeImages::trade_images<float>(float*, int, int, int, int);
 template void TradeImages::trade_images<double>(double*, int, int, int, int);
 template void TradeImages::trade_images<complex<double> >(complex<double>*, int, int, int, int);
+template void TradeImages::trade_images<complex<float> >(complex<float>*, int, int, int, int);
 template void TradeImages::trade_imagesx<float>(float*, float*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<double>(double*, double*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<complex<float> >(complex <float>*, complex <float>*, int, int, int, int, int);
