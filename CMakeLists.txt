@@ -26,7 +26,8 @@ if(DEFINED ENV{CRAY_LIBSCI})
 #set (RMG_GPU_ENABLED 1)
 endif()
 
-set(CMAKE_FIND_ROOT_PATH /opt/fftw/2.1.5.3
+set(CMAKE_FIND_ROOT_PATH 
+/opt/fftw/default/x86_64     #fftw3 path for bluewater
 /usr/local/apps/fftw/intel101_hydra/2.1.5
 /usr/local/apps/mvapich2/220b-intel140
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
