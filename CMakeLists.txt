@@ -327,7 +327,13 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
 
+if (CRAY_XK)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
+endif(CRAY_XK)
 
+
+#message(${CMAKE_C_FLAGS})
 # include files
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_SOURCE_DIR}/RmgLib/")
@@ -448,7 +454,7 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
-option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
+option (RMG_GPU_ENABLED "Use GPU acceleration." ON)
 if (RMG_GPU_ENABLED)
     if(CUDA_FOUND)
         set (GPU_ENABLED 1)
