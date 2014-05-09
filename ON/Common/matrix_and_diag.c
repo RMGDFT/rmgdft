@@ -40,8 +40,7 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 
     char side = 'l', uplo = 'l';
     double zero = 0.0, one = 1.0;
-    int numst = ct.num_states;
-    int maxst = numst;
+    int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
     int level;
     rmg_double_t tem, tem1, tem2;
     int idx, idx1;
@@ -49,11 +48,17 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 
 
 
+
 #if GAMMA_PT
 
     /* initialize matrices statearray and matB */
     time1 = my_crtc();
-    get_HS(states, states1, vtot_c, Hij, matB);
+    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+
+    Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
+            pct.desca, pct.desca[1]);
+    Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, matB, IB, JB,
+            pct.desca, pct.desca[1]);
 
     time2 = my_crtc();
     rmg_timings(HIJ_TIME, time2 - time1);
@@ -69,3 +74,6 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 
 
 }
+
+
+

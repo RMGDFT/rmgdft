@@ -20,7 +20,7 @@
 
 
 
-void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij)
+void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, double *Bij_00)
 {
     int idx, st1, st2, idx1, idx2;
     int maxst, n2;
@@ -94,12 +94,6 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double
     double vel = get_vel();
     sscal (&n2, &vel, Hij_00, &ione);
     sscal (&n2, &vel, Bij_00, &ione);
-
-    Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Aij, IB, JB,
-            pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, Bij, IB, JB,
-            pct.desca, pct.desca[1]);
-
 
     if (pct.gridpe == 0)
     {
