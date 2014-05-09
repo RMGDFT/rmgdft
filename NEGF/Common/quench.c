@@ -143,37 +143,23 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
     if (ct.runflag == 111 && cei.num_probe == 2)
     {
+        int size_of_matrix = pmo.mxllda_lead[1] * pmo.mxlocc_lead[1];
 
-        for(j=0; j < pmo.mxllda_lead[1]; j++)
-        {
-            for(k =0; k < pmo.mxlocc_lead[1]; k++)
-            {
+        int numst = lcr[1].num_states, ione=1, *desca;
+        double one = 1.0, zero = 0.0;
+        desca = &pmo.desc_lead[0];
 
-                jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb;
-                kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb;
+        dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[1].S00, &ione);
+        dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[2].S00, &ione);
 
-                st11 = jj + lcr[1].num_states;
-                st22 = kk + lcr[1].num_states;
-                lcr[1].S00[j + k * pmo.mxllda_lead[1]] =
-                    work_matrix[st11 * ct.num_states + st22];
-                lcr[2].S00[j + k * pmo.mxllda_lead[1]] =
-                    work_matrix[st11 * ct.num_states + st22];
 
-                st11 = jj + lcr[1].num_states + lcr[0].num_states;
-                lcr[1].S01[j + k * pmo.mxllda_lead[1]] =
-                    work_matrix[st11 * ct.num_states + st22];
-                lcr[1].SCL[j + k * pmo.mxllda_lead[1]] =
-                    work_matrix[st11 * ct.num_states + st22];
+        PDTRAN(&numst, &numst, &one, &lcr[0].Stri[size_of_matrix], &ione, &ione, desca,
+                                &zero, lcr[1].S01, &ione, &ione, desca);
+        dcopy (&size_of_matrix, lcr[1].S01, &ione, lcr[1].SCL, &ione);
 
-                st11 = jj + lcr[1].num_states;
-                st22 = kk + lcr[1].num_states + lcr[0].num_states;
-                lcr[2].S01[j + k * pmo.mxllda_lead[1]] =
-                    work_matrix[st11 * ct.num_states + st22];
-                lcr[2].SCL[j + k * pmo.mxllda_lead[1]] =
-                    work_matrix[st11 * ct.num_states + st22];
 
-            }
-        }
+        dcopy (&size_of_matrix, &lcr[0].Stri[3*size_of_matrix], &ione, lcr[2].S01, &ione);
+        dcopy (&size_of_matrix, lcr[2].S01, &ione, lcr[2].SCL, &ione);
 
     }
 
