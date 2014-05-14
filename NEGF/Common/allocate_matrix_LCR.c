@@ -157,6 +157,11 @@ void allocate_matrix_LCR ()
     int size = pct.num_local_orbit * pct.num_local_orbit;
     my_malloc_init( mat_local, size+1024, rmg_double_t );
 
+    size  = (ct.state_end - ct.state_begin) * ct.num_states;
+    if(size == 0 ) st = ct.num_states;
+    my_malloc(Hij_00, size, double);
+    my_malloc(Bij_00, size, double);
+
 
 
     fflush (NULL);

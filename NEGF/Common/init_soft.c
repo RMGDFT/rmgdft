@@ -131,6 +131,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     is_state_overlap (states, state_overlap_or_not);
     get_orbit_overlap_region (states);
     init_comm (states);
+    init_comm_res (states);
 
     duplicate_states_info (states, states1);
     my_barrier ();

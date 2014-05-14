@@ -7,12 +7,16 @@ app_mask.c
 assign_weight_on.c
 density_orbit_X_orbit.c
 distribute_to_global.c
+dot_product_orbit_orbit.c
 dot_product_orbit_nl.c
 duplicate_states_info.c
 fill_orbit_borders4.c
 genvlocpsi.c
 get_all_kbpsi.c
 get_all_partial_kbpsi.c
+get_matB_qnm.c
+get_HS.c
+get_Hvnlij.c
 get_ion_orbit_overlap_nl.c
 get_nlop.c
 get_orbit_overlap_region.c
@@ -21,6 +25,7 @@ get_vxc.c
 global_sums_int.c
 global_to_distribute.c
 init_comm.c
+init_comm_res.c
 init_dimension.c
 init_nl_xyz.c
 init_nonlocal_comm.c
@@ -34,6 +39,7 @@ make_mask_grid_state.c
 minimage1.c
 nlforce_par_rho.c
 open_wave_file.c
+orbit_dot_orbit.c
 partial_Mat_nm_R.c
 print_matrix.c
 pulay_rho_on.c

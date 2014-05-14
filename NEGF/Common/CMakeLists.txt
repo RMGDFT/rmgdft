@@ -7,7 +7,6 @@ charge_density_matrix_p.c
 diff_hx_interpolation.c
 distribute_to_X_soft.c
 distri_fermi.c
-dot_product_orbit_orbit.c
 find_fermi.c
 find_new_energy_point.c
 find_new_energy_point_sharp_peak.c
@@ -17,15 +16,11 @@ get_cond_frommatrix.c
 get_cond_frommatrix_kyz.c
 get_ddd_update.c
 get_dos.c
-get_Hij.c
 get_Hij_update.c
-get_Hvnlij.c
 get_inverse_block.c
 get_inverse_block_p.c
 get_ion_orbit_overlap_loc.c
 get_line.c
-get_matB_qnm.c
-get_matB_soft.c
 get_new_rho_local.c
 get_new_rho_soft.c
 get_state_to_proc.c
@@ -58,7 +53,6 @@ nlforce.c
 nlforce_par_D.c
 nlforce_par_Q.c
 nlforce_partial_H_part2.c
-orbit_dot_orbit.c
 ortho_norm_local.c
 partial_vloc.c
 partial_vlocpsi.c
@@ -108,7 +102,7 @@ tri_to_row.c
 tri_to_whole_complex.c
 tri_to_whole_complex_p.c
 whole_to_tri_complex.c
-whole_to_tri_p.c
+row_to_tri_p.c
 whole_to_tri_real.c
 whole_to_tri_update.c
 write_data.c

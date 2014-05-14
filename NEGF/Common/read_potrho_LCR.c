@@ -55,7 +55,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     int ix, iy, iz, idx, idx2, FPYZ0, FNXY;
-    double *vtot_global, *rho_global;
+    double *vtot_xyplane;
     FILE *file;
     int ii, jj, kk;
 
@@ -67,7 +67,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
     FPYZ0 = get_FPY0_GRID() * get_FPZ0_GRID();
     FNXY = get_FNX_GRID() * get_FNY_GRID();
-    my_malloc_init(vtot_global, FNXY, double);
+    my_malloc_init(vtot_xyplane, FNXY, double);
 
 
     ii = get_FPX_OFFSET();
@@ -85,13 +85,13 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
                 {
                     idx = ix * FPYZ0 + iy * get_FPZ0_GRID() + iz;
                     idx2 = (ix + ii) * get_FNY_GRID() + (iy + jj);
-                    vtot_global[idx2] = vtot[idx];
+                    vtot_xyplane[idx2] = vtot[idx];
                 }
             }
         }
     }
 
-    global_sums (vtot_global, &FNXY, pct.grid_comm);
+    global_sums (vtot_xyplane, &FNXY, pct.grid_comm);
 
 
     if (pct.gridpe == 0)
@@ -104,14 +104,14 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
             {
                 idx = iy + ix * get_FNY_GRID();
 
-                fprintf (file, " %d %d %f \n", ix, iy, vtot_global[idx]);
+                fprintf (file, " %d %d %f \n", ix, iy, vtot_xyplane[idx]);
             }
         }
 
         fclose (file);
     }
 
-    my_free (vtot_global);
+    my_free (vtot_xyplane);
 
 /* ================================================= */
 

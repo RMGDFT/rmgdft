@@ -58,7 +58,6 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
     int st1, st2, st11, st22;
     int idx, idx1, nL, iprobe, jprobe;
-    int ictxt, mb, nprow, npcol, myrow, mycol;
     int j, k, jj, kk, idx_delta, idx_C;
     int j1, k1, jdiff, kdiff;
     int idx2, FPYZ0_GRID;
@@ -119,54 +118,6 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     if(pct.gridpe==0) dprintf("\n sigma_all done");
     get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
     /* get lcr[0].S00 part */
-    get_matB_soft (states, states1, work_matrix);
-
-    /*******************************************/
-
-
-
-    whole_to_tri_p (lcr[0].Stri, work_matrix, ct.num_blocks, ct.block_dim);
-
-    /* ========= interaction between leads is zero ========== */
-    zero_lead_image(lcr[0].Stri);
-
-
-
-
-
-    ictxt = pmo.ictxt[pmo.myblacs];
-    mb = pmo.mblock;
-
-
-    Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-
-
-    if (ct.runflag == 111 && cei.num_probe == 2)
-    {
-        int size_of_matrix = pmo.mxllda_lead[1] * pmo.mxlocc_lead[1];
-
-        int numst = lcr[1].num_states, ione=1, *desca;
-        double one = 1.0, zero = 0.0;
-        desca = &pmo.desc_lead[0];
-
-        dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[1].S00, &ione);
-        dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[2].S00, &ione);
-
-
-        PDTRAN(&numst, &numst, &one, &lcr[0].Stri[size_of_matrix], &ione, &ione, desca,
-                                &zero, lcr[1].S01, &ione, &ione, desca);
-        dcopy (&size_of_matrix, lcr[1].S01, &ione, lcr[1].SCL, &ione);
-
-
-        dcopy (&size_of_matrix, &lcr[0].Stri[3*size_of_matrix], &ione, lcr[2].S01, &ione);
-        dcopy (&size_of_matrix, lcr[2].S01, &ione, lcr[2].SCL, &ione);
-
-    }
-
-
-    /* the corner elements of the matrix should be unchanged */
-    setback_corner_matrix_S();  
-
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
@@ -198,10 +149,11 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
 
     /* get lcr[0].H00 part */
-    get_Hij (states, states1, vtot_c, work_matrix);
+    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
 
 
-    whole_to_tri_p (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
+    row_to_tri_p (lcr[0].Htri, Hij_00, ct.num_blocks, ct.block_dim);
+    //whole_to_tri_p (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
 
 
     /* ========= interaction between L3-L4 is zero ========== */
@@ -210,6 +162,42 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
     /* corner elements keep unchanged */
     setback_corner_matrix_H();  
+
+    /*******************************************/
+
+
+    row_to_tri_p (lcr[0].Stri, Bij_00, ct.num_blocks, ct.block_dim);
+
+    /* ========= interaction between leads is zero ========== */
+    zero_lead_image(lcr[0].Stri);
+
+
+    if (ct.runflag == 111 && cei.num_probe == 2)
+    {
+        int size_of_matrix = pmo.mxllda_lead[1] * pmo.mxlocc_lead[1];
+
+        int numst = lcr[1].num_states, ione=1, *desca;
+        double one = 1.0, zero = 0.0;
+        desca = &pmo.desc_lead[0];
+
+        dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[1].S00, &ione);
+        dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[2].S00, &ione);
+
+
+        PDTRAN(&numst, &numst, &one, &lcr[0].Stri[size_of_matrix], &ione, &ione, desca,
+                                &zero, lcr[1].S01, &ione, &ione, desca);
+        dcopy (&size_of_matrix, lcr[1].S01, &ione, lcr[1].SCL, &ione);
+
+
+        dcopy (&size_of_matrix, &lcr[0].Stri[3*size_of_matrix], &ione, lcr[2].S01, &ione);
+        dcopy (&size_of_matrix, lcr[2].S01, &ione, lcr[2].SCL, &ione);
+
+    }
+
+
+    /* the corner elements of the matrix should be unchanged */
+    setback_corner_matrix_S();  
+
 
 
 

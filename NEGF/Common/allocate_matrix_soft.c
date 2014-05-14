@@ -64,9 +64,9 @@ void allocate_matrix_soft ()
     my_malloc_init( vtot, get_FP0_BASIS(), rmg_double_t );
     my_malloc_init( vtot_c, get_P0_BASIS(), rmg_double_t );
     my_malloc_init( rhocore, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
 /*  my_malloc_init( nlarray1, get_P0_BASIS()/MAX_FUNC_PE, rmg_double_t );*/
-/*  my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
- * rho_global = vtot_global;
+ /* rho_global = vtot_global;
  */
 
     my_malloc_init( rho_old, get_FP0_BASIS() * ispin, rmg_double_t );

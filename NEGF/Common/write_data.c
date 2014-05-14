@@ -188,7 +188,7 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 
 
     int ix, iy, iz, idx2, FPYZ0, FNXY;
-    double *vtot_global, *rho_global;
+    double *vtot_xyplane, *rho_xyplane;
     FILE *file, *file2;
     int ii, jj, kk;
 
@@ -218,8 +218,8 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 
 
     FNXY = get_FNX_GRID() * get_FNY_GRID();
-    my_malloc_init(vtot_global, FNXY, double);
-    my_malloc_init(rho_global, FNXY, double);
+    my_malloc_init(vtot_xyplane, FNXY, double);
+    my_malloc_init(rho_xyplane, FNXY, double);
 
 
     ii = get_FPX_OFFSET();
@@ -237,15 +237,15 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
                 {
                     idx = ix * FPYZ0 + iy * get_FPZ0_GRID() + iz;
                     idx2 = (ix + ii) * get_FNY_GRID() + (iy + jj);
-                    vtot_global[idx2] = vtot[idx];
-                    rho_global[idx2] = rho[idx];
+                    vtot_xyplane[idx2] = vtot[idx];
+                    rho_xyplane[idx2] = rho[idx];
                 }
             }
         }
     }
 
-    global_sums (vtot_global, &FNXY, pct.grid_comm);
-    global_sums (rho_global, &FNXY, pct.grid_comm);
+    global_sums (vtot_xyplane, &FNXY, pct.grid_comm);
+    global_sums (rho_xyplane, &FNXY, pct.grid_comm);
 
 
     if (pct.gridpe == 0)
@@ -259,8 +259,8 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
             {
                 idx = iy + ix * get_FNY_GRID();
 
-                fprintf (file, " %d %d %f \n", ix, iy, vtot_global[idx]);
-                fprintf (file2, " %d %d %f \n", ix, iy, rho_global[idx]);
+                fprintf (file, " %d %d %f \n", ix, iy, vtot_xyplane[idx]);
+                fprintf (file2, " %d %d %f \n", ix, iy, rho_xyplane[idx]);
             }
         }
 
@@ -268,8 +268,8 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
         fclose (file2);
     }
 
-    my_free (vtot_global);
-    my_free (rho_global);
+    my_free (vtot_xyplane);
+    my_free (rho_xyplane);
 
 /* ================================================= */
 

@@ -7,7 +7,6 @@ add_library (ON_Common
  change_states_crds.c
  CMakeLists.txt
  diag_eig_matrix.c
- dot_product_orbit_orbit.c
  fastrlx.c
  fill.c
  genvpsi.c
@@ -15,10 +14,7 @@ add_library (ON_Common
  get_dm_diag_p.c
  get_dnmpsi.c
  get_gamma_precond.c
- get_HS.c
- get_Hvnlij.c
  get_invmat.c
- get_matB_qnm.c
  get_mat_Omega.c
  get_mehr.c
  get_new_rho.c
@@ -29,7 +25,6 @@ add_library (ON_Common
  get_te.c
  get_wave.c
  init.c
- init_comm_res.c
  init_kbr.c
  init_pe_on.c
  init_rho_atom.c
@@ -48,7 +43,6 @@ add_library (ON_Common
  nlforce.c
  nlforce_par_omega.c
  normalize_orbits.c
- orbit_dot_orbit.c
  precond.c
  precond_mg.c
  print_status.c
