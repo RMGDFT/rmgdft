@@ -155,7 +155,6 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     for(i = 0; i < pmo.ntot;i++) lcr[0].Htri[i] = 0.0;
     for(i = 0; i < pmo.ntot;i++) lcr[0].Stri[i] = 0.0;
     row_to_tri_p (lcr[0].Htri, Hij_00, ct.num_blocks, ct.block_dim);
-    //whole_to_tri_p (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
 
 
     /* ========= interaction between L3-L4 is zero ========== */

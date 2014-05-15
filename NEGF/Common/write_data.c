@@ -148,17 +148,6 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 	write_global_data (fhand, rho, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
 
-	idx = ct.num_states * ct.num_states;
-	get_distributed_mat (work_matrix, matB);
-	global_sums (work_matrix, &idx, pct.grid_comm);
-	if (pct.gridpe == 0)
-		write (fhand, work_matrix, idx * sizeof (double));
-
-	get_distributed_mat (work_matrix, Hij);
-	global_sums (work_matrix, &idx, pct.grid_comm);
-	if (pct.gridpe == 0)
-		write (fhand, work_matrix, idx * sizeof (double));
-
 	/*        ntot = 0;
 	 *        for (i =0; i <ct.num_blocks; i++) ntot += ct.block_dim[i] * ct.block_dim[i];
 	 *        for (i =1; i <ct.num_blocks; i++) ntot += ct.block_dim[i-1] * ct.block_dim[i];

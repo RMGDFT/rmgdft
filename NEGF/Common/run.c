@@ -103,6 +103,14 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 		init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
 
+        size = 1;
+        for (i = 0; i < ct.num_blocks; i++) size = max(size, ct.block_dim[i] * ct.block_dim[i]);
+        size = max(size, ct.num_states * (ct.state_end - ct.state_begin));
+        size = max(size, pct.num_local_orbit * pct.num_local_orbit);
+
+        my_malloc_init( work_matrix, size, rmg_double_t );
+
+
 		if (pct.gridpe == 0)
 			printf ("init_soft is done\n");
 

@@ -92,7 +92,6 @@ void allocate_matrix_soft ()
  * my_malloc_init( uu_dis, sizeofmatrix, rmg_double_t );
 */
 
-    my_malloc_init( work_matrix, ct.num_states * ct.num_states, rmg_double_t );
 
     /*  allocate memory for other uses  */
 
