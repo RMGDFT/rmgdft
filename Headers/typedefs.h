@@ -90,8 +90,6 @@ typedef struct
     /* Total basis size in a smoothing grid on each processor (dimx+2)*(dimy+2)*(dimz+2) */
     int sbasis;
 
-    /*8 Index of the orbital */
-    int istate;
 
 
     /** Volume element associated with each real space grid point */
@@ -156,8 +154,11 @@ typedef struct
     int n_orbital_same_center;
     int gaussian_orbital_index;
 
+    /*8 Index of the orbital */
+    int istate;
     int whichblock;
     int istate_in_block;
+    int local_index;
 
 
     int ixmin_old;

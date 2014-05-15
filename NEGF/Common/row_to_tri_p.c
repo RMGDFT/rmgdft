@@ -38,15 +38,14 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
      */
 
     int i, j,  k;
-    int ndim;
+    int n2, ndim;
     int ictxt, mb, nprow, npcol, myrow, mycol;
-    int istart, jj, kk, jjj, kkk;
+    int istart, jj, kk;
 
 
     ictxt = pmo.ictxt[pmo.myblacs];
     mb = pmo.mblock;
 
-    double sym_fold = 0.5;
     /* dimension of matrix Aii */
     ndim = 0;
     for (i = 0; i < N; i++)
@@ -56,13 +55,33 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
 
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
-    for(i = 0; i < pmo.ntot; i++) A_tri[i] = 0.0;
 
     /* for diagonal blocks */
 
     istart = 0;
     for(i = 0; i < N; i++)
     {
+
+        n2 = ct.block_dim[i] * ct.block_dim[i];
+
+        for(j = 0; j < n2; j++ ) work_matrix[j] = 0.0;
+
+        for(j = 0; j < ct.block_dim[i]; j++)
+            for(k = 0; k < ct.block_dim[i]; k++)
+            {
+                jj = istart + j;
+                kk = istart + k;
+
+                if(kk >= ct.state_begin && kk < ct.state_end)
+                {
+                    work_matrix[k * ct.block_dim[i] + j] += 0.5 *Aii[ (kk-ct.state_begin) * ndim + jj];
+                    work_matrix[j * ct.block_dim[i] + k] += 0.5 *Aii[ (kk-ct.state_begin) * ndim + jj];
+                }
+            }
+
+
+        global_sums(work_matrix, &n2, pct.grid_comm);
+
 
         for(j =0; j < pmo.mxllda_cond[i]; j++)
         {
@@ -76,22 +95,11 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
                 jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
                 kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
 
-                jjj = jj + istart;
-                kkk = kk + istart;
 
-                if(kkk >= ct.state_begin && kkk < ct.state_end)
-                {
-
-                    A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j] 
-                        += Aii[(kkk-ct.state_begin) * ndim + jjj]*sym_fold;
-                }
-                if(jjj >= ct.state_begin && jjj < ct.state_end)
-                {
-                    A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j] 
-                        += Aii[(jjj-ct.state_begin) * ndim + kkk]*sym_fold;
-                }
-
+                A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j] 
+                    += work_matrix[k * ct.block_dim[i] + j];
             }
+
         }
 
         istart += ct.block_dim[i];
@@ -104,6 +112,27 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
     istart = 0;
     for(i = 1; i < N; i++)
     {
+        n2 = ct.block_dim[i-1] * ct.block_dim[i];
+
+        for(j = 0; j < n2; j++ ) work_matrix[j] = 0.0;
+
+        for(j = 0; j < ct.block_dim[i-1]; j++)
+            for(k = 0; k < ct.block_dim[i]; k++)
+            {
+                jj = istart + j;
+                kk = istart + k + ct.block_dim[i-1];
+
+                if(kk >= ct.state_begin && kk < ct.state_end)
+                {
+                    work_matrix[k * ct.block_dim[i-1] + j] += 0.5 *Aii[ (kk-ct.state_begin) * ndim + jj];
+                }
+                if(jj >= ct.state_begin && jj < ct.state_end)
+                {
+                    work_matrix[k * ct.block_dim[i-1] + j] += 0.5 *Aii[ (jj-ct.state_begin) * ndim + kk];
+                }
+            }
+
+        global_sums(work_matrix, &n2, pct.grid_comm);
 
         for(j =0; j < pmo.mxllda_cond[i-1]; j++)
         {
@@ -117,19 +146,8 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
                 jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
                 kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
 
-                jjj = jj + istart;
-                kkk = kk + istart + ct.block_dim[i-1];
-
-                if(kkk >= ct.state_begin && kkk < ct.state_end)
-                {
-                    A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j] 
-                        += Aii[(kkk-ct.state_begin) * ndim + jjj] * sym_fold;
-                }
-                if(jjj >= ct.state_begin && jjj < ct.state_end)
-                {
-                   A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j] 
-                      += Aii[(jjj-ct.state_begin) * ndim + kkk]*sym_fold;
-                }
+                A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j] 
+                    += work_matrix[kk * ct.block_dim[i-1]  + jj] ;
 
             }
         }
@@ -137,8 +155,6 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
         istart += ct.block_dim[i-1];
     }
 
-
-    global_sums(A_tri, &pmo.ntot, pct.grid_comm);
 
 }
 

@@ -17,6 +17,7 @@ get_cond_frommatrix_kyz.c
 get_ddd_update.c
 get_dos.c
 get_Hij_update.c
+get_Hvnlij_old.c
 get_inverse_block.c
 get_inverse_block_p.c
 get_ion_orbit_overlap_loc.c
@@ -40,6 +41,7 @@ is_vloc_state_overlap.c
 kpoints.c
 lead_bandstructure.c
 lead_mat_distribute.c
+local_to_tri.c
 map_orbital_to_process.c
 matrix_inverse_anyprobe_p.c
 matrix_inverse_blocknm.c

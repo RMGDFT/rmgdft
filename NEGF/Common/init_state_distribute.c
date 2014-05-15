@@ -70,6 +70,9 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     y_off = get_PY_OFFSET();
     z_off = get_PZ_OFFSET();
 
+//  local_index = -1 means that this orbital is not on this process
+    for (st = 0; st < ct.num_states; st++) states_distribute[st].local_index = -1;
+
     pct.num_local_orbit = 0;
     istart = 0;
     for(block_i = 0; block_i < ct.num_blocks; block_i++)
@@ -125,6 +128,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
 
 
             states_distribute[pct.num_local_orbit].istate = st;
+            states_distribute[st].local_index = pct.num_local_orbit;
             states_distribute[pct.num_local_orbit].whichblock = block_i;
             states_distribute[pct.num_local_orbit].istate_in_block = st_in_block;
             pct.num_local_orbit++;

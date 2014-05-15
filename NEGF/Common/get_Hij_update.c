@@ -8,6 +8,7 @@
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
+#include "pmo.h"
 
 
 
@@ -30,14 +31,20 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     int ix, iy,iz;
     time1 = my_crtc ();
 
-    n2 = ct.num_states * ct.num_states;
     maxst = ct.num_states;
     int pbasis = get_P0_BASIS();
 
 
     my_malloc(psi, pct.num_local_orbit * get_P0_BASIS()+1024, double);
-    for (st1 = 0; st1 < ct.num_states * ct.num_states; st1++)
-        Aij[st1] = 0.;
+    for (st1 = 0; st1 < ct.num_states * (ct.state_end-ct.state_begin); st1++)
+        Hij_00[st1] = 0.;
+
+    get_Hvnlij (Hij_00);
+    double vel = get_vel();
+
+    n2 = ct.num_states * (ct.state_end-ct.state_begin);
+    dscal (&n2, &vel, Hij_00, &ione);
+    row_to_tri_p (lcr[0].Htri, Hij_00, ct.num_blocks, ct.block_dim);
 
     /* Loop over states */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
@@ -70,56 +77,17 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     }
 
 
-    for (st1 = 0; st1 < pct.num_local_orbit; st1++)
-    {
-        st11 = states_distribute[st1].istate;
-        for (st2 = 0; st2 < pct.num_local_orbit; st2++)
-        {
-            st22 = states_distribute[st2].istate;
-
-            idx = st11 * ct.num_states + st22;
-            Aij[idx] = mat_local[st1 * pct.num_local_orbit + st2];
-
-        }
-    }                           /* end for st1 = .. */
-
-
     my_barrier();
-    time4 = my_crtc ();
-    rmg_timings (H_psi_TIME, (time4 - time3));
+
+    n2 = pct.num_local_orbit * pct.num_local_orbit;
+    dscal (&n2, &vel, mat_local, &ione);
+
+    local_to_tri(states_distribute, lcr[0].Htri, mat_local);
 
 
-    time3 = my_crtc ();
-
-    get_Hvnlij (Aij);
-
-    time4 = my_crtc ();
-    rmg_timings (get_Hnl_TIME, (time4 - time3));
 
 
-    /* symmetrize the Aij */
-    for (st1 = 0; st1 < ct.num_states - 1; st1++)
-        for (st2 = st1 + 1; st2 < ct.num_states; st2++)
-        {
-            idx1 = st1 + st2 * ct.num_states;
-            idx2 = st2 + st1 * ct.num_states;
-            Aij[idx1] = 0.5 * (Aij[idx1] + Aij[idx2]);
-            Aij[idx2] = Aij[idx1];
-        }
 
-    global_sums (Aij, &n2, pct.grid_comm);     /* sum up Aij contributions */
-
-    double vel = get_vel();
-    dscal (&n2, &vel, Aij, &ione);
-
-    if (pct.gridpe == 0)
-    {
-        printf (" matrix Hij\n");
-        print_matrix (work_matrix, 5, maxst);
-        print_sum (n2, work_matrix, "work_matrix before leaving get_Hij ddd ");
-    }
-
-    time2 = my_crtc ();
 
     rmg_timings (GET_Hij_TIME, (time2 - time1));
 

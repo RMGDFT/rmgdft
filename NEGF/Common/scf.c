@@ -70,8 +70,6 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     get_Hij_update (states, states_distribute, vtot_c, work_matrix);
 
 
-    whole_to_tri_update (lcr[0].Htri, work_matrix, ct.num_blocks, ct.block_dim);
-
 
 /* ========= interaction between L3-L4 is zero ========== */
 
