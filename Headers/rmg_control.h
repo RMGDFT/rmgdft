@@ -625,18 +625,7 @@ typedef struct
     int num_storage_st;
 
 
-    /* Index telling if an orbital has been allocated */
-    char allocate_st[MAX_STATES];
-
-    /* Number of orbital in each global function */
-    int nb_func[MAX_STATES];
-
-    /* Initial storage of each orbital
-       (to restart with same function) */
-    int alloc_ini[MAX_STATES];
-
     /* "Center" of global function */
-    rmg_double_t center[MAX_STATES][3];
 
     rmg_double_t Bc;
     rmg_double_t Bx;
