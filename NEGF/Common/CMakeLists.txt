@@ -17,7 +17,6 @@ get_cond_frommatrix_kyz.c
 get_ddd_update.c
 get_dos.c
 get_Hij_update.c
-get_Hvnlij_old.c
 get_inverse_block.c
 get_inverse_block_p.c
 get_ion_orbit_overlap_loc.c
