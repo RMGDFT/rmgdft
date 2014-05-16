@@ -1,12 +1,6 @@
 /*
  *
- * Copyright (c) 1995, Emil Briggs
- * Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                     Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- * Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                     Marco Buongiorno Nardelli,Charles Brabec, 
- *                     Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                     Jerzy Bernholc
+ * Copyright (c) 2014, Emil Briggs
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,16 +27,32 @@
  * 
 */
 
-#ifndef RMG_vhartree_h
-#define RMG_vhartree_h
+#ifndef RMG_State_H
+#define RMG_State_H 1
 
-#include "BaseGrid.h"
-#include "TradeImages.h"
-#include "Lattice.h"
+template <typename StateType> class State {
 
-double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
-                 int min_sweeps, int max_sweeps, int maxlevel,
-                 int global_presweeps, int global_postsweeps, int mucycles,
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status);
+public:
+    State(StateType *storage);
+   ~State(void);
+
+    // Storage area for the orbital
+    StateType *psi;
+ 
+    // Last two eigenvalues
+    double eig[2];
+
+    // Index of the orbital 
+    int istate;
+
+    // Occupation of the orbital
+    double occupation[2];
+
+    // Index showing which k-point this orbital is associated with
+    int kidx;
+
+    void set_storage(StateType *storage);
+
+};
 
 #endif

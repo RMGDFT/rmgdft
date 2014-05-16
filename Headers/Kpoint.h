@@ -1,12 +1,6 @@
 /*
  *
- * Copyright (c) 1995, Emil Briggs
- * Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                     Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- * Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                     Marco Buongiorno Nardelli,Charles Brabec, 
- *                     Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                     Jerzy Bernholc
+ * Copyright (c) 2014, Emil Briggs
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,16 +27,51 @@
  * 
 */
 
-#ifndef RMG_vhartree_h
-#define RMG_vhartree_h
+#ifndef RMG_Kpoint_H
+#define RMG_Kpoint_H 1
 
-#include "BaseGrid.h"
-#include "TradeImages.h"
-#include "Lattice.h"
+#include <State.h>
 
-double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
-                 int min_sweeps, int max_sweeps, int maxlevel,
-                 int global_presweeps, int global_postsweeps, int mucycles,
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status);
+template <typename KpointType> class Kpoint {
+
+public:
+
+    Kpoint(double *kpt, double *kweight, State<KpointType> *kstate );
+
+    /** The index of the k-point for backreferencing */
+    int kidx;
+
+    /** The k-point */
+    double kpt[3];
+
+    /** The corresponding vector */
+    double kvec[3];
+
+    /** The weight associated with the k-point */
+    double kweight;
+
+    /** The magnitude of the k-vector */
+    double kmag;
+
+    /* The orbital structure for this k-point */
+    State<KpointType> *kstate;
+
+
+    /* Mean min, and max wavefunction residuals for occupied space */
+    double meanres;
+    double minres;
+    double maxres;
+
+    /* Total energies */
+    double ES;
+    double NUC;
+    double KE;
+    double XC;
+    double NL;
+    double II;
+    double TOTAL;
+
+
+};
 
 #endif
