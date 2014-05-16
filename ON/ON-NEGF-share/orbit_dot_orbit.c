@@ -49,15 +49,17 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
 
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+        st11 = st1 - ct.state_begin;
         for (st2 = ct.state_begin; st2 < ct.state_end; st2++)
-            if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+            if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
             {
-                st11 = st1 - ct.state_begin;
                 dot_product_orbit_orbit(&states1[st1], &states[st2], &states[st1],  &H, &S);
                 Aij[st11 * ct.num_states + st2] = H;
                 Bij[st11 * ct.num_states + st2] = S;
 
             }
+    }
 
     int max_ii = 0;
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
@@ -81,7 +83,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
 
-	my_barrier();
+        my_barrier();
         proc1 = send_to1[loop * state_per_proc];
         proc2 = recv_from1[loop * state_per_proc];
         num_send = send_to1[loop * state_per_proc + 1];
@@ -117,7 +119,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
 
 
         ii = loop * max_ii +2;
-        
+
         for(i = 1; i< num_recv+1; i++)
         {
             ii++;
@@ -136,13 +138,15 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
             if(ii%2 == 0) states[st2].psiR = psi3;
 
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-                if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+            {
+                st11 = st1 - ct.state_begin;
+                if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                 {
-                    st11 = st1 - ct.state_begin;
                     dot_product_orbit_orbit(&states1[st1], &states[st2], &states[st1], &H, &S);
                     Aij[st11 * ct.num_states + st2] = H;
                     Bij[st11 * ct.num_states + st2] = S;
                 }
+            }
 
         }
 

@@ -68,7 +68,7 @@ void get_new_rho(STATE * states, double *rho)
            psi1 = states[st1].psiR;
            psi2 = states[st2].psiR;
 
-           if (state_overlap_or_not[st1 + st2 * ct.num_states] == 1)
+           if (state_overlap_or_not[st11 * ct.num_states + st2 ] == 1)
                density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
                        rho_global, 0, states, orbit_overlap_region);
 
@@ -144,14 +144,18 @@ void get_new_rho(STATE * states, double *rho)
 
 
            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-               if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+           {
+
+               st11 = st1 - ct.state_begin;
+
+               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                {
-                   st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                    density_orbit_X_orbit(st1, st2, scale, psi1, psi_p,
                            rho_global, 0, states, orbit_overlap_region);
                }
+           }
        }
 
        ii++;
@@ -189,14 +193,16 @@ void get_new_rho(STATE * states, double *rho)
            if(ii%2 == 0) psi_p = psi3;
 
            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-               if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+           {
+               st11 = st1 - ct.state_begin;
+               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                {
-                   st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                    density_orbit_X_orbit(st1, st2, scale, psi1, psi_p,
                            rho_global, 0, states, orbit_overlap_region);
                }
+           }
 
 
        }
@@ -224,14 +230,16 @@ void get_new_rho(STATE * states, double *rho)
 
 
                for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-                   if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+               {
+                   st11 = st1 - ct.state_begin;
+                   if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                    {
-                       st11 = st1 - ct.state_begin;
                        psi1 = states[st1].psiR;
                        scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                        density_orbit_X_orbit(st1, st2, scale, psi1,
                                psi_p, rho_global, 0, states, orbit_overlap_region);
                    }
+               }
            }
 
            ii++;
@@ -241,14 +249,16 @@ void get_new_rho(STATE * states, double *rho)
            if(ii%2 == 0) psi_p = psi3;
 
            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-               if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+           {
+               st11 = st1 - ct.state_begin;
+               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                {
-                   st11 = st1 - ct.state_begin;
                    psi1 = states[st1].psiR;
                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
                    density_orbit_X_orbit(st1, st2, scale, psi1, 
-                               psi_p, rho_global, 0, states, orbit_overlap_region);
+                           psi_p, rho_global, 0, states, orbit_overlap_region);
                }
+           }
 
 
        }
@@ -291,7 +301,7 @@ void get_new_rho(STATE * states, double *rho)
    rmg_timings(RHO_CTOF_TIME, time3 - time2);
 
    rho_augmented(rho, work_matrix_row, state_begin, state_end, num_nonlocal_ion, 
-            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+           kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
 
 
    time2 = my_crtc();

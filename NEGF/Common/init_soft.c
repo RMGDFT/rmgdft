@@ -47,6 +47,7 @@
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 
 
+void is_state_overlap (STATE *, char *);
 
 void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * rhoc,
                 STATE * states, STATE * states1, rmg_double_t * vnuc, rmg_double_t * vext, rmg_double_t * vxc, rmg_double_t * vh_old,
@@ -114,7 +115,6 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     /* Initialize the mehrstellen weights */
     /*get_mehr (); */
 
-    get_state_to_proc (states);
 
     init_state_size (states);
 

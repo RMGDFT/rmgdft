@@ -274,13 +274,15 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             states1[st1].psiR[idx] = 0.0;
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+        st11 = st1-ct.state_begin;
         for (st2 = ct.state_begin; st2 < ct.state_end; st2++)
-            if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+            if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
             {
-                st11 = st1-ct.state_begin;
                 temp = work_theta[st11 * ct.num_states + st2];
                 theta_phi_new(st1, st2, temp, states[st2].psiR, states1[st1].psiR, 0, states);
             }
+    }
 
     /*  send overlaped orbitals to other PEs */
     my_barrier();
@@ -304,7 +306,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
-	my_barrier();
+        my_barrier();
 
         proc1 = send_to1[loop * state_per_proc];
         proc2 = recv_from1[loop * state_per_proc];
@@ -348,12 +350,14 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             if(ii%2 ==0) psi_pointer = psi3;
             if(ii%2 ==1) psi_pointer = psi2;
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-                if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
+            {
+                st11 = st1-ct.state_begin;
+                if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                 {
-                    st11 = st1-ct.state_begin;
                     theta_ion = work_theta[st11 * ct.num_states + st2];
                     theta_phi_new(st1, st2, theta_ion, psi_pointer, states1[st1].psiR, 0, states);
                 }
+            }
         }
 
     }

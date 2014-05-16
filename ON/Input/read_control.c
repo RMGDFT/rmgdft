@@ -124,6 +124,10 @@ void read_control (char *file)
 
     /* Number of states */
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
+    get_data ("number_of_atoms", &ct.num_ions, INT, "0");
+
+    get_state_to_proc(states);
+    allocate_states();
     if (ct.num_states > MAX_STATES)
     {
         printf("\n increase MAX_STATES in params.h %d ", ct.num_states);

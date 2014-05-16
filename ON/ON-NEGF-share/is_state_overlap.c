@@ -17,7 +17,7 @@
 #include "prototypes_on.h"
 
 
-void is_state_overlap(STATE * states, short int *state_overlap_or_not)
+void is_state_overlap(STATE * states, char *state_overlap_or_not)
 {
 
     int state1, state2;
@@ -29,7 +29,7 @@ void is_state_overlap(STATE * states, short int *state_overlap_or_not)
 
     int xoverlap, yoverlap, zoverlap;
 
-    for (state1 = 0; state1 < ct.num_states; state1++)
+    for (state1 = ct.state_begin; state1 < ct.state_end; state1++)
     {
         ixcenter1 = (states[state1].ixmin + states[state1].ixmax)/2;
         iycenter1 = (states[state1].iymin + states[state1].iymax)/2;
@@ -38,7 +38,7 @@ void is_state_overlap(STATE * states, short int *state_overlap_or_not)
         iyhalf1 = (states[state1].iymax - states[state1].iymin)/2;
         izhalf1 = (states[state1].izmax - states[state1].izmin)/2;
 
-        for (state2 = state1; state2 < ct.num_states; state2++)
+        for (state2 = 0; state2 < ct.num_states; state2++)
         {
             ixcenter2 = (states[state2].ixmin + states[state2].ixmax)/2;
             iycenter2 = (states[state2].iymin + states[state2].iymax)/2;
@@ -59,12 +59,10 @@ void is_state_overlap(STATE * states, short int *state_overlap_or_not)
             if ((xoverlap <= ixhalf1 + ixhalf2 ) && 
                     (yoverlap <= iyhalf1 + iyhalf2 ) && 
                     (zoverlap <= izhalf1 + izhalf2 ))
-                state_overlap_or_not[state1 * ct.num_states + state2] = 1;
+                state_overlap_or_not[(state1-ct.state_begin) * ct.num_states + state2] = 1;
             else
-                state_overlap_or_not[state1 * ct.num_states + state2] = 0;	
+                state_overlap_or_not[(state1-ct.state_begin) * ct.num_states + state2] = 0;	
 
-            state_overlap_or_not[state1 + state2 * ct.num_states]
-                = state_overlap_or_not[state1 * ct.num_states + state2];
 
         }
     }

@@ -604,5 +604,5 @@ void duplicate_states_info (STATE * states, STATE * states1);
 void get_ion_ion_overlap_region_orbit ();
 
 
-void is_state_overlap (STATE * states, short int *);
+void is_state_overlap (STATE * states, char *);
 

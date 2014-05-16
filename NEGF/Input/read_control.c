@@ -141,6 +141,16 @@ void read_control (char *file)
 
     /* Number of states */
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
+    get_data ("number_of_atoms", &ct.num_ions, INT, "0");
+
+    /* read the atomic positions and species */
+
+    read_atoms ();
+    read_orbitals ();
+
+    get_state_to_proc(states);
+
+    allocate_states();
     if (ct.num_states > MAX_STATES)
     {
         printf("\n increase MAX_STATES in params.h %d ", ct.num_states);
@@ -182,10 +192,6 @@ void read_control (char *file)
 
 
 
-    /* read the atomic positions and species */
-    read_atoms ();
-
-    read_orbitals ();
 
 
 /**************************************************
@@ -359,16 +365,12 @@ static void read_orbitals ()
 
     }                         
 
-    ct.num_states = ni;
 
     /* optional number of atoms consistency check */
-    if (get_data ("number_of_orbitals", &ni, INT, "0"))
+    if (ni != ct.num_states)
     {
-        if (ni != ct.num_states)
-        {
-            printf ("number_of_orbitals = %d != %d = orbital info count\n", ni, ct.num_states);
-            error_handler ("Mismatch between number_of_orbitals and orbitals count");
-        }
+        printf ("number_of_orbitals = %d != %d = orbital info count\n", ni, ct.num_states);
+        error_handler ("Mismatch between number_of_orbitals and orbitals count");
     }
 
 

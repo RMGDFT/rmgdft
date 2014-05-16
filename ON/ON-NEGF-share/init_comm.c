@@ -48,6 +48,7 @@ void init_comm(STATE * states)
     int recv_order;
     int num_overlap;
     int recv_proc;
+    int st11;
 	double tem, tem1;
 
     state_per_proc = ct.state_per_proc + 2;
@@ -78,21 +79,24 @@ void init_comm(STATE * states)
     proc1 = pct.gridpe;
     for (proc2 = 0; proc2 < NPES; proc2++)
     {
-	num_overlap = 0;
-	for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-		    for (st2 = 0; st2 < ct.num_states; st2++)
-			    if ( (states[st2].pe == proc2)
-					    && (proc2 != proc1)
-					    && (state_overlap_or_not[st1 * ct.num_states + st2] == 1))
-			    {
-				    num_overlap++;
-				    break;
-			    }
-	    matrix_pairs[proc1 * NPES + proc2] = num_overlap;
+        num_overlap = 0;
+        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+        {
+            st11 = st1 - ct.state_begin;
+            for (st2 = 0; st2 < ct.num_states; st2++)
+                if ( (states[st2].pe == proc2)
+                        && (proc2 != proc1)
+                        && (state_overlap_or_not[st11 * ct.num_states + st2] == 1))
+                {
+                    num_overlap++;
+                    break;
+                }
+        }
+        matrix_pairs[proc1 * NPES + proc2] = num_overlap;
     }
 
- idx = NPES * NPES;
- global_sums_int(matrix_pairs, &idx);
+    idx = NPES * NPES;
+    global_sums_int(matrix_pairs, &idx);
 
 
     /*
@@ -110,102 +114,107 @@ void init_comm(STATE * states)
 
     for (loop = 0; loop < NPES; loop++)
     {
-	    for (proc1 = 0; proc1 < NPES; proc1++)
-		    proc_recv[proc1] = 0;
-	    communication_pair = 0;
-	    for (proc1 = 0; proc1 < NPES; proc1++)
-	    {
-		    max_send_states = 0;
-		    for (proc3 = proc1 + 1; proc3 < proc1 + NPES; proc3++)
-		    {
-			    proc2 = proc3;
-			    if (proc2 > NPES - 1)
-				    proc2 = proc2 - NPES;
-			    if (matrix_pairs[proc1 * NPES + proc2] > max_send_states && proc_recv[proc2] == 0)
-			    {
-				    max_send_states = matrix_pairs[proc1 * NPES + proc2];
-				    recv_proc = proc2;
-			    }
-		    }
+        for (proc1 = 0; proc1 < NPES; proc1++)
+            proc_recv[proc1] = 0;
+        communication_pair = 0;
+        for (proc1 = 0; proc1 < NPES; proc1++)
+        {
+            max_send_states = 0;
+            for (proc3 = proc1 + 1; proc3 < proc1 + NPES; proc3++)
+            {
+                proc2 = proc3;
+                if (proc2 > NPES - 1)
+                    proc2 = proc2 - NPES;
+                if (matrix_pairs[proc1 * NPES + proc2] > max_send_states && proc_recv[proc2] == 0)
+                {
+                    max_send_states = matrix_pairs[proc1 * NPES + proc2];
+                    recv_proc = proc2;
+                }
+            }
 
-		    if (max_send_states > 0)
-		    {
-			    proc_recv[recv_proc] = 1;
-			    if (pct.gridpe == proc1)
-			    {
-				    send_to[loop * state_per_proc] = recv_proc;
-				    send_to[loop * state_per_proc + 1] = max_send_states;
-			    }
-			    if (pct.gridpe == recv_proc)
-			    {
-				    recv_from[loop * state_per_proc] = proc1;
-				    recv_from[loop * state_per_proc + 1] = max_send_states;
-			    }
-			    matrix_pairs[proc1 * NPES + recv_proc] = 0;
-			    matrix_pairs[recv_proc * NPES + proc1] = 0;
-			    communication_pair++;
-		    }
-	    }
-	    if (communication_pair == 0)
-	    {
-		    num_sendrecv_loop = loop;
-		    loop += NPES;       /* break */
-	    }
+            if (max_send_states > 0)
+            {
+                proc_recv[recv_proc] = 1;
+                if (pct.gridpe == proc1)
+                {
+                    send_to[loop * state_per_proc] = recv_proc;
+                    send_to[loop * state_per_proc + 1] = max_send_states;
+                }
+                if (pct.gridpe == recv_proc)
+                {
+                    recv_from[loop * state_per_proc] = proc1;
+                    recv_from[loop * state_per_proc + 1] = max_send_states;
+                }
+                matrix_pairs[proc1 * NPES + recv_proc] = 0;
+                matrix_pairs[recv_proc * NPES + proc1] = 0;
+                communication_pair++;
+            }
+        }
+        if (communication_pair == 0)
+        {
+            num_sendrecv_loop = loop;
+            loop += NPES;       /* break */
+        }
     }
 
 
     for (loop = 0; loop < num_sendrecv_loop; loop++)
     {
-	    proc1 = pct.gridpe;
-	    proc2 = send_to[loop * state_per_proc];
-	    send_order = 0;
-	    if (proc2 != MPI_PROC_NULL)
-		    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-		    {
-			    for (st2 = 0; st2 < ct.num_states; st2++)
-			    {
-				    if (states[st2].pe == proc2
-						    && state_overlap_or_not[st1 * ct.num_states + st2] == 1)
-				    {
-					    send_to[loop * state_per_proc + send_order + 2] = st1;
-					    send_order++;
-					    break;
-				    }
-			    }
-		    }
-	    assert(send_order == send_to[loop * state_per_proc + 1]);
+        proc1 = pct.gridpe;
+        proc2 = send_to[loop * state_per_proc];
+        send_order = 0;
+        if (proc2 != MPI_PROC_NULL)
+            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+            {
+                st11 = st1 - ct.state_begin;
+                for (st2 = 0; st2 < ct.num_states; st2++)
+                {
+                    if (states[st2].pe == proc2
+                            && state_overlap_or_not[st11 * ct.num_states + st2] == 1)
+                    {
+                        send_to[loop * state_per_proc + send_order + 2] = st1;
+                        send_order++;
+                        break;
+                    }
+                }
+            }
+        assert(send_order == send_to[loop * state_per_proc + 1]);
 
-	    proc1 = pct.gridpe;
-	    proc2 = recv_from[loop * state_per_proc];
-	    recv_order = 0;
-	    if (proc2 != MPI_PROC_NULL)
-		    for (st2 = 0; st2 < ct.num_states; st2++)
-		    {
-			    if (states[st2].pe == proc2)
-				    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-					    if (state_overlap_or_not[st1 * ct.num_states + st2] == 1)
-					    {
-						    recv_from[loop * state_per_proc + recv_order + 2] = st2;
-						    recv_order++;
-						    break;
-					    }
-		    }
-	    assert(recv_order == recv_from[loop * state_per_proc + 1]);
+        proc1 = pct.gridpe;
+        proc2 = recv_from[loop * state_per_proc];
+        recv_order = 0;
+        if (proc2 != MPI_PROC_NULL)
+            for (st2 = 0; st2 < ct.num_states; st2++)
+            {
+
+                if (states[st2].pe == proc2)
+                    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+                    {
+                        st11 = st1 - ct.state_begin;
+                        if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
+                        {
+                            recv_from[loop * state_per_proc + recv_order + 2] = st2;
+                            recv_order++;
+                            break;
+                        }
+                    }
+            }
+        assert(recv_order == recv_from[loop * state_per_proc + 1]);
     }
 
 #if 	DEBUG
     for (loop = 0; loop < num_sendrecv_loop; loop++)
     {
 
-	    printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
-			    pct.gridpe, send_to[loop * state_per_proc + 1], send_to[loop * state_per_proc]);
-	    for (st2 = 0; st2 < send_to[loop * state_per_proc + 1]; st2++)
-		    printf("  %d ", send_to[loop * state_per_proc + 2 + st2]);
+        printf("\nLoop: %d  PE:%d send %d states to PE:%d ---- ", loop,
+                pct.gridpe, send_to[loop * state_per_proc + 1], send_to[loop * state_per_proc]);
+        for (st2 = 0; st2 < send_to[loop * state_per_proc + 1]; st2++)
+            printf("  %d ", send_to[loop * state_per_proc + 2 + st2]);
 
-	    printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
-			    pct.gridpe, recv_from[loop * state_per_proc + 1], recv_from[loop * state_per_proc]);
-	    for (st2 = 0; st2 < recv_from[loop * state_per_proc + 1]; st2++)
-		    printf("  %d ", recv_from[loop * state_per_proc + 2 + st2]);
+        printf("\nLoop: %d  PE:%d receive %d states from PE:%d ---- ", loop,
+                pct.gridpe, recv_from[loop * state_per_proc + 1], recv_from[loop * state_per_proc]);
+        for (st2 = 0; st2 < recv_from[loop * state_per_proc + 1]; st2++)
+            printf("  %d ", recv_from[loop * state_per_proc + 2 + st2]);
 
     }
 #endif

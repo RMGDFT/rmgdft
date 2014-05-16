@@ -104,8 +104,6 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     /* Initialize the mehrstellen weights */
     get_mehr();
 
-    get_state_to_proc(states);
-
     if(gridpe == 0) printf("\n init get_state_to_proc done %f sec",my_crtc()-time1 );
 
     /* allocate memory for wave functions states.psiR and psiI */

@@ -24,7 +24,7 @@ the operation orbitals_NEGF(x,y,z) = orbitals_ON(y,x,z) is needed.
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
-#include "init_var_negf.h"
+#include "init_var.h"
 #include "LCR.h"
 
 

@@ -35,7 +35,7 @@ int state_to_ion[MAX_STATES];
 int state_to_proc[MAX_STATES];
 char num_loc_st[MAX_IONS];
 short int overlap_or_not[MAX_IONS * MAX_IONS];
-short int state_overlap_or_not[MAX_STATES * MAX_STATES];
+char *state_overlap_or_not;
 
 
 /* Array telling for each pair of ions if the localization regions

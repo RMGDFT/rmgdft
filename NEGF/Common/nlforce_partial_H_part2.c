@@ -38,7 +38,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
         st11 = st1 - ct.state_begin;
         for( st2 = st1; st2 < ct.state_end; st2++)
         {
-            if (state_overlap_or_not[st1 * ct.num_states + st2] == 0) break;
+            if (state_overlap_or_not[st11 * ct.num_states + st2] == 0) break;
 
             if (((st1 < idx1) && (st2 < idx1)) || 
                     ((st2 >= idx2) && (st1 < idx1)) 
@@ -118,7 +118,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
                 st11 = st1 - ct.state_begin;
-                if (state_overlap_or_not[st1 * ct.num_states + st2] == 0) break;
+                if (state_overlap_or_not[st11 * ct.num_states + st2] == 0) break;
 
                 if (((st1 < idx1) && (st2 < idx1)) || 
                         ((st2 >= idx2) && (st1 < idx1)) || 
@@ -182,7 +182,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
                 for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
                 {
                     st11 = st1 - ct.state_begin;
-                    if (state_overlap_or_not[st1 * ct.num_states + st2] == 0) break;
+                    if (state_overlap_or_not[st11 * ct.num_states + st2] == 0) break;
 
                     if (((st1 < idx1) && (st2 < idx1)) || 
                             ((st2 >= idx2) && (st1 < idx1)) || 
