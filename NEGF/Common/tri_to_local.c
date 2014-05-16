@@ -72,11 +72,9 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
     // change the tri-diagonal distributed matrix to global matrix, need
     // to be optimized later for memory issues with work_matrix.
     //
-    for(i=0; i<ct.num_states * ct.num_states; i++)
-    {
-        work_matrix[i] = 0.0;
-    }
 
+    for(j = 0; j < pct.num_local_orbit * pct.num_local_orbit; j++)
+        Aii_local[j] = 0.0;
 
 
     /* for diagonal blocks */
@@ -84,6 +82,10 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
     istart = 0;
     for(i = 0; i < ct.num_blocks; i++)
     {
+        for(j=0; j<ct.block_dim[i] * ct.block_dim[i]; j++) 
+        {
+            work_matrix[j] = 0.0;
+        }
 
         for(j =0; j < pmo.mxllda_cond[i]; j++)
         {
@@ -97,17 +99,32 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
                 jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
                 kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
 
-                jjj = jj + istart;
-                kkk = kk + istart;
-                work_matrix[kkk * ct.num_states + jjj] =
+                work_matrix[kk * ct.block_dim[i] + jj] =
                     A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j];
 
             }
         }
 
+        size = ct.block_dim[i] * ct.block_dim[i];
+        comm_sums((rmg_double_t *)work_matrix, &size, COMM_EN2);
+
+        for(j =0; j < ct.block_dim[i]; j++)
+        {
+            for(k=0; k < ct.block_dim[i]; k++)
+            {
+                jj = states_distribute[istart + j].local_index;
+                kk = states_distribute[istart + k].local_index;
+
+                if(jj >= 0 && kk >=0)
+                    Aii_local[kk * pct.num_local_orbit + jj] = work_matrix[k * ct.block_dim[i] + j] ;
+
+
+            }
+        }
+
+
         istart += ct.block_dim[i];
     }
-
 
 
     /* for off-diagonal blocks */
@@ -115,6 +132,10 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
     istart = 0;
     for(i = 1; i < ct.num_blocks; i++)
     {
+        for(j=0; j<ct.block_dim[i-1] * ct.block_dim[i]; j++) 
+        {
+            work_matrix[j] = 0.0;
+        }
 
         for(j =0; j < pmo.mxllda_cond[i-1]; j++)
         {
@@ -128,41 +149,36 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
                 jj = (j/mb ) * nprow * mb + myrow * mb + j - j/mb * mb; 
                 kk = (k/mb ) * npcol * mb + mycol * mb + k - k/mb * mb; 
 
-                jjj = jj + istart;
-                kkk = kk + istart + ct.block_dim[i-1];
-                work_matrix[kkk * ct.num_states + jjj] =
+                work_matrix[kk * ct.block_dim[i-1] + jj] =
                     A_tri[ pmo.offdiag_begin[i-1] + k * pmo.mxllda_cond[i-1] + j];
 
-                work_matrix[jjj * ct.num_states + kkk] = work_matrix[kkk * ct.num_states + jjj] ;
+
+            }
+        }
+
+        size = ct.block_dim[i-1] * ct.block_dim[i];
+        comm_sums((rmg_double_t *)work_matrix, &size, COMM_EN2);
+
+
+        for(j =0; j < ct.block_dim[i-1]; j++)
+        {
+            for(k=0; k < ct.block_dim[i]; k++)
+            {
+                jj = states_distribute[istart + j].local_index;
+                kk = states_distribute[istart + k + ct.block_dim[i-1]].local_index;
+
+                if(jj >= 0 && kk >=0)
+                {
+                    Aii_local[kk * pct.num_local_orbit + jj] = work_matrix[k * ct.block_dim[i-1] + j] ;
+                    Aii_local[jj * pct.num_local_orbit + kk] = work_matrix[k * ct.block_dim[i-1] + j] ;
+                }
+
 
             }
         }
 
         istart += ct.block_dim[i-1];
     }
-
-    size = ct.num_states * ct.num_states;
-    comm_sums((rmg_double_t *)work_matrix, &size, COMM_EN2);
-
-
-    // global matrix map to local matrix(pct.num_local * pct.num_local);
-    //
-    for(st1 = 0; st1 < pct.num_local_orbit * pct.num_local_orbit; st1++) Aii_local[st1] = 0.0;
-
-
-    for (st1 = 0; st1 < pct.num_local_orbit; st1++)
-    {
-        st11 = states_distribute[st1].istate;
-        for (st2 = 0; st2 < pct.num_local_orbit; st2++)
-        {
-            st22 = states_distribute[st2].istate;
-
-            idx = st11 * ct.num_states + st22;
-            Aii_local[st1 * pct.num_local_orbit + st2] = work_matrix[idx];
-
-        }
-    }                           /* end for st1 = .. */
-
 
 
 
