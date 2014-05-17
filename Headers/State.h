@@ -30,10 +30,12 @@
 #ifndef RMG_State_H
 #define RMG_State_H 1
 
+#include <vector>
+
 template <typename StateType> class State {
 
 public:
-    State(StateType *storage);
+    State(void);
    ~State(void);
 
     // Storage area for the orbital

@@ -36,33 +36,40 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double *kweight, State<KpointType> *kstate );
+    Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis );
 
-    /** The index of the k-point for backreferencing */
+    void sort_orbitals(void);
+
+    // The index of the k-point for backreferencing
     int kidx;
 
-    /** The k-point */
+    // The k-point
     double kpt[3];
 
-    /** The corresponding vector */
+    // The corresponding vector
     double kvec[3];
 
-    /** The weight associated with the k-point */
+    // The weight associated with the k-point
     double kweight;
 
-    /** The magnitude of the k-vector */
+    // The magnitude of the k-vector
     double kmag;
 
-    /* The orbital structure for this k-point */
-    State<KpointType> *kstate;
+    // Number of orbitals
+    int nstates;
 
+    // Block of contiguous storage for the orbitals
+    KpointType *orbital_storage;
 
-    /* Mean min, and max wavefunction residuals for occupied space */
+    // The orbital structure for this k-point
+    State<KpointType> *Kstates;
+
+    // Mean min, and max wavefunction residuals for occupied space
     double meanres;
     double minres;
     double maxres;
 
-    /* Total energies */
+    // Total energies */
     double ES;
     double NUC;
     double KE;

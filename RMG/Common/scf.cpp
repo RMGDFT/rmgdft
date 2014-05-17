@@ -43,44 +43,50 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "grid.h"
+//#include "grid.h"
+#include "const.h"
 #include "common_prototypes.h"
 #include "State.h"
+#include "Kpoint.h"
 #include "BaseThread.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
+#include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
 #include "transition.h"
 
-//#include "hybrid.h"
 
 
 static int firststep = true;
 
-bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
-          double * rho, double * rho_oppo, double * rhocore, double * rhoc )
+template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, double * vh, double *vh_ext,
+          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
+          int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag)
 {
 
     RmgTimer RT0("Scf steps");
-    int kpt, st1, idx, diag_this_step, nspin = (ct.spin_flag + 1), istop, vcycle, P0_BASIS, FP0_BASIS;
+    int kpt, st1, idx, diag_this_step;
+    int nspin = (spin_flag + 1);
     bool CONVERGED = false;
     double t3;
     double *vtot, *vtot_psi, *new_rho;
     double time1, time2, time3;
     double t[3];                  /* SCF checks and average potential */
-    int ist;
+    int ist, istop, P0_BASIS, FP0_BASIS;
+    BaseThread *T = BaseThread::getBaseThread(0);
+
 
     /* to hold the send data and receive data of eigenvalues */
     double *rho_tot;   
     
     time3 = my_crtc ();
 
-    P0_BASIS = get_P0_BASIS();
-    FP0_BASIS = get_FP0_BASIS();
+    P0_BASIS =  Rmg_G->get_P0_BASIS(1);
+    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     /* allocate memory for eigenvalue send array and receive array */
-    if (ct.spin_flag)
+    if (spin_flag)
     {
     	rho_tot = new double[FP0_BASIS];
     }
@@ -101,7 +107,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     get_vxc (rho, rho_oppo, rhocore, vxc);
     delete(RT1);
 
-    if (ct.spin_flag)        
+    if (spin_flag)        
     {
 	/*calculate the total charge density in order to calculate hartree potential*/
 	for (idx = 0; idx < FP0_BASIS; idx++)
@@ -120,14 +126,14 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
         for (idx = 0; idx < pbasis; idx++)
             rho_neutral[idx] = rho[idx] - rhoc[idx];
 
-        double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, ct.vh_ext, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre,
+        double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, hartree_min_sweeps, hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre,
                     ct.poi_parm.gl_pst, ct.poi_parm.mucycles, ct.rms/ct.hartree_rms_ratio,
-                    ct.poi_parm.gl_step, ct.poi_parm.sb_step, ct.boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
+                    ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
         //cout << "Hartree residual = " << residual << endl;
  
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */
-        CPP_pack_dtos (Rmg_G, vh_eig, ct.vh_ext, dimx, dimy, dimz, ct.boundaryflag);
+        CPP_pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, boundaryflag);
         delete [] rho_neutral;
 
         delete(RT1);
@@ -137,7 +143,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     {
     	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
-    	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
+    	get_vh (rho, rhoc, vh, hartree_min_sweeps, hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, boundaryflag);
         delete(RT1);
     }
 
@@ -173,11 +179,11 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     if (!firststep)
     {
         printf ("\n");
-        progress_tag ();
+        //progress_tag ();
         printf ("SCF CHECKS: <rho dv>  = %15.8e\n", t[0]);
-        progress_tag ();
+        //progress_tag ();
         printf ("SCF CHECKS: RMS[dv]   = %15.8e\n", t[1]);
-        progress_tag ();
+        //progress_tag ();
         printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
     }
 
@@ -191,7 +197,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     /*Generate the Dnm_I */
     get_ddd (vtot);
 
-    for(vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
+    for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
         RT1 = new RmgTimer("Scf steps: Beta x psi");
         betaxpsi (states);
@@ -203,11 +209,11 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
 
         /* Update the wavefunctions */
         RT1 = new RmgTimer("Scf steps: Mg_eig");
-        istop = ct.num_kpts * ct.num_states / ct.THREADS_PER_NODE;
-        istop = istop * ct.THREADS_PER_NODE;
-        for(st1=0;st1 < istop;st1+=ct.THREADS_PER_NODE) {
+        istop = ct.num_kpts * ct.num_states / T->get_threads_per_node();
+        istop = istop * T->get_threads_per_node();
+        for(st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
           SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
-          for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
+          for(ist = 0;ist < T->get_threads_per_node();ist++) {
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;
               thread_control[ist].sp = &states[st1 + ist];
@@ -215,7 +221,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
           }
 
           // Thread tasks are set up so run them
-          run_thread_tasks(ct.THREADS_PER_NODE);
+          run_thread_tasks(T->get_threads_per_node());
 
         }
 
@@ -292,7 +298,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     
 
 
-    if (ct.spin_flag)
+    if (spin_flag)
 	get_opposite_eigvals (states);
 
 	
@@ -308,7 +314,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     if (ct.occ_flag == 1 && !firststep)
     {
         printf ("\n");
-        progress_tag ();
+        //progress_tag ();
         printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
     }
 
@@ -322,7 +328,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     /*Takes care of mixing and checks whether the charge density is negative*/
     mix_rho(new_rho, rho, rhocore, FP0_BASIS, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
 
-    if (ct.spin_flag)
+    if (spin_flag)
 	get_rho_oppo (rho,  rho_oppo);
     
     delete(RT1);
@@ -344,7 +350,7 @@ bool scf (State<StateType> * states, double * vxc, double * vh, double * vnuc,
     delete [] vtot_psi;
 
     /* free the memory */
-    if (ct.spin_flag)
+    if (spin_flag)
     {
     	delete [] rho_tot;
     }
