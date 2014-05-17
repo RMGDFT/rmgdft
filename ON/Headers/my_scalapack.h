@@ -131,9 +131,6 @@ void distribute_mat (double *, double *);
 void dsymm_dis (char *, char *, int *, double *, double *, double *);
 
 
-/* Global Matrix dimension */
-#define NN       MAX_STATES
-
 /* Blacs dimension */
 #define DLEN    9
 

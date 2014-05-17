@@ -5,7 +5,6 @@
 /*
 
 	Requires the predefined parameters:
-		NN:	size of the global matrix (my_scalapack.h)
 		NPES:	number of processors (CFLAGS)
 
 Documentation:

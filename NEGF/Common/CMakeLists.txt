@@ -1,7 +1,6 @@
 add_library (NEGF_Common
 allocate_matrix_LCR.c
 allocate_matrix_soft.c
-allocate_psi.c
 apply_potential_drop.c
 charge_density_matrix_p.c
 diff_hx_interpolation.c

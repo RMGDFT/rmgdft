@@ -259,7 +259,6 @@ typedef struct
 
 } KPOINT;
 
-#define         MAX_STATES  3000
 
 #include "rmg_control.h"
 

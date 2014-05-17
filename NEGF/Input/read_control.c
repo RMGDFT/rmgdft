@@ -143,19 +143,13 @@ void read_control (char *file)
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
     get_data ("number_of_atoms", &ct.num_ions, INT, "0");
 
+    allocate_states();
     /* read the atomic positions and species */
 
     read_atoms ();
     read_orbitals ();
 
     get_state_to_proc(states);
-
-    allocate_states();
-    if (ct.num_states > MAX_STATES)
-    {
-        printf("\n increase MAX_STATES in params.h %d ", ct.num_states);
-        error_handler("Too many states specified in input file");
-    }
 
 
     /* Get k-points and weights */

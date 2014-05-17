@@ -31,8 +31,6 @@ int S0_BASIS;
 int PX0_GRID;
 int PY0_GRID;
 int PZ0_GRID;
-int state_to_ion[MAX_STATES];
-int state_to_proc[MAX_STATES];
 char num_loc_st[MAX_IONS];
 short int overlap_or_not[MAX_IONS * MAX_IONS];
 char *state_overlap_or_not;
@@ -43,11 +41,13 @@ char *state_overlap_or_not;
 int array_both_not_zero[MAX_IONS][MAX_IONS];
 
 
-STATE states[MAX_STATES];
-STATE states1[MAX_STATES];
-STATE states_res[MAX_STATES];
-STATE states_res1[MAX_STATES];
-STATE states_tem[MAX_STATES];
+int *state_to_ion;
+int *state_to_proc;
+STATE *states;
+STATE *states1;
+STATE *states_tem;
+STATE *states_distribute;
+char *vloc_state_overlap_or_not;
 
 
 
@@ -76,8 +76,6 @@ double complex *sigma_all;
 int peakNum;
 rmg_double_t *work_matrix;
 ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc; 
-short int vloc_state_overlap_or_not[MAX_IONS * MAX_STATES];
-STATE states_distribute[MAX_STATES];
 rmg_double_t *vnuc_x, *vnuc_y, *vnuc_z;
 
 

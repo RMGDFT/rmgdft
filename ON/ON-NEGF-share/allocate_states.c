@@ -36,10 +36,13 @@
 void allocate_states()
 {
     int size;
+    my_malloc(states, ct.num_states, STATE);
+    my_malloc(states1, ct.num_states, STATE);
+    my_malloc(states_tem, ct.num_states, STATE);
+    my_malloc(states_distribute, ct.num_states, STATE);
+    my_malloc(state_to_ion, ct.num_states, int);
+    my_malloc(state_to_proc, ct.num_states, int);
 
-    size = (ct.state_end - ct.state_begin) * ct.num_states;
-   // size = ct.num_states* ct.num_states;
-
-    my_malloc( state_overlap_or_not, size,  char);
+    my_malloc(vloc_state_overlap_or_not, ct.num_ions * ct.num_states, char);
 }
 
