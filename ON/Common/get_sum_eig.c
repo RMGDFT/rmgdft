@@ -99,7 +99,6 @@ double get_Exc(double *rho, double *rhocore)
     double *work, *nrho, esum;
     int idx;
 
-    rmg_double_t tem, tem1, tem2;
 
     /* Grab some memory */
     /* begin shuchun wang */

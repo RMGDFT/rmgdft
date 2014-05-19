@@ -28,7 +28,6 @@ void get_matB_qnm(double *Aij)
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
-    SPECIES *sp;
     ION *iptr;
     rmg_double_t *qqq;
     double tem;
@@ -57,7 +56,6 @@ void get_matB_qnm(double *Aij)
                 /* begin shuchun wang */
                 ion1 = pct.ionidx[ion];
                 iptr = &ct.ions[ion1];
-                sp = &ct.sp[iptr->species];
                 nh = pct.prj_per_ion[ion1];
                 qqq = pct.qqq[ion1];
                 for (ip1 = 0; ip1 < nh; ip1++)
@@ -106,7 +104,6 @@ void get_matB_qnm(double *Aij)
 
                     /* begin shuchun wang */
                     iptr = &ct.ions[ion1_global];
-                    sp = &ct.sp[iptr->species];
                     nh = pct.prj_per_ion[ion1_global];
                     qqq = pct.qqq[ion1_global];
 

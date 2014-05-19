@@ -39,17 +39,13 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
     static double *f;
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
-    double c[MAX_STEPS];
     int ipvt[MAX_STEPS];
     int i, j;
     int ione = 1;
     int info;
     int size;
     int s2;
-    char trans = 'N';
     double one = 1.0;
-    double alpha;
-    double beta;
     double gamma = -0.5;        /* KAIN  step length  */
     double sd_step = -0.1;
     double sum_ci = 0.0;

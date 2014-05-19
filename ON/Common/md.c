@@ -66,11 +66,9 @@ int main(int argc, char **argv)
 
 
     time_t tt;
-    char *timeptr;
 
 
     time(&tt);
-    timeptr = ctime(&tt);
     ct.time0 = my_crtc();
 
     ct.images_per_node = 1;

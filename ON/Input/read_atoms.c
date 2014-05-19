@@ -31,7 +31,7 @@
 #include "init_var.h"
 void read_atoms (void)
 {
-    int st1,ist, ion, args;
+    int st1,ist, ion;
     char tbuf[MAX_PATH];
     char species[32];
 

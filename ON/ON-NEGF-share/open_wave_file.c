@@ -23,7 +23,7 @@
 int open_wave_file (char *filename)
 {
 
-    char newname[MAX_PATH + 20], tmpname[MAX_PATH];
+    char tmpname[MAX_PATH];
     int amode;
     int fhand;
 
@@ -36,23 +36,23 @@ int open_wave_file (char *filename)
     if (fhand < 0)
     {
 
-	/*Make a copy of output filename, dirname overwrites it*/
-	strcpy(tmpname, filename);
+        /*Make a copy of output filename, dirname overwrites it*/
+        strcpy(tmpname, filename);
 
-	printf( "\n write_data: Opening output file '%s' failed\n" 
-		"  Trying to create subdirectory in case it does not exist\n", 
-		filename );
+        printf( "\n write_data: Opening output file '%s' failed\n" 
+                "  Trying to create subdirectory in case it does not exist\n", 
+                filename );
 
 
-	if (!mkdir(dirname(tmpname),S_IRWXU))
-	    printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
-	else
-	    printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
+        if (!mkdir(dirname(tmpname),S_IRWXU))
+            printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
+        else
+            printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
 
-	fflush (NULL);
+        fflush (NULL);
 
-	/*try opening file again */
-	fhand = open (filename, O_CREAT | O_TRUNC | O_RDWR, amode);
+        /*try opening file again */
+        fhand = open (filename, O_CREAT | O_TRUNC | O_RDWR, amode);
 
     }
 

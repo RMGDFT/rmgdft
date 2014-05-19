@@ -131,9 +131,9 @@ void interpolate_atom_density(double *rho_tem, double *rho_out, int ixmin, int i
             {
                 idx = ix * grid_y * grid_z + iy * grid_z + iz;
 
-                if(      indx[ix] <0 | indx[ix] >= grid_x 
-                        |indy[iy] <0 | indy[iy] >= grid_y 
-                        |indz[iz] <0 | indz[iz] >= grid_z)
+                if(      (indx[ix] <0) | (indx[ix] >= grid_x) 
+                        |(indy[iy] <0) | (indy[iy] >= grid_y) 
+                        |(indz[iz] <0) | (indz[iz] >= grid_z))
                 {
                    rho_out[idx] = 0.0;
                 }

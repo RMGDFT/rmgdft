@@ -22,14 +22,12 @@
 
 void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, double *Bij_00)
 {
-    int idx, st1, st2, idx1, idx2;
+    int idx, st1;
     int maxst, n2;
     STATE *sp;
     int ione = 1;
-    rmg_double_t tem;
     int ixx, iyy, izz;
 
-    int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
 
     maxst = ct.num_states;
 

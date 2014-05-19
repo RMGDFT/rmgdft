@@ -23,30 +23,17 @@
 void get_mat_Omega(STATE * states, double Omega[])
 {
     int st1;
-    int i, ione = 1, info, numst = ct.num_states;
+    int ione = 1, numst = ct.num_states;
     double zero = 0., one = 1.;
-    char side, uplo = 'l', jobz = 'v', transa, transb;
+    char side, uplo = 'l', transa, transb;
 
     /* for parallel libraries */
-    int  npcol, nprow;
-    int mycol, myrow;
-    int rsrc = 0, csrc = 0;
-    int mxllda, mxllda2;
-    double *work;
+    int myrow;
     _fcd char_fcd1;
     _fcd char_fcd2;
-    _fcd char_fcd3;
 
 
-    mxllda = MXLLDA;
-    mxllda2 = MXLLDA * MXLCOL;
-    npcol = pct.npcol;
-    nprow = pct.nprow;
-
-    mycol = pct.mycol;
     myrow = pct.myrow;
-
-    work = work_memory;
 
     /* If I'm in the process grid, execute the program */
     if (myrow != -1)

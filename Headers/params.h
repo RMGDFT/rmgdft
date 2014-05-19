@@ -71,7 +71,7 @@
 
 /* Maximum number of ions -- just an upper limit on
  * dynamically allocated data structures. */
-#define         MAX_IONS        512
+#define         MAX_IONS        5120
 
 /* Maximum number of atoms whose projectors have overlap with current processor */
 #define MAX_NONLOC_IONS         1024
@@ -118,11 +118,6 @@
 
 #define         MAX_OPTS  16
 
-
-
-/* Maximum number of ions -- just an upper limit on
- * dynamically allocated data structures. */
-#define         IONS_PER_PE     MAX_IONS
 
 
 /* Number of k-points -- just an upper limit on

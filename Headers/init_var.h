@@ -31,14 +31,8 @@ int S0_BASIS;
 int PX0_GRID;
 int PY0_GRID;
 int PZ0_GRID;
-char num_loc_st[MAX_IONS];
-short int overlap_or_not[MAX_IONS * MAX_IONS];
 char *state_overlap_or_not;
 
-
-/* Array telling for each pair of ions if the localization regions
-   around touch both a same region (anywhere on any PE) */
-int array_both_not_zero[MAX_IONS][MAX_IONS];
 
 
 int *state_to_ion;

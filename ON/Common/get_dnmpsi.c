@@ -26,8 +26,7 @@ modified by Wenchang Lu, 09-24-2005
 void get_dnmpsi(STATE *sp, double *kbpsi_one_state, double *work)
 {
     int ion, ipindex, idx, ip1, ip2;
-    double *prjptr, time1, time2;
-    int PROJECTOR_SPACE;
+    double *prjptr;
     int ion2, nh;
     double *qqq, *kbpsi_one_ion, *qnm_weight;
     double *prj_sum;

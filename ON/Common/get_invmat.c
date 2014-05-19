@@ -19,25 +19,18 @@
 
 void get_invmat(double *matB)
 {
-    int maxst = ct.num_states, numst = ct.num_states;
+    int numst = ct.num_states;
     int info;
     double time1, time2;
     char uplo = 'l';
 
-    int idx;
     int ione = 1;
-    int  npcol, nprow;
-    int mycol, myrow;
-    int rsrc = 0, csrc = 0, l, mxllda;
+    int myrow;
     _fcd char_fcd1;
 
     time1 = my_crtc();
 
-    mxllda = MXLLDA;
-    npcol = pct.npcol;
-    nprow = pct.nprow;
 
-    mycol = pct.mycol;
     myrow = pct.myrow;
 
     /* If I'm in the process grid, execute the program */

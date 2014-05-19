@@ -20,7 +20,7 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
     int ion, idx;
     int *pvec, docount, size;
     int ilow, jlow, klow, ihi, jhi, khi, map;
-    int icut, icenter;
+    int icenter;
     int *Aix, *Aiy, *Aiz;
     rmg_double_t r, xc, yc, zc, Zv, rc, rcnorm, t1;
     rmg_double_t ax[3], bx[3], x_hat, y_hat, z_hat, rc2, invdr, norm1;
@@ -61,7 +61,6 @@ void lforce (rmg_double_t * rho, rmg_double_t * vh)
         sp = &ct.sp[iptr->species];
 
         icenter = sp->ldim / 2;
-        icut = (icenter + 1) * (icenter + 1);
 
 
         Zv = sp->zvalence;

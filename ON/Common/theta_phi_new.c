@@ -23,7 +23,7 @@ void theta_phi_new(int st1, int st2, rmg_double_t theta_ion, rmg_double_t * st2_
     int zlow1, zhigh1, zlow2, zhigh2, zshift;
     int iyy, izz, iyy1, izz1;
     int incx, incy, incx1, incy1;
-    int ix, iy, iz, ix1, ix2, iy1, iy2, iz1, iz2;
+    int ix, iy, iz, ix1, ix2, iy1, iy2;
     int idx1, idx2;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;

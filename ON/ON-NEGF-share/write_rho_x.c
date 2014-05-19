@@ -14,7 +14,6 @@ void write_rho_x(rmg_double_t * rho, char *ab)
     int ix, iy, iz, poff;
     rmg_double_t t1;
     rmg_double_t *zvec;
-    int pyoff, pzoff;
 
     my_malloc_init( zvec, get_FNX_GRID(), rmg_double_t );
     /* Get this processors offset */

@@ -22,7 +22,7 @@ static int fold_to_unitcell(int, int);
 void add_orbit_to_wave(int st1, rmg_double_t scale, rmg_double_t * psi1, rmg_double_t * wave_global, STATE * states)
 {
 
-    int iyy, izz, iyy1, izz1;
+    int iyy, izz;
     int incx, incy;
     int ix, iy, iz;
     int ix1,  iy1,  iz1,  idx1 ;

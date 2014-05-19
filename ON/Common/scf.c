@@ -32,7 +32,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     double time1, time2, time3, time4;
     int numst = ct.num_states;
     int ispin, kpt, kpt1;
-    int st1, idx, ione = 1;
+    int idx, ione = 1;
     double tem;
     int flag;
     int steps;
@@ -90,6 +90,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) get_FP0_BASIS();
+    steps = ct.scf_steps;
     pulay_rho_on (steps, get_FP0_BASIS(), rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
 
 

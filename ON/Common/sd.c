@@ -30,7 +30,6 @@ void precond(double *x);
 void sd(int step, int N, double *xm, double *fm)
 {
     int ione = 1;
-    double one = 1.0;
     double gamma = -0.5;
 
     precond(fm);

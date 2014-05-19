@@ -42,10 +42,10 @@ Documentation:
 
 void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
 {
-    int i, ione = 1, info, numst = ct.num_states;
+    int ione = 1, info, numst = ct.num_states;
     double zero = 0., one = 1.;
     int st1, itype = 1;
-    char diag, side, uplo = 'l', jobz = 'v', transa, transb, char_tmp;
+    char diag, side, uplo = 'l', jobz = 'v', transa, transb;
     double time1, time2, time3;
     double val[ct.num_states];
 
@@ -53,8 +53,7 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     int nb, npcol, nprow;
     int mycol, myrow;
     int lwork;
-    int rsrc = 0, csrc = 0;
-    int mxllda, mxllda2;
+    int  mxllda2;
     double scale;
     double *work;
     _fcd char_fcd1;
@@ -73,7 +72,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     time3 = my_crtc();
 
 
-    mxllda = MXLLDA;
     mxllda2 = MXLLDA * MXLCOL;
     npcol = pct.npcol;
     nprow = pct.nprow;

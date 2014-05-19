@@ -38,12 +38,8 @@
 void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int flag)
 {
 
-    char side = 'l', uplo = 'l';
-    double zero = 0.0, one = 1.0;
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
     int level;
-    rmg_double_t tem, tem1, tem2;
-    int idx, idx1;
     double time1, time2;
 
 

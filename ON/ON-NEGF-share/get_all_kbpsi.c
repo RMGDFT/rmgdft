@@ -94,9 +94,8 @@ void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state,
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, rmg_double_t *projectors)
 {
 
-    int incx = 1, stop, ip, idx;
+    int ip;
     double *prjptr;
-    int *pidx;
     int ion, ion2;
 
 

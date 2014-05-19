@@ -11,8 +11,8 @@
 
 void partial_QI (int ion, rmg_double_t * QI_R, ION * iptr)
 {
-    int idx, idx1, i, j, k, l, num;
-    int ix, iy, iz, ih, size, *dvec;
+    int idx, idx1, i, j, num;
+    int ix, iy, iz, size, *dvec;
     int lpx[9][9], lpl[9][9][9];
     int  nh, icount;
     rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9];

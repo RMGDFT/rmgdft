@@ -38,7 +38,6 @@ void read_common ()
 {
     int tmp, is, ibrav, flag;
     char *tbuf, *tptr;
-    rmg_double_t time1;
     rmg_double_t celldm[6], a0[3], a1[3], a2[3], omega;
     static int run_count = - 1;
     int NX_GRID, NY_GRID, NZ_GRID;

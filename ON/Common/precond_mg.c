@@ -19,8 +19,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     STATE *sp;
 
     int idx;
-    rmg_double_t tem, tem1, tem2;
-    int ion, ixx, iyy, izz;
+    int ixx, iyy, izz;
     /* Pre and post smoothings on each level */
 
 
@@ -41,7 +40,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     /* Get state pointer */
     sp = &states[istate];
 
-    ion = state_to_ion[istate];
     ixx = states[istate].ixmax - states[istate].ixmin + 1;
     iyy = states[istate].iymax - states[istate].iymin + 1;
     izz = states[istate].izmax - states[istate].izmin + 1;

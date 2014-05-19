@@ -34,23 +34,18 @@
 void read_data(char *name, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, STATE * states)
 {
-    int fhand, ion, ii, jj, ione = 1, ithree = 3;
-    int state, st, t1;
-    int i, ic, flag, temp_int[MAX_LOC_ST];
-    off_t newoffset;
+    int fhand, ion;
+    int state, t1;
+    int i;
     STATE *sp;
     double temp_occ;
     double temp_pos[3];
     unsigned nbytes;
-    int ipe;
-    int numst;
     char newname[MAX_PATH + 200];
-    rmg_double_t tem, tem1, tem2, tem3;
+    rmg_double_t tem1, tem2;
     int idx;
-    int idx1, ix, iy, PNX0, PNY0, PNZ0, NX, NY, NZ;
-    int pex, pey, pez, position, ix1, iy1;
+    int pex, pey, pez;
 
-    numst = get_P0_BASIS();
     /* Wait until everybody gets here */
     my_barrier();
 
@@ -177,7 +172,6 @@ tem1 = my_crtc();
     read(fhand, &ct.fpt[0], 4 * sizeof(int));
 
     /* Read ionic forces from the file */
-    flag = 0;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
@@ -230,7 +224,7 @@ tem1 = my_crtc();
     MPI_Info fileinfo;
     MPI_Datatype  filetype; 
     MPI_Status status;
-    MPI_Offset disp, offset;
+    MPI_Offset disp;
 
 
     /* this datatype describes the mapping of the local array

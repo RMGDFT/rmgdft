@@ -50,7 +50,7 @@
 
 void xcgga(rmg_double_t * rho1, rmg_double_t * vxc, rmg_double_t * exc, int mode)
 {
-    int ix, iy, iz, idx;
+    int idx;
     rmg_double_t *gx, *gy, *gz, *agx, *agy, *agz, *agg, *d2rho, *nrho;
     rmg_double_t d, s, u, v, kf, us, uu, t, vv, ww;
     rmg_double_t pisq3, ex, vx, ec;
@@ -58,7 +58,7 @@ void xcgga(rmg_double_t * rho1, rmg_double_t * vxc, rmg_double_t * exc, int mode
     rmg_double_t vcup, vcdn;
     rmg_double_t dvcup, dvcdn;
     rmg_double_t ecrs, eczet, alfc;
-    rmg_double_t cpot, cen, xen;
+    rmg_double_t cpot, cen;
     rmg_double_t dhalf, d1half[3], d2half, vcm0, fac;
     int ndim, lgga, lpot;
 

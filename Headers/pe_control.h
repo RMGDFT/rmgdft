@@ -56,17 +56,13 @@ typedef struct
 
 
     /** Points to start of projector storage for this ion in projector space */
-    //rmg_double_t *weight[MAX_IONS];
     rmg_double_t *weight;
     rmg_double_t *Bweight;
 
 #if FDIFF_BETA
     /*These are used for non-local force */
-    //rmg_double_t *weight_derx[MAX_IONS];
     rmg_double_t **weight_derx;
-    //rmg_double_t *weight_dery[MAX_IONS];
     rmg_double_t **weight_dery;
-    //rmg_double_t *weight_derz[MAX_IONS];
     rmg_double_t **weight_derz;
 #endif
 
@@ -74,44 +70,33 @@ typedef struct
     /** An index array which maps the projectors onto the 3-d grid associated
         with each processor.
     */
-    //int *nlindex[MAX_IONS];
     int **nlindex;
-    //int *Qindex[MAX_IONS];
     int **Qindex;
 
     /** An index array which indicate whether the grid map on the current pocessor*/
-    //int *idxflag[MAX_IONS];
     int **idxflag;
-    //int *Qdvec[MAX_IONS];
     int **Qdvec;
 
     /** Number of points in the nlindex array for each ion */
-    //int idxptrlen[MAX_IONS];
     int *idxptrlen;
-    //int Qidxptrlen[MAX_IONS];
     int *Qidxptrlen;
 
     /** Number of points in the circle of local projector for each pocessor*/
-    //int lptrlen[MAX_IONS];
     int *lptrlen;
 
     /** Phase shifts for the non-local operators */
-    //rmg_double_t *phaseptr[MAX_IONS];
     rmg_double_t **phaseptr;
 
     /** Points to start of storage for theaugument function*/
-    //rmg_double_t *augfunc[MAX_IONS];
     rmg_double_t **augfunc;
 
     /** points to start of DnmI function storage for this ion*/
-    //rmg_double_t *dnmI[MAX_IONS];
     rmg_double_t **dnmI;
     rmg_double_t **dnmI_x;
     rmg_double_t **dnmI_y;
     rmg_double_t **dnmI_z;
 
     /** points to start of qqq storage for this ion*/
-    //rmg_double_t *qqq[MAX_IONS];
     rmg_double_t **qqq;
 
 

@@ -43,7 +43,7 @@ recv_from1[loop * (ct.num_state_per_proc +2) ]:
 
 void init_comm_res(STATE * states)
 {
-    int i, j, proc1, proc2, proc3;
+    int proc1, proc2, proc3;
     int communication_pair, state_per_proc, loop;
     int *matrix_pairs, *proc_recv;
     int st1, st2, idx;

@@ -39,20 +39,16 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     int ion;
     int state, i1;
     STATE *sp;
-    rmg_double_t *work;
     char newname[MAX_PATH + 20];
-    rmg_double_t tem, tem1, tem2, tem3;
-    int idx, idx1, st;
+    int idx, idx1;
     int fhand;
-    int ione = 1, st1, st2;
-    rmg_double_t dis;
     double hxgrid, hygrid, hzgrid;
     double *rho_tem;
     int ix, iy, iz, ixdim, iydim, izdim;
     int ixmin, ixmax, iymin, iymax, izmin, izmax;
     int ixx, iyy, izz;
-    int ipe, NX, NY, NZ, PNX0, PNY0, PNZ0;
-    int ix1, iy1, pex, pey, pez, position;
+    int PNX0, PNY0, PNZ0;
+    int pex, pey, pez;
 
     time_t tt;
 
@@ -173,7 +169,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	MPI_Info fileinfo;
 	MPI_Datatype  filetype; 
 	MPI_Status status;
-	MPI_Offset disp, offset;
+	MPI_Offset disp;
 
 
 	/* this datatype describes the mapping of the local array

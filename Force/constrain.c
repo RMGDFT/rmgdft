@@ -42,13 +42,13 @@
 
 void constrain (void)
 {
+    int ion;
+    ION *iptr;
     printf("Entering constrained forces for image %d", pct.thisimg+1);
     switch (ct.constrainforces)
     {
         case 5:   /* NEB tangent to higher energy adjacent image with climbing/descending extrema */
             {
-                int ion;
-                ION *iptr;
                 rmg_double_t Mag_T = 0.0;
                 rmg_double_t Mag_L = 0.0;
                 rmg_double_t Mag_R = 0.0;
@@ -174,8 +174,6 @@ void constrain (void)
             break;
         case 4:                    /* NEB tangent to higher energy adjacent image */
             {
-                int ion;
-                ION *iptr;
                 rmg_double_t Mag_T = 0.0;
                 rmg_double_t Mag_L = 0.0;
                 rmg_double_t Mag_R = 0.0;
@@ -285,8 +283,6 @@ void constrain (void)
 
         case 3:                    /* NEB tangent to normalized adjacent images */
             {
-                int ion;
-                ION *iptr;
                 rmg_double_t Mag_T = 0.0;
                 rmg_double_t Mag_L = 0.0;
                 rmg_double_t Mag_R = 0.0;
@@ -373,8 +369,6 @@ void constrain (void)
 
         case 2:                    /* NEB tangent to adjacent images */
             {
-                int ion;
-                ION *iptr;
                 rmg_double_t Mag_T = 0.0;
                 rmg_double_t Mag_L = 0.0;
                 rmg_double_t Mag_R = 0.0;
@@ -460,9 +454,7 @@ void constrain (void)
 
         case 1:                    /* In plane, 2-D restriction (typical). */
             {
-                int ion;
                 rmg_double_t FdotC;
-                ION *iptr;
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
                     iptr = &ct.ions[ion];

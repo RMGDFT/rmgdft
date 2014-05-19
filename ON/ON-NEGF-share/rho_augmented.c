@@ -16,15 +16,13 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 
 {
 
-    int istate, incx, idx;
+    int idx;
     int *ivec, size, idx1, idx2;
     int nh, icount, ncount, i, j, ion;
     rmg_double_t *qnmI, *qtpr;
     rmg_double_t *product, *ptr_product;
-    rmg_double_t time1, time2;
     ION *iptr;
     SPECIES *sp;
-    double alfa;
 
 
 

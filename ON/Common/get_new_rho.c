@@ -21,8 +21,6 @@ void get_new_rho(STATE * states, double *rho)
     register double tcharge;
 
     /* for parallel libraries */
-    int n2 = (ct.state_end-ct.state_begin)* ct.num_states;
-    int mxllda;
 
     rmg_double_t *psi1, *psi2, *psi3, *psi_p, scale;
     int i, st1, st2, proc1, proc2;
@@ -46,7 +44,6 @@ void get_new_rho(STATE * states, double *rho)
     print_sum_square(get_P0_BASIS(), rho, "rho_sum_square before get_new_rho  ");
 #endif
 
-    mxllda = MXLLDA;
 
 
 

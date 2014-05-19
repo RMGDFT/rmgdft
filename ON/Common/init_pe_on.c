@@ -40,9 +40,9 @@ extern int mpi_myrank;
 void init_pe_on(void)
 {
 
-    int npes, ii, jj, kk;
+    int npes;
     int ndims, dims[2], periods[2], reorder, kpdelta, remains[2];
-    int coords[2], item, rank;
+    int coords[2];
 
 
  /* get total mpi core count  */
@@ -118,9 +118,8 @@ void init_pe_on(void)
         }
     }
 
-    int numst1, npes_tem;
+    int numst1;
     numst1 = (ct.num_states + NPES -1)/NPES;
-    npes_tem = (ct.num_states + numst1 -1) /numst1;
     sl_init_on(&ictxt, 1,NPES);
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);

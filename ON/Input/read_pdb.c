@@ -34,10 +34,7 @@
 
 int read_parse_pdb_line (ION * iptr, int ion_index)
 {
-    int rvalue;
-    char temp_str[10];
     char *tbuf;
-    char *temp_ptr;
 
     my_malloc (tbuf, 256, char);
 
@@ -148,7 +145,7 @@ int read_parse_pdb_line (ION * iptr, int ion_index)
 
 #endif
 
-    return;
+    return 0;
 
 }
 
@@ -159,8 +156,6 @@ int read_parse_pdb_line (ION * iptr, int ion_index)
 void read_pdb (void)
 {
     int ion;
-    char s[32];
-    int tmp = 0;
 
 
 #if 0

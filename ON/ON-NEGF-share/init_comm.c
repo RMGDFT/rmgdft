@@ -39,7 +39,7 @@ recv_from[loop * (ct.num_state_per_proc +2) ]:
 
 void init_comm(STATE * states)
 {
-    int i, j, proc1, proc2, proc3;
+    int proc1, proc2, proc3;
     int communication_pair, state_per_proc, loop;
     int *matrix_pairs, *proc_recv;
     int st1, st2, idx;
@@ -49,7 +49,6 @@ void init_comm(STATE * states)
     int num_overlap;
     int recv_proc;
     int st11;
-	double tem, tem1;
 
     state_per_proc = ct.state_per_proc + 2;
     my_calloc( matrix_pairs, NPES * NPES, int );

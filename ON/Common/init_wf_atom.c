@@ -21,14 +21,8 @@
 void init_wf_atom(STATE * states)
 {
 
-    int idx, state, ix, iy, iz;
-    STATE *sp;
-    long idum;
-    int ix1, iy1, iz1;
-    int ixx, iyy, izz;
-    rmg_double_t temp;
+    int idx, state;
     char newname[MAX_PATH + 200];
-    int i, ii;
     int ion, species, ist, fhand, nbytes;
 
 

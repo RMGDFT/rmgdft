@@ -32,7 +32,6 @@
 double erf(double);
 
 
-static void init_vcomp(double *);
 static double get_charge(double *);
 
 
@@ -346,83 +345,6 @@ void init_nuc(double *vnuc, double *rhoc, double *rhocore)
     my_barrier();
 
 }                               /* end init_nuc */
-
-
-/*
-    Initialization of the compensating potential
-*/
-static void init_vcomp(double *vc)
-{
-    int ix, iy, iz, ii, jj, kk;
-    int ilow, jlow, klow;
-    int idx, ion, istart, jstart;
-    double r, Zv, rc, point[3];
-    SPECIES *sp;
-    ION *iptr;
-
-
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
-    {
-
-        vc[idx] = 0.;
-
-    }                           /* end for */
-
-
-    ilow = get_FPX_OFFSET();
-    jlow = get_FPY_OFFSET();
-    klow = get_FPZ_OFFSET();
-
-
-    /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-
-        /* Generate ion pointer */
-        iptr = &ct.ions[ion];
-
-        /* Get species type */
-        sp = &ct.sp[iptr->species];
-
-        Zv = sp->zvalence;
-        rc = sp->rc;
-
-        for (ix = 0; ix < get_FPX0_GRID(); ix++)
-        {
-
-            point[0] = (ix + ilow) * get_hxxgrid();
-            istart = get_FPZ0_GRID() * get_FPY0_GRID() * ix;
-
-            for (iy = 0; iy < get_FPY0_GRID(); iy++)
-            {
-
-                point[1] = (iy + jlow) * get_hyygrid();
-                jstart = istart + get_FPZ0_GRID() * iy;
-
-                for (iz = 0; iz < get_FPZ0_GRID(); iz++)
-                {
-
-                    point[2] = (iz + klow) * get_hzzgrid();
-
-                    r = minimage1(point, iptr->crds);
-
-
-                    if (r <= DELTA)
-                    {
-                        vc[jstart + iz] += Zv * M_2_SQRTPI / rc;
-                    }
-                    else
-                    {
-                        vc[jstart + iz] += Zv * erf(r / rc) / r;
-                    }
-
-                }               /* end for */
-
-            }                   /* end for */
-
-        }                       /* end for */
-    }
-}
 
 
 

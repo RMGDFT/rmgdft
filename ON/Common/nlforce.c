@@ -18,8 +18,8 @@
 
 void nlforce(rmg_double_t * veff)
 {
-    int ion, i, isp;
-    int nh, size, n2, idx;
+    int ion;
+    int nh, size, idx;
     rmg_double_t *rho_nm;
     rmg_double_t *part_rho_nm_x, *part_omega_nm_x;
     rmg_double_t *part_rho_nm_y, *part_omega_nm_y;
@@ -52,7 +52,6 @@ void nlforce(rmg_double_t * veff)
             projectors_x, projectors_y, projectors_z, partial_kbpsi_x,
             partial_kbpsi_y, partial_kbpsi_z);
 
-    n2 = ct.num_states * ct.num_states;
 
     Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, work_matrix_row,
             IB, JB, pct.descb, pct.desca[1]);

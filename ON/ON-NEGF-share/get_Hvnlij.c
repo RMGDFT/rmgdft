@@ -30,10 +30,8 @@ void get_Hvnlij(double *Aij)
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
     rmg_double_t *dnmI;
-    SPECIES *sp;
     ION *iptr;
     double tem;
-    int st11;
 
 
 
@@ -59,7 +57,6 @@ void get_Hvnlij(double *Aij)
                 /* begin shuchun wang */
                 ion1 = pct.ionidx[ion];
                 iptr = &ct.ions[ion1];
-                sp = &ct.sp[iptr->species];
                 nh = pct.prj_per_ion[ion1];
                 dnmI = pct.dnmI[ion1];
                 for (ip1 = 0; ip1 < nh; ip1++)
@@ -113,7 +110,6 @@ void get_Hvnlij(double *Aij)
 
                     /* begin shuchun wang */
                     iptr = &ct.ions[ion1_global];
-                    sp = &ct.sp[iptr->species];
                     nh = pct.prj_per_ion[ion1_global];
                     dnmI = pct.dnmI[ion1_global];
 

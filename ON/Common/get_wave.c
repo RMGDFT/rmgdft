@@ -20,20 +20,15 @@ Get a particular wave st and store it in wave_global
 
 void get_wave(int st, STATE * states)
 {
-	int  j, idx, ione = 1;
-	rmg_double_t t2;
+	int  idx;
 	rmg_double_t *wave_temp;
 	register double tcharge;
         double charge_from_wave;
-	int mxllda;
-	mxllda = MXLLDA;
 	double one = 1.0, zero = 0.0;
 
 	/* for parallel libraries */
-	int n2 = (ct.state_end-ct.state_begin)* ct.num_states;
 	rmg_double_t *psi1,  scale;
-	int i, st1, state_per_proc;
-	state_per_proc = ct.state_per_proc + 2;
+	int  st1;
 
 	int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
 	int st11;
@@ -79,7 +74,6 @@ void get_wave(int st, STATE * states)
 
 	for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
 	{ 
-                int i;
 		st11 = st1 - ct.state_begin;
 		scale =  coefficient_matrix_row[st11 * ct.num_states + st]; //column st store the coefficients for st wave
 		psi1 = states[st1].psiR;

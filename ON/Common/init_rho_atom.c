@@ -21,13 +21,12 @@
 void init_rho_atom(double *rho)
 {
 
-    int idx1, idx, state, ix, iy, iz;
+    int idx1, idx, ix, iy, iz;
     int ix1, iy1, iz1;
     int ix0, iy0, iz0;
     int ixx, iyy, izz;
     char newname[MAX_PATH + 200];
-    int i, ii;
-    int ion, species, ist, fhand, nbytes;
+    int ion, species, fhand;
 
     double hxgrid, hygrid, hzgrid;
     double hxgrid_new, hygrid_new, hzgrid_new;

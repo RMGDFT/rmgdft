@@ -43,7 +43,7 @@ rmg_double_t app_cil_orbital6 (rmg_double_t * a, rmg_double_t * b, int dimx, int
               rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int iz, ix, iy, incx, incy, incxr, incyr, numgrid;
+    int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;

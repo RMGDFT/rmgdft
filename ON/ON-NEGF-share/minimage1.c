@@ -17,7 +17,7 @@
 rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
 {
 
-    int ix, iy, iz, idx, idxmin, nn = 0;
+    int ix, iy, iz, idx, nn = 0;
     rmg_double_t r[27], ax, ay, az, rmin, x, y, z;
 
 
@@ -68,7 +68,6 @@ rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
         {
 
             rmin = r[idx];
-            idxmin = idx;
 
         }                       /* end if */
 

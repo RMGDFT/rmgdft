@@ -13,12 +13,10 @@
 
 void state_corner_xyz(STATE * states)
 {
-    int ix, iy, iz, state;
+    int state;
     rmg_double_t hgrid[3];
-    rmg_double_t tem;
-    int ixx, iyy, izz, imin, imax;
+    int ixx, iyy, izz;
     int item;
-    int max_nx, max_ny, max_nz;
 
     hgrid[0] = get_hxgrid() * get_xside();
     hgrid[1] = get_hygrid() * get_yside();

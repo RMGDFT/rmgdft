@@ -44,7 +44,6 @@ extern rmg_double_t *vh_old, *vxc_old;
 void run(STATE * states, STATE * states1)
 {
     rmg_double_t time1;
-    int MAT_TRANSFER = 0;
 
 
     time1 = my_crtc();

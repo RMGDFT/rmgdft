@@ -50,16 +50,14 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
           STATE * states, STATE * states1, rmg_double_t * vnuc, rmg_double_t * vxc, rmg_double_t * vh_old, rmg_double_t * vxc_old)
 {
 
-    int kpt, ic, idx, ion, ispin, kpt1;
-    int flag, level;
-    rmg_double_t time1, time2, cut_init;
-    double tem, tem1;
+    int ic, idx, ion;
+    int level;
+    rmg_double_t time1, time2;
 
    int  gridpe = pct.gridpe;
 
     time1 = my_crtc();
     /* initialize the lattice basis vectors */
-    flag = 0;
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 

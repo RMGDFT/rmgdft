@@ -42,7 +42,7 @@
 
 void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int dimz)
 {
-    int ix, iy, iz, idx, idx1;
+    int ix, iy, iz;
     int ixs, iys;
     int xlen, ylen, zlen;
     int *nb_ids;
@@ -56,7 +56,7 @@ void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int d
     int incy2 = dimz + 4;
 
 #if MD_TIMERS
-    rmg_double_t d1, time1, time2;
+    rmg_double_t time1, time2;
     time1 = my_crtc();
 #endif
 

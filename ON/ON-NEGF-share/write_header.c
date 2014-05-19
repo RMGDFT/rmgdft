@@ -67,9 +67,7 @@ void write_header(void)
     time_t tt;
     rmg_double_t t1;
 
-    char *timeptr;
     time(&tt);
-    timeptr = ctime(&tt);
 
 
     switch (ct.boundaryflag)
@@ -287,7 +285,6 @@ void write_header(void)
     for (idx = 0; idx < ct.num_species; idx++)
     {
 
-        int l, ip;
         SPECIES *sp;
         sp = &ct.sp[idx];
 

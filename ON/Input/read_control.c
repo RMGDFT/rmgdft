@@ -46,9 +46,7 @@ static void read_kpoints ();
 
 void read_control (char *file)
 {
-    int tmp, mpi_nprocs;
     char *tbuf, *tptr;
-    FILE *fhand;
     int is,ns;
 
 
@@ -273,8 +271,8 @@ static void read_kpoints ()
 
 static void read_orbitals ()
 {
-    int ni, is, ns;
-    int i, ist, st1;
+    int ni;
+    int i;
     int num_lines;
     double crds[3], radius;
     double bohr;
@@ -294,8 +292,6 @@ static void read_orbitals ()
 
     /* read and count coordinates for each ion */
     ni = 0;
-    ns = 0;
-    ist = 0;
     while (get_data ("orbitals", tbuf, ITEM | STR, NULL))
     {
         int args = 0;

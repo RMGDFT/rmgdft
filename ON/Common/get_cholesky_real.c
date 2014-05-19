@@ -38,22 +38,17 @@
 void get_cholesky_real(double *matS)
 {
     int ione = 1, numst = ct.num_states;
-    int maxst;
-    double time1, time2, time3;
     char uplo = 'l';
     int info, lwork;
     double rcond, anorm = 1.;
     double *work;
     int *iwork, liwork, locr;
-    int nb, nproc, iproc;
-    int mxllda, mxllda2;
+    int nb, nproc;
+    int mxllda2;
     _fcd char_fcd1;
 
-    int ix, iy, idx;
 
     nb = ct.scalapack_block_factor;
-    maxst = ct.num_states;
-    time3 = my_crtc();
 #if DEBUG
     if (pct.gridpe == 0)
     {
@@ -62,7 +57,6 @@ void get_cholesky_real(double *matS)
 #endif
 
 
-    mxllda = MXLLDA;
     mxllda2 = MXLLDA * MXLCOL;
 
     /* If I'm in the process grid, execute the program */
@@ -85,9 +79,7 @@ void get_cholesky_real(double *matS)
         }
 
         /* Compute the conditioning of statearray */
-        time1 = my_crtc();
         nproc = pct.nprow * pct.npcol;
-        iproc = pct.gridpe;
         locr = ((numst / nb + 1) / nproc + 1) * nb + nb;
         lwork = locr * 5 + nb;
         liwork = locr;
@@ -125,12 +117,6 @@ void get_cholesky_real(double *matS)
             fflush(NULL);
             exit(0);
         }
-    }
-    if (pct.gridpe == 0)
-    {
-        time2 = my_crtc();
-        rmg_timings(COND_S_TIME, (time2 - time1));
-        rmg_timings(CHOLESKY_TIME, (time2 - time3));
     }
 
 }

@@ -52,10 +52,8 @@
 
 void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, STATE * states)
 {
-    int ion, st, kpt, idx, nspin = (ct.spin_flag + 1);
-    rmg_double_t *vtott, *rho_tot, meanres;
-    STATE *sp;
-    rmg_double_t time1, time2, time3;
+    int ion, idx;
+    rmg_double_t *vtott, *rho_tot;
 #if VERBOSE
     rmg_double_t *old_force;
     rmg_double_t sumx, sumy, sumz;

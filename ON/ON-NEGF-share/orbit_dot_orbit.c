@@ -26,7 +26,6 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
 {
     int i, ii;
     int st1, st2;
-    rmg_double_t temp;
     rmg_double_t *psi1;
     rmg_double_t *psi2;
     rmg_double_t *psi3;
@@ -34,9 +33,6 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
     rmg_double_t time1;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
-    rmg_double_t sum;
-    int idx;
-    rmg_double_t temp2, temp3, temp4;
     MPI_Request mr_send, *mr_recv;
     int st11;
     double H, S;

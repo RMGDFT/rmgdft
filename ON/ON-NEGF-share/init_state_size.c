@@ -36,8 +36,7 @@
 void init_state_size(STATE * states)
 {
 
-    int kpt, ispin, kpt1, st1;
-    rmg_double_t *rptr, *rptr1, *rptr2;
+    int st1;
     int state;
     int max_nx, max_ny, max_nz;
     int nx_tem, ny_tem, nz_tem, item;

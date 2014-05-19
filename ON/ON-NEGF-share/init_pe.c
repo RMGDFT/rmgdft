@@ -38,8 +38,7 @@
 void init_pe ( int image )
 {
 
-    int ii, jj, kk, ix, iy, iz, idx, ioffset;
-    int rem;
+    int ii, jj, kk;
     int image_grp_map[MAX_IMGS], range[1][3];
     MPI_Group group, world_grp, img_masters;
 

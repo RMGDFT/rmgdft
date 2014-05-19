@@ -38,17 +38,14 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
     double b0[MAX_STEPS], bmin;
-    double c[MAX_STEPS];
     int ipvt[MAX_STEPS];
     int i, j;
     int ione = 1;
     int info;
     int size, step;
     int s2;
-    char trans = 'N';
     double one = 1.0;
     double alpha;
-    double beta;
     double t1;
     double *x1, *x2, *f1, *f2;
     double *fi, *fj;

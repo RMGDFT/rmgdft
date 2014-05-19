@@ -61,7 +61,7 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
 {
     int i;
     int cycl;
-    int incx, incy, incz, size, idx;
+    int  size, idx;
     rmg_double_t scale;
     int ione = 1;
     int dx2, dy2, dz2, siz2;
@@ -69,9 +69,6 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
 
     int ncycl;
 
-    int iz, ix;
-
-    rmg_double_t tem1, tem;
 
     double step;
     int ixoff, iyoff, izoff;
@@ -82,9 +79,6 @@ void mgrid_solv_local(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t *
     step = 0.3;
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-    incx = (dimy + 2) * (dimz + 2);
-    incy = (dimz + 2);
-    incz = 1;
 
     resid = work + 2 * size;
 

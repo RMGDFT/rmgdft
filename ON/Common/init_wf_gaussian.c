@@ -58,7 +58,7 @@ void init_wf_gaussian(STATE * states)
     int n_orbital_same_center;
     int gaussian;
     double crds[3], hx, hy, hz, x, y, z, r2;
-    double radius, alpha1, alpha2, alpha3;
+    double radius, alpha1, alpha2;
 
 
     if (pct.gridpe == 0)
@@ -85,7 +85,6 @@ void init_wf_gaussian(STATE * states)
 
         alpha1 =  (4.0 /radius) * (4.0 /radius);
         alpha2 =  (7.0 /radius) * (7.0 /radius);
-        alpha3 = (5.0 /radius) * (5.0 /radius);
 
         gaussian = ist;
         if (n_orbital_same_center <4) 

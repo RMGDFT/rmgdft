@@ -33,13 +33,13 @@ void init_weight();
 
 void get_nlop(void)
 {
-    int ion, idx, ip, isp;
-    int tot_prj, item, ion1, index;
+    int ion, idx, ip;
+    int tot_prj, ion1, index;
     int PROJECTOR_SPACE, prjcount;
     double *beta, *beta_x, *beta_y, *beta_z;
     SPECIES *sp;
     ION *iptr;
-    fftw_plan p1, p2;
+    fftw_plan p2;
     int overlap;
     int coarse_size, st1;
     double *fftw_phase_sin,*fftw_phase_cos;
