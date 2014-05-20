@@ -40,6 +40,7 @@ void Stransfer_p (complex double * tot, complex double * tott,
     int nrow, ncol, nmax;
     int IA=1 , JA=1;
     int *desca;
+    int size;
 
 
     nmax = lcr[iprobe].num_states;
@@ -58,7 +59,8 @@ void Stransfer_p (complex double * tot, complex double * tott,
     my_malloc_init( t11,  nrow * ncol, complex double );
     my_malloc_init( t12,  nrow * ncol, complex double );
 
-    my_malloc_init( ipiv, nrow + pmo.mblock, int );
+    size = nrow + pmo.mblock;
+    my_malloc_init( ipiv, size, int );
 
 
     /* contruct the transfer matrix         */

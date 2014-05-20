@@ -79,20 +79,6 @@ void allocate_matrix_soft ()
 #endif
 
 
-    my_malloc_init( statearray, sizeofmatrix, rmg_double_t );
-    my_malloc_init( l_s, sizeofmatrix, rmg_double_t );
-    my_malloc_init( matB, sizeofmatrix, rmg_double_t );
-    my_malloc_init( mat_X, sizeofmatrix, rmg_double_t );
-    my_malloc_init( Hij, sizeofmatrix, rmg_double_t );
-    my_malloc_init( theta, sizeofmatrix, rmg_double_t );
-/*  my_malloc_init( work_dis, sizeofmatrix, rmg_double_t );
- * my_malloc_init( work_dis2, sizeofmatrix, rmg_double_t );
- * my_malloc_init( zz_dis, sizeofmatrix, rmg_double_t );
- * my_malloc_init( gamma_dis, sizeofmatrix, rmg_double_t );
- * my_malloc_init( uu_dis, sizeofmatrix, rmg_double_t );
-*/
-
-
     /*  allocate memory for other uses  */
 
     item = ct.num_kpts * ct.num_states;

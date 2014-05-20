@@ -30,6 +30,7 @@ void Sgreen_p (complex double * tot, complex double * tott, complex double *ch0,
     char fcd_n = 'N', fcd_t = 'T';
     int nrow, ncol, *desca, nmax, n1;
     int ione = 1;
+    int size;
 
 
     /* allocate matrix and initialization  */
@@ -43,7 +44,8 @@ void Sgreen_p (complex double * tot, complex double * tott, complex double *ch0,
     desca = &pmo.desc_lead[ (iprobe-1) * DLEN];
 
 
-    my_malloc_init( ipiv, nrow + pmo.mblock, int );
+    size = nrow + pmo.mblock;
+    my_malloc_init( ipiv, size, int );
 
 
     PZGEMM (&fcd_n, &fcd_n, &nmax, &nmax, &nmax, &alpha, ch1, &ione, &ione, desca,

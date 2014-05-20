@@ -63,7 +63,8 @@ void init_psp_soft (void)
     }                           /* end if */
 
 
-    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t );
+    int size = MAX_RGRID + MAX_LOCAL_LIG;
+    my_malloc_init( work, size, rmg_double_t );
     workr = work + MAX_RGRID;
 
 

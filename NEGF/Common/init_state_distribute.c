@@ -141,7 +141,9 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     dprintf("\n pct.num_local_orbit = %d", pct.num_local_orbit);
     double *rptr;
     size = pct.num_local_orbit * get_P0_BASIS()+1024;
+    printf("\n pct.num_local_orbit = %d size = %d", pct.num_local_orbit, size);
     my_malloc_init( rptr, size, rmg_double_t );
+    my_malloc_init( work_memory, size, rmg_double_t );
 
     for (st1 = 0; st1 < pct.num_local_orbit; st1++)
     {

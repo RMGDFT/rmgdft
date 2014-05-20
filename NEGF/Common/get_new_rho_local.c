@@ -36,7 +36,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
     int pbasis = get_P0_BASIS();
     time1 = my_crtc ();
 
-    my_malloc(psi, pct.num_local_orbit * pbasis+1024, double);
+    psi = work_memory;
     my_malloc_init( rho_temp, pbasis, rmg_double_t );
 
 
@@ -84,7 +84,6 @@ psi[st1 * pbasis + idx];
             get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
 
     my_free(rho_temp);
-    my_free(psi);
 
     tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
     rho_augmented(rho, work_matrix, state_begin, state_end,
