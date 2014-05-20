@@ -98,10 +98,8 @@ static void init_wf_gamma(STATE * states)
 
 
 
-    normalize_orbits(states);
-    /*
-     *	ortho_norm_local(states); 
-     */
+    //normalize_orbits(states);
+    ortho_norm_local(states); 
 
 
 

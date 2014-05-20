@@ -406,7 +406,8 @@ void init_wf_gaussian(STATE * states)
 
     }
 
-    normalize_orbits(states);
+    //normalize_orbits(states);
+    ortho_norm_local(states);
 
     if (pct.gridpe == 0)
         printf(" initial orbitals  done  \n");

@@ -228,10 +228,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     mix_steps++;
 
-    /* 	ortho_norm_local(states); 
-     */
+     	ortho_norm_local(states); 
 
-    normalize_orbits(states);
+   // normalize_orbits(states);
 
 
 

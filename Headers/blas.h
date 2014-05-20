@@ -125,7 +125,7 @@ void fsymforces (rmg_double_t * force, int *s, int *irg, int *irt,
                  rmg_double_t * celldm, int *nr1, int *nr2, int *nr3);
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
-void saxpy (int *n, rmg_double_t * alpha, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
+void saxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);
 void sscal (int *n, rmg_double_t * alpha, rmg_double_t * x, int *incx);
 void scopy (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
 rmg_double_t sdot (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
