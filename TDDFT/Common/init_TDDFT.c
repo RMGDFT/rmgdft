@@ -26,7 +26,7 @@ void init_TDDFT()
        pct.pe_kpoint * ( pct.pe_x, pct.pe_y, pct.pe_z) or
        pct.pe_kpoint * ( pct.pe_column , pct.pe_row)
      */
-    init_dimension();
+    init_dimension(&MXLLDA, &MXLCOL);
     init_pe_on();
 
 

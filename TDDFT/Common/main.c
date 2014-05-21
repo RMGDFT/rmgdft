@@ -81,6 +81,8 @@ int main(int argc, char **argv)
 
     /*  Begin to do the real calculations */
     init_TDDFT();
+    get_HS(states, states1, vtot_c, Hij, matB);
+
     get_cholesky_real(matB);
     get_dm_diag_p(states, l_s, mat_X, Hij);
 
@@ -170,8 +172,8 @@ FILE *dfi;
             efield = 0.0;
         }
 
-        for(i = 0; i < n2; i++) Hij_00[i] = time_step*Hij_00[i] + efield * Yij[i];
-        eldyn_(&num_states, Bij_00, Hij_00, Pn0, Pn1, &Ieldyn, &iprint);
+        for(i = 0; i < n2; i++) Hij[i] = time_step*Hij[i] + efield * Yij[i];
+        eldyn_(&num_states, matB, Hij, Pn0, Pn1, &Ieldyn, &iprint);
 
         for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];

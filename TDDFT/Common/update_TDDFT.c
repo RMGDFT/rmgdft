@@ -83,6 +83,10 @@ void update_pot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     /* Generate exchange-correlation potential */
     get_vxc(rho, rho, rhocore, vxc);
 
+
+   // for(idx = 0; idx < n; idx++) printf("\n %d %f %f adad", idx,
+//rho[idx], vxc[idx]); 
+
     pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_PZ0_GRID(), ct.boundaryflag);
 
     /* Keep in memory vh*rho_new before updating vh */
