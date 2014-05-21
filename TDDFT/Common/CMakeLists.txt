@@ -5,5 +5,5 @@ get_phi_xyz_phi.c
 update_TDDFT.c
 init_TDDFT.c
 )
-include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
-include_directories("${RMG_BINARY_DIR}/ON/Headers/")
+include_directories("${RMG_SOURCE_DIR}/Headers/")
+include_directories("${RMG_BINARY_DIR}/Headers/")

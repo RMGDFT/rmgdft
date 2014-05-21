@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "prototypes_on.h"
+#include "init_var.h"
+
 
 
 void dot_product_orbit_xyz_orbit(STATE *orbit1, STATE *orbit2, double *X0, double *Y0, double *Z0)
@@ -25,18 +28,18 @@ void dot_product_orbit_xyz_orbit(STATE *orbit1, STATE *orbit2, double *X0, doubl
     int incx, incy, incx1, incy1;
     int zcase, ix, iy, iz;
     int ix1, ix2, iy1, iy2, idx1, idx2;
-    REAL time1;
+    double time1;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
-    REAL *psi1, *psi2;
+    double *psi1, *psi2;
     double hxgrid, hygrid, hzgrid;
 
     int ione = 1;
 
 
-    hxgrid = ct.hxgrid * ct.xside;
-    hygrid = ct.hygrid * ct.yside;
-    hzgrid = ct.hzgrid * ct.zside;
+    hxgrid = get_hxgrid() * get_xside();
+    hygrid = get_hxgrid() * get_yside();
+    hzgrid = get_hxgrid() * get_zside();
 
     time1 = my_crtc();
 

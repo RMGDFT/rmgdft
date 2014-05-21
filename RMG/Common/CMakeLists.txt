@@ -59,7 +59,6 @@ write_pdb.c
 relax.c
 nlforce_par_omega.c
 real_min_all.c
-app_grad.c
 init_nuc.c
 partial_betaxpsi.c
 gramsch.c
@@ -76,7 +75,6 @@ write_zstates.c
 gather_psi.c
 update_waves.c
 get_phase.c
-app6_del2.c
 betaxpsi1.c
 symmetry.c
 lbfgs.c

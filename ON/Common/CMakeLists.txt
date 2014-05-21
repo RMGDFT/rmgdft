@@ -34,7 +34,6 @@ add_library (ON_Common
  interpolate_atom_density.c
  kain.c
  matrix_and_diag.c
- md.c
  md_fastrelax.c
  mg_eig.c
  mgrid_solv_local.c

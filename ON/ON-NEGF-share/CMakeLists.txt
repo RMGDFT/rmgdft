@@ -3,7 +3,6 @@ allocate_masks.c
 allocate_psi.c
 allocate_states.c
 app10_del2.c
-app6_del2.c
 app_grad6.c
 app_mask.c
 assign_weight_on.c
@@ -23,7 +22,6 @@ get_ion_orbit_overlap_nl.c
 get_nlop.c
 get_orbit_overlap_region.c
 get_start.c
-get_vxc.c
 global_sums_int.c
 global_to_distribute.c
 init_comm.c
@@ -54,8 +52,6 @@ write_force.c
 write_header.c
 write_pos.c
 write_rho_x.c
-xcgga.c
-xclsd_pz81.c
 xyz2pe.c
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")

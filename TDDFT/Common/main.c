@@ -38,16 +38,19 @@
 #include <string.h>
 #include <time.h>
 #include "main.h"
-//include "svnrev.h"
+#include "prototypes_on.h"
+#include "init_var.h"
+#include "svnrev.h"
 
 
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
-//CONTROL ct;
+CONTROL ct;
 
 /* PE control structure which is also declared extern in main.h */
-//PE_CONTROL pct;
+PE_CONTROL pct;
+
 
 void eldyn_(int *num_states, double *, double *, double *, double *, int *, int*);
 
@@ -104,18 +107,18 @@ int main(int argc, char **argv)
     dipole_ele_x = 0.0;
     dipole_ele_y = 0.0;
     dipole_ele_z = 0.0;
-    for(i = 0; i < pct.FPX0_GRID; i++)
+    for(i = 0; i < get_FPX0_GRID(); i++)
     {
-        x = (pct.FPX_OFFSET + i)*ct.hxxgrid * ct.xside;
-        for(j = 0; j < pct.FPY0_GRID; j++)
+        x = (get_FPX_OFFSET() + i)*get_hxxgrid() * get_xside();
+        for(j = 0; j < get_FPY0_GRID(); j++)
         {
-            y = (pct.FPY_OFFSET + j)*ct.hyygrid * ct.yside;
+            y = (get_FPY_OFFSET() + j)*get_hyygrid() * get_yside();
 
-            for(k = 0; k < pct.FPZ0_GRID; k++)
+            for(k = 0; k < get_FPZ0_GRID(); k++)
             {
-                z = (pct.FPZ_OFFSET + k)*ct.hzzgrid * ct.zside;
+                z = (get_FPZ_OFFSET() + k)*get_hzzgrid() * get_zside();
         
-                idx = i * pct.FPY0_GRID * pct.FPZ0_GRID + j*pct.FPZ0_GRID + k;
+                idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j*get_FPZ0_GRID() + k;
                 dipole_ion_x += x * rhoc[idx];
                 dipole_ion_y += y * rhoc[idx];
                 dipole_ion_z += z * rhoc[idx];
@@ -126,12 +129,12 @@ int main(int argc, char **argv)
         }
     }
 
-    dipole_ion_x *= ct.vel_f;
-    dipole_ion_y *= ct.vel_f;
-    dipole_ion_z *= ct.vel_f;
-    dipole_ele_x *= ct.vel_f;
-    dipole_ele_y *= ct.vel_f;
-    dipole_ele_z *= ct.vel_f;
+    dipole_ion_x *= get_vel_f();
+    dipole_ion_y *= get_vel_f();
+    dipole_ion_z *= get_vel_f();
+    dipole_ele_x *= get_vel_f();
+    dipole_ele_y *= get_vel_f();
+    dipole_ele_z *= get_vel_f();
 
 printf("\n  x dipolll  %f %f", dipole_ion_x, dipole_ele_x);
 printf("\n  y dipolll  %f %f", dipole_ion_y, dipole_ele_y);
@@ -177,18 +180,18 @@ FILE *dfi;
     dipole_ele_x = 0.0;
     dipole_ele_y = 0.0;
     dipole_ele_z = 0.0;
-    for(i = 0; i < pct.FPX0_GRID; i++)
+    for(i = 0; i < get_FPX0_GRID(); i++)
     {
-        x = (pct.FPX_OFFSET + i)*ct.hxxgrid * ct.xside;
-        for(j = 0; j < pct.FPY0_GRID; j++)
+        x = (get_FPX_OFFSET() + i)*get_hxxgrid() * get_xside();
+        for(j = 0; j < get_FPY0_GRID(); j++)
         {
-            y = (pct.FPY_OFFSET + j)*ct.hyygrid * ct.yside;
+            y = (get_FPY_OFFSET() + j)*get_hyygrid() * get_yside();
 
-            for(k = 0; k < pct.FPZ0_GRID; k++)
+            for(k = 0; k < get_FPZ0_GRID(); k++)
             {
-                z = (pct.FPZ_OFFSET + k)*ct.hzzgrid * ct.zside;
+                z = (get_FPZ_OFFSET() + k)*get_hzzgrid() * get_zside();
         
-                idx = i * pct.FPY0_GRID * pct.FPZ0_GRID + j*pct.FPZ0_GRID + k;
+                idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j*get_FPZ0_GRID() + k;
                 dipole_ele_x += x * rho[idx];
                 dipole_ele_y += y * rho[idx];
                 dipole_ele_z += z * rho[idx];
@@ -196,9 +199,9 @@ FILE *dfi;
         }
     }
 
-    dipole_ele_x *= ct.vel_f;
-    dipole_ele_y *= ct.vel_f;
-    dipole_ele_z *= ct.vel_f;
+    dipole_ele_x *= get_vel_f();
+    dipole_ele_y *= get_vel_f();
+    dipole_ele_z *= get_vel_f();
 
 //        dipole_m = ddot(&n2, Pn1, &ione, Xij, &ione);
     dipole_ele_x -= dipole_ion_x;

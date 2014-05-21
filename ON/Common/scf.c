@@ -150,7 +150,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
         vtot[idx] = vxc[idx] + vh[idx];
 
     /* Generate exchange-correlation potential */
-    get_vxc(rho, rhocore, vxc);
+    get_vxc(rho, rho, rhocore, vxc);
 
     pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 

@@ -222,7 +222,7 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
 
     if(ct.runflag !=1) 
     {
-        get_vxc(rho, rhocore, vxc);
+        get_vxc(rho, rho, rhocore, vxc);
         pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
         get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
         for (idx = 0; idx < get_FP0_BASIS(); idx++)

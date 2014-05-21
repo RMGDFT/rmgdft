@@ -18,23 +18,24 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var.h"
 
 
 void orbit_xyz_orbit(STATE * states, double *Xij, double *Yij, double *Zij)
 {
     int i, ii;
     int st1, st2;
-    REAL temp;
-    REAL *psi1;
-    REAL *psi2;
-    REAL *psi3;
+    double temp;
+    double *psi1;
+    double *psi2;
+    double *psi3;
     MPI_Status mstatus;
-    REAL time1;
+    double time1;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
-    REAL sum;
+    double sum;
     int idx;
-    REAL temp2, temp3, temp4;
+    double temp2, temp3, temp4;
     MPI_Request mr_send, *mr_recv;
     int st11;
     double X0, Y0, Z0;
@@ -74,7 +75,7 @@ void orbit_xyz_orbit(STATE * states, double *Xij, double *Yij, double *Zij)
     my_calloc(mr_recv, ii, MPI_Request);
 
     psi2 = orbit_tem;
-    my_malloc_init(psi3, ct.max_orbit_size, REAL );
+    my_malloc_init(psi3, ct.max_orbit_size, double );
 
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)

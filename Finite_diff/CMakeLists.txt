@@ -15,6 +15,8 @@ FiniteDiff_Cbindings.cpp
 app_cir_fcc.cpp
 app_cir_bcc.cpp
 app_cir_hex.cpp
+app_grad.c
+app6_del2.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 

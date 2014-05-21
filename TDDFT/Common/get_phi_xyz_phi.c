@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "main.h"
+#include "init_var.h"
+
 
 
 
@@ -24,7 +26,7 @@ void get_phi_xyz_phi(STATE * states, double *Xij, double *Yij, double *Zij)
     int maxst, n2;
     STATE *sp;
     int ione = 1;
-    REAL tem;
+    double tem, vel;
     int ixx, iyy, izz;
     double *Xij_00, *Yij_00, *Zij_00;
 
@@ -55,9 +57,10 @@ void get_phi_xyz_phi(STATE * states, double *Xij, double *Yij, double *Zij)
     my_barrier();
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
-    sscal (&n2, &ct.vel, Xij, &ione);
-    sscal (&n2, &ct.vel, Yij, &ione);
-    sscal (&n2, &ct.vel, Zij, &ione);
+    vel = get_vel();
+    sscal (&n2, &vel, Xij, &ione);
+    sscal (&n2, &vel, Yij, &ione);
+    sscal (&n2, &vel, Zij, &ione);
 
     if (pct.gridpe == 0)
     {
