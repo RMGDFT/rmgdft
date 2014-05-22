@@ -51,10 +51,8 @@ void update_TDDFT(double *mat_X)
     update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, &CONVERGENCE, states);
 
 
-    get_te(rho, rhoc, rhocore, vh, vxc, states);
+//    get_te(rho, rhoc, rhocore, vh, vxc, states);
 
-
-    get_HS(states, states1, vtot_c, Hij, matB);
 
 
 }

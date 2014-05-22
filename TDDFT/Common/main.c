@@ -62,10 +62,14 @@ int main(int argc, char **argv)
     time_t tt;
     char *timeptr;
 
-    double *Hmatrix, *Smatrix, *Xij, *Yij, *Zij;
-    int Ieldyn=1, iprint = 6;
-    int n2, num_states,i;
+    double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
+    double *Xij_dist, *Yij_dist, *Zij_dist;
+    
+    int Ieldyn=1, iprint = 0;
+    int n2, numst,i;
     double *Pn0, *Pn1;
+    double dipole_ion[3], dipole_ele[3];
+    int IA=1, JA=1, IB=1, JB=1;
 
     time(&tt);
     timeptr = ctime(&tt);
@@ -77,75 +81,67 @@ int main(int argc, char **argv)
 
     my_barrier();
 
-    
+
 
     /*  Begin to do the real calculations */
     init_TDDFT();
-    get_HS(states, states1, vtot_c, Hij, matB);
+
+    numst = ct.num_states;
+
+    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+
+    Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
+            pct.desca, pct.desca[1]);
+    Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, matB, IB, JB,
+            pct.desca, pct.desca[1]);
+
 
     get_cholesky_real(matB);
     get_dm_diag_p(states, l_s, mat_X, Hij);
 
     write_eigs(states);
-    num_states = ct.num_states;
-    n2 = num_states * num_states;
+
+    n2 = (ct.state_end - ct.state_begin) * ct.num_states;
+    my_malloc( Xij_00, n2, double );
+    my_malloc( Yij_00, n2, double );
+    my_malloc( Zij_00, n2, double );
+
+
+    n2 = MXLLDA * MXLCOL;
+    my_malloc( Xij_dist, n2, double );
+    my_malloc( Yij_dist, n2, double );
+    my_malloc( Zij_dist, n2, double );
+
+    get_phi_xyz_phi(states, Xij_00, Yij_00, Zij_00);
+
+    Cpdgemr2d(numst, numst, Xij_00, IA, JA, pct.descb, Xij_dist, IB, JB,
+            pct.desca, pct.desca[1]);
+    Cpdgemr2d(numst, numst, Yij_00, IA, JA, pct.descb, Yij_dist, IB, JB,
+            pct.desca, pct.desca[1]);
+    Cpdgemr2d(numst, numst, Zij_00, IA, JA, pct.descb, Zij_dist, IB, JB,
+            pct.desca, pct.desca[1]);
+
+    n2 = numst * numst;
     my_malloc( Pn0, 2*n2, double );
     my_malloc( Pn1, 2*n2, double );
+    my_malloc( Hmatrix, n2, double );
+    my_malloc( Smatrix, n2, double );
+    
 
-    for(i = 0; i < n2; i++) Pn0[i] = mat_X[i];
-    for(i = 0; i < n2; i++) Pn0[i+n2] = 0.0;
 
-/*  matB: overlap matrix, Hij:  Hamiltonian matrix */
-    int j, k, idx;
 
-    double x, y, z, dipole_ion_x = 0.0;
-    double dipole_ion_y = 0.0;
-    double dipole_ion_z = 0.0;
 
-    double dipole_ele_x = 0.0;
-    double dipole_ele_y = 0.0;
-    double dipole_ele_z = 0.0;
+    /*  matB: overlap matrix, Hij:  Hamiltonian matrix  distributed in
+     *  scalapack way*/
 
-    dipole_ele_x = 0.0;
-    dipole_ele_y = 0.0;
-    dipole_ele_z = 0.0;
-    for(i = 0; i < get_FPX0_GRID(); i++)
-    {
-        x = (get_FPX_OFFSET() + i)*get_hxxgrid() * get_xside();
-        for(j = 0; j < get_FPY0_GRID(); j++)
-        {
-            y = (get_FPY_OFFSET() + j)*get_hyygrid() * get_yside();
+    dipole_calculation(rhoc, dipole_ion);
+    dipole_calculation(rho, dipole_ele);
 
-            for(k = 0; k < get_FPZ0_GRID(); k++)
-            {
-                z = (get_FPZ_OFFSET() + k)*get_hzzgrid() * get_zside();
-        
-                idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j*get_FPZ0_GRID() + k;
-                dipole_ion_x += x * rhoc[idx];
-                dipole_ion_y += y * rhoc[idx];
-                dipole_ion_z += z * rhoc[idx];
-                dipole_ele_x += x * rho[idx];
-                dipole_ele_y += y * rho[idx];
-                dipole_ele_z += z * rho[idx];
-            }
-        }
-    }
 
-    dipole_ion_x *= get_vel_f();
-    dipole_ion_y *= get_vel_f();
-    dipole_ion_z *= get_vel_f();
-    dipole_ele_x *= get_vel_f();
-    dipole_ele_y *= get_vel_f();
-    dipole_ele_z *= get_vel_f();
+    printf("\n  x dipolll  %f %f", dipole_ion[0], dipole_ele[0]);
+    printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
+    printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
 
-printf("\n  x dipolll  %f %f", dipole_ion_x, dipole_ele_x);
-printf("\n  y dipolll  %f %f", dipole_ion_y, dipole_ele_y);
-printf("\n  z dipolll  %f %f", dipole_ion_z, dipole_ele_z);
-
-    my_malloc( Xij, n2, double );
-    my_malloc( Yij, n2, double );
-    my_malloc( Zij, n2, double );
-    get_phi_xyz_phi(states, Xij, Yij, Zij);
 
 
 
@@ -158,12 +154,16 @@ printf("\n  z dipolll  %f %f", dipole_ion_z, dipole_ele_z);
     //  write_eigs(states);
     /*  Xij = <phi|x|phi>, Yij = <phi|y|phi>, Zij = <phi|z|phi>  */ 
 
+    mat_dist_to_global(mat_X, Pn0, pct.desca);
+    mat_dist_to_global(matB, Smatrix, pct.desca);
+
+    for(i = 0; i < n2; i++) Pn0[i+n2] = 0.0;
+
     double time_step = 0.20;
-    double dipole_m,  efield = 0.001;
-    int ione = 1;
+    double efield = 0.001;
     double fs= 0.02418884;  // 1fs = 0.02418884 *10^-15 second 
-FILE *dfi;
- dfi = fopen("dipole.dat.ykick", "w+");
+    FILE *dfi;
+    dfi = fopen("dipole.dat.ykick", "w+");
     for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
 
@@ -172,47 +172,29 @@ FILE *dfi;
             efield = 0.0;
         }
 
-        for(i = 0; i < n2; i++) Hij[i] = time_step*Hij[i] + efield * Yij[i];
-        eldyn_(&num_states, matB, Hij, Pn0, Pn1, &Ieldyn, &iprint);
+        for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i] + efield * Yij_dist[i];
 
-        for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
+        mat_dist_to_global(Hij, Hmatrix, pct.desca);
+
+        eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
+
+        //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
+        mat_global_to_dist(Pn1, mat_X, pct.desca);
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
         update_TDDFT(mat_X);
 
-    dipole_ele_x = 0.0;
-    dipole_ele_y = 0.0;
-    dipole_ele_z = 0.0;
-    for(i = 0; i < get_FPX0_GRID(); i++)
-    {
-        x = (get_FPX_OFFSET() + i)*get_hxxgrid() * get_xside();
-        for(j = 0; j < get_FPY0_GRID(); j++)
-        {
-            y = (get_FPY_OFFSET() + j)*get_hyygrid() * get_yside();
+        get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+        Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
+            pct.desca, pct.desca[1]);
+        dipole_calculation(rho, dipole_ele);
 
-            for(k = 0; k < get_FPZ0_GRID(); k++)
-            {
-                z = (get_FPZ_OFFSET() + k)*get_hzzgrid() * get_zside();
-        
-                idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j*get_FPZ0_GRID() + k;
-                dipole_ele_x += x * rho[idx];
-                dipole_ele_y += y * rho[idx];
-                dipole_ele_z += z * rho[idx];
-            }
-        }
-    }
+        dipole_ele[0] -= dipole_ion[0];
+        dipole_ele[1] -= dipole_ion[1];
+        dipole_ele[2] -= dipole_ion[2];
 
-    dipole_ele_x *= get_vel_f();
-    dipole_ele_y *= get_vel_f();
-    dipole_ele_z *= get_vel_f();
-
-//        dipole_m = ddot(&n2, Pn1, &ione, Xij, &ione);
-    dipole_ele_x -= dipole_ion_x;
-    dipole_ele_y -= dipole_ion_y;
-    dipole_ele_z -= dipole_ion_z;
- 
 
         fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
-ct.scf_steps*time_step, dipole_ele_x, dipole_ele_y, dipole_ele_z);
+                ct.scf_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
         // get_dm_diag_p(states, l_s, mat_X, Hij);
         // write_eigs(states);
 

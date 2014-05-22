@@ -14,10 +14,10 @@ implicit none
 !
 !-- get Si  directly from  U (wihtout Ui)
 !
-  write(*,*)' dochol -0 '
-  write(*,*)'Nsq,N = ',Nsq, N
-  write(*,*)'**:S'
-  write(*,100) s
+!  write(*,*)' dochol -0 '
+!  write(*,*)'Nsq,N = ',Nsq, N
+!  write(*,*)'**:S'
+!  write(*,100) s
 100 format(9f8.4)
   !call  dumpm(S)
   !write(*,*)'**:Si',Si
