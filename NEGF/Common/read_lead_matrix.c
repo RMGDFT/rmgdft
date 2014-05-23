@@ -81,7 +81,7 @@ void read_lead_matrix ()
         /* read the matrices for  leads */
 
         sprintf (newname, "%s%s", name, ".matrix");
-        fhand = open(newname, O_RDWR);
+        my_open( fhand, newname, O_RDWR, S_IREAD | S_IWRITE );
         nbytes = read(fhand, tem_H00, idx * sizeof(double));
         nbytes = read(fhand, tem_S00, idx * sizeof(double));
         nbytes = read(fhand, tem_H01, idx * sizeof(double));

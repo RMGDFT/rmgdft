@@ -266,21 +266,6 @@ double app_cil_fourth_f_gpu(const float *psi,
                        cudaStream_t cstream);
 
 
-#define my_fopen(_fhandle_, _filename_, _mode_) do {\
-    _fhandle_ = fopen(_filename_, _mode_);\
-    if (_fhandle_ == NULL)\
-        error_handler("macro my_fopen: can't fopen file %s", _filename_);\
-    printf("\nfopening file '%s' mode '%s'\n", _filename_, _mode_);\
-} while (0)
-
-
-
-#define my_open(_fhandle_, _filename_, _flags_, _mode_) do {\
-    _fhandle_ = open(_filename_, _flags_, _mode_);\
-    if (_fhandle_ < 0)\
-        error_handler("macro my_open: can't open file %s", _filename_);\
-    printf("\nopening file '%s' flags '%s' mode '%s'\n", _filename_, #_flags_, #_mode_);\
-} while (0)
 
 #endif
 
