@@ -1,4 +1,6 @@
 add_library (Misc
+GlobalSums.cpp
+GlobalSums_Cbindings.cpp
 BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp
@@ -10,7 +12,6 @@ Lattice_Cbindings.cpp
 transition.cpp
 init_IO.c
 get_index.c
-global_sums.c
 minimage.c
 get_vtot_psi.c
 my_mpi.c

@@ -1,4 +1,7 @@
 add_library (RMG_Common
+Kpoint.cpp
+State.cpp
+#scf.cpp
 RmgPrintTimings.cpp
 pack_stop_axpy.cpp
 genvpsi.cpp

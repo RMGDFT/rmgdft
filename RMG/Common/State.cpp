@@ -30,10 +30,9 @@
 #include <State.h>
 #include <complex>
 
-template <class StateType> State<StateType>::State(StateType *storage)
+template <class StateType> State<StateType>::State(void)
 {
 
-    this->psi = storage;
 
 }
 
