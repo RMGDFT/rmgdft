@@ -30,6 +30,16 @@
  * SOURCE
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <libgen.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -41,6 +51,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "svnrev.h"
+#include "RmgTimer.h"
 
 
 
@@ -53,14 +64,12 @@ PE_CONTROL pct;
 
 
 void eldyn_(int *num_states, double *, double *, double *, double *, int *, int*);
+FILE *my_fopen_increment(char *name);
 
 int main(int argc, char **argv)
 {
 
 
-
-    time_t tt;
-    char *timeptr;
 
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
@@ -70,10 +79,7 @@ int main(int argc, char **argv)
     double *Pn0, *Pn1;
     double dipole_ion[3], dipole_ele[3];
     int IA=1, JA=1, IB=1, JB=1;
-
-    time(&tt);
-    timeptr = ctime(&tt);
-    ct.time0 = my_crtc();
+    FILE *dfi;
 
     ct.images_per_node = 1;
     init_IO(argc, argv);
@@ -82,6 +88,8 @@ int main(int argc, char **argv)
     my_barrier();
 
 
+    void *RT = BeginRmgTimer("Main");
+    void *RT1 = BeginRmgTimer("Main: init");
 
     /*  Begin to do the real calculations */
     init_TDDFT();
@@ -159,33 +167,56 @@ int main(int argc, char **argv)
 
     for(i = 0; i < n2; i++) Pn0[i+n2] = 0.0;
 
+    EndRmgTimer(RT1);
+
     double time_step = 0.20;
-    double efield = 0.001;
+    double efield[3];
+    efield[0] = ct.x_field_0 * ct.e_field;
+    efield[1] = ct.y_field_0 * ct.e_field;
+    efield[2] = ct.z_field_0 * ct.e_field;
+
+
     double fs= 0.02418884;  // 1fs = 0.02418884 *10^-15 second 
-    FILE *dfi;
-    dfi = fopen("dipole.dat.ykick", "w+");
+    if(pct.gridpe == 0)dfi = my_fopen_increment("dipole.dat");
+
+    if(pct.gridpe == 0)fprintf(dfi, "\n  electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
+
     for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
 
-        if(ct.scf_steps > 0) 
+        if(ct.scf_steps == 0) 
         {
-            efield = 0.0;
+            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i] 
+                + efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] + efield[2] * Zij_dist[i];
+        }
+        else
+        {
+
+            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i];
+            
         }
 
-        for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i] + efield * Yij_dist[i];
 
         mat_dist_to_global(Hij, Hmatrix, pct.desca);
 
+        void *RT2 = BeginRmgTimer("Main: ELDYN");
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
+        EndRmgTimer(RT2);
 
         //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
         mat_global_to_dist(Pn1, mat_X, pct.desca);
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
-        update_TDDFT(mat_X);
 
+        void *RT3 = BeginRmgTimer("Main: update");
+        update_TDDFT(mat_X);
+        EndRmgTimer(RT3);
+
+        void *RT4 = BeginRmgTimer("Main: get_HS");
         get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+        EndRmgTimer(RT4);
+
         Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
-            pct.desca, pct.desca[1]);
+                pct.desca, pct.desca[1]);
         dipole_calculation(rho, dipole_ele);
 
         dipole_ele[0] -= dipole_ion[0];
@@ -193,7 +224,7 @@ int main(int argc, char **argv)
         dipole_ele[2] -= dipole_ion[2];
 
 
-        fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
+        if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 ct.scf_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
         // get_dm_diag_p(states, l_s, mat_X, Hij);
         // write_eigs(states);
@@ -201,9 +232,13 @@ int main(int argc, char **argv)
 
     }
 
-    //    my_free(Xij);
-    //    my_free(Yij);
-    //    my_free(Zij);
+
+    EndRmgTimer(RT);
+
+
+
+    if(pct.imgpe == 0) fclose(ct.logfile);
+    CompatRmgTimerPrint(ct.logname, ct.scf_steps);
 
     MPI_Finalize();
 

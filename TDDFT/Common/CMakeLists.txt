@@ -1,4 +1,5 @@
 add_library (tddft_Common
+RmgPrintTimings.cpp
 dipole_calculation.c
 dot_product_orbit_xyz_orbit.c
 orbit_xyz_orbit.c
@@ -10,3 +11,4 @@ init_TDDFT.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/Headers/")
+

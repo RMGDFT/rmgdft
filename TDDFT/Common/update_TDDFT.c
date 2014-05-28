@@ -24,33 +24,22 @@ void update_TDDFT(double *mat_X)
     int idx, ione =1;
     int n = get_FP0_BASIS();
 
-    time1 = my_crtc();
-
-
    
+
+    void *RT = BeginRmgTimer("update");
+
     scopy(&n, rho, &ione, rho_old, &ione);
 
+    void *RT1 = BeginRmgTimer("Main: update: get_rho");
     get_new_rho(states, rho);
+    EndRmgTimer(RT1);
 
-/*
-    tem1 = 0.0;
-    for (idx = 0; idx < FP0_BASIS; idx++)
-    {
-        tem = rho_old[idx];
-        rho_old[idx] = -rho[idx] + rho_old[idx];
-        rho[idx] = tem;
-        tem1 += rho_old[idx] * rho_old[idx];
-    }
-
-    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) FP0_BASIS;
-    pulay_rho (ct.scf_steps, FP0_BASIS, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
-
-*/
 
     /* Update potential */
     update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, &CONVERGENCE, states);
 
 
+    EndRmgTimer(RT);
 //    get_te(rho, rhoc, rhocore, vh, vxc, states);
 
 
@@ -94,9 +83,11 @@ void update_pot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 
     /* Generate hartree potential */
     //    get_vh1(rho, rhoc, vh, 15, ct.poi_parm.levels);
+    void *RT1 = BeginRmgTimer("Main: update: get_vh");
     get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps,
             ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
 
+    EndRmgTimer(RT1);
 
 
     /* Compute quantities function of rho only */

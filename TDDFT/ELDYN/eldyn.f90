@@ -43,7 +43,7 @@ write(*,*) "enter eldyn"
 ! set threshold and  max number of  iteration  for commutator expansion
 !
 
-write(*,*)'-- eldyn -1'
+!write(*,*)'-- eldyn -1'
   Nsq= N*N
   thrs =  1.0d-8
   Maxiter = 100
@@ -66,13 +66,13 @@ write(*,*)'-- eldyn -1'
 !  cholesky decomposition and  O/N transformation matrices U,Ui
 !
  
-write(*,*)'-- eldyn -2'
+!write(*,*)'-- eldyn -2'
    call dochol(S,Si,U,Ui,N)   ! includes timing inside dochol (split on Sinverse and U,Ui
 
 !
 !  O/N transformation Pn-Po
 !
-write(*,*)'-- eldyn -3'
+!write(*,*)'-- eldyn -3'
    call start_time(5)
    call  ontrans(U,Ui,F         , Fo        ,n,iFn2Fo)
    call  ontrans(U,Ui,Pn0(1,1,1), Po0(1,1,1),n,iPn2Po)
@@ -80,7 +80,7 @@ write(*,*)'-- eldyn -3'
    call stop_time(5)
 
 
-write(*,*)'-- eldyn -4'
+!write(*,*)'-- eldyn -4'
 
    if(iprint.gt.0) then ; 
      write(*,*)'*******  S :' ; call dumpm(S,iprint)  !iprint)
@@ -98,7 +98,7 @@ write(*,*)'-- eldyn -4'
 !
 !  now commut propagation
 !
-write(*,*)'-- eldyn -5'
+!write(*,*)'-- eldyn -5'
    if (tCommutp) then 
      call  start_time(6)
      call commutp (Po0,Po1,Fo,N,thrs,maxiter,niter,errmax,iprint)
@@ -109,7 +109,7 @@ write(*,*)'-- eldyn -5'
         endif
     endif 
      
-write(*,*)'-- eldyn -6'
+!write(*,*)'-- eldyn -6'
 !
 !  now diag propagation
 !
@@ -123,7 +123,7 @@ write(*,*)'-- eldyn -6'
          endif
    endif 
 
-write(*,*)'-- eldyn -7'
+!write(*,*)'-- eldyn -7'
 !
 !--  now back n/o transformation: Po->Pn
 !
@@ -137,7 +137,7 @@ write(*,*)'-- eldyn -7'
       write(*,*)"**** o/n transformed,  Pn1:" ;  call dumpm(Pn1,iprint)
       endif
 
-write(*,*)'-- eldyn -8'
+!write(*,*)'-- eldyn -8'
 
 !----- stop timer
    call stop_time(1)

@@ -14,6 +14,7 @@ init_IO.c
 get_index.c
 minimage.c
 get_vtot_psi.c
+my_fopen_increment.c
 my_mpi.c
 blaswrappers.c
 set_bc.c

@@ -23,15 +23,15 @@ implicit none
   !write(*,*)'**:Si',Si
   
   call   dcopy(Nsq,S,1,Si,1)
-  write(*,*)' dochol -1 '
+! write(*,*)' dochol -1 '
   call   start_time(3)
   call   dpotrf('U',N,Si,N,info)   !  cholesky 
-  write(*,*)' dochol -2 '
+! write(*,*)' dochol -2 '
   if (info.ne.0)  then ; write(*,*) 'Chol-1-err';stop; endif
   call   dpotri('U',N,Si,N,info)   ! inverse  of S using  cholesky 
   if (info.ne.0)  then ; write(*,*) 'Chol-2-err';stop; endif
   call  filllt(Si,N,lt)
-  write(*,*)' dochol -3 '
+! write(*,*)' dochol -3 '
   call  stop_time(3)
 !  write(*,*)' **** chol: Si='  ;  call dumpm(Si)
 
@@ -41,7 +41,7 @@ implicit none
   
   call  start_time(4)
   call  dcopy(Nsq,S,1,U,1)
-  write(*,*)' dochol -4 '
+! write(*,*)' dochol -4 '
   call  dpotrf('U',N,U,N,info)   !  cholesky 
   if (info.ne.0)  then ; write(*,*) 'Chol-3-err';stop; endif
   call  dcopy(Nsq,U,1,Ui,1) 
@@ -57,7 +57,7 @@ implicit none
 !  dpptrf
 !  dtptri 
 
-  write(*,*)' dochol -5 '
+! write(*,*)' dochol -5 '
 
 end subroutine
 
