@@ -21,14 +21,12 @@ void get_invmat(double *matB)
 {
     int numst = ct.num_states;
     int info;
-    double time1, time2;
     char uplo = 'l';
 
     int ione = 1;
     int myrow;
     _fcd char_fcd1;
 
-    time1 = my_crtc();
 
 
     myrow = pct.myrow;
@@ -58,6 +56,4 @@ void get_invmat(double *matB)
     my_barrier();
 
 
-    time2 = my_crtc();
-    rmg_timings(INVMATB_TIME, (time2 - time1));
 }

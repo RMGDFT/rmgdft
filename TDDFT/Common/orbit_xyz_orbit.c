@@ -30,7 +30,6 @@ void orbit_xyz_orbit(STATE * states, double *Xij, double *Yij, double *Zij)
     double *psi2;
     double *psi3;
     MPI_Status mstatus;
-    double time1;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
     double sum;
@@ -39,12 +38,10 @@ void orbit_xyz_orbit(STATE * states, double *Xij, double *Yij, double *Zij)
     MPI_Request mr_send, *mr_recv;
     int st11;
     double X0, Y0, Z0;
-	double time0;
 
 
     my_barrier();
     state_per_proc = ct.state_per_proc + 2;
-    time1 = my_crtc();
 
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
@@ -153,8 +150,6 @@ void orbit_xyz_orbit(STATE * states, double *Xij, double *Yij, double *Zij)
 
     }
 
-    time1 = my_crtc() - time1;
-    rmg_timings(ORBIT_DOT_ORBIT, time1);
 
     my_free(psi3);
     my_free(mr_recv);

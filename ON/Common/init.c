@@ -52,11 +52,9 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
 
     int ic, idx, ion;
     int level;
-    rmg_double_t time1, time2;
 
    int  gridpe = pct.gridpe;
 
-    time1 = my_crtc();
     /* initialize the lattice basis vectors */
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
@@ -69,12 +67,9 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     ct.states = states;
 
     init_parameter(states);
-    if(gridpe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
 
-    if(gridpe == 0) printf("\n init latgen done %f sec",my_crtc()-time1 );
 
     init_parameter(states);
-    if(gridpe == 0) printf("\n init_parameter done %f sec",my_crtc()-time1 );
 
     /* initialize the reciprocal lattice vectors */
     recips();
@@ -95,99 +90,76 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
         write_header();
     }
 
-    if(gridpe == 0) printf("\n init write_header done %f sec",my_crtc()-time1 );
     my_barrier();
-    if(gridpe == 0) printf("\n init my_brarrier done %f sec",my_crtc()-time1 );
 
     /* Initialize the mehrstellen weights */
     get_mehr();
 
-    if(gridpe == 0) printf("\n init get_state_to_proc done %f sec",my_crtc()-time1 );
 
     /* allocate memory for wave functions states.psiR and psiI */
     init_state_size(states);
-    if(gridpe == 0) printf("\n init_state_size  done %f sec",my_crtc()-time1 );
 
     state_corner_xyz(states);
-    if(gridpe == 0) printf("\n init_state_corner_xyz  done %f sec",my_crtc()-time1 );
 
     allocate_psi(states, states1);
 
 
-    if(gridpe == 0) printf("\n init_allocate_psi  done %f sec",my_crtc()-time1 );
 
     init_states();
 
     is_state_overlap(states, state_overlap_or_not);
 
-    if(gridpe == 0) printf("\n init_is_state_overlap  done %f sec",my_crtc()-time1 );
 
     get_orbit_overlap_region(states);
-    if(gridpe == 0) printf("\n init_get_orbit_overlap_region  done %f sec",my_crtc()-time1 );
 
     init_comm(states);
 
     init_comm_res(states);
-    if(gridpe == 0) printf("\n init_comm_ress  done %f sec",my_crtc()-time1 );
 
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);
 
-    if(gridpe == 0) printf("\n init_duplicate_states_info done %f sec",my_crtc()-time1 );
     my_barrier();
-    if(gridpe == 0) printf("\n init_barrier done %f sec",my_crtc()-time1 );
 
 
     allocate_masks(states);
-    if(gridpe == 0) printf("\n init_allocate mask done %f sec",my_crtc()-time1 );
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state(level, states);
 
     /* Initialize the radial potential stuff */
     init_kbr();
-    if(gridpe == 0) printf("\n init_kbr done %f sec",my_crtc()-time1 );
 
     /* Initialize symmetry stuff */
    //  init_sym();
-    if(gridpe == 0) printf("\n init_sys done %f sec",my_crtc()-time1 );
 
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc(vnuc, rhoc, rhocore);
-    if(gridpe == 0) printf("\n init_nuc done %f sec",my_crtc()-time1 );
 
 
 
     /* Initialize Non-local operators */
     init_nl_xyz();
-    if(gridpe == 0) printf("\n init_nl_xyz done %f sec",my_crtc()-time1 );
     get_ion_orbit_overlap_nl(states);
-    if(gridpe == 0) printf("\n init_get_ion_orbit_overlap_nl done %f sec",my_crtc()-time1 );
 
     get_nlop();
-    if(pct.gridpe == 0) printf("\n pe %d init_get_lop done %f sec",pct.gridpe, my_crtc()-time1 );
 
     fflush(NULL);
 
     my_barrier();
-    if(pct.gridpe == 0) printf("\n pe %d my_barrier %f sec",pct.gridpe, my_crtc()-time1 );
     fflush(NULL);
 
     init_nonlocal_comm();
-    if(pct.gridpe == 0) printf("\n pe %d init_nonlocal_comm done %f sec",pct.gridpe,my_crtc()-time1 );
     fflush(NULL);
 
     /* Initialize qfuction in Cartesin coordinates */
     init_qfunct();
-    if(gridpe == 0) printf("\n init_qfunct done %f sec",my_crtc()-time1 );
     fflush(NULL);
     get_QI();
-    if(gridpe == 0) printf("\n init_get_QI done %f sec",my_crtc()-time1 );
     fflush(NULL);
 
     /* Get the qqq */
     get_qqq();
-    if(gridpe == 0) printf("\n init_get_qqq done %f sec",my_crtc()-time1 );
     fflush(NULL);
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
@@ -202,7 +174,6 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
         case INIT_FIREBALL:
             init_wf_atom(states);
             init_rho_atom(rho);
-            printf("\n init_rho_atom done %f sec",my_crtc()-time1 );
             break;
 
         case INIT_GAUSSIAN:
@@ -212,9 +183,7 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
             break;
 
         case 1:
-            time1 = my_crtc();
             read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
-            if(gridpe == 0) printf("\n init_read_data done %f sec",my_crtc()-time1 );
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
             break;
 
@@ -239,8 +208,6 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     get_ddd(vtot);
 
 
-    time2 = my_crtc();
-    rmg_timings(INIT_TIME, (time2 - time1));
     my_barrier();
     fflush(NULL);
 

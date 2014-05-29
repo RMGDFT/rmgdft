@@ -30,7 +30,6 @@ void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma
 
     int info;
     int i, nprobe;
-    rmg_double_t time1, time2;
     int ni[MAX_BLOCKS] ;
     int N, N1, N2;
     int j, idx, idx1;
@@ -60,7 +59,6 @@ void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma
     }
     
 
-    time1 = my_crtc ();
 /* ===================================================== */
 
 
@@ -73,8 +71,6 @@ void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma
     /*  Green_C store the (n2,n1) block of Green function */
 
 
-    time2 = my_crtc ();
-    rmg_timings (matrix_inverse_cond_TIME, (time2 - time1));
 
 
 

@@ -78,7 +78,6 @@ void mgrid_solv_negf(rmg_double_t * v_mat, rmg_double_t * f_mat, rmg_double_t * 
     int iz, ix;
 
     rmg_double_t tem1, tem;
-    double time1, time2;
 
 
 /* precalc some boundaries */

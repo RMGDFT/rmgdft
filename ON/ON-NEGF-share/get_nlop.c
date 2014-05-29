@@ -52,14 +52,11 @@ void get_nlop(void)
     init_alloc_nonloc_mem ();
 
 
-    double time2 = my_crtc();
     /*Do forward transform for each species and store results on the coarse grid */
     init_weight ();
     /*The same for derivative of beta */
     init_derweight ();
 
-    if (pct.gridpe == 0)
-        printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
 
     /*Get memory to store the phase factor applied to the forward Fourier transform
      *      * and to store the backwards transform*/

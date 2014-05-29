@@ -32,8 +32,6 @@ void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
     int ion, ion1, ip;
     double *psi, *prjptr_x, *prjptr_y, *prjptr_z;
 
-    double time1, time2;
-    time1 = my_crtc();
 
     /* size of the <psi|kb> in each processor */
     size = ct.state_per_proc * pct.n_ion_center * ct.max_nl;
@@ -80,7 +78,5 @@ void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
 
     }
 
-    time2 = my_crtc();
-    rmg_timings(PARTIAL_KBPSI, time2 - time1);
 
 }

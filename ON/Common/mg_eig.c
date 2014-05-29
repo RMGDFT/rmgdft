@@ -31,7 +31,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     int idx, istate, ione = 1;
     double diag, t1, d1, gamma;
     STATE *sp, *sp1;
-    double time1, time2;
     int st1, ixx, iyy, izz;
     char side = 'l', uplo = 'l';
     int n2 = ct.num_states * ct.num_states, numst = ct.num_states;
@@ -62,17 +61,13 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     get_ddd(vtot);
 
-    time1 = my_crtc();
 
     distribute_to_global(vtot_c, vtot_global);
-    time2 = my_crtc();
-    rmg_timings(POTFC_TIME, time2 - time1);
 
 
     get_invmat(matB);
 
     /* Compute matrix theta = matB * Hij  */
-    time1 = my_crtc();
     dsymm_dis(&side, &uplo, &numst, matB, Hij, theta);
 
     t1 = 2.0;
@@ -82,8 +77,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
             pct.descb, pct.desca[1]);
 
 
-    time2 = my_crtc();
-    rmg_timings(THETA_TIME, time2 - time1);
 
 
     /* calculate  Theta * S * |states[].psiR > and stored in  states1[].psiR 
@@ -97,7 +90,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
 
 
-    time1 = my_crtc();
 
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
@@ -109,14 +101,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         saxpy(&states[istate].size, &t1, orbit_tem, &ione, states_tem[istate].psiR, &ione);
     }
 
-    time2 = my_crtc();
-    rmg_timings(QNMPSI_TIME, time2 - time1);
 
 
     get_nonortho_res(states_tem, work_matrix_row, states1);
     my_barrier();
-    time1 = my_crtc();
-    rmg_timings(NONRES_TIME, time1 - time2);
     /* end shuchun wang */
 
 
@@ -134,7 +122,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
        and all the vectors H|psi> */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
-    time1 = my_crtc();
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         ixx = states[st1].ixmax - states[st1].ixmin + 1;
@@ -172,8 +159,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         t1 = -2.0;
         saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
     }                           /* end for st1 = .. */
-    time2 = my_crtc();
-    rmg_timings(HPSI_TIME, time2 - time1);
 
      
 
@@ -200,7 +185,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
-    time1 = my_crtc();
 
     switch (ct.mg_method)
     {
@@ -223,8 +207,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
             error_handler("Undefined mg_method ");
     }
 
-    time2 = my_crtc();
-    rmg_timings(MIXPSI_TIME, time2 - time1);
 
     mix_steps++;
 
@@ -234,9 +216,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
-    time2 = my_crtc();
-    d1 = time2 - time1;
-    rmg_timings(MG_TIME, d1);
 
     firstflag++;
 
@@ -252,7 +231,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1)
 {
     int i,ii,max_ii;
-    double time1, time2;
     int idx, st1, st2;
     rmg_double_t theta_ion;
     rmg_double_t *psi_pointer,*psi3,*psi2, *psi1;

@@ -32,8 +32,6 @@ void rho_nm_mat (double *Aij, rmg_double_t * global_mat_X)
     int nh;
 
 
-    double time1, time2;
-    time1 = my_crtc ();
 
 
     /* Loop over states on this proce onle 
@@ -132,8 +130,6 @@ void rho_nm_mat (double *Aij, rmg_double_t * global_mat_X)
 
 
 
-    time2 = my_crtc ();
-    rmg_timings (RHO_QNM_MAT, time2 - time1);
 
 
 }

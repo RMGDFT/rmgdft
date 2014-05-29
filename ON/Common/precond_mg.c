@@ -15,7 +15,7 @@
 void precond_mg(double *res, double *work1, double *work2, int istate)
 {
     int cycles, ione = 1, nits, stopp0;
-    double diag, t1, time1, time2, d1, one = 1.;
+    double diag, t1, d1, one = 1.;
     STATE *sp;
 
     int idx;
@@ -29,7 +29,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     double *work3;
 
     eig_pre[ct.eig_parm.levels] = 50;
-    time1 = my_crtc();
 
     diag = -1. / ct.Ac;
 #if FD4
@@ -105,10 +104,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
     my_free(work3);
-
-    time2 = my_crtc();
-    d1 = time2 - time1;
-    rmg_timings(PRECOND_TIME, d1);
 
 
 }

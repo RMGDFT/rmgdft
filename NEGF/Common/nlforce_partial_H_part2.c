@@ -24,11 +24,9 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
     MPI_Status mstatus;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_sendrecv, num_send, num_recv;
-    double time1, time2, time3, time4;
     int st11;
 
     state_per_proc = ct.state_per_proc + 2;
-    time1 = my_crtc ();
 
     idx1 = lcr[1].num_states / 2;
     idx2 = ct.num_states - lcr[2].num_states / 2;
@@ -88,10 +86,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
         }/* end for st2 */
     }/* end for st1 */ 
 
-    time2 = my_crtc();
-    rmg_timings(PAR_D_VNUC_LOC, (time2-time1));
 
-    time3 = my_crtc();
     psi2 = orbit_tem;
     for (loop = 0; loop < num_sendrecv_loop; loop++)
     {
@@ -244,7 +239,5 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
         my_barrier ();
     }
 
-    time4 = my_crtc();
-    rmg_timings(PAR_D_VNUC_COMM, (time4-time3));
 
 }

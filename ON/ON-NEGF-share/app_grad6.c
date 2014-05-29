@@ -18,7 +18,7 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
     int iz, ix, iy;
     double t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
     double t3x,t3y,t3z;
-    double time1, time2, *rptr;
+    double *rptr;
     double *wxr, *wyr, *wzr;
     int ixs, iys;
     int ix1, iy1;
@@ -32,7 +32,6 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
     wyr = (rmg_double_t *) wy;
     wzr = (rmg_double_t *) wz;
 
-    time1 = my_crtc();
     my_malloc_init( rptr, (dimx + 6) * (dimy + 6) * (dimz + 6), double );
 
 
@@ -101,9 +100,6 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
     }                           /* end switch */
 
     my_free(rptr);
-
-    time2 = my_crtc();
-    rmg_timings(APPGRAD_TIME, (time2 - time1));
 
 
 

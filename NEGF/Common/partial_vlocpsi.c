@@ -30,8 +30,6 @@ void partial_vlocpsi (STATE st1, int ion2, rmg_double_t * psi, rmg_double_t * pr
     int idx1, idx2;
     int index;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc ();
 
 /*    for (idx1=0; idx1 < st1.size; idx1++) vlpsi[idx1] = 0.0;*/
 
@@ -169,7 +167,5 @@ void partial_vlocpsi (STATE st1, int ion2, rmg_double_t * psi, rmg_double_t * pr
         }
     }                           /* end for ix = xlow2 */
 
-    time2 = my_crtc ();
-    rmg_timings (PAR_VLOCPSI, (time2 - time1));
 
 }

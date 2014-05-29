@@ -55,10 +55,6 @@ void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int d
     int incx2 = (dimy + 4) * (dimz + 4);
     int incy2 = dimz + 4;
 
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
-#endif
 
     zlen = dimx * dimy * 2;
     ylen = dimx * 2 * (dimz + 4);
@@ -249,10 +245,6 @@ void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int d
     my_free(frdx1n);
     my_free(frdx1);
 
-#if MD_TIMERS
-    time2 = my_crtc();
-    rmg_timings(IMAGE_TIME, (time2 - time1));
-#endif
 
 }                               /* end trade_images2 */
 

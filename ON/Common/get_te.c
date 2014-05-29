@@ -26,10 +26,8 @@
 void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc, STATE * states)
 {
     double eigsum, energy_sc;
-    double time1, time2;
 
 
-    time1 = my_crtc();
 
 
     eigsum = get_sum_eig(states);
@@ -62,8 +60,6 @@ void get_te(double *rho, double *rhoc, double *rhocore, double *vh, double *vxc,
     }                           /* end if */
 
 
-    time2 = my_crtc();
-    rmg_timings(GET_TE_TIME, (time2 - time1));
 
 
 }                               /* end get_te */

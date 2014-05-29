@@ -28,7 +28,6 @@ void dot_product_orbit_xyz_orbit(STATE *orbit1, STATE *orbit2, double *X0, doubl
     int incx, incy, incx1, incy1;
     int zcase, ix, iy, iz;
     int ix1, ix2, iy1, iy2, idx1, idx2;
-    double time1;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
     double *psi1, *psi2;
@@ -41,7 +40,6 @@ void dot_product_orbit_xyz_orbit(STATE *orbit1, STATE *orbit2, double *X0, doubl
     hygrid = get_hxgrid() * get_yside();
     hzgrid = get_hxgrid() * get_zside();
 
-    time1 = my_crtc();
 
     *X0 = 0.0;
     *Y0 = 0.0;
@@ -409,7 +407,5 @@ void dot_product_orbit_xyz_orbit(STATE *orbit1, STATE *orbit2, double *X0, doubl
 
     }
 
-    time1 = my_crtc() - time1;
-    rmg_timings(DOT_PRODUCT, time1);
 }
 

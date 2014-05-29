@@ -46,7 +46,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     double zero = 0., one = 1.;
     int st1, itype = 1;
     char diag, side, uplo = 'l', jobz = 'v', transa, transb;
-    double time1, time2, time3;
     double val[ct.num_states];
 
     /* for parallel libraries */
@@ -69,7 +68,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
     nb = ct.scalapack_block_factor;
     int NB = ct.scalapack_block_factor;
     my_barrier();
-    time3 = my_crtc();
 
 
     mxllda2 = MXLLDA * MXLCOL;
@@ -103,7 +101,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
         /* 
          * SOLVE THE GENERALIZED EIGENVALUE PROBLEM:  m * z = lambda * matS * z 
          */
-        time1 = my_crtc();
 
         /* Transform the generalized eigenvalue problem to a standard form */
         scopy(&mxllda2, hb, &ione, uu_dis, &ione);
@@ -118,15 +115,9 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
             fflush(NULL);
             exit(0);
         }
-        if (myrow == 0 && mycol == 0)
-        {
-            time2 = my_crtc();
-            rmg_timings(PSSYGST_TIME, (time2 - time1));
-        }
 
 
         /* solve a standard symmetric eigenvalue problem */
-        time1 = my_crtc();
 
         char_fcd1 = &jobz;
         char_fcd3 = &uplo;
@@ -139,11 +130,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
             printf(" get_dm_diag_p: PSSYEV, output info=%d\n", info);
             fflush(NULL);
             exit(0);
-        }
-        if (myrow == 0 && mycol == 0)
-        {
-            time2 = my_crtc();
-            rmg_timings(PSSYEV_TIME, (time2 - time1));
         }
 
 
@@ -159,7 +145,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
         /* Get the eigenvectors Z of the generalized eigenvalue problem */
 
         /* Solve Z=L**(-T)*U */
-        time1 = my_crtc();
         diag = 'n';
         transa = 't';
         char_fcd1 = &uplo;
@@ -172,11 +157,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
             printf(" get_dm_diag_p: PSTRTRS, output info=%d\n", info);
             fflush(NULL);
             exit(0);
-        }
-        if (myrow == 0 && mycol == 0)
-        {
-            time2 = my_crtc();
-            rmg_timings(PSTRTRS_TIME, (time2 - time1));
         }
 
 
@@ -219,11 +199,6 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
 
     /* my_free(work); */
     my_barrier();
-    if (pct.gridpe == 0)
-    {
-        time2 = my_crtc();
-        rmg_timings(DIAG_TIME, time2 - time3);
-    }
 
 
 }

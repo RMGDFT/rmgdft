@@ -37,7 +37,6 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
     int ione = 1;
 
 
-    time1 = my_crtc();
 
     *H = 0.0;
     *S = 0.0;
@@ -375,7 +374,5 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
 
     }
 
-    time1 = my_crtc() - time1;
-    rmg_timings(DOT_PRODUCT, time1);
 }
 

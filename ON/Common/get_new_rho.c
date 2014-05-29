@@ -24,7 +24,6 @@ void get_new_rho(STATE * states, double *rho)
 
     rmg_double_t *psi1, *psi2, *psi3, *psi_p, scale;
     int i, st1, st2, proc1, proc2;
-    rmg_double_t time1, time2, time3;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
     rmg_double_t *rho_temp;
@@ -34,7 +33,6 @@ void get_new_rho(STATE * states, double *rho)
     int st11;
 
     state_per_proc = ct.state_per_proc + 2;
-    time1 = my_crtc();
     if (pct.gridpe == 0)
         printf(" Compute new density\n");
 
@@ -54,7 +52,6 @@ void get_new_rho(STATE * states, double *rho)
    for (idx = 0; idx < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx++)
        rho_global[idx] = 0.;
 
-   time2 = my_crtc();
    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
        for (st2 = st1; st2 < ct.state_end; st2++)
        {
@@ -280,13 +277,9 @@ void get_new_rho(STATE * states, double *rho)
    my_free(psi3);
    my_free(mr_recv);
    my_barrier();
-   time3 = my_crtc();
-   rmg_timings(RHO_PHI_TIME, time3 - time2);
 
    idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
    global_sums(rho_global, &idx, pct.grid_comm);
-   time2 = my_crtc();
-   rmg_timings(RHO_SUM_TIME, time2 - time3);
 
    global_to_distribute(rho_global, rho_temp);
 
@@ -294,15 +287,11 @@ void get_new_rho(STATE * states, double *rho)
 
    my_free(rho_temp);
 
-   time3 = my_crtc();
-   rmg_timings(RHO_CTOF_TIME, time3 - time2);
 
    rho_augmented(rho, work_matrix_row, state_begin, state_end, num_nonlocal_ion, 
            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
 
 
-   time2 = my_crtc();
-   rmg_timings(RHO_AUG_TIME, time2 - time3);
 
    tcharge = 0.0;
    for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -319,8 +308,6 @@ void get_new_rho(STATE * states, double *rho)
        printf("\n total charge Normalization constant = %f  \n", t2);
 
 
-   time1 = my_crtc() - time1;
-   rmg_timings(GET_NEW_RHO, time1);
 
 #if  	DEBUG
    print_sum_square(get_P0_BASIS(), rho, "rho_sum_sqare in the end of get_new_rho  ");

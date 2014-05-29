@@ -30,18 +30,15 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
     rmg_double_t *psi2;
     rmg_double_t *psi3;
     MPI_Status mstatus;
-    rmg_double_t time1;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
     MPI_Request mr_send, *mr_recv;
     int st11;
     double H, S;
-	double time0;
 
 
     my_barrier();
     state_per_proc = ct.state_per_proc + 2;
-    time1 = my_crtc();
 
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
@@ -148,8 +145,6 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
 
     }
 
-    time1 = my_crtc() - time1;
-    rmg_timings(ORBIT_DOT_ORBIT, time1);
 
     my_free(psi3);
     my_free(mr_recv);

@@ -44,13 +44,11 @@ extern rmg_double_t *vh_old, *vxc_old;
 
 void run (STATE * states, STATE * states1, STATE *states_distribute)
 {
-	rmg_double_t time1, time2;
 	FILE *file;
 	int ix, iy, iz, idx;
 	int size, iprobe, idx_delta, i, j;
 	double *vbias;
 
-	time1 = my_crtc ();
 	/* initialize processor structure, decompose the processor into subdomains
 	 * pct.pe_kpoint * ( pct.pe_x, pct.pe_y, pct.pe_z) or
 	 * pct.pe_kpoint * ( pct.pe_column , pct.pe_row)
@@ -64,17 +62,12 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 	pmo_init();
 	if (ct.runflag == 100)
 	{
-		time1 = my_crtc ();
 		lead_bandstructure ();
-		time2 = my_crtc ();
-		if (pct.gridpe == 0)
-			printf ("\nTIME for lead bandstructure %f\n", time2 - time1);
 		if (pct.gridpe == 0)
 			printf ("\nband structrue file: band.dat\n");
 	}
 	else if (ct.runflag == 110)
 	{
-		time1 = my_crtc ();
 #if GPU_ENABLED
 		init_gpu();
 #endif
@@ -83,9 +76,6 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 		//get_cond_frommatrix ();
 		get_cond_frommatrix_kyz ();
 
-		time2 = my_crtc ();
-		if (pct.gridpe == 0)
-			printf ("\nTIME for get_cond_dos %f\n", time2 - time1);
 	}
 
 	else 
@@ -116,7 +106,6 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 		if (ct.runflag == 200)
 		{
-			time1 = my_crtc ();
 			get_cond_frommatrix ();
 			get_cond_frommatrix_kyz ();
 
@@ -127,9 +116,6 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 				printf ("\n peaks[%d] = %f", i, peaks[i]);
 				get_3Ddos (states, peaks[i]-0.0002 , peaks[i]+0.0002, 3, i);
 			}
-			time2 = my_crtc ();
-			if (pct.gridpe == 0)
-				printf ("\n TIME for get_cond_dos %f", time2 - time1);
 		}
 		else 
 		{
@@ -216,8 +202,6 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 			}                           /* end switch */
 
 
-			time1 = my_crtc () - time1;
-			rmg_timings (TOTAL_TIME, time1);
 
 
 			if(pct.psi1 != NULL ) my_free( pct.psi1 );
@@ -242,7 +226,6 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 			my_barrier();
 
-			write_timings();
 
 		}
 	}

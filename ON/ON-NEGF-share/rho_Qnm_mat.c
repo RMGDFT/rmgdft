@@ -26,7 +26,6 @@ void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X, int
 int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 {
     int ion, ip1, ip2, st1, st2, ist;
-    double time1, time2;
     MPI_Status mstatus;
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
@@ -36,7 +35,6 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
     double tem;
 
 
-    time1 = my_crtc();
 
     /* Loop over states on this proce onle 
        (distribution of work AND Aij contributions) */
@@ -137,9 +135,6 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
     }                           /* end for idx */
 
 
-
-    time2 = my_crtc();
-    rmg_timings(RHO_QNM_MAT, (time2 - time1));
 
 
 }

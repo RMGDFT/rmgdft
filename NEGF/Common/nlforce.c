@@ -26,8 +26,6 @@ void nlforce (rmg_double_t * veff)
     ION *iptr;
     SPECIES *sp;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
 
  
     size = ct.num_ions * ct.max_nl * ct.max_nl;
@@ -114,7 +112,5 @@ void nlforce (rmg_double_t * veff)
     my_free (rho_nm);
     my_free (forces_tem);
 
-    time2 = my_crtc();
-    rmg_timings(NLFORCE_TIME, time2 - time1);
 
 }

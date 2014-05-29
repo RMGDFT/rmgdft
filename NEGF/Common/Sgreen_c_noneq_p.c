@@ -32,7 +32,6 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
 
     int *ipiv, idx, idx1;
     int i, j, nprobe; 
-    rmg_double_t time1, time2;
     int ni[MAX_BLOCKS], ntot, ndim;
     int N, N1, N2;
     rmg_double_t tem;
@@ -84,7 +83,6 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
     }
 
 
-    time1 = my_crtc ();
 
 #if GPU_ENABLED
    matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C); 
@@ -93,8 +91,6 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
 #endif
 
 
-    time2 = my_crtc ();
-    rmg_timings (matrix_inverse_lr_TIME, (time2 - time1));
 
 
     my_free( H_tri );

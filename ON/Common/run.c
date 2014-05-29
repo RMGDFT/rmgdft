@@ -43,15 +43,17 @@ extern rmg_double_t *vh_old, *vxc_old;
 
 void run(STATE * states, STATE * states1)
 {
-    rmg_double_t time1;
 
 
-    time1 = my_crtc();
 
     /* initialize processor structure, decompose the processor into subdomains
        pct.pe_kpoint * ( pct.pe_x, pct.pe_y, pct.pe_z) or
        pct.pe_kpoint * ( pct.pe_column , pct.pe_row)
      */
+
+
+    void *RT = BeginRmgTimer("1-TOTAL: init");
+
     init_dimension(&MXLLDA, &MXLCOL);
     init_pe_on();
 
@@ -71,33 +73,36 @@ void run(STATE * states, STATE * states1)
 
     my_barrier();
 
+    EndRmgTimer(RT);
     /* Dispatch to the correct driver routine */
 
+            void *RT1 = BeginRmgTimer("1-TOTAL: quench");
     switch (ct.forceflag)
     {
-    case MD_QUENCH:            /* Quench the electrons */
-        quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhoc, rhocore);
-        break;
+        case MD_QUENCH:            /* Quench the electrons */
 
-    case MD_FASTRLX:           /* Fast relax */
-        fastrlx(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhocore, rhoc);
-        /* error_handler ("Undefined MD method"); */
-        break;
-    default:
-        error_handler("Undefined MD method");
+            quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhoc, rhocore);
+            break;
+
+        case MD_FASTRLX:           /* Fast relax */
+            fastrlx(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhocore, rhoc);
+            /* error_handler ("Undefined MD method"); */
+            break;
+        default:
+            error_handler("Undefined MD method");
     }
 
+            EndRmgTimer(RT1);
 
     /* Save data to output file */
+    void *RT2 = BeginRmgTimer("1-TOTAL: write");
     write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
 
     /* Save state information to file */
     write_states_info(ct.outfile, &states[0]);
 
-
     my_barrier();
+    EndRmgTimer(RT2);
 
-    time1 = my_crtc() - time1;
-    rmg_timings(TOTAL_TIME, time1);
 
 }

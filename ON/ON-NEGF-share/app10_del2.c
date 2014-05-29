@@ -49,11 +49,6 @@ void app10_del2(rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int d
     rmg_double_t *dum2;
     int ixs, iys, ix1, iy1;
 
-#if MD_TIMERS
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
-#endif
-
     ixs = (dimy + 8) * (dimz + 8);
     iys = (dimz + 8);
     ix1 = dimy * dimz;
@@ -125,10 +120,6 @@ void app10_del2(rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int d
         }                       /* end for */
     }                           /* end for */
 
-#if MD_TIMERS
-    time2 = my_crtc();
-    rmg_timings(APPCIL_TIME, (time2 - time1));
-#endif
 
     my_free(dum2);
 

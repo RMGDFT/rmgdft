@@ -31,8 +31,6 @@ Apply linear potential drop
 
 void apply_potential_drop (rmg_double_t *vbias)
 {
-    double time1, time2;
-    time1 = my_crtc ();
     int idx;
     int i, j, k, xoff, yoff;
     int ii, jj, kk;
@@ -415,8 +413,6 @@ void apply_potential_drop (rmg_double_t *vbias)
 
     my_barrier ();
 
-    time2 = my_crtc ();
-    rmg_timings (SCF_TIME, time2 - time1);
 
 }                              
 

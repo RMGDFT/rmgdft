@@ -25,9 +25,7 @@ void multi_GHG_munu (rmg_double_t *GHG_tri, rmg_double_t *GHG_en_tri)
     complex double *green_C, *complex_H, *temp_matrix_tri, *temp_matrix1;
     complex double *sigma_sum1, *sigma_sum2, *sigma_L;
     complex double one, zero;
-    double time1, time2, time3, time4;
 
-    time1 = my_crtc ();
 
     one = 1.0;
     zero = 0.0;
@@ -127,13 +125,10 @@ void multi_GHG_munu (rmg_double_t *GHG_tri, rmg_double_t *GHG_en_tri)
             }
 
 
-    	    time3 = my_crtc ();
 
             /* Calculating the Green function */
             Sgreen_c (lcr[0].Htri, lcr[0].Stri, sigma_sum1, sigma_sum2, ene, green_C, nC);
 
-    	    time4 = my_crtc ();
-    	    rmg_timings (NLFORCE_GREE_F, (time4 - time3));
 
             /* Expanding Htri to complex space and temporarily stored in temp_matrix_tri*/
             for (idx1 = 0; idx1 < ntot; idx1++)
@@ -341,7 +336,5 @@ void multi_GHG_munu (rmg_double_t *GHG_tri, rmg_double_t *GHG_en_tri)
     my_free(complex_H);
     my_free(temp_matrix1);
 
-    time2 = my_crtc ();
-    rmg_timings (PAR_D_GHG, (time2 - time1));
 
 }

@@ -11,12 +11,10 @@
 void app_mask(int istate, double *u, int level)
 {
     char *maskptr;
-    double time1, time2;
     int idx, istart;
     int size, nx, ny, nz, item;
 
 
-    time1 = my_crtc();
 
     maskptr = ct.states[istate].lmask[level];
     
@@ -35,7 +33,5 @@ void app_mask(int istate, double *u, int level)
         for (idx = 0; idx < size; idx++)
             u[idx] = 0.;
 
-    time2 = my_crtc();
-    rmg_timings(MASK_TIME, (time2 - time1));
 
 }

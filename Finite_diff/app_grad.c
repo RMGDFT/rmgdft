@@ -57,7 +57,6 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
     my_malloc (rptr, (dimx + 4) * (dimy + 4) * (dimz + 4), rmg_double_t);
 
 
-    time1 = my_crtc ();
     trade_imagesx (rho, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
 
     switch (ibrav)
@@ -164,7 +163,6 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wxr, rmg_double_t *wyr, rmg_do
 
     my_free (rptr);
 
-    time2 = my_crtc ();
 
 
 

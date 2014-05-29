@@ -16,8 +16,6 @@ void nlforce_par_Q(rmg_double_t * veff, rmg_double_t * rho_nm, int ion, int nh, 
     rmg_double_t *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z, *gamma;
     ION *iptr;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
 
     gamma = rho_nm + ion * ct.max_nl * ct.max_nl;
 
@@ -86,7 +84,5 @@ void nlforce_par_Q(rmg_double_t * veff, rmg_double_t * rho_nm, int ion, int nh, 
  *   iptr->force[ct.fpt[0]][2] += get_vel_f() * forces[2];
 */
 
-    time2 = my_crtc();
-    rmg_timings(NLFORCE_PAR_Q, time2 - time1);
 
 }

@@ -1,11 +1,11 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 /*
-                         scf.c
-  Performs a single self consistent step.
-*/
+   scf.c
+   Performs a single self consistent step.
+ */
 
 #include <float.h>
 #include <math.h>
@@ -18,18 +18,17 @@
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *,
-                double *, double *, int *, STATE * states);
+        double *, double *, int *, STATE * states);
 void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
-                int Nrefresh, double scale, int preconditioning);
+        int Nrefresh, double scale, int preconditioning);
 static double t[2];
 extern int it_scf;
 double tem1;
 
 void scf(STATE * states, STATE * states1, double *vxc, double *vh,
-         double *vnuc, double *rho, double *rhoc, double *rhocore,
-         rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE)
+        double *vnuc, double *rho, double *rhoc, double *rhocore,
+        rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE)
 {
-    double time1, time2, time3, time4;
     int numst = ct.num_states;
     int ispin, kpt, kpt1;
     int idx, ione = 1;
@@ -38,13 +37,12 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     int steps;
     int nfp0 = get_FP0_BASIS();
 
-    time1 = my_crtc();
 
+    void *RT = BeginRmgTimer("2-SCF");
 
-    /* decide if update orbital localization centers  */
     ct.move_centers_at_this_step = 0;
     if ((ct.scf_steps % ct.movingSteps == 0) && if_update_centers(states)
-        && ct.scf_steps > 1 && ct.movingCenter)
+            && ct.scf_steps > 1 && ct.movingCenter)
     {
         ct.move_centers_at_this_step = 1;
         update_orbit_centers(states);
@@ -63,10 +61,9 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         {
             kpt1 = kpt + ispin * ct.num_kpts;
             flag = 0;
-            time3 = my_crtc();
+            void *RT1 = BeginRmgTimer("2-SCF: matrix_and_diag");
             matrix_and_diag(ct.kp[kpt1].kstate, states1, vtot_c, flag);
-            time4 = my_crtc();
-            rmg_timings(MATDIAG_TIME, time4 - time3);
+            EndRmgTimer(RT1);
         }
     }
 
@@ -78,7 +75,9 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
     scopy(&nfp0, rho, &ione, rho_old, &ione);
 
+    void *RT2 = BeginRmgTimer("2-SCF: get_new_rho");
     get_new_rho(states, rho);
+    EndRmgTimer(RT2);
 
     tem1 = 0.0;
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -91,39 +90,39 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
     tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) get_FP0_BASIS();
     steps = ct.scf_steps;
+    void *RT3 = BeginRmgTimer("2-SCF: pulay mix");
     pulay_rho_on (steps, get_FP0_BASIS(), rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+    EndRmgTimer(RT3);
 
 
     /* Update potential */
-    time3 = my_crtc();
+    void *RT4 = BeginRmgTimer("2-SCF: update_pot");
     update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, CONVERGENCE, states);
-    time4 = my_crtc();
-    rmg_timings(UPDATEPOT_TIME, time4 - time3);
+    EndRmgTimer(RT4);
 
 
+    void *RT5 = BeginRmgTimer("2-SCF: get_te");
     get_te(rho, rhoc, rhocore, vh, vxc, states);
+    EndRmgTimer(RT5);
 
     /* Update the orbitals */
 
-    time3 = my_crtc();
 
 
     if(ct.scf_steps < ct.freeze_orbital_step)
     {
         steps = ct.scf_steps;
+        void *RT6 = BeginRmgTimer("2-SCF: mg_eig");
         mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
+        EndRmgTimer(RT6);
     }
     else
     {
         steps = ct.scf_steps - ct.freeze_orbital_step;
         if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
     }
-    time4 = my_crtc();
-    rmg_timings(MG_TIME, time4 - time3);
 
-    time2 = my_crtc();
-    rmg_timings(SCF_TIME, time2 - time1);
-
+    EndRmgTimer(RT);
 }                               /* end scf */
 
 
@@ -160,8 +159,8 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
 
     /* Generate hartree potential */
-//    get_vh1(rho, rhoc, vh, 15, ct.poi_parm.levels);
-   get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
+    //    get_vh1(rho, rhoc, vh, 15, ct.poi_parm.levels);
+    get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
 
 
 
@@ -211,8 +210,8 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
-   get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
-    
+    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+
     if (t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;
 }

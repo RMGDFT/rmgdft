@@ -50,9 +50,7 @@ void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * 
     int outcount = 0;
     int state_plot, i;
     static int CONVERGENCE = FALSE;
-    double time1, time2;
 
-    time1 = my_crtc();
 
 
     for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
@@ -111,8 +109,6 @@ void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * 
 //  if (pct.gridpe == 0) write_force();
 
 
-    time2 = my_crtc();
-    rmg_timings(QUENCH_TIME, time2 - time1);
 
 
 }

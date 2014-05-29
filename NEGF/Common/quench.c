@@ -63,9 +63,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     int idx2, FPYZ0_GRID;
     int i;
 
-    double time1, time2;
 
-    time1 = my_crtc ();
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -266,8 +264,6 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
         printf ("\n Quench is done \n");
 
 
-    time2 = my_crtc ();
-    rmg_timings (QUENCH_TIME, time2 - time1);
 
 }                               /* end quench */
 

@@ -28,13 +28,11 @@ void charge_density_matrix_p (complex double * sigma_all)
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
     complex double *green_C_non;
     int maxrow, maxcol;
-    double time1, time2, time3, time4, time5, time6;
     double one, zero;
     int ione =1;
     one =1.0;
     zero =0.0;
 
-    time1 = my_crtc ();
 
     nL = lcr[1].num_states;
     if (nL != ct.block_dim[0])
@@ -56,7 +54,6 @@ void charge_density_matrix_p (complex double * sigma_all)
 
     /*   Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
 
-    time3 = my_crtc ();
 
     idx_sigma = 0;
     iprobe = cei.probe_noneq;
@@ -109,10 +106,7 @@ void charge_density_matrix_p (complex double * sigma_all)
 
         }                       /* end for energy points */
 
-        time5 = my_crtc ();
         comm_sums (lcr[iprobe].density_matrix_tri, &ntot, COMM_EN1);
-        time6 = my_crtc ();
-        rmg_timings (MPISUM_EQ_TIME, (time6 - time5));
 
 
         if(cei.probe_noneq > 0) break;
@@ -123,8 +117,6 @@ void charge_density_matrix_p (complex double * sigma_all)
 
     my_free( green_C );
 
-    time4 = my_crtc ();
-    rmg_timings (EQ_PART_TIME, (time4 - time3));
 
     /* ======================= Non-equilibrium part ===================== */
 
@@ -193,7 +185,6 @@ void charge_density_matrix_p (complex double * sigma_all)
 
 
                         /* sigma is the rhomn in output  */
-                        time5 = my_crtc ();
 
                         idx_C = cei.probe_in_block[idx_delta - 1];
                         for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
@@ -216,8 +207,6 @@ void charge_density_matrix_p (complex double * sigma_all)
                         rho_munu_p (rho_mn, green_C_non, gamma, idx_delta); 
 #endif
 
-                        time6 = my_crtc ();
-                        rmg_timings (RHO_MUNU_TIME, (time6 - time5));
 
 
                         for (st1 = 0; st1 < ntot; st1++)
@@ -247,8 +236,6 @@ void charge_density_matrix_p (complex double * sigma_all)
         my_free( sigma );
         my_free( gamma );
 
-        time3 = my_crtc ();
-        rmg_timings (NONEQ_PART_TIME, (time3 - time4));
 
         /* ========== Calculation of the density matrix ============= */		
 
@@ -351,7 +338,5 @@ void charge_density_matrix_p (complex double * sigma_all)
     if (cei.num_probe > 4)
         error_handler ("probe > 4");
 
-    time2 = my_crtc ();
-    rmg_timings (CHARGE_DEN_MAT_TIME, (time2 - time1));
 
 }

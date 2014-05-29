@@ -6,6 +6,7 @@
 #include <functional>
 #include <string>
 #include <iomanip>
+#include <algorithm>
 #include "RmgTimer.h"
 
 using namespace std;
@@ -13,6 +14,7 @@ using namespace std;
 void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
     int tid;
+    size_t i, count, count1;
     BaseThread *T = BaseThread::getBaseThread(0);
     RmgTimer RT("Print timings");
 
@@ -54,17 +56,33 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
         logfile << std::fixed << std::setprecision(2);
         logfile << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------" << endl;
         logfile << "                                                 Total time       Per SCF/step" << endl;
+        count1 = 0;
         for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
-            std::size_t found = it->first.find_first_of(":");
-            if(found != std::string::npos) {
-                logfile << "  ";
-                logfile << setw(39) << left << it->first << setw(18) << right << it->second << setw(18) << right << it->second/(double)steps << endl;
+            count = std::count(it->first.begin(), it->first.end(), ':');  
+
+            if(count1 < count) {
+                for(i = 0; i < count1; i++) logfile << "  ";
+                for(i = 2 * count1; i < 77; i++) logfile <<"-";
+                logfile <<  endl;
+            }
+
+            if(count == 0) logfile << endl;
+
+            for(i = 0; i < count; i++) logfile << "  ";
+            logfile << setw(41-count*2) << left << it->first << setw(18) << right << it->second << setw(18) << right << it->second/(double)steps << endl;
+                
+#if 0 
+          if(count) {
+                for(i = 0; i < count; i++) logfile << "  ";
+                logfile << setw(41-count*2) << left << it->first << setw(18) << right << it->second << setw(18) << right << it->second/(double)steps << endl;
             }
             else {
                 logfile << endl;
                 logfile <<         setw(41) << left << it->first << setw(18) << right <<  it->second << setw(18) << right << it->second/(double)steps << endl;
                 logfile << "-----------------------------------------------------------------------------" << endl;
             }
+#endif
+            count1 = count;
         }
 
         logfile << endl << endl;

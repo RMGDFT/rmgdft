@@ -16,8 +16,6 @@ void nlforce_par_rho(rmg_double_t * par_gamma_x, rmg_double_t * par_gamma_y, rmg
     rmg_double_t *gamma_x, *gamma_y, *gamma_z, *dnmI;
     ION *iptr;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
 
     size = ct.max_nl * ct.max_nl;
     max_nl = ct.max_nl;
@@ -59,7 +57,5 @@ void nlforce_par_rho(rmg_double_t * par_gamma_x, rmg_double_t * par_gamma_y, rmg
     iptr->force[ct.fpt[0]][1] += forces[1];
     iptr->force[ct.fpt[0]][2] += forces[2];
 
-    time2 = my_crtc();
-    rmg_timings(NLFORCE_PAR_RHO, time2 - time1);
 
 }

@@ -35,8 +35,6 @@ void get_Hvnlij(double *Aij)
 
 
 
-    time1 = my_crtc();
-
 
     alpha = 1. / get_vel();
 
@@ -145,9 +143,6 @@ void get_Hvnlij(double *Aij)
     }                           /* end for idx */
 
 
-
-    time2 = my_crtc();
-    rmg_timings(NL_TIME, (time2 - time1));
 
 
 }

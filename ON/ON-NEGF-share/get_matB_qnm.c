@@ -34,8 +34,6 @@ void get_matB_qnm(double *Aij)
 
 
 
-    time1 = my_crtc();
-
 
     alpha = 1. / get_vel();
 
@@ -138,9 +136,6 @@ void get_matB_qnm(double *Aij)
     }                           /* end for idx */
 
 
-
-    time2 = my_crtc();
-    rmg_timings(matB_QNM, (time2 - time1));
 
 
 }

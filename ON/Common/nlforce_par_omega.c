@@ -16,8 +16,6 @@ void nlforce_par_omega(rmg_double_t * par_omega_x, rmg_double_t * par_omega_y, r
     rmg_double_t *omega_x, *omega_y, *omega_z, *qqq;
     ION *iptr;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
 
     size = ct.max_nl * ct.max_nl;
     max_nl = ct.max_nl;
@@ -59,7 +57,5 @@ void nlforce_par_omega(rmg_double_t * par_omega_x, rmg_double_t * par_omega_y, r
     iptr->force[ct.fpt[0]][1] -= forces[1];
     iptr->force[ct.fpt[0]][2] -= forces[2];
 
-    time2 = my_crtc();
-    rmg_timings(NLFORCE_PAR_OMEGA, time2 - time1);
 
 }

@@ -30,9 +30,7 @@ void get_all_kbpsi (STATE *states1, STATE * states,
     int st1, idx;
     int size;
     int ion, ion1, ip;
-    double time1, time2;
 
-    time1 = my_crtc ();
 
     /* size of the <psi|kb> in each processor */
     size = ct.state_per_proc * pct.n_ion_center * ct.max_nl;
@@ -53,8 +51,6 @@ void get_all_kbpsi (STATE *states1, STATE * states,
 */
 
 
-    time2 = my_crtc ();
-    rmg_timings (NL_TIME, (time2 - time1));
 
 }
 
@@ -71,18 +67,14 @@ void get_kbpsi (STATE *sp1, double *kbpsi_one_state,
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, rmg_double_t *projectors)
 {
     int ixx, iyy, izz;
-    double time1, time2;
     double *psi;
 
-    time1 = my_crtc ();
 
     psi = sp1->psiR;
 
     get_local_kbpsi (sp1, psi, kbpsi_one_state,
             ion_orbit_overlap_region_nl, projectors);
 
-    time2 = my_crtc ();
-    rmg_timings (NL_TIME, (time2 - time1));
 
 }
 

@@ -38,7 +38,6 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore,
           rmg_double_t * vxc_old, rmg_double_t * vh_old, rmg_double_t * vbias, int *CONVERGENCE)
 {
-    double time1, time2;
     int st1, st2, idx, idx1, ione = 1;
     int st11, st22;
     double tem;
@@ -52,7 +51,6 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     int fpbasis;
     fpbasis = get_FP0_BASIS();
 
-    time1 = my_crtc ();
     for (idx = 0; idx < fpbasis; idx++)
         vtot[idx] = vh[idx] + vxc[idx] -vh_old[idx] - vxc_old[idx];
 
@@ -205,8 +203,6 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
      *    mix_vxc(vxc, vxc_old, ct.mix, ct.steps, 1);
      */
 
-    time2 = my_crtc ();
-    rmg_timings (SCF_TIME, time2 - time1);
 
 
 
@@ -227,11 +223,9 @@ void update_pot (double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t *
 
     int n = get_FP0_BASIS(), idx, ione = 1;
 
-    double time1, time2;
 
     /* allocate memory */
 
-    time1 = my_crtc ();
 
     /* save old vtot, vxc, vh */
     scopy (&n, vxc, &ione, vxc_old, &ione);
@@ -280,7 +274,5 @@ void update_pot (double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t *
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vext[idx];
     }
 
-    time2 = my_crtc ();
-    rmg_timings (UPDATE_POT_TIME, time2 - time1);
 
 }

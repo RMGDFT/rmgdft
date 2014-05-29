@@ -36,16 +36,6 @@
 #include <time.h>
 #include <stdio.h>
 
-
-rmg_double_t timings[LAST_TIME];
-
-void rmg_timings(int what, rmg_double_t time)
-{
-
-    timings[what] += time;
-
-}                               /* end rmg_timings */
-
 #include <sys/time.h>
 
 rmg_double_t my_crtc (void)
@@ -61,90 +51,3 @@ rmg_double_t my_crtc (void)
 }
 
 
-
-
-/* Outputs timing information */
-void write_timings (void)
-{
-
-
-/* Write timing information */
-    if (pct.gridpe == 0)
-    {
-
-
-        printf ("\n\n  TIMING INFORMATION\n");
-        printf ("*********************************\n");
-        printf ("TOTAL                %12.4f\n", timings[TOTAL_TIME]);
-        printf ("---------------------------------\n");
-        printf ("  INIT               %12.4f\n", timings[INIT_SOFT_TIME]);
-        printf ("  QUENCH             %12.4f\n", timings[QUENCH_TIME]);
-        printf ("  memory alloc.      %12.4f\n", timings[ALLOC_TIME]);
-        printf ("---------------------------------\n");
-        printf ("    sigma_all        %12.4f\n", timings[SIGMA_ALL_TIME]);
-        printf ("    SCF              %12.4f   (%12.4f /step)\n", timings[SCF_TIME],
-                timings[SCF_TIME] / ct.max_scf_steps);
-        printf ("---------------------------------\n");
-        printf ("      get_ddd        %12.4f\n", timings[GET_DDD_TIME]);
-        printf ("      get_Hij        %12.4f\n", timings[GET_Hij_TIME]);
-        printf ("      get_matB       %12.4f\n", timings[GET_MATB_SOFT_TIME]);
-        printf ("      charge mat     %12.4f\n", timings[CHARGE_DEN_MAT_TIME]);
-        printf ("      new rho        %12.4f\n", timings[GET_NEW_RHO]);
-        printf ("      update pot     %12.4f\n", timings[UPDATE_POT_TIME]);
-        printf ("         Hartree     %12.4f\n", timings[HARTREE_TIME]);
-        printf ("            Hartre1  %12.4f\n", timings[VH1_TIME]);
-        printf ("            Hartre2  %12.4f\n", timings[VH2_TIME]);
-        printf ("                  a  %12.4f\n", timings[VH2a_TIME]);
-        printf ("                  b  %12.4f\n", timings[VH2b_TIME]);
-        printf ("                  c  %12.4f\n", timings[VH2c_TIME]);
-        printf ("                  d  %12.4f\n", timings[VH2d_TIME]);
-        printf ("            Hartre3  %12.4f\n", timings[VH3_TIME]);
-        printf ("           confine   %12.4f\n", timings[CONFINE_TIME]);
-        printf ("           mgrid_vh  %12.4f\n", timings[MGRID_VH_TIME]);
-        printf ("           app_cil   %12.4f\n", timings[CIL_TIME]);
-        printf ("             image   %12.4f\n", timings[CIL_IMAGE_TIME]);
-        printf ("*********************************\n\n");
-
-        printf ("      get_Hij        %12.4f\n", timings[GET_Hij_TIME]);
-        printf ("---------------------------------\n");
-        printf ("        H|psi>       %12.4f\n", timings[H_psi_TIME]);
-        printf ("        <psi|psi>    %12.4f\n", timings[ORBIT_DOT_ORBIT_H]);
-        printf ("        <kb|psi>     %12.4f\n", timings[get_allkbpsi_TIME]);
-        printf ("        get_Hvnl     %12.4f\n", timings[get_Hnl_TIME]);
-
-        printf ("\n");
-        printf ("     get_matB        %12.4f\n", timings[GET_MATB_SOFT_TIME]);
-        printf ("---------------------------------\n");
-        printf ("       <psi|psi>     %12.4f\n", timings[ORBIT_DOT_ORBIT_O]);
-        printf ("       matB_qnm      %12.4f\n", timings[matB_qnm_TIME]);
-
-        printf ("\n");
-        printf ("     charge mat      %12.4f\n", timings[CHARGE_DEN_MAT_TIME]);
-        printf ("---------------------------------\n");
-        printf ("       equilibrium   %12.4f\n", timings[EQ_PART_TIME]);
-        printf ("       non-equilib   %12.4f\n", timings[NONEQ_PART_TIME]);
-        printf ("\n");
-
-
-        printf ("       equilibrium   %12.4f\n", timings[EQ_PART_TIME]);
-        printf ("---------------------------------\n");
-        printf ("         global sum  %12.4f\n", timings[MPISUM_EQ_TIME]);
-        printf ("         Green_c     %12.4f\n", timings[GREEN_EQ_TIME]);
-
-        printf ("\n");
-        printf ("       non-equilib   %12.4f\n", timings[NONEQ_PART_TIME]);
-        printf ("---------------------------------\n");
-        printf ("         rho_munu    %12.4f\n", timings[RHO_MUNU_TIME]);
-        printf ("         Green_c     %12.4f\n", timings[GREEN_NONEQ_TIME]);
-        printf ("         inverse     %12.4f\n", timings[matrix_inverse_lr_TIME]);
-
-        fflush (NULL);
-
-
-    }                           /* end if */
-    my_barrier ();
-    if (pct.gridpe == 0)
-        printf ("\n run done... \n");
-}                               /* end write_timings */
-
-/******/

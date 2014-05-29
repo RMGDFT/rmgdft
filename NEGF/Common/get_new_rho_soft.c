@@ -24,7 +24,6 @@ void get_new_rho_soft (STATE * states, double *rho)
 
     rmg_double_t *psi1, *psi2, scale;
     int i, st1, st2, proc1, proc2, st11;
-    rmg_double_t time1;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
     rmg_double_t *rho_temp;
@@ -34,7 +33,6 @@ void get_new_rho_soft (STATE * states, double *rho)
     double tem;
 
     state_per_proc = ct.state_per_proc + 2;
-    time1 = my_crtc ();
     /*    if (pct.gridpe == 0)
           printf (" Compute new density\n");*/
 
@@ -169,8 +167,6 @@ void get_new_rho_soft (STATE * states, double *rho)
 
 
     my_barrier ();
-    time1 = my_crtc () - time1;
-    rmg_timings (GET_NEW_RHO, time1);
 
 #if  	DEBUG
     print_sum_square (get_P0_BASIS(), rho, "rho_sum_sqare in the end of get_new_rho  ");

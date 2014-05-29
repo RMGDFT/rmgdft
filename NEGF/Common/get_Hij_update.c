@@ -25,11 +25,9 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     rmg_double_t tem, tem1;
     int ixx, iyy, izz;
     char msg[100];
-    double time1, time2, time3, time4;
     double *psi, one = 1.0, zero = 0.0;
 
     int ix, iy,iz;
-    time1 = my_crtc ();
 
     maxst = ct.num_states;
     int pbasis = get_P0_BASIS();
@@ -49,7 +47,6 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     /* Loop over states */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
-    time3 = my_crtc ();
 
     if(pct.num_local_orbit >0)
     {
@@ -86,10 +83,6 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
 
 
-
-
-
-    rmg_timings (GET_Hij_TIME, (time2 - time1));
 
     my_free(psi);
 

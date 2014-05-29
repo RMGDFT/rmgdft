@@ -20,12 +20,10 @@ void ortho_norm_local (STATE *states)
 {
     int ione = 1, i, j, k;
     int n;
-    double time1, time2;
     int num_state_on_this_ion;
     rmg_double_t norm;
     rmg_double_t overlap[MAX_ORBIT_ON_ION];
 
-    time1 = my_crtc ();
 
     if (pct.gridpe == 0)
         printf ("\n LOCAL ORTHONORMALIZATION  ");
@@ -63,8 +61,6 @@ void ortho_norm_local (STATE *states)
         sscal (&states[j].size, &norm, states[j].psiR, &ione);
     }
 
-    time2 = my_crtc ();
-    rmg_timings (ORTHONORM_TIME, (time2 - time1));
 }
 
 

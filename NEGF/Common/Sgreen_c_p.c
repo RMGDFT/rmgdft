@@ -32,7 +32,6 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
 
     int info;
     int i, j, nprobe;
-    rmg_double_t time1, time2;
     int ntot, N1, N2; 
     int idx, idx2, ioff, joff;
     
@@ -67,7 +66,6 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
 
     }	
 
-    time1 = my_crtc ();
 
 #if GPU_ENABLED
     matrix_inverse_cuda (H_tri, Green_C);
@@ -76,8 +74,6 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
 #endif
 
 
-    time2 = my_crtc ();
-    rmg_timings (matrix_inverse_cond_TIME, (time2 - time1));
 
 
     my_free( H_tri );

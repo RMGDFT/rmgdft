@@ -27,7 +27,6 @@ void sigma_all_energy_point (complex double * sigma_all)
     complex double ene, ctem;
 
     int idx_sigma, idx_C;
-    double time1, time2;
     int  maxrow, maxcol, maxrow2, maxcol2;
     int max_sigma_col, max_sigma_row;
     int t1, t2;
@@ -35,7 +34,6 @@ void sigma_all_energy_point (complex double * sigma_all)
     int ione = 1;
     int *desca, *descb, numst, numstC;
 
-    time1 = my_crtc ();
 
 
     maxrow =0;
@@ -291,8 +289,6 @@ void sigma_all_energy_point (complex double * sigma_all)
     my_free(ch01);
     my_free(ch10);
 
-    time2 = my_crtc ();
-    rmg_timings (SIGMA_ALL_TIME, (time2 - time1));
 
 
 }

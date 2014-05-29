@@ -30,8 +30,6 @@ void nlforce(rmg_double_t * veff)
 
     int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
 
-    rmg_double_t time1, time2;
-    time1 = my_crtc();
 
     size = ct.num_ions * ct.max_nl * ct.max_nl;
     my_malloc_init( rho_nm, 7 * size, rmg_double_t );
@@ -128,8 +126,6 @@ void nlforce(rmg_double_t * veff)
     my_free(rho_nm);
     my_free(forces_tem);
 
-    time2 = my_crtc();
-    rmg_timings(NLFORCE_TIME, time2 - time1);
 
 }
 

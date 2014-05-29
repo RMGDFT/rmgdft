@@ -42,14 +42,12 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     double temp_pos[3];
     unsigned nbytes;
     char newname[MAX_PATH + 200];
-    rmg_double_t tem1, tem2;
     int idx;
     int pex, pey, pez;
 
     /* Wait until everybody gets here */
     my_barrier();
 
-tem1 = my_crtc();
 
     sprintf(newname, "%s%s", name, ".basis");
     fhand = open(newname, O_RDWR);
@@ -212,8 +210,6 @@ tem1 = my_crtc();
 
     close(fhand);
 
-    tem2 = my_crtc();
-    if(pct.gridpe == 0) printf("\n aaaa read basis %f", tem2 - tem1);
     fflush(NULL);
 
     sprintf(newname, "%s%s", name, ".pot_rho");
@@ -268,9 +264,6 @@ tem1 = my_crtc();
     MPI_File_close(&mpi_fhand);
 
     my_barrier();
-    tem1 = my_crtc();
-    if(pct.gridpe == 0) printf("\n aaaa read pot_rho %f", tem2 - tem1);
-    fflush(NULL);
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {
@@ -293,8 +286,6 @@ tem1 = my_crtc();
 
     my_barrier();
 
-    tem1 = my_crtc();
-    if(pct.gridpe == 0) printf("\n aaaa read orbit %f", tem2 - tem1);
     fflush(NULL);
     fflush(NULL);
 

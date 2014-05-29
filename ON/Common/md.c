@@ -64,13 +64,7 @@ int main(int argc, char **argv)
 {
 
 
-
-    time_t tt;
-
-
-    time(&tt);
-    ct.time0 = my_crtc();
-
+    void *RT = BeginRmgTimer("1-TOTAL");
     ct.images_per_node = 1;
     init_IO(argc, argv);
 
@@ -81,9 +75,13 @@ int main(int argc, char **argv)
     /*  Begin to do the real calculations */
     run(states, states1);
 
-    //my_alloc_report( "order-n" );
 
-    write_timings();
+    EndRmgTimer(RT);
+
+
+    if(pct.imgpe == 0) fclose(ct.logfile);
+    CompatRmgTimerPrint(ct.logname, ct.scf_steps);
+
     MPI_Finalize();
 
     return 0;

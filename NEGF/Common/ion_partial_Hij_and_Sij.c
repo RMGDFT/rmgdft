@@ -25,8 +25,6 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
     rmg_double_t alpha, *partial_kbpsi, *partial_kbpsi_comm;
 
 
-    double time1, time2;
-    time1 = my_crtc ();
 
     for(idx = 0; idx < ct.num_states * ct.num_states; idx++) 
     {
@@ -213,8 +211,6 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
 
     my_free(partial_kbpsi_comm);
 
-    time2 = my_crtc ();
-    rmg_timings (PAR_D_H_AND_S, time2 - time1);
 
 
 }

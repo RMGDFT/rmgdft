@@ -40,7 +40,6 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
     int level;
-    double time1, time2;
 
 
 
@@ -48,7 +47,6 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 #if GAMMA_PT
 
     /* initialize matrices statearray and matB */
-    time1 = my_crtc();
     get_HS(states, states1, vtot_c, Hij_00, Bij_00);
 
     Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
@@ -56,8 +54,6 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
     Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, matB, IB, JB,
             pct.desca, pct.desca[1]);
 
-    time2 = my_crtc();
-    rmg_timings(HIJ_TIME, time2 - time1);
 
 
     get_cholesky_real(matB);

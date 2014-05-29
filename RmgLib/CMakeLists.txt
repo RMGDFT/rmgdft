@@ -43,6 +43,7 @@ src/app_cir_driver.cpp
 src/app_cil_driver.cpp
 src/FiniteDiff.cpp
 src/RmgTimer.cpp
+src/RmgPrintTimings.cpp
 src/RmgSumAll.cpp
 src/rmg_error.cpp
 src/get_vh.cpp

@@ -32,7 +32,6 @@ void Sgreen_onerow (complex double *Htri, complex double * sigma,
 
     int *ipiv, idx, idx1;
     int i, j, nprobe; 
-    rmg_double_t time1, time2;
     int ni[MAX_BLOCKS], ntot, ndim;
     int N, N1, N2;
     rmg_double_t tem;
@@ -83,14 +82,11 @@ void Sgreen_onerow (complex double *Htri, complex double * sigma,
     }
 
 
-    time1 = my_crtc ();
 
 
    matrix_inverse_anyprobe_p (H_tri, N, ni, iprobe, Green_C); 
 
 
-    time2 = my_crtc ();
-    rmg_timings (matrix_inverse_lr_TIME, (time2 - time1));
 
 
     my_free( H_tri );

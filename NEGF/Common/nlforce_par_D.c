@@ -21,10 +21,8 @@ void nlforce_par_D (STATE *states, rmg_double_t *forces)
     int idx1, idx2, size;
     int N_res, N_int, Num_ene_points;
     rmg_double_t *par_Hij_tri, *par_Sij_tri, *GHG_tri, *GHG_en_tri, *S_matrix;
-    double time1, time2, time3, time4;
     ION *iptr;
 
-    time1 = my_crtc ();
 
     /*allocate memory for par_Hij_tri, par_Sij_tri, GHG_tri and GHG_en_tri  */
     ntot = 0;
@@ -96,21 +94,16 @@ void nlforce_par_D (STATE *states, rmg_double_t *forces)
 
     my_free(S_matrix);
 
-    time3 = my_crtc ();
 
     /* Calculating the force due to another part of partial Halmitonian (partial_Vnuc/partial_R) */
     tri_to_row(GHG_tri, work_matrix, ct.num_blocks, ct.block_dim);
     nlforce_partial_H_part2 (states, states1, work_matrix, forces);
 
-    time4 = my_crtc ();
-    rmg_timings (PAR_D_VNUC, (time4 - time3));
 
     my_free(par_Hij_tri);
     my_free(par_Sij_tri);
     my_free(GHG_tri);
     my_free(GHG_en_tri);
 
-    time2 = my_crtc ();
-    rmg_timings (NLFORCE_PAR_D, (time2 - time1));
 
 }

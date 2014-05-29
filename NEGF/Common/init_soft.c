@@ -56,7 +56,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 
     int kpt, ic, idx, ion, ispin, kpt1;
     int flag, level;
-    rmg_double_t time1, time2, cut_init;
+    rmg_double_t cut_init;
     rmg_double_t tem;
     int item;
     char *nameL, *nameC, *nameR;
@@ -64,7 +64,6 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
         int ione = 1;
 
 
-    time1 = my_crtc ();
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
     ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
@@ -274,9 +273,6 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     /* Get the qqq */
     get_qqq ();
 
-
-    time2 = my_crtc ();
-    rmg_timings (INIT_SOFT_TIME, time2 - time1);
 
 
 
