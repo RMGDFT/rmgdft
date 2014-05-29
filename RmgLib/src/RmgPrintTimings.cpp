@@ -71,17 +71,6 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
             for(i = 0; i < count; i++) logfile << "  ";
             logfile << setw(41-count*2) << left << it->first << setw(18) << right << it->second << setw(18) << right << it->second/(double)steps << endl;
                 
-#if 0 
-          if(count) {
-                for(i = 0; i < count; i++) logfile << "  ";
-                logfile << setw(41-count*2) << left << it->first << setw(18) << right << it->second << setw(18) << right << it->second/(double)steps << endl;
-            }
-            else {
-                logfile << endl;
-                logfile <<         setw(41) << left << it->first << setw(18) << right <<  it->second << setw(18) << right << it->second/(double)steps << endl;
-                logfile << "-----------------------------------------------------------------------------" << endl;
-            }
-#endif
             count1 = count;
         }
 

@@ -1,5 +1,4 @@
 add_library (tddft_Common
-RmgPrintTimings.cpp
 dipole_calculation.c
 dot_product_orbit_xyz_orbit.c
 orbit_xyz_orbit.c
