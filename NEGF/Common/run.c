@@ -62,7 +62,13 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 	pmo_init();
 	if (ct.runflag == 100)
 	{
+
+        void *RT1 = BeginRmgTimer("BANDSTRUCTURE Calculation");
+
 		lead_bandstructure ();
+
+        EndRmgTimer(RT1);
+
 		if (pct.gridpe == 0)
 			printf ("\nband structrue file: band.dat\n");
 	}
@@ -74,7 +80,9 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 		/* allocate memory for matrixs  */
 		//get_cond_frommatrix ();
+        void *RT2 = BeginRmgTimer("Conductance Calculation");
 		get_cond_frommatrix_kyz ();
+        EndRmgTimer(RT2);
 
 	}
 
@@ -91,7 +99,9 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 		my_malloc_init( vh_old, get_FP0_BASIS(), rmg_double_t );
 
 
+        void *RT3 = BeginRmgTimer("1-TOTAL: init");
 		init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
+        EndRmgTimer(RT3);
 
         size = 1;
         for (i = 0; i < ct.num_blocks; i++) size = max(size, ct.block_dim[i] * ct.block_dim[i]);
@@ -188,6 +198,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 			/* Dispatch to the correct driver routine */
 
+            void *RT4 = BeginRmgTimer("1-TOTAL: Quench");
 			switch (ct.forceflag)
 			{
 
@@ -201,6 +212,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 			}                           /* end switch */
 
+            EndRmgTimer(RT4);
 
 
 
@@ -210,6 +222,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 
 			/* Save data to output file */
+            void *RT5 = BeginRmgTimer("1-TOTAL: Write_data");
 			write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vbias, &states[0]);
 
 			if (ct.runflag == 111)
@@ -218,6 +231,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 			my_barrier ();
 			writeout_matrix_p ();
+            EndRmgTimer(RT5);
 
 			my_barrier ();
 			if (pct.gridpe == 0)

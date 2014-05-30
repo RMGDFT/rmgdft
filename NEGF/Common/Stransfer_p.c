@@ -185,6 +185,8 @@ void Stransfer_p (complex double * tot, complex double * tott,
        comm_sums(&converge1, &ione, COMM_EN2);
        comm_sums(&converge2, &ione, COMM_EN2);
 
+        if(converge1 > 1.0E06 | converge2 > 1.0E06) 
+            dprintf("\n WARNING Green function in Stransfer_p.c diverging");
         if (converge1 < 1.0E-7 && converge2 < 1.0E-7)
             break;
     }

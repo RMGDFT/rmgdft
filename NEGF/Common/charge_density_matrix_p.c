@@ -34,6 +34,8 @@ void charge_density_matrix_p (complex double * sigma_all)
     zero =0.0;
 
 
+    void *RT = BeginRmgTimer("4-ChargeDensityMatrix");
+
     nL = lcr[1].num_states;
     if (nL != ct.block_dim[0])
     {
@@ -66,6 +68,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         }
     }
 
+    void *RT1 = BeginRmgTimer("4-ChargeDensityMatrix: equilibrium");
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         if(cei.probe_noneq > 0)  iprobe = cei.probe_noneq;
@@ -118,6 +121,9 @@ void charge_density_matrix_p (complex double * sigma_all)
     my_free( green_C );
 
 
+    EndRmgTimer(RT1);
+
+    void *RT2 = BeginRmgTimer("4-ChargeDensityMatrix: non-equilibrium");
     /* ======================= Non-equilibrium part ===================== */
 
     if (ct.runflag == 113)
@@ -237,6 +243,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         my_free( gamma );
 
 
+        EndRmgTimer(RT2);
         /* ========== Calculation of the density matrix ============= */		
 
 
@@ -334,6 +341,7 @@ void charge_density_matrix_p (complex double * sigma_all)
     for (st1 = 0; st1 < ntot; st1++)
         lcr[0].density_matrix_tri[st1] /= PI;
 
+    EndRmgTimer(RT);
 
     if (cei.num_probe > 4)
         error_handler ("probe > 4");

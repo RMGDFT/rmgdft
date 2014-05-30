@@ -64,6 +64,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     int i;
 
 
+    void *RT = BeginRmgTimer("2-Quench");
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -109,12 +110,17 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
     my_malloc_init( sigma_all, idx1, complex double );
 
+    void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
     if (ct.runflag != 111)
         sigma_all_energy_point (sigma_all);
-
     my_barrier();
+    EndRmgTimer(RT1);
     if(pct.gridpe==0) dprintf("\n sigma_all done");
+
+
+    void *RT2 = BeginRmgTimer("2-Quench: kbpsi");
     get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
+    EndRmgTimer(RT2);
     /* get lcr[0].S00 part */
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -146,6 +152,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     get_ddd (vtot);
 
 
+    void *RT3 = BeginRmgTimer("2-Quench: set H and S first");
     /* get lcr[0].H00 part */
     get_HS(states, states1, vtot_c, Hij_00, Bij_00);
 
@@ -199,6 +206,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
 
 
+    EndRmgTimer(RT3);
 
 
     for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
@@ -210,9 +218,11 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
         if (!CONVERGENCE)
         {
 
+            void *RT4 = BeginRmgTimer("2-Quench: SCF");
             scf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
                     rhocore, vxc_old, vh_old, vbias, &CONVERGENCE);
 
+            EndRmgTimer(RT4);
 
 
         }
@@ -263,6 +273,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     if (pct.gridpe == 0)
         printf ("\n Quench is done \n");
 
+    EndRmgTimer(RT);
 
 
 }                               /* end quench */

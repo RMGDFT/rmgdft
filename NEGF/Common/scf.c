@@ -51,6 +51,10 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     int fpbasis;
     fpbasis = get_FP0_BASIS();
 
+    void *RT = BeginRmgTimer("3-SCF");
+
+
+    void *RT1 = BeginRmgTimer("3-SCF: Hij update");
     for (idx = 0; idx < fpbasis; idx++)
         vtot[idx] = vh[idx] + vxc[idx] -vh_old[idx] - vxc_old[idx];
 
@@ -117,6 +121,8 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
     /* corner elements keep unchanged */
     setback_corner_matrix_H();  
+ 
+    EndRmgTimer(RT1);
 
 
     /* Generate new density */
@@ -126,16 +132,23 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     if (ct.runflag == 111 && ct.metal == 1)
         find_fermi (sigma_all);
     if (ct.runflag == 111 && ct.metal == 0)
-        sigma_all_energy_point (sigma_all);
+    {
 
+        void *RT2 = BeginRmgTimer("3-SCF: sigma_all for 3lead");
+
+        sigma_all_energy_point (sigma_all);
+        EndRmgTimer(RT2);
+    }
 
     my_barrier ();
 
+    void *RT3 = BeginRmgTimer("3-SCF: charge_density_matrix");
     charge_density_matrix_p (sigma_all);
 
 
     my_barrier ();
 
+    EndRmgTimer(RT3);
 
 #if DEBUG |1
     write_rho_x (rho, "rhoooo_1");
@@ -154,13 +167,17 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
 
     //    get_new_rho_soft (states, rho);
+    void *RT4 = BeginRmgTimer("3-SCF: rho");
     get_new_rho_local (states_distribute, rho);
+    EndRmgTimer(RT4);
+
 #if DEBUG
     write_rho_x (rho, "rhoaaa_1");
     if (pct.gridpe == 0)
         printf ("\n %rhoaaa");
 #endif
 
+    void *RT5 = BeginRmgTimer("3-SCF: rho mixing");
     modify_rho (rho, rho_old); 
     /* modify_rho_y (rho, rho_old); */
 
@@ -193,8 +210,12 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
     my_barrier ();
 
+    EndRmgTimer(RT5);
 
+    void *RT6 = BeginRmgTimer("3-SCF: pot update");
     update_pot (vxc, vh, vxc_old, vh_old, vnuc, vext, rho, rhoc, rhocore, CONVERGENCE);
+    EndRmgTimer(RT6);
+    EndRmgTimer(RT);
 
 
 
