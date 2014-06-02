@@ -99,6 +99,7 @@
 
 // Boundary condition flags
 #include "boundary_conditions.h"
+#include "RmgTimer.h"
 
 /* Include the  library of exchange and correlation (namely, Libxc) */
 /* #include "../../Common/libxc/include/xc.h"   */
