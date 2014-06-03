@@ -61,7 +61,8 @@ void read_control (char *file)
    char start_mode_opts[] = "Random Start\n"
                             "Restart From File\n"
                             "FIREBALL Start\n"
-                            "Gaussian Start";
+                            "Gaussian Start\n"
+                            "Restart TDDFT";
     get_data ("start_mode", NULL, INIT | OPT, start_mode_opts);
 
 

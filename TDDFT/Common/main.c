@@ -80,6 +80,9 @@ int main(int argc, char **argv)
     double dipole_ion[3], dipole_ele[3];
     int IA=1, JA=1, IB=1, JB=1;
     FILE *dfi;
+    int tot_steps, pre_steps;
+    int amode, fhand;
+    char filename[MAX_PATH+200];
 
     ct.images_per_node = 1;
     init_IO(argc, argv);
@@ -181,10 +184,25 @@ int main(int argc, char **argv)
 
     if(pct.gridpe == 0)fprintf(dfi, "\n  electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
 
+    pre_steps = 0;
+
+    if(ct.runflag == 4) 
+    {
+        sprintf(filename, "%s%s", ct.infile, ".TDDFT_restart");
+        fhand = open(filename, O_RDWR);
+        if (fhand < 0)
+            error_handler(" Unable to write file ");
+        read(fhand, &pre_steps,  sizeof(int));
+        read(fhand, Pn0, 2* numst * numst*sizeof(double));
+        close(fhand);
+    }
+
+
     for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
+        tot_steps = ct.scf_steps + pre_steps;
 
-        if(ct.scf_steps == 0) 
+        if(tot_steps == 0 ) 
         {
             for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i] 
                 + efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] + efield[2] * Zij_dist[i];
@@ -193,7 +211,7 @@ int main(int argc, char **argv)
         {
 
             for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i];
-            
+
         }
 
 
@@ -225,9 +243,24 @@ int main(int argc, char **argv)
 
 
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
-                ct.scf_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
-        // get_dm_diag_p(states, l_s, mat_X, Hij);
-        // write_eigs(states);
+                tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
+        if((ct.scf_steps +1)%ct.checkpoint == 0)
+        {
+            write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
+            if(pct.gridpe == 0)
+            {
+                sprintf(filename, "%s%s", ct.outfile, ".TDDFT_restart");
+                amode = S_IREAD | S_IWRITE;
+                fhand = open(filename, O_CREAT | O_TRUNC | O_RDWR, amode);
+                if (fhand < 0)
+                    error_handler(" Unable to write file ");
+
+                write(fhand, &tot_steps,  sizeof(int));
+                write(fhand, Pn0, 2* numst * numst*sizeof(double));
+                close(fhand);
+            }
+
+        }
 
 
     }
@@ -235,6 +268,20 @@ int main(int argc, char **argv)
 
     EndRmgTimer(RT);
 
+    tot_steps = ct.scf_steps + pre_steps;
+    write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
+    if(pct.gridpe == 0)
+    {
+        sprintf(filename, "%s%s", ct.outfile, ".TDDFT_restart");
+        amode = S_IREAD | S_IWRITE;
+        fhand = open(filename, O_CREAT | O_TRUNC | O_RDWR, amode);
+        if (fhand < 0)
+            error_handler(" Unable to write file ");
+
+        write(fhand, &tot_steps,  sizeof(int));
+        write(fhand, Pn0, 2* numst * numst*sizeof(double));
+        close(fhand);
+    }
 
 
     if(pct.imgpe == 0) fclose(ct.logfile);

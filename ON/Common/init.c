@@ -183,21 +183,25 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
             break;
 
         case 1:
+        case 4:
             read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
             break;
 
     }
 
-    if(ct.runflag !=1) 
+    switch(ct.runflag)
     {
-        get_vxc(rho, rho, rhocore, vxc);
-        pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-        get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vh_old[idx] = vh[idx];
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            vxc_old[idx] = vxc[idx];
+        case 0:
+        case INIT_FIREBALL:
+        case INIT_GAUSSIAN:
+            get_vxc(rho, rho, rhocore, vxc);
+            pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+            get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
+                vh_old[idx] = vh[idx];
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
+                vxc_old[idx] = vxc[idx];
     }
 
 

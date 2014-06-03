@@ -83,7 +83,7 @@ void init_wf_gaussian(STATE * states)
         iyy = states[state].iymax - states[state].iymin + 1;
         izz = states[state].izmax - states[state].izmin + 1;
 
-        alpha1 =  (4.0 /radius) * (4.0 /radius);
+        alpha1 =  (6.0 /radius) * (6.0 /radius);
         alpha2 =  (7.0 /radius) * (7.0 /radius);
 
         gaussian = ist;
