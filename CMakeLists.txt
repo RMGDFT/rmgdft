@@ -33,6 +33,7 @@ set(CMAKE_FIND_ROOT_PATH
 /usr/local/apps/mvapich2/220b-intel140
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 /usr/lib64/mpi/gcc/openmpi/
+/sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
@@ -181,7 +182,8 @@ target_link_libraries (rmg-tddft ON_Common XC)
 
 # Search for an MPI implementation
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
-find_package(MPI REQUIRED)
+#find_package(MPI REQUIRED)
+find_package(MPI)
   include_directories(${MPI_INCLUDE_PATH})
 if(MPI_CXX_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH})
@@ -380,7 +382,6 @@ if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
 endif(CRAY_XK)
-
 
 #message(${CMAKE_C_FLAGS})
 # include files
