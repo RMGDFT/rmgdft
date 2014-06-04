@@ -1,4 +1,6 @@
 add_library (RMG_Common
+Main.cpp
+AppNls.cpp
 Kpoint.cpp
 State.cpp
 #scf.cpp
