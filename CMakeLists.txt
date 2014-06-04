@@ -38,7 +38,7 @@ ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
 # Main codes
-add_executable(rmg RMG/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
+add_executable(rmg RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-tddft TDDFT/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-negf NEGF/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
