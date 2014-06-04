@@ -51,6 +51,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
+#include "GlobalSums.h"
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
@@ -169,7 +170,7 @@ template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, do
     
     
     idx = 3;
-    global_sums (t, &idx, pct.img_comm);
+    GlobalSums (t, idx, pct.img_comm);
     t[0] *= get_vel_f();
     
     /* get the averaged value over each spin and each fine grid */

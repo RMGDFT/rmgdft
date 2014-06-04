@@ -17,7 +17,7 @@
 
 #include "rmgtypedefs.h"
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -269,9 +269,10 @@ double app_cil_fourth_f_gpu(const float *psi,
 
 #endif
 
+
+
+#ifdef __cplusplus
+}
 #endif
 
-
-#if __cplusplus
-}
 #endif

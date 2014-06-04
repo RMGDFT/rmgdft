@@ -114,6 +114,10 @@
 #endif
 
 
+#if __cplusplus
+extern "C" {
+#endif
+
 void my_copy(rmg_double_t *in, rmg_double_t *out, int length);
 void my_scal(rmg_double_t alpha, rmg_double_t *vect, int length);
 void my_axpy(rmg_double_t alpha, rmg_double_t *in, rmg_double_t *out, int length);
@@ -169,5 +173,7 @@ void dgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, in
 void zgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
 void dgemv ( char *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
 
-
+#if __cplusplus
+}
+#endif
 /******/

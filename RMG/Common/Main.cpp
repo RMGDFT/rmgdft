@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: main.c 2296 2014-04-25 20:51:26Z ebriggs $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/main.c *****
@@ -43,9 +43,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "const.h"
 #include "RmgTimer.h"
-#include "../Headers/main.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+
+
 #include "../Headers/common_prototypes.h"
+#include "../Headers/common_prototypes1.h"
+
+extern "C" void init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+           STATE * states, double * vnuc, double * vxc);
+
+extern "C" bool quench (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
+             double * rho_oppo, double * rhocore, double * rhoc);
+
+extern "C" void lbfgs_init(int num_ions, int num_images);
+
+extern "C" void relax_tau (int steps, STATE * states, double * vxc, double * vh, double * vnuc,
+              double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * tau);
 
 void initialize (int argc, char **argv);
 
@@ -63,32 +81,32 @@ STATE *states;
 
 
 /* Electronic charge density or charge density of own spin in polarized case */
-rmg_double_t *rho;
+double *rho;
 
 /*  Electronic charge density of pposite spin density*/
-rmg_double_t *rho_oppo;  
+double *rho_oppo;  
 
 
 /* Core Charge density */
-rmg_double_t *rhocore;
+double *rhocore;
 
 
 /* Compensating charge density */
-rmg_double_t *rhoc;
+double *rhoc;
 
 
 /* Hartree potential */
-rmg_double_t *vh;
+double *vh;
 
 /* Nuclear local potential */
-rmg_double_t *vnuc;
+double *vnuc;
 
 /* Exchange-correlation potential */
-rmg_double_t *vxc;
+double *vxc;
 
 
 
-rmg_double_t *tau;
+double *tau;
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
 CONTROL ct;
@@ -100,16 +118,16 @@ PE_CONTROL pct;
 int main (int argc, char **argv)
 {
 
-    void *RT = BeginRmgTimer("Main");
+    RmgTimer RT("Main");
     char *tptr;
 
 #if GPU_ENABLED
 //  Hack to force initialization of libsci on Cray before we create our own threads
     char *trans = "n";
     int asize = 32, i, j;
-    rmg_double_t alpha = 1.0;
-    rmg_double_t beta = 0.0;
-    rmg_double_t A[32*32], B[32*32], C[32*32];
+    double alpha = 1.0;
+    double beta = 0.0;
+    double A[32*32], B[32*32], C[32*32];
 
     for(i = 0;i < asize * asize;i++) {
         A[i] = 1.0;
@@ -134,15 +152,14 @@ int main (int argc, char **argv)
         ct.mpi_threadlevel = atoi(tptr);
     }
 
-    void *RT1 = BeginRmgTimer("Main: init");
+    RmgTimer *RT1 =  new RmgTimer("Main: init");
     initialize (argc, argv);
-    EndRmgTimer(RT1);
+    delete(RT1);
 
-    RT1 = BeginRmgTimer("Main: run");
+    RmgTimer *RT2 = new RmgTimer("Main: run");
     run ();
-    EndRmgTimer(RT1);
+    delete(RT2);
 
-    EndRmgTimer(RT);
 
     report ();
 
@@ -159,7 +176,7 @@ void initialize(int argc, char **argv)
 
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
-    void *RT = BeginRmgTimer("Pre-init");
+    RmgTimer *RT = new RmgTimer("Pre-init");
 
 
     /* Initialize all I/O including MPI group comms */
@@ -172,18 +189,18 @@ void initialize(int argc, char **argv)
     num_images = 1;
     lbfgs_init(ct.num_ions, num_images);
 
-    my_malloc (rho, FP0_BASIS, rmg_double_t);
-    my_malloc (rhocore, FP0_BASIS, rmg_double_t);
-    my_malloc (rhoc, FP0_BASIS, rmg_double_t);
-    my_malloc (vh, FP0_BASIS, rmg_double_t);
-    my_malloc (vnuc, FP0_BASIS, rmg_double_t);
-    my_malloc (vxc, FP0_BASIS, rmg_double_t);
+    rho = new double[FP0_BASIS];
+    rhocore = new double[FP0_BASIS];
+    rhoc = new double[FP0_BASIS];
+    vh = new double[FP0_BASIS];
+    vnuc = new double[FP0_BASIS];
+    vxc = new double[FP0_BASIS];
     if (ct.xctype == MGGA_TB09) 
-    	my_malloc (tau, FP0_BASIS, rmg_double_t);
+    	tau = new double[FP0_BASIS];
 
     /* for spin polarized calculation, allocate memory for density of the opposite spin */
     if(ct.spin_flag)
-    	    my_malloc (rho_oppo, FP0_BASIS, rmg_double_t);
+            rho_oppo = new double[FP0_BASIS];
 
 
     /* initialize states */
@@ -193,7 +210,7 @@ void initialize(int argc, char **argv)
     my_barrier ();
 
     /* Record the rime it took from the start of run until we hit init */
-    EndRmgTimer(RT);
+    delete(RT);
 
     /* Perform any necessary initializations */
     init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
@@ -261,7 +278,7 @@ void run (void)
         bandstructure (states, vxc, vh, vnuc);
         break;
     default:
-        error_handler ("Undefined MD method");
+        rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
 
     }
 
@@ -302,9 +319,9 @@ void report ()
 
     /* Release the memory for density of opposite spin */
     if (ct.spin_flag)
-    	my_free (rho_oppo);
+    	delete [] rho_oppo;
     if (ct.xctype == MGGA_TB09) 
-    	my_free (tau);
+    	delete [] tau;
 
     /* Write timing information */
     write_timings ();

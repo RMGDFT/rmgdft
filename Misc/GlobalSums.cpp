@@ -3,10 +3,12 @@
 #include "rmg_error.h"
 #include "GlobalSums.h"
 #include <typeinfo>
-#include "complex.h"
+#include <complex>
 
-template void GlobalSums <float>(float*, int, MPI_Comm);
+using namespace std;
+template void GlobalSums<float>(float*, int, MPI_Comm);
 template void GlobalSums<double>(double*, int, MPI_Comm);
+template void GlobalSums<complex<double> >(complex <double>*, int, MPI_Comm);
 
 static double *fixed_vector1 = NULL;
 static double *fixed_vector2 = NULL;
@@ -35,6 +37,10 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
     int tid;
     RmgTimer RT0("GlobalSums");
     BaseThread *T = BaseThread::getBaseThread(0);
+    RmgType *v1, *v2;
+
+    v1 = (RmgType *)fixed_vector1;
+    v2 = (RmgType *)fixed_vector2;
 
     tid = T->get_thread_tid();
     if(tid < 0) {
@@ -54,14 +60,14 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         if(length < MAX_FIXED_VECTOR) {
 
             for(int idx = 0;idx < length;idx++)
-                fixed_vector1[length * tid + idx] = vect[idx];
+                v1[length * tid + idx] = vect[idx];
             T->thread_barrier_wait();
 
             if(tid == 0)
-                MPI_Allreduce(fixed_vector1, fixed_vector2, length * T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
+                MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
 
             T->thread_barrier_wait();
-            for(int idx = 0;idx < length;idx++) vect[idx] = fixed_vector2[length * tid + idx];
+            for(int idx = 0;idx < length;idx++) vect[idx] = v2[length * tid + idx];
 
             return;
         }

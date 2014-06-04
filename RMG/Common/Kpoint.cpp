@@ -2,11 +2,14 @@
 #include <Kpoint.h>
 #include <complex>
 
-template <class KpointType> Kpoint<KpointType>::Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis)
+template <class KpointType> Kpoint<KpointType>::Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis, int index)
 {
 
     int state;
     KpointType *tptr;
+
+    this->kidx = index;
+    this->kweight = kweight;
 
     State<KpointType> *sp;
   
@@ -22,6 +25,16 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kpt, double kweig
         tptr += pbasis;
     }
 
+}
+
+template <class KpointType> int Kpoint<KpointType>::get_nstates(void)
+{
+    return this->nstates;
+}
+
+template <class KpointType> int Kpoint<KpointType>::get_index(void)
+{
+    return this->kidx;
 }
 
 template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
@@ -72,6 +85,6 @@ void TestKpoint(void)
 
   float t1[20000];
   double kpt[3];
-  Kpoint<float> K1(kpt, 0.5, t1, 100, 10000);
+  Kpoint<float> K1(kpt, 0.5, t1, 100, 10000, 0);
 
 }

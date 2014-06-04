@@ -36,9 +36,11 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis );
+    Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis, int index );
 
     void sort_orbitals(void);
+    int get_nstates(void);
+    int get_index(void);
 
     // The index of the k-point for backreferencing
     int kidx;
