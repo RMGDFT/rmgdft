@@ -111,11 +111,3 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
     }
 
 }
-
-#include "main.h"
-#include "transition.h"
-extern "C" void CompatRmgTimerPrint(const char *outfile, int steps)
-{
-    RmgPrintTimings(Rmg_G, outfile, steps);
-}
-

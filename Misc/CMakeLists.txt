@@ -1,4 +1,5 @@
 add_library (Misc
+RmgTimer_Cbindings.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp
 BaseThread_Cbindings.cpp
