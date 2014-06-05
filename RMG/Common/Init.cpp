@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: init.c 2303 2014-05-03 13:14:47Z ebriggs $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/init.c *****
@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init(rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, 
- *             STATE *states, rmg_double_t *vnuc, rmg_double_t *vxc)
+ *   void init(double *vh, double *rho, double *rhocore, double *rhoc, 
+ *             STATE *states, double *vnuc, double *vxc)
  *   Basic initialization stuff.
  * INPUTS
  *   rhocore: core charge density for non-linear core corection
@@ -45,29 +45,35 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include "grid.h"
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
 #include "common_prototypes.h"
-#include "main.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "../Headers/prototypes.h"
 
 
 static void init_alloc_nonloc_mem (void);
 
+extern "C" bool     verify( char *tagname, const void *optvalue );
 
-
-void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc,
-           STATE * states, rmg_double_t * vnuc, rmg_double_t * vxc)
+void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+           STATE * states, double * vnuc, double * vxc)
 {
 
-    int kpt, kpt1, kst1, ic, idx, state, ion, st1, it1, P0_BASIS, FP0_BASIS;
-    int species, i;
+    int kpt, kpt1, kst1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
+    int species;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     SPECIES *sp;
-    int flag;
-    rmg_double_t *rptr = NULL, *rptr1 = NULL, *vtot, t1, t2, scale, *rho_tot;
-    ION *iptr, *iptr0;
-    rmg_double_t time1, time2, v1, v2, v3, fac;
+    double *rptr = NULL, *rptr1 = NULL, *vtot, *rho_tot;
+    ION *iptr;
+    double time1, time2, v1, v2, v3, fac;
     STATE *st;
 
 #if GPU_ENABLED
@@ -75,23 +81,23 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 #endif
 
     time1 = my_crtc ();
+    P0_BASIS =  Rmg_G->get_P0_BASIS(1);
+    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
-    P0_BASIS = get_P0_BASIS();
-    FP0_BASIS = get_FP0_BASIS();
-    PX0_GRID = get_PX0_GRID();
-    PY0_GRID = get_PY0_GRID();
-    PZ0_GRID = get_PZ0_GRID();
-    FPX0_GRID = get_FPX0_GRID();
-    FPY0_GRID = get_FPY0_GRID();
-    FPZ0_GRID = get_FPZ0_GRID();
+    PX0_GRID = Rmg_G->get_PX0_GRID(1);
+    PY0_GRID = Rmg_G->get_PY0_GRID(1);
+    PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
+    FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
+    FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
+    FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
 
     ct.fftw_wisdom_setup = 0;
 
     ct.total_scf_steps = 0;
     ct.md_steps = 0;
 
-    ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
+    ct.psi_nbasis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
+    ct.psi_fnbasis = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
 
 
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
@@ -115,12 +121,12 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
 
     /* Set hartree boundary condition stuff */
-    ct.vh_pxgrid = get_FPX0_GRID();
-    ct.vh_pygrid = get_FPY0_GRID();
-    ct.vh_pzgrid = get_FPZ0_GRID();
+    ct.vh_pxgrid = FPX0_GRID;
+    ct.vh_pygrid = FPY0_GRID;
+    ct.vh_pzgrid = FPZ0_GRID;
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
-    my_malloc (ct.vh_ext, ct.vh_pbasis, rmg_double_t);
+    ct.vh_ext = new double[ct.vh_pbasis];
     
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
@@ -129,19 +135,12 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     }
 
 
-    /* initialize the lattice basis vectors */
-//    flag = 0;
-//    latgen (ct.celldm, ct.a0, ct.a1, ct.a2, &ct.omega, &flag);
-
-    /* initialize the reciprocal lattice vectors */
-//    recips ();
-
     /* Initialize some k-point stuff */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
-        v1 = twoPI * ct.kp[kpt].kpt[0] / get_xside();
-        v2 = twoPI * ct.kp[kpt].kpt[1] / get_yside();
-        v3 = twoPI * ct.kp[kpt].kpt[2] / get_zside();
+        v1 = twoPI * ct.kp[kpt].kpt[0] / Rmg_L.get_xside();
+        v2 = twoPI * ct.kp[kpt].kpt[1] / Rmg_L.get_yside();
+        v3 = twoPI * ct.kp[kpt].kpt[2] / Rmg_L.get_zside();
 
         ct.kp[kpt].kvec[0] = v1;
         ct.kp[kpt].kvec[1] = v2;
@@ -158,17 +157,17 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     init_pos ();
 
 
-    ct.hmaxgrid = get_xside() * get_hxgrid();
-    if (get_yside() * get_hygrid() > ct.hmaxgrid)
-        ct.hmaxgrid = get_yside() * get_hygrid();
-    if (get_zside() * get_hzgrid() > ct.hmaxgrid)
-        ct.hmaxgrid = get_zside() * get_hzgrid();
+    ct.hmaxgrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
+    if (Rmg_L.get_yside() * Rmg_G->get_hygrid(1) > ct.hmaxgrid)
+        ct.hmaxgrid = Rmg_L.get_yside() * Rmg_G->get_hygrid(1);
+    if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) > ct.hmaxgrid)
+        ct.hmaxgrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
-    ct.hmingrid = get_xside() * get_hxgrid();
-    if (get_yside() * get_hygrid() < ct.hmingrid)
-        ct.hmingrid = get_yside() * get_hygrid();
-    if (get_zside() * get_hzgrid() < ct.hmingrid)
-        ct.hmingrid = get_zside() * get_hzgrid();
+    ct.hmingrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
+    if (Rmg_L.get_yside() * Rmg_G->get_hygrid(1) < ct.hmingrid)
+        ct.hmingrid = Rmg_L.get_yside() * Rmg_G->get_hygrid(1);
+    if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) < ct.hmingrid)
+        ct.hmingrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
     //set_anisotropy(ct.hmaxgrid / ct.hmingrid);
 
@@ -176,11 +175,11 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     {
         if (pct.imgpe == 0)
         {
-            printf ("get_hxgrid() = %7.5f\n", get_hxgrid());
-            printf ("get_hygrid() = %7.5f\n", get_hygrid());
-            printf ("get_hzgrid() = %7.5f\n", get_hzgrid());
+            printf ("hxgrid = %7.5f\n", Rmg_G->get_hxgrid(1));
+            printf ("hygrid = %7.5f\n", Rmg_G->get_hygrid(1));
+            printf ("hzgrid = %7.5f\n", Rmg_G->get_hzgrid(1));
         }
-        error_handler ("Anisotropy too large");
+        rmg_error_handler (__FILE__, __LINE__, "Anisotropy too large");
     }
 
 
@@ -197,35 +196,35 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     /* Set state pointers and initialize state data */
 #if GAMMA_PT
   #if GPU_ENABLED
-      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(rmg_double_t));
+      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(double));
 #if BATCH_NLS
-      cudaMallocHost((void **)&pct.nv, ct.num_states * P0_BASIS * sizeof(rmg_double_t));
-      cudaMallocHost((void **)&pct.ns, ct.num_states * P0_BASIS * sizeof(rmg_double_t));
-      cudaMallocHost((void **)&pct.Bns, ct.num_states * P0_BASIS * sizeof(rmg_double_t));
+      cudaMallocHost((void **)&pct.nv, ct.num_states * P0_BASIS * sizeof(double));
+      cudaMallocHost((void **)&pct.ns, ct.num_states * P0_BASIS * sizeof(double));
+      cudaMallocHost((void **)&pct.Bns, ct.num_states * P0_BASIS * sizeof(double));
 #endif
   #else
     /* Wavefunctions are actually stored here */
-    my_malloc (rptr, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, rmg_double_t);
+    rptr = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
 #if BATCH_NLS
-    my_malloc (pct.nv, ct.num_states * P0_BASIS, rmg_double_t);
-    my_malloc (pct.ns, ct.num_states * P0_BASIS, rmg_double_t);
-    my_malloc (pct.Bns, ct.num_states * P0_BASIS, rmg_double_t);
+    pct.nv = new double[ct.num_states * P0_BASIS];
+    pct.ns = new double[ct.num_states * P0_BASIS];
+    pct.Bns = new double[ct.num_states * P0_BASIS];
 #endif
   #endif
 
   if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-      my_malloc (rptr1, (ct.num_states + 1) * (P0_BASIS + 4) + 1024, rmg_double_t);
+      rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
   }
 
 #else
     /* Wavefunctions are actually stored here */
     if (verify ("calculation_mode", "Band Structure Only"))
     {
-        my_malloc (rptr, 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024, rmg_double_t);
+        rptr = new double[2*(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
     }
     else
     {
-        my_malloc (rptr, ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024, rmg_double_t);
+        rptr = new double[ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024];
     }
 #endif
 
@@ -260,7 +259,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     }
 
 
-    Dprintf ("If not an initial run read data from files");
+    //Dprintf ("If not an initial run read data from files");
     if (ct.runflag == 1)
     {
         read_data (ct.infile, vh, rho, vxc, states);
@@ -308,7 +307,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     }                           /* end if */
 
 
-    Dprintf ("Initialize the radial potential stuff");
+    //Dprintf ("Initialize the radial potential stuff");
     init_psp ();
 
     /* Initialize symmetry stuff */
@@ -317,7 +316,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 #endif
 
 
-    Dprintf ("Allocate memory for arrays related to nonlocal PP");
+    //Dprintf ("Allocate memory for arrays related to nonlocal PP");
     init_alloc_nonloc_mem ();
 
     /*Set max_nldim */
@@ -341,14 +340,14 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     /*Setup fftw wisdom */
     //init_fftw_wisdom ();
 
-    Dprintf ("Get memory for fourier transform phase");
+    //Dprintf ("Get memory for fourier transform phase");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
 
-        my_malloc (iptr->fftw_phase_sin, sp->nldim * sp->nldim * sp->nldim, rmg_double_t);
-        my_malloc (iptr->fftw_phase_cos, sp->nldim * sp->nldim * sp->nldim, rmg_double_t);
+        iptr->fftw_phase_sin = new double[sp->nldim * sp->nldim * sp->nldim];
+        iptr->fftw_phase_cos = new double[sp->nldim * sp->nldim * sp->nldim];
     }
 
 
@@ -387,7 +386,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
         
     mix_betaxpsi(0);
 
-    Dprintf ("Set the initial density to be equal to the compensating charges");
+    //Dprintf ("Set the initial density to be equal to the compensating charges");
 	
     /*For random start, use charge density equal to compensating charge */
     if (ct.runflag == 0)
@@ -425,26 +424,26 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
 
     ct.rms = 0.0;
     
-    Dprintf ("Generate initial vxc potential and hartree potential");
+    //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
 
 
-    Dprintf ("Condition of run flag is %d", ct.runflag);
+    //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
     if (ct.runflag != 1)
     {
        	get_vxc (rho, rho_oppo, rhocore, vxc);
-       	Dprintf ("get vxc completed");
+       	//Dprintf ("get vxc completed");
 
 	if (ct.spin_flag)
 	{
-    		my_malloc (rho_tot,  FP0_BASIS, rmg_double_t);
+                rho_tot = new double[FP0_BASIS];
   	    	for (idx = 0; idx < FP0_BASIS; idx++)
             		rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
         	get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-    		my_free (rho_tot);
+    		delete [] rho_tot;
 	}
 	else
         	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
@@ -452,12 +451,11 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     }
 
 
-    Dprintf ("If diagonalization is requested do a subspace diagonalization");
+    //Dprintf ("If diagonalization is requested do a subspace diagonalization");
     if (ct.initdiag)
     {
         /*dnmI has to be stup before calling subdiag */
-        my_malloc (vtot, FP0_BASIS, rmg_double_t);
-
+        vtot = new double[FP0_BASIS];
 
         for (idx = 0; idx < FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -466,7 +464,7 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
         get_ddd (vtot);
 
         /*Release vtot memory */
-        my_free (vtot);
+        delete [] vtot;
 
         /*Now we cam do subspace diagonalization */
 #if GAMMA_PT
@@ -496,6 +494,8 @@ void init (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_d
     if (ct.domilliken)
     {
 
+        int i, it1;
+        double t1, t2, scale;
         /* Find milliken radius in number of grid points */
         /* Set the scaling factor for determining the radius of the local grids */
         scale = 1.0;
@@ -589,29 +589,24 @@ static void init_alloc_nonloc_mem (void)
     int ion;
 
 #if FDIFF_BETA
-    my_malloc (pct.weight_derx, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.weight_dery, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.weight_derz, ct.num_ions, rmg_double_t *);
+    pct.weight_derx = new double *[ct.num_ions];
+    pct.weight_dery = new double *[ct.num_ions];
+    pct.weight_derz = new double *[ct.num_ions];
 #endif
 
-    my_malloc (pct.nlindex, ct.num_ions, int *);
-    my_malloc (pct.Qindex, ct.num_ions, int *);
-    my_malloc (pct.idxflag, ct.num_ions, int *);
-    my_malloc (pct.Qdvec, ct.num_ions, int *);
+    pct.nlindex = new int *[ct.num_ions];
+    pct.Qindex = new int *[ct.num_ions];
+    pct.idxflag = new int *[ct.num_ions];
+    pct.Qdvec = new int *[ct.num_ions];
 
+    pct.idxptrlen = new int [ct.num_ions];
+    pct.Qidxptrlen = new int [ct.num_ions];
+    pct.lptrlen = new int [ct.num_ions];
 
-    my_malloc (pct.idxptrlen, ct.num_ions, int);
-    my_malloc (pct.Qidxptrlen, ct.num_ions, int);
-    my_malloc (pct.lptrlen, ct.num_ions, int);
-
-
-    my_malloc (pct.phaseptr, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.augfunc, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.dnmI, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.qqq, ct.num_ions, rmg_double_t *);
-
-    //my_malloc(pct.nonloc_ions_list, ct.num_ions, int);
-    //my_malloc(pct.q_ions_list, ct.num_ions, int);
+    pct.phaseptr = new double *[ct.num_ions];
+    pct.augfunc = new double *[ct.num_ions];
+    pct.dnmI = new double *[ct.num_ions];
+    pct.qqq = new double *[ct.num_ions];
 
 
     /*Initialize pointer arrays to NULL */

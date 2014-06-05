@@ -1,4 +1,5 @@
 add_library (RMG_Common
+Init.cpp
 Main.cpp
 AppNls.cpp
 Kpoint.cpp
@@ -83,7 +84,7 @@ betaxpsi1.c
 symmetry.c
 lbfgs.c
 assign_weight.c
-init.c
+#init.c
 nlforce_par_Q.c
 init_fftw_wisdom.c
 lcao_get_awave.c

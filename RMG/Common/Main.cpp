@@ -54,7 +54,7 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 
-extern "C" void init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            STATE * states, double * vnuc, double * vxc);
 
 extern "C" bool quench (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
@@ -213,7 +213,7 @@ void initialize(int argc, char **argv)
     delete(RT);
 
     /* Perform any necessary initializations */
-    init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
+    Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
 
 
 

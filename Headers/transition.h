@@ -24,7 +24,6 @@ extern "C" void mix_rho (double * new_rho, double * rho, double *rhocore, int le
 extern "C" void  get_rho_oppo (double * rho, double * rho_oppo);
 
 
-
 #endif
 #endif
 
