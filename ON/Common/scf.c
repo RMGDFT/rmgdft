@@ -177,6 +177,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
 
+
     /* evaluate SC correction */
     t[0] = t[1] = 0.;
 
@@ -209,6 +210,8 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+
+    get_ddd(vtot);
 
     get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
 

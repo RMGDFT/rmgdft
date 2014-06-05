@@ -59,8 +59,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     work1 = work_memory;
 
 
-    get_ddd(vtot);
-
 
     distribute_to_global(vtot_c, vtot_global);
 
