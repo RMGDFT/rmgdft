@@ -283,6 +283,9 @@ int main(int argc, char **argv)
         close(fhand);
     }
 
+     get_dm_diag_p(states, l_s, mat_X, Hij);
+
+     write_eigs(states);
 
     if(pct.imgpe == 0) fclose(ct.logfile);
     CompatRmgTimerPrint(ct.logname, ct.scf_steps);
