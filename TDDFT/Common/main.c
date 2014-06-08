@@ -180,7 +180,13 @@ int main(int argc, char **argv)
 
 
     double fs= 0.02418884;  // 1fs = 0.02418884 *10^-15 second 
-    if(pct.gridpe == 0)dfi = my_fopen_increment("dipole.dat");
+    if(pct.gridpe == 0)
+    {
+        int name_incr = filename_increment("dipole.dat");
+        sprintf(filename, "%s.%02d", "dipole.dat", name_incr);
+        
+            dfi = fopen(filename, "w");
+    }
 
     if(pct.gridpe == 0)fprintf(dfi, "\n  electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
 

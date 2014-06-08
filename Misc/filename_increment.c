@@ -14,13 +14,12 @@
 #include "main.h"
 #include "macros.h"
 
-FILE *my_fopen_increment(char *filename)
+int filename_increment(char *filename)
 {
 
     int lognum = 0, status;
     char workdir[MAX_PATH], basename[MAX_PATH];
     struct stat buffer;
-    FILE *fhand;
 
 
     strcpy(basename, filename);
@@ -52,7 +51,5 @@ FILE *my_fopen_increment(char *filename)
     }
 
     /* open and save logfile handle, printf is stdout before here */
-    fhand = fopen ( basename, "w");
-    if(fhand == NULL) error_handler("cannot open file %s", basename);
-    return fhand;
+    return lognum;
 }

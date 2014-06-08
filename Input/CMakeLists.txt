@@ -1,4 +1,5 @@
 add_library (Input
+read_init.c
 countItems.c
 pdb_clean.c
 assign.c

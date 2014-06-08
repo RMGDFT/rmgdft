@@ -47,13 +47,11 @@ void init_pe ( int image )
     /* get world group handle */
     MPI_Comm_group (MPI_COMM_WORLD, &world_grp);
 
- /* get total mpi core count  */
-    MPI_Comm_size (MPI_COMM_WORLD, &NPES);
 
     /* Infer the number of cpu grids in each image. */
     pct.grids = image / NPES;
     if (NPES * pct.grids != image)
-        error_handler ("MPI processes per image must be a multiple of NPES (pct.pe_x*pct.pe_y*pct.pe_z).");
+        error_handler ("MPI processes per image %d %dmust be a multiple of NPES (pct.pe_x*pct.pe_y*pct.pe_z).", image, NPES);
 
     if ( pct.grids > MAX_GRIDS )
         error_handler ("CPU Grid multiplicity (%d) is more than MAX_GRIDS in params.h.", pct.grids);

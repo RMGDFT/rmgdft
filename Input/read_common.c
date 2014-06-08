@@ -44,6 +44,7 @@ void read_common ()
     int FNX_GRID, FNY_GRID, FNZ_GRID;
     int PE_X, PE_Y, PE_Z;
     int FG_RATIO;
+    char temp[MAX_PATH];
 
     run_count ++;
     
@@ -90,33 +91,42 @@ void read_common ()
 
     /* Read in the starting wavefunction file name */
     get_data ("input_wave_function_file", &ct.infile, STR, "Waves/wave.out");
+    if(ct.infile[0] !='/') 
+    {
+        snprintf(temp, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], ct.infile);
+        strncpy(ct.infile,  temp, MAX_PATH); 
+    }
 
     /* Read in the output wavefunction file name */
     get_data ("output_wave_function_file", &ct.outfile, STR, "Waves/wave.out");
-
+    if(ct.outfile[0] !='/') 
+    {
+        snprintf(temp, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], ct.outfile);
+        strncpy(ct.outfile,  temp, MAX_PATH); 
+    }
 
     /* Set up and validate input options */
     char boundary_condition_type_opts[] = "Periodic\n"
-                                          "Cluster\n"
-                                          "Surface";
+        "Cluster\n"
+        "Surface";
     get_data ("boundary_condition_type", NULL, INIT | OPT, boundary_condition_type_opts);
 
     /* Read in the boundary condition flag */
     get_data ("boundary_condition_type", &ct.boundaryflag, OPT, "Periodic");
-    
-    
+
+
     /*Order of Pulay mixing for charge density*/
     get_data ("charge_pulay_order", &ct.charge_pulay_order, INT, "5");
-    
+
     /*Scale parameter for residuals in Pulay mixing*/
     get_data ("charge_pulay_scale", &ct.charge_pulay_scale, DBL, "0.50");
 
     /*How often to refresh Pulay history*/
     get_data ("charge_pulay_refresh", &ct.charge_pulay_refresh, INT, "0");
-    
+
     /*Flag to test whether or not the modified metrics should be used in Pulay mixing*/
     get_data ("charge_pulay_special_metrics", &ct.charge_pulay_special_metrics, BOOL, "false");
-    
+
     /*Weight to use for Pulay special metrics*/ 
     get_data ("charge_pulay_special_metrics_weight", &ct.charge_pulay_special_metrics_weight, DBL, "100.0");
 
@@ -125,11 +135,11 @@ void read_common ()
 
     /* Set up and validate input options */
     char exchange_correlation_type_opts[] = "LDA\n"
-                                            "GGA BLYP\n"
-                                            "GGA XB CP\n"
-                                            "GGA XP CP\n"
-                                            "GGA PBE\n"
-                                            "MGGA TB09";
+        "GGA BLYP\n"
+        "GGA XB CP\n"
+        "GGA XP CP\n"
+        "GGA PBE\n"
+        "MGGA TB09";
     get_data ("exchange_correlation_type", NULL, INIT | OPT, exchange_correlation_type_opts);
 
     /* Exchange correlation potential type flag */
@@ -143,7 +153,7 @@ void read_common ()
 
     /* force convergence criterion */
     get_data ("relax_max_force", &ct.thr_frc, DBL, "2.5E-3");
-    
+
     /* Write pseudopotential plots */
     get_data ("write_pseudopotential_plots", NULL, BOOL, "false");
 
@@ -153,9 +163,9 @@ void read_common ()
 
     /* Set up and validate input options */
     char occupations_type_opts[] = "Fixed\n"
-                                   "Fermi Dirac\n"
-                                   "Gaussian\n"
-                                   "Error Function";
+        "Fermi Dirac\n"
+        "Gaussian\n"
+        "Error Function";
     get_data ("occupations_type", NULL, INIT | OPT, occupations_type_opts);
 
     /* Fermi occupation flag */
@@ -174,15 +184,15 @@ void read_common ()
 
     /* Set up and validate input options */
     char calculation_mode_opts[] = "Quench Electrons\n"
-                                   "Relax Structure\n"
-                                   "Constant Volume And Energy\n"
-                                   "Constant Temperature And Energy\n"
-                                   "Constant Pressure And Energy\n"
-                                   "Plot\n"
-                                   "Psi Plot\n"
-                                   "Band Structure Only\n"
-                                   "NEB Relax\n"
-                                   "Dimer Relax";
+        "Relax Structure\n"
+        "Constant Volume And Energy\n"
+        "Constant Temperature And Energy\n"
+        "Constant Pressure And Energy\n"
+        "Plot\n"
+        "Psi Plot\n"
+        "Band Structure Only\n"
+        "NEB Relax\n"
+        "Dimer Relax";
     get_data ("calculation_mode", NULL, INIT | OPT, calculation_mode_opts);
 
     /* Force flag */
@@ -190,8 +200,6 @@ void read_common ()
 
 
 
-/* do spin polarized calculation? */
-    get_data ("spin_polarization", &ct.spin_flag, BOOL, "false");
 
     get_data ("equal_initial_density", &ct.init_equal_density_flag, BOOL, "false");
     /* Initialized spin up and down charge density equally? */
@@ -213,10 +221,10 @@ void read_common ()
 
     /* Ionic timestep */
     get_data ("ionic_time_step", &ct.iondt, DBL, "50");
-    
+
     /* Max number of sweeps in get_vh*/
     get_data ("hartree_max_sweeps", &ct.hartree_max_sweeps, INT, "100");
-    
+
     /* Min number of sweeps in get_vh*/
     get_data ("hartree_min_sweeps", &ct.hartree_min_sweeps, INT, "5");
 
@@ -239,13 +247,13 @@ void read_common ()
         get_data ("states_count_and_occupation", ct.occupation_str, STR, NULL);
 
     }
-		
+
 
 
 
     /* Set up and validate input options */
     char crds_units_opts[] = "Bohr\n"
-                               "Angstrom";
+        "Angstrom";
     get_data ("crds_units", NULL, INIT | OPT, crds_units_opts);
 
     /*This is not read into any variable */
@@ -253,20 +261,20 @@ void read_common ()
 
     /* Set up and validate input options */
     char bravais_lattice_type_opts[] = "None\n"
-                                       "Cubic Primitive\n"
-                                       "Cubic Face Centered\n"
-                                       "Cubic Body Centered\n"
-                                       "Hexagonal Primitive\n"
-                                       "Hexagonal Rhombohedral (Trigonal)\n"
-                                       "Tetragonal Primitive\n"
-                                       "Tetragonal Body Centered\n"
-                                       "Orthorhombic Primitive\n"
-                                       "Orthorhombic Base Centered\n"
-                                       "Orthorhombic Body Centered\n"
-                                       "Orthorhombic Face Centered\n"
-                                       "Monoclinic Primitive\n"
-                                       "Monoclinic Base Centered\n"
-                                       "Triclinic Primitive";
+        "Cubic Primitive\n"
+        "Cubic Face Centered\n"
+        "Cubic Body Centered\n"
+        "Hexagonal Primitive\n"
+        "Hexagonal Rhombohedral (Trigonal)\n"
+        "Tetragonal Primitive\n"
+        "Tetragonal Body Centered\n"
+        "Orthorhombic Primitive\n"
+        "Orthorhombic Base Centered\n"
+        "Orthorhombic Body Centered\n"
+        "Orthorhombic Face Centered\n"
+        "Monoclinic Primitive\n"
+        "Monoclinic Base Centered\n"
+        "Triclinic Primitive";
     get_data ("bravais_lattice_type", NULL, INIT | OPT, bravais_lattice_type_opts);
 
     /* lattice type */
@@ -293,13 +301,13 @@ void read_common ()
     /* Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a */
     /* Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC */
     if (!verify ("bravais_lattice_type", "Cubic Primitive") &&
-        !verify ("bravais_lattice_type", "Cubic Face Centered") &&
-        !verify ("bravais_lattice_type", "Cubic Body Centered"))
+            !verify ("bravais_lattice_type", "Cubic Face Centered") &&
+            !verify ("bravais_lattice_type", "Cubic Body Centered"))
     {
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
     }
-    
+
 
     /* initialize the lattice basis vectors */
     flag = 0;
@@ -340,7 +348,7 @@ void read_common ()
     ct.qcparm = ct.cparm / (rmg_double_t) FG_RATIO;
     ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
     ct.cparm /= (rmg_double_t) FG_RATIO; 
-    
+
     /*Blocking factor for scalapack*/
     get_data ("scalapack_block_factor", &ct.scalapack_block_factor, INT, "32");
 
@@ -358,13 +366,13 @@ void read_common ()
 
     if (!run_count)
     {
-	ct.num_species = tmp; 
-	my_malloc (ct.sp, ct.num_species, SPECIES);
+        ct.num_species = tmp; 
+        my_malloc (ct.sp, ct.num_species, SPECIES);
     }
     else 
     {
-	if (tmp != ct.num_species)
-	    error_handler("Inconsistency in number of species: %d was specified initially, but %d is given now", ct.num_species, tmp);
+        if (tmp != ct.num_species)
+            error_handler("Inconsistency in number of species: %d was specified initially, but %d is given now", ct.num_species, tmp);
     }
 
     tbuf = tptr;
@@ -372,16 +380,20 @@ void read_common ()
     while (get_data ("pseudopotential", tbuf, ITEM | STR, NULL))
     {
 
-        if (sscanf (tbuf, "%s %s", ct.sp[is].pseudo_symbol, ct.sp[is].pseudo_filename) != 2)
+        if (sscanf (tbuf, "%s %s", ct.sp[is].pseudo_symbol, temp) != 2)
         {
 
             printf ("pseudo_symbol: %s pseudo_filename: %s", ct.sp[is].pseudo_symbol,
-                    ct.sp[is].pseudo_filename);
+                    temp);
 
             printf ("\n pseudopotential data: %s is malformed", tbuf);
             error_handler ("Malformed pseudopotential entry in the input file");
         }
 
+        if(temp[0] !='/') 
+            snprintf(ct.sp[is].pseudo_filename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], temp);
+        else
+            strncpy(ct.sp[is].pseudo_filename, temp, MAX_PATH); 
         is++;
 
     }
@@ -389,7 +401,7 @@ void read_common ()
 
     /* Set up and validate input options */
     char atomic_coordinate_type_opts[] = "Cell Relative\n"
-                                         "Absolute";
+        "Absolute";
     get_data ("atomic_coordinate_type", NULL, INIT | OPT, atomic_coordinate_type_opts);
 
     /* Absolute or cell relative coordinates */
@@ -412,6 +424,6 @@ void read_common ()
 
     /* Clean up malloc'ed memory */
     my_free (tptr);
-    
+
 
 }                               /* end read_control */
