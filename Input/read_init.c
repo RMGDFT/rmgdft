@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <sys/stat.h>
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
@@ -15,16 +16,24 @@ void read_init(char *meta)
     int tmp, is;
     char *tbuf, *tptr, *dstr;
     float ftmp;
-    int size, num_image;
+    int status,size, num_image;
+    struct stat buffer;
 
     my_malloc (tptr, MAX_PATH, char);
 
     //get_data (file, NULL, INIT | TAGS, NULL);
     my_malloc (tptr, MAX_PATH, char);
-    strncpy(pct.image_path[0], "./", MAX_PATH);
-    strncpy(pct.image_input[0], "input", MAX_PATH);
-    pct.image_npes[0] = 1;
-    ct.images_per_node = 1;
+    if((status = stat(meta, &buffer)) == -1)
+    {
+        dprintf("\n using default path and input"); 
+        strncpy(pct.image_path[0], "./", MAX_PATH);
+        strncpy(pct.image_input[0], "input", MAX_PATH);
+        pct.images = 1;
+        pct.image_npes[0] = 1;
+        ct.images_per_node = 1;
+        ct.spin_flag = 0;
+        return;
+    }
 
     if (pct.worldrank == 0)
     {
@@ -98,7 +107,7 @@ void read_init(char *meta)
         for(tmp = 1; tmp < pct.images; tmp++) 
             if(pct.image_npes[tmp] != pct.image_npes[0])
             {
-               dprintf("\n image %d has different NPES %d", pct.image_npes[tmp], pct.image_npes[0]);
+                dprintf("\n image %d has different NPES %d", pct.image_npes[tmp], pct.image_npes[0]);
                 exit(0);
             }
     }

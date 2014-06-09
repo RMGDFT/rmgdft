@@ -62,7 +62,13 @@ void init_IO (int argc, char **argv)
     MPI_Comm_size (MPI_COMM_WORLD, &npes);
     pct.total_npes = npes;
 
-    read_init("ctrl_init.dat");
+    if(argc == 2)
+    {
+        read_init(argv[1]);
+    }
+    else
+        read_init("ctrl_init.dat");
+
 
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
