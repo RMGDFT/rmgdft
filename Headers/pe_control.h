@@ -184,7 +184,6 @@ typedef struct
 
     int instances;
     /** Neighboring processors in three-dimensional space */
-    int neighbors[6];
 
     /** Processor kpoint- coordinate for domain decomposition */
     /*  paralleled for kpoint */

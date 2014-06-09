@@ -152,9 +152,16 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
     /* add exchange correlation together */ 
     for (idx = 0; idx < FP0_BASIS; idx++) 
     {
-	    vxc[idx] += vc[idx];
-	    exc[idx] += ec[idx];
-	    vsigma[idx] += vsigma_c[idx];
+        if( (fabs(rho[idx]) <1.0e-10 ) ||( sigma[idx] <1.0e-15))
+        {
+            vsigma[idx] = 0.0;
+        }
+        else
+        {
+        vxc[idx] += vc[idx];
+        exc[idx] += ec[idx];
+        vsigma[idx] += vsigma_c[idx];
+        }
     }
 
 
@@ -162,12 +169,12 @@ void xcgga_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, in
     app_grad (vsigma, vgx, vgy, vgz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
 
-     /* Vxc = vrho -2 \div \dot ( vsigma * \grad(rho) ) */
+    /* Vxc = vrho -2 \div \dot ( vsigma * \grad(rho) ) */
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-	     vxc[idx] -= 2.0 * ( vgx[idx] * gx[idx] + 
-	     		   vgy[idx] * gy[idx] + vgz[idx] * gz[idx] ) ;
-	     vxc[idx] -= 2.0 * vsigma[idx] * d2rho[idx];
+        vxc[idx] -= 2.0 * ( vgx[idx] * gx[idx] + 
+                vgy[idx] * gy[idx] + vgz[idx] * gz[idx] ) ;
+        vxc[idx] -= 2.0 * vsigma[idx] * d2rho[idx];
     }
 
 

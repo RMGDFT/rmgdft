@@ -134,47 +134,12 @@ void init_pe ( int image )
 
 
 
-    /* Legacy portion of init_pe */
-
-    /* XYZ coordinates of this processor */
-    pe2xyz (pct.gridpe, &ii, &jj, &kk);
-
-    /* Now wrap them in case we are running with some processors duplicated */
-    /* Two should be enough for any case that we might be doing.            */
-    /* Wouldn't ii %= pct.pe_x; be better??? */
-    if (ii >= pct.pe_x)
-        ii -= pct.pe_x;
-    if (ii >= pct.pe_x)
-        ii -= pct.pe_x;
-
-
-    /* Have each processor figure out who it's neighbors are */
-    XYZ2PE (ii, (jj + 1) % pct.pe_y, kk, pct.neighbors[NB_N]);
-    XYZ2PE (ii, (jj - 1 + pct.pe_y) % pct.pe_y, kk, pct.neighbors[NB_S]);
-    XYZ2PE ((ii + 1) % pct.pe_x, jj, kk, pct.neighbors[NB_E]);
-    XYZ2PE ((ii - 1 + pct.pe_x) % pct.pe_x, jj, kk, pct.neighbors[NB_W]);
-    XYZ2PE (ii, jj, (kk + 1) % pct.pe_z, pct.neighbors[NB_U]);
-    XYZ2PE (ii, jj, (kk - 1 + pct.pe_z) % pct.pe_z, pct.neighbors[NB_D]);
 
 
  // Set up grids and neighbors using both C and C++ for now
     set_rank(pct.gridpe);
 
 
-    // Compute grid sizes for each node.
-
-//    find_node_sizes(pct.gridpe, get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(), &pct.get_PX0_GRID(), &pct.get_PY0_GRID(), &pct.get_PZ0_GRID());
- //   find_node_sizes(pct.gridpe, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(), &pct.get_FPX0_GRID(), &pct.get_FPY0_GRID(), &pct.get_FPZ0_GRID());
-
-  //  pct.get_P0_BASIS() = pct.get_PX0_GRID() * pct.get_PY0_GRID() * pct.get_PZ0_GRID();
-   // pct.get_FP0_BASIS() = pct.get_FPX0_GRID() * pct.get_FPY0_GRID() * pct.get_FPZ0_GRID();
-
-    // Now compute the global grid offset of the first point of the coarse and fine node grids
-    //find_node_offsets(pct.gridpe, get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
-      //                &get_PX_OFFSET(), &get_PY_OFFSET(), &get_PZ_OFFSET());
-
-    //find_node_offsets(pct.gridpe, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
-     //                 &get_FPX_OFFSET(), &get_FPY_OFFSET(), &get_FPZ_OFFSET());
 
 
     my_barrier ();

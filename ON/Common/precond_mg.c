@@ -77,7 +77,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
             mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
-                       get_hxgrid(), get_hygrid(), get_hzgrid(), 0, pct.neighbors,
+                       get_hxgrid(), get_hygrid(), get_hzgrid(), 0, get_neighbors(),
                        ct.eig_parm.levels, eig_pre, eig_post, 1, istate, &sp->inum, 1);
 
 
