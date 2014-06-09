@@ -33,7 +33,7 @@ void get_mat_Omega(STATE * states, double Omega[])
     _fcd char_fcd2;
 
 
-    myrow = pct.myrow;
+    myrow = pct.scalapack_myrow;
 
     /* If I'm in the process grid, execute the program */
     if (myrow != -1)

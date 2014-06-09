@@ -71,11 +71,11 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
 
 
     mxllda2 = MXLLDA * MXLCOL;
-    npcol = pct.npcol;
-    nprow = pct.nprow;
+    npcol = pct.scalapack_npcol;
+    nprow = pct.scalapack_nprow;
 
-    mycol = pct.mycol;
-    myrow = pct.myrow;
+    mycol = pct.scalapack_mycol;
+    myrow = pct.scalapack_myrow;
 
     icrow = INDXG2P(&itwo, &nb, &myrow, &izero, &nprow);
     iccol = INDXG2P(&ione, &nb, &mycol, &izero, &npcol);

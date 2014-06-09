@@ -60,7 +60,7 @@ void get_cholesky_real(double *matS)
     mxllda2 = MXLLDA * MXLCOL;
 
     /* If I'm in the process grid, execute the program */
-    if (pct.myrow != -1)
+    if (pct.scalapack_myrow != -1)
     {
 
 
@@ -79,7 +79,7 @@ void get_cholesky_real(double *matS)
         }
 
         /* Compute the conditioning of statearray */
-        nproc = pct.nprow * pct.npcol;
+        nproc = pct.scalapack_nprow * pct.scalapack_npcol;
         locr = ((numst / nb + 1) / nproc + 1) * nb + nb;
         lwork = locr * 5 + nb;
         liwork = locr;

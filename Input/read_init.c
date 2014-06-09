@@ -24,6 +24,7 @@ void read_init(char *meta)
     strncpy(pct.image_path[0], "./", MAX_PATH);
     strncpy(pct.image_input[0], "input", MAX_PATH);
     pct.image_npes[0] = 1;
+    ct.images_per_node = 1;
 
     if (pct.worldrank == 0)
     {

@@ -39,7 +39,7 @@ void allocate_matrix()
     int ispin, sizeofmatrix, item, item1, item2, lwork;
     int nproc, myrow, mycol, icrow, iccol;
     int izero = 0, ione = 1, itwo = 2, nb, nn, NN;
-    int nprow = pct.nprow, npcol = pct.npcol, npes = NPES;
+    int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = NPES;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
     int NB;
 
@@ -97,15 +97,15 @@ void allocate_matrix()
     item2 = 2 * get_P0_BASIS() + S0_BASIS + item1;
     item = max(13 * S0_BASIS, item2);
 
-    nproc = pct.nprow * pct.npcol;
+    nproc = pct.scalapack_nprow * pct.scalapack_npcol;
     locr = ((ct.num_states / NB + 1) / nproc + 1) * NB + NB;
     lwork = 10 * (locr * 5 + NB);
     item1 = max(lwork, item);
 
-    nprow = pct.nprow;
-    npcol = pct.npcol;
-    myrow = pct.myrow;
-    mycol = pct.mycol;
+    nprow = pct.scalapack_nprow;
+    npcol = pct.scalapack_npcol;
+    myrow = pct.scalapack_myrow;
+    mycol = pct.scalapack_mycol;
 
     icrow = INDXG2P(&itwo, &nb, &myrow, &izero, &nprow);
     iccol = INDXG2P(&ione, &nb, &mycol, &izero, &npcol);

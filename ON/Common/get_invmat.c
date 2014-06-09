@@ -29,7 +29,7 @@ void get_invmat(double *matB)
 
 
 
-    myrow = pct.myrow;
+    myrow = pct.scalapack_myrow;
 
     /* If I'm in the process grid, execute the program */
     if (myrow != -1)

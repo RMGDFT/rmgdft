@@ -166,13 +166,13 @@ void read_control (char *file)
 
     get_data ("kpoints_per_processor", &pct.pe_kpoint, INT, "1");
     get_data ("Hamiltonia_processor_grid", tbuf, STR, "1 1");
-    pct.nprow = strtol(tbuf, &tbuf, 10);
-    pct.npcol = strtol(tbuf, &tbuf, 10);
+    pct.scalapack_nprow = strtol(tbuf, &tbuf, 10);
+    pct.scalapack_npcol = strtol(tbuf, &tbuf, 10);
 
-    if(NPES < pct.pe_kpoint * pct.nprow * pct.npcol)
+    if(NPES < pct.pe_kpoint * pct.scalapack_nprow * pct.scalapack_npcol)
     {
         printf("\n NPES = %d", NPES);
-      printf("\n pct.pe_kpoint, pct.nprow, pct.npcol = %d %d %d",pct.pe_kpoint, pct.nprow, pct.npcol);
+      printf("\n pct.pe_kpoint, pct.scalapack_nprow, pct.scalapack_npcol = %d %d %d",pct.pe_kpoint, pct.scalapack_nprow, pct.scalapack_npcol);
         error_handler("bad decomposion of processor grid");
     }
 

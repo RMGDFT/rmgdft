@@ -55,7 +55,7 @@ void init_pe_on(void)
     periods[0] = 1;
     periods[1] = 1;
     reorder = 1;
-    MPI_Cart_create(MPI_COMM_WORLD, ndims, &dims[0], &periods[0], reorder, &COMM_KP);
+    MPI_Cart_create(pct.img_comm, ndims, &dims[0], &periods[0], reorder, &COMM_KP);
 
     /* get the coordinate of the processor in COMM_KP */
     MPI_Cart_get(COMM_KP, ndims, &dims[0], &periods[0], &coords[0]);
@@ -98,15 +98,15 @@ void init_pe_on(void)
     int rsrc = 0, csrc = 0;
     int mxllda = MXLLDA, nb = ct.scalapack_block_factor;
 
-    sl_init_on(&ictxt, pct.nprow, pct.npcol);
+    sl_init_on(&ictxt, pct.scalapack_nprow, pct.scalapack_npcol);
 
-    Cblacs_gridinfo(ictxt, &pct.nprow, &pct.npcol, &pct.myrow, &pct.mycol);
+    Cblacs_gridinfo(ictxt, &pct.scalapack_nprow, &pct.scalapack_npcol, &pct.scalapack_myrow, &pct.scalapack_mycol);
 
 
 
     /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
     /* Initialize the array descriptors for the matrices */
-    if(pct.myrow !=-1)
+    if(pct.scalapack_myrow !=-1)
     {
         DESCINIT(pct.desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
         if (info != 0)

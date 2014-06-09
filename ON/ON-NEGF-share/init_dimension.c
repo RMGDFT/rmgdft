@@ -43,11 +43,11 @@ void init_dimension(int *MXLLDA, int *MXLCOL)
     if (ct.num_states < NB)
         NB = ct.num_states;
     NNBB = (ct.num_states + NB - 1) / NB;
-    NNBBR = (NNBB + pct.nprow - 1) / pct.nprow;
+    NNBBR = (NNBB + pct.scalapack_nprow - 1) / pct.scalapack_nprow;
     NNBBRB = (NNBBR * NB);
     *MXLLDA = NNBBRB ;
 
-    NNBBR = (NNBB + pct.npcol - 1) / pct.npcol;
+    NNBBR = (NNBB + pct.scalapack_npcol - 1) / pct.scalapack_npcol;
     *MXLCOL = NNBBR * NB;
 
 }

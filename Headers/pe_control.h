@@ -229,10 +229,6 @@ typedef struct
     int psi_size;
     /* pointer to former step solution, used in pulay and KAIN mixing  */
     int descb[DLEN];
-    int mycol;
-    int myrow;
-    int nprow;
-    int npcol;
 
     int num_local_orbit;
     rmg_double_t *psi1, *psi2;

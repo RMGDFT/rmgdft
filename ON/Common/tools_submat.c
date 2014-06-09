@@ -43,7 +43,7 @@ Documentation:
 *  Purpose
 *  =======
 *
-*  SL_INIT initializes an pct.nprow x pct.npcol process grid using a row-major
+*  SL_INIT initializes an pct.scalapack_nprow x pct.scalapack_npcol process grid using a row-major
 *  ordering  of  the  processes. This routine retrieves a default system
 *  context  which  will  include all available processes. In addition it
 *  spawns the processes if needed.
@@ -55,12 +55,12 @@ Documentation:
 *          ictxt specifies the BLACS context handle identifying 
 *          created process grid.  The context itself is global.
 *
-*  pct.nprow   (global input) int
-*          pct.nprow specifies the number of process rows in the grid
+*  pct.scalapack_nprow   (global input) int
+*          pct.scalapack_nprow specifies the number of process rows in the grid
 *          to be created.
 *
-*  pct.npcol   (global input) int
-*          pct.npcol specifies the number of process columns in the grid
+*  pct.scalapack_npcol   (global input) int
+*          pct.scalapack_npcol specifies the number of process columns in the grid
 *          to be created.
 *
 *  ============================================================
@@ -83,7 +83,7 @@ void sl_init_on(int *ictxt, int nprow, int npcol)
     Cblacs_get(0, 0, ictxt);
 
 
-    my_malloc_init( pmap, pct.nprow * pct.npcol, int );
+    my_malloc_init( pmap, pct.scalapack_nprow * pct.scalapack_npcol, int );
     for (i = 0; i < nprow * npcol; i++)
         pmap[i] = i;
 
@@ -155,7 +155,7 @@ void dsymm_dis(char *side, char *uplo, int *nn, double *aa, double *bb, double *
 
 
     /* If I'm in the process grid, execute the program */
-    if (pct.myrow != -1)
+    if (pct.scalapack_myrow != -1)
     {
 
         char_fcd1 = side;
