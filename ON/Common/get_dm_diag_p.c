@@ -40,61 +40,31 @@ Documentation:
 
 
 
-void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
+void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
 {
-    int ione = 1, info, numst = ct.num_states;
+	int num_states;
+    int ione = 1, izero = 0;    /* blas constants */
+    char *uplo = "l", *jobz = "v";
+
+    int info, numst = ct.num_states;
     double zero = 0., one = 1.;
     int st1, itype = 1;
-    char diag, side, uplo = 'l', jobz = 'v', transa, transb;
-    double val[ct.num_states];
+    char diag, side, transa, transb;
+    double *eigs;
 
     /* for parallel libraries */
     int nb, npcol, nprow;
     int mycol, myrow;
     int lwork;
     int  mxllda2;
-    double scale;
-    double *work;
     _fcd char_fcd1;
     _fcd char_fcd2;
     _fcd char_fcd3;
 
 
-    int icrow, iccol, mpc0, nqc0, sizemqrleft, qrmem, i1, itwo = 2, izero = 0;
-    int npes = NPES, nn, NN, ldc, nrc;
-
-    nn = ct.num_states;
-    NN = ct.num_states;
-    nb = ct.scalapack_block_factor;
-    int NB = ct.scalapack_block_factor;
-    my_barrier();
-
-
-    mxllda2 = MXLLDA * MXLCOL;
-    npcol = pct.scalapack_npcol;
-    nprow = pct.scalapack_nprow;
-
-    mycol = pct.scalapack_mycol;
-    myrow = pct.scalapack_myrow;
-
-    icrow = INDXG2P(&itwo, &nb, &myrow, &izero, &nprow);
-    iccol = INDXG2P(&ione, &nb, &mycol, &izero, &npcol);
-    mpc0 = NUMROC(&nn, &nb, &myrow, &icrow, &nprow);
-    nqc0 = NUMROC(&nn, &nb, &mycol, &iccol, &npcol);
-    nrc = NUMROC(&nn, &nb, &myrow, &izero, &npes);
-    ldc = max(1, nrc);
-    sizemqrleft = max((NB * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
-    sizemqrleft *= 2;
-    qrmem = 2 * NN - 2;
-    lwork = 5 * NN + NN * ldc + max(sizemqrleft, qrmem) + 1;
-
-
-    /* my_malloc_init( work, lwork, rmg_double_t ); */
-    work = work_memory;
-
-
+    void *RT = BeginRmgTimer("Diagonalization: scalapack");
     /* If I'm in the process grid, execute the program */
-    if (myrow != -1)
+    if (pct.scalapack_myrow != -1)
     {
 
 
@@ -102,99 +72,113 @@ void get_dm_diag_p(STATE * states, double *l_s, double *X, double *hb)
          * SOLVE THE GENERALIZED EIGENVALUE PROBLEM:  m * z = lambda * matS * z 
          */
 
-        /* Transform the generalized eigenvalue problem to a standard form */
+        /* Transform the generalized eigenvalue problem to a sStandard form */
+        mxllda2 = MXLLDA * MXLCOL;
         scopy(&mxllda2, hb, &ione, uu_dis, &ione);
+        scopy(&mxllda2, matS, &ione, l_s, &ione);
 
-        char_fcd1 = &uplo;
+        char *range = "a";
+        rmg_double_t vx = 0.0;
+        rmg_double_t tol = 0.0;
+        int eigs_found, eigvs_found;
+        rmg_double_t orfac = 0.0;
+        int *iwork, *ifail, *iclustr, lwork;
+        rmg_double_t *gap, lwork_tmp, *work2;
+        int liwork_tmp, liwork;
 
-        PSSYGST(&itype, char_fcd1, &numst, uu_dis, &ione, &ione, pct.desca,
-                l_s, &ione, &ione, pct.desca, &scale, &info);
-        if (info != 0)
+        my_malloc (ifail, num_states, int);
+        my_malloc (eigs, num_states, double);
+        my_malloc (iclustr, 2 * pct.scalapack_nprow * pct.scalapack_npcol, int);
+        my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, rmg_double_t);
+        lwork = -1;
+        liwork = -1;
+
+
+        PDSYGVX (&ione, jobz, range, uplo, &num_states, uu_dis, &ione, &ione, pct.desca,
+                l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, &lwork_tmp, &lwork,
+                &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
+
+        if (info)
         {
-            printf(" get_dm_diag_p: PSSYGST, output info=%d\n", info);
-            fflush(NULL);
-            exit(0);
+            printf ("\n PDSYGVX query failed, info is %d", info);
+            error_handler ("PDSYGVX query failed");
+        }
+
+        /*set lwork and liwork */
+        lwork = (int) lwork_tmp + 1;
+        liwork = liwork_tmp;
+
+        my_malloc (work2, lwork, rmg_double_t);
+        my_malloc (iwork, liwork, int);
+
+        tol = 1e-15;
+
+
+
+        PDSYGVX (&ione, jobz, range, uplo, &num_states, uu_dis, &ione, &ione, pct.desca,
+                l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, work2, &lwork,
+                iwork, &liwork, ifail, iclustr, gap, &info);
+
+
+        if (info)
+        {
+            printf ("\n PDSYGVX failed, info is %d", info);
+            error_handler ("PDSYGVX failed");
         }
 
 
-        /* solve a standard symmetric eigenvalue problem */
-
-        char_fcd1 = &jobz;
-        char_fcd3 = &uplo;
-
-
-        PSSYEV(char_fcd1, char_fcd3, &numst, uu_dis, &ione, &ione, pct.desca,
-               val, zz_dis, &ione, &ione, pct.desca, work, &lwork, &info);
-        if (info != 0)
-        {
-            printf(" get_dm_diag_p: PSSYEV, output info=%d\n", info);
-            fflush(NULL);
-            exit(0);
-        }
-
-
-        /* generalize the gamma for charge density matrix X */
-        for (st1 = 0; st1 < numst; st1++)
-        {
-            work_matrix_row[st1] = states[st1].occupation[0];
-        }
-
-        diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);
-
-
-        /* Get the eigenvectors Z of the generalized eigenvalue problem */
-
-        /* Solve Z=L**(-T)*U */
-        diag = 'n';
-        transa = 't';
-        char_fcd1 = &uplo;
-        char_fcd2 = &transa;
-        char_fcd3 = &diag;
-        PSTRTRS(char_fcd1, char_fcd2, char_fcd3, &numst, &numst,
-                l_s, &ione, &ione, pct.desca, zz_dis, &ione, &ione, pct.desca, &info);
-        if (info != 0)
-        {
-            printf(" get_dm_diag_p: PSTRTRS, output info=%d\n", info);
-            fflush(NULL);
-            exit(0);
-        }
-
-
-
-        /* 
-         * Build the density matrix X 
-         */
-
-
-        /* X = Z * gamma * Z^*  */
-        side = 'r';
-        uplo = 'l';
-        char_fcd1 = &side;
-        char_fcd2 = &uplo;
-        PSSYMM(char_fcd1, char_fcd2, &numst, &numst, &one,
-               gamma_dis, &ione, &ione, pct.desca,
-               zz_dis, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
-
-        transa = 'n';
-        transb = 't';
-        char_fcd1 = &transa;
-        char_fcd2 = &transb;
-        PSGEMM(char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
-               uu_dis, &ione, &ione, pct.desca,
-               zz_dis, &ione, &ione, pct.desca, &zero, X, &ione, &ione, pct.desca);
-
-
-
+        my_free (ifail);
+        my_free (iclustr);
+        my_free (gap);
+        my_free (work2);
+        my_free (iwork);
 
     }
+    EndRmgTimer(RT);
+
+
+
+    /* generalize the gamma for charge density matrix X */
+    for (st1 = 0; st1 < numst; st1++)
+    {
+        work_matrix_row[st1] = states[st1].occupation[0];
+    }
+
+    diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);
+
+
+
+    /* 
+     * Build the density matrix X 
+     */
+
+
+    /* X = Z * gamma * Z^*  */
+    side = 'r';
+    uplo = 'l';
+    char_fcd1 = &side;
+    char_fcd2 = &uplo;
+    PSSYMM(char_fcd1, char_fcd2, &numst, &numst, &one,
+            gamma_dis, &ione, &ione, pct.desca,
+            zz_dis, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
+
+    transa = 'n';
+    transb = 't';
+    char_fcd1 = &transa;
+    char_fcd2 = &transb;
+    PSGEMM(char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
+            uu_dis, &ione, &ione, pct.desca,
+            zz_dis, &ione, &ione, pct.desca, &zero, X, &ione, &ione, pct.desca);
 
 
     my_barrier();
 
-    MPI_Bcast(&val[0], numst, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&eigs[0], numst, MPI_DOUBLE, 0, pct.grid_comm);
     for (st1 = 0; st1 < ct.num_states; st1++)
     {
-        states[st1].eig[0] = val[st1];
+        states[st1].eig[0] = eigs[st1];
     }
 
     /* my_free(work); */

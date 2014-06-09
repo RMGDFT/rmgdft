@@ -87,7 +87,7 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 
 
         MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
-                MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
 

@@ -199,7 +199,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 	amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
 	MPI_File mpi_fhand ;
-	MPI_File_open(MPI_COMM_WORLD, newname, amode, fileinfo, &mpi_fhand);
+	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
 
 
 	disp=0;

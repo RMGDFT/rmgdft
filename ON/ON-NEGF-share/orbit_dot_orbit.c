@@ -92,8 +92,8 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
             st2 = recv_from1[loop * state_per_proc + i + 2];
             size2 = states[st2].size;
 
-            if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-            if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+            if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+            if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
         }
 
 
@@ -106,7 +106,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
             psi1 = states[st1].psiR;
             size1 = states[st1].size;
 
-            MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, MPI_COMM_WORLD, &mr_send);
+            MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
             MPI_Request_free(&mr_send);
         }   
 
@@ -123,8 +123,8 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
 
             if(i != num_recv)
             {
-                if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-                if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+                if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+                if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
             }
 
             if(ii%2 == 1) states[st2].psiR = psi2;

@@ -96,13 +96,13 @@ void partial_Mat_nm_R(double *partial_x, double *partial_y, double *partial_z, r
 
 
         MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx,
-                     kbpsi_comm, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                     kbpsi_comm, size, MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
         MPI_Sendrecv(partial_kbpsi_x, size, MPI_DOUBLE, proc1, idx,
-                     kbpsi_comm_x, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                     kbpsi_comm_x, size, MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
         MPI_Sendrecv(partial_kbpsi_y, size, MPI_DOUBLE, proc1, idx,
-                     kbpsi_comm_y, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                     kbpsi_comm_y, size, MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
         MPI_Sendrecv(partial_kbpsi_z, size, MPI_DOUBLE, proc1, idx,
-                     kbpsi_comm_z, size, MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                     kbpsi_comm_z, size, MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
         for (st1 = ct.state_begin; st1 < ct.state_end; st1++)

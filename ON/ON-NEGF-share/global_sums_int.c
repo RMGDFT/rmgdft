@@ -129,7 +129,7 @@ void global_sums_int (int *vect, int *length)
         for (idx = 0; idx < sizr; idx++)
             rptr[idx] = vect[idx];
 
-        MPI_Allreduce (rptr, vect, sizr, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce (rptr, vect, sizr, MPI_INTEGER, MPI_SUM, pct.grid_comm);
         my_free(rptr);
         return;
     }
@@ -147,7 +147,7 @@ void global_sums_int (int *vect, int *length)
 
         for (idx = 0; idx < newsize; idx++)
             rptr[idx] = rptr1[idx];
-        MPI_Allreduce (rptr, rptr1, newsize, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce (rptr, rptr1, newsize, MPI_INTEGER, MPI_SUM, pct.grid_comm);
 
         rptr1 += newsize;
     }
@@ -158,7 +158,7 @@ void global_sums_int (int *vect, int *length)
         for (idx = 0; idx < sizr; idx++)
             rptr[idx] = rptr1[idx];
 
-        MPI_Allreduce (rptr, rptr1, sizr, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce (rptr, rptr1, sizr, MPI_INTEGER, MPI_SUM, pct.grid_comm);
     }
 
 

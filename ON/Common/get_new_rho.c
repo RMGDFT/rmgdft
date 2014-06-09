@@ -106,10 +106,10 @@ void get_new_rho(STATE * states, double *rho)
            size2 = states[st2].size;
            psi1 = states[st1].psiR;
 
-           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, MPI_COMM_WORLD, &mr_send);
+           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
            MPI_Request_free(&mr_send);
-           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
        }
 
 
@@ -126,11 +126,11 @@ void get_new_rho(STATE * states, double *rho)
 
            MPI_Wait(&mr_recv[ii-1], &mstatus);
 
-           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, MPI_COMM_WORLD, &mr_send);
+           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
            MPI_Request_free(&mr_send);
 
-           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
 
            st2 = recv_from[loop * state_per_proc + i-1 + 2];
            if(ii%2 == 1) psi_p = psi2;
@@ -162,8 +162,8 @@ void get_new_rho(STATE * states, double *rho)
            size2 = states[st2].size;
 
 
-           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
        }
 
 
@@ -173,7 +173,7 @@ void get_new_rho(STATE * states, double *rho)
            st1 = send_to[loop * state_per_proc + i + 2];
            size1 = states[st1].size;
            psi1 = states[st1].psiR;
-           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, MPI_COMM_WORLD, &mr_send);
+           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
            MPI_Request_free(&mr_send);
        }
 
@@ -214,8 +214,8 @@ void get_new_rho(STATE * states, double *rho)
 
                MPI_Wait(&mr_recv[ii-1], &mstatus);
 
-               if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-               if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+               if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+               if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
 
                st2 = recv_from[loop * state_per_proc + i-1 + 2];
                if(ii%2 == 1) psi_p = psi2;
@@ -266,7 +266,7 @@ void get_new_rho(STATE * states, double *rho)
                size1 = states[st1].size;
 
 
-               MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, MPI_COMM_WORLD, &mr_send);
+               MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
                MPI_Request_free(&mr_send);
 
            }

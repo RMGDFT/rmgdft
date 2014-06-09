@@ -50,7 +50,7 @@ rmg_double_t real_max_all(rmg_double_t x)
 
 #else
 
-    MPI_Allreduce(&inreg, &outreg, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&inreg, &outreg, 1, MPI_DOUBLE, MPI_MAX, pct.grid_comm);
 
 #endif
 

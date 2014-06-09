@@ -295,8 +295,8 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             ii++;
             st2 = recv_from1[loop * state_per_proc + i + 2];
             size2 = states[st2].size;
-            if(ii %2 ==0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-            if(ii %2 ==1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+            if(ii %2 ==0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+            if(ii %2 ==1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
         }
 
 
@@ -308,7 +308,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             st1 = send_to1[loop * state_per_proc + i + 2];
             psi1 = states[st1].psiR;
             size1 = states[st1].size;
-            MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, MPI_COMM_WORLD, &mr_send);
+            MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
             MPI_Request_free(&mr_send);
         }
 
@@ -320,8 +320,8 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             MPI_Wait(&mr_recv[ii-1],&mstatus); 
             st2 = recv_from1[loop * state_per_proc + i-1 + 2];
             size2 = states[st2].size;
-            if(i != num_recv && ii%2 ==0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
-            if(i != num_recv && ii%2 ==1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, MPI_COMM_WORLD, &mr_recv[ii]);
+            if(i != num_recv && ii%2 ==0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
+            if(i != num_recv && ii%2 ==1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
             if(ii%2 ==0) psi_pointer = psi3;
             if(ii%2 ==1) psi_pointer = psi2;
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)

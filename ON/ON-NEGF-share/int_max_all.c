@@ -50,7 +50,7 @@ int int_max_all(int x)
 
 #else
 
-    MPI_Allreduce(&inreg, &outreg, 1, MPI_INTEGER, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&inreg, &outreg, 1, MPI_INTEGER, MPI_MAX, pct.grid_comm);
 
 #endif
 

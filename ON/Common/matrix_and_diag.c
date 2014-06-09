@@ -50,15 +50,15 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
     get_HS(states, states1, vtot_c, Hij_00, Bij_00);
 
     Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
-            pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, matB, IB, JB,
-            pct.desca, pct.desca[1]);
+           pct.desca, pct.desca[1]);
+   Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, matB, IB, JB,
+          pct.desca, pct.desca[1]);
 
 
 
-    get_cholesky_real(matB);
+//    get_cholesky_real(matB);
 
-    get_dm_diag_p(states, l_s, mat_X, Hij);
+    get_dm_diag_p(states, matB, mat_X, Hij);
 #else
     error_handler("not programmed for non-Gamma point");
 #endif

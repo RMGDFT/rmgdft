@@ -27,5 +27,6 @@ init_pos.c
 rmg_error.c
 rmg_alloc.c
 ions.c
+sl_init_comm.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")

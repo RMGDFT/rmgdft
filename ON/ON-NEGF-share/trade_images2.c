@@ -119,10 +119,10 @@ void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int d
 
 
     MPI_Sendrecv(frdz1, zlen, MPI_DOUBLE, nb_ids[NB_D], 1,
-                 frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], 1, MPI_COMM_WORLD, &mrstatus);
+                 frdz2n, zlen, MPI_DOUBLE, nb_ids[NB_U], 1, pct.grid_comm, &mrstatus);
 
     MPI_Sendrecv(frdz2, zlen, MPI_DOUBLE, nb_ids[NB_U], 2,
-                 frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], 2, MPI_COMM_WORLD, &mrstatus);
+                 frdz1n, zlen, MPI_DOUBLE, nb_ids[NB_D], 2, pct.grid_comm, &mrstatus);
 
 
     /* Unpack them */
@@ -169,10 +169,10 @@ void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int d
 
 
     MPI_Sendrecv(frdy1, ylen, MPI_DOUBLE, nb_ids[NB_S], 1,
-                 frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], 1, MPI_COMM_WORLD, &mrstatus);
+                 frdy2n, ylen, MPI_DOUBLE, nb_ids[NB_N], 1, pct.grid_comm, &mrstatus);
 
     MPI_Sendrecv(frdy2, ylen, MPI_DOUBLE, nb_ids[NB_N], 2,
-                 frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], 2, MPI_COMM_WORLD, &mrstatus);
+                 frdy1n, ylen, MPI_DOUBLE, nb_ids[NB_S], 2, pct.grid_comm, &mrstatus);
 
 
     /* Unpack them */
@@ -216,10 +216,10 @@ void trade_images2(rmg_double_t * f, rmg_double_t * w, int dimx, int dimy, int d
 
 
     MPI_Sendrecv(frdx1, xlen, MPI_DOUBLE, nb_ids[NB_W], 1,
-                 frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], 1, MPI_COMM_WORLD, &mrstatus);
+                 frdx2n, xlen, MPI_DOUBLE, nb_ids[NB_E], 1, pct.grid_comm, &mrstatus);
 
     MPI_Sendrecv(frdx2, xlen, MPI_DOUBLE, nb_ids[NB_E], 2,
-                 frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], 2, MPI_COMM_WORLD, &mrstatus);
+                 frdx1n, xlen, MPI_DOUBLE, nb_ids[NB_W], 2, pct.grid_comm, &mrstatus);
 
 
     /* Unpack them */

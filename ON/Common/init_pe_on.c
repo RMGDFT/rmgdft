@@ -98,7 +98,7 @@ void init_pe_on(void)
     int rsrc = 0, csrc = 0;
     int mxllda = MXLLDA, nb = ct.scalapack_block_factor;
 
-    sl_init_on(&ictxt, pct.scalapack_nprow, pct.scalapack_npcol);
+    sl_init_comm(&ictxt, pct.scalapack_nprow, pct.scalapack_npcol, pct.grid_comm);
 
     Cblacs_gridinfo(ictxt, &pct.scalapack_nprow, &pct.scalapack_npcol, &pct.scalapack_myrow, &pct.scalapack_mycol);
 
@@ -120,7 +120,7 @@ void init_pe_on(void)
 
     int numst1;
     numst1 = (ct.num_states + NPES -1)/NPES;
-    sl_init_on(&ictxt, 1,NPES);
+    sl_init_comm(&ictxt, 1,NPES, pct.grid_comm);
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 

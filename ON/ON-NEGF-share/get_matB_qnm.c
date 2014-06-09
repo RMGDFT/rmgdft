@@ -88,7 +88,7 @@ void get_matB_qnm(double *Aij)
 
 
         MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
-                MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)

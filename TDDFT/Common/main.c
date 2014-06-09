@@ -107,8 +107,7 @@ int main(int argc, char **argv)
             pct.desca, pct.desca[1]);
 
 
-    get_cholesky_real(matB);
-    get_dm_diag_p(states, l_s, mat_X, Hij);
+    get_dm_diag_p(states, matB, mat_X, Hij);
 
     write_eigs(states);
 
@@ -122,6 +121,8 @@ int main(int argc, char **argv)
     my_malloc( Xij_dist, n2, double );
     my_malloc( Yij_dist, n2, double );
     my_malloc( Zij_dist, n2, double );
+
+    /*  Xij = <phi|x|phi>, Yij = <phi|y|phi>, Zij = <phi|z|phi>  */ 
 
     get_phi_xyz_phi(states, Xij_00, Yij_00, Zij_00);
 
@@ -154,16 +155,6 @@ int main(int argc, char **argv)
     printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
 
 
-
-
-
-
-    //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
-    //update_TDDFT(mat_X);
-    //  get_dm_diag_p(states, l_s, mat_X, Hij);
-
-    //  write_eigs(states);
-    /*  Xij = <phi|x|phi>, Yij = <phi|y|phi>, Zij = <phi|z|phi>  */ 
 
     mat_dist_to_global(mat_X, Pn0, pct.desca);
     mat_dist_to_global(matB, Smatrix, pct.desca);
@@ -289,7 +280,7 @@ int main(int argc, char **argv)
         close(fhand);
     }
 
-     get_dm_diag_p(states, l_s, mat_X, Hij);
+     get_dm_diag_p(states, matB, mat_X, Hij);
 
      write_eigs(states);
 
