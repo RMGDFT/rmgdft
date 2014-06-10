@@ -73,36 +73,15 @@ void init_IO (int argc, char **argv)
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
 
-    // assign pct.thisimg:  which image on this processor
-    int pe1, pe2, j, k;
-    pe2 = 0;
-    for(i = 0; i < pct.images; i+= ct.images_per_node)
-    {
-        pe1 = 0;
-        for(j = 0; j < ct.images_per_node; j++)
-        {
-            pe1 += pct.image_npes[i+j];
-            for(k = 0; k < pct.image_npes[i + j]; k++)
-            {
-                if(pct.worldrank == (pe2 + k * ct.images_per_node + j) ) pct.thisimg = i;
-            }
-        }
-        pe2 += pe1;
-    } 
+
+    init_pestr ();
 
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
     snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
 
-    /* Setup image number that this core belongs to */
-    image = npes / pct.images;
-    NPES = pct.image_npes[pct.thisimg];   // NPES is the per image number of PES
-
-
-    //error_handler("message a"); 
-    /* PE(MPI) initialization, need mpi groups defined before logfile is initialized */
-    init_pe ( image );
-
+    read_control(ct.cfile);
+    set_rank(pct.gridpe);
 
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)

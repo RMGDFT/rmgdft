@@ -19,7 +19,6 @@ void read_init(char *meta)
     int status,size, num_image;
     struct stat buffer;
 
-    //get_data (file, NULL, INIT | TAGS, NULL);
     my_malloc (tptr, MAX_PATH, char);
     if((status = stat(meta, &buffer)) == -1)
     {
@@ -30,6 +29,7 @@ void read_init(char *meta)
         pct.image_npes[0] = 1;
         ct.images_per_node = 1;
         ct.spin_flag = 0;
+        pct.pe_kpoint = 1;
         return;
     }
 
@@ -57,6 +57,7 @@ void read_init(char *meta)
 
     get_data ("num_images", &pct.images, INT, "1");
     get_data ("image_per_node", &ct.images_per_node, INT, "1");
+    get_data ("pegroup_for_kpoint", &pct.pe_kpoint, INT, "1");
 
     dprintf("\n pct.images %d", pct.images);
     num_image = 0;

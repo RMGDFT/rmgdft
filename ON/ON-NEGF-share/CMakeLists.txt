@@ -31,7 +31,6 @@ init_nl_xyz.c
 init_nonlocal_comm.c
 init_nuc.c
 init_parameter.c
-init_pe.c
 init_state_size.c
 int_max_all.c
 is_state_overlap.c

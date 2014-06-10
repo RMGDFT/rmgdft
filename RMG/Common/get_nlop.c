@@ -490,7 +490,7 @@ void get_nlop (void)
 
 		pct.num_owners++;
 
-		Dprintf("Owner of ion %d PE %d has not been previously recorded: pct.owners_list[%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d, pct.list_ions_per_owner[%d][0]=%d, pct.num_owners=%d", 
+		printf("Owner of ion %d PE %d has not been previously recorded: pct.owners_list[%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d, pct.list_ions_per_owner[%d][0]=%d, pct.num_owners=%d", 
 			ion, owner, pct.num_owners, pct.owners_list[pct.num_owners], pct.num_owners, pct.num_nonowned_ions_per_pe[pct.num_owners], pct.num_owners, pct.list_ions_per_owner[pct.num_owners][0], pct.num_owners); 
 	    }
 

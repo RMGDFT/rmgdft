@@ -12,6 +12,7 @@ BaseGrid_Cbindings.cpp
 Lattice_Cbindings.cpp
 transition.cpp
 init_IO.c
+init_pestr.c
 get_index.c
 minimage.c
 get_vtot_psi.c

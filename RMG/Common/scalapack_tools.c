@@ -38,8 +38,6 @@ Documentation:
 
 
 /*Blocking parameter*/
-int NB = 32;
-
 
 /*
 *  Purpose
@@ -68,7 +66,9 @@ int NB = 32;
 *  ============================================================
 *  =====================================================================
 */
-static void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node);
+int NB;
+
+static void set_scalapack_comm(int nprow, int npcol, int npes, int images_per_node);
 void sl_init (int *ictxt, int size)
 {
     int i, npes;
@@ -79,14 +79,12 @@ void sl_init (int *ictxt, int size)
     MPI_Group grp_world, grp_this;
 
     // Allocate the memory for scalapack_desca
-    my_malloc(pct.scalapack_desca, NPES*DLEN, int);
+    MPI_Comm_size(pct.grid_comm, &npes);
+    my_malloc(pct.scalapack_desca, npes*DLEN, int);
 
     // Reset NB to input value
     NB = ct.scalapack_block_factor;
 
-    npes = NPES;
-    if(ct.images_per_node  >1 && ct.images_per_node <= npes)
-        npes = npes/ct.images_per_node;
 
     /*First, determine if we want all processors to be involved in scalapack operations
      * We do not want to have too many processors*/
@@ -94,14 +92,10 @@ void sl_init (int *ictxt, int size)
     if (size % NB)
         num_blocks++;
 
-    /*More processors than 1 per block is a waste */
-    if (num_blocks * num_blocks < npes)
-        npes = num_blocks * num_blocks;
-
-
-
     /*Distribute processors into 2D grid */
-    proc_gridsetup (npes, &nprow, &npcol);
+    if(npes < ct.images_per_node) 
+        error_handler("\n npes %d < images_per_node %d", npes, ct.images_per_node); 
+    proc_gridsetup (npes/ct.images_per_node, &nprow, &npcol);
 
     /*Number of processor in any given direction cannot be more than number of blocks*/
     if(num_blocks < nprow) nprow = num_blocks;
@@ -117,21 +111,21 @@ void sl_init (int *ictxt, int size)
     Cblacs_get (0, 0, ictxt);
 
     /* calculate MPI world rank range in this group to be mapped to blacs */
-    if (nprow * npcol* ct.images_per_node > NPES)
+    if (nprow * npcol* ct.images_per_node > npes)
         error_handler
             ("Insufficient MPI group processes to handle scalapack call, have %d, need %d  * %d",
-             NPES, nprow * npcol, ct.images_per_node);
+             npes, nprow * npcol, ct.images_per_node);
 
 
     /* Allocate space on the assumption that NPES is the same as group size */
-    my_malloc (tgmap, NPES, int);
-    my_malloc (pmap, NPES, int);
+    my_malloc (tgmap, npes, int);
+    my_malloc (pmap, npes, int);
 
     /* Set this group rank array maping */
-    for (i = 0; i < NPES; i++)
+    for (i = 0; i < npes; i++)
 	tgmap[i] = i;
 
-    set_scalapack_comm(nprow, npcol, NPES, ct.images_per_node);
+    set_scalapack_comm(nprow, npcol, npes, ct.images_per_node);
     /* Get the world rank maping of this groups processes,
        blacs appears to operate on world group ranking */
     int num_pe_scalapack;
@@ -173,7 +167,7 @@ void sl_init (int *ictxt, int size)
     if(pct.scalapack_pe) {
         pct.scalapack_mpi_rank[myrow*npcol + mycol] = pct.gridpe;
     }
-    MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_mpi_rank, NPES, MPI_INT, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_mpi_rank, npes, MPI_INT, MPI_SUM, pct.grid_comm);
 
     pct.scalapack_max_dist_size = NUMROC (&ct.num_states, &NB, &myrow, &izero, &nprow) *
                                   NUMROC (&ct.num_states, &NB, &mycol, &izero, &npcol);
@@ -250,7 +244,9 @@ void set_desca (int *desca, int *ictxt, int size)
 
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_desca, NPES*DLEN, MPI_INT, MPI_SUM, pct.grid_comm);
+    int npes;
+    MPI_Comm_size(pct.grid_comm, &npes);
+    MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_desca, npes*DLEN, MPI_INT, MPI_SUM, pct.grid_comm);
 }
 
 
@@ -593,20 +589,20 @@ void reduce_and_dist_matrix(int n, rmg_double_t *global_matrix, rmg_double_t *di
     EndRmgTimer(RT);
 }
 
-static void set_scalapack_comm(int nprow, int npcol, int NPES, int images_per_node)
+static void set_scalapack_comm(int nprow, int npcol, int npes, int images_per_node)
 {
 
     //devide NPES to groups, each group has same number of MPI processes which is >= nprw * npcol * imagpes_per_nodes.
     int num_group, i, num_pe;
     MPI_Comm tem_comm;
 
-    num_group = NPES /(nprow * npcol * images_per_node);
+    num_group = npes /(nprow * npcol * images_per_node);
 
     for ( i = num_group; i >0; i--)
-        if(NPES % i == 0) break;
+        if(npes % i == 0) break;
 
     num_group = i;
-    num_pe = NPES/i;
+    num_pe = npes/i;
     
     pct.scalapack_npes = num_pe;
 

@@ -41,7 +41,6 @@ app_nls_allstates.c
 subdiag_gamma_app_AB_hybrid.c
 write_header.c
 app_nls_batch.c
-init_pe.c
 norm_psi1.c
 quench.c
 get_psioverlaps.c

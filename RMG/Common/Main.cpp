@@ -140,11 +140,6 @@ int main (int argc, char **argv)
                B, &asize, &beta, C, &asize);
 #endif
 
-    // Get RMG_IMAGES_PER_NODE environment variable
-    ct.images_per_node = 1;
-    if(NULL != (tptr = getenv("RMG_IMAGES_PER_NODE"))) {
-        ct.images_per_node = atoi(tptr);
-    }
 
     // Get RMG_MPI_THREAD_LEVEL environment variable
     ct.mpi_threadlevel = MPI_THREAD_SERIALIZED;
@@ -336,6 +331,7 @@ void finish ()
     if (pct.scalapack_pe)
         sl_exit (pct.ictxt);
 
+    MPI_Barrier(MPI_COMM_WORLD);
 	/*Exit MPI */
     MPI_Finalize ();
 
