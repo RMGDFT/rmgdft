@@ -19,8 +19,6 @@ void read_init(char *meta)
     int status,size, num_image;
     struct stat buffer;
 
-    my_malloc (tptr, MAX_PATH, char);
-
     //get_data (file, NULL, INIT | TAGS, NULL);
     my_malloc (tptr, MAX_PATH, char);
     if((status = stat(meta, &buffer)) == -1)
