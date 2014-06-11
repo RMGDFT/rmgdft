@@ -5,13 +5,18 @@
  *   , and grid
  *   MPI_COMM_WORLD  :   first level
  *   pct.img_comm :      second level: number of proc: NPES=pct.npes_images[pct.thisimag]
- *                               it split into the following two card groups
- *   pct.spin_comm:       third level:  2 proc for spin-polarized, 1 for  nonspin
- *   pct.allkp_comm:      third level:  half of the pct.img_comm for
- *                                      spin-polarized case
+ *                               it split into the following
+ *                               3dimensional cartesian group
+ *                       (ct.spin_flag +1) * pct.pe_kpoint *
+ *                       numpeforgrid = npes of pct.img_comm
+ *                 
+ *   pct.spin_comm:      third level:  2 proc for spin-polarized, 1 for  nonspin
+ *                           this one contains NPES/(ct.spin_flag+1)
+ *                           communicators
  *                                  this will split into two car groups
- *  pct.kpsub_comm:      fourth level:   pct.pe_kpoint, this comm should be used for sum over kpoint    
- *  pct.grid_comm:       fourth level:   NPES/(ct.spinflag+1)/pct.pe_kpoint     
+ *  pct.kpsub_comm:      third level:   num_proc is pct.pe_kpoint, this comm should be used for sum over kpoint    
+ *                                      it contains NPES/pct.pe_kpoint communicators 
+ *  pct.grid_comm:       third level:   NPES/(ct.spinflag+1)/pct.pe_kpoint     
  *                                       must be divisible 
  *                                  this is the grid communicator, size
  *                                  should be pex * pey * pez from
@@ -98,55 +103,31 @@ void init_pestr()
 
 
     // set up communicator for spin
-    int ndims = 2;
+    int ndims = 3;
     int nspin = 1+ct.spin_flag;
-    if(pct.image_npes[pct.thisimg] % nspin != 0)
+    if(pct.image_npes[pct.thisimg] % (nspin* pct.pe_kpoint) != 0)
     {
-        dprintf("npes %d for image needs to be even for spin-polarized calculation", pct.image_npes[pct.thisimg]); 
+        dprintf("npes %d for image needs to be multiple of nspin*pct.pe_kpoint %d %d", pct.image_npes[pct.thisimg], nspin, pct.pe_kpoint); 
         exit(0);
     }
-    int dims[] = { pct.image_npes[pct.thisimg]/nspin, nspin };
-    int periods[] = { 0, 0 };
+    int dims[] = { nspin, pct.pe_kpoint, pct.image_npes[pct.thisimg]/nspin/pct.pe_kpoint};
+    int periods[] = { 0, 0, 0 };
     int reorder = 1;
-    int remains[] = { 1, 0 };
-
     MPI_Cart_create (pct.img_comm, ndims, dims, periods, reorder, &pct.grid_topo_comm);
-    MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.allkp_comm);
+
+    int remains[] = { 1, 0, 0 };
+    MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.spin_comm);
 
     remains[0] = 0;
     remains[1] = 1;
-    MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.spin_comm);
+    remains[2] = 0;
+    MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.kpsub_comm);
     /* set spinpe rank value to local spin rank value */
     MPI_Comm_rank (pct.spin_comm, &pct.spinpe);
 
-    /* for debug usage*/
-    /* MPI_Comm_rank(pct.grid_comm, &pct.gridpe); */
-
-    /*printf("My spin rank is %d and my image rank is %d\n", pct.spinpe, pct.imgpe);*/
-
-
-    // set up for kpoint parallelization
-
-    MPI_Comm_size (pct.allkp_comm, &npes_tem);
-
-    if(npes_tem % pct.pe_kpoint != 0)
-    {
-        dprintf("npes %d is not multiple of %d", npes_tem, pct.pe_kpoint ); 
-        exit(0);
-    }
-
-    dims[0] = pct.pe_kpoint;
-    dims[1] = npes_tem/pct.pe_kpoint;
-    ndims = 2;
-
-    MPI_Cart_create (pct.allkp_comm, ndims, dims, periods, reorder, &pct.grid_topo_comm);
-
-    remains[0] = 1;
-    remains[1] = 0;
-    MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.kpsub_comm);
-
     remains[0] = 0;
-    remains[1] = 1;
+    remains[1] = 0;
+    remains[2] = 1;
     MPI_Cart_sub (pct.grid_topo_comm, remains, &pct.grid_comm);
 
     MPI_Barrier(MPI_COMM_WORLD);
