@@ -87,7 +87,7 @@ int tagstrip (void)
                 if (j > 0 && string[j - 1] != '"' && string[i + 1] != '"')
                 {               /* Found space were none should be! */
                     snprintf (snip, 8, "%s", &string[i]);
-                    printf ("Malformed input near ...%s...\nAttemtping recovery!\n", snip);
+                    dprintf ("Malformed input near ...%s...\nAttemtping recovery!\n", snip);
                     while (string[j - 1] != '"' && j > 0)
                         j--;
                 }

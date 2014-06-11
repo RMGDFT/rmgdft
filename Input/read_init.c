@@ -26,7 +26,7 @@ void read_init(char *meta)
         strncpy(pct.image_path[0], "./", MAX_PATH);
         strncpy(pct.image_input[0], "input", MAX_PATH);
         pct.images = 1;
-        pct.image_npes[0] = 1;
+        pct.image_npes[0] = pct.total_npes;
         ct.images_per_node = 1;
         ct.spin_flag = 0;
         pct.pe_kpoint = 1;
