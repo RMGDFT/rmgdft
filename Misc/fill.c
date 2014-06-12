@@ -61,7 +61,19 @@ rmg_double_t fill (STATE * states, rmg_double_t width, rmg_double_t nel, rmg_dou
     rmg_double_t *occ;
 
 
-    /* bracket the roots and bisect to find the mu */
+    if(nel == 1 && ct.num_kpts == 1 && ct.spin_flag == 0)
+    {
+        sp = &ct.kp[0].kstate[0];
+        sp->occupation[0] = 1.0;
+        mu = sp->eig[0];
+        for (st1 = 1; st1 < ct.num_states; st1++)
+        {
+            sp = &ct.kp[0].kstate[st1];
+            sp->occupation[0] = 0.0;
+        }
+
+        return(mu);
+    }
 
     switch (occ_flag % 10)
     {

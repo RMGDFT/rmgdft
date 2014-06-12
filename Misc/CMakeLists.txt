@@ -17,6 +17,7 @@ get_index.c
 minimage.c
 get_vtot_psi.c
 filename_increment.c
+fill.c
 my_mpi.c
 blaswrappers.c
 set_bc.c

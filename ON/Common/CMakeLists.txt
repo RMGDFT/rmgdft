@@ -7,7 +7,6 @@ add_library (ON_Common
  CMakeLists.txt
  diag_eig_matrix.c
  fastrlx.c
- fill.c
  genvpsi.c
  get_cholesky_real.c
  get_dm_diag_p.c
