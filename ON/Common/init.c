@@ -105,8 +105,6 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
 
 
 
-    init_states();
-
     is_state_overlap(states, state_overlap_or_not);
 
 

@@ -70,6 +70,7 @@ int main(int argc, char **argv)
 
 
 
+    init_states();
     my_barrier();
 
     /*  Begin to do the real calculations */

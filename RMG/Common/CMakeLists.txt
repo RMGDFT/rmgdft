@@ -109,7 +109,6 @@ init_psp.c
 ortho_get_coeff.c
 assign_derweight.c
 partial_gamma.c
-init_states.c
 fire.c
 mg_prolong_6.c
 reinit_ionic_pp.c

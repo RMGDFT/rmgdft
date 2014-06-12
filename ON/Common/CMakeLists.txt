@@ -26,7 +26,6 @@ add_library (ON_Common
  init_kbr.c
  init_pe_on.c
  init_rho_atom.c
- init_states.c
  init_wf_atom.c
  init_wf.c
  init_wf_gaussian.c

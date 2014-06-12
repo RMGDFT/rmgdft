@@ -118,7 +118,7 @@ STATE *init_states ()
 
 
     /* re-assign the number of states for global variables */
-    ct.num_states = num_states_spf[0];
+    if(ct.num_states <= 0 ) ct.num_states = num_states_spf[0];
 
     if (nspin == 2)
     {
@@ -153,7 +153,6 @@ STATE *init_states ()
 				
 			ns += occ[i + j * MAX_NOCC].n;
 		}
-		ct.num_states = num_states_spf[0];
 	}
     }
 
