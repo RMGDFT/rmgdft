@@ -45,7 +45,8 @@
 #include "prototypes_on.h"
 
 void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * vh,
-            rmg_double_t * vnuc, rmg_double_t * vh_old, rmg_double_t * vxc_old, rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * rhocore)
+            rmg_double_t * vnuc, rmg_double_t * vh_old, rmg_double_t *
+vxc_old, rmg_double_t * rho, double * rho_oppo, rmg_double_t * rhoc, rmg_double_t * rhocore)
 {
     int outcount = 0;
     int state_plot, i;
@@ -60,10 +61,8 @@ void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * 
 
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
-            scf(states, states1, vxc, vh, vnuc, rho, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
+            scf(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
 
-        if (pct.gridpe == 0)
-            write_eigs(states);
 
         if (CONVERGENCE)
         {

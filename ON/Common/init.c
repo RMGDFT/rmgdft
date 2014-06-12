@@ -46,8 +46,8 @@
 
 void init_wf_atom(STATE *);
 
-void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * rhoc,
-          STATE * states, STATE * states1, rmg_double_t * vnuc, rmg_double_t * vxc, rmg_double_t * vh_old, rmg_double_t * vxc_old)
+void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
+          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old)
 {
 
     int ic, idx, ion;
@@ -62,7 +62,7 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
 
 
-    my_malloc_init( ct.energies, ct.max_scf_steps, rmg_double_t );
+    my_malloc_init( ct.energies, ct.max_scf_steps, double );
 
     ct.states = states;
 
@@ -161,23 +161,38 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
     fflush(NULL);
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
+    double fac;
+    fac = 1.0 - ct.spin_flag * 2.0/3.0 /(1.0 + pct.spinpe);
+    if(ct.init_equal_density_flag) fac = 0.5; 
     switch(ct.runflag)
     {
         case 0:
             init_wf(states);
 
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
-                rho[idx] = rhoc[idx];
+            {
+                rho[idx] = rhoc[idx] * fac;
+                rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
+        
+            }
             break;
         case INIT_FIREBALL:
             init_wf_atom(states);
             init_rho_atom(rho);
+            {
+                rho_oppo[idx] = rho[idx] * (1.0 - fac);
+                rho[idx] = rho[idx] * fac;
+            }
             break;
 
         case INIT_GAUSSIAN:
             init_wf_gaussian(states);
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
-                rho[idx] = rhoc[idx];
+            {
+                rho[idx] = rhoc[idx] * fac;
+                rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
+            }
+        
             break;
 
         case 1:
@@ -193,9 +208,13 @@ void init(rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_dou
         case 0:
         case INIT_FIREBALL:
         case INIT_GAUSSIAN:
-            get_vxc(rho, rho, rhocore, vxc);
+            get_vxc(rho, rho_oppo, rhocore, vxc);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-            get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+            
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
+                rho_tot[idx] = rho[idx] + rho_oppo[idx];
+
+            get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 vh_old[idx] = vh[idx];
             for (idx = 0; idx < get_FP0_BASIS(); idx++)

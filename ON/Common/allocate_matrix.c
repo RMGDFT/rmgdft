@@ -36,7 +36,7 @@
 
 void allocate_matrix()
 {
-    int ispin, sizeofmatrix, item, item1, item2, lwork;
+    int sizeofmatrix, item, item1, item2, lwork;
     int nproc, myrow, mycol, icrow, iccol;
     int izero = 0, ione = 1, itwo = 2, nb, nn, NN;
     int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = NPES;
@@ -48,10 +48,10 @@ void allocate_matrix()
     nn = ct.num_states;
     NN = ct.num_states;
     
-    ispin = ct.spin + 1;
 
-
-    my_malloc_init( rho, get_FP0_BASIS() * ispin, rmg_double_t );
+    my_malloc_init( rho, get_FP0_BASIS() *2, rmg_double_t );
+    rho_oppo = rho + get_FP0_BASIS() ;
+    my_malloc_init( rho_tot, get_FP0_BASIS(), rmg_double_t );
     my_malloc_init( rhoc, get_FP0_BASIS(), rmg_double_t );
     my_malloc_init( vh, 2*get_FP0_BASIS(), rmg_double_t );
     vxc = vh + get_FP0_BASIS();
@@ -63,7 +63,7 @@ void allocate_matrix()
     my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
     my_malloc_init( wave_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
     rho_global = vtot_global;
-    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, rmg_double_t );
+    my_malloc_init( rho_old, get_FP0_BASIS() , rmg_double_t );
 
     my_malloc_init( sg_res, S0_BASIS, rmg_double_t );
 

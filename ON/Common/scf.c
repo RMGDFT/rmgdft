@@ -17,7 +17,7 @@
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 #define DELTA_V_MAX 1.0
 
-void update_pot(double *, double *, double *, double *, double *, double *,
+void update_pot(double *, double *, double *, double *, double *, double *, double *,
         double *, double *, int *, STATE * states);
 void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         int Nrefresh, double scale, int preconditioning);
@@ -26,11 +26,11 @@ extern int it_scf;
 double tem1;
 
 void scf(STATE * states, STATE * states1, double *vxc, double *vh,
-        double *vnuc, double *rho, double *rhoc, double *rhocore,
+        double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE)
 {
     int numst = ct.num_states;
-    int ispin, kpt, kpt1;
+    int  kpt, kpt1;
     int idx, ione = 1;
     double tem;
     int flag;
@@ -55,18 +55,16 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
-    for (ispin = 0; ispin <= ct.spin; ispin++)
+    for (kpt = pct.kstart; kpt < pct.kend; kpt++)
     {
-        for (kpt = pct.kstart; kpt < pct.kend; kpt++)
-        {
-            kpt1 = kpt + ispin * ct.num_kpts;
-            flag = 0;
-            void *RT1 = BeginRmgTimer("2-SCF: matrix_and_diag");
-            matrix_and_diag(ct.kp[kpt1].kstate, states1, vtot_c, flag);
-            EndRmgTimer(RT1);
-        }
+        flag = 0;
+        void *RT1 = BeginRmgTimer("2-SCF: matrix_and_diag");
+        matrix_and_diag(ct.kp[kpt].kstate, states1, vtot_c, flag);
+        EndRmgTimer(RT1);
     }
 
+    if(ct.spin_flag)
+        get_opposite_eigvals( states );
     /* Generate new density */
     ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
@@ -95,9 +93,13 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     EndRmgTimer(RT3);
 
 
+
+    if (ct.spin_flag)
+        get_rho_oppo (rho,  rho_oppo);
+
     /* Update potential */
     void *RT4 = BeginRmgTimer("2-SCF: update_pot");
-    update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rhoc, rhocore, CONVERGENCE, states);
+    update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore, CONVERGENCE, states);
     EndRmgTimer(RT4);
 
 
@@ -135,11 +137,14 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
    corresponding to the input "rho".
  */
 void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * vh_old,
-        double *vnuc, double *rho, double *rhoc, double *rhocore,
+        double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         int *CONVERGENCE, STATE * states)
 {
     int n = get_FP0_BASIS(), idx, ione = 1;
     double tem;
+
+
+
 
     /* save old vtot, vxc, vh */
     scopy(&n, vxc, &ione, vxc_old, &ione);
@@ -149,7 +154,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
         vtot[idx] = vxc[idx] + vh[idx];
 
     /* Generate exchange-correlation potential */
-    get_vxc(rho, rho, rhocore, vxc);
+    get_vxc(rho, rho_oppo, rhocore, vxc);
 
     pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
@@ -160,7 +165,19 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
     /* Generate hartree potential */
     //    get_vh1(rho, rhoc, vh, 15, ct.poi_parm.levels);
-    get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
+
+    if(ct.spin_flag == 1)
+    {
+        for (idx = 0; idx < get_FP0_BASIS(); idx++) 
+            rho_tot[idx] = rho[idx] + rho_oppo[idx];
+    }
+    else
+    {
+        for (idx = 0; idx < get_FP0_BASIS(); idx++) 
+            rho_tot[idx] = rho[idx] ;
+    }
+       
+    get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
 
 
 

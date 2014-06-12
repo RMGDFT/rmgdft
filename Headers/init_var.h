@@ -9,6 +9,7 @@
 int MXLLDA, MXLCOL;
 rmg_double_t *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot,
     *vtot_c;
+double *rho_oppo, *rho_tot;
 rmg_double_t *vh_old, *vxc_old;
 rmg_double_t *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
 double *Hij_00, *Bij_00;

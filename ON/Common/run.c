@@ -69,7 +69,7 @@ void run(STATE * states, STATE * states1)
     my_malloc_init( vxc_old, get_FP0_BASIS(), rmg_double_t );
     my_malloc_init( vh_old, get_FP0_BASIS(), rmg_double_t );
 
-    init(vh, rho, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
+    init(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 
     my_barrier();
 
@@ -81,7 +81,7 @@ void run(STATE * states, STATE * states1)
     {
         case MD_QUENCH:            /* Quench the electrons */
 
-            quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhoc, rhocore);
+            quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
             break;
 
         case MD_FASTRLX:           /* Fast relax */
