@@ -44,7 +44,7 @@
 
 
 #define printf( message... ) \
-	 ((pct.gridpe == 0) ? fprintf( ct.logfile, message ): 0)
+	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
 //	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ), fflush (NULL), fsync ( fileno (ct.logfile) ): 0)
 	
 
