@@ -124,7 +124,7 @@ void init_parameter(STATE * states)
 
     for (ispin = 0; ispin <= ct.spin; ispin++)
     {
-        for (kpt = pct.kstart; kpt < pct.kend; kpt++)
+        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
         {
             for (st1 = 0; st1 < ct.num_states; st1++)
             {
@@ -133,8 +133,8 @@ void init_parameter(STATE * states)
                 states[kst1].istate = st1;
                 states[kst1].firstflag = 0;
                 states[kst1].occupation[0] = 0.0;
-                if(st1 < full_occ)  states[kst1].occupation[0] = 2.0;
-                if(st1 == full_occ)  states[kst1].occupation[0] = part_occ;
+                if(st1 < full_occ)  states[kst1].occupation[0] = 2.0/(1.0 + ct.spin_flag);
+                if(st1 == full_occ)  states[kst1].occupation[0] = part_occ/(1.0+ ct.spin_flag);
             }                   /* end for */
 
         }                       /* end for */

@@ -292,17 +292,20 @@ void get_new_rho(STATE * states, double *rho)
            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
 
 
+   int iii = get_FP0_BASIS();
 
    tcharge = 0.0;
    for (idx = 0; idx < get_FP0_BASIS(); idx++)
        tcharge += rho[idx];
    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
+   ct.tcharge = real_sum_all(tcharge, pct.spin_comm);
 
 
    ct.tcharge *= get_vel_f();
+
    t2 = ct.nel / ct.tcharge;
-   int iii = get_FP0_BASIS();
    sscal(&iii, &t2, &rho[0], &ione);
+    
 
    if (pct.gridpe == 0)
        printf("\n total charge Normalization constant = %f  \n", t2);

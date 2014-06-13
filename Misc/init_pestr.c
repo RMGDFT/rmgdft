@@ -133,6 +133,7 @@ void init_pestr()
     MPI_Barrier(MPI_COMM_WORLD);
     /* set gridpe rank value to local grid rank value */
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
+    MPI_Comm_rank (pct.kpsub_comm, &pct.kstart);
     MPI_Comm_size (pct.grid_comm, &NPES);
     Dprintf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 

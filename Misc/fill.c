@@ -207,7 +207,7 @@ rmg_double_t fill (STATE * states, rmg_double_t width, rmg_double_t nel, rmg_dou
 
     my_free (occ);
 
-    return (mu);
+    return (mu1);
 
 }                               /* end fill */ 
 

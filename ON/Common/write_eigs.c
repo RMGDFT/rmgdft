@@ -1,18 +1,18 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 /*
 
 
-  write_eigs.c
+   write_eigs.c
 
 
-    Various functions to write out results to stdout.
+   Various functions to write out results to stdout.
 
 
 
-*/
+ */
 
 
 
@@ -34,7 +34,14 @@ void write_eigs(STATE * states)
 
     for (i = 0; i < ct.num_states; i++)
         printf("  %8.3f [%4.2f]%s", states[i].eig[0] * Ha_eV,
-               states[i].occupation[0], ((i % 5 == 4) ? "\n" : ""));
+                states[i].occupation[0], ((i % 5 == 4) ? "\n" : ""));
+    if(ct.spin_flag)
+    {
+        printf("\n Eigs for oppsite spin\n");
+        for (i = 0; i < ct.num_states; i++)
+            printf("  %8.3f [%4.2f]%s", states[i].eig[1] * Ha_eV,
+                    states[i].occupation[1], ((i % 5 == 4) ? "\n" : ""));
+    }
 
     printf("\n\n");
 

@@ -60,8 +60,6 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 
     get_dm_diag_p(states, matB, mat_X, Hij);
 
-    if (pct.gridpe == 0)
-        write_eigs(states);
 #else
     error_handler("not programmed for non-Gamma point");
 #endif

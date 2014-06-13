@@ -11,7 +11,7 @@ void get_vxc_exc (rmg_double_t * nrho, rmg_double_t * nrho_oppo,  rmg_double_t *
 	/* libflag to indicate whether use libxc or not to calculate xc potential and energy: 
 	 * libflag = 1 means using libxc; while libflag = 0 means not using libxc */
 
-	libflag = 1;
+	libflag = 0;
 
    	/* Evaluate the XC potential and energy*/
 	if (ct.spin_flag && libflag)

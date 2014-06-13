@@ -55,7 +55,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
-    for (kpt = pct.kstart; kpt < pct.kend; kpt++)
+    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+= pct.pe_kpoint)
     {
         flag = 0;
         void *RT1 = BeginRmgTimer("2-SCF: matrix_and_diag");
@@ -67,6 +67,8 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         get_opposite_eigvals( states );
     /* Generate new density */
     ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
+
+    if(pct.gridpe == 0) write_eigs(states);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
         printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
@@ -92,10 +94,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     pulay_rho_on (steps, get_FP0_BASIS(), rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     EndRmgTimer(RT3);
 
-
-
-    if (ct.spin_flag)
-        get_rho_oppo (rho,  rho_oppo);
+    if(ct.spin_flag) get_rho_oppo(rho, rho_oppo);
 
     /* Update potential */
     void *RT4 = BeginRmgTimer("2-SCF: update_pot");
@@ -176,7 +175,7 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
         for (idx = 0; idx < get_FP0_BASIS(); idx++) 
             rho_tot[idx] = rho[idx] ;
     }
-       
+
     get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
 
 
