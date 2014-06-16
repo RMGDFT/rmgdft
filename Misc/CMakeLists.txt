@@ -15,6 +15,7 @@ init_IO.c
 init_pestr.c
 init_states.c
 get_index.c
+get_te.c
 minimage.c
 get_vtot_psi.c
 filename_increment.c

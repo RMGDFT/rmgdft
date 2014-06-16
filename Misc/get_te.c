@@ -224,15 +224,16 @@ void get_te (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore
     
     /* Print contributions to total energies into output file */
     printf ("\n\n");
-    progress_tag ();
+//    progress_tag ();
     printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
-    progress_tag ();
+//    progress_tag ();
     printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
-    progress_tag ();
+//    progress_tag ();
     printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
-    progress_tag ();
-    printf ("@@ XC                 = %16.9f Ha\n", ct.XC - xcstate);
-    progress_tag ();
+//    progress_tag ();
+    printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
+    printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
+//    progress_tag ();
     printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
         
     if (ct.spin_flag)

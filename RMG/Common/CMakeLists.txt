@@ -22,7 +22,6 @@ scalapack_tools.c
 ortho.c
 lbfgs_init.c
 finish_release_mem.c
-get_te.c
 init_efield.c
 lcao_init.c
 nlforce.c

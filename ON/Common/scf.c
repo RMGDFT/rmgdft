@@ -103,7 +103,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
     void *RT5 = BeginRmgTimer("2-SCF: get_te");
-    get_te(rho, rhoc, rhocore, vh, vxc, states);
+    get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
     EndRmgTimer(RT5);
 
     /* Update the orbitals */

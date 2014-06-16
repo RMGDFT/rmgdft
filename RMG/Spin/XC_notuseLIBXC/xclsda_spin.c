@@ -25,7 +25,7 @@ void xclsda_spin(rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc
 	rhox = rho[idx] + rho_oppo[idx];    
         arhox = fabs(rhox);
 
-	if (arhox < SMALL && ct.scf_steps < 10)
+	if (arhox < SMALL )
 	{   
             vxc[idx]=0.0;
 	    exc[idx]=0.0;

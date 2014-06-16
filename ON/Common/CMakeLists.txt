@@ -20,7 +20,6 @@ add_library (ON_Common
  get_qnmpsi.c
  get_state_to_proc.c
  get_sum_eig.c
- get_te.c
  get_wave.c
  init.c
  init_kbr.c
