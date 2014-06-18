@@ -96,7 +96,8 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
     if (pct.gridpe == 0)
     {          
-        file = fopen ("pot_init.dat", "w");
+        sprintf (newname, "%s%s", pct.image_path[pct.thisimg], "pot_init.dat");
+        my_fopen (file, newname, "r");
 
         for (ix = 0; ix < get_FNX_GRID(); ix++)
         {
@@ -113,7 +114,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
     my_free (vtot_xyplane);
 
-/* ================================================= */
+    /* ================================================= */
 
 
 
@@ -121,9 +122,9 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     read_potrho (vxc, 0, 1);
-        if(pct.gridpe ==0) printf (" vxc calc is done \n"); 
+    if(pct.gridpe ==0) printf (" vxc calc is done \n"); 
     read_potrho (rho, 0, 2);
-        if(pct.gridpe ==0) printf (" rho calc is done \n"); 
+    if(pct.gridpe ==0) printf (" rho calc is done \n"); 
 
 
 

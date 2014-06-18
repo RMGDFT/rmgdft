@@ -90,7 +90,7 @@ void writeout_matrix_p ()
         for(iprobe = 0; iprobe < cei.num_probe; iprobe++)
 		{
 
-			sprintf(newname, "%s%d%s", "lead_", iprobe, ".dat");
+			sprintf(newname, "%s%s%d%s", pct.image_path[pct.thisimg], "lead_", iprobe, ".dat");
 			MPI_Info_create(&fileinfo);
 			MPI_File_open(COMM_EN2, newname, amode, fileinfo, &mpi_fhand);
 
@@ -113,7 +113,7 @@ void writeout_matrix_p ()
         for(i =0; i < ct.num_blocks; i++)
         {
 
-            sprintf(newname, "%s%d%s", "center_diag_", i, ".dat");
+            sprintf(newname, "%s%s%d%s",pct.image_path[pct.thisimg],  "center_diag_", i, ".dat");
 
             MPI_Info_create(&fileinfo);
             MPI_File_open(COMM_EN2, newname, amode, fileinfo, &mpi_fhand);
@@ -128,7 +128,7 @@ void writeout_matrix_p ()
 
         for(i =0; i < ct.num_blocks-1; i++)
         {
-            sprintf(newname, "%s%d%s", "center_offdiag_", i, ".dat");
+            sprintf(newname, "%s%s%d%s", pct.image_path[pct.thisimg], "center_offdiag_", i, ".dat");
             MPI_Info_create(&fileinfo);
             MPI_File_open(COMM_EN2, newname, amode, fileinfo, &mpi_fhand);
 

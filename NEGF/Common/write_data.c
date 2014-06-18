@@ -239,8 +239,11 @@ void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vx
 
     if (pct.gridpe == 0)
     {          
-        file = fopen ("pot.dat", "w");
-        file2 = fopen ("rho.dat", "w");
+        sprintf (newname, "%s%s", pct.image_path[pct.thisimg], "pot.dat");
+        my_fopen (file, newname, "w");
+
+        sprintf (newname, "%s%s", pct.image_path[pct.thisimg], "rho.dat");
+        my_fopen (file2, newname, "w");
 
         for (ix = 0; ix < get_FNX_GRID(); ix++)
         {

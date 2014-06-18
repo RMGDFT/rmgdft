@@ -22,7 +22,9 @@ void read_cond_input (double *emin, double *emax, int *E_POINTS, double *E_imag,
     char tbuf[200], *tptr;
 
     /* Open the input file for reading */
-    my_fopen (fhand, "cond.input", "r");
+    sprintf (tbuf, "%s%s", pct.image_path[pct.thisimg], "cond.input");
+    my_fopen (fhand, tbuf, "r");
+
 
     ct.num_states = atoi (get_line (tbuf, fhand));
 

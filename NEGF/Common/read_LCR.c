@@ -57,14 +57,16 @@ void read_LCR ()
     {
 
         /* Open the input file for reading */
-        sprintf (newname, "%s%d", "LCR.dat", iprobe);
+        sprintf (newname, "%s%s%d", pct.image_path[pct.thisimg], "LCR.dat", iprobe);
         my_fopen (fhand, newname, "r");
 
         /* Read in the starting wavefunction file name */
-        strcpy (lcr[iprobe].name, get_line (tbuf, fhand));
+        strcpy (newname, get_line (tbuf, fhand));
+        sprintf (lcr[iprobe].name, "%s%s", pct.image_path[pct.thisimg], newname);
 
         /* Read in the calculated lead potential/rho file name */
-        strcpy (lcr[iprobe].lead_name, get_line (tbuf, fhand));
+        strcpy (newname, get_line (tbuf, fhand));
+        sprintf (lcr[iprobe].lead_name, "%s%s", pct.image_path[pct.thisimg], newname);
 
         lcr[iprobe].NX_GRID = atoi (get_line (tbuf, fhand));
 

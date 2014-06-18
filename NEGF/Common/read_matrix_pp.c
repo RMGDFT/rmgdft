@@ -107,7 +107,7 @@ void read_matrix_pp ()
                                                                                                                                  
         /* read the matrices for  leads */
 
-		sprintf(newname, "%s%d%s", "lead_", iprobe, ".dat");
+		sprintf(newname, "%s%s%d%s", pct.image_path[pct.thisimg], "lead_", iprobe, ".dat");
         fhand = open(newname, O_RDWR);
         nbytes = read(fhand, tem_H00, idx * sizeof(double));
         nbytes = read(fhand, tem_S00, idx * sizeof(double));
@@ -149,7 +149,7 @@ void read_matrix_pp ()
     for(i =0; i < ct.num_blocks; i++)
     {
 
-        sprintf(newname, "%s%d%s", "center_diag_", i, ".dat");
+        sprintf(newname, "%s%s%d%s", pct.image_path[pct.thisimg], "center_diag_", i, ".dat");
 
         MPI_Info_create(&fileinfo);
         MPI_File_open(COMM_EN2, newname, amode, fileinfo, &mpi_fhand);
@@ -165,7 +165,7 @@ void read_matrix_pp ()
 
     for(i =0; i < ct.num_blocks-1; i++)
     {
-        sprintf(newname, "%s%d%s", "center_offdiag_", i, ".dat");
+        sprintf(newname, "%s%s%d%s", pct.image_path[pct.thisimg], "center_offdiag_", i, ".dat");
 
         MPI_Info_create(&fileinfo);
         MPI_File_open(COMM_EN2, newname, amode, fileinfo, &mpi_fhand);

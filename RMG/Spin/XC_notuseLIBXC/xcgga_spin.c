@@ -164,7 +164,7 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
 	rhotot = rho_up[idx] + rho_dw[idx];    
         arhox = fabs(rhotot);
 
-	if (arhox < SMALL && ct.scf_steps < 10)
+	if (arhox < SMALL )
 	{   
             vxc_up[idx]=0.0;
 	    exc[idx]=0.0;

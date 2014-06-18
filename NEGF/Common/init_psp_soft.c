@@ -73,7 +73,7 @@ void init_psp_soft (void)
     scale = 1.0;
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        sprintf (newname, "%s%d.xmgr", name, isp);
+        sprintf (newname, "%s%s%d.xmgr", pct.image_path[pct.thisimg], name, isp);
         if (pct.gridpe == 0)
             psp = fopen (newname, "w+");
         sp = &ct.sp[isp];

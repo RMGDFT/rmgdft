@@ -28,7 +28,8 @@ void read_trans (complex_energy_integral * cei)
     int idx;
 	
     /* Open the input file for reading */
-    my_fopen (fhand, "trans.in", "r");
+    sprintf (tbuf, "%s%s", pct.image_path[pct.thisimg], "trans.in");
+    my_fopen (fhand, tbuf, "r");
 
     /* Read in the initial run flag */
     cei->num_probe = atoi (get_line (tbuf, fhand));
