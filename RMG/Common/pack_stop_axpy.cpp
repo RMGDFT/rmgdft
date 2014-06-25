@@ -4,7 +4,6 @@
 #include "packfuncs.h"
 
 
-using namespace std;
 
 template void CPP_pack_stop_axpy<double>(double*, double*, double, int, int, int);
 template void CPP_pack_stop_axpy<float>(float*, float*, double, int, int, int);

@@ -44,7 +44,6 @@
 
 #define TWO 2.0
 
-using namespace std;
 
 template void CPP_genvpsi<double>(double*, double*, double*, double*, double*, double, int, int, int);
 template void CPP_genvpsi<float>(float*, float*, double*, double*, double*, double, int, int, int);

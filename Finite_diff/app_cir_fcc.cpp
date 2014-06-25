@@ -34,7 +34,6 @@
 #include <complex>
 
 
-using namespace std;
 
 template <typename RmgType>
 void FiniteDiff::app_cir_fcc (RmgType * a, RmgType * b, int dimx, int dimy, int dimz)

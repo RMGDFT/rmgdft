@@ -43,8 +43,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "transition.h"
 #include "const.h"
-#include "common_prototypes.h"
 #include "State.h"
 #include "Kpoint.h"
 #include "BaseThread.h"
@@ -55,17 +55,21 @@
 #include "rmgthreads.h"
 #include "vhartree.h"
 #include "packfuncs.h"
-
-// Transitional headers
-#include "transition.h"
 #include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "../Headers/prototypes.h"
+
+
 
 
 static int firststep = true;
 
-template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, double * vh, double *vh_ext,
+template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag)
+          int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr)
 {
 
     RmgTimer RT0("Scf steps");
@@ -212,7 +216,7 @@ template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, do
 
         /* Update the wavefunctions */
         RT1 = new RmgTimer("Scf steps: Mg_eig");
-        istop = kpoint->nstates / T->get_threads_per_node();
+        istop = Kptr[0]->nstates / T->get_threads_per_node();
         istop = istop * T->get_threads_per_node();
         for(st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
           SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
@@ -230,8 +234,8 @@ template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, do
         }
 
         // Process any remaining states in serial fashion
-        for(st1 = istop;st1 < kpoint->nstates;st1++) {
-//            MgEigState<ScfType> (Rmg_G, Rmg_T, 
+        for(st1 = istop;st1 < Kptr[0]->nstates;st1++) {
+//            MgEigState<OrbitalType> (Rmg_G, Rmg_T, 
             mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
         }
         delete(RT1);
@@ -258,7 +262,7 @@ template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, do
     /* do diagonalizations if requested, if not orthogonalize */
     if (diag_this_step) {
         RT1 = new RmgTimer("Scf steps: Diagonalization");
-        subdiag_gamma (kpoint->Kstates, vh, vnuc, vxc);
+        subdiag_gamma (states, vh, vnuc, vxc);
         delete(RT1);
     }
     else {
@@ -342,7 +346,7 @@ template <typename ScfType> bool scf (Kpoint<ScfType> * kpoint, double * vxc, do
 
     /* If sorting is requested then sort the states. */
     if (ct.sortflag)
-        kpoint->sort_orbitals();
+        Kptr[0]->sort_orbitals();
 
 
     /* Make sure we see output, e.g. so we can shut down errant runs */

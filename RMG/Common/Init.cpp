@@ -57,7 +57,6 @@
 #include "Kpoint.h"
 #include "../Headers/prototypes.h"
 
-using namespace std;
 
 static void init_alloc_nonloc_mem (void);
 
@@ -68,7 +67,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 // Instantiate gamma and non-gamma versions
 template void Init<double>(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<double>**);
-template void Init<complex<double> >(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<complex <double> >**);
+template void Init<std::complex<double> >(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<std::complex <double> >**);
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            STATE * states, double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)

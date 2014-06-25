@@ -52,7 +52,6 @@
 #include "transition.h"
 #include "Kpoint.h"
 
-using namespace std;
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
@@ -70,7 +69,7 @@ extern "C" void relax_tau (int steps, STATE * states, double * vxc, double * vh,
 
 void initialize (int argc, char **argv);
 
-void run (void);
+template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr);
 
 void report (void);
 
@@ -109,6 +108,8 @@ double *vxc;
 
 // Pointer to Kpoint class array
 void **Kptr;
+
+bool is_gamma=TRUE;
 
 double *tau;
 /* Main control structure which is declared extern in main.h so any module */
@@ -156,7 +157,10 @@ int main (int argc, char **argv)
     delete(RT1);
 
     RmgTimer *RT2 = new RmgTimer("Main: run");
-    run ();
+    if(is_gamma)
+        run<double> ((Kpoint<double> **)Kptr);
+    else
+        run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr);
     delete(RT2);
 
 
@@ -232,7 +236,8 @@ void initialize(int argc, char **argv)
         else {
 
             // General case
-            Kptr[kpt] = (void *) new Kpoint<complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+            is_gamma = FALSE;
+            Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
 
         }
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];
@@ -250,7 +255,7 @@ void initialize(int argc, char **argv)
     if((ct.num_kpts == 1) && (ct.kp[0].kmag == 0.0)) 
         Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<double> **)Kptr);
     else
-        Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<complex<double>> **)Kptr);
+        Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<std::complex<double>> **)Kptr);
 
 
 
@@ -281,7 +286,7 @@ void initialize(int argc, char **argv)
 
 }
 
-void run (void)
+template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 {
 
 
@@ -293,15 +298,16 @@ void run (void)
     	if (ct.xctype == MGGA_TB09)
         	relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
 	else 
-        	relax (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        	Relax (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
-        relax (ct.max_md_steps, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        Relax (ct.max_md_steps, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;
 
     case NEB_RELAX:           /* nudged elastic band relax */
-        neb_relax (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+// Fix later. Calls C version of relax which is deprecated
+//        neb_relax (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
         break;
 
     case MD_CVE:               /* molecular dynamics */

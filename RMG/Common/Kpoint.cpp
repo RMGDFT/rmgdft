@@ -2,11 +2,10 @@
 #include <Kpoint.h>
 #include <complex>
 
-using namespace std;
 
 template class Kpoint<float>;
 template Kpoint<double>::Kpoint(double*, double, int, int, int);
-template Kpoint<complex <double> >::Kpoint(double*, double, int, int, int);
+template Kpoint<std::complex <double> >::Kpoint(double*, double, int, int, int);
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int knstates, int kpbasis, int kindex)
 {

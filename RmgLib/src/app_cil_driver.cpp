@@ -33,7 +33,6 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 
-using namespace std;
 
 template double CPP_app_cil_driver<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int);
 template double CPP_app_cil_driver<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int);

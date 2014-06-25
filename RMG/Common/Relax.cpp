@@ -1,5 +1,5 @@
 /************************** SVN Revision Information **************************
- **    $Id$    **
+ **    $Id: relax.c 2012 2013-05-13 17:22:57Z ebriggs $    **
 ******************************************************************************/
 
 /****f* QMD-MGDFT/fastrlx.c *****
@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void fastrlx(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
- *                rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
+ *   void fastrlx(STATE *states, double *vxc, double *vh, double *vnuc,
+ *                double *rho, double *rhocore, double *rhoc)
  *   drive routine for fast relax.
  * INPUTS
  *   states: all wave functions (see main.h)
@@ -40,17 +40,33 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include "main.h"
+#include <sys/mman.h>
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "../Headers/prototypes.h"
+
+
+// Instantiate gamma and non-gamma versions
+template void Relax<double>(int , STATE *, double *, double *, double *,
+              double *, double *, double *, double *, Kpoint<double> **Kptr);
+template void Relax<std::complex<double> >(int , STATE *, double *, double *, double *,
+              double *, double *, double *, double *, Kpoint<std::complex<double> >**Kptr);
 
 
 
-
-
-void relax (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
-              rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc)
+template <typename OrbitalType> void Relax (int steps, STATE * states, double * vxc, double * vh, double * vnuc,
+              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
 
     int iion;
@@ -98,7 +114,7 @@ void relax (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rm
                 rmg_lbfgs();
                 break;
             default:
-                error_handler ("Undefined MD method");
+                rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
         }
 
         /* ct.md_steps measures the number of updates to the atomic positions */
@@ -123,7 +139,7 @@ void relax (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rm
         {
             if (ct.ions[iion].movable)
             {
-                rmg_double_t *fp;
+                double *fp;
                 fp = ct.ions[iion].force[ct.fpt[0]];
                 CONV_FORCE &=
                     ((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);
@@ -143,7 +159,7 @@ void relax (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rm
     {
 
         printf ("\n");
-        progress_tag ();
+        //progress_tag ();
 
         if (CONV_FORCE)
             printf ("force convergence has been achieved. stopping ...\n");

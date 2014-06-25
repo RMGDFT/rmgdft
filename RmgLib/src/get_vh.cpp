@@ -47,7 +47,6 @@
 
 #define         PI          3.14159265359
 
-using namespace std;
 
 #define MAX_MG_LEVELS 8
 
@@ -231,7 +230,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
     }                           /* end for */
 
     if((G->get_rank() == 0) && print_status)
-        cout << "get_vh: executed " << its << " sweeps, residual is " << residual << endl;
+        std::cout << "get_vh: executed " << its << " sweeps, residual is " << residual << std::endl;
 
     /* Release our memory */
     delete [] nrho;
