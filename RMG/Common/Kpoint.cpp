@@ -2,23 +2,35 @@
 #include <Kpoint.h>
 #include <complex>
 
-template <class KpointType> Kpoint<KpointType>::Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis, int index)
+using namespace std;
+
+template class Kpoint<float>;
+template Kpoint<double>::Kpoint(double*, double, int, int, int);
+template Kpoint<complex <double> >::Kpoint(double*, double, int, int, int);
+
+template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int knstates, int kpbasis, int kindex)
 {
 
-    int state;
+    this->kpt[0] = kkpt[0];
+    this->kpt[1] = kkpt[1];
+    this->kpt[2] = kkpt[2];
+    this->kidx = kindex;
+    this->kweight = kkweight;
+    this->nstates = knstates;
+    this->pbasis = kpbasis;
+
+}
+
+template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)
+{
     KpointType *tptr;
+    int state;
 
-    this->kidx = index;
-    this->kweight = kweight;
+    this->orbital_storage = pool;
 
-    State<KpointType> *sp;
-  
-    orbital_storage = pool;
     tptr = pool;
 
     Kstates = new State<KpointType> [nstates];
-
-    sp = Kstates;
 
     for(state = 0;state < nstates;state++) {
         Kstates[state].set_storage(tptr); 
@@ -26,7 +38,6 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kpt, double kweig
     }
 
 }
-
 template <class KpointType> int Kpoint<KpointType>::get_nstates(void)
 {
     return this->nstates;
@@ -47,9 +58,9 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
 
     tmp_orbital = new KpointType[pbasis];
 
-    for(state = 0;state < this.num_states;state++)
+    for(state = 0;state < nstates;state++)
     {
-        sp = this.Kstate + state;
+        sp = Kstates + state;
         sp1 = sp++;
         if (sp->eig[0] > sp1->eig[0])
         {
@@ -80,11 +91,3 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
     delete [] tmp_orbital;
 }
 
-void TestKpoint(void)
-{
-
-  float t1[20000];
-  double kpt[3];
-  Kpoint<float> K1(kpt, 0.5, t1, 100, 10000, 0);
-
-}

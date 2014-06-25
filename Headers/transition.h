@@ -22,6 +22,8 @@ extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sw
 extern "C" void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 extern "C" void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 extern "C" void  get_rho_oppo (double * rho, double * rho_oppo);
+extern "C" void get_ddd (double *veff);
+extern "C" void mix_betaxpsi (int mix);
 
 
 #endif

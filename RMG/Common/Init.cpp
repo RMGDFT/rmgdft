@@ -54,15 +54,24 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
+#include "Kpoint.h"
 #include "../Headers/prototypes.h"
 
+using namespace std;
 
 static void init_alloc_nonloc_mem (void);
 
 extern "C" bool     verify( char *tagname, const void *optvalue );
 
-void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           STATE * states, double * vnuc, double * vxc)
+template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+           STATE * states, double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
+
+// Instantiate gamma and non-gamma versions
+template void Init<double>(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<double>**);
+template void Init<complex<double> >(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<complex <double> >**);
+
+template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+           STATE * states, double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
     int kpt, kpt1, kst1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
@@ -73,7 +82,7 @@ void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, doubl
     SPECIES *sp;
     double *rptr = NULL, *rptr1 = NULL, *vtot, *rho_tot;
     ION *iptr;
-    double time1, time2, v1, v2, v3, fac;
+    double time1, time2, fac;
     STATE *st;
 
 #if GPU_ENABLED
@@ -135,23 +144,6 @@ void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, doubl
     }
 
 
-    /* Initialize some k-point stuff */
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
-    {
-        v1 = twoPI * ct.kp[kpt].kpt[0] / Rmg_L.get_xside();
-        v2 = twoPI * ct.kp[kpt].kpt[1] / Rmg_L.get_yside();
-        v3 = twoPI * ct.kp[kpt].kpt[2] / Rmg_L.get_zside();
-
-        ct.kp[kpt].kvec[0] = v1;
-        ct.kp[kpt].kvec[1] = v2;
-        ct.kp[kpt].kvec[2] = v3;
-
-        ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
-
-        ct.kp[kpt].kstate = &states[kpt * ct.num_states];
-        ct.kp[kpt].kidx = kpt;
-    }
-
 
     /* Get the crystal or cartesian coordinates of the ions */
     init_pos ();
@@ -169,7 +161,6 @@ void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, doubl
     if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) < ct.hmingrid)
         ct.hmingrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
-    //set_anisotropy(ct.hmaxgrid / ct.hmingrid);
 
     if ((ct.hmaxgrid / ct.hmingrid) > 1.1)
     {
@@ -194,39 +185,37 @@ void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, doubl
     ct.eig_parm.sb_step = 1.0;
 
     /* Set state pointers and initialize state data */
-#if GAMMA_PT
-  #if GPU_ENABLED
-      cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(double));
-#if BATCH_NLS
-      cudaMallocHost((void **)&pct.nv, ct.num_states * P0_BASIS * sizeof(double));
-      cudaMallocHost((void **)&pct.ns, ct.num_states * P0_BASIS * sizeof(double));
-      cudaMallocHost((void **)&pct.Bns, ct.num_states * P0_BASIS * sizeof(double));
-#endif
-  #else
-    /* Wavefunctions are actually stored here */
-    rptr = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-#if BATCH_NLS
-    pct.nv = new double[ct.num_states * P0_BASIS];
-    pct.ns = new double[ct.num_states * P0_BASIS];
-    pct.Bns = new double[ct.num_states * P0_BASIS];
-#endif
-  #endif
-
-  if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-      rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-  }
-
+    if((ct.num_kpts == 1) && (ct.kp[0].kmag == 0.0)) {
+#if GPU_ENABLED
+        cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(double));
+        cudaMallocHost((void **)&pct.nv, ct.num_states * P0_BASIS * sizeof(double));
+        cudaMallocHost((void **)&pct.ns, ct.num_states * P0_BASIS * sizeof(double));
+        cudaMallocHost((void **)&pct.Bns, ct.num_states * P0_BASIS * sizeof(double));
 #else
-    /* Wavefunctions are actually stored here */
-    if (verify ("calculation_mode", "Band Structure Only"))
-    {
-        rptr = new double[2*(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-    }
-    else
-    {
-        rptr = new double[ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-    }
+        /* Wavefunctions are actually stored here */
+        rptr = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
+        pct.nv = new double[ct.num_states * P0_BASIS];
+        pct.ns = new double[ct.num_states * P0_BASIS];
+        pct.Bns = new double[ct.num_states * P0_BASIS];
 #endif
+
+      if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
+          rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
+      }
+
+    }
+    else {
+
+        /* Wavefunctions are actually stored here */
+        if (verify ("calculation_mode", "Band Structure Only"))
+        {
+            rptr = new double[2*(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
+        }
+        else
+        {
+            rptr = new double[ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024];
+        }
+    }
 
 
     kpt1 = ct.num_kpts;
@@ -235,6 +224,7 @@ void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, doubl
     kst1 = 0;
     for (kpt = 0; kpt < kpt1; kpt++)
     {
+
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
             states[kst1].kidx = kpt;

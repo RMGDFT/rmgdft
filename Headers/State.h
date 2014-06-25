@@ -43,6 +43,8 @@ public:
  
     // Last two eigenvalues
     double eig[2];
+    double oldeig[2];
+
 
     // Index of the orbital 
     int istate;

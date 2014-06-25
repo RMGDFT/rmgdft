@@ -47,7 +47,6 @@ template <class StateType> void State<StateType>::set_storage(StateType *storage
     this->psi = storage;
 }
 
-template class State<float>;
 template class State<double>;
 template class State<std::complex <double> >;
 

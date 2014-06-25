@@ -36,8 +36,9 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double kweight, KpointType *pool, int nstates, int pbasis, int index );
+    Kpoint(double *kpt, double kweight, int nstates, int pbasis, int index );
 
+    void set_pool(KpointType *pool);
     void sort_orbitals(void);
     int get_nstates(void);
     int get_index(void);
@@ -65,6 +66,9 @@ public:
 
     // The orbital structure for this k-point
     State<KpointType> *Kstates;
+
+    // Number of points in orbital basis
+    int pbasis;
 
     // Mean min, and max wavefunction residuals for occupied space
     double meanres;

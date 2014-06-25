@@ -49,13 +49,16 @@
 #include "params.h"
 #include "typedefs.h"
 #include "rmg_error.h"
+#include "transition.h"
+#include "Kpoint.h"
 
+using namespace std;
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 
-void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           STATE * states, double * vnuc, double * vxc);
+template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+           STATE * states, double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 
 extern "C" bool quench (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
              double * rho_oppo, double * rhocore, double * rhoc);
@@ -104,7 +107,8 @@ double *vnuc;
 /* Exchange-correlation potential */
 double *vxc;
 
-
+// Pointer to Kpoint class array
+void **Kptr;
 
 double *tau;
 /* Main control structure which is declared extern in main.h so any module */
@@ -178,7 +182,7 @@ void initialize(int argc, char **argv)
     /* Also reads control and pseudopotential files*/
     init_IO (argc, argv);
 
-    FP0_BASIS = get_FP0_BASIS();
+    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     int num_images = pct.images;
     num_images = 1;
@@ -201,6 +205,41 @@ void initialize(int argc, char **argv)
     /* initialize states */
     states = init_states (); 
 
+    // Set up kpoints
+    /* Initialize some k-point stuff */
+    Kptr = new void * [ct.num_kpts];
+
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+    {
+        double v1, v2, v3;
+
+        v1 = twoPI * ct.kp[kpt].kpt[0] / Rmg_L.get_xside();
+        v2 = twoPI * ct.kp[kpt].kpt[1] / Rmg_L.get_yside();
+        v3 = twoPI * ct.kp[kpt].kpt[2] / Rmg_L.get_zside();
+
+        ct.kp[kpt].kvec[0] = v1;
+        ct.kp[kpt].kvec[1] = v2;
+        ct.kp[kpt].kvec[2] = v3;
+
+        ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
+
+        if(ct.kp[kpt].kmag == 0.0) {
+
+            // Gamma point
+            Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+
+        }
+        else {
+
+            // General case
+            Kptr[kpt] = (void *) new Kpoint<complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+
+        }
+        ct.kp[kpt].kstate = &states[kpt * ct.num_states];
+        ct.kp[kpt].kidx = kpt;
+    }
+
+
 
     my_barrier ();
 
@@ -208,7 +247,10 @@ void initialize(int argc, char **argv)
     delete(RT);
 
     /* Perform any necessary initializations */
-    Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc);
+    if((ct.num_kpts == 1) && (ct.kp[0].kmag == 0.0)) 
+        Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<double> **)Kptr);
+    else
+        Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<complex<double>> **)Kptr);
 
 
 
