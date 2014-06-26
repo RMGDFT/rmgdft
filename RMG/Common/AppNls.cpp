@@ -1,19 +1,25 @@
+
+#include "transition.h"
 #include "const.h"
-#include "common_prototypes.h"
-#include "State.h"
-#include "Kpoint.h"
 #include "BaseThread.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "State.h"
+#include "Kpoint.h"
+#include "../Headers/prototypes.h"
+
 #include "GlobalSums.h"
 #include "vhartree.h"
 #include "packfuncs.h"
 #include "blas.h"
 
-// Transitional headers
-#include "transition.h"
-#include "typedefs.h"
 
 
 template <typename RmgType> void AppNls(Kpoint<RmgType> *kpoint, double *work, double *work2, double *sintR, double *sintI, double *Bns)

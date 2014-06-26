@@ -67,7 +67,14 @@
 
 static int firststep = true;
 
-template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * vh, double *vh_ext,
+template bool Scf<double> (double *, double *, double *,
+          double *, double *, double *, double *, double *, int ,
+          int , int , int , Kpoint<double> **);
+template bool Scf<std::complex<double> > (double *, double *, double *,
+          double *, double *, double *, double *, double *, int ,
+          int , int , int , Kpoint<std::complex<double>> **);
+
+template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr)
 {
@@ -185,13 +192,13 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
 
     if (!firststep)
     {
-        printf ("\n");
+        rmg_printf ("\n");
         //progress_tag ();
-        printf ("SCF CHECKS: <rho dv>  = %15.8e\n", t[0]);
+        rmg_printf ("SCF CHECKS: <rho dv>  = %15.8e\n", t[0]);
         //progress_tag ();
-        printf ("SCF CHECKS: RMS[dv]   = %15.8e\n", t[1]);
+        rmg_printf ("SCF CHECKS: RMS[dv]   = %15.8e\n", t[1]);
         //progress_tag ();
-        printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
+        rmg_printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
     }
 
     if (!firststep && t[1] < ct.thr_rms)
@@ -207,12 +214,10 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        betaxpsi (states);
+        betaxpsi (Kptr[0]->kstates);
         delete(RT1);
 
-#if BATCH_NLS
-        app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
-#endif
+        app_nls_batch (Kptr[0]->kstates, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
 
         /* Update the wavefunctions */
         RT1 = new RmgTimer("Scf steps: Mg_eig");
@@ -223,7 +228,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
           for(ist = 0;ist < T->get_threads_per_node();ist++) {
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;
-              thread_control[ist].sp = &states[st1 + ist];
+              thread_control[ist].sp = &Kptr[0]->kstates[st1 + ist];
               T->set_pptr(ist, &thread_control[ist]);
 //              set_pptr(ist, &thread_control[ist]);
           }
@@ -236,7 +241,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
         // Process any remaining states in serial fashion
         for(st1 = istop;st1 < Kptr[0]->nstates;st1++) {
 //            MgEigState<OrbitalType> (Rmg_G, Rmg_T, 
-            mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
+            mg_eig_state_driver (&Kptr[0]->kstates[st1], 0, vtot_psi, ct.mg_eig_precision);
         }
         delete(RT1);
 
@@ -247,7 +252,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
 
     /*wavefunctions have changed, projectors have to be recalculated */
     RT1 = new RmgTimer("Scf steps: Beta x psi");
-    betaxpsi (states);
+    betaxpsi (Kptr[0]->kstates);
     delete(RT1);
 
 
@@ -262,12 +267,12 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
     /* do diagonalizations if requested, if not orthogonalize */
     if (diag_this_step) {
         RT1 = new RmgTimer("Scf steps: Diagonalization");
-        subdiag_gamma (states, vh, vnuc, vxc);
+        subdiag_gamma (Kptr[0]->kstates, vh, vnuc, vxc);
         delete(RT1);
     }
     else {
         RT1 = new RmgTimer("Scf steps: Orthogonalization");
-        ortho (states, 0);
+        ortho (Kptr[0]->kstates, 0);
         delete(RT1);
     }
 #else
@@ -281,7 +286,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
     {
 	/*Projectores need to be updated prior to subspace diagonalization*/
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        betaxpsi (states);
+        betaxpsi (Kptr[0]->kstates);
         delete(RT1);
         
         RT1 = new RmgTimer("Scf steps: Diagonalization");
@@ -295,7 +300,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
     /*wavefunctions have changed, projectors have to be recalculated */
     time1 = my_crtc ();
     RT1 = new RmgTimer("Scf steps: Beta x psi");
-    betaxpsi (states);
+    betaxpsi (Kptr[0]->kstates);
     delete(RT1);
     
     /*Get oldsintR*/
@@ -307,7 +312,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
 
 
     if (spin_flag)
-	get_opposite_eigvals (states);
+	get_opposite_eigvals (Kptr[0]->kstates);
 
 	
 
@@ -322,9 +327,9 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
 
     if (ct.occ_flag == 1 && !firststep)
     {
-        printf ("\n");
+        rmg_printf ("\n");
         //progress_tag ();
-        printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
+        rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
     }
 #endif
 
@@ -333,7 +338,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
 
     /* Generate new density */
     RT1 = new RmgTimer("Scf steps: Get rho");
-    get_new_rho (states, new_rho);
+    get_new_rho (Kptr[0]->kstates, new_rho);
 
     /*Takes care of mixing and checks whether the charge density is negative*/
     mix_rho(new_rho, rho, rhocore, FP0_BASIS, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
@@ -364,7 +369,7 @@ template <typename OrbitalType> bool Scf (STATE *states, double * vxc, double * 
     	delete [] rho_tot;
     }
 
-    printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time3);
+    rmg_printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time3);
 
     return CONVERGED;
 }                               /* end scf */

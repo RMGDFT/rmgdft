@@ -228,16 +228,22 @@ void initialize(int argc, char **argv)
         ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
 
         if(ct.kp[kpt].kmag == 0.0) {
+            Kpoint<double> *ktmp;
 
             // Gamma point
             Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+            ktmp = (Kpoint<double> *)Kptr[kpt];
+            ktmp->kstates = &states[kpt*ct.num_states];
 
         }
         else {
+            Kpoint<std::complex<double>> *ktmp;
 
             // General case
             is_gamma = FALSE;
             Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+            ktmp = (Kpoint<std::complex<double>> *)Kptr[kpt];
+            ktmp->kstates = &states[kpt*ct.num_states];
 
         }
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];
@@ -298,11 +304,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     	if (ct.xctype == MGGA_TB09)
         	relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
 	else 
-        	Relax (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+        	Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;
 
     case MD_FASTRLX:           /* Fast relax */
-        Relax (ct.max_md_steps, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+        Relax (ct.max_md_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;
 
     case NEB_RELAX:           /* nudged elastic band relax */

@@ -95,6 +95,9 @@ void init_IO (int argc, char **argv)
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
     }
+    else {
+        ct.logfile = fopen("/dev/null", "w");
+    }
 
     MPI_Comm_size (pct.img_comm, &status);
     printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));

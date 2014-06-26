@@ -58,14 +58,14 @@
 
 
 // Instantiate gamma and non-gamma versions
-template void Relax<double>(int , STATE *, double *, double *, double *,
+template void Relax<double>(int , double *, double *, double *,
               double *, double *, double *, double *, Kpoint<double> **Kptr);
-template void Relax<std::complex<double> >(int , STATE *, double *, double *, double *,
+template void Relax<std::complex<double> >(int , double *, double *, double *,
               double *, double *, double *, double *, Kpoint<std::complex<double> >**Kptr);
 
 
 
-template <typename OrbitalType> void Relax (int steps, STATE * states, double * vxc, double * vh, double * vnuc,
+template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
 
@@ -75,9 +75,8 @@ template <typename OrbitalType> void Relax (int steps, STATE * states, double * 
 
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
 
-
 	/* quench the electrons and calculate forces */
-    quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+    Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
     
 
     /* ---------- begin relax loop --------- */
@@ -89,7 +88,7 @@ template <typename OrbitalType> void Relax (int steps, STATE * states, double * 
 		rlx_steps++;
 
         if (pct.imgpe == 0)
-            printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
+            rmg_printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
         /* not done yet ? => move atoms */
 		/* move the ions */
@@ -121,16 +120,16 @@ template <typename OrbitalType> void Relax (int steps, STATE * states, double * 
         ct.md_steps++;
 
         /* Update items that change when the ionic coordinates change */
-        reinit_ionic_pp (states, vnuc, rhocore, rhoc);
+        reinit_ionic_pp (Kptr[0]->kstates, vnuc, rhocore, rhoc);
 
         /* quench the electrons and calculate forces */
-        quench (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
 
 
         /* save data to file for future restart */
         if (ct.checkpoint)
             if ( ct.md_steps % ct.checkpoint == 0 )
-                write_restart (ct.outfile, vh, rho, rho_oppo, vxc, states);
+                write_restart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr[0]->kstates);
 
 
         /* check force convergence */
@@ -158,20 +157,20 @@ template <typename OrbitalType> void Relax (int steps, STATE * states, double * 
     if (ct.max_md_steps > 0 && steps > 0)
     {
 
-        printf ("\n");
+        rmg_printf ("\n");
         //progress_tag ();
 
         if (CONV_FORCE)
-            printf ("force convergence has been achieved. stopping ...\n");
+            rmg_printf ("force convergence has been achieved. stopping ...\n");
         else
-            printf ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
+            rmg_printf ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
 
     }
 
 
 
     /*Write out final data */
-    write_restart (ct.outfile, vh, rho, rho_oppo, vxc, states);
+    write_restart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr[0]->kstates);
 
 
 }                               /* end fastrlx */

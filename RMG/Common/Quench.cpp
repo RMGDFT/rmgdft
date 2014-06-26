@@ -56,10 +56,10 @@
 #include "../Headers/prototypes.h"
 
 // Instantiate gamma and non-gamma versions
-template bool Quench<double> (STATE *, double *, double *, double *, double *, double *, double *, double *, Kpoint<double> **Kptr);
-template bool Quench<std::complex<double> > (STATE *, double *, double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double>> **Kptr);
+template bool Quench<double> (double *, double *, double *, double *, double *, double *, double *, Kpoint<double> **Kptr);
+template bool Quench<std::complex<double> > (double *, double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double>> **Kptr);
 
-template <typename OrbitalType> bool Quench (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
+template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
              double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
 
@@ -76,15 +76,15 @@ template <typename OrbitalType> bool Quench (STATE * states, double * vxc, doubl
     {
 
         if (pct.imgpe == 0)
-            printf ("\n\nquench: ------ [md: %d/%d  scf: %d/%d] ------\n",
+            rmg_printf ("\n\nquench: ------ [md: %d/%d  scf: %d/%d] ------\n",
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps);
 
 
         /* perform a single self-consistent step */
-        CONVERGED = Scf (states, vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.boundaryflag, Kptr);
+        CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.boundaryflag, Kptr);
 
 
-	get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+	get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr[0]->kstates, !ct.scf_steps);
 
 	/* output the eigenvalues with occupations */
 	if (ct.write_eigvals_period)
@@ -93,8 +93,8 @@ template <typename OrbitalType> bool Quench (STATE * states, double * vxc, doubl
 	    {
 		if (pct.imgpe == 0)
 		{
-		    output_eigenvalues (states, 0, ct.scf_steps);
-		    printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+		    output_eigenvalues (Kptr[0]->kstates, 0, ct.scf_steps);
+		    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 		}
 	    }
 	}
@@ -106,27 +106,27 @@ template <typename OrbitalType> bool Quench (STATE * states, double * vxc, doubl
 
     if (CONVERGED)
     {
-	printf ("\n");
+	rmg_printf ("\n");
 	//progress_tag ();
-	printf ("potential convergence has been achieved. stopping ...\n");
+	rmg_printf ("potential convergence has been achieved. stopping ...\n");
 	    
 	/*Write PDOS if converged*/
 	if (ct.pdos_flag)
-	    get_pdos (states, ct.Emin, ct.Emax, ct.E_POINTS);
+	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
     }
 
-    printf ("\n");
+    rmg_printf ("\n");
     //progress_tag ();
-    printf ("final total energy = %14.7f Ha\n", ct.TOTAL);
+    rmg_printf ("final total energy = %14.7f Ha\n", ct.TOTAL);
 
 
 
     /* output final eigenvalues with occupations */
 
-    output_eigenvalues (states, 0, ct.scf_steps);
-    printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+    output_eigenvalues (Kptr[0]->kstates, 0, ct.scf_steps);
+    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
-    wvfn_residual (states);
+    wvfn_residual (Kptr[0]->kstates);
 
 
 
@@ -162,7 +162,7 @@ template <typename OrbitalType> bool Quench (STATE * states, double * vxc, doubl
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
     if (CONVERGED || (ct.forceflag != MD_QUENCH))
-	force (rho, rho_oppo, rhoc, vh, vxc, vnuc, states);
+	force (rho, rho_oppo, rhoc, vh, vxc, vnuc, Kptr[0]->kstates);
 
     /* output the forces */
     if (pct.imgpe == 0)

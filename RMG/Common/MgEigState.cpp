@@ -74,10 +74,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
     res = new rmg_double_t[sbasis];
     sg_twovpsi_t = new RmgType[sbasis];
 
-#if !BATCH_NLS
-    ns = new rmg_double_t[sbasis];
-    nv = new rmg_double_t[sbasis];
-#endif
     res2 = new rmg_double_t[sbasis];
     saved_psi = new rmg_double_t[sbasis];
     nvtot_psi = new rmg_double_t[sbasis];
@@ -91,13 +87,8 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
         mix_betaxpsi1(sp);
 
     /* Get the non-local operator and S acting on psi (nv and ns, respeget_vel()y) */
-#if !BATCH_NLS
-    app_nls (tmp_psi, NULL, nv, NULL, ns, NULL, pct.oldsintR_local, NULL, sp->istate, sp->kidx);
-
-#else
     nv = &pct.nv[sp->istate * P0_BASIS]; 
     ns = &pct.ns[sp->istate * P0_BASIS]; 
-#endif
 
 
     // Copy double precision ns into temp single precision array */
@@ -394,11 +385,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
     delete [] nvtot_psi;
     delete [] saved_psi;
     delete [] res2;
-
-#if !BATCH_NLS
-    delete [] nv;
-    delete [] ns;
-#endif
 
     delete [] sg_twovpsi_t;
     delete [] res;

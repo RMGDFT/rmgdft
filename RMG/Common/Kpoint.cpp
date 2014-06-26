@@ -1,11 +1,28 @@
 
-#include <Kpoint.h>
-#include <complex>
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "../Headers/prototypes.h"
 
 
 template class Kpoint<float>;
 template Kpoint<double>::Kpoint(double*, double, int, int, int);
 template Kpoint<std::complex <double> >::Kpoint(double*, double, int, int, int);
+template void Kpoint<double>::sort_orbitals(void);
+template void Kpoint<std::complex <double> >::sort_orbitals(void);
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int knstates, int kpbasis, int kindex)
 {
@@ -33,7 +50,7 @@ template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)
 
     for(state = 0;state < nstates;state++) {
         Kstates[state].set_storage(tptr); 
-        tptr += pbasis;
+        tptr += this->pbasis;
     }
 
 }
@@ -50,16 +67,16 @@ template <class KpointType> int Kpoint<KpointType>::get_index(void)
 template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
 {
 
-    int state, pbasis;
+    int state;
     double t1;
     State<KpointType> *sp, *sp1;
     KpointType *tmp_orbital;
 
-    tmp_orbital = new KpointType[pbasis];
+    tmp_orbital = new KpointType[this->pbasis];
 
-    for(state = 0;state < nstates;state++)
+    for(state = 0;state < this->nstates - 1;state++)
     {
-        sp = Kstates + state;
+        sp = this->Kstates + state;
         sp1 = sp++;
         if (sp->eig[0] > sp1->eig[0])
         {

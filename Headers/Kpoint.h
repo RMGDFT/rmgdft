@@ -67,6 +67,9 @@ public:
     // The orbital structure for this k-point
     State<KpointType> *Kstates;
 
+    // Legacy structure will be removed later
+    STATE *kstates;
+
     // Number of points in orbital basis
     int pbasis;
 
