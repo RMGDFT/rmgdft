@@ -53,7 +53,7 @@ void find_fermi (complex double * sigma_all)
         }
 
         set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
-        sigma_all_energy_point (sigma_all);
+        sigma_all_energy_point (sigma_all, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
 
         charge_density_matrix_p (sigma_all);
 
@@ -108,7 +108,7 @@ void find_fermi (complex double * sigma_all)
     my_free(matrix_SxRHO);
     set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
 
-    sigma_all_energy_point (sigma_all);
+    sigma_all_energy_point (sigma_all, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
 
     lcr[1].EF_new = bias1;
     lcr[2].EF_new = bias2;

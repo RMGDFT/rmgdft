@@ -136,7 +136,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
         void *RT2 = BeginRmgTimer("3-SCF: sigma_all for 3lead");
 
-        sigma_all_energy_point (sigma_all);
+        sigma_all_energy_point (sigma_all, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
         EndRmgTimer(RT2);
     }
 

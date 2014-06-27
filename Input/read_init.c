@@ -75,7 +75,6 @@ void read_init(char *meta)
             printf("\n image info wrong");
             exit(0);
         }
-dprintf("GG %s  %s  %d\n",pct.image_path[num_image],pct.image_input[num_image],pct.image_npes[num_image]);
         tot_pe += pct.image_npes[num_image];
         num_image++;
     }

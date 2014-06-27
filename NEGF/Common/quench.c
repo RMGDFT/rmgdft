@@ -112,7 +112,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
     void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
     if (ct.runflag != 111)
-        sigma_all_energy_point (sigma_all);
+        sigma_all_energy_point (sigma_all, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
     my_barrier();
     EndRmgTimer(RT1);
     if(pct.gridpe==0) dprintf("\n sigma_all done");

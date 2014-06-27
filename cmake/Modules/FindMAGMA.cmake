@@ -21,8 +21,9 @@ find_library (MAGMABLAS_LIBRARIES NAMES magmablas PATH_SUFFIXES magmablas)
 # handle the QUIETLY and REQUIRED arguments and set MAGMA_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES
-MAGMA_INCLUDES MAGMABLAS_LIBRARIES)
+find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES)
+#find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES
+#MAGMA_INCLUDES MAGMABLAS_LIBRARIES)
 
 mark_as_advanced (MAGMA_LIBRARIES MAGMA_INCLUDES MAGMABLAS_LIBRARIES)
 

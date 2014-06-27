@@ -34,6 +34,7 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
+/home/luw/Downloads/magma-1.4.1
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
@@ -147,6 +148,7 @@ target_link_libraries (rmg-negf Misc NEGF_Pois)
 target_link_libraries (rmg-negf NEGF_Cudafunc)
 target_link_libraries (rmg-negf NEGF_Common NEGF_Cudafunc)
 target_link_libraries (rmg-negf NEGF_Cudafunc NEGF_Common)
+#target_link_libraries (rmg-negf NEGF_Cudafunc NEGF_Common /home/luw/Downloads/magma-1.4.1/lib/libmagma.a)
 
 target_link_libraries (rmg-tddft RmgLib)
 target_link_libraries (rmg-tddft Finite_diff ON_Common RmgLib)
@@ -454,11 +456,12 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 
 # Look for the magma libraries
 find_package(MAGMA)
+message("${MAGMA_FOUND}")
 if(MAGMA_FOUND)
-    target_link_libraries (rmg ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
-    target_link_libraries (rmg-on ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
-    target_link_libraries (rmg-tddft ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
-    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES})
+    target_link_libraries (rmg ${MAGMA_LIBRARIES} )
+    target_link_libraries (rmg-on ${MAGMA_LIBRARIES} )
+    target_link_libraries (rmg-tddft ${MAGMA_LIBRARIES} )
+    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} )
 endif(MAGMA_FOUND)
 
 
@@ -516,7 +519,7 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
-option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
+option (RMG_GPU_ENABLED "Use GPU acceleration." ON)
 if (RMG_GPU_ENABLED)
     if(CUDA_FOUND)
         set (GPU_ENABLED 1)

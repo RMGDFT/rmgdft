@@ -72,6 +72,10 @@ int main (int argc, char **argv)
 
 
   void *RT = BeginRmgTimer("1-TOTAL");
+ 
+#if GPU_ENABLED
+    magma_init();
+#endif
 
     ct.images_per_node = 1;
     init_IO(argc, argv);

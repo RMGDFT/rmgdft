@@ -58,7 +58,6 @@ pack_doubles.c
 claim_ion.c
 debug_write_rho_z.c
 write_pdb.c
-relax.c
 nlforce_par_omega.c
 real_min_all.c
 init_nuc.c
