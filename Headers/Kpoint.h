@@ -70,6 +70,11 @@ public:
     // Legacy structure will be removed later
     STATE *kstates;
 
+    // Pointers to nv, ns, and Bns
+    KpointType *nv;
+    KpointType *ns;
+    KpointType *Bns;
+
     // Number of points in orbital basis
     int pbasis;
 

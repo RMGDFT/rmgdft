@@ -23,6 +23,11 @@ template Kpoint<double>::Kpoint(double*, double, int, int, int);
 template Kpoint<std::complex <double> >::Kpoint(double*, double, int, int, int);
 template void Kpoint<double>::sort_orbitals(void);
 template void Kpoint<std::complex <double> >::sort_orbitals(void);
+template void Kpoint<double>::set_pool(double *pool);
+template void Kpoint<std::complex <double> >::set_pool(std::complex<double> *pool);
+template int Kpoint<double>::get_nstates(void);
+template int Kpoint<std::complex <double> >::get_nstates(void);
+
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int knstates, int kpbasis, int kindex)
 {
@@ -34,7 +39,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->kweight = kkweight;
     this->nstates = knstates;
     this->pbasis = kpbasis;
-
+    this->Kstates = new State<KpointType>[this->nstates];
 }
 
 template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)
@@ -45,8 +50,6 @@ template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)
     this->orbital_storage = pool;
 
     tptr = pool;
-
-    Kstates = new State<KpointType> [nstates];
 
     for(state = 0;state < nstates;state++) {
         Kstates[state].set_storage(tptr); 

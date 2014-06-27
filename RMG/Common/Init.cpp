@@ -63,23 +63,24 @@ static void init_alloc_nonloc_mem (void);
 extern "C" bool     verify( char *tagname, const void *optvalue );
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           STATE * states, double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
+           double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
 
 // Instantiate gamma and non-gamma versions
-template void Init<double>(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<double>**);
-template void Init<std::complex<double> >(double*, double*, double*, double*, double*, STATE*, double*, double*, Kpoint<std::complex <double> >**);
+template void Init<double>(double*, double*, double*, double*, double*, double*, double*, Kpoint<double>**);
+template void Init<std::complex<double> >(double*, double*, double*, double*, double*, double*, double*, Kpoint<std::complex <double> >**);
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           STATE * states, double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
+           double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
-    int kpt, kpt1, kst1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
+    int kpt, kpt1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
     int species;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     SPECIES *sp;
-    double *rptr = NULL, *rptr1 = NULL, *vtot, *rho_tot;
+    OrbitalType *rptr = NULL, *nv, *ns, *Bns;
+    double *vtot, *rho_tot, *rptr1;
     ION *iptr;
     double time1, time2, fac;
     STATE *st;
@@ -87,6 +88,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 #if GPU_ENABLED
     init_gpu();
 #endif
+
+    nv = (OrbitalType *)pct.nv;
 
     time1 = my_crtc ();
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -184,27 +187,28 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.eig_parm.sb_step = 1.0;
 
     /* Set state pointers and initialize state data */
-    if((ct.num_kpts == 1) && (ct.kp[0].kmag == 0.0)) {
 #if GPU_ENABLED
-        cudaMallocHost((void **)&rptr, ((ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(double));
-        cudaMallocHost((void **)&pct.nv, ct.num_states * P0_BASIS * sizeof(double));
-        cudaMallocHost((void **)&pct.ns, ct.num_states * P0_BASIS * sizeof(double));
-        cudaMallocHost((void **)&pct.Bns, ct.num_states * P0_BASIS * sizeof(double));
+    // Wavefunctions are actually stored here
+    cudaMallocHost((void **)&rptr, (ct.num_kpts * (ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(OrbitalType));
+    cudaMallocHost((void **)&nv, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+    cudaMallocHost((void **)&ns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+    cudaMallocHost((void **)&Bns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
 #else
-        /* Wavefunctions are actually stored here */
-        rptr = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-        pct.nv = new double[ct.num_states * P0_BASIS];
-        pct.ns = new double[ct.num_states * P0_BASIS];
-        pct.Bns = new double[ct.num_states * P0_BASIS];
+    // Wavefunctions are actually stored here
+    rptr = new OrbitalType[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
+    nv = new OrbitalType[ct.num_states * P0_BASIS];
+    ns = new OrbitalType[ct.num_states * P0_BASIS];
+    Bns = new OrbitalType[ct.num_states * P0_BASIS];
 #endif
+    pct.nv = (double *)nv;
+    pct.ns = (double *)ns;
+    pct.Bns = (double *)Bns;
 
-      if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-          rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-      }
-
+    if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
+        rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
     }
-    else {
 
+#if 0
         /* Wavefunctions are actually stored here */
         if (verify ("calculation_mode", "Band Structure Only"))
         {
@@ -214,36 +218,33 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             rptr = new double[ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024];
         }
-    }
-
+#endif
 
     kpt1 = ct.num_kpts;
     if (verify ("calculation_mode", "Band Structure Only"))
         kpt1 = 1;
-    kst1 = 0;
     for (kpt = 0; kpt < kpt1; kpt++)
     {
 
+        Kptr[kpt]->set_pool(rptr);
+        Kptr[kpt]->nv = nv;
+        Kptr[kpt]->ns = ns;
+        Kptr[kpt]->Bns = Bns;
+
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            states[kst1].kidx = kpt;
-            states[kst1].psiR = rptr;
-            states[kst1].psiI = rptr +P0_BASIS;
-            states[kst1].dvhxc = rptr1;
-            states[kst1].vxc = vxc;
-            states[kst1].vh = vh;
-            states[kst1].vnuc = vnuc;
-            states[kst1].pbasis =P0_BASIS;
-            states[kst1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
-            states[kst1].istate = st1;
-            states[kst1].vel = get_vel();
-#if GAMMA_PT
+            Kptr[kpt]->kstates[st1].kidx = kpt;
+            Kptr[kpt]->kstates[st1].psiR = (double *)rptr;
+            Kptr[kpt]->kstates[st1].dvhxc = rptr1;
+            Kptr[kpt]->kstates[st1].vxc = vxc;
+            Kptr[kpt]->kstates[st1].vh = vh;
+            Kptr[kpt]->kstates[st1].vnuc = vnuc;
+            Kptr[kpt]->kstates[st1].pbasis =P0_BASIS;
+            Kptr[kpt]->kstates[st1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
+            Kptr[kpt]->kstates[st1].istate = st1;
+            Kptr[kpt]->kstates[st1].vel = get_vel();
             rptr +=P0_BASIS;
             rptr1 +=P0_BASIS;
-#else
-            rptr += 2 *P0_BASIS;
-#endif
-            kst1++;
         }
     }
 
@@ -251,14 +252,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("If not an initial run read data from files");
     if (ct.runflag == 1)
     {
-        read_data (ct.infile, vh, rho, vxc, states);
+        read_data (ct.infile, vh, rho, vxc, Kptr[0]->kstates);
     
 	/*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
 	if (ct.spin_flag)
 	{
 	    get_rho_oppo (rho, rho_oppo);
-	    get_opposite_eigvals (states);
-	    get_opposite_occupancies (states);
+	    get_opposite_eigvals (Kptr[0]->kstates);
+	    get_opposite_occupancies (Kptr[0]->kstates);
 	}
     }
     else 
@@ -272,13 +273,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	if (ct.runflag == 2)
 	{
 	    lcao_init ();
-	    lcao_get_psi(states);
+	    lcao_get_psi(Kptr[0]->kstates);
 	}
 	
 	else
 	{
 	    for (kpt = 0; kpt < ct.num_kpts; kpt++)
-		init_wf (&states[kpt * ct.num_states]);
+		init_wf (&Kptr[0]->kstates[kpt * ct.num_states]);
 	}
 
 
@@ -358,7 +359,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     /* Update items that change when the ionic coordinates change */
-    reinit_ionic_pp (states, vnuc, rhocore, rhoc);
+    reinit_ionic_pp (Kptr[0]->kstates, vnuc, rhocore, rhoc);
 
 
     if (ct.runflag != 1) /* Initial run */
@@ -367,7 +368,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             for (state = 0; state < ct.num_states; state++)
             {
-                st = &states[kpt * ct.num_states + state];
+                st = &Kptr[kpt]->kstates[state];
                 norm_psi1 (st, state, kpt);
             }
         }
@@ -457,25 +458,25 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /*Now we cam do subspace diagonalization */
 #if GAMMA_PT
-        subdiag_gamma (states, vh, vnuc, vxc);
+        subdiag_gamma (Kptr[0]->kstates, vh, vnuc, vxc);
 #else
-        subdiag_nongamma (states, vh, vnuc, vxc);
+        subdiag_nongamma (Kptr[0]->kstates, vh, vnuc, vxc);
 #endif
 
     }                           /*end if(ct.initdiag) */
     else
     {
 #if GAMMA_PT
-        ortho(states, 0);
+        ortho(Kptr[0]->kstates, 0);
 #else
         for (kpt = 0; kpt < ct.num_kpts; kpt++)
-            ortho (&states[kpt *ct.num_states], kpt);
+            ortho (Kptr[kpt]->kstates, kpt);
         
 #endif
     }
 
 
-    betaxpsi (states);
+    betaxpsi (Kptr[0]->kstates);
     mix_betaxpsi(0);
 
 #if 0

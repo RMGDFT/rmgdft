@@ -217,7 +217,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         betaxpsi (Kptr[0]->kstates);
         delete(RT1);
 
-        app_nls_batch (Kptr[0]->kstates, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
+        //app_nls_batch (Kptr[0]->kstates, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
+        AppNls<OrbitalType>(Kptr[0], pct.oldsintR_local, pct.oldsintI_local);
 
         /* Update the wavefunctions */
         RT1 = new RmgTimer("Scf steps: Mg_eig");

@@ -165,7 +165,7 @@ void ssyev (char *jobz, char *uplo, int *numm, rmg_double_t * ss, int *numn,
 void cheev (char *jobz, char *uplo, int *numm, rmg_double_t * ss, int *numn,
             rmg_double_t * work1, rmg_double_t * work2, int *lwork, rmg_double_t *, int *info);
 void spotri (char *, int *, rmg_double_t *, int *, int *);
-void dgemm(char *, char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
+void dgemm(const char *, const char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
 void zgemm(char *, char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
 void dgetrf( int *, int *, rmg_double_t *, int *, int *, int *);
 void dgetri(int *, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);

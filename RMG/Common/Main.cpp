@@ -56,9 +56,6 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 
-template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           STATE * states, double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
-
 extern "C" bool quench (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
              double * rho_oppo, double * rhocore, double * rhoc);
 
@@ -259,9 +256,9 @@ void initialize(int argc, char **argv)
 
     /* Perform any necessary initializations */
     if((ct.num_kpts == 1) && (ct.kp[0].kmag == 0.0)) 
-        Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<double> **)Kptr);
+        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, (Kpoint<double> **)Kptr);
     else
-        Init (vh, rho, rho_oppo, rhocore, rhoc, states, vnuc, vxc, (Kpoint<std::complex<double>> **)Kptr);
+        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, (Kpoint<std::complex<double>> **)Kptr);
 
 
 
