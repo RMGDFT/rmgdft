@@ -166,7 +166,7 @@ bool scf_tau (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_
 
         // Process any remaining states in serial fashion
         for(st1 = istop;st1 < ct.num_kpts * ct.num_states;st1++) {
-            mg_eig_state_driver (&states[st1], 0, vtot_psi, ct.mg_eig_precision);
+            mg_eig_state_driver (&states[st1], 0, vtot_psi);
         }
         EndRmgTimer(RT1);
 

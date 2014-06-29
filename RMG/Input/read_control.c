@@ -102,13 +102,6 @@ void read_control (char *file)
     /* sorting flag */
     get_data ("sort_wavefunctions", &ct.sortflag, BOOL, "true");
     
-    /* Precision opts */
-    char mg_eig_precision_opts[] = "mixed\n"
-                                   "double\n";
-    get_data ("mg_eig_precision", NULL, INIT | OPT, mg_eig_precision_opts);
-    get_data ("mg_eig_precision", &ct.mg_eig_precision, OPT, "mixed");
-    ct.mg_eig_precision <<= 3;   // shift it to sizeof(float/double)
-
     /* Diaonalization opts */
     char diagonalization_driver_opts[] = "lapack\n"
                                          "scalapack\n"

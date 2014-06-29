@@ -43,7 +43,7 @@ void get_te (rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, r
 void get_vxc (rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *vxc);
 void init (rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *rhocore, rmg_double_t *rhoc, STATE *states,
            rmg_double_t *vnuc, rmg_double_t *vxc);
-void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision);
+void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi);
 void nlforce_par_gamma (rmg_double_t * par_gamma, int ion, int nh, rmg_double_t *force);
 void nlforce_par_omega (rmg_double_t * par_omega, int ion, int nh, rmg_double_t *force);
 void nlforce_par_Q (rmg_double_t *veff, rmg_double_t *gamma, int ion, ION *iptr, int nh,

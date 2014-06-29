@@ -442,14 +442,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
 extern "C" void mg_eig_state(STATE *sp, int tid, double *vtot_psi)
 {
-    MgEigState<double> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
-}
-extern "C" void mg_eig_state_f(STATE *sp, int tid, double *vtot_psi)
-{
     MgEigState<float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 
-extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi, int precision)
+extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
 {
 
 #if !GAMMA_PT
@@ -459,16 +455,8 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi, int
 
 #else
 
-    if(precision == sizeof(double)) {
-
-        MgEigState<double> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
-
-    }
-    else {
-
         MgEigState<float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
-    }
 
 #endif
 

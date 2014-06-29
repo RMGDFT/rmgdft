@@ -50,9 +50,6 @@ typedef struct
     /** Description of the run. */
     char description[MAX_CHAR];
 
-    // Precision level for mg_eig_state. Either single (4) or double (8) May be switched dynamically
-    int mg_eig_precision;
-
     /* time at which run started */
     rmg_double_t time0;
     

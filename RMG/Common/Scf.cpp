@@ -242,7 +242,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         // Process any remaining states in serial fashion
         for(st1 = istop;st1 < Kptr[0]->nstates;st1++) {
 //            MgEigState<OrbitalType> (Rmg_G, Rmg_T, 
-            mg_eig_state_driver (&Kptr[0]->kstates[st1], 0, vtot_psi, ct.mg_eig_precision);
+            mg_eig_state_driver (&Kptr[0]->kstates[st1], 0, vtot_psi);
         }
         delete(RT1);
 #endif

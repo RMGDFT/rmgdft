@@ -51,7 +51,7 @@ void *run_threads(void *v) {
         // Switch that controls what we do
         switch(ss->job) {
             case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
-               mg_eig_state_driver(ss->sp, 0, ss->vtot, ct.mg_eig_precision);
+               mg_eig_state_driver(ss->sp, 0, ss->vtot);
                break;
             case HYBRID_SKIP:
                break;
