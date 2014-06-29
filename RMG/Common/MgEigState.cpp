@@ -1,5 +1,5 @@
 
-
+#include <complex>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
@@ -14,8 +14,63 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "packfuncs.h"
+#include "transition.h"
 
 
+
+void ComputeEig(int n, double *A, double *B, double *C, double *D, double *rval)
+{
+    double s1[2];
+    s1[0] = 0.0;
+    s1[1] = 0.0;
+
+    for(int idx = 0;idx < n;idx++) {
+        s1[0] += A[idx] * B[idx];
+        s1[1] += C[idx] * D[idx];
+    }
+
+    int length = 2;
+    global_sums (s1, &length, pct.grid_comm);
+
+    *rval = (s1[0] / (2.0 * s1[1]));
+
+}
+
+void ComputeEig(int n, float *A, float *B, float *C, float *D, double *rval)
+{
+    double s1[2];
+    s1[0] = 0.0;
+    s1[1] = 0.0;
+
+    for(int idx = 0;idx < n;idx++) {
+        s1[0] += (double)A[idx] * (double)B[idx];
+        s1[1] += (double)C[idx] * (double)D[idx];
+    }
+
+    int length = 2;
+    global_sums (s1, &length, pct.grid_comm);
+
+    *rval = (s1[0] / (2.0 * s1[1]));
+
+}
+
+void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::complex<double> *C, std::complex<double> *D, double *rval)
+{
+    std::complex<double> s1[2];
+    s1[0] = 0.0 * s1[0];
+    s1[1] = 0.0 * s1[1];
+
+    for(int idx = 0;idx < n;idx++) {
+        s1[0] = s1[0] + A[idx] * B[idx] + A[idx] * std::conj(B[idx]);
+        s1[1] = s1[1] + C[idx] * D[idx] + C[idx] * std::conj(D[idx]);
+    }
+
+    int length = 4;
+    global_sums ((double *)s1, &length, pct.grid_comm);
+
+    *rval = std::real(s1[0] / (2.0 * s1[1]));
+
+}
 
 extern STATE *states;
 
@@ -23,26 +78,27 @@ using namespace std;
 
 static std::mutex vtot_sync_mutex;
 
-template <typename RmgType>
-void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, rmg_double_t * vtot_psi)
+//template void MgEigState<std::complex<double> >(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
+
+template <typename OrbitalType>
+void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi)
 {
 
     RmgTimer RT("Mg_eig");
 
     int idx, cycles, P0_BASIS;
     int nits, pbasis, sbasis;
-    rmg_double_t eig, diag, t1, t2, t3, t4;
-    rmg_double_t *work1, *nv, *ns, *res2;
-    rmg_double_t *tmp_psi, *res, *saved_psi;
-    rmg_double_t *nvtot_psi;
-    RmgType *tmp_psi_t, *work2_t, *res_t, *res2_t, *sg_psi_t;
+    double eig, diag, t1, t2, t3, t4;
+    double *work1, *nv, *ns, *res2;
+    double *tmp_psi, *res, *saved_psi;
+    double *nvtot_psi;
+    OrbitalType *tmp_psi_t, *work2_t, *res_t, *res2_t, *sg_psi_t;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
     int dimx, dimy, dimz, levels, potential_acceleration;
-    rmg_double_t hxgrid, hygrid, hzgrid, sb_step;
-    rmg_double_t tarr[8];
-    RmgType *sg_twovpsi_t, *work1_t;
+    double hxgrid, hygrid, hzgrid, sb_step;
+    OrbitalType *sg_twovpsi_t, *work1_t;
     Mgrid MG(L, T);
 
 
@@ -65,20 +121,20 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
     sbasis = sp->sbasis;
 
     /* Grab some memory */
-    res2_t = new RmgType[sbasis];
-    work2_t = new RmgType[4 * sbasis];
-    work1_t = new RmgType[4 * sbasis];
-    work1 = new rmg_double_t[4 * sbasis];
+    res2_t = new OrbitalType[sbasis];
+    work2_t = new OrbitalType[4 * sbasis];
+    work1_t = new OrbitalType[4 * sbasis];
+    work1 = new double[4 * sbasis];
 
-    sg_psi_t = new RmgType[sbasis];
-    res = new rmg_double_t[sbasis];
-    sg_twovpsi_t = new RmgType[sbasis];
+    sg_psi_t = new OrbitalType[sbasis];
+    res = new double[sbasis];
+    sg_twovpsi_t = new OrbitalType[sbasis];
 
-    res2 = new rmg_double_t[sbasis];
-    saved_psi = new rmg_double_t[sbasis];
-    nvtot_psi = new rmg_double_t[sbasis];
-    tmp_psi_t = new RmgType[sbasis];
-    res_t = new RmgType[sbasis];
+    res2 = new double[sbasis];
+    saved_psi = new double[sbasis];
+    nvtot_psi = new double[sbasis];
+    tmp_psi_t = new OrbitalType[sbasis];
+    res_t = new OrbitalType[sbasis];
 
     tmp_psi = sp->psiR;
 
@@ -93,18 +149,18 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
 
     // Copy double precision ns into temp single precision array */
     for(idx = 0;idx < pbasis;idx++) {
-        work1_t[idx] = (RmgType)ns[idx];
+        work1_t[idx] = (OrbitalType)ns[idx];
     }
   
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     RmgTimer *RT1 = new RmgTimer("Mg_eig: app_cir");
-    CPP_app_cir_driver<RmgType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    CPP_app_cir_driver<OrbitalType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
     delete(RT1);
 
     // Copy double precision psi into single precison array
     for(idx = 0;idx < pbasis;idx++) {
-        tmp_psi_t[idx] = (RmgType)tmp_psi[idx];
+        tmp_psi_t[idx] = (OrbitalType)tmp_psi[idx];
     }
 
     // Setup some potential acceleration stuff
@@ -126,7 +182,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
 
         /* Apply Mehrstellen left hand operators */
         RT1 = new RmgTimer("Mg_eig: app_cil");
-        diag = CPP_app_cil_driver<RmgType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        diag = CPP_app_cil_driver<OrbitalType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         delete(RT1);
 
         diag = -1.0 / diag;
@@ -148,33 +204,19 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
 
         /* B operating on 2*V*psi stored in work1 */
         RT1 = new RmgTimer("Mg_eig: app_cir");
-        CPP_app_cir_driver<RmgType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        CPP_app_cir_driver<OrbitalType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
         for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 
 
-        RmgType tscal = -ONE;
+        OrbitalType tscal = -ONE;
         QMD_axpy (pbasis, tscal, work2_t, ione, work1_t, ione);
 
         /* If this is the first time through compute the eigenvalue */
         if ((cycles == 0) || (potential_acceleration != 0)) 
         {
 
-            eig = 0.0;
-            t2 = 0.0;
-
-            for (idx = 0; idx < pbasis; idx++)
-            {
-
-                t2 += (rmg_double_t)tmp_psi_t[idx] * (rmg_double_t)res_t[idx];
-                eig += (rmg_double_t)tmp_psi_t[idx] * (rmg_double_t)work1_t[idx];
-
-            }
-
-            tarr[0] = t2;
-            tarr[1] = eig;
-            idx = 2;
-
+            ComputeEig(pbasis, tmp_psi_t, work1_t, tmp_psi_t, res_t, &eig);
 
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
@@ -183,8 +225,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
             {
                 if (ct.scf_steps == 0)
                 {
-                    global_sums (tarr, &idx, pct.grid_comm);
-                    eig = tarr[1] / (TWO * tarr[0]);
                     sp->eig[0] = eig;
                     sp->oldeig[0] = eig;
                 }
@@ -193,8 +233,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
 	    }
             else
             {
-                global_sums (tarr, &idx, pct.grid_comm);
-                eig = tarr[1] / (TWO * tarr[0]);
                 sp->eig[0] = eig;
                 if(ct.scf_steps == 0) {
                     sp->oldeig[0] = eig;
@@ -223,15 +261,15 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
             }
 
             /* Pack the residual data into multigrid array */
-            CPP_pack_ptos<RmgType> (sg_psi_t, res_t, dimx, dimy, dimz);
+            CPP_pack_ptos<OrbitalType> (sg_psi_t, res_t, dimx, dimy, dimz);
 
-            T->trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+            T->trade_images<OrbitalType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
 
 
             /* Smooth it once and store the smoothed residual in work1 */
             t1 = 145.0;
 
-            CPP_app_smooth<RmgType> (sg_psi_t, work1_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+            CPP_app_smooth<OrbitalType> (sg_psi_t, work1_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
 
             if(potential_acceleration) {
@@ -257,7 +295,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
              */
 
             t1 = -1.0;
-            CPP_pack_stop_axpy<RmgType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
+            CPP_pack_stop_axpy<OrbitalType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 
 
         }
@@ -272,7 +310,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
             for (idx = 0; idx <P0_BASIS; idx++)
             {
 
-                t3 = t1 * (rmg_double_t)res_t[idx] - (rmg_double_t)work1_t[idx];
+                t3 = t1 * (double)res_t[idx] - (double)work1_t[idx];
                 t2 += t3 * t3;
                 tmp_psi_t[idx] += t4 * t3;
 
@@ -282,7 +320,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
             {
 
                 t2 = real_sum_all (t2, pct.grid_comm);
-                t1 = (rmg_double_t) (ct.psi_nbasis);
+                t1 = (double) (ct.psi_nbasis);
                 sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
 
             }
@@ -327,10 +365,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
             }
 
             /* Pack delta_rho into multigrid array */
-            CPP_pack_ptos<RmgType> (sg_psi_t, res_t, dimx, dimy, dimz);
-            T->trade_images<RmgType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+            CPP_pack_ptos<OrbitalType> (sg_psi_t, res_t, dimx, dimy, dimz);
+            T->trade_images<OrbitalType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
             /* Smooth it once and store the smoothed charge in res */
-            CPP_app_smooth1<RmgType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+            CPP_app_smooth1<OrbitalType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
@@ -359,7 +397,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res_t[idx] = 0.0;
             }
-            CPP_pack_stop_axpy<RmgType> (sg_twovpsi_t, res_t, 1.0, dimx, dimy, dimz);
+            CPP_pack_stop_axpy<OrbitalType> (sg_twovpsi_t, res_t, 1.0, dimx, dimy, dimz);
             t1 = ct.potential_acceleration_poisson_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
             vtot_sync_mutex.lock();
@@ -375,7 +413,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
     // Copy single precision orbital back to double precision
     for(idx = 0;idx < pbasis;idx++) {
 
-        tmp_psi[idx] = (rmg_double_t)tmp_psi_t[idx];
+        tmp_psi[idx] = (double)tmp_psi_t[idx];
 
     }
 
@@ -402,16 +440,16 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, r
 
 #include "transition.h"
 
-extern "C" void mg_eig_state(STATE *sp, int tid, rmg_double_t *vtot_psi)
+extern "C" void mg_eig_state(STATE *sp, int tid, double *vtot_psi)
 {
-    MgEigState<rmg_double_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+    MgEigState<double> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
-extern "C" void mg_eig_state_f(STATE *sp, int tid, rmg_double_t *vtot_psi)
+extern "C" void mg_eig_state_f(STATE *sp, int tid, double *vtot_psi)
 {
-    MgEigState<rmg_float_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+    MgEigState<float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 
-extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_psi, int precision)
+extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi, int precision)
 {
 
 #if !GAMMA_PT
@@ -421,14 +459,14 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, rmg_double_t * vtot_ps
 
 #else
 
-    if(precision == sizeof(rmg_double_t)) {
+    if(precision == sizeof(double)) {
 
-        MgEigState<rmg_double_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+        MgEigState<double> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
     }
     else {
 
-        MgEigState<rmg_float_t> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+        MgEigState<float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
     }
 

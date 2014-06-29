@@ -30,18 +30,38 @@
 #ifndef RMG_Kpoint_H
 #define RMG_Kpoint_H 1
 
-#include <State.h>
+#include "BaseGrid.h"
+#include "Lattice.h"
+#include "TradeImages.h"
+#include "State.h"
+#include <mpi.h>
 
 template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double kweight, int nstates, int pbasis, int index );
+    Kpoint(double *kpt, double kweight, int nstates, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL );
 
     void set_pool(KpointType *pool);
     void sort_orbitals(void);
+    void random_init(void);
     int get_nstates(void);
     int get_index(void);
+    void orthogonalize(double *storage);
+    void orthogonalize(std::complex<double> *storage);
+
+
+    // BaseGrid class
+    BaseGrid *G;
+
+    // TradeImages object to use
+    TradeImages *T;
+
+    // Lattice object
+    Lattice *L;
+
+    // MPI communicator to use for trade images and reduction operations
+    MPI_Comm comm;
 
     // The index of the k-point for backreferencing
     int kidx;

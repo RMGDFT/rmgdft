@@ -134,7 +134,7 @@ void sscal (int *n, rmg_double_t * alpha, rmg_double_t * x, int *incx);
 void scopy (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
 rmg_double_t sdot (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
 rmg_double_t snrm2 (int *n, rmg_double_t * x, int *incx);
-void ssyrk (char *uplo, char *trans, int *n, int *k, rmg_double_t * alpha, rmg_double_t * A,
+void ssyrk (const char *uplo, const char *trans, int *n, int *k, rmg_double_t * alpha, rmg_double_t * A,
             int *lda, rmg_double_t * beta, rmg_double_t * c, int *ldc);
 void sswap (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
 void xbecke (rmg_double_t * d, rmg_double_t * s, rmg_double_t * u, rmg_double_t * v, rmg_double_t * ex, rmg_double_t * vx);

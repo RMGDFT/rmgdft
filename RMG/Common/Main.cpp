@@ -228,7 +228,7 @@ void initialize(int argc, char **argv)
             Kpoint<double> *ktmp;
 
             // Gamma point
-            Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+            Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
             ktmp = (Kpoint<double> *)Kptr[kpt];
             ktmp->kstates = &states[kpt*ct.num_states];
 
@@ -238,7 +238,7 @@ void initialize(int argc, char **argv)
 
             // General case
             is_gamma = FALSE;
-            Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, Rmg_G->get_P0_BASIS(1), kpt);
+            Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
             ktmp = (Kpoint<std::complex<double>> *)Kptr[kpt];
             ktmp->kstates = &states[kpt*ct.num_states];
 

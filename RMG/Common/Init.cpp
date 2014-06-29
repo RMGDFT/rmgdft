@@ -279,7 +279,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	else
 	{
 	    for (kpt = 0; kpt < ct.num_kpts; kpt++)
-		init_wf (&Kptr[0]->kstates[kpt * ct.num_states]);
+		//init_wf (&Kptr[0]->kstates[kpt * ct.num_states]);
+                Kptr[kpt]->random_init();
 	}
 
 
@@ -362,14 +363,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     reinit_ionic_pp (Kptr[0]->kstates, vnuc, rhocore, rhoc);
 
 
+    // Normalize orbitals if not an initial run
     if (ct.runflag != 1) /* Initial run */
     {
         for (kpt = 0; kpt < ct.num_kpts; kpt++)
         {
             for (state = 0; state < ct.num_states; state++)
             {
-                st = &Kptr[kpt]->kstates[state];
-                norm_psi1 (st, state, kpt);
+                Kptr[kpt]->Kstates[state].normalize(Kptr[kpt]->Kstates[state].psi, state);
             }
         }
     }

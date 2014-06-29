@@ -216,7 +216,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         RT1 = new RmgTimer("Scf steps: Beta x psi");
         betaxpsi (Kptr[0]->kstates);
         delete(RT1);
-
+#if 1
         //app_nls_batch (Kptr[0]->kstates, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
         AppNls<OrbitalType>(Kptr[0], pct.oldsintR_local, pct.oldsintI_local);
 
@@ -245,7 +245,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             mg_eig_state_driver (&Kptr[0]->kstates[st1], 0, vtot_psi, ct.mg_eig_precision);
         }
         delete(RT1);
-
+#endif
     }
 
 
@@ -264,6 +264,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
      * the reason is for non-gamma subdiag is not coded to solve generalized eigenvalue problem, it can
      * only solve the regular eigenvalue problem and that requires that wavefunctions are orthogonal to start with.*/
     diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
+//diag_this_step = 0;
 #if GAMMA_PT
     /* do diagonalizations if requested, if not orthogonalize */
     if (diag_this_step) {
@@ -273,14 +274,16 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     }
     else {
         RT1 = new RmgTimer("Scf steps: Orthogonalization");
-        ortho (Kptr[0]->kstates, 0);
+        //ortho (Kptr[0]->kstates, 0);
+        Kptr[0]->orthogonalize(Kptr[0]->orbital_storage);
         delete(RT1);
     }
 #else
 
     RT1 = new RmgTimer("Scf steps: Orthogonalization");
 //    ortho (kpoint->Kstates, kpt);
-    ortho (kpoint->Kstates, 0);
+    //ortho (kpoint->Kstates, 0);
+    Kptr[0]->orthogonalize(Kptr[0]->orbital_storage);
     delete(RT1);
     
     if (diag_this_step)

@@ -148,15 +148,19 @@ template <typename OrbitalType> void AppNls(Kpoint<OrbitalType> *kpoint, double 
         dgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
                 &rone, (double *)pct.M_qqq,  &pct.num_tot_proj, (double *)sintR_compack, &pct.num_tot_proj,
                 &rzero,  (double *)nwork, &pct.num_tot_proj);
-        dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
+
+        if(!ct.norm_conserving_pp) {
+            dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
                 &rone, (double *)pct.weight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
                 &rone,  (double *)work2, &P0_BASIS);
+        }
+
         dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
                 &rone, (double *)pct.Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
                 &rzero,  (double *)Bns, &P0_BASIS);
 
     }
-    else {
+    else if(typeid(OrbitalType) == typeid(std::complex<double>)) {
 
 
     }

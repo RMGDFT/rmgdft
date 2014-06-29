@@ -30,13 +30,19 @@
 #ifndef RMG_State_H
 #define RMG_State_H 1
 
-#include <vector>
-
+#include <mpi.h>
+template <typename T> class Kpoint;
 template <typename StateType> class State {
 
 public:
     State(void);
-   ~State(void);
+    void normalize(double *tpsi, int istate);
+    void normalize(std::complex<double> *tpsi, int istate);
+
+    // kpoint this state is attached to
+    Kpoint<StateType> *Kptr;
+
+    //void normalize(void);
 
     // Storage area for the orbital
     StateType *psi;
@@ -45,15 +51,11 @@ public:
     double eig[2];
     double oldeig[2];
 
-
     // Index of the orbital 
     int istate;
 
     // Occupation of the orbital
     double occupation[2];
-
-    // Index showing which k-point this orbital is associated with
-    int kidx;
 
     void set_storage(StateType *storage);
 

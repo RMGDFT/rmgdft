@@ -4,7 +4,10 @@ Main.cpp
 AppNls.cpp
 Kpoint.cpp
 State.cpp
-#scf.cpp
+Relax.cpp
+Quench.cpp
+Scf.cpp
+scf.c
 pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
@@ -91,7 +94,6 @@ rmg_lbfgs.c
 test_overlap.c
 assign_weight2.c
 write_avgv.c
-scf.c
 move_ions.c
 ranv.c
 init_wf.c
