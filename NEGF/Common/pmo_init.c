@@ -55,6 +55,7 @@ void pmo_init ()
     my_malloc( pmo.mxlocc_cond, ct.num_blocks, int);
     my_malloc( pmo.diag_begin, ct.num_blocks, int);
     my_malloc( pmo.offdiag_begin, ct.num_blocks, int);
+    my_malloc( pmo.lowoffdiag_begin, ct.num_blocks, int);
 
     my_malloc( pmo.mxllda_lead, cei.num_probe, int);
     my_malloc( pmo.mxlocc_lead, cei.num_probe, int);
@@ -231,33 +232,12 @@ void pmo_init ()
         pmo.ntot += pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i];
     }
 
-
-    /* Initialize the array descriptors for the offdiagonal block  */
-	/* which is between the conductor and the lead */
-/*
-    for(iprobe = 1; iprobe <=cei.num_probe; iprobe++)
+    pmo.lowoffdiag_begin[0] = pmo.ntot;
+    for(i = 1; i < ct.num_blocks-1; i++)
     {
-
-        j = cei.probe_in_block[iprobe - 1];
-
-        numst = lcr[iprobe].num_states;
-        mxllda = ct.block_dim[j];
-
-        idx = j + (iprobe - 1) * ct.num_blocks;
-        desca = &pmo.desc_cond_lead[ idx * DLEN];
-
-
-    	DESCINIT (desca, &ct.block_dim[j], &numst, &nb, &nb, &rsrc, &csrc, 
-                   &pmo.ictxt[pmo.myblacs], &mxllda, &info);
-        if (info != 0)
-        {
-            printf (" distribute_mat: DESCINIT, info=%d\n", info);
-            fflush (NULL);
-            exit (0);
-        } 
-
+        pmo.lowoffdiag_begin[i] = pmo.lowoffdiag_begin[i-1] + pmo.mxllda_cond[i] * pmo.mxlocc_cond[i-1];
     }
-*/
+
 
     for(iprobe = 1; iprobe <=cei.num_probe; iprobe++)
     {

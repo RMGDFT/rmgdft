@@ -1195,9 +1195,9 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
         /* Compute coefficients for this grid spacing */
         cc = (-FOUR_t / THREE_t) * (ihx + ihy + ihz);
 
-        fcx = FIVE_t * ihx + (cc / EIGHT_t);
-        fcy = FIVE_t * ihy + (cc / EIGHT_t);
-        fcz = FIVE_t * ihz + (cc / EIGHT_t);
+        fcx = FIVE_t/SIX_t * ihx + (cc / EIGHT_t);
+        fcy = FIVE_t/SIX_t * ihy + (cc / EIGHT_t);
+        fcz = FIVE_t/SIX_t * ihz + (cc / EIGHT_t);
 
         ecxy = (ONE_t / TWELVE_t) * (ihx + ihy);
         ecxz = (ONE_t / TWELVE_t) * (ihx + ihz);

@@ -38,16 +38,28 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
 
     ntot = pmo.ntot;
 
+//  add matrix of lower triangle blocks 
+    for(i=1; i< ct.num_blocks; i++)
+    {
+        ntot += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i-1];
+    }
+
+
+
+//  H_tri store the matrix of diagonal, upper offdiag for all blocks
+//  then the lower offdiag blocks.
 
     /* allocate matrix and initialization  */
     my_malloc_init( H_tri, ntot, complex double );
  
+    matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
+
 
     /* Construct H = ES - H */
-    for (i = 0; i < ntot; i++)
-    {
-        H_tri[i] = ene * Stri[i] - Htri[i] * Ha_eV;
-    }
+//    for (i = 0; i < ntot; i++)
+ //   {
+  //      H_tri[i] = ene * Stri[i] - Htri[i] * Ha_eV;
+   // }
 
 	
     /* put the sigma for a probe in the corresponding block 

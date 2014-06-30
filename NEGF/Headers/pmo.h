@@ -27,6 +27,7 @@ struct parallel_matrix_operation
         
     int *diag_begin; /* start address of the diagonal blocks in Htri ...*/
     int *offdiag_begin; /* start address of the diagonal blocks in Htri ...*/
+    int *lowoffdiag_begin;
     int ntot; /* size of distributed matrix Htri, ... */
 };
 typedef struct  parallel_matrix_operation parallel_matrix_operation;

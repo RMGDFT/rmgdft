@@ -45,6 +45,7 @@ matrix_inverse_anyprobe_p.c
 matrix_inverse_blocknm.c
 matrix_inverse_p.c
 matrix_kpoint.c
+matrix_kpoint_center.c
 matrix_kpoint_lead.c
 md.c
 min_distance_index.c
