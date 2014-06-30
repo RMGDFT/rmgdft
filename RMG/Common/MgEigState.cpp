@@ -17,23 +17,28 @@
 #include "transition.h"
 
 
-
-void ComputeEig(int n, double *A, double *B, double *C, double *D, double *rval)
+void CopyDoubleToFloat(int n, double *A, float *B)
 {
-    double s1[2];
-    s1[0] = 0.0;
-    s1[1] = 0.0;
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = (float)A[idx];
+}
 
-    for(int idx = 0;idx < n;idx++) {
-        s1[0] += A[idx] * B[idx];
-        s1[1] += C[idx] * D[idx];
-    }
+void CopyDoubleToFloat(int n, std::complex<double> *A, std::complex<float> *B)
+{
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = (std::complex<float>)A[idx];
+}
 
-    int length = 2;
-    global_sums (s1, &length, pct.grid_comm);
+void CopyFloatToDouble(int n, float *A, double *B)
+{
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = (double)A[idx];
+}
 
-    *rval = (s1[0] / (2.0 * s1[1]));
-
+void CopyFloatToDouble(int n, std::complex<float> *A, std::complex<double> *B)
+{
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = (std::complex<double>)A[idx];
 }
 
 void ComputeEig(int n, float *A, float *B, float *C, float *D, double *rval)
@@ -54,15 +59,15 @@ void ComputeEig(int n, float *A, float *B, float *C, float *D, double *rval)
 
 }
 
-void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::complex<double> *C, std::complex<double> *D, double *rval)
+void ComputeEig(int n, std::complex<float> *A, std::complex<float> *B, std::complex<float> *C, std::complex<float> *D, double *rval)
 {
     std::complex<double> s1[2];
     s1[0] = 0.0 * s1[0];
     s1[1] = 0.0 * s1[1];
 
     for(int idx = 0;idx < n;idx++) {
-        s1[0] = s1[0] + A[idx] * B[idx] + A[idx] * std::conj(B[idx]);
-        s1[1] = s1[1] + C[idx] * D[idx] + C[idx] * std::conj(D[idx]);
+        s1[0] = (std::complex<double>)s1[0] + (std::complex<double>)A[idx] * (std::complex<double>)B[idx] + (std::complex<double>)A[idx] * std::conj((std::complex<double>)B[idx]);
+        s1[1] = s1[1] + (std::complex<double>)C[idx] * (std::complex<double>)D[idx] + (std::complex<double>)C[idx] * std::conj((std::complex<double>)D[idx]);
     }
 
     int length = 4;
@@ -72,15 +77,16 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 
 }
 
+
 extern STATE *states;
 
-using namespace std;
 
 static std::mutex vtot_sync_mutex;
 
-//template void MgEigState<std::complex<double> >(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
+template void MgEigState<double,float>(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
+//template void MgEigState<std::complex<double>, std::complex<float> >(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
 
-template <typename OrbitalType>
+template <typename OrbitalType, typename CalcType>
 void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi)
 {
 
@@ -89,18 +95,15 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
     int idx, cycles, P0_BASIS;
     int nits, pbasis, sbasis;
     double eig, diag, t1, t2, t3, t4;
-    double *work1, *nv, *ns, *res2;
-    double *tmp_psi, *res, *saved_psi;
+    double *work1, *nv, *ns;
+    double *res;
     double *nvtot_psi;
-    OrbitalType *tmp_psi_t, *work2_t, *res_t, *res2_t, *sg_psi_t;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
     int dimx, dimy, dimz, levels, potential_acceleration;
     double hxgrid, hygrid, hzgrid, sb_step;
-    OrbitalType *sg_twovpsi_t, *work1_t;
     Mgrid MG(L, T);
-
 
     P0_BASIS = G->get_P0_BASIS(1);
 
@@ -121,28 +124,28 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
     sbasis = sp->sbasis;
 
     /* Grab some memory */
-    res2_t = new OrbitalType[sbasis];
-    work2_t = new OrbitalType[4 * sbasis];
-    work1_t = new OrbitalType[4 * sbasis];
+    CalcType *res2_t = new CalcType[sbasis];
+    CalcType *work2_t = new CalcType[4 * sbasis];
+    CalcType *work1_t = new CalcType[4 * sbasis];
     work1 = new double[4 * sbasis];
 
-    sg_psi_t = new OrbitalType[sbasis];
+    CalcType *sg_psi_t = new CalcType[sbasis];
     res = new double[sbasis];
-    sg_twovpsi_t = new OrbitalType[sbasis];
+    CalcType *sg_twovpsi_t = new CalcType[sbasis];
 
-    res2 = new double[sbasis];
-    saved_psi = new double[sbasis];
+    CalcType *res2 = new CalcType[sbasis];
+    OrbitalType *saved_psi = new OrbitalType[sbasis];
     nvtot_psi = new double[sbasis];
-    tmp_psi_t = new OrbitalType[sbasis];
-    res_t = new OrbitalType[sbasis];
+    CalcType *tmp_psi_t = new CalcType[sbasis];
+    CalcType *res_t = new CalcType[sbasis];
 
-    tmp_psi = sp->psiR;
+    OrbitalType *tmp_psi = (OrbitalType *)sp->psiR;
 
 
     if(ct.eig_parm.mucycles > 1)
         mix_betaxpsi1(sp);
 
-    /* Get the non-local operator and S acting on psi (nv and ns, respeget_vel()y) */
+    /* Get the non-local operator and S acting on psi (nv and ns, respectfully) */
     nv = &pct.nv[sp->istate * P0_BASIS]; 
     ns = &pct.ns[sp->istate * P0_BASIS]; 
 
@@ -155,13 +158,11 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     RmgTimer *RT1 = new RmgTimer("Mg_eig: app_cir");
-    CPP_app_cir_driver<OrbitalType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    CPP_app_cir_driver<CalcType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
     delete(RT1);
 
     // Copy double precision psi into single precison array
-    for(idx = 0;idx < pbasis;idx++) {
-        tmp_psi_t[idx] = (OrbitalType)tmp_psi[idx];
-    }
+    CopyDoubleToFloat(pbasis, tmp_psi, tmp_psi_t);
 
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
@@ -182,7 +183,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
         /* Apply Mehrstellen left hand operators */
         RT1 = new RmgTimer("Mg_eig: app_cil");
-        diag = CPP_app_cil_driver<OrbitalType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        diag = CPP_app_cil_driver<CalcType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         delete(RT1);
 
         diag = -1.0 / diag;
@@ -204,12 +205,12 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
         /* B operating on 2*V*psi stored in work1 */
         RT1 = new RmgTimer("Mg_eig: app_cir");
-        CPP_app_cir_driver<OrbitalType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        CPP_app_cir_driver<CalcType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
         for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 
 
-        OrbitalType tscal = -ONE;
+        CalcType tscal = -ONE;
         QMD_axpy (pbasis, tscal, work2_t, ione, work1_t, ione);
 
         /* If this is the first time through compute the eigenvalue */
@@ -252,24 +253,24 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
         {
 
 
-            t1 = TWO * eig;
+            CalcType f1(TWO * eig);
             for (idx = 0; idx <P0_BASIS; idx++)
             {
 
-                res_t[idx] = t1 * res_t[idx] - work1_t[idx];
+                res_t[idx] = f1 * res_t[idx] - work1_t[idx];
 
             }
 
             /* Pack the residual data into multigrid array */
-            CPP_pack_ptos<OrbitalType> (sg_psi_t, res_t, dimx, dimy, dimz);
+            CPP_pack_ptos<CalcType> (sg_psi_t, res_t, dimx, dimy, dimz);
 
-            T->trade_images<OrbitalType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+            T->trade_images<CalcType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
 
 
             /* Smooth it once and store the smoothed residual in work1 */
             t1 = 145.0;
 
-            CPP_app_smooth<OrbitalType> (sg_psi_t, work1_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+            CPP_app_smooth<CalcType> (sg_psi_t, work1_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
 
             if(potential_acceleration) {
@@ -295,7 +296,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
              */
 
             t1 = -1.0;
-            CPP_pack_stop_axpy<OrbitalType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
+            CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 
 
         }
@@ -306,7 +307,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
             t1 = TWO * eig;
             t2 = ZERO;
             t4 = ct.eig_parm.gl_step * diag;
-
+#if 0
             for (idx = 0; idx <P0_BASIS; idx++)
             {
 
@@ -324,11 +325,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
                 sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
 
             }
-
+#endif
         }
 
     }                           /* end for */
-
 
     if(potential_acceleration) {
 
@@ -345,7 +345,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
             vtot_sync_mutex.lock();
             for(idx = 0;idx <P0_BASIS;idx++) {
-               vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi_t[idx] * (tmp_psi_t[idx] - saved_psi[idx]);
+               vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi_t[idx] * (tmp_psi_t[idx] - (CalcType)saved_psi[idx]);
             }
             vtot_sync_mutex.unlock();
 
@@ -365,10 +365,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
             }
 
             /* Pack delta_rho into multigrid array */
-            CPP_pack_ptos<OrbitalType> (sg_psi_t, res_t, dimx, dimy, dimz);
-            T->trade_images<OrbitalType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+            CPP_pack_ptos<CalcType> (sg_psi_t, res_t, dimx, dimy, dimz);
+            T->trade_images<CalcType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
             /* Smooth it once and store the smoothed charge in res */
-            CPP_app_smooth1<OrbitalType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+            CPP_app_smooth1<CalcType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
             // neutralize cell with a constant background charge
             t2 = 0.0;
@@ -397,7 +397,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
             for(idx = 0;idx <P0_BASIS;idx++) {
                 res_t[idx] = 0.0;
             }
-            CPP_pack_stop_axpy<OrbitalType> (sg_twovpsi_t, res_t, 1.0, dimx, dimy, dimz);
+            CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, res_t, 1.0, dimx, dimy, dimz);
             t1 = ct.potential_acceleration_poisson_step;
             if(sp->occupation[0] < 0.5) t1 = 0.0;
             vtot_sync_mutex.lock();
@@ -410,12 +410,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
     } // end if
 
+
     // Copy single precision orbital back to double precision
-    for(idx = 0;idx < pbasis;idx++) {
+    CopyFloatToDouble(pbasis, tmp_psi_t, tmp_psi);
 
-        tmp_psi[idx] = (double)tmp_psi_t[idx];
-
-    }
 
     /* Release our memory */
     delete [] res_t;
@@ -435,14 +433,13 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
 
 
-
 } // end MgEigState
 
 #include "transition.h"
 
 extern "C" void mg_eig_state(STATE *sp, int tid, double *vtot_psi)
 {
-    MgEigState<float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+    MgEigState<double,float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 }
 
 extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
@@ -455,7 +452,7 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
 
 #else
 
-        MgEigState<float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
+        MgEigState<double,float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
 
 
 #endif

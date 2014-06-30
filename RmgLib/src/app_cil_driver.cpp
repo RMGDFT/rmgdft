@@ -32,10 +32,11 @@
 #include "FiniteDiff.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
-
+#include <complex>
 
 template double CPP_app_cil_driver<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int);
 template double CPP_app_cil_driver<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int);
+template double CPP_app_cil_driver<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int);
 
 template <typename RmgType>
 double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)

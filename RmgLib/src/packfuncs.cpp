@@ -30,12 +30,15 @@
 
 
 #include "packfuncs.h"
+#include <complex>
 
 
 template void CPP_pack_stop<double>(double*, double*, int, int, int);
 template void CPP_pack_stop<float>(float*, float*, int, int, int);
+template void CPP_pack_stop<std::complex<float> >(std::complex<float>*, std::complex<float>*, int, int, int);
 template void CPP_pack_ptos<double>(double*, double*, int, int, int);
 template void CPP_pack_ptos<float>(float*, float*, int, int, int);
+template void CPP_pack_ptos<std::complex<float> >(std::complex<float> *, std::complex<float>*, int, int, int);
 
 template <typename RmgType>
 void CPP_pack_stop (RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)

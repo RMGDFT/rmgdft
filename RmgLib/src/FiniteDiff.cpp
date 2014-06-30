@@ -49,6 +49,7 @@ template void FiniteDiff::app_cir_sixth<std::complex<double> >(std::complex <dou
 
 template double FiniteDiff::app_cil_fourth<float>(float *, float *, int, int, int, double, double, double);
 template double FiniteDiff::app_cil_fourth<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app_cil_fourth<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app_cil_fourth<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
 template void FiniteDiff::app_cir_fourth<float>(float *, float *, int, int, int);

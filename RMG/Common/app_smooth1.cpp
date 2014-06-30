@@ -1,5 +1,6 @@
 
 #include "rmgtypes.h"
+#include <complex>
 
 
 /**
@@ -7,21 +8,24 @@
  Smooths f and returns result in work
 */
 template <typename RmgType>
+void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
+
+template void CPP_app_smooth1<std::complex<float> > (std::complex<float> *, std::complex<float> *, int , int , int );
+
+template <typename RmgType>
 void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz)
 {
 
     int iz, ix, iy, incx, incy;
     int ixs, iys, ixms, ixps, iyms, iyps;
 
-    rmg_double_t scale, ec, fc, crn, cc, temp;
+    RmgType scale, fc, cc, temp;
 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
 
     cc = 6.0;
     fc = 1.0;
-    ec = 0.0;
-    crn = 0.0;
     scale = 1.0 / 12.0;
 
 

@@ -50,6 +50,8 @@ template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int
 
 template void Mgrid::mgrid_solv<complex <double> >(complex<double>*, complex<double>*, complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
+template void Mgrid::mgrid_solv<complex <float> >(complex<float>*, complex<float>*, complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+
 //template void Mgrid::mgrid_solv<complex <float> >(complex<float>*, complex<float>*, complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 
