@@ -42,6 +42,9 @@ template <typename RmgType>
 void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
 template <typename RmgType>
 double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
+template <typename RmgType>
+void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
 
 
 #include "rmg_error.h"
@@ -82,6 +85,11 @@ public:
 
     template <typename RmgType>
     void app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
+
+    template <typename RmgType>
+    void app_gradient (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                               double gridhx, double gridhy, double gridhz);
+
 
 
 };
