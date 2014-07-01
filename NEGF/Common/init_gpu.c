@@ -80,7 +80,7 @@ void init_gpu (void)
 		exit(-1);
 	}
 
-	alloc = pmo.ntot * sizeof(complex double);
+	alloc = pmo.ntot_low * sizeof(complex double);
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Htri , alloc )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
 		exit(-1);
@@ -99,8 +99,12 @@ void init_gpu (void)
 	}
 
 	alloc = ntot_row * maxrow * sizeof(complex double);
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gtem , alloc ) ){
-		fprintf (stderr, "Error: cudaMalloc failed for: gpu_Gtem\n");
+	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Grow , alloc ) ){
+		fprintf (stderr, "Error: cudaMalloc failed for: gpu_Grow\n");
+		exit(-1);
+	}
+	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gcol , alloc ) ){
+		fprintf (stderr, "Error: cudaMalloc failed for: gpu_Grow\n");
 		exit(-1);
 	}
 
@@ -183,7 +187,8 @@ void finalize_gpu (void)
 
 	cublasDestroy(ct.cublas_handle);
 	cudaFree(ct.gpu_global_matrix);
-	cudaFree(ct.gpu_Gtem);
+	cudaFree(ct.gpu_Grow);
+	cudaFree(ct.gpu_Gcol);
 	cudaFree(ct.gpu_work1);
 	cudaFree(ct.gpu_work2);
 	cudaFree(ct.gpu_work3);

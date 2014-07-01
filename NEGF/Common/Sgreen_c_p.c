@@ -36,14 +36,7 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
     int idx, idx2, ioff, joff;
     
 
-    ntot = pmo.ntot;
-
-//  add matrix of lower triangle blocks 
-    for(i=1; i< ct.num_blocks; i++)
-    {
-        ntot += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i-1];
-    }
-
+    ntot = pmo.ntot_low;
 
 
 //  H_tri store the matrix of diagonal, upper offdiag for all blocks

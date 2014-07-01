@@ -69,10 +69,10 @@ void Sgreen_cuda (complex double * g,
     tsumt = ct.gpu_Gtri + nmax * nmax;
     t11 = ct.gpu_Gtri + 2 * nmax * nmax;
     t12 = ct.gpu_Gtri + 3 * nmax * nmax;
-    s1 = ct.gpu_Gtem;
-    s2 = ct.gpu_Gtem + nmax * nmax;
+    s1 = ct.gpu_Grow;
+    s2 = ct.gpu_Grow + nmax * nmax;
     ch0_cu = ct.gpu_temp;
-    ch1_cu = ct.gpu_Gtem + 2* nmax * nmax;
+    ch1_cu = ct.gpu_Grow + 2* nmax * nmax;
     tot_cu = ct.gpu_Hii;
     tott_cu = ct.gpu_Gii;
 

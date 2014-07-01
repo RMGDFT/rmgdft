@@ -504,7 +504,8 @@ typedef struct
 
 
     cuDoubleComplex *gpu_Htri, *gpu_Gtri;
-    cuDoubleComplex *gpu_Gtem;
+    cuDoubleComplex *gpu_Grow;
+    cuDoubleComplex *gpu_Gcol;
     cuDoubleComplex *gpu_Gii;
     cuDoubleComplex *gpu_Hii;
     cuDoubleComplex *gpu_Imatrix;

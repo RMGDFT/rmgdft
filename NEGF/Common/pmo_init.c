@@ -233,9 +233,11 @@ void pmo_init ()
     }
 
     pmo.lowoffdiag_begin[0] = pmo.ntot;
+    pmo.ntot_low = pmo.ntot + pmo.mxllda_cond[1] * pmo.mxlocc_cond[0];
     for(i = 1; i < ct.num_blocks-1; i++)
     {
         pmo.lowoffdiag_begin[i] = pmo.lowoffdiag_begin[i-1] + pmo.mxllda_cond[i] * pmo.mxlocc_cond[i-1];
+        pmo.ntot_low += pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i];
     }
 
 
