@@ -108,7 +108,7 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	    d = fabs (rho[idx]);
-	    if (d < SMALL && ct.scf_steps < 10)
+	    if (d < SMALL )
 	    {
 		    vxc[idx] = 0.0;
 		    exc[idx] = 0.0;

@@ -23,7 +23,7 @@ void xclda(rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
     {
 	d = fabs(rho[idx]);    /* use the absolute value of rho since intepolated charge may be negative*/    
         
-	if (d < SMALL && ct.scf_steps < 10)
+	if (d < SMALL )
 	{   
             vxc[idx]=0.0;
 	    exc[idx]=0.0;
