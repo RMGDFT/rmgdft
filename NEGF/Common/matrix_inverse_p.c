@@ -36,29 +36,34 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
     int *ipiv;
-    complex double *Hii, *Gii, *G_tem, *temp, *Hii1, *Gii0;
-    complex double mone, one, zero;
-    int ione = 1, *ntem_begin;
-    int ntot_row;
+    complex double *Hii, *Gii, *G_tem, *G_col, *temp, *Hlower, *Hupper, *Gii0;
+    complex double half, mone, one, zero;
+    int ione = 1, *ntem_begin, *ncol_begin;
+    int ntot_row, ntot_col;
     int maxrow, maxcol;
     int *desca, *descb, *descc, *descd;
+    int *desce, *descf, *descg, *desch;
+    int *desci, *descj, *desck, *descl;
     int *ni, N;
 
         ni = ct.block_dim;
         N = ct.num_blocks;
     mone = -1.0;
     one = 1.0;
+    half = 0.5;
     zero = 0.0;
 
 /*  find the maximum dimension of the blocks  */
 
 
     ntot_row = 0;
+    ntot_col = 0;
     maxrow=0;
     maxcol=0;
     for (i = 0; i < ct.num_blocks; i++)
     {
         ntot_row += pmo.mxllda_cond[i];
+        ntot_col += pmo.mxlocc_cond[i];
         maxrow = max(maxrow, pmo.mxllda_cond[i]);
         maxcol = max(maxcol, pmo.mxlocc_cond[i]);
 
@@ -68,10 +73,12 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
 
     my_malloc_init( ntem_begin, ct.num_blocks, int);
+    my_malloc_init( ncol_begin, ct.num_blocks, int);
     my_malloc_init( Hii, maxrow * maxcol, complex double );
     my_malloc_init( Gii, maxrow * maxcol, complex double );
     my_malloc_init( temp, maxrow * maxcol, complex double );
     my_malloc_init( G_tem, ntot_row * maxcol, complex double );
+    my_malloc_init( G_col, ntot_col * maxrow, complex double );
 
 
     /*
@@ -79,9 +86,11 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
      */
 
     ntem_begin[0] = 0;
+    ncol_begin[0] = 0;
     for (i = 1; i < ct.num_blocks; i++)
     {
         ntem_begin[i] = ntem_begin[i - 1] + pmo.mxllda_cond[i - 1] * maxcol;
+        ncol_begin[i] = ntem_begin[i - 1] + pmo.mxlocc_cond[i - 1] * maxrow;
     }
 
     /*  calculate the inverse of the first block  */
@@ -102,9 +111,10 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     for (i = 0; i < N - 1; i++)
     {
         /* get the interaction  Hi,i+1  from input H_tri 
-         * Hii1 is a pointer only
+         * Hupper is a pointer only
          */
-        Hii1 = &H_tri[pmo.offdiag_begin[i] ];
+        Hupper = &H_tri[pmo.offdiag_begin[i] ];
+        Hlower = &H_tri[pmo.lowoffdiag_begin[i] ];
         Gii0 = &G_tri[pmo.diag_begin[i] ];
 
         /* Hii now has the matrix Hi+1,i+1  */
@@ -125,10 +135,10 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         descc = &pmo.desc_cond[ (i+1 +     i * ct.num_blocks) * DLEN];
         descd = &pmo.desc_cond[ (i+1 + (i+1) * ct.num_blocks) * DLEN];
 
-        PZGEMM ("T", "N", &n1, &n2, &n2, &one, Hii1, &ione, &ione, desca,
+        PZGEMM ("N", "N", &n1, &n2, &n2, &one, Hlower, &ione, &ione, descc,
                 Gii0, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
         PZGEMM ("N", "N", &n1, &n1, &n2, &mone, temp, &ione, &ione, descc,
-                Hii1, &ione, &ione, desca, &one, Hii, &ione, &ione, descd);
+                Hupper, &ione, &ione, desca, &one, Hii, &ione, &ione, descd);
 
 
         /* now Hii store the matrix Hi+1,i+1 - Hi+1,i * Gii^0 * Hi,i+1
@@ -146,21 +156,30 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         n2 = ni[i + 1];
         n3 = pmo.offdiag_begin[i];
 
+        /* temp = Hi+1,i * Gii^0  eq. 11 for j = I term*/
+        PZGEMM ("N", "N", &n2, &n1, &n1, &mone, Hlower, &ione, &ione, descc,
+                Gii0, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+
+        PZGEMM ("N", "N", &n2, &n1, &n2, &one, &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descd,
+                temp, &ione, &ione, descc, &zero, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &ione, descc);
+
+        n4 = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i + 1];
+        zcopy(&n4, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &G_col[ntem_begin[i]], &ione); 
+
         /* temp = Gii^0 * Hi,i+1 */
         PZGEMM ("N", "N", &n1, &n2, &n1, &mone, Gii0, &ione, &ione, descb,
-                Hii1, &ione, &ione, desca, &zero, temp, &ione, &ione, desca);
+                Hupper, &ione, &ione, desca, &zero, temp, &ione, &ione, desca);
 
         /* G(i,i+1) = temp * G(i+1,i+1)  also == G_tem(i,i+1)  */
         PZGEMM ("N", "N", &n1, &n2, &n2, &one, temp, &ione, &ione, desca,
                 Gii, &ione, &ione, descd, &zero, &G_tri[n3], &ione, &ione, desca);
 
-        n4 = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i + 1];
         zcopy (&n4, &G_tri[n3], &ione, &G_tem[ntem_begin[i]], &ione);
 
         /* update Gii  */
 
-        PZGEMM ("N", "T", &n1, &n1, &n2, &one, temp, &ione, &ione, desca,
-                &G_tri[n3], &ione, &ione, desca, &one, &G_tri[pmo.diag_begin[i]], &ione, &ione, descb);
+        PZGEMM ("N", "N", &n1, &n1, &n2, &one, temp, &ione, &ione, desca,
+                &G_tri[pmo.lowoffdiag_begin[i]], &ione, &ione, descc, &one, &G_tri[pmo.diag_begin[i]], &ione, &ione, descb);
 
         for (j = i - 1; j >= 0; j--)
         {
@@ -174,43 +193,85 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
             n7 = ntem_begin[j + 1];     /* starting address of Gtem(j+1,*) in G_tem */
             n8 = ni[j + 1];     /* dimension of block j+1 */
 
+            desca = &pmo.desc_cond[ ( j   +  i    * ct.num_blocks) * DLEN];
+            descb = &pmo.desc_cond[ ( i   + (i+1) * ct.num_blocks) * DLEN];
+            descc = &pmo.desc_cond[ ( j   + (i+1) * ct.num_blocks) * DLEN];
+            descd = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
+            desce = &pmo.desc_cond[ ( i   +  j    * ct.num_blocks) * DLEN];
+            descf = &pmo.desc_cond[ ( i+1 +  j    * ct.num_blocks) * DLEN];
+            descg = &pmo.desc_cond[ ( i+1 + (i+1) * ct.num_blocks) * DLEN];
+            desch = &pmo.desc_cond[ ( j   +  j    * ct.num_blocks) * DLEN];
+            desci = &pmo.desc_cond[ ( i+1 + (j+1) * ct.num_blocks) * DLEN];
+            descj = &pmo.desc_cond[ ( j   + (j+1) * ct.num_blocks) * DLEN];
+            desck = &pmo.desc_cond[ ( j+1 + (j+1) * ct.num_blocks) * DLEN];
+            descl = &pmo.desc_cond[ ( j+1 + (j+1) * ct.num_blocks) * DLEN];
+
+
+            /* gpu_Gii = -Hi+1,i * G0(i,j)   */
+
+            PZGEMM ("N", "N", &n3, &n1, &n2, &mone, Hlower, &ione, &ione, descd,
+                    &G_col[ncol_begin[j]], &ione, &ione, desce, &zero, Gii, &ione, &ione, descf);
+
+            /*  G(I+1, j) = G(I+1, I+1) * gpu_Gii  eq. 11 */
+            PZGEMM ("N", "N", &n3, &n1, &n3, &one, &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descg,
+                    Gii, &ione, &ione, descf, &zero, &G_col[ncol_begin[j]], &ione, &ione, descf);
+
+
             /* temp = -G0(j,i) * Hi,i+1  */
-            desca = &pmo.desc_cond[ ( j + i * ct.num_blocks) * DLEN];
-            descb = &pmo.desc_cond[ ( i + (i+1) * ct.num_blocks) * DLEN];
-            descc = &pmo.desc_cond[ ( j + (i+1) * ct.num_blocks) * DLEN];
-
             PZGEMM ("N", "N", &n1, &n3, &n2, &mone, &G_tem[n4], &ione, &ione, desca,
-                    Hii1, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+                    Hupper, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
 
-            /* G0(j, i+1) = temp * G(i+1,i+1) */
+            /* G0(j, i+1) = temp * G(i+1,i+1) eq 8 */
 
-            desca = &pmo.desc_cond[ ( j + (i+1) * ct.num_blocks) * DLEN];
-            descb = &pmo.desc_cond[ ( i+1 + (i+1) * ct.num_blocks) * DLEN];
-            PZGEMM ("N", "N", &n1, &n3, &n3, &one, temp, &ione, &ione, desca,
-                    Gii, &ione, &ione, descb, &zero, &G_tem[n4], &ione, &ione, desca);
+            PZGEMM ("N", "N", &n1, &n3, &n3, &one, temp, &ione, &ione, descc,
+                    &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descg, &zero, &G_tem[n4], &ione, &ione, descc);
 
-            /* G(j,j) = G0(j,j) + temp * G(i+1,j) */
-            desca = &pmo.desc_cond[ ( j + (i+1) * ct.num_blocks) * DLEN];
-            descb = &pmo.desc_cond[ ( j + j * ct.num_blocks) * DLEN];
-            PZGEMM ("N", "T", &n1, &n1, &n3, &one, temp, &ione, &ione, desca, 
-                    &G_tem[n4], &ione, &ione, desca, &one, &G_tri[n5], &ione, &ione, descb);
+            /* G(j,j) = G0(j,j) + temp * G(i+1,j) eq.9  */
 
-            /* G(j,j+1) = G0(j,j+1) + temp * G(i+1,j+1)  */
-            desca = &pmo.desc_cond[ ( j + (i+1) * ct.num_blocks) * DLEN];
-            descb = &pmo.desc_cond[ ( j+1 + (i+1) * ct.num_blocks) * DLEN];
-            descc = &pmo.desc_cond[ ( j + (j+1) * ct.num_blocks) * DLEN];
-            PZGEMM ("N", "T", &n1, &n8, &n3, &one, temp, &ione, &ione, desca, 
-                    &G_tem[n7], &ione, &ione, descb, &one, &G_tri[n6],
-                    &ione, &ione, descc);
+            PZGEMM ("N", "N", &n1, &n1, &n3, &one, temp, &ione, &ione, descc, 
+                    &G_col[ncol_begin[j]], &ione, &ione, descf, &one, &G_tri[n5], &ione, &ione, desch);
+
+            /* G(j,j+1) = G0(j,j+1) + temp * G(i+1,j+1) eq. 10 */
+            PZGEMM ("N", "N", &n1, &n8, &n3, &one, temp, &ione, &ione, descc, 
+                    &G_col[ncol_begin[j+1]], &ione, &ione, desci, &one, &G_tri[n6],
+                    &ione, &ione, descj);
+
+            /* G(j,j+1) = G0(j,j+1) + temp * G(i+1,j+1)  eq. 12 */
+            PZGEMM ("N", "N", &n8, &n1, &n3, &one, &G_tem[n7], &ione, &ione, desck, 
+                    Gii, &ione, &ione, descf, &one, &G_tri[pmo.lowoffdiag_begin[j]],
+                    &ione, &ione, descl);
+
         }                       /* end for (j--) */
 
     }                           /* end  for(i = 0; i < N-1; i++) */
 
+    for(i = 0; i < ct.num_blocks - 1; i++)
+    {
+        n1 = ct.block_dim[i];
+        n2 = ct.block_dim[i+1];
+        n3 = pmo.offdiag_begin[i];
+        n4 = pmo.lowoffdiag_begin[i];
+
+        desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
+        descb = &pmo.desc_cond[ ( i+1 +  (i+1)  * ct.num_blocks) * DLEN];
+        descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
+        
+        pmo_unitary_matrix(Gii, descb);
+
+
+        PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
+                Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
+
+    }
+
+
 
     my_free( ntem_begin );
+    my_free( ncol_begin );
     my_free( ipiv );
     my_free( Hii );
     my_free( Gii );
     my_free( temp );
     my_free( G_tem );
+    my_free( G_col );
 }
