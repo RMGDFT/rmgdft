@@ -14,7 +14,8 @@ void *rmg_malloc(int n, size_t size )
 {
     void *ptr;
     if(NULL == (ptr = malloc(n * size))) {
-           rmg_error_handler("can't allocate memory");
+           printf("\n memory size required %d x %d", n, size);
+           rmg_error_handler("can't allocate memory malloc ");
     }
     return ptr;
 }
@@ -23,7 +24,8 @@ void *rmg_malloc_init(int n, size_t size, char *type )
 {
     void *ptr;
     if(NULL == (ptr = malloc(n * size))) {
-           rmg_error_handler("can't allocate memory");
+            printf("\n memory size required %d x %d", n, size);
+           rmg_error_handler("can't allocate memory malloc_init " );
     }
     rmg_alloc_initialize (ptr, n, type);
     return ptr;
@@ -33,7 +35,8 @@ void *rmg_calloc(int n, size_t size )
 {
     void *ptr;
     if(NULL == (ptr = calloc(n, size))) {
-           rmg_error_handler("can't allocate memory");
+            printf("\n memory size required %d x %d", n, size);
+           rmg_error_handler("can't allocate memory calloc ");
     }
     return ptr;
 }

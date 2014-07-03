@@ -21,13 +21,14 @@
 void pmo_init ()
 {
 
-    int ndims, *pmap, dims[2], periods[2], reorder, coords[2], *ictxt, i;
+    int ndims, *tgmap, *pmap, dims[2], periods[2], reorder, coords[2], *ictxt, i;
     int myrank, mxllda, *desca, info;
     int iprobe, rsrc =0, csrc =0, maxblocks, nblocks, numst;
     int idx, nb, mycol, myrow, nprow, npcol;
     int ip, j;
     int izero = 0;
     int remains[2];
+    MPI_Group grp_world, grp_this;
    
  
     pmo.npe_energy = NPES/pmo.nrow/pmo.ncol; 
@@ -69,6 +70,7 @@ void pmo_init ()
     my_malloc( pmo.desc_cond, idx * DLEN, int);
 
     my_malloc(pmap, pmo.nrow * pmo.ncol, int);
+    my_malloc(tgmap, pmo.nrow * pmo.ncol, int);
 
     if( dims[1] * dims[0] != NPES) 
     {
@@ -78,7 +80,7 @@ void pmo_init ()
     }
 
 
-    MPI_Cart_create(MPI_COMM_WORLD, ndims, &dims[0], &periods[0], reorder, &COMM_EN);
+    MPI_Cart_create(pct.grid_comm, ndims, &dims[0], &periods[0], reorder, &COMM_EN);
 
 
     MPI_Cart_get(COMM_EN, ndims, dims, periods, coords);
@@ -96,6 +98,9 @@ void pmo_init ()
 
     pmo.myblacs = coords[0];
 
+    MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
+    MPI_Comm_group (pct.grid_comm, &grp_this);
+
 
     for(ip =0; ip < pmo.npe_energy; ip++)
     {
@@ -106,8 +111,12 @@ void pmo_init ()
 
             coords[1] = i;
             MPI_Cart_rank( COMM_EN, coords, &myrank);
-            pmap[i] = myrank;
+            tgmap[i] = myrank;
         }
+
+
+        MPI_Group_translate_ranks (grp_this, dims[1], tgmap, grp_world, pmap);
+
 
         Cblacs_get(0, 0, &pmo.ictxt[ip] ); 
         Cblacs_gridmap( &pmo.ictxt[ip], pmap, pmo.nrow, pmo.nrow, pmo.ncol);

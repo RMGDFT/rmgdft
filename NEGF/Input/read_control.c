@@ -164,25 +164,17 @@ void read_control (char *file)
     ct.background_charge *= -1.0;
 
 
-    get_data ("kpoints_per_processor", &pct.pe_kpoint, INT, "1");
     get_data ("Hamiltonia_processor_grid", tbuf, STR, "1 1");
     pct.scalapack_nprow = strtol(tbuf, &tbuf, 10);
     pct.scalapack_npcol = strtol(tbuf, &tbuf, 10);
 
-    if(NPES < pct.pe_kpoint * pct.scalapack_nprow * pct.scalapack_npcol)
+    if(NPES < pct.scalapack_nprow * pct.scalapack_npcol)
     {
         printf("\n NPES = %d", NPES);
       printf("\n pct.pe_kpoint, pct.scalapack_nprow, pct.scalapack_npcol = %d %d %d",pct.pe_kpoint, pct.scalapack_nprow, pct.scalapack_npcol);
         error_handler("bad decomposion of processor grid");
     }
 
-
-    MPI_Comm_size (MPI_COMM_WORLD, &mpi_nprocs);
-    if(NPES != mpi_nprocs) 
-    {
-        printf("\n NPES, mpi_nproc %d %d", NPES, mpi_nprocs);
-        error_handler("bad NPES: job and input not match");
-    }
 
 
 

@@ -106,7 +106,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
             psi1 = states[st1].psiR;
 
             MPI_Sendrecv (psi1, size1, MPI_DOUBLE, proc1, i, psi2, size2,
-                    MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
+                    MPI_DOUBLE, proc2, i, pct.grid_comm, &mstatus);
 
             old_psi = states[st2].psiR;
             states[st2].psiR = psi2;
@@ -170,7 +170,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
                 st2 = recv_from[loop * state_per_proc + i + 2];
                 size2 = states[st2].size;
 
-                MPI_Recv (psi2, size2, MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
+                MPI_Recv (psi2, size2, MPI_DOUBLE, proc2, i, pct.grid_comm, &mstatus);
 
                 old_psi = states[st2].psiR;
                 states[st2].psiR = psi2;
@@ -233,7 +233,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
                 st1 = send_to[loop * state_per_proc + i + 2];
                 size1 = states[st1].size;
                 psi1 = states[st1].psiR;
-                MPI_Send (psi1, size1, MPI_DOUBLE, proc1, i, MPI_COMM_WORLD);
+                MPI_Send (psi1, size1, MPI_DOUBLE, proc1, i, pct.grid_comm);
             }
 
         my_barrier ();

@@ -226,7 +226,7 @@ void get_cond_dos_test (STATE * states)
 
 
 
-    MPI_Barrier (MPI_COMM_WORLD);
+    MPI_Barrier (pct.grid_comm);
 
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
@@ -248,7 +248,7 @@ void get_cond_dos_test (STATE * states)
         }
 
         idx = ntot;
-        MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe, MPI_COMM_WORLD);
+        MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe, pct.grid_comm);
 
         get_new_rho_soft (states, rho);
 

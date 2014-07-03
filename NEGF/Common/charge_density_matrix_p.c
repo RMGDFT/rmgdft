@@ -339,7 +339,9 @@ void charge_density_matrix_p (complex double * sigma_all)
 
 
     for (st1 = 0; st1 < ntot; st1++)
-        lcr[0].density_matrix_tri[st1] /= PI;
+        lcr[0].density_matrix_tri[st1] *= ct.kp[pct.kstart].kweight /PI ;
+
+    comm_sums (lcr[0].density_matrix_tri, &ntot, pct.kpsub_comm);
 
     EndRmgTimer(RT);
 

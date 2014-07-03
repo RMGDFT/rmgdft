@@ -128,10 +128,10 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
 
 
         MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
-                      MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                      MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
         MPI_Sendrecv(partial_kbpsi, size, MPI_DOUBLE, proc1, idx, partial_kbpsi_comm, size, 
-                      MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                      MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
         for (st1 = state_begin[proc]; st1 < state_end[proc]; st1++)

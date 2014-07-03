@@ -28,6 +28,7 @@ void find_fermi (complex double * sigma_all)
     int fermi_step, st1, st2;
     rmg_double_t tem1, tem2, bias1, bias2, bias1a, bias2a, tchargea;
     rmg_double_t *matrix_SxRHO;
+    double tem3;
     int ntot, i;
     int ione = 1;
 
@@ -53,7 +54,7 @@ void find_fermi (complex double * sigma_all)
         }
 
         set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
-        sigma_all_energy_point (sigma_all, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
+        sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
         charge_density_matrix_p (sigma_all);
 
@@ -68,7 +69,7 @@ void find_fermi (complex double * sigma_all)
 
 
         if (pct.gridpe == 0)
-            printf ("\n total charge, %f %f \n Fermi energy %16.10f %16.10f",
+            printf ("\n total charge, %18.12f %18.12f \n Fermi energy %16.10f %16.10f",
                     ct.nel, ct.tcharge, bias1, bias2);
 
 
@@ -90,8 +91,11 @@ void find_fermi (complex double * sigma_all)
         }
         else
         {
-            tem1 = bias1a - (bias1a - bias1) / (tchargea - ct.tcharge) * (tchargea - ct.nel);
-            tem2 = bias2a - (bias2a - bias2) / (tchargea - ct.tcharge) * (tchargea - ct.nel);
+       //     tem3 = (tchargea - ct.nel) / (tchargea - ct.tcharge);
+            //tem1 = bias1a - (bias1a - bias1) *tem3;
+            //tem2 = bias2a - (bias2a - bias2) *tem3;
+            tem1 = bias1a - (bias1a - bias1) /(tchargea - ct.tcharge) * (tchargea - ct.nel);
+            tem2 = bias2a - (bias2a - bias2)  /(tchargea - ct.tcharge) * (tchargea - ct.nel);
             tchargea = ct.tcharge;
             bias1a = bias1;
             bias2a = bias2;
@@ -108,7 +112,7 @@ void find_fermi (complex double * sigma_all)
     my_free(matrix_SxRHO);
     set_energy_weight (lcr[1].ene, lcr[1].weight, bias1, &lcr[1].nenergy);
 
-    sigma_all_energy_point (sigma_all, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
+    sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
     lcr[1].EF_new = bias1;
     lcr[2].EF_new = bias2;

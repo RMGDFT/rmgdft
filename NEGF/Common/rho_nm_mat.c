@@ -85,7 +85,7 @@ void rho_nm_mat (double *Aij, rmg_double_t * global_mat_X)
 
 
         MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
-                      MPI_DOUBLE, proc2, idx, MPI_COMM_WORLD, &mstatus);
+                      MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
         for (st1 = state_begin[proc]; st1 < state_end[proc]; st1++)

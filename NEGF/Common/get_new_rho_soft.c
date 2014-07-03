@@ -91,7 +91,7 @@ void get_new_rho_soft (STATE * states, double *rho)
             size2 = states[st2].size;
 
             MPI_Sendrecv (psi1, size1, MPI_DOUBLE, proc1, i, psi2, size2,
-                    MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
+                    MPI_DOUBLE, proc2, i, pct.grid_comm, &mstatus);
 
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
@@ -112,7 +112,7 @@ void get_new_rho_soft (STATE * states, double *rho)
             {
                 st2 = recv_from[loop * state_per_proc + i + 2];
                 size2 = states[st2].size;
-                MPI_Recv (psi2, size2, MPI_DOUBLE, proc2, i, MPI_COMM_WORLD, &mstatus);
+                MPI_Recv (psi2, size2, MPI_DOUBLE, proc2, i, pct.grid_comm, &mstatus);
                 for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
                 {
 
@@ -133,7 +133,7 @@ void get_new_rho_soft (STATE * states, double *rho)
                 st1 = send_to[loop * state_per_proc + i + 2];
                 psi1 = states[st1].psiR;
                 size1 = states[st1].size;
-                MPI_Send (psi1, size1, MPI_DOUBLE, proc1, i, MPI_COMM_WORLD);
+                MPI_Send (psi1, size1, MPI_DOUBLE, proc1, i, pct.grid_comm);
             }
 
         my_barrier ();

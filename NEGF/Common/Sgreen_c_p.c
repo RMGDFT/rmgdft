@@ -45,7 +45,7 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
     /* allocate matrix and initialization  */
     my_malloc_init( H_tri, ntot, complex double );
  
-    matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[0].kpt[1], ct.kp[0].kpt[2]);
+    matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
 
     /* Construct H = ES - H */

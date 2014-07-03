@@ -50,43 +50,6 @@ void init_pe_on (void)
     MPI_Comm_size (pct.grid_comm, &npes);
 
     /* Create a Cartisian topology for parallel in kpoint */
-    ndims = 2;
-    dims[0] = pct.pe_kpoint;
-    dims[1] = npes / dims[0];
-    periods[0] = 1;
-    periods[1] = 1;
-    reorder = 1;
-    MPI_Cart_create (MPI_COMM_WORLD, ndims, &dims[0], &periods[0], reorder, &COMM_KP);
-
-    /* get the coordinate of the processor in COMM_KP */
-    MPI_Cart_get (COMM_KP, ndims, &dims[0], &periods[0], &coords[0]);
-
-    pct.coords[0] = coords[0];
-    pct.coords[1] = coords[1];
-    if (pct.pe_kpoint == 1)
-        pct.coords[1] = pct.gridpe;
-    /* determine the lower and upper bounds 
-     *  of K-point for each group of processors
-     */
-
-    kpdelta = (ct.num_kpts + dims[0] - 1) / dims[0];
-    pct.kstart = coords[0] * kpdelta;
-    pct.kend = pct.kstart + kpdelta;
-    if (pct.kend > ct.num_kpts)
-        pct.kend = ct.num_kpts;
-
-
-    /* Partition the communicator into subgroups 
-     * COMM_KPSUB1:  dims[0] communicators each with dims[1] processors
-     * COMM_KPSUB2:  dims[1] communicators each with dims[0] processors
-     */
-
-    remains[0] = 0;
-    remains[1] = 1;
-    MPI_Cart_sub (COMM_KP, remains, &COMM_KPSUB1);
-    remains[0] = 1;
-    remains[1] = 0;
-    MPI_Cart_sub (COMM_KP, remains, &COMM_KPSUB2);
 
 
 
@@ -99,7 +62,7 @@ void init_pe_on (void)
     periods[1] = 1;
     periods[2] = 1;
     reorder = 0;
-    MPI_Cart_create (MPI_COMM_WORLD, ndims, &dims[0], &periods[0], reorder, &COMM_3D);
+    MPI_Cart_create (pct.grid_comm, ndims, &dims[0], &periods[0], reorder, &COMM_3D);
 
     /* Partition the communicator COMM_3D  into subgroups 
      * COMM_PEX:  pey * pez communicators each with pex processors

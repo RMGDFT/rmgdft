@@ -81,7 +81,7 @@ void read_init(char *meta)
 
     if(tot_pe != pct.total_npes) 
     {
-        dprintf("\n require %d npes != %d from job", tot_pe, pct.total_npes);
+        dprintf("\n require %d npes != from job/pe_kpoint %d", tot_pe, pct.total_npes);
         exit(0);
     }
     if(num_image != pct.images) 
