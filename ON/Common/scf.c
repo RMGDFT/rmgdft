@@ -88,7 +88,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         tem1 += rho_old[idx] * rho_old[idx];
     }
 
-    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) ) /(double) get_FP0_BASIS();
+    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) )/ ((double) (ct.vh_nbasis));
     steps = ct.scf_steps;
     void *RT3 = BeginRmgTimer("2-SCF: pulay mix");
     pulay_rho_on (steps, get_FP0_BASIS(), rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
