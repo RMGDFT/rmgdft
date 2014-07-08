@@ -359,6 +359,8 @@ add_dependencies(rmg-negf libxc)
 find_package(LIBXC)
 if(NOT LIBXC_FOUND)
     execute_process(
+    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3.tar -C ${PROJECT_SOURCE_DIR}/lib )
+    execute_process(
     COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
     execute_process(
     COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure
