@@ -97,7 +97,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
     if (pct.gridpe == 0)
     {          
         sprintf (newname, "%s%s", pct.image_path[pct.thisimg], "pot_init.dat");
-        my_fopen (file, newname, "r");
+        my_fopen (file, newname, "w");
 
         for (ix = 0; ix < get_FNX_GRID(); ix++)
         {
