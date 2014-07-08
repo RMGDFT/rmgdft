@@ -80,7 +80,7 @@ void get_cond_frommatrix_kyz ()
 	//  set number of kpoint in x direction be 1, 
 	nkp[0] = 1;
 
-    if(cei.num_probe > 2 ) nkp[1] = 1;
+//    if(cei.num_probe > 2 ) nkp[1] = 1;
 	ntot = nkp[0] * nkp[1] * nkp[2];
 	printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 

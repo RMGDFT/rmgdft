@@ -37,7 +37,7 @@ template <typename StateType> class State {
 public:
     State(void);
     void normalize(double *tpsi, int istate);
-    void normalize(std::complex<double> *tpsi, int istate);
+    //void normalize(std::complex<double> *tpsi, int istate);
 
     // kpoint this state is attached to
     Kpoint<StateType> *Kptr;
