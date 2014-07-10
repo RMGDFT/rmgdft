@@ -50,8 +50,8 @@ void charge_density_matrix_p (complex double * sigma_all)
     }
 
     /*  allocate memory for green_C, grenn_C is tri-diagonal */
-    ntot = pmo.ntot_low;
-    my_malloc_init( green_C, ntot, complex double );
+    ntot = pmo.ntot;
+    my_malloc_init( green_C, pmo.ntot_low, complex double );
     my_malloc_init( sigma_idx, cei.num_probe, int );
 
     /*   Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
