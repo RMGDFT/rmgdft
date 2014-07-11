@@ -65,9 +65,9 @@ void init_parameter(STATE * states)
         ct.kp[kpt].kvec[1] = v2;
         ct.kp[kpt].kvec[2] = v3;
 
-        ct,kp[kpt][0] *= TWO * PI;
-        ct,kp[kpt][1] *= TWO * PI;
-        ct,kp[kpt][2] *= TWO * PI;
+        ct.kp[kpt].kpt[0] *= TWO * PI;
+        ct.kp[kpt].kpt[1] *= TWO * PI;
+        ct.kp[kpt].kpt[2] *= TWO * PI;
 
         ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
 
