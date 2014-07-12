@@ -51,13 +51,12 @@ void mix_betaxpsi1 (STATE *sp)
                 &pct.oldsintR_local[loffset + istate * ct.max_nl], size);
 
 
-#if !GAMMA_PT
+        if(!ct.is_gamma) {
+            my_scal( scale, &pct.oldsintI_local[loffset + istate * ct.max_nl], size);
+            my_axpy(1.0 - scale, &pct.newsintI_local[loffset + istate * ct.max_nl],
+                    &pct.oldsintI_local[loffset + istate * ct.max_nl], size);
 
-        my_scal( scale, &pct.oldsintI_local[loffset + istate * ct.max_nl], size);
-        my_axpy(1.0 - scale, &pct.newsintI_local[loffset + istate * ct.max_nl],
-                &pct.oldsintI_local[loffset + istate * ct.max_nl], size);
-
-#endif
+        }
 
     }
 }

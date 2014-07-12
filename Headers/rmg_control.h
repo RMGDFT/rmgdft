@@ -697,6 +697,8 @@ typedef struct
     int simpson_depth;
     double simpson_tol;
 
+    int is_gamma;
+
 
 } CONTROL;
 

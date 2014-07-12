@@ -77,7 +77,6 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
 	/* quench the electrons and calculate forces */
     Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-    
 
     /* ---------- begin relax loop --------- */
     DONE = (ct.max_md_steps < 1 || steps < 1);

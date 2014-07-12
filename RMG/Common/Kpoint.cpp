@@ -1,3 +1,31 @@
+/*
+ *
+ * Copyright (c) 2014, Emil Briggs
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+*/
 
 #include <float.h>
 #include <math.h>
@@ -86,14 +114,12 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
     int state;
     double t1;
     State<KpointType> *sp, *sp1;
-    KpointType *tmp_orbital;
-
-    tmp_orbital = new KpointType[this->pbasis];
+    STATE *spl, *spl1;
 
     for(state = 0;state < this->nstates - 1;state++)
     {
-        sp = this->Kstates + state;
-        sp1 = sp++;
+        sp = &this->Kstates[state];
+        sp1 = &this->Kstates[state+1];
         if (sp->eig[0] > sp1->eig[0])
         {
 
@@ -120,7 +146,45 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
 
     } 
 
-    delete [] tmp_orbital;
+    // Legacy
+    for(state = 0;state < this->nstates - 1;state++)
+    {
+        sp = &this->Kstates[state];
+        sp1 = &this->Kstates[state+1];
+        spl = &this->kstates[state];
+        spl1 = &this->kstates[state+1];
+        if (spl->eig[0] > spl1->eig[0])
+        {
+
+            if (((spl->occupation[0] > 0.1) && (spl1->occupation[0] > 0.1))
+                || ((spl->occupation[0] < 0.1) && (spl1->occupation[0] < 0.1)))
+            {
+                KpointType tmp;
+                for(int idx = 0;idx < this->pbasis;idx++) {
+                    tmp = sp->psi[idx];
+                    sp->psi[idx] = sp1->psi[idx];
+                    sp1->psi[idx] = tmp;
+                }
+
+                t1 = spl->eig[0];
+                spl->eig[0] = spl1->eig[0];
+                spl1->eig[0] = t1;
+
+                t1 = spl->oldeig[0];
+                spl->oldeig[0] = spl1->oldeig[0];
+                spl1->oldeig[0] = t1;
+
+                t1 = spl->occupation[0];
+                spl->occupation[0] = spl1->occupation[0];
+                spl1->occupation[0] = t1;
+
+
+            }                   /* end if */
+
+        }                       /* end if */
+
+    } 
+
 }
 
 
@@ -128,6 +192,7 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
 template <class KpointType> void Kpoint<KpointType>::random_init(void)
 {
 
+    KpointType ONE_t(1.0);
     int PX0_GRID = Rmg_G->get_PX0_GRID(1);
     int PY0_GRID = Rmg_G->get_PY0_GRID(1);
     int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
@@ -143,8 +208,14 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     // Set state 0 to a constant 
     for(int idx = 0;idx < pbasis;idx++) {
 
-        this->Kstates[0].psi[idx] = 1.0;
+        this->Kstates[0].psi[idx] = ONE_t;
 
+    }
+    if(typeid(KpointType) == typeid(std::complex<double>)) {
+        for(int idx = 0;idx < pbasis;idx++) {
+            double *a = (double *)&this->Kstates[0].psi[idx];
+            a[1] = 1.0;
+        }
     }
 
     /* If random start and Fermi occupation, start with
@@ -153,8 +224,8 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     {
         /* Set occupation for the first state */
         for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
-            this->Kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * ct.num_states);
-            this->kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * ct.num_states);
+            this->Kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
+            this->kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
         }
     }
 
@@ -166,7 +237,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     /* Initialize the random number generator */
     rand0 (&idum);
 
-    for (int state = 1; state < this->nstates; state++)
+    for (int state = 0; state < this->nstates; state++)
     {
 
 
@@ -185,8 +256,8 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
         if (ct.occ_flag && (ct.runflag != 1))
         {
             for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
-                this->Kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * ct.num_states);
-                this->kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * ct.num_states);
+                this->Kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
+                this->kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
             }
         }
 
@@ -227,6 +298,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
             for(idx = 0;idx < pbasis;idx++) {
                 double *a = (double *)&this->Kstates[state].psi[idx];
                 a[1] = tmp_psiI[idx];
+
             }
 
         }
@@ -339,6 +411,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
    RmgTimer RT("Orthogonalization");
 
+   double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
+   vel = this->L->get_omega() / vel;
+
+
+
    if(ct.norm_conserving_pp) {
 
        int ione = 1;
@@ -347,9 +424,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
        // compute the lower-triangular part of the overlap matrix
        for(int st = 0;st < this->nstates;st++) {
 
+           dr[st] = std::complex<double>(0.0,0.0); 
+
            // Normalize this orbital
            this->Kstates[st].normalize(this->Kstates[st].psi, st);
-          
+
            // compute the projection along the remaining vectors
            for(int st1 = st + 1;st1 < this->nstates;st1++) {
                dr[st1] = std::complex<double>(0.0,0.0); 
@@ -361,6 +440,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
            int length = 2 * this->nstates;
            MPI_Allreduce(MPI_IN_PLACE, dr, length, MPI_DOUBLE, MPI_SUM, this->comm);
 
+           std::complex<double> ct1(-vel, 0.0);
+           for(int st2=0;st2 < this->nstates;st2++) {
+               dr[st2] = ct1 * dr[st2];
+           }
+           
            for(int st1 = st + 1;st1 < this->nstates;st1++) {
                zaxpy(&this->pbasis, &dr[st1], &this->orbital_storage[st*this->pbasis], &ione, &this->orbital_storage[st1*this->pbasis], &ione);
            }            
@@ -368,5 +452,149 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
        }
 
        delete [] dr;
+
+#if 0
+       // RRRRR Check orthogonalization
+       std::complex<double> *tarr = new std::complex<double>[this->nstates*this->nstates];
+       for(int idx=0;idx<this->nstates*this->nstates;idx++) tarr[idx] = std::complex<double>(0.0,0.0);
+       for(int st = 0;st < this->nstates;st++) {
+           for(int st1 = 0;st1 < this->nstates;st1++) {
+               for(int idx = 0;idx < this->pbasis;idx++) {
+                   tarr[st*this->nstates + st1] = tarr[st*this->nstates + st1] + vel*std::conj(this->orbital_storage[st*this->pbasis + idx]) * this->orbital_storage[st1*this->pbasis + idx];
+               }
+
+           }
+
+       }
+
+       for(int st = 0;st < this->nstates;st++) {
+           for(int st1 = 0;st1 < this->nstates;st1++) {
+               rmg_printf("\nOOOOOOO  %d  %d  (%14.6f,%14.6f)\n", st, st1, std::real(tarr[st*this->nstates + st1]), std::imag(tarr[st*this->nstates + st1]));
+           }
+       }
+       delete [] tarr;
+#endif
    }
+   else {
+
+      int incx=1;
+      double *cR = new double[this->nstates];
+      double *cI = new double[this->nstates];
+      STATE *st;
+
+      st = this->kstates;
+      for(int ist1 = 0;ist1 < this->nstates;ist1++) {
+
+
+          // Normalize this orbital
+          this->Kstates[ist1].normalize(this->Kstates[ist1].psi, ist1);
+
+          /*This will calculate cR and cI coefficients */
+          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
+              //ortho_get_coeff (st1, &st[ist2], ist1, ist2, this->kidx, &cR[ist2], &cI[ist2]);
+
+              int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
+              int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+              double sumpsiR = 0.0;
+              double sumpsiI = 0.0;
+              double sumbetaR = 0.0;
+              double sumbetaI = 0.0;
+
+              int nidx = -1;
+              for (int ion = 0; ion < pct.num_owned_ions; ion++)
+              {
+                  int oion = pct.owned_ions_list[ion];
+
+                  ION *iptr = &ct.ions[oion];
+                  SPECIES *sp = &ct.sp[iptr->species];
+
+                  int nh = sp->nh;
+
+                  /* Figure out index of owned ion in nonloc_ions_list array*/
+                  do {
+
+                      nidx++;
+                      if (nidx >= pct.num_nonloc_ions)
+                          rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
+
+                  } while (pct.nonloc_ions_list[nidx] != oion);
+
+                  double *qqq = pct.qqq[oion];
+
+                  /* get<beta|psi1> and <beta|psi2> */
+                  double *sint1R = &pct.newsintR_local[sidx1 + nidx * this->nstates * ct.max_nl];
+                  double *sint1I = &pct.newsintI_local[sidx1 + nidx * this->nstates * ct.max_nl];
+                  double *sint2R = &pct.newsintR_local[sidx2 + nidx * this->nstates * ct.max_nl];
+                  double *sint2I = &pct.newsintI_local[sidx2 + nidx * this->nstates * ct.max_nl];
+
+
+                  for (int i = 0; i < nh; i++)
+                  {
+                      int inh = i * nh;
+                      double sri = sint1R[i];
+                      double sii = sint1I[i];
+
+                      for (int j = 0; j < nh; j++)
+                      {
+                          sumbetaR += qqq[inh + j] * (sri * sint2R[j] + sii * sint2I[j]);
+                          sumbetaI += qqq[inh + j] * (sri * sint2I[j] - sii * sint2R[j]);
+                      }                   /*end for j */
+                  }                       /*end for i */
+              }                           /*end for ion */
+
+              for (int idx = 0; idx < this->pbasis; idx++)
+              {
+                  //sumpsiR += (tmp_psi2R[idx] * tmp_psi1R[idx] + tmp_psi2I[idx] * tmp_psi1I[idx]);
+                  //sumpsiI += (tmp_psi2I[idx] * tmp_psi1R[idx] - tmp_psi2R[idx] * tmp_psi1I[idx]);
+                  sumpsiR = sumpsiR + std::real(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
+                  sumpsiI = sumpsiI + std::imag(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
+              }
+
+              cR[ist2] = vel * sumpsiR + sumbetaR;
+              cI[ist2] = vel * sumpsiI + sumbetaI;
+
+          }
+          int length = this->nstates - (ist1 + 1);
+          /*Sum coefficients over all processors */
+          if (length)
+          {
+              global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
+              global_sums (&cI[ist1 + 1], &length, pct.grid_comm);
+          }
+          /*Update wavefunctions */
+          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
+              //update_waves (st1, &st[ist2], ist1, ist2, this->kidx, cR[ist2], cI[ist2]);
+
+              KpointType cA(cR[ist2], cI[ist2]);
+              for(int idx = 0;idx < this->pbasis;idx++) {
+                  this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
+                                                - cA * this->Kstates[ist1].psi[idx]; 
+              }
+              /* update localized <beta|psi2> */
+              for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+              {
+
+                  int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
+                  int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+
+                  double *ptr1R = &pct.newsintR_local[lsidx1 + ion * this->nstates * ct.max_nl];
+                  double *ptr1I = &pct.newsintI_local[lsidx1 + ion * this->nstates * ct.max_nl];
+                  double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
+                  double *ptr2I = &pct.newsintI_local[lsidx2 + ion * this->nstates * ct.max_nl];
+
+                  QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
+                  QMD_daxpy (ct.max_nl, cI[ist2], ptr1I, incx, ptr2R, incx);
+  
+                  QMD_daxpy (ct.max_nl, -cR[ist2], ptr1I, incx, ptr2I, incx);
+                  QMD_daxpy (ct.max_nl, -cI[ist2], ptr1R, incx, ptr2I, incx);
+
+              }
+
+          }
+
+      }
+      delete [] cI;
+      delete [] cR;
+   }
+
 }

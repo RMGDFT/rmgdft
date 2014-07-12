@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "common_prototypes.h"
+#include "rmgthreads.h"
 
 #include "hybrid.h"
 
@@ -18,27 +19,27 @@
 #endif
 
 
-static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_ptr, STATE * states, int kpt);
-static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states);
+void betaxpsi1_calculate (double * sintR_ptr, double * sintI_ptr, STATE * states, int kpt);
+void betaxpsi1_calculate_gamma (double * sintR_ptr, double * psi);
 
-static void betaxpsi1_receive (rmg_double_t * recv_buff, rmg_double_t * recv_buffI, int num_pes,
+void betaxpsi1_receive (double * recv_buff, double * recv_buffI, int num_pes,
                                int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
                                MPI_Request * req_recv, MPI_Request * req_recvI);
 
-static void betaxpsi1_send (rmg_double_t * send_buff, rmg_double_t * send_buffI, int num_pes,
+void betaxpsi1_send (double * send_buff, double * send_buffI, int num_pes,
                             int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
                             MPI_Request * req_send, MPI_Request * req_sendI);
 
-static void betaxpsi1_pack (rmg_double_t * sintR, rmg_double_t * sintI, rmg_double_t * fill_buff, rmg_double_t * fill_buffI,
+void betaxpsi1_pack (double * sintR, double * sintI, double * fill_buff, double * fill_buffI,
                             int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
                             int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
 
-static void betaxpsi1_sum_onwed (rmg_double_t * recv_buff, rmg_double_t * recv_buffI, rmg_double_t * sintR, rmg_double_t * sintI,
+void betaxpsi1_sum_onwed (double * recv_buff, double * recv_buffI, double * sintR, double * sintI,
                                  int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
                                  int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
 
-static void betaxpsi1_write_non_owned (rmg_double_t * sintR, rmg_double_t * sintI, rmg_double_t * recv_buff,
-                                       rmg_double_t * recv_buffI, int num_pes,
+void betaxpsi1_write_non_owned (double * sintR, double * sintI, double * recv_buff,
+                                       double * recv_buffI, int num_pes,
                                        int num_ions_per_pe[MAX_NONLOC_PROCS],
                                        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS]);
 
@@ -46,8 +47,8 @@ static void betaxpsi1_write_non_owned (rmg_double_t * sintR, rmg_double_t * sint
 
 void betaxpsi1 (STATE * states, int kpt)
 {
-    rmg_double_t *own_buff = NULL, *own_buffI = NULL, *nown_buff = NULL, *nown_buffI = NULL, *sintR = NULL, *sintI = NULL;
-    rmg_double_t *send_buff, *send_buffI, *recv_buff, *recv_buffI;
+    double *own_buff = NULL, *own_buffI = NULL, *nown_buff = NULL, *nown_buffI = NULL, *sintR = NULL, *sintI = NULL;
+    double *send_buff, *send_buffI, *recv_buff, *recv_buffI;
     MPI_Request *req_send, *req_sendI, *req_recv, *req_recvI;
     MPI_Request *req_own = NULL, *req_ownI = NULL, *req_nown = NULL, *req_nownI = NULL;
     int size_own, size_nown, pe, koffset, i, nlion, idx;
@@ -65,26 +66,26 @@ void betaxpsi1 (STATE * states, int kpt)
 
 
     if (size_own)
-        my_calloc (own_buff, size_own, rmg_double_t);
+        my_calloc (own_buff, size_own, double);
     if (size_nown)
-        my_calloc (nown_buff, size_nown, rmg_double_t);
-#if !GAMMA_PT
-    if (size_own)
-        my_calloc (own_buffI, size_own, rmg_double_t);
-    if (size_nown)
-        my_calloc (nown_buffI, size_nown, rmg_double_t);
-#endif
+        my_calloc (nown_buff, size_nown, double);
+    if(!ct.is_gamma) {
+        if (size_own)
+            my_calloc (own_buffI, size_own, double);
+        if (size_nown)
+            my_calloc (nown_buffI, size_nown, double);
+    }
 
     if (pct.num_owned_pe)
         my_malloc (req_own, pct.num_owned_pe, MPI_Request);
     if (pct.num_owners)
         my_malloc (req_nown, pct.num_owners, MPI_Request);
-#if !GAMMA_PT
-    if (pct.num_owned_pe)
-        my_malloc (req_ownI, pct.num_owned_pe, MPI_Request);
-    if (pct.num_owners)
-        my_malloc (req_nownI, pct.num_owners, MPI_Request);
-#endif
+    if(!ct.is_gamma) {
+        if (pct.num_owned_pe)
+            my_malloc (req_ownI, pct.num_owned_pe, MPI_Request);
+        if (pct.num_owners)
+            my_malloc (req_nownI, pct.num_owners, MPI_Request);
+    }
 
     /*First owning cores will receive data from non-owners */
     send_buff = nown_buff;
@@ -105,25 +106,46 @@ void betaxpsi1 (STATE * states, int kpt)
     /*Offset due to a kpoint */
     koffset = kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
     sintR = &pct.newsintR_local[koffset];
-#if !GAMMA_PT
     sintI = &pct.newsintI_local[koffset];
-#endif
 
     for (i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
     {
         sintR[i] = 0.0;
-#if !GAMMA_PT
-        sintI[i] = 0.0;
-#endif
+        if(!ct.is_gamma) {
+                sintI[i] = 0.0;
+        }
     }
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
 
-#if GAMMA_PT
-    betaxpsi1_calculate_gamma (sintR, states);
-#else
-    betaxpsi1_calculate (sintR, sintI, states, kpt);
+    if(ct.is_gamma) {
+        betaxpsi1_calculate_gamma (sintR, states[0].psiR);
+    }
+    else {
+        betaxpsi1_calculate (sintR, sintI, states, kpt);
+#if 0
+        double *tpsi;
+        int jdx,stt;
+        my_malloc(tpsi, ct.num_states*get_P0_BASIS(), double);
+        jdx=0;
+        for(stt=0;stt<ct.num_states;stt++) {
+            for(idx=0;idx<get_P0_BASIS();idx++) {
+                tpsi[jdx] = states[stt].psiR[idx];
+                jdx++;
+            }
+        }
+        betaxpsi1_calculate_gamma (sintR, tpsi);
+        jdx=0;
+        for(stt=0;stt<ct.num_states;stt++) {
+            for(idx=0;idx<get_P0_BASIS();idx++) {
+                tpsi[jdx] = states[stt].psiI[idx];
+                jdx++;
+            }
+        }
+        betaxpsi1_calculate_gamma (sintI, tpsi);
+        my_free(tpsi);
 #endif
+    }
 
 
     /*Pack data for sending */
@@ -142,12 +164,12 @@ Dprintf("BETA1  %d  %p  %d  %p",pct.num_owned_pe,req_recv,pct.num_owners,req_sen
         MPI_Waitall (pct.num_owners, req_send, MPI_STATUSES_IGNORE);
 Dprintf("BETA1DONE");
 
-#if !GAMMA_PT
-    if(pct.num_owned_pe)
-        MPI_Waitall (pct.num_owned_pe, req_recvI, MPI_STATUSES_IGNORE);
-    if(pct.num_owners)
-        MPI_Waitall (pct.num_owners, req_sendI, MPI_STATUSES_IGNORE);
-#endif
+    if(!ct.is_gamma) {
+        if(pct.num_owned_pe)
+            MPI_Waitall (pct.num_owned_pe, req_recvI, MPI_STATUSES_IGNORE);
+        if(pct.num_owners)
+            MPI_Waitall (pct.num_owners, req_sendI, MPI_STATUSES_IGNORE);
+    }
 
     /*Unpack received data and sum contributions from all pes for owned ions */
     betaxpsi1_sum_onwed (recv_buff, recv_buffI, sintR, sintI, pct.num_owned_pe,
@@ -186,12 +208,12 @@ Dprintf("BETA2  %d  %p  %d  %p",pct.num_owned_pe,req_send,pct.num_owners,req_rec
 Dprintf("BETA2DONE");
 
 
-#if !GAMMA_PT
-    if(pct.num_owned_pe)
-        MPI_Waitall (pct.num_owned_pe, req_sendI, MPI_STATUSES_IGNORE);
-    if(pct.num_owners)
-        MPI_Waitall (pct.num_owners, req_recvI, MPI_STATUSES_IGNORE);
-#endif
+    if(!ct.is_gamma) {
+        if(pct.num_owned_pe)
+            MPI_Waitall (pct.num_owned_pe, req_sendI, MPI_STATUSES_IGNORE);
+        if(pct.num_owners)
+            MPI_Waitall (pct.num_owners, req_recvI, MPI_STATUSES_IGNORE);
+    }
 
     /*Finaly, write received data about non-owned ions into sintR array */
     betaxpsi1_write_non_owned (sintR, sintI, recv_buff, recv_buffI, pct.num_owners,
@@ -207,30 +229,29 @@ Dprintf("BETA2DONE");
     if (pct.num_owners)
         my_free (req_nown);
 
-#if !GAMMA_PT
-    if (size_own)
-        my_free (own_buffI);
-    if (size_nown)
-        my_free (nown_buffI);
-    if (pct.num_owned_pe)
-        my_free (req_ownI);
-    if (pct.num_owners)
-        my_free (req_nownI);
-#endif
-
+    if(!ct.is_gamma) {
+        if (size_own)
+            my_free (own_buffI);
+        if (size_nown)
+            my_free (nown_buffI);
+        if (pct.num_owned_pe)
+            my_free (req_ownI);
+        if (pct.num_owners)
+            my_free (req_nownI);
+    }
 
 }
 
 
 
-static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
+void betaxpsi1_calculate_gamma (double * sintR_ptr, double *psi)
 {
     int idx1, idx2, proj_index, istate, ip, nion, ione=1, P0_BASIS;
     char *transt = "t", *transn = "n";
 
-    rmg_double_t alpha, rzero = 0.0;
-    rmg_double_t *nlarray;
-    rmg_double_t time1, time2;
+    double alpha, rzero = 0.0;
+    double *nlarray;
+    double time1, time2;
     alpha = get_vel();
 
     if(pct.num_tot_proj == 0) return;
@@ -241,16 +262,16 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
     cublasOperation_t cu_transT = CUBLAS_OP_T, cu_transN = CUBLAS_OP_N;
     nlarray = ct.gpu_host_work;
 #else
-    my_calloc (nlarray, pct.num_tot_proj * ct.num_states, rmg_double_t);
+    my_calloc (nlarray, pct.num_tot_proj * ct.num_states, double);
 #endif
     
     time1=my_crtc();
 #if GPU_ENABLED
     Dprintf("SIZES %d %d  %d  %d", pct.num_tot_proj * ct.num_states, P0_BASIS, ct.num_states, pct.num_tot_proj);
-    cublasSetVector( P0_BASIS * ct.num_states, sizeof( rmg_double_t ), states[0].psiR, ione, ct.gpu_states, ione );
+    cublasSetVector( P0_BASIS * ct.num_states, sizeof( double ), psi, ione, ct.gpu_states, ione );
     Dprintf("DGEMM TIME0 %12.8f", my_crtc()-time1);
     time1=my_crtc();
-//    cublasSetVector( P0_BASIS * pct.num_tot_proj, sizeof( rmg_double_t ), pct.weight, ione, ct.gpu_temp, ione );
+//    cublasSetVector( P0_BASIS * pct.num_tot_proj, sizeof( double ), pct.weight, ione, ct.gpu_temp, ione );
 //    dprintf("DGEMM TIME1 %12.8f", my_crtc()-time1);
 //    time1=my_crtc();
 
@@ -260,7 +281,7 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
 
     Dprintf("DGEMM TIME2 %12.8f", my_crtc()-time1);
     time1=my_crtc();
-    cublasGetVector( ct.num_states * pct.num_tot_proj, sizeof( rmg_double_t ), ct.gpu_work1, ione, nlarray, ione );
+    cublasGetVector( ct.num_states * pct.num_tot_proj, sizeof( double ), ct.gpu_work1, ione, nlarray, ione );
     Dprintf("DGEMM TIME3 %12.8f", my_crtc()-time1);
     time1=my_crtc();
 
@@ -270,7 +291,7 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
      //       states[0].psiR, &P0_BASIS, pct.weight, &P0_BASIS, 
       //      &rzero, nlarray, &ct.num_states);
     dgemm (transt, transn, &pct.num_tot_proj, &ct.num_states, &P0_BASIS, &alpha, 
-            pct.weight, &P0_BASIS, states[0].psiR, &P0_BASIS, 
+            pct.weight, &P0_BASIS, psi, &P0_BASIS, 
             &rzero, nlarray, &pct.num_tot_proj);
 #endif
     Dprintf("DGEMM TIME4 %12.8f", my_crtc()-time1);
@@ -296,11 +317,11 @@ static void betaxpsi1_calculate_gamma (rmg_double_t * sintR_ptr, STATE * states)
 #endif
 }
 
-static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_ptr, STATE * states, int kpt)
+void betaxpsi1_calculate (double * sintR_ptr, double * sintI_ptr, STATE * states, int kpt)
 {
     int alloc, nion, ion, istate, idx, ipindex, stop, ip, incx = 1, start_state, istop, ist, P0_BASIS;
-    rmg_double_t *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
-    rmg_double_t *weiptr, *weightptr_ion, *psiR, *psiI;
+    double *nlarrayR, *nlarrayI, *sintR, *sintI, *pR, *pI;
+    double *weiptr, *weightptr_ion, *psiR, *psiI;
     ION *iptr;
     SPECIES *sp;
     STATE *st;
@@ -310,7 +331,7 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
-    my_calloc (nlarrayR, 2 * alloc * ct.THREADS_PER_NODE, rmg_double_t);
+    my_calloc (nlarrayR, 2 * alloc, double);
     nlarrayI = nlarrayR + alloc;
 
 
@@ -323,7 +344,6 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
         /*Actual index of the ion under consideration */
         ion = pct.nonloc_ions_list[nion];
 
-
         iptr = &ct.ions[ion];
         sp = &ct.sp[iptr->species];
         stop = P0_BASIS;
@@ -332,75 +352,51 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
         if (pct.idxptrlen[ion])
         {
 
-#if !GAMMA_PT
             pR = pct.phaseptr[ion];
             pR += 2 * kpt * stop;
             pI = pR + stop;
-#endif
-
+//for(idx=0;idx<stop;idx++){
+//    printf("TTTTTT  %d  %d  %d  %d\n", nion, ion, pR[idx], pI[idx]);
+//}
             sintR = &sintR_ptr[nion * ct.num_states * ct.max_nl];
-#if !GAMMA_PT
             sintI = &sintI_ptr[nion * ct.num_states * ct.max_nl];
-#endif
 
-            // Parallelized over threads here.
-            start_state = 0;
-            istop = ct.num_states / ct.THREADS_PER_NODE;
-            istop = istop * ct.THREADS_PER_NODE;
-
-            for(ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
-                thread_control[ist].job = HYBRID_BETAX_PSI1_CALCULATE;
-                thread_control[ist].sp = &states[ist];
-                thread_control[ist].ion = ion;
-                thread_control[ist].nion = nion;
-                thread_control[ist].sintR = sintR;
-                thread_control[ist].sintI = sintI;
-                thread_control[ist].weiptr = weightptr_ion;
-            }
-
-            // Thread tasks are set up so wake them
-            run_thread_tasks(ct.THREADS_PER_NODE);
-
-            start_state = istop;
-
-
-            // Handle the remainder of the states in serial fashion. If
-            // not running in hybrid mode then start_state is 0.
-            for (istate = start_state; istate < ct.num_states; istate++)
+            // Handle the remainder of the states in serial fashion.
+            for (istate = 0; istate < ct.num_states; istate++)
             {
 
                 st = &states[istate];
                 psiR = st->psiR;
-#if !GAMMA_PT
                 psiI = st->psiI;
-#endif
 
-
-#if GAMMA_PT
-                /* Copy wavefunction into temporary array */
-                for (idx = 0; idx < stop; idx++)
-                    nlarrayR[idx] = psiR[idx];
-#else
-                for (idx = 0; idx < stop; idx++)
+                for (idx = 0; idx < stop; idx++){
                     nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
+                }
 
-                for (idx = 0; idx < stop; idx++)
+                for (idx = 0; idx < stop; idx++) {
                     nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
-#endif
+                }
 
                 /* <Beta|psi>                                       */
 
                 weiptr = weightptr_ion;
-                ipindex = istate * ct.max_nl;
 
+                ipindex = istate * ct.max_nl;
                 for (ip = 0; ip < sp->nh; ip++)
                 {
 
+//for(idx=0;idx<stop;idx++){
+//    printf("DCCCCCCCCCC  %d  %d  %d  %d  %d    %14.6e\n",P0_BASIS,ip, istate,nion,idx, weiptr[idx]);
+//}
+//sintR[ipindex]=0.0;
+//for(idx=0;idx<stop;idx++){
+//  sintR[ipindex]+=nlarrayR[idx]*weiptr[idx];
+//printf("CCCCCCCCCC  %d  %d  %d  %d  %d  %d    %14.6e\n",ip, istate,nion,idx, pR[idx],pI[idx], nlarrayR[idx]);
+//}
+//
                     sintR[ipindex] = get_vel() * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
-#if !GAMMA_PT
                     sintI[ipindex] = get_vel() * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
-#endif
-
+//printf("BBBBBBBBB  %d  %d   %14.6e  %14.6e\n", ion, ip, sintR[ipindex], sintI[ipindex]);
                     weiptr += P0_BASIS;
                     ipindex++;
 
@@ -418,11 +414,11 @@ static void betaxpsi1_calculate (rmg_double_t * sintR_ptr, rmg_double_t * sintI_
 
 
 /*This receives data from other PEs for ions owned by current PE*/
-static void betaxpsi1_receive (rmg_double_t * recv_buff, rmg_double_t * recv_buffI, int num_pes,
+void betaxpsi1_receive (double * recv_buff, double * recv_buffI, int num_pes,
         int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
         MPI_Request * req_recv, MPI_Request * req_recvI)
 {
-    rmg_double_t *tpr, *tprI;
+    double *tpr, *tprI;
     int tag, pe, source, size;
 
     tpr = recv_buff;
@@ -437,11 +433,11 @@ static void betaxpsi1_receive (rmg_double_t * recv_buff, rmg_double_t * recv_buf
 
         MPI_Irecv (tpr, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recv[pe]);
         Dprintf("Posting nonblock receive from PE %d tag is %d size is %d", source, tag, size);
-#if !GAMMA_PT
-        tag *= 2;
-        MPI_Irecv (tprI, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recvI[pe]);
-        Dprintf("Posting nonblock receive for imaginary part from PE %d tag is %d size is %d", source, tag, size);
-#endif
+        if(!ct.is_gamma) {
+            tag *= 2;
+            MPI_Irecv (tprI, size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recvI[pe]);
+            Dprintf("Posting nonblock receive for imaginary part from PE %d tag is %d size is %d", source, tag, size);
+        }
 
         tpr += size;
         tprI += size;
@@ -449,11 +445,11 @@ static void betaxpsi1_receive (rmg_double_t * recv_buff, rmg_double_t * recv_buf
 
 }
 
-static void betaxpsi1_send (rmg_double_t * send_buff, rmg_double_t * send_buffI, int num_pes,
+void betaxpsi1_send (double * send_buff, double * send_buffI, int num_pes,
         int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
         MPI_Request * req_send, MPI_Request * req_sendI)
 {
-    rmg_double_t *tpr, *tprI;
+    double *tpr, *tprI;
     int target, num_ions, size, tag, pe;
 
     tpr = send_buff;
@@ -472,11 +468,11 @@ static void betaxpsi1_send (rmg_double_t * send_buff, rmg_double_t * send_buffI,
         MPI_Isend (tpr, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_send[pe]);
         Dprintf("Sending data to PE %d, tag is %d and size is %d", target, tag, size);
 
-#if !GAMMA_PT
-        tag *= 2;
-        MPI_Isend (tprI, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_sendI[pe]);
-        Dprintf("Sending imaginary part of data to PE %d, tag is %d and size is %d", target, tag, size);
-#endif
+        if(!ct.is_gamma) {
+            tag *= 2;
+            MPI_Isend (tprI, size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_sendI[pe]);
+            Dprintf("Sending imaginary part of data to PE %d, tag is %d and size is %d", target, tag, size);
+        }
 
         tpr += size;
         tprI += size;
@@ -485,11 +481,11 @@ static void betaxpsi1_send (rmg_double_t * send_buff, rmg_double_t * send_buffI,
 }
 
 
-static void betaxpsi1_pack (rmg_double_t * sintR, rmg_double_t * sintI, rmg_double_t * fill_buff, rmg_double_t * fill_buffI,
+void betaxpsi1_pack (double * sintR, double * sintI, double * fill_buff, double * fill_buffI,
         int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS])
 {
-    rmg_double_t *tpr_buff, *tpr_buffI, *sintR_tpr, *sintI_tpr;
+    double *tpr_buff, *tpr_buffI, *sintR_tpr, *sintI_tpr;
     int size, num_ions, ion, nlion, pe;
 
     tpr_buff = fill_buff;
@@ -512,11 +508,11 @@ static void betaxpsi1_pack (rmg_double_t * sintR, rmg_double_t * sintI, rmg_doub
             my_copy (sintR_tpr, tpr_buff, size);
             tpr_buff += size;
 
-#if !GAMMA_PT
-            sintI_tpr = &sintI[nlion * ct.num_states * ct.max_nl];
-            my_copy (sintI_tpr, tpr_buffI, size);
-            tpr_buffI += size;
-#endif
+            if(!ct.is_gamma) { 
+                sintI_tpr = &sintI[nlion * ct.num_states * ct.max_nl];
+                my_copy (sintI_tpr, tpr_buffI, size);
+                tpr_buffI += size;
+            }
         }
 
     }
@@ -524,11 +520,11 @@ static void betaxpsi1_pack (rmg_double_t * sintR, rmg_double_t * sintI, rmg_doub
 }
 
 
-static void betaxpsi1_sum_onwed (rmg_double_t * recv_buff, rmg_double_t * recv_buffI, rmg_double_t * sintR, rmg_double_t * sintI,
+void betaxpsi1_sum_onwed (double * recv_buff, double * recv_buffI, double * sintR, double * sintI,
         int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS])
 {
-    rmg_double_t *tpr1, *tpr1I, *tpr2, *tpr2I;
+    double *tpr1, *tpr1I, *tpr2, *tpr2I;
     int size, num_ions, ion_index, pe, ion;
 
 
@@ -547,10 +543,11 @@ static void betaxpsi1_sum_onwed (rmg_double_t * recv_buff, rmg_double_t * recv_b
             tpr2 = &sintR[ion_index * ct.num_states * ct.max_nl];
             my_axpy (1.0, tpr1, tpr2, size);
 
-#if !GAMMA_PT
-            tpr2I = &sintI[ion_index * ct.num_states * ct.max_nl];
-            my_axpy (1.0, tpr1I, tpr2I, size);
-#endif
+            if(!ct.is_gamma) { 
+                tpr2I = &sintI[ion_index * ct.num_states * ct.max_nl];
+                my_axpy (1.0, tpr1I, tpr2I, size);
+            }
+
             tpr1 += size;
             tpr1I += size;
         }
@@ -561,12 +558,12 @@ static void betaxpsi1_sum_onwed (rmg_double_t * recv_buff, rmg_double_t * recv_b
 
 
 
-static void betaxpsi1_write_non_owned (rmg_double_t * sintR, rmg_double_t * sintI, rmg_double_t * recv_buff,
-        rmg_double_t * recv_buffI, int num_pes,
+void betaxpsi1_write_non_owned (double * sintR, double * sintI, double * recv_buff,
+        double * recv_buffI, int num_pes,
         int num_ions_per_pe[MAX_NONLOC_PROCS],
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS])
 {
-    rmg_double_t *tpr1, *tpr1I, *tpr2, *tpr2I;
+    double *tpr1, *tpr1I, *tpr2, *tpr2I;
     int size, num_ions, ion_index, pe, ion;
 
 
@@ -585,10 +582,10 @@ static void betaxpsi1_write_non_owned (rmg_double_t * sintR, rmg_double_t * sint
             tpr2 = &sintR[ion_index * ct.num_states * ct.max_nl];
             my_copy (tpr1, tpr2, size);
 
-#if !GAMMA_PT
-            tpr2I = &sintI[ion_index * ct.num_states * ct.max_nl];
-            my_copy (tpr1I, tpr2I, size);
-#endif
+            if(!ct.is_gamma) { 
+                tpr2I = &sintI[ion_index * ct.num_states * ct.max_nl];
+                my_copy (tpr1I, tpr2I, size);
+            }
             tpr1 += size;
             tpr1I += size;
         }
@@ -599,13 +596,13 @@ static void betaxpsi1_write_non_owned (rmg_double_t * sintR, rmg_double_t * sint
 
 
 
-void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, rmg_double_t *sintI, int kpt, rmg_double_t *weiptr_base) {
+void betaxpsi1_calculate_one(STATE *st, int ion, int nion, double *sintR, double *sintI, int kpt, double *weiptr_base) {
 
     int idx, stop, alloc, ip, incx=1, ipindex, istate, ist, st_stop, P0_BASIS;
     ION *iptr;
     SPECIES *sp;
-    rmg_double_t *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
-    rmg_double_t *pR, *pI;
+    double *nlarrayR, *nlarrayI, *psiR, *psiI, *weiptr;
+    double *pR, *pI;
 
     istate = st->istate;
 
@@ -614,37 +611,42 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, 
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
 
-    my_malloc (nlarrayR, 2 * alloc, rmg_double_t);
+    my_calloc (nlarrayR, 2 * alloc, double);
     nlarrayI = nlarrayR + alloc;
 
     iptr = &ct.ions[ion];
     sp = &ct.sp[iptr->species];
 
     stop = P0_BASIS;
+#if 0
     st_stop = ct.num_states / ct.THREADS_PER_NODE;
     st_stop = st_stop * ct.THREADS_PER_NODE;
+#endif
+    st_stop = ct.num_states;
 
-    for(ist = istate;ist < st_stop;ist+=ct.THREADS_PER_NODE) {
+//    for(ist = istate;ist < st_stop;ist+=ct.THREADS_PER_NODE) {
+    for(ist = istate;ist < st_stop;ist++) {
 
         psiR = st->psiR;
-#if !GAMMA_PT
-        psiI = st->psiI;
-        pR = pct.phaseptr[ion];
-        pR += 2 * kpt * stop;
-        pI = pR + stop;
-#endif
+        if(!ct.is_gamma) {
+            psiI = st->psiI;
+            pR = pct.phaseptr[ion];
+            pR += 2 * kpt * stop;
+            pI = pR + stop;
+        }
 
-#if GAMMA_PT
-        /* Copy wavefunction into temporary array */
-        for (idx = 0; idx < stop; idx++)
-            nlarrayR[idx] = psiR[idx];
-#else
-        for (idx = 0; idx < stop; idx++)
-            nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
+        if(ct.is_gamma) {
+            /* Copy wavefunction into temporary array */
+            for (idx = 0; idx < stop; idx++)
+                nlarrayR[idx] = psiR[idx];
+        }
+        else { 
+            for (idx = 0; idx < stop; idx++)
+                nlarrayR[idx] = psiR[idx] * pR[idx] - psiI[idx] * pI[idx];
 
-        for (idx = 0; idx < stop; idx++)
-            nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
-#endif
+            for (idx = 0; idx < stop; idx++)
+                nlarrayI[idx] = psiI[idx] * pR[idx] + psiR[idx] * pI[idx];
+        }
 
         /* <Beta|psi>                                       */
 
@@ -655,16 +657,16 @@ void betaxpsi1_calculate_one(STATE *st, int ion, int nion, rmg_double_t *sintR, 
         {
 
             sintR[ipindex] = get_vel() * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
-#if !GAMMA_PT
-            sintI[ipindex] = get_vel() * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
-#endif
-
+            if(!ct.is_gamma) {
+                sintI[ipindex] = get_vel() * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
+            }
             weiptr += P0_BASIS;
             ipindex++;
 
         }
 
-        st += ct.THREADS_PER_NODE;
+//        st += ct.THREADS_PER_NODE;
+        st++;
     }
     my_free (nlarrayR);
 

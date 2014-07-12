@@ -55,8 +55,8 @@ template class State<std::complex <double> >;
 template State<double>::State(void);
 template State<std::complex<double> >::State(void);
 
-template void State<double>::normalize(double *tpsi, int istate);
-template void State<std::complex <double> >::normalize(std::complex <double> *tpsi, int istate);
+template void State<double>::normalize(double *, int );
+template void State<std::complex <double> >::normalize(std::complex <double> *, int );
 template void State<double>::set_storage(double *storage);
 template void State<std::complex <double> >::set_storage(std::complex <double> *tpsi);
 
@@ -71,7 +71,7 @@ template <class StateType> void State<StateType>::set_storage(StateType *storage
     this->psi = storage;
 }
 
-template <class StateType> void State<StateType>::normalize(double *tpsi, int istate)
+template <class StateType> void State<StateType>::normalize(StateType *tpsi, int istate)
 {
     double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     vel = Rmg_L.get_omega() / vel;
@@ -80,29 +80,26 @@ template <class StateType> void State<StateType>::normalize(double *tpsi, int is
 
         double sum1 = 0.0, sum2;
         for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
-            sum1 = sum1 + tpsi[idx] * tpsi[idx];
+            sum1 = sum1 + std::norm(tpsi[idx]);
         }
 
         sum2 = vel * RmgSumAll<double>(sum1, this->Kptr->comm);
         sum2 = sqrt(1.0 / sum2);
 
+        StateType tscale(sum2);
         for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
-            tpsi[idx] = tpsi[idx] * sum2;
+            tpsi[idx] = tpsi[idx] * tscale;
         }
 
     }
     else {
 
-        int idx, ion, nh, i, j, size, incx = 1, inh, sidx_local, nidx, oion;
+        int ion, nh, i, j, inh, sidx_local, nidx, oion;
         double sumbeta, sumpsi, sum, t1;
-        double *tmp_psiR, *qqq, *sintR, *ptr;
+        double *qqq, *sintR, *sintI, *ptr;
         ION *iptr;
 
         sidx_local = this->Kptr->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
-
-        size = this->Kptr->pbasis;
-
-        tmp_psiR = tpsi;
 
         sumpsi = 0.0;
         sumbeta = 0.0;
@@ -132,6 +129,7 @@ template <class StateType> void State<StateType>::normalize(double *tpsi, int is
 
             /*nidx adds offset due to current ion*/
             sintR = &pct.newsintR_local[sidx_local + nidx * ct.num_states * ct.max_nl];
+            sintI = &pct.newsintI_local[sidx_local + nidx * ct.num_states * ct.max_nl];
 
 
             for (i = 0; i < nh; i++)
@@ -141,20 +139,27 @@ template <class StateType> void State<StateType>::normalize(double *tpsi, int is
                 {
                     if (qqq[inh + j] != 0.0)
                     {
-                        sumbeta += qqq[inh + j] * sintR[i] * sintR[j];
+                        if(ct.is_gamma) {
+                            sumbeta += qqq[inh + j] * sintR[i] * sintR[j];
+                        }
+                        else {
+                            sumbeta += qqq[inh + j] * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
+                            sumbeta += qqq[inh + j] * (sintR[i] * sintI[j] - sintI[i] * sintR[j]);
+                        }
                     }
                 }
             }
         }
 
 
-        for (idx = 0; idx < get_P0_BASIS(); idx++)
+        for (int idx = 0; idx < this->Kptr->pbasis; idx++)
         {
-            sumpsi += tmp_psiR[idx] * tmp_psiR[idx];
+            sumpsi += std::norm(tpsi[idx]);
         }
 
-        sum = real_sum_all (vel * sumpsi + sumbeta, pct.grid_comm);
+        sum = RmgSumAll<double>(vel * sumpsi + sumbeta, this->Kptr->comm);
         sum = 1.0 / sum;
+
         if (sum < 0.0)
         {
             rmg_printf ("the %dth state is wrong\n", istate);
@@ -162,7 +167,10 @@ template <class StateType> void State<StateType>::normalize(double *tpsi, int is
         }
 
         t1 = sqrt (sum);
-        QMD_dscal (size, t1, tmp_psiR, incx);
+rmg_printf("\nSSSSSS %d  %14.6f\n",istate,t1);
+        for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
+            tpsi[idx] = tpsi[idx] * t1;
+        }
 
         /* update <beta|psi> - Local version*/
         
@@ -171,33 +179,20 @@ template <class StateType> void State<StateType>::normalize(double *tpsi, int is
 
             ptr = &pct.newsintR_local[ion * ct.num_states * ct.max_nl];
             ptr += sidx_local;
-            
-            QMD_dscal (ct.max_nl, t1, ptr, incx);
-        }
+            for(int jdx = 0;jdx < ct.max_nl;jdx++) {
+                ptr[jdx] = ptr[jdx] * t1;
+            }
 
+            if(!ct.is_gamma) {
+                ptr = &pct.newsintI_local[ion * ct.num_states * ct.max_nl];
+                ptr += sidx_local;
+                for(int jdx = 0;jdx < ct.max_nl;jdx++) {
+                    ptr[jdx] = ptr[jdx] * t1;
+                }
+            }
 
-    }
-}
-
-template <class StateType> void State<StateType>::normalize(std::complex<double> *tpsi, int istate)
-{
-
-    double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
-    vel = Rmg_L.get_omega() / vel;
-
-    if(ct.norm_conserving_pp) {
-
-        double sum1 = 0.0, sum2;
-        for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
-            sum1 = sum1 + std::real(tpsi[idx] * std::conj(tpsi[idx]));
-        }
-
-        sum2 = vel * RmgSumAll<double>(sum1, this->Kptr->comm);
-        sum2 = sqrt(1.0 / sum2);
-
-        for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
-            tpsi[idx] = tpsi[idx] * sum2;
         }
 
     }
 }
+

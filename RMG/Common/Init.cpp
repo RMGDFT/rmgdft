@@ -80,10 +80,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns, *Bns;
-    double *vtot, *rho_tot, *rptr1;
+    double *vtot, *rho_tot, *rptr1=NULL;
     ION *iptr;
     double time1, time2, fac;
-    STATE *st;
 
 #if GPU_ENABLED
     init_gpu();
@@ -125,10 +124,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
     pct.oldsintR_local = NULL;
-#if !GAMMA_PT
     pct.newsintI_local = NULL;
     pct.oldsintI_local = NULL;
-#endif
 
 
     /* Set hartree boundary condition stuff */
@@ -189,13 +186,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
     // Wavefunctions are actually stored here
-    cudaMallocHost((void **)&rptr, (ct.num_kpts * (ct.num_states + 1) * (P0_BASIS + 4) + 1024) * sizeof(OrbitalType));
+    cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.num_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     cudaMallocHost((void **)&nv, ct.num_states * P0_BASIS * sizeof(OrbitalType));
     cudaMallocHost((void **)&ns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
     cudaMallocHost((void **)&Bns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
+    rptr = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.num_states * P0_BASIS];
     ns = new OrbitalType[ct.num_states * P0_BASIS];
     Bns = new OrbitalType[ct.num_states * P0_BASIS];
@@ -203,6 +200,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.nv = (double *)nv;
     pct.ns = (double *)ns;
     pct.Bns = (double *)Bns;
+
+    OrbitalType Zero(0.0);
+    for(int idx = 0;idx < ct.num_states * P0_BASIS;idx++) {
+        nv[idx] = Zero;
+        ns[idx] = Zero;
+        Bns[idx] = Zero;
+    }
 
     if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
         rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
@@ -235,6 +239,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             Kptr[kpt]->kstates[st1].kidx = kpt;
             Kptr[kpt]->kstates[st1].psiR = (double *)rptr;
+            Kptr[kpt]->kstates[st1].psiI = Kptr[kpt]->kstates[st1].psiR + P0_BASIS;
             Kptr[kpt]->kstates[st1].dvhxc = rptr1;
             Kptr[kpt]->kstates[st1].vxc = vxc;
             Kptr[kpt]->kstates[st1].vh = vh;
@@ -302,9 +307,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     init_psp ();
 
     /* Initialize symmetry stuff */
-#if !GAMMA_PT
-    init_sym ();
-#endif
+//RRRRRRR    if(!ct.is_gamma)
+//        init_sym ();
 
 
     //Dprintf ("Allocate memory for arrays related to nonlocal PP");
@@ -467,17 +471,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }                           /*end if(ct.initdiag) */
     else
     {
-#if GAMMA_PT
-        ortho(Kptr[0]->kstates, 0);
-#else
-        for (kpt = 0; kpt < ct.num_kpts; kpt++)
-            ortho (Kptr[kpt]->kstates, kpt);
+
+        for (kpt = 0; kpt < ct.num_kpts; kpt++) {
+            Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
+        }
         
-#endif
     }
 
 
-    betaxpsi (Kptr[0]->kstates);
+    //betaxpsi (Kptr[0]->kstates);
+    Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr);
     mix_betaxpsi(0);
 
 #if 0

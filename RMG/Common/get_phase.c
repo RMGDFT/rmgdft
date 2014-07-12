@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_phase(ION *iptr, rmg_double_t *rtptr, int ip, int icount, int *dvec)
+ *   void get_phase(ION *iptr, double *rtptr, int ip, int icount, int *dvec)
  *   Generates the phase factors for the k-points 
  * INPUTS
  *   iptr: point to structure ION (see main.h )
@@ -40,18 +40,23 @@
 #include "main.h"
 #include "common_prototypes.h"
 
-void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
+void get_phase (ION * iptr, double * rtptr, int ip, int icount, int *dvec)
 {
 
     int kpt, idx, ix, iy, iz, docount;
-    rmg_double_t ax[3], bx[3], xc, yc, zc;
-    rmg_double_t kdr;
-    rmg_double_t hxgrid, hygrid, hzgrid;
+    int dimx, dimy, dimz, pbasis;
+    double ax[3], bx[3], xc, yc, zc;
+    double kdr;
+    double hxgrid, hygrid, hzgrid;
     SPECIES *sp;
 
     hxgrid = get_hxgrid();
     hygrid = get_hygrid();
     hzgrid = get_hzgrid();
+    dimx = get_PX0_GRID();
+    dimy = get_PY0_GRID();
+    dimz = get_PZ0_GRID();
+    pbasis = dimx * dimy * dimz;
 
     if (rtptr == NULL)
         return;
@@ -63,35 +68,29 @@ void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
 
-        idx = docount = 0;
+        idx = 0;
         xc = iptr->nlxcstart;
-        for (ix = 0; ix < sp->nldim; ix++)
+        for (ix = 0; ix < dimx; ix++)
         {
 
             yc = iptr->nlycstart;
-            for (iy = 0; iy < sp->nldim; iy++)
+            for (iy = 0; iy < dimy; iy++)
             {
 
                 zc = iptr->nlzcstart;
-                for (iz = 0; iz < sp->nldim; iz++)
+                for (iz = 0; iz < dimz; iz++)
                 {
 
-                    if (dvec[idx])
-                    {
-
-                        ax[0] = xc - iptr->xtal[0];
-                        ax[1] = yc - iptr->xtal[1];
-                        ax[2] = zc - iptr->xtal[2];
-                        to_cartesian (ax, bx);
-                        kdr = ct.kp[kpt].kvec[0] * bx[0] +
-                            ct.kp[kpt].kvec[1] * bx[1] + ct.kp[kpt].kvec[2] * bx[2];
+                    ax[0] = xc - iptr->xtal[0];
+                    ax[1] = yc - iptr->xtal[1];
+                    ax[2] = zc - iptr->xtal[2];
+                    to_cartesian (ax, bx);
+                    kdr = ct.kp[kpt].kvec[0] * bx[0] +
+                          ct.kp[kpt].kvec[1] * bx[1] + ct.kp[kpt].kvec[2] * bx[2];
 
 
-                        rtptr[docount + 2 * kpt * icount] = cos (kdr);
-                        rtptr[docount + 2 * kpt * icount + icount] = sin (kdr);
-                        docount++;
-
-                    }           /* end if */
+                    rtptr[idx + 2 * kpt * pbasis] = cos (kdr);
+                    rtptr[idx + 2 * kpt * pbasis + pbasis] = sin (kdr);
 
                     idx++;
 
@@ -105,8 +104,6 @@ void get_phase (ION * iptr, rmg_double_t * rtptr, int ip, int icount, int *dvec)
             xc += hxgrid;
         }                       /* end for */
 
-        if (docount != icount)
-            error_handler ("Something wrong with docount");
     }                           /* end for */
 
 

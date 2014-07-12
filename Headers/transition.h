@@ -37,6 +37,7 @@ extern "C" void mix_betaxpsi (int mix);
 extern "C" void rmg_lbfgs (void);
 extern "C" void write_restart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, STATE * states);
 
+template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
@@ -46,8 +47,27 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> void AppNls(Kpoint<OrbitalType> *kpoint, double *sintR, double *sintI);
+void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI);
+void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI);
+
 template <typename OrbitalType, typename CalcType> void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi);
+
+template <typename OrbitalType>
+void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> **Kptr);
+
+// Gamma point float version
+void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, void * kd,
+              double kmag, int dimx, int dimy, int dimz);
+// complex float version
+void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kd,
+              double kmag, int dimx, int dimy, int dimz);
+// Gamma point double version
+void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, void * kd,
+              double kmag, int dimx, int dimy, int dimz);
+
+void pack_to_complex(double *psi, int nstates, int pbasis);
+void pack_to_standard(double *psi, int nstates, int pbasis);
+
 
 
 

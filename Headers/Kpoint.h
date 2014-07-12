@@ -48,7 +48,7 @@ public:
     int get_nstates(void);
     int get_index(void);
     void orthogonalize(double *storage);
-    //void orthogonalize(std::complex<double> *storage);
+    void orthogonalize(std::complex<double> *storage);
 
 
     // BaseGrid class

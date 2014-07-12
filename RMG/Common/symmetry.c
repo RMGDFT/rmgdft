@@ -35,12 +35,11 @@
  *   to_crystal.c symmetry.f
  * SOURCE
  */
-
+#if 0
 #include <float.h>
 #include <math.h>
 #include "main.h"
 
-#if !GAMMA_PT
 
 static int s[MAX_SYMMETRY][3][3];
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
@@ -235,5 +234,4 @@ void symforce (void)
 }                               /* end symforce */
 
 #endif
-
 /******/

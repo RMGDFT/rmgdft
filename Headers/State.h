@@ -36,8 +36,9 @@ template <typename StateType> class State {
 
 public:
     State(void);
-    void normalize(double *tpsi, int istate);
-    //void normalize(std::complex<double> *tpsi, int istate);
+
+    void set_storage(StateType *storage);
+    void normalize(StateType *tpsi, int istate);
 
     // kpoint this state is attached to
     Kpoint<StateType> *Kptr;
@@ -57,7 +58,6 @@ public:
     // Occupation of the orbital
     double occupation[2];
 
-    void set_storage(StateType *storage);
 
 };
 

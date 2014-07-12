@@ -3,6 +3,7 @@
 #include "auxiliary.h"
 #include "packfuncs.h"
 #include <complex>
+#include <typeinfo>
 
 
 

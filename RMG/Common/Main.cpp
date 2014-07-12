@@ -106,8 +106,6 @@ double *vxc;
 // Pointer to Kpoint class array
 void **Kptr;
 
-bool is_gamma=TRUE;
-
 double *tau;
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
@@ -154,7 +152,7 @@ int main (int argc, char **argv)
     delete(RT1);
 
     RmgTimer *RT2 = new RmgTimer("Main: run");
-    if(is_gamma)
+    if(ct.is_gamma)
         run<double> ((Kpoint<double> **)Kptr);
     else
         run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr);
@@ -225,22 +223,37 @@ void initialize(int argc, char **argv)
         ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
 
         if(ct.kp[kpt].kmag == 0.0) {
+
             Kpoint<double> *ktmp;
 
             // Gamma point
+            ct.is_gamma = true;
+            rmg_printf("\nUSING REAL ORBITALS\n");
+
             Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
             ktmp = (Kpoint<double> *)Kptr[kpt];
             ktmp->kstates = &states[kpt*ct.num_states];
+            for(int st = 0;st < ct.num_states;st++) {
+                ktmp->Kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
+                ktmp->kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
+            }
 
         }
         else {
+
             Kpoint<std::complex<double>> *ktmp;
 
             // General case
-            is_gamma = FALSE;
+            ct.is_gamma = false;
+            rmg_printf("\nUSING COMPLEX ORBITALS\n");
+
             Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
             ktmp = (Kpoint<std::complex<double>> *)Kptr[kpt];
             ktmp->kstates = &states[kpt*ct.num_states];
+            for(int st = 0;st < ct.num_states;st++) {
+                ktmp->Kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
+                ktmp->kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
+            }
 
         }
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];
@@ -255,10 +268,12 @@ void initialize(int argc, char **argv)
     delete(RT);
 
     /* Perform any necessary initializations */
-    if((ct.num_kpts == 1) && (ct.kp[0].kmag == 0.0)) 
+    if(ct.is_gamma) {
         Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, (Kpoint<double> **)Kptr);
-    else
+    }
+    else {
         Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, (Kpoint<std::complex<double>> **)Kptr);
+    }
 
 
 

@@ -198,17 +198,12 @@ void get_nlop (void)
             }
 
 
-#if !GAMMA_PT
-
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion))
-                my_calloc (pct.phaseptr[ion], 2 * icount * ct.num_kpts + 128, rmg_double_t);
+                my_calloc (pct.phaseptr[ion], 2 * get_P0_BASIS() * ct.num_kpts + 128, rmg_double_t);
             else
                 pct.phaseptr[ion] = NULL;
-
-            get_phase (iptr, pct.phaseptr[ion], ip, icount, dvec);
-
-#endif
+            get_phase (iptr, pct.phaseptr[ion], ip, get_P0_BASIS(), dvec);
 
         }                       /* end if (map) */
 
@@ -308,30 +303,21 @@ void get_nlop (void)
 
     
     
-    /*Memory for nonlocal projectors */
+    // Set storage sequentially for real and imaginary components so we can transform storage pattern
     if (pct.newsintR_local)
         my_free (pct.newsintR_local);
     if (pct.oldsintR_local)
         my_free (pct.oldsintR_local);
     
-    my_calloc (pct.newsintR_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
+    my_calloc (pct.newsintR_local, 2 * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
                rmg_double_t);
-    my_calloc (pct.oldsintR_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
+    my_calloc (pct.oldsintR_local, 2 * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
                rmg_double_t);
 
-#if !GAMMA_PT
-    if (pct.newsintI_local)
-        my_free (pct.newsintI_local);
-    if (pct.oldsintI_local)
-        my_free (pct.oldsintI_local);
+    pct.newsintI_local = pct.newsintR_local + ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+    pct.oldsintI_local = pct.oldsintR_local + ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+
     
-    my_calloc (pct.newsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
-               rmg_double_t);
-    my_calloc (pct.oldsintI_local, ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
-               rmg_double_t);
-#endif
-
-
 
 #if 1
 
@@ -556,10 +542,8 @@ static void reset_pct_arrays (int num_ions)
 #endif
 
 
-#if !GAMMA_PT
         if (pct.phaseptr[ion])
             my_free (pct.phaseptr[ion]);
-#endif
     }
 
 
