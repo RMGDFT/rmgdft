@@ -117,6 +117,7 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
 
 
 
+        tol = 1.0e-15;
         PDSYGVX (&ione, jobz, range, uplo, &num_states, uu_dis, &ione, &ione, pct.desca,
                 l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
                 &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, work2, &lwork,
