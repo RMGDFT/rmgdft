@@ -81,7 +81,7 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
         rmg_double_t vx = 0.0;
         rmg_double_t tol = 0.0;
         int eigs_found, eigvs_found;
-        rmg_double_t orfac = -1.0;
+        rmg_double_t orfac = 0.0;
         int *iwork, *ifail, *iclustr, lwork;
         rmg_double_t *gap, lwork_tmp, *work2;
         int liwork_tmp, liwork;
