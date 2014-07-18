@@ -35,7 +35,7 @@
  *   to_crystal.c symmetry.f
  * SOURCE
  */
-#if 0
+
 #include <float.h>
 #include <math.h>
 #include "main.h"
@@ -44,15 +44,9 @@
 static int s[MAX_SYMMETRY][3][3];
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int ftau[MAX_SYMMETRY][3], ityp[MAX_IONS];
-static rmg_double_t tau[MAX_IONS][3];
+static double tau[MAX_IONS][3];
 static int nsym;
 
-
-
-typedef struct
-{
-    rmg_double_t s[FNZ_GRID][FNY_GRID][FNX_GRID];
-} DENS_ARRAY;
 
 
 /* This routine is used to initialize the symmetry structures */
@@ -60,8 +54,10 @@ void init_sym (void)
 {
     int nr1, nr2, nr3;
     int ion, kpt, wflag;
-    rmg_double_t celldm[6];
-    rmg_double_t *xk, *wk;
+    double celldm[6];
+    double *xk, *wk;
+    int ibrav = get_ibrav_type();
+
 
     /* This function uses MAX_IONS as a limit for array sizes.
      * It is, of course, possible to allocate these arrays dynamically,
@@ -87,8 +83,8 @@ void init_sym (void)
     }
 
 
-    my_malloc (xk, 3 * ct.num_kpts, rmg_double_t);
-    my_malloc (wk, ct.num_kpts, rmg_double_t);
+    my_malloc (xk, 3 * ct.num_kpts, double);
+    my_malloc (wk, ct.num_kpts, double);
 
     /* Set up special k-point positions and weights for fortran routines */
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
@@ -100,9 +96,9 @@ void init_sym (void)
     }
 
 
-    celldm[0] = ct.celldm[0];
-    celldm[1] = ct.celldm[1];
-    celldm[2] = ct.celldm[2];
+    celldm[0] = get_celldm(0);
+    celldm[1] = get_celldm(1);
+    celldm[2] = get_celldm(2);
     celldm[3] = 0.0;
     celldm[4] = 0.0;
     celldm[5] = 0.0;
@@ -110,9 +106,9 @@ void init_sym (void)
     if (ct.boundaryflag != CLUSTER)
     {
         /* Call the symmetry routine */
-        symmetry (&ct.ibrav, &s[0][0][0], &nsym, irg, &irt[0][0],
+        symmetry (&ibrav, &s[0][0][0], &nsym, irg, &irt[0][0],
                   &ftau[0][0], &ct.num_ions, &tau[0][0], ityp,
-                  &ct.num_kpts, xk, wk, ct.celldm, &nr1, &nr2, &nr3, &wflag);
+                  &ct.num_kpts, xk, wk, celldm, &nr1, &nr2, &nr3, &wflag);
     }
 
     my_free (xk);
@@ -123,13 +119,21 @@ void init_sym (void)
 
 
 /* Symmetrizes the density */
-void symmetrize_rho (FP0_GRID * rho)
+void symmetrize_rho (double * rho)
 {
 
-    int idx, ix, iy, iz, xoff, yoff, zoff, nr1, nr2, nr3;
-    DENS_ARRAY *da;
-    rmg_double_t t1;
+    int idx, ix, iy, iz, xoff, yoff, zoff;
+    double *da;
+    double t1;
 
+    int FPX0_GRID = get_FPX0_GRID();
+    int FPY0_GRID = get_FPY0_GRID();
+    int FPZ0_GRID = get_FPZ0_GRID();
+    int FP0_BASIS = get_FP0_BASIS();
+    int FNX_GRID = get_FNX_GRID();
+    int FNY_GRID = get_FNY_GRID();
+    int FNZ_GRID = get_FNZ_GRID();
+    int FN_BASIS = FNX_GRID * FNY_GRID * FNZ_GRID;
 
     /* Wait until all processors arrive at this point */
     /*my_barrier(); */
@@ -137,52 +141,64 @@ void symmetrize_rho (FP0_GRID * rho)
 
 
     /* Get some memory */
-    my_malloc (da, 1, DENS_ARRAY);
+    my_malloc (da, FN_BASIS, double);
 
 
+    for(idx = 0;idx < FN_BASIS;idx++) {
+        da[idx] = 0.0;
+    }
+
+#if 0
     for (ix = 0; ix < get_FNX_GRID(); ix++)
         for (iy = 0; iy < get_FNY_GRID(); iy++)
             for (iz = 0; iz < get_FNZ_GRID(); iz++)
                 da->s[iz][iy][ix] = 0.0;
+#endif
 
 
 
 
     /* Put this processors charge in the correct place */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = ix * pct.FPX0_GRID;
-    yoff = iy * pct.FPY0_GRID;
-    zoff = iz * pct.FPZ0_GRID;
+    xoff = ix * FPX0_GRID;
+    yoff = iy * FPY0_GRID;
+    zoff = iz * FPZ0_GRID;
 
+    int incx = FPY0_GRID * FPZ0_GRID;
+    int incy = FPZ0_GRID;
 
+    int incx1 = 1;
+    int incy1 = FNX_GRID;
+    int incz1 = FNX_GRID * FNY_GRID;
 
-    for (ix = 0; ix < pct.FPX0_GRID; ix++)
-        for (iy = 0; iy < pct.FPY0_GRID; iy++)
-            for (iz = 0; iz < pct.FPZ0_GRID; iz++)
-                da->s[iz + zoff][iy + yoff][ix + xoff] = rho->s1.b[ix][iy][iz];
-
+    for (ix = 0; ix < FPX0_GRID; ix++) {
+        for (iy = 0; iy < FPY0_GRID; iy++) {
+            for (iz = 0; iz < FPZ0_GRID; iz++) {
+                da[(iz + zoff)*incx1 + (iy + yoff)*incy1 + (ix + xoff)*incz1] = rho[ix * incx + iy*incy + iz];
+            }
+        }
+    }
 
     /* Call global sums to give everyone the full array */
-    idx = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
-    global_sums (&da->s[0][0][0], &idx, pct.grid_comm);
+    global_sums (da, &FP0_BASIS, pct.grid_comm);
 
 
     /* Do the symmetrization on this processor */
-    nr1 = get_FNX_GRID();
-    nr2 = get_FNY_GRID();
-    nr3 = get_FNZ_GRID();
 
-    symrho (&da->s[0][0][0], &nr1, &nr2, &nr3, &nsym, &s[0][0][0], irg, &ftau[0][0]);
+    symrho (da, &FNX_GRID, &FNY_GRID, &FNZ_GRID, &nsym, &s[0][0][0], irg, &ftau[0][0]);
 
 
     /* Pack density back into correct place */
-    t1 = (rmg_double_t) nsym;
+    t1 = (double) nsym;
     t1 = 1.0 / t1;
 
-    for (ix = 0; ix < pct.FPX0_GRID; ix++)
-        for (iy = 0; iy < pct.FPY0_GRID; iy++)
-            for (iz = 0; iz < pct.FPZ0_GRID; iz++)
-                rho->s1.b[ix][iy][iz] = da->s[iz + zoff][iy + yoff][ix + xoff] * t1;
+    for (ix = 0; ix < FPX0_GRID; ix++) {
+        for (iy = 0; iy < FPY0_GRID; iy++) {
+            for (iz = 0; iz < FPZ0_GRID; iz++) {
+                rho[ix * incx + iy*incy + iz] = da[(iz + zoff)*incx1 + (iy + yoff)*incy1 + (ix + xoff)*incz1] * t1;
+            }
+        }
+    }
 
 
     /* Release our memory */
@@ -196,16 +212,18 @@ void symmetrize_rho (FP0_GRID * rho)
 /* This routine is used to symmetrize the forces (MBN)*/
 void symforce (void)
 {
-    int ion, nr1, nr2, nr3;
-    rmg_double_t celldm[6], force[MAX_IONS][3];
+    int ion;
+    double celldm[6], force[MAX_IONS][3];
 
-    nr1 = get_NX_GRID();
-    nr2 = get_NY_GRID();
-    nr3 = get_NZ_GRID();
+    int NX_GRID = get_NX_GRID();
+    int NY_GRID = get_NY_GRID();
+    int NZ_GRID = get_NZ_GRID();
 
-    celldm[0] = ct.celldm[0];
-    celldm[1] = ct.celldm[1];
-    celldm[2] = ct.celldm[2];
+    int ibrav = get_ibrav_type();
+
+    celldm[0] = get_celldm(0);
+    celldm[1] = get_celldm(1);
+    celldm[2] = get_celldm(2);
     celldm[3] = 0.0;
     celldm[4] = 0.0;
     celldm[5] = 0.0;
@@ -219,8 +237,8 @@ void symforce (void)
         force[ion][2] = ct.ions[ion].force[ct.fpt[0]][2];
     }
 
-    fsymforces (&force[0][0], &s[0][0][0], irg, &irt[0][0], &ct.num_ions, &ct.ibrav,
-                &nsym, celldm, &nr1, &nr2, &nr3);
+    fsymforces (&force[0][0], &s[0][0][0], irg, &irt[0][0], &ct.num_ions, &ibrav,
+                &nsym, celldm, &NX_GRID, &NY_GRID, &NZ_GRID);
 
     /* Store forces back in c format */
 
@@ -233,5 +251,4 @@ void symforce (void)
 
 }                               /* end symforce */
 
-#endif
 /******/

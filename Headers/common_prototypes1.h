@@ -216,9 +216,7 @@ void init_wf (STATE *states);
 void init_nuc (rmg_double_t *vnuc, rmg_double_t *rhoc, rmg_double_t *rhocore);
 void init_pos (void);
 void init_sym (void);
-#if GAMMA_POINT
-void symmetrize_rho (FP0_GRID *rho);
-#endif
+void symmetrize_rho (double *rho);
 void symforce (void);
 void rmg_timings (int what, rmg_double_t time);
 rmg_double_t minimage (ION *ip1, ION *ip2, rmg_double_t *xtal_r);

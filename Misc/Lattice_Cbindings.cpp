@@ -85,6 +85,10 @@ extern "C" void latgen (double *celldm, double *a0, double *a1, double *a2, doub
 {
     Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
 }
+extern "C" void latgen_ (double *celldm, double *a0, double *a1, double *a2, double *OMEGAI, int *flag)
+{
+    Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
+}
 extern "C" double get_anisotropy(void)
 {
     double hmaxgrid = get_xside() * get_hxgrid();

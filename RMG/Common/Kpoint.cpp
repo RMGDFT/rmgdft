@@ -401,7 +401,104 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
     }
     else {
 
+      int incx=1;
+      double *cR = new double[this->nstates];
+      STATE *st;
 
+      st = this->kstates;
+      for(int ist1 = 0;ist1 < this->nstates;ist1++) {
+
+
+          // Normalize this orbital
+          this->Kstates[ist1].normalize(this->Kstates[ist1].psi, ist1);
+
+          /* This will calculate cR coefficients */
+          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
+
+              int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
+              int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+              double sumpsiR = 0.0;
+              double sumbetaR = 0.0;
+
+              int nidx = -1;
+              for (int ion = 0; ion < pct.num_owned_ions; ion++)
+              {
+                  int oion = pct.owned_ions_list[ion];
+
+                  ION *iptr = &ct.ions[oion];
+                  SPECIES *sp = &ct.sp[iptr->species];
+
+                  int nh = sp->nh;
+
+                  /* Figure out index of owned ion in nonloc_ions_list array*/
+                  do {
+
+                      nidx++;
+                      if (nidx >= pct.num_nonloc_ions)
+                          rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
+
+                  } while (pct.nonloc_ions_list[nidx] != oion);
+
+                  double *qqq = pct.qqq[oion];
+
+                  /* get<beta|psi1> and <beta|psi2> */
+                  double *sint1R = &pct.newsintR_local[sidx1 + nidx * this->nstates * ct.max_nl];
+                  double *sint2R = &pct.newsintR_local[sidx2 + nidx * this->nstates * ct.max_nl];
+
+
+                  for (int i = 0; i < nh; i++)
+                  {
+                      int inh = i * nh;
+                      double sri = sint1R[i];
+
+                      for (int j = 0; j < nh; j++)
+                      {
+                          sumbetaR += qqq[inh + j] * sri * sint2R[j];
+                      }                   /*end for j */
+                  }                       /*end for i */
+              }                           /*end for ion */
+
+              for (int idx = 0; idx < this->pbasis; idx++)
+              {
+                  sumpsiR = sumpsiR + std::real(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
+              }
+
+              cR[ist2] = vel * sumpsiR + sumbetaR;
+
+          }
+          int length = this->nstates - (ist1 + 1);
+          /*Sum coefficients over all processors */
+          if (length)
+          {
+              global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
+          }
+          /*Update wavefunctions */
+          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
+              //update_waves (st1, &st[ist2], ist1, ist2, this->kidx, cR[ist2], cI[ist2]);
+
+              KpointType cA(cR[ist2]);
+              for(int idx = 0;idx < this->pbasis;idx++) {
+                  this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
+                                                - cA * this->Kstates[ist1].psi[idx]; 
+              }
+              /* update localized <beta|psi2> */
+              for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+              {
+
+                  int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
+                  int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+
+                  double *ptr1R = &pct.newsintR_local[lsidx1 + ion * this->nstates * ct.max_nl];
+                  double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
+
+                  QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
+
+              }
+
+          }
+
+      }
+      delete [] cR;
     }
     
 }
