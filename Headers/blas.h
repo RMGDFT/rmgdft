@@ -154,10 +154,6 @@ void cpotrf (char *uplo, int *n, rmg_double_t * a, int *lda, int *info);
 void exch (rmg_double_t * d, rmg_double_t * s, rmg_double_t * u, rmg_double_t * v, rmg_double_t * ex, rmg_double_t * vx);
 void exchpbe (rmg_double_t * d, rmg_double_t * s, rmg_double_t * u, rmg_double_t * v, int *lgga, int *lpot,
               rmg_double_t * ex, rmg_double_t * vx);
-void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
-               int *ftau, int *nat, rmg_double_t * tau, int *ityp, int *nks,
-               rmg_double_t * xk, rmg_double_t * wk, rmg_double_t * celldm, int *nr1, int *nr2,
-               int *nr3, int *wflag);
 void symrho (rmg_double_t * rho, int *nr1, int *nr2, int *nr3, int *nsym, int *s,
              int *irg, int *ftau);
 void ssyev (char *jobz, char *uplo, int *numm, rmg_double_t * ss, int *numn,

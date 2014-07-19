@@ -60,7 +60,6 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
         vnuc_f[idx] = 0.0;
     }
 
-
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)
     {

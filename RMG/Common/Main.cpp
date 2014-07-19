@@ -223,6 +223,7 @@ void initialize(int argc, char **argv)
         ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
 
         if(ct.kp[kpt].kmag == 0.0) {
+//if(1) {
 
             Kpoint<double> *ktmp;
 

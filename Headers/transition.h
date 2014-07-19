@@ -27,6 +27,10 @@ MPI_Comm transition_get_grid_comm(void);
 void thread_barrier_wait(void);
 int transition_get_gridpe(void);
 void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
+void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
+               int *ftau, int *nat, rmg_double_t * tau, int *ityp, int *nks,
+               rmg_double_t * xk, rmg_double_t * wk, rmg_double_t * celldm, int *nr1, int *nr2,
+               int *nr3, rmg_double_t *a1, rmg_double_t *a2, rmg_double_t *a3, rmg_double_t *omega, int *wflag);
 }
 extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 extern "C" void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
@@ -49,6 +53,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr);
 void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI);
 void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI);
+//template <typename OrbitalType> void AppNls(Kpoint<OrbitalType> *kpoint, double *sintR, double *sintI);
 
 template <typename OrbitalType, typename CalcType> void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi);
 
@@ -60,6 +65,9 @@ void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, 
               double kmag, int dimx, int dimy, int dimz);
 // complex float version
 void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kd,
+              double kmag, int dimx, int dimy, int dimz);
+// complex double version
+void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kd,
               double kmag, int dimx, int dimy, int dimz);
 // Gamma point double version
 void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, void * kd,

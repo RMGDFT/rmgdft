@@ -310,7 +310,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(!ct.is_gamma)
         init_sym ();
 
-
     //Dprintf ("Allocate memory for arrays related to nonlocal PP");
     init_alloc_nonloc_mem ();
 

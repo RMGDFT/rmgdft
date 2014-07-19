@@ -177,6 +177,7 @@ rmg_double_t get_a2(int which);
 rmg_double_t get_b0(int which);
 rmg_double_t get_b1(int which);
 rmg_double_t get_b2(int which);
+rmg_double_t get_omega(void);
 
 
 void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int type);

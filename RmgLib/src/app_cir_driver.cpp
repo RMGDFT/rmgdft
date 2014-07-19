@@ -37,6 +37,7 @@
 template void CPP_app_cir_driver<float>(Lattice *, TradeImages *, float *, float *, int, int, int, int);
 template void CPP_app_cir_driver<double>(Lattice *, TradeImages *, double *, double *, int, int, int, int);
 template void CPP_app_cir_driver<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, int);
+template void CPP_app_cir_driver<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, int);
 
 template <typename RmgType>
 void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order)

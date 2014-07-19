@@ -355,9 +355,7 @@ void betaxpsi1_calculate (double * sintR_ptr, double * sintI_ptr, STATE * states
             pR = pct.phaseptr[ion];
             pR += 2 * kpt * stop;
             pI = pR + stop;
-//for(idx=0;idx<stop;idx++){
-//    printf("TTTTTT  %d  %d  %d  %d\n", nion, ion, pR[idx], pI[idx]);
-//}
+
             sintR = &sintR_ptr[nion * ct.num_states * ct.max_nl];
             sintI = &sintI_ptr[nion * ct.num_states * ct.max_nl];
 
@@ -385,18 +383,9 @@ void betaxpsi1_calculate (double * sintR_ptr, double * sintI_ptr, STATE * states
                 for (ip = 0; ip < sp->nh; ip++)
                 {
 
-//for(idx=0;idx<stop;idx++){
-//    printf("DCCCCCCCCCC  %d  %d  %d  %d  %d    %14.6e\n",P0_BASIS,ip, istate,nion,idx, weiptr[idx]);
-//}
-//sintR[ipindex]=0.0;
-//for(idx=0;idx<stop;idx++){
-//  sintR[ipindex]+=nlarrayR[idx]*weiptr[idx];
-//printf("CCCCCCCCCC  %d  %d  %d  %d  %d  %d    %14.6e\n",ip, istate,nion,idx, pR[idx],pI[idx], nlarrayR[idx]);
-//}
-//
                     sintR[ipindex] = get_vel() * QMD_ddot (stop, nlarrayR, incx, weiptr, incx);
                     sintI[ipindex] = get_vel() * QMD_ddot (stop, nlarrayI, incx, weiptr, incx);
-//printf("BBBBBBBBB  %d  %d   %14.6e  %14.6e\n", ion, ip, sintR[ipindex], sintI[ipindex]);
+
                     weiptr += P0_BASIS;
                     ipindex++;
 

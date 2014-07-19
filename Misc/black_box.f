@@ -4,7 +4,7 @@ c******************************************************************************
  
 *-----------------------------------------------------------------------
       subroutine symmetry(ibrav,s,nsym,irg,irt,ftau,nat,tau,ityp,nks,
-     &                    xk,wk,celldm,nr1,nr2,nr3, wflag)
+     &             xk,wk,celldm,nr1,nr2,nr3, a0, a1, a2, omega, wflag)
 *-----------------------------------------------------------------------
 
 * the subroutine generates the crystal cell in real space given the bravais
@@ -152,8 +152,19 @@ c******************************************************************************
      &       hxgrid,hygrid,hzgrid
       integer invs(3,3,48)
       real*8 celldm(6),omega
+      real*8 a0(3), a1(3), a2(3)
       logical invsym
       external checksym, error, ddsum, coset, matinv
+
+      at(1,1) = a0(1);
+      at(2,1) = a0(2);
+      at(3,1) = a0(3);
+      at(1,2) = a1(1);
+      at(2,2) = a1(2);
+      at(3,2) = a1(3);
+      at(1,3) = a2(1);
+      at(2,3) = a2(2);
+      at(3,3) = a2(3);
 
       if(nat .ge. natp) then
         print *,'symmetry  NAT  .GT.   NATP', nat, natp
@@ -167,7 +178,8 @@ c******************************************************************************
 
 
 c generate direct space vectors 
-      call latgen(ibrav,celldm,at(1,1),at(1,2),at(1,3),omega,1)
+c      call latgen_f(ibrav,celldm,at(1,1),at(1,2),at(1,3),omega,1)
+
 c reciprocal space vectors
       call recips_f(at(1,1),at(1,2),at(1,3),bg(1,1),bg(1,2),bg(1,3))
 
@@ -991,7 +1003,7 @@ cEmil      intrinsic my_pe
  
 
 * generate direct space vectors
-      call latgen(ibrav,celldm,at(1,1),at(1,2),at(1,3),omega,1)
+      call latgen_f(ibrav,celldm,at(1,1),at(1,2),at(1,3),omega,1)
 * reciprocal space vectors
       call recips_f(at(1,1),at(1,2),at(1,3),bg(1,1),bg(1,2),bg(1,3))
  

@@ -10,6 +10,7 @@
 template void CPP_pack_stop_axpy<double>(double*, double*, double, int, int, int);
 template void CPP_pack_stop_axpy<float>(float*, float*, double, int, int, int);
 template void CPP_pack_stop_axpy<std::complex<float> >(std::complex<float>*, std::complex<float>*, double, int, int, int);
+template void CPP_pack_stop_axpy<std::complex<double> >(std::complex<double>*, std::complex<double>*, double, int, int, int);
 
 template <typename RmgType>
 void CPP_pack_stop_axpy (RmgType * sg, RmgType * pg, double alpha, int dimx, int dimy, int dimz)

@@ -28,6 +28,10 @@ extern "C" double get_vel(void)
     double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     return Rmg_L.get_omega() / t1;
 }
+extern "C" double get_omega(void)
+{
+    return Rmg_L.get_omega();
+}
 extern "C" double get_vel_f(void)
 {
     double t1 = (double) (Rmg_G->get_NX_GRID(Rmg_G->get_default_FG_RATIO()) * Rmg_G->get_NY_GRID(Rmg_G->get_default_FG_RATIO()) * Rmg_G->get_NZ_GRID(Rmg_G->get_default_FG_RATIO()));
@@ -85,8 +89,9 @@ extern "C" void latgen (double *celldm, double *a0, double *a1, double *a2, doub
 {
     Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
 }
-extern "C" void latgen_ (double *celldm, double *a0, double *a1, double *a2, double *OMEGAI, int *flag)
+extern "C" void latgen_f_ (int *ibrav, double *celldm, double *a0, double *a1, double *a2, double *OMEGAI, int *flag)
 {
+    //*ibrav = Rmg_L.get_ibrav_type();
     Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
 }
 extern "C" double get_anisotropy(void)

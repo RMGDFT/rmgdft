@@ -57,7 +57,18 @@ void init_sym (void)
     double celldm[6];
     double *xk, *wk;
     int ibrav = get_ibrav_type();
+    double a0[3], a1[3], a2[3], omega;
 
+    a0[0] = get_a0(0);
+    a0[1] = get_a0(1);
+    a0[2] = get_a0(2);
+    a1[0] = get_a1(0);
+    a1[1] = get_a1(1);
+    a1[2] = get_a1(2);
+    a2[0] = get_a2(0);
+    a2[1] = get_a2(1);
+    a2[2] = get_a2(2);
+    omega = get_omega();
 
     /* This function uses MAX_IONS as a limit for array sizes.
      * It is, of course, possible to allocate these arrays dynamically,
@@ -108,7 +119,7 @@ void init_sym (void)
         /* Call the symmetry routine */
         symmetry (&ibrav, &s[0][0][0], &nsym, irg, &irt[0][0],
                   &ftau[0][0], &ct.num_ions, &tau[0][0], ityp,
-                  &ct.num_kpts, xk, wk, celldm, &nr1, &nr2, &nr3, &wflag);
+                  &ct.num_kpts, xk, wk, celldm, &nr1, &nr2, &nr3, a0, a1, a2, &omega, &wflag);
     }
 
     my_free (xk);
@@ -180,7 +191,7 @@ void symmetrize_rho (double * rho)
     }
 
     /* Call global sums to give everyone the full array */
-    global_sums (da, &FP0_BASIS, pct.grid_comm);
+    global_sums (da, &FN_BASIS, pct.grid_comm);
 
 
     /* Do the symmetrization on this processor */

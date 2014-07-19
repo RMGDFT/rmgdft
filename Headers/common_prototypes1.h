@@ -307,6 +307,8 @@ void my_barrier (void);
 /* Conversion between crystal and cartesian coordinate prototypes */
 void latgen (rmg_double_t *celldm, rmg_double_t *A0I, rmg_double_t *A1I, rmg_double_t *A2I,
              rmg_double_t *OMEGAI, int *flag);
+void latgen_f_ (int *ibrav, rmg_double_t *celldm, rmg_double_t *A0I, rmg_double_t *A1I, rmg_double_t *A2I,
+             rmg_double_t *OMEGAI, int *flag);
 void recips (void);
 void to_cartesian (rmg_double_t crystal[], rmg_double_t cartesian[]);
 void to_crystal (rmg_double_t crystal[], rmg_double_t cartesian[]);

@@ -39,6 +39,7 @@ template <typename RmgType>
 void CPP_app_smooth (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
 
 template void CPP_app_smooth<std::complex<float> > (std::complex<float> *, std::complex<float> *, int , int , int );
+template void CPP_app_smooth<std::complex<double> > (std::complex<double> *, std::complex<double> *, int , int , int );
 
 
 

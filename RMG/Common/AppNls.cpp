@@ -41,19 +41,19 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     int istate, proj_index;
 
     double *psiR = kpoint->orbital_storage;
-    double *work = kpoint->nv;
-    double *work2 = kpoint->ns;
+    double *nv = kpoint->nv;
+    double *ns = kpoint->ns;
     double *Bns = kpoint->Bns;
 
     if(pct.num_tot_proj == 0)
     {
         for(i = 0; i < num_states * P0_BASIS; i++)
         {
-            work[i] = 0.0;
+            nv[i] = 0.0;
             Bns[i] = 0.0;
         }
         for(int idx = 0;idx < num_states * P0_BASIS;idx++)
-            work2[idx] = psiR[idx];
+            ns[idx] = psiR[idx];
 
         return;
     }
@@ -132,11 +132,11 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
             &rzero,  (double *)nwork, &pct.num_tot_proj);
     dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
             &rone, (double *)pct.Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-            &rzero,  (double *)work, &P0_BASIS);
+            &rzero,  (double *)nv, &P0_BASIS);
 
 
     for(int idx = 0;idx < num_states * P0_BASIS;idx++)
-        work2[idx] = psiR[idx];
+        ns[idx] = psiR[idx];
 
     dgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
             &rone, (double *)pct.M_qqq,  &pct.num_tot_proj, (double *)sintR_compack, &pct.num_tot_proj,
@@ -145,7 +145,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     if(!ct.norm_conserving_pp) {
         dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
             &rone, (double *)pct.weight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-            &rone,  (double *)work2, &P0_BASIS);
+            &rone,  (double *)ns, &P0_BASIS);
     }
 
     dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
@@ -182,7 +182,7 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
 
 
 
-void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double * psiI, double * workR, double * workI, double *work2R, double *work2I, double *sintR, double *sintI, int state)
+void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double * psiI, double *nvR, double *nvI, double *nsR, double *nsI, double *sintR, double *sintI, int state)
 {
 
     int ion, gion, sindex;
@@ -196,7 +196,7 @@ void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double *
     double *psintI;
 
 
-    alloc =kptr->pbasis;
+    alloc = kptr->pbasis;
     if (alloc < ct.max_nlpoints)
         alloc = ct.max_nlpoints;
     double *nworkR = new double[alloc];
@@ -220,16 +220,16 @@ void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double *
 
     /* Zero out the work array */
     for (int idx = 0; idx <kptr->pbasis; idx++)
-        workR[idx] = 0.0;
+        nvR[idx] = 0.0;
     for (int idx = 0; idx <kptr->pbasis; idx++)
-        workI[idx] = 0.0;
+        nvI[idx] = 0.0;
 
 
     // Copy wavefunctions
     for(int idx = 0;idx < kptr->pbasis;idx++)
-        work2R[idx] = psiR[idx];
+        nsR[idx] = psiR[idx];
     for(int idx = 0;idx < kptr->pbasis;idx++)
-        work2I[idx] = psiI[idx];
+        nsI[idx] = psiI[idx];
 
     /* Loop over ions once again */
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
@@ -284,14 +284,14 @@ void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double *
             /* Write back the results */
             for (int idx = 0; idx < kptr->pbasis; idx++)
             {
-                workR[idx] += (nworkR[idx] * pR[idx] + nworkI[idx] * pI[idx]);
-                work2R[idx] += (nwork2R[idx] * pR[idx] + nwork2I[idx] * pI[idx]);
+                nvR[idx] += (nworkR[idx] * pR[idx] + nworkI[idx] * pI[idx]);
+                nsR[idx] += (nwork2R[idx] * pR[idx] + nwork2I[idx] * pI[idx]);
             }
 
             for (int idx = 0; idx < kptr->pbasis; idx++)
             {
-                workI[idx] += (-nworkR[idx] * pI[idx] + nworkI[idx] * pR[idx]);
-                work2I[idx] += (-nwork2R[idx] * pI[idx] + nwork2I[idx] * pR[idx]);
+                nvI[idx] += (-nworkR[idx] * pI[idx] + nworkI[idx] * pR[idx]);
+                nsI[idx] += (-nwork2R[idx] * pI[idx] + nwork2I[idx] * pR[idx]);
             }                       /* end for */
 
             for (int idx = 0; idx < kptr->pbasis; idx++)
@@ -303,6 +303,7 @@ void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double *
             }
 
         }
+
 
 
     }                           /* end for */
