@@ -167,7 +167,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         }
 
         t1 = sqrt (sum);
-rmg_printf("\nSSSSSS %d  %14.6f\n",istate,t1);
+//rmg_printf("\nSSSSSS %d  %14.6f\n",istate,t1);
         for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
             tpsi[idx] = tpsi[idx] * t1;
         }

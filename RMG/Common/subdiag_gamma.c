@@ -214,7 +214,8 @@ void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_
 {
 
     void *RT = BeginRmgTimer("Diagonalization");
-
+//return;
+//RRRRRRRR
 #if GPU_ENABLED
       cuCtxSynchronize();
 #endif

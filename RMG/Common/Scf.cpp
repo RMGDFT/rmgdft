@@ -90,7 +90,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     int ist, istop, P0_BASIS, FP0_BASIS;
     BaseThread *T = BaseThread::getBaseThread(0);
 
-
     /* to hold the send data and receive data of eigenvalues */
     double *rho_tot;   
     
@@ -164,7 +163,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
 
-
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
         t3 = -vtot[idx];
@@ -210,6 +208,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     
         RT1 = new RmgTimer("Scf steps: Beta x psi");
         Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr);
+
         //betaxpsi (Kptr[0]->kstates);
         delete(RT1);
 

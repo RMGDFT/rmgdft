@@ -318,187 +318,211 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
 template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 {
 
-   RmgTimer RT("Orthogonalization");
+    RmgTimer RT("Orthogonalization");
 
-   double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
-   vel = this->L->get_omega() / vel;
-
-
-   if(ct.norm_conserving_pp) {
-
-       int st, st1, length, idx, omp_tid;
-       double zero = 0.0;
-       double one = 1.0;
-       double *sarr;
-       const char *transt = "t";
-       const char *uplo = "l";
-
-       double *tarr = new double[this->nstates];
-       double *global_matrix = new double[this->nstates * this->nstates];
-
-       ssyrk( uplo, transt, &this->nstates, &this->pbasis, &one, this->orbital_storage, &this->pbasis,
-                   &zero, global_matrix, &this->nstates);
-
-       /* get the global part */
-       length = this->nstates * this->nstates;
-       MPI_Allreduce(MPI_IN_PLACE, global_matrix, length, MPI_DOUBLE, MPI_SUM, this->comm);
+    double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
+    vel = this->L->get_omega() / vel;
 
 
-       /* compute the cholesky factor of the overlap matrix */
-       cholesky(global_matrix, this->nstates);
+    if(ct.norm_conserving_pp) {
+
+        int st, st1, length, idx, omp_tid;
+        double zero = 0.0;
+        double one = 1.0;
+        double *sarr;
+        const char *transt = "t";
+        const char *uplo = "l";
+
+        double *tarr = new double[this->nstates];
+        double *global_matrix = new double[this->nstates * this->nstates];
+
+        ssyrk( uplo, transt, &this->nstates, &this->pbasis, &one, this->orbital_storage, &this->pbasis,
+                    &zero, global_matrix, &this->nstates);
+
+        /* get the global part */
+        length = this->nstates * this->nstates;
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, length, MPI_DOUBLE, MPI_SUM, this->comm);
 
 
-       // Get inverse of diagonal elements
-       for(st = 0;st < this->nstates;st++) tarr[st] = 1.0 / global_matrix[st + this->nstates * st];
+        /* compute the cholesky factor of the overlap matrix */
+        cholesky(global_matrix, this->nstates);
 
 
-    // This code may look crazy but there is a method to the madness. We copy a slice
-    // of the wavefunction array consisting of the values for all orbitals of a given
-    // basis point into a temporary array. Then we do the updates on each slice and
-    // parallelize over slices with OpenMP. This produces good cache behavior
-    // and excellent parformance on the XK6.
+        // Get inverse of diagonal elements
+        for(st = 0;st < this->nstates;st++) tarr[st] = 1.0 / global_matrix[st + this->nstates * st];
 
-       double *darr;
-    #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
-    {
-           omp_tid = omp_get_thread_num();
-           if(omp_tid == 0) darr = new double[this->nstates * omp_get_num_threads()];
-    #pragma omp barrier
 
-    #pragma omp for schedule(static, 1) nowait
-       for(idx = 0;idx < this->pbasis;idx++) {
+        // This code may look crazy but there is a method to the madness. We copy a slice
+        // of the wavefunction array consisting of the values for all orbitals of a given
+        // basis point into a temporary array. Then we do the updates on each slice and
+        // parallelize over slices with OpenMP. This produces good cache behavior
+        // and excellent parformance on the XK6.
 
-           sarr = &darr[omp_tid*this->nstates];
+        double *darr;
+        #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+        {
+               omp_tid = omp_get_thread_num();
+               if(omp_tid == 0) darr = new double[this->nstates * omp_get_num_threads()];
+        #pragma omp barrier
 
-           for (st = 0; st < this->nstates; st++) sarr[st] = this->orbital_storage[st*this->pbasis + idx];
+        #pragma omp for schedule(static, 1) nowait
+            for(idx = 0;idx < this->pbasis;idx++) {
 
-           for (st = 0; st < this->nstates; st++) {
+                sarr = &darr[omp_tid*this->nstates];
 
-               sarr[st] *= tarr[st];
+                for (st = 0; st < this->nstates; st++) sarr[st] = this->orbital_storage[st*this->pbasis + idx];
 
-               for (st1 = st+1; st1 < this->nstates; st1++) {
-                   sarr[st1] -= global_matrix[st1 + this->nstates*st] * sarr[st];
-               }
+                for (st = 0; st < this->nstates; st++) {
 
-           }
+                    sarr[st] *= tarr[st];
 
-           for (st = 0; st < this->nstates; st++) this->orbital_storage[st*this->pbasis + idx] = sarr[st];
+                    for (st1 = st+1; st1 < this->nstates; st1++) {
+                        sarr[st1] -= global_matrix[st1 + this->nstates*st] * sarr[st];
+                    }
 
-       }
-    }
+                }
 
-       delete [] darr;
+                for (st = 0; st < this->nstates; st++) this->orbital_storage[st*this->pbasis + idx] = sarr[st];
 
-       double tmp = 1.0 / sqrt(vel);
-       idx = this->nstates * this->pbasis;
-       for(int idx = 0;idx < this->nstates * this->pbasis;idx++) {
-           this->orbital_storage[idx] *= tmp;
-       }
+            }
+        }
 
-       delete [] global_matrix;
-       delete [] tarr;
+        delete [] darr;
+
+        double tmp = 1.0 / sqrt(vel);
+        idx = this->nstates * this->pbasis;
+        for(int idx = 0;idx < this->nstates * this->pbasis;idx++) {
+            this->orbital_storage[idx] *= tmp;
+        }
+
+        delete [] global_matrix;
+        delete [] tarr;
+
+#if 0
+        // RRRRR Check orthogonalization
+        double *varr = new double[this->nstates*this->nstates];
+        for(int idx=0;idx<this->nstates*this->nstates;idx++) varr[idx] = 0.0;
+        for(int st = 0;st < this->nstates;st++) {
+            for(int st1 = 0;st1 < this->nstates;st1++) {
+                for(int idx = 0;idx < this->pbasis;idx++) {
+                    varr[st*this->nstates + st1] = varr[st*this->nstates + st1] + vel*this->orbital_storage[st*this->pbasis + idx] * this->orbital_storage[st1*this->pbasis + idx];
+                }
+
+            }
+
+        }
+
+        int ll = this->nstates*this->nstates;
+        global_sums (varr, &ll, pct.grid_comm);
+
+        for(int st = 0;st < this->nstates;st++) {
+            for(int st1 = 0;st1 < this->nstates;st1++) {
+                rmg_printf("\nOOOOOOO  %d  %d  (%14.6f)\n", st, st1, varr[st*this->nstates + st1]);
+            }
+        }
+#endif
 
     }
     else {
 
-      int incx=1;
-      double *cR = new double[this->nstates];
-      STATE *st;
+        int incx=1;
+        double *cR = new double[this->nstates];
+        STATE *st;
 
-      st = this->kstates;
-      for(int ist1 = 0;ist1 < this->nstates;ist1++) {
-
-
-          // Normalize this orbital
-          this->Kstates[ist1].normalize(this->Kstates[ist1].psi, ist1);
-
-          /* This will calculate cR coefficients */
-          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-
-              int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
-              int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
-              double sumpsiR = 0.0;
-              double sumbetaR = 0.0;
-
-              int nidx = -1;
-              for (int ion = 0; ion < pct.num_owned_ions; ion++)
-              {
-                  int oion = pct.owned_ions_list[ion];
-
-                  ION *iptr = &ct.ions[oion];
-                  SPECIES *sp = &ct.sp[iptr->species];
-
-                  int nh = sp->nh;
-
-                  /* Figure out index of owned ion in nonloc_ions_list array*/
-                  do {
-
-                      nidx++;
-                      if (nidx >= pct.num_nonloc_ions)
-                          rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
-
-                  } while (pct.nonloc_ions_list[nidx] != oion);
-
-                  double *qqq = pct.qqq[oion];
-
-                  /* get<beta|psi1> and <beta|psi2> */
-                  double *sint1R = &pct.newsintR_local[sidx1 + nidx * this->nstates * ct.max_nl];
-                  double *sint2R = &pct.newsintR_local[sidx2 + nidx * this->nstates * ct.max_nl];
+        st = this->kstates;
+        for(int ist1 = 0;ist1 < this->nstates;ist1++) {
 
 
-                  for (int i = 0; i < nh; i++)
-                  {
-                      int inh = i * nh;
-                      double sri = sint1R[i];
+            // Normalize this orbital
+            this->Kstates[ist1].normalize(this->Kstates[ist1].psi, ist1);
 
-                      for (int j = 0; j < nh; j++)
-                      {
-                          sumbetaR += qqq[inh + j] * sri * sint2R[j];
-                      }                   /*end for j */
-                  }                       /*end for i */
-              }                           /*end for ion */
+            /* This will calculate cR coefficients */
+            for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
 
-              for (int idx = 0; idx < this->pbasis; idx++)
-              {
-                  sumpsiR = sumpsiR + std::real(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
-              }
+                int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
+                int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+                double sumpsiR = 0.0;
+                double sumbetaR = 0.0;
 
-              cR[ist2] = vel * sumpsiR + sumbetaR;
+                int nidx = -1;
+                for (int ion = 0; ion < pct.num_owned_ions; ion++)
+                {
+                    int oion = pct.owned_ions_list[ion];
 
-          }
-          int length = this->nstates - (ist1 + 1);
-          /*Sum coefficients over all processors */
-          if (length)
-          {
-              global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
-          }
-          /*Update wavefunctions */
-          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-              //update_waves (st1, &st[ist2], ist1, ist2, this->kidx, cR[ist2], cI[ist2]);
+                    ION *iptr = &ct.ions[oion];
+                    SPECIES *sp = &ct.sp[iptr->species];
 
-              KpointType cA(cR[ist2]);
-              for(int idx = 0;idx < this->pbasis;idx++) {
-                  this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
-                                                - cA * this->Kstates[ist1].psi[idx]; 
-              }
-              /* update localized <beta|psi2> */
-              for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
-              {
+                    int nh = sp->nh;
 
-                  int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
-                  int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+                    /* Figure out index of owned ion in nonloc_ions_list array*/
+                    do {
 
-                  double *ptr1R = &pct.newsintR_local[lsidx1 + ion * this->nstates * ct.max_nl];
-                  double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
+                        nidx++;
+                        if (nidx >= pct.num_nonloc_ions)
+                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
 
-                  QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
+                    } while (pct.nonloc_ions_list[nidx] != oion);
 
-              }
+                    double *qqq = pct.qqq[oion];
 
-          }
+                    /* get<beta|psi1> and <beta|psi2> */
+                    double *sint1R = &pct.newsintR_local[sidx1 + nidx * this->nstates * ct.max_nl];
+                    double *sint2R = &pct.newsintR_local[sidx2 + nidx * this->nstates * ct.max_nl];
 
-      }
-      delete [] cR;
+
+                    for (int i = 0; i < nh; i++)
+                    {
+                        int inh = i * nh;
+                        double sri = sint1R[i];
+
+                        for (int j = 0; j < nh; j++)
+                        {
+                            sumbetaR += qqq[inh + j] * sri * sint2R[j];
+                        }                   /*end for j */
+                    }                       /*end for i */
+                }                           /*end for ion */
+
+                for (int idx = 0; idx < this->pbasis; idx++)
+                {
+                    sumpsiR = sumpsiR + std::real(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
+                }
+
+                cR[ist2] = vel * sumpsiR + sumbetaR;
+
+            }
+            int length = this->nstates - (ist1 + 1);
+            /*Sum coefficients over all processors */
+            if (length)
+            {
+                global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
+            }
+            /*Update wavefunctions */
+            for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
+                //update_waves (st1, &st[ist2], ist1, ist2, this->kidx, cR[ist2], cI[ist2]);
+  
+                KpointType cA(cR[ist2]);
+                for(int idx = 0;idx < this->pbasis;idx++) {
+                    this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
+                                                  - cA * this->Kstates[ist1].psi[idx]; 
+                }
+                /* update localized <beta|psi2> */
+                for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+                {
+
+                    int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
+                    int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+
+                    double *ptr1R = &pct.newsintR_local[lsidx1 + ion * this->nstates * ct.max_nl];
+                    double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
+
+                    QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
+
+                }
+
+            }
+
+        }
+        delete [] cR;
     }
     
 }
@@ -563,6 +587,9 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
            }
 
        }
+
+       int ll = 2*this->nstates*this->nstates;
+       global_sums ((double *)tarr, &ll, pct.grid_comm);
 
        for(int st = 0;st < this->nstates;st++) {
            for(int st1 = 0;st1 < this->nstates;st1++) {

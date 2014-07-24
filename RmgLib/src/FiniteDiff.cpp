@@ -522,7 +522,6 @@ void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy,
     c110 = 1.0 / 144.0;
     c200 = -1.0 / 240.0;
 
-
     // Handle the general case first
     if(dimz % 4) {
 
@@ -753,9 +752,9 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType cc=0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
     RmgType ihx, ihy, ihz;
-    RmgType ONE_t = 1.0;
-    RmgType TWO_t = 2.0;
-    RmgType FOUR_t = 4.0;
+    RmgType ONE_t(1.0);
+    RmgType TWO_t(2.0);
+    RmgType FOUR_t(4.0);
 
     ihx = 1.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     ihy = 1.0 / (gridhy * gridhy * L->get_yside() * L->get_yside());

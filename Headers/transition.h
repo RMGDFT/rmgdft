@@ -76,6 +76,8 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl
 void pack_to_complex(double *psi, int nstates, int pbasis);
 void pack_to_standard(double *psi, int nstates, int pbasis);
 
+extern "C" void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s,
+    int dimx, int dimy, int dimz, rmg_double_t hx, rmg_double_t hy, rmg_double_t hz, int order);
 
 
 

@@ -57,7 +57,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
 
         return;
     }
-            
+
     alloc = P0_BASIS;
 
     alloc = pct.num_tot_proj * num_states;
@@ -131,7 +131,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
             &rone, (double *)pct.M_dnm,  &pct.num_tot_proj, (double *)sintR_compack, &pct.num_tot_proj,
             &rzero,  (double *)nwork, &pct.num_tot_proj);
     dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
-            &rone, (double *)pct.Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
+            &rone, (double *)pct.weight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
             &rzero,  (double *)nv, &P0_BASIS);
 
 

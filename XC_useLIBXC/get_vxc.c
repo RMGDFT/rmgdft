@@ -15,15 +15,9 @@ void get_vxc (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocor
 
     FP0_BASIS = get_FP0_BASIS();
  
-    if (ct.spin_flag)
-    {
-    	my_malloc (exc, 3 * FP0_BASIS, rmg_double_t);
-	nrho_oppo = exc + 2 * FP0_BASIS;
-    }
-    else
-    	my_malloc (exc, 2 * FP0_BASIS, rmg_double_t);
-    
-    nrho = exc + FP0_BASIS;
+    my_malloc (exc, FP0_BASIS, rmg_double_t);
+    my_malloc (nrho, FP0_BASIS, rmg_double_t);
+    my_malloc (nrho_oppo, FP0_BASIS, rmg_double_t);
 
 
     /* Add in the nonlinear core charges correction from pseudopotential file */
@@ -46,6 +40,8 @@ void get_vxc (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocor
     get_vxc_exc(nrho, nrho_oppo, vxc, exc, ct.xctype);
 
 
+    my_free (nrho_oppo);
+    my_free (nrho);
     my_free (exc);
 
 

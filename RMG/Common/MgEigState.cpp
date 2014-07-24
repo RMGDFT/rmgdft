@@ -41,6 +41,7 @@
 #include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
+#include "GlobalSums.h"
 #include "packfuncs.h"
 #include "transition.h"
 
@@ -49,6 +50,12 @@ void CopyAndConvert(int n, double *A, float *B)
 {
     for(int idx = 0;idx < n;idx++)
         B[idx] = (float)A[idx];
+}
+
+void CopyAndConvert(int n, double *A, double *B)
+{
+    for(int idx = 0;idx < n;idx++)
+        B[idx] = A[idx];
 }
 
 void CopyAndConvert(int n, std::complex<double> *A, std::complex<float> *B)
@@ -86,7 +93,25 @@ void ComputeEig(int n, float *A, float *B, float *D, double *rval)
     }
 
     int length = 2;
-    global_sums (s1, &length, pct.grid_comm);
+    GlobalSums (s1, length, pct.grid_comm);
+
+    *rval = (s1[0] / (2.0 * s1[1]));
+
+}
+
+void ComputeEig(int n, double *A, double *B, double *D, double *rval)
+{
+    double s1[2];
+    s1[0] = 0.0;
+    s1[1] = 0.0;
+
+    for(int idx = 0;idx < n;idx++) {
+        s1[0] += (double)A[idx] * (double)B[idx];
+        s1[1] += (double)A[idx] * (double)D[idx];
+    }
+
+    int length = 2;
+    GlobalSums (s1, length, pct.grid_comm);
 
     *rval = (s1[0] / (2.0 * s1[1]));
 
@@ -108,7 +133,7 @@ void ComputeEig(int n, std::complex<float> *A, std::complex<float> *B, std::comp
     }
 
     int length = 4;
-    global_sums (s1, &length, pct.grid_comm);
+    GlobalSums (s1, length, pct.grid_comm);
     *rval = ((s1[0] + s1[1]) / (2.0 * (s1[2] + s1[3])));
 
 }
@@ -128,7 +153,7 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
     }
 
     int length = 4;
-    global_sums (s1, &length, pct.grid_comm);
+    GlobalSums (s1, length, pct.grid_comm);
     *rval = ((s1[0] + s1[1]) / (2.0 * (s1[2] + s1[3])));
 
 }
@@ -162,7 +187,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
     double hxgrid, hygrid, hzgrid, sb_step;
     Mgrid MG(L, T);
 
-
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
     dimx = G->get_PX0_GRID(1);
     dimy = G->get_PY0_GRID(1);
@@ -180,23 +204,23 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
     sbasis = sp->sbasis;
 
     /* Grab some memory */
-    CalcType *res2_t = new CalcType[2 * sbasis];
+    CalcType *res2_t = new CalcType[2*sbasis];
     CalcType *work2_t = new CalcType[4 * sbasis];
     CalcType *work1_t = new CalcType[4 * sbasis];
     work1 = new double[4 * sbasis];
 
     CalcType *sg_psi_t = new CalcType[2 * sbasis];
-    res = new double[sbasis];
+    res = new double[2*sbasis];
     CalcType *sg_twovpsi_t = new CalcType[2 * sbasis];
 
     CalcType *res2 = new CalcType[2 * sbasis];
     OrbitalType *saved_psi = new OrbitalType[2 * sbasis];
-    nvtot_psi = new double[sbasis];
+    nvtot_psi = new double[2*sbasis];
     CalcType *tmp_psi_t = new CalcType[2 * sbasis];
     CalcType *res_t = new CalcType[2 * sbasis];
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psiR;
-    std::complex<double> *kdr = new std::complex<double>[2*pbasis];
+    std::complex<double> *kdr = new std::complex<double>[2*sbasis];
     for(int idx = 0;idx < pbasis;idx++) kdr[idx] = 0.0;
 
 
@@ -247,9 +271,7 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
         RT1 = new RmgTimer("Mg_eig: app_cil");
         diag = CPP_app_cil_driver<CalcType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         delete(RT1);
-
         diag = -1.0 / diag;
-
 
         // if complex orbitals apply gradient to psi and compute dot products
         if(typeid(OrbitalType) == typeid(std::complex<double>)) {
@@ -275,7 +297,9 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
         }
 
         // Copy saved application to ns to res
-        QMD_copy(sbasis, res2_t, 1, res_t, 1);
+        for(int idx=0;idx < pbasis;idx++) {
+            res_t[idx] = res2_t[idx];
+        }
 
         if(potential_acceleration) {
             /* Generate 2 * V * psi */
@@ -285,12 +309,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
             CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, nv, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
         }
 
-
         /* B operating on 2*V*psi stored in work1 */
         RT1 = new RmgTimer("Mg_eig: app_cir");
         CPP_app_cir_driver<CalcType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
-//        for(idx = 0; idx < dimx * dimy * dimz; idx++) work1_t[idx] += TWO * nv[idx];
 
 
         for(int idx=0;idx < pbasis;idx++) {
@@ -302,7 +324,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
         {
 
             ComputeEig(pbasis, tmp_psi_t, work1_t, res_t, &eig);
-
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
@@ -380,6 +401,8 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
              */
 
             t1 = -1.0;
+//RRRRRRR
+//t1 = 0.0;
             CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 
 

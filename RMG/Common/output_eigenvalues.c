@@ -82,7 +82,7 @@ void output_eigenvalues (STATE * states, int ikbs, int iscf)
             		if (is % 4 == 0)
                 		printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
 
-            		printf ("   %9.4f [%5.3f]%s",
+            		printf ("   %8.4f [%5.3f]%s",
                     		st[is].eig[idx] * Ha_eV, st[is].occupation[idx], ((is % 4 == 3) ? "\n" : ""));
         	}
         	printf ("\n");

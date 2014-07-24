@@ -123,28 +123,6 @@ void betaxpsi1 (STATE * states, int kpt)
     }
     else {
         betaxpsi1_calculate (sintR, sintI, states, kpt);
-#if 0
-        double *tpsi;
-        int jdx,stt;
-        my_malloc(tpsi, ct.num_states*get_P0_BASIS(), double);
-        jdx=0;
-        for(stt=0;stt<ct.num_states;stt++) {
-            for(idx=0;idx<get_P0_BASIS();idx++) {
-                tpsi[jdx] = states[stt].psiR[idx];
-                jdx++;
-            }
-        }
-        betaxpsi1_calculate_gamma (sintR, tpsi);
-        jdx=0;
-        for(stt=0;stt<ct.num_states;stt++) {
-            for(idx=0;idx<get_P0_BASIS();idx++) {
-                tpsi[jdx] = states[stt].psiI[idx];
-                jdx++;
-            }
-        }
-        betaxpsi1_calculate_gamma (sintI, tpsi);
-        my_free(tpsi);
-#endif
     }
 
 

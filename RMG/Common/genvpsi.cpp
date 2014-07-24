@@ -67,7 +67,7 @@ void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, 
 
             for (iz = 0; iz < dimz; iz++)
             {
-                sg_twovpsi[(ix) * incx + (iy) * incy + iz] =
+                sg_twovpsi[ix * incx + iy * incy + iz] =
                     TWO * psi[ix * incx + iy * incy + iz] *
                     vtot[ix * incx + iy * incy + iz] + TWO * vnl[ix * incx + iy * incy + iz];
             }                   /* end for */
@@ -80,7 +80,7 @@ void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, 
 }                               /* end genvpsi */
 
 // Gamma point double version
-void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, double * kdp,
+void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, void * kdp,
               double kmag, int dimx, int dimy, int dimz)
 {
 
