@@ -49,8 +49,8 @@
 #include "../Headers/prototypes.h"
 
 
-template void Betaxpsi<double> (BaseGrid *, TradeImages *, Lattice *, Kpoint<double> **);
-template void Betaxpsi<std::complex<double> > (BaseGrid *, TradeImages *, Lattice *, Kpoint<std::complex<double>> **);
+template void Betaxpsi<double> (BaseGrid *, TradeImages *, Lattice *, Kpoint<double> *);
+template void Betaxpsi<std::complex<double> > (BaseGrid *, TradeImages *, Lattice *, Kpoint<std::complex<double>> *);
 
 // Transitional functions used to pack orbital array
 void pack_to_complex(double *psi, int nstates, int pbasis)
@@ -102,19 +102,16 @@ void pack_to_standard(double *psi, int nstates, int pbasis)
 // to the old storage format, applies the operators and then transforms the output array
 // to the new storage format.
 template <typename OrbitalType>
-void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> **Kptr)
+void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> *Kptr)
 {
 
-
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
-        if(typeid(OrbitalType) == typeid(std::complex<double>)) {
-            pack_to_standard((double *)Kptr[kpt]->orbital_storage, Kptr[kpt]->nstates, Kptr[kpt]->pbasis);
-            betaxpsi1 (Kptr[kpt]->kstates, kpt);
-            pack_to_complex((double *)Kptr[kpt]->orbital_storage, Kptr[kpt]->nstates, Kptr[kpt]->pbasis);
-        }
-        else {
-            betaxpsi1 (Kptr[kpt]->kstates, kpt);
-        }
+    if(typeid(OrbitalType) == typeid(std::complex<double>)) {
+        pack_to_standard((double *)Kptr->orbital_storage, Kptr->nstates, Kptr->pbasis);
+        betaxpsi1 (Kptr->kstates, Kptr->kidx);
+        pack_to_complex((double *)Kptr->orbital_storage, Kptr->nstates, Kptr->pbasis);
+    }
+    else {
+        betaxpsi1 (Kptr->kstates, Kptr->kidx);
     }
 
 }

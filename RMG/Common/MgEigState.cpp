@@ -401,8 +401,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
              */
 
             t1 = -1.0;
-//RRRRRRR
-//t1 = 0.0;
             CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 
 

@@ -1,4 +1,5 @@
 add_library (Misc
+black_box.f
 RmgTimer_Cbindings.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp

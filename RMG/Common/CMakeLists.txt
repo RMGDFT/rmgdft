@@ -1,4 +1,6 @@
 add_library (RMG_Common
+GetNewRho.cpp
+Betaxpsi.cpp
 Init.cpp
 Main.cpp
 AppNls.cpp

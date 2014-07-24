@@ -479,8 +479,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //betaxpsi (Kptr[0]->kstates);
-    Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr);
-    mix_betaxpsi(0);
+    for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+        Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr[kpt]);
+        mix_betaxpsi(0);
+    }
 
 #if 0
     /*Setup things for mulliken population analysis */

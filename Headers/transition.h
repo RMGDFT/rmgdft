@@ -58,7 +58,7 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI);
 template <typename OrbitalType, typename CalcType> void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi);
 
 template <typename OrbitalType>
-void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> **Kptr);
+void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> *Kptr);
 
 // Gamma point float version
 void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, void * kd,
