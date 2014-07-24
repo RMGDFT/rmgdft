@@ -13,6 +13,7 @@
 #
 #
 cmake_minimum_required (VERSION 2.6) 
+enable_language(Fortran)
 project (RMG C CXX Fortran) 
 
 # Detect system type
