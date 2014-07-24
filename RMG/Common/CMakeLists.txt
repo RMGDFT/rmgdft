@@ -85,7 +85,6 @@ betaxpsi1.c
 symmetry.c
 lbfgs.c
 assign_weight.c
-#init.c
 nlforce_par_Q.c
 init_fftw_wisdom.c
 lcao_get_awave.c
@@ -98,7 +97,6 @@ assign_weight2.c
 write_avgv.c
 move_ions.c
 ranv.c
-init_wf.c
 print_density_z_direction.c
 get_derweight.c
 get_ke.c
