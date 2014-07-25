@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
+#include <complex>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -44,8 +44,6 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "blas.h"
-#include <complex>
-#include "transition.h"
 #include "../Headers/prototypes.h"
 
 

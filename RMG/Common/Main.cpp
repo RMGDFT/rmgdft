@@ -204,14 +204,12 @@ void initialize(int argc, char **argv)
     /* initialize states */
     states = init_states (); 
 
-    // Set up kpoints
     /* Initialize some k-point stuff */
     Kptr = new void * [ct.num_kpts];
 
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
-    {
+    ct.is_gamma = true;
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
         double v1, v2, v3;
-
         v1 = twoPI * ct.kp[kpt].kpt[0] / Rmg_L.get_xside();
         v2 = twoPI * ct.kp[kpt].kpt[1] / Rmg_L.get_yside();
         v3 = twoPI * ct.kp[kpt].kpt[2] / Rmg_L.get_zside();
@@ -219,15 +217,20 @@ void initialize(int argc, char **argv)
         ct.kp[kpt].kvec[0] = v1;
         ct.kp[kpt].kvec[1] = v2;
         ct.kp[kpt].kvec[2] = v3;
-
         ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
 
-        if(ct.kp[kpt].kmag == 0.0) {
+        if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
+    }
+
+
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+    {
+
+        if(ct.is_gamma) {
 
             Kpoint<double> *ktmp;
 
             // Gamma point
-            ct.is_gamma = true;
             rmg_printf("\nUSING REAL ORBITALS\n");
 
             Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
@@ -244,7 +247,6 @@ void initialize(int argc, char **argv)
             Kpoint<std::complex<double>> *ktmp;
 
             // General case
-            ct.is_gamma = false;
             rmg_printf("\nUSING COMPLEX ORBITALS\n");
 
             Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);

@@ -165,7 +165,7 @@ extern STATE *states;
 static std::mutex vtot_sync_mutex;
 
 template void MgEigState<double,float>(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
-//template void MgEigState<std::complex<double>, std::complex<float> >(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
+template void MgEigState<std::complex<double>, std::complex<float> >(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
 
 template <typename OrbitalType, typename CalcType>
 void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi)

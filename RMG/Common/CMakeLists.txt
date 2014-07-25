@@ -21,6 +21,7 @@ get_gamma.c
 get_nlop.c
 app_nls.c
 fastrelax.c
+MixBetaxpsi.cpp
 mix_betaxpsi.c
 open_restart_file.c
 scalapack_tools.c

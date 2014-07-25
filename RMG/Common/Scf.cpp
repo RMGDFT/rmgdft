@@ -238,8 +238,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
             // Process any remaining states in serial fashion
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
-                //MgEigState<OrbitalType> (Rmg_G, Rmg_T, 
-                mg_eig_state_driver (&Kptr[kpt]->kstates[st1], 0, vtot_psi);
+                if(ct.is_gamma) {
+                    MgEigState<double,float> (Rmg_G, Rmg_T, &Rmg_L, &Kptr[kpt]->kstates[st1], 0, vtot_psi);
+                }
+                else {
+                    MgEigState<std::complex<double>, std::complex<float> > (Rmg_G, Rmg_T, &Rmg_L, &Kptr[kpt]->kstates[st1], 0, vtot_psi);
+                }
+//                mg_eig_state_driver (&Kptr[kpt]->kstates[st1], 0, vtot_psi);
             }
             delete(RT1);
 
@@ -302,9 +307,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         
         /*Get oldsintR*/
         if (diag_this_step)
-            mix_betaxpsi(0);
+            MixBetaxpsi(0, kpt);
         else 
-            mix_betaxpsi(1);
+            MixBetaxpsi(1, kpt);
         
 
         if (spin_flag)
