@@ -185,7 +185,7 @@ void symmetrize_rho (double * rho)
     for (ix = 0; ix < FPX0_GRID; ix++) {
         for (iy = 0; iy < FPY0_GRID; iy++) {
             for (iz = 0; iz < FPZ0_GRID; iz++) {
-                da[(iz + zoff)*incx1 + (iy + yoff)*incy1 + (ix + xoff)*incz1] = rho[ix * incx + iy*incy + iz];
+                da[(iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] = rho[ix * incx + iy*incy + iz];
             }
         }
     }
@@ -206,7 +206,7 @@ void symmetrize_rho (double * rho)
     for (ix = 0; ix < FPX0_GRID; ix++) {
         for (iy = 0; iy < FPY0_GRID; iy++) {
             for (iz = 0; iz < FPZ0_GRID; iz++) {
-                rho[ix * incx + iy*incy + iz] = da[(iz + zoff)*incx1 + (iy + yoff)*incy1 + (ix + xoff)*incz1] * t1;
+                rho[ix * incx + iy*incy + iz] = da[(iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] * t1;
             }
         }
     }
