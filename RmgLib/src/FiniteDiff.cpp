@@ -755,6 +755,7 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType ONE_t(1.0);
     RmgType TWO_t(2.0);
     RmgType FOUR_t(4.0);
+    RmgType SIX_t(6.0);
 
     ihx = 1.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     ihy = 1.0 / (gridhy * gridhy * L->get_yside() * L->get_yside());
@@ -766,28 +767,103 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
 
-    switch (ibrav)
-    {
+    switch (ibrav) {
 
-    case CUBIC_PRIMITIVE:
-    case ORTHORHOMBIC_PRIMITIVE:
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
 
-        if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
-        {
-
-            cc = - TWO_t * ihx;
-            cc = cc - TWO_t * ihy;
-            cc = cc - TWO_t * ihz;
-            fcx = ONE_t * ihx;
-
-            for (ix = 1; ix <= dimx; ix++)
+            if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
-                ixs = ix * incx;
-                ixms = (ix - 1) * incx;
-                ixps = (ix + 1) * incx;
 
-                if (dimy % 2)
+                cc = - TWO_t * ihx;
+                cc = cc - TWO_t * ihy;
+                cc = cc - TWO_t * ihz;
+                fcx = ONE_t * ihx;
+
+                for (ix = 1; ix <= dimx; ix++)
                 {
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
+
+                    if (dimy % 2)
+                    {
+
+                        for (iy = 1; iy <= dimy; iy++)
+                        {
+                            iys = iy * incy;
+                            iyms = (iy - 1) * incy;
+                            iyps = (iy + 1) * incy;
+
+                            for (iz = 1; iz <= dimz; iz++)
+                            {
+
+                                b[ixs + iys + iz] =
+                                    cc * a[ixs + iys + iz] +
+                                    fcx * (a[ixms + iys + iz] +
+                                           a[ixps + iys + iz] +
+                                           a[ixs + iyms + iz] +
+                                           a[ixs + iyps + iz] +
+                                           a[ixs + iys + (iz - 1)] + a[ixs + iys + (iz + 1)]);
+
+
+                            }       /* end for */
+
+                        }           /* end for */
+
+                    }
+                    else
+                    {
+
+                        for (iy = 1; iy <= dimy; iy += 2)
+                        {
+                            iys = iy * incy;
+                            iyms = (iy - 1) * incy;
+                            iyps = (iy + 1) * incy;
+
+                            for (iz = 1; iz <= dimz; iz++)
+                            {
+
+                                b[ixs + iys + iz] =
+                                    cc * a[ixs + iys + iz] +
+                                    fcx * (a[ixs + iys + (iz - 1)] +
+                                           a[ixs + iys + (iz + 1)] +
+                                           a[ixms + iys + iz] +
+                                           a[ixps + iys + iz] +
+                                           a[ixs + iyms + iz] + a[ixs + iyps + iz]);
+
+                                b[ixs + iyps + iz] =
+                                    cc * a[ixs + iyps + iz] +
+                                    fcx * (a[ixs + iyps + (iz - 1)] +
+                                           a[ixs + iyps + (iz + 1)] +
+                                           a[ixms + iyps + iz] +
+                                           a[ixps + iyps + iz] +
+                                           a[ixs + iys + iz] + a[ixs + iyps + incy + iz]);
+
+                            }       /* end for */
+
+                        }           /* end for */
+
+                    }               /* end if */
+
+                }                   /* end for */
+
+            }
+            else
+            {
+
+                cc = - TWO_t * ihx;
+                cc = cc - TWO_t * ihy;
+                cc = cc - TWO_t * ihz;
+                fcx = ONE_t * ihx;
+                fcy = ONE_t * ihy;
+                fcz = ONE_t * ihz;
+
+                for (ix = 1; ix <= dimx; ix++)
+                {
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
 
                     for (iy = 1; iy <= dimy; iy++)
                     {
@@ -800,64 +876,27 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
 
                             b[ixs + iys + iz] =
                                 cc * a[ixs + iys + iz] +
-                                fcx * (a[ixms + iys + iz] +
-                                       a[ixps + iys + iz] +
-                                       a[ixs + iyms + iz] +
-                                       a[ixs + iyps + iz] +
-                                       a[ixs + iys + (iz - 1)] + a[ixs + iys + (iz + 1)]);
+                                fcx * a[ixms + iys + iz] +
+                                fcx * a[ixps + iys + iz] +
+                                fcy * a[ixs + iyms + iz] +
+                                fcy * a[ixs + iyps + iz] +
+                                fcz * a[ixs + iys + (iz - 1)] + fcz * a[ixs + iys + (iz + 1)];
 
 
-                        }       /* end for */
+                        }           /* end for */
 
-                    }           /* end for */
+                    }               /* end for */
 
-                }
-                else
-                {
+                }                   /* end for */
 
-                    for (iy = 1; iy <= dimy; iy += 2)
-                    {
-                        iys = iy * incy;
-                        iyms = (iy - 1) * incy;
-                        iyps = (iy + 1) * incy;
+            }                       /* end if */
 
-                        for (iz = 1; iz <= dimz; iz++)
-                        {
+            break;
 
-                            b[ixs + iys + iz] =
-                                cc * a[ixs + iys + iz] +
-                                fcx * (a[ixs + iys + (iz - 1)] +
-                                       a[ixs + iys + (iz + 1)] +
-                                       a[ixms + iys + iz] +
-                                       a[ixps + iys + iz] +
-                                       a[ixs + iyms + iz] + a[ixs + iyps + iz]);
+        case CUBIC_BC:
 
-                            b[ixs + iyps + iz] =
-                                cc * a[ixs + iyps + iz] +
-                                fcx * (a[ixs + iyps + (iz - 1)] +
-                                       a[ixs + iyps + (iz + 1)] +
-                                       a[ixms + iyps + iz] +
-                                       a[ixps + iyps + iz] +
-                                       a[ixs + iys + iz] + a[ixs + iyps + incy + iz]);
-
-                        }       /* end for */
-
-                    }           /* end for */
-
-                }               /* end if */
-
-            }                   /* end for */
-
-        }
-        else
-        {
-
-            cc = - TWO_t * ihx;
-            cc = cc - TWO_t * ihy;
-            cc = cc - TWO_t * ihz;
-            fcx = ONE_t * ihx;
-            fcy = ONE_t * ihy;
-            fcz = ONE_t * ihz;
+            cc = -TWO_t * ihx;
+            fc = ONE_t * ihx / FOUR_t;
 
             for (ix = 1; ix <= dimx; ix++)
             {
@@ -876,145 +915,108 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
 
                         b[ixs + iys + iz] =
                             cc * a[ixs + iys + iz] +
-                            fcx * a[ixms + iys + iz] +
-                            fcx * a[ixps + iys + iz] +
-                            fcy * a[ixs + iyms + iz] +
-                            fcy * a[ixs + iyps + iz] +
-                            fcz * a[ixs + iys + (iz - 1)] + fcz * a[ixs + iys + (iz + 1)];
+                            fc * a[ixms + iyms + iz - 1] +
+                            fc * a[ixms + iys + iz] +
+                            fc * a[ixs + iyms + iz] +
+                            fc * a[ixs + iys + iz - 1] +
+                            fc * a[ixs + iys + iz + 1] +
+                            fc * a[ixs + iyps + iz] +
+                            fc * a[ixps + iys + iz] + fc * a[ixps + iyps + iz + 1];
 
 
-                    }           /* end for */
+                    }               /* end for */
 
-                }               /* end for */
+                }                   /* end for */
 
-            }                   /* end for */
+            }                       /* end for */
+            break;
 
-        }                       /* end if */
+        case CUBIC_FC:
 
-        break;
+            cc = - SIX_t * ihx;
+            fc = (ONE_t / TWO_t) * ihx; 
 
-    case CUBIC_BC:
 
-        cc = -TWO_t * ihx;
-        fc = ONE_t * ihx / FOUR_t;
-
-        for (ix = 1; ix <= dimx; ix++)
-        {
-            ixs = ix * incx;
-            ixms = (ix - 1) * incx;
-            ixps = (ix + 1) * incx;
-
-            for (iy = 1; iy <= dimy; iy++)
+            for (ix = 1; ix <= dimx; ix++)
             {
-                iys = iy * incy;
-                iyms = (iy - 1) * incy;
-                iyps = (iy + 1) * incy;
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
 
-                for (iz = 1; iz <= dimz; iz++)
+                for (iy = 1; iy <= dimy; iy++)
                 {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
 
-                    b[ixs + iys + iz] =
-                        cc * a[ixs + iys + iz] +
-                        fc * a[ixms + iyms + iz - 1] +
-                        fc * a[ixms + iys + iz] +
-                        fc * a[ixs + iyms + iz] +
-                        fc * a[ixs + iys + iz - 1] +
-                        fc * a[ixs + iys + iz + 1] +
-                        fc * a[ixs + iyps + iz] +
-                        fc * a[ixps + iys + iz] + fc * a[ixps + iyps + iz + 1];
+                    for (iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[ixs + iys + iz] =
+                            cc * a[ixs + iys + iz] +
+                            fc * a[ixms + iys + iz] +
+                            fc * a[ixms + iys + iz + 1] +
+                            fc * a[ixms + iyps + iz] +
+                            fc * a[ixs + iyms + iz] +
+                            fc * a[ixs + iyms + iz + 1] +
+                            fc * a[ixs + iys + iz - 1] +
+                            fc * a[ixs + iys + iz + 1] +
+                            fc * a[ixs + iyps + iz - 1] +
+                            fc * a[ixs + iyps + iz] +
+                            fc * a[ixps + iyms + iz] +
+                            fc * a[ixps + iys + iz - 1] + 
+                            fc * a[ixps + iys + iz];
 
 
-                }               /* end for */
+                    }               /* end for */
 
-            }                   /* end for */
+                }                   /* end for */
 
-        }                       /* end for */
-        break;
+            }                       /* end for */
+            break;
 
-    case CUBIC_FC:
+        case HEXAGONAL:
 
-        cc = -6.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
-        fc = 1.0 / (2.0 * gridhx * gridhx * L->get_xside() * L->get_xside());
+            cc = -FOUR_t * ihx;
+            cc = cc - TWO_t * ihz;
+            fc1 = 2.0 / (3.0 * gridhx * gridhx * L->get_xside() * L->get_xside());
+            fc2 = 1.0 / (gridhz * gridhz * L->get_zside() * L->get_zside());
 
-        for (ix = 1; ix <= dimx; ix++)
-        {
-            ixs = ix * incx;
-            ixms = (ix - 1) * incx;
-            ixps = (ix + 1) * incx;
-
-            for (iy = 1; iy <= dimy; iy++)
+            for (ix = 1; ix <= dimx; ix++)
             {
-                iys = iy * incy;
-                iyms = (iy - 1) * incy;
-                iyps = (iy + 1) * incy;
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
 
-                for (iz = 1; iz <= dimz; iz++)
+                for (iy = 1; iy <= dimy; iy++)
                 {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
 
-                    b[ixs + iys + iz] =
-                        cc * a[ixs + iys + iz] +
-                        fc * a[ixms + iys + iz] +
-                        fc * a[ixms + iys + iz + 1] +
-                        fc * a[ixms + iyps + iz] +
-                        fc * a[ixs + iyms + iz] +
-                        fc * a[ixs + iyms + iz + 1] +
-                        fc * a[ixs + iys + iz - 1] +
-                        fc * a[ixs + iys + iz + 1] +
-                        fc * a[ixs + iyps + iz - 1] +
-                        fc * a[ixs + iyps + iz] +
-                        fc * a[ixps + iyms + iz] +
-                        fc * a[ixps + iys + iz - 1] + fc * a[ixps + iys + iz];
+                    for (iz = 1; iz <= dimz; iz++)
+                    {
 
-
-                }               /* end for */
-
-            }                   /* end for */
-
-        }                       /* end for */
-        break;
-
-    case HEXAGONAL:
-
-        cc = -FOUR_t * ihx;
-        cc = cc - TWO_t * ihz;
-        fc1 = 2.0 / (3.0 * gridhx * gridhx * L->get_xside() * L->get_xside());
-        fc2 = 1.0 / (gridhz * gridhz * L->get_zside() * L->get_zside());
-
-        for (ix = 1; ix <= dimx; ix++)
-        {
-            ixs = ix * incx;
-            ixms = (ix - 1) * incx;
-            ixps = (ix + 1) * incx;
-
-            for (iy = 1; iy <= dimy; iy++)
-            {
-                iys = iy * incy;
-                iyms = (iy - 1) * incy;
-                iyps = (iy + 1) * incy;
-
-                for (iz = 1; iz <= dimz; iz++)
-                {
-
-                    b[ixs + iys + iz] =
-                        cc * a[ixs + iys + iz] +
-                        fc1 * a[ixps + iys + iz] +
-                        fc1 * a[ixps + iyms + iz] +
-                        fc1 * a[ixs + iyms + iz] +
-                        fc1 * a[ixms + iys + iz] +
-                        fc1 * a[ixms + iyps + iz] +
-                        fc1 * a[ixs + iyps + iz] +
-                        fc2 * a[ixs + iys + iz + 1] + fc2 * a[ixs + iys + iz - 1];
+                        b[ixs + iys + iz] =
+                            cc * a[ixs + iys + iz] +
+                            fc1 * a[ixps + iys + iz] +
+                            fc1 * a[ixps + iyms + iz] +
+                            fc1 * a[ixs + iyms + iz] +
+                            fc1 * a[ixms + iys + iz] +
+                            fc1 * a[ixms + iyps + iz] +
+                            fc1 * a[ixs + iyps + iz] +
+                            fc2 * a[ixs + iys + iz + 1] + fc2 * a[ixs + iys + iz - 1];
 
 
-                }               /* end for */
+                    }               /* end for */
 
-            }                   /* end for */
+                }                   /* end for */
 
-        }                       /* end for */
-        break;
+            }                       /* end for */
+            break;
 
-    default:
-        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
 
     }                           /* end switch */
 
@@ -1109,25 +1111,28 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
 {
 
     RmgTimer RT("App_cil: computation");
-    int ibrav;
-    int iz, ix, iy, incx, incy, incxr, incyr;
+    int incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
     RmgType ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
     RmgType ihx, ihy, ihz;
+    RmgType a1, a2, a3;
     RmgType ONE_t = 1.0;
+    RmgType TWO_t = 1.0;
     RmgType THREE_t = 3.0;
     RmgType FOUR_t = 4.0;
     RmgType FIVE_t = 5.0;
     RmgType SIX_t = 6.0;
     RmgType EIGHT_t = 8.0;
+    RmgType NINE_t = 9.0;
     RmgType TWELVE_t = 12.0;
+    RmgType EIGHTTEEN_t = 18.0;
+    RmgType TWENTYFOUR_t = 24.0;
+    RmgType THIRTYFOUR_t = 34.0;
+    RmgType THIRTYSIX_t = 34.0;
+    RmgType FORTYEIGHT_t = 48.0;
 
-    ibrav = L->get_ibrav_type();
+    int ibrav = L->get_ibrav_type();
 
-
-    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
-    }
 
     ihx = 1.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     ihy = 1.0 / (gridhy * gridhy * L->get_yside() * L->get_yside());
@@ -1139,126 +1144,246 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
     incxr = dimz * dimy;
     incyr = dimz;
 
+    switch(ibrav) {
 
-    if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
-    {
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
 
-        cc = (-FOUR_t / THREE_t) * (ihx + ihx + ihx);
-        fcx = (FIVE_t / SIX_t) * ihx + (cc / EIGHT_t);
-        ecxy = (ONE_t / TWELVE_t) * (ihx + ihx);
-        incy = dimz + 2;
-        incx = (dimz + 2) * (dimy + 2);
-        incyr = dimz;
-        incxr = dimz * dimy;
-
-        for (ix = 1; ix <= dimx; ix++)
-        {
-            ixs = ix * incx;
-            ixms = (ix - 1) * incx;
-            ixps = (ix + 1) * incx;
-            for (iy = 1; iy <= dimy; iy++)
+            if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
-                iys = iy * incy;
-                iyms = (iy - 1) * incy;
-                iyps = (iy + 1) * incy;
 
-                for (iz = 1; iz <= dimz; iz++)
+                cc = (-FOUR_t / THREE_t) * (ihx + ihx + ihx);
+                fcx = (FIVE_t / SIX_t) * ihx + (cc / EIGHT_t);
+                ecxy = (ONE_t / TWELVE_t) * (ihx + ihx);
+                incy = dimz + 2;
+                incx = (dimz + 2) * (dimy + 2);
+                incyr = dimz;
+                incxr = dimz * dimy;
+
+                for (int ix = 1; ix <= dimx; ix++)
                 {
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
+                    for (int iy = 1; iy <= dimy; iy++)
+                    {
+                        iys = iy * incy;
+                        iyms = (iy - 1) * incy;
+                        iyps = (iy + 1) * incy;
 
-                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                        cc * rptr[ixs + iys + iz] +
-                        fcx * (rptr[ixms + iys + iz] +
-                                rptr[ixps + iys + iz] +
-                                rptr[ixs + iyms + iz] +
-                                rptr[ixs + iyps + iz] +
-                                rptr[ixs + iys + (iz - 1)] + rptr[ixs + iys + (iz + 1)]);
+                        for (int iz = 1; iz <= dimz; iz++)
+                        {
 
-                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                        ecxy * (rptr[ixms + iys + iz - 1] +
-                                rptr[ixps + iys + iz - 1] +
-                                rptr[ixs + iyms + iz - 1] +
-                                rptr[ixs + iyps + iz - 1] +
-                                rptr[ixms + iyms + iz] +
-                                rptr[ixms + iyps + iz] +
-                                rptr[ixps + iyms + iz] +
-                                rptr[ixps + iyps + iz] +
-                                rptr[ixms + iys + iz + 1] +
-                                rptr[ixps + iys + iz + 1] +
-                                rptr[ixs + iyms + iz + 1] + rptr[ixs + iyps + iz + 1]);
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                                cc * rptr[ixs + iys + iz] +
+                                fcx * (rptr[ixms + iys + iz] +
+                                        rptr[ixps + iys + iz] +
+                                        rptr[ixs + iyms + iz] +
+                                        rptr[ixs + iyps + iz] +
+                                        rptr[ixs + iys + (iz - 1)] + rptr[ixs + iys + (iz + 1)]);
 
-
-                }           /* end for */
-
-            }               /* end for */
-
-        }                   /* end for */
-    }
-    else
-    {
-
-        /* Compute coefficients for this grid spacing */
-        cc = (-FOUR_t / THREE_t) * (ihx + ihy + ihz);
-
-        fcx = FIVE_t/SIX_t * ihx + (cc / EIGHT_t);
-        fcy = FIVE_t/SIX_t * ihy + (cc / EIGHT_t);
-        fcz = FIVE_t/SIX_t * ihz + (cc / EIGHT_t);
-
-        ecxy = (ONE_t / TWELVE_t) * (ihx + ihy);
-        ecxz = (ONE_t / TWELVE_t) * (ihx + ihz);
-        ecyz = (ONE_t / TWELVE_t) * (ihy + ihz);
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                                ecxy * (rptr[ixms + iys + iz - 1] +
+                                        rptr[ixps + iys + iz - 1] +
+                                        rptr[ixs + iyms + iz - 1] +
+                                        rptr[ixs + iyps + iz - 1] +
+                                        rptr[ixms + iyms + iz] +
+                                        rptr[ixms + iyps + iz] +
+                                        rptr[ixps + iyms + iz] +
+                                        rptr[ixps + iyps + iz] +
+                                        rptr[ixms + iys + iz + 1] +
+                                        rptr[ixps + iys + iz + 1] +
+                                        rptr[ixs + iyms + iz + 1] + rptr[ixs + iyps + iz + 1]);
 
 
-        incy = dimz + 2;
-        incx = (dimz + 2) * (dimy + 2);
-        incyr = dimz;
-        incxr = dimz * dimy;
+                        }           /* end for */
 
+                    }               /* end for */
 
-
-        for (ix = 1; ix <= dimx; ix++)
-        {
-            ixs = ix * incx;
-            ixms = (ix - 1) * incx;
-            ixps = (ix + 1) * incx;
-            for (iy = 1; iy <= dimy; iy++)
+                }                   /* end for */
+            }
+            else
             {
-                iys = iy * incy;
-                iyms = (iy - 1) * incy;
-                iyps = (iy + 1) * incy;
 
-                for (iz = 1; iz <= dimz; iz++)
+                /* Compute coefficients for this grid spacing */
+                cc = (-FOUR_t / THREE_t) * (ihx + ihy + ihz);
+
+                fcx = FIVE_t/SIX_t * ihx + (cc / EIGHT_t);
+                fcy = FIVE_t/SIX_t * ihy + (cc / EIGHT_t);
+                fcz = FIVE_t/SIX_t * ihz + (cc / EIGHT_t);
+
+                ecxy = (ONE_t / TWELVE_t) * (ihx + ihy);
+                ecxz = (ONE_t / TWELVE_t) * (ihx + ihz);
+                ecyz = (ONE_t / TWELVE_t) * (ihy + ihz);
+
+
+                incy = dimz + 2;
+                incx = (dimz + 2) * (dimy + 2);
+                incyr = dimz;
+                incxr = dimz * dimy;
+
+
+
+                for (int ix = 1; ix <= dimx; ix++)
                 {
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
+                    for (int iy = 1; iy <= dimy; iy++)
+                    {
+                        iys = iy * incy;
+                        iyms = (iy - 1) * incy;
+                        iyps = (iy + 1) * incy;
 
-                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                        cc * rptr[ixs + iys + iz] +
-                        fcx * rptr[ixms + iys + iz] +
-                        fcx * rptr[ixps + iys + iz] +
-                        fcy * rptr[ixs + iyms + iz] +
-                        fcy * rptr[ixs + iyps + iz] +
-                        fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
+                        for (int iz = 1; iz <= dimz; iz++)
+                        {
 
-                    b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                        ecxz * rptr[ixms + iys + iz - 1] +
-                        ecxz * rptr[ixps + iys + iz - 1] +
-                        ecyz * rptr[ixs + iyms + iz - 1] +
-                        ecyz * rptr[ixs + iyps + iz - 1] +
-                        ecxy * rptr[ixms + iyms + iz] +
-                        ecxy * rptr[ixms + iyps + iz] +
-                        ecxy * rptr[ixps + iyms + iz] +
-                        ecxy * rptr[ixps + iyps + iz] +
-                        ecxz * rptr[ixms + iys + iz + 1] +
-                        ecxz * rptr[ixps + iys + iz + 1] +
-                        ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                                cc * rptr[ixs + iys + iz] +
+                                fcx * rptr[ixms + iys + iz] +
+                                fcx * rptr[ixps + iys + iz] +
+                                fcy * rptr[ixs + iyms + iz] +
+                                fcy * rptr[ixs + iyps + iz] +
+                                fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
+
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                                ecxz * rptr[ixms + iys + iz - 1] +
+                                ecxz * rptr[ixps + iys + iz - 1] +
+                                ecyz * rptr[ixs + iyms + iz - 1] +
+                                ecyz * rptr[ixs + iyps + iz - 1] +
+                                ecxy * rptr[ixms + iyms + iz] +
+                                ecxy * rptr[ixms + iyps + iz] +
+                                ecxy * rptr[ixps + iyms + iz] +
+                                ecxy * rptr[ixps + iyps + iz] +
+                                ecxz * rptr[ixms + iys + iz + 1] +
+                                ecxz * rptr[ixps + iys + iz + 1] +
+                                ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
 
 
-                }           /* end for */
+                        }           /* end for */
 
-            }               /* end for */
+                    }               /* end for */
 
-        }                   /* end for */
+                }                   /* end for */
 
-    }                       /* end if */
+            }                       /* end if */
+            break;
 
+        case HEXAGONAL:
+
+            cc = ((-THREE_t / FOUR_t) * ihz) - ((FIVE_t / THREE_t) * ihx);
+            a1 = ((THREE_t / EIGHT_t) * ihz) - ((ONE_t / SIX_t) * ihx);
+            a2 = ((FIVE_t / EIGHTTEEN_t) * ihx) - ((ONE_t / TWENTYFOUR_t) * ihz);
+            a3 = ((ONE_t / FORTYEIGHT_t) * ihz) + ((ONE_t / THIRTYSIX_t) * ihx);
+            cc = TWO_t * cc;
+            a1 = TWO_t * a1;
+            a2 = TWO_t * a2;
+            a3 = TWO_t * a3;
+
+            for (int ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (int iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+
+                    for (int iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            cc * rptr[ixs + iys + iz] +
+                            a3 * (rptr[ixps + iys + iz - 1] +
+                                  rptr[ixps + iyms + iz - 1] +
+                                  rptr[ixs + iyms + iz - 1] +
+                                  rptr[ixms + iys + iz - 1] +
+                                  rptr[ixms + iyps + iz - 1] +
+                                  rptr[ixs + iyps + iz - 1] +
+                                  rptr[ixps + iys + iz + 1] +
+                                  rptr[ixps + iyms + iz + 1] +
+                                  rptr[ixs + iyms + iz + 1] +
+                                  rptr[ixms + iys + iz + 1] +
+                                  rptr[ixms + iyps + iz + 1] + 
+                                  rptr[ixs + iyps + iz + 1]);
+
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            a2 * (rptr[ixps + iys + iz] +
+                                  rptr[ixps + iyms + iz] +
+                                  rptr[ixs + iyms + iz] +
+                                  rptr[ixms + iys + iz] + 
+                                  rptr[ixms + iyps + iz] + 
+                                  rptr[ixs + iyps + iz]);
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            a1 * (rptr[ixs + iys + iz - 1] + rptr[ixs + iys + iz + 1]);
+
+                    }               /* end for */
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+            break;
+
+        case CUBIC_FC:
+
+            cc = -(THIRTYFOUR_t / SIX_t) * ihx;
+            a1 = (FOUR_t / NINE_t) * ihx;
+            a2 = (ONE_t / EIGHTTEEN_t) * ihx;
+
+            for (int ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (int iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+
+                    for (int iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            cc * rptr[ix * incx + iys + iz] +
+                            a1 * rptr[ixms + iys + iz] +
+                            a1 * rptr[ixms + iys + iz + 1] +
+                            a1 * rptr[ixms + iyps + iz] +
+                            a1 * rptr[ixs + iyms + iz] +
+                            a1 * rptr[ixs + iyms + iz + 1] +
+                            a1 * rptr[ixs + iys + iz - 1] +
+                            a1 * rptr[ixs + iys + iz + 1] +
+                            a1 * rptr[ixs + iyps + iz - 1] +
+                            a1 * rptr[ixs + iyps + iz] +
+                            a1 * rptr[ixps + iyms + iz] +
+                            a1 * rptr[ixps + iys + iz - 1] + 
+                            a1 * rptr[ixps + iys + iz];
+
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            a2 * rptr[ixms + iyms + iz + 1] +
+                            a2 * rptr[ixms + iyps + iz - 1] +
+                            a2 * rptr[ixms + iyps + iz + 1] +
+                            a2 * rptr[ixps + iyms + iz - 1] +
+                            a2 * rptr[ixps + iyms + iz + 1] + 
+                            a2 * rptr[ixps + iyps + iz - 1];
+
+                    }               /* end for */
+
+                }                   /* end for */
+
+            }                       /* end for */
+            break;
+
+        default:
+                rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
+
+    } // end switch
 
     return (double)std::real(cc);
 
@@ -1270,55 +1395,126 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 {
 
     RmgTimer RT("App_cir: computation");
-    int ix, iy, iz, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps;
-    int incy, incx;
-    int incyr, incxr;
-    RmgType c000 = 0.5, c100 = 1.0/12.0;
+    RmgType c000(0.5), c100(1.0/12.0);
+    RmgType Bc(2.0 / 3.0);
+    RmgType Bf(1.0 / 36.0);
+    RmgType Bch(7.0 / 12.0);
+    RmgType Bfh(1.0 / 24.0);
+    RmgType Bz(1.0 / 12.0);
 
-    ibrav = L->get_ibrav_type();
+    int ibrav = L->get_ibrav_type();
+    int incx = (dimz + 2) * (dimy + 2);
+    int incy = dimz + 2;
+    int incxr = dimz * dimy;
+    int incyr = dimz;
 
+    switch(ibrav) {
 
-    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cir_fourth.\n");
-    }
-
-    incx = (dimz + 2) * (dimy + 2);
-    incy = dimz + 2;
-    incxr = dimz * dimy;
-    incyr = dimz;
-
-    //c000 = 0.5;
-    //c100 = 1.0 / 12.0;
-    for (ix = 1; ix < dimx + 1; ix++)
-    {
-        ixs = ix * incx;
-        ixms = (ix - 1) * incx;
-        ixps = (ix + 1) * incx;
-
-        for (iy = 1; iy < dimy + 1; iy++)
-        {
-            iys = iy * incy;
-            iyms = (iy - 1) * incy;
-            iyps = (iy + 1) * incy;
-
-            for (iz = 1; iz < dimz + 1; iz++)
+        case CUBIC_PRIMITIVE: 
+        case ORTHORHOMBIC_PRIMITIVE:
+            for (int ix = 1; ix < dimx + 1; ix++)
             {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
 
-                b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                    c100 * (rptr[ixs + iys + (iz - 1)] +
-                            rptr[ixs + iys + (iz + 1)] +
-                            rptr[ixms + iys + iz] +
-                            rptr[ixps + iys + iz] +
-                            rptr[ixs + iyms + iz] +
-                            rptr[ixs + iyps + iz]) + 
-                    c000 *  rptr[ixs + iys + iz];
+                for (int iy = 1; iy < dimy + 1; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
 
-            }                   /* end for */
+                    for (int iz = 1; iz < dimz + 1; iz++)
+                    {
 
-        }                       /* end for */
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            c100 * (rptr[ixs + iys + (iz - 1)] +
+                                    rptr[ixs + iys + (iz + 1)] +
+                                    rptr[ixms + iys + iz] +
+                                    rptr[ixps + iys + iz] +
+                                    rptr[ixs + iyms + iz] +
+                                    rptr[ixs + iyps + iz]) + 
+                            c000 *  rptr[ixs + iys + iz];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+            break;
+
+        case HEXAGONAL:
+
+            for(int ix = 1;ix <= dimx;ix++) {
+
+                ixs = ix * incx;
+                for(int iy = 1;iy <= dimy;iy++) {
+
+                    iys = iy * incy;
+                    for(int iz = 1;iz <= dimz;iz++) {
+
+                        b[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] =
+                           Bch * rptr[ixs + iys + iz] +
+                           Bz * rptr[ixs + iys + iz - 1] +
+                           Bz * rptr[ixs + iys + iz + 1] +
+                           Bfh * rptr[(ix+1)*incx + iys + iz] +
+                           Bfh * rptr[(ix+1)*incx + (iy-1)*incy + iz] +
+                           Bfh * rptr[ixs + (iy-1)*incy + iz] +
+                           Bfh * rptr[(ix-1)*incx + iys + iz] +
+                           Bfh * rptr[(ix-1)*incx + (iy+1)*incy + iz] +
+                           Bfh * rptr[ixs + (iy+1)*incy + iz];
+
+                    } /* end for */
+
+                } /* end for */
+
+            } /* end for */
+            break;
+
+        case CUBIC_FC:
+
+            for (int ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (int iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+                    for (int iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            Bc * rptr[ixs + iys + iz] +
+                            Bf * (rptr[ixms + iys + iz] +
+                                  rptr[ixms + iys + iz + 1] +
+                                  rptr[ixms + iyps + iz] +
+                                  rptr[ixs + iyms + iz] +
+                                  rptr[ixs + iyms + iz + 1] +
+                                  rptr[ixs + iys + iz - 1] +
+                                  rptr[ixs + iys + iz + 1] +
+                                  rptr[ixs + iyps + iz - 1] +
+                                  rptr[ixs + iyps + iz] +
+                                  rptr[ixps + iyms + iz] + 
+                                  rptr[ixps + iys + iz - 1] + 
+                                  rptr[ixps + iys + iz]);
+
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+            break;
+
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cir_fourth.\n");
+
+    }
 
 }
 
@@ -1400,7 +1596,6 @@ void FiniteDiff::app_gradient (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgT
             break;
 
         case HEXAGONAL:
-
 
             for (int ix = 2; ix < dimx + 2; ix++)
             {

@@ -159,14 +159,6 @@ void symmetrize_rho (double * rho)
         da[idx] = 0.0;
     }
 
-#if 0
-    for (ix = 0; ix < get_FNX_GRID(); ix++)
-        for (iy = 0; iy < get_FNY_GRID(); iy++)
-            for (iz = 0; iz < get_FNZ_GRID(); iz++)
-                da->s[iz][iy][ix] = 0.0;
-#endif
-
-
 
 
     /* Put this processors charge in the correct place */

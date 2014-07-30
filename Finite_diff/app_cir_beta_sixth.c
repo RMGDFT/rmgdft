@@ -18,8 +18,8 @@
 void app_cir_beta_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
 {
 
-    int numgrid, tid, used_alloc=FALSE;
-    rmg_double_t *rptr=NULL, *gpu_psi, *gpu_b;
+    int used_alloc=FALSE;
+    rmg_double_t *rptr=NULL;
 
 
     int ix, iy, iz;
@@ -33,7 +33,6 @@ void app_cir_beta_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy,
     incxr = dimz * dimy;
     incyr = dimz;
 
-    int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
 

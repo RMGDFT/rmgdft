@@ -223,7 +223,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
         residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
 
-        //cout << "\n get_vh sweep " << its << " rms residual is " << residual;
+        //std::cout << "\n get_vh sweep " << its << " rms residual is " << residual;
 
 	    
         its ++;

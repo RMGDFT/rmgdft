@@ -16,19 +16,16 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
 {
 
-    int numgrid, tid, P0_BASIS;
     rmg_double_t *rptr;
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
     rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
     rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    rmg_double_t ihx, ihy, ihz, retv;
+    rmg_double_t ihx, ihy, ihz;
     rmg_double_t c000, c100, c110, c200;
-    int pbasis = dimx * dimy * dimz, itid;
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
-    P0_BASIS = get_P0_BASIS();
 
     c000 = 61.0 / 120.0;
     c100 = 13.0 / 180.0;
