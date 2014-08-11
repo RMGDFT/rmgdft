@@ -50,6 +50,8 @@ write_force.c
 write_header.c
 write_pos.c
 write_rho_x.c
+write_rho_y.c
+write_rho_z.c
 xyz2pe.c
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
