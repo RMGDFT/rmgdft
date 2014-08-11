@@ -21,7 +21,7 @@ void app_cir_beta_fourth (double * a, double * b, int dimx, int dimy, int dimz)
     int incy, incx;
     int incyr, incxr;
     double *rptr;
-    double c000, c100, Bc, Bf;
+    double c000, c100, Bc, Bf, Bz;
 
     ibrav = get_ibrav_type();
 
@@ -128,6 +128,42 @@ void app_cir_beta_fourth (double * a, double * b, int dimx, int dimy, int dimz)
 
             }                           /* end for */
 
+            break;
+
+       case HEXAGONAL:
+            Bc = 7.0 / 12.0;
+            Bf = 1.0 / 24.0;
+            Bz = 1.0 / 12.0;
+            for (ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+                    for (iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            Bc * rptr[ixs + iys + iz] +
+                            Bz * rptr[ixs + iys + iz - 1] +
+                            Bz * rptr[ixs + iys + iz + 1] +
+                            Bf * rptr[ixps + iys + iz] +
+                            Bf * rptr[ixps + iyms + iz] +
+                            Bf * rptr[ixs + iyms + iz] +
+                            Bf * rptr[ixms + iys + iz] +
+                            Bf * rptr[ixms + iyps + iz] +
+                            Bf * rptr[ixs + iyps + iz];
+
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
             break;
 
        default:

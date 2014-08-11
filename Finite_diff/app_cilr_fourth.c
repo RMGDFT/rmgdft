@@ -18,13 +18,13 @@
 double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_eig_s, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
-    int  numgrid, used_alloc=FALSE, ibrav;
+    int  used_alloc=FALSE, ibrav;
     double *rptr=NULL;
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps;
     double ecxy, ecxz, ecyz, cc, fcx, fcy, fcz;
-    double ihx, ihy, ihz, a1, a2, a3;
+    double ihx, ihy, ihz, a1, a2, a3, Bz;
     double c000 = 0.5;
     double c100 = 1.0 / 12.0;
     double Bc = 2.0 / 3.0;
@@ -207,6 +207,81 @@ double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_
                 }                   /* end for */
 
             }                       /* end if */
+            break;
+
+        case HEXAGONAL:
+
+            Bc = 7.0 / 12.0;
+            Bf = 1.0 / 24.0;
+            Bz = 1.0 / 12.0;
+            cc = ((-3.0 / 4.0) * ihz) - ((5.0 / 3.0) * ihx);
+            a1 = ((3.0 / 8.0) * ihz) - ((1.0 / 6.0) * ihx);
+            a2 = ((5.0 / 18.0) * ihx) - ((1.0 / 24.0) * ihz);
+            a3 = ((1.0 / 48.0) * ihz) + ((1.0 / 36.0) * ihx);
+            cc *= 2.0;
+            a1 *= 2.0;
+            a2 *= 2.0;
+            a3 *= 2.0;
+
+            for(ix = 1;ix <= dimx;ix++) {
+              ixs = ix * incx;
+              ixms = (ix - 1) * incx;
+              ixps = (ix + 1) * incx;
+              for(iy = 1;iy <= dimy;iy++) {
+                iys = iy * incy;
+                iyms = (iy - 1) * incy;
+                iyps = (iy + 1) * incy;
+                for(iz = 1;iz <= dimz;iz++) {
+  
+                  b_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] = 
+          
+                             Bc * rptr[ixs + iys + iz] +
+                             Bz * rptr[ixs + iys + iz - 1] +
+                             Bz * rptr[ixs + iys + iz + 1] +
+                             Bf * rptr[ixps + iys + iz] +
+                             Bf * rptr[ixps + iyms + iz] +
+                             Bf * rptr[ixs + iyms + iz] +
+                             Bf * rptr[ixms + iys + iz] +
+                             Bf * rptr[ixms + iyps + iz] +
+                             Bf * rptr[ixs + iyps + iz];
+
+
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] =
+  
+                      cc * rptr[ixs + iys + iz] +
+
+                         a3 * (rptr[ixps + iys + iz-1] +
+                               rptr[ixps + iyms + iz-1] +
+                               rptr[ixs + iyms + iz-1] +
+                               rptr[ixms + iys + iz-1] +
+                               rptr[ixms + iyps + iz-1] +
+                               rptr[ixs + iyps + iz-1] +
+
+                               rptr[ixps + iys + iz+1] +
+                               rptr[ixps + iyms + iz+1] +
+                               rptr[ixs + iyms + iz+1] +
+                               rptr[ixms + iys + iz+1] +
+                               rptr[ixms + iyps + iz+1] +
+                               rptr[ixs + iyps + iz+1]);
+     
+                                                            
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] +=
+                         a2 * (rptr[ixps + iys + iz] +
+                               rptr[ixps + iyms + iz] +
+                               rptr[ixs + iyms + iz] +
+                               rptr[ixms + iys + iz] +
+                               rptr[ixms + iyps + iz] +
+                               rptr[ixs + iyps + iz]);
+
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] +=
+                         a1 * (rptr[ixs + iys + iz-1] + rptr[ixs + iys + iz+1]);
+
+                                                            
+                } /* end for */
+  
+              } /* end for */
+
+            } /* end for */
             break;
 
         case CUBIC_FC:

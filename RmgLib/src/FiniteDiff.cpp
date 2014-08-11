@@ -1117,7 +1117,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
     RmgType ihx, ihy, ihz;
     RmgType a1, a2, a3;
     RmgType ONE_t = 1.0;
-    RmgType TWO_t = 1.0;
+    RmgType TWO_t = 2.0;
     RmgType THREE_t = 3.0;
     RmgType FOUR_t = 4.0;
     RmgType FIVE_t = 5.0;
@@ -1128,7 +1128,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
     RmgType EIGHTTEEN_t = 18.0;
     RmgType TWENTYFOUR_t = 24.0;
     RmgType THIRTYFOUR_t = 34.0;
-    RmgType THIRTYSIX_t = 34.0;
+    RmgType THIRTYSIX_t = 36.0;
     RmgType FORTYEIGHT_t = 48.0;
 
     int ibrav = L->get_ibrav_type();
@@ -1446,24 +1446,28 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 
         case HEXAGONAL:
 
-            for(int ix = 1;ix <= dimx;ix++) {
+            for(int ix = 1;ix < dimx + 1;ix++) {
 
                 ixs = ix * incx;
-                for(int iy = 1;iy <= dimy;iy++) {
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for(int iy = 1;iy < dimy + 1;iy++) {
 
                     iys = iy * incy;
-                    for(int iz = 1;iz <= dimz;iz++) {
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+                    for(int iz = 1;iz < dimz + 1;iz++) {
 
                         b[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] =
                            Bch * rptr[ixs + iys + iz] +
                            Bz * rptr[ixs + iys + iz - 1] +
                            Bz * rptr[ixs + iys + iz + 1] +
-                           Bfh * rptr[(ix+1)*incx + iys + iz] +
-                           Bfh * rptr[(ix+1)*incx + (iy-1)*incy + iz] +
-                           Bfh * rptr[ixs + (iy-1)*incy + iz] +
-                           Bfh * rptr[(ix-1)*incx + iys + iz] +
-                           Bfh * rptr[(ix-1)*incx + (iy+1)*incy + iz] +
-                           Bfh * rptr[ixs + (iy+1)*incy + iz];
+                           Bfh * rptr[ixps + iys + iz] +
+                           Bfh * rptr[ixps + iyms + iz] +
+                           Bfh * rptr[ixs + iyms + iz] +
+                           Bfh * rptr[ixms + iys + iz] +
+                           Bfh * rptr[ixms + iyps + iz] +
+                           Bfh * rptr[ixs + iyps + iz];
 
                     } /* end for */
 
