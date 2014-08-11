@@ -120,14 +120,14 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                     ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                 }
 
-//#if GPU_ENABLED
-//                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
+                //#if GPU_ENABLED
+                //                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
 
-//#else
+                //#else
 
                 if (cimag(ene) >0.5 )
                 {
-                    Sgreen_semi_infinite_p (g, ch0, ch01, jprobe);
+                    Sgreen_semi_infinite_p (g, ch0, ch01, ch10, jprobe);
                 }
                 else
                 {
@@ -136,9 +136,9 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                     Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
 
                 }
-//#endif
+                //#endif
 
-                
+
                 idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
                 idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
                 for (i = 0; i < idx; i++)
@@ -231,13 +231,13 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                             ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
-//#if GPU_ENABLED
-//                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
+                        //#if GPU_ENABLED
+                        //                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
 
-//#else
+                        //#else
                         Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
                         Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
-//#endif
+                        //#endif
 
 
 

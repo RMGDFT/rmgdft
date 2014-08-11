@@ -271,6 +271,13 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
 // due to time-inverse symmetry, H and S are Hermitian,  G(-k) = G(k)^~
 //we average the lower and upper part of G(k) and only copy the upper triangle parts back to cpu
 
+    cublasGetVector( pmo.ntot_low, sizeof( complex double ), ct.gpu_Gtri, ione, G_tri, ione );
+
+    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
+
+
+    double complex half = 0.5;
+    int *desca, *descb, *descc;
     for(i = 0; i < ct.num_blocks - 1; i++)
     {
         n1 = ct.block_dim[i];
@@ -278,13 +285,18 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
         n3 = pmo.offdiag_begin[i];
         n4 = pmo.lowoffdiag_begin[i];
 
-        cublasZgemm (ct.cublas_handle, transT, transN, n1, n2, n2, &cuhalf, &ct.gpu_Gtri[n4], n2,
-                    ct.gpu_Imatrix, maxrow, &cuhalf, &ct.gpu_Gtri[n3], n1);
+        desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
+        descb = &pmo.desc_cond[ ( i+1 +  (i+1)  * ct.num_blocks) * DLEN];
+        descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
+
+        pmo_unitary_matrix(Gii, descb);
+
+
+        PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc,
+                Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
+
     }
-        
 
-
-    cublasGetVector( pmo.ntot, sizeof( complex double ), ct.gpu_Gtri, ione, G_tri, ione );
 
     my_free( ntem_begin );
     my_free( ipiv );

@@ -46,6 +46,7 @@ matrix_inverse_blocknm.c
 matrix_inverse_p.c
 matrix_kpoint.c
 matrix_kpoint_center.c
+green_kpoint_phase.c
 matrix_kpoint_lead.c
 md.c
 min_distance_index.c

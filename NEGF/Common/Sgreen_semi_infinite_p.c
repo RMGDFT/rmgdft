@@ -21,7 +21,7 @@
 
 
 void Sgreen_semi_infinite_p (complex double * green, complex double
-        *ch00, complex double *ch01, int jprobe)
+        *ch00, complex double *ch01, complex double *ch10, int jprobe)
 {
 
     double converge1, converge2, tem;
@@ -37,9 +37,6 @@ void Sgreen_semi_infinite_p (complex double * green, complex double
 
     desca = &pmo.desc_lead[(jprobe -1) * DLEN];
     nmax = desca[2];
-
-    fcd1 = 'N';
-    fcd2 = 'T';
 
 
     maxrow = pmo.mxllda_lead[jprobe-1];
@@ -79,10 +76,10 @@ void Sgreen_semi_infinite_p (complex double * green, complex double
 
 
         ZCOPY (&n1, ch00, &ione, chnn, &ione);
-        PZGEMM (&fcd1, "N", &nmax, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
+        PZGEMM ("N", "N", &nmax, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
                 green, &ione, &ione, desca,  &beta, chtem, &ione, &ione, desca);
-        PZGEMM ("N", &fcd2, &nmax, &nmax, &nmax, &mone, chtem, &ione, &ione, desca,
-                ch01, &ione, &ione, desca, &alpha, chnn, &ione, &ione, desca);
+        PZGEMM ("N", "N", &nmax, &nmax, &nmax, &mone, chtem, &ione, &ione, desca,
+                ch10, &ione, &ione, desca, &alpha, chnn, &ione, &ione, desca);
 
         get_inverse_block_p (chnn, green, ipiv, desca);
 

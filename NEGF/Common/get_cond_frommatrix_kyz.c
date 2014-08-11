@@ -309,7 +309,7 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%d%d%s", "cond_", iprobe1, iprobe2, ".dat1");
+            sprintf(newname, "%s%s%d%d%s", pct.image_path[pct.thisimg], "cond_", iprobe1, iprobe2, ".dat1");
             file = fopen (newname, "w");
         }
 

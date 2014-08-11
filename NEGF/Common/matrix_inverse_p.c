@@ -90,7 +90,7 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     for (i = 1; i < ct.num_blocks; i++)
     {
         ntem_begin[i] = ntem_begin[i - 1] + pmo.mxllda_cond[i - 1] * maxcol;
-        ncol_begin[i] = ntem_begin[i - 1] + pmo.mxlocc_cond[i - 1] * maxrow;
+        ncol_begin[i] = ncol_begin[i - 1] + pmo.mxlocc_cond[i - 1] * maxrow;
     }
 
     /*  calculate the inverse of the first block  */
@@ -163,8 +163,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         PZGEMM ("N", "N", &n2, &n1, &n2, &one, &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descd,
                 temp, &ione, &ione, descc, &zero, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &ione, descc);
 
-        n4 = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i + 1];
-        zcopy(&n4, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &G_col[ntem_begin[i]], &ione); 
+        n4 = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i];
+        zcopy(&n4, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &G_col[ncol_begin[i]], &ione); 
 
         /* temp = Gii^0 * Hi,i+1 */
         PZGEMM ("N", "N", &n1, &n2, &n1, &mone, Gii0, &ione, &ione, descb,
@@ -174,6 +174,7 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         PZGEMM ("N", "N", &n1, &n2, &n2, &one, temp, &ione, &ione, desca,
                 Gii, &ione, &ione, descd, &zero, &G_tri[n3], &ione, &ione, desca);
 
+        n4 = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i + 1];
         zcopy (&n4, &G_tri[n3], &ione, &G_tem[ntem_begin[i]], &ione);
 
         /* update Gii  */
@@ -244,6 +245,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         }                       /* end for (j--) */
 
     }                           /* end  for(i = 0; i < N-1; i++) */
+
+    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
     for(i = 0; i < ct.num_blocks - 1; i++)
     {
