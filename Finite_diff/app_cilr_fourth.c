@@ -181,8 +181,10 @@ double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_
                                 ecxz * rptr[ixps + iys + iz + 1] +
                                 ecyz * rptr[ixs + iyms + iz + 1] + 
                                 ecyz * rptr[ixs + iyps + iz + 1];
+
                             a_psi[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                                2.0*c100 * (rptr[ixs + iys + (iz - 1)] *vtot_eig_s[ixs + iys + (iz - 1)] +
+                                2.0*c100 * (
+                                        rptr[ixs + iys + (iz - 1)] *vtot_eig_s[ixs + iys + (iz - 1)] +
                                         rptr[ixs + iys + (iz + 1)] *vtot_eig_s[ixs + iys + (iz + 1)] +
                                         rptr[ixms + iys + iz] *     vtot_eig_s[ixms + iys + iz] +
                                         rptr[ixps + iys + iz] *     vtot_eig_s[ixps + iys + iz] +
@@ -233,7 +235,7 @@ double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_
                 iyps = (iy + 1) * incy;
                 for(iz = 1;iz <= dimz;iz++) {
   
-                  b_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] = 
+                    b_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] = 
           
                              Bc * rptr[ixs + iys + iz] +
                              Bz * rptr[ixs + iys + iz - 1] +
@@ -248,7 +250,9 @@ double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_
 
                     a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] =
   
-                      cc * rptr[ixs + iys + iz] +
+                      -cc * rptr[ixs + iys + iz];
+
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] -=
 
                          a3 * (rptr[ixps + iys + iz-1] +
                                rptr[ixps + iyms + iz-1] +
@@ -265,7 +269,7 @@ double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_
                                rptr[ixs + iyps + iz+1]);
      
                                                             
-                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] +=
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] -=
                          a2 * (rptr[ixps + iys + iz] +
                                rptr[ixps + iyms + iz] +
                                rptr[ixs + iyms + iz] +
@@ -273,9 +277,19 @@ double app_cilr_fourth (double *psi, double *a_psi, double *b_psi, double *vtot_
                                rptr[ixms + iyps + iz] +
                                rptr[ixs + iyps + iz]);
 
-                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] +=
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] -=
                          a1 * (rptr[ixs + iys + iz-1] + rptr[ixs + iys + iz+1]);
 
+                    a_psi[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] +=
+                             2.0 * Bc * rptr[ixs + iys + iz] * vtot_eig_s[ixs + iys + iz] +
+                             2.0 * Bz * rptr[ixs + iys + iz - 1] * vtot_eig_s[ixs + iys + iz - 1] +
+                             2.0 * Bz * rptr[ixs + iys + iz + 1] * vtot_eig_s[ixs + iys + iz + 1] +
+                             2.0 * Bf * rptr[ixps + iys + iz] * vtot_eig_s[ixps + iys + iz] +
+                             2.0 * Bf * rptr[ixps + iyms + iz] * vtot_eig_s[ixps + iyms + iz] +
+                             2.0 * Bf * rptr[ixs + iyms + iz] * vtot_eig_s[ixs + iyms + iz] +
+                             2.0 * Bf * rptr[ixms + iys + iz] * vtot_eig_s[ixms + iys + iz] +
+                             2.0 * Bf * rptr[ixms + iyps + iz] * vtot_eig_s[ixms + iyps + iz] +
+                             2.0 * Bf * rptr[ixs + iyps + iz] * vtot_eig_s[ixs + iyps + iz];
                                                             
                 } /* end for */
   
