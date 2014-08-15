@@ -18,9 +18,9 @@
 #include "pmo.h"
 
 
-void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
-                     int *sigma_idx, complex double ene, complex double * Green_C, int nC,
-                     int iprobe)
+void Sgreen_c_noneq_p (double *Htri, double *Stri, complex double * sigma,
+                     int *sigma_idx, complex double ene, complex double *Green_C_row, 
+                     complex double *Green_C_col, int nC, int iprobe)
 {
 /*   H00, S00: nC * nC real matrix
  *   sigma:  nC * nC complex matrix
@@ -57,19 +57,13 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
     }
 
 
-    ntot = pmo.ntot;
+    ntot = pmo.ntot_low;
     /* allocate matrix and initialization  */
     my_malloc_init( H_tri, ntot, complex double );
+ 
+    matrix_kpoint_center(H_tri, Stri, Htri, creal(ene), ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
     
- 	/* Construct: H = ES - H */
-    for (i = 0; i < ntot; i++)
-    {
-        H_tri[i] = creal(ene) * S00[i] - H00[i] * Ha_eV;
-    }
-    /* put the sigma for a probe in the corresponding block
-	   of the Green's matrices  */
-
     for (nprobe = 0; nprobe < cei.num_probe; nprobe++)
 	{	
         N1 = cei.probe_in_block[nprobe];
@@ -85,9 +79,9 @@ void Sgreen_c_noneq_p (double *H00, double *S00, complex double * sigma,
 
 
 #if GPU_ENABLED
-   matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C); 
+   matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
 #else
-   matrix_inverse_anyprobe_p (H_tri, N, ni, iprobe, Green_C); 
+   matrix_inverse_anyprobe_p (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
 #endif
 
 

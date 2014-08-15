@@ -12,7 +12,8 @@
 #include "pmo.h"
 
 
-void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int iprobe, complex double * Green_C)
+void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int iprobe, 
+    complex double * Green_C_row, complex double * Green_C_col)
 {
     /*  Calculate the inverse of a semi-tridiagonal complex matrix
      *
@@ -115,6 +116,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
     cublasSetVector( maxrow * maxcol, sizeof( complex double ), Imatrix, ione, ct.gpu_Imatrix, ione );
     cublasSetVector( pmo.ntot, sizeof( complex double ), H_tri, ione, ct.gpu_Htri, ione );
 
+
     int info;
 
     n1 = ni[0];
@@ -124,6 +126,8 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
     cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n1, &cuone, ct.gpu_Imatrix, maxrow,
             ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Gii, n1);
     magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
+
+
 
     cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Grow[n_begin1[0]], ione);
 
@@ -356,7 +360,11 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
 
     n4 = tot_row * maxcol;
-    cublasGetVector(n4, sizeof( complex double ), ct.gpu_Grow, ione, Green_C, ione );
+    cublasGetVector(n4, sizeof( complex double ), ct.gpu_Grow, ione, Green_C_row, ione );
+
+
+
+
     my_free(n_begin1);
     my_free(ipiv);
     my_free( Hii );

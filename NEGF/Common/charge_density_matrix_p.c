@@ -26,7 +26,7 @@ void charge_density_matrix_p (complex double * sigma_all)
     complex double *sigma, *gamma;
     rmg_double_t denominator, numerator, dum, sum, *wmn;
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
-    complex double *green_C_non;
+    complex double *green_C_row, *green_C_col;
     int maxrow, maxcol;
     double one, zero;
     int ione =1;
@@ -145,14 +145,17 @@ void charge_density_matrix_p (complex double * sigma_all)
         maxrow = 0;
         maxcol = 0;
         int totrow = 0;
+        int totcol = 0;
         for(i = 0; i < ct.num_blocks; i++)
         {
             maxrow = max(maxrow, pmo.mxllda_cond[i]);
             maxcol = max(maxcol, pmo.mxlocc_cond[i]);
             totrow += pmo.mxllda_cond[i];
+            totcol += pmo.mxlocc_cond[i];
         }
 
-        my_malloc_init( green_C_non, maxcol * totrow, complex double ); 
+        my_malloc_init( green_C_row, maxcol * totrow, complex double ); 
+        my_malloc_init( green_C_col, maxrow * totcol, complex double ); 
         my_malloc_init( rho_mn, ntot, complex double );
 
         /*   Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
@@ -186,7 +189,7 @@ void charge_density_matrix_p (complex double * sigma_all)
                         nC = ct.num_states;
 
                         Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene,
-                                green_C_non, nC, idx_delta);
+                                green_C_row, green_C_col, nC, idx_delta);
 
 
 
@@ -208,9 +211,9 @@ void charge_density_matrix_p (complex double * sigma_all)
                             gamma[i] = I * (sigma[i] - gamma[i]);
                         }
 #if GPU_ENABLED
-                        rho_munu_cuda (rho_mn, green_C_non, gamma, idx_delta); 
+                        rho_munu_cuda (rho_mn, green_C_row, green_C_col, gamma, idx_delta); 
 #else
-                        rho_munu_p (rho_mn, green_C_non, gamma, idx_delta); 
+                        rho_munu_p (rho_mn, green_C_row, green_C_col, gamma, idx_delta); 
 #endif
 
 
@@ -235,7 +238,8 @@ void charge_density_matrix_p (complex double * sigma_all)
             if(cei.probe_noneq > 0) break;
         }      /* iprobe loop ends here */
 
-        my_free( green_C_non );
+        my_free( green_C_row );
+        my_free( green_C_col );
         my_free( rho_mn );
         my_free( sigma_idx );
 
