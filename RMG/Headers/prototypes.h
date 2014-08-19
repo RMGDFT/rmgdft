@@ -57,6 +57,7 @@ bool scf (STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc
 void subdiag_app_B_one (STATE *sp, rmg_double_t * b_psi);
 void subdiag_app_A_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * s_psi, rmg_double_t * vtot_eig);
 void subdiag_app_AB_one (STATE *sp, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig_s);
+void subdiag_app_AB (STATE * states, rmg_double_t * a_psi, rmg_double_t * b_psi, rmg_double_t * vtot_eig);
 void write_data (int fhand, rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rho_oppo, rmg_double_t *vxc,
                  STATE *states);
 #if 0
