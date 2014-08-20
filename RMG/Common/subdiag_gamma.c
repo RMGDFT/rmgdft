@@ -1129,7 +1129,7 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
                 }
                 else {
 
-                    dsygvx_  (&ione, jobz, range, uplo, &num_states, distCij, &num_states, distSij, &num_states,
+                    dsygvx  (&ione, jobz, range, uplo, &num_states, distCij, &num_states, distSij, &num_states,
                         &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, global_matrix, &num_states, work2, 
                         &lwork, iwork, ifail, &info);
 

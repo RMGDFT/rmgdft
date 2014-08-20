@@ -12,8 +12,8 @@
 
 
 
-void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s, 
-    int dimx, int dimy, int dimz, rmg_double_t hx, rmg_double_t hy, rmg_double_t hz, int order)
+void app_cilr_driver (double * psi, double * a_psi, double *b_psi, double *vtot_eig_s, 
+    int dimx, int dimy, int dimz, double hx, double hy, double hz, int order)
 {
 
 

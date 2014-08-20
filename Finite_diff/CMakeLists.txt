@@ -1,4 +1,7 @@
 add_library (Finite_diff
+AppCilrFourth.cpp
+AppCilrSixth.cpp
+AppCilrDriver.cpp
 app_cir_beta_fourth.c
 app_cilr_drive.c
 app_cilr_sixth.c

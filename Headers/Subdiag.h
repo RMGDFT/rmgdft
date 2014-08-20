@@ -48,8 +48,10 @@ template <typename KpointType> void Subdiag(Kpoint<KpointType> *kptr,
                                             double *vxc,
                                             int subdiag_driver);
 template <typename KpointType>
-void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi,
-                     KpointType *nv, KpointType *Bns, double *vtot);
+void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot);
+template <typename KpointType>
+void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
+
 
 #endif
 #endif

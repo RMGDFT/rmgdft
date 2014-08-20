@@ -24,6 +24,7 @@ typedef struct
     // Pointers to special args
     void *p1;
     void *p2;
+    void *p3;
     int ion;        // Used for threaded beta_xpsi
     int nion;       // Used for threaded beta_xpsi
     rmg_double_t *sintR;    // Used for threaded beta_xpsi

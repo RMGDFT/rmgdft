@@ -91,6 +91,7 @@
 #  define		zgesv 	        zgesv_
 #  define		ZGESV 	        zgesv_
 #  define               dgemv           dgemv_
+#  define               dsygvx         dsygvx_
 
 #else
 #ifdef AIX
@@ -168,6 +169,8 @@ void dgetri(int *, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
 void dgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
 void zgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
 void dgemv ( char *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
+void dsygvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
+             int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, int *iwork, int *ifail, int *info);
 
 #if __cplusplus
 }

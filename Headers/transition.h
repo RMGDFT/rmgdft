@@ -76,10 +76,16 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl
 void pack_to_complex(double *psi, int nstates, int pbasis);
 void pack_to_standard(double *psi, int nstates, int pbasis);
 void MixBetaxpsi (int mix, int kpt);
+template  <typename OrbitalType> void AppCilrDriver (TradeImages *T, OrbitalType * psi, OrbitalType * a_psi, OrbitalType *b_psi, double *vtot,
+    int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
+
 
 
 extern "C" void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s,
     int dimx, int dimy, int dimz, rmg_double_t hx, rmg_double_t hy, rmg_double_t hz, int order);
+
+template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
 
 

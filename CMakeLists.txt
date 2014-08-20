@@ -90,6 +90,7 @@ target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
 target_link_libraries (rmg Force)
 target_link_libraries (rmg Force US_PP)
 target_link_libraries (rmg US_PP Force)
+target_link_libraries (rmg RMG_Subdiag Finite_diff)
 
 
 target_link_libraries (rmg-on RmgLib)
@@ -425,6 +426,7 @@ add_subdirectory (RMG/Common EXCLUDE_FROM_ALL)
 add_subdirectory (RMG/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Spin/XC_notuseLIBXC EXCLUDE_FROM_ALL) 
+add_subdirectory (RMG/Subdiag EXCLUDE_FROM_ALL)
 
 add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
@@ -451,6 +453,7 @@ link_directories (${RMG_BINARY_DIR}/RMG/Common)
 link_directories (${RMG_BINARY_DIR}/RMG/Input)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
+link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_scalapack_lp64.a")
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_intel_lp64.a")

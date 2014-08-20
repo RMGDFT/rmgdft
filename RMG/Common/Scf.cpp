@@ -60,6 +60,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "Subdiag.h"
 #include "../Headers/prototypes.h"
 
 
@@ -266,9 +267,12 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
             /* do diagonalizations if requested, if not orthogonalize */
             if (diag_this_step) {
-                RT1 = new RmgTimer("Scf steps: Diagonalization");
-                subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
-                delete(RT1);
+                if(ct.subdiag_driver == SUBDIAG_LAPACK) {
+                    Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
+                }
+                else {
+                    subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
+                }
             }
             else {
                 RT1 = new RmgTimer("Scf steps: Orthogonalization");

@@ -16,19 +16,19 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *, double *, double *);
-template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, double *);
+template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *);
+template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, std::complex<double> *, double *);
 
 // Applies A and B operators to one wavefunction
 template <typename KpointType>
-void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, 
-                     KpointType *nv, KpointType *Bns, double *vtot)
+void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot)
 {
-    KpointType *work2;
     BaseGrid *G = kptr->G;
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;
     STATE *sp = &kptr->kstates[istate];
+
+    double vel = L->get_omega() / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
@@ -49,27 +49,29 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     }
 
     /* A operating on psi stored in work3 */
-    app_cilr_driver (sp->psiR, a_psi, b_psi, vtot, dimx, dimy, dimz, G->get_hxgrid(1),
-            G->get_hygrid(1), G->get_hzgrid(1), ct.kohn_sham_fd_order);
+    AppCilrDriver(T, kptr->Kstates[istate].psi, a_psi, b_psi, vtot, dimx, dimy, dimz, 
+                  G->get_hxgrid(1), G->get_hygrid(1), G->get_hzgrid(1), ct.kohn_sham_fd_order);
 
 
-    // Point work2 to non-local operator applied to this orbital
-    work2 = &nv[istate * P0_BASIS];
+    // Add in non-local
     for(int idx = 0; idx < P0_BASIS; idx++) {
 
-        a_psi[idx] += TWO * work2[idx];
+        a_psi[idx] += TWO * kptr->nv[istate * kptr->pbasis + idx];
 
     }
 
 
     for (int idx = 0; idx < P0_BASIS; idx++) {
 
-        a_psi[idx] = 0.5 * get_vel() * a_psi[idx];
+        a_psi[idx] = 0.5 * vel * a_psi[idx];
 
     }
 
-    work2 = &Bns[istate * P0_BASIS];
-    for(int idx = 0; idx < P0_BASIS; idx++) b_psi[idx] += work2[idx];
+    for(int idx = 0; idx < P0_BASIS; idx++) {
+
+        b_psi[idx] += kptr->Bns[istate * kptr->pbasis + idx];
+
+    }
 
 
 } // end ApplyOperators
