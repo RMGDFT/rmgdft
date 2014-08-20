@@ -113,34 +113,38 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
 
     RT1 = new RmgTimer("Diagonalization: lapack");
+    int *ifail = new int[num_states];
+    int lwork = 2 * num_states * num_states + 6 * num_states + 2;
+    int liwork = 6*num_states;
+    int eigs_found;
+    double *work2 = new double[2*lwork];
+    int *iwork = new int[liwork];
+    double vx = 0.0;
+    double tol = 1e-15;
     if(ct.is_gamma) {
-
-        int *ifail = new int[num_states];
-        int lwork = 2 * num_states * num_states + 6 * num_states + 2;
-        int liwork = 6*num_states;
-        int eigs_found;
-        double *work2 = new double[lwork];
-        int *iwork = new int[liwork];
-        double vx = 0.0;
-        double tol = 1e-15;
 
         dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
                         &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
                         &lwork, iwork, ifail, &info);
 
-
-        delete [] iwork;
-        delete [] work2;
-        delete [] ifail;
-
     }
     else {
 
-
+        double *rwork = new double[8 * num_states];
+        zhegvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
+                        &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
+                        &lwork, rwork, iwork, ifail, &info);
+        delete [] rwork;
+rmg_printf("BBBBBBBBB  %d\n", eigs_found);
     }
+
+    delete [] iwork;
+    delete [] work2;
+    delete [] ifail;
+
     if (info) {
-        rmg_printf ("\n PDSYGVX failed, info is %d", info);
-        rmg_error_handler (__FILE__, __LINE__, "PDSYGVX failed");
+        rmg_printf ("\n Lapack eigensolver failed, info is %d", info);
+        rmg_error_handler (__FILE__, __LINE__, "Lapack eigensolver failed");
     }
 
     delete(RT1);

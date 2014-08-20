@@ -41,6 +41,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
+    rmg_printf("\nDIAGONALIZATION\n");
+
     int num_states = kptr->nstates;
     int pbasis = kptr->pbasis;
 
@@ -263,6 +265,14 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
                             (double *)&beta, (double *)tmp_arrayR, &pbasis );
     }
     else {
+
+        KpointType alpha(1.0);
+        KpointType beta(0.0);
+        zgemm("n", "n", &pbasis, &num_states, &num_states,
+                            (double *)&alpha,
+                            (double *)kptr->orbital_storage, &pbasis,
+                            (double *)global_matrix, &num_states,
+                            (double *)&beta, (double *)tmp_arrayR, &pbasis );
 
     }
     

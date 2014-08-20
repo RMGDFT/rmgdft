@@ -263,46 +263,22 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
          * the reason is for non-gamma subdiag is not coded to solve generalized eigenvalue problem, it can
          * only solve the regular eigenvalue problem and that requires that wavefunctions are orthogonal to start with.*/
         diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
-        if(ct.is_gamma) {
-
-            /* do diagonalizations if requested, if not orthogonalize */
-            if (diag_this_step) {
-                if(ct.subdiag_driver == SUBDIAG_LAPACK) {
-                    Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
-                }
-                else {
-                    subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
-                }
+        /* do diagonalizations if requested, if not orthogonalize */
+        if (diag_this_step) {
+            if(ct.subdiag_driver == SUBDIAG_LAPACK) {
+                //subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
+                Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
             }
             else {
-                RT1 = new RmgTimer("Scf steps: Orthogonalization");
-                Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
-                delete(RT1);
+                subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
             }
         }
         else {
             RT1 = new RmgTimer("Scf steps: Orthogonalization");
             Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
             delete(RT1);
-            
-    //RRR
-    #if 0
-            if (diag_this_step)
-            {
-                /*Projectores need to be updated prior to subspace diagonalization*/
-                RT1 = new RmgTimer("Scf steps: Beta x psi");
-                //betaxpsi (Kptr[kpt]->kstates);
-                Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr[kpt]);
-                delete(RT1);
-                
-                RT1 = new RmgTimer("Scf steps: Diagonalization");
-                subdiag_nongamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
-                delete(RT1);
-
-            }
-    #endif
         }
-        
+            
         
         /*wavefunctions have changed, projectors have to be recalculated */
         RT1 = new RmgTimer("Scf steps: Beta x psi");
