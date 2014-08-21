@@ -25,12 +25,12 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
 {
 
     int num_states = kpoint->get_nstates();
-    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int P0_BASIS = kpoint->pbasis;
 
     const char *transa = "n";
 
-    int idx, ion, gion, sindex;
-    int i, j, nh, inh;
+    int ion, gion, sindex;
+    int nh, inh;
     int alloc;
     double *dnmI;
     double *nwork, *psintR, *qqq;
@@ -47,7 +47,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
 
     if(pct.num_tot_proj == 0)
     {
-        for(i = 0; i < num_states * P0_BASIS; i++)
+        for(int i = 0; i < num_states * P0_BASIS; i++)
         {
             nv[i] = 0.0;
             Bns[i] = 0.0;
@@ -64,7 +64,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     sintR_compack = new double[alloc];
     nwork = new double[alloc];
 
-    for(i = 0; i < num_states * pct.num_tot_proj; i++)
+    for(int i = 0; i < num_states * pct.num_tot_proj; i++)
             sintR_compack[i] = 0.0;
 
 
@@ -81,7 +81,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
             sp = &ct.sp[iptr->species];
 
             nh = sp->nh;
-            for (i = 0; i < nh; i++)
+            for (int i = 0; i < nh; i++)
             {
                 sintR_compack[istate * pct.num_tot_proj + proj_index + i] =
                     psintR[i]; 
@@ -89,7 +89,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
         }
     }
 
-    for (i = 0; i < pct.num_tot_proj * pct.num_tot_proj; i++)
+    for (int i = 0; i < pct.num_tot_proj * pct.num_tot_proj; i++)
     {
         pct.M_dnm[i] = 0.0;
         pct.M_qqq[i] = 0.0;
@@ -113,13 +113,13 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
         dnmI = pct.dnmI[gion];
         qqq = pct.qqq[gion];
 
-        for (i = 0; i < nh; i++)
+        for (int i = 0; i < nh; i++)
         {
             inh = i * nh;
-            for (j = 0; j < nh; j++)
+            for (int j = 0; j < nh; j++)
             {
 
-                idx = (proj_index + i) * pct.num_tot_proj + proj_index + j;
+                int idx = (proj_index + i) * pct.num_tot_proj + proj_index + j;
                 pct.M_dnm[idx] = dnmI[inh+j];
                 pct.M_qqq[idx] = qqq[inh+j];
             }
@@ -130,10 +130,21 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     dgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
             &rone, (double *)pct.M_dnm,  &pct.num_tot_proj, (double *)sintR_compack, &pct.num_tot_proj,
             &rzero,  (double *)nwork, &pct.num_tot_proj);
-    dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
-            &rone, (double *)pct.weight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-            &rzero,  (double *)nv, &P0_BASIS);
 
+    if(ct.norm_conserving_pp) {
+
+        dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
+                &rone, (double *)pct.weight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
+                &rzero,  (double *)nv, &P0_BASIS);
+
+    }
+    else {
+
+        dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
+                &rone, (double *)pct.Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
+                &rzero,  (double *)nv, &P0_BASIS);
+
+    }
 
     for(int idx = 0;idx < num_states * P0_BASIS;idx++)
         ns[idx] = psiR[idx];

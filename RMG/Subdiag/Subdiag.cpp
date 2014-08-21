@@ -46,7 +46,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     int num_states = kptr->nstates;
     int pbasis = kptr->pbasis;
 
-    double vel = L->get_omega() / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
     // For MPI routines
     int factor = 1;
@@ -77,7 +77,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
     double *vtot = new double[4*FP0_BASIS];
-    double *vtot_eig = new double[4*kptr->pbasis];
+    double *vtot_eig = new double[kptr->pbasis];
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
@@ -108,6 +108,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     
     // Apply Nls
     AppNls(kptr, pct.newsintR_local, pct.newsintI_local);
+    //app_nls_batch (kptr->kstates, pct.nv, pct.ns, pct.Bns, pct.newsintR_local);
+
 
     // Each thread applies the operator to one wavefunction
     KpointType *a_psi = (KpointType *)tmp_arrayR;
@@ -115,8 +117,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     int istop = kptr->nstates / T->get_threads_per_node();
     istop = istop * T->get_threads_per_node();
-    SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
     for(int st1=0;st1 < istop;st1 += T->get_threads_per_node()) {
+        SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
         for(int ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
             thread_control[ist].sp = &kptr->kstates[st1 + ist];
@@ -134,7 +136,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < kptr->nstates;st1++) {
-        //subdiag_app_AB_one (&kptr->kstates[st1], &a_psi[st1 * kptr->pbasis], &b_psi[st1 *  kptr->pbasis], vtot);
+//        subdiag_app_AB_one (&kptr->kstates[st1], &a_psi[st1 * kptr->pbasis], &b_psi[st1 *  kptr->pbasis], vtot);
         ApplyOperators (kptr, st1, &a_psi[st1 * kptr->pbasis], &b_psi[st1 * kptr->pbasis], vtot);
 
     }
@@ -173,6 +175,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix[idx];
     delete(RT1);
+
+
+
     // Compute S matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     if(ct.is_gamma) {

@@ -25,7 +25,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 {
     BaseGrid *G = kptr->G;
     TradeImages *T = kptr->T;
-    Lattice *L = kptr->L;
+    Lattice *L = &Rmg_L;
     STATE *sp = &kptr->kstates[istate];
 
     double vel = L->get_omega() / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
@@ -34,7 +34,6 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
     int P0_BASIS = dimx * dimy * dimz;
-
 
     /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
     if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {

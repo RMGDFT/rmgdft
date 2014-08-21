@@ -288,7 +288,6 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
                 kdr[idx] = -I_t * (ct.kp[sp->kidx].kvec[0] * (std::complex<double>)gx[idx] +
                                                ct.kp[sp->kidx].kvec[1] * (std::complex<double>)gy[idx] +
                                                ct.kp[sp->kidx].kvec[2] * (std::complex<double>)gz[idx]);
-
             }
 
             delete [] gz;

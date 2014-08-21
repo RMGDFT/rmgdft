@@ -135,7 +135,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
                         &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
                         &lwork, rwork, iwork, ifail, &info);
         delete [] rwork;
-rmg_printf("BBBBBBBBB  %d\n", eigs_found);
+
     }
 
     delete [] iwork;

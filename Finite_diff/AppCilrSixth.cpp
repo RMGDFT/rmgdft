@@ -13,10 +13,10 @@ template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalT
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    rmg_double_t ihx, ihy, ihz;
-    rmg_double_t c000, c100, c110, c200;
+    double ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
+    double fc2x, fc2y, fc2z, tcx, tcy, tcz;
+    double ihx, ihy, ihz;
+    double c000, c100, c110, c200;
 
 
     c000 = 61.0 / 120.0;
