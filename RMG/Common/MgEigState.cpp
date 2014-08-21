@@ -302,10 +302,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
         if(potential_acceleration) {
             /* Generate 2 * V * psi */
-            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, nvtot_psi, nv, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
+            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, nvtot_psi, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
         }
         else {
-            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, nv, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
+            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
         }
 
         /* B operating on 2*V*psi stored in work1 */
@@ -313,6 +313,10 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
         CPP_app_cir_driver<CalcType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
 
+        // Add in non-local which has already had B applied in AppNls
+        for(int idx=0;idx < pbasis;idx++) {
+            work1_t[idx] += 2.0 * nv[idx];
+        }
 
         for(int idx=0;idx < pbasis;idx++) {
             work1_t[idx] = work1_t[idx] - work2_t[idx];

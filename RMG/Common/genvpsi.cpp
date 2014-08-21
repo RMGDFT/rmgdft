@@ -46,7 +46,7 @@
 
 
 // Gamma point float version
-void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, void * kdp,
+void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, void * kdp,
               double kmag, int dimx, int dimy, int dimz)
 {
 
@@ -69,7 +69,7 @@ void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, 
             {
                 sg_twovpsi[ix * incx + iy * incy + iz] =
                     TWO * psi[ix * incx + iy * incy + iz] *
-                    vtot[ix * incx + iy * incy + iz] + TWO * vnl[ix * incx + iy * incy + iz];
+                    vtot[ix * incx + iy * incy + iz];
             }                   /* end for */
 
         }                       /* end for */
@@ -80,7 +80,7 @@ void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, 
 }                               /* end genvpsi */
 
 // Gamma point double version
-void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, void * kdp,
+void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, void * kdp,
               double kmag, int dimx, int dimy, int dimz)
 {
 
@@ -103,7 +103,7 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl
             {
                 sg_twovpsi[ix * incx + iy * incy + iz] =
                     TWO * psi[ix * incx + iy * incy + iz] *
-                    vtot[ix * incx + iy * incy + iz] + TWO * vnl[ix * incx + iy * incy + iz];
+                    vtot[ix * incx + iy * incy + iz];
             }                   /* end for */
 
         }                       /* end for */
@@ -113,7 +113,7 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl
 }
 
 // complex float version
-void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kdp,
+void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, void * kdp,
               double kmag, int dimx, int dimy, int dimz)
 {
 
@@ -138,8 +138,7 @@ void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, d
                     (
                     2.0 * (std::complex<double>)psi[ix * incx + iy * incy + iz] *
                     (vtot[ix * incx + iy * incy + iz] + 0.5 * kmag) +
-                    2.0 * kd[ix * incx + iy * incy + iz] + TWO * vnl[ix * incx + iy * incy + iz]
-                    );
+                    2.0 * kd[ix * incx + iy * incy + iz]);
             }                   /* end for */
 
         }                       /* end for */
@@ -150,7 +149,7 @@ void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, d
 
 
 // complex double version
-void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kdp,
+void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, void * kdp,
               double kmag, int dimx, int dimy, int dimz)
 {
 
@@ -175,8 +174,7 @@ void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi,
                     (
                     2.0 * (std::complex<double>)psi[ix * incx + iy * incy + iz] *
                     (vtot[ix * incx + iy * incy + iz] + 0.5 * kmag) +
-                    2.0 * kd[ix * incx + iy * incy + iz] + TWO * vnl[ix * incx + iy * incy + iz]
-                    );
+                    2.0 * kd[ix * incx + iy * incy + iz]);
             }                   /* end for */
 
         }                       /* end for */
@@ -186,17 +184,17 @@ void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi,
 }                               /* end genvpsi */
 
 
-extern "C" void genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, double * kd,
+extern "C" void genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * kd,
               double kmag, int dimx, int dimy, int dimz)
 {
 
-    CPP_genvpsi(psi, sg_twovpsi, vtot, vnl, kd, kmag, dimx, dimy, dimz);
+    CPP_genvpsi(psi, sg_twovpsi, vtot, kd, kmag, dimx, dimy, dimz);
 
 }
-extern "C" void genvpsi_f (float * psi, float * sg_twovpsi, double * vtot, double * vnl, double * kd,
+extern "C" void genvpsi_f (float * psi, float * sg_twovpsi, double * vtot, double * kd,
               double kmag, int dimx, int dimy, int dimz)
 {
 
-    CPP_genvpsi(psi, sg_twovpsi, vtot, vnl, kd, kmag, dimx, dimy, dimz);
+    CPP_genvpsi(psi, sg_twovpsi, vtot, kd, kmag, dimx, dimy, dimz);
 
 }

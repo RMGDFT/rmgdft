@@ -61,16 +61,16 @@ template <typename OrbitalType>
 void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> *Kptr);
 
 // Gamma point float version
-void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double * vnl, void * kd,
+void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, void * kd,
               double kmag, int dimx, int dimy, int dimz);
 // complex float version
-void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kd,
+void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, void * kd,
               double kmag, int dimx, int dimy, int dimz);
 // complex double version
-void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, std::complex<double> * vnl, void * kd,
+void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, void * kd,
               double kmag, int dimx, int dimy, int dimz);
 // Gamma point double version
-void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double * vnl, void * kd,
+void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, void * kd,
               double kmag, int dimx, int dimy, int dimz);
 
 void pack_to_complex(double *psi, int nstates, int pbasis);
