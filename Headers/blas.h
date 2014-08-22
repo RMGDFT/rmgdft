@@ -86,6 +86,8 @@
 #  define		ZGEMM  	        zgemm_
 #  define		dgetrf 	        dgetrf_
 #  define		dgetri 	        dgetri_
+#  define		zgetrf 	        zgetrf_
+#  define		zgetri 	        zgetri_
 #  define		dgesv 	        dgesv_
 #  define               sgesv           dgesv_
 #  define		zgesv 	        zgesv_
@@ -93,6 +95,8 @@
 #  define               dgemv           dgemv_
 #  define               dsygvx          dsygvx_
 #  define               zhegvx          zhegvx_
+#  define               zhegst          zhegst_
+#  define               zheevd          zheevd_
 
 #else
 #ifdef AIX
@@ -164,9 +168,13 @@ void cheev (char *jobz, char *uplo, int *numm, rmg_double_t * ss, int *numn,
             rmg_double_t * work1, rmg_double_t * work2, int *lwork, rmg_double_t *, int *info);
 void spotri (char *, int *, rmg_double_t *, int *, int *);
 void dgemm(const char *, const char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
-void zgemm(char *, char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
+void zgemm(const char *, const char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
 void dgetrf( int *, int *, rmg_double_t *, int *, int *, int *);
 void dgetri(int *, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
+void zgetrf( int *, int *, rmg_double_t *, int *, int *, int *);
+void zgetri(int *, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
+void zhegst(int *, const char *, int *, double *, int *, double *, int *, int *);
+void zheevd(const char *, const char *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
 void zgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
 void dgemv ( char *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);

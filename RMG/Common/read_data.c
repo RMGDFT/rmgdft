@@ -141,7 +141,7 @@ void read_data (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
 
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
-    if (gamma != GAMMA_PT)
+    if (gamma != ct.is_gamma)
 	error_handler ("Wrong gamma data");
 
 

@@ -132,9 +132,9 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
             &rzero,  (double *)nwork, &pct.num_tot_proj);
 
 
-        dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
-                &rone, (double *)pct.Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-                &rzero,  (double *)nv, &P0_BASIS);
+    dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
+            &rone, (double *)pct.Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
+            &rzero,  (double *)nv, &P0_BASIS);
 
 
     for(int idx = 0;idx < num_states * P0_BASIS;idx++)

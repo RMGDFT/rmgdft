@@ -107,7 +107,7 @@ void write_data (int fhand, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
 
 
     /* write wavefunction info */
-    gamma = GAMMA_PT;
+    gamma = ct.is_gamma;
     nk = ct.num_kpts;
     write_int (fhand, &gamma, 1);
     write_int (fhand, &nk, 1); 

@@ -54,7 +54,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     // Invert Bij
     RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
 
-    int *ipiv = new int[num_states];
+    int *ipiv = new int[2*num_states];
     for(int idx=0;idx < num_states;idx++) ipiv[idx] = 0;
     int info = 0;
     if(ct.is_gamma) {
@@ -83,12 +83,11 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     }
     else {
 
-        KpointType alpha = ONE_t;
-        KpointType beta = ZERO_t;
+        KpointType alpha(1.0);
+        KpointType beta(0.0);;
 
         // Inverse of B should be in Cij
         zgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
-        delete(RT1);
 
         /*Multiply inverse of B and and A */
         /*B^-1*A */
@@ -121,6 +120,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     int *iwork = new int[liwork];
     double vx = 0.0;
     double tol = 1e-15;
+
     if(ct.is_gamma) {
 
         dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
