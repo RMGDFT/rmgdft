@@ -79,6 +79,17 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->T = newT;
     this->L = newL;
     this->pbasis = this->G->get_P0_BASIS(1);
+
+    double v1, v2, v3;
+    v1 = twoPI * this->kpt[0] / Rmg_L.get_xside();
+    v2 = twoPI * this->kpt[1] / Rmg_L.get_yside();
+    v3 = twoPI * this->kpt[2] / Rmg_L.get_zside();
+
+    this->kvec[0] = v1;
+    this->kvec[1] = v2;
+    this->kvec[2] = v3;
+    this->kmag = v1 * v1 + v2 * v2 + v3 * v3;
+
 }
 
 template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)

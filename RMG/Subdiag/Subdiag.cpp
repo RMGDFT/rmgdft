@@ -105,16 +105,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     int dimy = kptr->G->get_PY0_GRID(1);
     int dimz = kptr->G->get_PZ0_GRID(1);
 
-    // Trade images on coarse grid and store result back in vtot
-    if(ct.kohn_sham_fd_order == APP_CI_FOURTH)
-        kptr->T->trade_imagesx (vtot_eig, vtot, dimx, dimy, dimz, 1, FULL_TRADE);
 
-    if(ct.kohn_sham_fd_order == APP_CI_SIXTH)
-        kptr->T->trade_imagesx (vtot_eig, vtot, dimx, dimy, dimz, 2, FULL_TRADE);
-    
     // Apply Nls
     AppNls(kptr, pct.newsintR_local, pct.newsintI_local);
-    //app_nls_batch (kptr->kstates, pct.nv, pct.ns, pct.Bns, pct.newsintR_local);
 
 
     // Each thread applies the operator to one wavefunction
@@ -131,7 +124,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
             thread_control[ist].p1 = (void *)&a_psi[(st1 + ist) * kptr->pbasis];
             thread_control[ist].p2 = (void *)&b_psi[(st1 + ist) * kptr->pbasis];
             thread_control[ist].p3 = (void *)kptr;
-            thread_control[ist].vtot = vtot;
+            thread_control[ist].vtot = vtot_eig;
             T->set_pptr(ist, &thread_control[ist]);
         }
 
@@ -142,9 +135,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < kptr->nstates;st1++) {
-//        subdiag_app_AB_one (&kptr->kstates[st1], &a_psi[st1 * kptr->pbasis], &b_psi[st1 *  kptr->pbasis], vtot);
-        ApplyOperators (kptr, st1, &a_psi[st1 * kptr->pbasis], &b_psi[st1 * kptr->pbasis], vtot);
-
+        ApplyOperators (kptr, st1, &a_psi[st1 * kptr->pbasis], &b_psi[st1 * kptr->pbasis], vtot_eig);
     }
 
     delete(RT1);

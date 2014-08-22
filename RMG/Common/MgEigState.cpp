@@ -564,4 +564,3 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
 
 
 }
-

@@ -197,7 +197,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }                           /*end for ion */
 
     if(!ct.is_gamma) {
-        symmetrize_rho (rho);
+//        symmetrize_rho (rho);
     }
 
 

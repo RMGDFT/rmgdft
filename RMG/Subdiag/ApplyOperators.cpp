@@ -27,51 +27,100 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     TradeImages *T = kptr->T;
     Lattice *L = &Rmg_L;
     STATE *sp = &kptr->kstates[istate];
+    KpointType *psi = kptr->Kstates[istate].psi;
 
     double vel = L->get_omega() / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+    double hxgrid = G->get_hxgrid(1);
+    double hygrid = G->get_hygrid(1);
+    double hzgrid = G->get_hzgrid(1);
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
-    int P0_BASIS = dimx * dimy * dimz;
+    int pbasis = dimx * dimy * dimz;
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
-    /* Generate 2*V*psi and store it in a smoothing grid and store in sg_twovpsi */
-    if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-        if(ct.scf_steps > 0)
-        {
-            if(ct.kohn_sham_fd_order == APP_CI_FOURTH)
-                T->trade_imagesx (sp->dvhxc, vtot, dimx, dimy, dimz, 1, FULL_TRADE);
+    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    potential_acceleration = potential_acceleration & (ct.scf_steps > 0);
 
-            if(ct.kohn_sham_fd_order == APP_CI_SIXTH)
-                T->trade_imagesx (sp->dvhxc, vtot, dimx, dimy, dimz, 2, FULL_TRADE);
+
+    // Apply A operator to psi
+    CPP_app_cil_driver (L, T, psi, a_psi, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+
+
+    // Apply B operator to psi
+    CPP_app_cir_driver (L, T, psi, b_psi, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+
+
+    // if complex orbitals apply gradient to orbital and compute dot products
+    std::complex<double> *kdr = new std::complex<double>[pbasis];
+    std::complex<double> ZERO_t(0.0, 0.0);
+    for(int idx = 0;idx < pbasis;idx++) kdr[idx] = ZERO_t;
+
+    if(typeid(KpointType) == typeid(std::complex<double>)) {
+
+        KpointType *gx = new KpointType[pbasis];
+        KpointType *gy = new KpointType[pbasis];
+        KpointType *gz = new KpointType[pbasis];
+
+        CPP_app_grad_driver (L, T, psi, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid);
+
+        std::complex<double> I_t(0.0, 1.0);
+        for(int idx = 0;idx < pbasis;idx++) {
+
+            kdr[idx] = -I_t * (kptr->kvec[0] * (std::complex<double>)gx[idx] +
+                               kptr->kvec[1] * (std::complex<double>)gy[idx] +
+                               kptr->kvec[2] * (std::complex<double>)gz[idx]);
         }
+
+        delete [] gz;
+        delete [] gy;
+        delete [] gx;
+
     }
 
-    /* A operating on psi stored in work3 */
-    AppCilrDriver(T, kptr->Kstates[istate].psi, a_psi, b_psi, vtot, dimx, dimy, dimz, 
-                  G->get_hxgrid(1), G->get_hygrid(1), G->get_hzgrid(1), ct.kohn_sham_fd_order);
+    // Generate 2*V*psi
+    KpointType *sg_twovpsi_t = new KpointType[sbasis];
+    if(potential_acceleration) {
+        CPP_genvpsi (psi, sg_twovpsi_t, sp->dvhxc, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
+    }
+    else {
+        CPP_genvpsi (psi, sg_twovpsi_t, vtot, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
+    }
 
+    // B operating on 2*V*psi stored in work
+    KpointType *work_t = new KpointType[sbasis];
+    CPP_app_cir_driver (L, T, sg_twovpsi_t, work_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
-    // Add in non-local
-    for(int idx = 0; idx < P0_BASIS; idx++) {
+    for(int idx = 0; idx < pbasis; idx++) {
+
+        a_psi[idx] = work_t[idx] - a_psi[idx];
+
+    }
+
+    // Add in non-local which has already had B applied in AppNls
+    for(int idx = 0; idx < pbasis; idx++) {
 
         a_psi[idx] += TWO * kptr->nv[istate * kptr->pbasis + idx];
 
     }
 
-
-    for (int idx = 0; idx < P0_BASIS; idx++) {
+    for (int idx = 0; idx < pbasis; idx++) {
 
         a_psi[idx] = 0.5 * vel * a_psi[idx];
 
     }
 
-    for(int idx = 0; idx < P0_BASIS; idx++) {
+    // Add in already applied Bns to b_psi
+    for(int idx = 0; idx < pbasis; idx++) {
 
         b_psi[idx] += kptr->Bns[istate * kptr->pbasis + idx];
 
     }
 
+
+    delete [] work_t;
+    delete [] sg_twovpsi_t;
 
 } // end ApplyOperators
 
