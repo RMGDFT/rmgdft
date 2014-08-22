@@ -253,7 +253,7 @@ void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double *
             psintI = &sintI[ion * ct.num_states * ct.max_nl + sindex];
 
             //weiptr = &pct.weight[gion];
-            weiptr = &pct.weight[ion * ct.max_nl * kptr->pbasis];
+            weiptr = &pct.Bweight[ion * ct.max_nl * kptr->pbasis];
 
             dnmI = pct.dnmI[gion];
             qqq = pct.qqq[gion];
