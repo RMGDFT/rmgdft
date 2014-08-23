@@ -324,13 +324,14 @@ void matinit (int *desca, double *dismat, double *globmat, int size)
 
                         if (jjj < mxlloc && jj < size)
                         {
-#if GAMMA_PT
-                            dismat[iii + jjj * mxllda] = globmat[ii + jj * size];
-#else
-                            dismat[2 * (iii + jjj * mxllda)] = globmat[2 * (ii + jj * size)];
-                            dismat[2 * (iii + jjj * mxllda) + 1] =
-                                globmat[2 * (ii + jj * size) + 1];
-#endif
+                            if(ct.is_gamma) {
+                                dismat[iii + jjj * mxllda] = globmat[ii + jj * size];
+                            }
+                            else {
+                                dismat[2 * (iii + jjj * mxllda)] = globmat[2 * (ii + jj * size)];
+                                dismat[2 * (iii + jjj * mxllda) + 1] =
+                                    globmat[2 * (ii + jj * size) + 1];
+                            }
                         }
                     }
                 }
@@ -362,13 +363,14 @@ void matgather (double *dismat, int *desca, double *globmat, int size)
 
 
 
-#if GAMMA_PT
-    for (i = 0; i < size * size; i++)
-        globmat[i] = 0.;
-#else
-    for (i = 0; i < 2 * size * size; i++)
-        globmat[i] = 0.;
-#endif
+    if(ct.is_gamma) {
+        for (i = 0; i < size * size; i++)
+            globmat[i] = 0.;
+    }
+    else {
+        for (i = 0; i < 2 * size * size; i++)
+            globmat[i] = 0.;
+    }
 
 
     maxrow = (size / (nprow * mb)) + 1;
@@ -406,13 +408,14 @@ void matgather (double *dismat, int *desca, double *globmat, int size)
                         //if (jjj < mxllda && jj < size)
                         if (jjj < mxlloc && jj < size)
                         {
-#if GAMMA_PT
-                            globmat[ii + jj * size] = dismat[iii + jjj * mxllda];
-#else
-                            globmat[2 * (ii + jj * size)] = dismat[2 * (iii + jjj * mxllda)];
-                            globmat[2 * (ii + jj * size) + 1] =
-                                dismat[2 * (iii + jjj * mxllda) + 1];
-#endif
+                            if(ct.is_gamma) {
+                                globmat[ii + jj * size] = dismat[iii + jjj * mxllda];
+                            }
+                            else {
+                                globmat[2 * (ii + jj * size)] = dismat[2 * (iii + jjj * mxllda)];
+                                globmat[2 * (ii + jj * size) + 1] =
+                                    dismat[2 * (iii + jjj * mxllda) + 1];
+                            }
                         }
                     }
                 }

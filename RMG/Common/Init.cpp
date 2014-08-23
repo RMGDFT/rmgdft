@@ -55,6 +55,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "Subdiag.h"
 #include "../Headers/prototypes.h"
 
 
@@ -461,11 +462,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete [] vtot;
 
         /*Now we cam do subspace diagonalization */
-#if GAMMA_PT
-        subdiag_gamma (Kptr[0]->kstates, vh, vnuc, vxc);
-#else
-        subdiag_nongamma (Kptr[0]->kstates, vh, vnuc, vxc);
-#endif
+        for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+            Subdiag (Kptr[0], vh, vnuc, vxc, ct.subdiag_driver);
+        }
 
     }                           /*end if(ct.initdiag) */
     else

@@ -51,6 +51,7 @@
 #include "rmg_error.h"
 #include "transition.h"
 #include "Kpoint.h"
+#include "blas.h"
 
 
 #include "../Headers/common_prototypes.h"

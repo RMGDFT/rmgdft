@@ -17,6 +17,12 @@
 #define         zgemm   zgemm_
 
 
+/*
+  These functions are used to simplify the subspace diagonalization code by hiding the
+  details of data type and GPU utilization from the higher level routines.
+
+*/
+
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);

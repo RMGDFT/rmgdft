@@ -51,6 +51,8 @@ template <typename KpointType>
 void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot);
 template <typename KpointType>
 void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
+template <typename KpointType>
+void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m, int n, int k, DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc);
 
 

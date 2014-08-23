@@ -264,13 +264,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
         /* do diagonalizations if requested, if not orthogonalize */
         if (diag_this_step) {
-            if(ct.subdiag_driver == SUBDIAG_LAPACK) {
-                //subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
-                Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
-            }
-            else {
-                subdiag_gamma (Kptr[kpt]->kstates, vh, vnuc, vxc);
-            }
+            Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
         }
         else {
             RT1 = new RmgTimer("Scf steps: Orthogonalization");

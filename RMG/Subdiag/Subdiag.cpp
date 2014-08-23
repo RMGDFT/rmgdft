@@ -197,6 +197,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
         case SUBDIAG_LAPACK:
             Subdiag_Lapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
             break;
+        case SUBDIAG_SCALAPACK:
+            Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
+            break;
         default:
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
 
