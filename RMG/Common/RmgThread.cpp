@@ -70,7 +70,6 @@ void *run_threads(void *v) {
                    kptr_c = (Kpoint<std::complex<double>> *)ss->p3;
                    ApplyOperators<std::complex<double> > (kptr_c, ss->sp->istate, (std::complex<double> *)ss->p1, (std::complex<double> *)ss->p2, ss->vtot);
                } 
-//               subdiag_app_AB_one(ss->sp, (rmg_double_t *)ss->p1, (rmg_double_t *)ss->p2, ss->vtot);
                break;
             case HYBRID_SUBDIAG_APP_A:
                subdiag_app_A_one(ss->sp, (rmg_double_t *)ss->p1, (rmg_double_t *)ss->p2, ss->vtot);

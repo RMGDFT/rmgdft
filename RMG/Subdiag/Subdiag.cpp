@@ -25,9 +25,6 @@
 #endif
 
 
-static double *tmp_arrayR = NULL;
-static double *tmp_array2R = NULL;
-static double *global_matrix_storage = NULL;
 
 
 template void Subdiag<double>(Kpoint<double> *, double *, double *, double *, int);
@@ -37,15 +34,26 @@ template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, int subdiag_driver)
 {
 
+    KpointType *tmp_arrayT = NULL;
+    KpointType *tmp_array2T = NULL;
+    KpointType *global_matrix;
+
     //RmgTimer RT0("Diagonalization");
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
-    KpointType *global_matrix;
 
-    const char *trans_t = "t";
-    const char *trans_n = "n";
-    const char *trans_c = "c";
+    char *trans_t = "t";
+    char *trans_n = "n";
+    char *trans_c = "c";
+    char *trans_m;
+    if(typeid(KpointType) == typeid(std::complex<double>)) {
+         trans_m = trans_c;
+    }
+    else {
+        trans_m = trans_t;
+    }   
+
 
     int num_states = kptr->nstates;
     int pbasis = kptr->pbasis;
@@ -61,24 +69,23 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
 
     // First time through allocate pinned memory for buffers
-    if(!tmp_arrayR) {
+    if(!tmp_arrayT) {
 
-        int retval1 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayR);
-        int retval2 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_array2R);
-        int retval3 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix_storage);
+        int retval1 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
+        int retval2 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_array2T);
+        int retval3 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix);
 
         if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) ) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
         }
 
         #if GPU_ENABLED
-            cudaHostRegister( tmp_arrayR, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
-            cudaHostRegister( tmp_array2R, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
+            cudaHostRegister( tmp_arrayT, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
+            cudaHostRegister( tmp_array2T, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
             cudaHostRegister( global_matrix, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
         #endif
 
     }
-    global_matrix = (KpointType *)global_matrix_storage;
 
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
@@ -98,12 +105,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     get_vtot_psi (vtot_eig, vtot, kptr->G->get_default_FG_RATIO());
 
 
-    // Apply AB operator on each wavefunction
+    // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("Diagonalization: apply operators");
-
-    int dimx = kptr->G->get_PX0_GRID(1);
-    int dimy = kptr->G->get_PY0_GRID(1);
-    int dimz = kptr->G->get_PZ0_GRID(1);
 
 
     // Apply Nls
@@ -111,8 +114,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
 
     // Each thread applies the operator to one wavefunction
-    KpointType *a_psi = (KpointType *)tmp_arrayR;
-    KpointType *b_psi = (KpointType *)tmp_array2R;
+    KpointType *a_psi = (KpointType *)tmp_arrayT;
+    KpointType *b_psi = (KpointType *)tmp_array2T;
 
     int istop = kptr->nstates / T->get_threads_per_node();
     istop = istop * T->get_threads_per_node();
@@ -140,30 +143,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     delete(RT1);
     /* Operators applied and we now have
-         tmp_arrayR:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
-         tmp_array2R:  B|psi> + B|beta>qnm<beta|psi> */
+         tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
+         tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
 
     // Compute A matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
-
-    if(ct.is_gamma) {
-
-        double alpha(1.0);
-        double beta(0.0);
-        dgemm (trans_t, trans_n, &num_states, &num_states, &pbasis, &alpha, (double *)kptr->Kstates[0].psi, &pbasis,
-                                tmp_arrayR, &pbasis, &beta, (double *)global_matrix, &num_states);
-
-    } 
-    else {
-
-        KpointType alpha(1.0);
-        KpointType beta(0.0);
-        zgemm (trans_c, trans_n, &num_states, &num_states, &pbasis, (double *)&alpha, (double *)kptr->Kstates[0].psi, &pbasis,
-                                (double *)tmp_arrayR, &pbasis, (double *)&beta, (double *)global_matrix, &num_states);
-
-    }
-
+    KpointType alpha(1.0);
+    KpointType beta(0.0);
+    SubdiagGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->Kstates[0].psi, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states);
     delete(RT1);
 
     // Reduce matrix and store copy in Aij
@@ -177,22 +165,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Compute S matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
-    if(ct.is_gamma) {
-
-        double alpha(vel);
-        double beta(0.0);
-        dgemm (trans_t, trans_n, &num_states, &num_states, &pbasis, &alpha, (double *)kptr->Kstates[0].psi, &pbasis,
-                                (double *)kptr->ns, &pbasis, &beta, (double *)global_matrix, &num_states);
-
-    }
-    else {
-
-        KpointType alpha(vel);
-        KpointType beta(0.0);
-        zgemm (trans_c, trans_n, &num_states, &num_states, &pbasis, (double *)&alpha, (double *)kptr->Kstates[0].psi, &pbasis,
-                                (double *)kptr->ns, &pbasis, (double *)&beta, (double *)global_matrix, &num_states);
-
-    }
+    KpointType alpha1(vel);
+    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->Kstates[0].psi, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states);
     delete(RT1);
 
     // Reduce matrix and store copy in Sij
@@ -205,22 +179,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Compute B matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
-    if(ct.is_gamma) {
-
-        double alpha(vel);
-        double beta(0.0);
-        dgemm (trans_t, trans_n, &num_states, &num_states, &pbasis, &alpha, (double *)kptr->Kstates[0].psi, &pbasis,
-                                tmp_array2R, &pbasis, &beta, (double *)global_matrix, &num_states);
-
-    } 
-    else {
-
-        KpointType alpha(vel);
-        KpointType beta(0.0);
-        zgemm (trans_c, trans_n, &num_states, &num_states, &pbasis, (double *)&alpha, (double *)kptr->Kstates[0].psi, &pbasis,
-                                (double *)tmp_array2R, &pbasis, (double *)&beta, (double *)global_matrix, &num_states);
-
-    }
+    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->Kstates[0].psi, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states);
     delete(RT1);
 
     // Reduce matrix and store copy in Bij
@@ -254,32 +213,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
 
 
-    // Update the orbitals
+    // Update the orbitals and store rotated orbitals in tmp_arrayT
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
-    if(ct.is_gamma) {
+    SubdiagGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis );
 
-        double alpha(1.0);
-        double beta(0.0);
-        dgemm("n", "n", &pbasis, &num_states, &num_states,
-                            (double *)&alpha,
-                            (double *)kptr->orbital_storage, &pbasis,
-                            (double *)global_matrix, &num_states,
-                            (double *)&beta, (double *)tmp_arrayR, &pbasis );
-    }
-    else {
-
-        KpointType alpha(1.0);
-        KpointType beta(0.0);
-        zgemm("n", "n", &pbasis, &num_states, &num_states,
-                            (double *)&alpha,
-                            (double *)kptr->orbital_storage, &pbasis,
-                            (double *)global_matrix, &num_states,
-                            (double *)&beta, (double *)tmp_arrayR, &pbasis );
-
-    }
-    
-    KpointType *tptr = (KpointType *)tmp_arrayR;
-    for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tptr[idx];
+    // And finally copy them back
+    for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     delete(RT1);
 
     // free memory

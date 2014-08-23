@@ -89,7 +89,6 @@ assign_weight.c
 nlforce_par_Q.c
 init_fftw_wisdom.c
 lcao_get_awave.c
-subdiag_nongamma.c
 lcao_get_rho.c
 destroy_fftw_wisdom.c
 rmg_lbfgs.c

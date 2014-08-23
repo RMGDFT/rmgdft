@@ -217,7 +217,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             delete(RT1);
 
             AppNls(Kptr[kpt], pct.oldsintR_local, pct.oldsintI_local);
-//app_nls_batch(Kptr[kpt]->kstates, (double *)Kptr[kpt]->nv, (double *)Kptr[kpt]->ns, (double *)Kptr[kpt]->Bns, pct.oldsintR_local);
 
             /* Update the wavefunctions */
             RT1 = new RmgTimer("Scf steps: Mg_eig");
@@ -246,7 +245,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
                 else {
                     MgEigState<std::complex<double>, std::complex<float> > (Rmg_G, Rmg_T, &Rmg_L, &Kptr[kpt]->kstates[st1], 0, vtot_psi);
                 }
-//                mg_eig_state_driver (&Kptr[kpt]->kstates[st1], 0, vtot_psi);
             }
             delete(RT1);
 
