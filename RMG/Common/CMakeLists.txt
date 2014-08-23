@@ -40,9 +40,7 @@ app_smooth1.cpp
 rand0.c
 get_extrapolation_constants.c
 output_wave.c
-subdiag_gamma_app_AB1_hybrid.c
 app_nls_allstates.c
-subdiag_gamma_app_AB_hybrid.c
 write_header.c
 app_nls_batch.c
 norm_psi1.c

@@ -84,9 +84,11 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
 
 
     // Reduce and distribute matrices
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: distribute matrices.");
     distribute_mat (pct.desca, (double *)Aij, (double *)distAij, &num_states);
     distribute_mat (pct.desca, (double *)Sij, (double *)distSij, &num_states);
     distribute_mat (pct.desca, (double *)Bij, (double *)distBij, &num_states);
+    delete(RT1);
 
     // Create and distribute unitary matrix
     for (int idx = 0; idx < num_states * num_states; idx++) {
@@ -107,9 +109,9 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
         // Keep an extra copy of the distributed matrix
         for(int idx=0;idx < dist_length;idx++) distIij[idx] = distCij[idx];
 
+        RT1 = new RmgTimer("Diagonalization: Invert Bij");
         // Get matrix that is inverse to B
         {
-
             int info=0;
             int ipiv_size = NUMROC (&pct.desca[2], &pct.desca[4], &pct.scalapack_myrow, &pct.desca[6],
                             &pct.scalapack_nprow) + pct.desca[4];
@@ -134,7 +136,10 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
 
             delete [] ipiv;
         }
+        delete(RT1);
 
+
+        RT1 = new RmgTimer("Diagonalization: matrix setup");
         /*Multiply inverse of B and and A */
         {
             char *trans = "n";
@@ -169,9 +174,12 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
             // Copy result into Bij
             for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
         }
+        delete(RT1);
+
 
         /****************** Find Matrix of Eigenvectors *****************************/
         /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
+        RT1 = new RmgTimer("Diagonalization: lapack");
         {
             char *range = "a";
             char *uplo = "l", *jobz = "v";
@@ -253,6 +261,7 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
             delete [] iwork;
 
         }
+        delete(RT1);
         
         // Gather result onto global_matrix
         matgather ((double *)distAij, pct.desca, (double *)eigvectors, num_states);
@@ -267,7 +276,9 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     }
 
     // Finally, sum eigvectors over all PEs
+    RT1 = new RmgTimer("Diagonalization: MPI_Allreduce");
     MPI_Allreduce(MPI_IN_PLACE, eigvectors, factor * num_states * num_states, MPI_DOUBLE, MPI_SUM, pct.scalapack_comm);
+    delete(RT1);
 
 
 

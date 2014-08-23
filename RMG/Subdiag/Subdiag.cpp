@@ -33,7 +33,7 @@ template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, dou
 template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, int subdiag_driver)
 {
-
+    RmgTimer RT0("Diagonalization");
     KpointType *tmp_arrayT = NULL;
     KpointType *tmp_array2T = NULL;
     KpointType *global_matrix;
@@ -151,7 +151,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    SubdiagGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->Kstates[0].psi, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states);
+    SubdiagGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states);
     delete(RT1);
 
     // Reduce matrix and store copy in Aij
@@ -166,7 +166,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // Compute S matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha1(vel);
-    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->Kstates[0].psi, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states);
+    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states);
     delete(RT1);
 
     // Reduce matrix and store copy in Sij
@@ -179,7 +179,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Compute B matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
-    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->Kstates[0].psi, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states);
+    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states);
     delete(RT1);
 
     // Reduce matrix and store copy in Bij

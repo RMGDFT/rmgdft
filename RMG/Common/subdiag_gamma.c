@@ -210,6 +210,7 @@ void init_subdiag(void)
 
 }
 
+#if 0
 void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
 
@@ -709,7 +710,7 @@ void subdiag_gamma_scalapack (STATE * states, rmg_double_t * vh, rmg_double_t * 
     my_free (vtot_eig);
 
 }
-
+#endif
 
 
 
@@ -850,6 +851,7 @@ static void print_dist_matrix (rmg_double_t * dist_matrix, int global_size, int 
 #endif
 
 
+#if 0
 #if GAMMA_PT
 void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
@@ -1186,7 +1188,7 @@ void subdiag_gamma_lapack (STATE * states, rmg_double_t * vh, rmg_double_t * vnu
 
 
 } // end subdiag_gamma_lapack
-
+#endif
 
 
 int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, int ldb, 

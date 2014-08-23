@@ -71,12 +71,6 @@ void *run_threads(void *v) {
                    ApplyOperators<std::complex<double> > (kptr_c, ss->sp->istate, (std::complex<double> *)ss->p1, (std::complex<double> *)ss->p2, ss->vtot);
                } 
                break;
-            case HYBRID_SUBDIAG_APP_A:
-               subdiag_app_A_one(ss->sp, (rmg_double_t *)ss->p1, (rmg_double_t *)ss->p2, ss->vtot);
-               break;
-            case HYBRID_SUBDIAG_APP_B:
-               subdiag_app_B_one(ss->sp, (rmg_double_t *)ss->p1);
-               break;
             case HYBRID_BETAX_PSI1_CALCULATE:
                betaxpsi1_calculate_one(ss->sp, ss->ion, ss->nion, ss->sintR, ss->sintI, ss->kpt, ss->weiptr);
                break;
