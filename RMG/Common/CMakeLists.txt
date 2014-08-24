@@ -9,7 +9,6 @@ State.cpp
 Relax.cpp
 Quench.cpp
 Scf.cpp
-scf.c
 pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
@@ -52,7 +51,6 @@ cholesky.c
 get_pdos.c
 bandstructure.c
 del_space.c
-get_new_rho.c
 wvfn_residual.c
 init_img_topo.c
 mulliken.c

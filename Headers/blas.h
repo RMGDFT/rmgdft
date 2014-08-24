@@ -124,60 +124,60 @@
 extern "C" {
 #endif
 
-void my_copy(rmg_double_t *in, rmg_double_t *out, int length);
-void my_scal(rmg_double_t alpha, rmg_double_t *vect, int length);
-void my_axpy(rmg_double_t alpha, rmg_double_t *in, rmg_double_t *out, int length);
-void my_swap(rmg_double_t *vec1, rmg_double_t *vec2, int length);
+void my_copy(double *in, double *out, int length);
+void my_scal(double alpha, double *vect, int length);
+void my_axpy(double alpha, double *in, double *out, int length);
+void my_swap(double *vec1, double *vec2, int length);
 
 
-void fsymforces (rmg_double_t * force, int *s, int *irg, int *irt,
+void fsymforces (double * force, int *s, int *irg, int *irt,
                  int *nat, int *ibrav, int *nsym,
-                 rmg_double_t * celldm, int *nr1, int *nr2, int *nr3);
+                 double * celldm, int *nr1, int *nr2, int *nr3);
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
 void saxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);
-void sscal (int *n, rmg_double_t * alpha, rmg_double_t * x, int *incx);
-void scopy (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
-rmg_double_t sdot (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
-rmg_double_t snrm2 (int *n, rmg_double_t * x, int *incx);
-void ssyrk (const char *uplo, const char *trans, int *n, int *k, rmg_double_t * alpha, rmg_double_t * A,
-            int *lda, rmg_double_t * beta, rmg_double_t * c, int *ldc);
-void sswap (int *n, rmg_double_t * x, int *incx, rmg_double_t * y, int *incy);
-void xbecke (rmg_double_t * d, rmg_double_t * s, rmg_double_t * u, rmg_double_t * v, rmg_double_t * ex, rmg_double_t * vx);
-void corlyp_f90 (rmg_double_t * dp, rmg_double_t * dm, rmg_double_t * dp1, rmg_double_t * dm1, rmg_double_t * dp2,
-                 rmg_double_t * dm2, rmg_double_t * ec, rmg_double_t * vcp0, rmg_double_t * vcm0, int *ndm);
+void sscal (int *n, double * alpha, double * x, int *incx);
+void scopy (int *n, double * x, int *incx, double * y, int *incy);
+double sdot (int *n, double * x, int *incx, double * y, int *incy);
+double snrm2 (int *n, double * x, int *incx);
+void ssyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
+            int *lda, double * beta, double * c, int *ldc);
+void sswap (int *n, double * x, int *incx, double * y, int *incy);
+void xbecke (double * d, double * s, double * u, double * v, double * ex, double * vx);
+void corlyp_f90 (double * dp, double * dm, double * dp1, double * dm1, double * dp2,
+                 double * dm2, double * ec, double * vcp0, double * vcm0, int *ndm);
 
-void corlsd (rmg_double_t * rs, rmg_double_t * zet, rmg_double_t * ec, rmg_double_t * vcup, rmg_double_t * vcdn,
-             rmg_double_t * ecrs, rmg_double_t * eczet, rmg_double_t * alfc);
-void corgga (rmg_double_t * rs, rmg_double_t * zet, rmg_double_t * t, rmg_double_t * uu, rmg_double_t * vv,
-             rmg_double_t * ww, rmg_double_t * h, rmg_double_t * dvcup, rmg_double_t * dvcdn,
-             rmg_double_t * fk, rmg_double_t * sk, rmg_double_t * g, rmg_double_t * ec, rmg_double_t * ecrs,
-             rmg_double_t * eczet);
-void corpbe (rmg_double_t * rs, rmg_double_t * zet, rmg_double_t * t, rmg_double_t * uu, rmg_double_t * vv, rmg_double_t * ww,
-             int *lgga, int *lpot, rmg_double_t * ec, rmg_double_t * vcup, rmg_double_t * vcdn,
-             rmg_double_t * h, rmg_double_t * dvcup, rmg_double_t * DVCDN);
-void cpotrf (char *uplo, int *n, rmg_double_t * a, int *lda, int *info);
-void exch (rmg_double_t * d, rmg_double_t * s, rmg_double_t * u, rmg_double_t * v, rmg_double_t * ex, rmg_double_t * vx);
-void exchpbe (rmg_double_t * d, rmg_double_t * s, rmg_double_t * u, rmg_double_t * v, int *lgga, int *lpot,
-              rmg_double_t * ex, rmg_double_t * vx);
-void symrho (rmg_double_t * rho, int *nr1, int *nr2, int *nr3, int *nsym, int *s,
+void corlsd (double * rs, double * zet, double * ec, double * vcup, double * vcdn,
+             double * ecrs, double * eczet, double * alfc);
+void corgga (double * rs, double * zet, double * t, double * uu, double * vv,
+             double * ww, double * h, double * dvcup, double * dvcdn,
+             double * fk, double * sk, double * g, double * ec, double * ecrs,
+             double * eczet);
+void corpbe (double * rs, double * zet, double * t, double * uu, double * vv, double * ww,
+             int *lgga, int *lpot, double * ec, double * vcup, double * vcdn,
+             double * h, double * dvcup, double * DVCDN);
+void cpotrf (char *uplo, int *n, double * a, int *lda, int *info);
+void exch (double * d, double * s, double * u, double * v, double * ex, double * vx);
+void exchpbe (double * d, double * s, double * u, double * v, int *lgga, int *lpot,
+              double * ex, double * vx);
+void symrho (double * rho, int *nr1, int *nr2, int *nr3, int *nsym, int *s,
              int *irg, int *ftau);
-void ssyev (char *jobz, char *uplo, int *numm, rmg_double_t * ss, int *numn,
-            rmg_double_t * work1, rmg_double_t * work2, int *lwork, int *info);
-void cheev (char *jobz, char *uplo, int *numm, rmg_double_t * ss, int *numn,
-            rmg_double_t * work1, rmg_double_t * work2, int *lwork, rmg_double_t *, int *info);
-void spotri (char *, int *, rmg_double_t *, int *, int *);
-void dgemm(const char *, const char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
-void zgemm(const char *, const char *, int *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
-void dgetrf( int *, int *, rmg_double_t *, int *, int *, int *);
-void dgetri(int *, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
-void zgetrf( int *, int *, rmg_double_t *, int *, int *, int *);
-void zgetri(int *, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
+void ssyev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
+            double * work1, double * work2, int *lwork, int *info);
+void cheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
+            double * work1, double * work2, int *lwork, double *, int *info);
+void spotri (char *, int *, double *, int *, int *);
+void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+void zgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+void dgetrf( int *, int *, double *, int *, int *, int *);
+void dgetri(int *, double *, int *, int *, double *, int *, int *);
+void zgetrf( int *, int *, double *, int *, int *, int *);
+void zgetri(int *, double *, int *, int *, double *, int *, int *);
 void zhegst(int *, const char *, int *, double *, int *, double *, int *, int *);
 void zheevd(const char *, const char *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
-void dgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
-void zgesv (int *, int*, rmg_double_t *, int *, int *, rmg_double_t *, int *, int *);
-void dgemv ( char *, int *, int *, rmg_double_t *, rmg_double_t *, int *, rmg_double_t *, int *, rmg_double_t *, rmg_double_t *, int *);
+void dgesv (int *, int*, double *, int *, int *, double *, int *, int *);
+void zgesv (int *, int*, double *, int *, int *, double *, int *, int *);
+void dgemv ( char *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void dsygvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
              int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, int *iwork, int *ifail, int *info);
 void zhegvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
