@@ -24,10 +24,10 @@
 static void *gpubuffer;
 static unsigned char *curptr;
 static unsigned char *block_ptrs[MAX_GPU_BLOCKS];
-static int block_sizes[MAX_GPU_BLOCKS];
+static size_t block_sizes[MAX_GPU_BLOCKS];
 static int allocated_blocks = 0;
-static int cur_size = 0;
-static int max_size;
+static size_t cur_size = 0;
+static size_t max_size;
 
 
 void InitGpuMalloc(size_t bufsize)
@@ -61,6 +61,7 @@ void *GpuMalloc(size_t size)
     }
 
     block_ptrs[allocated_blocks] = curptr; 
+    block_sizes[allocated_blocks] = new_block; 
     curptr += new_block;
     cur_size += new_block;
     allocated_blocks++;
@@ -80,6 +81,7 @@ void GpuFree(void *ptr)
     }
 
     allocated_blocks--;
+    curptr -= block_sizes[allocated_blocks];
     cur_size -= block_sizes[allocated_blocks];
 }
 

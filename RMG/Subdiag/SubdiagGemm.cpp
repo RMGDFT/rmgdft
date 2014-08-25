@@ -82,7 +82,7 @@ template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m,
 
     if(Agpu == NULL) {
 
-        Agpu1 = (DataType *)GpuMalloc(ka * lda);
+        Agpu1 = (DataType *)GpuMalloc(ka * lda * sizeof( DataType ));
         custat = cublasSetVector(ka * lda , sizeof( DataType ), A, 1, Agpu1, 1 );
 
     }
@@ -91,7 +91,7 @@ template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m,
     }
     if(Bgpu == NULL) {
 
-        Bgpu1 = (DataType *)GpuMalloc(kb * ldb);
+        Bgpu1 = (DataType *)GpuMalloc(kb * ldb * sizeof( DataType ));
         custat = cublasSetVector(kb * ldb , sizeof( DataType ), B, 1, Bgpu1, 1 );
 
     }
@@ -100,7 +100,7 @@ template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m,
     }
     if(Cgpu == NULL) {
 
-        Cgpu1 = (DataType *)GpuMalloc(n * ldc);
+        Cgpu1 = (DataType *)GpuMalloc(n * ldc * sizeof( DataType ));
         custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
 
     }
