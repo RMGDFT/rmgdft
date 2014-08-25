@@ -118,7 +118,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     }
 
-
+    delete [] kdr;
     delete [] work_t;
     delete [] sg_twovpsi_t;
 
