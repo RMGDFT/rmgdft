@@ -55,8 +55,9 @@ template <typename KpointType>
 void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
 void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
-template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m, int n, int k, DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc);
-
+template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m, int n, int k, DataType alpha, 
+                                              DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc,
+                                              DataType *Agpu, DataType *Bgpu, DataType *Cgpu );
 
 
 #endif

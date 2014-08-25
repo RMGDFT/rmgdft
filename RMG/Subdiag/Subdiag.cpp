@@ -11,6 +11,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
+#include "GpuAlloc.h"
 #include "blas.h"
 
 #include "prototypes.h"
@@ -34,14 +35,33 @@ template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, int subdiag_driver)
 {
     RmgTimer RT0("Diagonalization");
+    rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
+
+    BaseGrid *G = kptr->G;
+    Lattice *L = kptr->L;
+
+    int num_states = kptr->nstates;
+    int pbasis = kptr->pbasis;
+    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
+
+    // For MPI routines
+    int factor = 1;
+    if(!ct.is_gamma) factor = 2;
+
+    BaseThread *T = BaseThread::getBaseThread(0);
+
     KpointType *tmp_arrayT = NULL;
     KpointType *tmp_array2T = NULL;
     KpointType *global_matrix;
+    KpointType *Agpu = NULL;
+    KpointType *NULLptr = NULL;
 
-    //RmgTimer RT0("Diagonalization");
-    BaseGrid *G = kptr->G;
-    Lattice *L = kptr->L;
-    rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
+#if GPU_ENABLED
+    // Start wavefunctions transferring to the GPU
+    Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
+    cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 );
+#endif
+
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -53,19 +73,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     else {
         trans_m = trans_t;
     }   
-
-
-    int num_states = kptr->nstates;
-    int pbasis = kptr->pbasis;
-
-    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-
-    // For MPI routines
-    int factor = 1;
-    if(!ct.is_gamma) factor = 2;
-
-
-    BaseThread *T = BaseThread::getBaseThread(0);
 
 
     // First time through allocate pinned memory for buffers
@@ -151,7 +158,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    SubdiagGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states);
+    SubdiagGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
     delete(RT1);
 
     // Reduce matrix and store copy in Aij
@@ -166,7 +173,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // Compute S matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha1(vel);
-    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states);
+    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
     delete(RT1);
 
     // Reduce matrix and store copy in Sij
@@ -179,7 +186,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Compute B matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
-    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states);
+    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
     delete(RT1);
 
     // Reduce matrix and store copy in Bij
@@ -218,11 +225,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Update the orbitals and store rotated orbitals in tmp_arrayT
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
-    SubdiagGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis );
+    SubdiagGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, NULLptr, NULLptr);
 
     // And finally copy them back
     for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     delete(RT1);
+
+#if GPU_ENABLED
+    GpuFree(Agpu);
+#endif
 
     // free memory
     delete [] Sij;

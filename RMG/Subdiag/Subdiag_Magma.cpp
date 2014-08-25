@@ -60,7 +60,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     for (int idx = 0; idx < num_states; idx++) {
         Cij[idx * num_states + idx] = ONE_t;
     }
-    custat = cublasSetVector(num_states * num_states , sizeof( rmg_double_t ), distCij, ione, gpuCij, ione );
+//    custat = cublasSetVector(num_states * num_states , sizeof( rmg_double_t ), distCij, ione, gpuCij, ione );
 #endif
 
      

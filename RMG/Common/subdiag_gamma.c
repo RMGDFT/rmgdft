@@ -53,6 +53,10 @@
 #include "blas.h"
 #include "RmgTimer.h"
 
+// Turning this off for now while we are in transition
+#undef GPU_ENABLED
+#define GPU_ENABLED 0
+
 
 #if GPU_ENABLED
 #include <cuda.h>
@@ -1481,7 +1485,7 @@ int rmg_folded_spectrum_cpu(int n, rmg_double_t *a, int lda, rmg_double_t *b, in
 } 
 #endif
 
-
+#if 0
 #if GAMMA_PT
 #if GPU_ENABLED
 #if MAGMA_LIBS
@@ -1764,6 +1768,7 @@ void subdiag_gamma_magma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc
 
 
 } // end subdiag_gamma_magma
+#endif
 
 #include <stdlib.h>
 #include <sys/types.h>

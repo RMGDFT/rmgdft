@@ -12,6 +12,10 @@
 
 #include "hybrid.h"
 
+// Turning this off for now while we are in transition
+#undef GPU_ENABLED
+#define GPU_ENABLED 0
+
 #if GPU_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>

@@ -42,6 +42,10 @@
 #include <stdio.h>
 #include <omp.h>
 
+// Turning this off for now while we are in transition
+#undef GPU_ENABLED
+#define GPU_ENABLED 0
+
 
 // Also used by subdiag but never at the same time.
 extern rmg_double_t *global_matrix;

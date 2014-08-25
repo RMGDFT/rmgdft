@@ -42,6 +42,7 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "GlobalSums.h"
+#include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"
 
@@ -164,14 +165,18 @@ extern STATE *states;
 
 static std::mutex vtot_sync_mutex;
 
-template void MgEigState<double,float>(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
-template void MgEigState<std::complex<double>, std::complex<float> >(BaseGrid *, TradeImages *, Lattice *, STATE *, int , double *);
+template void MgEigState<double,float>(Kpoint<double> *, STATE *, int , double *);
+template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, STATE *, int , double *);
 
 template <typename OrbitalType, typename CalcType>
-void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi)
+void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_psi)
 {
 
     RmgTimer RT("Mg_eig");
+
+    BaseGrid *G = kptr->G;
+    Lattice *L = kptr->L;
+    TradeImages *T = kptr->T;
 
     int idx, cycles, pbasis;
     int nits, sbasis;
@@ -545,22 +550,3 @@ void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, d
 
 } // end MgEigState
 
-#include "transition.h"
-
-extern "C" void mg_eig_state(STATE *sp, int tid, double *vtot_psi)
-{
-    MgEigState<double,float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
-}
-
-extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
-{
-
-        if(ct.is_gamma) {
-            MgEigState<double,float> (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
-        }
-        else {
-            MgEigState<std::complex<double>,std::complex<float> > (Rmg_G, Rmg_T, &Rmg_L, sp, tid, vtot_psi);
-        }
-
-
-}

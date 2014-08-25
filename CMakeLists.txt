@@ -92,6 +92,7 @@ target_link_libraries (rmg Force)
 target_link_libraries (rmg Force US_PP)
 target_link_libraries (rmg US_PP Force)
 target_link_libraries (rmg RMG_Subdiag Finite_diff)
+target_link_libraries (rmg RMG_Subdiag Misc)
 
 
 target_link_libraries (rmg-on RmgLib)
@@ -468,10 +469,10 @@ link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 find_package(MAGMA)
 message("${MAGMA_FOUND}")
 if(MAGMA_FOUND)
-    target_link_libraries (rmg ${MAGMABLAS_LIBRARIES} )
-    target_link_libraries (rmg-on ${MAGMABLAS_LIBRARIES} )
-    target_link_libraries (rmg-tddft ${MAGMABLAS_LIBRARIES} )
-    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES} )
+    target_link_libraries (rmg ${MAGMA_LIBRARIES} )
+    target_link_libraries (rmg-on ${MAGMA_LIBRARIES} )
+    target_link_libraries (rmg-tddft ${MAGMA_LIBRARIES} )
+    target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} )
 endif(MAGMA_FOUND)
 
 

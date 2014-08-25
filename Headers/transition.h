@@ -55,7 +55,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI);
 void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI);
 //template <typename OrbitalType> void AppNls(Kpoint<OrbitalType> *kpoint, double *sintR, double *sintI);
 
-template <typename OrbitalType, typename CalcType> void MgEigState (BaseGrid *G, TradeImages *T, Lattice *L, STATE * sp, int tid, double * vtot_psi);
+template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_psi);
 
 template <typename OrbitalType>
 void Betaxpsi (BaseGrid *G, TradeImages *T, Lattice *L, Kpoint<OrbitalType> *Kptr);

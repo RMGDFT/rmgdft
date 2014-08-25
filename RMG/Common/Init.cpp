@@ -56,6 +56,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
+#include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
 
 
@@ -186,6 +187,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
+
+    // Figure out how much memory space to reserve on the GPU
+    // 3 blocks of num_states * num_states for diagonalization arrays
+    size_t gpu_bufsize, t1;
+    t1 = ct.num_states * ct.num_states * sizeof(OrbitalType);
+    gpu_bufsize = 3 * t1;
+
+    // Two buffers for rotating the orbitals
+    t1 = ct.num_states * P0_BASIS * sizeof(OrbitalType);
+    gpu_bufsize += 2 * t1;
+    InitGpuMalloc(gpu_bufsize);
+
     // Wavefunctions are actually stored here
     cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.num_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     cudaMallocHost((void **)&nv, ct.num_states * P0_BASIS * sizeof(OrbitalType));

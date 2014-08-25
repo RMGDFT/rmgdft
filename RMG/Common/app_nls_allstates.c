@@ -55,6 +55,9 @@
 #endif
 
 
+// Turning this off for now while we are in transition
+#undef GPU_ENABLED
+#define GPU_ENABLED 0
 
 void app_nls_allstates (rmg_double_t * psiR, rmg_double_t * psiI, rmg_double_t * workR, rmg_double_t * workI, 
 rmg_double_t *work2R, rmg_double_t *work2I, rmg_double_t *Bns, rmg_double_t *BnsI, rmg_double_t *sintR, rmg_double_t *sintI, int kidx)

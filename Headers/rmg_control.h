@@ -468,29 +468,29 @@ typedef struct
     cudaStream_t cuda_stream;
 
     // GPU storage space for wavefunctions
-    rmg_double_t *gpu_states;
+//    rmg_double_t *gpu_states;
 
     // GPU temporary storage space for wavefunctions
-    rmg_double_t *gpu_temp;
+//    rmg_double_t *gpu_temp;
 
     // GPU temporary storage space for weights
-    rmg_double_t *gpu_weight;
-    rmg_double_t *gpu_Bweight;
+//    rmg_double_t *gpu_weight;
+//    rmg_double_t *gpu_Bweight;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    rmg_double_t *gpu_work1;
+//    rmg_double_t *gpu_work1;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    rmg_double_t *gpu_work2;
+//    rmg_double_t *gpu_work2;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    rmg_double_t *gpu_work3;
+//    rmg_double_t *gpu_work3;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-    rmg_double_t *gpu_work4;
+//    rmg_double_t *gpu_work4;
 
     // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
-    rmg_double_t *gpu_global_matrix;
+//    rmg_double_t *gpu_global_matrix;
 
     // Pinned host memory for finite difference routines. Allocation is slow so it
     // needs to be done once at initializatio time for each thread.

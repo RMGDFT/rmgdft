@@ -57,7 +57,14 @@ void *run_threads(void *v) {
         // Switch that controls what we do
         switch(ss->job) {
             case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
-               mg_eig_state_driver(ss->sp, 0, ss->vtot);
+               if(ct.is_gamma) {
+                   kptr_d = (Kpoint<double> *)ss->p3;
+                   MgEigState<double,float> (kptr_d, ss->sp, 0, ss->vtot);
+               }
+               else {
+                   kptr_c = (Kpoint<std::complex<double>> *)ss->p3;
+                   MgEigState<std::complex<double>, std::complex<float> > (kptr_c, ss->sp, 0, ss->vtot);
+               }
                break;
             case HYBRID_SKIP:
                break;

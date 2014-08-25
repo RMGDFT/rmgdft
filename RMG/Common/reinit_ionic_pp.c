@@ -29,6 +29,10 @@
 #include "main.h"
 #include "common_prototypes.h"
 
+// Turning this off for now while we are in transition
+#undef GPU_ENABLED
+#define GPU_ENABLED 0
+
 static int gpu_weight_alloc=0;
 
 void reinit_ionic_pp (STATE * states, rmg_double_t * vnuc, rmg_double_t * rhocore, rmg_double_t * rhoc)

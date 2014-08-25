@@ -229,6 +229,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
                   thread_control[ist].job = HYBRID_EIG;
                   thread_control[ist].vtot = vtot_psi;
                   thread_control[ist].sp = &Kptr[kpt]->kstates[st1 + ist];
+                  thread_control[ist].p3 = (void *)Kptr[kpt];
                   T->set_pptr(ist, &thread_control[ist]);
               }
 
@@ -240,10 +241,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             // Process any remaining states in serial fashion
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                 if(ct.is_gamma) {
-                    MgEigState<double,float> (Rmg_G, Rmg_T, &Rmg_L, &Kptr[kpt]->kstates[st1], 0, vtot_psi);
+                    MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], &Kptr[kpt]->kstates[st1], 0, vtot_psi);
                 }
                 else {
-                    MgEigState<std::complex<double>, std::complex<float> > (Rmg_G, Rmg_T, &Rmg_L, &Kptr[kpt]->kstates[st1], 0, vtot_psi);
+                    MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], &Kptr[kpt]->kstates[st1], 0, vtot_psi);
                 }
             }
             delete(RT1);
