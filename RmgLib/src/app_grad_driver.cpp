@@ -52,7 +52,7 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
     T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
     delete(RT1);
-    FD.app_gradient (a, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    FD.app_gradient (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     delete [] rptr;
 
