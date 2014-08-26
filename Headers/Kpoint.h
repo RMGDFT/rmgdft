@@ -95,6 +95,10 @@ public:
     KpointType *ns;
     KpointType *Bns;
 
+    // Pointers to weight and Bweight
+    KpointType *weight;
+    KpointType *Bweight;
+
     // Number of points in orbital basis
     int pbasis;
 
