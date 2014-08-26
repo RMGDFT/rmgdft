@@ -1,4 +1,5 @@
 add_library (RMG_Common
+PotentialAcceleration.cpp
 GetNewRho.cpp
 Betaxpsi.cpp
 Init.cpp

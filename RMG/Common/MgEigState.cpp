@@ -178,35 +178,30 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    int idx, cycles, pbasis;
-    int nits, sbasis;
     double eig, diag, t1, t2, t3, t4;
     double *work1;
     OrbitalType *nv, *ns;
-    double *res;
-    double *nvtot_psi;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
     int ione = 1;
-    int dimx, dimy, dimz, levels, potential_acceleration;
-    double hxgrid, hygrid, hzgrid, sb_step;
+    int potential_acceleration;
     Mgrid MG(L, T);
 
-    nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
-    dimx = G->get_PX0_GRID(1);
-    dimy = G->get_PY0_GRID(1);
-    dimz = G->get_PZ0_GRID(1);
-    hxgrid = G->get_hxgrid(1);
-    hygrid = G->get_hygrid(1);
-    hzgrid = G->get_hzgrid(1);
-    levels = ct.eig_parm.levels;
+    int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
+    int dimx = G->get_PX0_GRID(1);
+    int dimy = G->get_PY0_GRID(1);
+    int dimz = G->get_PZ0_GRID(1);
+    double hxgrid = G->get_hxgrid(1);
+    double hygrid = G->get_hygrid(1);
+    double hzgrid = G->get_hzgrid(1);
+    int levels = ct.eig_parm.levels;
     if ((ct.runflag == 0) && (ct.scf_steps < 2)) {
         levels = 0;
     }
 
-    sb_step = 1.0;
-    pbasis = sp->pbasis;
-    sbasis = sp->sbasis;
+    double sb_step = 1.0;
+    int pbasis = kptr->pbasis;
+    int sbasis = sp->sbasis;
 
     /* Grab some memory */
     CalcType *res2_t = new CalcType[2*sbasis];
@@ -215,12 +210,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
     work1 = new double[4 * sbasis];
 
     CalcType *sg_psi_t = new CalcType[2 * sbasis];
-    res = new double[2*sbasis];
+    double *res = new double[2*sbasis];
     CalcType *sg_twovpsi_t = new CalcType[2 * sbasis];
 
     CalcType *res2 = new CalcType[2 * sbasis];
     OrbitalType *saved_psi = new OrbitalType[2 * sbasis];
-    nvtot_psi = new double[2*sbasis];
+    double *nvtot_psi = new double[2*sbasis];
     CalcType *tmp_psi_t = new CalcType[2 * sbasis];
     CalcType *res_t = new CalcType[2 * sbasis];
 
@@ -258,7 +253,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     if(potential_acceleration) {
-        for(idx = 0;idx <pbasis;idx++) {
+        for(int idx = 0;idx <pbasis;idx++) {
             nvtot_psi[idx] = vtot_psi[idx];
             saved_psi[idx] = tmp_psi[idx];
         }
@@ -268,7 +263,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
 
 
     /* Smoothing cycles */
-    for (cycles = 0; cycles <= nits; cycles++)
+    for (int cycles = 0; cycles <= nits; cycles++)
     {
 
 
@@ -367,7 +362,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
 
 
             CalcType f1(TWO * eig);
-            for (idx = 0; idx <pbasis; idx++)
+            for (int idx = 0; idx <pbasis; idx++)
             {
 
                 res_t[idx] = f1 * res_t[idx] - work1_t[idx];
@@ -421,7 +416,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
             t2 = ZERO;
             t4 = ct.eig_parm.gl_step * diag;
 
-            for (idx = 0; idx <pbasis; idx++)
+            for (int idx = 0; idx <pbasis; idx++)
             {
 
                 OrbitalType t5;
@@ -443,87 +438,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_p
         }
 
     }                           /* end for */
-#if 0
-    if(potential_acceleration) {
 
-        // Save potential used for this orbital and update potential for future orbitals
-        for(idx = 0;idx <pbasis;idx++) {
-            sp->dvhxc[idx] = nvtot_psi[idx];
-        }
+    if(potential_acceleration)
+        PotentialAcceleration(kptr, sp, vtot_psi, nvtot_psi, tmp_psi_t, saved_psi);
 
-
-        if(ct.potential_acceleration_constant_step > 0.0) {
-
-            t1 = 1.8 * ct.potential_acceleration_constant_step;
-            if(sp->occupation[0] < 0.5) t1 = 0.0;
-
-            vtot_sync_mutex.lock();
-            for(idx = 0;idx <pbasis;idx++) {
-               vtot_psi[idx] = vtot_psi[idx] + t1 * PI * sp->occupation[0] * tmp_psi_t[idx] * (tmp_psi_t[idx] - (CalcType)saved_psi[idx]);
-            }
-            vtot_sync_mutex.unlock();
-
-        }
-
-        if(ct.potential_acceleration_poisson_step > 0.0) {
-
-            // construct delta_rho
-            for(idx = 0;idx <pbasis;idx++) {
-                res_t[idx] = -4.0 * PI * sp->occupation[0] *
-                           (tmp_psi_t[idx] - saved_psi[idx]) * (2.0*saved_psi[idx] + (tmp_psi_t[idx] - saved_psi[idx]));
-            }
-
-            // zero out solution vector
-            for(idx = 0;idx <pbasis;idx++) {
-                sg_twovpsi_t[idx] = 0.0;
-            }
-
-            /* Pack delta_rho into multigrid array */
-            CPP_pack_ptos<CalcType> (sg_psi_t, res_t, dimx, dimy, dimz);
-            T->trade_images<CalcType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
-            /* Smooth it once and store the smoothed charge in res */
-            CPP_app_smooth1<CalcType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
-
-            // neutralize cell with a constant background charge
-            t2 = 0.0;
-            for(idx = 0;idx <pbasis;idx++) {
-                t2 += res_t[idx];
-            }
-            t2 = real_sum_all(t2, pct.grid_comm) / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
-            for(idx = 0;idx <pbasis;idx++) {
-                res_t[idx] -= t2;
-            }
-
-            /* Do multigrid step with solution returned in sg_twovpsi */
-            eig_pre[0] = 2;
-            eig_post[0] = 2;
-            levels=1;
-
-            RT1 = new RmgTimer("Mg_eig: mgrid_solv");
-            MG.mgrid_solv (sg_twovpsi_t, res_t, work2_t,
-                        dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
-                        G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                        G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-            delete(RT1);
-
-            for(idx = 0;idx <pbasis;idx++) {
-                res_t[idx] = 0.0;
-            }
-            CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, res_t, 1.0, dimx, dimy, dimz);
-            t1 = ct.potential_acceleration_poisson_step;
-            if(sp->occupation[0] < 0.5) t1 = 0.0;
-            vtot_sync_mutex.lock();
-            for(idx = 0;idx <pbasis;idx++) {
-               vtot_psi[idx] = vtot_psi[idx] + t1 * res_t[idx];
-            }
-            vtot_sync_mutex.unlock();
-        }
-
-
-    } // end if
-#endif
 
     // Copy single precision orbital back to double precision
     CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);

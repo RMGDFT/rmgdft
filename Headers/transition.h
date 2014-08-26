@@ -86,6 +86,8 @@ extern "C" void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_d
 
 template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+template <typename OrbitalType, typename CalcType>
+void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
 
 
 
