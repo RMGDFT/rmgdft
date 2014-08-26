@@ -7,6 +7,7 @@
 #include "typedefs.h"
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
+#include "ErrorFuncs.h"
 
 
 #if GPU_ENABLED
@@ -85,6 +86,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 
         Agpu1 = (DataType *)GpuMalloc(ka * lda * sizeof( DataType ));
         custat = cublasSetVector(ka * lda , sizeof( DataType ), A, 1, Agpu1, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring A matrix to GPU.");
 
     }
     else {
@@ -94,6 +96,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 
         Bgpu1 = (DataType *)GpuMalloc(kb * ldb * sizeof( DataType ));
         custat = cublasSetVector(kb * ldb , sizeof( DataType ), B, 1, Bgpu1, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring B matrix to GPU.");
 
     }
     else {
@@ -103,6 +106,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 
         Cgpu1 = (DataType *)GpuMalloc(n * ldc * sizeof( DataType ));
         custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix to GPU.");
 
     }
     else {
@@ -115,6 +119,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                             (cuDoubleComplex*)Agpu1, lda,
                             (cuDoubleComplex*)Bgpu1, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)Cgpu1, ldc );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
         custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
@@ -122,10 +127,12 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                             (double*)Agpu1, lda,
                             (double*)Bgpu1, ldb,
                             (double*)&beta, (double*)Cgpu1, ldc );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
     }
 
     // Retreive data from the GPU.
     custat = cublasGetVector(n * ldc, sizeof( DataType ), Cgpu1, 1, C, 1 );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
 
     if(Cgpu == NULL) GpuFree(Cgpu1);
     if(Bgpu == NULL) GpuFree(Bgpu1);

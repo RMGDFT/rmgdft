@@ -13,6 +13,7 @@
 #include "RmgGemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
+#include "ErrorFuncs.h"
 #include "blas.h"
 
 #include "prototypes.h"
@@ -38,6 +39,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RmgTimer RT0("Diagonalization");
     rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
 
+
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
@@ -58,9 +60,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType *NULLptr = NULL;
 
 #if GPU_ENABLED
+    cublasStatus_t custat;
+
     // Start wavefunctions transferring to the GPU
     Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
-    cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 );
+    custat = cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring orbitals to GPU");
 #endif
 
 

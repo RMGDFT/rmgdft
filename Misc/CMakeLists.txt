@@ -1,4 +1,5 @@
 add_library (Misc
+RmgCudaError.cpp
 RmgGemm.cpp
 GpuAlloc.cpp
 black_box.f
