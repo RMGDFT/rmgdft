@@ -8,6 +8,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
+#include "RmgGemm.h"
 #include "blas.h"
 
 #include "prototypes.h"
@@ -35,6 +36,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
+    KpointType *NULLptr = NULL;
     KpointType *Cij = new KpointType[num_states * num_states];
 
     // Create unitary matrix
@@ -49,56 +51,24 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
 
     // Invert Bij
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
 
     int *ipiv = new int[2*num_states];
     for(int idx=0;idx < num_states;idx++) ipiv[idx] = 0;
     int info = 0;
     if(ct.is_gamma) {
 
-        double alpha = 1.0;
-        double beta = 0.0;
-
         // Inverse of B should be in Cij
+        RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
         dgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
         delete(RT1);
-
-        /*Multiply inverse of B and and A */
-        /*B^-1*A */
-        RT1 = new RmgTimer("Diagonalization: matrix setup");
-        dgemm ("n", "n", &num_states, &num_states, &num_states, &alpha,
-                        (double *)Cij, &num_states, (double *)Aij, &num_states, (double *)&beta, (double *)Bij,
-                        &num_states);
-
-        /*Multiply the result with Sij, result is in Cij */
-        dgemm ("n", "n", &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)Sij, &num_states, (double *)Bij, &num_states, (double *)&beta, (double *)Cij,
-                        &num_states);
-        delete(RT1);
-
 
     }
     else {
 
-        KpointType alpha(1.0);
-        KpointType beta(0.0);;
-
         // Inverse of B should be in Cij
+        RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
         zgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
-
-        /*Multiply inverse of B and and A */
-        /*B^-1*A */
-        RT1 = new RmgTimer("Diagonalization: matrix setup");
-        zgemm ("n", "n", &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)Cij, &num_states, (double *)Aij, &num_states, (double *)&beta, (double *)Bij,
-                        &num_states);
-
-        /*Multiply the result with Sij, result is in Cij */
-        zgemm ("n", "n", &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)Sij, &num_states, (double *)Bij, &num_states, (double *)&beta, (double *)Cij,
-                        &num_states);
         delete(RT1);
-
 
     }
     if (info) {
@@ -106,6 +76,23 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
     }
     delete [] ipiv;
+
+
+    /*Multiply inverse of B and and A */
+    /*B^-1*A */
+    KpointType alpha(1.0);
+    KpointType beta(0.0);;
+
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
+    RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
+                    Cij, num_states, Aij, num_states, beta, Bij,
+                    num_states, NULLptr, NULLptr, NULLptr);
+
+    /*Multiply the result with Sij, result is in Cij */
+    RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
+                    Sij, num_states, Bij, num_states, beta, Cij,
+                    num_states, NULLptr, NULLptr, NULLptr);
+    delete(RT1);
 
 
     RT1 = new RmgTimer("Diagonalization: lapack");
