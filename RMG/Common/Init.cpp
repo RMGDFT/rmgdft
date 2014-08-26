@@ -213,9 +213,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 #else
     // Wavefunctions are actually stored here
     rptr = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS + 1024];
-    nv = new OrbitalType[ct.num_states * P0_BASIS];
-    ns = new OrbitalType[ct.num_states * P0_BASIS];
-    Bns = new OrbitalType[ct.num_states * P0_BASIS];
+    nv = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS];
+    ns = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS];
+    Bns = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS];
 #endif
     pct.nv = (double *)nv;
     pct.ns = (double *)ns;
@@ -251,9 +251,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
 
         Kptr[kpt]->set_pool(rptr);
-        Kptr[kpt]->nv = nv;
-        Kptr[kpt]->ns = ns;
-        Kptr[kpt]->Bns = Bns;
+        Kptr[kpt]->nv = nv + kpt * ct.num_states * P0_BASIS;
+        Kptr[kpt]->ns = ns + kpt * ct.num_states * P0_BASIS;
+        Kptr[kpt]->Bns = Bns + kpt * ct.num_states * P0_BASIS;
 
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
