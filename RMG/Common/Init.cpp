@@ -58,7 +58,7 @@
 #include "Subdiag.h"
 #include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
-
+#include "ErrorFuncs.h"
 
 static void init_alloc_nonloc_mem (void);
 
@@ -188,6 +188,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
 
+    cudaError_t custat;
+
     // Figure out how much memory space to reserve on the GPU
     // 3 blocks of num_states * num_states for diagonalization arrays
     size_t gpu_bufsize, t1;
@@ -200,10 +202,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMalloc(gpu_bufsize);
 
     // Wavefunctions are actually stored here
-    cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.num_states * P0_BASIS + 1024) * sizeof(OrbitalType));
-    cudaMallocHost((void **)&nv, ct.num_states * P0_BASIS * sizeof(OrbitalType));
-    cudaMallocHost((void **)&ns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
-    cudaMallocHost((void **)&Bns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.num_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+    custat = cudaMallocHost((void **)&nv, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+    custat = cudaMallocHost((void **)&ns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+    custat = cudaMallocHost((void **)&Bns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
 #else
     // Wavefunctions are actually stored here
     rptr = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS + 1024];
