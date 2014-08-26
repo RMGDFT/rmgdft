@@ -1,10 +1,11 @@
 #include <complex>
+#include <typeinfo>
+#include <string>
+#include "make_conf.h"
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "rmg_alloc.h"
-#include "rmg_error.h"
-#include "Subdiag.h"
+#include "RmgGemm.h"
 #include "GpuAlloc.h"
 
 
@@ -27,8 +28,8 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 
 
 /*
-  These functions are used to simplify the subspace diagonalization code by hiding the
-  details of the matrix multiplication data type and GPU utilization from the higher level routines.
+  These functions are used to hide the details of the matrix multiplication data types and GPU 
+  utilization from the higher level routines.
 
   The first 13 arguments are the same as the standard dgemm args but with scalar quantities passed
   by value instead of by reference. The last three arguments are used only when GPU_ENABLED is true.
@@ -43,12 +44,12 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 */
 
 
-template void SubdiagGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
+template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
                                   double, double *, int, double *, double *, double *);
-template void SubdiagGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, std::complex<double> *, int, std::complex<double> *, int, 
+template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, std::complex<double> *, int, std::complex<double> *, int, 
                                   std::complex<double>, std::complex<double> *, int, std::complex<double> *, std::complex<double> *, std::complex<double> *);
 
-template <typename DataType> void SubdiagGemm(char *transa, char *transb, int m, int n, int k, 
+template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, 
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc,
                              DataType *Agpu, DataType *Bgpu, DataType *Cgpu )
 {

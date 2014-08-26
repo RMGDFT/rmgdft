@@ -10,6 +10,7 @@
 #include "RmgThread.h"
 #include "GlobalSums.h"
 #include "Kpoint.h"
+#include "RmgGemm.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
 #include "blas.h"
@@ -158,7 +159,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    SubdiagGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
+    RmgGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
     delete(RT1);
 
     // Reduce matrix and store copy in Aij
@@ -173,7 +174,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // Compute S matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha1(vel);
-    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
+    RmgGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
     delete(RT1);
 
     // Reduce matrix and store copy in Sij
@@ -186,7 +187,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Compute B matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
-    SubdiagGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
+    RmgGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr);
     delete(RT1);
 
     // Reduce matrix and store copy in Bij
@@ -225,7 +226,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Update the orbitals and store rotated orbitals in tmp_arrayT
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
-    SubdiagGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, NULLptr, NULLptr);
+    RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, NULLptr, NULLptr);
 
     // And finally copy them back
     for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];

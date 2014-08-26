@@ -1,4 +1,5 @@
 add_library (Misc
+RmgGemm.cpp
 GpuAlloc.cpp
 black_box.f
 RmgTimer_Cbindings.cpp

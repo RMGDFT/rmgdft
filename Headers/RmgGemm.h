@@ -27,34 +27,15 @@
  * 
 */
 
-#ifndef RMG_Subdiag_H
-#define RMG_Subdiag_H 1
+#ifndef RMG_RmgGemm_H
+#define RMG_RmgGemm_H 1
 
 #if __cplusplus
-#include "BaseGrid.h"
-#include "Lattice.h"
-#include "TradeImages.h"
-#include "const.h"
-#include "RmgTimer.h"
-#include "rmgtypedefs.h"
-#include "params.h"
-#include "typedefs.h"
-#include "rmg_error.h"
-#include "Kpoint.h"
 
-template <typename KpointType> void Subdiag(Kpoint<KpointType> *kptr, 
-                                            double *vh, 
-                                            double *vnuc,
-                                            double *vxc,
-                                            int subdiag_driver);
-template <typename KpointType>
-void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot);
-template <typename KpointType>
-void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
-template <typename KpointType>
-void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
-template <typename KpointType>
-void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
+#include <complex.h>
+template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, DataType alpha, 
+                                              DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc,
+                                              DataType *Agpu, DataType *Bgpu, DataType *Cgpu );
 
 
 #endif
