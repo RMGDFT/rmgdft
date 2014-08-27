@@ -38,26 +38,32 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 
   [ABC]gpu == NULL   transfer [ABC] to gpu and perform matrix multiplication there. 
 
-  If [ABC]gpu != NULL then data does not need to be transferred to the GPU.
+  If [ABC]gpu != NULL and Copyto[ABC]gpu is true then data needs to be transferred to the GPU.
 
-  Copy C gpu data back to C.
+  If CopyfromCgpu flag is true and Cgpu!=NULL then copy from Cgpu to C. Otherwise leave
+  data in Cgpu for reuse.
 
 */
 
 
 template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
-                                  double, double *, int, double *, double *, double *);
-template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, std::complex<double> *, int, std::complex<double> *, int, 
-                                  std::complex<double>, std::complex<double> *, int, std::complex<double> *, std::complex<double> *, std::complex<double> *);
+                                  double, double *, int, double *, double *, double *, bool, bool, bool, bool);
+template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
+                      std::complex<double> *, int, std::complex<double> *, int, 
+                      std::complex<double>, std::complex<double> *, int, std::complex<double> *, 
+                      std::complex<double> *, std::complex<double> *, bool, bool, bool, bool);
 
 template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, 
-                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc,
-                             DataType *Agpu, DataType *Bgpu, DataType *Cgpu )
+                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, 
+                             DataType *C, int ldc, DataType *Agpu, DataType *Bgpu, 
+                             DataType *Cgpu, bool CopytoAgpu, bool CopytoBgpu, 
+                             bool CopytoCgpu, bool CopyfromCgpu )
 {
 
 #if GPU_ENABLED
     cublasStatus_t custat;
     cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
+    DataType ZERO_t(0.0);
 
     if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
     if(!strcmp(transa, "T")) cu_transA = CUBLAS_OP_T;
@@ -91,6 +97,10 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
     else {
         Agpu1 = Agpu;
+        if(CopytoAgpu) {
+            custat = cublasSetVector(ka * lda , sizeof( DataType ), A, 1, Agpu1, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring A matrix to GPU.");
+        }
     }
     if(Bgpu == NULL) {
 
@@ -101,16 +111,27 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
     else {
         Bgpu1 = Bgpu;
+        if(CopytoBgpu) {
+            custat = cublasSetVector(kb * ldb , sizeof( DataType ), B, 1, Bgpu1, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring A matrix to GPU.");
+        }
     }
     if(Cgpu == NULL) {
 
         Cgpu1 = (DataType *)GpuMalloc(n * ldc * sizeof( DataType ));
-        custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix to GPU.");
+        // No need to copy if beta is zero
+        if(beta != ZERO_t) {
+            custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix to GPU.");
+        }
 
     }
     else {
         Cgpu1 = Cgpu;
+        if(CopytoCgpu) {
+            custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix to GPU.");
+        }
     }
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
@@ -131,8 +152,10 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
 
     // Retreive data from the GPU.
-    custat = cublasGetVector(n * ldc, sizeof( DataType ), Cgpu1, 1, C, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    if((Cgpu == NULL) || ((Cgpu != NULL) && CopyfromCgpu)) {
+        custat = cublasGetVector(n * ldc, sizeof( DataType ), Cgpu1, 1, C, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    }
 
     if(Cgpu == NULL) GpuFree(Cgpu1);
     if(Bgpu == NULL) GpuFree(Bgpu1);

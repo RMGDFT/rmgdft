@@ -86,12 +86,14 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
     RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                     Cij, num_states, Aij, num_states, beta, Bij,
-                    num_states, NULLptr, NULLptr, NULLptr);
+                    num_states, NULLptr, NULLptr, NULLptr,
+                    true, true, true, true);
 
     /*Multiply the result with Sij, result is in Cij */
     RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                     Sij, num_states, Bij, num_states, beta, Cij,
-                    num_states, NULLptr, NULLptr, NULLptr);
+                    num_states, NULLptr, NULLptr, NULLptr,
+                    true, true, true, true);
     delete(RT1);
 
 
