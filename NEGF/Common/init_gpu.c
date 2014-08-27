@@ -82,11 +82,11 @@ void init_gpu (void)
 
 	alloc = pmo.ntot_low * sizeof(complex double);
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Htri , alloc )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_Htri\n");
 		exit(-1);
 	}
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gtri , alloc )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_global_matrix\n");
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_Gtri\n");
 		exit(-1);
 	}
 
@@ -186,13 +186,13 @@ void finalize_gpu (void)
 {
 
 	cublasDestroy(ct.cublas_handle);
-	cudaFree(ct.gpu_global_matrix);
+//	cudaFree(ct.gpu_global_matrix);
 	cudaFree(ct.gpu_Grow);
 	cudaFree(ct.gpu_Gcol);
-	cudaFree(ct.gpu_work1);
-	cudaFree(ct.gpu_work2);
-	cudaFree(ct.gpu_work3);
-	cudaFree(ct.gpu_work4);
+//	cudaFree(ct.gpu_work1);
+//	cudaFree(ct.gpu_work2);
+//	cudaFree(ct.gpu_work3);
+//	cudaFree(ct.gpu_work4);
 	cudaFreeHost(ct.gpu_host_temp4);
 	cudaFreeHost(ct.gpu_host_temp3);
 	cudaFreeHost(ct.gpu_host_temp2);

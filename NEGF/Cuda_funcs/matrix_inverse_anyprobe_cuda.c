@@ -38,12 +38,12 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
      */
 
 #if GPU_ENABLED
-    cuDoubleComplex cumone, cuone,  cuzero, *Hiii;
+    cuDoubleComplex cumone, cuone,  cuzero, *Hii1, *Hi1i;
     cublasOperation_t transT = CUBLAS_OP_T, transN = CUBLAS_OP_N;
 
     int nmax, i, j, n1, n2, n3, n4, m;
     int *ipiv, *n_begin1;
-    complex double *Hii, *Gii, *temp, *Hii1, *Imatrix;
+    complex double *Hii, *Gii, *temp, *Imatrix;
     complex double *Hmm1, *temp2, *temp3;
     complex double mone, one, zero;
     int ione = 1, ntot, k, maxrow, maxcol; 
@@ -114,7 +114,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
     /* ========================== Part-I ==================================== */
 
     cublasSetVector( maxrow * maxcol, sizeof( complex double ), Imatrix, ione, ct.gpu_Imatrix, ione );
-    cublasSetVector( pmo.ntot, sizeof( complex double ), H_tri, ione, ct.gpu_Htri, ione );
+    cublasSetVector( pmo.ntot_low, sizeof( complex double ), H_tri, ione, ct.gpu_Htri, ione );
 
 
     int info;
@@ -140,7 +140,8 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
         /* get the interaction  Hi,i+1  from input H_tri 
          * Hii1 is a pointer only
          */
-        Hiii = &ct.gpu_Htri[pmo.offdiag_begin[i] ];
+        Hii1 = &ct.gpu_Htri[pmo.offdiag_begin[i] ];
+        Hi1i = &ct.gpu_Htri[pmo.lowoffdiag_begin[i] ];
 
         n2 = ni[i+1] * ni[i+1];
         cublasZcopy (ct.cublas_handle, n2, &ct.gpu_Htri[pmo.diag_begin[i+1]], ione, ct.gpu_Hii, ione);
@@ -153,10 +154,10 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
 
         /* calculate Hi+1,i * Gii^0 = tempi+1,i */
-        cublasZgemm (ct.cublas_handle, transT, transN, n1, n2, n2, &cuone, Hiii, n2,
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, Hi1i, n1,
                 ct.gpu_Gii, n2, &cuzero, ct.gpu_temp, n1);
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n2, &cumone, ct.gpu_temp, n1,
-                Hiii, n2, &cuone, ct.gpu_Hii, n1);
+                Hii1, n2, &cuone, ct.gpu_Hii, n1);
 
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n1, &cuone, ct.gpu_Imatrix, maxrow,
                 ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Gii, n1);
@@ -166,7 +167,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
         n1 = ni[i];
         n2 = ni[i + 1];
-        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cumone, Hiii, n1,
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cumone, Hii1, n1,
                 ct.gpu_Gii, n2, &cuzero, ct.gpu_temp, n1);
 
         /* Gj, i+1 = G0_j,i * tempi,i+1 ; j = 0, i */
@@ -216,7 +217,8 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
             /* get the interaction  Hi-1,i  from input H_tri 
              * Hii1 is a pointer only
              */
-            Hiii = &ct.gpu_Htri[pmo.offdiag_begin[i-1] ];
+            Hii1 = &ct.gpu_Htri[pmo.offdiag_begin[i-1] ];
+            Hi1i = &ct.gpu_Htri[pmo.lowoffdiag_begin[i-1] ];
 
             /* Hii now has the matrix Hi+1,i+1  */
 
@@ -230,12 +232,12 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
             n2 = ni[i];
 
             /* calculate Hi-1,i * Gii^0 = tempi-1,i */
-            cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, Hiii, n1,
+            cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, Hii1, n1,
                     ct.gpu_Gii, n2, &cuzero, ct.gpu_temp, n1);
 
             /* calculate Hi-1,i-1 - tempi-1,i * Hi,i-1 = Hi-1,i-1 */
-            cublasZgemm (ct.cublas_handle, transN, transT, n1, n1, n2, &cumone, ct.gpu_temp, n1,
-                    Hiii, n1, &cuone, ct.gpu_Hii, n1);
+            cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n2, &cumone, ct.gpu_temp, n1,
+                    Hi1i, n2, &cuone, ct.gpu_Hii, n1);
 
             /* now Hii store the matrix Hi-1,i-1 - Hi-1,i * Gii^0 * Hi,i-1
              * Gi-1,i-1, stored in Gii, = Hii^(-1)
@@ -252,7 +254,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
             n1 = ni[i];
             n2 = ni[i - 1];
 
-            cublasZgemm (ct.cublas_handle, transT, transN, n1, n2, n2, &cumone, Hiii, n2,
+            cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cumone, Hi1i, n1,
                     ct.gpu_Gii, n2, &cuzero, ct.gpu_temp, n1);
 
 
@@ -280,18 +282,68 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
 
         /* get the interaction Hm,m+1 from input H_tri */
-        Hiii = &ct.gpu_Htri[pmo.offdiag_begin[m] ];
+        Hii1 = &ct.gpu_Htri[pmo.offdiag_begin[m] ];
+        Hi1i = &ct.gpu_Htri[pmo.lowoffdiag_begin[m] ];
 
-        /* calculate: 1 - Gmm * Hm,m+1 * Gm+1,m+1 * Hm+1,m  */
 
         n1 = ni[m];
         n2 = ni[m + 1];
 
+        /*  ct.gpu_temp = Hm+1,m *  G0mm  */
+        cublasZgemm (ct.cublas_handle, transN, transN, n2, n1, n1,
+                &cuone, Hi1i, n2, &ct.gpu_Grow[n_begin1[m]], n1,
+                &cuzero, ct.gpu_temp, n2);
+        /*  ct.gpu_Gii = Hm,m+1 * G0 m+1,m+1 */
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, Hii1, n1,
+                &ct.gpu_Grow[n_begin1[m+1]], n2, &cuzero, ct.gpu_Gii, n1);
 
+        /*  ct.gpu_Hii = 1 - Hm,m+1 * Gm+1,m+1 * Hm+1,m * Gmm */
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n1, &cuone, ct.gpu_Imatrix, maxrow,
+                ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Hii, n1);
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n2, &cumone, ct.gpu_Gii, n1,
+                ct.gpu_temp, n2, &cuone, ct.gpu_Hii, n1);
+
+        /* set Gii to be unitary matrix */
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n1, &cuone, ct.gpu_Imatrix, maxrow,
+                ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Gii, n1);
+
+        /* get the inverse of ct.gpu_Hii , see second bracket in eq. 25 */
+        magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
+
+        /* gnu_Hii = Hm+1,m * Gmm * (... )^(-1)   eq.25 */
+        cublasZgemm (ct.cublas_handle, transN, transN, n2, n2, n1, &cuone, ct.gpu_temp, n2,
+                ct.gpu_Gii, n1, &cuzero, ct.gpu_Hii, n2);
+
+        /* eq. 25, first part for j <= m */
+        for (j = 0; j <= m; j++)
+        {
+            n3 = ni[j];
+
+
+            cublasZgemm (ct.cublas_handle, transN, transN, n3, n1, n1, &cuone, 
+                    &ct.gpu_Grow[n_begin1[j]], n3, ct.gpu_Gii, n1, &cuzero, ct.gpu_temp, n3);
+
+            n4 = ni[j] * ni[m];
+            cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+        }
+
+        for (j = m + 1; j < N; j++)
+        {
+            n3 = ni[j];
+
+            cublasZgemm (ct.cublas_handle, transN, transN, n3, n1, n2, &cumone, &ct.gpu_Grow[n_begin1[j]], n3,
+                    ct.gpu_Hii, n2, &cuzero, ct.gpu_temp, n3);
+
+            n4 = ni[j] * ni[m];
+            cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+
+        }
+
+#if 0
         /* calculate Gmm * Hm,m+1 = temp[m,m+1] */
 
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n1, &cuone, &ct.gpu_Grow[n_begin1[m]], n1,
-                Hiii, n1, &cuzero, ct.gpu_temp, n1);
+                Hii1, n1, &cuzero, ct.gpu_temp, n1);
 
 
 
@@ -300,8 +352,8 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
                 &ct.gpu_Grow[n_begin1[m+1]], n2, &cuzero, ct.gpu_Gii, n1);
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n1, &cuone, ct.gpu_Imatrix, maxrow,
                 ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Hii, n1);
-        cublasZgemm (ct.cublas_handle, transN, transT, n1, n1, n2, &cumone, ct.gpu_Gii, n1,
-                Hiii, n1, &cuone, ct.gpu_Hii, n1);
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n2, &cumone, ct.gpu_Gii, n1,
+                Hi1i, n2, &cuone, ct.gpu_Hii, n1);
         /* Now 1 - Gmm * Hm,m+1 * Gm+1,m+1 * Hm+1,m is stored in Hii[m,m] */
 
         /* calculate identity[m,m] - temp2[m,m+1] * Hm+1,m = identity[m,m] */
@@ -331,8 +383,8 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
             n3 = ni[j];
 
 
-            cublasZgemm (ct.cublas_handle, transN, transT, n3, n1, n1, &cuone, &ct.gpu_Grow[n_begin1[j]], n3,
-                    ct.gpu_Gii, n1, &cuzero, ct.gpu_temp, n3);
+            cublasZgemm (ct.cublas_handle, transN, transN, n1, n3, n1, &cuone, ct.gpu_Gii, n1, 
+                    &ct.gpu_Grow[n_begin1[j]], n1, &cuzero, ct.gpu_temp, n1);
 
             n4 = ni[j] * ni[m];
             cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Grow[n_begin1[j]], ione);
@@ -353,6 +405,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
         }
 
+#endif
 
 
     }                           /* if statement ends here */

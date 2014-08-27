@@ -85,7 +85,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
             ct.ions[ion].ixtal[ic] = ct.ions[ion].xtal[ic];
         }
 
-    if (pct.gridpe == 0)
+    if (pct.imgpe == 0)
     {
         write_header();
     }

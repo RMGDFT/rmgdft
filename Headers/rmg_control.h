@@ -468,10 +468,10 @@ typedef struct
     cudaStream_t cuda_stream;
 
     // GPU storage space for wavefunctions
-//    rmg_double_t *gpu_states;
+    rmg_double_t *gpu_states;
 
     // GPU temporary storage space for wavefunctions
-//    rmg_double_t *gpu_temp;
+    rmg_double_t *gpu_temp;
 
     // GPU temporary storage space for weights
 //    rmg_double_t *gpu_weight;

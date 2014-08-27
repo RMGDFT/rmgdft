@@ -87,8 +87,8 @@ rmg_double_t fill (STATE *states, rmg_double_t width, rmg_double_t nel, rmg_doub
 void find_phase (int nldim, rmg_double_t *nlcdrs, rmg_double_t *phase_sin,
                  rmg_double_t *phase_cos);
 void finish_release_mem(STATE *states);
-void genvpsi (rmg_double_t *psi, rmg_double_t *twovpsi, rmg_double_t *pvtot, 
-              rmg_double_t *kd, rmg_double_t kmag, int dimx, int dimy, int dimz);
+//void genvpsi (rmg_double_t *psi, rmg_double_t *twovpsi, rmg_double_t *pvtot, 
+//              rmg_double_t *kd, rmg_double_t kmag, int dimx, int dimy, int dimz);
 void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, rmg_double_t * vtot, rmg_double_t * kd,
               rmg_double_t kmag, int dimx, int dimy, int dimz);
 void get_nlop (void);

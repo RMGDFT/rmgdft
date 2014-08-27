@@ -16,7 +16,8 @@
 
 
 
-void rho_munu_cuda (complex double * rho_mn, complex double * green_C, complex double * gamma, int iprobe)
+void rho_munu_cuda (complex double * rho_mn, complex double * green_C_row, 
+        complex double *green_C_col, complex double * gamma, int iprobe)
 {
 
 #if GPU_ENABLED

@@ -24,11 +24,11 @@ char *get_line (char *buf, FILE * fh);
 
 void  pmo_unitary_matrix_double(double *, int *);
 
-void PZHEGVX (int *, char *, char *, char *, int*, complex double *, int*, int*,
-        int *, complex double *, int*, int*, int*, double *, double*, int*, int*,
-        double *, int*, int*, double*,double*, complex double *, int*,int*, int*,
-        complex double *, int*, double*, int*, int*, int*, 
-        int*, int*, double*, int*);
+//void PZHEGVX (int *, char *, char *, char *, int*, complex double *, int*, int*,
+//        int *, complex double *, int*, int*, int*, double *, double*, int*, int*,
+//        double *, int*, int*, double*,double*, complex double *, int*,int*, int*,
+//        complex double *, int*, double*, int*, int*, int*, 
+//        int*, int*, double*, int*);
 
 void lead_bandstructure ()
 {
@@ -253,10 +253,10 @@ void lead_bandstructure ()
         }
 
 
-        PZHEGVX( &itype, &jobz, &range, &uplo, &nL, matH, &ione, &ione,
-                desca, matS, &ione, &ione, desca, &VL, &VU, &IL, &IU,
-                &tol, &nL1, &nL2, eig_val, &orfac,z_vec, &ione, &ione, desca,
-                WORK, &LWORK, RWORK, &LRWORK, IWORK, &LIWORK,
+        PZHEGVX( &itype, &jobz, &range, &uplo, &nL, (double *)matH, &ione, &ione,
+                desca, (double *)matS, &ione, &ione, desca, &VL, &VU, &IL, &IU,
+                &tol, &nL1, &nL2, eig_val, &orfac,(double *)z_vec, &ione, &ione, desca,
+                (double *)WORK, &LWORK, RWORK, &LRWORK, IWORK, &LIWORK,
                 IFAIL, ICLUSTR, GAP, &info );
 
         if (info != 0)
