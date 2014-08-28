@@ -57,6 +57,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType *tmp_array2T = NULL;
     KpointType *global_matrix;
     KpointType *Agpu = NULL;
+    KpointType *gpu_eigvectors = NULL;
     KpointType *NULLptr = NULL;
 
 #if GPU_ENABLED
@@ -64,6 +65,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Start wavefunctions transferring to the GPU
     Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
+    gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
     custat = cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 );
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring orbitals to GPU");
 #endif
@@ -204,7 +206,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // global_matrix holds Bij now, we store a copy in Bij as well and pass Bij to the driver routine in globalmatrix as well
 
-    // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix will hold the eigenvectors
+    // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix will hold the eigenvectors.
+    // If the MAGMA driver is selected the eigenvectors will be stored on the GPU in gpu_global_matrix
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:
@@ -214,7 +217,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
             Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
             break;
         case SUBDIAG_MAGMA:
-            Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
+            Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix, (KpointType *)gpu_eigvectors);
             break;
         default:
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
@@ -234,13 +237,19 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Update the orbitals and store rotated orbitals in tmp_arrayT
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
-    RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, NULLptr, NULLptr, false, true, false, true);
+    if(subdiag_driver == SUBDIAG_MAGMA) {
+        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
+    }
+    else {
+        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, NULLptr, NULLptr, false, true, false, true);
+    }
 
     // And finally copy them back
     for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     delete(RT1);
 
 #if GPU_ENABLED
+    GpuFree(gpu_eigvectors);
     GpuFree(Agpu);
 #endif
 

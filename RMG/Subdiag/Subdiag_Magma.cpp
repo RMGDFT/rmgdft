@@ -35,12 +35,12 @@ int rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double>
 
 
 
-template void Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
-template void Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
+template void Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors, double *gpu_eigvectors);
+template void Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors, std::complex<double> *gpu_eigvectors);
 
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
 template <typename KpointType>
-void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
+void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors, KpointType *gpu_eigvectors)
 {
 
 #if !MAGMA_LIBS
@@ -62,7 +62,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
 
     KpointType *gpuAij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
     KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-    KpointType *gpuCij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
+    KpointType *gpuCij = gpu_eigvectors;
     KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
     KpointType *Cij = new KpointType[num_states * num_states];
 
@@ -149,8 +149,8 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
 
         info = rmg_dsygvd_gpu(num_states, (double *)gpuCij, num_states, (double *)gpuSij, num_states,
                               eigs, work, lwork, iwork, liwork, (double *)Cij);
-        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+//        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
+//        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
 
     }
     else {
@@ -159,8 +159,8 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
         double *rwork = new double[2 * lrwork];
         info = rmg_zhegvd_gpu(num_states, (std::complex<double> *)gpuCij, num_states, (std::complex<double> *)gpuSij, num_states,
                               eigs, work, lwork, rwork, lrwork, iwork, liwork, (double *)Cij);
-        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+//        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
+//        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
         delete [] rwork;
 
     }
@@ -174,7 +174,6 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     delete(Cij);
 
     GpuFree(gpuSij);
-    GpuFree(gpuCij);
     GpuFree(gpuBij);
     GpuFree(gpuAij);
 
