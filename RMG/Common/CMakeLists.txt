@@ -14,7 +14,6 @@ Scf.cpp
 pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
-rmg_timings.c
 write_occ.c
 betaxpsi.c
 mix_betaxpsi1.c

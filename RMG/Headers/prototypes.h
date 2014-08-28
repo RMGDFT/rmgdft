@@ -278,7 +278,6 @@ rmg_double_t real_sum_all (rmg_double_t x, MPI_Comm comm);
 rmg_double_t real_min_all (rmg_double_t x, MPI_Comm comm);
 
 
-void reset_timers (void);
 void sortpsi (STATE *states);
 /*
 void trade_images (rmg_double_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);

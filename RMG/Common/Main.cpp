@@ -388,7 +388,11 @@ void report ()
     	delete [] tau;
 
     /* Write timing information */
-    write_timings ();
+//    write_timings ();
+    if(pct.imgpe == 0) fclose(ct.logfile);
+    RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
+
+
    
 }                               /* end report */
 

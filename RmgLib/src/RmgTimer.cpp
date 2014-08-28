@@ -118,3 +118,15 @@ extern "C" void EndRmgTimer(void *ptr)
     delete(RT);
 }
 
+double MyCrtc (void)
+{
+    struct timeval t1;
+    gettimeofday (&t1, NULL);
+    return t1.tv_sec + 1e-6 * t1.tv_usec;
+}
+
+extern "C" double my_crtc (void)
+{
+    return MyCrtc();
+}
+

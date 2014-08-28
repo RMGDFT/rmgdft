@@ -67,3 +67,6 @@ void EndRmgTimer(void *ptr);
 #endif
 
 #endif
+
+// Non class timer function
+double MyCrtc (void);
