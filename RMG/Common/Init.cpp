@@ -381,10 +381,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     init_qfunct ();
 
     
-    // Set up some data structures used in subdiag */
-    init_subdiag();
-
-
     /* Update items that change when the ionic coordinates change */
     reinit_ionic_pp (Kptr[0]->kstates, vnuc, rhocore, rhoc);
 

@@ -391,8 +391,8 @@ target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 #    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_CXX_FLAGS "-Wall -O3 -std=c++11 ${RMG_SYSTEM_COMPILER_FLAG} -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_CXX_FLAGS "-Wall -O3 -std=c++11 ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
 endif()
@@ -543,7 +543,10 @@ endif(RMG_GPU_ENABLED)
 
 option (RMG_MAGMA_LIBS "Use MAGMA libraries." OFF)
 if (RMG_MAGMA_LIBS)
-    set (MAGMA_LIBS 1)
+    set (MAGMA_LIBS 0)
+    if (RMG_GPU_ENABLED)
+        set (MAGMA_LIBS 1)
+    endif(RMG_GPU_ENABLED)
 else (RMG_MAGMA_LIBS)
     set (MAGMA_LIBS 0)
 endif(RMG_MAGMA_LIBS)
