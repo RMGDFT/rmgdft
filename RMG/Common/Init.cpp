@@ -195,6 +195,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     size_t gpu_bufsize, t1;
     t1 = ct.num_states * ct.num_states * sizeof(OrbitalType);
     gpu_bufsize = 3 * t1;
+#if MAGMA_LIBS
+    gpu_bufsize += t1;
+#endif
 
     // Two buffers for rotating the orbitals
     t1 = ct.num_states * P0_BASIS * sizeof(OrbitalType);

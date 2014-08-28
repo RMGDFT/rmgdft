@@ -31,6 +31,13 @@
 #include "common_prototypes.h"
 
 #if GPU_ENABLED
+    #include <cuda.h>
+    #include <cuda_runtime_api.h>
+    #include <cublas_v2.h>
+
+    #if MAGMA_LIBS
+        #include <magma/magma.h>
+    #endif
 
 void rmg_printout_devices( )
 {
@@ -56,6 +63,9 @@ void rmg_printout_devices( )
         printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
         idevice, name, clock/1000.f, totalMem/1024.f/1024.f );
     }
+#if MAGMA_LIBS
+    magma_init();          
+#endif
 }
 
 
