@@ -10,6 +10,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include <cuComplex.h>
 
 
 void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int iprobe, 
@@ -39,7 +40,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
 #if GPU_ENABLED
     cuDoubleComplex cumone, cuone,  cuzero, *Hii1, *Hi1i;
-    cublasOperation_t transT = CUBLAS_OP_T, transN = CUBLAS_OP_N;
+    cublasOperation_t transN = CUBLAS_OP_N;
 
     int nmax, i, j, n1, n2, n3, n4, m;
     int *ipiv, *n_begin1;
@@ -130,6 +131,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
 
     cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Grow[n_begin1[0]], ione);
+    cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Gcol[n_begin1[0]], ione);
 
     /*  calculate the inverse of the first block  */
 
@@ -164,24 +166,40 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
         magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
         n2 = ni[i+1] * ni[i+1];
         cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Grow[n_begin1[i+1]], ione);
+        cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Gcol[n_begin1[i+1]], ione);
 
         n1 = ni[i];
         n2 = ni[i + 1];
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cumone, Hii1, n1,
                 ct.gpu_Gii, n2, &cuzero, ct.gpu_temp, n1);
 
-        /* Gj, i+1 = G0_j,i * tempi,i+1 ; j = 0, i */
+        /* Gj, i+1 = G0_j,i * tempi,i+1 ; j = 0, i   eq.15*/
         for (j = 0; j <= i; j++)
         {
 
-            n1 = ni[j];
-            n2 = ni[i];
-            n3 = ni[i + 1];
+            n3 = ni[j];
 
-            cublasZgemm (ct.cublas_handle, transN, transN, n1, n3, n2, &cuone, &ct.gpu_Grow[n_begin1[j]], n1,
-                    ct.gpu_temp, n2, &cuzero, ct.gpu_Hii, n1);
-            n2 = ni[j] * ni[i+1];
-            cublasZcopy (ct.cublas_handle, n2, ct.gpu_Hii, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+            cublasZgemm (ct.cublas_handle, transN, transN, n3, n2, n1, &cuone, &ct.gpu_Grow[n_begin1[j]], n3,
+                    ct.gpu_temp, n1, &cuzero, ct.gpu_Hii, n3);
+            n4 = ni[j] * ni[i+1];
+            cublasZcopy (ct.cublas_handle, n4, ct.gpu_Hii, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+
+        }                           /* end  for(i = 0; i < m; i++) */
+
+        /* Gi+1, j = G_i+1,i+1 * Hi+1,i * G0_i,j; j = 0, i  eq. 16*/
+
+        cublasZgemm (ct.cublas_handle, transN, transN, n2, n1, n2, &cumone, ct.gpu_Gii, n2,
+                Hi1i, n2, &cuzero, ct.gpu_temp, n2);
+
+        for (j = 0; j <= i; j++)
+        {
+
+            n3 = ni[j];
+
+            cublasZgemm (ct.cublas_handle, transN, transN, n2, n3, n1, &cuone, ct.gpu_temp, n2, 
+                    &ct.gpu_Gcol[n_begin1[j]], n1, &cuzero, ct.gpu_Hii, n2);
+            n4 = ni[j] * ni[i+1];
+            cublasZcopy (ct.cublas_handle, n4, ct.gpu_Hii, ione, &ct.gpu_Gcol[n_begin1[j]], ione);
 
         }                           /* end  for(i = 0; i < m; i++) */
 
@@ -204,6 +222,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
         n2 = ni[N-1] * ni[N-1];
         cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Grow[n_begin1[N-1]], ione);
+        cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Gcol[n_begin1[N-1]], ione);
 
 
 
@@ -248,6 +267,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
             n2 = ni[i-1] * ni[i-1];
             cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Grow[n_begin1[i-1]], ione);
+            cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, &ct.gpu_Gcol[n_begin1[i-1]], ione);
 
 
             /*  temp[i,i-1] = - Hi,i-1 * Gi-1,i-1  */
@@ -257,21 +277,36 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
             cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cumone, Hi1i, n1,
                     ct.gpu_Gii, n2, &cuzero, ct.gpu_temp, n1);
 
-
-            /* Gj, i-1 = G0_j,i * temp , j = i, n-1 */
+            /* Gj, i-1 = G0_j,i * temp , j = i, n-1  eq. 18*/
             for (j = i; j < N; j++)
             {
 
-                n1 = ni[j];
-                n2 = ni[i];
-                n3 = ni[i - 1];
+                n3 = ni[j];
 
-                cublasZgemm (ct.cublas_handle, transN, transN, n1, n3, n2, &cuone, &ct.gpu_Grow[n_begin1[j]], n1,
-                        ct.gpu_temp, n2, &cuzero, ct.gpu_Hii, n1);
+                cublasZgemm (ct.cublas_handle, transN, transN, n3, n2, n1, &cuone, &ct.gpu_Grow[n_begin1[j]], n1,
+                        ct.gpu_temp, n1, &cuzero, ct.gpu_Hii, n3);
 
 
-                n1 = ni[j] * ni[i-1];
-                cublasZcopy (ct.cublas_handle, n1, ct.gpu_Hii, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+                n4 = ni[j] * ni[i-1];
+                cublasZcopy (ct.cublas_handle, n4, ct.gpu_Hii, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+            }
+
+
+            /* Gi-1, j, = -G_i-1,i-1 * Hi-1,i * G0_i,j , j = i, n-1  eq. 19*/
+            cublasZgemm (ct.cublas_handle, transN, transN, n2, n1, n2, &cumone, 
+                    ct.gpu_Gii, n2, Hii1, n2, &cuzero, ct.gpu_temp, n2);
+
+            for (j = i; j < N; j++)
+            {
+
+                n3 = ni[j];
+
+                cublasZgemm (ct.cublas_handle, transN, transN, n2, n3, n1, &cuone, ct.gpu_temp, n2, 
+                        &ct.gpu_Gcol[n_begin1[j]], n1, &cuzero, ct.gpu_Hii, n2);
+
+
+                n4 = ni[j] * ni[i-1];
+                cublasZcopy (ct.cublas_handle, n4, ct.gpu_Hii, ione, &ct.gpu_Gcol[n_begin1[j]], ione);
             }
 
         }                           /* end  (i = N - 1; i > m + 1 ; i--) */
@@ -289,6 +324,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
         n1 = ni[m];
         n2 = ni[m + 1];
 
+        /* eq. 25, the inverse part */
         /*  ct.gpu_temp = Hm+1,m *  G0mm  */
         cublasZgemm (ct.cublas_handle, transN, transN, n2, n1, n1,
                 &cuone, Hi1i, n2, &ct.gpu_Grow[n_begin1[m]], n1,
@@ -339,17 +375,17 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
         }
 
-#if 0
+        /* eq. 24  */
         /* calculate Gmm * Hm,m+1 = temp[m,m+1] */
 
-        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n1, &cuone, &ct.gpu_Grow[n_begin1[m]], n1,
+        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n1, &cuone, &ct.gpu_Gcol[n_begin1[m]], n1,
                 Hii1, n1, &cuzero, ct.gpu_temp, n1);
 
 
 
         /* calculate  temp[m,m+1] * Gm+1,m+1 = temp2[m,m+1] */
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, ct.gpu_temp, n1,
-                &ct.gpu_Grow[n_begin1[m+1]], n2, &cuzero, ct.gpu_Gii, n1);
+                &ct.gpu_Gcol[n_begin1[m+1]], n2, &cuzero, ct.gpu_Gii, n1);
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n1, &cuone, ct.gpu_Imatrix, maxrow,
                 ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Hii, n1);
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n2, &cumone, ct.gpu_Gii, n1,
@@ -367,45 +403,35 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
         magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
 
 
-        /* calculate temp2[m,m] * temp[m,m+1] = temp3[m,m+1] */
+        /* ct.gpu_Hii store:  (1-G0mm * Hm,m+1 * G0m+1,m+1 * Hm+1,m)^-1 * G0mm * Hm,m+1 */
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n1, &cuone, ct.gpu_Gii, n1,
                 ct.gpu_temp, n1, &cuzero, ct.gpu_Hii, n1);
 
-
-        /* Gmj = temp2[m,m] * Gmj - temp3[m,m+1] * Gm+1,j; j = 0, N-1 */
-        /* this will be calculated in two parts                      */
-
-
-        /* Gmj = temp2[m,m] * Gmj; j = 0, m */
-        /* which is: Gjm = (Gmj)^T = Gjm * temp2[m,m]; j = 0, m */
         for (j = 0; j <= m; j++)
         {
             n3 = ni[j];
 
 
             cublasZgemm (ct.cublas_handle, transN, transN, n1, n3, n1, &cuone, ct.gpu_Gii, n1, 
-                    &ct.gpu_Grow[n_begin1[j]], n1, &cuzero, ct.gpu_temp, n1);
+                    &ct.gpu_Gcol[n_begin1[j]], n1, &cuzero, ct.gpu_temp, n1);
 
             n4 = ni[j] * ni[m];
-            cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+            cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Gcol[n_begin1[j]], ione);
         }
 
 
-        /* Gmj = - temp3[m,m+1] * Gm+1,j; j = m+1, N-1 */
-        /* which is: Gjm = (Gmj)^T = - Gj,m+1 * temp3[m+1,m]; j = m+1, N-1 */
         for (j = m + 1; j < N; j++)
         {
             n3 = ni[j];
 
-            cublasZgemm (ct.cublas_handle, transN, transT, n3, n1, n2, &cumone, &ct.gpu_Grow[n_begin1[j]], n3,
-                    ct.gpu_Hii, n1, &cuzero, ct.gpu_temp, n3);
+            cublasZgemm (ct.cublas_handle, transN, transN, n1, n3, n2, &cumone, ct.gpu_Hii, n1, 
+                    &ct.gpu_Gcol[n_begin1[j]], n2, &cuzero, ct.gpu_temp, n1);
 
             n4 = ni[j] * ni[m];
-            cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Grow[n_begin1[j]], ione);
+            cublasZcopy (ct.cublas_handle, n4, ct.gpu_temp, ione, &ct.gpu_Gcol[n_begin1[j]], ione);
 
         }
 
-#endif
 
 
     }                           /* if statement ends here */
@@ -414,7 +440,28 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
     n4 = tot_row * maxcol;
     cublasGetVector(n4, sizeof( complex double ), ct.gpu_Grow, ione, Green_C_row, ione );
-
+    n4 = tot_row * maxrow;
+    cublasGetVector(n4, sizeof( complex double ), ct.gpu_Gcol, ione, Green_C_col, ione );
+    for(j = 0; j < N; j++)
+    {
+        printf("\n aaa %d", j);
+        for(i = 0; i < 10; i++)
+        {
+            printf("\n");
+           for(n1 = 0; n1 < 10; n1++)
+           printf(" %f ", cimag(Green_C_row[n_begin1[j] + i * ni[j] + n1]));
+    }
+}
+    for(j = 0; j < N; j++)
+    {
+        printf("\n bbb %d", j);
+        for(i = 0; i < 10; i++)
+        {
+            printf("\n");
+           for(n1 = 0; n1 < 10; n1++)
+           printf(" %f ", cimag(Green_C_col[n_begin1[j] + i * ni[m] + n1]));
+    }
+}
 
 
 
