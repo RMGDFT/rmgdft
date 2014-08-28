@@ -22,7 +22,7 @@
 
 int min_distance_index(double *, int);
 
-void green_kpoint_phase (double complex *green, double kvecy, double kvecz)
+void green_kpoint_phase (double complex *green, double kvecy, double kvecz, int up_and_low)
 {
 
     int ntot, i, j, n, ii, jj, li, lj,nstart,idx, index;
@@ -160,52 +160,52 @@ void green_kpoint_phase (double complex *green, double kvecy, double kvecz)
 
     maxsize = maxrow * maxcol;
 
-    my_malloc_init(Htem1, maxsize, double);
-    my_malloc_init(Stem1, maxsize, double);
-
-    nstart = 0;
-    for(n = 0; n < ct.num_blocks -1; n++)
+    if(up_and_low == 1)
     {
-
-        for(li = 0; li < pmo.mxllda_cond[n+1]; li++)
+        nstart = 0;
+        for(n = 0; n < ct.num_blocks -1; n++)
         {
-            for(lj = 0; lj < pmo.mxlocc_cond[n]; lj++)
+
+            for(li = 0; li < pmo.mxllda_cond[n+1]; li++)
             {
+                for(lj = 0; lj < pmo.mxlocc_cond[n]; lj++)
+                {
 
-                /*  li,lj are the  index of distributed matrix */
-                /*  i,j are the  index of nondistributed matrix */
-                i = li/mb * nprow *mb + myrow * mb + li - li/mb * mb;
-                j = lj/nb * npcol *nb + mycol * nb + lj - lj/nb * nb;
+                    /*  li,lj are the  index of distributed matrix */
+                    /*  i,j are the  index of nondistributed matrix */
+                    i = li/mb * nprow *mb + myrow * mb + li - li/mb * mb;
+                    j = lj/nb * npcol *nb + mycol * nb + lj - lj/nb * nb;
 
-                /*  ii,jj are the orbital index */
-                ii = i+ nstart + ct.block_dim[n];
-                jj = j+ nstart;
+                    /*  ii,jj are the orbital index */
+                    ii = i+ nstart + ct.block_dim[n];
+                    jj = j+ nstart;
 
-                idx = lj * pmo.mxllda_cond[n+1] + li;
+                    idx = lj * pmo.mxllda_cond[n+1] + li;
 
-                yvec = states[ii].crds[1] - states[jj].crds[1];
-                zvec = states[ii].crds[2] - states[jj].crds[2];
+                    yvec = states[ii].crds[1] - states[jj].crds[1];
+                    zvec = states[ii].crds[2] - states[jj].crds[2];
 
-                distance[0] = yvec * yvec + zvec * zvec;
-                distance[1] = (yvec + blength) * (yvec + blength) + zvec * zvec;
-                distance[2] = (yvec - blength) * (yvec - blength) + zvec * zvec;
-                distance[3] = yvec * yvec + (zvec+clength) * (zvec+clength);
-                distance[4] = yvec * yvec + (zvec-clength) * (zvec-clength);
-                distance[5] = (yvec+blength) * (yvec+blength) + (zvec+clength) * (zvec+clength);
-                distance[6] = (yvec+blength) * (yvec+blength) + (zvec-clength) * (zvec-clength);
-                distance[7] = (yvec-blength) * (yvec-blength) + (zvec+clength) * (zvec+clength);
-                distance[8] = (yvec-blength) * (yvec-blength) + (zvec-clength) * (zvec-clength);
+                    distance[0] = yvec * yvec + zvec * zvec;
+                    distance[1] = (yvec + blength) * (yvec + blength) + zvec * zvec;
+                    distance[2] = (yvec - blength) * (yvec - blength) + zvec * zvec;
+                    distance[3] = yvec * yvec + (zvec+clength) * (zvec+clength);
+                    distance[4] = yvec * yvec + (zvec-clength) * (zvec-clength);
+                    distance[5] = (yvec+blength) * (yvec+blength) + (zvec+clength) * (zvec+clength);
+                    distance[6] = (yvec+blength) * (yvec+blength) + (zvec-clength) * (zvec-clength);
+                    distance[7] = (yvec-blength) * (yvec-blength) + (zvec+clength) * (zvec+clength);
+                    distance[8] = (yvec-blength) * (yvec-blength) + (zvec-clength) * (zvec-clength);
 
-                index =  min_distance_index(distance, 9);
+                    index =  min_distance_index(distance, 9);
 
-                green[pmo.lowoffdiag_begin[n] + idx] *= conj(ctem[index]);
+                    green[pmo.lowoffdiag_begin[n] + idx] *= conj(ctem[index]);
+                }
             }
+
+
+            nstart += ct.block_dim[n];
+
         }
 
-
-        nstart += ct.block_dim[n];
-
     }
-
 
 }

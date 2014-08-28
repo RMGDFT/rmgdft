@@ -246,7 +246,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     }                           /* end  for(i = 0; i < N-1; i++) */
 
-    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
+    int up_and_low = 1;
+    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
     for(i = 0; i < ct.num_blocks - 1; i++)
     {

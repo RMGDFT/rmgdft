@@ -273,7 +273,8 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
 
     cublasGetVector( pmo.ntot_low, sizeof( complex double ), ct.gpu_Gtri, ione, G_tri, ione );
 
-    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
+    int up_and_low = 1;
+    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
 
     double complex half = 0.5;
