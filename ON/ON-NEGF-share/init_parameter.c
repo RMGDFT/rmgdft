@@ -54,6 +54,10 @@ void init_parameter(STATE * states)
 
     ct.vh_nbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
     /* Initialize some k-point stuff */
+
+
+    ct.is_gamma = true;
+
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
 
@@ -70,6 +74,8 @@ void init_parameter(STATE * states)
         ct.kp[kpt].kpt[2] *= TWO * PI;
 
         ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
+
+        if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
 
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];
         ct.kp[kpt + ct.spin * ct.num_states].kstate =
