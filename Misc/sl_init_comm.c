@@ -42,7 +42,7 @@ usually world
 */
 void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
 {
-#if SCALAPACK_LIBRARIES
+#if SCALAPACK_LIBS 
     int i, npes;
     int *pmap, *tgmap;
 
