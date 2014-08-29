@@ -122,6 +122,13 @@ void read_control (char *file)
     }
 #endif
 
+#if !SCALAPACK_LIBS
+    if(verify( "subdiag_driver", "scalapack" )) {
+          dprintf("\nThis version of RMG was not built with Scalapack. Changing diagonalization driver to Lapack.\n");
+          ct.subdiag_driver = SUBDIAG_LAPACK;
+    }
+#endif
+
     /* Diagonalization info: initial diagonalization flag */
     get_data ("initial_diagonalization", &ct.initdiag, BOOL, "false");
 

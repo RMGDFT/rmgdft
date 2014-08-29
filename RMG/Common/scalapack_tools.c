@@ -33,7 +33,7 @@ Documentation:
 #include "grid.h"
 #include "main.h"
 
-
+#if SCALAPACK_LIBRARIES
 
 
 
@@ -620,4 +620,4 @@ static void set_scalapack_comm(int nprow, int npcol, int npes, int images_per_no
 
 
 }
-
+#endif

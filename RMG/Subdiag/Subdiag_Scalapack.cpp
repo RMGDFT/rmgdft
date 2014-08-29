@@ -31,6 +31,12 @@ template <typename KpointType>
 void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
+#if !SCALAPACK_LIBRARIES
+    rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
+    Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
+    return;
+#else
+
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
     int izero = 0;
@@ -301,4 +307,5 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     delete [] distSij;
     delete [] distBij;
     delete [] distAij;
+#endif
 }

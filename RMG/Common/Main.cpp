@@ -400,9 +400,11 @@ void report ()
 void finish ()
 {
 
+#if SCALAPACK_LIBRARIES
 	/*Exit Scalapack */
     if (pct.scalapack_pe)
         sl_exit (pct.ictxt);
+#endif
 
     MPI_Barrier(MPI_COMM_WORLD);
 	/*Exit MPI */

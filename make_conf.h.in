@@ -25,3 +25,5 @@
 /* Use Magma libs. */
 #define MAGMA_LIBS ${MAGMA_LIBS}
 
+/* Use Scalapack libs. */
+#define SCALAPACK_LIBS ${USE_SCALAPACK_LIBS}

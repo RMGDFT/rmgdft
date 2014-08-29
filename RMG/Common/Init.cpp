@@ -112,6 +112,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.psi_fnbasis = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) * Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
 
 
+#if SCALAPACK_LIBRARIES
     if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
 
         /*Initialize ScaLapack, get context */
@@ -121,6 +122,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         set_desca (pct.desca, &pct.ictxt, ct.num_states);
 
     }
+#endif
 
 
     /* Allocate storage for non-local projectors */
