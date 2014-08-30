@@ -2,6 +2,7 @@
 #define RMG_transition_h
 
 #if __cplusplus
+#include <complex>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -52,7 +53,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr);
 void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI);
-void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI);
+void AppNls(Kpoint<std::complex<double> > *kpoint, double *sintR, double *sintI);
 //template <typename OrbitalType> void AppNls(Kpoint<OrbitalType> *kpoint, double *sintR, double *sintI);
 
 template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_psi);

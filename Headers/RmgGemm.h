@@ -32,7 +32,7 @@
 
 #if __cplusplus
 
-#include <complex.h>
+#include <complex>
 template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k,
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
                              DataType *C, int ldc, DataType *Agpu, DataType *Bgpu,
