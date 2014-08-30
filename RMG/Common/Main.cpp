@@ -400,7 +400,7 @@ void report ()
 void finish ()
 {
 
-#if SCALAPACK_LIBRARIES
+#if SCALAPACK_LIBS
 	/*Exit Scalapack */
     if (pct.scalapack_pe)
         sl_exit (pct.ictxt);

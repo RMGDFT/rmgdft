@@ -33,7 +33,7 @@ Documentation:
 #include "grid.h"
 #include "main.h"
 
-#if SCALAPACK_LIBRARIES
+#if SCALAPACK_LIBS
 
 
 
