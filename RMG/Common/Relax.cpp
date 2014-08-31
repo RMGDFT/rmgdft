@@ -54,6 +54,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "transition.h"
 #include "../Headers/prototypes.h"
 
 
@@ -119,7 +120,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         ct.md_steps++;
 
         /* Update items that change when the ionic coordinates change */
-        reinit_ionic_pp (Kptr[0]->kstates, vnuc, rhocore, rhoc);
+        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
 
         /* quench the electrons and calculate forces */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);

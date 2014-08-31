@@ -26,7 +26,7 @@ void get_nlop (void)
     int *Aix, *Aiy, *Aiz;
     int *Aix2, *Aiy2, *Aiz2;
     int icut, itmp, icenter;
-    rmg_double_t vect[3];
+    double vect[3];
     SPECIES *sp;
     ION *iptr;
     int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
@@ -89,9 +89,9 @@ void get_nlop (void)
         vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
         /*Substract vector between left bottom corner of the box and center of the box */
-        vect[0] -= (sp->nldim / 2) / (rmg_double_t) get_NX_GRID();
-        vect[1] -= (sp->nldim / 2) / (rmg_double_t) get_NY_GRID();
-        vect[2] -= (sp->nldim / 2) / (rmg_double_t) get_NZ_GRID();
+        vect[0] -= (sp->nldim / 2) / (double) get_NX_GRID();
+        vect[1] -= (sp->nldim / 2) / (double) get_NY_GRID();
+        vect[2] -= (sp->nldim / 2) / (double) get_NZ_GRID();
 
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
@@ -183,9 +183,9 @@ void get_nlop (void)
 
             size_t weight_size = prj_per_ion * get_P0_BASIS() + 128;
 #if FDIFF_BETA
-                my_calloc (pct.weight_derx[ion], weight_size, rmg_double_t);
-                my_calloc (pct.weight_dery[ion], weight_size, rmg_double_t);
-                my_calloc (pct.weight_derz[ion], weight_size, rmg_double_t);
+                my_calloc (pct.weight_derx[ion], weight_size, double);
+                my_calloc (pct.weight_dery[ion], weight_size, double);
+                my_calloc (pct.weight_derz[ion], weight_size, double);
 #endif
             }
             else
@@ -200,7 +200,7 @@ void get_nlop (void)
 
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion))
-                my_calloc (pct.phaseptr[ion], 2 * get_P0_BASIS() * ct.num_kpts + 128, rmg_double_t);
+                my_calloc (pct.phaseptr[ion], 2 * get_P0_BASIS() * ct.num_kpts + 128, double);
             else
                 pct.phaseptr[ion] = NULL;
             get_phase (iptr, pct.phaseptr[ion], ip, get_P0_BASIS(), dvec);
@@ -260,28 +260,28 @@ void get_nlop (void)
     size_t weight_size = pct.num_tot_proj * get_P0_BASIS() + 128;
 
 #if GPU_ENABLED
-    if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(rmg_double_t) ))
+    if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(double) ))
         error_handler("Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
-    if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(rmg_double_t) ))
+    if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(double) ))
         error_handler("Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
 
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
-    if( cudaSuccess != cudaMallocHost((void **)&pct.M_dnm, weight_size * sizeof(rmg_double_t) ))
+    if( cudaSuccess != cudaMallocHost((void **)&pct.M_dnm, weight_size * sizeof(double) ))
         error_handler("Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.M_dnm[idx] = 0.0;
 
-    if( cudaSuccess != cudaMallocHost((void **)&pct.M_qqq, weight_size * sizeof(rmg_double_t) ))
+    if( cudaSuccess != cudaMallocHost((void **)&pct.M_qqq, weight_size * sizeof(double) ))
         error_handler("Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.M_dnm[idx] = 0.0;
 
 #else
-    my_calloc (pct.weight, weight_size, rmg_double_t);
-    my_calloc (pct.Bweight, weight_size, rmg_double_t);
+    my_calloc (pct.weight, weight_size, double);
+    my_calloc (pct.Bweight, weight_size, double);
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
-    my_calloc (pct.M_dnm, weight_size, rmg_double_t);
-    my_calloc (pct.M_qqq, weight_size, rmg_double_t);
+    my_calloc (pct.M_dnm, weight_size, double);
+    my_calloc (pct.M_qqq, weight_size, double);
 #endif
 
 
@@ -310,9 +310,9 @@ void get_nlop (void)
         my_free (pct.oldsintR_local);
     
     my_calloc (pct.newsintR_local, 2 * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
-               rmg_double_t);
+               double);
     my_calloc (pct.oldsintR_local, 2 * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl,
-               rmg_double_t);
+               double);
 
     pct.newsintI_local = pct.newsintR_local + ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
     pct.oldsintI_local = pct.oldsintR_local + ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;

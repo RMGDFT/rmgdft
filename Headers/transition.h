@@ -91,7 +91,11 @@ template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
 // Print function
 void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps);
+template <typename KpointType>
+void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);
 
+
+extern "C" bool verify( char *tagname, const void *optvalue );
 
 
 

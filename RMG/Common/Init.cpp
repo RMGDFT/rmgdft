@@ -384,7 +384,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     
     /* Update items that change when the ionic coordinates change */
-    reinit_ionic_pp (Kptr[0]->kstates, vnuc, rhocore, rhoc);
+    ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
 
 
     // Normalize orbitals if not an initial run
