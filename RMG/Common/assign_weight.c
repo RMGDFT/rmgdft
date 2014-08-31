@@ -64,4 +64,7 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * 
         printf ("docount = %d != %d = pct.idxptrlen[ion = %d]\n", docount, pct.idxptrlen[ion], ion);
         error_handler ("wrong numbers of projectors");
     }
+
+    my_free(Btem_array);
+    my_free(tem_array);
 }
