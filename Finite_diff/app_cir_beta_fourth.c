@@ -30,7 +30,7 @@ void app_cir_beta_fourth (double * a, double * b, int dimx, int dimy, int dimz)
     incxr = dimz * dimy;
     incyr = dimz;
 
-    my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), rmg_double_t);
+    my_malloc (rptr, (dimx + 2) * (dimy + 2) * (dimz + 2), double);
 
     for(ix = 0; ix < (dimx + 2) * (dimy + 2) * (dimz + 2); ix++)
         rptr[ix] = 0.0;

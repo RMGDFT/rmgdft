@@ -9,17 +9,50 @@ template void ReinitIonicPotentials<double>(Kpoint<double> **, double *, double 
 template void ReinitIonicPotentials<std::complex<double> >(Kpoint<std::complex<double>> **, double *, double *, double *);
 
 template <typename KpointType>
-void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc)
+void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * rhocore, double * rhoc)
 {
+
+    int pbasis = Kptr[0]->pbasis;
 
     /* Update items that change when the ionic coordinates change */
     init_nuc (vnuc, rhoc, rhocore);
     get_QI ();
-    get_nlop ();
+    GetNlop(Kptr);
+
+    // For gamma point calculations the pointers to the weights are the same as the global pointers.
+    // For non-gamma we need to allocate a complex array for each kpoint since the phase factors
+    // are different.
+    if(ct.is_gamma) {
+
+        for(int kpt=0;kpt < ct.num_kpts;kpt++) {
+
+            Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
+            Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
+        }
+
+    }
+    else {
+
+        for(int kpt=0;kpt < ct.num_kpts;kpt++) {
+
+            // Release old memory storage for weights
+            if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
+            if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
+
+            // Allocate new storage
+            Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis];
+            Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis];
+
+            // Now generate the complex weights with the correct phase factor
+
+        }
+
+    }
 
     /*Other things that need to be recalculated when ionic positions change */
-    get_weight ();
+    GetWeight (Kptr);
     get_qqq ();
+
 
 #if GPU_ENABLED
     cublasStatus_t custat;

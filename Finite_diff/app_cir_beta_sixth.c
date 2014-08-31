@@ -15,18 +15,18 @@
 // This is B operator applied on projector |beta>
 // no trade_images is needed.
 
-void app_cir_beta_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
+void app_cir_beta_sixth (double * a, double * b, int dimx, int dimy, int dimz)
 {
 
     int used_alloc=FALSE;
-    rmg_double_t *rptr=NULL;
+    double *rptr=NULL;
 
 
     int ix, iy, iz;
     int ixs, iys, ixms, ixps, iyms, iyps;
     int incy, incx, ixmms, ixpps, iymms, iypps;
     int incyr, incxr;
-    rmg_double_t c000, c100, c110, c200;
+    double c000, c100, c110, c200;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
@@ -38,7 +38,7 @@ void app_cir_beta_sixth (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy,
 
     // If rptr is null then we must allocate it here
     if(rptr == NULL) {
-        my_malloc (rptr, sbasis + 64, rmg_double_t);
+        my_malloc (rptr, sbasis + 64, double);
         used_alloc = TRUE;
     }
 

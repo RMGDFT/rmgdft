@@ -93,6 +93,15 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_ps
 void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps);
 template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);
+template <typename KpointType>
+void GetNlop (Kpoint<KpointType> **Kptr);
+template <typename KpointType>
+void GetWeight (Kpoint<KpointType> **Kptr);
+template <typename KpointType>
+void AssignWeight (Kpoint<KpointType> **Kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, double *Bweight);
+
+
+
 
 
 extern "C" bool verify( char *tagname, const void *optvalue );

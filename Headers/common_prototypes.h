@@ -110,6 +110,7 @@ rmg_double_t app_cil_sixth (rmg_double_t *psi, rmg_double_t *b, int dimx, int di
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 rmg_double_t app_cil_sixth_f (rmg_float_t *psi, rmg_float_t *b, int dimx, int dimy, int dimz,
                     rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
+void app_cir_beta_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, int order);
 
 void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
 

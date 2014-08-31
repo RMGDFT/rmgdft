@@ -73,6 +73,8 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->comm = newcomm;
     this->kidx = kindex;
     this->kweight = kkweight;
+    this->nl_weight = NULL;
+    this->nl_Bweight = NULL;
     this->nstates = knstates;
     this->Kstates = new State<KpointType>[this->nstates];
     this->G = newG;
