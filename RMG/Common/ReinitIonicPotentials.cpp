@@ -12,6 +12,7 @@ template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * rhocore, double * rhoc)
 {
 
+    KpointType ZERO_t(0.0);
     int pbasis = Kptr[0]->pbasis;
 
     /* Update items that change when the ionic coordinates change */
@@ -19,35 +20,22 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     get_QI ();
     GetNlop(Kptr);
 
-    // For gamma point calculations the pointers to the weights are the same as the global pointers.
-    // For non-gamma we need to allocate a complex array for each kpoint since the phase factors
-    // are different.
-    if(ct.is_gamma) {
+    // Number of total projectors required is computed in GetNlop so we allocate per
+    // k-point storage for the weights here.
+    for(int kpt=0;kpt < ct.num_kpts;kpt++) {
 
-        for(int kpt=0;kpt < ct.num_kpts;kpt++) {
+        // Release old memory storage for weights
+        if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
+        if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
 
-            Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
-            Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
-        }
-
-    }
-    else {
-
-        for(int kpt=0;kpt < ct.num_kpts;kpt++) {
-
-            // Release old memory storage for weights
-            if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
-            if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
-
-            // Allocate new storage
-            Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis];
-            Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis];
-
-            // Now generate the complex weights with the correct phase factor
-
-        }
+        // Allocate new storage
+        Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis];
+        Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis];
+        for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_weight[idx] = ZERO_t;    
+        for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_Bweight[idx] = ZERO_t;    
 
     }
+
 
     /*Other things that need to be recalculated when ionic positions change */
     GetWeight (Kptr);

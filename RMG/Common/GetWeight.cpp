@@ -16,7 +16,8 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 {
 
     int ion, ion1, ip, coarse_size, max_size, idx, P0_BASIS;
-    double *rtptr, *Bweight;
+    double *rtptr;
+    KpointType *Bweight, *Nlweight;
     std::complex<double> I_t(0.0, 1.0);
 
 #if FDIFF_BETA
@@ -59,99 +60,107 @@ void GetWeight (Kpoint<KpointType> **Kptr)
         pct.weight[idx] = 0.0;
         pct.Bweight[idx] = 0.0;
     }
-    /* Loop over ions */
-    for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
-    {
-        rtptr = &pct.weight[ion1 * ct.max_nl * P0_BASIS];
-        Bweight = &pct.Bweight[ion1 * ct.max_nl * P0_BASIS];
-        ion = pct.nonloc_ions_list[ion1];
-        /* Generate ion pointer */
-        iptr = &ct.ions[ion];
 
+    for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
-        /* Get species type */
-        sp = &ct.sp[iptr->species];
-
-        in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nldim * sp->nldim * sp->nldim);
-        out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nldim * sp->nldim * sp->nldim);
-
-
-        /*Number of grid points on which fourier transform is done (in the corse grid) */
-        coarse_size = sp->nldim * sp->nldim * sp->nldim;
-
-
-
-        //fftw_import_wisdom_from_string (sp->backward_wisdom);
-        p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
-                FFTW_ESTIMATE);
-        //fftw_forget_wisdom ();
-
-
-        /*Calculate the phase factor */
-        find_phase (sp->nldim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
-
-
-        /*Temporary pointer to the already calculated forward transform */
-        fptr = (std::complex<double> *)sp->forward_beta;
-
-        /*Pointer to where calculated beta will be stored */
-#if FDIFF_BETA
-        rtptr_x = pct.weight_derx[ion];
-        rtptr_y = pct.weight_dery[ion];
-        rtptr_z = pct.weight_derz[ion];
-#endif
-
-
-        /* Loop over radial projectors */
-        for (ip = 0; ip < sp->num_projectors; ip++)
+        /* Loop over ions */
+        for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
         {
+            rtptr = &pct.weight[ion1 * ct.max_nl * P0_BASIS];
+//            Bweight = (KpointType *)&pct.Bweight[ion1 * ct.max_nl * P0_BASIS];
+            Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
+            Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];
+            ion = pct.nonloc_ions_list[ion1];
+            /* Generate ion pointer */
+            iptr = &ct.ions[ion];
 
 
-            /*Apply the phase factor */
-            for (idx = 0; idx < coarse_size; idx++)
+            /* Get species type */
+            sp = &ct.sp[iptr->species];
+
+            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nldim * sp->nldim * sp->nldim);
+            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nldim * sp->nldim * sp->nldim);
+
+
+            /*Number of grid points on which fourier transform is done (in the corse grid) */
+            coarse_size = sp->nldim * sp->nldim * sp->nldim;
+
+
+
+            //fftw_import_wisdom_from_string (sp->backward_wisdom);
+            p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
+                    FFTW_ESTIMATE);
+            //fftw_forget_wisdom ();
+
+
+            /*Calculate the phase factor */
+            find_phase (sp->nldim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
+
+
+            /*Temporary pointer to the already calculated forward transform */
+            fptr = (std::complex<double> *)sp->forward_beta;
+
+            /*Pointer to where calculated beta will be stored */
+    #if FDIFF_BETA
+            rtptr_x = pct.weight_derx[ion];
+            rtptr_y = pct.weight_dery[ion];
+            rtptr_z = pct.weight_derz[ion];
+    #endif
+
+
+            /* Loop over radial projectors */
+            for (ip = 0; ip < sp->num_projectors; ip++)
             {
-                gbptr[idx] =
-                    (std::real(fptr[idx]) * iptr->fftw_phase_cos[idx] + std::imag(fptr[idx]) * iptr->fftw_phase_sin[idx]) +
-                    (std::imag(fptr[idx]) * iptr->fftw_phase_cos[idx] * I_t - std::real(fptr[idx]) * iptr->fftw_phase_sin[idx] * I_t);
-            }
 
 
-            /*Do the backwards transform */
-            fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
-            /*This takes and stores the part of beta that is useful for this PE */
-            AssignWeight (Kptr, sp, ion, reinterpret_cast<fftw_complex*>(beptr), rtptr, Bweight);
-
-            /*Calculate derivative of beta */
-#if FDIFF_BETA
-            partial_beta_fdiff (beptr, sp->nldim, r1, r2, r3);
-
-            assign_weight2 (sp->nldim, ion, r1, rtptr_x);
-            assign_weight2 (sp->nldim, ion, r2, rtptr_y);
-            assign_weight2 (sp->nldim, ion, r3, rtptr_z);
-#endif
+                /*Apply the phase factor */
+                for (idx = 0; idx < coarse_size; idx++)
+                {
+                    gbptr[idx] =
+                        (std::real(fptr[idx]) * iptr->fftw_phase_cos[idx] + std::imag(fptr[idx]) * iptr->fftw_phase_sin[idx]) +
+                        (std::imag(fptr[idx]) * iptr->fftw_phase_cos[idx] * I_t - std::real(fptr[idx]) * iptr->fftw_phase_sin[idx] * I_t);
+                }
 
 
+                /*Do the backwards transform */
+                fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
+                /*This takes and stores the part of beta that is useful for this PE */
+                AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), rtptr, Bweight, Nlweight);
 
-            /*Advance the temp pointers */
-            fptr += coarse_size;
-            rtptr += P0_BASIS;
-            Bweight += P0_BASIS;
-#if FDIFF_BETA
-            rtptr_x += pct.idxptrlen[ion];
-            rtptr_y += pct.idxptrlen[ion];
-            rtptr_z += pct.idxptrlen[ion];
-#endif
+                /*Calculate derivative of beta */
+    #if FDIFF_BETA
+                partial_beta_fdiff (beptr, sp->nldim, r1, r2, r3);
 
-        }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
-
-
-        fftw_destroy_plan (p2);
-        fftw_free(out);
-        fftw_free(in);
+                assign_weight2 (sp->nldim, ion, r1, rtptr_x);
+                assign_weight2 (sp->nldim, ion, r2, rtptr_y);
+                assign_weight2 (sp->nldim, ion, r3, rtptr_z);
+    #endif
 
 
 
-    }                           /* end for */
+                /*Advance the temp pointers */
+                fptr += coarse_size;
+                rtptr += P0_BASIS;
+                Bweight += P0_BASIS;
+                Nlweight += P0_BASIS;
+    #if FDIFF_BETA
+                rtptr_x += pct.idxptrlen[ion];
+                rtptr_y += pct.idxptrlen[ion];
+                rtptr_z += pct.idxptrlen[ion];
+    #endif
+
+            }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
+
+
+            fftw_destroy_plan (p2);
+            fftw_free(out);
+            fftw_free(in);
+
+
+
+        }                           /* end for */
+
+    } // end for(kpt)
 
 #if FDIFF_BETA
     my_free (r1);

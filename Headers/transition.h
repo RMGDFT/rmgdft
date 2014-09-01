@@ -97,8 +97,9 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr);
-template <typename KpointType>
-void AssignWeight (Kpoint<KpointType> **Kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, double *Bweight);
+void AssignWeight (Kpoint<double> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, double *Bweight, double *Nlweight);
+void AssignWeight (Kpoint<std::complex<double> > *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, std::complex<double> *Bweight, std::complex<double> *Nlweight);
+
 
 
 
