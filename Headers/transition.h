@@ -52,8 +52,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr);
-//void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI);
-//void AppNls(Kpoint<std::complex<double> > *kpoint, double *sintR, double *sintI);
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI);
 
 
@@ -98,8 +96,8 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr);
-void AssignWeight (Kpoint<double> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, double *Bweight, double *Nlweight);
-void AssignWeight (Kpoint<std::complex<double> > *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, std::complex<double> *Bweight, std::complex<double> *Nlweight);
+template <typename KpointType>
+void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight);
 
 
 
