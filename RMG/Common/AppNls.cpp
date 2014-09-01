@@ -13,14 +13,18 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
+#include "RmgGemm.h"
 #include "../Headers/prototypes.h"
 
 #include "GlobalSums.h"
 #include "blas.h"
 
+template void AppNls<double>(Kpoint<double> *, double *, double *);
+template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, double *, double *);
+
 void app_nls_single (Kpoint<std::complex<double>> *kptr, double * psiR, double * psiI, double * workR, double * workI, double *work2R, double *work2I, double *sintR, double *sintI, int state);
 
-
+#if 0
 void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
 {
 
@@ -37,7 +41,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     ION *iptr;
     SPECIES *sp;
     double rzero = 0.0, rone=1.0;
-    double *sintR_compack;
+    double *sint_compack;
     int istate, proj_index;
 
     double *psiR = kpoint->orbital_storage;
@@ -59,11 +63,11 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     }
 
     alloc = pct.num_tot_proj * num_states;
-    sintR_compack = new double[alloc];
+    sint_compack = new double[alloc];
     nwork = new double[alloc];
 
     for(int i = 0; i < num_states * pct.num_tot_proj; i++)
-            sintR_compack[i] = 0.0;
+            sint_compack[i] = 0.0;
 
 
     for(istate = 0; istate < num_states; istate++)
@@ -81,7 +85,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
             nh = sp->nh;
             for (int i = 0; i < nh; i++)
             {
-                sintR_compack[istate * pct.num_tot_proj + proj_index + i] =
+                sint_compack[istate * pct.num_tot_proj + proj_index + i] =
                     psintR[i]; 
             }
         }
@@ -126,7 +130,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
 
 
     dgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
-            &rone, (double *)pct.M_dnm,  &pct.num_tot_proj, (double *)sintR_compack, &pct.num_tot_proj,
+            &rone, (double *)pct.M_dnm,  &pct.num_tot_proj, (double *)sint_compack, &pct.num_tot_proj,
             &rzero,  (double *)nwork, &pct.num_tot_proj);
 
 
@@ -140,7 +144,7 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
 
     if(!ct.norm_conserving_pp) {
         dgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
-                &rone, (double *)pct.M_qqq,  &pct.num_tot_proj, (double *)sintR_compack, &pct.num_tot_proj,
+                &rone, (double *)pct.M_qqq,  &pct.num_tot_proj, (double *)sint_compack, &pct.num_tot_proj,
                 &rzero,  (double *)nwork, &pct.num_tot_proj);
 
         dgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
@@ -153,10 +157,10 @@ void AppNls(Kpoint<double> *kpoint, double *sintR, double *sintI)
     }
 
     delete [] nwork;
-    delete [] sintR_compack;
+    delete [] sint_compack;
 
 }
-
+#endif
 
 
 
@@ -185,24 +189,25 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
 }
 #endif
 
-
-void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
+template <typename KpointType>
+void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI)
 {
 
     int num_states = kpoint->get_nstates();
     int P0_BASIS = kpoint->pbasis;
-    std::complex<double> ZERO_t(0.0);
-    std::complex<double> ONE_t(1.0);
+    KpointType ZERO_t(0.0);
+    KpointType ONE_t(1.0);
+    KpointType *NULLptr = NULL;
 
-    const char *transa = "n";
+    char *transa = "n";
 
     double *dnmI;
     double *psintR, *psintI, *qqq;
 
-    std::complex<double> *psi = kpoint->orbital_storage;
-    std::complex<double> *nv = kpoint->nv;
-    std::complex<double> *ns = kpoint->ns;
-    std::complex<double> *Bns = kpoint->Bns;
+    KpointType *psi = kpoint->orbital_storage;
+    KpointType *nv = kpoint->nv;
+    KpointType *ns = kpoint->ns;
+    KpointType *Bns = kpoint->Bns;
 
     if(pct.num_tot_proj == 0)
     {
@@ -217,12 +222,12 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
         return;
     }
 
-    std::complex<double> *M_dnm = new std::complex<double> [pct.num_tot_proj * pct.num_tot_proj];
-    std::complex<double> *M_qqq = new std::complex<double> [pct.num_tot_proj * pct.num_tot_proj];
+    KpointType *M_dnm = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
+    KpointType *M_qqq = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
 
     int alloc = pct.num_tot_proj * num_states;
-    std::complex<double> *sint_compack = new std::complex<double>[alloc];
-    std::complex<double> *nwork = new std::complex<double>[alloc];
+    KpointType *sint_compack = new KpointType[alloc];
+    KpointType *nwork = new KpointType[alloc];
 
     for(int i = 0; i < num_states * pct.num_tot_proj; i++)
             sint_compack[i] = ZERO_t;
@@ -244,7 +249,15 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
             int nh = sp->nh;
             for (int i = 0; i < nh; i++)
             {
-                sint_compack[istate * pct.num_tot_proj + proj_index + i] = std::complex<double>(psintR[i], psintI[i]);
+                if(ct.is_gamma) {
+                    sint_compack[istate * pct.num_tot_proj + proj_index + i] = (KpointType)psintR[i];
+                }
+                else {
+                    std::complex<double> t1 = std::complex<double>(psintR[i], psintI[i]);
+                    std::complex<double> *t2 = (std::complex<double> *)&sint_compack[istate * pct.num_tot_proj + proj_index + i];
+                    *t2 = t1;
+                    //sint_compack[istate * pct.num_tot_proj + proj_index + i] = (KpointType)t1;
+                }
             }
         }
     }
@@ -253,6 +266,8 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
     {
         M_dnm[i] = ZERO_t;
         M_qqq[i] = ZERO_t;
+        pct.M_dnm[i] = 0.0;
+        pct.M_qqq[i] = 0.0;
     }
 
 
@@ -280,38 +295,41 @@ void AppNls(Kpoint<std::complex<double>> *kpoint, double *sintR, double *sintI)
             {
 
                 int idx = (proj_index + i) * pct.num_tot_proj + proj_index + j;
-                M_dnm[idx] = std::complex<double>(dnmI[inh+j], 0.0);
-                M_qqq[idx] = std::complex<double>(qqq[inh+j], 0.0);
+                M_dnm[idx] = (KpointType)dnmI[inh+j];
+                M_qqq[idx] = (KpointType)qqq[inh+j];
+                pct.M_dnm[idx] = std::real(dnmI[inh+j]);
+                pct.M_qqq[idx] = std::real(qqq[inh+j]);
+
             }
         }
     }
 
 
-    zgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
-            (double *)&ONE_t, (double *)M_dnm,  &pct.num_tot_proj, (double *)sint_compack, &pct.num_tot_proj,
-            (double *)&ZERO_t,  (double *)nwork, &pct.num_tot_proj);
+    RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
+            ONE_t, M_dnm,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
+            ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
 
-    zgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
-            (double *)&ONE_t, (double *)kpoint->nl_Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-            (double *)&ZERO_t,  (double *)nv, &P0_BASIS);
+    RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
+            ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
+            ZERO_t,  nv, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
 
     for(int idx = 0;idx < num_states * P0_BASIS;idx++)
         ns[idx] = psi[idx];
 
     if(!ct.norm_conserving_pp) {
-        zgemm (transa, transa, &pct.num_tot_proj, &num_states, &pct.num_tot_proj, 
-                (double *)&ONE_t, (double *)M_qqq,  &pct.num_tot_proj, (double *)sint_compack, &pct.num_tot_proj,
-                (double *)&ZERO_t,  (double *)nwork, &pct.num_tot_proj);
+        RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
+                ONE_t, M_qqq,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
+                ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
-        zgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
-                (double *)&ONE_t, (double *)kpoint->nl_weight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-                (double *)&ONE_t,  (double *)ns, &P0_BASIS);
+        RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
+                ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, pct.num_tot_proj,
+                ONE_t,  ns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
-        zgemm (transa, transa, &P0_BASIS, &num_states, &pct.num_tot_proj, 
-                (double *)&ONE_t, (double *)kpoint->nl_Bweight,  &P0_BASIS, (double *)nwork, &pct.num_tot_proj,
-                (double *)&ZERO_t,  (double *)Bns, &P0_BASIS);
+        RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
+                ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
+                ZERO_t,  Bns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
     }
 
     delete [] nwork;

@@ -119,7 +119,7 @@ void AssignWeight (Kpoint<std::complex<double>> *kptr, SPECIES * sp, int ion, ff
                     int idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
                     rtptr[pidx[docount]] = std::real(nbeptr[idx1]);
                     Nlweight[pidx[docount]] = std::complex<double>(std::real(nbeptr[idx1]), 0.0);
-                    Bweight[pidx[docount]] = std::complex<double>(Btem_array[idx1]*pR[pidx[docount]], Btem_array[idx1]*pI[pidx[docount]]);
+                    Bweight[pidx[docount]] = std::complex<double>(Btem_array[idx1]*pR[pidx[docount]], -Btem_array[idx1]*pI[pidx[docount]]);
 //Bweight[pidx[docount]] = std::complex<double>(Btem_array[idx1], 0.0);
                     docount++;
                 }

@@ -24,15 +24,25 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     // k-point storage for the weights here.
     for(int kpt=0;kpt < ct.num_kpts;kpt++) {
 
-        // Release old memory storage for weights
-        if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
-        if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
+        if(ct.is_gamma) {
 
-        // Allocate new storage
-        Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis];
-        Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis];
-        for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_weight[idx] = ZERO_t;    
-        for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_Bweight[idx] = ZERO_t;    
+            // Identical for gamma point
+            Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
+            Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
+
+        }
+        else {
+
+            // Release old memory storage for weights
+            if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
+            if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
+
+            // Allocate new storage
+            Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis];
+            Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis];
+            for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_weight[idx] = ZERO_t;    
+            for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_Bweight[idx] = ZERO_t;    
+        }
 
     }
 
