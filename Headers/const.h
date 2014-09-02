@@ -387,4 +387,9 @@
 #define SUBDIAG_LAPACKFS 4
 #define SUBDIAG_ELPA 5
 
+// Run type flags
+#define RANDOM_START 0
+#define RESTART 1
+#define LCAO_START 2
+
 #endif /* CONST_H_INCLUDED */
