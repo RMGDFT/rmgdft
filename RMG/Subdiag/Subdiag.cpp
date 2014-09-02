@@ -53,9 +53,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     BaseThread *T = BaseThread::getBaseThread(0);
 
-    KpointType *tmp_arrayT = NULL;
-    KpointType *tmp_array2T = NULL;
-    KpointType *global_matrix;
+    static KpointType *tmp_arrayT = NULL;
+    static KpointType *tmp_array2T = NULL;
+    static KpointType *global_matrix = NULL;
     KpointType *Agpu = NULL;
     KpointType *gpu_eigvectors = NULL;
     KpointType *NULLptr = NULL;
