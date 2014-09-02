@@ -254,6 +254,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 #endif
 
     // free memory
+    delete [] eigs;
     delete [] Sij;
     delete [] Bij;
     delete [] Aij;
