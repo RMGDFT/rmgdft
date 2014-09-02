@@ -143,7 +143,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
                     hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
                     ct.poi_parm.gl_pst, ct.poi_parm.mucycles, ct.rms/ct.hartree_rms_ratio,
                     ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
-        std::cout << "Hartree residual = " << residual << std::endl;
+        rmg_printf("Hartree residual = %14.6e\n", residual);
  
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */

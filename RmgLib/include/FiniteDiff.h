@@ -43,7 +43,7 @@ void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, i
 template <typename RmgType>
 double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
-void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 
 
 
@@ -87,8 +87,13 @@ public:
     void app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
-    void app_gradient (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+    void app_gradient_fourth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    void app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                                   double gridhx, double gridhy, double gridhz);
+
 
 
 

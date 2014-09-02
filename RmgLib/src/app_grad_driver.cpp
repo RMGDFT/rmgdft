@@ -34,25 +34,46 @@
 #include "RmgTimer.h"
 #include <complex>
 
-template void CPP_app_grad_driver<float>(Lattice *, TradeImages *, float *, float *, float *, float *, int, int, int, double, double, double);
-template void CPP_app_grad_driver<double>(Lattice *, TradeImages *, double *, double *, double *, double *, int, int, int, double, double, double);
-template void CPP_app_grad_driver<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
-template void CPP_app_grad_driver<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
+template void CPP_app_grad_driver<float>(Lattice *, TradeImages *, float *, float *, float *, float *, int, int, int, double, double, double, int);
+template void CPP_app_grad_driver<double>(Lattice *, TradeImages *, double *, double *, double *, double *, int, int, int, double, double, double, int);
+template void CPP_app_grad_driver<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int);
+template void CPP_app_grad_driver<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int);
 
 template <typename RmgType>
-void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
+void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
 
     RmgTimer RT("App_gradient");
     int sbasis;
     FiniteDiff FD(L);
-    sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+    sbasis = (dimx + 6) * (dimy + 6) * (dimz + 6);
     RmgType *rptr = new RmgType[sbasis + 64];
 
-    RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
-    T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
-    delete(RT1);
-    FD.app_gradient (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    if(order == APP_CI_FOURTH) {
+
+        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
+        delete(RT1);
+        RT1 = new RmgTimer("App_gradient: computation");
+        FD.app_gradient_fourth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        delete(RT1);
+
+    }
+    else if(order == APP_CI_SIXTH) {
+
+        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 3, FULL_TRADE);
+        delete(RT1);
+        RT1 = new RmgTimer("App_gradient: computation");
+        FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        delete(RT1);
+
+    }
+    else {
+        rmg_error_handler (__FILE__, __LINE__, "Finite difference order not programmed yet in app_gradient_driver.\n");
+    }
+
+
 
     delete [] rptr;
 

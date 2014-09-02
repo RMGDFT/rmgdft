@@ -62,11 +62,15 @@ template double FiniteDiff::app_del2c<double>(double *, double *, int, int, int,
 template double FiniteDiff::app_del2c<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app_del2c<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
-template void FiniteDiff::app_gradient<float> (float *, float *, float *, float *, int, int, int, double, double, double);
-template void FiniteDiff::app_gradient<double> (double *, double *, double *, double *, int, int, int, double, double, double);
-template void FiniteDiff::app_gradient<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
-template void FiniteDiff::app_gradient<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
+template void FiniteDiff::app_gradient_fourth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
+template void FiniteDiff::app_gradient_fourth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
+template void FiniteDiff::app_gradient_fourth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
+template void FiniteDiff::app_gradient_fourth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
 
+template void FiniteDiff::app_gradient_sixth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
+template void FiniteDiff::app_gradient_sixth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
+template void FiniteDiff::app_gradient_sixth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
+template void FiniteDiff::app_gradient_sixth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
 
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
@@ -1524,7 +1528,7 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 
 
 template <typename RmgType>
-void FiniteDiff::app_gradient (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+void FiniteDiff::app_gradient_fourth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                double gridhx, double gridhy, double gridhz)
 {
 
@@ -1644,3 +1648,78 @@ void FiniteDiff::app_gradient (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgT
 
 }
 
+
+template <typename RmgType>
+void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                               double gridhx, double gridhy, double gridhz)
+{
+
+    int ixs = (dimy + 6) * (dimz + 6);
+    int iys = (dimz + 6);
+    int ix1 = dimy * dimz;
+    int iy1 = dimz;
+
+    int ibrav = L->get_ibrav_type();
+
+    RmgType t1x (3.0 / ( 4.0 * gridhx * L->get_xside()));
+    RmgType t2x (-3.0 / (20.0 * gridhx * L->get_xside()));
+    RmgType t3x (1.0 / (60.0 * gridhx * L->get_xside()));
+
+    RmgType t1y (3.0 / ( 4.0 * gridhy * L->get_yside()));
+    RmgType t2y (-3.0 / (20.0 * gridhy * L->get_yside()));
+    RmgType t3y (1.0 / (60.0 * gridhy * L->get_yside()));
+
+    RmgType t1z (3.0 / ( 4.0 * gridhz * L->get_zside()));
+    RmgType t2z (-3.0 / (20.0 * gridhz * L->get_zside()));
+    RmgType t3z (1.0 / (60.0 * gridhz * L->get_zside()));
+
+    switch (ibrav)
+    {
+
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
+
+            for (int ix = 3; ix < dimx + 3; ix++)
+            {
+
+                for (int iy = 3; iy < dimy + 3; iy++)
+                {
+
+                    for (int iz = 3; iz < dimz + 3; iz++)
+                    {
+
+                        wxr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
+                            -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
+                            -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
+                            -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
+                             t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
+                             t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
+                             t3x * rptr[(ix + 3) * ixs + iy * iys + iz];
+
+                        wyr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
+                            -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
+                            -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
+                            -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
+                             t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
+                             t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
+                             t3y * rptr[ix * ixs + (iy + 3) * iys + iz];
+
+                        wzr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
+                            -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
+                            -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
+                            -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
+                             t1z * rptr[ix * ixs + iy * iys + iz + 1] +
+                             t2z * rptr[ix * ixs + iy * iys + iz + 2] +
+                             t3z * rptr[ix * ixs + iy * iys + iz + 3];
+
+                    }               /* end for */
+                }                   /* end for */
+            }                       /* end for */
+
+            break;
+
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+
+    }                           /* end switch */
+}
