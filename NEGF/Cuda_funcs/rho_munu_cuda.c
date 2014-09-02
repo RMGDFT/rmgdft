@@ -93,10 +93,11 @@ void rho_munu_cuda (complex double * rho_mn, complex double * green_C_row,
     cublasZgemm(ct.cublas_handle, transN, transC, n1, n1, nL, &cuone, ct.gpu_temp, n1,
             &ct.gpu_Grow[n_green], n1, &cuzero, &ct.gpu_Gtri[pmo.diag_begin[N-1]], n1);
 
+
     if(!ct.is_gamma)
     {
 
-
+        n_green = 0;
         for (i = 0; i < N - 1; i++)
         {
             n1 = ni[i];
@@ -109,7 +110,7 @@ void rho_munu_cuda (complex double * rho_mn, complex double * green_C_row,
             /* rho_mn (i,i) = temp * G_i0^, the block (i,i) */
 
             cublasZgemm(ct.cublas_handle, transN, transN, n1, n1, nL, &cuhalf, ct.gpu_temp, n1,
-                    &ct.gpu_Grow[n_green], nL, &cuhalf, &ct.gpu_Gtri[pmo.diag_begin[i]], n1);
+                    &ct.gpu_Gcol[n_green], nL, &cuhalf, &ct.gpu_Gtri[pmo.diag_begin[i]], n1);
 
             /* rho_mn (i,i+1) = temp * G_i+10^, the block (i,i) */
             n_green += pmo.mxllda_cond[i] * maxcol;
@@ -127,7 +128,7 @@ void rho_munu_cuda (complex double * rho_mn, complex double * green_C_row,
         cublasZgemm(ct.cublas_handle, transC, transN, n1, nL, nL, &cuone, &ct.gpu_Gcol[n_green], nL,
                 ct.gpu_Gii, nL, &cuzero, ct.gpu_temp, n1);
         cublasZgemm(ct.cublas_handle, transN, transN, n1, n1, nL, &cuhalf, ct.gpu_temp, n1,
-                &ct.gpu_Grow[n_green], nL, &cuhalf, &ct.gpu_Gtri[pmo.diag_begin[N-1]], n1);
+                &ct.gpu_Gcol[n_green], nL, &cuhalf, &ct.gpu_Gtri[pmo.diag_begin[N-1]], n1);
 
 
 

@@ -82,8 +82,6 @@ void matrix_kpoint_lead (complex double *S00, complex double *H00,
         H01[i] = 0.0;
         S00[i] = 0.0;
         H00[i] = 0.0;
-        SCL[i] = 0.0;
-        HCL[i] = 0.0;
     }
 
     for(li = 0; li < llda; li++)
@@ -131,6 +129,12 @@ void matrix_kpoint_lead (complex double *S00, complex double *H00,
     llda  = pmo.mxllda_cond[i];
     locc  = pmo.mxlocc_lead[iprobe-1];
     ntot  = llda * locc;
+
+    for(i = 0; i < ntot; i++) 
+    {
+        SCL[i] = 0.0;
+        HCL[i] = 0.0;
+    }
 
     nstart_block = 0;
     for (j =0; j < cei.probe_in_block[iprobe-1]; j++)

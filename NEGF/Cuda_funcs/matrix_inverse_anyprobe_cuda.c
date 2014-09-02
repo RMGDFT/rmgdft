@@ -347,7 +347,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
         magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
 
         /* gnu_Hii = Hm+1,m * Gmm * (... )^(-1)   eq.25 */
-        cublasZgemm (ct.cublas_handle, transN, transN, n2, n2, n1, &cuone, ct.gpu_temp, n2,
+        cublasZgemm (ct.cublas_handle, transN, transN, n2, n1, n1, &cuone, ct.gpu_temp, n2,
                 ct.gpu_Gii, n1, &cuzero, ct.gpu_Hii, n2);
 
         /* eq. 25, first part for j <= m */
@@ -442,26 +442,6 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
     cublasGetVector(n4, sizeof( complex double ), ct.gpu_Grow, ione, Green_C_row, ione );
     n4 = tot_row * maxrow;
     cublasGetVector(n4, sizeof( complex double ), ct.gpu_Gcol, ione, Green_C_col, ione );
-    for(j = 0; j < N; j++)
-    {
-        printf("\n aaa %d", j);
-        for(i = 0; i < 10; i++)
-        {
-            printf("\n");
-           for(n1 = 0; n1 < 10; n1++)
-           printf(" %f ", cimag(Green_C_row[n_begin1[j] + i * ni[j] + n1]));
-    }
-}
-    for(j = 0; j < N; j++)
-    {
-        printf("\n bbb %d", j);
-        for(i = 0; i < 10; i++)
-        {
-            printf("\n");
-           for(n1 = 0; n1 < 10; n1++)
-           printf(" %f ", cimag(Green_C_col[n_begin1[j] + i * ni[m] + n1]));
-    }
-}
 
 
 

@@ -245,7 +245,7 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                         idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
                         for (i = 0; i < idx; i++)
                         {
-                            ch01[i] = ene * lcr[jprobe].SCL[i] - Ha_eV * lcr[jprobe].HCL[i];
+                            ch01[i] = ene * SCL[i] - Ha_eV * HCL[i];
                         }
                         desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
                         descb = &pmo.desc_lead_cond[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];

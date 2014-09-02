@@ -222,7 +222,7 @@ void charge_density_matrix_p (complex double * sigma_all)
                         {
 
                             lcr[iprobe].lcr_ne[j].density_matrix_ne_tri[st1] +=
-                                creal(weight *rho_mn[st1]);   /* check -ve sign ??? */
+                                creal(weight) * creal(rho_mn[st1]);   /* check -ve sign ??? */
 
                         }
 
