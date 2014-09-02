@@ -280,7 +280,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("If not an initial run read data from files");
-    if (ct.runflag == 1)
+    if (ct.runflag == RESTART)
     {
         read_data (ct.infile, vh, rho, vxc, Kptr[0]->kstates);
     
@@ -300,7 +300,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /* Set initial states to random start */
     
-	if (ct.runflag == 2)
+	if (ct.runflag == LCAO_START)
 	{
 	    lcao_init ();
 	    lcao_get_psi(Kptr[0]->kstates);
@@ -388,7 +388,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     // Normalize orbitals if not an initial run
-    if (ct.runflag != 1) /* Initial run */
+    if (ct.runflag != RESTART) /* Initial run */
     {
         for (kpt = 0; kpt < ct.num_kpts; kpt++)
         {
@@ -404,7 +404,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("Set the initial density to be equal to the compensating charges");
 	
     /*For random start, use charge density equal to compensating charge */
-    if (ct.runflag == 0)
+    if (ct.runflag == RANDOM_START)
     {
 	if (ct.spin_flag)
         {   
@@ -433,7 +433,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	}
     }
     
-    if (ct.runflag == 2)
+    if (ct.runflag == LCAO_START)
 	lcao_get_rho(rho);
 
 
@@ -446,7 +446,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
-    if (ct.runflag != 1)
+    if (ct.runflag != RESTART)
     {
        	get_vxc (rho, rho_oppo, rhocore, vxc);
        	//Dprintf ("get vxc completed");
