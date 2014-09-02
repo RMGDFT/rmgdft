@@ -81,6 +81,10 @@ void write_restart (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_doubl
 	printf ("write_data: Restart file %s opened...\n", name);
 
 
+        // Absolute coordinates in bohr
+        fprintf(fhandle, "atomic_coordinate_type = \"Absolute\"\n");
+        fprintf(fhandle, "crds_units = \"Bohr\"\n");
+
 	/* write current ionic cartesian positions */
 	fprintf(fhandle,"atoms = \"");
 
