@@ -90,6 +90,10 @@ public:
     // Legacy structure will be removed later
     STATE *kstates;
 
+    // Pointer to sint arrays (Betaxpsi)
+    KpointType *newsint_local;
+    KpointType *oldsint_local;
+
     // Pointers to nv, ns, and Bns
     KpointType *nv;
     KpointType *ns;
