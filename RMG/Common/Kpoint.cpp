@@ -250,7 +250,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     /* Initialize the random number generator */
     rand0 (&idum);
 
-    for (int state = 1; state < this->nstates; state++)
+    for (int state = 0; state < this->nstates; state++)
     {
 
 
@@ -311,6 +311,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
             for(idx = 0;idx < pbasis;idx++) {
                 double *a = (double *)&this->Kstates[state].psi[idx];
                 a[1] = tmp_psiI[idx];
+                //a[1] = 0.0;
 
             }
 
