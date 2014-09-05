@@ -416,30 +416,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
         delete [] global_matrix;
         delete [] tarr;
 
-#if 0
-        // RRRRR Check orthogonalization
-        double *varr = new double[this->nstates*this->nstates];
-        for(int idx=0;idx<this->nstates*this->nstates;idx++) varr[idx] = 0.0;
-        for(int st = 0;st < this->nstates;st++) {
-            for(int st1 = 0;st1 < this->nstates;st1++) {
-                for(int idx = 0;idx < this->pbasis;idx++) {
-                    varr[st*this->nstates + st1] = varr[st*this->nstates + st1] + vel*this->orbital_storage[st*this->pbasis + idx] * this->orbital_storage[st1*this->pbasis + idx];
-                }
-
-            }
-
-        }
-
-        int ll = this->nstates*this->nstates;
-        global_sums (varr, &ll, pct.grid_comm);
-
-        for(int st = 0;st < this->nstates;st++) {
-            for(int st1 = 0;st1 < this->nstates;st1++) {
-                rmg_printf("\nOOOOOOO  %d  %d  (%14.6f)\n", st, st1, varr[st*this->nstates + st1]);
-            }
-        }
-#endif
-
     }
     else {
 
@@ -592,30 +568,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
        delete [] dr;
 
-#if 0
-       // RRRRR Check orthogonalization
-       std::complex<double> *tarr = new std::complex<double>[this->nstates*this->nstates];
-       for(int idx=0;idx<this->nstates*this->nstates;idx++) tarr[idx] = std::complex<double>(0.0,0.0);
-       for(int st = 0;st < this->nstates;st++) {
-           for(int st1 = 0;st1 < this->nstates;st1++) {
-               for(int idx = 0;idx < this->pbasis;idx++) {
-                   tarr[st*this->nstates + st1] = tarr[st*this->nstates + st1] + vel*std::conj(this->orbital_storage[st*this->pbasis + idx]) * this->orbital_storage[st1*this->pbasis + idx];
-               }
-
-           }
-
-       }
-
-       int ll = 2*this->nstates*this->nstates;
-       global_sums ((double *)tarr, &ll, pct.grid_comm);
-
-       for(int st = 0;st < this->nstates;st++) {
-           for(int st1 = 0;st1 < this->nstates;st1++) {
-               rmg_printf("\nOOOOOOO  %d  %d  (%14.6f,%14.6f)\n", st, st1, std::real(tarr[st*this->nstates + st1]), std::imag(tarr[st*this->nstates + st1]));
-           }
-       }
-       delete [] tarr;
-#endif
    }
    else {
 
@@ -665,9 +617,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
                   /* get<beta|psi1> and <beta|psi2> */
                   KpointType *sint1 = &this->newsint_local[sidx1 + nidx * this->nstates * ct.max_nl];
-                  //double *sint1I = &pct.newsintI_local[sidx1 + nidx * this->nstates * ct.max_nl];
                   KpointType *sint2 = &this->newsint_local[sidx2 + nidx * this->nstates * ct.max_nl];
-                  //double *sint2I = &pct.newsintI_local[sidx2 + nidx * this->nstates * ct.max_nl];
 
 
                   for (int i = 0; i < nh; i++)
@@ -726,16 +676,10 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
                   //double *ptr1I = &pct.newsintI_local[lsidx1 + ion * this->nstates * ct.max_nl];
                   double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
                   //double *ptr2I = &pct.newsintI_local[lsidx2 + ion * this->nstates * ct.max_nl];
-#if 0
+
                   for(int inh=0;inh < ct.max_nl;inh++) {
-                      ptr2[inh] = ptr2[inh] + 
+                      ptr2[inh] = ptr2[inh] - cA * ptr1[inh];
                   }
-                  QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
-                  QMD_daxpy (ct.max_nl, cI[ist2], ptr1I, incx, ptr2R, incx);
-  
-                  QMD_daxpy (ct.max_nl, -cR[ist2], ptr1I, incx, ptr2I, incx);
-                  QMD_daxpy (ct.max_nl, -cI[ist2], ptr1R, incx, ptr2I, incx);
-#endif
 
               }
 
