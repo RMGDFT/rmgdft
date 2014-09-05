@@ -165,11 +165,11 @@ extern STATE *states;
 
 static std::mutex vtot_sync_mutex;
 
-template void MgEigState<double,float>(Kpoint<double> *, STATE *, int , double *);
-template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, STATE *, int , double *);
+template void MgEigState<double,float>(Kpoint<double> *, STATE *, double *);
+template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, STATE *, double *);
 
 template <typename OrbitalType, typename CalcType>
-void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, int tid, double * vtot_psi)
+void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
 {
 
     RmgTimer RT("Mg_eig");

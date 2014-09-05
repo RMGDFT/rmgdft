@@ -36,6 +36,7 @@
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
+#include "FiniteDiff.h"
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
@@ -222,6 +223,9 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     double *yrand = new double[2 * Rmg_G->get_NY_GRID(1)];
     double *zrand = new double[2 * Rmg_G->get_NZ_GRID(1)];
 
+    int factor = 2;
+    if(ct.is_gamma) factor = 1;
+
     // Set state 0 to a constant 
     for(int idx = 0;idx < pbasis;idx++) {
 
@@ -254,16 +258,16 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     /* Initialize the random number generator */
     rand0 (&idum);
 
-    for (int state = 0; state < this->nstates; state++)
+    for (int state = 1; state < this->nstates; state++)
     {
 
 
         /* Generate x, y, z random number sequences */
-        for (int idx = 0; idx < 2*Rmg_G->get_NX_GRID(1); idx++)
+        for (int idx = 0; idx < factor*Rmg_G->get_NX_GRID(1); idx++)
             xrand[idx] = rand0 (&idum) - 0.5;
-        for (int idx = 0; idx < 2*Rmg_G->get_NY_GRID(1); idx++)
+        for (int idx = 0; idx < factor*Rmg_G->get_NY_GRID(1); idx++)
             yrand[idx] = rand0 (&idum) - 0.5;
-        for (int idx = 0; idx < 2*Rmg_G->get_NZ_GRID(1); idx++)
+        for (int idx = 0; idx < factor*Rmg_G->get_NZ_GRID(1); idx++)
             zrand[idx] = rand0 (&idum) - 0.5;
 
 
@@ -294,12 +298,17 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
                     tmp_psiR[idx] = xrand[xoff + ix] * 
                                     yrand[yoff + iy] * 
                                     zrand[zoff + iz];
-                    //tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
+                    tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
 
-                    tmp_psiI[idx] = xrand[Rmg_G->get_NX_GRID(1) + xoff + ix] * 
-                                    yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
-                                    zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
-                    //tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
+
+                    if(!ct.is_gamma) {
+
+                        tmp_psiI[idx] = xrand[Rmg_G->get_NX_GRID(1) + xoff + ix] * 
+                                        yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
+                                        zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
+                        tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
+
+                    }
 
                     idx++;
 
@@ -314,12 +323,16 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
         if(typeid(KpointType) == typeid(std::complex<double>)) {
             for(idx = 0;idx < pbasis;idx++) {
                 double *a = (double *)&this->Kstates[state].psi[idx];
-                a[1] = tmp_psiI[idx];
+                if(!ct.is_gamma)
+                    a[1] = tmp_psiI[idx];
                 //a[1] = 0.0;
 
             }
 
         }
+
+        // Hit the orbital with the right hand mehrstellen operator which should smooth it a bit
+        CPP_app_cir_driver (this->L, this->T, this->Kstates[state].psi, this->Kstates[state].psi, PX0_GRID, PY0_GRID, PZ0_GRID, APP_CI_FOURTH);
 
     }                           /* end for */
 

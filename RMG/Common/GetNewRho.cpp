@@ -60,8 +60,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     double *work = new double[pbasis];
     double *product = new double[max_product];
-    double *sintR = new double[2 * ct.max_nl];
-    double *sintI = new double[2 * ct.max_nl];
     OrbitalType *sint = new OrbitalType[2 * ct.max_nl];
 
 
@@ -111,105 +109,94 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
 
 
-    for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
-    {
-        int gion = pct.nonloc_ions_list[ion];
-        
-        if (pct.Qidxptrlen[gion])
+    if(!ct.norm_conserving_pp) {
+
+        for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
+            int gion = pct.nonloc_ions_list[ion];
             
-            ION *iptr = &ct.ions[gion];
-       
-            int nh = ct.sp[iptr->species].nh;
-            
-            int *ivec = pct.Qindex[gion];
-            int ncount = pct.Qidxptrlen[gion];
-            double *qnmI = pct.augfunc[gion];
-
-            for (int i=0; i < max_product; i++)
-                product[i] = 0.0;
-
-            for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+            if (pct.Qidxptrlen[gion])
             {
+                
+                ION *iptr = &ct.ions[gion];
+           
+                int nh = ct.sp[iptr->species].nh;
+                
+                int *ivec = pct.Qindex[gion];
+                int ncount = pct.Qidxptrlen[gion];
+                double *qnmI = pct.augfunc[gion];
 
-                STATE *sp = ct.kp[kpt].kstate;
-                /* Loop over states and accumulate charge */
-                for (int istate = 0; istate < ct.num_states; istate++)
+                for (int i=0; i < max_product; i++)
+                    product[i] = 0.0;
+
+                for (int kpt = 0; kpt < ct.num_kpts; kpt++)
                 {
-                    double t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-                    for (int i = 0; i < ct.max_nl; i++)
+                    STATE *sp = ct.kp[kpt].kstate;
+                    /* Loop over states and accumulate charge */
+                    for (int istate = 0; istate < ct.num_states; istate++)
                     {
-                        sint[i] = Kpts[kpt]->newsint_local[ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-//                        sintR[i] =
-//                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
-//                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+                        double t1 = sp->occupation[0] * ct.kp[kpt].kweight;
 
-//                        if(!ct.is_gamma) {
-//                            sintI[i] =
-//                                pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
-//                                + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-//                        }
-
-                    }               /*end for i */
-
-                    int idx = 0;
-                    for (int i = 0; i < nh; i++)
-                    {
-                        for (int j = i; j < nh; j++)
+                        for (int i = 0; i < ct.max_nl; i++)
                         {
+                            sint[i] = Kpts[kpt]->newsint_local[ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+    //                        sintR[i] =
+    //                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
+    //                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
 
-                            if(i == j) {
+    //                        if(!ct.is_gamma) {
+    //                            sintI[i] =
+    //                                pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
+    //                                + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+    //                        }
 
-                                    product[idx] += t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+                        }               /*end for i */
 
-                            }
-                            else {
+                        int idx = 0;
+                        for (int i = 0; i < nh; i++)
+                        {
+                            for (int j = i; j < nh; j++)
+                            {
 
-                                    product[idx] += 2.0 * t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+                                if(i == j) {
 
-                            }
-#if 0
-                            if(ct.is_gamma) {
-                                if (i == j)
-                                    product[idx] += t1 * sintR[i] * sintR[j];
-                                else
-                                    product[idx] += 2 * t1 * sintR[i] * sintR[j];
-                            }
-                            else {
+                                        product[idx] += t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
 
-                                if (i == j)
-                                    product[idx] += t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
-                                else
-                                    product[idx] += 2 * t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
-                            }
-#endif
-                            idx++;
-                        }           /*end for j */
-                    }               /*end for i */
-                    sp++;
-                }                   /*end for istate */
-            }                       /*end for kpt */
+                                }
+                                else {
+
+                                        product[idx] += 2.0 * t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+
+                                }
+                                idx++;
+                            }           /*end for j */
+                        }               /*end for i */
+                        sp++;
+                    }                   /*end for istate */
+                }                       /*end for kpt */
 
 
-            int idx = 0;
-            for (int i = 0; i < nh; i++)
-            {
-                for (int j = i; j < nh; j++)
+                int idx = 0;
+                for (int i = 0; i < nh; i++)
                 {
-                    qtpr = qnmI + idx * ncount;
-                    for (int icount = 0; icount < ncount; icount++)
+                    for (int j = i; j < nh; j++)
                     {
-                        rho[ivec[icount]] += qtpr[icount] * product[idx];
-                    }           /*end for icount */
-                    idx++;
-                }               /*end for j */
-            }                   /*end for i */
+                        qtpr = qnmI + idx * ncount;
+                        for (int icount = 0; icount < ncount; icount++)
+                        {
+                            rho[ivec[icount]] += qtpr[icount] * product[idx];
+                        }           /*end for icount */
+                        idx++;
+                    }               /*end for j */
+                }                   /*end for i */
 
 
-        }                       /*end if */
+            }                       /*end if */
 
-    }                           /*end for ion */
+        }                           /*end for ion */
+
+    }
 
     if(!ct.is_gamma) {
         //symmetrize_rho (rho);
@@ -239,8 +226,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
 
     delete [] sint;
-    delete [] sintI;
-    delete [] sintR;
     delete [] product;
     delete [] work;
 }

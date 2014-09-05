@@ -481,6 +481,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /*Now we cam do subspace diagonalization */
         for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+            Betaxpsi (Kptr[kpt]);
             Subdiag (Kptr[0], vh, vnuc, vxc, ct.subdiag_driver);
         }
 

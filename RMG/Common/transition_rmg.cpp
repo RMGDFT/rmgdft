@@ -68,7 +68,7 @@ extern "C" void get_new_rho (STATE * states, rmg_double_t * rho)
 extern "C" void mg_eig_state(STATE *sp, int tid, double *vtot_psi)
 {
     Kpoint<double> *kptr = (Kpoint<double> *)Kptr[0];
-    MgEigState<double,float> (kptr, sp, tid, vtot_psi);
+    MgEigState<double,float> (kptr, sp, vtot_psi);
 }
 
 extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
@@ -76,11 +76,11 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
 
         if(ct.is_gamma) {
             Kpoint<double> *kptr = (Kpoint<double> *)Kptr[0];
-            MgEigState<double,float> (kptr, sp, tid, vtot_psi);
+            MgEigState<double,float> (kptr, sp, vtot_psi);
         }
         else {
             Kpoint<std::complex<double>> *kptr = (Kpoint<std::complex<double>> *)Kptr[0];
-            MgEigState<std::complex<double>,std::complex<float> > (kptr, sp, tid, vtot_psi);
+            MgEigState<std::complex<double>,std::complex<float> > (kptr, sp, vtot_psi);
         }
 
 

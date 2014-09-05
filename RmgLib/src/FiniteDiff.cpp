@@ -95,20 +95,18 @@ double FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy,
     RmgTimer RT("App_cil: computation");
     int iz, ix, iy, incx, incy, incxr, incyr, ibrav;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    RmgType ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    RmgType fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    RmgType ihx, ihy, ihz;
+    double ihx, ihy, ihz;
     RmgType rz, rzms, rzps, rzpps;
     RmgType rfc1, rbc1, rbc2, rd1, rd2, rd3, rd4;
     RmgType td1, td2, td3, td4, td5, td6, td7, td8, tdx;
-    RmgType c0 = -116.0 / 90.0;
-    RmgType c1 = 31.0 / 232.0;
-    RmgType c2 = 49.0 / 60.0;
-    RmgType c3 = -31.0 / 464.0;
-    RmgType c4 = 1.0 / 10.0;
-    RmgType c5 = 1.0 / 120.0;
-    RmgType c6 = -1.0 / 240.0;
-    RmgType c7 = 1.0 / 144.0;
+    double c0 = -116.0 / 90.0;
+    double c1 = 31.0 / 232.0;
+    double c2 = 49.0 / 60.0;
+    double c3 = -31.0 / 464.0;
+    double c4 = 1.0 / 10.0;
+    double c5 = 1.0 / 120.0;
+    double c6 = -1.0 / 240.0;
+    double c7 = 1.0 / 144.0;
 
     ibrav = L->get_ibrav_type();
 
@@ -121,24 +119,25 @@ double FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy,
     ihy = 1.0 / (gridhy * gridhy * L->get_yside() * L->get_yside());
     ihz = 1.0 / (gridhz * gridhz * L->get_zside() * L->get_zside());
 
-    cc = c0 * (ihx + ihy + ihz);
-    fcx = c1 * cc + c2 * ihx;
-    fcy = c1 * cc + c2 * ihy;
-    fcz = c1 * cc + c2 * ihz;
+    double ccd (c0 * (ihx + ihy + ihz));
+    RmgType cc (std::real(c0 * (ihx + ihy + ihz)));
+    RmgType fcx ( std::real(c1 * ccd + c2 * ihx));
+    RmgType fcy ( std::real(c1 * ccd + c2 * ihy));
+    RmgType fcz ( std::real(c1 * ccd + c2 * ihz));
 
-    ecxy = c3 * cc - c4 * ihz;
-    ecxz = c3 * cc - c4 * ihy;
-    ecyz = c3 * cc - c4 * ihx;
+    RmgType ecxy ( std::real(c3 * ccd - c4 * ihz));
+    RmgType ecxz ( std::real(c3 * ccd - c4 * ihy));
+    RmgType ecyz ( std::real(c3 * ccd - c4 * ihx));
 
-    cor = c7 * (ihx + ihy + ihz);
+    RmgType cor ( std::real(c7 * (ihx + ihy + ihz)));
 
-    fc2x = c5 * (ihy + ihz);
-    fc2y = c5 * (ihx + ihz);
-    fc2z = c5 * (ihx + ihy);
+    RmgType fc2x ( std::real(c5 * (ihy + ihz)));
+    RmgType fc2y ( std::real(c5 * (ihx + ihz)));
+    RmgType fc2z ( std::real(c5 * (ihx + ihy)));
 
-    tcx = c6 * ihx;
-    tcy = c6 * ihy;
-    tcz = c6 * ihz;
+    RmgType tcx ( std::real(c6 * ihx));
+    RmgType tcy ( std::real(c6 * ihy));
+    RmgType tcz ( std::real(c6 * ihz));
 
     // Handle the general case first
     if((dimz % 4) || (ibrav != CUBIC_PRIMITIVE)) {
