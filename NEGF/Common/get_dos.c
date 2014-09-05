@@ -149,7 +149,7 @@ void get_dos (STATE * states)
     my_malloc_init( S10,  idx,  double );
 
 
-    my_malloc_init( green_C, ntot, complex double );
+    my_malloc_init( green_C, pmo.ntot_low, complex double );
     /*st1 = (E_POINTS + NPES - 1) / NPES;*/
     st1 = (E_POINTS + pmo.npe_energy - 1) / pmo.npe_energy;
    
@@ -157,12 +157,12 @@ void get_dos (STATE * states)
 
 /*===================================================================*/
 
-    nx1 = cei.dos_window_start[0] * get_FG_NX();
-    nx2 = cei.dos_window_end[0] * get_FG_NX();
-    ny1 = cei.dos_window_start[1] * get_FG_NY();
-    ny2 = cei.dos_window_end[1] * get_FG_NY();
-    nz1 = cei.dos_window_start[2] * get_FG_NZ();
-    nz2 = cei.dos_window_end[2] * get_FG_NZ();
+    nx1 = cei.dos_window_start[0] * get_FG_RATIO();
+    nx2 = cei.dos_window_end[0] * get_FG_RATIO();
+    ny1 = cei.dos_window_start[1] * get_FG_RATIO();
+    ny2 = cei.dos_window_end[1] * get_FG_RATIO();
+    nz1 = cei.dos_window_start[2] * get_FG_RATIO();
+    nz2 = cei.dos_window_end[2] * get_FG_RATIO();
                                                                                               
                                                                                               
                                                                                               
@@ -305,7 +305,8 @@ void get_dos (STATE * states)
         MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe,
                 COMM_EN1);
 
-        get_new_rho_soft (states, rho);
+        get_new_rho_local (states_distribute, rho);
+        //get_new_rho_soft (states, rho);
 
 
         for (ix = 0; ix < get_FPX0_GRID(); ix++)
@@ -369,7 +370,7 @@ void get_dos (STATE * states)
             {
 
                 fprintf (file, " %10.6f %10.6f %12.6e\n",
-                        ix * dx - x0, emin+iene*de, rho_energy[iene * get_FNX_GRID() + ix * get_FG_NX()]);
+                        ix * dx - x0, emin+iene*de, rho_energy[iene * get_FNX_GRID() + ix * get_FG_RATIO()]);
             }
             fprintf (file, "\n");
         }
@@ -397,7 +398,7 @@ void get_dos (STATE * states)
                 {
 
                     fprintf (file, " %10.6f %10.6f %12.6e\n",
-                            iy * dy - y0, emin+iene*de, rho_energy2[iene * get_FNY_GRID() + iy * get_FG_NY()]);
+                            iy * dy - y0, emin+iene*de, rho_energy2[iene * get_FNY_GRID() + iy * get_FG_RATIO()]);
                 }
                 fprintf (file, "\n");
             }

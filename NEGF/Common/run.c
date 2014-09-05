@@ -116,6 +116,11 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 		if (ct.runflag == 200)
 		{
+            get_dos(states);
+        }
+        else
+		if (ct.runflag == 300)
+		{
 			get_cond_frommatrix ();
 			get_cond_frommatrix_kyz ();
 
@@ -204,6 +209,7 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 
 				case MD_QUENCH:            /* Quench the electrons */
 					quench (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, vbias);
+        
 					break;
 
 				default:

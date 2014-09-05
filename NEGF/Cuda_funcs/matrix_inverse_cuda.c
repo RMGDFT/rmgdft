@@ -37,7 +37,7 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
 #if GPU_ENABLED
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
     int *ipiv;
-    complex double *Hii, *Gii, *G_tem, *temp, *Imatrix;
+    complex double *Gii, *Imatrix;
     complex double mone, one, zero;
     int ione = 1, *ntem_begin;
     int idx;
@@ -84,12 +84,8 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
     size = maxrow + pmo.mblock;
     my_malloc_init( ipiv, size, int );
     size = maxrow * maxcol;
-    my_malloc_init( Hii, size, complex double );
     my_malloc_init( Gii, size, complex double );
-    my_malloc_init( temp, size, complex double );
     my_malloc_init( Imatrix, size, complex double );
-    size = ntot_row * maxcol;
-    my_malloc_init( G_tem, size, complex double );	
 
 
     /*
@@ -293,18 +289,17 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
         pmo_unitary_matrix(Gii, descb);
 
 
-        PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc,
-                Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
+       PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc,
+              Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
 
     }
 
 
     my_free( ntem_begin );
     my_free( ipiv );
-    my_free( Hii );
+    my_free( Imatrix );
+
     my_free( Gii );
-    my_free( temp );
-    my_free( G_tem );
     /*
        acc_free( ipiv );
        acc_free( Hii );
