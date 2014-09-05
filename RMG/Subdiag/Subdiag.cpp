@@ -125,7 +125,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
 
     // Apply Nls
-    AppNls(kptr, pct.newsintR_local, pct.newsintI_local);
+    AppNls(kptr, kptr->newsint_local);
 
 
     // Each thread applies the operator to one wavefunction

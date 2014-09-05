@@ -128,8 +128,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
     pct.oldsintR_local = NULL;
-    pct.newsintI_local = NULL;
-    pct.oldsintI_local = NULL;
+    //pct.newsintI_local = NULL;
+    //pct.oldsintI_local = NULL;
 
 
     /* Set hartree boundary condition stuff */
@@ -499,8 +499,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //betaxpsi (Kptr[0]->kstates);
     for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-        Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr[kpt]);
-        mix_betaxpsi(0);
+        Betaxpsi (Kptr[kpt]);
+        Kptr[kpt]->mix_betaxpsi(0);
     }
 
 #if 0

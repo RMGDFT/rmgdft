@@ -96,10 +96,11 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
         int ion, nh, i, j, inh, sidx_local, nidx, oion;
         double sumbeta, sumpsi, sum, t1;
-        double *qqq, *sintR, *sintI, *ptr;
+        double *qqq;
+        StateType *sint;
         ION *iptr;
 
-        sidx_local = this->Kptr->kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + istate * ct.max_nl;
+        sidx_local = istate * ct.max_nl;
 
         sumpsi = 0.0;
         sumbeta = 0.0;
@@ -128,9 +129,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
 
             /*nidx adds offset due to current ion*/
-            sintR = &pct.newsintR_local[sidx_local + nidx * ct.num_states * ct.max_nl];
-            sintI = &pct.newsintI_local[sidx_local + nidx * ct.num_states * ct.max_nl];
-
+            sint = &this->Kptr->newsint_local[sidx_local + nidx * ct.num_states * ct.max_nl];
 
             for (i = 0; i < nh; i++)
             {
@@ -139,13 +138,10 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
                 {
                     if (qqq[inh + j] != 0.0)
                     {
-                        if(ct.is_gamma) {
-                            sumbeta += qqq[inh + j] * sintR[i] * sintR[j];
-                        }
-                        else {
-                            sumbeta += qqq[inh + j] * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
-                            sumbeta += qqq[inh + j] * (sintR[i] * sintI[j] - sintI[i] * sintR[j]);
-                        }
+
+                        sumbeta += qqq[inh + j] * std::real((std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j])));
+                        sumbeta += qqq[inh + j] * std::real((std::real(sint[i]) * std::imag(sint[j]) - std::imag(sint[i]) * std::real(sint[j])));
+
                     }
                 }
             }
@@ -167,7 +163,6 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         }
 
         t1 = sqrt (sum);
-//rmg_printf("\nSSSSSS %d  %14.6f\n",istate,t1);
         for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
             tpsi[idx] = tpsi[idx] * t1;
         }
@@ -177,18 +172,9 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         for (ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
 
-            ptr = &pct.newsintR_local[ion * ct.num_states * ct.max_nl];
-            ptr += sidx_local;
+            StateType *tsint_ptr = &this->Kptr->newsint_local[sidx_local + ion * ct.num_states * ct.max_nl];
             for(int jdx = 0;jdx < ct.max_nl;jdx++) {
-                ptr[jdx] = ptr[jdx] * t1;
-            }
-
-            if(!ct.is_gamma) {
-                ptr = &pct.newsintI_local[ion * ct.num_states * ct.max_nl];
-                ptr += sidx_local;
-                for(int jdx = 0;jdx < ct.max_nl;jdx++) {
-                    ptr[jdx] = ptr[jdx] * t1;
-                }
+                tsint_ptr[jdx] = tsint_ptr[jdx] * t1;
             }
 
         }

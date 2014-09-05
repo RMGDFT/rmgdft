@@ -7,6 +7,7 @@ transition_rmg.cpp
 PotentialAcceleration.cpp
 GetNewRho.cpp
 Betaxpsi.cpp
+#Betaxpsi1.cpp
 Init.cpp
 Main.cpp
 AppNls.cpp
@@ -20,12 +21,11 @@ genvpsi.cpp
 MgEigState.cpp
 write_occ.c
 betaxpsi.c
-mix_betaxpsi1.c
 get_gamma.c
 get_nlop.c
 app_nls.c
 fastrelax.c
-MixBetaxpsi.cpp
+#MixBetaxpsi.cpp
 mix_betaxpsi.c
 open_restart_file.c
 scalapack_tools.c

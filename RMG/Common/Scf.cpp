@@ -212,11 +212,11 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
         
             RT1 = new RmgTimer("Scf steps: Beta x psi");
-            Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr[kpt]);
+            Betaxpsi (Kptr[kpt]);
 
             delete(RT1);
 
-            AppNls(Kptr[kpt], pct.oldsintR_local, pct.oldsintI_local);
+            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
 
             /* Update the wavefunctions */
             RT1 = new RmgTimer("Scf steps: Mg_eig");
@@ -253,7 +253,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
         /*wavefunctions have changed, projectors have to be recalculated */
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr[kpt]);
+        Betaxpsi (Kptr[kpt]);
         delete(RT1);
 
 
@@ -276,14 +276,14 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         
         /*wavefunctions have changed, projectors have to be recalculated */
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (Rmg_G, Rmg_T, &Rmg_L, Kptr[kpt]);
+        Betaxpsi (Kptr[kpt]);
         delete(RT1);
         
         /*Get oldsintR*/
         if (diag_this_step)
-            MixBetaxpsi(0, kpt);
+            Kptr[kpt]->mix_betaxpsi(0);
         else 
-            MixBetaxpsi(1, kpt);
+            Kptr[kpt]->mix_betaxpsi(1);
         
 
         if (spin_flag)

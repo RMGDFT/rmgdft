@@ -471,7 +471,6 @@ void init_efield (rmg_double_t * vnuc);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, rmg_double_t ***hist, rmg_double_t ***rhist, int special_metric, rmg_double_t weight);
 void mg_restrict_4th (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz);
 void mix_betaxpsi (int mix);
-void mix_betaxpsi1 (STATE *sp);
 int claim_ion (rmg_double_t *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
 int find_grid_1d_owner(int igrid, int tgrid, int pgrid);
 void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid, int nzgrid, int *xnode, int *ynode, int *znode);

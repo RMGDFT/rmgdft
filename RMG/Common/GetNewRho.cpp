@@ -62,6 +62,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     double *product = new double[max_product];
     double *sintR = new double[2 * ct.max_nl];
     double *sintI = new double[2 * ct.max_nl];
+    OrbitalType *sint = new OrbitalType[2 * ct.max_nl];
+
 
     for(int idx = 0;idx < pbasis;idx++)
         work[idx] = 0.0;
@@ -138,15 +140,16 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
                     for (int i = 0; i < ct.max_nl; i++)
                     {
-                        sintR[i] =
-                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
-                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+                        sint[i] = Kpts[kpt]->newsint_local[ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+//                        sintR[i] =
+//                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
+//                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
 
-                        if(!ct.is_gamma) {
-                            sintI[i] =
-                                pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
-                                + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-                        }
+//                        if(!ct.is_gamma) {
+//                            sintI[i] =
+//                                pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
+//                                + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+//                        }
 
                     }               /*end for i */
 
@@ -156,6 +159,17 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
                         for (int j = i; j < nh; j++)
                         {
 
+                            if(i == j) {
+
+                                    product[idx] += t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+
+                            }
+                            else {
+
+                                    product[idx] += 2.0 * t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+
+                            }
+#if 0
                             if(ct.is_gamma) {
                                 if (i == j)
                                     product[idx] += t1 * sintR[i] * sintR[j];
@@ -169,6 +183,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
                                 else
                                     product[idx] += 2 * t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
                             }
+#endif
                             idx++;
                         }           /*end for j */
                     }               /*end for i */
@@ -197,7 +212,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }                           /*end for ion */
 
     if(!ct.is_gamma) {
-        symmetrize_rho (rho);
+        //symmetrize_rho (rho);
     }
 
 
@@ -223,6 +238,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
 
 
+    delete [] sint;
     delete [] sintI;
     delete [] sintR;
     delete [] product;

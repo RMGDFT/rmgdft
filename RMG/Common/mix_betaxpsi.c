@@ -35,15 +35,14 @@ void mix_betaxpsi (int mix)
 {
 
     int size;
-    double *newsintR, *oldsintR, *newsintI, *oldsintI;
+    double *newsintR, *oldsintR;
 
     /*Local version*/
     newsintR = pct.newsintR_local;
     oldsintR = pct.oldsintR_local;
-    newsintI = pct.newsintI_local;
-    oldsintI = pct.oldsintI_local;
     
     size = ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+    if(!ct.is_gamma) size *=2;
     
       
     if (mix)
@@ -51,19 +50,10 @@ void mix_betaxpsi (int mix)
         my_scal( 1.0 - ct.prjmix, oldsintR, size);
         my_axpy(ct.prjmix, newsintR, oldsintR, size); 
 
-        if(!ct.is_gamma) {
-            my_scal( 1.0 - ct.prjmix, oldsintI, size);
-            my_axpy(ct.prjmix, newsintI, oldsintI, size); 
-        }
     }
-
-
     else
     {
         my_copy (newsintR, oldsintR, size);
-        if(!ct.is_gamma) {
-            my_copy (newsintI, oldsintI, size);
-        }
     }
 
 }

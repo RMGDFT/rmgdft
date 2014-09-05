@@ -19,12 +19,12 @@
 #include "GlobalSums.h"
 #include "blas.h"
 
-template void AppNls<double>(Kpoint<double> *, double *, double *);
-template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, double *, double *);
+template void AppNls<double>(Kpoint<double> *, double *);
+template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *);
 
 
 template <typename KpointType>
-void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI)
+void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
 {
 
     int num_states = kpoint->get_nstates();
@@ -36,7 +36,8 @@ void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI)
     char *transa = "n";
 
     double *dnmI;
-    double *psintR, *psintI, *qqq;
+    double *qqq;
+    KpointType *psintR;
 
     KpointType *psi = kpoint->orbital_storage;
     KpointType *nv = kpoint->nv;
@@ -69,12 +70,12 @@ void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI)
 
     for(int istate = 0; istate < num_states; istate++)
     {
-        int sindex = kpoint->kidx * pct.num_nonloc_ions * num_states * ct.max_nl + istate * ct.max_nl;
+        int sindex = istate * ct.max_nl;
         for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
             int proj_index = ion * ct.max_nl;
             psintR = &sintR[ion * num_states * ct.max_nl + sindex];
-            psintI = &sintI[ion * num_states * ct.max_nl + sindex];
+            //psintI = &sintI[ion * num_states * ct.max_nl + sindex];
             /*Actual index of the ion under consideration*/
             int gion = pct.nonloc_ions_list[ion];
             ION *iptr = &ct.ions[gion];
@@ -83,15 +84,7 @@ void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI)
             int nh = sp->nh;
             for (int i = 0; i < nh; i++)
             {
-                if(ct.is_gamma) {
-                    sint_compack[istate * pct.num_tot_proj + proj_index + i] = (KpointType)psintR[i];
-                }
-                else {
-                    std::complex<double> t1 = std::complex<double>(psintR[i], psintI[i]);
-                    std::complex<double> *t2 = (std::complex<double> *)&sint_compack[istate * pct.num_tot_proj + proj_index + i];
-                    *t2 = t1;
-                    //sint_compack[istate * pct.num_tot_proj + proj_index + i] = (KpointType)t1;
-                }
+                sint_compack[istate * pct.num_tot_proj + proj_index + i] = psintR[i];
             }
         }
     }
@@ -153,6 +146,7 @@ void AppNls(Kpoint<KpointType> *kpoint, double *sintR, double *sintI)
         ns[idx] = psi[idx];
 
     if(!ct.norm_conserving_pp) {
+
         RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
                 ONE_t, M_qqq,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
                 ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);

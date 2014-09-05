@@ -49,6 +49,8 @@ public:
     int get_index(void);
     void orthogonalize(double *storage);
     void orthogonalize(std::complex<double> *storage);
+    void mix_betaxpsi(int mix);
+    void mix_betaxpsi1(int istate);
 
 
     // BaseGrid class
@@ -93,6 +95,9 @@ public:
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;
     KpointType *oldsint_local;
+
+    // Size of the sint arrays
+    int sint_size;
 
     // Pointers to nv, ns, and Bns
     KpointType *nv;
