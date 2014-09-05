@@ -421,9 +421,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
         int incx=1;
         double *cR = new double[this->nstates];
-        STATE *st;
 
-        st = this->kstates;
         for(int ist1 = 0;ist1 < this->nstates;ist1++) {
 
 
@@ -571,12 +569,9 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
    }
    else {
 
-      int incx=1;
       double *cR = new double[this->nstates];
       double *cI = new double[this->nstates];
-      STATE *st;
 
-      st = this->kstates;
       for(int ist1 = 0;ist1 < this->nstates;ist1++) {
 
 
@@ -671,11 +666,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
                   KpointType *ptr1 = &this->newsint_local[lsidx1 + ion * this->nstates * ct.max_nl];
                   KpointType *ptr2 = &this->newsint_local[lsidx2 + ion * this->nstates * ct.max_nl];
-
-                  double *ptr1R = &pct.newsintR_local[lsidx1 + ion * this->nstates * ct.max_nl];
-                  //double *ptr1I = &pct.newsintI_local[lsidx1 + ion * this->nstates * ct.max_nl];
-                  double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
-                  //double *ptr2I = &pct.newsintI_local[lsidx2 + ion * this->nstates * ct.max_nl];
 
                   for(int inh=0;inh < ct.max_nl;inh++) {
                       ptr2[inh] = ptr2[inh] - cA * ptr1[inh];

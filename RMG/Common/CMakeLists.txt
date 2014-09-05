@@ -1,4 +1,5 @@
 add_library (RMG_Common
+AppCirDriverBeta.cpp
 AssignWeight.cpp
 GetWeight.cpp
 GetNlop.cpp
@@ -7,7 +8,6 @@ transition_rmg.cpp
 PotentialAcceleration.cpp
 GetNewRho.cpp
 Betaxpsi.cpp
-#Betaxpsi1.cpp
 Init.cpp
 Main.cpp
 AppNls.cpp
@@ -25,7 +25,6 @@ get_gamma.c
 get_nlop.c
 app_nls.c
 fastrelax.c
-#MixBetaxpsi.cpp
 mix_betaxpsi.c
 open_restart_file.c
 scalapack_tools.c

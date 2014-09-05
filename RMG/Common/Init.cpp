@@ -128,8 +128,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
     pct.oldsintR_local = NULL;
-    //pct.newsintI_local = NULL;
-    //pct.oldsintI_local = NULL;
 
 
     /* Set hartree boundary condition stuff */
@@ -399,7 +397,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
     }
         
-    mix_betaxpsi(0);
+    //mix_betaxpsi(0);
 
     //Dprintf ("Set the initial density to be equal to the compensating charges");
 	

@@ -97,7 +97,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
 
     // Apply B operator then map weights back
-    CPP_app_cir_driver (L, T, tem_array, Btem_array, nldim, nldim, nldim, ct.kohn_sham_fd_order);
+    AppCirDriverBeta (L, T, tem_array, Btem_array, nldim, nldim, nldim, ct.kohn_sham_fd_order);
 
     idx = 0;
     docount = 0;

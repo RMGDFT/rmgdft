@@ -189,7 +189,8 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
 {
     KpointType rzero(0.0);
     KpointType *NULLptr = NULL;
-    char *transt = "t", *transn = "n", *transc = "c", *transa;
+    char *transt = "t", *transn = "n", *transc = "c";
+    char *transa;
    
     transa = transc;
     if(ct.is_gamma) transa = transt;
