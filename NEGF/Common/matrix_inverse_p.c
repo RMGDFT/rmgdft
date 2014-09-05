@@ -204,8 +204,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
             desch = &pmo.desc_cond[ ( j   +  j    * ct.num_blocks) * DLEN];
             desci = &pmo.desc_cond[ ( i+1 + (j+1) * ct.num_blocks) * DLEN];
             descj = &pmo.desc_cond[ ( j   + (j+1) * ct.num_blocks) * DLEN];
-            desck = &pmo.desc_cond[ ( j+1 + (j+1) * ct.num_blocks) * DLEN];
-            descl = &pmo.desc_cond[ ( j+1 + (j+1) * ct.num_blocks) * DLEN];
+            desck = &pmo.desc_cond[ ( j+1 + (i+1) * ct.num_blocks) * DLEN];
+            descl = &pmo.desc_cond[ ( j+1 +  j    * ct.num_blocks) * DLEN];
 
 
             /* gpu_Gii = -Hi+1,i * G0(i,j)   */
