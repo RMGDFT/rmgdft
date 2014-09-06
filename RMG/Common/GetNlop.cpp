@@ -23,7 +23,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 {
 
     int ion, idx, i, pe, owned, nlion, owner;
-    int ix, iy, iz, ip, prj_per_ion;
+    int ix, iy, iz, prj_per_ion;
     int *pvec, *dvec, *ivec;
     int ilow, jlow, klow, ihi, jhi, khi, map, map2, icount;
     int alloc;

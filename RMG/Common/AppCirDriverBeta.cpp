@@ -44,10 +44,8 @@ void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int
 {
 
     RmgTimer RT("App_cir");
-    RmgType ZERO_t(0.0);
-    int sbasis;
     FiniteDiff FD(L);;
-    sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
     RmgType *rptr = new RmgType[sbasis + 64]();
 
     int incx = dimy * dimz;

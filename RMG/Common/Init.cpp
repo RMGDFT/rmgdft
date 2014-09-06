@@ -84,7 +84,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     OrbitalType *rptr = NULL, *nv, *ns, *Bns;
     double *vtot, *rho_tot, *rptr1=NULL;
     ION *iptr;
-    double time1, time2, fac;
+    double time2, fac;
 
 #if GPU_ENABLED
     init_gpu();
@@ -92,7 +92,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     nv = (OrbitalType *)pct.nv;
 
-    time1 = my_crtc ();
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
@@ -367,7 +366,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /*The same for derivative of beta */
     init_derweight ();
 
-	printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
+    printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
     fflush (NULL);
 
 
@@ -441,7 +440,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag != RESTART)
     {
        	get_vxc (rho, rho_oppo, rhocore, vxc);
-       	//Dprintf ("get vxc completed");
 
 	if (ct.spin_flag)
 	{
