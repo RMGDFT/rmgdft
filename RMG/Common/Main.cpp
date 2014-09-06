@@ -119,7 +119,7 @@ PE_CONTROL pct;
 int main (int argc, char **argv)
 {
 
-    RmgTimer RT("Main");
+    RmgTimer *RT = new RmgTimer("Main");
     char *tptr;
 
 #if GPU_ENABLED
@@ -160,10 +160,11 @@ int main (int argc, char **argv)
     delete(RT2);
 
 
+    delete(RT);   // Destructor has to run before report
     report ();
 
     finish ();
-
+    
     return 0;
 }
 
