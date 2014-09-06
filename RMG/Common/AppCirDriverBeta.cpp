@@ -48,9 +48,7 @@ void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int
     int sbasis;
     FiniteDiff FD(L);;
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-    RmgType *rptr = new RmgType[sbasis + 64];
-
-    for(int idx = 0;idx < sbasis;idx++) rptr[idx] = ZERO_t;
+    RmgType *rptr = new RmgType[sbasis + 64]();
 
     int incx = dimy * dimz;
     int incy = dimz;

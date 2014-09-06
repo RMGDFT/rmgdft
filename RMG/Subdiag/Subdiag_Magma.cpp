@@ -50,7 +50,6 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
 #endif
 
 #if GPU_ENABLED
-    KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
     int num_states = kptr->nstates;
     int ione = 1;
@@ -64,13 +63,9 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
     KpointType *gpuCij = gpu_eigvectors;
     KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-    KpointType *Cij = new KpointType[num_states * num_states];
+    KpointType *Cij = new KpointType[num_states * num_states]();
 
     // Create unitary matrix
-    for (int idx = 0; idx < num_states * num_states; idx++) {
-        Cij[idx] = ZERO_t;
-    }
-
     for (int idx = 0; idx < num_states; idx++) {
         Cij[idx * num_states + idx] = ONE_t;
     }

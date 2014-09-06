@@ -718,9 +718,7 @@ template <class KpointType> void Kpoint<KpointType>::mix_betaxpsi(int mix)
 template <class KpointType> void Kpoint<KpointType>::mix_betaxpsi1(int istate)
 {
 
-    double scale = pow(1.0 - ct.prjmix, (double)istate);
-    if(istate == 0) scale = 1.0 - ct.prjmix;
-
+    double scale = 1.0 - ct.prjmix;
     for (int ion = 0; ion < pct.num_nonloc_ions; ion++) {
 
         /* For localized <beta|psi>, there is offset due to the ion*/

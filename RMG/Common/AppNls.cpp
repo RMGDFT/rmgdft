@@ -61,11 +61,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
     KpointType *M_qqq = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
 
     int alloc = pct.num_tot_proj * num_states;
-    KpointType *sint_compack = new KpointType[alloc];
+    KpointType *sint_compack = new KpointType[alloc]();
     KpointType *nwork = new KpointType[alloc];
-
-    for(int i = 0; i < num_states * pct.num_tot_proj; i++)
-            sint_compack[i] = ZERO_t;
 
 
     for(int istate = 0; istate < num_states; istate++)

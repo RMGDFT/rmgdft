@@ -47,7 +47,7 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     int factor = 1;
     if(!ct.is_gamma) factor=2;
 
-    KpointType *Cij = new KpointType[num_states * num_states];
+    KpointType *Cij = new KpointType[num_states * num_states]();
 
     if (pct.scalapack_pe)
     {
@@ -64,27 +64,12 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     }
 
     // Allocate and clear distributed matrices */
-    KpointType *distAij = new KpointType[dist_length];
-    KpointType *distBij = new KpointType[dist_length];
-    KpointType *distSij = new KpointType[dist_length];
-    KpointType *distCij = new KpointType[dist_length];
-    KpointType *distIij = new KpointType[dist_length];
+    KpointType *distAij = new KpointType[dist_length]();
+    KpointType *distBij = new KpointType[dist_length]();
+    KpointType *distSij = new KpointType[dist_length]();
+    KpointType *distCij = new KpointType[dist_length]();
+    KpointType *distIij = new KpointType[dist_length]();
 
-    for(int idx = 0;idx < dist_length;idx++) {
-        distAij[idx] = ZERO_t;
-    }
-    for(int idx = 0;idx < dist_length;idx++) {
-        distBij[idx] = ZERO_t;
-    }
-    for(int idx = 0;idx < dist_length;idx++) {
-        distSij[idx] = ZERO_t;
-    }
-    for(int idx = 0;idx < dist_length;idx++) {
-        distCij[idx] = ZERO_t;
-    }
-    for(int idx = 0;idx < dist_length;idx++) {
-        distIij[idx] = ZERO_t;
-    }
 
 
     // Reduce and distribute matrices
@@ -95,11 +80,6 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     delete(RT1);
 
     // Create and distribute unitary matrix
-    for (int idx = 0; idx < num_states * num_states; idx++) {
-        Cij[idx] = ZERO_t;
-    }
-
-
     for (int idx = 0; idx < num_states; idx++) {
         Cij[idx * num_states + idx] = ONE_t;
     }

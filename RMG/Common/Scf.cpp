@@ -210,13 +210,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
         for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
-        
+            // Update betaxpsi        
             RT1 = new RmgTimer("Scf steps: Beta x psi");
             Betaxpsi (Kptr[kpt]);
-
             delete(RT1);
 
             AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
+            Kptr[kpt]->mix_betaxpsi(0);
 
             /* Update the wavefunctions */
             RT1 = new RmgTimer("Scf steps: Mg_eig");
@@ -249,6 +249,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             }
             delete(RT1);
 
+
         }
 
         /*wavefunctions have changed, projectors have to be recalculated */
@@ -266,18 +267,21 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         /* do diagonalizations if requested, if not orthogonalize */
         if (diag_this_step) {
             Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
+            // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
+            // after diagonalizing.
         }
         else {
             RT1 = new RmgTimer("Scf steps: Orthogonalization");
             Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
             delete(RT1);
+
+            // wavefunctions have changed, projectors have to be recalculated */
+            RT1 = new RmgTimer("Scf steps: Beta x psi");
+            Betaxpsi (Kptr[kpt]);
+            delete(RT1);
         }
             
         
-        /*wavefunctions have changed, projectors have to be recalculated */
-        RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (Kptr[kpt]);
-        delete(RT1);
         
         /*Get oldsintR*/
         if (diag_this_step)

@@ -82,12 +82,10 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
 
 
     if (size_own) {
-        own_buff = new KpointType[size_own];
-        for(int idx = 0;idx < size_own;idx++) own_buff[idx] = ZERO_t;
+        own_buff = new KpointType[size_own]();
     }
     if (size_nown) {
-        nown_buff = new KpointType[size_nown];
-        for(int idx = 0;idx < size_nown;idx++) nown_buff[idx] = ZERO_t;
+        nown_buff = new KpointType[size_nown]();
     }
 
     if (pct.num_owned_pe) {

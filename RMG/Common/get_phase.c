@@ -40,7 +40,7 @@
 #include "main.h"
 #include "common_prototypes.h"
 
-void get_phase (ION * iptr, double * rtptr, int ip, int icount, int *dvec)
+void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
 {
 
     int kpt, idx, ix, iy, iz, docount;

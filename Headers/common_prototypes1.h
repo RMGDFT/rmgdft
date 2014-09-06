@@ -93,7 +93,7 @@ void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, rmg_double_t * vtot
               rmg_double_t kmag, int dimx, int dimy, int dimz);
 void get_nlop (void);
 void get_weight (void);
-void get_phase (ION *iptr, rmg_double_t *rtptr, int ip, int icount, int *dvec);
+void get_phase (ION *iptr, rmg_double_t *rtptr, int icount, int *dvec);
 void get_nlop_smp (int tid);
 char *get_num (char *str);
 

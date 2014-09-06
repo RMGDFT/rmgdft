@@ -12,7 +12,6 @@ template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * rhocore, double * rhoc)
 {
 
-    KpointType ZERO_t(0.0);
     int pbasis = Kptr[0]->pbasis;
 
     /* Update items that change when the ionic coordinates change */
@@ -38,10 +37,9 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
 
             // Allocate new storage
-            Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis];
-            Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis];
-            for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_weight[idx] = ZERO_t;    
-            for(int idx = 0;idx < pct.num_tot_proj * pbasis;idx++) Kptr[kpt]->nl_Bweight[idx] = ZERO_t;    
+            Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
+            Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
+
         }
 
     }

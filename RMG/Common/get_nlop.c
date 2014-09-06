@@ -203,7 +203,7 @@ void get_nlop (void)
                 my_calloc (pct.phaseptr[ion], 2 * get_P0_BASIS() * ct.num_kpts + 128, double);
             else
                 pct.phaseptr[ion] = NULL;
-            get_phase (iptr, pct.phaseptr[ion], ip, get_P0_BASIS(), dvec);
+            get_phase (iptr, pct.phaseptr[ion], get_P0_BASIS(), dvec);
 
         }                       /* end if (map) */
 

@@ -40,16 +40,12 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
 
-    KpointType *tem_array = new KpointType[nldim * nldim * nldim];
-    KpointType *Btem_array = new KpointType[nldim * nldim * nldim];
+    KpointType *tem_array = new KpointType[nldim * nldim * nldim]();
+    KpointType *Btem_array = new KpointType[nldim * nldim * nldim]();
     std::complex<double> *tem_array_C = (std::complex<double> *)tem_array;
     std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
     double *Btem_array_R = (double *)Btem_array;
 
-    for(int ix = 0; ix < nldim * nldim * nldim; ix++) {
-        tem_array[ix] = ZERO_t;
-        Btem_array[ix] = ZERO_t;
-    }
 
     for(int ix = 0; ix < nldim * nldim * nldim; ix++) {
         tem_array[ix] = std::real(nbeptr[ix]);

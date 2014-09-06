@@ -34,17 +34,11 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     int num_states = kptr->nstates;
     int ione = 1;
 
-    KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
     KpointType *NULLptr = NULL;
-    KpointType *Cij = new KpointType[num_states * num_states];
+    KpointType *Cij = new KpointType[num_states * num_states]();
 
     // Create unitary matrix
-    for (int idx = 0; idx < num_states * num_states; idx++) {
-        Cij[idx] = ZERO_t;
-    }
-
-
     for (int idx = 0; idx < num_states; idx++) {
         Cij[idx * num_states + idx] = ONE_t;
     }

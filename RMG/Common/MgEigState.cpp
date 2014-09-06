@@ -160,8 +160,6 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 }
 
 
-extern STATE *states;
-
 
 static std::mutex vtot_sync_mutex;
 
@@ -178,12 +176,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    double eig, diag, t1, t2, t3, t4;
+    double eig, diag, t1, t2, t4;
     double *work1;
     OrbitalType *nv, *ns;
     int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
     int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
-    int ione = 1;
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -220,13 +217,13 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
     CalcType *res_t = new CalcType[2 * sbasis];
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psiR;
-    std::complex<double> *kdr = new std::complex<double>[2*sbasis];
-    for(int idx = 0;idx < pbasis;idx++) kdr[idx] = 0.0;
+    std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
+
+//    if(ct.eig_parm.mucycles > 1) {
+//        kptr->mix_betaxpsi1(sp->istate);
+//    }
 
 
-    if(ct.eig_parm.mucycles > 1) {
-        kptr->mix_betaxpsi1(sp->istate);
-    }
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectfully) */
     if(ct.is_gamma) {
@@ -382,7 +379,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
 
 
             if(potential_acceleration) {
-                t1 = eig - states[0].eig[0];
+                t1 = eig - kptr->kstates[0].eig[0];
                 t1 = -t1*t1 / 10.0;
             }
             else {

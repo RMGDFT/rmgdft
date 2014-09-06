@@ -216,20 +216,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 #else
     // Wavefunctions are actually stored here
     rptr = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS + 1024];
-    nv = new OrbitalType[ct.num_states * P0_BASIS];
-    ns = new OrbitalType[ct.num_states * P0_BASIS];
-    Bns = new OrbitalType[ct.num_states * P0_BASIS];
+    nv = new OrbitalType[ct.num_states * P0_BASIS]();
+    ns = new OrbitalType[ct.num_states * P0_BASIS]();
+    Bns = new OrbitalType[ct.num_states * P0_BASIS]();
 #endif
     pct.nv = (double *)nv;
     pct.ns = (double *)ns;
     pct.Bns = (double *)Bns;
 
-    OrbitalType Zero(0.0);
-    for(int idx = 0;idx < ct.num_states * P0_BASIS;idx++) {
-        nv[idx] = Zero;
-        ns[idx] = Zero;
-        Bns[idx] = Zero;
-    }
 
     if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
         rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
@@ -463,6 +457,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     }
 
+    // Generate initial Betaxpsi
+    for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+        Betaxpsi (Kptr[kpt]);
+        Kptr[kpt]->mix_betaxpsi(0);
+    }
 
     //Dprintf ("If diagonalization is requested do a subspace diagonalization");
     if (ct.initdiag)
@@ -481,7 +480,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /*Now we cam do subspace diagonalization */
         for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-            Betaxpsi (Kptr[kpt]);
             Subdiag (Kptr[0], vh, vnuc, vxc, ct.subdiag_driver);
         }
 
@@ -496,11 +494,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
-    //betaxpsi (Kptr[0]->kstates);
-    for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-        Betaxpsi (Kptr[kpt]);
-        Kptr[kpt]->mix_betaxpsi(0);
-    }
 
 #if 0
     /*Setup things for mulliken population analysis */

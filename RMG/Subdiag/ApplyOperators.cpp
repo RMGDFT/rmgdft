@@ -53,9 +53,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // if complex orbitals apply gradient to orbital and compute dot products
-    std::complex<double> *kdr = new std::complex<double>[pbasis];
-    std::complex<double> ZERO_t(0.0, 0.0);
-    for(int idx = 0;idx < pbasis;idx++) kdr[idx] = ZERO_t;
+    std::complex<double> *kdr = new std::complex<double>[pbasis]();
 
     if(typeid(KpointType) == typeid(std::complex<double>)) {
 

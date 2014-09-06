@@ -22,7 +22,7 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr)
 {
 
-    int ion, ion1, idx, i, pe, owned, nlion, owner;
+    int ion, idx, i, pe, owned, nlion, owner;
     int ix, iy, iz, ip, prj_per_ion;
     int *pvec, *dvec, *ivec;
     int ilow, jlow, klow, ihi, jhi, khi, map, map2, icount;
@@ -172,9 +172,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
             if (icount)
             {
-                pct.nlindex[ion] = new int[icount + 128];
-                int *iptr = pct.nlindex[ion];
-                for(int idj = 0;idj < icount + 128;idj++) iptr[idj] = 0;
+                pct.nlindex[ion] = new int[icount + 128]();
 
                 ivec = pct.nlindex[ion];
                 for (idx = 0; idx < icount; idx++)
@@ -188,17 +186,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             if ((icount * prj_per_ion))
             {
 
-            size_t weight_size = prj_per_ion * get_P0_BASIS() + 128;
 #if FDIFF_BETA
-                pct.weight_derx[ion] = new double[weight_size];
-                pct.weight_dery[ion] = new double[weight_size];
-                pct.weight_derz[ion] = new double[weight_size];
-                double *tptr = pct.weight_derx[ion];
-                for(int idj = 0;idj < weight_size;idj++) tptr[idj] = 0.0;
-                tptr = pct.weight_dery[ion];
-                for(int idj = 0;idj < weight_size;idj++) tptr[idj] = 0.0;
-                tptr = pct.weight_derz[ion];
-                for(int idj = 0;idj < weight_size;idj++) tptr[idj] = 0.0;
+                size_t weight_size = prj_per_ion * get_P0_BASIS() + 128;
+                pct.weight_derx[ion] = new double[weight_size]();
+                pct.weight_dery[ion] = new double[weight_size]();
+                pct.weight_derz[ion] = new double[weight_size]();
 #endif
             }
             else
@@ -213,14 +205,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion)) {
-                pct.phaseptr[ion] = new double[2 * get_P0_BASIS() * ct.num_kpts + 128];
-                double *tptr = pct.phaseptr[ion];
-                for(int idj = 0;idj < 2 * get_P0_BASIS() * ct.num_kpts + 128;idj++) tptr[idj] = 0.0; 
+                pct.phaseptr[ion] = new double[2 * get_P0_BASIS() * ct.num_kpts + 128]();
             }
             else {
                 pct.phaseptr[ion] = NULL;
             }
-            get_phase (iptr, pct.phaseptr[ion], ip, get_P0_BASIS(), dvec);
+            get_phase (iptr, pct.phaseptr[ion], get_P0_BASIS(), dvec);
 
         }                       /* end if (map) */
 
@@ -292,16 +282,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     for(idx = 0;idx < weight_size;idx++) pct.M_dnm[idx] = 0.0;
 
 #else
-    pct.weight = new double[weight_size];
-    pct.Bweight = new double[weight_size];
-    for(int idj=0;idj < weight_size;idj++) pct.weight[idj] = 0.0;
-    for(int idj=0;idj < weight_size;idj++) pct.Bweight[idj] = 0.0;
+    pct.weight = new double[weight_size]();
+    pct.Bweight = new double[weight_size]();
 
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
-    pct.M_dnm = new double[weight_size];
-    pct.M_qqq = new double[weight_size];
-    for(int idj=0;idj < weight_size;idj++) pct.M_dnm[idj] = 0.0;
-    for(int idj=0;idj < weight_size;idj++) pct.M_qqq[idj] = 0.0;
+    pct.M_dnm = new double[weight_size]();
+    pct.M_qqq = new double[weight_size]();
 #endif
 
 
@@ -330,10 +316,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    pct.newsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl];
-    pct.oldsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl];
-    for(int idj = 0;idj < factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;idj++) pct.newsintR_local[idj] = 0.0;
-    for(int idj = 0;idj < factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl;idj++) pct.oldsintR_local[idj] = 0.0;
+    pct.newsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.oldsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
     KpointType *tsintold_ptr = (KpointType *)pct.oldsintR_local;
