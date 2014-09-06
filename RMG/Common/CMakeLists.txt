@@ -1,4 +1,6 @@
 add_library (RMG_Common
+ApplyAOperator.cpp
+ApplyBOperator.cpp
 AppCirDriverBeta.cpp
 AssignWeight.cpp
 GetWeight.cpp

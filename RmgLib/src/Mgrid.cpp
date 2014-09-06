@@ -231,6 +231,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
     int x0, xp, xm, y0, yp, ym, z0, zp, zm;
     double scale;
     RmgType face, corner, edge;
+    RmgType inplane, zaxis, outplane;
 
     ibrav = L->get_ibrav_type();
 
@@ -247,7 +248,6 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
         case CUBIC_PRIMITIVE:
         case CUBIC_FC:
         case ORTHORHOMBIC_PRIMITIVE:
-        case HEXAGONAL:
 
             scale = 1.0 / 64.0;
             for (ix = 1; ix <= dx2; ix++)
@@ -312,6 +312,69 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
             break;
 
+        case HEXAGONAL:
+
+            scale = 1.0 / 32.0;
+
+            for (ix = 1; ix <= dx2; ix++)
+            {
+
+                x0 = 2 * ix - 1 + xoffset;
+                xp = x0 + 1;
+                xm = x0 - 1;
+
+                for (iy = 1; iy <= dy2; iy++)
+                {
+
+                    y0 = 2 * iy - 1 + yoffset;
+                    yp = y0 + 1;
+                    ym = y0 - 1;
+
+                    for (iz = 1; iz <= dz2; iz++)
+                    {
+
+                        z0 = 2 * iz - 1 + zoffset;
+                        zp = z0 + 1;
+                        zm = z0 - 1;
+
+                        inplane =
+                            full[x0 * incx + yp * incy + z0] +
+                            full[x0 * incx + ym * incy + z0] +
+                            full[xm * incx + y0 * incy + z0] +
+                            full[xp * incx + y0 * incy + z0] +
+                            full[xm * incx + yp * incy + z0] +
+                            full[xp * incx + ym * incy + z0];
+
+                        zaxis =
+                            full[x0 * incx + y0 * incy + zp] +
+                            full[x0 * incx + y0 * incy + zm];
+
+                        outplane =
+                            full[x0 * incx + yp * incy + zm] +
+                            full[x0 * incx + ym * incy + zm] +
+                            full[xm * incx + y0 * incy + zm] +
+                            full[xp * incx + y0 * incy + zm] +
+                            full[xm * incx + yp * incy + zm] +
+                            full[xp * incx + ym * incy + zm] +
+
+                            full[x0 * incx + yp * incy + zp] +
+                            full[x0 * incx + ym * incy + zp] +
+                            full[xm * incx + y0 * incy + zp] +
+                            full[xp * incx + y0 * incy + zp] +
+                            full[xm * incx + yp * incy + zp] +
+                            full[xp * incx + ym * incy + zp];
+
+                        half[ix * incx2 + iy * incy2 + iz] =
+                            (RmgType)scale * ((RmgType)4.0 * full[x0 * incx + y0 * incy + z0] + 
+                            (RmgType)2.0 * inplane + (RmgType)2.0 * zaxis + outplane);
+
+                    }               /* end for */
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+            break;
 
         case CUBIC_BC:
 
@@ -431,6 +494,9 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
 }                               /* end mg_restrict */
 
+
+
+
 template <typename RmgType>
 void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
@@ -438,195 +504,394 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
     int ix, iy, iz;
     int incx, incy, incxr, incyr;
 
+    int ibrav = L->get_ibrav_type();
+
     incy = dimz + 2;
     incx = (dimz + 2) * (dimy + 2);
 
     incyr = dz2 + 2;
     incxr = (dz2 + 2) * (dy2 + 2);
 
-
-    /* transfer coarse grid points to fine grid along with the
-     * high side image point
-     */
-
-    for (ix = 1-xoffset; ix <= dimx/2 + 1; ix++)
+    switch (ibrav)
     {
 
-        for (iy = 1-yoffset; iy <= dimy/2 + 1; iy++)
-        {
+        case CUBIC_PRIMITIVE:
+        case CUBIC_FC:
+        case ORTHORHOMBIC_PRIMITIVE:
 
-            for (iz = 1-zoffset; iz <= dimz/2 + 1; iz++)
+            /* transfer coarse grid points to fine grid along with the
+             * high side image point
+             */
+
+            for (ix = 1-xoffset; ix <= dimx/2 + 1; ix++)
             {
 
-                full[(2 * ix - 1+xoffset) * incx + (2 * iy - 1+yoffset) * incy + 2 * iz - 1+zoffset] =
-                    half[ix * incxr + iy * incyr + iz];
+                for (iy = 1-yoffset; iy <= dimy/2 + 1; iy++)
+                {
 
-            }                   /* end for */
+                    for (iz = 1-zoffset; iz <= dimz/2 + 1; iz++)
+                    {
 
-        }                       /* end for */
+                        full[(2 * ix - 1+xoffset) * incx + (2 * iy - 1+yoffset) * incy + 2 * iz - 1+zoffset] =
+                            half[ix * incxr + iy * incyr + iz];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    /* interior center points
-     */
-    for (ix = 2-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 2-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 2-zoffset; iz <= dimz; iz += 2)
+            /* interior center points
+             */
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz - 1] +
-                    (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz + 1] +
-                    (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz - 1] +
-                    (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz + 1] +
-                    (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz - 1] +
-                    (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz + 1] +
-                    (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz - 1] +
-                    (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz + 1];
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz + 1] +
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz + 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz + 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz + 1];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    for (ix = 1-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 1-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 2-zoffset; iz <= dimz; iz += 2)
+            for (ix = 1-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.5 * full[ix * incx + iy * incy + iz - 1] +
-                    (RmgType)0.5 * full[ix * incx + iy * incy + iz + 1];
+                for (iy = 1-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.5 * full[ix * incx + iy * incy + iz - 1] +
+                            (RmgType)0.5 * full[ix * incx + iy * incy + iz + 1];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    for (ix = 1-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 2-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 1-zoffset; iz <= dimz; iz += 2)
+            for (ix = 1-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.5 * full[ix * incx + (iy - 1) * incy + iz] +
-                    (RmgType)0.5 * full[ix * incx + (iy + 1) * incy + iz];
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 1-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.5 * full[ix * incx + (iy - 1) * incy + iz] +
+                            (RmgType)0.5 * full[ix * incx + (iy + 1) * incy + iz];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    for (ix = 2-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 1-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 1-zoffset; iz <= dimz; iz += 2)
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.5 * full[(ix - 1) * incx + iy * incy + iz] +
-                    (RmgType)0.5 * full[(ix + 1) * incx + iy * incy + iz];
+                for (iy = 1-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 1-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.5 * full[(ix - 1) * incx + iy * incy + iz] +
+                            (RmgType)0.5 * full[(ix + 1) * incx + iy * incy + iz];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    for (ix = 1-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 2-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 2-zoffset; iz <= dimz; iz += 2)
+            for (ix = 1-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz - 1] +
-                    (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz + 1] +
-                    (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz - 1] +
-                    (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz + 1];
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz - 1] +
+                            (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz + 1] +
+                            (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz - 1] +
+                            (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz + 1];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    for (ix = 2-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 1-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 2-zoffset; iz <= dimz; iz += 2)
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz - 1] +
-                    (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz + 1] +
-                    (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz - 1] +
-                    (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz + 1];
+                for (iy = 1-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz - 1] +
+                            (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz + 1] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz - 1] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz + 1];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
 
 
 
-    for (ix = 2-xoffset; ix <= dimx; ix += 2)
-    {
-
-        for (iy = 2-yoffset; iy <= dimy; iy += 2)
-        {
-
-            for (iz = 1-zoffset; iz <= dimz; iz += 2)
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
             {
 
-                full[ix * incx + iy * incy + iz] =
-                    (RmgType)0.25 * full[(ix - 1) * incx + (iy - 1) * incy + iz] +
-                    (RmgType)0.25 * full[(ix + 1) * incx + (iy - 1) * incy + iz] +
-                    (RmgType)0.25 * full[(ix - 1) * incx + (iy + 1) * incy + iz] +
-                    (RmgType)0.25 * full[(ix + 1) * incx + (iy + 1) * incy + iz];
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
 
-            }                   /* end for */
+                    for (iz = 1-zoffset; iz <= dimz; iz += 2)
+                    {
 
-        }                       /* end for */
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.25 * full[(ix - 1) * incx + (iy - 1) * incy + iz] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + (iy - 1) * incy + iz] +
+                            (RmgType)0.25 * full[(ix - 1) * incx + (iy + 1) * incy + iz] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + (iy + 1) * incy + iz];
 
-    }                           /* end for */
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+            break;
+
+        case HEXAGONAL:
+
+            /* transfer coarse grid points to fine grid along with the
+             * high side image point
+             */
+
+            for (ix = 1-xoffset; ix <= dimx/2 + 1; ix++)
+            {
+
+                for (iy = 1-yoffset; iy <= dimy/2 + 1; iy++)
+                {
+
+                    for (iz = 1-zoffset; iz <= dimz/2 + 1; iz++)
+                    {
+
+                        full[(2 * ix - 1+xoffset) * incx + (2 * iy - 1+yoffset) * incy + 2 * iz - 1+zoffset] =
+                            half[ix * incxr + iy * incyr + iz];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+
+
+            /* interior center points
+             */
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy - 1) * incy + iz + 1] +
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix - 1) * incx + (iy + 1) * incy + iz + 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy - 1) * incy + iz + 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz - 1] +
+                            (RmgType)0.125 * full[(ix + 1) * incx + (iy + 1) * incy + iz + 1];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+            for (ix = 1-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 1-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.5 * full[ix * incx + iy * incy + iz - 1] +
+                            (RmgType)0.5 * full[ix * incx + iy * incy + iz + 1];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+
+
+            for (ix = 1-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 1-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.5 * full[ix * incx + (iy - 1) * incy + iz] +
+                            (RmgType)0.5 * full[ix * incx + (iy + 1) * incy + iz];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+
+
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 1-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 1-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.5 * full[(ix - 1) * incx + iy * incy + iz] +
+                            (RmgType)0.5 * full[(ix + 1) * incx + iy * incy + iz];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+
+            for (ix = 1-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz - 1] +
+                            (RmgType)0.25 * full[ix * incx + (iy - 1) * incy + iz + 1] +
+                            (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz - 1] +
+                            (RmgType)0.25 * full[ix * incx + (iy + 1) * incy + iz + 1];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+
+
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 1-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 2-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz - 1] +
+                            (RmgType)0.25 * full[(ix - 1) * incx + iy * incy + iz + 1] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz - 1] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + iy * incy + iz + 1];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+
+
+            for (ix = 2-xoffset; ix <= dimx; ix += 2)
+            {
+
+                for (iy = 2-yoffset; iy <= dimy; iy += 2)
+                {
+
+                    for (iz = 1-zoffset; iz <= dimz; iz += 2)
+                    {
+
+                        full[ix * incx + iy * incy + iz] =
+                            (RmgType)0.25 * full[(ix - 1) * incx + (iy - 1) * incy + iz] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + (iy - 1) * incy + iz] +
+                            (RmgType)0.25 * full[(ix - 1) * incx + (iy + 1) * incy + iz] +
+                            (RmgType)0.25 * full[(ix + 1) * incx + (iy + 1) * incy + iz];
+
+                    }                   /* end for */
+
+                }                       /* end for */
+
+            }                           /* end for */
+
+            break;
+        
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not programmed");
+
+    } // end switch
 
 }                               /* end mg_prolong */
 

@@ -31,6 +31,7 @@
 #define RMG_FiniteDiff_H 1
 
 /* Order of finite differencing for driver routines */
+#define APP_CI_SECOND 2
 #define APP_CI_FOURTH 4
 #define APP_CI_SIXTH 6
 
@@ -44,6 +45,8 @@ template <typename RmgType>
 double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
 void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
+template <typename RmgType>
+double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 
 
 

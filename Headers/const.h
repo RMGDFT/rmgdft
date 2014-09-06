@@ -39,6 +39,10 @@
 #define FALSE 0
 #endif
 
+// Discretization types
+#define         MEHRSTELLEN_DISCRETIZATION      0
+#define         CENTRAL_DISCRETIZATION          1
+
 /* Symbolic numeric constants */
 #define		ZERO        0.0
 #define		ONE         1.0

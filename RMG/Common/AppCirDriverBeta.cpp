@@ -61,7 +61,17 @@ void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int
                 }
             }
         }
-        FD.app_cir_fourth (rptr, b, dimx, dimy, dimz);
+
+        if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
+            FD.app_cir_fourth (rptr, b, dimx, dimy, dimz);
+        }
+        else if(ct.discretization == CENTRAL_DISCRETIZATION) {
+            for(int ix=0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
+        }
+        else {
+             rmg_error_handler(__FILE__, __LINE__, "Unknown discretization method.");
+        }
+
     }
     else if(order == APP_CI_SIXTH) {
         int incx1 = (dimy + 4) * (dimz + 4);
@@ -73,7 +83,17 @@ void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int
                 }
             }
         }
-        FD.app_cir_sixth (rptr, b, dimx, dimy, dimz);
+
+        if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
+            FD.app_cir_sixth (rptr, b, dimx, dimy, dimz);
+        }
+        else if(ct.discretization == CENTRAL_DISCRETIZATION) {
+            for(int ix=0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
+        }
+        else {
+             rmg_error_handler(__FILE__, __LINE__, "Unknown discretization method.");
+        }
+
     }
     else {
         rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in AppCirDriverBeta.\n");

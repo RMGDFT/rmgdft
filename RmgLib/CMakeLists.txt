@@ -42,6 +42,7 @@ src/Mgrid.cpp
 src/app_cir_driver.cpp
 src/app_cil_driver.cpp
 src/app_grad_driver.cpp
+src/app_del2_driver.cpp
 src/FiniteDiff.cpp
 src/RmgTimer.cpp
 src/RmgPrintTimings.cpp

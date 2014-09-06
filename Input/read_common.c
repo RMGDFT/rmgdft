@@ -105,6 +105,15 @@ void read_common ()
         strncpy(ct.outfile,  temp, MAX_PATH); 
     }
 
+    /* Set up and validate discretization options */
+    char discretization_type_opts[] = 
+        "Mehrstellen\n"
+        "Central";
+    get_data ("discretization_type", NULL, INIT | OPT, discretization_type_opts);
+
+    /* Read in the discretization type */
+    get_data ("discretization_type", &ct.discretization, OPT, "Mehrstellen");
+
     /* Set up and validate input options */
     char boundary_condition_type_opts[] = "Periodic\n"
         "Cluster\n"

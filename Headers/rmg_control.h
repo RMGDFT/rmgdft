@@ -34,6 +34,9 @@ typedef struct
 typedef struct
 {
 
+    // Discretization type flag
+    int discretization;
+
     // Special variables when running with multiple images per node
     // The number of images stacked on a single node
     int images_per_node;
@@ -51,7 +54,7 @@ typedef struct
     char description[MAX_CHAR];
 
     /* time at which run started */
-    rmg_double_t time0;
+    double time0;
     
     /* determine if this image is processing spin up or spin down. */
     int spin_flag;
@@ -117,10 +120,10 @@ typedef struct
     int md_steps;
 
     /* Emin when get_dos */
-    rmg_double_t Emin;
+    double Emin;
 
     /* Emax when get_dos */
-    rmg_double_t Emax;
+    double Emax;
 
     /* number of energy points when get_dos */
     int E_POINTS;
@@ -136,10 +139,10 @@ typedef struct
 
 
     /* convergence criterion */
-    rmg_double_t thr_rms;
+    double thr_rms;
 
     /* force convergence criterion */
-    rmg_double_t thr_frc;
+    double thr_frc;
 
     /* Number of steps after which to perform checkpointing */
     int checkpoint;
@@ -177,15 +180,15 @@ typedef struct
     int num_species;
 
     /* Cutoff parameter */
-    rmg_double_t cparm;
-    rmg_double_t betacparm;
-    rmg_double_t qcparm;
+    double cparm;
+    double betacparm;
+    double qcparm;
 
     /** Total conpensating charge density */
-    rmg_double_t crho;
+    double crho;
 
     /** Total charge in supercell */
-    rmg_double_t tcharge;
+    double tcharge;
 
     /** Norm conserving pseudo potential flag */
     int norm_conserving_pp;
@@ -209,11 +212,11 @@ typedef struct
     int max_Qpoints;
 
     /** Maximum grid spacing in any coordinate direction */
-    rmg_double_t hmaxgrid;
+    double hmaxgrid;
 
 
     /** Minimum grid spacing in any coordinate direction */
-    rmg_double_t hmingrid;
+    double hmingrid;
 
 
     /** Physical grid basis size */
@@ -224,7 +227,7 @@ typedef struct
     int relax_mass;
 
     /** Density mixing parameter. Typical values range from 0.2 to 0.9, while larger values provide faster convergence as long as they are stable. */
-    rmg_double_t mix;
+    double mix;
 
     /*Order of Pulay mixing for charge density*/
     int charge_pulay_order;
@@ -233,21 +236,21 @@ typedef struct
     int charge_pulay_refresh;
 
     /*Scale parameter for residuals in Pulay mixing*/
-    rmg_double_t charge_pulay_scale;
+    double charge_pulay_scale;
 
     /*Flag to test whether or not the modified metrics should be used in Pulay mixing*/
     int charge_pulay_special_metrics;
 
     /*Weight for Pulay special metrics*/
-    rmg_double_t charge_pulay_special_metrics_weight;
+    double charge_pulay_special_metrics_weight;
 
     /* Projector mixing parameter */
-    rmg_double_t prjmix;
+    double prjmix;
 
     /* Global uniform grid corner */
-    rmg_double_t xcstart;
-    rmg_double_t ycstart;
-    rmg_double_t zcstart;
+    double xcstart;
+    double ycstart;
+    double zcstart;
 
 
     /* Hartree potential grid sizes per domain */
@@ -265,28 +268,28 @@ typedef struct
     int psi_fnbasis;
 
     /* Decoupled hartree potential */
-    rmg_double_t *vh_ext;
+    double *vh_ext;
 
 
     /* Mean min, and max wavefunction residuals for occupied space */
-    rmg_double_t meanres;
-    rmg_double_t minres;
-    rmg_double_t maxres;
+    double meanres;
+    double minres;
+    double maxres;
 
     /* total ionic charge */
-    rmg_double_t ionic_charge;
+    double ionic_charge;
 
     /* Variable occupation stuff */
-    rmg_double_t nel;
+    double nel;
 
     int occ_flag;
 
-    rmg_double_t occ_width;
+    double occ_width;
 
-    rmg_double_t occ_mix;
+    double occ_mix;
 
     /** total background smearing charge -- for charged supercells */
-    rmg_double_t background_charge;
+    double background_charge;
 
 
     /** Multigrid parameters for the eigenvalue solver */
@@ -322,7 +325,7 @@ typedef struct
     int end_diag;
 
     /* Folded spectrum width */
-    rmg_double_t folded_spectrum_width;
+    double folded_spectrum_width;
 
     /* Flag indicating whether to use MPI_Allreduce operations or point to point in subdiag */
     int scalapack_global_sums;
@@ -350,16 +353,16 @@ typedef struct
     int write_memory_report;
 
     /** Ionic motion timestep */
-    rmg_double_t iondt;
+    double iondt;
 
     /*** Maximum ionic motion timestep */
-    rmg_double_t iondt_max;
+    double iondt_max;
 
     /*** Factor by which iondt is increased */
-    rmg_double_t iondt_inc;
+    double iondt_inc;
 
     /*** Factor by which iondt is decreased */
-    rmg_double_t iondt_dec;
+    double iondt_dec;
 
     /*Number of steps after which iondt is increased */
     int relax_steps_delay;
@@ -369,20 +372,20 @@ typedef struct
 
 
     /** Ionic motion energy */
-    rmg_double_t ionke;
+    double ionke;
 
 
     /* Total energies */
-    rmg_double_t ES;
-    rmg_double_t NUC;
-    rmg_double_t KE;
-    rmg_double_t XC;
-    rmg_double_t NL;
-    rmg_double_t II;
-    rmg_double_t TOTAL;
+    double ES;
+    double NUC;
+    double KE;
+    double XC;
+    double NL;
+    double II;
+    double TOTAL;
 
     /* fermi energy */
-    rmg_double_t efermi;
+    double efermi;
 
     /** Total number of k-points being used in the calculation */
     int num_kpts;
@@ -415,18 +418,18 @@ typedef struct
     int interp_trade;
 
     /* the external electric field */
-    rmg_double_t e_field;
+    double e_field;
 
-    rmg_double_t x_field_0;
+    double x_field_0;
 
-    rmg_double_t y_field_0;
+    double y_field_0;
 
-    rmg_double_t z_field_0;
+    double z_field_0;
 
-    rmg_double_t neb_spring_constant;
+    double neb_spring_constant;
 
     /*Current RMS value*/
-    rmg_double_t rms;
+    double rms;
 
     /* Max number of sweeps in get_vh*/
     int hartree_max_sweeps;
@@ -435,16 +438,16 @@ typedef struct
     int hartree_min_sweeps;
 
     /*Ratio between target RMS for get_vh and RMS total potential*/
-    rmg_double_t hartree_rms_ratio;
+    double hartree_rms_ratio;
 
     /*Boolean flag for using mask function filtering*/
     int mask_function;
 
     /* Potential acceleration constant step factor */
-    rmg_double_t potential_acceleration_constant_step;
+    double potential_acceleration_constant_step;
 
     /* Potential acceleration constant step factor */
-    rmg_double_t potential_acceleration_poisson_step;
+    double potential_acceleration_poisson_step;
 
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
@@ -468,39 +471,39 @@ typedef struct
     cudaStream_t cuda_stream;
 
     // GPU storage space for wavefunctions
-    rmg_double_t *gpu_states;
+    double *gpu_states;
 
     // GPU temporary storage space for wavefunctions
-    rmg_double_t *gpu_temp;
+    double *gpu_temp;
 
     // GPU temporary storage space for weights
-//    rmg_double_t *gpu_weight;
-//    rmg_double_t *gpu_Bweight;
+//    double *gpu_weight;
+//    double *gpu_Bweight;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    rmg_double_t *gpu_work1;
+//    double *gpu_work1;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    rmg_double_t *gpu_work2;
+//    double *gpu_work2;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    rmg_double_t *gpu_work3;
+//    double *gpu_work3;
 
     // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    rmg_double_t *gpu_work4;
+//    double *gpu_work4;
 
     // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
-//    rmg_double_t *gpu_global_matrix;
+//    double *gpu_global_matrix;
 
     // Pinned host memory for finite difference routines. Allocation is slow so it
     // needs to be done once at initializatio time for each thread.
-    rmg_double_t *gpu_host_temp1;
-    rmg_double_t *gpu_host_temp2;
-    rmg_double_t *gpu_host_temp3;
-    rmg_double_t *gpu_host_temp4;
-    rmg_double_t *gpu_host_fdbuf1;
-    rmg_double_t *gpu_host_fdbuf2;
-    rmg_double_t *gpu_host_work;
+    double *gpu_host_temp1;
+    double *gpu_host_temp2;
+    double *gpu_host_temp3;
+    double *gpu_host_temp4;
+    double *gpu_host_fdbuf1;
+    double *gpu_host_fdbuf2;
+    double *gpu_host_work;
 
 
     cuDoubleComplex *gpu_Htri, *gpu_Gtri;
@@ -545,13 +548,13 @@ typedef struct
 
  
     /** Global uniform grid spacing in x */
-    //rmg_double_t hxgrid;
+    //double hxgrid;
 
     /** Global uniform grid spacing in y */
-    //rmg_double_t hygrid;
+    //double hygrid;
 
     /** Global uniform grid spacing in z */
-    //rmg_double_t hzgrid;
+    //double hzgrid;
 
  
 
@@ -559,14 +562,14 @@ typedef struct
     //int ibrav;
 
     /* lengths of the sides of the supercell */
-    //rmg_double_t xside;
-    //rmg_double_t yside;
-    //rmg_double_t zside;
+    //double xside;
+    //double yside;
+    //double zside;
 
  
     /** Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. 
       A value larger than 1.05 can lead to convergence problems. */
-    //rmg_double_t anisotropy;
+    //double anisotropy;
 
 
  
@@ -580,14 +583,14 @@ typedef struct
     int vh_nbasis;
 
 
-    rmg_double_t bg_begin;
-    rmg_double_t bg_end;
-    rmg_double_t BT;
+    double bg_begin;
+    double bg_end;
+    double BT;
 
 
    
     /* Total number of electrons */
-    rmg_double_t num_el;
+    double num_el;
 
    
     /* movie flags */
@@ -597,22 +600,22 @@ typedef struct
  
 
     /* Desired vector for constrained dynamics */
-    rmg_double_t cd_vector[3];
+    double cd_vector[3];
 
     /* number of velocity in constrained dynamics */
-    rmg_double_t cd_velocity;
+    double cd_velocity;
 
 
 
-    rmg_double_t Evxcold_rho;
-    rmg_double_t Evhold_rho;
-    rmg_double_t Evh_rho;
-    rmg_double_t Evh_rhoc;
+    double Evxcold_rho;
+    double Evhold_rho;
+    double Evh_rho;
+    double Evh_rhoc;
 
-    rmg_double_t TOTAL_former;
-    rmg_double_t dE;
+    double TOTAL_former;
+    double dE;
 
-    rmg_double_t *energies;
+    double *energies;
 
     int restart_mix;
 
@@ -625,17 +628,17 @@ typedef struct
 
     /* "Center" of global function */
 
-    rmg_double_t Bc;
-    rmg_double_t Bx;
-    rmg_double_t By;
-    rmg_double_t Bz;
-    rmg_double_t Ac;
-    rmg_double_t Ax;
-    rmg_double_t Ay;
-    rmg_double_t Az;
-    rmg_double_t Axy;
-    rmg_double_t Axz;
-    rmg_double_t Ayz;
+    double Bc;
+    double Bx;
+    double By;
+    double Bz;
+    double Ac;
+    double Ax;
+    double Ay;
+    double Az;
+    double Axy;
+    double Axz;
+    double Ayz;
 
     int state_per_proc;
     int state_begin;

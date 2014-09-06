@@ -45,11 +45,11 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // Apply A operator to psi
-    CPP_app_cil_driver (L, T, psi, a_psi, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+    ApplyAOperator (L, T, psi, a_psi, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
 
     // Apply B operator to psi
-    CPP_app_cir_driver (L, T, psi, b_psi, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    ApplyBOperator (L, T, psi, b_psi, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 
     // if complex orbitals apply gradient to orbital and compute dot products
@@ -88,7 +88,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     // B operating on 2*V*psi stored in work
     KpointType *work_t = new KpointType[sbasis];
-    CPP_app_cir_driver (L, T, sg_twovpsi_t, work_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    ApplyBOperator (L, T, sg_twovpsi_t, work_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
     for(int idx = 0; idx < pbasis; idx++) {
 

@@ -228,8 +228,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
     CopyAndConvert(pbasis, ns, work1_t);
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
-    RmgTimer *RT1 = new RmgTimer("Mg_eig: app_cir");
-    CPP_app_cir_driver<CalcType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    RmgTimer *RT1 = new RmgTimer("Mg_eig: apply B operator");
+    ApplyBOperator<CalcType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
     delete(RT1);
 
     // Copy double precision psi into single precison array
@@ -253,8 +253,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
 
 
         /* Apply Mehrstellen left hand operators */
-        RT1 = new RmgTimer("Mg_eig: app_cil");
-        diag = CPP_app_cil_driver<CalcType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        RT1 = new RmgTimer("Mg_eig: apply A operator");
+        diag = ApplyAOperator<CalcType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         delete(RT1);
         diag = -1.0 / diag;
 
@@ -294,8 +294,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
         }
 
         /* B operating on 2*V*psi stored in work1 */
-        RT1 = new RmgTimer("Mg_eig: app_cir");
-        CPP_app_cir_driver<CalcType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        RT1 = new RmgTimer("Mg_eig: apply B operator");
+        ApplyBOperator<CalcType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
         delete(RT1);
 
         // Add in non-local which has already had B applied in AppNls
