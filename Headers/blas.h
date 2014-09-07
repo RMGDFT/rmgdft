@@ -97,6 +97,11 @@
 #  define               zhegvx          zhegvx_
 #  define               zhegst          zhegst_
 #  define               zheevd          zheevd_
+#  define               dsyev           dsyev_
+#  define               dsyevd          dsyevd_
+#  define               dsyevx          dsyevx_
+#  define               zheev           zheev_
+
 
 #else
 #ifdef AIX
@@ -182,6 +187,15 @@ void dsygvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A,
              int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, int *iwork, int *ifail, int *info);
 void zhegvx (int *itype, char *jobz, char *range, char *uplo, int *n, double *A, int *lda, double *B, int *ldb, double *vl, double *vu, 
              int *il, int *iu, double *tol, int *m, double *w, double *z, int *ldz, double *work, int *lwork, double *rwork, int *iwork, int *ifail, int *info);
+void dsyev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
+            double * work1, double * work2, int *lwork, int *info);
+void dsyevd (char *jobz, char *uplo, int *numm, double * ss, int *numn,
+            double * work1, double * work2, int *lwork, int *iwork, int *liwork, int *info);
+void zheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
+            double * work1, double * work2, int *lwork, double *rwork, int *info);
+void dsyevx (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
+
+
 
 #if __cplusplus
 }
