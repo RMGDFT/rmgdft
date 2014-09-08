@@ -62,6 +62,11 @@ template double FiniteDiff::app_del2c<double>(double *, double *, int, int, int,
 template double FiniteDiff::app_del2c<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app_del2c<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
+template double FiniteDiff::app4_del2<float>(float *, float *, int, int, int, double, double, double);
+template double FiniteDiff::app4_del2<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app4_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
+template double FiniteDiff::app4_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
+
 template double FiniteDiff::app6_del2<float>(float *, float *, int, int, int, double, double, double);
 template double FiniteDiff::app6_del2<double>(double *, double *, int, int, int, double, double, double);
 template double FiniteDiff::app6_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
@@ -1034,6 +1039,70 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
 
 }                               /* end app_del2c */
 
+
+template <typename RmgType>
+double FiniteDiff::app4_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+               double gridhx, double gridhy, double gridhz)
+{
+
+    int iz, ix, iy;
+    int ixs, iys, ix1, iy1;
+
+    ixs = (dimy + 4) * (dimz + 4);
+    iys = (dimz + 4);
+    ix1 = dimy * dimz;
+    iy1 = dimz;
+
+    double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
+    double th2 (-5.0 / (2.0 * h2));
+    RmgType t1x (4.0 / ( 3.0 * h2));
+    RmgType t2x (-1.0 / (12.0 * h2));
+
+    h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
+    th2 -= (5.0 / (2.0 * h2));
+    RmgType t1y  (4.0 / ( 3.0 * h2));
+    RmgType t2y  (-1.0 / (12.0 * h2));
+
+    h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
+    th2 -= (5.0 / (2.0 * h2));
+    RmgType t1z  (4.0 / ( 3.0 * h2));
+    RmgType t2z  (-1.0 / (12.0 * h2));
+    RmgType t0 (th2);
+
+
+
+    for (ix = 2; ix < dimx + 2; ix++)
+    {
+
+        for (iy = 2; iy < dimy + 2; iy++)
+        {
+
+            for (iz = 2; iz < dimz + 2; iz++)
+            {
+
+                b[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
+                    t0 * a[ix * ixs + iy * iys + iz] +
+                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
+                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
+                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
+                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
+                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
+                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
+                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
+                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
+                    t1z * a[ix * ixs + iy * iys + iz - 1] +
+                    t1z * a[ix * ixs + iy * iys + iz + 1] +
+                    t2z * a[ix * ixs + iy * iys + iz - 2] +
+                    t2z * a[ix * ixs + iy * iys + iz + 2];
+
+            }                   /* end for */
+        }                       /* end for */
+    }                           /* end for */
+
+    /* Return the diagonal component of the operator */
+    return (double)std::real(t0);
+
+}                               /* end app4_del2 */
 
 template <typename RmgType>
 double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,

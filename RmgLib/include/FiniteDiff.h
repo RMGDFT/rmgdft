@@ -72,6 +72,9 @@ public:
     double app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
+    double app4_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
     double app6_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
