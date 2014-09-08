@@ -268,11 +268,11 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     stop = zlen * ACTIVE_THREADS;
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_D], (1>>16),
-                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_D], (1<<16),
+                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_U], (1<<16), TradeImages::comm, &mrstatus);
 
-        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_U], (2>>16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_U], (2<<16),
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_D], (2<<16), TradeImages::comm, &mrstatus);
     }
     T->thread_barrier_wait();
 
@@ -337,11 +337,11 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     stop = ylen * ACTIVE_THREADS;
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_S], (3>>16),
-                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_N], (3>>16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_S], (3<<16),
+                  &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_N], (3<<16), TradeImages::comm, &mrstatus);
 
-        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_N], (4>>16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4>>16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_N], (4<<16),
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_S], (4<<16), TradeImages::comm, &mrstatus);
     }
     T->thread_barrier_wait();
 
@@ -404,11 +404,11 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     T->thread_barrier_wait();
     if(tid == 0) {
 
-        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_W], (5>>16),
-                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_E], (5>>16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_W], (5<<16),
+                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[NB_E], (5<<16), TradeImages::comm, &mrstatus);
 
-        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_E], (6>>16),
-                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_W], (6>>16), TradeImages::comm, &mrstatus);
+        MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_E], (6<<16),
+                  &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[NB_W], (6<<16), TradeImages::comm, &mrstatus);
 
     }
     T->thread_barrier_wait();
@@ -523,8 +523,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     stop = dimx * dimy * ACTIVE_THREADS;
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_U], (1>>16), swbuf2x_f, factor*stop,
-		  MPI_BYTE, nb_ids[NB_D], (1>>16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_U], (1<<16), swbuf2x_f, factor*stop,
+		  MPI_BYTE, nb_ids[NB_D], (1<<16), TradeImages::comm, &mstatus);
     } 
     T->thread_barrier_wait();
 
@@ -554,8 +554,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     stop = dimx * dimy * ACTIVE_THREADS;
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_D], (2>>16), swbuf2x_f, factor*stop,
-                      MPI_BYTE, nb_ids[NB_U], (2>>16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[NB_D], (2<<16), swbuf2x_f, factor*stop,
+                      MPI_BYTE, nb_ids[NB_U], (2<<16), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait();
 
@@ -588,8 +588,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_N], (3>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_S], (3>>16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_N], (3<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[NB_S], (3<<16), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait();
 
@@ -614,8 +614,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_S], (4>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_N], (4>>16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_S], (4<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[NB_N], (4<<16), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait();
 
@@ -644,8 +644,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_E], (5>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_W], (5>>16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_E], (5<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[NB_W], (5<<16), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait();
 
@@ -657,8 +657,8 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     T->thread_barrier_wait();
     if(tid == 0) {
-        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_W], (6>>16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
-                  MPI_BYTE, nb_ids[NB_E], (6>>16), TradeImages::comm, &mstatus);
+        MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[NB_W], (6<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
+                  MPI_BYTE, nb_ids[NB_E], (6<<16), TradeImages::comm, &mstatus);
     }
     T->thread_barrier_wait();
     for(int idx = 0;idx < stop;idx++)
