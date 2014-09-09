@@ -100,6 +100,7 @@
 #  define               dsyev           dsyev_
 #  define               dsyevd          dsyevd_
 #  define               dsyevx          dsyevx_
+#  define               dsyevr          dsyevr_
 #  define               zheev           zheev_
 
 
@@ -194,6 +195,8 @@ void dsyevd (char *jobz, char *uplo, int *numm, double * ss, int *numn,
 void zheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
             double * work1, double * work2, int *lwork, double *rwork, int *info);
 void dsyevx (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
+void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, int *, double *, int *, int *, int *, int *);
+
 
 
 
