@@ -79,86 +79,97 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     distribute_mat (pct.desca, (double *)Bij, (double *)distBij, &num_states);
     delete(RT1);
 
-    // Create and distribute unitary matrix
+    // Create unitary matrix
     for (int idx = 0; idx < num_states; idx++) {
         Cij[idx * num_states + idx] = ONE_t;
     }
 
-    if (pct.scalapack_pe)
-        distribute_mat (pct.desca, (double *)Cij, (double *)distCij, &num_states);
-
 
     if (pct.scalapack_pe) {
 
-        // Keep an extra copy of the distributed matrix
-        for(int idx=0;idx < dist_length;idx++) distIij[idx] = distCij[idx];
+        // distribute unitary matrix
+        distribute_mat (pct.desca, (double *)Cij, (double *)distCij, &num_states);
 
-        RT1 = new RmgTimer("Diagonalization: Invert Bij");
-        // Get matrix that is inverse to B
-        {
-            int info=0;
-            int ipiv_size = NUMROC (&pct.desca[2], &pct.desca[4], &pct.scalapack_myrow, &pct.desca[6],
-                            &pct.scalapack_nprow) + pct.desca[4];
-            int *ipiv = new int[ipiv_size];
-            for(int idx=0;idx < ipiv_size;idx++) ipiv[idx] = 0;
+        if(!ct.norm_conserving_pp) {
 
-            /*Inverse of B should be in Cij */
-            if(ct.is_gamma) {
-                PDGESV (&num_states, &num_states, (double *)distBij, &ione, &ione, pct.desca, ipiv, (double *)distCij, &ione,
-                        &ione, pct.desca, &info);
-            }
-            else {
-                PZGESV (&num_states, &num_states, (double *)distBij, &ione, &ione, pct.desca, ipiv, (double *)distCij, &ione,
-                        &ione, pct.desca, &info);
-            }
+            // Keep an extra copy of the distributed matrix
+            for(int idx=0;idx < dist_length;idx++) distIij[idx] = distCij[idx];
 
-            if (info)
+            RT1 = new RmgTimer("Diagonalization: Invert Bij");
+            // Get matrix that is inverse to B
             {
-                rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-                rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-            }
+                int info=0;
+                int ipiv_size = NUMROC (&pct.desca[2], &pct.desca[4], &pct.scalapack_myrow, &pct.desca[6],
+                                &pct.scalapack_nprow) + pct.desca[4];
+                int *ipiv = new int[ipiv_size];
+                for(int idx=0;idx < ipiv_size;idx++) ipiv[idx] = 0;
 
-            delete [] ipiv;
+                /*Inverse of B should be in Cij */
+                if(ct.is_gamma) {
+                    PDGESV (&num_states, &num_states, (double *)distBij, &ione, &ione, pct.desca, ipiv, (double *)distCij, &ione,
+                            &ione, pct.desca, &info);
+                }
+                else {
+                    PZGESV (&num_states, &num_states, (double *)distBij, &ione, &ione, pct.desca, ipiv, (double *)distCij, &ione,
+                            &ione, pct.desca, &info);
+                }
+
+                if (info)
+                {
+                    rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
+                    rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
+                }
+
+                delete [] ipiv;
+            }
+            delete(RT1);
+
+
+            RT1 = new RmgTimer("Diagonalization: matrix setup");
+            /*Multiply inverse of B and and A */
+            {
+                char *trans = "n";
+                KpointType alpha(1.0);
+                KpointType beta(0.0);
+
+                /*B^-1*A */
+                if(ct.is_gamma) {
+                    PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
+                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, &ione, pct.desca, (double *)&beta, (double *)distBij,
+                            &ione, &ione, pct.desca);
+                }
+                else {
+                    PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
+                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, &ione, pct.desca, (double *)&beta, (double *)distBij,
+                            &ione, &ione, pct.desca);
+                }
+
+
+                /*Multiply the result with Sij, result is in distCij */
+                if(ct.is_gamma) {
+                    PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
+                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, &ione, pct.desca, (double *)&beta, (double *)distCij,
+                            &ione, &ione, pct.desca);
+                }
+                else {
+                    PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
+                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, &ione, pct.desca, (double *)&beta, (double *)distCij,
+                            &ione, &ione, pct.desca);
+                }
+
+                // Copy result into Bij
+                for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
+            }
+            delete(RT1);
+
         }
-        delete(RT1);
+        else {
 
+            // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into Cij
+            // to pass to eigensolver
+            for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
 
-        RT1 = new RmgTimer("Diagonalization: matrix setup");
-        /*Multiply inverse of B and and A */
-        {
-            char *trans = "n";
-            KpointType alpha(1.0);
-            KpointType beta(0.0);
-
-            /*B^-1*A */
-            if(ct.is_gamma) {
-                PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, &ione, pct.desca, (double *)&beta, (double *)distBij,
-                        &ione, &ione, pct.desca);
-            }
-            else {
-                PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, &ione, pct.desca, (double *)&beta, (double *)distBij,
-                        &ione, &ione, pct.desca);
-            }
-
-
-            /*Multiply the result with Sij, result is in distCij */
-            if(ct.is_gamma) {
-                PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, &ione, pct.desca, (double *)&beta, (double *)distCij,
-                        &ione, &ione, pct.desca);
-            }
-            else {
-                PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                        (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, &ione, pct.desca, (double *)&beta, (double *)distCij,
-                        &ione, &ione, pct.desca);
-            }
-
-            // Copy result into Bij
-            for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
         }
-        delete(RT1);
 
 
         /****************** Find Matrix of Eigenvectors *****************************/
