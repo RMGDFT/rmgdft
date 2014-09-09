@@ -31,6 +31,11 @@ template <typename KpointType>
 void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
+    BaseGrid *G = kptr->G;
+    Lattice *L = kptr->L;
+    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
+
+    int info = 0;
     int num_states = kptr->nstates;
     int ione = 1;
 
@@ -43,55 +48,62 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         Cij[idx * num_states + idx] = ONE_t;
     }
 
+    if(!ct.norm_conserving_pp) {
 
-    // Invert Bij
+        // Invert Bij
+        int *ipiv = new int[2*num_states]();
+        if(ct.is_gamma) {
 
-    int *ipiv = new int[2*num_states];
-    for(int idx=0;idx < num_states;idx++) ipiv[idx] = 0;
-    int info = 0;
-    if(ct.is_gamma) {
+            // Inverse of B should be in Cij
+            RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+            dgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
+            delete(RT1);
 
-        // Inverse of B should be in Cij
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
-        dgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
+        }
+        else {
+
+            // Inverse of B should be in Cij
+            RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+            zgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
+            delete(RT1);
+
+        }
+        if (info) {
+            rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
+            rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
+        }
+        delete [] ipiv;
+
+
+        /*Multiply inverse of B and and A */
+        /*B^-1*A */
+        KpointType alpha(1.0);
+        KpointType beta(0.0);;
+
+        RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
+        RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
+                        Cij, num_states, Aij, num_states, beta, Bij,
+                        num_states, NULLptr, NULLptr, NULLptr,
+                        true, true, true, true);
+
+        /*Multiply the result with Sij, result is in Cij */
+        RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
+                        Sij, num_states, Bij, num_states, beta, Cij,
+                        num_states, NULLptr, NULLptr, NULLptr,
+                        true, true, true, true);
         delete(RT1);
 
     }
     else {
 
-        // Inverse of B should be in Cij
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
-        zgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
-        delete(RT1);
+        // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into Cij
+        // to pass to eigensolver
+        for(int ix=0;ix < num_states*num_states;ix++) Cij[ix] = Aij[ix];
 
     }
-    if (info) {
-        rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-        rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-    }
-    delete [] ipiv;
 
 
-    /*Multiply inverse of B and and A */
-    /*B^-1*A */
-    KpointType alpha(1.0);
-    KpointType beta(0.0);;
-
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
-    RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                    Cij, num_states, Aij, num_states, beta, Bij,
-                    num_states, NULLptr, NULLptr, NULLptr,
-                    true, true, true, true);
-
-    /*Multiply the result with Sij, result is in Cij */
-    RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                    Sij, num_states, Bij, num_states, beta, Cij,
-                    num_states, NULLptr, NULLptr, NULLptr,
-                    true, true, true, true);
-    delete(RT1);
-
-
-    RT1 = new RmgTimer("Diagonalization: lapack");
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: lapack");
     int *ifail = new int[num_states];
     int lwork = 2 * num_states * num_states + 6 * num_states + 2;
     int liwork = 6*num_states;
@@ -122,13 +134,13 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     delete [] work2;
     delete [] ifail;
 
+    delete(RT1);
+    delete [] Cij;
+
+
     if (info) {
         rmg_printf ("\n Lapack eigensolver failed, info is %d", info);
         rmg_error_handler (__FILE__, __LINE__, "Lapack eigensolver failed");
     }
 
-    delete(RT1);
-
-
-    delete [] Cij;
 }
