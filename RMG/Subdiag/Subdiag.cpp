@@ -248,7 +248,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     delete(RT1);
 
-#if 1
     // Rotate new betaxpsi
     int size = kptr->sint_size;
     KpointType *sint_ptr = kptr->newsint_local;
@@ -273,7 +272,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
     delete [] tmp_sint_ptr;
     delete [] work;
-#endif
+
 #if GPU_ENABLED
     GpuFree(gpu_eigvectors);
     GpuFree(Agpu);
