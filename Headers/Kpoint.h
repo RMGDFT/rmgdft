@@ -104,9 +104,12 @@ public:
     KpointType *ns;
     KpointType *Bns;
 
-    // Pointers to weight and Bweight
+    // Pointers to weight and Bweight and gpu versions
     KpointType *nl_weight;
     KpointType *nl_Bweight;
+    KpointType *nl_weight_gpu;
+    KpointType *nl_Bweight_gpu;
+
 
     // Number of points in orbital basis
     int pbasis;

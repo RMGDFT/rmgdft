@@ -128,7 +128,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
         }
     }
 
-
     RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
             ONE_t, M_dnm,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
             ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
@@ -136,7 +135,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
 
     RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
             ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
-            ZERO_t,  nv, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+            ZERO_t,  nv, P0_BASIS, kpoint->nl_Bweight_gpu, NULLptr, NULLptr, false, false, false, true);
 
 
     for(int idx = 0;idx < num_states * P0_BASIS;idx++)
@@ -150,11 +149,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
 
         RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, pct.num_tot_proj,
-                ONE_t,  ns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+                ONE_t,  ns, P0_BASIS, kpoint->nl_weight_gpu, NULLptr, NULLptr, false, false, false, true);
 
         RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
                 ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
-                ZERO_t,  Bns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+                ZERO_t,  Bns, P0_BASIS, kpoint->nl_Bweight_gpu, NULLptr, NULLptr, false, false, false, true);
     }
 
     delete [] nwork;

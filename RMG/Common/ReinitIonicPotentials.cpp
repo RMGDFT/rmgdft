@@ -3,6 +3,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "Kpoint.h"
+#include "ErrorFuncs.h"
 #include "transition.h"
 
 template void ReinitIonicPotentials<double>(Kpoint<double> **, double *, double *, double *);
@@ -37,12 +38,33 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
 
             // Allocate new storage
-            Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
-            Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
-
+            if(pct.num_tot_proj) {
+                Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
+                Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
+            }
         }
 
-    }
+#if GPU_ENABLED
+        cudaError_t cuerr;
+
+        if(Kptr[kpt]->nl_weight_gpu != NULL) cudaFree(Kptr[kpt]->nl_weight_gpu);
+        if(Kptr[kpt]->nl_Bweight_gpu != NULL) cudaFree(Kptr[kpt]->nl_Bweight_gpu);
+
+        // Allocate new storage
+        if(pct.num_tot_proj) {
+
+            cuerr = cudaMalloc((void **)&Kptr[kpt]->nl_weight_gpu , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+            if(cuerr != cudaSuccess)
+                RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+
+            cuerr = cudaMalloc((void **)&Kptr[kpt]->nl_Bweight_gpu , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+            if(cuerr != cudaSuccess)
+                RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+
+        }
+#endif
+
+    } // end loop over kpts
 
 
     /*Other things that need to be recalculated when ionic positions change */
@@ -52,38 +74,22 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
 #if GPU_ENABLED
     cublasStatus_t custat;
+    for(int kpt=0;kpt < ct.num_kpts;kpt++) {
 
-    // If gpu weight buffer has not been setup yet or size has changed must take care of allocation
-    if((ct.gpu_weight == NULL) || (gpu_weight_alloc < (get_P0_BASIS() * pct.num_tot_proj * sizeof(double)))) {
-        if(ct.gpu_weight != NULL) {
-            cudaFree(ct.gpu_weight);
-            ct.gpu_weight = NULL;
-        }
         if(pct.num_tot_proj) {
-            if( cudaSuccess != cudaMalloc((void **)&ct.gpu_weight , get_P0_BASIS() * pct.num_tot_proj * sizeof(double) ))
-                rmg_error_handler(__FILE__, __LINE__, "cudaMalloc failed for: gpu_weight\n");
+
+            // Transfer copy of weights to GPU
+            custat = cublasSetVector( pbasis * pct.num_tot_proj, sizeof( KpointType ), Kptr[kpt]->nl_weight, 1, Kptr[kpt]->nl_weight_gpu, 1 );
+            if(custat != CUBLAS_STATUS_SUCCESS)
+                rmg_error_handler(__FILE__, __LINE__, "Problem transferring non-local weight matrix from system memory to GPU.");
+
+            custat = cublasSetVector( pbasis * pct.num_tot_proj, sizeof( KpointType ), Kptr[kpt]->nl_Bweight, 1, Kptr[kpt]->nl_Bweight_gpu, 1 );
+            if(custat != CUBLAS_STATUS_SUCCESS)
+                rmg_error_handler(__FILE__, __LINE__, "Problem transferring non-local weight matrix from system memory to GPU.");
+
         }
-        gpu_weight_alloc = get_P0_BASIS() * pct.num_tot_proj * sizeof(double);
+
     }
-
-    // Transfer copy of weights to GPU
-    custat = cublasSetVector( get_P0_BASIS() * pct.num_tot_proj, sizeof( double ), pct.weight, 1, ct.gpu_weight, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring weight mmatrix from GPU to system memory.");
-
-    if((ct.gpu_Bweight == NULL) || (gpu_weight_alloc < (get_P0_BASIS() * pct.num_tot_proj * sizeof(double)))) {
-        if(ct.gpu_Bweight != NULL) {
-            cudaFree(ct.gpu_Bweight);
-            ct.gpu_Bweight = NULL;
-        }
-        if(pct.num_tot_proj) {
-            if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Bweight , get_P0_BASIS() * pct.num_tot_proj * sizeof(double) ))
-                rmg_error_handler(__FILE__, __LINE__, "cudaMalloc failed for: gpu_Bweight\n");
-        }
-    }
-
-    // Transfer copy of weights to GPU
-    custat = cublasSetVector( get_P0_BASIS() * pct.num_tot_proj, sizeof( double ), pct.Bweight, 1, ct.gpu_Bweight, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring Bweight mmatrix from GPU to system memory.");
 
 #endif
 
