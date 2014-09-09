@@ -202,7 +202,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
     
     RmgGemm (transa, transn, pct.num_tot_proj, kptr->nstates, pbasis, alpha, 
             kptr->nl_weight, pbasis, psi, pbasis, 
-            rzero, nlarray, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
+            rzero, nlarray, pct.num_tot_proj, kptr->nl_weight_gpu, NULLptr, NULLptr, false, false, false, true);
 
     for (int nion = 0; nion < pct.num_nonloc_ions; nion++)
     {

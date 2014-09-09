@@ -201,6 +201,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Two buffers for rotating the orbitals
     t1 = ct.num_states * P0_BASIS * sizeof(OrbitalType);
     gpu_bufsize += 2 * t1;
+    // and multiply by 2 just for kicks
+    gpu_bufsize *= 2;
     InitGpuMalloc(gpu_bufsize);
 
     // Wavefunctions are actually stored here
