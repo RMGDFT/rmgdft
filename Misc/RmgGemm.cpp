@@ -19,6 +19,7 @@
 #define         dgemm   dgemm_
 #define         zgemm   zgemm_
 
+void ProcessCublasError(cublasStatus_t custat);
 
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
@@ -140,6 +141,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                             (cuDoubleComplex*)Agpu1, lda,
                             (cuDoubleComplex*)Bgpu1, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)Cgpu1, ldc );
+        ProcessCublasError(custat);
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
@@ -148,6 +150,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                             (double*)Agpu1, lda,
                             (double*)Bgpu1, ldb,
                             (double*)&beta, (double*)Cgpu1, ldc );
+        ProcessCublasError(custat);
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
     }
 
@@ -174,3 +177,42 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 
 #endif
 }
+
+void ProcessCublasError(cublasStatus_t custat)
+{
+    if(custat==CUBLAS_STATUS_SUCCESS)
+        return;
+
+    if(custat==CUBLAS_STATUS_NOT_INITIALIZED)
+    {
+        printf("'CUBLAS_STATUS_NOT_INITIALIZED'");
+    }
+    else if(custat==CUBLAS_STATUS_ALLOC_FAILED)
+    {
+        printf("CUBLAS_STATUS_ALLOC_FAILED");
+    }
+    else if(custat==CUBLAS_STATUS_INVALID_VALUE)
+    {
+        printf("CUBLAS_STATUS_INVALID_VALUE");
+    }
+    else if(custat==CUBLAS_STATUS_ARCH_MISMATCH)
+    {
+        printf("CUBLAS_STATUS_ARCH_MISMATCH");
+    }
+    else if(custat==CUBLAS_STATUS_MAPPING_ERROR)
+    {
+        printf("CUBLAS_STATUS_MAPPING_ERROR");
+    }
+    else if(custat==CUBLAS_STATUS_EXECUTION_FAILED)
+    {
+        printf("CUBLAS_STATUS_EXECUTION_FAILED");
+    }
+    else if(custat==CUBLAS_STATUS_INTERNAL_ERROR)
+    {
+        printf("CUBLAS_STATUS_INTERNAL_ERROR");
+    }
+
+    printf("UNKNOWN CUBLAS ERROR");
+
+}
+
