@@ -15,9 +15,6 @@
 #include "blas.h"
 #include "../Headers/prototypes.h"
 
-// Turning this off for now while we are in transition
-#undef GPU_ENABLED
-#define GPU_ENABLED 0
 
 #if GPU_ENABLED
 #include <cuda.h>
