@@ -19,13 +19,14 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
+template int FoldedSpectrumCpu<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *);
 
 template <typename KpointType>
 int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
 		double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C)
 {
 
-    RmgTimer RT0("Diagonalization: folded spectrum");
+    RmgTimer RT0("Diagonalization: fs:");
 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
@@ -35,6 +36,10 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     char *trans="n", *transt="t", *transn="n";
     char *cuplo = "l", *side="l", *diag="n", *jobz="V";
+
+    int ione=1, itype=1, info=0;
+    double rone = 1.0;
+    double alpha, beta=0.0, lambda;
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
@@ -68,22 +73,15 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     }
 
-
-
-    int ione=1, itype=1, info=0;
-    double rone = 1.0;
-    int eig_index;
-    double alpha, beta=0.0, lambda;
-    int eig_step, eig_start, eig_stop;
      
     // Folded spectrum method is parallelized over PE's. Each PE gets assigned
     // a subset of the eigenvectors.
     double t1 = (double)n;
     t1 = t1 / ((double)NPES);
     double t2 = t1 * (double)pct.gridpe;
-    eig_start = (int)rint(t2);
-    eig_stop = (int)rint(t1 + t2);
-    eig_step = eig_stop - eig_start;
+    int eig_start = (int)rint(t2);
+    int eig_stop = (int)rint(t1 + t2);
+    int eig_step = eig_stop - eig_start;
     if(pct.gridpe == (NPES - 1)) eig_stop = n;
 
     // Set width of window in terms of a percentage of n. Larger values will be slower but
@@ -118,7 +116,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
 
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: folded spectrum - cholesky factorization of B");
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: cholesky");
     //  Form a Cholesky factorization of B.
     dpotrf(cuplo, &n, B, &ldb, &info);
     if( info != 0 )
@@ -127,7 +125,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
     //  Transform problem to standard eigenvalue problem
-    RT1 = new RmgTimer("Diagonalization: folded spectrum - transform to tridiagonal");
+    RT1 = new RmgTimer("Diagonalization: fs: tridiagonal");
     dsygst_(&itype, cuplo, &n, A, &lda, B, &ldb, &info);
     if( info != 0 ) 
         rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
@@ -135,9 +133,9 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
     // We need to wait until a is diagonally dominant so we skip the first 3 steps
-    if(ct.scf_steps < 3) {
+    if((ct.scf_steps < 3) || (ct.runflag != RESTART)) {
 
-        RT1 = new RmgTimer("Diagonalization: folded spectrum - standard symmetric solver");
+        RT1 = new RmgTimer("Diagonalization: fs: init");
         dsyevd(jobz, cuplo, &n, A, &lda, eigs,
                          work,  &lwork,
                          iwork, &liwork,
@@ -155,7 +153,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     }
     else {
        
-        RT1 = new RmgTimer("Diagonalization: folded spectrum - folded symmetric solver");
+        RT1 = new RmgTimer("Diagonalization: fs: normal");
         // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
         KpointType *V = new KpointType[n*n]();
         KpointType *G = new KpointType[n*n]();
@@ -168,7 +166,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
      
         // Do the submatrix along the diagonal to get starting values for folded spectrum
         //--------------------------------------------------------------------
-        RmgTimer *RT2 = new RmgTimer("Diagonalization: folded spectrum - submatrix");
+        RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: submatrix");
         for(int ix = 0;ix < n_win;ix++){
             for(int iy = 0;iy < n_win;iy++){
                 G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
@@ -211,7 +209,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
         // Apply folded spectrum to this PE's range of eigenvectors
-        RT2 = new RmgTimer("Diagonalization: folded spectrum - iteration");
+        RT2 = new RmgTimer("Diagonalization: fs: iteration");
         for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
 
                 lambda = eigs[eig_index];
@@ -252,13 +250,13 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         // Make sure all PE's have all eigenvectors. Possible optimization here would be to 
         // overlap computation in the above loop with communication here.
 //        MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        RT2 = new RmgTimer("Diagonalization: folded spectrum - allreduce1");
+        RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
         MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
         delete(RT2);
 
         // Do the same for the eigenvalues
         // Could replace this with an MPI_Allgatherv as well
-        RT2 = new RmgTimer("Diagonalization: folded spectrum - allreduce2");
+        RT2 = new RmgTimer("Diagonalization: fs: allreduce2");
         MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         delete(RT2);
 
@@ -266,19 +264,19 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
         // Gram-Schmidt ortho for eigenvectors.
-        RT2 = new RmgTimer("Diagonalization: folded spectrum - Gram-Schmidt");
+        RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
         alpha = 1.0;
         beta = 0.0;
 
         // Overlaps
-        RmgTimer *RT3 = new RmgTimer("Diagonalization: folded spectrum - Gram-Schmidt - overlaps");
+        RmgTimer *RT3 = new RmgTimer("Diagonalization: fs: overlaps");
         //QMD_dcopy (n*n, V, 1, a, 1);
         for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
         dsyrk (cuplo, transt, &n, &n, &alpha, A, &n, &beta, C, &n);
         delete(RT3);
 
         // Cholesky factorization
-        RT3 = new RmgTimer("Diagonalization: folded spectrum - Gram-Schmidt - cholesky");
+        RT3 = new RmgTimer("Diagonalization: fs: cholesky");
         dpotrf(cuplo, &n, C, &n, &info);
         delete(RT3);
 
@@ -326,7 +324,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
         // A matrix transpose here would let us use an Allgatherv which would be
         // almost twice as fast for the communications part.
-        RT2 = new RmgTimer("Diagonalization: folded spectrum - allreduce3");
+        RT2 = new RmgTimer("Diagonalization: fs: allreduce3");
         MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         delete(RT2);
         for(int idx = 0;idx < n*n;idx++) A[idx] = G[idx];
@@ -334,7 +332,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
 
-        RT2 = new RmgTimer("Diagonalization: folded spectrum - dtrsm");
+        RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
         dtrsm (side, cuplo, transt, diag, &n, &n, &rone, B, &ldb, A, &lda);
         delete(RT2);
 

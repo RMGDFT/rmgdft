@@ -227,6 +227,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix will hold the eigenvectors.
     // If the MAGMA driver is selected the eigenvectors will be stored on the GPU in gpu_global_matrix
+    RT1 = new RmgTimer("Diagonalization: Eigensolver");
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:
@@ -242,6 +243,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
 
     } // end switch
+    delete(RT1);
 
 
     // If subspace diagonalization is used everystep, use eigenvalues obtained here 
