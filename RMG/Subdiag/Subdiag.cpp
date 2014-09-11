@@ -55,19 +55,34 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     static KpointType *tmp_arrayT = NULL;
     static KpointType *tmp_array2T = NULL;
     static KpointType *global_matrix = NULL;
+
     KpointType *Agpu = NULL;
     KpointType *gpu_eigvectors = NULL;
     KpointType *NULLptr = NULL;
 
 #if GPU_ENABLED
-    cublasStatus_t custat;
 
-    // Start wavefunctions transferring to the GPU
+    cublasStatus_t custat;
+    static KpointType *Aij = NULL;
+    static KpointType *Bij = NULL;
+    static KpointType *Sij = NULL;
+
+    // Grab some gpu memory
     gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
     Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
-    custat = cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring orbitals to GPU");
+
+    // Start wavefunctions transferring to the GPU
+    RmgCudaError(__FILE__,__LINE__, cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 ) , "Problem transferring orbitals to GPU");
+
+
+#else
+
+    KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
+    KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
+    KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
+
 #endif
+
 
 
     char *trans_t = "t";
@@ -94,20 +109,21 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
         }
 
         #if GPU_ENABLED
-            cudaHostRegister( tmp_arrayT, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
-            cudaHostRegister( tmp_array2T, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
-            cudaHostRegister( global_matrix, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable);
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_array2T, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Bij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Sij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
         #endif
 
     }
+
 
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
     double *vtot = new double[4*FP0_BASIS];
     double *vtot_eig = new double[kptr->pbasis];
-    KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
-    KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
-    KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
     double *eigs = new double[2*kptr->nstates];
 
     for (int idx = 0; idx < FP0_BASIS; idx++) {
@@ -295,9 +311,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // free memory
     delete [] eigs;
+#if !GPU_ENABLED
     delete [] Sij;
     delete [] Bij;
     delete [] Aij;
+#endif
     delete [] vtot_eig;
     delete [] vtot;
 
