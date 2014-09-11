@@ -59,6 +59,8 @@
 #  define		sscal   	dscal_
 #  define		dscal   	dscal_
 #  define		ssyrk   	dsyrk_
+#  define		dsyrk   	dsyrk_
+#  define		zsyrk   	zsyrk_
 #  define		spotrf  	dpotrf_
 #  define		dpotrf  	dpotrf_
 #  define		zpotrf  	zpotrf_
@@ -103,6 +105,8 @@
 #  define               dsyevx          dsyevx_
 #  define               dsyevr          dsyevr_
 #  define               zheev           zheev_
+#  define               dtrsm           dtrsm_
+#  define               dsygst          dsygst_
 
 
 #else
@@ -148,6 +152,8 @@ void scopy (int *n, double * x, int *incx, double * y, int *incy);
 double sdot (int *n, double * x, int *incx, double * y, int *incy);
 double snrm2 (int *n, double * x, int *incx);
 void ssyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
+            int *lda, double * beta, double * c, int *ldc);
+void dsyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
             int *lda, double * beta, double * c, int *ldc);
 void sswap (int *n, double * x, int *incx, double * y, int *incy);
 void xbecke (double * d, double * s, double * u, double * v, double * ex, double * vx);
@@ -199,6 +205,9 @@ void zheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
             double * work1, double * work2, int *lwork, double *rwork, int *info);
 void dsyevx (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, int *, double *, int *, int *, int *, int *);
+void dtrsm(char *side, char *uplo, char *transa, char *diag, int *M, int *N, double *alpha, double *A, int *lda, double *B, int *ldb);
+void dsygst( int *itype, char *uplo, int *N, double *A, int *LDA, double *B, int *LDB, int *INFO );
+
 
 
 
