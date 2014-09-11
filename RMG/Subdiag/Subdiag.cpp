@@ -190,17 +190,21 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     delete(RT1);
 
 
+    // We don't need B matrix for norm-conserving pseudopotentials
+    if(!ct.is_gamma) {
 
-    // Compute B matrix
-    RT1 = new RmgTimer("Diagonalization: matrix setup");
-    RmgGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
-    delete(RT1);
+        // Compute B matrix
+        RT1 = new RmgTimer("Diagonalization: matrix setup");
+        RmgGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+        delete(RT1);
 
-    // Reduce matrix and store copy in Bij
-    RT1 = new RmgTimer("Diagonalization: MPI_Allreduce");
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    for(int idx = 0;idx < num_states*num_states;idx++) Bij[idx] = global_matrix[idx];
-    delete(RT1);
+        // Reduce matrix and store copy in Bij
+        RT1 = new RmgTimer("Diagonalization: MPI_Allreduce");
+        MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        for(int idx = 0;idx < num_states*num_states;idx++) Bij[idx] = global_matrix[idx];
+        delete(RT1);
+
+    }
 
 
     // global_matrix holds Bij now, we store a copy in Bij as well and pass Bij to the driver routine in globalmatrix as well
