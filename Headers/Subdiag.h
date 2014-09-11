@@ -55,6 +55,9 @@ template <typename KpointType>
 void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors, KpointType *gpu_eigvectors);
 template <typename KpointType>
 void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
+template <typename KpointType>
+int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb,
+                double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C);
 
 
 #endif

@@ -132,28 +132,19 @@ void write_header (void)
 
     printf ("\n");
     switch(ct.subdiag_driver) {
-        case SUBDIAG_LAPACK:
-            printf ("    Subspace diagonalization using lapack driver\n");
+        case SUBDIAG_SCALAPACK:
+            printf ("    Subspace diagonalization using scalapack driver\n");
             break;
-        case SUBDIAG_LAPACKFS:
-            printf ("    Subspace diagonalization using lapackfs driver\n");
-            break;
-        case SUBDIAG_MAGMAFS:
 #if MAGMA_LIBS
-            printf ("    Subspace diagonalization using magmafs driver\n");
-#else
-            error_handler("    This version of RMG was not built with Magma.\n");
-#endif
-            break;
         case SUBDIAG_MAGMA:
-#if MAGMA_LIBS
             printf ("    Subspace diagonalization using magma driver\n");
-#else
-            error_handler("    This version of RMG was not built with Magma.\n");
+            break;
 #endif
+        case SUBDIAG_FOLDED:
+            printf ("    Subspace diagonalization using folded spectrum driver\n");
             break;
         default:
-            printf ("    Subspace diagonalization using scalapack driver\n");
+            printf ("    Subspace diagonalization using lapack driver\n");
     }
 
 

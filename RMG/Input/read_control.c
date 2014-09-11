@@ -106,8 +106,7 @@ void read_control (char *file)
     char diagonalization_driver_opts[] = "lapack\n"
                                          "scalapack\n"
                                          "magma\n"
-                                         "magmafs\n"
-                                         "lapackfs\n";
+                                         "folded\n";
 //                                       "elpa\n"
     get_data ("subdiag_driver", NULL, INIT | OPT, diagonalization_driver_opts);
     get_data ("subdiag_driver", &ct.subdiag_driver, OPT, "scalapack");

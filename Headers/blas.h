@@ -61,6 +61,7 @@
 #  define		ssyrk   	dsyrk_
 #  define		spotrf  	dpotrf_
 #  define		dpotrf  	dpotrf_
+#  define		zpotrf  	zpotrf_
 #  define		spotri  	dpotri_
 #  define		cpotrf  	zpotrf_
 #  define		cpotri  	zpotri_
@@ -163,6 +164,8 @@ void corpbe (double * rs, double * zet, double * t, double * uu, double * vv, do
              int *lgga, int *lpot, double * ec, double * vcup, double * vcdn,
              double * h, double * dvcup, double * DVCDN);
 void cpotrf (char *uplo, int *n, double * a, int *lda, int *info);
+void dpotrf (char *uplo, int *n, double * a, int *lda, int *info);
+void zpotrf (char *uplo, int *n, double * a, int *lda, int *info);
 void exch (double * d, double * s, double * u, double * v, double * ex, double * vx);
 void exchpbe (double * d, double * s, double * u, double * v, int *lgga, int *lpot,
               double * ex, double * vx);
