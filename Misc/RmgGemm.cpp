@@ -14,12 +14,12 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
+void ProcessCublasError(cublasStatus_t custat);
 #endif
 
 #define         dgemm   dgemm_
 #define         zgemm   zgemm_
 
-void ProcessCublasError(cublasStatus_t custat);
 
 extern "C" {
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
@@ -178,6 +178,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 #endif
 }
 
+#if GPU_ENABLED
 void ProcessCublasError(cublasStatus_t custat)
 {
     if(custat==CUBLAS_STATUS_SUCCESS)
@@ -215,4 +216,4 @@ void ProcessCublasError(cublasStatus_t custat)
     printf("UNKNOWN CUBLAS ERROR");
 
 }
-
+#endif
