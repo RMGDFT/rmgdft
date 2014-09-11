@@ -202,7 +202,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     t1 = ct.num_states * P0_BASIS * sizeof(OrbitalType);
     gpu_bufsize += 2 * t1;
     // and multiply by 2 just for kicks
-    gpu_bufsize *= 2;
+    //gpu_bufsize *= 2;
     InitGpuMalloc(gpu_bufsize);
 
     // Wavefunctions are actually stored here
@@ -229,18 +229,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
         rptr1 = new double[(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
     }
-
-#if 0
-        /* Wavefunctions are actually stored here */
-        if (verify ("calculation_mode", "Band Structure Only"))
-        {
-            rptr = new double[2*(ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-        }
-        else
-        {
-            rptr = new double[ct.num_kpts * 2 * (ct.num_states + 1) * (P0_BASIS + 4) + 1024];
-        }
-#endif
 
     kpt1 = ct.num_kpts;
     if (verify ("calculation_mode", "Band Structure Only"))

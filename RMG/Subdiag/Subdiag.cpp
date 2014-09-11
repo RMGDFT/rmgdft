@@ -39,7 +39,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RmgTimer RT0("Diagonalization");
     rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
 
-
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
@@ -64,8 +63,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     cublasStatus_t custat;
 
     // Start wavefunctions transferring to the GPU
-    Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
     gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
+    Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
     custat = cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 );
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring orbitals to GPU");
 #endif
@@ -109,7 +108,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
-    double *eigs = new double[kptr->nstates];
+    double *eigs = new double[2*kptr->nstates];
 
     for (int idx = 0; idx < FP0_BASIS; idx++) {
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
@@ -235,17 +234,29 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
 
 
-    // Update the orbitals and store rotated orbitals in tmp_arrayT
+    // Update the orbitals
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
     if(subdiag_driver == SUBDIAG_MAGMA) {
-        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
+
+        // The magma driver leaves the eigenvectors on the gpu in gpu_eigvectors and the current
+        // orbitals are already there in Agpu. So we set C to kptr->orbital_storage and have the
+        // gpu transfer the rotated orbitals directly back there.
+        // The magma driver also brings the eigvectors back from the gpu and puts them in global_matrix
+        // so we can rotate the betaxpsi as well.
+        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, 
+                NULLptr, pbasis, NULLptr, num_states, beta, kptr->orbital_storage, pbasis, 
+                Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
     }
     else {
-        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, Agpu, NULLptr, NULLptr, false, true, false, true);
+
+        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, 
+                kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, 
+                Agpu, NULLptr, NULLptr, false, true, false, true);
+
+        // And finally copy them back
+        for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     }
 
-    // And finally copy them back
-    for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     delete(RT1);
 
     // Rotate new betaxpsi
@@ -274,8 +285,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     delete [] work;
 
 #if GPU_ENABLED
-    GpuFree(gpu_eigvectors);
     GpuFree(Agpu);
+    GpuFree(gpu_eigvectors);
 #endif
 
     // free memory

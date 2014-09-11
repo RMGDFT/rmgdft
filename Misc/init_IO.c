@@ -110,6 +110,7 @@ void init_IO (int argc, char **argv)
 
 #if GPU_ENABLED
     cudaDeviceReset();
+    cudaSetDeviceFlags(cudaDeviceScheduleSpin);
     if( CUDA_SUCCESS != cuInit( 0 ) ) {
         fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
     }
@@ -117,13 +118,18 @@ void init_IO (int argc, char **argv)
         fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
     }
     cudaSetDevice(ct.cu_dev);
-    //  if( CUDA_SUCCESS != cuCtxCreate( &ct.cu_context, CU_CTX_SCHED_YIELD, ct.cu_dev ) ) {
-    //      fprintf(stderr, "CUDA: Cannot create the context\n"); exit(-1);
-    //  }
-    cudaSetDevice(ct.cu_dev);
     if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
         fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
     }
+    if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
+        fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+    }
+#if MAGMA_LIBS
+magma_init();
+//magmablasSetKernelStream(ct.cuda_stream);
+#endif
+
+
 
 #endif
 

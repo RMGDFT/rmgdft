@@ -65,71 +65,84 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
     KpointType *Cij = new KpointType[num_states * num_states]();
 
-    // Create unitary matrix
-    for (int idx = 0; idx < num_states; idx++) {
-        Cij[idx * num_states + idx] = ONE_t;
-    }
 
-    // Transfer it to the GPU
-    custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Cij, ione, gpuCij, ione );
+    if(!ct.norm_conserving_pp) {
 
-    // Transfer eigvectors which holds Bij to the gpuBij
-    custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpuBij, ione );
+        // Create unitary matrix
+        for (int idx = 0; idx < num_states; idx++) {
+            Cij[idx * num_states + idx] = ONE_t;
+        }
 
-    // Transfer Aij to gpuAij
-    custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Aij, ione, gpuAij, ione );
+        // Transfer it to the GPU
+        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Cij, ione, gpuCij, ione );
 
-    // Transfer Sij to gpuSij
-    custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Sij, ione, gpuSij, ione );
+        // Transfer eigvectors which holds Bij to the gpuBij
+        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpuBij, ione );
 
-    // Invert Bij
+        // Transfer Aij to gpuAij
+        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Aij, ione, gpuAij, ione );
 
-    int *ipiv = new int[2*num_states];
-    for(int idx=0;idx < num_states;idx++) ipiv[idx] = 0;
-    int info = 0;
-    if(ct.is_gamma) {
+        // Transfer Sij to gpuSij
+        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Sij, ione, gpuSij, ione );
 
-        // Inverse of B should be in Cij
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
-        magma_dgesv_gpu (num_states, num_states, (double *)gpuBij, num_states, ipiv, (double *)gpuCij, num_states, &info);
+        // Invert Bij
+        int *ipiv = new int[2*num_states];
+        for(int idx=0;idx < num_states;idx++) ipiv[idx] = 0;
+        int info = 0;
+        if(ct.is_gamma) {
+
+            // Inverse of B should be in Cij
+            RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+            magma_dgesv_gpu (num_states, num_states, (double *)gpuBij, num_states, ipiv, (double *)gpuCij, num_states, &info);
+            delete(RT1);
+
+
+        }
+        else {
+
+            // Inverse of B should be in Cij
+            RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+            magma_zgesv_gpu (num_states, num_states, (magmaDoubleComplex *)gpuBij, num_states, ipiv, (magmaDoubleComplex *)gpuCij, num_states, &info);
+            delete(RT1);
+
+
+        }
+        if (info) {
+            rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
+            rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
+        }
+        delete [] ipiv;
+
+
+        /*Multiply inverse of B and and A */
+        /*B^-1*A */
+        KpointType alpha(1.0);
+        KpointType beta(0.0);;
+
+        RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
+        RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
+                        Cij, num_states, Aij, num_states, beta, Bij,
+                        num_states, gpuCij, gpuAij, gpuBij, false, false, false, false);
+
+        /*Multiply the result with Sij, result is in Cij */
+        RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
+                        Sij, num_states, Bij, num_states, beta, gpuCij,
+                        num_states, gpuSij, gpuBij, gpuCij, false, false, false, false);
         delete(RT1);
-
 
     }
     else {
 
-        // Inverse of B should be in Cij
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
-        magma_zgesv_gpu (num_states, num_states, (magmaDoubleComplex *)gpuBij, num_states, ipiv, (magmaDoubleComplex *)gpuCij, num_states, &info);
-        delete(RT1);
+        // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into gpuCij
+        // to pass to eigensolver. Also need Sij on GPU
+        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Aij, ione, gpuCij, ione );
 
+        // Transfer Sij to gpuSij
+        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Sij, ione, gpuSij, ione );
 
     }
-    if (info) {
-        rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-        rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-    }
-    delete [] ipiv;
 
-
-    /*Multiply inverse of B and and A */
-    /*B^-1*A */
-    KpointType alpha(1.0);
-    KpointType beta(0.0);;
-
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
-    RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                    Cij, num_states, Aij, num_states, beta, Bij,
-                    num_states, gpuCij, gpuAij, gpuBij, false, false, false, false);
-
-    /*Multiply the result with Sij, result is in Cij */
-    RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                    Sij, num_states, Bij, num_states, beta, gpuCij,
-                    num_states, gpuSij, gpuBij, gpuCij, false, false, false, false);
-    delete(RT1);
-
-
-    RT1 = new RmgTimer("Diagonalization: magma");
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: magma");
 
     int *ifail = new int[num_states];
     int lwork = 3 * num_states * num_states + 8 * num_states;
@@ -142,20 +155,22 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
 
     if(ct.is_gamma) {
 
-        info = rmg_dsygvd_gpu(num_states, (double *)gpuCij, num_states, (double *)gpuSij, num_states,
+        int info = rmg_dsygvd_gpu(num_states, (double *)gpuCij, num_states, (double *)gpuSij, num_states,
                               eigs, work, lwork, iwork, liwork, (double *)Cij);
-//        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-//        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+        // We have to transfer this back in order to rotate the betaxpsi
+        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
 
     }
     else {
 
         int lrwork = 2 * num_states * num_states + 6 * num_states;
         double *rwork = new double[2 * lrwork];
-        info = rmg_zhegvd_gpu(num_states, (std::complex<double> *)gpuCij, num_states, (std::complex<double> *)gpuSij, num_states,
+        int info = rmg_zhegvd_gpu(num_states, (std::complex<double> *)gpuCij, num_states, (std::complex<double> *)gpuSij, num_states,
                               eigs, work, lwork, rwork, lrwork, iwork, liwork, (double *)Cij);
-//        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-//        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+        // We have to transfer this back in order to rotate the betaxpsi
+        custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
         delete [] rwork;
 
     }
