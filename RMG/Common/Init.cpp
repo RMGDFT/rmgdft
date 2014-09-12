@@ -452,7 +452,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     //Dprintf ("If diagonalization is requested do a subspace diagonalization");
-    if (ct.initdiag)
+    // but skip on restart
+    if (ct.initdiag && (ct.runflag != RESTART))
     {
         /*dnmI has to be stup before calling subdiag */
         vtot = new double[FP0_BASIS];

@@ -19,6 +19,9 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
+// I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
+// useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
+// be straightforward enough to finish.
 template int FoldedSpectrumCpu<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *);
 
 template <typename KpointType>
@@ -115,7 +118,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
 
-
     RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: cholesky");
     //  Form a Cholesky factorization of B.
     dpotrf(cuplo, &n, B, &ldb, &info);
@@ -133,7 +135,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
 
     // We need to wait until a is diagonally dominant so we skip the first 3 steps
-    if((ct.scf_steps < 3) || (ct.runflag != RESTART)) {
+    if((ct.scf_steps < 3) && (ct.runflag != RESTART)) {
 
         RT1 = new RmgTimer("Diagonalization: fs: init");
         dsyevd(jobz, cuplo, &n, A, &lda, eigs,
@@ -237,9 +239,12 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
                     daxpy(&n, &rone, d_p1, &ione, d_p0, &ione);
                 }
                 // Renormalize
-                t1 = dnrm2_(&n, d_p0, &ione);
-                t1 = 1.0 / t1;
-                dscal(&n, &t1, d_p0, &ione);
+                //t1 = dnrm2_(&n, d_p0, &ione);
+                t1 = 0.0;
+                for(int idx = 0;idx < n;idx++) t1 += std::norm(d_p0[idx]);
+                t1 = 1.0 / sqrt(t1);
+                for(int idx = 0;idx < n;idx++) d_p0[idx] *= t1;
+                //dscal(&n, &t1, d_p0, &ione);
 
                 for(int idx = 0;idx < n;idx++) V[eig_index*n + idx] = d_p0[idx];
                 //QMD_dcopy (n, d_p0, 1, &V[eig_index*n], 1);

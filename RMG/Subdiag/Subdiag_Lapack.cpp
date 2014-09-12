@@ -115,9 +115,19 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
     if(ct.is_gamma) {
 
-        dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-                        &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
-                        &lwork, iwork, ifail, &info);
+        if(ct.use_folded_spectrum) {
+
+            FoldedSpectrumCpu<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
+            for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 
+
+        }
+        else {
+
+            dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
+                            &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
+                            &lwork, iwork, ifail, &info);
+
+        }
 
     }
     else {

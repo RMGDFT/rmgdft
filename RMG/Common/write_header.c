@@ -135,16 +135,22 @@ void write_header (void)
         case SUBDIAG_SCALAPACK:
             printf ("    Subspace diagonalization using scalapack driver\n");
             break;
+        case SUBDIAG_LAPACK:
+            printf ("    Subspace diagonalization using lapack driver\n");
+            break;
 #if MAGMA_LIBS
         case SUBDIAG_MAGMA:
             printf ("    Subspace diagonalization using magma driver\n");
             break;
 #endif
-        case SUBDIAG_FOLDED:
-            printf ("    Subspace diagonalization using folded spectrum driver\n");
-            break;
         default:
-            printf ("    Subspace diagonalization using lapack driver\n");
+            printf ("    Unknown diagonalization method\n");
+    }
+
+    if(ct.use_folded_spectrum) {
+
+        printf ("    Subspace diagonalization with folded spectrum\n");
+
     }
 
 

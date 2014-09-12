@@ -324,6 +324,9 @@ typedef struct
     int diag;
     int end_diag;
 
+    /* Use folded spectrum if possible */
+    int use_folded_spectrum;
+
     /* Folded spectrum width */
     double folded_spectrum_width;
 
