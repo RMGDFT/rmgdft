@@ -111,7 +111,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     double *Vdiag = new double[n];
     double *p0 = new double[n];
     double *p1 = new double[n];
-    double *d_p0 = new double[n];
+    double *d_p0 = new double[n * eig_step];
     double *d_p1 = new double[n];
     double *tarr = new double[n];
     double *Asave = new double[n*n];
@@ -212,6 +212,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
         // Apply folded spectrum to this PE's range of eigenvectors
         RT2 = new RmgTimer("Diagonalization: fs: iteration");
+#if 0
         for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
 
                 lambda = eigs[eig_index];
@@ -238,15 +239,28 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
                     dgemv_(transn, &n, &n, &alpha, C, &n, d_p0, &ione, &beta, d_p1, &ione);
                     daxpy(&n, &rone, d_p1, &ione, d_p0, &ione);
                 }
+#endif
+        for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
+            n_eigs[eig_index] = eigs[eig_index];
+            int offset = n * (eig_index - eig_start);
+            for(int idx = 0;idx < n;idx++) d_p0[offset + idx] = V[eig_index*n + idx];
+        }
+
+        FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, d_p0, -0.5, 6);
+
+
+        for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
+
+                int offset = n * (eig_index - eig_start);
                 // Renormalize
                 //t1 = dnrm2_(&n, d_p0, &ione);
                 t1 = 0.0;
-                for(int idx = 0;idx < n;idx++) t1 += std::norm(d_p0[idx]);
+                for(int idx = 0;idx < n;idx++) t1 += std::norm(d_p0[offset + idx]);
                 t1 = 1.0 / sqrt(t1);
-                for(int idx = 0;idx < n;idx++) d_p0[idx] *= t1;
+                for(int idx = 0;idx < n;idx++) d_p0[offset + idx] *= t1;
                 //dscal(&n, &t1, d_p0, &ione);
 
-                for(int idx = 0;idx < n;idx++) V[eig_index*n + idx] = d_p0[idx];
+                for(int idx = 0;idx < n;idx++) V[eig_index*n + idx] = d_p0[offset + idx];
                 //QMD_dcopy (n, d_p0, 1, &V[eig_index*n], 1);
         }
         delete(RT2);
