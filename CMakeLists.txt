@@ -334,7 +334,7 @@ endif(NOT RMG_MATH_LIBS)
 
 # Look for GPU libraries. Only CUDA supported for now
 find_package(CUDA)
-if(CUDA_FOUND)
+if(CUDA_FOUND AND RMG_GPU_ENABLED)
   if(NOT CRAY_XK)
       target_link_libraries(rmg ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
       target_link_libraries(rmg-on ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
@@ -362,7 +362,7 @@ ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
   target_link_libraries(rmg-negf TestLib)
 ADD_DEPENDENCIES(rmg-negf TestLib)
  
-endif(CUDA_FOUND)
+endif(CUDA_FOUND AND RMG_GPU_ENABLED)
 
 #include_directories(rmg "/usr/local/magma/include")
 add_dependencies(rmg libxc)

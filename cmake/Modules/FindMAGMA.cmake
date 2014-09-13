@@ -1,7 +1,7 @@
 # - Find MAGMA
 # Find the native MAGMA includes and library
 #
-#  MAGMA_INCLUDES    - where to find fftw.h
+#  MAGMA_INCLUDES    - where to find magma.h
 #  MAGMA_LIBRARIES   - List of libraries when using MAGMA.
 #  MAGMA_FOUND       - True if MAGMA found.
 
@@ -21,8 +21,8 @@ find_library (MAGMABLAS_LIBRARIES NAMES magmablas PATH_SUFFIXES magmablas)
 # handle the QUIETLY and REQUIRED arguments and set MAGMA_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES)
-find_package_handle_standard_args (MAGMABLAS DEFAULT_MSG MAGMABLAS_LIBRARIES)
+find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES MAGMA_INCLUDES)
+find_package_handle_standard_args (MAGMABLAS DEFAULT_MSG MAGMABLAS_LIBRARIES MAGMA_INCLUDES)
 #find_package_handle_standard_args (MAGMA DEFAULT_MSG MAGMA_LIBRARIES
 #MAGMA_INCLUDES MAGMABLAS_LIBRARIES)
 

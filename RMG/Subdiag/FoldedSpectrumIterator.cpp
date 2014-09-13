@@ -60,11 +60,6 @@ void FoldedSpectrumIterator(DataType *A, int n, double *eigs, int k, DataType *X
 
         for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
 
-//        for(int kcol = 0;kcol < k;kcol++) {
-//           for(int ix = 0;ix < n;ix++) {
-//               X[kcol*n + ix] += alpha * Y[kcol*n + ix];
-//           }
-//        }
     }    
 
     delete [] C;

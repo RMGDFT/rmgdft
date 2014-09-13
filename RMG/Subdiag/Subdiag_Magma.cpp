@@ -49,6 +49,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     return;
 #endif
 
+#if MAGMA_LIBS
 #if GPU_ENABLED
     KpointType ONE_t(1.0);
     int num_states = kptr->nstates;
@@ -187,6 +188,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     GpuFree(gpuBij);
     GpuFree(gpuAij);
 
+#endif
 #endif
      
 }

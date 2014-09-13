@@ -212,34 +212,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
         // Apply folded spectrum to this PE's range of eigenvectors
         RT2 = new RmgTimer("Diagonalization: fs: iteration");
-#if 0
-        for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
-
-                lambda = eigs[eig_index];
-                n_eigs[eig_index] = lambda;
-
-                for(int ix=0;ix<n;ix++){
-                    Asave[ix*n + ix] -= lambda;
-                }
-                alpha = 1.0;
-                for(int idx = 0;idx < n*n;idx++) C[idx] = Asave[idx];
-                //QMD_dcopy (n*ct.num_states, Asave, 1, C, 1);
-
-                // Restore matrix for next pass
-                for(ix=0;ix<n;ix++){
-                    Asave[ix*n + ix] += lambda;
-                }
-
-                for(int idx = 0;idx < n;idx++) d_p0[idx] = V[eig_index*n + idx];
-                //QMD_dcopy (n, &V[eig_index*n], 1, d_p0, 1);
-
-                alpha = -0.5;
-                beta = 0.0;
-                for(int its = 0;its < 6;its++) {
-                    dgemv_(transn, &n, &n, &alpha, C, &n, d_p0, &ione, &beta, d_p1, &ione);
-                    daxpy(&n, &rone, d_p1, &ione, d_p0, &ione);
-                }
-#endif
         for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
             n_eigs[eig_index] = eigs[eig_index];
             int offset = n * (eig_index - eig_start);

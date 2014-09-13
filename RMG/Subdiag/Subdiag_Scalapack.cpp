@@ -47,7 +47,6 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     int factor = 1;
     if(!ct.is_gamma) factor=2;
 
-    KpointType *Cij = new KpointType[num_states * num_states]();
 
     if (pct.scalapack_pe)
     {
@@ -68,7 +67,6 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     KpointType *distBij = new KpointType[dist_length]();
     KpointType *distSij = new KpointType[dist_length]();
     KpointType *distCij = new KpointType[dist_length]();
-    KpointType *distIij = new KpointType[dist_length]();
 
 
 
@@ -76,10 +74,11 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     RmgTimer *RT1 = new RmgTimer("Diagonalization: distribute matrices.");
     distribute_mat (pct.desca, (double *)Aij, (double *)distAij, &num_states);
     distribute_mat (pct.desca, (double *)Sij, (double *)distSij, &num_states);
-    distribute_mat (pct.desca, (double *)Bij, (double *)distBij, &num_states);
+    distribute_mat (pct.desca, (double *)eigvectors, (double *)distBij, &num_states);
     delete(RT1);
 
     // Create unitary matrix
+    KpointType *Cij = new KpointType[num_states * num_states]();
     for (int idx = 0; idx < num_states; idx++) {
         Cij[idx * num_states + idx] = ONE_t;
     }
@@ -92,17 +91,13 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
 
         if(!ct.norm_conserving_pp) {
 
-            // Keep an extra copy of the distributed matrix
-            for(int idx=0;idx < dist_length;idx++) distIij[idx] = distCij[idx];
-
             RT1 = new RmgTimer("Diagonalization: Invert Bij");
             // Get matrix that is inverse to B
             {
                 int info=0;
                 int ipiv_size = NUMROC (&pct.desca[2], &pct.desca[4], &pct.scalapack_myrow, &pct.desca[6],
                                 &pct.scalapack_nprow) + pct.desca[4];
-                int *ipiv = new int[ipiv_size];
-                for(int idx=0;idx < ipiv_size;idx++) ipiv[idx] = 0;
+                int *ipiv = new int[ipiv_size]();
 
                 /*Inverse of B should be in Cij */
                 if(ct.is_gamma) {
@@ -134,31 +129,33 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
 
                 /*B^-1*A */
                 if(ct.is_gamma) {
+
                     PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, &ione, pct.desca, (double *)&beta, (double *)distBij,
-                            &ione, &ione, pct.desca);
+                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, 
+                            &ione, pct.desca, (double *)&beta, (double *)distBij, &ione, &ione, pct.desca);
+
+                    /*Multiply the result with Sij, result is in distCij */
+                    PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
+                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, 
+                            &ione, pct.desca, (double *)&beta, (double *)distCij, &ione, &ione, pct.desca);
+
                 }
                 else {
-                    PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, &ione, pct.desca, (double *)&beta, (double *)distBij,
-                            &ione, &ione, pct.desca);
-                }
 
-
-                /*Multiply the result with Sij, result is in distCij */
-                if(ct.is_gamma) {
-                    PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, &ione, pct.desca, (double *)&beta, (double *)distCij,
-                            &ione, &ione, pct.desca);
-                }
-                else {
                     PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, &ione, pct.desca, (double *)&beta, (double *)distCij,
-                            &ione, &ione, pct.desca);
+                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, 
+                            &ione, pct.desca, (double *)&beta, (double *)distBij, &ione, &ione, pct.desca);
+
+                    /*Multiply the result with Sij, result is in distCij */
+                    PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
+                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, 
+                            &ione, pct.desca, (double *)&beta, (double *)distCij, &ione, &ione, pct.desca);
+
                 }
 
                 // Copy result into Bij
                 for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
+
             }
             delete(RT1);
 
@@ -265,7 +262,7 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
     }
     else {
         // Non-scalapack nodes should have Aij set to zero
-        for (int idx = 0; idx < dist_length; idx++) {
+        for (int idx = 0; idx < num_states*num_states; idx++) {
             eigvectors[idx] = ZERO_t;
         }
     }
@@ -294,7 +291,6 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
 
 
     delete [] Cij;
-    delete [] distIij;
     delete [] distCij;
     delete [] distSij;
     delete [] distBij;
