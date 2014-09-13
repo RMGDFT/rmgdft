@@ -171,7 +171,7 @@ void Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *B
 
         /****************** Find Matrix of Eigenvectors *****************************/
         /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
-        RT1 = new RmgTimer("Diagonalization: lapack");
+        RT1 = new RmgTimer("Diagonalization: PDSYGVX/PZHEGVX");
         {
             char *range = "a";
             char *uplo = "l", *jobz = "v";

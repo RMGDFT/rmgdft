@@ -158,7 +158,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     }
     else {
        
-        RT1 = new RmgTimer("Diagonalization: fs: normal");
+        RT1 = new RmgTimer("Diagonalization: fs: folded");
         // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
         KpointType *V = new KpointType[n*n]();
         KpointType *G = new KpointType[n*n]();
@@ -260,8 +260,9 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         // Overlaps
         RmgTimer *RT3 = new RmgTimer("Diagonalization: fs: overlaps");
         //QMD_dcopy (n*n, V, 1, a, 1);
-        for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
-        dsyrk (cuplo, transt, &n, &n, &alpha, A, &n, &beta, C, &n);
+//        for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
+//        dsyrk (cuplo, transt, &n, &n, &alpha, A, &n, &beta, C, &n);
+        dsyrk (cuplo, transt, &n, &n, &alpha, V, &n, &beta, C, &n);
         delete(RT3);
 
         // Cholesky factorization
