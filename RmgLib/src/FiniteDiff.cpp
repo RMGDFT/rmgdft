@@ -1051,7 +1051,7 @@ double FiniteDiff::app4_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 {
 
     int ibrav = L->get_ibrav_type();
-    if((ibrav != CUBIC_PRIMITIVE) || (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
     }
 
@@ -1120,7 +1120,7 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 {
 
     int ibrav = L->get_ibrav_type();
-    if((ibrav != CUBIC_PRIMITIVE) || (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
         rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
     }
 
