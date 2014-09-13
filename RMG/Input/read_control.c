@@ -114,10 +114,6 @@ void read_control (char *file)
           dprintf("\nThis version of RMG was not built with Magma. Changing diagonalization driver to Lapack.\n");
           ct.subdiag_driver = SUBDIAG_LAPACK;
     }
-    if(verify( "subdiag_driver", "magmafs" )) {
-          dprintf("\nThis version of RMG was not built with Magma. Changing diagonalization driver to Lapack.\n");
-          ct.subdiag_driver = SUBDIAG_LAPACK;
-    }
 #endif
 
 #if !SCALAPACK_LIBS

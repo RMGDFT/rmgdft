@@ -89,7 +89,12 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.
-    double r_width = 0.3;
+    if((ct.folded_spectrum_width < 0.15) || (ct.folded_spectrum_width > 1.0)) {
+        rmg_printf("Folded spectrum width of %d is outside valid range (0.15,1.0). Resetting to default of 0.3.\n", ct.folded_spectrum_width);
+        ct.folded_spectrum_width = 0.3;
+    }
+
+    double r_width = ct.folded_spectrum_width;
     t1 = (double)n;
     int n_win = (int)(r_width * t1);
 
@@ -111,8 +116,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     double *Vdiag = new double[n];
     double *p0 = new double[n];
     double *p1 = new double[n];
-    double *d_p0 = new double[n * eig_step];
-    double *d_p1 = new double[n];
     double *tarr = new double[n];
     double *Asave = new double[n*n];
 
@@ -128,7 +131,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     //  Transform problem to standard eigenvalue problem
     RT1 = new RmgTimer("Diagonalization: fs: tridiagonal");
-    dsygst_(&itype, cuplo, &n, A, &lda, B, &ldb, &info);
+    dsygst(&itype, cuplo, &n, A, &lda, B, &ldb, &info);
     if( info != 0 ) 
         rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
     delete(RT1);
@@ -149,7 +152,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         //        backtransform eigenvectors: x = inv(L)**T*y or inv(U)*y
         //   dtrsm_( "Leftx", uplo, trans, "Non-unit", &n, &n, &rone, b, &ldb, a, &lda );
         //
-        dtrsm (side, cuplo, transt, diag, &n, &n, &rone, B, &ldb, A, &lda);
+        dtrsm(side, cuplo, transt, diag, &n, &n, &rone, B, &ldb, A, &lda);
         delete(RT1);
 
     }
@@ -178,7 +181,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         for(int idx = 0;idx < n_win * n_win;idx++) A[idx] = G[idx];
         //QMD_dcopy (n_win * n_win, G, 1, a, 1);
 
-        dsyevd_(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
+        dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
                         work, &lwork,
                         iwork, &liwork,
                         &info);
@@ -215,25 +218,20 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
             n_eigs[eig_index] = eigs[eig_index];
             int offset = n * (eig_index - eig_start);
-            for(int idx = 0;idx < n;idx++) d_p0[offset + idx] = V[eig_index*n + idx];
         }
 
-        FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, d_p0, -0.5, 6);
+        FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 6);
 
 
         for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
 
-                int offset = n * (eig_index - eig_start);
-                // Renormalize
-                //t1 = dnrm2_(&n, d_p0, &ione);
-                t1 = 0.0;
-                for(int idx = 0;idx < n;idx++) t1 += std::norm(d_p0[offset + idx]);
-                t1 = 1.0 / sqrt(t1);
-                for(int idx = 0;idx < n;idx++) d_p0[offset + idx] *= t1;
-                //dscal(&n, &t1, d_p0, &ione);
+            int offset = n * eig_index;
+            // Renormalize
+            t1 = 0.0;
+            for(int idx = 0;idx < n;idx++) t1 += std::norm(V[offset + idx]);
+            t1 = 1.0 / sqrt(t1);
+            for(int idx = 0;idx < n;idx++) V[offset + idx] *= t1;
 
-                for(int idx = 0;idx < n;idx++) V[eig_index*n + idx] = d_p0[offset + idx];
-                //QMD_dcopy (n, d_p0, 1, &V[eig_index*n], 1);
         }
         delete(RT2);
 
@@ -337,8 +335,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     delete [] Asave;
     delete [] tarr;
-    delete [] d_p1;
-    delete [] d_p0;
     delete [] p1;
     delete [] p0;
     delete [] Vdiag;

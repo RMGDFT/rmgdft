@@ -13,9 +13,6 @@
 /* Extra fine timers, may cause some slowdown, but they are generally useful */
 #define MD_TIMERS ${MD_TIMERS}
 
-/* Experimental fast Mehrstellen operator. Disabled by default. */
-#define FAST_MEHR ${FAST_MEHR}
-
 /* Experimental fast ortho. Disabled by default. */
 #define FAST_ORTHO ${FAST_ORTHO}
 
