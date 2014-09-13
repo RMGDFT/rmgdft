@@ -329,8 +329,8 @@ void read_common ()
     get_data ("kohn_sham_time_step", &ct.eig_parm.gl_step, DBL, "0.3");
     get_data ("kohn_sham_mucycles", &ct.eig_parm.mucycles, INT, "1");
     get_data ("kohn_sham_fd_order", &ct.kohn_sham_fd_order, INT, "6");
-    if((ct.kohn_sham_fd_order != 4) && (ct.kohn_sham_fd_order != 6)) {
-        error_handler ("Kohn sham finite difference order must be 4 or 6.");
+    if((ct.kohn_sham_fd_order != 4) && (ct.kohn_sham_fd_order != 6) && (ct.kohn_sham_fd_order != 8)) {
+        error_handler ("Kohn sham finite difference order must be 4,6 or 8.");
     }
 
 

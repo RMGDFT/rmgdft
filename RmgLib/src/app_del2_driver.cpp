@@ -45,28 +45,41 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
 
     RmgTimer RT("App_del2");
     int sbasis;
+    RmgType *rptr;
     double cc = 0.0;
     FiniteDiff FD(L);
-    sbasis = (dimx + 6) * (dimy + 6) * (dimz + 6);
-    RmgType *rptr = new RmgType[sbasis + 64];
 
     if(order == APP_CI_SECOND) {
         RmgTimer *RT1 = new RmgTimer("App_del2: trade images");
+        sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
+        rptr = new RmgType[sbasis + 64];
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_TRADE);
         delete(RT1);
-        cc = FD.app_del2c (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_FOURTH) {
         RmgTimer *RT1 = new RmgTimer("App_del2: trade images");
+        sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+        rptr = new RmgType[sbasis + 64];
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
         delete(RT1);
         cc = FD.app4_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_SIXTH) {
         RmgTimer *RT1 = new RmgTimer("App_del2: trade images");
+        sbasis = (dimx + 6) * (dimy + 6) * (dimz + 6);
+        rptr = new RmgType[sbasis + 64];
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 3, CENTRAL_TRADE);
         delete(RT1);
         cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_EIGHT) {
+        RmgTimer *RT1 = new RmgTimer("App_del2: trade images");
+        sbasis = (dimx + 8) * (dimy + 8) * (dimz + 8);
+        rptr = new RmgType[sbasis + 64];
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, CENTRAL_TRADE);
+        delete(RT1);
+        cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else {
 

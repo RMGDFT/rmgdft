@@ -34,6 +34,7 @@
 #define APP_CI_SECOND 2
 #define APP_CI_FOURTH 4
 #define APP_CI_SIXTH 6
+#define APP_CI_EIGHT 8
 
 #ifdef __cplusplus
 #include "Lattice.h"
@@ -69,13 +70,16 @@ public:
     void app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
-    double app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+    double app2_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     double app4_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     double app6_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    double app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     double app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);

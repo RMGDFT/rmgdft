@@ -64,9 +64,9 @@ void mg_restrict_f (rmg_float_t *full, rmg_float_t *half, int dimx, int dimy, in
 void mg_prolong (rmg_double_t *full, rmg_double_t *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 void mg_prolong_f (rmg_float_t *full, rmg_float_t *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
-rmg_double_t app_del2c (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz,
+rmg_double_t app2_del2 (rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz,
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
-rmg_double_t app_del2c_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
+rmg_double_t app2_del2_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz,
                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz);
 void init_global_sums(void);
 

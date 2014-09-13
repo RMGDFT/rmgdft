@@ -57,10 +57,10 @@ template void FiniteDiff::app_cir_fourth<double>(double *, double *, int, int, i
 template void FiniteDiff::app_cir_fourth<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int);
 template void FiniteDiff::app_cir_fourth<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, int, int);
 
-template double FiniteDiff::app_del2c<float>(float *, float *, int, int, int, double, double, double);
-template double FiniteDiff::app_del2c<double>(double *, double *, int, int, int, double, double, double);
-template double FiniteDiff::app_del2c<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
-template double FiniteDiff::app_del2c<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
+template double FiniteDiff::app2_del2<float>(float *, float *, int, int, int, double, double, double);
+template double FiniteDiff::app2_del2<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app2_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
+template double FiniteDiff::app2_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
 template double FiniteDiff::app4_del2<float>(float *, float *, int, int, int, double, double, double);
 template double FiniteDiff::app4_del2<double>(double *, double *, int, int, int, double, double, double);
@@ -71,6 +71,11 @@ template double FiniteDiff::app6_del2<float>(float *, float *, int, int, int, do
 template double FiniteDiff::app6_del2<double>(double *, double *, int, int, int, double, double, double);
 template double FiniteDiff::app6_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app6_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
+
+template double FiniteDiff::app8_del2<float>(float *, float *, int, int, int, double, double, double);
+template double FiniteDiff::app8_del2<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app8_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
+template double FiniteDiff::app8_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
 template void FiniteDiff::app_gradient_fourth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
 template void FiniteDiff::app_gradient_fourth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
@@ -756,7 +761,7 @@ void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy,
 
 
 template <typename RmgType>
-double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+double FiniteDiff::app2_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz)
 {
 
@@ -1037,13 +1042,18 @@ double FiniteDiff::app_del2c (RmgType * a, RmgType * b, int dimx, int dimy, int 
     /* Return the diagonal component of the operator */
     return (double)std::real(cc);
 
-}                               /* end app_del2c */
+}                               /* end app2_del2 */
 
 
 template <typename RmgType>
 double FiniteDiff::app4_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz)
 {
+
+    int ibrav = L->get_ibrav_type();
+    if((ibrav != CUBIC_PRIMITIVE) || (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+    }
 
     int iz, ix, iy;
     int ixs, iys, ix1, iy1;
@@ -1108,6 +1118,11 @@ template <typename RmgType>
 double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz)
 {
+
+    int ibrav = L->get_ibrav_type();
+    if((ibrav != CUBIC_PRIMITIVE) || (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+    }
 
     int iz, ix, iy;
     int ixs, iys, ix1, iy1;
@@ -1178,6 +1193,96 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 
 }                               /* end app6_del2 */
 
+
+template <typename RmgType>
+double FiniteDiff::app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+               double gridhx, double gridhy, double gridhz)
+{
+
+    int ibrav = L->get_ibrav_type();
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+    }
+
+    int iz, ix, iy;
+    int ixs, iys, ix1, iy1;
+
+    ixs = (dimy + 8) * (dimz + 8);
+    iys = (dimz + 8);
+    ix1 = dimy * dimz;
+    iy1 = dimz;
+
+    double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
+    double th2 (-205.0 / (72.0 * h2));
+    RmgType t1x (8.0 / ( 5.0 * h2));
+    RmgType t2x (-1.0 / (5.0 * h2));
+    RmgType t3x (8.0 / (315.0 * h2));
+    RmgType t4x (-1.0 / (560.0 * h2));
+
+    h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
+    th2 -= (205.0 / (72.0 * h2));
+    RmgType t1y (8.0 / ( 5.0 * h2));
+    RmgType t2y (-1.0 / (5.0 * h2));
+    RmgType t3y (8.0 / (315.0 * h2));
+    RmgType t4y (-1.0 / (560.0 * h2));
+
+    h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
+    th2 -= (205.0 / (72.0 * h2));
+    RmgType t1z (8.0 / ( 5.0 * h2));
+    RmgType t2z (-1.0 / (5.0 * h2));
+    RmgType t3z (8.0 / (315.0 * h2));
+    RmgType t4z (-1.0 / (560.0 * h2));
+    RmgType t0 (th2);
+
+
+
+    for (ix = 4; ix < dimx + 4; ix++)
+    {
+
+        for (iy = 4; iy < dimy + 4; iy++)
+        {
+
+            for (iz = 4; iz < dimz + 4; iz++)
+            {
+
+                b[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
+                    t0 * a[ix * ixs + iy * iys + iz] +
+                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
+                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
+                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
+                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
+                    t3x * a[(ix - 3) * ixs + iy * iys + iz] +
+                    t3x * a[(ix + 3) * ixs + iy * iys + iz] +
+                    t4x * a[(ix - 4) * ixs + iy * iys + iz] +
+                    t4x * a[(ix + 4) * ixs + iy * iys + iz] +
+
+                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
+                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
+                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
+                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
+                    t3y * a[ix * ixs + (iy - 3) * iys + iz] +
+                    t3y * a[ix * ixs + (iy + 3) * iys + iz] +
+                    t4y * a[ix * ixs + (iy - 4) * iys + iz] +
+                    t4y * a[ix * ixs + (iy + 4) * iys + iz] +
+
+                    t1z * a[ix * ixs + iy * iys + iz - 1] +
+                    t1z * a[ix * ixs + iy * iys + iz + 1] +
+                    t2z * a[ix * ixs + iy * iys + iz - 2] +
+                    t2z * a[ix * ixs + iy * iys + iz + 2] +
+                    t3z * a[ix * ixs + iy * iys + iz - 3] +
+                    t3z * a[ix * ixs + iy * iys + iz + 3] +
+                    t4z * a[ix * ixs + iy * iys + iz - 4] +
+                    t4z * a[ix * ixs + iy * iys + iz + 4];
+
+            }                   /* end for */
+        }                       /* end for */
+    }                           /* end for */
+
+    /* Return the diagonal component of the operator */
+    return (double)std::real(t0);
+
+
+}                               /* end app8_del2 */
 
 
 template <typename RmgType>
