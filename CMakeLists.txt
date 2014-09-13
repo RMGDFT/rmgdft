@@ -474,6 +474,7 @@ link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 
 # Look for the magma libraries
 find_package(MAGMA)
+include_directories(${MAGMA_INCLUDES})
 if(MAGMA_FOUND)
     if(MAGMABLAS_FOUND) 
         target_link_libraries (rmg ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
@@ -525,13 +526,6 @@ if (RMG_MD_TIMERS)
 else (RMG_MD_TIMERS)
     set (MD_TIMERS 0)
 endif(RMG_MD_TIMERS)
-
-option (RMG_FAST_MEHR "Fast Mehrstellen operator." ON)
-if (RMG_FAST_MEHR)
-    set (FAST_MEHR 1)
-else (RMG_FAST_MEHR)
-    set (FAST_MEHR 0)
-endif(RMG_FAST_MEHR)
 
 set (FAST_ORTHO 0)
 if(EXPERIMENTAL_FEATURES)
