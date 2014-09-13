@@ -48,10 +48,8 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     ApplyAOperator (L, T, psi, a_psi, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
 
-    // Apply B operator to psi for ultrasoft pp
-    if(!ct.norm_conserving_pp) {
-        ApplyBOperator (L, T, psi, b_psi, dimx, dimy, dimz, ct.kohn_sham_fd_order);
-    }
+    // Apply B operator to psi
+    ApplyBOperator (L, T, psi, b_psi, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 
     // if complex orbitals apply gradient to orbital and compute dot products

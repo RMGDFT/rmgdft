@@ -67,7 +67,8 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     KpointType *Cij = new KpointType[num_states * num_states]();
 
 
-    if(!ct.norm_conserving_pp) {
+    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
+
 
         // Create unitary matrix
         for (int idx = 0; idx < num_states; idx++) {

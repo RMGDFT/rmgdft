@@ -48,7 +48,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         Cij[idx * num_states + idx] = ONE_t;
     }
 
-    if(!ct.norm_conserving_pp) {
+    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
         // Invert Bij
         int *ipiv = new int[2*num_states]();
@@ -96,8 +96,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     }
     else {
 
-        // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into Cij
-        // to pass to eigensolver
+        // norm-conserving and central FD
         for(int ix=0;ix < num_states*num_states;ix++) Cij[ix] = Aij[ix];
 
     }

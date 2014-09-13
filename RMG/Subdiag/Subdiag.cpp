@@ -206,8 +206,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     delete(RT1);
 
 
-    // We don't need B matrix for norm-conserving pseudopotentials
-    if(!ct.is_gamma) {
+    // We need B matrix for US pseudopotentials and/or MEHRSTELLEN_DISCRETIZATION
+    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
         // Compute B matrix
         RT1 = new RmgTimer("Diagonalization: matrix setup");

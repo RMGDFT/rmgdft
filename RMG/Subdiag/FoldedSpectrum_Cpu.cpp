@@ -34,7 +34,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
-    BaseGrid *G = kptr->G;
+    BaseGrid *Grid = kptr->G;
     Lattice *L = kptr->L;
 
     char *trans="n", *transt="t", *transn="n";
@@ -49,7 +49,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     if(ct.is_gamma) factor = 1;
 
 
-    int NPES = G->get_PE_X() * G->get_PE_Y() * G->get_PE_Z();
+    int NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
 
     // Array storage for folded spectrum diagonalization
     static int *fs_eigstart = NULL;
@@ -114,8 +114,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     }
 
     double *Vdiag = new double[n];
-    double *p0 = new double[n];
-    double *p1 = new double[n];
     double *tarr = new double[n];
     double *Asave = new double[n*n];
 
@@ -236,15 +234,13 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         delete(RT2);
 
 
-        // Make sure all PE's have all eigenvectors. Possible optimization here would be to 
-        // overlap computation in the above loop with communication here.
-//        MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        // Make sure all PE's have all eigenvectors.
         RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
         MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
         delete(RT2);
 
         // Do the same for the eigenvalues
-        // Could replace this with an MPI_Allgatherv as well
+        // Could replace this with an MPI_Allgatherv but size is small so maybe no point
         RT2 = new RmgTimer("Diagonalization: fs: allreduce2");
         MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         delete(RT2);
@@ -259,9 +255,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
         // Overlaps
         RmgTimer *RT3 = new RmgTimer("Diagonalization: fs: overlaps");
-        //QMD_dcopy (n*n, V, 1, a, 1);
-//        for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
-//        dsyrk (cuplo, transt, &n, &n, &alpha, A, &n, &beta, C, &n);
         dsyrk (cuplo, transt, &n, &n, &alpha, V, &n, &beta, C, &n);
         delete(RT3);
 
@@ -318,7 +311,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         delete(RT2);
         for(int idx = 0;idx < n*n;idx++) A[idx] = G[idx];
-        //QMD_dcopy (n*n, G, 1, a, 1);
 
 
 
@@ -336,8 +328,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     delete [] Asave;
     delete [] tarr;
-    delete [] p1;
-    delete [] p0;
     delete [] Vdiag;
 
     return 0;
