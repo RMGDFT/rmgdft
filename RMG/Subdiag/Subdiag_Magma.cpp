@@ -52,6 +52,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
 #if MAGMA_LIBS
 #if GPU_ENABLED
     KpointType ONE_t(1.0);
+    KpointType ZERO_t(1.0);
     int num_states = kptr->nstates;
     int ione = 1;
     int factor = 1;
@@ -64,19 +65,12 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
     KpointType *gpuCij = gpu_eigvectors;
     KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-    KpointType *Cij = new KpointType[num_states * num_states]();
+    KpointType *Cij = new KpointType[num_states * num_states];
 
 
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
 
-        // Create unitary matrix
-        for (int idx = 0; idx < num_states; idx++) {
-            Cij[idx * num_states + idx] = ONE_t;
-        }
-
-        // Transfer it to the GPU
-        custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Cij, ione, gpuCij, ione );
 
         // Transfer eigvectors which holds Bij to the gpuBij
         custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpuBij, ione );
@@ -88,10 +82,12 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
         custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Sij, ione, gpuSij, ione );
 
         // Invert Bij
-        int *ipiv = new int[2*num_states];
-        for(int idx=0;idx < num_states;idx++) ipiv[idx] = 0;
+        int *ipiv = new int[2*num_states]();
         int info = 0;
         if(ct.is_gamma) {
+
+            // Create unitary matrix on the gpu
+            magmablas_dlaset(MagmaFull, num_states, num_states, 0.0, 1.0, (double *)gpuCij, num_states);
 
             // Inverse of B should be in Cij
             RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
@@ -101,6 +97,9 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
 
         }
         else {
+
+            // Create unitary matrix on the gpu
+            magmablas_zlaset(MagmaFull, num_states, num_states, MAGMA_Z_MAKE(0.0,0.0), MAGMA_Z_MAKE(1.0,0.0), (magmaDoubleComplex *)gpuCij, num_states);
 
             // Inverse of B should be in Cij
             RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
