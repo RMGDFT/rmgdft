@@ -18,6 +18,7 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     rmg_double_t cc, hxx, hyy, hzz;
     double complex *weptr1, *weptr2, *weptr3, *weptr4, *weptr5, *gwptr;
     double complex *r1, *r2, *r3, *r4, *r5;
+    int ixx, iyy, izz;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -50,21 +51,30 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     cc = sqrt (5.0 / (4.0 * PI));
     t2 = sqrt (3.0);
 
-    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
+    ibegin = -sp->nlfdim / 2;
     iend = ibegin + sp->nlfdim;
 
-    idx = 0;
     for (ix = ibegin; ix < iend; ix++)
     {
+        ixx = ix;
+        if (ixx < 0) ixx = ix + sp->nlfdim;
         xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
+            iyy = iy;
+            if (iyy < 0) iyy = iy + sp->nlfdim;
             yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
+
+                izz = iz;
+                if (izz < 0) izz = iz + sp->nlfdim;
+                idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
+
                 zc = (rmg_double_t) iz *hzz;
+
 
 
                 ax[0] = xc;
@@ -82,7 +92,6 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 weptr4[idx] = cc * t1 * bx[1] * bx[2] / rsq1 + 0.0I;
                 weptr5[idx] = cc * t1 * (bx[0] * bx[0] - bx[1] * bx[1]) / (2.0 * rsq1) + 0.0I;
 
-                idx++;
             }                   /* end for */
 
         }                       /* end for */

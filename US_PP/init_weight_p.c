@@ -18,8 +18,18 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     rmg_double_t hxx, hyy, hzz;
     double complex *weptr1, *weptr2, *weptr3, *gwptr;
     double complex *r1, *r2, *r3;
+    int ixx, iyy, izz;
+    double complex *in, *out;
 
     invdr = 1.0 / sp->drnlig;
+
+
+        /*This is something we need to do only once per species, so do not use wisdom */
+//    in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+//    out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+
+
+ //   p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
 
     /*Number of grid points in th enon-local box in coarse and double grids */
@@ -45,20 +55,29 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
     cc = sqrt (3.0 / (4.0 * PI));
 
-    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
+    ibegin = -sp->nlfdim/2;
     iend = ibegin + sp->nlfdim;
 
-    idx = 0;
     for (ix = ibegin; ix < iend; ix++)
     {
+        ixx = ix;
+        if (ixx < 0) ixx = ix + sp->nlfdim;
+
         xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
+            iyy = iy;
+            if (iyy < 0) iyy = iy + sp->nlfdim;
+
             yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
+                izz = iz;
+                if (izz < 0) izz = iz + sp->nlfdim;
+                idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
+
                 zc = (rmg_double_t) iz *hzz;
 
                 ax[0] = xc;
@@ -74,8 +93,6 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 weptr2[idx] = cc * bx[2] * t1 / r + 0.0I;
                 weptr3[idx] = cc * bx[1] * t1 / r + 0.0I;
 
-                idx++;
-
             }                   /* end for */
 
         }                       /* end for */
@@ -88,9 +105,12 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     fftw_execute_dft (p1, weptr2, gwptr);
     pack_gftoc (sp, gwptr, r2);
 
+
     fftw_execute_dft (p1, weptr3, gwptr);
     pack_gftoc (sp, gwptr, r3);
 
     fftw_free (weptr1);
+    fftw_free (in);
+    fftw_free (out);
 
 }

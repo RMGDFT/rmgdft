@@ -37,20 +37,28 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     invdr = 1.0 / sp->drnlig;
 
     /*We assume that ion is in the center of non-local box */
-    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
-    iend = ibegin + sp->nlfdim;
+//    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
 
-    idx = 0;
+    ibegin = -sp->nlfdim/2;
+    iend = ibegin + sp->nlfdim;
+    int ixx, iyy, izz;
     for (ix = ibegin; ix < iend; ix++)
     {
+        ixx = ix;
+        if (ixx < 0) ixx = ix + sp->nlfdim;
         xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
+            iyy = iy;
+            if (iyy < 0) iyy = iy + sp->nlfdim;
             yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
+
+                izz = iz;
+                if (izz < 0) izz = iz + sp->nlfdim;
                 zc = (rmg_double_t) iz *hzz;
 
                 ax[0] = xc;
@@ -59,9 +67,9 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
                 r = metric (ax);
                 t1 = linint (&sp->betalig[ip][0], r, invdr);
+                idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
                 weptr[idx] = sqrt (1.0 / (4.0 * PI)) * t1 + 0.0I;
 
-                idx++;
             }                   /* end for */
 
         }                       /* end for */
@@ -69,6 +77,7 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     }                           /* end for */
 
     fftw_execute_dft (p1, weptr, gwptr);
+
     pack_gftoc (sp, gwptr, rtptr);
 
     fftw_free (weptr);

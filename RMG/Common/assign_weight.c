@@ -22,6 +22,7 @@ void assign_weight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t * 
     idx = nldim * nldim * nldim;
     my_malloc (tem_array, idx, rmg_double_t);
     my_malloc (Btem_array, idx, rmg_double_t);
+    weight_shift_center(sp, beptr);
     for(ix = 0; ix < nldim * nldim * nldim; ix++) 
         tem_array[ix] = creal(beptr[ix]);
 

@@ -15,6 +15,7 @@ void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t
     int idx, ix, iy, iz, *dvec;
     int idx1, docount;
 
+    weight_shift_center(sp, beptr);
     dvec = pct.idxflag[ion];
     idx = docount = 0;
     for (ix = 0; ix < sp->nldim; ix++)

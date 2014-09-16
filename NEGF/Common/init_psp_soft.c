@@ -110,7 +110,8 @@ void init_psp_soft (void)
         if (!(it1 % 2))
             it1++;
         sp->nldim = it1;
-        sp->nlfdim = ct.nxfgrid * it1;
+        sp->nldim = sp->nldim/2*2 +1;
+        sp->nlfdim = ct.nxfgrid * sp->nldim + ct.nxfgrid -1;
 
         if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID())
             || (sp->nldim >= get_NZ_GRID()))

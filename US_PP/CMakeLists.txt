@@ -1,4 +1,5 @@
 add_library (US_PP
+weight_shift_center.c
 init_weight_p.c
 ylmr2.c
 init_weight_s.c

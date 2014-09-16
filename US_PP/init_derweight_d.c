@@ -40,6 +40,7 @@ void init_derweight_d (SPECIES * sp,
     double complex *r3x, *r3y, *r3z;
     double complex *r4x, *r4y, *r4z;
     double complex *r5x, *r5y, *r5z;
+    int ixx, iyy, izz;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -103,20 +104,30 @@ void init_derweight_d (SPECIES * sp,
     cc = sqrt (5.0 / (4.0 * PI));
     t3 = sqrt (3.0);
 
-    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
+    ibegin = -sp->nlfdim / 2;
     iend = ibegin + sp->nlfdim;
 
     idx = 0;
     for (ix = ibegin; ix < iend; ix++)
     {
+
+        ixx = ix;
+        if (ixx < 0) ixx = ix + sp->nlfdim;
         xc = (rmg_double_t) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
+            iyy = iy;
+            if (iyy < 0) iyy = iy + sp->nlfdim;
             yc = (rmg_double_t) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
+
+                izz = iz;
+                if (izz < 0) izz = iz + sp->nlfdim;
+                idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
+
                 zc = (rmg_double_t) iz *hzz;
 
 
@@ -197,7 +208,6 @@ void init_derweight_d (SPECIES * sp,
                 weptr5z[idx] = cc * (t2 * dy5_dz + y5 * dt2_dz) + 0.0I;
 
 
-                idx++;
             }                   /* end for */
 
         }                       /* end for */
