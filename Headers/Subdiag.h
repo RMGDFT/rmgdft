@@ -61,6 +61,12 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 template <typename DataType>
 void FoldedSpectrumIterator(DataType *A, int n, double *eigs, int k, DataType *X, double alpha, int iterations);
 
+template <typename DataType>
+void FoldedSpectrumMinverse(DataType *A, DataType *Ainv, int n, int iterations);
+
+template <typename DataType>
+void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations);
+
 
 
 #endif

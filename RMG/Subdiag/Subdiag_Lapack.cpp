@@ -49,7 +49,6 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     }
 
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
-
         // Invert Bij
         int *ipiv = new int[2*num_states]();
         if(ct.is_gamma) {
@@ -73,7 +72,6 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
             rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
         }
         delete [] ipiv;
-
 
         /*Multiply inverse of B and and A */
         /*B^-1*A */
@@ -114,7 +112,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
     if(ct.is_gamma) {
 
-        if(ct.use_folded_spectrum) {
+        if(ct.use_folded_spectrum && (ct.scf_steps > 2) || (ct.use_folded_spectrum && (ct.runflag == RESTART))) {
 
             FoldedSpectrumCpu<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
             for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 

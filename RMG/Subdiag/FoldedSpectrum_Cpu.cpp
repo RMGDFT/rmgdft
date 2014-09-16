@@ -90,7 +90,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.
     if((ct.folded_spectrum_width < 0.15) || (ct.folded_spectrum_width > 1.0)) {
-        rmg_printf("Folded spectrum width of %d is outside valid range (0.15,1.0). Resetting to default of 0.3.\n", ct.folded_spectrum_width);
+        rmg_printf("Folded spectrum width of %8.4f is outside valid range (0.15,1.0). Resetting to default of 0.3.\n", ct.folded_spectrum_width);
         ct.folded_spectrum_width = 0.3;
     }
 
@@ -116,216 +116,205 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     double *Vdiag = new double[n];
     double *tarr = new double[n];
     double *Asave = new double[n*n];
-
-
+    double *Bsave = new double[n*n];
+    for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
 
     RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: cholesky");
-    //  Form a Cholesky factorization of B.
+    //  Form a Cholesky factorization of B
     dpotrf(cuplo, &n, B, &ldb, &info);
     if( info != 0 )
         rmg_error_handler(__FILE__, __LINE__, "dpotrf failure");
     delete(RT1);
 
 
-    //  Transform problem to standard eigenvalue problem
-    RT1 = new RmgTimer("Diagonalization: fs: tridiagonal");
-    dsygst(&itype, cuplo, &n, A, &lda, B, &ldb, &info);
+    RT1 = new RmgTimer("Diagonalization: fs: folded");
+    char *trans_n = "n";
+    KpointType *NULLptr = NULL;
+
+
+    // Convert to standard eigenvalue problem
+    KpointType *Binv = new KpointType[n*n];
+
+    int its=5;
+double *T = new double[n*n];
+for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its);
+
+    // Copy back to A
+    for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
+delete [] T;
+
+    // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
+    KpointType *V = new KpointType[n*n]();
+    KpointType *G = new KpointType[n*n]();
+    double *n_eigs = new double[n]();
+
+    // AX=lambdaX  store a copy of A in Asave
+    for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+    //QMD_dcopy (n*n, a, 1, Asave, 1);
+
+ 
+    // Do the submatrix along the diagonal to get starting values for folded spectrum
+    //--------------------------------------------------------------------
+    RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: submatrix");
+    for(int ix = 0;ix < n_win;ix++){
+        for(int iy = 0;iy < n_win;iy++){
+            G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
+        }
+    }
+
+    for(int idx = 0;idx < n_win * n_win;idx++) A[idx] = G[idx];
+    //QMD_dcopy (n_win * n_win, G, 1, a, 1);
+
+    dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
+                    work, &lwork,
+                    iwork, &liwork,
+                    &info);
     if( info != 0 ) 
-        rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
-    delete(RT1);
-
-
-    // We need to wait until a is diagonally dominant so we skip the first 3 steps
-    if((ct.scf_steps < 3) && (ct.runflag != RESTART)) {
-
-        RT1 = new RmgTimer("Diagonalization: fs: init");
-        dsyevd(jobz, cuplo, &n, A, &lda, eigs,
-                         work,  &lwork,
-                         iwork, &liwork,
-                         &info);
-        if( info != 0 ) 
             rmg_error_handler(__FILE__, __LINE__, "dsyevd failure");
 
-        //   For A*x=(lambda)*B*x and A*B*x=(lambda)*x;
-        //        backtransform eigenvectors: x = inv(L)**T*y or inv(U)*y
-        //   dtrsm_( "Leftx", uplo, trans, "Non-unit", &n, &n, &rone, b, &ldb, a, &lda );
-        //
-        dtrsm(side, cuplo, transt, diag, &n, &n, &rone, B, &ldb, A, &lda);
-        delete(RT1);
+    //--------------------------------------------------------------------
+
+    for(int idx = 0;idx < n_win * n_win;idx++) G[idx] = A[idx];
+    //QMD_dcopy (n_win * n_win, a, 1, G, 1);
+
+    for(int ix = 0;ix < n_win;ix++) {
+        Vdiag[ix] = ONE_t;
+        if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -ONE_t;
+    }
+
+    // Store the eigen vector from the submatrix
+    for(int ix = 0;ix < n_win;ix++) {
+
+        if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
+
+            for(int iy = 0;iy < n_win;iy++) {
+                  V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
+            }
+
+        }
 
     }
-    else {
-       
-        RT1 = new RmgTimer("Diagonalization: fs: folded");
-        // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
-        KpointType *V = new KpointType[n*n]();
-        KpointType *G = new KpointType[n*n]();
-        double *n_eigs = new double[n]();
-
-        // AX=lambdaX  store a copy of A in Asave
-        for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
-        //QMD_dcopy (n*n, a, 1, Asave, 1);
-
-     
-        // Do the submatrix along the diagonal to get starting values for folded spectrum
-        //--------------------------------------------------------------------
-        RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: submatrix");
-        for(int ix = 0;ix < n_win;ix++){
-            for(int iy = 0;iy < n_win;iy++){
-                G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
-            }
-        }
-
-        for(int idx = 0;idx < n_win * n_win;idx++) A[idx] = G[idx];
-        //QMD_dcopy (n_win * n_win, G, 1, a, 1);
-
-        dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
-                        work, &lwork,
-                        iwork, &liwork,
-                        &info);
-        if( info != 0 ) 
-                rmg_error_handler(__FILE__, __LINE__, "dsyevd failure");
-
-        //--------------------------------------------------------------------
-
-        for(int idx = 0;idx < n_win * n_win;idx++) G[idx] = A[idx];
-        //QMD_dcopy (n_win * n_win, a, 1, G, 1);
-
-        for(int ix = 0;ix < n_win;ix++) {
-            Vdiag[ix] = ONE_t;
-            if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -ONE_t;
-        }
-
-        // Store the eigen vector from the submatrix
-        for(int ix = 0;ix < n_win;ix++) {
-
-            if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
-
-                for(int iy = 0;iy < n_win;iy++) {
-                      V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
-                }
-
-            }
-
-        }
-        delete(RT2);
+    delete(RT2);
 
 
-        // Apply folded spectrum to this PE's range of eigenvectors
-        RT2 = new RmgTimer("Diagonalization: fs: iteration");
-        for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
-            n_eigs[eig_index] = eigs[eig_index];
-            int offset = n * (eig_index - eig_start);
-        }
+    // Apply folded spectrum to this PE's range of eigenvectors
+    RT2 = new RmgTimer("Diagonalization: fs: iteration");
+    for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
+        n_eigs[eig_index] = eigs[eig_index];
+        int offset = n * (eig_index - eig_start);
+    }
 
-        FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 6);
-
-
-        for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
-
-            int offset = n * eig_index;
-            // Renormalize
-            t1 = 0.0;
-            for(int idx = 0;idx < n;idx++) t1 += std::norm(V[offset + idx]);
-            t1 = 1.0 / sqrt(t1);
-            for(int idx = 0;idx < n;idx++) V[offset + idx] *= t1;
-
-        }
-        delete(RT2);
+    FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 6);
 
 
-        // Make sure all PE's have all eigenvectors.
-        RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
-        MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
-        delete(RT2);
+    for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
 
-        // Do the same for the eigenvalues
-        // Could replace this with an MPI_Allgatherv but size is small so maybe no point
-        RT2 = new RmgTimer("Diagonalization: fs: allreduce2");
-        MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        delete(RT2);
+        int offset = n * eig_index;
+        // Renormalize
+        t1 = 0.0;
+        for(int idx = 0;idx < n;idx++) t1 += std::norm(V[offset + idx]);
+        t1 = 1.0 / sqrt(t1);
+        for(int idx = 0;idx < n;idx++) V[offset + idx] *= t1;
 
-        // Copy summed eigs back to w
-        for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
+    }
+    delete(RT2);
 
-        // Gram-Schmidt ortho for eigenvectors.
-        RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
-        alpha = 1.0;
-        beta = 0.0;
 
-        // Overlaps
-        RmgTimer *RT3 = new RmgTimer("Diagonalization: fs: overlaps");
-        dsyrk (cuplo, transt, &n, &n, &alpha, V, &n, &beta, C, &n);
-        delete(RT3);
+    // Make sure all PE's have all eigenvectors.
+    RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
+    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+    delete(RT2);
 
-        // Cholesky factorization
-        RT3 = new RmgTimer("Diagonalization: fs: cholesky");
-        dpotrf(cuplo, &n, C, &n, &info);
-        delete(RT3);
+    // Do the same for the eigenvalues
+    // Could replace this with an MPI_Allgatherv but size is small so maybe no point
+    RT2 = new RmgTimer("Diagonalization: fs: allreduce2");
+    MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    delete(RT2);
 
-        // Get inverse of diagonal elements
-        for(ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
+    // Copy summed eigs back to w
+    for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
+
+    // Gram-Schmidt ortho for eigenvectors.
+    RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
+    alpha = 1.0;
+    beta = 0.0;
+
+    // Overlaps
+    RmgTimer *RT3 = new RmgTimer("Diagonalization: fs: overlaps");
+    dsyrk (cuplo, transt, &n, &n, &alpha, V, &n, &beta, C, &n);
+    delete(RT3);
+
+    // Cholesky factorization
+    RT3 = new RmgTimer("Diagonalization: fs: cholesky");
+    dpotrf(cuplo, &n, C, &n, &info);
+    delete(RT3);
+
+    // Get inverse of diagonal elements
+    for(ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
 //----------------------------------------------------------------
-        for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
+    for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
-        int idx, omp_tid;
-        double *darr, *sarr;
-        int st, st1;
+    int idx, omp_tid;
+    double *darr, *sarr;
+    int st, st1;
 #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
 {
-        omp_tid = omp_get_thread_num();
-        if(omp_tid == 0) darr = new double[n * omp_get_num_threads()];
+    omp_tid = omp_get_thread_num();
+    if(omp_tid == 0) darr = new double[n * omp_get_num_threads()];
 #pragma omp barrier
 
 #pragma omp for schedule(static, 1) nowait
-        for(idx = eig_start;idx < eig_stop;idx++) {
+    for(idx = eig_start;idx < eig_stop;idx++) {
 
-            sarr = &darr[omp_tid*n];
+        sarr = &darr[omp_tid*n];
 
-            for (int st = 0; st < n; st++) sarr[st] = V[st*n + idx];
+        for (int st = 0; st < n; st++) sarr[st] = V[st*n + idx];
 
-            for (int st = 0; st < n; st++) {
+        for (int st = 0; st < n; st++) {
 
-                sarr[st] *= tarr[st];
+            sarr[st] *= tarr[st];
 
-                for (int st1 = st+1; st1 < n; st1++) {
-                    sarr[st1] -= C[st1 + n*st] * sarr[st];
-                }
-
+            for (int st1 = st+1; st1 < n; st1++) {
+                sarr[st1] -= C[st1 + n*st] * sarr[st];
             }
 
-            for (st = 0; st < n; st++) G[st*n + idx] = sarr[st];
-
         }
-} // end omp section
 
-        delete [] darr;
-
-        delete(RT2);
-
-
-        // A matrix transpose here would let us use an Allgatherv which would be
-        // almost twice as fast for the communications part.
-        RT2 = new RmgTimer("Diagonalization: fs: allreduce3");
-        MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        delete(RT2);
-        for(int idx = 0;idx < n*n;idx++) A[idx] = G[idx];
-
-
-
-        RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
-        dtrsm (side, cuplo, transt, diag, &n, &n, &rone, B, &ldb, A, &lda);
-        delete(RT2);
-
-        delete(RT1);
-        delete [] V;
-        delete [] G;
-        delete [] n_eigs;
+        for (st = 0; st < n; st++) G[st*n + idx] = sarr[st];
 
     }
+} // end omp section
+
+    delete [] darr;
+
+    delete(RT2);
 
 
+    // A matrix transpose here would let us use an Allgatherv which would be
+    // almost twice as fast for the communications part.
+    RT2 = new RmgTimer("Diagonalization: fs: allreduce3");
+    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    delete(RT2);
+    for(int idx = 0;idx < n*n;idx++) A[idx] = G[idx];
+
+
+
+    RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
+    dtrsm (side, cuplo, transt, diag, &n, &n, &rone, B, &ldb, A, &lda);
+    delete(RT2);
+
+    delete(RT1);
+    delete [] V;
+    delete [] G;
+    delete [] n_eigs;
+
+
+for(int st1=0;st1<n;st1++)
+    rmg_printf("EIGS for state %d = %10.4f\n", st1, Ha_eV*eigs[st1]);
+
+    delete [] Bsave;
     delete [] Asave;
     delete [] tarr;
     delete [] Vdiag;
