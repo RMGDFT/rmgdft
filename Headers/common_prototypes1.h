@@ -206,6 +206,7 @@ void init_img_topo ( int dimensionality );
 void init_pegrid (void);
 STATE *init_states (void);
 void init_weight (void);
+void weight_shift_center(SPECIES * sp, fftw_complex * weptr);
 void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
                     fftw_plan p1);
 void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip,

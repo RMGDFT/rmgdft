@@ -32,6 +32,8 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     double *Nlweight_R = (double *)Nlweight;
     double *Bweight_R = (double *)Bweight;
 
+    weight_shift_center(sp, beptr);
+
     for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
     for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
     for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
