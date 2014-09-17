@@ -89,6 +89,14 @@ void init_derweight_s (SPECIES * sp,
                 weptry[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[1] / r + 0.0I;
                 weptrz[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[2] / r + 0.0I;
 
+
+                if((ix*2 + sp->nlfdim) == 0 | (iy*2 + sp->nlfdim) == 0 | (iz*2 + sp->nlfdim) == 0 )
+                {
+                    weptrx[idx] = 0.0;
+                    weptry[idx] = 0.0;
+                    weptrz[idx] = 0.0;
+                }
+
             }                   /* end for */
 
         }                       /* end for */

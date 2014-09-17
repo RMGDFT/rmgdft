@@ -129,7 +129,7 @@ void init_psp (void)
         /*Get nldim */
         sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
         sp->nldim = sp->nldim/2*2 +1;
-        sp->nlfdim = ct.nxfgrid * sp->nldim + ct.nxfgrid -1;
+        sp->nlfdim = ct.nxfgrid * sp->nldim;
         
 	if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID())
             || (sp->nldim >= get_NZ_GRID()))

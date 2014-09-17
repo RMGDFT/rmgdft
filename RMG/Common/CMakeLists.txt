@@ -1,4 +1,5 @@
 add_library (RMG_Common
+weight_shift_center.c
 ApplyAOperator.cpp
 ApplyBOperator.cpp
 AppCirDriverBeta.cpp

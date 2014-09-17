@@ -92,6 +92,15 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 weptr4[idx] = cc * t1 * bx[1] * bx[2] / rsq1 + 0.0I;
                 weptr5[idx] = cc * t1 * (bx[0] * bx[0] - bx[1] * bx[1]) / (2.0 * rsq1) + 0.0I;
 
+
+                if((ix*2 + sp->nlfdim) == 0 | (iy*2 + sp->nlfdim) == 0 | (iz*2 + sp->nlfdim) == 0 )
+    {
+                    weptr1[idx] = 0.0;
+                    weptr2[idx] = 0.0;
+                    weptr3[idx] = 0.0;
+                    weptr4[idx] = 0.0;
+                    weptr5[idx] = 0.0;
+}
             }                   /* end for */
 
         }                       /* end for */

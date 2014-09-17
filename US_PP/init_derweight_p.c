@@ -132,6 +132,20 @@ void init_derweight_p (SPECIES * sp,
 
 
 
+                if((ix*2 + sp->nlfdim) == 0 | (iy*2 + sp->nlfdim) == 0 | (iz*2 + sp->nlfdim) == 0 )
+                {
+                    weptr1x[idx] = 0.0;
+                    weptr1y[idx] = 0.0;
+                    weptr1z[idx] = 0.0;
+                    weptr2x[idx] = 0.0;
+                    weptr2y[idx] = 0.0;
+                    weptr2z[idx] = 0.0;
+                    weptr3x[idx] = 0.0;
+                    weptr3y[idx] = 0.0;
+                    weptr3z[idx] = 0.0;
+                }
+
+
             }                   /* end for */
 
         }                       /* end for */
