@@ -67,6 +67,10 @@ void FoldedSpectrumMinverse(DataType *A, DataType *Ainv, int n, int iterations);
 template <typename DataType>
 void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations);
 
+int Rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,
+                double *w, double *work, int lwork, int *iwork, int liwork, double *wa);
+int Rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double> *b, int ldb,
+                double *eigs, double *work, int lwork, double *rwork, int lrwork, int *iwork, int liwork, double *wa);
 
 
 #endif

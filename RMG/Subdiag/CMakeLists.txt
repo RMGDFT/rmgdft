@@ -7,6 +7,8 @@ Subdiag_Scalapack.cpp
 FoldedSpectrum_Cpu.cpp
 FoldedSpectrumIterator.cpp
 #FoldedSpectrumMinverse.cpp
+Rmg_dsygvd_gpu.cpp
+Rmg_zhegvd_gpu.cpp
 FoldedSpectrumGSE.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
