@@ -31,37 +31,87 @@
 //         alpha is the multiplicative factor
 //         iterations is the number of iterations
 
-template void FoldedSpectrumIterator<double> (double *, int, double *, int, double *, double, int);
-template <typename DataType>
-void FoldedSpectrumIterator(DataType *A, int n, double *eigs, int k, DataType *X, double alpha, int iterations)
+void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations)
 {
 
-    DataType ZERO_t(0.0);
-    DataType ONE_t(1.0);
-    DataType *Y = new DataType[n * k]();
-    DataType *C = new DataType[n];
-    DataType *NULLptr = NULL;
-
+    int ione = 1;
+    double ONE_t = 1.0;
+    double ZERO_t = 0.0;
+    double *Y = new double[n * k]();
+    double *NULLptr = NULL;
+    double *Agpu = NULL;
+    double *Xgpu = NULL;
+    double *Ygpu = NULL;
+    double *Tgpu = NULL;
+    double *eigs_gpu = NULL;
+    double neg_rone = -1.0;
+    int sizr = n * k;
     char *trans_n = "n";
+    char *trans_t = "t";
 
+#if GPU_ENABLED
+    cublasStatus_t custat;
+    Agpu = (double *)GpuMalloc(n * n * sizeof(double));
+    Xgpu = (double *)GpuMalloc(n * k * sizeof(double));
+    Ygpu = (double *)GpuMalloc(n * k * sizeof(double));
+    Tgpu = (double *)GpuMalloc(n * k * sizeof(double));
+    eigs_gpu = (double *)GpuMalloc(n * sizeof(double));
+    custat = cublasSetVector(n * n , sizeof(double), A, ione, Agpu, ione );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing A from system memory to gpu.");
+
+    // Must be a better way of doing this, setting matrix to zero on CPU and transferring seems wasteful
+    custat = cublasSetVector(n * k , sizeof(double), Y, ione, Ygpu, ione );     // Must be a better way of doing this
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
+
+    // Must be a better way of doing this, setting matrix to zero on CPU and transferring seems wasteful
+    custat = cublasSetVector(n * k , sizeof(double), X, ione, Xgpu, ione );     // Must be a better way of doing this
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing X from system memory to gpu.");
+
+    custat = cublasSetVector(n, sizeof(double), eigs, ione, eigs_gpu, ione );     // Must be a better way of doing this
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
+
+#endif
 
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
 
         // Generate A * X for entire block
-        RmgGemm(trans_n, trans_n, n, k, n, ONE_t, A, n, X, n, ZERO_t, Y, n, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        RmgGemm(trans_n, trans_n, n, k, n, ONE_t, A, n, X, n, ZERO_t, Y, n, Agpu, Xgpu, Ygpu, false, false, false, false);
 
-        // Subtract off lamda * I component
+        // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
+#if GPU_ENABLED
+
+        custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
+        custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, Tgpu, ione, Ygpu, ione);
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+        custat = cublasDaxpy(ct.cublas_handle, sizr, &alpha, Ygpu, ione, Xgpu, ione);
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+
+#else
         for(int kcol = 0;kcol < k;kcol++) {
            for(int ix = 0;ix < n;ix++) {
                Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
            }
         }
+        daxpy(&sizr, &alpha, Y, &ione, X, &ione);
+        //for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
+#endif
 
-        for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
 
     }    
 
-    delete [] C;
+#if GPU_ENABLED
+    custat = cublasGetVector(n * k, sizeof( double ), Xgpu, 1, X, 1 );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");
+
+    GpuFree(eigs_gpu);
+    GpuFree(Tgpu);
+    GpuFree(Ygpu);
+    GpuFree(Xgpu);
+    GpuFree(Agpu);
+#endif
     delete [] Y;
 }
+
+
