@@ -85,7 +85,8 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_ps
                 orig_psi = std::real(saved_psi[idx]) + std::imag(saved_psi[idx]) * I_t;
                 delta_psi = std::real(tmp_psi_t[idx]) - std::real(saved_psi[idx]) + (std::imag(tmp_psi_t[idx]) - std::imag(saved_psi[idx])) * I_t;
                 res_t[idx] = -4.0 * PI * sp->occupation[0] * std::real( std::conj(delta_psi) * orig_psi +
-                                                                         delta_psi * std::conj(orig_psi + delta_psi*std::conj(delta_psi) ));
+                                                                         delta_psi * std::conj(orig_psi) + delta_psi*std::conj(delta_psi) );
+
 
 //                res_t[idx] = -4.0 * PI * sp->occupation[0] *
 //                           (tmp_psi_t[idx] - (float)saved_psi[idx]) * (2.0*(float)saved_psi[idx] + ((float)tmp_psi_t[idx] - (float)saved_psi[idx]));
