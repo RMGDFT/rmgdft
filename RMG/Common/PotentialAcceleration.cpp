@@ -51,7 +51,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_ps
         vtot_sync_mutex.unlock();
 
     }
-#if 0
+
     if(ct.potential_acceleration_poisson_step > 0.0) {
 
         BaseGrid *G = kptr->G;
@@ -70,28 +70,32 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_ps
         double hygrid = G->get_hygrid(1);
         double hzgrid = G->get_hzgrid(1);
 
-        CalcType *res_t = new CalcType[2 * sbasis];
-        CalcType *work_t = new CalcType[2 * sbasis];
-        CalcType *work2_t = new CalcType[4 * sbasis];
-        CalcType *sg_psi_t = new CalcType[2 * sbasis];
+        float *res_t = new float[2 * sbasis];
+        float *work_t = new float[2 * sbasis]();
+        float *work2_t = new float[4 * sbasis];
+        float *sg_psi_t = new float[2 * sbasis];
 
 
         // construct delta_rho
-        for(int idx = 0;idx <pbasis;idx++) {
-            res_t[idx] = -4.0 * PI * sp->occupation[0] *
-                       (tmp_psi_t[idx] - saved_psi[idx]) * (2.0*saved_psi[idx] + (tmp_psi_t[idx] - saved_psi[idx]));
-        }
+        std::complex<double> delta_psi;
+        std::complex<double> orig_psi;
+        std::complex<double> I_t(0.0, 1.0);
 
-        // zero out solution vector
-        for(int idx = 0;idx <pbasis;idx++) {
-            work_t[idx] = 0.0;
+        for(int idx = 0;idx < pbasis;idx++) {
+                orig_psi = std::real(saved_psi[idx]) + std::imag(saved_psi[idx]) * I_t;
+                delta_psi = std::real(tmp_psi_t[idx]) - std::real(saved_psi[idx]) + (std::imag(tmp_psi_t[idx]) - std::imag(saved_psi[idx])) * I_t;
+                res_t[idx] = -4.0 * PI * sp->occupation[0] * std::real( std::conj(delta_psi) * orig_psi +
+                                                                         delta_psi * std::conj(orig_psi + delta_psi*std::conj(delta_psi) ));
+
+//                res_t[idx] = -4.0 * PI * sp->occupation[0] *
+//                           (tmp_psi_t[idx] - (float)saved_psi[idx]) * (2.0*(float)saved_psi[idx] + ((float)tmp_psi_t[idx] - (float)saved_psi[idx]));
         }
 
         /* Pack delta_rho into multigrid array */
-        CPP_pack_ptos<CalcType> (sg_psi_t, res_t, dimx, dimy, dimz);
-        T->trade_images<CalcType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
+        CPP_pack_ptos<float> (sg_psi_t, res_t, dimx, dimy, dimz);
+        T->trade_images<float> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
         /* Smooth it once and store the smoothed charge in res */
-        CPP_app_smooth1<CalcType> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
+        CPP_app_smooth1<float> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
         // neutralize cell with a constant background charge
         double t2 = 0.0;
@@ -118,7 +122,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_ps
         for(int idx = 0;idx <pbasis;idx++) {
             res_t[idx] = 0.0;
         }
-        CPP_pack_stop_axpy<CalcType> (work_t, res_t, 1.0, dimx, dimy, dimz);
+        CPP_pack_stop_axpy<float> (work_t, res_t, 1.0, dimx, dimy, dimz);
         double t1 = ct.potential_acceleration_poisson_step;
         if(sp->occupation[0] < 0.5) t1 = 0.0;
         vtot_sync_mutex.lock();
@@ -132,6 +136,6 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_ps
         delete [] res_t;
 
     }
-#endif
+
 }
 
