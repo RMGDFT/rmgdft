@@ -300,13 +300,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         }
 
 
-    #if 0
         /* Take care of occupation filling */
         if  (!firststep)
-            ct.efermi = fill (states, ct.occ_width, ct.nel, ct.occ_mix, kpoint->nstates, ct.occ_flag);
-
-
-
+            ct.efermi = fill (Kptr[kpt]->kstates, ct.occ_width, ct.nel, ct.occ_mix, Kptr[kpt]->nstates, ct.occ_flag);
 
 
         if (ct.occ_flag == 1 && !firststep)
@@ -315,7 +311,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             //progress_tag ();
             rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
         }
-    #endif
 
     } // end loop over kpoints
 
