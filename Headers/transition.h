@@ -104,15 +104,8 @@ template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
 void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
-
-
-
-
-
-
-
-
-
+void LoadUpf(char *file, SPECIES *sp);
+extern "C" void LoadUpf_C(char *file, SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 
 
