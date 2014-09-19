@@ -68,6 +68,7 @@ BaseThread::BaseThread(int nthreads)
     if(!BaseThread::init_flag) {
 
         BaseThread::THREADS_PER_NODE = nthreads;
+        BaseThread::in_threaded_region = false;
 
         // Should work on linux and AIX
 #if __linux__
