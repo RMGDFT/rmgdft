@@ -28,6 +28,20 @@ if(DEFINED ENV{CRAY_LIBSCI})
 #set (RMG_GPU_ENABLED 1)
 endif()
 
+option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
+if (RMG_GPU_ENABLED)
+   set (GPU_ENABLED 1)
+   set (MAGMA_LIBS 1)
+else (RMG_GPU_ENABLED)
+   set (GPU_ENABLED 0)
+   set (MAGMA_LIBS 0)
+endif(RMG_GPU_ENABLED)
+
+option (RMG_MAGMA_LIBS "Use MAGMA libraries." ON)
+if (NOT RMG_MAGMA_LIBS)
+    set (MAGMA_LIBS 0)
+endif(NOT RMG_MAGMA_LIBS)
+
 set(CMAKE_FIND_ROOT_PATH 
 /opt/fftw/default/x86_64     #fftw3 path for bluewater
 /usr/local/apps/fftw/intel101_hydra/2.1.5
@@ -336,8 +350,8 @@ endif(NOT RMG_MATH_LIBS)
 
 
 # Look for GPU libraries. Only CUDA supported for now
-find_package(CUDA)
-if(CUDA_FOUND AND RMG_GPU_ENABLED)
+if(RMG_GPU_ENABLED)
+  find_package(CUDA REQUIRED)
   if(NOT CRAY_XK)
       target_link_libraries(rmg ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
       target_link_libraries(rmg-on ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
@@ -354,18 +368,18 @@ if(CUDA_FOUND AND RMG_GPU_ENABLED)
   include_directories(${CUDA_INCLUDE_DIRS})
 
 
-SET(CUDA_NVCC_FLAGS "-arch=sm_13" CACHE STRING "nvcc flags" FORCE)
+  SET(CUDA_NVCC_FLAGS "-arch=sm_13" CACHE STRING "nvcc flags" FORCE)
  
 #HW capability 1.3
-SET (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-SET(LIB_TYPE STATIC) #set the lib type
-CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
-${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
-${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
+  SET (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+  SET(LIB_TYPE STATIC) #set the lib type
+  CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
+  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
+  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
   target_link_libraries(rmg-negf TestLib)
-ADD_DEPENDENCIES(rmg-negf TestLib)
+  ADD_DEPENDENCIES(rmg-negf TestLib)
  
-endif(CUDA_FOUND AND RMG_GPU_ENABLED)
+endif(RMG_GPU_ENABLED)
 
 #include_directories(rmg "/usr/local/magma/include")
 add_dependencies(rmg libxc)
@@ -542,26 +556,6 @@ if(EXPERIMENTAL_FEATURES)
     endif(RMG_FAST_ORTHO)
 endif(EXPERIMENTAL_FEATURES)
 
-option (RMG_GPU_ENABLED "Use GPU acceleration." ON)
-if (RMG_GPU_ENABLED)
-    if(CUDA_FOUND)
-        set (GPU_ENABLED 1)
-    else(CUDA_FOUND)
-        set (GPU_ENABLED 0)
-    endif(CUDA_FOUND)
-else (RMG_GPU_ENABLED)
-    set (GPU_ENABLED 0)
-endif(RMG_GPU_ENABLED)
-
-option (RMG_MAGMA_LIBS "Use MAGMA libraries." OFF)
-if (RMG_MAGMA_LIBS)
-    set (MAGMA_LIBS 0)
-    if (RMG_GPU_ENABLED)
-        set (MAGMA_LIBS 1)
-    endif(RMG_GPU_ENABLED)
-else (RMG_MAGMA_LIBS)
-    set (MAGMA_LIBS 0)
-endif(RMG_MAGMA_LIBS)
 
 # Send the configure file to the build directory
 configure_file (
