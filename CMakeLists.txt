@@ -270,6 +270,7 @@ if(MKLROOT)
 endif(MKLROOT)
 
 
+set(USE_SCALAPACK_LIBS 1)
 # MKL includes blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
 if(NOT RMG_MATH_LIBS)
@@ -475,9 +476,10 @@ link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 #target_link_libraries (rmg "/usr/local/magma/lib/libmagma.a" "${MKL_LIB64}/libmkl_gnu_thread.a" "/usr/local/magma/lib/libmagma.a")
 
 # Look for the magma libraries
-find_package(MAGMA)
-include_directories(${MAGMA_INCLUDES})
-if(MAGMA_FOUND)
+if(MAGMA_LIBS)
+  find_package(MAGMA)
+  include_directories(${MAGMA_INCLUDES})
+  if(MAGMA_FOUND)
     if(MAGMABLAS_FOUND) 
         target_link_libraries (rmg ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
         target_link_libraries (rmg-on ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
@@ -489,7 +491,8 @@ if(MAGMA_FOUND)
         target_link_libraries (rmg-tddft ${MAGMA_LIBRARIES} )
         target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} )
     endif(MAGMABLAS_FOUND) 
-endif(MAGMA_FOUND)
+  endif(MAGMA_FOUND)
+endif(MAGMA_LIBS)
 
 
 # configure make_conf.h to pass some of the CMake settings
