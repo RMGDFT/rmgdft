@@ -58,12 +58,41 @@ void LoadUpf(char *file, SPECIES *sp)
    
    std::cout << PP_INFO << std::endl; 
 
+   // Get the type of pseudopotential
+   std::string pp_type = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.pseudo_type");
+   boost::to_upper(pp_type);
+   if(!pp_type.compare(0, 2, "NC")) {
+       ct.norm_conserving_pp = true;
+   }
+   else if(!pp_type.compare(0, 2, "US")) {
+       ct.norm_conserving_pp = false;
+   }
+   else {
+       rmg_error_handler(__FILE__,__LINE__,"RMG only supports norm conserving and ultrasoft pseudpotentials.\n");
+   }
+
+
+   // Kind of redundant information in the format
+   std::string s_is_ultrasoft = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.is_ultrasoft"); 
+   boost::to_upper(s_is_ultrasoft);
+   if(!s_is_ultrasoft.compare(0,1,"F")) ct.norm_conserving_pp = true;
+   if(!s_is_ultrasoft.compare(0,5,"FALSE")) ct.norm_conserving_pp = true;
+   if(!s_is_ultrasoft.compare(0,1,"T")) ct.norm_conserving_pp = false;
+   if(!s_is_ultrasoft.compare(0,4,"TRUE")) ct.norm_conserving_pp = false;
+
+   // Core correction
+   std::string s_core_correction = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.core_correction");
+   if(!s_core_correction.compare(0,1,"F")) sp->nlccflag = false;
+   if(!s_core_correction.compare(0,5,"FALSE")) sp->nlccflag = false;
+   if(!s_core_correction.compare(0,1,"T")) sp->nlccflag = true;
+   if(!s_core_correction.compare(0,4,"TRUE")) sp->nlccflag = true;
+
    // Attributes of the mesh
    double PP_MESH_dx = upf_tree.get<double>("UPF.PP_MESH.<xmlattr>.dx");
    std::cout << "PP_MESH.dx    =  " << PP_MESH_dx << std::endl; 
 
-   int PP_MESH_mesh = upf_tree.get<double>("UPF.PP_MESH.<xmlattr>.mesh");
-   std::cout << "PP_MESH.mesh  =  " << PP_MESH_mesh << std::endl; 
+   sp->rg_points = upf_tree.get<double>("UPF.PP_MESH.<xmlattr>.mesh");
+   std::cout << "PP_MESH.mesh  =  " << sp->rg_points << std::endl; 
  
    double PP_MESH_xmin = upf_tree.get<double>("UPF.PP_MESH.<xmlattr>.xmin");
    std::cout << "PP_MESH.xmin  =  " << PP_MESH_xmin << std::endl; 
@@ -77,32 +106,52 @@ void LoadUpf(char *file, SPECIES *sp)
 
    // Read in the radial mesh and convert it into a C style array
    std::string PP_R = upf_tree.get<std::string>("UPF.PP_MESH.PP_R");
-   double *rmesh = UPF_str_to_double_array(PP_R, PP_MESH_mesh);
+   //sp->r = UPF_str_to_double_array(PP_R, sp->rg_points);
+
+   // Read in rab and convert it into a C style array
+   std::string PP_RAB = upf_tree.get<std::string>("UPF.PP_MESH.PP_RAB");
+   //sp->rab = UPF_str_to_double_array(PP_RAB, sp->rg_points);
 
    // Local potential
    std::string PP_LOCAL = upf_tree.get<std::string>("UPF.PP_LOCAL");
-   double *v_local = UPF_str_to_double_array(PP_LOCAL, PP_MESH_mesh);
+   double *v_local = UPF_str_to_double_array(PP_LOCAL, sp->rg_points);
 
    // Atomic charge density
    std::string PP_RHOATOM = upf_tree.get<std::string>("UPF.PP_RHOATOM");
-   double *rhoatom = UPF_str_to_double_array(PP_RHOATOM, PP_MESH_mesh);
+   sp->atomic_rho = UPF_str_to_double_array(PP_RHOATOM, sp->rg_points);
 
    // Number of atomic orbitals
    int number_of_wfc = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_wfc");
    if(number_of_wfc > 0) {
 
-       char path_sep = '/';
        for(int iwf = 0;iwf < number_of_wfc;iwf++) {
            // Ugh. UPF format has embedded .s so use / as a separator
            typedef ptree::path_type path;
            std::string chi = "UPF/PP_PSWFC/PP_CHI." + boost::lexical_cast<std::string>(iwf + 1);
            std::string PP_CHI = upf_tree.get<std::string>(path(chi, '/'));
-           double *apsi = UPF_str_to_double_array(PP_CHI, PP_MESH_mesh);
+           double *apsi = UPF_str_to_double_array(PP_CHI, sp->rg_points);
            
        }
 
    }
 
+   // Number of projectors
+   int number_of_proj = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_proj");
+   if(number_of_proj > 0) {
+
+       for(int ip = 0;ip < number_of_proj;ip++) {
+           // Ugh. UPF format has embedded .s so use / as a separator
+           typedef ptree::path_type path;
+           std::string betapath = "UPF/PP_NONLOCAL/PP_BETA." + boost::lexical_cast<std::string>(ip + 1);
+           std::string PP_BETA = upf_tree.get<std::string>(path(betapath, '/'));
+           double *beta = UPF_str_to_double_array(PP_BETA, sp->rg_points);
+            
+       }
+
+   }
+
+
+   
 }
 
 // C binding
