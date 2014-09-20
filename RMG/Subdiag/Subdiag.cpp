@@ -280,7 +280,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
 
     delete(RT1);
-
+#if 0
     // Rotate new betaxpsi
     int size = kptr->sint_size;
     KpointType *sint_ptr = kptr->newsint_local;
@@ -305,6 +305,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
     delete [] tmp_sint_ptr;
     delete [] work;
+#endif
 
 #if GPU_ENABLED
     GpuFree(Agpu);

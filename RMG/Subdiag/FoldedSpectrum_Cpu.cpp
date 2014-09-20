@@ -18,6 +18,12 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
+#if GPU_ENABLED
+    #include <cuda.h>
+    #include <cuda_runtime_api.h>
+    #include <cublas_v2.h>
+
+#endif
 
 #define FOLDED_GSE 0
 
@@ -32,6 +38,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 {
 
     RmgTimer RT0("Diagonalization: fs:");
+    RmgTimer *RT1;
 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
@@ -44,7 +51,6 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     int ione=1, itype=1, info=0;
     double rone = 1.0;
-    double alpha, beta=0.0, lambda;
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
@@ -65,55 +71,12 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         fs_eigcounts = new int[NPES];
     }
 
-    for(int idx = 0;idx < NPES;idx++) {
-        double t1 = (double)n;
-        t1 = t1 / ((double)NPES);
-        double t2 = t1 * (double)idx;
-        fs_eigstart[idx] = (int)rint(t2);
-        fs_eigstop[idx] = (int)rint(t1 + t2);
-        fs_eigcounts[idx] = fs_eigstop[idx] - fs_eigstart[idx];
-        fs_eigstart[idx] *= n;
-        fs_eigstop[idx] *= n;
-        fs_eigcounts[idx] *= n;
+    // Set up partition indices and bookeeping arrays
+    int eig_start, eig_stop, eig_step;
+    int n_start, n_win;
+    FoldedSpectrumSetup(n, NPES, pct.gridpe, &eig_start, &eig_stop, &eig_step,
+                        &n_start, &n_win, fs_eigstart, fs_eigstop, fs_eigcounts);
 
-    }
-
-     
-    // Folded spectrum method is parallelized over PE's. Each PE gets assigned
-    // a subset of the eigenvectors.
-    double t1 = (double)n;
-    t1 = t1 / ((double)NPES);
-    double t2 = t1 * (double)pct.gridpe;
-    int eig_start = (int)rint(t2);
-    int eig_stop = (int)rint(t1 + t2);
-    int eig_step = eig_stop - eig_start;
-    if(pct.gridpe == (NPES - 1)) eig_stop = n;
-
-    // Set width of window in terms of a percentage of n. Larger values will be slower but
-    // exhibit behavior closer to full diagonalization.
-    if((ct.folded_spectrum_width < 0.15) || (ct.folded_spectrum_width > 1.0)) {
-        rmg_printf("Folded spectrum width of %8.4f is outside valid range (0.15,1.0). Resetting to default of 0.3.\n", ct.folded_spectrum_width);
-        ct.folded_spectrum_width = 0.3;
-    }
-
-    double r_width = ct.folded_spectrum_width;
-    t1 = (double)n;
-    int n_win = (int)(r_width * t1);
-
-    // Find start of interval
-    int ix = n_win - eig_step;
-    if(ix < 4)
-        rmg_error_handler(__FILE__, __LINE__, "Too few PE's to use folded spectrum method for this problem");
-    if(ix % 2) {
-        n_win++;
-        ix = n_win - eig_step;
-    }
-
-    int n_start = eig_start - ix/2;
-    if(n_start < 0)n_start = 0;
-    if((n_start + n_win) > n) {
-        n_start = n - n_win;
-    }
 
     double *Vdiag = new double[n];
     double *tarr = new double[n];
@@ -121,14 +84,15 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     double *Bsave = new double[n*n];
     for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
 
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: cholesky");
+
 #if !FOLDED_GSE
+    RT1 = new RmgTimer("Diagonalization: fs: cholesky");
     //  Form a Cholesky factorization of B
     dpotrf(cuplo, &n, B, &ldb, &info);
     if( info != 0 )
         rmg_error_handler(__FILE__, __LINE__, "dpotrf failure");
-#endif
     delete(RT1);
+#endif
 
 
     RT1 = new RmgTimer("Diagonalization: fs: folded");
@@ -136,20 +100,24 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     //  Transform problem to standard eigenvalue problem
     RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: tridiagonal");
+
+#if !FOLDED_GSE
     dsygst(&itype, cuplo, &n, A, &lda, B, &ldb, &info);
     if( info != 0 )
         rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
-    delete(RT2);
-#if FOLDED_GSE
+#else
+
     int its=7;
-double *T = new double[n*n];
-for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
-FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its);
+    double *T = new double[n*n];
+    for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+    FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its);
 
     // Copy back to A
     for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
-delete [] T;
+    delete [] T;
+
 #endif
+    delete(RT2);
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
     KpointType *V = new KpointType[n*n]();
     KpointType *G = new KpointType[n*n]();
@@ -203,15 +171,13 @@ delete [] T;
     }
     delete(RT2);
 
-
     // Apply folded spectrum to this PE's range of eigenvectors
     RT2 = new RmgTimer("Diagonalization: fs: iteration");
     for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
         n_eigs[eig_index] = eigs[eig_index];
-        int offset = n * (eig_index - eig_start);
     }
 
-    FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 6);
+    FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10);
     delete(RT2);
 
 
@@ -226,92 +192,31 @@ delete [] T;
     MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     delete(RT2);
 
-    // Copy summed eigs back to w
+    // Copy summed eigs from n_eigs back to eigs
     for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
-    alpha = 1.0;
-    beta = 0.0;
 
-    // Overlaps
-    RmgTimer *RT3 = new RmgTimer("Diagonalization: fs: overlaps");
 #if !FOLDED_GSE
-    dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, V, NULLptr);
 #else
-RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, B, n, ZERO_t, G, n, NULLptr, NULLptr, NULLptr, false, false, false, true);
-RmgGemm(trans_n, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n, NULLptr, NULLptr, NULLptr, false, false, false, true);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, V, B);
 #endif
-    delete(RT3);
-
-    // Cholesky factorization
-    RT3 = new RmgTimer("Diagonalization: fs: cholesky");
-    dpotrf(cuplo, &n, C, &n, &info);
-    delete(RT3);
-
-    // Get inverse of diagonal elements
-    for(ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
-
-//----------------------------------------------------------------
-    for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
-
-    int idx, omp_tid;
-    double *darr, *sarr;
-    int st, st1;
-#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
-{
-    omp_tid = omp_get_thread_num();
-    if(omp_tid == 0) darr = new double[n * omp_get_num_threads()];
-#pragma omp barrier
-
-#pragma omp for schedule(static, 1) nowait
-    for(idx = eig_start;idx < eig_stop;idx++) {
-
-        sarr = &darr[omp_tid*n];
-
-        for (int st = 0; st < n; st++) sarr[st] = V[st*n + idx];
-
-        for (int st = 0; st < n; st++) {
-
-            sarr[st] *= tarr[st];
-
-            for (int st1 = st+1; st1 < n; st1++) {
-                sarr[st1] -= C[st1 + n*st] * sarr[st];
-            }
-
-        }
-
-        for (st = 0; st < n; st++) G[st*n + idx] = sarr[st];
-
-    }
-} // end omp section
-
-    delete [] darr;
-
+    for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
     delete(RT2);
 
-    // A matrix transpose here would let us use an Allgatherv which would be
-    // almost twice as fast for the communications part.
-    RT2 = new RmgTimer("Diagonalization: fs: allreduce3");
-    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    delete(RT2);
-    for(int idx = 0;idx < n*n;idx++) A[idx] = G[idx];
 
-
-    RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
 #if !FOLDED_GSE
+    RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
     dtrsm (side, cuplo, trans_t, diag, &n, &n, &rone, B, &ldb, A, &lda);
-#endif
     delete(RT2);
+#endif
 
     delete(RT1);
     delete [] V;
     delete [] G;
     delete [] n_eigs;
-
-
-//for(int st1=0;st1<n;st1++)
-//    rmg_printf("EIGS for state %d = %10.4f\n", st1, Ha_eV*eigs[st1]);
 
     delete [] Bsave;
     delete [] Asave;
