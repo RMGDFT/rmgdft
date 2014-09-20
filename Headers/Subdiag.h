@@ -59,7 +59,7 @@ template <typename KpointType>
 int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb,
                 double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C);
 void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations);
-void FoldedSpectrumIterator(std::complex<double> *A, int n, double *eigs, int k, std::complex<double> *X, double alpha, int iterations);
+void FoldedSpectrumIterator(std::complex<double> *A, int n, double *eigs, int k, std::complex<double> *X, double alpha, int iterations, int istart);
 
 template <typename DataType>
 void FoldedSpectrumMinverse(DataType *A, DataType *Ainv, int n, int iterations);
@@ -71,6 +71,13 @@ int Rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,
                 double *w, double *work, int lwork, int *iwork, int liwork, double *wa);
 int Rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double> *b, int ldb,
                 double *eigs, double *work, int lwork, double *rwork, int lrwork, int *iwork, int liwork, double *wa);
+void FoldedSpectrumSetup(int n, int NPES, int THISPE, 
+                         int *eigstart, int *eigstop, int *eigstep,
+                         int *n_start, int *n_win,
+                         int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts);
+template <typename KpointType>
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, KpointType *V, KpointType *B);
+
 
 
 #endif

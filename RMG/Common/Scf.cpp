@@ -216,7 +216,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             delete(RT1);
 
             AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
-            Kptr[kpt]->mix_betaxpsi(0);
+//            Kptr[kpt]->mix_betaxpsi(0);
 
             /* Update the wavefunctions */
             RT1 = new RmgTimer("Scf steps: Mg_eig");
@@ -270,7 +270,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         if (diag_this_step) {
 
             Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
-            Kptr[kpt]->mix_betaxpsi(0);
+   Betaxpsi (Kptr[kpt]);
+        Kptr[kpt]->mix_betaxpsi(0);
             // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
             // after diagonalizing.
 

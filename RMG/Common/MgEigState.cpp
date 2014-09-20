@@ -159,6 +159,7 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 
 }
 
+extern "C" void mix_betaxpsi1 (STATE *sp);
 
 
 static std::mutex vtot_sync_mutex;
@@ -218,6 +219,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psiR;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
+
+    if(ct.eig_parm.mucycles > 1)
+        mix_betaxpsi1(sp);
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectfully) */
