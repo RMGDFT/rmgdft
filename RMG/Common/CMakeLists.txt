@@ -28,6 +28,7 @@ get_nlop.c
 app_nls.c
 fastrelax.c
 mix_betaxpsi.c
+mix_betaxpsi1.c
 open_restart_file.c
 scalapack_tools.c
 ortho.c

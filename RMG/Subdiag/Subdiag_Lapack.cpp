@@ -112,7 +112,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
     if(ct.is_gamma) {
 
-        if(ct.use_folded_spectrum && (ct.scf_steps > 2) || (ct.use_folded_spectrum && (ct.runflag == RESTART))) {
+        if(ct.use_folded_spectrum && (ct.scf_steps > 6) || (ct.use_folded_spectrum && (ct.runflag == RESTART))) {
 
             FoldedSpectrumCpu<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
             for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 

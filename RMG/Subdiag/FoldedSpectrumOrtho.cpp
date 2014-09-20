@@ -28,10 +28,10 @@
 // else <i|j> = I
 //
 
-template void FoldedSpectrumOrtho<double> (int, int, int, double *, double *);
+template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *);
 
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, KpointType *V, KpointType *B)
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B)
 {
     RmgTimer RT0("Diagonalization: fs: Gram-Schmidt");
     KpointType ZERO_t(0.0);
@@ -109,10 +109,27 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, KpointType *V, Kpoi
     delete [] darr;
     delete(RT1);
 
-    // A matrix transpose here would let us use an Allgatherv which would be
-    // almost twice as fast for the communications part.
+    // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
+    // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("Diagonalization: fs: Gram-Schmidt allreduce3");
-    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+//    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+    for(int st1 = eig_start;st1 < eig_stop;st1++) {
+        for(int st2 = 0;st2 < n;st2++) {
+            V[st1*n + st2] = G[st1 + st2*n];
+        }
+    }
+
+    int eig_step = eig_stop - eig_start;
+    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+
+    // Transpose the full matrix backwards. Maybe use OMP for this?
+    for(int st1 = 0;st1 < n;st1++) {
+        for(int st2 = 0;st2 < n;st2++) {
+            G[st1*n + st2] = V[st1 + st2*n];
+        }
+    }
+
     delete(RT1);
     for(int idx = 0;idx < n*n;idx++) V[idx] = G[idx];
 

@@ -76,7 +76,7 @@ void FoldedSpectrumSetup(int n, int NPES, int THISPE,
                          int *n_start, int *n_win,
                          int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts);
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, KpointType *V, KpointType *B);
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B);
 
 
 

@@ -199,9 +199,9 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
 
 #if !FOLDED_GSE
-    FoldedSpectrumOrtho(n, eig_start, eig_stop, V, NULLptr);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, NULLptr);
 #else
-    FoldedSpectrumOrtho(n, eig_start, eig_stop, V, B);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B);
 #endif
     for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
     delete(RT2);
