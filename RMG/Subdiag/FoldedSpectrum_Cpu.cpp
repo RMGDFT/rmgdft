@@ -25,7 +25,14 @@
 
 #endif
 
-#define FOLDED_GSE 0
+#define FOLDED_GSE 1
+
+
+// Array storage for folded spectrum diagonalization communications
+static int *fs_eigstart = NULL;
+static int *fs_eigstop = NULL;
+static int *fs_eigcounts = NULL;
+
 
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
@@ -59,12 +66,8 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     int NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
 
-    // Array storage for folded spectrum diagonalization
-    static int *fs_eigstart = NULL;
-    static int *fs_eigstop = NULL;
-    static int *fs_eigcounts = NULL;
 
-    // Initialize them
+    // Allocate some memory for our communication book keeping arrays
     if(!fs_eigstart) {
         fs_eigstart = new int[NPES];
         fs_eigstop = new int[NPES];
@@ -171,12 +174,13 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     }
     delete(RT2);
 
-    // Apply folded spectrum to this PE's range of eigenvectors
-    RT2 = new RmgTimer("Diagonalization: fs: iteration");
+    // And the eigenvalues
     for(int eig_index = eig_start;eig_index < eig_stop;eig_index++) {
         n_eigs[eig_index] = eigs[eig_index];
     }
 
+    // Apply folded spectrum to this PE's range of eigenvectors
+    RT2 = new RmgTimer("Diagonalization: fs: iteration");
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10);
     delete(RT2);
 
@@ -185,6 +189,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
     delete(RT2);
+
 
     // Do the same for the eigenvalues
     // Could replace this with an MPI_Allgatherv but size is small so maybe no point

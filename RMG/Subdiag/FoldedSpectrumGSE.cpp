@@ -39,7 +39,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     if(ct.is_gamma) factor = 1;
 
     char *trans_n = "n";
-    char *trans_t = "n";
+    char *trans_t = "t";
 
     RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: GSE-setup");
     // Set up D^(-1)
@@ -81,12 +81,56 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     }
     delete(RT1);
 
+#if GPU_ENABLED
+
+       int ione = 1;
+       cublasStatus_t custat;
+
+       DataType *gpuT1 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
+       DataType *gpuA = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
+       DataType *gpuZ = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
+       DataType *gpuB = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
+
+       custat = cublasSetVector(n * n , sizeof(DataType), T1, ione, gpuT1, ione );
+       RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+
+       custat = cublasSetVector(istep * n , sizeof(DataType), &A[istart*n], ione, gpuA, ione );
+       RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+
+       custat = cublasSetVector(istep * n , sizeof(DataType), &Z[istart*n], ione, gpuZ, ione );
+       RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+
+       custat = cublasSetVector(istep * n , sizeof(DataType), &B[istart*n], ione, gpuB, ione );
+       RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+
+       // outer loop over steps
+       for(int step = 0;step < iterations;step++) {
+
+           RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
+           RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, gpuT1, gpuZ, gpuA, false, false, false, false);
+           delete(RT1);
+
+           RT1 = new RmgTimer("Diagonalization: fs: GSE-Sum");
+           cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
+           delete(RT1);
+       }
+
+       custat = cublasGetVector(istep *n, sizeof( DataType ), gpuZ, 1, &Z[istart*n], 1 );
+       RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");
+
+       GpuFree(gpuB);
+       GpuFree(gpuZ);
+       GpuFree(gpuA);
+       GpuFree(gpuT1);
+
+#else
+
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
 
         RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
         // Compute (I - D-1 * B) * Z(step) and store in A
-        RmgGemm(trans_n, trans_t, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, true);
         delete(RT1);
 
         RT1 = new RmgTimer("Diagonalization: fs: GSE-Sum");
@@ -100,6 +144,8 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
         delete(RT1);
 
     }    
+
+#endif
 
     // Make sure everybody has a copy
     RT1 = new RmgTimer("Diagonalization: fs: GSE-Allgatherv");

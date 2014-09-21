@@ -2,6 +2,7 @@ add_library (Misc
 RmgCudaError.cpp
 RmgGemm.cpp
 GpuAlloc.cpp
+GpuAllocHost.cpp
 black_box.f
 RmgTimer_Cbindings.cpp
 GlobalSums.cpp
