@@ -29,7 +29,12 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     DataType ONE_t(1.0);
     DataType *D = new DataType[n];
     DataType *X = new DataType[n*n]();
+#if GPU_ENABLED
+    DataType *T1 = (DataType *)GpuMallocHost(n * n * sizeof(DataType));
+    for(int ix = 0;ix < n*n;ix++) T1[ix] = ZERO_t;
+#else
     DataType *T1 = new DataType[n*n]();
+#endif
     DataType *T2 = new DataType[n*n];
     DataType *NULLptr = NULL;
     int istep = istop - istart;
@@ -153,7 +158,11 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     delete(RT1);
 
     delete [] T2;
+#if GPU_ENABLED
+    GpuFreeHost(T1);
+#else
     delete [] T1;
+#endif
     delete [] X;
     delete [] D;
 }
