@@ -106,15 +106,15 @@ void LoadUpf(char *file, SPECIES *sp)
 
    // Read in the radial mesh and convert it into a C style array
    std::string PP_R = upf_tree.get<std::string>("UPF.PP_MESH.PP_R");
-   //sp->r = UPF_str_to_double_array(PP_R, sp->rg_points);
+   sp->r = UPF_str_to_double_array(PP_R, sp->rg_points);
 
    // Read in rab and convert it into a C style array
    std::string PP_RAB = upf_tree.get<std::string>("UPF.PP_MESH.PP_RAB");
-   //sp->rab = UPF_str_to_double_array(PP_RAB, sp->rg_points);
+   sp->rab = UPF_str_to_double_array(PP_RAB, sp->rg_points);
 
    // Local potential
    std::string PP_LOCAL = upf_tree.get<std::string>("UPF.PP_LOCAL");
-   double *v_local = UPF_str_to_double_array(PP_LOCAL, sp->rg_points);
+   sp->vloc0 = UPF_str_to_double_array(PP_LOCAL, sp->rg_points);
 
    // Atomic charge density
    std::string PP_RHOATOM = upf_tree.get<std::string>("UPF.PP_RHOATOM");
@@ -129,22 +129,22 @@ void LoadUpf(char *file, SPECIES *sp)
            typedef ptree::path_type path;
            std::string chi = "UPF/PP_PSWFC/PP_CHI." + boost::lexical_cast<std::string>(iwf + 1);
            std::string PP_CHI = upf_tree.get<std::string>(path(chi, '/'));
-           double *apsi = UPF_str_to_double_array(PP_CHI, sp->rg_points);
+           sp->atomic_wave[iwf] = UPF_str_to_double_array(PP_CHI, sp->rg_points);
            
        }
 
    }
 
    // Number of projectors
-   int number_of_proj = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_proj");
-   if(number_of_proj > 0) {
+   sp->nbeta = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_proj");
+   if(sp->nbeta > 0) {
 
-       for(int ip = 0;ip < number_of_proj;ip++) {
+       for(int ip = 0;ip < sp->nbeta;ip++) {
            // Ugh. UPF format has embedded .s so use / as a separator
            typedef ptree::path_type path;
            std::string betapath = "UPF/PP_NONLOCAL/PP_BETA." + boost::lexical_cast<std::string>(ip + 1);
            std::string PP_BETA = upf_tree.get<std::string>(path(betapath, '/'));
-           double *beta = UPF_str_to_double_array(PP_BETA, sp->rg_points);
+           sp->beta[ip] = UPF_str_to_double_array(PP_BETA, sp->rg_points);
             
        }
 

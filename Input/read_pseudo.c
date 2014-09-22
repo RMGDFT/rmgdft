@@ -57,6 +57,13 @@ void read_pseudo (void)
 
         sp = &ct.sp[i];
 
+        // Allocate arrays
+        my_malloc (sp->r, MAX_RGRID, double);
+        my_malloc (sp->rab, MAX_RGRID, double);
+        my_malloc (sp->vloc0, MAX_RGRID, double);
+        my_malloc (sp->cr, MAX_RGRID, double);
+        my_malloc (sp->rspsco, MAX_RGRID, double);
+
         get_data (sp->pseudo_filename, NULL, LINES|INIT, NULL);
 
 
@@ -264,6 +271,10 @@ void read_pseudo (void)
                 error_handler("Beta function with l=%d has undefined nlrcut", sp->llbeta[j]);
             if (sp->llbeta[j] > ct.max_l)
                 ct.max_l = sp->llbeta[j];
+            // Allocate memory for the beta
+            my_malloc(sp->beta[j], MAX_RGRID, double);
+
+
             for (k = 0; k < MAX_RGRID; k++)
                 sp->beta[j][k] = 0.0;
             for ( k = 0; k < sp->kkbeta; k+=4 )
