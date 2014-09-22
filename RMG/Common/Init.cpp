@@ -456,36 +456,39 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->mix_betaxpsi(0);
     }
 
-    // If diagonalization is requested do a subspace diagonalization otherwise orthogonalize
-    if (ct.initdiag)
-    {
-        /*dnmI has to be stup before calling subdiag */
-        vtot = new double[FP0_BASIS];
+    // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
+    if(ct.runflag != RESTART) {
 
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        if (ct.initdiag)
+        {
+            /*dnmI has to be stup before calling subdiag */
+            vtot = new double[FP0_BASIS];
 
-        /*Generate the Dnm_I */
-        get_ddd (vtot);
+            for (idx = 0; idx < FP0_BASIS; idx++)
+                vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
-        /*Release vtot memory */
-        delete [] vtot;
+            /*Generate the Dnm_I */
+            get_ddd (vtot);
 
-        /*Now we cam do subspace diagonalization */
-        for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-            Subdiag (Kptr[0], vh, vnuc, vxc, ct.subdiag_driver);
+            /*Release vtot memory */
+            delete [] vtot;
+
+            /*Now we cam do subspace diagonalization */
+            for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+                Subdiag (Kptr[0], vh, vnuc, vxc, ct.subdiag_driver);
+            }
+
+        }                           /*end if(ct.initdiag) */
+        else
+        {
+
+            for (kpt = 0; kpt < ct.num_kpts; kpt++) {
+                Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
+            }
+            
         }
 
-    }                           /*end if(ct.initdiag) */
-    else
-    {
-
-        for (kpt = 0; kpt < ct.num_kpts; kpt++) {
-            Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
-        }
-        
     }
-
 
 
 #if 0
