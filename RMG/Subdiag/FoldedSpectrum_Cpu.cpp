@@ -111,19 +111,34 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 #else
 
     int its=7;
+#if GPU_ENABLED
+    double *T = (double *)GpuMallocHost(n * n * sizeof(double));
+#else
     double *T = new double[n*n];
+#endif
     for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
     FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its);
 
     // Copy back to A
     for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
+#if GPU_ENABLED
+    GpuFreeHost(T);
+#else
     delete [] T;
+#endif
 
 #endif
     delete(RT2);
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
+#if GPU_ENABLED
+    KpointType *V = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    for(int ix = 0;ix < n * n;ix++) V[ix] = ZERO_t;
+    for(int ix = 0;ix < n * n;ix++) G[ix] = ZERO_t;
+#else
     KpointType *V = new KpointType[n*n]();
     KpointType *G = new KpointType[n*n]();
+#endif
     double *n_eigs = new double[n]();
 
     // AX=lambdaX  store a copy of A in Asave
@@ -219,8 +234,13 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 #endif
 
     delete(RT1);
-    delete [] V;
+#if GPU_ENABLED
+    GpuFreeHost(G);
+    GpuFreeHost(V);
+#else
     delete [] G;
+    delete [] V;
+#endif
     delete [] n_eigs;
 
     delete [] Bsave;

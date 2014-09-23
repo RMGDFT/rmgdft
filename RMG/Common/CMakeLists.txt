@@ -121,4 +121,6 @@ RmgThread.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
+include_directories(${MAGMA_INCLUDES})
+include_directories(${MAGMA_INCLUDES}/magma)
 

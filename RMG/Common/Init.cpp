@@ -198,8 +198,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     gpu_bufsize += t1;
 #endif
 
-    // Two buffers for rotating the orbitals
-    t1 = ct.num_states * P0_BASIS * sizeof(OrbitalType);
+    // Two buffers for rotating the orbitals. Make sure they are big enough to use
+    // as additional diagonalization arrays as well
+    t1 = ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
     gpu_bufsize += 2 * t1;
     // and multiply by 2 just for kicks
     //gpu_bufsize *= 2;
@@ -207,7 +208,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Next is page locked memory for transferring data back and forth
     size_t gpu_hostbufsize;
-    gpu_hostbufsize = 4 * ct.num_states * ct.num_states * sizeof(OrbitalType);
+    gpu_hostbufsize = 5 * ct.num_states * ct.num_states * sizeof(OrbitalType);
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here

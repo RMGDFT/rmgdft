@@ -19,13 +19,15 @@
 #include "transition.h"
 
 #if GPU_ENABLED
+    #if MAGMA_LIBS
+        #include <magma.h>
+        #include <magmablas.h>
+    #endif
+
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
 
-    #if MAGMA_LIBS
-        #include <magma/magma.h>
-    #endif
 #endif
 
 int rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,

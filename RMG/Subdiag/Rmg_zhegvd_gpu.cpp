@@ -22,7 +22,7 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-#include <magma/magma.h>
+#include <magma.h>
 
 
 // GPU specific versions with itype=1,jobz=v,uplo=l

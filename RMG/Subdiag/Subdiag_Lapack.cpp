@@ -9,6 +9,7 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "RmgGemm.h"
+#include "GpuAlloc.h"
 #include "blas.h"
 
 #include "prototypes.h"
@@ -40,8 +41,14 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     int ione = 1;
 
     KpointType ONE_t(1.0);
+    KpointType ZERO_t(0.0);
     KpointType *NULLptr = NULL;
+#if GPU_ENABLED
+    KpointType *Cij = (KpointType *)GpuMallocHost(num_states * num_states * sizeof(KpointType));
+    for(int ix = 0;ix < num_states * num_states;ix++) Cij[ix] = ZERO_t;
+#else
     KpointType *Cij = new KpointType[num_states * num_states]();
+#endif
 
     // Create unitary matrix
     for (int idx = 0; idx < num_states; idx++) {
@@ -142,7 +149,11 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     delete [] ifail;
 
     delete(RT1);
+#if GPU_ENABLED
+    GpuFreeHost(Cij);
+#else
     delete [] Cij;
+#endif
 
 
     if (info) {

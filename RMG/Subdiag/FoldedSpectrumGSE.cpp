@@ -51,8 +51,11 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / B[ix*n + ix];
 
     // Initial starting guess is just the identity
-    for(int ix = 0;ix < n*n;ix++) Z[ix] = ZERO_t;
-    for(int ix = istart;ix < istop;ix++) Z[ix*n + ix] = 1.0;
+    //for(int ix = 0;ix < n*n;ix++) Z[ix] = ZERO_t;
+    for(int st1 = istart;st1 < istop;st1++){
+        for(int st2 = 0;st2 < n;st2++) Z[st1*n + st2] = ZERO_t;
+    }
+    for(int ix = istart;ix < istop;ix++) Z[ix*n + ix] = ONE_t;
 
     // T1 starts out as the identity but will hold (I - D-1 * B)
     for(int ix = 0;ix < n;ix++) T1[ix*n + ix] = 1.0;
@@ -60,19 +63,29 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // Create unitary matrix X
     for(int ix = 0;ix < n;ix++) X[ix*n + ix] = 1.0;
 
+    int st1, st2;
+#pragma omp parallel private(st1, st2)
+{
+#pragma omp for schedule(static, 1) nowait
     // (I - D-1 * B)
-    for(int st1 = 0;st1 < n;st1++){
-        for(int st2 = 0;st2 < n;st2++){
+    for(st1 = 0;st1 < n;st1++){
+        for(st2 = 0;st2 < n;st2++){
             T1[st1*n + st2] -= D[st2] * B[st1*n + st2];
         }
     }
+}
 
     // D-1 * A
-    for(int st1 = 0;st1 < n;st1++){
-        for(int st2 = 0;st2 < n;st2++){
+#pragma omp parallel private(st1, st2)
+{
+#pragma omp for schedule(static, 1) nowait
+    for(st1 = 0;st1 < n;st1++){
+        for(st2 = 0;st2 < n;st2++){
             T2[st1*n + st2] = D[st2] * A[st1*n + st2];
         }
     }
+} // end omp parallel region
+
 
     delete(RT1);
 
@@ -86,6 +99,8 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     }
     delete(RT1);
 
+
+    RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
 #if GPU_ENABLED
 
        int ione = 1;
@@ -111,13 +126,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
        // outer loop over steps
        for(int step = 0;step < iterations;step++) {
 
-           RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
            RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, gpuT1, gpuZ, gpuA, false, false, false, false);
-           delete(RT1);
 
-           RT1 = new RmgTimer("Diagonalization: fs: GSE-Sum");
            cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
-           delete(RT1);
        }
 
        custat = cublasGetVector(istep *n, sizeof( DataType ), gpuZ, 1, &Z[istart*n], 1 );
@@ -133,12 +144,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
 
-        RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
         // Compute (I - D-1 * B) * Z(step) and store in A
         RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, true);
-        delete(RT1);
 
-        RT1 = new RmgTimer("Diagonalization: fs: GSE-Sum");
         // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
         //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
         for(int st1 = istart;st1 < istop;st1++){
@@ -146,11 +154,12 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
                 Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
             }
         }
-        delete(RT1);
 
     }    
 
 #endif
+
+    delete(RT1);
 
     // Make sure everybody has a copy
     RT1 = new RmgTimer("Diagonalization: fs: GSE-Allgatherv");

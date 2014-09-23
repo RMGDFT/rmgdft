@@ -16,7 +16,9 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
-
+    #if MAGMA_LIBS
+        #include <magma.h>
+    #endif
 #endif
 
 // Gram-Schmidt ortho for eigenvectors.
@@ -27,6 +29,8 @@
 // B if not NULL then the orthogonalization condition is  <i|B|j> = I
 // else <i|j> = I
 //
+
+void Transpose(int n, double *A, double *B);
 
 template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *);
 
@@ -39,8 +43,24 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
+#if GPU_ENABLED
+    cublasStatus_t custat;
+    KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *Bgpu = NULL; 
+    KpointType *Ggpu = NULL; 
+    KpointType *Vgpu = NULL; 
+    KpointType *Cgpu = NULL; 
+    if(B) {
+        Bgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+        Ggpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+        Vgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+        Cgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+    }
+#else
     KpointType *C = new KpointType[n * n];
     KpointType *G = new KpointType[n * n];
+#endif
     double *tarr = new double[n];
     int info = 0;
 
@@ -56,15 +76,27 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
         dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
     }
     else {
-        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, B, n, ZERO_t, G, n, NULLptr, NULLptr, NULLptr, false, false, false, true);
-        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        // transfer V and B to the GPU for the multiplication and leave the result there
+        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, B, n, ZERO_t, G, n, Vgpu, Bgpu, Ggpu, true, true, false, false);
+        // Multiply G by V and leave result in Cgpu for the magma_dpotrf_gpu call coming up next
+        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n, Ggpu, Vgpu, Cgpu, false, false, false, false);
     }
     delete(RT1);
 
 
     // Cholesky factorization
     RT1 = new RmgTimer("Diagonalization: fs: Gram-Schmidt cholesky");
+#if GPU_ENABLED && MAGMA_LIBS
+    magma_dpotrf_gpu(MagmaLower, n, Cgpu, n, &info);
+    custat = cublasGetVector(n * n, sizeof( KpointType ), Cgpu, 1, C, 1 );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+#elif GPU_ENABLED
+    custat = cublasGetVector(n * n, sizeof( KpointType ), Cgpu, 1, C, 1 );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
     dpotrf(cuplo, &n, C, &n, &info);
+#else
+    dpotrf(cuplo, &n, C, &n, &info);
+#endif
     delete(RT1);
 
 
@@ -123,17 +155,45 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     int eig_step = eig_stop - eig_start;
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
 
-    // Transpose the full matrix backwards. Maybe use OMP for this?
+    // Transpose the full matrix backwards. Maybe use OMP for this on the CPU?
+#if GPU_ENABLED
+    int ione = 1;
+    custat = cublasSetVector(n * n , sizeof(KpointType), V, ione, Vgpu, ione );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring V matrix from system memory to GPU.");
+
+    custat = cublasDgeam(ct.cublas_handle,  CUBLAS_OP_T,  CUBLAS_OP_N, n, n, &ONE_t, Vgpu, n, &ZERO_t, Bgpu, n, Ggpu, n);
+    RmgCudaError(__FILE__, __LINE__, custat, "Matrix transpose with cublasDgeam failed.");
+
+    custat = cublasGetVector(n * n, sizeof( KpointType ), Ggpu, 1, G, 1 );
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring G matrix from GPU to system memory.");
+#else
     for(int st1 = 0;st1 < n;st1++) {
         for(int st2 = 0;st2 < n;st2++) {
             G[st1*n + st2] = V[st1 + st2*n];
         }
     }
+#endif
 
+
+#if GPU_ENABLED
+    if(B) {
+        GpuFree(Cgpu);
+        GpuFree(Vgpu);
+        GpuFree(Ggpu);
+        GpuFree(Bgpu);
+    }
+#endif
     delete(RT1);
     for(int idx = 0;idx < n*n;idx++) V[idx] = G[idx];
 
     delete [] tarr;
+#if GPU_ENABLED
+    GpuFreeHost(G);
+    GpuFreeHost(C);
+#else
     delete [] G;
     delete [] C;
+#endif
 }
+
+
