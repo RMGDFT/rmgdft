@@ -193,7 +193,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // 3 blocks of num_states * num_states for diagonalization arrays
     size_t gpu_bufsize, t1;
     t1 = ct.num_states * ct.num_states * sizeof(OrbitalType);
-    gpu_bufsize = 3 * t1;
+    gpu_bufsize = 4 * t1;
 #if MAGMA_LIBS
     gpu_bufsize += t1;
 #endif
@@ -208,7 +208,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Next is page locked memory for transferring data back and forth
     size_t gpu_hostbufsize;
-    gpu_hostbufsize = 5 * ct.num_states * ct.num_states * sizeof(OrbitalType);
+    gpu_hostbufsize = 7 * ct.num_states * ct.num_states * sizeof(OrbitalType);
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here

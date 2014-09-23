@@ -43,20 +43,18 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
-#if GPU_ENABLED
-    cublasStatus_t custat;
-    KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
     KpointType *Bgpu = NULL; 
     KpointType *Ggpu = NULL; 
     KpointType *Vgpu = NULL; 
     KpointType *Cgpu = NULL; 
-    if(B) {
-        Bgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-        Ggpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-        Vgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-        Cgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-    }
+#if GPU_ENABLED
+    cublasStatus_t custat;
+    KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    Bgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+    Ggpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+    Vgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+    Cgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
 #else
     KpointType *C = new KpointType[n * n];
     KpointType *G = new KpointType[n * n];
@@ -73,7 +71,14 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     // Overlaps
     RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: overlaps");
     if(!B) {
+#if GPU_ENABLED
+        custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, Vgpu, n, &beta, Cgpu, n);
+
+#else
         dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
+#endif
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
@@ -176,12 +181,10 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 
 #if GPU_ENABLED
-    if(B) {
-        GpuFree(Cgpu);
-        GpuFree(Vgpu);
-        GpuFree(Ggpu);
-        GpuFree(Bgpu);
-    }
+    GpuFree(Cgpu);
+    GpuFree(Vgpu);
+    GpuFree(Ggpu);
+    GpuFree(Bgpu);
 #endif
     delete(RT1);
     for(int idx = 0;idx < n*n;idx++) V[idx] = G[idx];

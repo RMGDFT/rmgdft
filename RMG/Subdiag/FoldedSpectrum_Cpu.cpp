@@ -22,10 +22,15 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
+    #if MAGMA_LIBS
+        #include <magma.h>
+    #endif
 
 #endif
 
+
 #define FOLDED_GSE 1
+
 
 
 // Array storage for folded spectrum diagonalization communications
@@ -83,8 +88,13 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 
     double *Vdiag = new double[n];
     double *tarr = new double[n];
+#if GPU_ENABLED
+    double *Asave = (double *)GpuMallocHost(n * n * sizeof(double));
+    double *Bsave = (double *)GpuMallocHost(n * n * sizeof(double));
+#else
     double *Asave = new double[n*n];
     double *Bsave = new double[n*n];
+#endif
     for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
 
 
@@ -158,10 +168,17 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
     for(int idx = 0;idx < n_win * n_win;idx++) A[idx] = G[idx];
     //QMD_dcopy (n_win * n_win, G, 1, a, 1);
 
+#if (GPU_ENABLED && MAGMA_LIBS)
+    magma_dsyevd(MagmaVec, MagmaLower, n_win, A, n_win, &eigs[n_start],
+                    work, lwork,
+                    iwork, liwork,
+                    &info);
+#else
     dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
                     work, &lwork,
                     iwork, &liwork,
                     &info);
+#endif
     if( info != 0 ) 
             rmg_error_handler(__FILE__, __LINE__, "dsyevd failure");
 
@@ -237,14 +254,16 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
 #if GPU_ENABLED
     GpuFreeHost(G);
     GpuFreeHost(V);
+    GpuFreeHost(Bsave);
+    GpuFreeHost(Asave);
 #else
     delete [] G;
     delete [] V;
+    delete [] Bsave;
+    delete [] Asave;
 #endif
     delete [] n_eigs;
 
-    delete [] Bsave;
-    delete [] Asave;
     delete [] tarr;
     delete [] Vdiag;
 
