@@ -100,7 +100,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing B from system memory to gpu.");
 
     // D-1 * B stored temporarily in gpuT2
-    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, n, gpuB, n, gpuD, ione, gpuT2, n);
+    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_LEFT, n, n, gpuB, n, gpuD, ione, gpuT2, n);
 
     // (I - D-1 * B) stored in T1
     DataType neg_rone(-1.0);
@@ -120,10 +120,13 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
         }
     }
 } // end omp parallel region
+
+
     delete(RT1);
-
-
     RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
+
+//    custat = cublasSetVector(n * n , sizeof(DataType), T1, ione, gpuT1, ione );
+//    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
 
     // Start the slice of A from istart to istop transferring to the GPU
     custat = cublasSetVector(istep * n , sizeof(DataType), &A[istart*n], ione, gpuA, ione );

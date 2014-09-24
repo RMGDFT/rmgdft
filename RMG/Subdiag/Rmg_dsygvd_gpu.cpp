@@ -18,11 +18,16 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-#if (GPU_ENABLED && MAGMA_LIBS)
+#if GPU_ENABLED
+#if MAGMA_LIBS
+#include <magma.h>
+#include <magmablas.h>
+
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-#include <magma.h>
+
+
 
 
 // GPU specific versions with itype=1,jobz=v,uplo=l
@@ -80,4 +85,5 @@ int Rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,
         return 0;
 }
 
+#endif
 #endif

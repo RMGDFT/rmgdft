@@ -67,7 +67,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
     KpointType *gpuCij = gpu_eigvectors;
     KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-    KpointType *Cij = new KpointType[num_states * num_states];
+    KpointType *Cij = (KpointType *)GpuMallocHost(num_states * num_states * sizeof(KpointType));
 
 
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
@@ -151,7 +151,7 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     int lwork = 3 * num_states * num_states + 8 * num_states;
     int liwork = 6 * num_states + 4;
     int eigs_found;
-    double *work = new double[2*lwork];
+    double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
     int *iwork = new int[2*liwork];
     double vx = 0.0;
     double tol = 1e-15;
@@ -179,12 +179,12 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     }
 
     delete [] iwork;
-    delete [] work;
+    GpuFreeHost(work);
     delete [] ifail;
 
 
     delete(RT1);
-    delete(Cij);
+    GpuFreeHost(Cij);
 
     GpuFree(gpuSij);
     GpuFree(gpuBij);

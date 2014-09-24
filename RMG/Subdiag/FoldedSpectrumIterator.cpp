@@ -37,6 +37,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     int ione = 1;
     double ONE_t = 1.0;
     double ZERO_t = 0.0;
+    double *Y = new double[n * k]();
     double *NULLptr = NULL;
     double *Agpu = NULL;
     double *Xgpu = NULL;
@@ -46,12 +47,9 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     double neg_rone = -1.0;
     int sizr = n * k;
     char *trans_n = "n";
+    char *trans_t = "t";
 
 #if GPU_ENABLED
-
-    double *Y = (double *)GpuMallocHost(n * k * sizeof(double));
-    for(int ix = 0;ix < n * k;ix++) Y[ix] = 0.0;
-
     cublasStatus_t custat;
     Agpu = (double *)GpuMalloc(n * n * sizeof(double));
     Xgpu = (double *)GpuMalloc(n * k * sizeof(double));
@@ -72,6 +70,8 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     custat = cublasSetVector(n, sizeof(double), eigs, ione, eigs_gpu, ione );     // Must be a better way of doing this
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
 
+#endif
+
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
 
@@ -79,6 +79,8 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         RmgGemm(trans_n, trans_n, n, k, n, ONE_t, A, n, X, n, ZERO_t, Y, n, Agpu, Xgpu, Ygpu, false, false, false, false);
 
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
+#if GPU_ENABLED
+
         custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
         custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, Tgpu, ione, Ygpu, ione);
@@ -86,8 +88,20 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         custat = cublasDaxpy(ct.cublas_handle, sizr, &alpha, Ygpu, ione, Xgpu, ione);
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
 
+#else
+        for(int kcol = 0;kcol < k;kcol++) {
+           for(int ix = 0;ix < n;ix++) {
+               Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
+           }
+        }
+        daxpy(&sizr, &alpha, Y, &ione, X, &ione);
+        //for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
+#endif
+
+
     }    
 
+#if GPU_ENABLED
     custat = cublasGetVector(n * k, sizeof( double ), Xgpu, 1, X, 1 );
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");
 
@@ -96,34 +110,8 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     GpuFree(Ygpu);
     GpuFree(Xgpu);
     GpuFree(Agpu);
-    GpuFreeHost(Y);
-
-
-#else
-
-    double *Y = new double[n * k]();
-
-    // outer loop over steps
-    for(int step = 0;step < iterations;step++) {
-
-        // Generate A * X for entire block
-        RmgGemm(trans_n, trans_n, n, k, n, ONE_t, A, n, X, n, ZERO_t, Y, n, Agpu, Xgpu, Ygpu, false, false, false, false);
-
-        // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
-        for(int kcol = 0;kcol < k;kcol++) {
-           for(int ix = 0;ix < n;ix++) {
-               Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
-           }
-        }
-        daxpy(&sizr, &alpha, Y, &ione, X, &ione);
-        //for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
-    }    
-    delete [] Y;
-
 #endif
-
-
-
+    delete [] Y;
 }
 
 
