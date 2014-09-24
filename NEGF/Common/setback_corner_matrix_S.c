@@ -96,6 +96,15 @@ void  setback_corner_matrix_S()
             nlead0 = 0;
         }
 
+        if(iprobe == 3 && cei.num_probe == 3)
+        {
+            ni0 = lcr[iprobe].num_states/2;
+            ni1 =  lcr[iprobe].num_states;
+            nlead0 = 0;
+        }
+
+
+
         for (lj = 0; lj < pmo.mxlocc_cond[ni]; lj++)
         {
             for (li = 0; li < pmo.mxllda_cond[ni]; li++)

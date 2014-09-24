@@ -115,6 +115,26 @@ void read_lead_matrix ()
                 }
         }
 
+        if(iprobe == 3 && cei.num_probe == 3)
+        {
+
+            for(i = 0; i < lcr[iprobe].num_states; i++)
+                for(j = i; j < lcr[iprobe].num_states; j++)
+                {
+
+                    idx  = i * lcr[iprobe].num_states + j;
+                    idx1 = j * lcr[iprobe].num_states + i;
+
+                    tem = tem_H01[idx]; 
+                    tem_H01[idx] = tem_H01[idx1];
+                    tem_H01[idx1] = tem;
+
+                    tem = tem_S01[idx]; 
+                    tem_S01[idx] = tem_S01[idx1];
+                    tem_S01[idx1] = tem;
+                }
+        }
+
 
         /* now distribue the matrix into subset of processors */
         desca = &pmo.desc_lead[ (iprobe - 1) * DLEN];
