@@ -42,10 +42,10 @@ static int *fs_eigcounts = NULL;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrumCpu<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *);
+template int FoldedSpectrum<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *);
 
 template <typename KpointType>
-int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
+int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
 		double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C)
 {
 

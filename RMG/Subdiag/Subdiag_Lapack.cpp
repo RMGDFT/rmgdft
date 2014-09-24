@@ -124,7 +124,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
         if(use_folded) {
 
-            FoldedSpectrumCpu<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
+            FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
             for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 
 
         }
