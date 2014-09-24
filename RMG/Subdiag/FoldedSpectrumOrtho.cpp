@@ -158,6 +158,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     int eig_step = eig_stop - eig_start;
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
 
+#if 0
     // Transpose the full matrix backwards. Maybe use OMP for this on the CPU?
 #if GPU_ENABLED
     int ione = 1;
@@ -178,6 +179,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
     for(int idx = 0;idx < n*n;idx++) V[idx] = G[idx];
 
+#endif
 #endif
 
 

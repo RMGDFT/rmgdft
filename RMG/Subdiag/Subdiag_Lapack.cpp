@@ -24,21 +24,24 @@
 #endif
 
 
-template void Subdiag_Lapack<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
-template void Subdiag_Lapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
+template char * Subdiag_Lapack<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
+template char * Subdiag_Lapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
 
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
 template <typename KpointType>
-void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
+char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
+    static char *trans_t = "t";
+    static char *trans_n = "n";
     int info = 0;
     int num_states = kptr->nstates;
     int ione = 1;
+    bool use_folded = (ct.use_folded_spectrum && (ct.scf_steps > 6) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     KpointType ONE_t(1.0);
     KpointType ZERO_t(0.0);
@@ -119,7 +122,7 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
     if(ct.is_gamma) {
 
-        if(ct.use_folded_spectrum && (ct.scf_steps > 6) || (ct.use_folded_spectrum && (ct.runflag == RESTART))) {
+        if(use_folded) {
 
             FoldedSpectrumCpu<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
             for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 
@@ -161,4 +164,6 @@ void Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         rmg_error_handler (__FILE__, __LINE__, "Lapack eigensolver failed");
     }
 
+    if(use_folded) return trans_t;
+    return trans_n;
 }

@@ -88,12 +88,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
-    char *trans_m;
+    char *trans_a;
     if(typeid(KpointType) == typeid(std::complex<double>)) {
-         trans_m = trans_c;
+         trans_a = trans_c;
     }
     else {
-        trans_m = trans_t;
+        trans_a = trans_t;
     }   
 
 
@@ -181,7 +181,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    RmgGemm(trans_m, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
     delete(RT1);
 
     // Reduce matrix and store copy in Aij
@@ -196,7 +196,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // Compute S matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup");
     KpointType alpha1(vel);
-    RmgGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
     delete(RT1);
 
     // Reduce matrix and store copy in Sij
@@ -211,7 +211,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
         // Compute B matrix
         RT1 = new RmgTimer("Diagonalization: matrix setup");
-        RmgGemm (trans_m, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
         delete(RT1);
 
         // Reduce matrix and store copy in Bij
@@ -227,17 +227,20 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix will hold the eigenvectors.
     // If the MAGMA driver is selected the eigenvectors will be stored on the GPU in gpu_global_matrix
+    // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
+    // used. This is handled during the rotation of the orbitals by trans_b which is set by the driver routine.
     RT1 = new RmgTimer("Diagonalization: Eigensolver");
+    char *trans_b;
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:
-            Subdiag_Lapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
+            trans_b = Subdiag_Lapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
             break;
         case SUBDIAG_SCALAPACK:
-            Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
+            trans_b = Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix);
             break;
         case SUBDIAG_MAGMA:
-            Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix, (KpointType *)gpu_eigvectors);
+            trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix, (KpointType *)gpu_eigvectors);
             break;
         default:
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
@@ -265,13 +268,13 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
         // gpu transfer the rotated orbitals directly back there.
         // The magma driver also brings the eigvectors back from the gpu and puts them in global_matrix
         // so we can rotate the betaxpsi as well.
-        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, 
+        RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
                 NULLptr, pbasis, NULLptr, num_states, beta, kptr->orbital_storage, pbasis, 
                 Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
     }
     else {
 
-        RmgGemm(trans_n, trans_n, pbasis, num_states, num_states, alpha, 
+        RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
                 kptr->orbital_storage, pbasis, global_matrix, num_states, beta, tmp_arrayT, pbasis, 
                 Agpu, NULLptr, NULLptr, false, true, false, true);
 

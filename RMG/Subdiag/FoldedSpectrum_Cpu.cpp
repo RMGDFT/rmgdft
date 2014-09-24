@@ -120,7 +120,7 @@ int FoldedSpectrumCpu(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, K
         rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
 #else
 
-    int its=8;
+    int its=7;
 #if GPU_ENABLED
     double *T = (double *)GpuMallocHost(n * n * sizeof(double));
 #else

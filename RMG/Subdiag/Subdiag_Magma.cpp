@@ -37,24 +37,27 @@ int rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double>
 
 
 
-template void Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors, double *gpu_eigvectors);
-template void Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors, std::complex<double> *gpu_eigvectors);
+template char * Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors, double *gpu_eigvectors);
+template char * Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors, std::complex<double> *gpu_eigvectors);
 
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
 template <typename KpointType>
-void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors, KpointType *gpu_eigvectors)
+char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors, KpointType *gpu_eigvectors)
 {
 
 #if !MAGMA_LIBS
     rmg_printf("This version of RMG was not built with MAGMA support. Redirecting to LAPACK.");
-    Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
-    return;
+    return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
 #if MAGMA_LIBS
 #if GPU_ENABLED
     KpointType ONE_t(1.0);
     KpointType ZERO_t(1.0);
+
+    static char *trans_t = "t";
+    static char *trans_n = "n";
+
     int num_states = kptr->nstates;
     int ione = 1;
     int factor = 1;
@@ -189,6 +192,8 @@ void Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, 
     GpuFree(gpuSij);
     GpuFree(gpuBij);
     GpuFree(gpuAij);
+
+    return trans_n;
 
 #endif
 #endif
