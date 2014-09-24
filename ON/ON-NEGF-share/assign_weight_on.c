@@ -28,7 +28,7 @@ void assign_weight_on(SPECIES * sp, fftw_complex * weptr, rmg_double_t * rtptr)
             {
 
                 rtptr[idx] = creal(weptr[idx]);
-                printf("\n dddddd %d %d %d %f", ix, iy, iz, rtptr[idx]); 
+//                printf("\n dddddd %d %d %d %f", ix, iy, iz, rtptr[idx]); 
                 if (fabs(cimag(weptr[idx])) > 1.0e-6)
                 {
                     printf("weptr[%d].im=%e\n", idx, cimag(weptr[idx]));
