@@ -46,6 +46,7 @@ static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int ftau[MAX_SYMMETRY][3], ityp[MAX_IONS];
 static double tau[MAX_IONS][3];
 static int nsym;
+static double translation[MAX_SYMMETRY][3];
 
 
 
@@ -58,6 +59,18 @@ void init_sym (void)
     double *xk, *wk;
     int ibrav = get_ibrav_type();
     double a0[3], a1[3], a2[3], omega;
+
+    double lattice[3][3];
+
+    lattice[0][0] = get_a0(0);
+    lattice[0][1] = get_a0(1);
+    lattice[0][2] = get_a0(2);
+    lattice[1][0] = get_a1(0);
+    lattice[1][1] = get_a1(1);
+    lattice[1][2] = get_a1(2);
+    lattice[2][0] = get_a2(0);
+    lattice[2][1] = get_a2(1);
+    lattice[2][2] = get_a2(2);
 
     a0[0] = get_a0(0);
     a0[1] = get_a0(1);
@@ -114,12 +127,29 @@ void init_sym (void)
     celldm[4] = 0.0;
     celldm[5] = 0.0;
 
+    nsym = spg_get_symmetry(&s[0][0][0], translation,  MAX_SYMMETRY, lattice, tau, ityp, ct.num_ions, 1e-5);
+    printf("\n nysm %d", nsym);
+    int i, j;
+    for(kpt = 0; kpt < nsym; kpt++)
+    {
+        printf("\n sym operation # %d", kpt);
+            for(i = 0; i < 3; i++)
+            {
+                printf("\n");
+                for(j = 0; j < 3; j++)
+                {
+                    printf(" %d ", s[kpt][i][j]);
+                }
+            }
+        printf("\n %f %f %f ", translation[kpt][0], translation[kpt][1], translation[kpt][2]);
+    }
+
     if (ct.boundaryflag != CLUSTER)
     {
         /* Call the symmetry routine */
         symmetry (&ibrav, &s[0][0][0], &nsym, irg, &irt[0][0],
-                  &ftau[0][0], &ct.num_ions, &tau[0][0], ityp,
-                  &ct.num_kpts, xk, wk, celldm, &nr1, &nr2, &nr3, a0, a1, a2, &omega, &wflag);
+                &ftau[0][0], &ct.num_ions, &tau[0][0], ityp,
+                &ct.num_kpts, xk, wk, celldm, &nr1, &nr2, &nr3, a0, a1, a2, &omega, &wflag);
     }
 
     my_free (xk);
@@ -241,7 +271,7 @@ void symforce (void)
     }
 
     fsymforces (&force[0][0], &s[0][0][0], irg, &irt[0][0], &ct.num_ions, &ibrav,
-                &nsym, celldm, &NX_GRID, &NY_GRID, &NZ_GRID);
+            &nsym, celldm, &NX_GRID, &NY_GRID, &NZ_GRID);
 
     /* Store forces back in c format */
 

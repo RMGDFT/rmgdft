@@ -75,20 +75,21 @@ void init_pos ()
                 iptr->xtal[1] = iptr->crds[1] / (SR3 / 2.0) / get_celldm(0);
                 iptr->xtal[2] = iptr->crds[2] * get_b2(2);
 
-                if (iptr->xtal[0] < 0.0)
-                    iptr->xtal[0] += 1.0;
-                if (iptr->xtal[1] < 0.0)
-                    iptr->xtal[1] += 1.0;
-                if (iptr->xtal[2] < 0.0)
-                    iptr->xtal[2] += 1.0;
-                if (iptr->xtal[0] > 1.0)
-                    iptr->xtal[0] -= 1.0;
-                if (iptr->xtal[1] > 1.0)
-                    iptr->xtal[1] -= 1.0;
-                if (iptr->xtal[2] > 1.0)
-                    iptr->xtal[2] -= 1.0;
 
             }                   /* end if */
+
+            if (iptr->xtal[0] < 0.0)
+                iptr->xtal[0] += 1.0;
+            if (iptr->xtal[1] < 0.0)
+                iptr->xtal[1] += 1.0;
+            if (iptr->xtal[2] < 0.0)
+                iptr->xtal[2] += 1.0;
+            if (iptr->xtal[0] > 1.0)
+                iptr->xtal[0] -= 1.0;
+            if (iptr->xtal[1] > 1.0)
+                iptr->xtal[1] -= 1.0;
+            if (iptr->xtal[2] > 1.0)
+                iptr->xtal[2] -= 1.0;
             to_cartesian (iptr->xtal, iptr->crds);
 
         }                       /* end for i */

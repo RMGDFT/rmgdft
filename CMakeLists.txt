@@ -28,7 +28,7 @@ if(DEFINED ENV{CRAY_LIBSCI})
 #set (RMG_GPU_ENABLED 1)
 endif()
 
-option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
+option (RMG_GPU_ENABLED "Use GPU acceleration." ON)
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
    set (MAGMA_LIBS 1)
@@ -37,7 +37,7 @@ else (RMG_GPU_ENABLED)
    set (MAGMA_LIBS 0)
 endif(RMG_GPU_ENABLED)
 
-option (RMG_MAGMA_LIBS "Use MAGMA libraries." ON)
+option (RMG_MAGMA_LIBS "Use MAGMA libraries." OFF)
 if (NOT RMG_MAGMA_LIBS)
     set (MAGMA_LIBS 0)
 endif(NOT RMG_MAGMA_LIBS)
@@ -50,6 +50,7 @@ set(CMAKE_FIND_ROOT_PATH
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /home/luw/Downloads/magma-1.4.1
+${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
@@ -409,6 +410,36 @@ target_link_libraries (rmg ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-tddft ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
+
+add_dependencies(rmg libspg)
+add_dependencies(rmg-on libspg)
+add_dependencies(rmg-tddft libspg)
+add_dependencies(rmg-negf libspg)
+
+find_package(LIBSPG)
+if(NOT LIBSPG_FOUND)
+    execute_process(
+    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
+    execute_process(
+    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
+    execute_process(
+    COMMAND ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/configure
+        --prefix=${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64
+        --libdir=${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
+    execute_process(COMMAND make 
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
+    execute_process(COMMAND cp src/.libs/libsymspg.*a . 
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
+endif(NOT LIBSPG_FOUND)
+
+
+find_package(LIBSPG REQUIRED)
+target_link_libraries (rmg ${LIBSPG_LIBRARIES})
+target_link_libraries (rmg-on ${LIBSPG_LIBRARIES})
+target_link_libraries (rmg-tddft ${LIBSPG_LIBRARIES})
+target_link_libraries (rmg-negf ${LIBSPG_LIBRARIES})
+
 
 
 
