@@ -39,6 +39,11 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                              DataType *Cgpu, bool CopytoAgpu, bool CopytoBgpu,
                              bool CopytoCgpu, bool CopyfromCgpu );
 
+template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
+                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
+                             DataType *C, int ldc, DataType *Agpu, DataType *Bgpu,
+                             DataType *Cgpu, bool CopytoAgpu, bool CopytoBgpu,
+                             bool CopytoCgpu, bool CopyfromCgpu );
 
 #endif
 #endif
