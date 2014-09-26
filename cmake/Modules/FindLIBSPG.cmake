@@ -1,0 +1,20 @@
+# - Find Libspg
+#
+#  LIBSPG_INCLUDES    - where to find fftw.h
+#  LIBSPG_LIBRARIES   - List of libraries when using LIBSPG.
+#  LIBSPG_FOUND       - True if LIBSPG found.
+
+if (LIBSPG_LIBRARIES)
+  # Already in cache, be silent
+  set (LIBSPG_FIND_QUIETLY TRUE)
+endif (LIBSPG_LIBRARIES)
+
+find_library (LIBSPG_LIBRARIES NAMES symspg)
+
+# handle the QUIETLY and REQUIRED arguments and set LIBSPG_FOUND to TRUE if
+# all listed variables are TRUE
+include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args (LIBSPG DEFAULT_MSG LIBSPG_LIBRARIES)
+
+mark_as_advanced (LIBSPG_LIBRARIES)
+
