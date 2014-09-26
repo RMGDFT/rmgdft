@@ -42,6 +42,7 @@
 
 
 static int s[MAX_SYMMETRY][3][3];
+static int sa[MAX_SYMMETRY][3][3];
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int ftau[MAX_SYMMETRY][3], ityp[MAX_IONS];
 static double tau[MAX_IONS][3];
@@ -59,8 +60,11 @@ void init_sym (void)
     double *xk, *wk;
     int ibrav = get_ibrav_type();
     double a0[3], a1[3], a2[3], omega;
+    double frac1, frac2, frac3, intpart, symprec = 1.0e-5;
 
     double lattice[3][3];
+    int nsym_atom;
+    int i, j;
 
     lattice[0][0] = get_a0(0);
     lattice[0][1] = get_a0(1);
@@ -127,22 +131,47 @@ void init_sym (void)
     celldm[4] = 0.0;
     celldm[5] = 0.0;
 
-    nsym = spg_get_symmetry(&s[0][0][0], translation,  MAX_SYMMETRY, lattice, tau, ityp, ct.num_ions, 1e-5);
-    printf("\n nysm %d", nsym);
-    int i, j;
-    for(kpt = 0; kpt < nsym; kpt++)
+    nsym_atom = spg_get_symmetry(&sa[0][0][0], translation,  MAX_SYMMETRY, lattice, tau, ityp, ct.num_ions, symprec);
+
+//    for(kpt = 0; kpt < nsym_atom; kpt++)
+//    {
+ //       printf("\n sym operation considering atom only # %d", kpt);
+  //      for(i = 0; i < 3; i++)
+   //     {
+    //        printf("\n      %3d  %3d  %3d", sa[kpt][i][0],sa[kpt][i][1],sa[kpt][i][2]);
+     //   }
+      //  printf("\n  translation in crystal unit:    %f %f %f ", translation[kpt][0], translation[kpt][1], translation[kpt][2]);
+    //}
+    //   check if the real space grid fit the symmetry operations, if not, kick it out
+
+    nsym = 0;
+    for(kpt = 0; kpt < nsym_atom; kpt++)
     {
-        printf("\n sym operation # %d", kpt);
+        frac1 = modf(translation[kpt][0] * nr1, &intpart);
+        frac2 = modf(translation[kpt][1] * nr2, &intpart);
+        frac3 = modf(translation[kpt][2] * nr3, &intpart);
+        if(frac1 < symprec && frac2 < symprec &&frac3 < symprec)
+        {
+            nsym++;
+
+            printf("\n sym operation after considering real space grid # %d",nsym);
+            for(i = 0; i < 3; i++)
+                for(j = 0; j < 3; j++)
+                    s[nsym][i][j] = sa[kpt][i][j];
+
+            ftau[nsym][0] = translation[kpt][0] * nr1;
+            ftau[nsym][1] = translation[kpt][1] * nr2;
+            ftau[nsym][2] = translation[kpt][2] * nr3;
+
             for(i = 0; i < 3; i++)
             {
-                printf("\n");
-                for(j = 0; j < 3; j++)
-                {
-                    printf(" %d ", s[kpt][i][j]);
-                }
+                printf("\n      %3d  %3d  %3d", s[nsym][i][0],s[nsym][i][1],s[nsym][i][2]);
             }
-        printf("\n %f %f %f ", translation[kpt][0], translation[kpt][1], translation[kpt][2]);
+            printf("  with ttranslation of (%d %d %d) grids ", ftau[nsym][0],ftau[nsym][1],ftau[nsym][2]);
+        }
     }
+
+
 
     if (ct.boundaryflag != CLUSTER)
     {
