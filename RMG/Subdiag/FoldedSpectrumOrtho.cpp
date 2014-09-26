@@ -11,7 +11,9 @@
 #include "ErrorFuncs.h"
 #include "blas.h"
 
+
 #include "transition.h"
+
 #if GPU_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
@@ -60,7 +62,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     double *tarr = new double[n];
     int info = 0;
 
-    char *trans_t="t", *trans_n="n", *cuplo = "l";
+    char *trans_t="t", *trans_n="n", *cuplo = "l", *side = "l";
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
@@ -80,9 +82,10 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
-        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, B, n, ZERO_t, G, n, Vgpu, Bgpu, Ggpu, true, true, false, false);
+//        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Vgpu, Bgpu, Ggpu, true, true, false, false);
+        RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Bgpu, Vgpu, Ggpu, true, true, false, false);
         // Multiply G by V and leave result in Cgpu for the magma_dpotrf_gpu call coming up next
-        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, G, n, V, n, ZERO_t, C, n, Ggpu, Vgpu, Cgpu, false, false, false, false);
+        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n, Vgpu, Ggpu, Cgpu, false, false, false, false);
     }
     delete(RT1);
 
@@ -157,30 +160,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     int eig_step = eig_stop - eig_start;
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
-
-#if 0
-    // Transpose the full matrix backwards. Maybe use OMP for this on the CPU?
-#if GPU_ENABLED
-    int ione = 1;
-    custat = cublasSetVector(n * n , sizeof(KpointType), V, ione, Vgpu, ione );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring V matrix from system memory to GPU.");
-
-    custat = cublasDgeam(ct.cublas_handle,  CUBLAS_OP_T,  CUBLAS_OP_N, n, n, &ONE_t, Vgpu, n, &ZERO_t, Bgpu, n, Ggpu, n);
-    RmgCudaError(__FILE__, __LINE__, custat, "Matrix transpose with cublasDgeam failed.");
-
-    custat = cublasGetVector(n * n, sizeof( KpointType ), Ggpu, 1, V, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring G matrix from GPU to system memory.");
-
-#else
-    for(int st1 = 0;st1 < n;st1++) {
-        for(int st2 = 0;st2 < n;st2++) {
-            G[st1*n + st2] = V[st1 + st2*n];
-        }
-    }
-    for(int idx = 0;idx < n*n;idx++) V[idx] = G[idx];
-
-#endif
-#endif
 
 
 #if GPU_ENABLED

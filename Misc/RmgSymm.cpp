@@ -132,7 +132,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
     }
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        custat = cublasZgemm(ct.cublas_handle, cu_side, cu_uplo, m, n,
+        custat = cublasZsymm(ct.cublas_handle, cu_side, cu_uplo, m, n,
                             (cuDoubleComplex *)&alpha,
                             (cuDoubleComplex*)Agpu1, lda,
                             (cuDoubleComplex*)Bgpu1, ldb,
@@ -141,7 +141,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
-        custat = cublasDgemm(ct.cublas_handle, cu_side, cu_uplo, m, n,
+        custat = cublasDsymm(ct.cublas_handle, cu_side, cu_uplo, m, n,
                             (double*)&alpha,
                             (double*)Agpu1, lda,
                             (double*)Bgpu1, ldb,
