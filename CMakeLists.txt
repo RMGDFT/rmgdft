@@ -28,7 +28,7 @@ if(DEFINED ENV{CRAY_LIBSCI})
 #set (RMG_GPU_ENABLED 1)
 endif()
 
-option (RMG_GPU_ENABLED "Use GPU acceleration." ON)
+option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
    set (MAGMA_LIBS 1)

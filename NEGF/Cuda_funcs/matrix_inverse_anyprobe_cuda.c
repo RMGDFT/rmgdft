@@ -10,7 +10,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
-#include <cuComplex.h>
+//#include <cuComplex.h>
 
 
 void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int iprobe, 

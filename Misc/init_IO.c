@@ -150,4 +150,6 @@ magma_init();
 
     init_global_sums();
 
+    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+
 }

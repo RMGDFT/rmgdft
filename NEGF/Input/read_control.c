@@ -43,7 +43,6 @@
 #include "twoParts.h"
 
 static void read_orbitals ();
-static void read_kpoints ();
 
 
 void read_control (char *file)
@@ -142,9 +141,6 @@ void read_control (char *file)
     /* Number of states */
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
     get_data ("number_of_atoms", &ct.num_ions, INT, "0");
-
-    /* Get k-points and weights */
-    read_kpoints ();
 
     allocate_states();
     /* read the atomic positions and species */
@@ -254,56 +250,6 @@ void read_control (char *file)
 
 
 }                               /* end read_control */
-
-
-static void read_kpoints ()
-{
-    int ik, nk;
-    double w;
-    char tbuf [MAX_PATH];
-
-    /* first let's count the number of k-points */
-    nk = 0;
-
-
- require (get_data ("kpoints", &nk, INIT | LIST, NULL));
-    my_malloc (ct.kp, nk, KPOINT);
-
-    /* now we can read the kpoint data */
-    ik = 0;
-    while (get_data ("kpoints", tbuf, ITEM | STR, NULL))
-    {
-        sscanf (tbuf, "%lf %lf %lf %lf",
-                &ct.kp[ik].kpt[0], &ct.kp[ik].kpt[1], &ct.kp[ik].kpt[2], &ct.kp[ik].kweight);
-        ik++;
-    }
-    if (nk != ik)
-    {
-        printf ("nk = %d != %d = ik\n", nk, ik);
-        error_handler ("Mismatch while reading k-point information\n");
-    }
-
-    /*  normalize the kweight to 1.0 if sum(kweights) > 0.0 */
-    w = 0.0;
-    for (ik = 0; ik < nk; ik++)
-        w += ct.kp[ik].kweight;
-    if (w > 0.0)
-        for (ik = 0; ik < nk; ik++)
-            ct.kp[ik].kweight /= w;
-
-    ct.num_kpts = nk;
-
-
-    /* optional kpoints consistency check */
-    if (get_data ("number_of_kpoints", &nk, INT, "0"))
-        if (nk != ct.num_kpts)
-        {
-            printf ("number_of_kpoints = %d != %d = kpoint count\n", nk, ct.num_kpts);
-            error_handler ("Mismatch between number_of_kpoints and kpoint count\n");
-        }
-
-}
-
 
 
 

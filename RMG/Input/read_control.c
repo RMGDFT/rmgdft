@@ -294,43 +294,6 @@ void read_control (char *file)
     get_data ("b_spline_trade_order", &ct.interp_trade, INT, "3");
 
 
-    /* Get k-points and weights */
-    require (get_data ("kpoints", &tmp, INIT | LIST, NULL));
-    if (!run_count)
-    {
-	ct.num_kpts = tmp;
-	my_malloc (ct.kp, ct.num_kpts, KPOINT);
-    }
-    else
-    {
-	if (tmp != ct.num_kpts)
-	    error_handler("Inconsistency in number of kpoints: %d was specified initially, but %d is given now", ct.num_kpts, tmp);
-    }
-
-    /* now we can read the kpoint data */
-    tmp = 0;
-    while (get_data ("kpoints", tbuf, ITEM | STR, NULL))
-    {
-        sscanf (tbuf, "%lf %lf %lf %lf",
-                &ct.kp[tmp].kpt[0], &ct.kp[tmp].kpt[1], &ct.kp[tmp].kpt[2], &ct.kp[tmp].kweight);
-        tmp++;
-    }
-    if (ct.num_kpts != tmp)
-    {
-        error_handler ("Count mismatch while reading k-point information\n");
-    }
-
-    /*  normalize the kweight to 1.0 if sum(kweights) > 0.0 */
-    ftmp = 0.0;
-    for (tmp = 0; tmp < ct.num_kpts; tmp++)
-        ftmp += ct.kp[tmp].kweight;
-    if (ftmp > 0.0)
-        for (tmp = 0; tmp < ct.num_kpts; tmp++)
-            ct.kp[tmp].kweight /= ftmp;
-    
-
-
-
 
     /*Fine grid for non-local pseudopotential */
     get_data ("fine_grid_non_local_pp", &ct.nxfgrid, INT, "4");

@@ -1,4 +1,5 @@
 add_library (Misc
+init_kpoints.c
 RmgCudaError.cpp
 RmgGemm.cpp
 RmgSymm.cpp

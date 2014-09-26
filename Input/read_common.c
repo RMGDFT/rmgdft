@@ -417,6 +417,15 @@ void read_common ()
     get_data ("atomic_coordinate_type", &ct.crd_flag, OPT, "Absolute");
 
 
+    get_data ("kpoint_mesh", tbuf, STR, "1 1 1");
+    ct.kpoint_mesh[0] = strtol(tbuf, &tbuf, 10);
+    ct.kpoint_mesh[1] = strtol(tbuf, &tbuf, 10);
+    ct.kpoint_mesh[2] = strtol(tbuf, &tbuf, 10);
+
+    get_data ("kpoint_is_shift", tbuf, STR, "0 0 0");
+    ct.kpoint_is_shift[0] = strtol(tbuf, &tbuf, 10);
+    ct.kpoint_is_shift[1] = strtol(tbuf, &tbuf, 10);
+    ct.kpoint_is_shift[2] = strtol(tbuf, &tbuf, 10);
 
     if ((FNX_GRID / (1 << ct.poi_parm.levels)) < 3)
         error_handler ("NX_GRID: too many hartree MG levels");

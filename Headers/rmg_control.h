@@ -396,6 +396,8 @@ typedef struct
 
     /** K-point control structure */
     KPOINT *kp;
+    int kpoint_mesh[3];
+    int kpoint_is_shift[3];
 
     /** The maximum number of projectors for any species */
     int max_nl;
