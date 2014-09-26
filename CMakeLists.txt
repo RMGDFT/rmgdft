@@ -429,7 +429,9 @@ if(NOT LIBSPG_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
     execute_process(COMMAND make 
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
-    execute_process(COMMAND cp src/.libs/libsymspg.*a . 
+    execute_process(
+    	COMMAND cp src/.libs/libsymspg.a . 
+    	COMMAND cp src/.libs/libsymspg.la . 
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
 endif(NOT LIBSPG_FOUND)
 
