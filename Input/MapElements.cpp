@@ -2,6 +2,7 @@
 #include "make_conf.h"
 #include "MapElements.h"
 #include "rmg_error.h"
+#include <iostream>
 
 
 
@@ -240,7 +241,7 @@ int GetAtomicNumber(const char *symbol)
         return SymbolToNumber.at(symbol);
     }
     catch (const std::out_of_range& oor) {
-        printf("Unknown atomic symbol.\n");
+        std::cerr << "Unknown atomic symbol." << '\n';
         rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
@@ -253,7 +254,7 @@ double GetAtomicMass(const char *symbol)
         return SymbolToMass.at(symbol);
     }
     catch (const std::out_of_range& oor) {
-        printf("Unknown atomic symbol.\n");
+        std::cerr << "Unknown atomic symbol." << '\n';
         rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
