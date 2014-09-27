@@ -43,7 +43,6 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     RmgTimer RT0("Diagonalization: fs: GSE");
     DataType ZERO_t(0.0);
     DataType ONE_t(1.0);
-    DataType *D = new DataType[n];
 
     DataType *NULLptr = NULL;
     int istep = istop - istart;
@@ -60,6 +59,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 #if GPU_ENABLED
 
     RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: GSE-setup");
+    DataType *D = (DataType *)GpuMallocHost(n * sizeof(DataType));
 
     int ione = 1;
     cublasStatus_t custat;
@@ -156,10 +156,15 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     GpuFree(gpuA);
     GpuFree(gpuT2);
     GpuFree(gpuT1);
+#if !MAGMA_LIBS
+    GpuFreeHost(T1);
+#endif
+    GpuFreeHost(D);
 
     delete(RT1);
 #else
 
+    DataType *D = new DataType[n];
     RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: GSE-setup");
 
     DataType *T1 = new DataType[n*n]();
@@ -224,6 +229,8 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     }    
 
     delete(RT1);
+    delete [] T1;
+    delete [] D;
 #endif
 
 
@@ -232,12 +239,4 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     MPI_Allgatherv(MPI_IN_PLACE, istep * n * factor, MPI_DOUBLE, Z, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
     delete(RT1);
 
-#if GPU_ENABLED
-#if !MAGMA_LIBS
-    GpuFreeHost(T1);
-#endif
-#else
-    delete [] T1;
-#endif
-    delete [] D;
 }

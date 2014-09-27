@@ -37,7 +37,6 @@ template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *
 template <typename KpointType>
 void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B)
 {
-    RmgTimer RT0("Diagonalization: fs: Gram-Schmidt");
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
     KpointType *NULLptr = NULL;
@@ -69,7 +68,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     if(ct.is_gamma) factor = 1;
 
     // Overlaps
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: overlaps");
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: Gram-overlaps");
     if(!B) {
 #if GPU_ENABLED
         custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
@@ -91,7 +90,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 
     // Cholesky factorization
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-Schmidt cholesky");
+    RT1 = new RmgTimer("Diagonalization: fs: Gram-cholesky");
 #if GPU_ENABLED && MAGMA_LIBS
     magma_dpotrf_gpu(MagmaLower, n, Cgpu, n, &info);
     custat = cublasGetVector(n * n, sizeof( KpointType ), Cgpu, 1, C, 1 );
@@ -106,7 +105,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
 
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-Schmidt update");
+    RT1 = new RmgTimer("Diagonalization: fs: Gram-update");
     // Get inverse of diagonal elements
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
@@ -149,7 +148,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-Schmidt allreduce3");
+    RT1 = new RmgTimer("Diagonalization: fs: Gram-allreduce");
 //    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
