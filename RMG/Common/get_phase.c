@@ -53,10 +53,6 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
     hxgrid = get_hxgrid();
     hygrid = get_hygrid();
     hzgrid = get_hzgrid();
-    dimx = get_PX0_GRID();
-    dimy = get_PY0_GRID();
-    dimz = get_PZ0_GRID();
-    pbasis = dimx * dimy * dimz;
 
     if (rtptr == NULL)
         return;
@@ -64,44 +60,50 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
     /* Get species type */
     sp = &ct.sp[iptr->species];
 
+    dimx = sp->nldim;
+    dimy = sp->nldim;
+    dimz = sp->nldim;
+    pbasis = dimx * dimy * dimz;
+
+        printf("\n Ionnnnn  %f %f ",iptr->crds[0],  iptr->nlxcstart);
 
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {
 
         idx = 0;
-        xc = iptr->nlxcstart;
         for (ix = 0; ix < dimx; ix++)
         {
+    
+           xc = iptr->nlxcstart + ix * hxgrid;
 
-            yc = iptr->nlycstart;
             for (iy = 0; iy < dimy; iy++)
             {
+                yc = iptr->nlycstart + iy * hygrid;
 
-                zc = iptr->nlzcstart;
                 for (iz = 0; iz < dimz; iz++)
                 {
+                   zc = iptr->nlzcstart + iz * hzgrid;
 
-                    ax[0] = xc - iptr->xtal[0];
-                    ax[1] = yc - iptr->xtal[1];
-                    ax[2] = zc - iptr->xtal[2];
+                   // ax[0] = xc - iptr->xtal[0];
+                   // ax[1] = yc - iptr->xtal[1];
+                   // ax[2] = zc - iptr->xtal[2];
+                    ax[0] = xc ;
+                    ax[1] = yc ;
+                    ax[2] = zc ;
                     to_cartesian (ax, bx);
                     kdr = ct.kp[kpt].kvec[0] * bx[0] +
                           ct.kp[kpt].kvec[1] * bx[1] + ct.kp[kpt].kvec[2] * bx[2];
 
+                    idx = ix * dimy * dimz + iy * dimz + iz;
 
                     rtptr[idx + 2 * kpt * pbasis] = cos (kdr);
                     rtptr[idx + 2 * kpt * pbasis + pbasis] = sin (kdr);
 
-                    idx++;
 
-
-                    zc += hzgrid;
                 }               /* end for */
 
-                yc += hygrid;
             }                   /* end for */
 
-            xc += hxgrid;
         }                       /* end for */
 
     }                           /* end for */

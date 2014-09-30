@@ -205,7 +205,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion)) {
-                pct.phaseptr[ion] = new double[2 * get_P0_BASIS() * ct.num_kpts + 128]();
+                itmp = sp->nldim * sp->nldim * sp->nldim;
+                pct.phaseptr[ion] = new double[2 * itmp * ct.num_kpts + 128]();
             }
             else {
                 pct.phaseptr[ion] = NULL;

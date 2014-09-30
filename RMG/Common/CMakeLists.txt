@@ -1,4 +1,5 @@
 add_library (RMG_Common
+output_band_plot.c
 ApplyAOperator.cpp
 ApplyBOperator.cpp
 AppCirDriverBeta.cpp

@@ -62,6 +62,7 @@ extern "C" bool quench (STATE * states, double * vxc, double * vh, double * vnuc
 
 extern "C" void lbfgs_init(int num_ions, int num_images);
 
+extern "C" void output_band_plot();
 extern "C" void relax_tau (int steps, STATE * states, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * tau);
 
@@ -346,7 +347,10 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     default:
         rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
 
+
     }
+    if (pct.gridpe == 0)
+        output_band_plot();
 
 }                               /* end run */
 
@@ -368,7 +372,7 @@ void report ()
 
     /* If milliken population info is requested then compute and output it */
     /*if (ct.domilliken)
-        mulliken (states);*/
+      mulliken (states);*/
 
 
     /*Destroy wisdom that may have been allocated previously */
@@ -385,17 +389,17 @@ void report ()
 
     /* Release the memory for density of opposite spin */
     if (ct.spin_flag)
-    	delete [] rho_oppo;
+        delete [] rho_oppo;
     if (ct.xctype == MGGA_TB09) 
-    	delete [] tau;
+        delete [] tau;
 
     /* Write timing information */
-//    write_timings ();
+    //    write_timings ();
     if(pct.imgpe == 0) fclose(ct.logfile);
     RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
 
 
-   
+
 }                               /* end report */
 
 
@@ -403,13 +407,13 @@ void finish ()
 {
 
 #if SCALAPACK_LIBS
-	/*Exit Scalapack */
+    /*Exit Scalapack */
     if (pct.scalapack_pe)
         sl_exit (pct.ictxt);
 #endif
 
     MPI_Barrier(MPI_COMM_WORLD);
-	/*Exit MPI */
+    /*Exit MPI */
     MPI_Finalize ();
 
 #if GPU_ENABLED
