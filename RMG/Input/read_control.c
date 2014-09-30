@@ -367,6 +367,8 @@ void read_control (char *file)
         error_handler ("No ion coordinates available");
     }
 
+    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+
 
     /*Read or initialize ionic velocities*/
     if (verify("ionic_velocities", NULL))

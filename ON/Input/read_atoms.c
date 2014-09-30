@@ -106,11 +106,11 @@ void read_atoms (void)
 
 
 
-        for(st1 = ist; st1 < ist+ct.ions[ion].n_loc_states; st1++)
-        {
-            state_to_ion[st1] = ion;
-            states[st1].atomic_orbital_index = st1-ist;
-        }
+        //for(st1 = ist; st1 < ist+ct.ions[ion].n_loc_states; st1++)
+        //{
+            //state_to_ion[st1] = ion;
+            //states[st1].atomic_orbital_index = st1-ist;
+        //}
 
         ist += ct.ions[ion].n_loc_states;
 

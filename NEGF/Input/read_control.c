@@ -142,10 +142,14 @@ void read_control (char *file)
     get_data ("number_of_orbitals", &ct.num_states, INT, "0");
     get_data ("number_of_atoms", &ct.num_ions, INT, "0");
 
-    allocate_states();
     /* read the atomic positions and species */
 
     read_atoms ();
+
+    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+
+    allocate_states();
+
     read_orbitals ();
 
     get_state_to_proc(states);
@@ -266,6 +270,7 @@ static void read_orbitals ()
     get_data("orbitals", &num_lines, INIT | LIST, NULL);
 
     /* read and count coordinates for each ion */
+    int natom = 0;
     ni = 0;
     ns = 0;
     ist = 0;
@@ -291,9 +296,13 @@ static void read_orbitals ()
             states[ni + i].radius = radius;
             states[ni + i].movable = movable;
             states[ni + i].frozen = frozen;
+            state_to_ion[ni+i] = natom;
+            states[ni+1].atomic_orbital_index = i;
+
         }
 
 
+        natom++;
         ni += num_tem;
 
     }                         

@@ -36,7 +36,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "init_var.h"
 
+int spg_get_ir_reciprocal_mesh(int *grid_address,
+                               int map[],
+                               const int mesh[3],
+                               const int is_shift[3],
+                               const int is_time_reversal,
+                               const double lattice[3][3],
+                               const double *position,
+                               const int types[],
+                               const int num_atom,
+                               const double symprec);
 
 int init_kpoints (int *mesh, int *is_shift)
 {
@@ -120,7 +131,7 @@ int init_kpoints (int *mesh, int *is_shift)
 
 
 
-        my_free(grid_address);
+    my_free(grid_address);
     my_free(tau);
     my_free(ityp);
 

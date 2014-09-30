@@ -706,6 +706,7 @@ typedef struct
     double simpson_tol;
 
     int is_gamma;
+    int is_use_symmetry;
 
 
 } CONTROL;

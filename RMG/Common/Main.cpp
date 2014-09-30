@@ -224,6 +224,7 @@ void initialize(int argc, char **argv)
         if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
     }
 
+    if(!ct.is_gamma) ct.is_use_symmetry = 1;
 
     for (int kpt = 0; kpt < ct.num_kpts; kpt++)
     {
