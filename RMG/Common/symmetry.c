@@ -112,9 +112,9 @@ void init_sym (void)
     if (ct.num_ions >= MAX_IONS)
         error_handler ("Too many ions, increase MAX_IONS in params.h");
 
-    nr1 = get_NX_GRID();
-    nr2 = get_NY_GRID();
-    nr3 = get_NZ_GRID();
+    nr1 = get_FNX_GRID();
+    nr2 = get_FNY_GRID();
+    nr3 = get_FNZ_GRID();
 
     /* Only have PE zero output symmetry information */
     wflag = pct.gridpe;
@@ -215,6 +215,7 @@ void symmetrize_rho (double * rho)
 {
 
     int idx, ix, iy, iz, xoff, yoff, zoff;
+    int ix1, iy1, iz1;
     int isy, ixx, iyy, izz;
     double *da;
     double t1, tem;
@@ -245,10 +246,9 @@ void symmetrize_rho (double * rho)
 
 
     /* Put this processors charge in the correct place */
-    pe2xyz (pct.gridpe, &ix, &iy, &iz);
-    xoff = ix * FPX0_GRID;
-    yoff = iy * FPY0_GRID;
-    zoff = iz * FPZ0_GRID;
+    xoff = get_FPX_OFFSET();
+    yoff = get_FPY_OFFSET();
+    zoff = get_FPZ_OFFSET();
 
     int incx = FPY0_GRID * FPZ0_GRID;
     int incy = FPZ0_GRID;
@@ -284,7 +284,11 @@ void symmetrize_rho (double * rho)
                 tem = 0.0;
                 for(isy = 0; isy < nsym; isy++)
                 {
-                    symm_ijk(&s[isy *9], &ftau[isy*3], ix, iy, iz, &ixx, &iyy, &izz, 
+                    ix1 = ix + xoff;
+                    iy1 = iy + yoff;
+                    iz1 = iz + zoff;
+                    
+                    symm_ijk(&s[isy *9], &ftau[isy*3], ix1, iy1, iz1, &ixx, &iyy, &izz, 
                              FNX_GRID, FNY_GRID, FNZ_GRID);
                     tem += da[izz *incz1 + iyy *incy1 + ixx *incx1];
                 }

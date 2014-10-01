@@ -198,7 +198,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     }
 
-    //symmetrize_rho (rho);
+    symmetrize_rho (rho);
 
 
     /* Check total charge. */
