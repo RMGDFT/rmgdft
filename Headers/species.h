@@ -15,7 +15,7 @@ typedef struct
     /** Description of the species (e.g Atomic carbon generated using 
      * hamann's code with  rcs=0.80 rcp=0.85 bohr
      */
-    char description[MAX_CHAR];
+    char *description;
 
     /** Atomic number */
     int atomic_number;
@@ -116,7 +116,7 @@ typedef struct
     int nqf;
 
     /*L-independent inner coutoff radii rinner for Q_I(r) function */
-    double rinner[5];
+    double *rinner;
 
     /* ultrosoft Vanderbilt Qnm_rad(r) function and */
     double *qnm;

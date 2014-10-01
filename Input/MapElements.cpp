@@ -239,10 +239,10 @@ int GetAtomicNumber(const char *symbol)
 {
 
     try {
-        return SymbolToNumber.at(symbol);
+        return SymbolToNumber[symbol];
     }
     catch (const std::out_of_range& oor) {
-        std::cerr << "Unknown atomic symbol." << '\n';
+        std::cerr << "Unknown atomic symbol. " << symbol << '\n';
         rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
@@ -252,10 +252,10 @@ double GetAtomicMass(const char *symbol)
 {
 
     try {
-        return SymbolToMass.at(symbol);
+        return SymbolToMass[symbol];
     }
     catch (const std::out_of_range& oor) {
-        std::cerr << "Unknown atomic symbol." << '\n';
+        std::cerr << "Unknown atomic symbol. " << symbol << '\n';
         rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
     }
 
