@@ -320,7 +320,8 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     case MD_QUENCH:            /* Quench the electrons */
     	if (ct.xctype == MGGA_TB09)
-        	relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
+        	//relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
+                ;
 	else 
         	Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;

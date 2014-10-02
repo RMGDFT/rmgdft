@@ -54,6 +54,8 @@ static void write_bs_eigenvalues (char *fn, STATE * states, int ik);
 void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc)
 {
 
+// Fix up later
+#if 0
     int ik, st1, idx;
     rmg_double_t *vtot, *vtot_psi;
     rmg_double_t time1, time2;
@@ -150,6 +152,7 @@ void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_d
     /* release memory */
     my_free (vtot);
     my_free (vtot_psi);
+#endif
 
 }                               /* end bandstructure  */
 

@@ -15,7 +15,7 @@ get_new_tau.c
 get_te_tau.c
 mgga_libxc.c
 mix_tau.c
-quench_tau.c
-relax_tau.c
-scf_tau.c
+#quench_tau.c
+#relax_tau.c
+#scf_tau.c
 )

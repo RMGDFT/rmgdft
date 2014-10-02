@@ -32,7 +32,7 @@ mix_betaxpsi.c
 mix_betaxpsi1.c
 open_restart_file.c
 scalapack_tools.c
-ortho.c
+#ortho.c
 lbfgs_init.c
 finish_release_mem.c
 init_efield.c
@@ -72,7 +72,7 @@ nlforce_par_omega.c
 real_min_all.c
 init_nuc.c
 partial_betaxpsi.c
-gramsch.c
+#gramsch.c
 neb_relax.c
 app_smooth.cpp
 moldyn.c
@@ -106,9 +106,9 @@ get_derweight.c
 get_ke.c
 lcao_get_psi.c
 set_pbc.c
-ortho_ncpp.c
+#ortho_ncpp.c
 pulay_rho.c
-subdiag_gamma.c
+#subdiag_gamma.c
 init_psp.c
 ortho_get_coeff.c
 assign_derweight.c
