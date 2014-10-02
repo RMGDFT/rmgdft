@@ -24,10 +24,8 @@ pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
 write_occ.c
-betaxpsi.c
 get_gamma.c
 fastrelax.c
-mix_betaxpsi.c
 mix_betaxpsi1.c
 open_restart_file.c
 scalapack_tools.c
