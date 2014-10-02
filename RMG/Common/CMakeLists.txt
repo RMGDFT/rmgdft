@@ -16,8 +16,9 @@ Main.cpp
 AppNls.cpp
 Kpoint.cpp
 State.cpp
-Relax.cpp
 Quench.cpp
+Relax.cpp
+RmgThread.cpp
 Scf.cpp
 pack_stop_axpy.cpp
 genvpsi.cpp
@@ -43,11 +44,7 @@ app_smooth1.cpp
 rand0.c
 get_extrapolation_constants.c
 output_wave.c
-app_nls_allstates.c
 write_header.c
-app_nls_batch.c
-quench.c
-get_psioverlaps.c
 read_data.c
 mix_rho.c
 cholesky.c
@@ -59,7 +56,6 @@ init_img_topo.c
 mulliken.c
 write_avgd.c
 bsplines.c
-pack_doubles.c
 claim_ion.c
 debug_write_rho_z.c
 write_pdb.c
@@ -72,13 +68,10 @@ app_smooth.cpp
 moldyn.c
 write_data.c
 xbsmovie.c
-scatter_psi.c
 write_restart.c
 get_weight.c
 init_gpu.c
 write_zstates.c
-gather_psi.c
-update_waves.c
 get_phase.c
 betaxpsi1.c
 symmetry.c
@@ -108,7 +101,6 @@ fire.c
 mg_prolong_6.c
 partial_beta_fdiff.c
 output_eigenvalues.c
-RmgThread.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

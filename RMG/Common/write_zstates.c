@@ -39,7 +39,9 @@
 void write_zstates (STATE * states)
 {
 
-#if 1
+rmg_error_handler("Requires updating.");
+
+#if 0
     int ix, iy, iz, poff, PX0_GRID, PY0_GRID, PZ0_GRID;
     int px, py, pz;
     int istate;
@@ -114,9 +116,9 @@ void write_zstates (STATE * states)
         }
         fclose (avg);
     }                           /* istate */
-#endif
 
     my_free(zvec);
+#endif
 }                               /* end write_zstates */
 
 /******/

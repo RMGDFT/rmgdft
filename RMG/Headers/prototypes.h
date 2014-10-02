@@ -127,7 +127,6 @@ char *get_num (char *str);
 void get_xc (rmg_double_t * nrho, rmg_double_t * nrho_oppo,  rmg_double_t * vxc, rmg_double_t * exc, int xctype);
 
 void get_zdens (STATE *states, int state, rmg_double_t *zvec);
-void get_psi_overlaps(rmg_double_t *psi_array, rmg_double_t *overlap, int numst, int maxst, int numpt, int maxpt);
 
 /* new lda function incorporating both  1981 and 1994 monte carlo data */
 void xclda(rmg_double_t *rho, rmg_double_t *vxc, rmg_double_t *exc);
