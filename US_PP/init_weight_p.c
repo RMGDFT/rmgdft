@@ -19,8 +19,6 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     double complex *weptr1, *weptr2, *weptr3, *gwptr;
     double complex *r1, *r2, *r3;
     int ixx, iyy, izz;
-    double complex *in, *out;
-
     invdr = 1.0 / sp->drnlig;
 
 
@@ -36,14 +34,13 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-    weptr1 = (double complex *)fftw_malloc(sizeof(double complex) * 4 * size);
+    weptr1 = (double complex *)fftw_malloc(sizeof(double complex) * size);
+    weptr2 = (double complex *)fftw_malloc(sizeof(double complex) * size);
+    weptr3 = (double complex *)fftw_malloc(sizeof(double complex) * size);
+    gwptr = (double complex *)fftw_malloc(sizeof(double complex) * size);
 
-    if (weptr1 == NULL)
+    if ((weptr1 == NULL) || (weptr2 == NULL) || (weptr3 == NULL) || (gwptr == NULL))
         error_handler ("can't allocate memory\n");
-
-    weptr2 = weptr1 + size;
-    weptr3 = weptr2 + size;
-    gwptr = weptr3 + size;
 
     hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
     hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
@@ -117,8 +114,9 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     fftw_execute_dft (p1, weptr3, gwptr);
     pack_gftoc (sp, gwptr, r3);
 
+    fftw_free (gwptr);
+    fftw_free (weptr3);
+    fftw_free (weptr2);
     fftw_free (weptr1);
-    fftw_free (in);
-    fftw_free (out);
 
 }
