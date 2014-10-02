@@ -69,14 +69,12 @@ moldyn.c
 write_data.c
 xbsmovie.c
 write_restart.c
-get_weight.c
 init_gpu.c
 write_zstates.c
 get_phase.c
 betaxpsi1.c
 symmetry.c
 lbfgs.c
-assign_weight.c
 nlforce_par_Q.c
 init_fftw_wisdom.c
 lcao_get_awave.c
@@ -84,7 +82,6 @@ lcao_get_rho.c
 destroy_fftw_wisdom.c
 rmg_lbfgs.c
 test_overlap.c
-assign_weight2.c
 write_avgv.c
 move_ions.c
 ranv.c
