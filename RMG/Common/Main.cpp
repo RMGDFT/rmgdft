@@ -232,34 +232,18 @@ void initialize(int argc, char **argv)
 
         if(ct.is_gamma) {
 
-            Kpoint<double> *ktmp;
-
             // Gamma point
             rmg_printf("\nUSING REAL ORBITALS\n");
 
             Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
-            ktmp = (Kpoint<double> *)Kptr[kpt];
-            ktmp->kstates = &states[kpt*ct.num_states];
-            for(int st = 0;st < ct.num_states;st++) {
-                ktmp->Kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
-                ktmp->kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
-            }
 
         }
         else {
-
-            Kpoint<std::complex<double>> *ktmp;
 
             // General case
             rmg_printf("\nUSING COMPLEX ORBITALS\n");
 
             Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
-            ktmp = (Kpoint<std::complex<double>> *)Kptr[kpt];
-            ktmp->kstates = &states[kpt*ct.num_states];
-            for(int st = 0;st < ct.num_states;st++) {
-                ktmp->Kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
-                ktmp->kstates[st].occupation[0] = ktmp->kstates[st].occupation[0];
-            }
 
         }
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];

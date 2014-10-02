@@ -53,6 +53,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "transition.h"
 #include "../Headers/prototypes.h"
 
 // Instantiate gamma and non-gamma versions
@@ -84,7 +85,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.boundaryflag, Kptr);
 
 
-	get_te (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr[0]->kstates, !ct.scf_steps);
+	GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr[0]->Kstates, !ct.scf_steps);
 
 	/* output the eigenvalues with occupations */
 	if (ct.write_eigvals_period)
@@ -93,7 +94,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 	    {
 		if (pct.imgpe == 0)
 		{
-		    output_eigenvalues (Kptr[0]->kstates, 0, ct.scf_steps);
+                    OutputEigenvalues (Kptr, 0, ct.scf_steps);
 		    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 		}
 	    }
@@ -111,8 +112,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 	rmg_printf ("potential convergence has been achieved. stopping ...\n");
 	    
 	/*Write PDOS if converged*/
-	if (ct.pdos_flag)
-	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
+//	if (ct.pdos_flag)
+//	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
     }
 
     rmg_printf ("\n");
@@ -123,10 +124,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /* output final eigenvalues with occupations */
 
-    output_eigenvalues (Kptr[0]->kstates, 0, ct.scf_steps);
+    OutputEigenvalues (Kptr, 0, ct.scf_steps);
     rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
-    wvfn_residual (Kptr[0]->kstates);
+//    wvfn_residual (Kptr[0]->kstates);
 
 
 
@@ -161,8 +162,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
-    if (CONVERGED || (ct.forceflag != MD_QUENCH))
-	force (rho, rho_oppo, rhoc, vh, vxc, vnuc, Kptr[0]->kstates);
+//    if (CONVERGED || (ct.forceflag != MD_QUENCH))
+//	force (rho, rho_oppo, rhoc, vh, vxc, vnuc, Kptr[0]->kstates);
 
     /* output the forces */
     if (pct.imgpe == 0)

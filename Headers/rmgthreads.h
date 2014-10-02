@@ -17,7 +17,7 @@ typedef struct
     int kidx;
 
     /* Pointer to current state assigned to the thread when used in sections that process a single state */
-    STATE *sp;
+    void *sp;
 
     rmg_double_t *vtot;
 

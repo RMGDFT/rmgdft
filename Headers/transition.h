@@ -55,7 +55,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR);
 
 
-template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi);
+template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi);
 
 
 // Gamma point float version
@@ -74,6 +74,8 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, void * kd,
 void pack_to_complex(double *psi, int nstates, int pbasis);
 void pack_to_standard(double *psi, int nstates, int pbasis);
 void MixBetaxpsi (int mix, int kpt);
+template <typename OrbitalType>
+void MixBetaxpsi1 (State<OrbitalType> *sp);
 template  <typename OrbitalType> void AppCilrDriver (TradeImages *T, OrbitalType * psi, OrbitalType * a_psi, OrbitalType *b_psi, double *vtot,
     int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
 
@@ -85,7 +87,7 @@ extern "C" void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_d
 template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template <typename OrbitalType, typename CalcType>
-void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
+void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
 // Print function
 void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps);
 template <typename KpointType>
@@ -108,6 +110,25 @@ void LoadUpf(SPECIES *sp);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 extern "C" void ReadPseudo(int nspecies, SPECIES *sp);
+template <typename KpointType>
+void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf);
+template <typename KpointType>
+void ReadData (char *name, double * vh, double * rho, double * vxc, State<KpointType> * states);
+template <typename StateType>
+void GetOppositeEigvals (State<StateType> * states);
+template <typename StateType>
+void GetOppositeOccupancies (State<StateType> * states);
+template <typename StateType>
+void LcaoGetPsi (State<StateType> * states);
+template <typename StateType>
+void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff);
+template <typename StateType>
+void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, State<StateType> * states, int ii_flag);
+template <typename StateType>
+void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
+template <typename StateType>
+void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
+
 
 
 #endif

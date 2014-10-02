@@ -5,6 +5,7 @@
 #include "typedefs.h"
 #include "rmg_alloc.h"
 #include "rmg_error.h"
+#include "State.h"
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
@@ -26,7 +27,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     BaseGrid *G = kptr->G;
     TradeImages *T = kptr->T;
     Lattice *L = &Rmg_L;
-    STATE *sp = &kptr->kstates[istate];
+    State<KpointType> *sp = &kptr->Kstates[istate];
     KpointType *psi = kptr->Kstates[istate].psi;
 
     double vel = L->get_omega() / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));

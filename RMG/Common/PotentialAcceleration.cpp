@@ -20,13 +20,13 @@
 
 static std::mutex vtot_sync_mutex;
 
-template void PotentialAcceleration<double,float>(Kpoint<double> *, STATE *, double *, double *, float *, double *);
-template void PotentialAcceleration<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double> > *, STATE *, double *, double *, std::complex<float> *, std::complex<double> *);
+template void PotentialAcceleration<double,float>(Kpoint<double> *, State<double> *, double *, double *, float *, double *);
+template void PotentialAcceleration<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double> > *, State<std::complex<double> > *, double *, double *, std::complex<float> *, std::complex<double> *);
 
 
 
 template <typename OrbitalType, typename CalcType>
-void PotentialAcceleration(Kpoint<OrbitalType> *kptr, STATE *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
+void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
 {
 
     int pbasis = kptr->pbasis;

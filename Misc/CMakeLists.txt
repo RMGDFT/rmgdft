@@ -1,4 +1,5 @@
 add_library (Misc
+GetTe.cpp
 init_kpoints.c
 RmgCudaError.cpp
 RmgGemm.cpp

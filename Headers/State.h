@@ -43,11 +43,41 @@ public:
     // kpoint this state is attached to
     Kpoint<StateType> *Kptr;
 
+    /** Index showing which k-point this orbital is associated with */
+    int kidx;
+
     //void normalize(void);
 
     // Storage area for the orbital
     StateType *psi;
  
+    /** Nuclear potential */
+    double *vnuc;
+
+    /** Hartree potential */
+    double *vh;
+
+    /** Exchange correlation potential */
+    double *vxc;
+
+    /** Total potential */
+    double *vtot;
+
+    // dvhxc for potential acceleration
+    double *dvhxc;
+
+    /** Total basis size on each processor (dimx*dimy*dimz) */
+    int pbasis;
+
+    /* Total basis size in a smoothing grid on each processor (dimx+2)*(dimy+2)*(dimz+2) */
+    int sbasis;
+
+    /** Volume element associated with each real space grid point */
+    double vel;
+
+    /** Wavefunction residual error computed by multigrid solver */
+    double res;
+
     // Last two eigenvalues
     double eig[2];
     double oldeig[2];

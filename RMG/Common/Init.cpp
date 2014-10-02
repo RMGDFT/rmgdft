@@ -249,17 +249,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            Kptr[kpt]->kstates[st1].kidx = kpt;
-            Kptr[kpt]->kstates[st1].psiR = (double *)rptr;
-            Kptr[kpt]->kstates[st1].psiI = Kptr[kpt]->kstates[st1].psiR + P0_BASIS;
-            Kptr[kpt]->kstates[st1].dvhxc = rptr1;
-            Kptr[kpt]->kstates[st1].vxc = vxc;
-            Kptr[kpt]->kstates[st1].vh = vh;
-            Kptr[kpt]->kstates[st1].vnuc = vnuc;
-            Kptr[kpt]->kstates[st1].pbasis =P0_BASIS;
-            Kptr[kpt]->kstates[st1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
-            Kptr[kpt]->kstates[st1].istate = st1;
-            Kptr[kpt]->kstates[st1].vel = get_vel();
+            Kptr[kpt]->Kstates[st1].kidx = kpt;
+            Kptr[kpt]->Kstates[st1].psi = rptr;
+            Kptr[kpt]->Kstates[st1].dvhxc = rptr1;
+            Kptr[kpt]->Kstates[st1].vxc = vxc;
+            Kptr[kpt]->Kstates[st1].vh = vh;
+            Kptr[kpt]->Kstates[st1].vnuc = vnuc;
+            Kptr[kpt]->Kstates[st1].pbasis =P0_BASIS;
+            Kptr[kpt]->Kstates[st1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
+            Kptr[kpt]->Kstates[st1].istate = st1;
+            Kptr[kpt]->Kstates[st1].vel = get_vel();
             rptr +=P0_BASIS;
             rptr1 +=P0_BASIS;
         }
@@ -269,14 +268,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("If not an initial run read data from files");
     if (ct.runflag == RESTART)
     {
-        read_data (ct.infile, vh, rho, vxc, Kptr[0]->kstates);
+        ReadData (ct.infile, vh, rho, vxc, Kptr[0]->Kstates);
     
 	/*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
 	if (ct.spin_flag)
 	{
 	    get_rho_oppo (rho, rho_oppo);
-	    get_opposite_eigvals (Kptr[0]->kstates);
-	    get_opposite_occupancies (Kptr[0]->kstates);
+            GetOppositeEigvals (Kptr[0]->Kstates);
+	    GetOppositeOccupancies (Kptr[0]->Kstates);
 	}
     }
     else 
@@ -290,7 +289,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	if (ct.runflag == LCAO_START)
 	{
 	    lcao_init ();
-	    lcao_get_psi(Kptr[0]->kstates);
+            LcaoGetPsi(Kptr[0]->Kstates);
 	}
 	
 	else

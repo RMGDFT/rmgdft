@@ -228,7 +228,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
               for(ist = 0;ist < T->get_threads_per_node();ist++) {
                   thread_control[ist].job = HYBRID_EIG;
                   thread_control[ist].vtot = vtot_psi;
-                  thread_control[ist].sp = &Kptr[kpt]->kstates[st1 + ist];
+                  thread_control[ist].sp = &Kptr[kpt]->Kstates[st1 + ist];
                   thread_control[ist].p3 = (void *)Kptr[kpt];
                   T->set_pptr(ist, &thread_control[ist]);
               }
@@ -241,10 +241,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             // Process any remaining states in serial fashion
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                 if(ct.is_gamma) {
-                    MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], &Kptr[kpt]->kstates[st1], vtot_psi);
+                    MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                 }
                 else {
-                    MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], &Kptr[kpt]->kstates[st1], vtot_psi);
+                    MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                 }
             }
             delete(RT1);
@@ -292,7 +292,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             
 
         if (spin_flag)
-            get_opposite_eigvals (Kptr[kpt]->kstates);
+            GetOppositeEigvals (Kptr[kpt]->Kstates);
 
             
         /* If sorting is requested then sort the states. */
@@ -302,8 +302,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
 
         /* Take care of occupation filling */
-        if  (!firststep)
-            ct.efermi = fill (Kptr[kpt]->kstates, ct.occ_width, ct.nel, ct.occ_mix, Kptr[kpt]->nstates, ct.occ_flag);
+//        if  (!firststep)
+//            ct.efermi = fill (Kptr[kpt]->kstates, ct.occ_width, ct.nel, ct.occ_mix, Kptr[kpt]->nstates, ct.occ_flag);
 
 
         if (ct.occ_flag == 1 && !firststep)

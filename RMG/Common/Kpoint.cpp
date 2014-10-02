@@ -135,7 +135,6 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
     int state;
     double t1;
     State<KpointType> *sp, *sp1;
-    STATE *spl, *spl1;
 
     for(state = 0;state < this->nstates - 1;state++)
     {
@@ -159,45 +158,6 @@ template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
                 t1 = sp->occupation[0];
                 sp->occupation[0] = sp1->occupation[0];
                 sp1->occupation[0] = t1;
-
-
-            }                   /* end if */
-
-        }                       /* end if */
-
-    } 
-
-    // Legacy
-    for(state = 0;state < this->nstates - 1;state++)
-    {
-        sp = &this->Kstates[state];
-        sp1 = &this->Kstates[state+1];
-        spl = &this->kstates[state];
-        spl1 = &this->kstates[state+1];
-        if (spl->eig[0] > spl1->eig[0])
-        {
-
-            if (((spl->occupation[0] > 0.1) && (spl1->occupation[0] > 0.1))
-                || ((spl->occupation[0] < 0.1) && (spl1->occupation[0] < 0.1)))
-            {
-                KpointType tmp;
-                for(int idx = 0;idx < this->pbasis;idx++) {
-                    tmp = sp->psi[idx];
-                    sp->psi[idx] = sp1->psi[idx];
-                    sp1->psi[idx] = tmp;
-                }
-
-                t1 = spl->eig[0];
-                spl->eig[0] = spl1->eig[0];
-                spl1->eig[0] = t1;
-
-                t1 = spl->oldeig[0];
-                spl->oldeig[0] = spl1->oldeig[0];
-                spl1->oldeig[0] = t1;
-
-                t1 = spl->occupation[0];
-                spl->occupation[0] = spl1->occupation[0];
-                spl1->occupation[0] = t1;
 
 
             }                   /* end if */
@@ -249,7 +209,6 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
         /* Set occupation for the first state */
         for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
             this->Kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
-            this->kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
         }
     }
 
@@ -281,7 +240,6 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
         {
             for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
                 this->Kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
-                this->kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
             }
         }
 

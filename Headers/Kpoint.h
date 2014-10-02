@@ -90,7 +90,7 @@ public:
     State<KpointType> *Kstates;
 
     // Legacy structure will be removed later
-    STATE *kstates;
+    //STATE *kstates;
 
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;

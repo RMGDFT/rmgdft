@@ -1,4 +1,10 @@
 add_library (RMG_Common
+WriteData.cpp
+MixBetaxpsi1.cpp
+WriteRestart.cpp
+LcaoGetAwave.cpp
+LcaoGetPsi.cpp
+ReadData.cpp
 output_band_plot.c
 ApplyAOperator.cpp
 ApplyBOperator.cpp
@@ -19,6 +25,7 @@ State.cpp
 Quench.cpp
 Relax.cpp
 RmgThread.cpp
+OutputEigenvalues.cpp
 Scf.cpp
 pack_stop_axpy.cpp
 genvpsi.cpp

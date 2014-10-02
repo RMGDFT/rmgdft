@@ -73,7 +73,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         for (int istate = 0; istate < nstates; istate++)
         {
 
-            double scale = Kpts[kpt]->kstates[istate].occupation[0] * ct.kp[kpt].kweight;
+            double scale = Kpts[kpt]->Kstates[istate].occupation[0] * ct.kp[kpt].kweight;
 
             OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
 
@@ -132,11 +132,11 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
                 for (int kpt = 0; kpt < ct.num_kpts; kpt++)
                 {
 
-                    STATE *sp = ct.kp[kpt].kstate;
+                    //STATE *sp = ct.kp[kpt].kstate;
                     /* Loop over states and accumulate charge */
                     for (int istate = 0; istate < ct.num_states; istate++)
                     {
-                        double t1 = sp->occupation[0] * ct.kp[kpt].kweight;
+                        double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * ct.kp[kpt].kweight;
 
                         for (int i = 0; i < ct.max_nl; i++)
                         {
@@ -172,7 +172,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
                                 idx++;
                             }           /*end for j */
                         }               /*end for i */
-                        sp++;
                     }                   /*end for istate */
                 }                       /*end for kpt */
 

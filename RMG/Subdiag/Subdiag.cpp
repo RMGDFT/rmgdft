@@ -156,7 +156,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
         SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
         for(int ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
-            thread_control[ist].sp = &kptr->kstates[st1 + ist];
+            thread_control[ist].sp = &kptr->Kstates[st1 + ist];
             thread_control[ist].p1 = (void *)&a_psi[(st1 + ist) * kptr->pbasis];
             thread_control[ist].p2 = (void *)&b_psi[(st1 + ist) * kptr->pbasis];
             thread_control[ist].p3 = (void *)kptr;
@@ -250,7 +250,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // as the correct eigenvalues
     if (ct.diag == 1) {
         for (int st1 = 0; st1 < num_states; st1++) {
-            kptr->kstates[st1].eig[0] = eigs[st1];
             kptr->Kstates[st1].eig[0] = eigs[st1];
         }
     }

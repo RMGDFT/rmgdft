@@ -129,7 +129,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         /* save data to file for future restart */
         if (ct.checkpoint)
             if ( ct.md_steps % ct.checkpoint == 0 )
-                write_restart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr[0]->kstates);
+                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr[0]->Kstates);
 
 
         /* check force convergence */
@@ -170,7 +170,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
 
     /*Write out final data */
-    write_restart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr[0]->kstates);
+    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr[0]->Kstates);
 
 
 }                               /* end fastrlx */

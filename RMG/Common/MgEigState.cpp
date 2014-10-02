@@ -159,16 +159,13 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 
 }
 
-extern "C" void mix_betaxpsi1 (STATE *sp);
-
-
 static std::mutex vtot_sync_mutex;
 
-template void MgEigState<double,float>(Kpoint<double> *, STATE *, double *);
-template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, STATE *, double *);
+template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *);
+template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *);
 
 template <typename OrbitalType, typename CalcType>
-void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
+void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi)
 {
 
     RmgTimer RT("Mg_eig");
@@ -217,11 +214,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
     CalcType *tmp_psi_t = new CalcType[2 * sbasis];
     CalcType *res_t = new CalcType[2 * sbasis];
 
-    OrbitalType *tmp_psi = (OrbitalType *)sp->psiR;
+    OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
 
     if(ct.eig_parm.mucycles > 1)
-        mix_betaxpsi1(sp);
+        MixBetaxpsi1(sp);
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectfully) */
@@ -371,7 +368,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, STATE * sp, double * vtot_psi)
 
 
             if(potential_acceleration) {
-                t1 = eig - kptr->kstates[0].eig[0];
+                t1 = eig - kptr->Kstates[0].eig[0];
                 t1 = -t1*t1 / 10.0;
             }
             else {

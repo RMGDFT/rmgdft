@@ -26,7 +26,7 @@ extern double *rhocore;
 /* Compensating charge density */
 extern double *rhoc;
 
-
+#if 0
 extern "C" void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
 {
      Kpoint<double>* kptr = (Kpoint<double> *)Kptr[0]; 
@@ -85,4 +85,4 @@ extern "C" void mg_eig_state_driver (STATE * sp, int tid, double * vtot_psi)
 
 
 }
-
+#endif
