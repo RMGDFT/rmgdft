@@ -51,12 +51,15 @@ double * UPF_str_to_double_array(std::string str, int max_count, int start) {
    return array;
 }
 
+
+
 // Skips the first element in array since some UPF pseudopotentials
 // have r[0] = 0 which causes us issues.
 double * UPF_read_mesh_array(std::string str, int max_count)
 {
     return UPF_str_to_double_array(str, max_count + 1, 1);
 }
+
 
 using boost::property_tree::ptree;
 
@@ -344,7 +347,16 @@ void LoadUpf(SPECIES *sp)
     catch(std::exception& e)
     {
         std::cout << e.what() << '\n';
-        rmg_error_handler(__FILE__,__LINE__,"Problem reading pseudopotential. Terminating.\n");
+        // Specific error messages
+        if(!std::strcmp("No such node (UPF.PP_INFO)", e.what())) {
+            std::cout << "RMG requires Universal pseudopotential format v2.0.1 files. Please check your pseudopotential files and convert them to the correct format.\n" << std::endl;
+        }
+        else {
+            // Catch all
+            std::cout << "Problem reading pseudopotential. Terminating." << std::endl;
+        }
+        fflush(NULL);
+        MPI_Abort( MPI_COMM_WORLD, 0 );
     }
 
     // Set the maximum number of non-local projecters needed
@@ -353,8 +365,9 @@ void LoadUpf(SPECIES *sp)
    
     // Optional stuff next
     
-    char *def_desc = "Pseudopotential";
-    //sp->description = upf_tree.get<char *>("UPF.PP_HEADER.<xmlattr>.comment", def_desc);
+    std::string description = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.comment", "Pseudopotential");
+    sp->description = new char[description.length() + 1]();
+    std::strcpy(sp->description, description.c_str());
 
     // Stuff not present in the UPF format that RMG requires. We need to find a consistent way of automatically
     // setting these

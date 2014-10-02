@@ -38,19 +38,16 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     double ONE_t = 1.0;
     double ZERO_t = 0.0;
     double *Y = new double[n * k]();
-    double *NULLptr = NULL;
     double *Agpu = NULL;
     double *Xgpu = NULL;
     double *Ygpu = NULL;
-    double *Tgpu = NULL;
-    double *eigs_gpu = NULL;
-    double neg_rone = -1.0;
     int sizr = n * k;
     char *trans_n = "n";
-    char *trans_t = "t";
 
 #if GPU_ENABLED
     cublasStatus_t custat;
+    double *Tgpu = NULL;
+    double *eigs_gpu = NULL;
     Agpu = (double *)GpuMalloc(n * n * sizeof(double));
     Xgpu = (double *)GpuMalloc(n * k * sizeof(double));
     Ygpu = (double *)GpuMalloc(n * k * sizeof(double));
@@ -81,6 +78,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
 #if GPU_ENABLED
 
+        double neg_rone = -1.0;
         custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
         custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, Tgpu, ione, Ygpu, ione);

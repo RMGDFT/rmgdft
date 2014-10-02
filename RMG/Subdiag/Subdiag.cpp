@@ -227,7 +227,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
     // used. This is handled during the rotation of the orbitals by trans_b which is set by the driver routine.
     RT1 = new RmgTimer("Diagonalization: Eigensolver");
-    char *trans_b;
+    char *trans_b = "n";
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:

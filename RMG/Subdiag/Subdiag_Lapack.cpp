@@ -32,21 +32,17 @@ template <typename KpointType>
 char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
-    BaseGrid *G = kptr->G;
-    Lattice *L = kptr->L;
-    double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
-
     static char *trans_t = "t";
     static char *trans_n = "n";
     int info = 0;
     int num_states = kptr->nstates;
     int ione = 1;
-    bool use_folded = (ct.use_folded_spectrum && (ct.scf_steps > 6) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     KpointType ONE_t(1.0);
-    KpointType ZERO_t(0.0);
     KpointType *NULLptr = NULL;
 #if GPU_ENABLED
+    KpointType ZERO_t(0.0);
     KpointType *Cij = (KpointType *)GpuMallocHost(num_states * num_states * sizeof(KpointType));
     for(int ix = 0;ix < num_states * num_states;ix++) Cij[ix] = ZERO_t;
 #else
