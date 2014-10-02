@@ -53,13 +53,11 @@ void read_init(char *meta)
 
     /* do spin polarized calculation? */
     get_data ("spin_polarization", &ct.spin_flag, BOOL, "false");
-    dprintf("\n ct.spin_flag  %d", ct.spin_flag); 
 
     get_data ("num_images", &pct.images, INT, "1");
     get_data ("image_per_node", &ct.images_per_node, INT, "1");
     get_data ("pegroup_for_kpoint", &pct.pe_kpoint, INT, "1");
 
-    dprintf("\n pct.images %d", pct.images);
     num_image = 0;
 
     get_data ("image_infos", &tmp, INIT | LIST, NULL);
@@ -79,6 +77,16 @@ void read_init(char *meta)
         num_image++;
     }
 
+    if(num_image == 0) 
+    {
+        tot_pe = pct.total_npes;
+        strcpy(pct.image_path[0],  "./");
+        strcpy(pct.image_input[0] , meta);
+        pct.image_npes[0] = pct.total_npes;
+        num_image = 1;
+    }
+    
+    
     if(tot_pe != pct.total_npes) 
     {
         dprintf("\n require %d npes != from job/pe_kpoint %d", tot_pe, pct.total_npes);
