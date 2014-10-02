@@ -55,6 +55,8 @@ void bandstructure (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_d
 {
 
 // Fix up later
+rmg_error_handler("Requires updating.");
+
 #if 0
     int ik, st1, idx;
     rmg_double_t *vtot, *vtot_psi;

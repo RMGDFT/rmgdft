@@ -62,6 +62,8 @@ int stepcount = 0;
 void moldyn (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
              rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * rhocore)
 {
+rmg_error_handler("Requires updating.");
+#if 0
 
     rmg_double_t target;
     rmg_double_t *crdsx, *crdsy, *crdsz, rsteps;
@@ -461,7 +463,7 @@ void moldyn (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t
     my_free (crdsy);
     my_free (crdsz);
 
-
+#endif
 }                               /* end moldyn */
 
 
