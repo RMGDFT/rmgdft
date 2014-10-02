@@ -97,7 +97,7 @@
 #define         MAX_GRIDS        2
 
 /* Maximum number of points in pseudopotential radial grid */
-#define         MAX_RGRID	(1000)
+#define         MAX_RGRID	(2000)
 
 
 

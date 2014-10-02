@@ -7,7 +7,7 @@
 
 
 
-std::unordered_map<const char *, const int> SymbolToNumber ({
+std::unordered_map<std::string, const int> SymbolToNumber ({
 {"0?", 0},
 {"H", 1},
 {"He", 2},
@@ -121,7 +121,7 @@ std::unordered_map<const char *, const int> SymbolToNumber ({
 {"Ds", 110}
 });
 
-std::unordered_map<const char *, const int> SymbolToMass ({
+std::unordered_map<std::string, const int> SymbolToMass ({
 {"H",  1.0080},
 {"He",  4.0026},
 {"Li",  6.9400},
@@ -235,7 +235,7 @@ std::unordered_map<const char *, const int> SymbolToMass ({
 });
 
 
-int GetAtomicNumber(const char *symbol)
+int GetAtomicNumber(std::string symbol)
 {
 
     try {
@@ -248,7 +248,7 @@ int GetAtomicNumber(const char *symbol)
 
 }
 
-double GetAtomicMass(const char *symbol)
+double GetAtomicMass(std::string symbol)
 {
 
     try {
@@ -268,7 +268,7 @@ const char * GetAtomicSymbol(int number)
 
     for ( auto it = SymbolToNumber.begin(); it != SymbolToNumber.end(); ++it ) {
         if(it->second == number) {
-            return it->first;
+            return it->first.c_str();
         }
     }
     return "";
