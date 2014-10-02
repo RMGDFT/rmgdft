@@ -66,15 +66,15 @@ void read_pseudo (void)
 
         get_data (sp->pseudo_filename, NULL, LINES|INIT, NULL);
 
+        my_malloc(sp->description, MAX_CHAR, char);
 
         /* Description */
         get_data (sp->pseudo_filename, &sp->description, ITEM | STR, "ultrasoft pseudo-potential"); 
-        Dprintf( "desc=:%s:\n", sp->description );
+        //dprintf( "desc=:%s:\n", sp->description );
 
 
         /* Read in the nlcc flag */
         get_data (sp->pseudo_filename, &sp->nlccflag, ITEM | INT, NULL); 
-        Dprintf( "nlcc=:%d:\n", sp->nlccflag );
 
         /* Read in the atomic number */
         get_data (sp->pseudo_filename, &sp->atomic_number, ITEM | INT, NULL); 
@@ -112,7 +112,6 @@ void read_pseudo (void)
             error_handler ("Maximum l-value too large");
 
         /* Local potential radius */
-        //get_data (sp->pseudo_filename, &sp->lradius, ITEM | DBL, NULL); 
         get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL);
         idx = sscanf ( tbuf, " %lf %lf %lf %lf %lf ", &sp->lradius, &sp->aradius, &sp->acut, &sp->agwidth, &sp->arwidth ); 
         if (idx == 1)
@@ -125,7 +124,6 @@ void read_pseudo (void)
 
         if ((idx != 1) && (idx != 5))
             error_handler("Unexpected number of parameters (%d), only 1 or 5 are valid. The string was %s", idx, tbuf);
-
 
         /* Non-Local potential radius */
         get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
@@ -170,6 +168,7 @@ void read_pseudo (void)
         /*read in the rinner for Q_L(r) function */
         get_data (sp->pseudo_filename, tbuf, ITEM | STR, NULL); 
         tptr = tbuf;
+         my_malloc(sp->rinner, sp->nlc, int);
         for (j = 0; j < sp->nlc; j++)
         {
             sp->rinner[j] = strtod( tptr, &endptr);
