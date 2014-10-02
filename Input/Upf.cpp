@@ -152,7 +152,7 @@ void LoadUpf(SPECIES *sp)
         std::string PP_RHOATOM = upf_tree.get<std::string>("UPF.PP_RHOATOM");
         sp->atomic_rho = UPF_read_mesh_array(PP_RHOATOM, sp->rg_points);
         // UPF stores rhoatom * r^2 so rescale
-        for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / sp->r[ix] / sp->r[ix];
+        for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
 
         if(sp->nlccflag) {
             std::string PP_NLCC = upf_tree.get<std::string>("UPF.PP_NLCC");
@@ -172,9 +172,13 @@ void LoadUpf(SPECIES *sp)
                 std::string chi = "UPF/PP_PSWFC/PP_CHI." + boost::lexical_cast<std::string>(iwf + 1);
                 std::string PP_CHI = upf_tree.get<std::string>(path(chi, '/'));
                 sp->atomic_wave[iwf] = UPF_read_mesh_array(PP_CHI, sp->rg_points);
+                sp->atomic_wave_l[iwf] = upf_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
+                //sp->atomic_wave_label[j][0] =
+                sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
+
                 // UPF stores atomic wavefunctions * r so divide through
-                for(int idx = 0;idx < sp->rg_points;idx++) sp->atomic_wave[iwf][idx] /= sp->r[idx];
-                sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG];
+                for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
+                sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG]();
                 
             }
 
@@ -190,8 +194,7 @@ void LoadUpf(SPECIES *sp)
                 std::string betapath = "UPF/PP_NONLOCAL/PP_BETA." + boost::lexical_cast<std::string>(ip + 1);
                 std::string PP_BETA = upf_tree.get<std::string>(path(betapath, '/'));
                 sp->beta[ip] = UPF_read_mesh_array(PP_BETA, sp->rg_points);
-                for(int ix = 1;ix < sp->rg_points;ix++) sp->beta[ip][ix] /= sp->r[ix];
-                sp->beta[ip][0] = sp->beta[ip][1];
+                for(int ix = 0;ix < sp->rg_points;ix++) sp->beta[ip][ix] /= sp->r[ix];
                 sp->llbeta[ip] =  upf_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/'));
                 if(sp->llbeta[ip] > ct.max_l) ct.max_l = sp->llbeta[ip];  // For all species
                 if(sp->llbeta[ip] > l_max) l_max = sp->llbeta[ip];        // For this species
@@ -356,10 +359,10 @@ void LoadUpf(SPECIES *sp)
     // Stuff not present in the UPF format that RMG requires. We need to find a consistent way of automatically
     // setting these
     sp->rc = 0.65;
-    sp->lradius = 3.3;
-    sp->nlradius = 3.3;
+    sp->lradius = 3.170425;
+    sp->nlradius = 3.170425;
     sp->qradius = 3.3;
-    sp->lrcut = 2.2;
+    sp->lrcut = 2.170425;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
     if (ct.runflag == LCAO_START)
@@ -370,7 +373,7 @@ void LoadUpf(SPECIES *sp)
         sp->arwidth = 25.0;
     }
     for(int ip = 0;ip < sp->nbeta;ip++) {
-        sp->nlrcut[sp->llbeta[ip]] = 3.3;
+        sp->nlrcut[sp->llbeta[ip]] = 3.170425;
     }
 
     // Leftover initializations
