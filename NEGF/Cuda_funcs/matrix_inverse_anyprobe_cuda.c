@@ -283,7 +283,7 @@ void matrix_inverse_anyprobe_cuda (complex double * H_tri, int N, int * ni, int 
 
                 n3 = ni[j];
 
-                cublasZgemm (ct.cublas_handle, transN, transN, n3, n2, n1, &cuone, &ct.gpu_Grow[n_begin1[j]], n1,
+                cublasZgemm (ct.cublas_handle, transN, transN, n3, n2, n1, &cuone, &ct.gpu_Grow[n_begin1[j]], n3,
                         ct.gpu_temp, n1, &cuzero, ct.gpu_Hii, n3);
 
 
