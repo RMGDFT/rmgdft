@@ -126,14 +126,12 @@ int init_kpoints (int *mesh, int *is_shift)
     for(kpt = 0; kpt < num_kpts; kpt++)
         printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
 
-
-    return num_kpts;
-
-
-
     my_free(grid_address);
     my_free(tau);
     my_free(ityp);
+
+    return num_kpts;
+
 
 
 }                               /* end init_sym */
