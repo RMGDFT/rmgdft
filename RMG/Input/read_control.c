@@ -307,13 +307,8 @@ void read_control (char *file)
     ct.betacparm = ct.cparm / (rmg_double_t) ct.nxfgrid;
     ct.cparm /= (rmg_double_t) get_FG_RATIO(); 
     
-    // Norm conserving pseudo potential flag
-    get_data ("norm_conserving_pp", &ct.norm_conserving_pp, BOOL, "false");
-    
     /* scalapack allreduce or point to point for dist matrices */
     get_data ("scalapack_global_sums", &ct.scalapack_global_sums, BOOL, "true");
-
-
 
 
 

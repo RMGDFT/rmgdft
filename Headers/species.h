@@ -26,6 +26,9 @@ typedef struct
     /** Atomic mass */
     double atomic_mass;
 
+    /** Norm conserving pp flag */
+    int is_norm_conserving;
+
     /** Number of valence electrons */
     double zvalence;
 

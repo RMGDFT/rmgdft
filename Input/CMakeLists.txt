@@ -1,6 +1,7 @@
 add_library (Input
 MapElements.cpp
 Upf.cpp
+ReadPseudo.cpp
 read_init.c
 countItems.c
 pdb_clean.c

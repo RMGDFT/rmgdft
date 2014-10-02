@@ -99,13 +99,13 @@ void LoadUpf(SPECIES *sp)
         boost::to_upper(pp_type);
 
         if(!pp_type.compare(0, 2, "NC")) {
-            ct.norm_conserving_pp = true;
+            sp->is_norm_conserving = true;
         }
         else if(!pp_type.compare(0, 2, "SL")) {  // Norm conserving with extra information
-            ct.norm_conserving_pp = true;
+            sp->is_norm_conserving = true;
         }
         else if(!pp_type.compare(0, 2, "US")) {
-            ct.norm_conserving_pp = false;
+            sp->is_norm_conserving = false;
         }
         else {
             rmg_error_handler(__FILE__,__LINE__,"RMG only supports norm conserving and ultrasoft pseudpotentials.\n");
@@ -115,10 +115,10 @@ void LoadUpf(SPECIES *sp)
         // Kind of redundant information in the format
         std::string s_is_ultrasoft = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.is_ultrasoft"); 
         boost::to_upper(s_is_ultrasoft);
-        if(!s_is_ultrasoft.compare(0,1,"F")) ct.norm_conserving_pp = true;
-        if(!s_is_ultrasoft.compare(0,5,"FALSE")) ct.norm_conserving_pp = true;
-        if(!s_is_ultrasoft.compare(0,1,"T")) ct.norm_conserving_pp = false;
-        if(!s_is_ultrasoft.compare(0,4,"TRUE")) ct.norm_conserving_pp = false;
+        if(!s_is_ultrasoft.compare(0,1,"F")) sp->is_norm_conserving = true;
+        if(!s_is_ultrasoft.compare(0,5,"FALSE")) sp->is_norm_conserving = true;
+        if(!s_is_ultrasoft.compare(0,1,"T")) sp->is_norm_conserving = false;
+        if(!s_is_ultrasoft.compare(0,4,"TRUE")) sp->is_norm_conserving = false;
 
         // Core correction flag
         std::string s_core_correction = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.core_correction");
@@ -219,7 +219,7 @@ void LoadUpf(SPECIES *sp)
         sp->nqf=0;
         sp->nlc=0;
         // Charge augmentation for US
-        if(!ct.norm_conserving_pp) {
+        if(!sp->is_norm_conserving) {
            char q_with_l = upf_tree.get<char>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
            sp->nqf = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqf", 0);
            sp->nlc = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nlqc", 2*l_max + 1);

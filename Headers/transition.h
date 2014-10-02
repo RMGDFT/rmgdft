@@ -107,7 +107,7 @@ void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int d
 void LoadUpf(SPECIES *sp);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
-
+extern "C" void ReadPseudo(int nspecies, SPECIES *sp);
 
 
 #endif
