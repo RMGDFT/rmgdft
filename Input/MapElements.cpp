@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <string>
 #include "make_conf.h"
 #include "MapElements.h"
 #include "rmg_error.h"
