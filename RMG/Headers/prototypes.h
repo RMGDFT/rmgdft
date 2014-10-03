@@ -106,7 +106,6 @@ void app_grad (rmg_double_t  * rho, rmg_double_t *wx, rmg_double_t *wy, rmg_doub
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain( void );
 void cross_product (rmg_double_t *a, rmg_double_t *b, rmg_double_t *c);
-void destroy_fftw_wisdom (void);
 rmg_double_t fill (STATE *states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix,
            int num_st, int occ_flag);
 

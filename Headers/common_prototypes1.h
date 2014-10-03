@@ -80,7 +80,6 @@ void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int 
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain( void );
 void cross_product (double *a, double *b, double *c);
-void destroy_fftw_wisdom (void);
 double fill (STATE *states, double width, double nel, double mix,
            int num_st, int occ_flag);
 

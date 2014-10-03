@@ -77,10 +77,6 @@ void finish (void);
 /* Global MPI stuff. Overridden by input params */
 int NPES=1;
 
-/* State storage pointer (memory allocated dynamically in rd_cont */
-STATE *states;
-
-
 /* Electronic charge density or charge density of own spin in polarized case */
 double *rho;
 
@@ -205,9 +201,6 @@ void initialize(int argc, char **argv)
             rho_oppo = new double[FP0_BASIS];
 
 
-    /* initialize states */
-//    states = init_states (); 
-
     /* Initialize some k-point stuff */
     Kptr_g = new Kpoint<double> * [ct.num_kpts];
     Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts];
@@ -246,10 +239,8 @@ void initialize(int argc, char **argv)
             Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
 
         }
-        //ct.kp[kpt].kstate = &states[kpt * ct.num_states];
         ct.kp[kpt].kidx = kpt;
     }
-
 
 
     my_barrier ();
@@ -278,7 +269,12 @@ void initialize(int argc, char **argv)
 
 
     /* Write state occupations to stdout */
-    //Kptr[0]->write_occ(); 
+    if(ct.is_gamma) {
+        Kptr_g[0]->write_occ(); 
+    }
+    else {
+        Kptr_c[0]->write_occ(); 
+    }
 
     
     /* Flush the results immediately */
@@ -359,10 +355,6 @@ void report ()
     /* If milliken population info is requested then compute and output it */
     /*if (ct.domilliken)
       mulliken (states);*/
-
-
-    /*Destroy wisdom that may have been allocated previously */
-    //destroy_fftw_wisdom ();
 
 
     if (ct.write_memory_report)
