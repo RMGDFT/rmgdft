@@ -218,7 +218,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
 
     if(ct.eig_parm.mucycles > 1)
-        MixBetaxpsi1(sp);
+        kptr->mix_betaxpsi1(sp->istate);
+        //MixBetaxpsi1(sp);
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectfully) */
