@@ -48,6 +48,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
+#include "GlobalSums.h"
 #include "transition.h"
 
 template void GetTe (double *, double *, double *, double *, double *, double *, State<double> *, int);
@@ -56,7 +57,7 @@ template void GetTe (double *, double *, double *, double *, double *, double *,
 template <typename StateType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, State<StateType> * states, int ii_flag)
 {
-    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
+    int state, kpt, idx, i, j, nspin = (ct.spin_flag + 1), FP0_BASIS;
     double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     double vel, loc_sum;
     double *exc, *nrho, *nrho_oppo;
@@ -162,12 +163,12 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /*Sum emergies over all processors */
     if (ct.spin_flag)
     {
-    	global_sums (esum, &two, pct.grid_comm);
-    	global_sums (&esum[2], &one, pct.img_comm);  
-    	global_sums (&mag, &one, pct.grid_comm); 
+    	GlobalSums (esum, 2, pct.grid_comm);
+    	GlobalSums (&esum[2], 1, pct.img_comm);  
+    	GlobalSums (&mag, 1, pct.grid_comm); 
     }
     else
-    	global_sums (esum, &three, pct.grid_comm);
+    	GlobalSums (esum, 3, pct.grid_comm);
 
 
     /*Electrostatic E */
