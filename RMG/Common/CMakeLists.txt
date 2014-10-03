@@ -5,7 +5,7 @@ WriteRestart.cpp
 LcaoGetAwave.cpp
 LcaoGetPsi.cpp
 ReadData.cpp
-output_band_plot.c
+#output_band_plot.c
 ApplyAOperator.cpp
 ApplyBOperator.cpp
 AppCirDriverBeta.cpp
@@ -31,7 +31,7 @@ pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
 write_occ.c
-get_gamma.c
+#get_gamma.c
 fastrelax.c
 mix_betaxpsi1.c
 open_restart_file.c
@@ -53,12 +53,12 @@ write_header.c
 read_data.c
 mix_rho.c
 cholesky.c
-get_pdos.c
+#get_pdos.c
 bandstructure.c
 del_space.c
 wvfn_residual.c
 init_img_topo.c
-mulliken.c
+#mulliken.c
 write_avgd.c
 bsplines.c
 claim_ion.c
@@ -67,7 +67,7 @@ write_pdb.c
 nlforce_par_omega.c
 real_min_all.c
 init_nuc.c
-partial_betaxpsi.c
+#partial_betaxpsi.c
 neb_relax.c
 app_smooth.cpp
 moldyn.c
@@ -98,11 +98,10 @@ set_pbc.c
 pulay_rho.c
 init_psp.c
 assign_derweight.c
-partial_gamma.c
+#partial_gamma.c
 fire.c
 mg_prolong_6.c
 partial_beta_fdiff.c
-output_eigenvalues.c
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

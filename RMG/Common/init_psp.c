@@ -91,8 +91,8 @@ void init_psp (void)
     workr = work + MAX_RGRID;
 
     write_flag = 0;
-    if (verify ("write_pseudopotential_plots", &SET))
-        write_flag = 1;
+//    if (verify ("write_pseudopotential_plots", &SET))
+//        write_flag = 1;
 
     /*Initialize max_nlpoints and max_nlfpoints */
     ct.max_nlpoints = 0;
@@ -174,7 +174,6 @@ void init_psp (void)
         /* Transform to g-space and filter it */
         /*rft1 (ct.cparm, work, &sp->r[0], sp->localig, &sp->rab[0], sp->rg_points, 0, sp->drlig,
               sp->gwidth, MAX_LOCAL_LIG);*/
-
 	filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, 
 		sp->localig, &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, sp->drlocalig);
 

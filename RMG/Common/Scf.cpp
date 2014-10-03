@@ -291,29 +291,30 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         }
             
 
-        if (spin_flag)
-            GetOppositeEigvals (Kptr[kpt]->Kstates);
-
-            
         /* If sorting is requested then sort the states. */
         if (ct.sortflag) {
             Kptr[kpt]->sort_orbitals();
         }
 
-
-        /* Take care of occupation filling */
-//        if  (!firststep)
-//            ct.efermi = fill (Kptr[kpt]->kstates, ct.occ_width, ct.nel, ct.occ_mix, Kptr[kpt]->nstates, ct.occ_flag);
-
-
-        if (ct.occ_flag == 1 && !firststep)
-        {
-            rmg_printf ("\n");
-            //progress_tag ();
-            rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
-        }
-
     } // end loop over kpoints
+
+
+    if (spin_flag)
+        GetOppositeEigvals (Kptr);
+
+
+    /* Take care of occupation filling */
+    if  (!firststep)
+        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+
+
+    if (ct.occ_flag == 1 && !firststep)
+    {
+        rmg_printf ("\n");
+        //progress_tag ();
+        rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
+    }
+
 
     if (firststep)
         firststep = false;

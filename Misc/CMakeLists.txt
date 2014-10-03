@@ -1,4 +1,5 @@
 add_library (Misc
+Fill.cpp
 GetTe.cpp
 init_kpoints.c
 RmgCudaError.cpp
@@ -27,7 +28,7 @@ get_te.c
 minimage.c
 get_vtot_psi.c
 filename_increment.c
-fill.c
+#fill.c
 my_mpi.c
 blaswrappers.c
 set_bc.c

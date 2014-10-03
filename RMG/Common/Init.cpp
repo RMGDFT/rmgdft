@@ -274,8 +274,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	if (ct.spin_flag)
 	{
 	    get_rho_oppo (rho, rho_oppo);
-            GetOppositeEigvals (Kptr[0]->Kstates);
-	    GetOppositeOccupancies (Kptr[0]->Kstates);
+            GetOppositeEigvals (Kptr);
+	    GetOppositeOccupancies (Kptr);
 	}
     }
     else 

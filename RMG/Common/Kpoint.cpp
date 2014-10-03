@@ -51,12 +51,14 @@
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
-template Kpoint<double>::Kpoint(double*, double, int, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *);
-template Kpoint<std::complex <double> >::Kpoint(double*, double, int, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *);
+template Kpoint<double>::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *);
+template Kpoint<std::complex <double> >::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *);
 template void Kpoint<double>::sort_orbitals(void);
 template void Kpoint<std::complex <double> >::sort_orbitals(void);
 template void Kpoint<double>::set_pool(double *pool);
 template void Kpoint<std::complex <double> >::set_pool(std::complex<double> *pool);
+template void Kpoint<double>::init_states(void);
+template void Kpoint<std::complex <double> >::init_states(void);
 template int Kpoint<double>::get_nstates(void);
 template int Kpoint<std::complex <double> >::get_nstates(void);
 template void Kpoint<double>::random_init(void);
@@ -67,9 +69,10 @@ template void Kpoint<double>::mix_betaxpsi(int mix);
 template void Kpoint<std::complex <double> >::mix_betaxpsi(int mix);
 template void Kpoint<double>::mix_betaxpsi1(int istate);
 template void Kpoint<std::complex <double> >::mix_betaxpsi1(int istate);
+template void Kpoint<double>::write_occ(void);
+template void Kpoint<std::complex <double> >::write_occ(void);
 
-
-template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int knstates, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL)
+template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL)
 {
 
     this->kpt[0] = kkpt[0];
@@ -83,8 +86,6 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->nl_weight_gpu = NULL;
     this->nl_Bweight_gpu = NULL;
 
-    this->nstates = knstates;
-    this->Kstates = new State<KpointType>[this->nstates];
     this->G = newG;
     this->T = newT;
     this->L = newL;
@@ -99,6 +100,156 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->kvec[1] = v2;
     this->kvec[2] = v3;
     this->kmag = v1 * v1 + v2 * v2 + v3 * v3;
+
+    this->init_states();
+
+}
+
+#define MAX_NOCC 10
+template <class KpointType> void Kpoint<KpointType>::init_states(void)
+{
+
+    int ii, is, ns, idx, i, j;
+    int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin = (ct.spin_flag + 1);
+    char *tbuf[2];
+
+    struct
+    {
+        int n;
+        double occ;
+    } occ[nspin * MAX_NOCC];
+
+    int repeat_occ;
+
+
+    /* calculate total number of electrons in the system from pseudopotential information */
+    ct.ionic_charge = 0.0;
+
+    for (ii = 0; ii < ct.num_ions; ii++)
+        ct.ionic_charge += ct.sp[ct.ions[ii].species].zvalence;
+
+
+    if (ct.spin_flag)
+    {
+        repeat_occ =( (strcmp(ct.occupation_str_spin_up, "") != 0) && (strcmp(ct.occupation_str_spin_down, "")!= 0) );
+        if( (strcmp(ct.occupation_str_spin_up, "") != 0) + (strcmp(ct.occupation_str_spin_down, "")!= 0) == 1 )
+                rmg_error_handler (__FILE__, __LINE__, "Fixed occupation for both spin up and down must be specified !!!");
+        tbuf[0] = ct.occupation_str_spin_up;
+        tbuf[1] = ct.occupation_str_spin_down;
+        num_states_spf[0] = 0;
+        num_states_spf[1] = 0;
+    }
+    else
+    {
+        repeat_occ = (strcmp (ct.occupation_str, "") != 0);
+        num_states_spf[0] = 0;
+        tbuf[0] = ct.occupation_str;
+    }
+
+    /* get repeat count occupation info from control file*/
+    if (repeat_occ)
+    {
+        int n;
+        ct.nel = 0;
+
+        for (idx = 0; idx < nspin; idx++)
+        {
+                /* count the fixed occupations of states */
+                while ((n = strtol (tbuf[idx], &tbuf[idx], 10)) > 0)
+                {
+                        count_states[idx] += n;
+                        if (nocc[idx] == MAX_NOCC)
+                                rmg_error_handler (__FILE__, __LINE__, "Too many blocks in repeat count for state occupations");
+                                /* two block example  3 1.0  4 0.0*/
+                        occ[nocc[idx] + MAX_NOCC * idx].n = n;
+                        occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
+                        ct.nel += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
+                        nocc[idx]++;
+                }
+
+                num_states_spf[idx] = count_states[idx];
+        }
+
+        if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )
+        {
+                rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
+                rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
+        }
+
+        ct.background_charge = ct.nel - ct.ionic_charge;
+
+    }
+    else     /* in case no fixed occupations available, calculate number of states */
+    {
+        ct.nel = ct.ionic_charge + ct.background_charge;
+        for (idx = 0; idx < nspin; idx++)
+                num_states_spf[idx] = (int) ceil(0.5 * ct.nel) + ct.num_unocc_states;
+    }
+
+
+
+    /* re-assign the number of states for global variables */
+    if(ct.num_states <= 0 ) ct.num_states = num_states_spf[0];
+
+    /* Allocate memory for the states */
+    this->Kstates = new State<KpointType>[ct.num_states];
+    this->nstates = ct.num_states;
+
+//    if (verify ("calculation_mode", "Band Structure Only"))
+//        nk = 1;
+//    else
+//        nk = ct.num_kpts;
+//    my_malloc (states, ct.num_states * nk, STATE);
+
+    if (nspin == 2)
+    {
+        ct.num_states_up = num_states_spf[0];
+        ct.num_states_down = num_states_spf[1];
+    }
+
+    /* set the initial occupations of the states */
+    if (repeat_occ)
+    {
+
+        if (nspin ==1)
+                pct.spinpe = 0;
+
+        for (idx = 0; idx < nspin; idx++)
+        {
+                ns = 0;
+                j = (idx + pct.spinpe) % 2;
+                for (i = 0; i < nocc[j]; i++)
+                {
+                        for (is = ns; is < ns + occ[i + j * MAX_NOCC].n; is++)
+                            this->Kstates[is].occupation[idx] = occ[i + j * MAX_NOCC].occ;
+
+                        ns += occ[i + j * MAX_NOCC].n;
+                }
+        }
+    }
+
+    else
+    {
+        double ne[nspin], oc;
+
+        for (idx = 0; idx < nspin; idx++)
+                ne[idx] = ct.nel / ((double) nspin);
+
+        for (idx = 0; idx < nspin; idx++)
+        {
+                for (is = 0; is < ct.num_states; is++)
+                {
+                        oc = 0.0;
+                        if ( ne[idx] >= (3.0 - nspin) )
+                                oc = (3.0 - nspin);
+                        else if (ne[idx] >= 0.0)
+                                oc = ne[idx];
+                        ne[idx] -= oc;
+                        this->Kstates[is].occupation[idx] = oc;
+                }
+        }
+
+    }
 
 }
 
@@ -692,6 +843,53 @@ template <class KpointType> void Kpoint<KpointType>::mix_betaxpsi1(int istate)
                 (1.0 - scale) * this->newsint_local[loffset + istate * ct.max_nl + idx];
 
         }
+
+    }
+
+}
+
+template <class KpointType> void Kpoint<KpointType>::write_occ(void)
+{
+
+    int i, idx, nspin = (ct.spin_flag + 1);
+
+    switch (ct.occ_flag)
+    {
+        case OCC_NONE:
+            break;
+        case OCC_FD:
+            printf ("\nFERMI-DIRAC OCCUPATION WITH PARAMETERS:");
+            printf ("\n  TEMP   = %14.8f", ct.occ_width);
+            printf ("\n  MIXING = %14.8f", ct.occ_mix);
+            break;
+        case OCC_GS:
+            printf ("\nGAUSSIAN OCCUPATION WITH PARAMETERS:");
+            printf ("\n  TEMP   = %14.8f", ct.occ_width);
+            printf ("\n  MIXING = %14.8f", ct.occ_mix);
+            break;
+        case OCC_EF:
+            printf ("\nERROR_FUNCTION OCCUPATION WITH PARAMETERS:");
+            printf ("\n  TEMP   = %14.8f", ct.occ_width);
+            printf ("\n  MIXING = %14.8f", ct.occ_mix);
+            break;
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "unknown filling procedure");
+    }
+
+
+    for (idx = 0; idx < nspin; idx++)
+    {
+        if (nspin == 1)
+                rmg_printf ("\n\n  STATE OCCUPATIONS :\n");
+        else if ((nspin == 2) && (idx == 0))
+                rmg_printf ("\n\n  STATE OCCUPATIONS FOR SPIN UP:\n");
+        else if ((nspin == 2) && (idx == 1))
+                rmg_printf ("\n\n  STATE OCCUPATIONS FOR SPIN DOWN:\n");
+
+        for (i = 0; i < ct.num_states; i++)
+                rmg_printf (" %7.2f%s", this->Kstates[i].occupation[idx], ((i % 10 == 9) ? "\n" : ""));
+
+        printf ("\n");
 
     }
 

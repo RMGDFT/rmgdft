@@ -40,7 +40,7 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double kweight, int nstates, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL );
+    Kpoint(double *kpt, double kweight, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL );
 
     void set_pool(KpointType *pool);
     void sort_orbitals(void);
@@ -51,6 +51,8 @@ public:
     void orthogonalize(std::complex<double> *storage);
     void mix_betaxpsi(int mix);
     void mix_betaxpsi1(int istate);
+    void init_states(void);
+    void write_occ(void);
 
 
     // BaseGrid class

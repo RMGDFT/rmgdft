@@ -105,8 +105,9 @@ double *vnuc;
 /* Exchange-correlation potential */
 double *vxc;
 
-// Pointer to Kpoint class array
-void **Kptr;
+// Pointer to Kpoint class arrays for gamma and non-gamma
+Kpoint<double> **Kptr_g;
+Kpoint<std::complex<double> > **Kptr_c;
 
 double *tau;
 /* Main control structure which is declared extern in main.h so any module */
@@ -155,9 +156,9 @@ int main (int argc, char **argv)
 
     RmgTimer *RT2 = new RmgTimer("Main: run");
     if(ct.is_gamma)
-        run<double> ((Kpoint<double> **)Kptr);
+        run<double> ((Kpoint<double> **)Kptr_g);
     else
-        run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr);
+        run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr_c);
     delete(RT2);
 
 
@@ -205,10 +206,11 @@ void initialize(int argc, char **argv)
 
 
     /* initialize states */
-    states = init_states (); 
+//    states = init_states (); 
 
     /* Initialize some k-point stuff */
-    Kptr = new void * [ct.num_kpts];
+    Kptr_g = new Kpoint<double> * [ct.num_kpts];
+    Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts];
 
     ct.is_gamma = true;
     for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
@@ -234,19 +236,17 @@ void initialize(int argc, char **argv)
 
             // Gamma point
             rmg_printf("\nUSING REAL ORBITALS\n");
-
-            Kptr[kpt] = (void *) new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
+            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
 
         }
         else {
 
             // General case
             rmg_printf("\nUSING COMPLEX ORBITALS\n");
-
-            Kptr[kpt] = (void *) new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, ct.num_states, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
+            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
 
         }
-        ct.kp[kpt].kstate = &states[kpt * ct.num_states];
+        //ct.kp[kpt].kstate = &states[kpt * ct.num_states];
         ct.kp[kpt].kidx = kpt;
     }
 
@@ -259,27 +259,26 @@ void initialize(int argc, char **argv)
 
     /* Perform any necessary initializations */
     if(ct.is_gamma) {
-        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, (Kpoint<double> **)Kptr);
+        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr_g);
     }
     else {
-        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, (Kpoint<std::complex<double>> **)Kptr);
+        Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr_c);
     }
 
 
-
-   /* Need if statement here, otherwise job output file 
-    * will also show information of control file ? */
-   if (pct.imgpe == 0)
-   {
+    /* Need if statement here, otherwise job output file 
+     * will also show information of control file ? */
+    if (pct.imgpe == 0)
+    {
     
-    /* Write header to stdout */
-    write_header (); 
+        /* Write header to stdout */
+        write_header (); 
 
-   }
+    }
 
 
     /* Write state occupations to stdout */
-    write_occ (states); 
+    //Kptr[0]->write_occ(); 
 
     
     /* Flush the results immediately */
@@ -323,11 +322,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     case MD_CVT:
     case MD_CPT:
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-        moldyn (states, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
+        //moldyn (states, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
         break;
 
     case BAND_STRUCTURE:
-        bandstructure (states, vxc, vh, vnuc);
+        //bandstructure (states, vxc, vh, vnuc);
         break;
     default:
         rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
@@ -335,7 +334,8 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     }
     if (pct.gridpe == 0)
-        output_band_plot();
+//        output_band_plot();
+;
 
 }                               /* end run */
 
@@ -351,7 +351,8 @@ void report ()
     }
     else if (ct.zaverage == 2)
     {
-        write_zstates (states);
+        //write_zstates (states);
+        ;
     }
 
 
@@ -367,7 +368,7 @@ void report ()
     if (ct.write_memory_report)
     {
         /*Release memory for projectors first */
-        finish_release_mem (states);
+        //finish_release_mem (states);
 
     }
 

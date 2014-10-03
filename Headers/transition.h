@@ -114,10 +114,10 @@ template <typename KpointType>
 void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf);
 template <typename KpointType>
 void ReadData (char *name, double * vh, double * rho, double * vxc, State<KpointType> * states);
-template <typename StateType>
-void GetOppositeEigvals (State<StateType> * states);
-template <typename StateType>
-void GetOppositeOccupancies (State<StateType> * states);
+template <typename KpointType>
+void GetOppositeEigvals (Kpoint<KpointType> **Kptr);
+template <typename KpointType>
+void GetOppositeOccupancies (Kpoint<KpointType> **Kptr);
 template <typename StateType>
 void LcaoGetPsi (State<StateType> * states);
 template <typename StateType>
@@ -128,6 +128,8 @@ template <typename StateType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
 template <typename StateType>
 void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
+template <typename KpointType>
+double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag);
 
 
 

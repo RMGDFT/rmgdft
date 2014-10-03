@@ -47,11 +47,11 @@
 #include "transition.h"
 
 
-template void GetOppositeOccupancies(State<double> *);
-template void GetOppositeOccupancies(State<std::complex<double> > *);
+template void GetOppositeOccupancies(Kpoint<double> **);
+template void GetOppositeOccupancies(Kpoint<std::complex<double> > **);
 
-template <typename StateType>
-void GetOppositeOccupancies (State<StateType> * states)
+template <typename KpointType>
+void GetOppositeOccupancies (Kpoint<KpointType> ** Kptr)
 {
 
     MPI_Status status; 
@@ -70,7 +70,7 @@ void GetOppositeOccupancies (State<StateType> * states)
     {
 	for (st1 = 0; st1 < ct.num_states; st1++)
 	{	
-	    occ_sd[st] = ct.kp[kpt].kstate[st1].occupation[0];
+	    occ_sd[st] = Kptr[kpt]->Kstates[st1].occupation[0];
 	    st += 1;
 	}	
     }
@@ -87,7 +87,7 @@ void GetOppositeOccupancies (State<StateType> * states)
     {
 	for (st1 = 0; st1 < ct.num_states; st1++)
 	{	
-	    ct.kp[kpt].kstate[st1].occupation[1] = occ_rv[st];
+	    Kptr[kpt]->Kstates[st1].occupation[1] = occ_rv[st];
 	    st += 1;
 
 	}	

@@ -46,11 +46,11 @@
 #include "transition.h"
 
 
-template void GetOppositeEigvals(State<double> *);
-template void GetOppositeEigvals(State<std::complex<double> > *);
+template void GetOppositeEigvals(Kpoint<double> **);
+template void GetOppositeEigvals(Kpoint<std::complex<double> > **);
 
-template <typename StateType>
-void GetOppositeEigvals (State<StateType> * states)
+template <typename KpointType>
+void GetOppositeEigvals (Kpoint<KpointType> ** Kptr)
 {
 
     MPI_Status status; 
@@ -69,7 +69,7 @@ void GetOppositeEigvals (State<StateType> * states)
     {
 	for (st1 = 0; st1 < ct.num_states; st1++)
 	{	
-	    eigval_sd[st] = ct.kp[kpt].kstate[st1].eig[0];
+	    eigval_sd[st] = Kptr[kpt]->Kstates[st1].eig[0];
 	    st += 1;
 	}	
     }
@@ -86,7 +86,7 @@ void GetOppositeEigvals (State<StateType> * states)
     {
 	for (st1 = 0; st1 < ct.num_states; st1++)
 	{	
-	    ct.kp[kpt].kstate[st1].eig[1] = eigval_rv[st];
+	    Kptr[kpt]->Kstates[st1].eig[1] = eigval_rv[st];
 	    st += 1;
 
 	}	
@@ -97,4 +97,3 @@ void GetOppositeEigvals (State<StateType> * states)
 }                               /* end scf */
 
 
-/******/

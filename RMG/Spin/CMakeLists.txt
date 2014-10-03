@@ -1,6 +1,6 @@
 add_library (RMG_Spin
-get_opposite_occupancies.c
-get_opposite_eigvals.c
+#get_opposite_occupancies.c
+#get_opposite_eigvals.c
 GetOppositeEigvals.cpp
 GetOppositeOccupancies.cpp
 get_rho_oppo.c
