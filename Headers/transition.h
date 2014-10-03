@@ -130,6 +130,9 @@ template <typename StateType>
 void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
 template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag);
+template <typename KpointType>
+void OutputBandPlot(Kpoint<KpointType> ** Kptr);
+
 
 
 

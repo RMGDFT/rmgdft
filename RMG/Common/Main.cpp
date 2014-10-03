@@ -330,8 +330,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     }
     if (pct.gridpe == 0)
-//        output_band_plot();
-;
+        OutputBandPlot(Kptr);
 
 }                               /* end run */
 

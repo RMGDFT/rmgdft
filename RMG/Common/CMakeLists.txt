@@ -5,7 +5,7 @@ WriteRestart.cpp
 LcaoGetAwave.cpp
 LcaoGetPsi.cpp
 ReadData.cpp
-#output_band_plot.c
+OutputBandPlot.cpp
 ApplyAOperator.cpp
 ApplyBOperator.cpp
 AppCirDriverBeta.cpp
