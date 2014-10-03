@@ -267,7 +267,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             CalcType *gy = new CalcType[pbasis];
             CalcType *gz = new CalcType[pbasis];
 
-            CPP_app_grad_driver (L, T, tmp_psi_t, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+            CPP_app_grad_driver (L, T, tmp_psi_t, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, APP_CI_SIXTH);
 
             std::complex<double> I_t(0.0, 1.0);
             for(int idx = 0;idx < pbasis;idx++) {

@@ -245,7 +245,7 @@ void initialize(int argc, char **argv)
 
     my_barrier ();
 
-    /* Record the rime it took from the start of run until we hit init */
+    /* Record the time it took from the start of run until we hit init */
     delete(RT);
 
     /* Perform any necessary initializations */

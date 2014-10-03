@@ -62,7 +62,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         KpointType *gy = new KpointType[pbasis];
         KpointType *gz = new KpointType[pbasis];
 
-        CPP_app_grad_driver (L, T, psi, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        CPP_app_grad_driver (L, T, psi, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, APP_CI_SIXTH);
 
         std::complex<double> I_t(0.0, 1.0);
         for(int idx = 0;idx < pbasis;idx++) {
