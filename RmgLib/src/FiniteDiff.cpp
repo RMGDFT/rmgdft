@@ -52,6 +52,11 @@ template double FiniteDiff::app_cil_fourth<double>(double *, double *, int, int,
 template double FiniteDiff::app_cil_fourth<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app_cil_fourth<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
+template double FiniteDiff::app_cil_fourth_threaded<float>(float *, float *, int, int, int, double, double, double);
+template double FiniteDiff::app_cil_fourth_threaded<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app_cil_fourth_threaded<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
+template double FiniteDiff::app_cil_fourth_threaded<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
+
 template void FiniteDiff::app_cir_fourth<float>(float *, float *, int, int, int);
 template void FiniteDiff::app_cir_fourth<double>(double *, double *, int, int, int);
 template void FiniteDiff::app_cir_fourth<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, int, int);
@@ -1898,3 +1903,242 @@ void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr
 
     }                           /* end switch */
 }
+
+
+// Openmp version. Very simple with no cache optimizations as of yet.
+template <typename RmgType>
+double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
+{
+
+    RmgTimer RT("App_cil: computation");
+    int incx, incy, incxr, incyr;
+    int ixs, iys, ixms, ixps, iyms, iyps;
+    RmgType ecxy, ecxz, ecyz, cc = 0.0, fcx, fcy, fcz;
+    RmgType ihx, ihy, ihz;
+    RmgType a1, a2, a3;
+    RmgType ONE_t = 1.0;
+    RmgType TWO_t = 2.0;
+    RmgType THREE_t = 3.0;
+    RmgType FOUR_t = 4.0;
+    RmgType FIVE_t = 5.0;
+    RmgType SIX_t = 6.0;
+    RmgType EIGHT_t = 8.0;
+    RmgType NINE_t = 9.0;
+    RmgType TWELVE_t = 12.0;
+    RmgType EIGHTTEEN_t = 18.0;
+    RmgType TWENTYFOUR_t = 24.0;
+    RmgType THIRTYFOUR_t = 34.0;
+    RmgType THIRTYSIX_t = 36.0;
+    RmgType FORTYEIGHT_t = 48.0;
+
+    int ibrav = L->get_ibrav_type();
+
+
+    ihx = 1.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
+    ihy = 1.0 / (gridhy * gridhy * L->get_yside() * L->get_yside());
+    ihz = 1.0 / (gridhz * gridhz * L->get_zside() * L->get_zside());
+
+
+    incx = (dimz + 2) * (dimy + 2);
+    incy = dimz + 2;
+    incxr = dimz * dimy;
+    incyr = dimz;
+
+    switch(ibrav) {
+
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
+
+            /* Compute coefficients for this grid spacing */
+            cc = (-FOUR_t / THREE_t) * (ihx + ihy + ihz);
+
+            fcx = FIVE_t/SIX_t * ihx + (cc / EIGHT_t);
+            fcy = FIVE_t/SIX_t * ihy + (cc / EIGHT_t);
+            fcz = FIVE_t/SIX_t * ihz + (cc / EIGHT_t);
+
+            ecxy = (ONE_t / TWELVE_t) * (ihx + ihy);
+            ecxz = (ONE_t / TWELVE_t) * (ihx + ihz);
+            ecyz = (ONE_t / TWELVE_t) * (ihy + ihz);
+
+
+            incy = dimz + 2;
+            incx = (dimz + 2) * (dimy + 2);
+            incyr = dimz;
+            incxr = dimz * dimy;
+
+            int ix, iy, iz;
+#pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
+{
+#pragma omp for schedule(static, 2) nowait
+            for (ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+
+                    for (iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            cc * rptr[ixs + iys + iz] +
+                            fcx * rptr[ixms + iys + iz] +
+                            fcx * rptr[ixps + iys + iz] +
+                            fcy * rptr[ixs + iyms + iz] +
+                            fcy * rptr[ixs + iyps + iz] +
+                            fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            ecxz * rptr[ixms + iys + iz - 1] +
+                            ecxz * rptr[ixps + iys + iz - 1] +
+                            ecyz * rptr[ixs + iyms + iz - 1] +
+                            ecyz * rptr[ixs + iyps + iz - 1] +
+                            ecxy * rptr[ixms + iyms + iz] +
+                            ecxy * rptr[ixms + iyps + iz] +
+                            ecxy * rptr[ixps + iyms + iz] +
+                            ecxy * rptr[ixps + iyps + iz] +
+                            ecxz * rptr[ixms + iys + iz + 1] +
+                            ecxz * rptr[ixps + iys + iz + 1] +
+                            ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
+
+
+                    }           /* end for */
+
+                }               /* end for */
+
+            }                   /* end for */
+}
+            break;
+
+        case HEXAGONAL:
+
+            cc = ((-THREE_t / FOUR_t) * ihz) - ((FIVE_t / THREE_t) * ihx);
+            a1 = ((THREE_t / EIGHT_t) * ihz) - ((ONE_t / SIX_t) * ihx);
+            a2 = ((FIVE_t / EIGHTTEEN_t) * ihx) - ((ONE_t / TWENTYFOUR_t) * ihz);
+            a3 = ((ONE_t / FORTYEIGHT_t) * ihz) + ((ONE_t / THIRTYSIX_t) * ihx);
+            cc = TWO_t * cc;
+            a1 = TWO_t * a1;
+            a2 = TWO_t * a2;
+            a3 = TWO_t * a3;
+
+#pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
+{
+#pragma omp for schedule(static, 2) nowait
+
+            for (ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+
+                    for (iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            cc * rptr[ixs + iys + iz] +
+                            a3 * (rptr[ixps + iys + iz - 1] +
+                                  rptr[ixps + iyms + iz - 1] +
+                                  rptr[ixs + iyms + iz - 1] +
+                                  rptr[ixms + iys + iz - 1] +
+                                  rptr[ixms + iyps + iz - 1] +
+                                  rptr[ixs + iyps + iz - 1] +
+                                  rptr[ixps + iys + iz + 1] +
+                                  rptr[ixps + iyms + iz + 1] +
+                                  rptr[ixs + iyms + iz + 1] +
+                                  rptr[ixms + iys + iz + 1] +
+                                  rptr[ixms + iyps + iz + 1] + 
+                                  rptr[ixs + iyps + iz + 1]);
+
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            a2 * (rptr[ixps + iys + iz] +
+                                  rptr[ixps + iyms + iz] +
+                                  rptr[ixs + iyms + iz] +
+                                  rptr[ixms + iys + iz] + 
+                                  rptr[ixms + iyps + iz] + 
+                                  rptr[ixs + iyps + iz]);
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            a1 * (rptr[ixs + iys + iz - 1] + rptr[ixs + iys + iz + 1]);
+
+                    }               /* end for */
+
+                }                   /* end for */
+
+            }                       /* end for */
+}
+            break;
+
+        case CUBIC_FC:
+
+            cc = -(THIRTYFOUR_t / SIX_t) * ihx;
+            a1 = (FOUR_t / NINE_t) * ihx;
+            a2 = (ONE_t / EIGHTTEEN_t) * ihx;
+
+#pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
+{
+#pragma omp for schedule(static, 2) nowait
+
+            for (ix = 1; ix <= dimx; ix++)
+            {
+                ixs = ix * incx;
+                ixms = (ix - 1) * incx;
+                ixps = (ix + 1) * incx;
+                for (iy = 1; iy <= dimy; iy++)
+                {
+                    iys = iy * incy;
+                    iyms = (iy - 1) * incy;
+                    iyps = (iy + 1) * incy;
+
+                    for (iz = 1; iz <= dimz; iz++)
+                    {
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                            cc * rptr[ix * incx + iys + iz] +
+                            a1 * rptr[ixms + iys + iz] +
+                            a1 * rptr[ixms + iys + iz + 1] +
+                            a1 * rptr[ixms + iyps + iz] +
+                            a1 * rptr[ixs + iyms + iz] +
+                            a1 * rptr[ixs + iyms + iz + 1] +
+                            a1 * rptr[ixs + iys + iz - 1] +
+                            a1 * rptr[ixs + iys + iz + 1] +
+                            a1 * rptr[ixs + iyps + iz - 1] +
+                            a1 * rptr[ixs + iyps + iz] +
+                            a1 * rptr[ixps + iyms + iz] +
+                            a1 * rptr[ixps + iys + iz - 1] + 
+                            a1 * rptr[ixps + iys + iz];
+
+
+                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                            a2 * rptr[ixms + iyms + iz + 1] +
+                            a2 * rptr[ixms + iyps + iz - 1] +
+                            a2 * rptr[ixms + iyps + iz + 1] +
+                            a2 * rptr[ixps + iyms + iz - 1] +
+                            a2 * rptr[ixps + iyms + iz + 1] + 
+                            a2 * rptr[ixps + iyps + iz - 1];
+
+                    }               /* end for */
+
+                }                   /* end for */
+
+            }                       /* end for */
+}
+            break;
+
+        default:
+                rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
+
+    } // end switch
+
+    return (double)std::real(cc);
+
+}                               /* end app_cil */

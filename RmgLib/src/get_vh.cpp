@@ -35,6 +35,7 @@
 
 
 #include <iostream>
+#include <omp.h>
 
 #include "TradeImages.h"
 #include "FiniteDiff.h"
@@ -117,6 +118,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
     /* Multiply through by 4PI */
     t1 = -4.0 * PI;
+#pragma omp for schedule(static, 1024) nowait
     for(idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * mgrhsarr[idx];
 
     its = 0;
@@ -136,11 +138,12 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
             {
 
                 /* Apply operator */
-                diag = CPP_app_cil_driver (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
+                diag = CPP_app_cil_driver_threaded (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
                 /* Generate residual vector */
+#pragma omp for schedule(static, 1024) nowait
                 for (idx = 0; idx < pbasis; idx++)
                 {
 
@@ -173,6 +176,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
                 /* Update vh */
                 t1 = 1.0;
+#pragma omp for schedule(static, 1024) nowait
                 for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
 
             }
@@ -181,6 +185,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
                 /* Update vh */
                 t1 = - global_step * diag;
+#pragma omp for schedule(static, 1024) nowait
                 for(int i = 0;i < pbasis;i++) vhartree[i] = vhartree[i] + t1 * mgresarr[i];
 
             }                   /* end if */
@@ -190,6 +195,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
                 /* Evaluate the average potential */
                 vavgcor = 0.0;
+#pragma omp for schedule(static, 1024) nowait
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += vhartree[idx];
 
@@ -199,6 +205,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
 
                 /* Make sure that the average value is zero */
+#pragma omp for schedule(static, 1024) nowait
                 for (idx = 0; idx < pbasis; idx++)
                     vhartree[idx] -= vavgcor;
 
@@ -207,7 +214,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
         }                       /* end for */
 
         /*Get residual*/
-        diag = CPP_app_cil_driver<double> (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
+        diag = CPP_app_cil_driver_threaded<double> (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;

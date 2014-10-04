@@ -45,6 +45,8 @@ void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, i
 template <typename RmgType>
 double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
+double CPP_app_cil_driver_threaded (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
+template <typename RmgType>
 void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
@@ -83,6 +85,9 @@ public:
 
     template <typename RmgType>
     double app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
+
+    template <typename RmgType>
+    double app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     void app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz);
