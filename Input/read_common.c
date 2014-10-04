@@ -239,7 +239,7 @@ void read_common ()
 
     /* Ratio between target RMS for get_vh and RMS total potential
      * This determines target RMS passed to get_vh*/
-    get_data ("hartree_rms_ratio", &ct.hartree_rms_ratio, DBL, "50.0");
+    get_data ("hartree_rms_ratio", &ct.hartree_rms_ratio, DBL, "1000.0");
 
     /*Whether to use mask mask function for filtering PPs*/
     get_data ("mask_function_filtering", &ct.mask_function, BOOL, "false");
