@@ -58,9 +58,6 @@ int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm
 
     std::cout << "Running with " << procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
 
-    // Probably sub optimal but will figure something out later for non-linux systems
-    nthreads = 1;
-
     return nthreads;
 }
 
