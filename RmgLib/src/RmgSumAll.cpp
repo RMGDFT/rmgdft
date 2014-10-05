@@ -38,8 +38,6 @@
 #include <typeinfo>
 
 
-using namespace std;
-
 std::mutex RmgSumAllLock;
 volatile int vector_state = 0;
 double RmgSumAllVector[2*MAX_RMG_THREADS];

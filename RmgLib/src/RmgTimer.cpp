@@ -36,7 +36,6 @@
 #include <iomanip>
 #include "RmgTimer.h"
 
-using namespace std;
 
 volatile double start_time;
 volatile double end_time;
@@ -99,7 +98,7 @@ void RmgTimer::disable(void)
     RmgTimer::enabled = false;
 }
 
-unordered_map<std::string, double> *RmgTimer::get_map(void)
+std::unordered_map<std::string, double> *RmgTimer::get_map(void)
 {
     return RmgTimer::timings;
 }

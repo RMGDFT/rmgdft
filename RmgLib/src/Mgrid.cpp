@@ -36,23 +36,24 @@
 
 
 #include <complex>
+#include <string>
+#include <iostream>
 #include "Mgrid.h"
 #include "FiniteDiff.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "boundary_conditions.h"
 
-using namespace std;
 
 template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<complex <double> >(complex<double>*, complex<double>*, complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<complex <float> >(complex<float>*, complex<float>*, complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
-//template void Mgrid::mgrid_solv<complex <float> >(complex<float>*, complex<float>*, complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+//template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 
 Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
@@ -65,7 +66,7 @@ Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
 Mgrid::~Mgrid(void)
 {
     if(level_flag)
-        cout << "Warning: too many multigrid levels were requested " << level_flag << " times." << endl;
+        std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times." << std::endl;
 }
 
 template <typename RmgType>

@@ -40,7 +40,7 @@
 
 #else
 
-#ifdef  LINUX
+#if  LINUX || __CYGWIN__
 
 #define  	NUMROC  	numroc_
 #define		INDXG2P  	indxg2p_

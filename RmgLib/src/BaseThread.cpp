@@ -31,7 +31,6 @@
 #include "rmg_error.h"
 #include "BaseThreadControl.h"
 
-using namespace std;
 
 // Init flag
 int BaseThread::init_flag=0;

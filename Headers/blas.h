@@ -42,7 +42,7 @@
 
 */
 
-#ifdef LINUX 
+#if LINUX || __CYGWIN__
 
 #define                 sger            dger_
 //#  define		global_sums     global_sums_

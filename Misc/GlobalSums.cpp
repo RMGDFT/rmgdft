@@ -5,10 +5,9 @@
 #include <typeinfo>
 #include <complex>
 
-using namespace std;
 template void GlobalSums<float>(float*, int, MPI_Comm);
 template void GlobalSums<double>(double*, int, MPI_Comm);
-template void GlobalSums<complex<double> >(complex <double>*, int, MPI_Comm);
+template void GlobalSums<std::complex<double> >(std::complex <double>*, int, MPI_Comm);
 
 static double *fixed_vector1 = NULL;
 static double *fixed_vector2 = NULL;
