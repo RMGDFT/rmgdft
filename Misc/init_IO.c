@@ -142,7 +142,7 @@ magma_init();
     }
     printf("Running with thread level = %d\n", provided);
     fflush(NULL);
-    init_HYBRID_MODEL(ct.THREADS_PER_NODE);
+    init_HYBRID_MODEL(NPES, pct.gridpe, ct.THREADS_PER_NODE, pct.grid_comm);
 
     // Allocate storage for trade_images and global sums routines
     init_TradeImages();

@@ -132,6 +132,7 @@ template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag);
 template <typename KpointType>
 void OutputBandPlot(Kpoint<KpointType> ** Kptr);
+int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
 
 
 

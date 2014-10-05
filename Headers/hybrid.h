@@ -36,6 +36,6 @@ int get_thread_basetag(void);
 int get_thread_tid(void);
 SCF_THREAD_CONTROL *get_thread_control(void);
 void run_thread_tasks(int jobs);
-void init_HYBRID_MODEL(int nthreads);
+void init_HYBRID_MODEL(int npes, int thispe, int nthreads, MPI_Comm comm);
 int is_loop_over_states(void);
 

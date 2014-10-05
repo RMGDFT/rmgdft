@@ -70,11 +70,6 @@ BaseThread::BaseThread(int nthreads)
         BaseThread::THREADS_PER_NODE = nthreads;
         BaseThread::in_threaded_region = false;
 
-        // Should work on linux and AIX
-#if __linux__
-        ncpus = sysconf( _SC_NPROCESSORS_ONLN );
-        printf("Hybrid mode with %d threads and %d cores per node.\n", nthreads, ncpus);
-#endif
         BaseThread::init_flag = 1;
 
     }

@@ -72,7 +72,7 @@ void read_common ()
     // Set up grid and node data
     set_grids(NX_GRID, NY_GRID, NZ_GRID, PE_X, PE_Y, PE_Z, FG_RATIO);
 
-    get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "1");
+    get_data("threads_per_node",  &ct.THREADS_PER_NODE, INT, "-1");
 
     FNX_GRID = NX_GRID * FG_RATIO;
     FNY_GRID = NY_GRID * FG_RATIO;

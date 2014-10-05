@@ -1,6 +1,8 @@
 #include "BaseThread.h"
+#include <mpi.h>
 #include "rmg_error.h"
 #include "const.h"
+#include "transition.h"
 
 
 void *run_threads(void *v);
@@ -36,9 +38,12 @@ extern "C" int get_thread_tid(void)
     return B->get_thread_tid();
 }
 
-extern "C" void init_HYBRID_MODEL(int nthreads)
+extern "C" void init_HYBRID_MODEL(int npes, int thispe, int nthreads, MPI_Comm comm)
 {
-    BaseThread *B = BaseThread::getBaseThread(nthreads);
+
+    int rec_threads = GetRecommendedThreadNumber(nthreads, npes, thispe, comm);
+
+    BaseThread *B = BaseThread::getBaseThread(rec_threads);
     B->RegisterThreadFunction(run_threads);
 
     // This is not a leak. We want B to live forever

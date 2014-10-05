@@ -1,4 +1,5 @@
 add_library (Misc
+GetRecommendedThreadNumber.cpp
 Fill.cpp
 GetTe.cpp
 init_kpoints.c
