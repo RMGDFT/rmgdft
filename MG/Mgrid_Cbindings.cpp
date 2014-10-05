@@ -15,7 +15,6 @@
 #include "packfuncs.h"
 
 
-using namespace std;
 
 
 // C wrappers

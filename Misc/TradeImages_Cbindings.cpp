@@ -1,7 +1,6 @@
 
 #include "TradeImages.h"
 #include "common_prototypes.h"
-using namespace std;
 
 #include "transition.h"
 

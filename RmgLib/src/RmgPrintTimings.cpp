@@ -9,7 +9,6 @@
 #include <algorithm>
 #include "RmgTimer.h"
 
-using namespace std;
 
 void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
@@ -52,10 +51,10 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
             }
         }
 
-        logfile << endl << endl;
+        logfile << std::endl << std::endl;
         logfile << std::fixed << std::setprecision(2);
-        logfile << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------" << endl;
-        logfile << "                                                 Total time       Per SCF/step" << endl;
+        logfile << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------" << std::endl;
+        logfile << "                                                 Total time       Per SCF/step" << std::endl;
         count1 = 0;
         for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
             count = std::count(it->first.begin(), it->first.end(), ':');  
@@ -63,19 +62,19 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
             if(count1 < count) {
                 for(i = 0; i < count1; i++) logfile << "  ";
                 for(i = 2 * count1; i < 77; i++) logfile <<"-";
-                logfile <<  endl;
+                logfile <<  std::endl;
             }
 
-            if(count == 0) logfile << endl;
+            if(count == 0) logfile << std::endl;
 
             for(i = 0; i < count; i++) logfile << "  ";
-            logfile << setw(41-count*2) << left << it->first << setw(18) << right << it->second << setw(18) << right << it->second/(double)steps << endl;
+            logfile << std::setw(41-count*2) << std::left << it->first << std::setw(18) << std::right << it->second << std::setw(18) << std::right << it->second/(double)steps << std::endl;
                 
             count1 = count;
         }
 
-        logfile << endl << endl;
-        logfile << "------------------------- TIMING INFORMATION FOR THREADS  -------------------" << endl << endl;
+        logfile << std::endl << std::endl;
+        logfile << "------------------------- TIMING INFORMATION FOR THREADS  -------------------" << std::endl << std::endl;
         logfile << "                                           Min            Max            Avg";
 
         auto it1 = tmin.cbegin();
@@ -85,21 +84,21 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
             std::size_t found = it1->first.find_first_of(":");
             if(found != std::string::npos) {
                 logfile << "  ";
-                logfile << setw(maxlen) << left << it1->first
-                << setw(16) << right << it1->second
-                << setw(15) << right << it2->second
-                << setw(15) << right
-                << it3->second/T->get_threads_per_node() << endl;
+                logfile << std::setw(maxlen) << std::left << it1->first
+                << std::setw(16) << std::right << it1->second
+                << std::setw(15) << std::right << it2->second
+                << std::setw(15) << std::right
+                << it3->second/T->get_threads_per_node() << std::endl;
             }
             else {
-                logfile << endl;
-                logfile << setw(maxlen) << left << it1->first
-                << setw(18) << right << it1->second
-                << setw(15) << right << it2->second
-                << setw(15) << right << it3->second/T->get_threads_per_node()
-                << endl
+                logfile << std::endl;
+                logfile << std::setw(maxlen) << std::left << it1->first
+                << std::setw(18) << std::right << it1->second
+                << std::setw(15) << std::right << it2->second
+                << std::setw(15) << std::right << it3->second/T->get_threads_per_node()
+                << std::endl
                 << "-----------------------------------------------------------------------------"
-                << endl;
+                << std::endl;
             }
             it1++;
             it2++;

@@ -240,7 +240,7 @@ typedef struct
     double kmag;
 
     /* The orbital structure for this k-point */
-//    STATE *kstate;
+    STATE *kstate;
 
 
     /* Mean min, and max wavefunction residuals for occupied space */

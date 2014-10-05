@@ -37,6 +37,7 @@
 
 #include <complex>
 #include <string>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include "Mgrid.h"
 #include "FiniteDiff.h"
@@ -80,7 +81,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
 {
     RmgTimer RT0("Mgrid_solv");
-    std::string timername = "Mgrid_solv: level " + std::to_string(level);
+    std::string timername = "Mgrid_solv: level " + boost::to_string(level);
     RmgTimer RT1(timername.c_str());
 
     int i;

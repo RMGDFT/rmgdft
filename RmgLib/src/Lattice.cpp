@@ -109,8 +109,6 @@
 #define         SQRT3       1.732050807569
 
 
-using namespace std;
-
 
 void Lattice::cross_product (double * a, double * b, double * c)
 {

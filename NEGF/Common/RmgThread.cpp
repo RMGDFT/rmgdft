@@ -10,7 +10,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #endif
-using namespace std;
 
 
 // Main thread function specific to subprojects
