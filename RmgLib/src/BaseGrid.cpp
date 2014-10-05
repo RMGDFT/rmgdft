@@ -35,10 +35,6 @@
 #include "BaseGrid.h"
 
 
-using namespace std;
-
-
-
     /// Used to set up global coarse grid dimensions, MPI node dimensions and the ratio of the fine grid to the coarse in each coordinate dimension.
     /// @param newNX_GRID New global coarse grid X dimension
     /// @param newNY_GRID New global coarse grid Y dimension

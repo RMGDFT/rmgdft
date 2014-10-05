@@ -46,8 +46,6 @@ extern "C" void init_HYBRID_MODEL(int npes, int thispe, int nthreads, MPI_Comm c
     BaseThread *B = BaseThread::getBaseThread(rec_threads);
     B->RegisterThreadFunction(run_threads);
 
-    // This is not a leak. We want B to live forever
-    //B = new BaseThread(nthreads);
 }
 
 extern "C" void set_cpu_affinity(int tid)

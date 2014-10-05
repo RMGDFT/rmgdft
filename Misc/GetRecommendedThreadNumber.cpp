@@ -21,13 +21,12 @@ int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm
         return nthreads;
     }
 
-#if __linux__
 
-    int ncpus;
+    int ncpus, name_len;
     // Determine how many MPI procs there are per host
-    int stride = HOST_NAME_MAX+2;
+    int stride = MPI_MAX_PROCESSOR_NAME+2;
     char *hnames = new char[stride * npes]();
-    gethostname(&hnames[thispe * stride], HOST_NAME_MAX);
+    MPI_Get_processor_name(&hnames[thispe * stride], &name_len);
 
     MPI_Allgather(&hnames[thispe * stride], stride, MPI_CHAR, hnames, stride, MPI_CHAR, comm);
 
@@ -36,7 +35,12 @@ int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm
         if(!std::strcmp(&hnames[thispe * stride], &hnames[i * stride])) procs_per_host++;
     }
     
+    // Sysconf works on linux, hopefully C++11 works elsewhere
+#if __linux__
     ncpus = sysconf( _SC_NPROCESSORS_ONLN );
+#else
+    ncpus = std::thread::hardware_concurrency();
+#endif
 
     if(ncpus >= procs_per_host) {
         nthreads = ncpus / procs_per_host;
@@ -54,13 +58,8 @@ int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm
 
     std::cout << "Running with " << procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
 
-#else
-
     // Probably sub optimal but will figure something out later for non-linux systems
     nthreads = 1;
-
-#endif
-
 
     return nthreads;
 }
