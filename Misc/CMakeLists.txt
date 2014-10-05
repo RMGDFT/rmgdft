@@ -29,7 +29,6 @@ get_te.c
 minimage.c
 get_vtot_psi.c
 filename_increment.c
-#fill.c
 my_mpi.c
 blaswrappers.c
 set_bc.c
@@ -42,5 +41,8 @@ rmg_error.c
 rmg_alloc.c
 ions.c
 sl_init_comm.c
+get_opposite_occupancies.c
+get_opposite_eigvals.c
+fill.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
