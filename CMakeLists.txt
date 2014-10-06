@@ -265,6 +265,8 @@ if (NOT MKLROOT)
     endif (EXISTS "/opt/intel/mkl")
 endif (NOT MKLROOT)
 
+
+if(NOT CRAY_XK)
 if(MKLROOT)
     set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
     set(MKL_LIB64 "${MKLROOT}/lib/intel64")
@@ -281,6 +283,7 @@ if(MKLROOT)
         message( SEND_ERROR "RMG requires 64 bit MKL." )
     endif(EXISTS "${MKL_LIB64}")
 endif(MKLROOT)
+endif(NOT CRAY_XK)
 
 
 set(USE_SCALAPACK_LIBS 1)
