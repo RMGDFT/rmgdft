@@ -355,7 +355,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
 
     /* If random start and Fermi occupation, start with
        each state equally occupied  */
-    if (ct.occ_flag && (ct.runflag != 1))
+    if (ct.occ_flag && (ct.runflag != RESTART))
     {
         /* Set occupation for the first state */
         for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
@@ -387,7 +387,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
         /* If random start and Fermi occupation, start with
            each state equally occupied  */
 
-        if (ct.occ_flag && (ct.runflag != 1))
+        if (ct.occ_flag && (ct.runflag != RESTART))
         {
             for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
                 this->Kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
