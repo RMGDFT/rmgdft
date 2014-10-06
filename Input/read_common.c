@@ -344,7 +344,7 @@ void read_common ()
 
     /* Multigrid levels */
     get_data ("kohn_sham_mg_levels", &ct.eig_parm.levels, INT, "1");
-    get_data ("poisson_mg_levels", &ct.poi_parm.levels, INT, "2");
+    get_data ("poisson_mg_levels", &ct.poi_parm.levels, INT, "-1");
 
     /*Fine grid for non-local pseudopotential */
     get_data ("fine_grid_non_local_pp", &ct.nxfgrid, INT, "4");
@@ -427,18 +427,20 @@ void read_common ()
     ct.kpoint_is_shift[1] = strtol(tbuf, &tbuf, 10);
     ct.kpoint_is_shift[2] = strtol(tbuf, &tbuf, 10);
 
-    if ((FNX_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("NX_GRID: too many hartree MG levels");
-    if ((FNY_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("NY_GRID: too many hartree MG levels");
-    if ((FNZ_GRID / (1 << ct.poi_parm.levels)) < 3)
-        error_handler ("NZ_GRID: too many hartree MG levels");
-    if ((FNX_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("NX_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FNY_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("NY_GRID not evenly divisible by 2^(poi_parm.levels)");
-    if ((FNZ_GRID % (1 << ct.poi_parm.levels)) != 0)
-        error_handler ("NZ_GRID not evenly divisible by 2^(poi_parm.levels)");
+    // If the user has not specifically set the number of poisson multigrid levels use the max
+    if(ct.poi_parm.levels == -1) {
+        for(ct.poi_parm.levels = 6;ct.poi_parm.levels >= 0;ct.poi_parm.levels--) {
+            int poi_level_err = false;
+            if ((FNX_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNY_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNZ_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNX_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNY_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNZ_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if (!poi_level_err) break;
+        }
+    }
+
 
     /* Clean up malloc'ed memory */
     my_free (tptr);
