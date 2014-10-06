@@ -12,25 +12,29 @@ typedef struct
     /** Number (rank in MPI terminology) of this processor in this image grid */
     int gridpe, imgpe, thisimg, spinpe;
 
-	/** Number of grids (typically 1) per image to be run simultaneously **/
-	int images, grids;
+    /** Number of grids (typically 1) per image to be run simultaneously **/
+    int images, grids;
     char image_path[MAX_IMGS][MAX_PATH];
     char image_input[MAX_IMGS][MAX_PATH];
     int image_npes[MAX_IMGS];
     int worldrank;
     int total_npes;
 
-	/* MPI communicators for each code grid (grid_comm) and one (rmg_comm)
-	 * for all group rank 0 pe's. The later effectively replaces MPI_COMM_WORLD
-	 * unless you really need all-to-all, even across grids, communication. */
-	MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm, scalapack_comm;
+    /* MPI communicators for each code grid (grid_comm) and one (rmg_comm)
+     * for all group rank 0 pe's. The later effectively replaces MPI_COMM_WORLD
+     * unless you really need all-to-all, even across grids, communication. */
+    MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm, scalapack_comm;
     MPI_Comm kpsub_comm, allkp_comm;
 
+    // Number of MPI procs per physical host
+    int procs_per_host;
 
+    // MPI rank of each proc local to this host (dimension procs_per_host)
+    int *mpi_local_ranks;
 
-	/* scalapack variables */
-	int desca[DLEN];
-	int ictxt;
+    /* scalapack variables */
+    int desca[DLEN];
+    int ictxt;
 
     /*Whether pe participates in scalapack calculations*/
     int scalapack_pe;
@@ -62,14 +66,14 @@ typedef struct
 
 
     /** Points to start of projector storage for this ion in projector space */
-    rmg_double_t *weight;
-    rmg_double_t *Bweight;
+    double *weight;
+    double *Bweight;
 
 #if FDIFF_BETA
     /*These are used for non-local force */
-    rmg_double_t **weight_derx;
-    rmg_double_t **weight_dery;
-    rmg_double_t **weight_derz;
+    double **weight_derx;
+    double **weight_dery;
+    double **weight_derz;
 #endif
 
 
@@ -91,19 +95,19 @@ typedef struct
     int *lptrlen;
 
     /** Phase shifts for the non-local operators */
-    rmg_double_t **phaseptr;
+    double **phaseptr;
 
     /** Points to start of storage for theaugument function*/
-    rmg_double_t **augfunc;
+    double **augfunc;
 
     /** points to start of DnmI function storage for this ion*/
-    rmg_double_t **dnmI;
-    rmg_double_t **dnmI_x;
-    rmg_double_t **dnmI_y;
-    rmg_double_t **dnmI_z;
+    double **dnmI;
+    double **dnmI_x;
+    double **dnmI_y;
+    double **dnmI_z;
 
     /** points to start of qqq storage for this ion*/
-    rmg_double_t **qqq;
+    double **qqq;
 
 
     int num_owned_ions;
@@ -142,46 +146,18 @@ typedef struct
      * These are indices within nonloc ions, not absolute ones*/ 
     int list_ions_per_owner[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     
-    rmg_double_t *oldsintR_local;
-    rmg_double_t *oldsintI_local;
-    rmg_double_t *newsintR_local;
-    rmg_double_t *newsintI_local;
+    double *oldsintR_local;
+    double *oldsintI_local;
+    double *newsintR_local;
+    double *newsintI_local;
 
     // Holds non-local and S operators acting on psi
-    rmg_double_t *nv;
-    rmg_double_t *ns;
-    rmg_double_t *Bns;
+    double *nv;
+    double *ns;
+    double *Bns;
     int num_tot_proj;
-    rmg_double_t *M_dnm;
-    rmg_double_t *M_qqq;
-
-
- 
-    /* Grid sizes on each PE */
-//    int PX0_GRID;
-//    int PY0_GRID;
-//    int PZ0_GRID;
-
-    /* Grid offsets on each PE */
-//    int PX_OFFSET;
-//    int PY_OFFSET;
-//    int PZ_OFFSET;
-
-    /* Basis size on each PE */
-//    int P0_BASIS;
-
-    /* Fine grid sizes on each PE */
-//    int FPX0_GRID;
-//    int FPY0_GRID;
-//    int FPZ0_GRID;
-
-    /* Fine Grid offsets on each PE */
-//    int FPX_OFFSET;
-//    int FPY_OFFSET;
-//    int FPZ_OFFSET;
-
-    /* Fine grid basis size on each PE */
-//    int FP0_BASIS;
+    double *M_dnm;
+    double *M_qqq;
 
     int instances;
     /** Neighboring processors in three-dimensional space */
@@ -189,12 +165,6 @@ typedef struct
     /** Processor kpoint- coordinate for domain decomposition */
     /*  paralleled for kpoint */
     int pe_kpoint;
-
- 
-    /** local grid size for x,y,z **/
-//    int nx_grid;
-//    int ny_grid;
-//    int nz_grid;
 
     /* kpoint index for start and end for a subdomain processors */
     int kstart;
@@ -231,7 +201,7 @@ typedef struct
     int descb[DLEN];
 
     int num_local_orbit;
-    rmg_double_t *psi1, *psi2;
+    double *psi1, *psi2;
 
 } PE_CONTROL;
 

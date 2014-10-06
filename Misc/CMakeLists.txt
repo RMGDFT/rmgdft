@@ -1,5 +1,5 @@
 add_library (Misc
-GetRecommendedThreadNumber.cpp
+InitHybridModel.cpp
 Fill.cpp
 GetTe.cpp
 init_kpoints.c

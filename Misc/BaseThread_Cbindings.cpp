@@ -41,10 +41,7 @@ extern "C" int get_thread_tid(void)
 extern "C" void init_HYBRID_MODEL(int npes, int thispe, int nthreads, MPI_Comm comm)
 {
 
-    int rec_threads = GetRecommendedThreadNumber(nthreads, npes, thispe, comm);
-    ct.THREADS_PER_NODE = rec_threads;
-    BaseThread *B = BaseThread::getBaseThread(rec_threads);
-    B->RegisterThreadFunction(run_threads);
+    InitHybridModel(nthreads, npes, thispe, comm);
 
 }
 
