@@ -120,6 +120,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
                 nthreads = 1;
             }
 
+            omp_set_num_threads(pct.ncpus);
             omp_set_num_threads(nthreads);
             std::cout << "Running with " << pct.procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
             std::cout << "OMP_NUM_THREADS environment variable was not set so using automatically determined value of " << nthreads << "." << std::endl;
