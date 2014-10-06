@@ -10,7 +10,7 @@ if (LIBXC_INCLUDES)
 endif (LIBXC_INCLUDES)
 
 find_path (LIBXC_INCLUDES xc.h 
-HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/src")
+HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/include")
 
 find_library (LIBXC_LIBRARIES 
 NAMES xc
