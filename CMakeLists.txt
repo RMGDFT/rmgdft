@@ -49,9 +49,7 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
-/home/luw/Downloads/magma-1.4.1
-${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64
-${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+/home/luw/Downloads/magma-1.4.1)
 
 # Executables defined by the file that contains main()
 # Main codes
@@ -405,7 +403,7 @@ endif(NOT LIBXC_FOUND)
 
 
 find_package(LIBXC REQUIRED)
-include_directories("${LIBXC_INCLUDES}")
+include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/")
 target_link_libraries (rmg ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-tddft ${LIBXC_LIBRARIES})

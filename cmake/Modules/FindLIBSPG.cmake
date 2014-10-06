@@ -9,7 +9,9 @@ if (LIBSPG_LIBRARIES)
   set (LIBSPG_FIND_QUIETLY TRUE)
 endif (LIBSPG_LIBRARIES)
 
-find_library (LIBSPG_LIBRARIES NAMES symspg)
+find_library (LIBSPG_LIBRARIES 
+NAMES symspg
+HINTS "${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64/")
 
 # handle the QUIETLY and REQUIRED arguments and set LIBSPG_FOUND to TRUE if
 # all listed variables are TRUE

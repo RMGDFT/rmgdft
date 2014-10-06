@@ -9,9 +9,12 @@ if (LIBXC_INCLUDES)
   set (LIBXC_FIND_QUIETLY TRUE)
 endif (LIBXC_INCLUDES)
 
-find_path (LIBXC_INCLUDES xc.h)
+find_path (LIBXC_INCLUDES xc.h 
+HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/src")
 
-find_library (LIBXC_LIBRARIES NAMES xc)
+find_library (LIBXC_LIBRARIES 
+NAMES xc
+HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib64")
 
 # handle the QUIETLY and REQUIRED arguments and set LIBXC_FOUND to TRUE if
 # all listed variables are TRUE
