@@ -334,7 +334,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     /* Make sure we see output, e.g. so we can shut down errant runs */
     fflush( ct.logfile );
-	fsync( fileno(ct.logfile) );
+#if !__CYGWIN__
+    fsync( fileno(ct.logfile) );
+#endif
 
     /* release memory */
     delete [] new_rho;

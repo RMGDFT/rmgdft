@@ -379,11 +379,7 @@ double gcutoff (double g1, double gcut, double width);
 void rft1 (double cparm, double *f, double *r, double *ffil, double *rab,
            int rg_points, int lval, double dr, double width, int lrg_points);
 void norm_psi1 (STATE *sp, int istate, int kpt);
-#if FAST_ORTHO
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, double *cR, double *cI, double *Oij);
-#else
 void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, double *cR, double *cI);
-#endif
 void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, double cR, double cI);
 double get_QnmL (int idx, int ltot, double r, SPECIES *sp);
 

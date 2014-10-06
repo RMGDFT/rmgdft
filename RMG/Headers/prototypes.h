@@ -401,11 +401,7 @@ rmg_double_t gcutoff (rmg_double_t g1, rmg_double_t gcut, rmg_double_t width);
 void rft1 (rmg_double_t cparm, rmg_double_t *f, rmg_double_t *r, rmg_double_t *ffil, rmg_double_t *rab,
            int rg_points, int lval, rmg_double_t dr, rmg_double_t width, int lrg_points);
 void norm_psi1 (STATE *sp, int istate, int kpt);
-#if FAST_ORTHO
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t *cR, rmg_double_t *cI, rmg_double_t *Oij);
-#else
 void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t *cR, rmg_double_t *cI);
-#endif
 void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, rmg_double_t cR, rmg_double_t cI);
 rmg_double_t get_QnmL (int idx, int ltot, rmg_double_t r, SPECIES *sp);
 

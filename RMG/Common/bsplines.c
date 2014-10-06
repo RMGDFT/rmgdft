@@ -2182,9 +2182,6 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
     rmg_double_t offset_x, offset_y, offset_z;
 
     /*These variables should keep values between calls */
-#if MD_TIMERS
-    static rmg_double_t time, time1;
-#endif
     static int flag = 0;
     static rmg_double_t *biatx, *biaty, *biatz, *knots_x, *knots_y, *knots_z;
     static int *leftx, *lefty, *leftz;
@@ -2242,10 +2239,6 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
     for (ix = 0; ix < cmax_z; ix++)
         crdsz[ix] = (rmg_double_t) ix *t1;
 
-
-#if MD_TIMERS
-    time = my_crtc ();
-#endif
 
     /*Here we do things that need to be done only once - 
      * first time we are going this function*/
@@ -2354,18 +2347,10 @@ void bspline_interp_full (rmg_double_t * rho, rmg_double_t * rho_f)
     }                           /*end if (!flag) */
 
 
-#if MD_TIMERS
-    time1 = my_crtc ();
-#endif
-
     dbs3gd2 (get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
              xorder, yorder, zorder,
              cmax_x, cmax_y, cmax_z, bscoef,
              rho_f, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), biatx, biaty, biatz, leftx, lefty, leftz);
-
-
-#if MD_TIMERS
-#endif
 
 
     my_free (bscoef);

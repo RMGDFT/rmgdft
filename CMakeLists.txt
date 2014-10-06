@@ -50,7 +50,7 @@ set(CMAKE_FIND_ROOT_PATH
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /home/luw/Downloads/magma-1.4.1
-${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3
+${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64
 ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 
 # Executables defined by the file that contains main()
@@ -541,18 +541,6 @@ if(MAGMA_LIBS)
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
 
-
-# configure make_conf.h to pass some of the CMake settings
-# to the source code
-option (RMG_EXPERIMENTAL_FEATURES "Turn ON to enable experimental features." OFF)
-if (RMG_EXPERIMENTAL_FEATURES)
-    unset (RMG_FAST_ORTHO CACHE)
-    set (EXPERIMENTAL_FEATURES 1)
-else (RMG_EXPERIMENTAL_FEATURES)
-    unset (RMG_FAST_ORTHO CACHE)
-    set (EXPERIMENTAL_FEATURES 0)
-endif(RMG_EXPERIMENTAL_FEATURES)
-
 option (RMG_GAMMA_PT "Turn on for a gamma point only calculation." ON)
 if (RMG_GAMMA_PT)
     set (GAMMA_PT 1)
@@ -571,24 +559,6 @@ if (RMG_FDIFF_BETA)
 else (RMG_FDIFF_BETA)
     set (FDIFF_BETA 0)
 endif(RMG_FDIFF_BETA)
-
-option (RMG_MD_TIMERS "Extra fine timers, may cause a small slowdown but they are generally useful." ON)
-if (RMG_MD_TIMERS)
-    set (MD_TIMERS 1)
-else (RMG_MD_TIMERS)
-    set (MD_TIMERS 0)
-endif(RMG_MD_TIMERS)
-
-set (FAST_ORTHO 0)
-if(EXPERIMENTAL_FEATURES)
-    option (RMG_FAST_ORTHO "Experimental fast ortho. Disabled by default." OFF)
-    if (RMG_FAST_ORTHO)
-        set (FAST_ORTHO 1)
-    else (RMG_FAST_ORTHO)
-        set (FAST_ORTHO 0)
-    endif(RMG_FAST_ORTHO)
-endif(EXPERIMENTAL_FEATURES)
-
 
 # Send the configure file to the build directory
 configure_file (

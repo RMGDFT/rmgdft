@@ -10,9 +10,6 @@
  * Leave this set to 0 unless you know what you are doing */
 #define FDIFF_BETA ${FDIFF_BETA}
 
-/* Extra fine timers, may cause some slowdown, but they are generally useful */
-#define MD_TIMERS ${MD_TIMERS}
-
 /* Experimental fast ortho. Disabled by default. */
 #define FAST_ORTHO ${FAST_ORTHO}
 
