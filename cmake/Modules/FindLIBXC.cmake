@@ -14,7 +14,9 @@ HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/src")
 
 find_library (LIBXC_LIBRARIES 
 NAMES xc
-HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib64")
+HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib64"
+"${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib"
+)
 
 # handle the QUIETLY and REQUIRED arguments and set LIBXC_FOUND to TRUE if
 # all listed variables are TRUE
