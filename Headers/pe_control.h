@@ -29,8 +29,20 @@ typedef struct
     // Number of MPI procs per physical host
     int procs_per_host;
 
+    // Number of cpu cores per physical host
+    int ncpus;
+
+    // Local rank of this proc
+    int local_rank;
+
     // MPI rank of each proc local to this host (dimension procs_per_host)
     int *mpi_local_ranks;
+
+    // Communicator associated with the local ranks.
+    MPI_Comm local_comm;
+
+    // local master
+    int is_local_master;
 
     /* scalapack variables */
     int desca[DLEN];

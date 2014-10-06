@@ -16,25 +16,26 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 {
 
     int omp_num_threads_set = -1;
+    MPI_Group parent, localgroup;
 
 
     // Determine hardware resources and how many MPI procs there are per host
-    int ncpus, name_len;
+    int name_len;
     int stride = MPI_MAX_PROCESSOR_NAME+2;
     char *hnames = new char[stride * npes]();
 
     int *ranks = new int[npes];
-    ranks[thispe] = pct.worldrank;
+    MPI_Comm_rank(comm, &ranks[thispe]);
 
     MPI_Get_processor_name(&hnames[thispe * stride], &name_len);
 
     MPI_Allgather(&hnames[thispe * stride], stride, MPI_CHAR, hnames, stride, MPI_CHAR, comm);
     MPI_Allgather(&ranks[thispe], 1, MPI_INT, ranks, 1, MPI_INT, comm);
 
-    int procs_per_host = 0;
+    pct.procs_per_host = 0;
     for(int i = 0;i < npes;i++) {
         if(!std::strcmp(&hnames[thispe * stride], &hnames[i * stride])) {
-            procs_per_host++;
+            pct.procs_per_host++;
         }
         else {
             ranks[i] = -1;
@@ -42,15 +43,25 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     }
     
 
-    pct.mpi_local_ranks = new int[procs_per_host];
+    pct.mpi_local_ranks = new int[pct.procs_per_host];
     int j = 0;
     for(int i = 0;i < npes;i++) {
         if(ranks[i] >= 0) {
             pct.mpi_local_ranks[j] = ranks[i];
-std::cout << "Local rank = " << pct.mpi_local_ranks[j] << " procs_per_host = " << procs_per_host <<  std::endl;
+//std::cout << "Local rank = " << pct.mpi_local_ranks[j] << " procs_per_host = " << pct.procs_per_host <<  std::endl;
             j++;
         }
     }
+
+    // Next create the local group and a communicator to go with it
+    MPI_Comm_group(comm, &parent);
+    MPI_Group_incl(parent, pct.procs_per_host, pct.mpi_local_ranks, &localgroup);
+    MPI_Comm_create(comm, localgroup, &pct.local_comm);
+
+    // And finally determine if we are the master process in this group
+    pct.is_local_master = false;
+    if(pct.mpi_local_ranks[thispe] == pct.mpi_local_ranks[0]) pct.is_local_master = true;
+    MPI_Comm_rank(pct.local_comm, &pct.local_rank);
 
 
     delete [] ranks;
@@ -58,9 +69,9 @@ std::cout << "Local rank = " << pct.mpi_local_ranks[j] << " procs_per_host = " <
 
     // Sysconf works on linux, hopefully C++11 works elsewhere
 #if __linux__
-    ncpus = sysconf( _SC_NPROCESSORS_ONLN );
+    pct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
 #else
-    ncpus = std::thread::hardware_concurrency();
+    pct.ncpus = std::thread::hardware_concurrency();
 #endif
 
 
@@ -102,15 +113,15 @@ std::cout << "Local rank = " << pct.mpi_local_ranks[j] << " procs_per_host = " <
         }
         else {
 
-            if(ncpus >= procs_per_host) {
-                nthreads = ncpus / procs_per_host;
+            if(pct.ncpus >= pct.procs_per_host) {
+                nthreads = pct.ncpus / pct.procs_per_host;
             }
             else {
                 nthreads = 1;
             }
 
             omp_set_num_threads(nthreads);
-            std::cout << "Running with " << procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
+            std::cout << "Running with " << pct.procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
             std::cout << "OMP_NUM_THREADS environment variable was not set so using automatically determined value of " << nthreads << "." << std::endl;
 
         }
