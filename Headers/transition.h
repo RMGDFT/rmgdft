@@ -113,7 +113,7 @@ extern "C" void ReadPseudo(int nspecies, SPECIES *sp);
 template <typename KpointType>
 void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf);
 template <typename KpointType>
-void ReadData (char *name, double * vh, double * rho, double * vxc, State<KpointType> * states);
+void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 void GetOppositeEigvals (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
@@ -124,10 +124,10 @@ template <typename StateType>
 void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff);
 template <typename StateType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, State<StateType> * states, int ii_flag);
-template <typename StateType>
-void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
-template <typename StateType>
-void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states);
+template <typename KpointType>
+void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
+template <typename KpointType>
+void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag);
 template <typename KpointType>

@@ -63,14 +63,14 @@ static void write_double (int fh, double * rp, int count);
 static void write_int (int fh, int *ip, int count);
 
 
-template void WriteData (int, double *, double *, double *, double *, State<double> *);
-template void WriteData (int, double *, double *, double *, double *, State<std::complex<double> > *);
+template void WriteData (int, double *, double *, double *, double *, Kpoint<double> **);
+template void WriteData (int, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
 
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-template <typename StateType>
-void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states)
+template <typename KpointType>
+void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
 {
     int fine[3];
     int grid[3];
@@ -136,13 +136,10 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     /* write the state occupations, in spin-polarized calculation, 
      * it's occupation for the processor's own spin */ 
     {
-	State<StateType> *sp;
-	sp = states;
 	for (ik = 0; ik < nk; ik++)
 	    for (is = 0; is < ns; is++)
 	    {
-		write_double (fhand, &sp->occupation[0], 1); 
-		sp++;
+		write_double (fhand, &Kptr[ik]->Kstates[is].occupation[0], 1); 
 	    }
     }
     
@@ -150,13 +147,10 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     /* write the state eigenvalues, while in spin-polarized case, 
      * it's eigenvalues of processor's own spin */
     {
-	State<StateType> *sp;
-	sp = states;
 	for (ik = 0; ik < nk; ik++)
 	    for (is = 0; is < ns; is++)
 	    {
-		write_double (fhand, &sp->eig[0], 1);
-		sp++;
+		write_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
 	    }
 
     }
@@ -166,16 +160,12 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     /* write wavefunctions */
     {
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
-        State<StateType> *sp;
 
-
-        sp = states;
         for (ik = 0; ik < nk; ik++)
         {
             for (is = 0; is < ns; is++)
             {
-                write_double (fhand, (double *)sp->psi, wvfn_size);
-                sp++;
+                write_float (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
             }
         }
     }

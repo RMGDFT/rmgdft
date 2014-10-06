@@ -60,13 +60,13 @@ static void read_float (int fhand, double * rp, int count);
 static void read_double (int fhand, double * rp, int count);
 static void read_int (int fhand, int *ip, int count);
 
-template void ReadData(char *, double *, double *, double *, State<double> *);
-template void ReadData(char *, double *, double *, double *, State<std::complex<double> > *);
+template void ReadData(char *, double *, double *, double *, Kpoint<double> **);
+template void ReadData(char *, double *, double *, double *, Kpoint<std::complex<double> > **);
 
 /* Reads the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things from a file. */
 template <typename KpointType>
-void ReadData (char *name, double * vh, double * rho, double * vxc, State<KpointType> * states)
+void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr)
 {
     char newname[MAX_PATH + 200];
     int grid[3];
@@ -146,8 +146,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
     rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
-
-
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     if (gamma != ct.is_gamma)
@@ -186,7 +184,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
 
     /* read state occupations */
     {
-	State<KpointType> *sp;
 	double *occ = new double[nk * ns];
         
 	read_double (fhand, occ, (nk * ns));
@@ -198,12 +195,10 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
 	{
 	    double occ_total = 0.0; 
 
-	    sp = states;
 	    for (ik = 0; ik < nk; ik++)
 		for (is = 0; is < ns; is++)
 		{
-		    occ_total += ( sp->occupation[0] = occ[ik * ns + is] );
-		    sp++;
+		    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
 		}
 
 
@@ -220,12 +215,10 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
 		double iocc_total = (double) (int) (occ_total + 0.5);
 		double fac = iocc_total / occ_total;
 
-		    sp = states;
 		    for (ik = 0; ik < nk; ik++)
 			for (is = 0; is < ns; is++)
 			{
-			    sp->occupation[0] *= fac;
-			    sp++;
+			    Kptr[ik]->Kstates[is].occupation[0] *= fac;
 			}
 		/* end of normailization*/
 	    }
@@ -242,16 +235,12 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
     /* read state eigenvalues, not needed really */
     {
 
-	State<KpointType> *sp;
-
 	/* Read eigenvalue in pairwised case, while in polarized case, 
 	 * it's the eigenvalue for proceesor's own spin  */ 
-	sp = states;
 	for (ik = 0; ik < nk; ik++)
 	    for (is = 0; is < ns; is++)
 	    {
-		read_double (fhand, &sp->eig[0], 1);
-		sp++;
+		read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
 	    }
 
 	printf ("read_data: read 'eigenvalues'\n");
@@ -263,16 +252,13 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
     /* read wavefunctions */
     {
 	int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
-	State<KpointType> *sp;
 
-	sp = states;
 	for (ik = 0; ik < nk; ik++)
 	{
 	    for (is = 0; is < ns; is++)
 	    {
 
-		read_double (fhand, (double *)sp->psi, wvfn_size);
-		sp++;
+		read_float (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
 
 	    }
 	    /*  for calculating band structures, 
@@ -299,23 +285,21 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, State<Kpoint
 static void read_double (int fhand, double * rp, int count)
 {
 
-    int size;
-
-    size = count * sizeof (double);
-
-    if (size != read (fhand, rp, size))
+    ssize_t wanted = sizeof (double) * (ssize_t)count;
+    ssize_t size = read (fhand, rp, wanted);
+    if(size != wanted)
 	rmg_error_handler (__FILE__, __LINE__,"error reading");
 
 }
 static void read_float (int fhand, double * rp, int count)
 {
 
-    int i, size;
+    int i;
     float *buf = new float[count];
+    ssize_t wanted = sizeof (float) * (ssize_t)count;
 
-    size = count * sizeof (float);
-
-    if (size != read (fhand, buf, size))
+    ssize_t size = read (fhand, buf, wanted);
+    if(size != wanted)
 	rmg_error_handler (__FILE__, __LINE__,"error reading");
 
     for (i = 0; i < count; i++)

@@ -53,13 +53,13 @@
 #include "Kpoint.h"
 #include "transition.h"
 
-template void WriteRestart (char *, double *, double *, double *, double *, State<double> *);
-template void WriteRestart (char *, double *, double *, double *, double *, State<std::complex<double> > *);
+template void WriteRestart (char *, double *, double *, double *, double *, Kpoint<double> **);
+template void WriteRestart (char *, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-template <typename StateType>
-void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, State<StateType> * states)
+template <typename KpointType>
+void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
 {
     char newname[MAX_PATH + 20];
     int amode;
@@ -183,7 +183,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
         rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
-    WriteData (fhand, vh, rho, rho_oppo, vxc, states);
+    WriteData (fhand, vh, rho, rho_oppo, vxc, Kptr);
     close (fhand);
 
     write_time = my_crtc () - time0;

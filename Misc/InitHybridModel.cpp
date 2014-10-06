@@ -20,17 +20,18 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
 
     // Determine hardware resources and how many MPI procs there are per host
-    int name_len;
+    int name_len, localrank;
     int stride = MPI_MAX_PROCESSOR_NAME+2;
     char *hnames = new char[stride * npes]();
 
     int *ranks = new int[npes];
-    MPI_Comm_rank(comm, &ranks[thispe]);
+    MPI_Comm_rank(comm, &localrank);
+    ranks[thispe] = localrank;
 
     MPI_Get_processor_name(&hnames[thispe * stride], &name_len);
 
-    MPI_Allgather(&hnames[thispe * stride], stride, MPI_CHAR, hnames, stride, MPI_CHAR, comm);
-    MPI_Allgather(&ranks[thispe], 1, MPI_INT, ranks, 1, MPI_INT, comm);
+    MPI_Allgather(MPI_IN_PLACE, stride, MPI_CHAR, hnames, stride, MPI_CHAR, comm);
+    MPI_Allgather(MPI_IN_PLACE, 1, MPI_INT, ranks, 1, MPI_INT, comm);
 
     pct.procs_per_host = 0;
     for(int i = 0;i < npes;i++) {

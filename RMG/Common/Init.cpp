@@ -268,7 +268,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("If not an initial run read data from files");
     if (ct.runflag == RESTART)
     {
-        ReadData (ct.infile, vh, rho, vxc, Kptr[0]->Kstates);
+        ReadData (ct.infile, vh, rho, vxc, Kptr);
     
 	/*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
 	if (ct.spin_flag)
