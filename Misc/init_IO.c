@@ -83,6 +83,8 @@ void init_IO (int argc, char **argv)
     read_control(ct.cfile);
     set_rank(pct.gridpe);
 
+    init_HYBRID_MODEL(NPES, pct.gridpe, ct.THREADS_PER_NODE, pct.grid_comm);
+
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
@@ -133,6 +135,7 @@ magma_init();
 
 #endif
 
+    // This is placed down here since the IO is not setup yet when provided is obtained above.
     if(provided < ct.mpi_threadlevel) {
 
         printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
@@ -142,7 +145,6 @@ magma_init();
     }
     printf("Running with thread level = %d\n", provided);
     fflush(NULL);
-    init_HYBRID_MODEL(NPES, pct.gridpe, ct.THREADS_PER_NODE, pct.grid_comm);
 
     // Allocate storage for trade_images and global sums routines
     init_TradeImages();

@@ -378,13 +378,10 @@ void LoadUpf(SPECIES *sp)
     sp->lrcut = 2.170425;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
-    if (ct.runflag == LCAO_START)
-    {
-        sp->aradius = 9.0;
-        sp->acut = 7.0;
-        sp->agwidth = 10.0;
-        sp->arwidth = 25.0;
-    }
+    sp->aradius = 9.0;
+    sp->acut = 7.0;
+    sp->agwidth = 10.0;
+    sp->arwidth = 25.0;
     for(int ip = 0;ip < sp->nbeta;ip++) {
         sp->nlrcut[sp->llbeta[ip]] = 3.170425;
     }

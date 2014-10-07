@@ -268,7 +268,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("If not an initial run read data from files");
     if (ct.runflag == RESTART)
     {
+        int THREADS_PER_NODE = ct.THREADS_PER_NODE;
         ReadData (ct.infile, vh, rho, vxc, Kptr);
+        ct.THREADS_PER_NODE = THREADS_PER_NODE;
     
 	/*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
 	if (ct.spin_flag)

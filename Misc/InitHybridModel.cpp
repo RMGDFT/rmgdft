@@ -7,6 +7,7 @@
 #include <transition.h>
 
 void *run_threads(void *v);
+static BaseThread *B;
 
 // Determine system information required to to setup optimal threading and local
 // MPI communications. We assume that if the user has set OMP_NUM_THREADS manually
@@ -17,7 +18,6 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     int omp_num_threads_set = -1;
     MPI_Group parent, localgroup;
-
 
     // Determine hardware resources and how many MPI procs there are per host
     int name_len, localrank;
@@ -49,7 +49,6 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     for(int i = 0;i < npes;i++) {
         if(ranks[i] >= 0) {
             pct.mpi_local_ranks[j] = ranks[i];
-//std::cout << "Local rank = " << pct.mpi_local_ranks[j] << " procs_per_host = " << pct.procs_per_host <<  std::endl;
             j++;
         }
     }
@@ -88,7 +87,6 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
         // User set threads in input file but did not set OMP_NUM_THREADS so use input file value
         if(omp_num_threads_set < 0) { 
 
-            omp_set_num_threads(nthreads);
             std::cout << "OMP_NUM_THREADS environment variable was not set so using input file value for threads_per_node." << std::endl;
 
         }
@@ -121,8 +119,6 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
                 nthreads = 1;
             }
 
-            omp_set_num_threads(pct.ncpus);
-            omp_set_num_threads(nthreads);
             std::cout << "Running with " << pct.procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
             std::cout << "OMP_NUM_THREADS environment variable was not set so using automatically determined value of " << nthreads << "." << std::endl;
 
@@ -132,7 +128,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
 
     ct.THREADS_PER_NODE = nthreads;
-    BaseThread *B = BaseThread::getBaseThread(nthreads);
+    B = BaseThread::getBaseThread(nthreads);
     B->RegisterThreadFunction(run_threads);
 
 }

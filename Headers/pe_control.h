@@ -1,3 +1,5 @@
+#ifndef RMG_pe_control_H
+#define RMG_pe_control_H 1
 
 /** @name PE_CONTROL
   *
@@ -222,4 +224,4 @@ typedef struct
 extern PE_CONTROL pct;
 
 
-
+#endif
