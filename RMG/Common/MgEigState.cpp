@@ -190,7 +190,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
     int levels = ct.eig_parm.levels;
-    if ((ct.runflag == 0) && (ct.scf_steps < 2)) {
+    if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) {
         levels = 0;
     }
 
