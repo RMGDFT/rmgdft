@@ -46,15 +46,8 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
         // Increase the resources available to this proc since the others on the local node
         // will be idle
-        int omp_save_nthreads = omp_get_num_threads();
         int nthreads = ct.THREADS_PER_NODE;
-        if(pct.procs_per_host > 1) {
-            // Maybe not ideal but will be somewhat system dependent
-            if(num_states >= 100) nthreads = std::min(2, pct.procs_per_host * ct.THREADS_PER_NODE);
-            if(num_states >= 200) nthreads = std::min(4, pct.procs_per_host * ct.THREADS_PER_NODE);
-            if(num_states >= 400) nthreads = std::min(8, pct.procs_per_host * ct.THREADS_PER_NODE);
-            if(num_states >= 600) nthreads = std::min(10, pct.procs_per_host * ct.THREADS_PER_NODE);
-        }
+        if(pct.procs_per_host > 1) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
 
 
@@ -181,15 +174,17 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         }
 
         // Reset omp_num_threads
-        omp_set_num_threads(omp_save_nthreads);
+        omp_set_num_threads(ct.THREADS_PER_NODE);
 
     } // end if is_local_master
 
 
     // If only one proc on this host participated broadcast results to the rest
     if(pct.procs_per_host > 1) {
-        MPI_Bcast(eigvectors, num_states*num_states, MPI_DOUBLE, pct.mpi_local_ranks[0], pct.local_comm);
-        MPI_Bcast(eigs, num_states, MPI_DOUBLE, pct.mpi_local_ranks[0], pct.local_comm);
+        int factor = 2;
+        if(ct.is_gamma) factor = 1;
+        MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);
+        MPI_Bcast(eigs, num_states, MPI_DOUBLE, 0, pct.local_comm);
     }
 
     if(use_folded) return trans_t;

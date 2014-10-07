@@ -60,9 +60,8 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     // And finally determine if we are the master process in this group
     pct.is_local_master = false;
-    if(pct.mpi_local_ranks[thispe] == pct.mpi_local_ranks[0]) pct.is_local_master = true;
     MPI_Comm_rank(pct.local_comm, &pct.local_rank);
-
+    if(pct.local_rank == 0) pct.is_local_master = true;
 
     delete [] ranks;
     delete [] hnames; 
