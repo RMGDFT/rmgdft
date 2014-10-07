@@ -1,8 +1,10 @@
 
 #include <exception>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
@@ -68,19 +70,54 @@ void LoadUpf(SPECIES *sp)
 {
 
    ptree upf_tree;
-   std::string PP_INFO;
-   std::string upf_file = sp->pseudo_filename;
+   char *pp_buffer;
+   int pp_buffer_len;
    int max_nlprojectors = 0;
    int l_max;
+   std::stringstream ss; 
    double  ddd0[6][6];  // Used to read in the PP_DIJ
    double qqq[6][6];    // Used to read in the norms of the augmentation functions (PP_Q)
 
+   try {
+
+       // Open on one pe and read entire file into a character buffer
+       if(pct.worldrank == 0) {
+
+           std::ifstream pp_file;
+           pp_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+           pp_file.open(sp->pseudo_filename);
+           pp_file.seekg(0, std::ios::end);
+           pp_buffer_len = pp_file.tellg();
+           pp_file.seekg(0, std::ios::beg);
+           pp_buffer = new char[pp_buffer_len + 1]();
+           pp_file.read(pp_buffer, pp_buffer_len);       // read the whole file into the buffer
+           pp_file.close();
+
+       }
+
+       // Send it to everyone else
+       MPI_Bcast (&pp_buffer_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+       if(pct.worldrank != 0) {
+           pp_buffer = new char[pp_buffer_len + 1]();
+       }
+       MPI_Bcast (pp_buffer, pp_buffer_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+       std::string pp_string(pp_buffer);
+       ss << pp_string;
+
+   }   
+   catch(std::ifstream::failure e) {
+       std::cout << e.what() << std::endl;
+       std::cerr << "\n\nERROR:  Unable to read pseudopoential file: " << sp->pseudo_filename << std::endl << std::endl;
+       fflush(NULL);
+       MPI_Abort( MPI_COMM_WORLD, 0 );
+   }
 
    // Get the compulsory stuff first
     try 
     {
-        read_xml(upf_file, upf_tree);
-        PP_INFO = upf_tree.get<std::string>("UPF.PP_INFO"); 
+
+        read_xml(ss, upf_tree);
+        std::string PP_INFO = upf_tree.get<std::string>("UPF.PP_INFO"); 
        
         // Atomic symbol, mass, number and zvalence and mesh size
         std::string atomic_symbol = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.element");
@@ -346,7 +383,7 @@ void LoadUpf(SPECIES *sp)
 
     catch(std::exception& e)
     {
-        std::cout << e.what() << '\n';
+        std::cout << e.what() << std::endl;
         // Specific error messages
         if(!std::strcmp("No such node (UPF.PP_INFO)", e.what())) {
             std::cout << "RMG requires Universal pseudopotential format v2.0.1 files. Please check your pseudopotential files and convert them to the correct format.\n" << std::endl;
@@ -374,7 +411,7 @@ void LoadUpf(SPECIES *sp)
     sp->rc = 0.65;
     sp->lradius = 3.170425;
     sp->nlradius = 3.170425;
-    sp->qradius = 3.3;
+    sp->qradius = 3.170425;
     sp->lrcut = 2.170425;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
