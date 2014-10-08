@@ -82,7 +82,7 @@ void LoadUpf(SPECIES *sp)
 
        if(!std::strcmp(sp->pseudo_filename, "./@Internal")) {
 
-           std::string pp_string = GetInternalPseudo("C");
+           std::string pp_string = GetInternalPseudo(&sp->pseudo_symbol[0]);
            ss << pp_string;
 
        }

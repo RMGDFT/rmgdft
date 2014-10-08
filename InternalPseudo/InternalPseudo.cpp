@@ -24,7 +24,7 @@
 #include "pseudo_list.h"
 
 
-std::unordered_map<const char *, compressed_pp> USPP_FILES ({
+std::unordered_map<std::string, compressed_pp> USPP_FILES ({
 {"H", h_pbe_v1_uspp_F_UPF_bz2},
 {"C", c_pbe_v1_2_uspp_F_UPF_bz2},
 {"N", n_pbe_v1_2_uspp_F_UPF_bz2},
@@ -33,10 +33,13 @@ std::unordered_map<const char *, compressed_pp> USPP_FILES ({
 
 namespace io = boost::iostreams;
 
-std::string GetInternalPseudo(char *symbol)
+std::string GetInternalPseudo(const char *symbol)
 {
+
     std::string decompressed;
-    std::vector<unsigned char> pp_file_v = USPP_FILES[symbol];
+    std::string lsym(symbol);
+
+    std::vector<unsigned char> pp_file_v = USPP_FILES[lsym];
     char *pptr = (char *)&pp_file_v[0];
 
     io::filtering_ostream os;

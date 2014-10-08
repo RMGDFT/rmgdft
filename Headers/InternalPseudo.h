@@ -3,6 +3,6 @@
 
 typedef std::vector<unsigned char> compressed_pp;
 
-std::string GetInternalPseudo(char *name);
+std::string GetInternalPseudo(const char *symbol);
 
 #endif
