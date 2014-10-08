@@ -389,20 +389,21 @@ void read_common ()
     while (get_data ("pseudopotential", tbuf, ITEM | STR, NULL))
     {
 
+        ct.sp[is].pseudo_filename[0] = 0;
         if (sscanf (tbuf, "%s %s", ct.sp[is].pseudo_symbol, temp) != 2)
         {
 
-            printf ("pseudo_symbol: %s pseudo_filename: %s", ct.sp[is].pseudo_symbol,
-                    temp);
+            printf ("\n pseudopotential data: no external file specified for %s using internal potential\n", ct.sp[is].pseudo_symbol);
 
-            printf ("\n pseudopotential data: %s is malformed", tbuf);
-            error_handler ("Malformed pseudopotential entry in the input file");
         }
+        else {
 
-        if(temp[0] !='/') 
-            snprintf(ct.sp[is].pseudo_filename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], temp);
-        else
-            strncpy(ct.sp[is].pseudo_filename, temp, MAX_PATH); 
+            if(temp[0] !='/') 
+                snprintf(ct.sp[is].pseudo_filename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], temp);
+            else
+                strncpy(ct.sp[is].pseudo_filename, temp, MAX_PATH); 
+
+        }
         is++;
 
     }

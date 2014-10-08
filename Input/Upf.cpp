@@ -80,7 +80,7 @@ void LoadUpf(SPECIES *sp)
    double qqq[6][6];    // Used to read in the norms of the augmentation functions (PP_Q)
    try {
 
-       if(!std::strcmp(sp->pseudo_filename, "./@Internal")) {
+       if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
 
            std::string pp_string = GetInternalPseudo(&sp->pseudo_symbol[0]);
            ss << pp_string;
@@ -442,11 +442,11 @@ void LoadUpf(SPECIES *sp)
     // Stuff not present in the UPF format that RMG requires. We need to find a consistent way of automatically
     // setting these
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
-    //sp->rc = 0.65;
-    sp->lradius = 3.170425;
-    sp->nlradius = 3.170425;
-    sp->qradius = 3.170425;
-    sp->lrcut = 2.170425;
+    //sp->rc = 0.70;
+    sp->lradius = 3.370425;
+    sp->nlradius = 3.370425;
+    sp->qradius = 3.370425;
+    sp->lrcut = 3.370425;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
     sp->aradius = 9.0;
@@ -454,7 +454,7 @@ void LoadUpf(SPECIES *sp)
     sp->agwidth = 10.0;
     sp->arwidth = 25.0;
     for(int ip = 0;ip < sp->nbeta;ip++) {
-        sp->nlrcut[sp->llbeta[ip]] = 3.170425;
+        sp->nlrcut[sp->llbeta[ip]] = 3.370425;
     }
 
     // Leftover initializations
