@@ -88,7 +88,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     num_energy = (max_eig - min_eig)/0.1 +1;
 
     int *mesh, *is_shift;
-    double *tau, *dos;
+    double *tau, *dos, *dos_g;
     int *grid_address, *map, *weights, *ir_weights;
     int is_time_reversal = 1;
     int meshsize, num_kpts;
@@ -117,6 +117,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     meshsize = mesh[0] * mesh[1] * mesh[2];
     dos = new double[num_energy];
+    dos_g = new double[num_energy];
 
     grid_address = new int[meshsize*3];
     map = new int[meshsize];
@@ -172,9 +173,11 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     spg_get_tetrahedra_relative_grid_address(relative_grid_address, rec_lat);
 
     int num_pe;
+    double tem, ebroading = 0.4;
     MPI_Comm_size (pct.grid_comm, &num_pe);
 
     for( i = 0; i < num_energy; i++) dos[i] = 0.0;
+    for( i = 0; i < num_energy; i++) dos_g[i] = 0.0;
     for( i = pct.gridpe; i < num_energy; i += num_pe)
     {
         energy = min_eig + i * 0.1;
@@ -195,6 +198,8 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
                 }
                 iw = spg_get_tetrahedra_integration_weight(energy, t_e, 'I');
                 dos[i] += iw/meshsize * ir_weights[j];
+                tem = energy - Kptr[j]->Kstates[k].eig[0] * Ha_eV;
+                dos_g[i] += exp(-tem * tem /ebroading/ebroading) /meshsize * ir_weights[j] /ebroading/1.7724;
             }
         }
 
@@ -202,6 +207,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
 
     GlobalSums (dos, num_energy, pct.grid_comm);
+    GlobalSums (dos_g, num_energy, pct.grid_comm);
     if(pct.gridpe == 0)
     {
         dos_f = fopen ("dos.dat", "w");
@@ -209,7 +215,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
         for( i = 0; i < num_energy; i++)
         {
             energy = min_eig + i * 0.1;
-            fprintf (dos_f, "\n %f  %16.8f", energy, dos[i]);
+            fprintf (dos_f, "\n %f  %16.8f  %16.8f", energy, dos[i], dos_g[i]);
         }
 
         fclose (dos_f);
