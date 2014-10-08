@@ -329,8 +329,8 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
 
     }
-    if (pct.gridpe == 0)
-        OutputBandPlot(Kptr);
+
+    OutputBandPlot(Kptr);
 
 }                               /* end run */
 

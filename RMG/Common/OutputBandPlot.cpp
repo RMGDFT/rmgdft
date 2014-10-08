@@ -48,10 +48,14 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     int num_energy, k, l, q, r, gp;
     double energy;
     double max_eig, min_eig, t1;
-    FILE *bs_f = fopen ("band.dat", "w");
-    if(!bs_f) {
-        rmg_printf("Unable to write band plot data.\n");
-        return;
+    FILE *bs_f, *dos_f; 
+    if(pct.gridpe == 0)
+    {
+        bs_f = fopen ("band.dat", "w");
+        if(!bs_f) {
+            rmg_printf("Unable to write band plot data.\n");
+            return;
+        }
     }
 
 
@@ -63,19 +67,19 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
         {
 
 
-            fprintf (bs_f, "\n %4d  %16.8f ", ik, Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
+            if(pct.gridpe == 0) fprintf (bs_f, "\n %4d  %16.8f ", ik, Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
             max_eig = max(max_eig,  Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
             min_eig = min(min_eig,  Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
 
-            
+
         }
-        
-        fprintf (bs_f, "\n &&");
+
+        if(pct.gridpe ==0 ) fprintf (bs_f, "\n &&");
     }
 
-    fclose (bs_f);
+    if(pct.gridpe ==0) fclose (bs_f);
 
-    
+
 
     modf(max_eig, &t1);
     max_eig = t1;
@@ -113,6 +117,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     meshsize = mesh[0] * mesh[1] * mesh[2];
     dos = new double[num_energy];
+
     grid_address = new int[meshsize*3];
     map = new int[meshsize];
     weights = new int[meshsize];
@@ -124,7 +129,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     tau = new double[ct.num_ions *3];
     ityp = new int[ct.num_ions];
 
-    
+
     /* Set up atomic positions and species for fortran routines */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -137,9 +142,9 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
 
     num_kpts = spg_get_ir_reciprocal_mesh(grid_address, map,mesh, is_shift, 
-        is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec);
+            is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec);
 
-    
+
     for(kpt = 0; kpt < meshsize; kpt++)
         weights[kpt] = 0;
     for(kpt = 0; kpt < meshsize; kpt++)
@@ -161,7 +166,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     int relative_grid_address[24][4][3];
     double rec_lat[3][3], iw;
-    
+
     mat_inverse_matrix_d3(rec_lat, lattice, 1e-5);
 
     spg_get_tetrahedra_relative_grid_address(relative_grid_address, rec_lat);
@@ -170,7 +175,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     MPI_Comm_size (pct.grid_comm, &num_pe);
 
     for( i = 0; i < num_energy; i++) dos[i] = 0.0;
-    for( i = 0; i < num_energy; i+=num_pe)
+    for( i = pct.gridpe; i < num_energy; i += num_pe)
     {
         energy = min_eig + i * 0.1;
 
@@ -189,7 +194,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
                     }
                 }
                 iw = spg_get_tetrahedra_integration_weight(energy, t_e, 'I');
-                dos[i] += iw * ir_weights[j];
+                dos[i] += iw/meshsize * ir_weights[j];
             }
         }
 
@@ -197,15 +202,18 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
 
     GlobalSums (dos, num_energy, pct.grid_comm);
-    FILE *dos_f = fopen ("dos.dat", "w");
-
-    for( i = 0; i < num_energy; i++)
+    if(pct.gridpe == 0)
     {
-        energy = min_eig + i * 0.1;
-        fprintf (dos_f, "\n %f  %16.8f ", energy, dos[i]);
-    }
+        dos_f = fopen ("dos.dat", "w");
 
-    fclose (dos_f);
+        for( i = 0; i < num_energy; i++)
+        {
+            energy = min_eig + i * 0.1;
+            fprintf (dos_f, "\n %f  %16.8f", energy, dos[i]);
+        }
+
+        fclose (dos_f);
+    }
 
     delete [] grid_address;
     delete [] map ;
@@ -222,41 +230,41 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
 static double mat_get_determinant_d3(double a[3][3])
 {
-  return a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1])
-    + a[0][1] * (a[1][2] * a[2][0] - a[1][0] * a[2][2])
-    + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]);
+    return a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1])
+        + a[0][1] * (a[1][2] * a[2][0] - a[1][0] * a[2][2])
+        + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]);
 }
 
 static int mat_inverse_matrix_d3(double m[3][3],
-                 double a[3][3],
-                 const double precision)
+        double a[3][3],
+        const double precision)
 {
-  double det;
-  det = mat_get_determinant_d3(a);
+    double det;
+    det = mat_get_determinant_d3(a);
 
-  m[0][0] = (a[1][1] * a[2][2] - a[1][2] * a[2][1]) / det;
-  m[1][0] = (a[1][2] * a[2][0] - a[1][0] * a[2][2]) / det;
-  m[2][0] = (a[1][0] * a[2][1] - a[1][1] * a[2][0]) / det;
-  m[0][1] = (a[2][1] * a[0][2] - a[2][2] * a[0][1]) / det;
-  m[1][1] = (a[2][2] * a[0][0] - a[2][0] * a[0][2]) / det;
-  m[2][1] = (a[2][0] * a[0][1] - a[2][1] * a[0][0]) / det;
-  m[0][2] = (a[0][1] * a[1][2] - a[0][2] * a[1][1]) / det;
-  m[1][2] = (a[0][2] * a[1][0] - a[0][0] * a[1][2]) / det;
-  m[2][2] = (a[0][0] * a[1][1] - a[0][1] * a[1][0]) / det;
-  return 1;
+    m[0][0] = (a[1][1] * a[2][2] - a[1][2] * a[2][1]) / det;
+    m[1][0] = (a[1][2] * a[2][0] - a[1][0] * a[2][2]) / det;
+    m[2][0] = (a[1][0] * a[2][1] - a[1][1] * a[2][0]) / det;
+    m[0][1] = (a[2][1] * a[0][2] - a[2][2] * a[0][1]) / det;
+    m[1][1] = (a[2][2] * a[0][0] - a[2][0] * a[0][2]) / det;
+    m[2][1] = (a[2][0] * a[0][1] - a[2][1] * a[0][0]) / det;
+    m[0][2] = (a[0][1] * a[1][2] - a[0][2] * a[1][1]) / det;
+    m[1][2] = (a[0][2] * a[1][0] - a[0][0] * a[1][2]) / det;
+    m[2][2] = (a[0][0] * a[1][1] - a[0][1] * a[1][0]) / det;
+    return 1;
 }
 
 static int grid_address_to_index(int g[3], int mesh[3])
 {
-  int i;
-  int gm[3];
+    int i;
+    int gm[3];
 
-  for (i = 0; i < 3; i++) {
-    gm[i] = g[i] % mesh[i];
-    if (gm[i] < 0) {
-      gm[i] += mesh[i];
+    for (i = 0; i < 3; i++) {
+        gm[i] = g[i] % mesh[i];
+        if (gm[i] < 0) {
+            gm[i] += mesh[i];
+        }
     }
-  }
-  return (gm[0] + gm[1] * mesh[0] + gm[2] * mesh[0] * mesh[1]);
+    return (gm[0] + gm[1] * mesh[0] + gm[2] * mesh[0] * mesh[1]);
 }
 
