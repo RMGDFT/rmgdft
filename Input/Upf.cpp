@@ -19,7 +19,7 @@
 #include "rmg_error.h"
 #include "MapElements.h"
 #include "transition.h"
-
+#include "InternalPseudo.h"
 
 
 // Converts a string containg a PP_MESH, PP_RAB, PP_LOCAL, etc into a double array and
@@ -78,32 +78,40 @@ void LoadUpf(SPECIES *sp)
    std::stringstream ss; 
    double  ddd0[6][6];  // Used to read in the PP_DIJ
    double qqq[6][6];    // Used to read in the norms of the augmentation functions (PP_Q)
-
    try {
 
-       // Open on one pe and read entire file into a character buffer
-       if(pct.worldrank == 0) {
+       if(!std::strcmp(sp->pseudo_filename, "./@Internal")) {
 
-           std::ifstream pp_file;
-           pp_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
-           pp_file.open(sp->pseudo_filename);
-           pp_file.seekg(0, std::ios::end);
-           pp_buffer_len = pp_file.tellg();
-           pp_file.seekg(0, std::ios::beg);
-           pp_buffer = new char[pp_buffer_len + 1]();
-           pp_file.read(pp_buffer, pp_buffer_len);       // read the whole file into the buffer
-           pp_file.close();
+           std::string pp_string = GetInternalPseudo("C");
+           ss << pp_string;
 
        }
+       else {
 
-       // Send it to everyone else
-       MPI_Bcast (&pp_buffer_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
-       if(pct.worldrank != 0) {
-           pp_buffer = new char[pp_buffer_len + 1]();
+           // Open on one pe and read entire file into a character buffer
+           if(pct.worldrank == 0) {
+
+               std::ifstream pp_file;
+               pp_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+               pp_file.open(sp->pseudo_filename);
+               pp_file.seekg(0, std::ios::end);
+               pp_buffer_len = pp_file.tellg();
+               pp_file.seekg(0, std::ios::beg);
+               pp_buffer = new char[pp_buffer_len + 1]();
+               pp_file.read(pp_buffer, pp_buffer_len);       // read the whole file into the buffer
+               pp_file.close();
+
+           }
+
+           // Send it to everyone else
+           MPI_Bcast (&pp_buffer_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+           if(pct.worldrank != 0) {
+               pp_buffer = new char[pp_buffer_len + 1]();
+           }
+           MPI_Bcast (pp_buffer, pp_buffer_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+           std::string pp_string(pp_buffer);
+           ss << pp_string;
        }
-       MPI_Bcast (pp_buffer, pp_buffer_len, MPI_CHAR, 0, MPI_COMM_WORLD);
-       std::string pp_string(pp_buffer);
-       ss << pp_string;
 
    }   
    catch(std::ifstream::failure e) {
