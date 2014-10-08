@@ -21,4 +21,8 @@ extern "C" void ReadPseudo(int nspecies, SPECIES *sp)
         sp++; 
     } 
 
+
+    // Now verify the pseudopotentials. Specifically all pseudopotentials must use the same
+    // XC type. If any disagree then the value must be set in the input file and will override
+    // the settings in the individual pseudopotentials.
 }

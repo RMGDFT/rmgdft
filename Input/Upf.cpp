@@ -135,12 +135,20 @@ void LoadUpf(SPECIES *sp)
         std::strncpy(sp->atomic_symbol, atomic_symbol.c_str(), 3);
         sp->atomic_mass = GetAtomicMass(atomic_symbol);
         sp->atomic_number = GetAtomicNumber(atomic_symbol);
-
         sp->zvalence = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.z_valence");
-        int r_total = upf_tree.get<int>("UPF.PP_HEADER.<xmlattr>.mesh_size");
+
+        // Functional is a bit tricky
+        std::vector<std::string> func_components;
+        std::string delims = " \t\n";
+        std::string PP_FUNC = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.functional");
+        boost::trim(PP_FUNC);
+        boost::algorithm::split( func_components, PP_FUNC, boost::is_any_of(delims), boost::token_compress_on );
+
+
 
         // Read in the radial mesh and keep values between 1.0e-05 < r < 50.0
         // adjusting mesh size accordingly
+        int r_total = upf_tree.get<int>("UPF.PP_HEADER.<xmlattr>.mesh_size");
         std::string PP_R = upf_tree.get<std::string>("UPF.PP_MESH.PP_R");
         double *t_r;
         t_r = UPF_str_to_double_array(PP_R, r_total, 0);
