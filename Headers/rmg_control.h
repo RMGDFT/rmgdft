@@ -1,4 +1,6 @@
 
+#include <stdbool.h>
+
 /* multigrid-parameter structure */
 typedef struct
 {
@@ -148,7 +150,7 @@ typedef struct
     int checkpoint;
 
     /** Sorting flag for wavefunctions. Read from input file. 0=no sort, 1=sort */
-    int sortflag;
+    bool sortflag;
 
     /** Number of states */
     int num_states;
