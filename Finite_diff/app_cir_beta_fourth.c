@@ -9,6 +9,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <TradeImages.h>
 #include "hybrid.h"
 

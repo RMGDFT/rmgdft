@@ -38,6 +38,7 @@
 #include <cublas_v2.h>
 #endif
 
+#include <stdbool.h>
 #include "fftw3.h"
 #include "mpi.h"
 #include "my_scalapack.h"
@@ -201,7 +202,7 @@ typedef struct
     double k0;
 
     /* randomize velocity flag */
-    int randomvel;
+    bool randomvel;
 
     /* Nose oscillation frequency */
     double fNose;

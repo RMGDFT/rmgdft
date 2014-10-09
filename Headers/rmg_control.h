@@ -333,7 +333,7 @@ typedef struct
     double folded_spectrum_width;
 
     /* Flag indicating whether to use MPI_Allreduce operations or point to point in subdiag */
-    int scalapack_global_sums;
+    bool scalapack_global_sums;
 
     /* scalapack block size */
     int scalapack_block_factor;
@@ -355,7 +355,7 @@ typedef struct
     int constrainforces;
 
     /* Whether to write full memory usage report at the end of calculation */
-    int write_memory_report;
+    bool write_memory_report;
 
     /** Ionic motion timestep */
     double iondt;
@@ -448,7 +448,7 @@ typedef struct
     double hartree_rms_ratio;
 
     /*Boolean flag for using mask function filtering*/
-    int mask_function;
+    bool mask_function;
 
     /* Potential acceleration constant step factor */
     double potential_acceleration_constant_step;
