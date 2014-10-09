@@ -62,10 +62,10 @@ typedef struct
     int spin_flag;
 
     /* determine whether to initialize up and down density equally or not */
-    int init_equal_density_flag; 
+    bool init_equal_density_flag; 
 
     /* determine whether to get_dos or not */
-    int pdos_flag; 
+    bool pdos_flag; 
 
 
     /** Name of the input control file. Passed as a command line argument
@@ -241,7 +241,7 @@ typedef struct
     double charge_pulay_scale;
 
     /*Flag to test whether or not the modified metrics should be used in Pulay mixing*/
-    int charge_pulay_special_metrics;
+    bool charge_pulay_special_metrics;
 
     /*Weight for Pulay special metrics*/
     double charge_pulay_special_metrics_weight;
@@ -322,12 +322,12 @@ typedef struct
     int subdiag_driver;
 
     /* Diagonalization flag and period */
-    int initdiag;
+    bool initdiag;
     int diag;
     int end_diag;
 
     /* Use folded spectrum if possible */
-    int use_folded_spectrum;
+    bool use_folded_spectrum;
 
     /* Folded spectrum width */
     double folded_spectrum_width;
