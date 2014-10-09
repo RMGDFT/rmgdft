@@ -75,6 +75,7 @@ void read_atoms (void)
             ct.ions[ion].xtal[0] = ct.ions[ion].crds[0];
             ct.ions[ion].xtal[1] = ct.ions[ion].crds[1];
             ct.ions[ion].xtal[2] = ct.ions[ion].crds[2];
+            to_cartesian(ct.ions[ion].xtal, ct.ions[ion].crds);
         }
         else if (verify ("crds_units", "Angstrom"))
         {
