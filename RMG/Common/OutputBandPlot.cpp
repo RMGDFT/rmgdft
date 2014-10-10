@@ -1,20 +1,27 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <float.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <complex>
+#include "transition.h"
 #include "const.h"
-#include "params.h"
-#include "rmgtypedefs.h"
-#include "typedefs.h"
-#include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "transition.h"
-#include "main.h"
+#include "BaseThread.h"
+#include "TradeImages.h"
+#include "RmgTimer.h"
+#include "RmgThread.h"
+#include "RmgException.h"
 #include "GlobalSums.h"
+#include "rmgthreads.h"
+#include "vhartree.h"
+#include "packfuncs.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "Subdiag.h"
+#include "../Headers/prototypes.h"
 
 extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
                                int map[],
@@ -68,8 +75,8 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
 
             if(pct.gridpe == 0) fprintf (bs_f, "\n %4d  %16.8f ", ik, Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
-            max_eig = max(max_eig,  Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
-            min_eig = min(min_eig,  Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
+            max_eig = std::max(max_eig,  Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
+            min_eig = std::min(min_eig,  Kptr[ik]->Kstates[is].eig[0] * Ha_eV);
 
 
         }
