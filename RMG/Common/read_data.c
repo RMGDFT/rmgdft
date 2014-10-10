@@ -81,6 +81,8 @@ void read_data (char *name, rmg_double_t * vh, rmg_double_t * rho, rmg_double_t 
 
     sprintf(newname, "%s.restart", name);
     read_control(newname);
+    set_rank(pct.gridpe);
+
 
     /* Make the new output file name */
     printf("\nspin flag =%d\n", ct.spin_flag);
