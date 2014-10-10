@@ -30,6 +30,8 @@
 #ifndef RMG_RmgException_H
 #define RMG_RmgException_H 1
 
+#ifdef __cplusplus
+
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -78,6 +80,7 @@ public:
 };
 
 
+#endif
 #endif
 
 
