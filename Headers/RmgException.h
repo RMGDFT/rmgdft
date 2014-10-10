@@ -30,19 +30,51 @@
 #ifndef RMG_RmgException_H
 #define RMG_RmgException_H 1
 
+#include <stdexcept>
+#include <sstream>
+#include <string>
+
+
+// Example of use
+// throw fatal_error() << "Density mixing set to " ct.mix  << " but value must lie between 0.0 and 1.0";
+//
+
 
 // Handles errors that require program termination
-class RmgFatalException {
+class RmgFatalException : public std::exception {
 
 private:
-    char *msgptr;
+    mutable std::stringstream ss;
+    mutable std::string What;
+
 
 public:
-    RmgFatalException(char *msg) {
-        msgptr = msg;
-    };
-    ~RmgFatalException(){};
-    const char *ShowMesg() const { return msgptr; }
+
+    RmgFatalException() {};
+    
+    RmgFatalException( const RmgFatalException &that )
+    {
+        What += that.ss.str();
+    }
+
+    virtual ~RmgFatalException() throw(){};
+
+    virtual const char *rwhat() const throw()
+    {
+        if ( ss.str().size() ) {
+            What += ss.str();
+            ss.str( "" );
+        }
+        return What.c_str();
+    }
+
+    template<typename T>
+    RmgFatalException& operator<<( const T& t )
+    {
+        ss <<t;
+        return *this;
+     }
+
 };
 
 

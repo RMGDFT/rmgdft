@@ -45,6 +45,7 @@
 #include <unistd.h>
 #include "const.h"
 #include "RmgTimer.h"
+#include "RmgException.h"
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
@@ -57,14 +58,7 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 
-extern "C" bool quench (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
-             double * rho_oppo, double * rhocore, double * rhoc);
-
 extern "C" void lbfgs_init(int num_ions, int num_images);
-
-extern "C" void output_band_plot();
-extern "C" void relax_tau (int steps, STATE * states, double * vxc, double * vh, double * vnuc,
-              double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * tau);
 
 void initialize (int argc, char **argv);
 
@@ -146,17 +140,43 @@ int main (int argc, char **argv)
         ct.mpi_threadlevel = atoi(tptr);
     }
 
-    RmgTimer *RT1 =  new RmgTimer("Main: init");
-    initialize (argc, argv);
-    delete(RT1);
 
-    RmgTimer *RT2 = new RmgTimer("Main: run");
-    if(ct.is_gamma)
-        run<double> ((Kpoint<double> **)Kptr_g);
-    else
-        run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr_c);
-    delete(RT2);
+    try {
 
+        RmgTimer *RT1 =  new RmgTimer("Main: init");
+        initialize (argc, argv);
+        delete(RT1);
+
+
+        RmgTimer *RT2 = new RmgTimer("Main: run");
+        if(ct.is_gamma)
+            run<double> ((Kpoint<double> **)Kptr_g);
+        else
+            run<std::complex<double> >((Kpoint<std::complex<double>> **)Kptr_c);
+        delete(RT2);
+
+    }
+
+    // Catch exceptions issued by us.
+    catch(RmgFatalException const &e) {
+        std::cout << e.rwhat() << std::endl;
+        MPI_Finalize();
+        exit(0);
+    }
+
+    // By std
+    catch (std::exception &e) {
+        std::cout << "Caught a std exception: " << e.what () << std::endl;
+        MPI_Finalize();
+        exit(0);
+    } 
+
+    // Catchall
+    catch (...) {
+        std::cout << "Caught an unknown exception of some type." << std::endl;
+        MPI_Finalize();
+        exit(0);
+    } 
 
     delete(RT);   // Destructor has to run before report
     report ();
