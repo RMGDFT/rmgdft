@@ -107,7 +107,7 @@ target_link_libraries (rmg US_PP RMG_Common)
 target_link_libraries (rmg Force)
 target_link_libraries (rmg Force US_PP)
 target_link_libraries (rmg US_PP Force)
-target_link_libraries (rmg RMG_Subdiag Finite_diff)
+target_link_libraries (rmg RMG_Subdiag Finite_diff RMG_Common)
 target_link_libraries (rmg RMG_Subdiag Misc)
 
 

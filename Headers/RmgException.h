@@ -36,7 +36,7 @@
 
 
 // Example of use
-// throw fatal_error() << "Density mixing set to " ct.mix  << " but value must lie between 0.0 and 1.0";
+// throw RmgFatalException() << "Density mixing set to " << ct.mix  << " but value must lie between 0.0 and 1.0";
 //
 
 
