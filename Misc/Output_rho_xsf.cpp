@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <complex>
 #include "transition.h"
+#include "main.h"
 
 
 
@@ -28,6 +29,10 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
     char *const endfmt="%12.6e\n";
     const int charspernum=13;
 
+    int ion;
+    SPECIES *sp;
+    ION *iptr;
+
 
     /* this datatype describes the mapping of the local array
      * to the global array (file)
@@ -41,7 +46,8 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
     subsizes[1] = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     subsizes[2] = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
-    Rmg_G->find_node_offsets(Rmg_G->get_rank(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), 
+    //Rmg_G->find_node_offsets(Rmg_G->get_rank(), Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), 
+    Rmg_G->find_node_offsets(pct.gridpe, Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO), 
             Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO), Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO),
             &FPX_OFFSET, &FPY_OFFSET, &FPZ_OFFSET);
 
@@ -75,6 +81,8 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
 
     MPI_Barrier(comm);
 
+
+
     //int order = MPI_ORDER_FORTRAN;
     int order = MPI_ORDER_C;
     MPI_Type_create_subarray(3, sizes, subsizes, starts, order, num_as_string, &localarray);
@@ -87,14 +95,37 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
     {
         FILE *fhand = fopen(newname, "w");
 
+
+        fprintf(fhand, "\n#This is a file to be viewed by xcrysden \n");
+
+        fprintf(fhand, "\n CRYSTAL \n");
+        fprintf(fhand, "\n# lattice parameters in Angstroms \n");
+        fprintf(fhand, "\n PRIMVEC \n");
+        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a0(0) * a0_A, Rmg_L.get_a0(1) * a0_A, Rmg_L.get_a0(2) * a0_A);
+        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a1(0) * a0_A, Rmg_L.get_a1(1) * a0_A, Rmg_L.get_a1(2) * a0_A);
+        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a2(0) * a0_A, Rmg_L.get_a2(1) * a0_A, Rmg_L.get_a2(2) * a0_A);
+
+        fprintf(fhand, "\n# Atomic coordinates in Angstroms \n");
+        fprintf(fhand, "\n PRIMCOORD");
+        fprintf(fhand, "\n  %d %d\n", ct.num_ions, 1);
+        
+
+        for(ion = 0; ion < ct.num_ions; ion++)
+        {
+            iptr = &ct.ions[ion];
+            sp = &ct.sp[iptr->species];
+            fprintf(fhand, " %2s  %18.6e   %18.6e   %18.6e\n", sp->atomic_symbol, iptr->crds[0] * a0_A, 
+                  iptr->crds[1] * a0_A,   iptr->crds[2] * a0_A);   
+        }
+
         fprintf(fhand, "BEGIN_BLOCK_DATAGRID_3D\n");                        
-        fprintf(fhand, "charge_density_view_with_Xcrysdena\n");
-        fprintf(fhand, "BEGIN_DATAGRID_3D_this_is_3Dgrid#1\n");           
+        fprintf(fhand, "   charge_density_view_with_Xcrysdena\n");
+        fprintf(fhand, "   BEGIN_DATAGRID_3D_this_is_3Dgrid#1\n");           
         fprintf(fhand, "%6d %6d %6d\n", sizes[0], sizes[1], sizes[2]);
         fprintf(fhand, "%8.3f %8.3f %8.3f\n", 0.0, 0.0, 0.0);
-        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a0(0), Rmg_L.get_a0(1), Rmg_L.get_a0(2));
-        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a1(0), Rmg_L.get_a1(1), Rmg_L.get_a1(2));
-        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a2(0), Rmg_L.get_a2(1), Rmg_L.get_a2(2));
+        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a0(0) * a0_A, Rmg_L.get_a0(1) * a0_A, Rmg_L.get_a0(2) * a0_A);
+        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a1(0) * a0_A, Rmg_L.get_a1(1) * a0_A, Rmg_L.get_a1(2) * a0_A);
+        fprintf(fhand, "%12.6f %12.6f %12.6f\n",Rmg_L.get_a2(0) * a0_A, Rmg_L.get_a2(1) * a0_A, Rmg_L.get_a2(2) * a0_A);
         fclose(fhand);
     }
     MPI_Barrier(comm);
@@ -112,10 +143,6 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
 
     MPI_File_set_view(mpi_fhand, disp,  MPI_CHAR, localarray, "native", MPI_INFO_NULL);
      
-    int pex, pey, pez;
-    
-    Rmg_G->pe2xyz(pct.gridpe, &pex, &pey, &pez);
-    disp = pez * subsizes[2];
     MPI_File_write_all(mpi_fhand, array_in_char, subsizes[0] * subsizes[1] * subsizes[2], num_as_string, &status);
 
     MPI_Type_free(&localarray);
