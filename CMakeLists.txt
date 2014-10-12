@@ -248,7 +248,7 @@ target_link_libraries (rmg-on ${FFTW_LIBRARIES})
 target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
 target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
 
-find_package(Boost REQUIRED COMPONENTS thread system iostreams)
+find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries (rmg ${Boost_LIBRARIES})
 target_link_libraries (rmg-on ${Boost_LIBRARIES})

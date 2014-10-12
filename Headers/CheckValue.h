@@ -4,8 +4,10 @@
 #include <string>
 
 template <typename DataType>
-bool CheckValueAndReturn(DataType val, DataType min, DataType max);
+bool CheckAndReturn(DataType val, DataType min, DataType max);
 template <typename DataType>
-void CheckValueAndTerminate(DataType val, DataType min, DataType max, std::string msg);
+void CheckAndTerminate(DataType val, DataType min, DataType max, std::string msg);
+template <typename DataType>
+void CheckAndFix(DataType *val, DataType min, DataType max, DataType fix, std::string msg);
 
 #endif

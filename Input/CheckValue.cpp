@@ -1,4 +1,5 @@
 #include <string>
+#include <iostream>
 #include "CheckValue.h"
 #include "RmgException.h"
 
@@ -6,17 +7,20 @@
 // when the caller is able to correct bad input values while the second form
 // CheckValueAndTerminate is used when correction is not possible.
 
-template bool CheckValueAndReturn(int, int, int);
-template bool CheckValueAndReturn(float, float, float);
-template bool CheckValueAndReturn(double, double, double);
+template bool CheckAndReturn(int, int, int);
+template bool CheckAndReturn(float, float, float);
+template bool CheckAndReturn(double, double, double);
 
-template void CheckValueAndTerminate(int, int, int, std::string);
-template void CheckValueAndTerminate(float, float, float, std::string);
-template void CheckValueAndTerminate(double, double, double, std::string);
+template void CheckAndTerminate(int, int, int, std::string);
+template void CheckAndTerminate(float, float, float, std::string);
+template void CheckAndTerminate(double, double, double, std::string);
 
+template void CheckAndFix(int *, int, int, int, std::string);
+template void CheckAndFix(float *, float, float, float, std::string);
+template void CheckAndFix(double *, double, double, double, std::string);
 
 template <typename DataType>
-bool CheckValueAndReturn(DataType val, DataType min, DataType max)
+bool CheckAndReturn(DataType val, DataType min, DataType max)
 {
     if((val < min) || (val > max)) {
         return false;
@@ -26,10 +30,20 @@ bool CheckValueAndReturn(DataType val, DataType min, DataType max)
 
 
 template <typename DataType>
-void CheckValueAndTerminate(DataType val, DataType min, DataType max, std::string msg)
+void CheckAndTerminate(DataType val, DataType min, DataType max, std::string msg)
 {
     if((val < min) || (val > max)) {
         throw RmgFatalException() << msg;
+    }
+}
+
+
+template <typename DataType>
+void CheckAndFix(DataType *val, DataType min, DataType max, DataType fix, std::string msg)
+{
+    if((*val < min) || (*val > max)) {
+       *val = fix;
+       std::cout << msg;
     }
 }
 

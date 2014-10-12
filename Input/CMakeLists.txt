@@ -1,4 +1,7 @@
 add_library (Input
+InputKey.cpp
+CheckValue.cpp
+RmgInputFile.cpp
 ReadCommon.cpp
 MapElements.cpp
 Upf.cpp
