@@ -177,63 +177,63 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
 
     If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 30,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Maximum number of hartree iterations to perform per scf step.\n",
+                     "hartree_max_sweeps must lie in the range (5,100). Resetting to the default value of 30.\n");
 
-    If.RegisterInputKey("hartree_min_sweeps", &lc.hartree_min_sweeps, 5, 5 , 5,
+    If.RegisterInputKey("hartree_min_sweeps", &lc.hartree_min_sweeps, 0, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Minimum number of hartree iterations to perform per scf step.\n",
+                     "hartree_min_sweeps must lie in the range (0.5). Resetting to the default value of 5.\n");
 
     If.RegisterInputKey("kohn_sham_pre_smoothing", &lc.eig_parm.gl_pre, 1, 5, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of global grid pre-smoothing steps to perform before a multigrid preconditioner iteration.\n",
+                     "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of global grid post-smoothing steps to perform after a multigrid preconditioner iteration.\n",
+                     "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 3, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner.\n",
+                     "kohn_sham_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
 
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 8, 6,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
+                     "kohn_sham_fd_order must lie in the range (4,8). Resetting to the default value of 6.\n");
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration.\n",
+                     "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 3.\n");
 
     If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 3,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "Number of global hartree grid post-smoothing steps to perform after a multigrid iteration.\n",
                      "");
 
     If.RegisterInputKey("poisson_mucycles", &lc.poi_parm.mucycles, 1, 3, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of mu (also known as W) cycles to use in the hartree multigrid solver.\n",
+                     "poisson_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
 
     If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
+                     "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25.\n");
 
     If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 2, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of multigrid levels to use in the kohn-sham multigrid preconditioner.\n",
+                     "kohn_sham_mg_levels must lie in the range (0,2). Resetting to the default value of 1.\n");
 
-    If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, 0, 10, -1,
+    If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of multigrid levels to use in the hartree multigrid solver.\n",
+                     "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1).\n");
 
     If.RegisterInputKey("fine_grid_non_local_pp", &lc.nxfgrid, 1, 4, 4,
                      CHECK_AND_FIX, OPTIONAL,
@@ -295,6 +295,11 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
                      "",
                      "");
 
+    If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Proportion of the current charge density to replace with the new density after each scf step.\n",
+                     "charge_density_mixing must lie in the range (0.0, 1.0)\n");
+
 
     // Booleans next. Booleans are never required.
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
@@ -340,11 +345,6 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
                      "");
 
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("charge_density_mixing", &lc.mix, min, max, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -480,17 +480,28 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
     CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
 
+    int FNX_GRID = NX_GRID * FG_RATIO;
+    int FNY_GRID = NY_GRID * FG_RATIO;
+    int FNZ_GRID = NZ_GRID * FG_RATIO;
+
+    // If the user has not specifically set the number of poisson multigrid levels use the max
+    if(lc.poi_parm.levels == -1) {
+        for(ct.poi_parm.levels = 6;ct.poi_parm.levels >= 0;ct.poi_parm.levels--) {
+            bool poi_level_err = false;
+            if ((FNX_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNY_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNZ_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNX_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNY_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNZ_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if (!poi_level_err) break;
+        }
+    }
+
+
 exit(0);
 
 #if 0
-    // Load them into the program options control structure
-    po::options_description control("RMG control options");
-    LoadInputKeys(&InputMap, &control);
-
-
-    po::variables_map vm;
-    std::stringstream ss;
-    ss << sfile;
 
     // Parse the input file
     auto parsedOptions = po::parse_config_file(ss, control, true);
