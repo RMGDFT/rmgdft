@@ -459,9 +459,6 @@ typedef struct
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
 
-    // Support for gpu direct collectives
-    int gpu_direct_collectives;
-
     // Integer device id
     int gpu_device_id;
 

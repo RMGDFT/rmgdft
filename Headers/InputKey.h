@@ -21,7 +21,7 @@ class InputKey {
         // Scalar types
         InputKey(std::string& KeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
         InputKey(std::string& KeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
-        InputKey(std::string& KeyName, bool *ReadVal, bool Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, bool *ReadVal, bool Defval, const char *helpmsg);
 
         // Strings
         InputKey(std::string& KeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);

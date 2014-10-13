@@ -28,6 +28,8 @@ class RmgInputFile {
         void RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
         void RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, int count, bool Required, const char *helpmsg, const char *errmsg);
         void RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, int count, bool Required, const char *helpmsg, const char *errmsg);
+        void RegisterInputKey(std::string KeyName, bool *ReadVal, bool Defval, const char *helpmsg);
+
 
         void LoadInputKeys(void);
 

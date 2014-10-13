@@ -81,11 +81,6 @@ void read_common ()
    if(NPES != (PE_X*PE_Y*PE_Z))
         error_handler ("NPES %d  not equal to PE_X*PE_Y*PE_Z!i %d %d %d", NPES, PE_X, PE_Y, PE_Z);
 
-#if GPU_ENABLED
-    // Does the system support gpu direct collective operations
-    get_data ("gpu_direct_collectives", &ct.gpu_direct_collectives, BOOL, "false");
-#endif
-
     /* Read in the description */
     get_data ("description", &ct.description, STR, "QMD run");
 

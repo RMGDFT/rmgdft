@@ -29,6 +29,7 @@ template void RmgInputFile::RegisterInputKey(std::string, double *, double, doub
 // Custom validators for boost program options. 
 namespace RmgInput {
 
+    // handles integer vectors
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<int>*, int)
     {
         ReadVector<int> A;
@@ -47,6 +48,7 @@ namespace RmgInput {
         v = A;
     }
 
+    // handles double vectors
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<double>*, double)
     {
         ReadVector<double> A;
@@ -81,6 +83,12 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, T *Readval, T Minval, T
     InputMap.insert(NewEntry);
 }
 
+void RmgInputFile::RegisterInputKey(std::string KeyName, bool *ReadVal, bool Defval, const char *helpmsg) {
+    InputKey *NewKey = new InputKey(KeyName, ReadVal, Defval, helpmsg);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+
 void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) {
     InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, helpmsg, errmsg);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
@@ -111,8 +119,6 @@ void RmgInputFile::LoadInputKeys(void) {
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readintval)->required(), Ik->helpmsg);
             if(Ik->KeyType == typeid(double).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readdoubleval)->required(), Ik->helpmsg);
-            if(Ik->KeyType == typeid(bool).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Readboolval)->required(), Ik->helpmsg);
             if(Ik->KeyType == typeid(std::string).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readstr)->required(), Ik->helpmsg);
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
@@ -263,10 +269,30 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
     }
 
     for (it = lines1.begin(); it != lines1.end(); ++it) {
+        // if *it does not contain quotes but does contain true or false then it's a boolean field so
+        // we turn the actual value into a 0 or 1 for the next level parsing routines
+        std::string& fline = *it;
+        std::size_t f1 = fline.find("\"", 1);
+        if(f1 == std::string::npos) {
+            // no quotes
+            std::size_t f2 = fline.find("true");
+            std::size_t f3 = fline.find("false");
+            if((f2 != std::string::npos) && (f3 != std::string::npos)) {
+                // Both true and false so some sort of error            
+                throw RmgFatalException() << "Syntax error in " << cfile << " near " << fline;
+            }
+            if(f2 != std::string::npos) {
+               fline.replace(f2, 4, "1");
+            }
+            if(f3 != std::string::npos) {
+               fline.replace(f3, 5, "0");
+            }
+        }
+
         outbuf = outbuf + *it + "\n";
     }
 
-    //std::cout << outbuf << std::endl;
+//    std::cout << outbuf << std::endl;
     return outbuf;
 
 }

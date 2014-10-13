@@ -102,17 +102,25 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
 
+    // Deault of zero is OK because this means to try to set it automatically later on.
+    // The value of 64 covers any possible hardware scenario I can imagine currently but might
+    // need to be adjusted at some point in the future.
+    If.RegisterInputKey("threads_per_node", &lc.THREADS_PER_NODE, 0, 64, 0, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Number of threads each MPI process will use.\n", 
+                     "threads_per_node cannnot be a negative number and must be less than 64.\n");
+
     If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Ratio of the fine grid to the coarse grid.", 
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
 
-    If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0 - DBL_MIN, 2.0 + DBL_MIN, 1.111, 
+    If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 2.0, 1.111, 
                       CHECK_AND_FIX, OPTIONAL, 
                      "Time step used for constant potential acceleration.\n",
                      "potential_acceleration_constant_step must lie in the range (0.0, 2.0). Resetting to the default value of 0.0.\n");
 
-    If.RegisterInputKey("potential_acceleration_poisson_step", &lc.potential_acceleration_poisson_step, 0.0 - DBL_MIN, 3.0 + DBL_MIN, 0.0, 
+    If.RegisterInputKey("potential_acceleration_poisson_step", &lc.potential_acceleration_poisson_step, 0.0, 3.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 
                      "Time step used for poisson potential acceleration.\n",
                      "potential_acceleration_poisson_step must lie in the range (0.0, 3.0). Resetting to the default value of 0.0.\n");
@@ -287,6 +295,162 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
                      "",
                      "");
 
+
+    // Booleans next. Booleans are never required.
+    If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
+                        "Flag to test whether or not the modified metrics should be used in Pulay mixing.");
+
+//    If.RegisterInputKey("write_pseudopotential_plots", NULL, false,
+//                        "");
+
+    If.RegisterInputKey("equal_initial_density", &lc.init_equal_density_flag, false,
+                        "Specifies whether to set initial up and down density to be equal.");
+
+    If.RegisterInputKey("write_pdos", &lc.pdos_flag, false,
+                        "Flag to write partial density of states.");
+
+    If.RegisterInputKey("mask_function_filtering", &lc.mask_function, false,
+                        "");
+
+    If.RegisterInputKey("write_memory_report", &lc.write_memory_report, false,
+                        "");
+
+    If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
+                        "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.");
+
+    If.RegisterInputKey("initial_diagonalization", &lc.initdiag, false, 
+                        "Perform initial subspace diagonalization.");
+
+    If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
+                         "Use folded spectrum.");
+
+//    If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
+//                        "");
+
+    If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
+                        "");
+
+    If.RegisterInputKey("scalapack_global_sums", &lc.scalapack_global_sums, true,
+                        "");
+
+#if 0
+    If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, min, max, 0.50,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("charge_density_mixing", &lc.mix, min, max, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, min, max, 1.0E-7,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("relax_max_force", &lc.thr_frc, min, max, 2.5E-3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, min, max, 0.04,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, min, max, 0.3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("electric_field_magnitude", &lc.e_field, min, max, 0.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, min, max, 1000.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, min, max, 0.3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, min, max, 0.6,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_coarse_time_step", &lc.poi_parm.sb_step, min, max, 0.6,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, min, max, 1.75,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("projector_mixing", &lc.prjmix, min, max, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("Emin", &lc.Emin, min, max, -6.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("Emax", &lc.Emax, min, max, 0.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, min, max, 0.3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, min, max, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("md_temperature", &lc.nose.temp, min, max, 300,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("md_nose_oscillation_frequency_THz", &lc.nose.fNose, min, max, 15.59,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, min, max, 150,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("ionic_time_step_increase", &lc.iondt_inc, min, max, 1.1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("system_charge", &lc.background_charge, min, max, 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+#endif
+
     If.LoadInputKeys();
 
 
@@ -339,64 +503,14 @@ exit(0);
     control.add_options()
        //("description", po::value<std::string>(&ii)->default_value("RMG RUN"), "description of run")
 
-        ("processor_grid", po::value<Ri::ReadVector<int> >(&ProcessorGrid), "Three-D (x,y,z) layout of the MPI processes.")
-        ("coarse_grid", po::value<Ri::ReadVector<int> >(&CoarseGrid), "Three-D (x,y,z) dimensions of the global wavefunction grid.")
-        ("threads_per_node", po::value<int>(&lc.THREADS_PER_NODE)->default_value(-1),"")
-
-        ("charge_pulay_scale", po::value<double>(&lc.charge_pulay_scale)->default_value(0.50), "")
-        ("charge_pulay_special_metrics_weight", po::value<double>(&lc.charge_pulay_special_metrics_weight)->default_value(100.0), "")
-        ("charge_density_mixing", po::value<double>(&lc.mix)->default_value(0.5), "")
-        ("rms_convergence_criterion", po::value<double>(&lc.thr_rms)->default_value(1.0E-7), "")
-        ("relax_max_force", po::value<double>(&lc.thr_frc)->default_value(2.5E-3), "")
-        ("occupation_electron_temperature_eV", po::value<double>(&lc.occ_width)->default_value(0.04), "")
-        ("occupation_number_mixing", po::value<double>(&lc.occ_mix)->default_value(0.3), "")
-        ("electric_field_magnitude", po::value<double>(&lc.e_field)->default_value(0.0), "")
-        ("ionic_time_step", po::value<double>(&lc.iondt)->default_value(50), "")
-        ("hartree_rms_ratio", po::value<double>(&lc.hartree_rms_ratio)->default_value(1000.0), "")
         ("a_length", po::value<double>(&celldm[0]), "")
         ("b_length", po::value<double>(&celldm[1]), "")
         ("c_length", po::value<double>(&celldm[2]), "")
         ("alpha", po::value<double>(&celldm[3]), "")
         ("beta", po::value<double>(&celldm[4]), "")
         ("gamma", po::value<double>(&celldm[5]), "")
-        ("kohn_sham_time_step", po::value<double>(&lc.eig_parm.gl_step)->default_value(0.3), "")
-        ("poisson_finest_time_step", po::value<double>(&lc.poi_parm.gl_step)->default_value(0.6), "")
-        ("poisson_coarse_time_step", po::value<double>(&lc.poi_parm.sb_step)->default_value(0.6), "")
-        ("energy_cutoff_parameter", po::value<double>(&lc.cparm)->default_value(1.75), "")
-        ("potential_acceleration_constant_step", po::value<double>(&lc.potential_acceleration_constant_step)->default_value(0.0), "")
-        ("potential_acceleration_poisson_step", po::value<double>(&lc.potential_acceleration_poisson_step)->default_value(0.0), "")
-        ("projector_mixing", po::value<double>(&lc.prjmix)->default_value(0.5), "")
-        ("Emin", po::value<double>(&lc.Emin)->default_value(-6.0), "")
-        ("Emax", po::value<double>(&lc.Emax)->default_value(0.0), "")
-        ("folded_spectrum_width", po::value<double>(&lc.folded_spectrum_width)->default_value(0.3), "")
-        ("neb_spring_constant", po::value<double>(&lc.neb_spring_constant)->default_value(0.5), "")
-        ("md_temperature", po::value<double>(&lc.nose.temp)->default_value(300), "")
-        ("md_nose_oscillation_frequency_THz", po::value<double>(&lc.nose.fNose)->default_value(15.59), "")
-        ("ionic_time_step", po::value<double>(&lc.iondt)->default_value(50), "")
-        ("max_ionic_time_step", po::value<double>(&lc.iondt_max)->default_value(150), "")
-        ("ionic_time_step_increase", po::value<double>(&lc.iondt_inc)->default_value(1.1), "")
 //        ("ionic_time_step_decrease", po::value<double>(&lc.iondt_dec) DBL, s_ttt);
-        ("system_charge", po::value<double>(&lc.background_charge)->default_value(0), "")
-        ("energy_cutoff_parameter", po::value<double>(&lc.cparm)->default_value(1.75), "")
 
-#if GPU_ENABLED
-        ("gpu_direct_collectives", po::value<bool>(&lc.gpu_direct_collectives)->default_value(false), "")
-#endif
-        ("charge_pulay_special_metrics", po::value<bool>(&lc.charge_pulay_special_metrics)->default_value(false), "Flag to test whether or not the modified metrics should be used in Pulay mixing.")
-//        ("write_pseudopotential_plots", po::value<bool>(NULL)->default_value(false), "")
-        ("equal_initial_density", po::value<bool>(&lc.init_equal_density_flag)->default_value(false), "Specifies whether to set initial up and down density to be equal.")
-        ("write_pdos", po::value<bool>(&lc.pdos_flag)->default_value(false), "Flag to write partial density of states.")
-        ("mask_function_filtering", po::value<bool>(&lc.mask_function)->default_value(false), "")
-        ("write_memory_report", po::value<bool>(&lc.write_memory_report)->default_value(false), "")
-        ("sort_wavefunctions", po::value<bool>(&lc.sortflag)->default_value(false), "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.")
-        ("initial_diagonalization", po::value<bool>(&lc.initdiag)->default_value(false), "Perform initial subspace diagonalization.")
-        ("folded_spectrum", po::value<bool>(&lc.use_folded_spectrum)->default_value(false), "Use folded spectrum.")
-//        ("relax_dynamic_timestep", po::value<bool>(NULL)->default_value(false), "")
-        ("write_pdos", po::value<bool>(&lc.pdos_flag)->default_value(false), "")
-// Depends on start flag
-//        ("md_randomize_velocity", po::value<bool>(&lc.nose.randomvel)->default_value(false), "")
-//        ("md_randomize_velocity", po::value<bool>(&lc.nose.randomvel)->default_value(true), "")
-        ("scalapack_global_sums", po::value<bool>(&lc.scalapack_global_sums)->default_value(true), "")
     ;
 
 
