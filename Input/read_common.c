@@ -356,9 +356,6 @@ void read_common ()
     /*Blocking factor for scalapack*/
     get_data ("scalapack_block_factor", &ct.scalapack_block_factor, INT, "32");
 
-    /* Whether to write full memory usage report at the end of calculation */
-    get_data ("write_memory_report", &ct.write_memory_report, BOOL, "false");
-
     /* Potential acceleration constant step, default=1.0 */
     get_data ("potential_acceleration_constant_step", &ct.potential_acceleration_constant_step, DBL, "0.0");
 

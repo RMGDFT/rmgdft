@@ -354,9 +354,6 @@ typedef struct
     /* Should we process constraints on forces flag */
     int constrainforces;
 
-    /* Whether to write full memory usage report at the end of calculation */
-    bool write_memory_report;
-
     /** Ionic motion timestep */
     double iondt;
 

@@ -37,7 +37,6 @@ mix_betaxpsi1.c
 open_restart_file.c
 scalapack_tools.c
 lbfgs_init.c
-finish_release_mem.c
 init_efield.c
 lcao_init.c
 nlforce.c

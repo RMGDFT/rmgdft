@@ -377,14 +377,6 @@ void report ()
       mulliken (states);*/
 
 
-    if (ct.write_memory_report)
-    {
-        /*Release memory for projectors first */
-        //finish_release_mem (states);
-
-    }
-
-
     /* Release the memory for density of opposite spin */
     if (ct.spin_flag)
         delete [] rho_oppo;

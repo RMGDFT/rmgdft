@@ -85,7 +85,6 @@ double fill (STATE *states, double width, double nel, double mix,
 
 void find_phase (int nldim, double *nlcdrs, double *phase_sin,
                  double *phase_cos);
-void finish_release_mem(STATE *states);
 //void genvpsi (double *psi, double *twovpsi, double *pvtot, 
 //              double *kd, double kmag, int dimx, int dimy, int dimz);
 void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, double * vtot, double * kd,

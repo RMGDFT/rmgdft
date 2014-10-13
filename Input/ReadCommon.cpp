@@ -81,11 +81,11 @@ namespace po = boost::program_options;
 
 namespace Ri = RmgInput;
 
-CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
+void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
 {
 
 
-    CONTROL lc;
+//    CONTROL lc;
     PE_CONTROL pelc;
     RmgInputFile If(cfile);
  
@@ -315,9 +315,6 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
                         "Flag to write partial density of states.");
 
     If.RegisterInputKey("mask_function_filtering", &lc.mask_function, false,
-                        "");
-
-    If.RegisterInputKey("write_memory_report", &lc.write_memory_report, false,
                         "");
 
     If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
