@@ -22,6 +22,7 @@ namespace po = boost::program_options;
 class RmgInputFile {
     public:
         RmgInputFile(char *inputfile);
+        ~RmgInputFile(void);
 
         template <typename T>
         void RegisterInputKey(std::string KeyName, T *Readval, T Minval, T Maxval, T Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);

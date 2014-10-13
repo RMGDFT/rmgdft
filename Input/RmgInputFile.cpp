@@ -296,3 +296,13 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
     return outbuf;
 
 }
+
+// Destructor frees up the map
+RmgInputFile::~RmgInputFile(void) {
+
+    for (auto item = InputMap.begin();item != InputMap.end();item++) {
+        InputKey *Ik = item->second;
+        delete [] Ik;        
+    }
+
+}

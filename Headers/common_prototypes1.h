@@ -361,6 +361,9 @@ double qval (int ih, int jh, double r, double invdr, double *ptpr, int *nhtol,
            int *nhtom, int *indv, double *ylm, double ap[][9][9], int lpx[][9],
            int lpl[][9][9], SPECIES *sp);
 void reinit_ionic_pp (STATE * states, double * vnuc, double * rhocore, double * rhoc);
+void init_pestr(void);
+void read_init(char *meta);
+int filename_increment(char *filename);
 
 #if GAMMA_PT
 void subdiag_gamma (STATE *states, double *vh, double *vnuc, double *vxc);

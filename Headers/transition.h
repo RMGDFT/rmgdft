@@ -135,8 +135,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
 void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm);
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& pp);
-
-
+void InitIo (int argc, char **argv);
 
 
 #endif

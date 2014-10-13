@@ -199,7 +199,7 @@ void initialize(int argc, char **argv)
 
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/
-    init_IO (argc, argv);
+    InitIo (argc, argv);
 
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
