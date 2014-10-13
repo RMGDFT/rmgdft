@@ -82,7 +82,11 @@ int main(int argc, char **argv)
     FILE *dfi;
     int tot_steps, pre_steps;
     int amode, fhand;
+
     char filename[MAX_PATH+200];
+    /* Define a default output stream, gets redefined to log file later */
+    ct.logfile = stdout;
+
 
     ct.images_per_node = 1;
     init_IO(argc, argv);

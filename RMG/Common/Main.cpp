@@ -114,6 +114,9 @@ int main (int argc, char **argv)
     RmgTimer *RT = new RmgTimer("Main");
     char *tptr;
 
+    /* Define a default output stream, gets redefined to log file later */
+    ct.logfile = stdout;
+
 #if GPU_ENABLED
 //  Hack to force initialization of libsci on Cray before we create our own threads
     char *trans = "n";

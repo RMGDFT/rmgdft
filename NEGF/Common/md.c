@@ -72,6 +72,10 @@ int main (int argc, char **argv)
 
 
   void *RT = BeginRmgTimer("1-TOTAL");
+
+    /* Define a default output stream, gets redefined to log file later */
+    ct.logfile = stdout;
+
  
 #if GPU_ENABLED
     magma_init();

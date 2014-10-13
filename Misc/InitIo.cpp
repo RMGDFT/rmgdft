@@ -72,10 +72,6 @@ void InitIo (int argc, char **argv)
         read_init("ctrl_init.dat");
 
 
-    /* Define a default output stream, gets redefined to log file later */
-    ct.logfile = stdout;
-
-
     init_pestr ();
 
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
