@@ -151,3 +151,9 @@ void InitIo (int argc, char **argv)
     GlobalSumsInit();
 
 }
+
+extern "C" void init_IO(int argc, char **argv)
+{
+    InitIo(argc, argv);
+}
+
