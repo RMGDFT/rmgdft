@@ -2,25 +2,36 @@
 #define RMG_InputKey_H 1
 
 #include <string>
+#include <vector>
+
+namespace RmgInput {
+
+    template <typename VectorType>
+    class ReadVector
+    {
+        public:
+            std::vector<VectorType> vals;
+    };
+
+}
 
 
 class InputKey {
     public:
         // Scalar types
-        InputKey(std::string KeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
-        InputKey(std::string KeyName, float *ReadVal, float Minval, float Maxval, float Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
-        InputKey(std::string KeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
-        InputKey(std::string KeyName, bool *ReadVal, bool Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, bool *ReadVal, bool Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
 
         // Strings
-        InputKey(std::string KeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
 
         // Vectors
-//        template <typename T>
-//        InputKey(std::string KeyName, Ri::ReadVector<T>, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t count, bool Required, const char* helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, size_t count, bool Required, const char* helpmsg, const char *errmsg);
         
 
-        std::string KeyName;
+        std::string& KeyName;
         size_t KeyType;
         bool Fix;
         bool Required;
@@ -28,19 +39,18 @@ class InputKey {
         int Minintval;
         int Maxintval;
         int Defintval;
-        float *Readfloatval;
-        float Minfloatval;
-        float Maxfloatval;
-        float Deffloatval;
         double *Readdoubleval;
         double Mindoubleval;
         double Maxdoubleval;
         double Defdoubleval;
         bool *Readboolval;
         bool Defboolval;
-        std::string *Readstr;
+        std::string* Readstr;
+        RmgInput::ReadVector<int> *Vint;
+        RmgInput::ReadVector<double> *Vdouble;
+        size_t count;
         const char *Defstr;
-        const char *helpmsg;
+        const char* helpmsg;
         const char *errmsg;
 };
 

@@ -24,18 +24,10 @@ namespace po = boost::program_options;
 
 
 template void RmgInputFile::RegisterInputKey<int>(std::string, int *, int, int, int, bool, bool, const char *, const char *);
-template void RmgInputFile::RegisterInputKey(std::string, float *, float, float, float, bool,  bool, const char *, const char *);
 template void RmgInputFile::RegisterInputKey(std::string, double *, double, double, double, bool, bool, const char *, const char *);
 
 // Custom validators for boost program options. 
 namespace RmgInput {
-
-    template <typename VectorType>
-    class ReadVector
-    {
-        public:
-            std::vector<VectorType> vals;
-    };
 
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<int>*, int)
     {
@@ -95,6 +87,18 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, c
     InputMap.insert(NewEntry);
 }
 
+void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, int count, bool Required, const char *helpmsg, const char *errmsg) {
+    InputKey *NewKey = new InputKey(KeyName, V, count, Required, helpmsg, errmsg);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+
+void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, int count, bool Required, const char *helpmsg, const char *errmsg) {
+    InputKey *NewKey = new InputKey(KeyName, V, count, Required, helpmsg, errmsg);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+
 void RmgInputFile::LoadInputKeys(void) {
 
     // Load the keys into the map
@@ -105,26 +109,30 @@ void RmgInputFile::LoadInputKeys(void) {
         if(Ik->Required) {
             if(Ik->KeyType == typeid(int).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readintval)->required(), Ik->helpmsg);
-            if(Ik->KeyType == typeid(float).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Readfloatval)->required(), Ik->helpmsg);
             if(Ik->KeyType == typeid(double).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readdoubleval)->required(), Ik->helpmsg);
             if(Ik->KeyType == typeid(bool).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readboolval)->required(), Ik->helpmsg);
             if(Ik->KeyType == typeid(std::string).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readstr)->required(), Ik->helpmsg);
+            if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
+                control.add_options() (KeyName.c_str(), po::value(Ik->Vint)->required(), Ik->helpmsg);
+            if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code())
+                control.add_options() (KeyName.c_str(), po::value(Ik->Vdouble)->required(), Ik->helpmsg);
         }
         else {
             if(Ik->KeyType == typeid(int).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readintval)->default_value(Ik->Defintval), Ik->helpmsg);
-            if(Ik->KeyType == typeid(float).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Readfloatval)->default_value(Ik->Deffloatval), Ik->helpmsg);
             if(Ik->KeyType == typeid(double).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readdoubleval)->default_value(Ik->Defdoubleval), Ik->helpmsg);
             if(Ik->KeyType == typeid(bool).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readboolval)->default_value(Ik->Defboolval), Ik->helpmsg);
             if(Ik->KeyType == typeid(std::string).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Readstr)->default_value(Ik->Defstr), Ik->helpmsg);
+            if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
+                control.add_options() (KeyName.c_str(), po::value(Ik->Vint), Ik->helpmsg);
+            if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code())
+                control.add_options() (KeyName.c_str(), po::value(Ik->Vdouble), Ik->helpmsg);
         }
         
 
@@ -147,13 +155,24 @@ void RmgInputFile::LoadInputKeys(void) {
         InputKey *Ik = item->second;
 
         if((Ik->Fix == CHECK_AND_TERMINATE) && (Ik->KeyType==typeid(int).hash_code())) CheckAndTerminate<int>(*Ik->Readintval, Ik->Minintval, Ik->Maxintval, Ik->errmsg);
-        if((Ik->Fix == CHECK_AND_TERMINATE) && (Ik->KeyType==typeid(float).hash_code())) CheckAndTerminate<float>(*Ik->Readfloatval, Ik->Minfloatval, Ik->Maxfloatval, Ik->errmsg);
         if((Ik->Fix == CHECK_AND_TERMINATE) && (Ik->KeyType==typeid(double).hash_code())) CheckAndTerminate<double>(*Ik->Readdoubleval, Ik->Mindoubleval, Ik->Maxdoubleval, Ik->errmsg);
 
         if((Ik->Fix == CHECK_AND_FIX) && (Ik->KeyType==typeid(int).hash_code())) CheckAndFix<int>(Ik->Readintval, Ik->Minintval, Ik->Maxintval, Ik->Defintval, Ik->errmsg);
-        if((Ik->Fix == CHECK_AND_FIX) && (Ik->KeyType==typeid(float).hash_code())) CheckAndFix<float>(Ik->Readfloatval, Ik->Minfloatval, Ik->Maxfloatval, Ik->Deffloatval, Ik->errmsg);
         if((Ik->Fix == CHECK_AND_FIX) && (Ik->KeyType==typeid(double).hash_code())) CheckAndFix<double>(Ik->Readdoubleval, Ik->Mindoubleval, Ik->Maxdoubleval, Ik->Defdoubleval, Ik->errmsg);
         
+        if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) {
+            if(Ik->Vint->vals.size() != Ik->count) {
+                throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
+            }
+        }
+
+        if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
+            if(Ik->Vint->vals.size() != Ik->count) {
+                throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
+            }
+        }
+
+
     }
 
 }

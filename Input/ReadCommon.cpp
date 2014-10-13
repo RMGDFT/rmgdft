@@ -28,7 +28,58 @@ namespace po = boost::program_options;
 #include "RmgInputFile.h"
 
 
+/**********************************************************************
 
+   The RMG input file consists of a set of key-value pairs of the form.
+
+   name=scalar    where scalar can be an integer, double or boolean value
+   period_of_diagonalization=1
+   charge_density_mixing = 0.5
+   initial_diagonalization = true
+   
+   
+   There are also strings and arrays which are delineated by double quotes so an integer array
+   with three elements would be
+   processor_grid = "2 2 2"
+
+   while a string example would be
+   description = "64 atom diamond cell test run at the gamma point"
+
+   strings can span multiple lines so
+   description = "
+     64 atom diamond cell test run at the gamma point
+     Uses Vanderbilt ultrasoft pseudopotential"
+
+   would also be valid.
+
+   Strong error checking is enforced on scalar types. This is done by
+   registering the type before the input file is loaded and parsed. A class
+   of type RmgInputFile If(cfile) is declared and the keys registered using
+   the RegisterInputKey method. The method is overloaded and takes different
+   arguments depending on what type of data is being read. For example scalar
+   values are registered in the following way.
+
+   RmgInputFile If(inputfile);
+   If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Ratio of the fine grid to the coarse grid.",
+                     "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
+
+   No matter what type of key is being registered the first argument of RegisterInputKey
+   always consists of the key name as used in the input file. The second argument is
+   always the destination where the data will be written. The last two arguments are a help
+   message and an error message respectively.
+
+   For integer and double scalar values the 3rd, 4th, and 5th values are the min, max and default
+   values respectively. The sixth argument specifies the action to take if the value obtained
+   from the input file does not fall within the acceptable range. CHECK_AND_FIX means set the 
+   value to the default and continue execution while CHECK_AND_TERMINATE ends the program. The
+   7th argument specifies whether the key is OPTIONAL or REQUIRED. If the key is REQUIRED the
+   default value is ignored.
+
+**********************************************************************/
+
+namespace Ri = RmgInput;
 
 CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
 {
@@ -38,11 +89,19 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
     PE_CONTROL pelc;
     RmgInputFile If(cfile);
  
-//    Ri::ReadVector<int> ProcessorGrid;
-//    Ri::ReadVector<int> CoarseGrid;
+    Ri::ReadVector<int> ProcessorGrid;
+    Ri::ReadVector<int> CoarseGrid;
     int FG_RATIO;
     double celldm[6];
  
+    If.RegisterInputKey("processor_grid", &ProcessorGrid, 3, REQUIRED, 
+                     "Three-D (x,y,z) layout of the MPI processes.\n", 
+                     "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
+
+    If.RegisterInputKey("coarse_grid", &CoarseGrid, 3, REQUIRED, 
+                     "Three-D (x,y,z) layout of the MPI processes.\n", 
+                     "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
+
     If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Ratio of the fine grid to the coarse grid.", 
@@ -63,7 +122,199 @@ CONTROL *ReadCommon(int argc, char *argv[], char *cfile, CONTROL *pp)
                      "Ionic time step for use in molecular dynamics and structure optimizations.\n",
                      "ionic_time_step must be greater than 0.0.\n");
 
+    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
+                     "The number of unoccupied orbitals.\n", 
+                     "unoccupied_states_per_kpoint must be greater than 0. Terminating.\n");
+
+    If.RegisterInputKey("period_of_diagonalization", &lc.diag, 0, INT_MAX, 1, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Diagonalization period (per scf step).\n", 
+                     "Diagonalization period must be greater than 0. Resetting to the default value of 1.\n");
+
+    If.RegisterInputKey("end_diagonalization_step", &lc.end_diag, 0, INT_MAX, 1000000,
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Stop diagonalizing after end_diag steps.\n", 
+                     "end_diag must be greater than 0. Resetting to the default value of 1000000\n");
+
+    If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Maximum number of self consistent steps to perform.\n", 
+                     "max_scf_steps must be greater than 0. Resetting to the default value of 500\n");
+
+    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 5, 5, 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 0, 0, 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 5, 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 10, 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 100, 100, 100,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 30,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("hartree_min_sweeps", &lc.hartree_min_sweeps, 5, 5 , 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("kohn_sham_pre_smoothing", &lc.eig_parm.gl_pre, 1, 5, 2,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 3, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 8, 6,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_mucycles", &lc.poi_parm.mucycles, 1, 3, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 2, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, 0, 10, -1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("fine_grid_non_local_pp", &lc.nxfgrid, 1, 4, 4,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 32, 512,64,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("max_rmg_steps", &lc.max_rmg_steps, 1, 1, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("dynamic_time_delay", &lc.relax_steps_delay, 5, 5, 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("dynamic_time_counter", &lc.relax_steps_counter, 0, 0 , 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("scf_steps_offset", &lc.scf_steps, 0, 0, 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("total_scf_steps_offset", &lc.total_scf_steps, 0, 0, 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("md_steps_offset", &lc.md_steps, 0, 0, 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("b_spline_order", &lc.interp_order, 5, 5, 5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("b_spline_trade_order", &lc.interp_trade, 3, 3, 3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
     If.LoadInputKeys();
+
+
+    // Check items that require custom handling
+    try {
+        pelc.pe_x = ProcessorGrid.vals.at(0);
+        pelc.pe_y = ProcessorGrid.vals.at(1);
+        pelc.pe_z = ProcessorGrid.vals.at(2);
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n";
+    }
+    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + std::to_string(pelc.pe_x) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + std::to_string(pelc.pe_y) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + std::to_string(pelc.pe_z) + " and only postive values are allowed.");
+
+    int NX_GRID=1, NY_GRID=1, NZ_GRID=1;
+    try {
+        NX_GRID = CoarseGrid.vals.at(0);
+        NY_GRID = CoarseGrid.vals.at(1);
+        NZ_GRID = CoarseGrid.vals.at(2);
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n";
+    }
+    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
 
 exit(0);
 
@@ -90,41 +341,7 @@ exit(0);
 
         ("processor_grid", po::value<Ri::ReadVector<int> >(&ProcessorGrid), "Three-D (x,y,z) layout of the MPI processes.")
         ("coarse_grid", po::value<Ri::ReadVector<int> >(&CoarseGrid), "Three-D (x,y,z) dimensions of the global wavefunction grid.")
-        ("ionic_time_step", po::value<double>(&lc.iondt)->default_value(50.0), "Ionic time step for use in molecular dynamics and structure optimizations.")
-        ("unoccupied_states_per_kpoint", po::value<int>(&lc.num_unocc_states)->default_value(10), "The number of unoccupied orbitals.")
-        ("period_of_diagonalization", po::value<int>(&lc.diag)->default_value(1), "Diagonalization period (per scf step).")
-        ("end_diagonalization_step", po::value<int>(&lc.end_diag)->default_value(9999999), "Stop diagonalizing after end_diag steps.")
         ("threads_per_node", po::value<int>(&lc.THREADS_PER_NODE)->default_value(-1),"")
-        ("charge_pulay_order", po::value<int>(&lc.charge_pulay_order)->default_value(5),"")
-        ("charge_pulay_refresh", po::value<int>(&lc.charge_pulay_refresh)->default_value(0),"")
-        ("max_scf_steps", po::value<int>(&lc.max_scf_steps)->default_value(500),"")
-        ("write_data_period", po::value<int>(&lc.checkpoint)->default_value(5),"")
-        ("write_eigvals_period", po::value<int>(&lc.write_eigvals_period)->default_value(5),"")
-        ("max_md_steps", po::value<int>(&lc.max_md_steps)->default_value(100),"")
-        ("hartree_max_sweeps", po::value<int>(&lc.hartree_max_sweeps)->default_value(100),"")
-        ("hartree_min_sweeps", po::value<int>(&lc.hartree_min_sweeps)->default_value(5),"")
-        ("kohn_sham_pre_smoothing", po::value<int>(&lc.eig_parm.gl_pre)->default_value(2),"")
-        ("kohn_sham_post_smoothing", po::value<int>(&lc.eig_parm.gl_pst)->default_value(1),"")
-        ("kohn_sham_mucycles", po::value<int>(&lc.eig_parm.mucycles)->default_value(1),"")
-        ("kohn_sham_fd_order", po::value<int>(&lc.kohn_sham_fd_order)->default_value(6),"")
-        ("poisson_pre_smoothing", po::value<int>(&lc.poi_parm.gl_pre)->default_value(3),"")
-        ("poisson_post_smoothing", po::value<int>(&lc.poi_parm.gl_pst)->default_value(3),"")
-        ("poisson_mucycles", po::value<int>(&lc.poi_parm.mucycles)->default_value(1),"")
-        ("poisson_coarsest_steps", po::value<int>(&lc.poi_parm.coarsest_steps)->default_value(80),"")
-        ("kohn_sham_mg_levels", po::value<int>(&lc.eig_parm.levels)->default_value(1),"")
-        ("poisson_mg_levels", po::value<int>(&lc.poi_parm.levels)->default_value(-1),"")
-        ("fine_grid_non_local_pp", po::value<int>(&lc.nxfgrid)->default_value(4),"")
-        ("scalapack_block_factor", po::value<int>(&lc.scalapack_block_factor)->default_value(32),"")
-        ("E_POINTS", po::value<int>(&lc.E_POINTS)->default_value(201),"")
-        ("max_rmg_steps", po::value<int>(&lc.max_rmg_steps)->default_value(1),"")
-        ("md_number_of_nose_thermostats", po::value<int>(&lc.nose.m)->default_value(5),"")
-        ("dynamic_time_delay", po::value<int>(&lc.relax_steps_delay)->default_value(5),"")
-        ("dynamic_time_counter", po::value<int>(&lc.relax_steps_counter)->default_value(0),"")
-        ("scf_steps_offset", po::value<int>(&lc.scf_steps)->default_value(0),"")
-        ("total_scf_steps_offset", po::value<int>(&lc.total_scf_steps)->default_value(0),"")
-        ("md_steps_offset", po::value<int>(&lc.md_steps)->default_value(0),"")
-        ("b_spline_order", po::value<int>(&lc.interp_order)->default_value(5),"")
-        ("b_spline_trade_order", po::value<int>(&lc.interp_trade)->default_value(3),"")
 
         ("charge_pulay_scale", po::value<double>(&lc.charge_pulay_scale)->default_value(0.50), "")
         ("charge_pulay_special_metrics_weight", po::value<double>(&lc.charge_pulay_special_metrics_weight)->default_value(100.0), "")
@@ -183,56 +400,8 @@ exit(0);
     ;
 
 
-    
-    try {
-        pelc.pe_x = ProcessorGrid.vals.at(0);
-        pelc.pe_y = ProcessorGrid.vals.at(1);
-        pelc.pe_z = ProcessorGrid.vals.at(2);
-    }
-    catch (const std::out_of_range& oor) {
-        std::cerr << "You must specify a triplet of (X,Y,Z) dimensions for the processor grid." << std::endl;
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
-    }
-    CheckValueAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + std::to_string(pelc.pe_x) + " and only postive values are allowed.");
-    CheckValueAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + std::to_string(pelc.pe_y) + " and only postive values are allowed.");
-    CheckValueAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + std::to_string(pelc.pe_z) + " and only postive values are allowed.");
-
-
-    int NX_GRID=1, NY_GRID=1, NZ_GRID=1;
-    try {
-        NX_GRID = CoarseGrid.vals.at(0);
-        NY_GRID = CoarseGrid.vals.at(1);
-        NZ_GRID = CoarseGrid.vals.at(2);
-    }
-    catch (const std::out_of_range& oor) {
-        std::cerr << "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid." << std::endl;
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
-    }
-    CheckValueAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
-    CheckValueAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
-    CheckValueAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
-
     // Set grid info up
 //    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pct.pe_x, pct.pe_y, pct.pe_z, 0, FG_RATIO);
-
-    if (vm.count("potential_grid_refinement"))
-        FG_RATIO = CheckValueAndFix(FG_RATIO, 0, 3, 2, "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
-
-    if (vm.count("potential_acceleration_constant_step"))
-        lc.potential_acceleration_constant_step = 
-            CheckValueAndFix(lc.potential_acceleration_constant_step, 0.0 - DBL_MIN, 2.0 + DBL_MIN, 0.0, 
-            "potential_acceleration_constant_step must lie in the range (0.0, 2.0). Resetting to the default value of 0.0\n");
-
-    if (vm.count("potential_acceleration_poisson_step"))
-        lc.potential_acceleration_constant_step = 
-            CheckValueAndFix(lc.potential_acceleration_poisson_step, 0.0 - DBL_MIN, 3.0 + DBL_MIN, 0.0, 
-            "potential_acceleration_poisson_step must lie in the range (0.0, 3.0). Resetting to the default value of 0.0\n");
-
-    if (vm.count("ionic_time_step")) 
-        ct.iondt = CheckValueAndFix(ct.iondt, 0.0 - DBL_MIN, DBL_MAX, 50.0, "ionic_time_step must be >= 0.0. Resetting to the default value of 50.0.\n");
-
-    if (vm.count("unoccupied_states_per_kpoint"))
-        ct.num_unocc_states = CheckValueAndFix(ct.num_unocc_states, 0, INT_MAX, 10, "unoccupied_states_per_kpoint must be > 0. Resetting to the default value of 10\n");
 
     if (vm.count("description")) {
         //std::cout << "AAdescription=" << ii << std::endl;
