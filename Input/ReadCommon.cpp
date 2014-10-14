@@ -91,6 +91,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
     RmgInputFile If(cfile);
     std::string LatticeType;
     std::string CalculationMode;
+    std::string DiscretizationType;
  
     Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> CoarseGrid;
@@ -114,6 +115,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      CHECK_AND_TERMINATE, REQUIRED, calculation_mode,
                      "Type of calculation to perform.\n", 
                      "calculation_mode not available.\n");
+
+    If.RegisterInputKey("discretization_type", &DiscretizationType, "",
+                     CHECK_AND_FIX, OPTIONAL, discretization_type,
+                     "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
+                     "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Mehrstellen\".\n");
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
@@ -178,6 +184,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "The number of unoccupied orbitals.\n", 
                      "unoccupied_states_per_kpoint must be greater than 0. Terminating.\n");
 
+    If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Target electron temperature when not using fixed occupations.\n ",
+                     "occupation_electron_temperature_eV must lie in the range (0.0,2.0). Resetting to the default value of 0.04.\n");
+
+    If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 0.3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Mixing parameter for orbital occupations when not using fixed occupations.\n",
+                     "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3.\n");
+
     If.RegisterInputKey("period_of_diagonalization", &lc.diag, 0, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Diagonalization period (per scf step).\n", 
@@ -198,6 +214,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "",
                      "");
 
+    If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, 0.0, 1.0, 0.50,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
+
     If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 0, 0, 0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
@@ -208,10 +229,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "",
                      "");
 
-    If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 10, 5,
+    If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 100, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "How often to output eigenvalues.",
+                     "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5.\n");
 
     If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 100, 100, 100,
                      CHECK_AND_FIX, OPTIONAL,
@@ -300,8 +321,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
 
     If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 32, 512,64,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware.\n",
+                     "scalapack_block_factor must lie in the range (32,512). Resetting to the default value of 64.\n");
 
     If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
                      CHECK_AND_FIX, OPTIONAL,
@@ -343,10 +364,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "",
                      "");
 
-    If.RegisterInputKey("b_spline_order", &lc.interp_order, 5, 5, 5,
+    If.RegisterInputKey("b_spline_order", &lc.interp_order, 0, 7, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Order of interpolation to use if b-spline is the selected method.\n",
+                     "b_spline_order must lie in the range (0,7). Resetting to the default value of 5.\n");
 
     If.RegisterInputKey("b_spline_trade_order", &lc.interp_trade, 3, 3, 3,
                      CHECK_AND_FIX, OPTIONAL,
@@ -396,64 +417,50 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
 //    If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
 //                        "");
 
+    If.RegisterInputKey("relax_max_force", &lc.thr_frc, 0.0, DBL_MAX, 2.5E-3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Force value at which an ionic relaxation is considered to be converged.\n",
+                     "relax_max_force must be a positive value. Resetting to default value of 2.5e-03.\n");
+
     If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
                         "");
 
     If.RegisterInputKey("scalapack_global_sums", &lc.scalapack_global_sums, true,
                         "");
 
+
+    If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 1.0e-4, 1.0e-12, 1.0e-7,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
+                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-12). Resetting to default value of 1.0e-7.\n");
+
     If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, 100000.0, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Ratio between target RMS for get_vh and RMS total potential.\n",
-                     "hartree_rms_ratio must be in the range (1000.0, 100000.0). Resetting to default value.\n");
+                     "hartree_rms_ratio must be in the range (1000.0, 100000.0). Resetting to default value of 10000.0.\n");
 
-#if 0
-    If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, min, max, 0.50,
-                     CHECK_AND_FIX, OPTIONAL,
+    If.RegisterInputKey("electric_field_magnitude", &lc.e_field, 0.0, DBL_MAX, 0.0,
+                     CHECK_AND_TERMINATE, OPTIONAL,
+                     "Magnitude of external electric field.\n",
+                     "electric_field_magnitude must be a postive value.\n");
+
+    If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
+                     CHECK_AND_TERMINATE, OPTIONAL,
                      "",
                      "");
 
+    If.RegisterInputKey("Emax", &lc.Emax, -100.0, 100.0, 0.0,
+                     CHECK_AND_TERMINATE, OPTIONAL,
+                     "",
+                     "");
+
+#if 0
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
 
-    If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, min, max, 1.0E-7,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("relax_max_force", &lc.thr_frc, min, max, 2.5E-3,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, min, max, 0.04,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, min, max, 0.3,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("electric_field_magnitude", &lc.e_field, min, max, 0.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, min, max, 1.75,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("Emin", &lc.Emin, min, max, -6.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("Emax", &lc.Emax, min, max, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
