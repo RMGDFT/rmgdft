@@ -82,12 +82,10 @@ namespace po = boost::program_options;
 
 namespace Ri = RmgInput;
 
-void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
+void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc)
 {
 
 
-//    CONTROL lc;
-    PE_CONTROL pelc;
     RmgInputFile If(cfile);
     std::string LatticeType;
     std::string CalculationMode;
@@ -429,10 +427,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                         "");
 
 
-    If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 1.0e-4, 1.0e-12, 1.0e-7,
+    If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 1.0e-14, 1.0e-4, 1.0e-7,
                      CHECK_AND_FIX, OPTIONAL,
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
-                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-12). Resetting to default value of 1.0e-7.\n");
+                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
 
     If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, 100000.0, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
@@ -545,38 +543,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
     }
 
 
-#if 0
-
-    // Parse the input file
-    auto parsedOptions = po::parse_config_file(ss, control, true);
-    po::store(parsedOptions, vm);
-    po::notify(vm);
-    auto unregistered = po::collect_unrecognized(parsedOptions.options, po::include_positional);
-
-    // Process results
-
-    control.add_options()
-       //("description", po::value<std::string>(&ii)->default_value("RMG RUN"), "description of run")
-
-        ("a_length", po::value<double>(&celldm[0]), "")
-        ("b_length", po::value<double>(&celldm[1]), "")
-        ("c_length", po::value<double>(&celldm[2]), "")
-        ("alpha", po::value<double>(&celldm[3]), "")
-        ("beta", po::value<double>(&celldm[4]), "")
-        ("gamma", po::value<double>(&celldm[5]), "")
-//        ("ionic_time_step_decrease", po::value<double>(&lc.iondt_dec) DBL, s_ttt);
-
-    ;
 
 
     // Set grid info up
-//    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pct.pe_x, pct.pe_y, pct.pe_z, 0, FG_RATIO);
-
-    if (vm.count("description")) {
-        //std::cout << "AAdescription=" << ii << std::endl;
-    }
-
-#endif
+    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, FG_RATIO);
 
 
 }

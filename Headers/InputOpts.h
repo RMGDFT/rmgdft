@@ -25,15 +25,16 @@ static std::unordered_map<std::string, int> discretization_type = {
         {"Central", 1}};
 
 static std::unordered_map<std::string, int> calculation_mode = {
-        {"Relax Structure", 0},
-        {"Constant Volume And Energy", 1},
-        {"Constant Temperature And Energy", 2},
-        {"Constant Pressure And Energy", 3},
-        {"Plot", 4},
-        {"Psi Plot", 5},
-        {"Band Structure Only", 6},
-        {"NEB Relax", 7},
-        {"Dimer Relax", 8}};
+        {"Quench Electrons", 0},
+        {"Relax Structure", 1},
+        {"Constant Volume And Energy", 2},
+        {"Constant Temperature And Energy", 3},
+        {"Constant Pressure And Energy", 4},
+        {"Plot", 5},
+        {"Psi Plot", 6},
+        {"Band Structure Only", 7},
+        {"NEB Relax", 8},
+        {"Dimer Relax", 9}};
 
 static std::unordered_map<std::string, int> occupations_type = {
         {"Fermi Dirac", 0},
