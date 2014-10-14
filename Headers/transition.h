@@ -15,6 +15,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "InputKey.h"
 
 
 extern BaseGrid *Rmg_G;
@@ -134,8 +135,8 @@ template <typename KpointType>
 void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
 void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm);
-void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& cont, PE_CONTROL& pecont);
-void InitIo (int argc, char **argv);
+void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
+void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& Map);
 
 
 #endif

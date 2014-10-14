@@ -43,6 +43,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
+#include "InputKey.h"
 #include "Kpoint.h"
 #include "blas.h"
 #include <complex>
@@ -51,8 +52,8 @@
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
-template Kpoint<double>::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *);
-template Kpoint<std::complex <double> >::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *);
+template Kpoint<double>::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<std::complex <double> >::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
 template void Kpoint<double>::sort_orbitals(void);
 template void Kpoint<std::complex <double> >::sort_orbitals(void);
 template void Kpoint<double>::set_pool(double *pool);
@@ -72,7 +73,7 @@ template void Kpoint<std::complex <double> >::mix_betaxpsi1(int istate);
 template void Kpoint<double>::write_occ(void);
 template void Kpoint<std::complex <double> >::write_occ(void);
 
-template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL)
+template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : ControlMap(ControlMap)
 {
 
     this->kpt[0] = kkpt[0];

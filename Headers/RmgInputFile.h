@@ -21,7 +21,7 @@ namespace po = boost::program_options;
 
 class RmgInputFile {
     public:
-        RmgInputFile(char *inputfile);
+        RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map);
         ~RmgInputFile(void);
 
         template <typename T>
@@ -39,7 +39,7 @@ class RmgInputFile {
         std::string PreprocessInputFile(char *cfile);
         std::string sfile;
         po::options_description control;
-        std::unordered_map<std::string, InputKey *> InputMap;
+        std::unordered_map<std::string, InputKey *>& InputMap;
         po::variables_map vm;
 
 

@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <unordered_map>
 #include "const.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
@@ -52,6 +53,7 @@
 #include "rmg_error.h"
 #include "transition.h"
 #include "Kpoint.h"
+#include "InputKey.h"
 #include "blas.h"
 
 
@@ -107,6 +109,7 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
+std::unordered_map<std::string, InputKey *> ControlMap;
 
 int main (int argc, char **argv)
 {
@@ -202,7 +205,7 @@ void initialize(int argc, char **argv)
 
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/
-    InitIo (argc, argv);
+    InitIo (argc, argv, ControlMap);
 
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
@@ -252,14 +255,14 @@ void initialize(int argc, char **argv)
 
             // Gamma point
             rmg_printf("\nUSING REAL ORBITALS\n");
-            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
+            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         else {
 
             // General case
             rmg_printf("\nUSING COMPLEX ORBITALS\n");
-            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L);
+            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         ct.kp[kpt].kidx = kpt;

@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <unordered_map>
 
 
 #include "grid.h"
@@ -42,10 +43,11 @@
 #include "transition.h"
 #include "macros.h"
 #include "GlobalSums.h"
+#include "InputKey.h"
 #include "hybrid.h"
 
 
-void InitIo (int argc, char **argv)
+void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
     int npes, worldpe, status, provided=0;
@@ -78,8 +80,8 @@ void InitIo (int argc, char **argv)
     snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
 
-//ReadCommon(argc, argv, "in.c60.nf", ct);
-//exit(0);
+ReadCommon(argc, argv, "in.c60.nf", ct, pct, ControlMap);
+exit(0);
     read_control(ct.cfile);
     Rmg_G->set_rank(pct.gridpe);
 
@@ -155,8 +157,11 @@ void InitIo (int argc, char **argv)
 
 }
 
+// Required here for transitional routines
+extern std::unordered_map<std::string, InputKey *> ControlMap;
+
 extern "C" void init_IO(int argc, char **argv)
 {
-    InitIo(argc, argv);
+    InitIo(argc, argv, ControlMap);
 }
 

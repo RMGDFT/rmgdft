@@ -71,7 +71,7 @@ namespace RmgInput {
 }
 
 
-RmgInputFile::RmgInputFile(char *inputfile) {
+RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map) : InputMap(Map)  {
     sfile = PreprocessInputFile(inputfile);
 
 }
@@ -325,9 +325,9 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
 // Destructor frees up the map
 RmgInputFile::~RmgInputFile(void) {
 
-    for (auto item = InputMap.begin();item != InputMap.end();item++) {
-        InputKey *Ik = item->second;
-        delete Ik;        
-    }
+//    for (auto item = InputMap.begin();item != InputMap.end();item++) {
+//        InputKey *Ik = item->second;
+//        delete Ik;        
+//    }
 
 }

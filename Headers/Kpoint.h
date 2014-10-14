@@ -34,13 +34,14 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "State.h"
+#include "InputKey.h"
 #include <mpi.h>
 
 template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double kweight, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL );
+    Kpoint(double *kpt, double kweight, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
 
     void set_pool(KpointType *pool);
     void sort_orbitals(void);
@@ -54,6 +55,8 @@ public:
     void init_states(void);
     void write_occ(void);
 
+    // Input file internal map
+    std::unordered_map<std::string, InputKey *>& ControlMap;
 
     // BaseGrid class
     BaseGrid *G;

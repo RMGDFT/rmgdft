@@ -10,6 +10,7 @@ namespace po = boost::program_options;
 #include <string> 
 #include <cfloat> 
 #include <climits> 
+#include <unordered_map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
@@ -82,11 +83,11 @@ namespace po = boost::program_options;
 
 namespace Ri = RmgInput;
 
-void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc)
+void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
 
-    RmgInputFile If(cfile);
+    RmgInputFile If(cfile, InputMap);
     std::string LatticeType;
     std::string CalculationMode;
     std::string DiscretizationType;
