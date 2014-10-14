@@ -273,6 +273,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "Time step to use in the poisson multigrid solver on the finest level.\n",
                      "poisson_finest_time_step must lie in the range (0.4,0.8). Resetting to the default value of 0.6.\n");
 
+    If.RegisterInputKey("poisson_coarse_time_step", &lc.poi_parm.sb_step, 0.4, 0.8, 0.6,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Time step to use in the poisson multigrid solver on the coarse levels.\n",
+                     "poisson_coarse_time_step must lie in the range (0.4,0.8). Resetting to the default value of 0.6.\n");
+
     If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
@@ -351,8 +356,17 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Proportion of the current charge density to replace with the new density after each scf step.\n",
-                     "charge_density_mixing must lie in the range (0.0, 1.0)\n");
+                     "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
 
+    If.RegisterInputKey("projector_mixing", &lc.prjmix, 0.0, 1.0, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Proportion of the current non-local projections to replace with the new projections after each scf step.\n ",
+                     "projector_mixing must lie in the range (0.0, 1.0). Resetting to the default value of 0.5.\n");
+
+    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.2, 1.0, 0.3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Submatrix width to use as a fraction of the full spectrum.\n",
+                     "folded_spectrum_width must lie in the range (0.2,1.0). Resetting to the default value of 0.3.\n");
 
     // Booleans next. Booleans are never required.
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
@@ -429,17 +443,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "",
                      "");
 
-    If.RegisterInputKey("poisson_coarse_time_step", &lc.poi_parm.sb_step, min, max, 0.6,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, min, max, 1.75,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("projector_mixing", &lc.prjmix, min, max, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -450,11 +454,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "");
 
     If.RegisterInputKey("Emax", &lc.Emax, min, max, 0.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, min, max, 0.3,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
