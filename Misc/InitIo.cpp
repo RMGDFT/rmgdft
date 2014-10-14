@@ -80,8 +80,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
 
-ReadCommon(argc, argv, "in.c60.nf", ct, pct, ControlMap);
-exit(0);
+//ReadCommon(argc, argv, "in.c60.nf", ct, pct, ControlMap);
+//exit(0);
     read_control(ct.cfile);
     Rmg_G->set_rank(pct.gridpe);
 

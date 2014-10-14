@@ -453,6 +453,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
+    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, 0.05, 3.0, 0.5,
+                     CHECK_AND_TERMINATE, OPTIONAL,
+                     "",
+                     "neb_spring_constant must be in the range (0.05, 3.0).\n");
+
+
 #if 0
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
                      CHECK_AND_FIX, OPTIONAL,
@@ -460,11 +466,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "");
 
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, min, max, 1.75,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, min, max, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
