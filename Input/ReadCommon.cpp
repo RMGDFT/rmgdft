@@ -26,6 +26,7 @@ namespace po = boost::program_options;
 #include "CheckValue.h"
 #include "RmgException.h"
 #include "RmgInputFile.h"
+#include "InputOpts.h"
 
 
 /**********************************************************************
@@ -88,6 +89,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
 //    CONTROL lc;
     PE_CONTROL pelc;
     RmgInputFile If(cfile);
+    std::string LatticeType;
+    std::string CalculationMode;
  
     Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> CoarseGrid;
@@ -102,12 +105,52 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
 
+    If.RegisterInputKey("bravais_lattice_type", &LatticeType, "",
+                     CHECK_AND_TERMINATE, REQUIRED, bravais_lattice_type,
+                     "Bravais Lattice Type.\n", 
+                     "bravais_lattice_type not found.\n");
+
+    If.RegisterInputKey("calculation_mode", &CalculationMode, "",
+                     CHECK_AND_TERMINATE, REQUIRED, calculation_mode,
+                     "Type of calculation to perform.\n", 
+                     "calculation_mode not available.\n");
+
+    If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
+                     CHECK_AND_TERMINATE, REQUIRED, 
+                     "First lattice constant.\n", 
+                     "a_length must be a positive number. Terminating.\n");
+
+    If.RegisterInputKey("b_length", &celldm[1], 0.0, DBL_MAX, 0.0, 
+                     CHECK_AND_TERMINATE, REQUIRED, 
+                     "Second lattice constant.\n", 
+                     "b_length must be a positive number. Terminating.\n");
+
+    If.RegisterInputKey("c_length", &celldm[2], 0.0, DBL_MAX, 0.0, 
+                     CHECK_AND_TERMINATE, REQUIRED, 
+                     "Third lattice constant.\n", 
+                     "c_length must be a positive number. Terminating.\n");
+
+    If.RegisterInputKey("alpha", &celldm[3], -DBL_MAX, DBL_MAX, 0.0, 
+                     CHECK_AND_TERMINATE, REQUIRED, 
+                     "First lattice angle.\n", 
+                     "\n");
+
+    If.RegisterInputKey("beta", &celldm[4], -DBL_MAX, DBL_MAX, 0.0, 
+                     CHECK_AND_TERMINATE, REQUIRED, 
+                     "Second lattice angle.\n", 
+                     "\n");
+
+    If.RegisterInputKey("gamma", &celldm[5], -DBL_MAX, DBL_MAX, 0.0, 
+                     CHECK_AND_TERMINATE, REQUIRED, 
+                     "Third lattice angle.\n", 
+                     "\n");
+
     // Deault of zero is OK because this means to try to set it automatically later on.
     // The value of 64 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.
     If.RegisterInputKey("threads_per_node", &lc.THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Number of threads each MPI process will use.\n", 
+                     "Number of threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
     If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
@@ -205,6 +248,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
                      "kohn_sham_fd_order must lie in the range (4,8). Resetting to the default value of 6.\n");
 
+    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.2, 0.5, 0.3,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
+                     "kohn_sham_time_step must lie in the range (0.2,0.5). Resetting to the default value of 0.3.\n");
+
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration.\n",
@@ -219,6 +267,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of mu (also known as W) cycles to use in the hartree multigrid solver.\n",
                      "poisson_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
+
+    If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 0.8, 0.6,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Time step to use in the poisson multigrid solver on the finest level.\n",
+                     "poisson_finest_time_step must lie in the range (0.4,0.8). Resetting to the default value of 0.6.\n");
 
     If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
                      CHECK_AND_FIX, OPTIONAL,
@@ -237,8 +290,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
 
     If.RegisterInputKey("fine_grid_non_local_pp", &lc.nxfgrid, 1, 4, 4,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Fine grid for non-local pseudopotential.\n",
+                     "fine_grid_non_local_pp must lie in the range (1,4). Resetting to the default value of 4.\n");
 
     If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 32, 512,64,
                      CHECK_AND_FIX, OPTIONAL,
@@ -335,6 +388,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
     If.RegisterInputKey("scalapack_global_sums", &lc.scalapack_global_sums, true,
                         "");
 
+    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, 100000.0, 10000.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Ratio between target RMS for get_vh and RMS total potential.\n",
+                     "hartree_rms_ratio must be in the range (1000.0, 100000.0). Resetting to default value.\n");
+
 #if 0
     If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, min, max, 0.50,
                      CHECK_AND_FIX, OPTIONAL,
@@ -367,21 +425,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
                      "");
 
     If.RegisterInputKey("electric_field_magnitude", &lc.e_field, min, max, 0.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, min, max, 1000.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, min, max, 0.3,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, min, max, 0.6,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -495,8 +538,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc)
         }
     }
 
-
-exit(0);
 
 #if 0
 

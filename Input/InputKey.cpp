@@ -1,5 +1,6 @@
 #include <typeinfo>
 #include <iostream>
+#include <unordered_map>
 #include "InputKey.h"
 
 // This is a rather kludgy way of doing this but I didn't have much luck getting
@@ -35,6 +36,7 @@ InputKey::InputKey(std::string& KeyName, bool *ReadVal, bool Defval, const char 
     InputKey::KeyType = typeid(bool).hash_code();
 }
 
+// Regular string
 InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
     InputKey::Readstr = ReadStr;
     InputKey::Defstr = Defstr;
@@ -42,6 +44,20 @@ InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defst
     InputKey::Required = Required;
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
+    InputKey::MapPresent = false;
+    InputKey::KeyType = typeid(std::string).hash_code();
+}
+
+// Enumerated string
+InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+    InputKey::Readstr = ReadStr;
+    InputKey::Range = Allowed;
+    InputKey::Defstr = Defstr;
+    InputKey::Fix = Fix;
+    InputKey::Required = Required;
+    InputKey::helpmsg = helpmsg;
+    InputKey::errmsg = errmsg;
+    InputKey::MapPresent = true;
     InputKey::KeyType = typeid(std::string).hash_code();
 }
 

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace RmgInput {
 
@@ -26,12 +27,18 @@ class InputKey {
         // Strings
         InputKey(std::string& KeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
 
+        // Enumerated strings
+        InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg);
+
+
         // Vectors
         InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t count, bool Required, const char* helpmsg, const char *errmsg);
         InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, size_t count, bool Required, const char* helpmsg, const char *errmsg);
         
 
         std::string& KeyName;
+        std::unordered_map<std::string, int> Range;
+        bool MapPresent;
         size_t KeyType;
         bool Fix;
         bool Required;

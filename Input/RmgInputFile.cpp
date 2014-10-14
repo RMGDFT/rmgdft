@@ -24,7 +24,8 @@ namespace po = boost::program_options;
 
 
 template void RmgInputFile::RegisterInputKey<int>(std::string, int *, int, int, int, bool, bool, const char *, const char *);
-template void RmgInputFile::RegisterInputKey(std::string, double *, double, double, double, bool, bool, const char *, const char *);
+template void RmgInputFile::RegisterInputKey<double>(std::string, double *, double, double, double, bool, bool, const char *, const char *);
+
 
 // Custom validators for boost program options. 
 namespace RmgInput {
@@ -91,6 +92,12 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, bool *ReadVal, bool Def
 
 void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) {
     InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, helpmsg, errmsg);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+
+void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const std::unordered_map<std::string, int>& Allowed, const char *helpmsg, const char *errmsg) {
+    InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, Allowed, helpmsg, errmsg);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
@@ -173,9 +180,27 @@ void RmgInputFile::LoadInputKeys(void) {
         }
 
         if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
-            if(Ik->Vint->vals.size() != Ik->count) {
+            if(Ik->Vdouble->vals.size() != Ik->count) {
                 throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
             }
+        }
+
+        if(Ik->KeyType == typeid(std::string).hash_code()) {
+
+            // Trim quotes
+            boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\""));
+            if(Ik->MapPresent) {
+                // enumerated string so check if the value is allowed
+                if(Ik->Range.count(*Ik->Readstr) == 0) {
+                    throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
+                }
+
+            }
+            else {
+                // regular string
+
+            }
+
         }
 
 
@@ -302,7 +327,7 @@ RmgInputFile::~RmgInputFile(void) {
 
     for (auto item = InputMap.begin();item != InputMap.end();item++) {
         InputKey *Ik = item->second;
-        delete [] Ik;        
+        delete Ik;        
     }
 
 }

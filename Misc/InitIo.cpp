@@ -78,6 +78,8 @@ void InitIo (int argc, char **argv)
     snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
 
+//ReadCommon(argc, argv, "in.c60.nf", ct);
+//exit(0);
     read_control(ct.cfile);
     Rmg_G->set_rank(pct.gridpe);
 
@@ -149,6 +151,7 @@ void InitIo (int argc, char **argv)
     Rmg_T->set_MPI_comm(pct.grid_comm);
 
     GlobalSumsInit();
+
 
 }
 

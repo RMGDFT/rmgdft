@@ -249,7 +249,7 @@ target_link_libraries (rmg-on ${FFTW_LIBRARIES})
 target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
 target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
 
-find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options)
+find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries (rmg ${Boost_LIBRARIES})
 target_link_libraries (rmg-on ${Boost_LIBRARIES})
@@ -452,7 +452,7 @@ target_link_libraries (rmg-negf ${LIBSPG_LIBRARIES})
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 #    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
     set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -g -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -mavx -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
 #    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
 endif()
