@@ -3,6 +3,7 @@
 
 #if __cplusplus
 #include <complex>
+#include <set>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -143,7 +144,7 @@ bool Verify(const std::string& KeyName, const std::string& KeyVal, const std::un
 bool Verify(const std::string& KeyName, const char *keyval, const std::unordered_map<std::string, InputKey *>& Map);
 bool Verify(const std::string& KeyName, const bool& KeyVal, const std::unordered_map<std::string, InputKey *>& Map);
 void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadRmgAtoms(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& Species, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 
 
 

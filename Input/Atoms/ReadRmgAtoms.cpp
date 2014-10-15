@@ -10,6 +10,7 @@ namespace po = boost::program_options;
 #include <climits> 
 #include <unordered_map>
 #include <set>
+#include <list>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
@@ -21,7 +22,6 @@ namespace po = boost::program_options;
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
-#include "CheckValue.h"
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
@@ -36,15 +36,14 @@ namespace po = boost::program_options;
 
 namespace Ri = RmgInput;
 
-void ReadRmgAtoms(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& Species, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
     std::string AtomArray;
     std::string line_delims = "^\n";
     std::string whitespace_delims = " \n\t";
     std::vector<std::string> Atoms;
-    std::set<std::string> Species;
-    size_t nions = 0;
+    int nions = 0;
 
     RmgInputFile If(cfile, InputMap);
 
@@ -85,10 +84,12 @@ void ReadRmgAtoms(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         boost::trim(sp);
 
         // Valid atomic symbol? GetAtomicMass will throw a fatal exception if the symbol is not valid.
-        double mass = GetAtomicMass(sp);
+        GetAtomicMass(sp);
 
-        // Is valid so make an entry in the Species set
-        Species.emplace(sp);
+        // Is valid so make an entry in the SpeciesTypes set and in the Species list. SpeciesTypes set only contains
+        // one entry for each unique species type while Species contains lc.num_ions entries (one for each ion)
+        SpeciesTypes.emplace(sp);
+        Species.emplace_back(sp);
       
         // Look for the coordinates
         it1++;
