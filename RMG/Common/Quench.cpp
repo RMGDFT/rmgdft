@@ -163,7 +163,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
 //    if (CONVERGED || (ct.forceflag != MD_QUENCH))
-//	force (rho, rho_oppo, rhoc, vh, vxc, vnuc, Kptr[0]->kstates);
+	force (rho, rho_oppo, rhoc, vh, vxc, vnuc);
 
     /* output the forces */
     if (pct.imgpe == 0)

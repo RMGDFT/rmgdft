@@ -110,16 +110,15 @@ void init_psp (void)
         sp = &ct.sp[isp];
 
         /*Get ldim */
-	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (rmg_double_t) get_FG_RATIO());
-        if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID())
-            || (sp->ldim >= get_FNZ_GRID()))
-            error_handler ("local potential radius exceeds global grid size");
+//	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (rmg_double_t) get_FG_RATIO());
+       // if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID())
+        //    || (sp->ldim >= get_FNZ_GRID()))
+        //    error_handler ("local potential radius exceeds global grid size");
 
 
         /*Get drnlig */
         /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)FG_NX; */
-        t1 = sp->ldim / get_FG_RATIO() + 1;
-        sp->drlig = sqrt (3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
+        sp->drlig = sqrt (3.0) * (sp->lradius +1.0);
         if (ibrav == HEXAGONAL)
             sp->drlig *= 2.0;
         t1 = (rmg_double_t) MAX_LOCAL_LIG;

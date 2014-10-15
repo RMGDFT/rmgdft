@@ -453,10 +453,10 @@ void LoadUpf(SPECIES *sp)
     // setting these
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
     sp->rc = 0.50;
-    sp->lradius = 3.0425;
+    sp->lradius = 9.0;
     sp->nlradius = 3.0425;
     sp->qradius = 3.0425;
-    sp->lrcut = 3.0425;
+    sp->lrcut = 7.5;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
     sp->aradius = 9.0;

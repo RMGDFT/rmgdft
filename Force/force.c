@@ -50,7 +50,7 @@
 
 
 
-void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, STATE * states)
+void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc)
 {
     int ion, idx;
     rmg_double_t *vtott, *rho_tot;

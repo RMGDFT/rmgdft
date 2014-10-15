@@ -386,8 +386,7 @@ void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, do
 void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, double cR, double cI);
 double get_QnmL (int idx, int ltot, double r, SPECIES *sp);
 
-void force (double *rho, double *rho_oppo, double *rhoc, double *vh, double *vxc, double *vnuc,
-            STATE *states);
+void force (double *rho, double *rho_oppo, double *rhoc, double *vh, double *vxc, double *vnuc);
 
 
 void iiforce (void);

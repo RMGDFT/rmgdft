@@ -48,38 +48,55 @@
 void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
 {
 
-    int ix, iy, iz, ion, idx;
-    int *pvec, docount, ishift;
-    int ilow, jlow, klow, ihi, jhi, khi, map;
-    int *Aix, *Aiy, *Aiz;
-    rmg_double_t r, xc, yc, zc, invdr;
-    rmg_double_t ax[3], axs[3], bx[3];
+    int ishift;
+    rmg_double_t axs[3], bx[3];
     rmg_double_t shift[4];
-    rmg_double_t fx, fy, fz;
+    rmg_double_t fl[3];
+    rmg_double_t deltac;
+    rmg_double_t sumxc2, sumx, sumy, sumz;
+
+    int ix, iy, iz, ixx, iyy, izz;
+    int xstart, ystart, zstart, xend, yend, zend;
+    int ion, idx;
+    int ilow, jlow, klow, ihi, jhi, khi;
+    int dimx, dimy, dimz;
+    int FP0_BASIS;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+    int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
+    int FNX_GRID, FNY_GRID, FNZ_GRID;
+
+    rmg_double_t r, Zv, rc, rc2, rcnorm, t1;
+    rmg_double_t x[3], invdr;
     rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;
-    rmg_double_t deltac;
-    rmg_double_t *locsum, *rx, *ry, *rz, *prjptr, *pptr;
-    rmg_double_t sumxc2, sumxyc;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
     hzzgrid = get_hzzgrid();
+    xside = get_xside();
+    yside = get_yside();
+    zside = get_zside();
 
-    my_calloc( Aix, get_FNX_GRID(), int );
-    my_calloc( Aiy, get_FNY_GRID(), int );
-    my_calloc( Aiz, get_FNZ_GRID(), int );
+    FP0_BASIS = get_FP0_BASIS();
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+    FPX_OFFSET = get_FPX_OFFSET();
+    FPY_OFFSET = get_FPY_OFFSET();
+    FPZ_OFFSET = get_FPZ_OFFSET();
+    FNX_GRID = get_FNX_GRID();
+    FNY_GRID = get_FNY_GRID();
+    FNZ_GRID = get_FNZ_GRID();
 
-    my_malloc (locsum, 12, rmg_double_t);
-    my_malloc (prjptr, 12 * get_FP0_BASIS(), rmg_double_t);
-    my_malloc (pvec, get_FP0_BASIS(), int);
 
-
-    rx = prjptr;
-    ry = rx + 4 * get_FP0_BASIS();
-    rz = ry + 4 * get_FP0_BASIS();
-
+    ilow = FPX_OFFSET;
+    jlow = FPY_OFFSET;
+    klow = FPZ_OFFSET;
+    ihi = ilow + FPX0_GRID;
+    jhi = jlow + FPY0_GRID;
+    khi = klow + FPZ0_GRID;
 
 
     deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) get_FG_RATIO();
@@ -103,188 +120,123 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
         if (sp->nlccflag)
         {
 
-            invdr = ONE / sp->drlig;
+            dimx =  sp->lradius/(hxxgrid*xside);
+            dimy =  sp->lradius/(hyygrid*yside);
+            dimz =  sp->lradius/(hzzgrid*zside);
 
-            /* Determine mapping indices or even if a mapping exists */
-            map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                             sp->ldim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
-                             get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
-                             &iptr->lxcstart, &iptr->lycstart, &iptr->lzcstart);
+            dimx = dimx * 2 + 1;
+            dimy = dimy * 2 + 1;
+            dimz = dimz * 2 + 1;
 
 
-            /* If there is any overlap then we have to generate the mapping */
-            /*my_barrier(); */
-            docount = 0;
-            if (map)
+            xstart = iptr->xtal[0] / hxxgrid - dimx/2;
+            xend = xstart + dimx;
+            ystart = iptr->xtal[1] / hyygrid - dimy/2;
+            yend = ystart + dimy;
+            zstart = iptr->xtal[2] / hzzgrid - dimz/2;
+            zend = zstart + dimz;
+
+            invdr = 1.0 / sp->drlig;
+
+            sumx = sumy = sumz = 0.0;
+            for (ix = xstart; ix < xend; ix++)
             {
-
-                zc = iptr->lzcstart;
-                for (iz = 0; iz < sp->ldim; iz++)
+                // fold the grid into the unit cell
+                ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
+                if(ixx >= ilow && ixx < ihi)
                 {
 
-                    yc = iptr->lycstart;
-                    for (iy = 0; iy < sp->ldim; iy++)
+                    for (iy = ystart; iy < yend; iy++)
                     {
-
-                        xc = iptr->lxcstart;
-                        for (ix = 0; ix < sp->ldim; ix++)
+                        // fold the grid into the unit cell
+                        iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
+                        if(iyy >= jlow && iyy < jhi)
                         {
-
-                            if (((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
-                                ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
-                                ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
+                            for (iz = zstart; iz < zend; iz++)
                             {
-
-                                pvec[docount] =
-                                    get_FPY0_GRID() * get_FPZ0_GRID() * ((Aix[ix]-get_FPX_OFFSET()) % get_FPX0_GRID()) +
-                                    get_FPZ0_GRID() * ((Aiy[iy]-get_FPY_OFFSET()) % get_FPY0_GRID()) +
-                                    ((Aiz[iz]-get_FPZ_OFFSET()) % get_FPZ0_GRID());
-
-                                ax[0] = xc - iptr->xtal[0];
-                                ax[1] = yc - iptr->xtal[1];
-                                ax[2] = zc - iptr->xtal[2];
-
-                                to_cartesian (ax, bx);
-
-
-                                for (ishift = 0; ishift < 4; ishift++)
+                                // fold the grid into the unit cell
+                                izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
+                                if(izz >= klow && izz < khi)
                                 {
 
-                                    axs[0] = bx[0] - shift[ishift];
-                                    axs[1] = bx[1];
-                                    axs[2] = bx[2];
-                                    r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-
-                                    rx[docount + ishift * get_FP0_BASIS()] =
-                                        linint (&sp->rhocorelig[0], r, invdr);
+                                    idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
+                                    x[0] = ix * hxxgrid - iptr->xtal[0];
+                                    x[1] = iy * hyygrid - iptr->xtal[1];
+                                    x[2] = iz * hzzgrid - iptr->xtal[2];
+                                    r = metric (x);
 
 
-
-                                }       /* end for */
-
-
-                                for (ishift = 0; ishift < 4; ishift++)
-                                {
-
-                                    axs[0] = bx[0];
-                                    axs[1] = bx[1] - shift[ishift];
-                                    axs[2] = bx[2];
-                                    r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-
-                                    ry[docount + ishift * get_FP0_BASIS()] =
-                                        linint (&sp->rhocorelig[0], r, invdr);
+                                    to_cartesian (x, bx);
 
 
-                                }       /* end for */
-
-                                for (ishift = 0; ishift < 4; ishift++)
-                                {
-
-                                    axs[0] = bx[0];
-                                    axs[1] = bx[1];
-                                    axs[2] = bx[2] - shift[ishift];
-                                    r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-
-                                    rz[docount + ishift * get_FP0_BASIS()] =
-                                        linint (&sp->rhocorelig[0], r, invdr);
+                                    for (ishift = 0; ishift < 4; ishift++)
+                                    {
+                                        axs[0] = bx[0] - shift[ishift];
+                                        axs[1] = bx[1];
+                                        axs[2] = bx[2];
+                                        r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
+                                        sumx +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                    }       /* end for */
 
 
+                                    for (ishift = 0; ishift < 4; ishift++)
+                                    {
+                                        axs[0] = bx[0];
+                                        axs[1] = bx[1] - shift[ishift];
+                                        axs[2] = bx[2];
+                                        r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
+                                        sumy +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                    }       /* end for */
 
-                                }       /* end for */
+                                    for (ishift = 0; ishift < 4; ishift++)
+                                    {
+                                        axs[0] = bx[0];
+                                        axs[1] = bx[1];
+                                        axs[2] = bx[2] - shift[ishift];
+                                        r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
+                                        sumz +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                    }       /* end for */
+                                }   /* end if */
+                            }       /* end for */
+                        }           /* end for */
+                    }               /* end for */
+                }                   /* end if */
+            }
 
 
-
-                                docount++;
-
-
-                            }   /* end if */
-
-                            xc += hxxgrid;
-
-                        }       /* end for */
-
-                        yc += hyygrid;
-
-                    }           /* end for */
-
-                    zc += hzzgrid;
-
-                }               /* end for */
+            fl[0] = -sumx/sumxc2 * get_vel_f();
+            fl[1] = -sumy/sumxc2 * get_vel_f();
+            fl[2] = -sumz/sumxc2 * get_vel_f();
 
 
 
-            }                   /* end if */
-
-            /*my_barrier(); */
-
-
-            pptr = prjptr;
-            for (ishift = 0; ishift < 12; ishift++)
+            idx = 3;
+            global_sums (fl, &idx, pct.grid_comm);
+            if (ct.spin_flag)
             {
-
-                locsum[ishift] = ZERO;
-
-                for (idx = 0; idx < docount; idx++)
-                {
-
-                    locsum[ishift] += pptr[idx] * vxc[pvec[idx]];
-
-                }               /* end for */
-
-                locsum[ishift] = locsum[ishift] * get_vel_f();
-                pptr += get_FP0_BASIS();
-
-            }                   /* end for */
+                fl[0] *= 0.5; 
+                fl[1] *= 0.5; 
+                fl[2] *= 0.5; 
+            }
+            /* factor 0.5 is because when calculating exchange correlation
+               half of nonlinear core corection charge is added to spin up and down density */
 
 
-            idx = 12;
-            global_sums (locsum, &idx, pct.img_comm);
-	    if (ct.spin_flag)
-	    	for (ishift = 0; ishift < 12; ishift++)
-			locsum[ishift] *= 0.5;         
-	        /* factor 0.5 is because when calculating exchange correlation
-		half of nonlinear core corection charge is added to spin up and down density */
+            iptr->force[ct.fpt[0]][0] += fl[0];
+            iptr->force[ct.fpt[0]][1] += fl[1];
+            iptr->force[ct.fpt[0]][2] += fl[2];
 
 
-            sumxyc = ZERO;
-            sumxyc += locsum[0] * shift[0];
-            sumxyc += locsum[1] * shift[1];
-            sumxyc += locsum[2] * shift[2];
-            sumxyc += locsum[3] * shift[3];
-            fx = -sumxyc / sumxc2;
-            iptr->force[ct.fpt[0]][0] += fx;
-
-            sumxyc = ZERO;
-            sumxyc += locsum[4] * shift[0];
-            sumxyc += locsum[5] * shift[1];
-            sumxyc += locsum[6] * shift[2];
-            sumxyc += locsum[7] * shift[3];
-            fy = -sumxyc / sumxc2;
-            iptr->force[ct.fpt[0]][1] += fy;
-
-            sumxyc = ZERO;
-            sumxyc += locsum[8] * shift[0];
-            sumxyc += locsum[9] * shift[1];
-            sumxyc += locsum[10] * shift[2];
-            sumxyc += locsum[11] * shift[3];
-            fz = -sumxyc / sumxc2;
-            iptr->force[ct.fpt[0]][2] += fz;
         }                       /* end if */
 
 
     }                           /* end for */
 
 
-
-    my_free (Aiz);
-    my_free (Aiy);
-    my_free (Aix);
-
-    my_free (pvec);
-    my_free (prjptr);
-    my_free (locsum);
-
-
 }                               /* end nlccforce */
 
 /******/
+
+
+
+
