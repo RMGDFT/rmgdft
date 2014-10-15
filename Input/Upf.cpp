@@ -452,7 +452,7 @@ void LoadUpf(SPECIES *sp)
     // Stuff not present in the UPF format that RMG requires. We need to find a consistent way of automatically
     // setting these
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
-    //sp->rc = 0.70;
+    sp->rc = 0.50;
     sp->lradius = 3.0425;
     sp->nlradius = 3.0425;
     sp->qradius = 3.0425;

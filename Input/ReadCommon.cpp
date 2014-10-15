@@ -88,7 +88,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
 
     RmgInputFile If(cfile, InputMap);
-    std::string LatticeType;
     std::string CalculationMode;
     std::string DiscretizationType;
  
@@ -105,20 +104,50 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
 
-    If.RegisterInputKey("bravais_lattice_type", &LatticeType, "",
+    If.RegisterInputKey("bravais_lattice_type", NULL, NULL, "",
                      CHECK_AND_TERMINATE, REQUIRED, bravais_lattice_type,
                      "Bravais Lattice Type.\n", 
                      "bravais_lattice_type not found.\n");
 
-    If.RegisterInputKey("calculation_mode", &CalculationMode, "",
+    If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "scalapack",
+                     CHECK_AND_FIX, OPTIONAL, subdiag_driver,
+                     "Driver type used for subspace diagonalization of the eigenvectors.\n", 
+                     "subdiag_driver must be lapack, scalapack or magma. Resetting to scalapack.\n");
+
+    If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
+                     CHECK_AND_FIX, OPTIONAL, crds_units,
+                     "Units for the atomic coordinates.\n", 
+                     "Coordinates must be specified in either Bohr or Angstrom.\n");
+
+    If.RegisterInputKey("atomic_coordinate_type", NULL, &lc.crd_flag, "Absolute",
+                     CHECK_AND_TERMINATE, OPTIONAL, atomic_coordinate_type,
+                     "Flag indicated whether or not atomic coordinates are absolute or cell relative.\n", 
+                     "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating.\n");
+
+    If.RegisterInputKey("calculation_mode", NULL, &lc.forceflag, "Quench Electrons",
                      CHECK_AND_TERMINATE, REQUIRED, calculation_mode,
                      "Type of calculation to perform.\n", 
                      "calculation_mode not available.\n");
 
-    If.RegisterInputKey("discretization_type", &DiscretizationType, "",
+    If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Mehrstellen",
                      CHECK_AND_FIX, OPTIONAL, discretization_type,
                      "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
                      "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Mehrstellen\".\n");
+
+    If.RegisterInputKey("boundary_condition_type", NULL, &lc.boundaryflag, "Periodic",
+                     CHECK_AND_TERMINATE, OPTIONAL, boundary_condition_type,
+                     "Boundary condition type Only periodic is currently implemented.\n", 
+                     "discretization_type must be Periodic.\n");
+
+    If.RegisterInputKey("exchange_correlation_type", NULL, &lc.xctype, "LDA",
+                     CHECK_AND_TERMINATE, OPTIONAL, exchange_correlation_type,
+                     "Type of functional for exchange-correlation.\n", 
+                     "exchange_correlation_type not supported. Terminating.\n");
+
+    If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fixed",
+                     CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
+                     "Method used to set the occupations of the electronic orbitals.\n", 
+                     "occupations_type not supported. Terminating.\n");
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
@@ -499,7 +528,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.LoadInputKeys();
 
-
     // Check items that require custom handling
     try {
         pelc.pe_x = ProcessorGrid.vals.at(0);
@@ -532,19 +560,36 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     // If the user has not specifically set the number of poisson multigrid levels use the max
     if(lc.poi_parm.levels == -1) {
-        for(ct.poi_parm.levels = 6;ct.poi_parm.levels >= 0;ct.poi_parm.levels--) {
+        for(lc.poi_parm.levels = 6;lc.poi_parm.levels >= 0;lc.poi_parm.levels--) {
             bool poi_level_err = false;
-            if ((FNX_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
-            if ((FNY_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
-            if ((FNZ_GRID / (1 << ct.poi_parm.levels)) < 3) poi_level_err = true;
-            if ((FNX_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
-            if ((FNY_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
-            if ((FNZ_GRID % (1 << ct.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNX_GRID / (1 << lc.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNY_GRID / (1 << lc.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNZ_GRID / (1 << lc.poi_parm.levels)) < 3) poi_level_err = true;
+            if ((FNX_GRID % (1 << lc.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNY_GRID % (1 << lc.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNZ_GRID % (1 << lc.poi_parm.levels)) != 0) poi_level_err = true;
             if (!poi_level_err) break;
         }
     }
 
 
+    // Transform to atomic units, which are used internally if input is in angstrom 
+    if (Verify ("crds_units", "Angstrom", InputMap))
+    {
+        celldm[0] *= A_a0;
+        celldm[1] *= A_a0;
+        celldm[2] *= A_a0;
+    }
+
+    // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
+    // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
+    if (!Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) &&
+            !Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
+            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+    {
+        celldm[1] /= celldm[0];
+        celldm[2] /= celldm[0];
+    }
 
 
     // Set grid info up

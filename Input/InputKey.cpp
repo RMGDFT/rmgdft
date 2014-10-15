@@ -5,7 +5,20 @@
 
 // This is a rather kludgy way of doing this but I didn't have much luck getting
 // the boost::program_options class working with run time type info so I went with this for now
+// 
+// If the passed value of ReadVal is NULL then we allocate memory to store the item inside
+// the constructor. Right now this is not freed inside the constructor since the typical
+// program usage is such that we don't care. (Only called once and items live for the
+// duration of the program). But we may want to change this in the future in which case
+// some means of tracking whether or not the memory needs to be freed in the des
+
+// ints
 InputKey::InputKey(std::string& KeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+
+    if(!ReadVal) {
+        allocated = true;
+        ReadVal = new int[1];
+    }
     InputKey::Readintval = ReadVal;
     InputKey::Minintval = Minval;
     InputKey::Maxintval = Maxval;
@@ -15,9 +28,16 @@ InputKey::InputKey(std::string& KeyName, int *ReadVal, int Minval, int Maxval, i
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::KeyType = typeid(int).hash_code();
+
 }
 
+// doubles
 InputKey::InputKey(std::string& KeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+
+    if(!ReadVal) {
+        allocated = true;
+        ReadVal = new double[1];
+    }
     InputKey::Readdoubleval = ReadVal;
     InputKey::Mindoubleval = Minval;
     InputKey::Maxdoubleval = Maxval;
@@ -27,17 +47,31 @@ InputKey::InputKey(std::string& KeyName, double *ReadVal, double Minval, double 
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::KeyType = typeid(double).hash_code();
+
 }
 
+// booleans
 InputKey::InputKey(std::string& KeyName, bool *ReadVal, bool Defval, const char *helpmsg) : KeyName(KeyName) {
+
+    if(!ReadVal) {
+        allocated = true;
+        ReadVal = new bool[1];
+    }
+    InputKey::Required = false;
     InputKey::Readboolval = ReadVal;
     InputKey::Defboolval = ReadVal;
     InputKey::helpmsg = helpmsg;
     InputKey::KeyType = typeid(bool).hash_code();
+
 }
 
 // Regular string
 InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+
+    if(!ReadStr) {
+        allocated = true;
+        ReadStr = new std::string[1];
+    }
     InputKey::Readstr = ReadStr;
     InputKey::Defstr = Defstr;
     InputKey::Fix = Fix;
@@ -46,11 +80,18 @@ InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defst
     InputKey::errmsg = errmsg;
     InputKey::MapPresent = false;
     InputKey::KeyType = typeid(std::string).hash_code();
+
 }
 
 // Enumerated string
-InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& KeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+
+    if(!ReadStr) {
+        allocated = true;
+        ReadStr = new std::string[1];
+    }
     InputKey::Readstr = ReadStr;
+    InputKey::Readintval = ReadVal;
     InputKey::Range = Allowed;
     InputKey::Defstr = Defstr;
     InputKey::Fix = Fix;
@@ -59,10 +100,16 @@ InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defst
     InputKey::errmsg = errmsg;
     InputKey::MapPresent = true;
     InputKey::KeyType = typeid(std::string).hash_code();
+
 }
 
+// Integer vector
 InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
 
+    if(!V) {
+        allocated = true;
+        V = new RmgInput::ReadVector<int>[1];
+    }
     InputKey::Vint = V;
     InputKey::Required = Required;
     InputKey::helpmsg = helpmsg;
@@ -71,13 +118,19 @@ InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t c
     InputKey::KeyType = typeid(RmgInput::ReadVector<int>).hash_code();
 }
 
+// Double vector
 InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
 
+    if(!V) {
+        allocated = true;
+        V = new RmgInput::ReadVector<double>[1];
+    }
     InputKey::Vdouble = V;
     InputKey::Required = Required;
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::count = count;
     InputKey::KeyType = typeid(RmgInput::ReadVector<double>).hash_code();
+
 }
 

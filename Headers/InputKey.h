@@ -28,7 +28,7 @@ class InputKey {
         InputKey(std::string& KeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
 
         // Enumerated strings
-        InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg);
 
 
         // Vectors
@@ -38,7 +38,8 @@ class InputKey {
 
         std::string& KeyName;
         std::unordered_map<std::string, int> Range;
-        bool MapPresent;
+        bool MapPresent;  // For enumerated strings
+        bool allocated=false;
         size_t KeyType;
         bool Fix;
         bool Required;

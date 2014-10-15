@@ -1,4 +1,5 @@
 add_library (Input
+Verify.cpp
 InputKey.cpp
 CheckValue.cpp
 RmgInputFile.cpp

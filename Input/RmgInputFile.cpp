@@ -96,8 +96,8 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, c
     InputMap.insert(NewEntry);
 }
 
-void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const std::unordered_map<std::string, int>& Allowed, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, Allowed, helpmsg, errmsg);
+void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, int *ReadVal, const char *defstr, bool Fix, bool Required, const std::unordered_map<std::string, int>& Allowed, const char *helpmsg, const char *errmsg) {
+    InputKey *NewKey = new InputKey(KeyName, Readstr, ReadVal, defstr, Fix, Required, Allowed, helpmsg, errmsg);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
@@ -194,7 +194,9 @@ void RmgInputFile::LoadInputKeys(void) {
                 if(Ik->Range.count(*Ik->Readstr) == 0) {
                     throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
                 }
-
+                // If integer val associated with the enum is desired set it
+                if(Ik->Readintval) *Ik->Readintval = Ik->Range[*Ik->Readstr];
+                
             }
             else {
                 // regular string
