@@ -35,7 +35,6 @@ void read_init(char *meta)
 
     if (pct.worldrank == 0)
     {
-        dprintf("\n  ddd %s ", filetostr(meta));
         newNode (meta, newItem (STR, filetostr (meta)));
         size = tagstrip ();
         dstr = this->is->the.string;

@@ -69,23 +69,23 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
         rmg_printf ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
                 jk, kptr->kpt[0], kptr->kpt[1], kptr->kpt[2]);
 
-	for (idx = 0; idx < nspin; idx++)
-	{
-		if ( (nspin == 2) && (idx == 0))	
-			rmg_printf("\n------------- SPIN UP ---------------\n\n");
-		else if ( (nspin == 2) && (idx == 1))	
-			rmg_printf("\n------------ SPIN DOWN --------------\n\n"); 
-        	il = 0;
-        	for (is = 0; is < ct.num_states; is++)
-        	{
-            		if (is % 4 == 0)
-                		rmg_printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
+        for (idx = 0; idx < nspin; idx++)
+        {
+            if ( (nspin == 2) && (idx == 0))	
+                rmg_printf("\n------------- SPIN UP ---------------\n\n");
+            else if ( (nspin == 2) && (idx == 1))	
+                rmg_printf("\n------------ SPIN DOWN --------------\n\n"); 
+            il = 0;
+            for (is = 0; is < ct.num_states; is++)
+            {
+                if (is % 4 == 0)
+                    rmg_printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
 
-            		rmg_printf ("   %8.4f [%5.3f]%s",
-                    		kptr->Kstates[is].eig[idx] * Ha_eV, kptr->Kstates[is].occupation[idx], ((is % 4 == 3) ? "\n" : ""));
-        	}
-        	rmg_printf ("\n");
-	}
+                rmg_printf ("   %8.4f [%5.3f]%s",
+                        kptr->Kstates[is].eig[idx] * Ha_eV, kptr->Kstates[is].occupation[idx], ((is % 4 == 3) ? "\n" : ""));
+            }
+            rmg_printf ("\n");
+        }
     }
 }
 

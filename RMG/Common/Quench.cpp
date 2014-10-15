@@ -85,7 +85,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.boundaryflag, Kptr);
 
 
-	GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr[0]->Kstates, !ct.scf_steps);
+	GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
 	/* output the eigenvalues with occupations */
 	if (ct.write_eigvals_period)

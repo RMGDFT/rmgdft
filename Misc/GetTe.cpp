@@ -51,17 +51,18 @@
 #include "GlobalSums.h"
 #include "transition.h"
 
-template void GetTe (double *, double *, double *, double *, double *, double *, State<double> *, int);
-template void GetTe (double *, double *, double *, double *, double *, double *, State<std::complex<double> > *, int);
+template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
+template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
 
-template <typename StateType>
-void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, State<StateType> * states, int ii_flag)
+template <typename KpointType>
+void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> **Kptr, int ii_flag)
 {
     int state, kpt, idx, i, j, nspin = (ct.spin_flag + 1), FP0_BASIS;
     double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     double vel, loc_sum;
     double *exc, *nrho, *nrho_oppo;
     ION *iptr1, *iptr2;
+    Kpoint<KpointType> *kptr;
 
 
     FP0_BASIS = get_FP0_BASIS();
@@ -87,15 +88,17 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     {
     	for (kpt = 0; kpt < ct.num_kpts; kpt++)
     	{
+            
+            kptr = Kptr[kpt];
         	t1 = 0.0;
         	for (state = 0; state < ct.num_states; state++)
         	{
 
-            		t1 += (states[state + kpt * ct.num_states].occupation[idx] *
-                   		states[state + kpt * ct.num_states].eig[idx]);
+            		t1 += (kptr->Kstates[state].occupation[idx] *
+                   		kptr->Kstates[state].eig[idx]);
 
         	}
-        	eigsum += t1 * ct.kp[kpt].kweight;
+        	eigsum += t1 * kptr->kweight;
     	}
     }
 
