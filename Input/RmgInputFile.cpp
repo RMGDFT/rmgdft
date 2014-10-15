@@ -102,14 +102,20 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, i
     InputMap.insert(NewEntry);
 }
 
-void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, int count, bool Required, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, V, count, Required, helpmsg, errmsg);
+void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, RmgInput::ReadVector<int> *Defintvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
+    InputKey *NewKey = new InputKey(KeyName, V, Defintvec, count, Required, helpmsg, errmsg);
+    if(!Required) {
+        for(int i = 0;i < count;i++) V->vals[i] = Defintvec->vals[i];
+    }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
 
-void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, int count, bool Required, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, V, count, Required, helpmsg, errmsg);
+void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
+    InputKey *NewKey = new InputKey(KeyName, V, Defdblvec, count, Required, helpmsg, errmsg);
+    if(!Required) {
+        for(int i = 0;i < count;i++) V->vals[i] = Defdblvec->vals[i];
+    }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
@@ -122,30 +128,43 @@ void RmgInputFile::LoadInputKeys(void) {
         std::string KeyName = item->first;
         InputKey *Ik = item->second;
         if(Ik->Required) {
+
             if(Ik->KeyType == typeid(int).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<int>(Ik->Readintval)->required(), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(double).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<double>(Ik->Readdoubleval)->required(), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(std::string).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<std::string>(Ik->Readstr)->required(), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Vint)->required(), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Vdouble)->required(), Ik->helpmsg);
+
         }
         else {
+
             if(Ik->KeyType == typeid(int).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<int>(Ik->Readintval)->default_value(Ik->Defintval), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(double).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<double>(Ik->Readdoubleval)->default_value(Ik->Defdoubleval), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(bool).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<bool>(Ik->Readboolval)->default_value(Ik->Defboolval), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(std::string).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<std::string>(Ik->Readstr)->default_value(Ik->Defstr), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Vint), Ik->helpmsg);
+
             if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Vdouble), Ik->helpmsg);
+
         }
         
 

@@ -42,6 +42,8 @@ extern "C" void get_ddd (double *veff);
 extern "C" void mix_betaxpsi (int mix);
 extern "C" void rmg_lbfgs (void);
 extern "C" void write_restart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, STATE * states);
+extern "C" int init_kpoints (int *mesh, int *is_shift);
+
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,

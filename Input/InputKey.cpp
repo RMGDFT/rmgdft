@@ -104,7 +104,7 @@ InputKey::InputKey(std::string& KeyName, std::string *ReadStr, int *ReadVal, con
 }
 
 // Integer vector
-InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
 
     if(!V) {
         allocated = true;
@@ -115,11 +115,12 @@ InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t c
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::count = count;
+    InputKey::Defintvec = Defintvec;
     InputKey::KeyType = typeid(RmgInput::ReadVector<int>).hash_code();
 }
 
 // Double vector
-InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
 
     if(!V) {
         allocated = true;
@@ -130,6 +131,7 @@ InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, size_t
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::count = count;
+    InputKey::Defdblvec = Defdblvec;
     InputKey::KeyType = typeid(RmgInput::ReadVector<double>).hash_code();
 
 }

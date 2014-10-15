@@ -1,4 +1,5 @@
 add_library (Input
+ReadDynamics.cpp
 Verify.cpp
 InputKey.cpp
 CheckValue.cpp

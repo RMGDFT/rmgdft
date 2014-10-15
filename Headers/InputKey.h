@@ -32,8 +32,8 @@ class InputKey {
 
 
         // Vectors
-        InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , size_t count, bool Required, const char* helpmsg, const char *errmsg);
-        InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, size_t count, bool Required, const char* helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg);
+        InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg);
         
 
         std::string& KeyName;
@@ -56,6 +56,8 @@ class InputKey {
         std::string* Readstr;
         RmgInput::ReadVector<int> *Vint;
         RmgInput::ReadVector<double> *Vdouble;
+        RmgInput::ReadVector<int> *Defintvec;
+        RmgInput::ReadVector<double> *Defdblvec;
         size_t count;
         const char *Defstr;
         const char* helpmsg;

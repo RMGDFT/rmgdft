@@ -28,8 +28,8 @@ class RmgInputFile {
         void RegisterInputKey(std::string KeyName, T *Readval, T Minval, T Maxval, T Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
         void RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
         void RegisterInputKey(std::string KeyName, std::string *Readstr, int *Readval, const char *defstr, bool Fix, bool Required, const std::unordered_map<std::string, int>& Allowed, const char *helpmsg, const char *errmsg);
-        void RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, int count, bool Required, const char *helpmsg, const char *errmsg);
-        void RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, int count, bool Required, const char *helpmsg, const char *errmsg);
+        void RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, RmgInput::ReadVector<int> *Defintvec, int count, bool Required, const char *helpmsg, const char *errmsg);
+        void RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, int count, bool Required, const char *helpmsg, const char *errmsg);
         void RegisterInputKey(std::string KeyName, bool *ReadVal, bool Defval, const char *helpmsg);
 
 

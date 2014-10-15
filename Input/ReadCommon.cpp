@@ -96,9 +96,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string Outfile;
  
     Ri::ReadVector<int> ProcessorGrid;
+    Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
     Ri::ReadVector<int> CoarseGrid;
+    Ri::ReadVector<int> DefCoarseGrid({{1,1,1}});
     Ri::ReadVector<int> kpoint_mesh;
+    Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
+    Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
     int FG_RATIO;
     double celldm[6];
     double a0[3], a1[3], a2[3], omega;
@@ -119,19 +123,19 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Output file/path to store wavefunctions and other binary data.\n", 
                      "");
 
-    If.RegisterInputKey("processor_grid", &ProcessorGrid, 3, REQUIRED, 
+    If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, REQUIRED, 
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
 
-    If.RegisterInputKey("coarse_grid", &CoarseGrid, 3, REQUIRED, 
+    If.RegisterInputKey("coarse_grid", &CoarseGrid, &DefCoarseGrid, 3, REQUIRED, 
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
 
-    If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, 3, REQUIRED, 
+    If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, REQUIRED, 
                      "Three-D layout of the kpoint mesh.\n", 
                      "You must specify a triplet of coordinate dimensions for the kpoint_mesh.\n");
 
-    If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, 3, REQUIRED, 
+    If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, &def_kpoint_is_shift, 3, REQUIRED, 
                      "Three-D layout of the kpoint shift.\n", 
                      "You must specify a triplet of coordinate dimensions for kpoint_is_shift.\n");
 
@@ -165,6 +169,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Mass to use for structural relaxation, either atomic masses, or use the mass of carbon for all atoms.\n", 
                      "relax_mass must be either \"Atomic\" or \"Equal\". Terminating.\n");
 
+    If.RegisterInputKey("md_integration_order", NULL, &lc.mdorder, "2nd Velocity Verlet",
+                     CHECK_AND_TERMINATE, OPTIONAL, md_integration_order,
+                     "Integration order for molecular dynamics.\n", 
+                     "md_integration_order must be either \"2nd Velocity Verlet\", \"3rd Beeman-Velocity Verlet\" or \"5th Beeman-Velocity Verlet\". Terminating.\n");
+
+    If.RegisterInputKey("z_average_output_mode", NULL, &lc.zaverage, "None",
+                     CHECK_AND_TERMINATE, OPTIONAL, z_average_output_mode,
+                     "z_average_output_mode.\n", 
+                     "z_average_output_mode not supported. Terminating.\n");
+
     If.RegisterInputKey("atomic_coordinate_type", NULL, &lc.crd_flag, "Absolute",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_coordinate_type,
                      "Flag indicated whether or not atomic coordinates are absolute or cell relative.\n", 
@@ -174,6 +188,21 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_TERMINATE, REQUIRED, calculation_mode,
                      "Type of calculation to perform.\n", 
                      "calculation_mode not available.\n");
+
+    If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "Fast Relax",
+                     CHECK_AND_TERMINATE, OPTIONAL, relax_method,
+                     "Type of relaxation method to use for structural optimizations.\n", 
+                     "relax_method not supported.\n");
+
+    If.RegisterInputKey("md_temperature_control", NULL, &lc.tcontrol, "Nose Hoover Chains",
+                     CHECK_AND_TERMINATE, OPTIONAL, md_temperature_control,
+                     "Type of temperature control method to use in molecular dynamics.\n", 
+                     "md_temperature_control type not supported.\n");
+
+    If.RegisterInputKey("md_temperature", &lc.nose.temp, 0.0, DBL_MAX, 300.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Target MD Temperature.\n",
+                     "md_temperature must be a positive number.\n");
 
     If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Mehrstellen",
                      CHECK_AND_FIX, OPTIONAL, discretization_type,
@@ -194,6 +223,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
                      "Method used to set the occupations of the electronic orbitals.\n", 
                      "occupations_type not supported. Terminating.\n");
+
+    If.RegisterInputKey("interpolation_type", NULL, &lc.interp_flag, "Cubic Polynomial",
+                     CHECK_AND_TERMINATE, OPTIONAL, interpolation_type,
+                     "Interpolation method for transferring data between the potential grid and the wavefunction grid.\n", 
+                     "interpolation_type not supported. Terminating.\n");
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
@@ -253,6 +287,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Ionic time step for use in molecular dynamics and structure optimizations.\n",
                      "ionic_time_step must be greater than 0.0.\n");
 
+    If.RegisterInputKey("ionic_time_step_increase", &lc.iondt_inc, 1.0, 3.0, 1.1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Factor by which iondt is increased when dynamic timesteps are enabled.\n",
+                     "ionic_time_step_increase must lie in the range (1.0,1.1). Resetting to the default value of 1.1.\n");
+
     If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, 0.0, 150.0, 150.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Maximum ionic time step to use.\n",
@@ -262,6 +301,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_TERMINATE, OPTIONAL, 
                      "The number of unoccupied orbitals.\n", 
                      "unoccupied_states_per_kpoint must be greater than 0. Terminating.\n");
+
+    If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "number of excess electrons in the system (useful for doped systems)\n",
+                     "system_charge must be a real number.\n");
 
     If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
                      CHECK_AND_FIX, OPTIONAL,
@@ -408,10 +452,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
-    If.RegisterInputKey("max_rmg_steps", &lc.max_rmg_steps, 1, 1, 1,
+    If.RegisterInputKey("max_rmg_steps", &lc.max_rmg_steps, 0, 1000, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+                     "Number of rmg \"restart like\" (NEB/exchange/ARTs) steps to perform",
+                     "max_rmg_steps must lie in the range (0,1000). Resetting to the default value of 1.");
 
     If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
@@ -493,8 +537,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
                          "Use folded spectrum.");
 
-//    If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
-//                        "");
+    If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
+                        "Flag indicating whether or not to use dynamic timesteps in relaxation mode.\n");
 
     If.RegisterInputKey("relax_max_force", &lc.thr_frc, 0.0, DBL_MAX, 2.5E-3,
                      CHECK_AND_FIX, OPTIONAL,
@@ -544,28 +588,37 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "energy_cutoff_parameter must be in the range (1.0,3.0). Resetting to default value of 3.0.\n");
 
 
+    std::string Occup, Occdown;
+    std::string Occ;
+    if(lc.spin_flag) {
+
+        If.RegisterInputKey("states_count_and_occupation_spin_up", &Occup, "",
+                         CHECK_AND_FIX, OPTIONAL,
+                         "Occupation string for spin up states.\n",
+                         "");
+
+        If.RegisterInputKey("states_count_and_occupation_spin_down", &Occdown, "",
+                         CHECK_AND_FIX, OPTIONAL,
+                         "Occupation string for spin down states.\n",
+                         "");
+
+        
+    }
+    else {
+
+        If.RegisterInputKey("states_count_and_occupation", &Occ, "",
+                         CHECK_AND_FIX, OPTIONAL,
+                         "Occupation string for states.\n",
+                         "");
+
+    }
 #if 0
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
 
-    If.RegisterInputKey("md_temperature", &lc.nose.temp, min, max, 300,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
     If.RegisterInputKey("md_nose_oscillation_frequency_THz", &lc.nose.fNose, min, max, 15.59,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("ionic_time_step_increase", &lc.iondt_inc, min, max, 1.1,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("system_charge", &lc.background_charge, min, max, 0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -578,6 +631,18 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Some hacks here to deal with code branches that are still in C
     if(!Description.length()) Description = "RMG electronic structure calculation.";
     std::strncpy(lc.description, Description.c_str(), sizeof(lc.description));
+
+    if(lc.spin_flag) {
+
+        std::strncpy(lc.occupation_str_spin_up, Occup.c_str(), sizeof(lc.occupation_str_spin_up));
+        std::strncpy(lc.occupation_str_spin_down, Occdown.c_str(), sizeof(lc.occupation_str_spin_down));
+
+    }
+    else {
+
+        std::strncpy(lc.occupation_str, Occ.c_str(), sizeof(lc.occupation_str));
+
+    }
 
     size_t found = Infile.find_first_of("/");
     if(found == std::string::npos) {
@@ -686,5 +751,28 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";
 
+    // We check multigrid levels last since we have to be sure that the grid dims have already 
+    // been read in.
+    if ((NX_GRID / (1 << lc.eig_parm.levels)) < 3)
+        throw RmgFatalException() << "NX_GRID: too many eigenvalue MG levels";
+    if ((NY_GRID / (1 << lc.eig_parm.levels)) < 3)
+        throw RmgFatalException() << "NY_GRID: too many eigenvalue MG levels";
+    if ((NZ_GRID / (1 << lc.eig_parm.levels)) < 3)
+        throw RmgFatalException() << "NZ_GRID: too many eigenvalue MG levels";
+    if ((NX_GRID % (1 << lc.eig_parm.levels)) != 0)
+        throw RmgFatalException() << "NX_GRID not evenly divisible by 2^(eig_parm.levels)";
+    if ((NY_GRID % (1 << lc.eig_parm.levels)) != 0)
+        throw RmgFatalException() << "NY_GRID not evenly divisible by 2^(eig_parm.levels)";
+    if ((NZ_GRID % (1 << lc.eig_parm.levels)) != 0)
+        throw RmgFatalException() << "NZ_GRID not evenly divisible by 2^(eig_parm.levels)";
+
+    // Constraints for Neb relax. What does this magic number mean? (set constraint type for switch in Common/constrain.c)
+    if(Verify("calculation_mode", "NEB Relax", InputMap)) lc.constrainforces = 5;
+
+    // Initialize k-points
+    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+
+    // Background charge is defined to be the opposite of system charge
+    lc.background_charge *= -1.0;
 
 }
