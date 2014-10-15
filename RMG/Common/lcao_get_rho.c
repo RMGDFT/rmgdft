@@ -14,37 +14,52 @@
 void lcao_get_rho (rmg_double_t * arho_f)
 {
 
-    int ix, iy, iz;
+    int n, incx;
+    int ix, iy, iz, ixx, iyy, izz;
+    int xstart, ystart, zstart, xend, yend, zend;
     int ion, idx;
-    int ilow, jlow, klow, ihi, jhi, khi, map;
-    int *Aix, *Aiy, *Aiz;
-    int icount, n, incx;
-    int *pvec;
+    int ilow, jlow, klow, ihi, jhi, khi;
+    int dimx, dimy, dimz;
+    int FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
+    int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    rmg_double_t r, xc, yc, zc;;
-    rmg_double_t x[3], invdr, t1, t2, xstart, ystart, zstart;;
+    rmg_double_t r, Zv, rc, rc2, rcnorm, t1, t2;
+    rmg_double_t x[3];
     rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;
+    int i_r;
+    double r1,r2, coef1, coef2, a,b,c;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
     hzzgrid = get_hzzgrid();
+    xside = get_xside();
+    yside = get_yside();
+    zside = get_zside();
 
+    FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();
     FPX_OFFSET = get_FPX_OFFSET();
     FPY_OFFSET = get_FPY_OFFSET();
     FPZ_OFFSET = get_FPZ_OFFSET();
+    FNX_GRID = get_FNX_GRID();
+    FNY_GRID = get_FNY_GRID();
+    FNZ_GRID = get_FNZ_GRID();
 
-    /* Grab some memory for temporary storage */
-    my_malloc (pvec, get_FP0_BASIS(), int);
-    my_malloc (Aix, get_FNX_GRID(), int);
-    my_malloc (Aiy, get_FNY_GRID(), int);
-    my_malloc (Aiz, get_FNZ_GRID(), int);
+
+    ilow = FPX_OFFSET;
+    jlow = FPY_OFFSET;
+    klow = FPZ_OFFSET;
+    ihi = ilow + FPX0_GRID;
+    jhi = jlow + FPY0_GRID;
+    khi = klow + FPZ0_GRID;
+
 
 
     /* Initialize the compensating charge array and the core charge array */
@@ -61,91 +76,90 @@ void lcao_get_rho (rmg_double_t * arho_f)
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
-        /* Determine mapping indices or even if a mapping exists */
-        map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->adim_rho, FPX0_GRID, FPY0_GRID, FPZ0_GRID,
-                         get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
-                         &xstart, &ystart, &zstart);
+        b = log((sp->r[2] - sp->r[1])/(sp->r[1] - sp->r[0]));
+        c = (sp->r[0] * exp(b) - sp->r[1])/(1.0 -exp(b) );
+        a = sp->r[0] + c;
+
+        dimx =  sp->aradius/(hxxgrid*xside);
+        dimy =  sp->aradius/(hyygrid*yside);
+        dimz =  sp->aradius/(hzzgrid*zside);
+
+        dimx = dimx * 2 + 1;
+        dimy = dimy * 2 + 1;
+        dimz = dimz * 2 + 1;
 
 
+        xstart = iptr->xtal[0] / hxxgrid - dimx/2;
+        xend = xstart + dimx;
+        ystart = iptr->xtal[1] / hyygrid - dimy/2;
+        yend = ystart + dimy;
+        zstart = iptr->xtal[2] / hzzgrid - dimz/2;
+        zend = zstart + dimz;
 
-        /* If there is any overlap then we have to generate the mapping */
-        if (map)
+
+        for (ix = xstart; ix < xend; ix++)
         {
-            invdr = 1.0 / sp->drlig_arho;
-            icount = 0;
-
-            xc = xstart;
-            for (ix = 0; ix < sp->adim_rho; ix++)
+            // fold the grid into the unit cell
+            ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
+            if(ixx >= ilow && ixx < ihi)
             {
-                yc = ystart;
-                for (iy = 0; iy < sp->adim_rho; iy++)
+
+                for (iy = ystart; iy < yend; iy++)
                 {
-                    zc = zstart;
-                    for (iz = 0; iz < sp->adim_rho; iz++)
+                    // fold the grid into the unit cell
+                    iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
+                    if(iyy >= jlow && iyy < jhi)
                     {
-                        if (((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
-                            ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
-                            ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
+                        for (iz = zstart; iz < zend; iz++)
                         {
-                            pvec[icount] =
-                                FPY0_GRID * FPZ0_GRID * ((Aix[ix]-FPX_OFFSET) % FPX0_GRID) +
-                                FPZ0_GRID * ((Aiy[iy]-FPY_OFFSET) % FPY0_GRID) +
-                                ((Aiz[iz]-FPZ_OFFSET) % FPZ0_GRID);
+                            // fold the grid into the unit cell
+                            izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
+                            if(izz >= klow && izz < khi)
+                            {
 
-                            x[0] = xc - iptr->xtal[0];
-                            x[1] = yc - iptr->xtal[1];
-                            x[2] = zc - iptr->xtal[2];
-                            r = metric (x);
+                                idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
+                                x[0] = ix * hxxgrid - iptr->xtal[0];
+                                x[1] = iy * hyygrid - iptr->xtal[1];
+                                x[2] = iz * hzzgrid - iptr->xtal[2];
+                                r = metric (x);
 
-			    if (r <= sp->aradius)
-				arho_f[pvec[icount]] += linint (&sp->arho_lig[0], r, invdr);
+                                i_r = (int)(log ( (r+c)/a) /b);
+                                r1 = a *exp (i_r * b) -c;
+                                r2 = a * exp((i_r+1) *b) -c;
 
-                            icount++;
-                        }
+                                coef1 = (r2-r)/(r2-r1);
+                                coef2 = (r-r1)/(r2-r1);
 
-                        zc += hzzgrid;
+                                arho_f[idx] += coef1 * sp->atomic_rho[i_r] 
+                                    + coef2 * sp->atomic_rho[i_r+1];
 
-                    }           /* end for */
 
-                    yc += hyygrid;
 
-                }               /* end for */
+                            }                       /* end if */
+                        }                           /* end for */
+                    }
+                }
+            }
+        }
+    }
 
-                xc += hxxgrid;
-
-            }                   /* end for */
-
-        }                       /* end if */
-
-    }                           /* end for */
-    
     /* Check total charge. */
     t2 = 0.0;
-    
+
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
-	t2 += arho_f[idx];
+        t2 += arho_f[idx];
 
     t2 = get_vel_f() *  real_sum_all (t2, pct.img_comm);
-    
+
     t1 = ct.nel / t2;
     if (pct.imgpe == 0)
         printf ("\n get_arho: Aggregate initial atomic charge is %f, normalization constant is %f", t2, t1);
-    
 
-    
+
+
     n = get_FP0_BASIS();
     incx = 1;
     QMD_dscal (n, t1, arho_f, incx);
 
+}
 
-
-    /* Release our memory */
-    my_free(Aiz);
-    my_free(Aiy);
-    my_free(Aix);
-    my_free (pvec);
-
-}                               /* end init_nuc */
-
-/******/

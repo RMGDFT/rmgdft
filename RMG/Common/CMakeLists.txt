@@ -38,7 +38,6 @@ open_restart_file.c
 scalapack_tools.c
 lbfgs_init.c
 init_efield.c
-lcao_init.c
 nlforce.c
 pack_rho_ctof.c
 write_force.c
@@ -81,7 +80,6 @@ symmetry.c
 lbfgs.c
 nlforce_par_Q.c
 init_fftw_wisdom.c
-lcao_get_awave.c
 lcao_get_rho.c
 rmg_lbfgs.c
 test_overlap.c
@@ -91,7 +89,6 @@ ranv.c
 print_density_z_direction.c
 get_derweight.c
 get_ke.c
-lcao_get_psi.c
 set_pbc.c
 pulay_rho.c
 init_psp.c

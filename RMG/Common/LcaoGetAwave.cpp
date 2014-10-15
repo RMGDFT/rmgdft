@@ -22,17 +22,35 @@ template <typename StateType>
 void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff)
 {
 
-    int ix, iy, iz;
-    int yindex;
-    int ilow, jlow, klow, ihi, jhi, khi, map;
-    int icount;
+
+    int  yindex;
+    rmg_double_t r, vector[3];
+
+    int ix, iy, iz, ixx, iyy, izz;
+    int xstart, ystart, zstart, xend, yend, zend;
+    int i_r, idx;
+    int ilow, jlow, klow, ihi, jhi, khi;
+    int dimx, dimy, dimz;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
     int PX_OFFSET, PY_OFFSET, PZ_OFFSET;
+    int NX_GRID, NY_GRID, NZ_GRID;
 
-    double r, xc, yc, zc, vector[3];
-    double x[3], invdr, xstart, ystart, zstart;;
-    double hxgrid, hygrid, hzgrid;
+
+    double r1, r2, fradius, coef1, coef2;
+    rmg_double_t x[3];
+    rmg_double_t hxgrid, hygrid, hzgrid;
+    double xside, yside, zside;
+    double a, b, c;
     SPECIES *sp;
+
+
+
+    hxgrid = get_hxgrid();
+    hygrid = get_hygrid();
+    hzgrid = get_hzgrid();
+    xside = get_xside();
+    yside = get_yside();
+    zside = get_zside();
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
@@ -40,93 +58,102 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
     PX_OFFSET = get_PX_OFFSET();
     PY_OFFSET = get_PY_OFFSET();
     PZ_OFFSET = get_PZ_OFFSET();
-    hxgrid = get_hxgrid();
-    hygrid = get_hygrid();
-    hzgrid = get_hzgrid();
+    NX_GRID = get_NX_GRID();
+    NY_GRID = get_NY_GRID();
+    NZ_GRID = get_NZ_GRID();
 
 
-    /* Grab some memory for temporary storage */
-    int *pvec = new int[get_P0_BASIS()];
-    int *Aix = new int[get_P0_BASIS()];
-    int *Aiy = new int[get_P0_BASIS()];
-    int *Aiz = new int[get_P0_BASIS()];
+    ilow = PX_OFFSET;
+    jlow = PY_OFFSET;
+    klow = PZ_OFFSET;
+    ihi = ilow + PX0_GRID;
+    jhi = jlow + PY0_GRID;
+    khi = klow + PZ0_GRID;
 
+
+
+
+    /*Starting index for ylm function: Indexing is as follows: 0:s, 1:px, 2:py, 3:pz, 4:dxx, etc.*/
+    yindex = l*l + m;
 
     /* Get species type */
     sp = &ct.sp[iptr->species];
 
+    // r[i] = a exp[(i*b] -c
+    // for norm-conserving in FHI, c= 0
+    // for ultrasoft with Vanderbilt code, c != 0.0
 
-    /* Determine mapping indices or even if a mapping exists */
-    map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-	    sp->adim_wave, PX0_GRID, PY0_GRID, PZ0_GRID,
-	    get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
-	    &xstart, &ystart, &zstart);
+    b = log((sp->r[2] - sp->r[1])/(sp->r[1] - sp->r[0]));
+    c = (sp->r[0] * exp(b) - sp->r[1])/(1.0 -exp(b) );
+    a = sp->r[0] + c;
 
 
-    /* If there is any overlap then we have to generate the mapping */
-    if (map)
+
+    dimx =  sp->aradius/(hxgrid*xside);
+    dimy =  sp->aradius/(hygrid*yside);
+    dimz =  sp->aradius/(hzgrid*zside);
+
+    dimx = dimx * 2 + 1;
+    dimy = dimy * 2 + 1;
+    dimz = dimz * 2 + 1;
+
+    xstart = iptr->xtal[0] / hxgrid - dimx/2;
+    xend = xstart + dimx;
+    ystart = iptr->xtal[1] / hygrid - dimy/2;
+    yend = ystart + dimy;
+    zstart = iptr->xtal[2] / hzgrid - dimz/2;
+    zend = zstart + dimz;
+
+    for (ix = xstart; ix < xend; ix++)
     {
-	
-	/*Starting index for ylm function: Indexing is as follows: 0:s, 1:px, 2:py, 3:pz, 4:dxx, etc.*/
-	yindex = l*l + m;
-	
-	invdr = 1.0 / sp->drlig_awave;
-	icount = 0;
+        // fold the grid into the unit cell
+        ixx = (ix + 20 * NX_GRID) % NX_GRID;
+        if(ixx >= ilow && ixx < ihi)
+        {
 
-	xc = xstart;
-	for (ix = 0; ix < sp->adim_wave; ix++)
-	{
-	    yc = ystart;
-	    for (iy = 0; iy < sp->adim_wave; iy++)
-	    {
-		zc = zstart;
-		for (iz = 0; iz < sp->adim_wave; iz++)
-		{
-		    if (((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
-			    ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
-			    ((Aiz[iz] >= klow) && (Aiz[iz] <= khi)))
-		    {
-                        pvec[icount] =
-                            PY0_GRID * PZ0_GRID * ((Aix[ix]-PX_OFFSET) % PX0_GRID) +
-                            PZ0_GRID * ((Aiy[iy]-PY_OFFSET) % PY0_GRID) +
-                            ((Aiz[iz]-PZ_OFFSET) % PZ0_GRID);
+            for (iy = ystart; iy < yend; iy++)
+            {
+                // fold the grid into the unit cell
+                iyy = (iy + 20 * NY_GRID) % NY_GRID;
+                if(iyy >= jlow && iyy < jhi)
+                {
+                    for (iz = zstart; iz < zend; iz++)
+                    {
+                        // fold the grid into the unit cell
+                        izz = (iz + 20 * NZ_GRID) % NZ_GRID;
+                        if(izz >= klow && izz < khi)
+                        {
 
+                            idx = (ixx-ilow) * PY0_GRID * PZ0_GRID + (iyy-jlow) * PZ0_GRID + izz-klow;
+                            x[0] = ix * hxgrid - iptr->xtal[0];
+                            x[1] = iy * hygrid - iptr->xtal[1];
+                            x[2] = iz * hzgrid - iptr->xtal[2];
+                            r = metric (x);
 
+                            to_cartesian(x, vector);
 
-			x[0] = xc - iptr->xtal[0];
-			x[1] = yc - iptr->xtal[1];
-			x[2] = zc - iptr->xtal[2];
-			r = metric (x);
+                        
+                            i_r = (int)(log ( (r+c)/a) /b);
+                            r1 = a *exp (i_r * b) -c;
+                            r2 = a * exp((i_r+1) *b) -c;
 
-			to_cartesian(x, vector);
+                            coef1 = (r2-r)/(r2-r1);
+                            coef2 = (r-r1)/(r2-r1);
 
-			if (r <= sp->aradius)
-			    psi[pvec[icount]] = psi[pvec[icount]] + coeff * linint (&sp->awave_lig[awave_idx][0], r, invdr) * ylm(yindex, vector);
-			    
+                            fradius = coef1 * sp->atomic_wave[l][i_r] 
+                                + coef2 * sp->atomic_wave[l][i_r+1];
 
-			icount++;
-		    }
-
-		    zc += hzgrid;
-
-		}           /* end for */
-
-		yc += hygrid;
-
-	    }               /* end for */
-
-	    xc += hxgrid;
-
-	}                   /* end for */
-
-    }                       /* end if */
+                            psi[idx] += coeff * fradius * ylm(yindex, vector);
 
 
-    /* Release our memory */
-    delete [] Aiz;
-    delete [] Aiy;
-    delete [] Aix;
-    delete [] pvec;
-
+                        }   
+                    }
+                }
+            }
+        }
+    }
 }
+
+/******/
+
 

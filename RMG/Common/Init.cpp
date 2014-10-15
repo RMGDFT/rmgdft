@@ -290,8 +290,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     
 	if (ct.runflag == LCAO_START)
 	{
-	    lcao_init ();
-            LcaoGetPsi(Kptr[0]->Kstates);
+        for(kpt = 0; kpt < ct.num_kpts; kpt++)
+            LcaoGetPsi(Kptr[kpt]->Kstates);
 	}
 	
 	else
