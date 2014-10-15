@@ -3,8 +3,8 @@
 #include "make_conf.h"
 #include "MapElements.h"
 #include "rmg_error.h"
+#include "RmgException.h"
 #include <iostream>
-#include <stdexcept>
 
 
 
@@ -243,8 +243,7 @@ int GetAtomicNumber(std::string symbol)
         return SymbolToNumber[symbol];
     }
     catch (const std::out_of_range& oor) {
-        std::cerr << "Unknown atomic symbol. " << symbol << '\n';
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
+        throw RmgFatalException() << "Unknown atomic symbol " << symbol << " in " << __FILE__ << " at line " << __LINE__ << "\n";
     }
 
 }
@@ -256,8 +255,7 @@ double GetAtomicMass(std::string symbol)
         return SymbolToMass[symbol];
     }
     catch (const std::out_of_range& oor) {
-        std::cerr << "Unknown atomic symbol. " << symbol << '\n';
-        rmg_error_handler(__FILE__, __LINE__, "Terminating.\n");
+        throw RmgFatalException() << "Unknown atomic symbol " << symbol << " in " << __FILE__ << " at " << __LINE__ << "\n";
     }
 
 }
@@ -265,7 +263,7 @@ double GetAtomicMass(std::string symbol)
 const char * GetAtomicSymbol(int number)
 {
     if((number < 1) || (number > 110))
-        rmg_error_handler(__FILE__, __LINE__, "Atomic numbers must be between 1 and 110.\n");
+        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Atomic numbers must be between 1 and 110.\n";
 
     for ( auto it = SymbolToNumber.begin(); it != SymbolToNumber.end(); ++it ) {
         if(it->second == number) {

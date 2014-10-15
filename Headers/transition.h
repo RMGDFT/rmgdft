@@ -142,6 +142,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 bool Verify(const std::string& KeyName, const std::string& KeyVal, const std::unordered_map<std::string, InputKey *>& Map);
 bool Verify(const std::string& KeyName, const char *keyval, const std::unordered_map<std::string, InputKey *>& Map);
 bool Verify(const std::string& KeyName, const bool& KeyVal, const std::unordered_map<std::string, InputKey *>& Map);
+void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+void ReadRmgAtoms(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 
 
 

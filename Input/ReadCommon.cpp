@@ -131,11 +131,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
 
-    If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, REQUIRED, 
+    If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh.\n", 
                      "You must specify a triplet of coordinate dimensions for the kpoint_mesh.\n");
 
-    If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, &def_kpoint_is_shift, 3, REQUIRED, 
+    If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, &def_kpoint_is_shift, 3, OPTIONAL, 
                      "Three-D layout of the kpoint shift.\n", 
                      "You must specify a triplet of coordinate dimensions for kpoint_is_shift.\n");
 

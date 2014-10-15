@@ -14,7 +14,6 @@ namespace po = boost::program_options;
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/lexical_cast.hpp>
 #include "MapElements.h"
 #include "transition.h"
 #include "make_conf.h"
@@ -30,15 +29,14 @@ namespace po = boost::program_options;
 
 /**********************************************************************
 
-    For detailed documentation on how the input system works look at
-    Input/ReadCommon.cpp. This function is used to read specific
-    information related to ionic positions, molecular dynamics and relaxations.
+    The routines in the Input/Atoms directory are used to read different
+    types of atomic formats and translate them into the RMG internal format.
 
 **********************************************************************/
 
 namespace Ri = RmgInput;
 
-void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadRmgAtoms(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
     std::string AtomArray;

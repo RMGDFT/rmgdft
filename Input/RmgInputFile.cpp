@@ -266,11 +266,12 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
     tbuf.clear();
     int idx = -1;
     bool join = false;
+    std::string join_str("^");
     for (it = lines.begin(); it != lines.end(); ++it) {
         std::string line = *it;
 
         if(join) {
-            lines1.at(idx) = lines1.at(idx) + line;
+            lines1.at(idx) = lines1.at(idx) + join_str + line;
             join = false;
         }
 
@@ -338,7 +339,7 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
         outbuf = outbuf + *it + "\n";
     }
 
-//    std::cout << outbuf << std::endl;
+//    std::cout << outbuf << std::endl;exit(0);
     return outbuf;
 
 }
