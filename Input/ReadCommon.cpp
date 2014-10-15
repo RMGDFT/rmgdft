@@ -28,6 +28,7 @@ namespace po = boost::program_options;
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
+#include "grid.h"
 
 
 /**********************************************************************
@@ -90,12 +91,34 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     RmgInputFile If(cfile, InputMap);
     std::string CalculationMode;
     std::string DiscretizationType;
+    std::string Description;
+    std::string Infile;
+    std::string Outfile;
  
     Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> CoarseGrid;
+    Ri::ReadVector<int> kpoint_mesh;
+    Ri::ReadVector<int> kpoint_is_shift;
     int FG_RATIO;
     double celldm[6];
+    double a0[3], a1[3], a2[3], omega;
+
  
+    If.RegisterInputKey("description", &Description, "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Description of the run.\n", 
+                     "");
+
+    If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
+                     "");
+
+    If.RegisterInputKey("output_wave_function_file", &Outfile, "Waves/wave.out",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Output file/path to store wavefunctions and other binary data.\n", 
+                     "");
+
     If.RegisterInputKey("processor_grid", &ProcessorGrid, 3, REQUIRED, 
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
@@ -104,10 +127,23 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
 
+    If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, 3, REQUIRED, 
+                     "Three-D layout of the kpoint mesh.\n", 
+                     "You must specify a triplet of coordinate dimensions for the kpoint_mesh.\n");
+
+    If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, 3, REQUIRED, 
+                     "Three-D layout of the kpoint shift.\n", 
+                     "You must specify a triplet of coordinate dimensions for kpoint_is_shift.\n");
+
     If.RegisterInputKey("bravais_lattice_type", NULL, NULL, "",
                      CHECK_AND_TERMINATE, REQUIRED, bravais_lattice_type,
                      "Bravais Lattice Type.\n", 
                      "bravais_lattice_type not found.\n");
+
+    If.RegisterInputKey("start_mode", NULL, &lc.runflag, "",
+                     CHECK_AND_TERMINATE, REQUIRED, start_mode,
+                     "Type of run. Choices are \"Random Start\", \"Restart From File\", or \"LCAO Start\".\n", 
+                     "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating.\n");
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "scalapack",
                      CHECK_AND_FIX, OPTIONAL, subdiag_driver,
@@ -118,6 +154,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL, crds_units,
                      "Units for the atomic coordinates.\n", 
                      "Coordinates must be specified in either Bohr or Angstrom.\n");
+
+    If.RegisterInputKey("charge_mixing_type", NULL, NULL, "Linear",
+                     CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
+                     "Type of charge density mixing to use. Linear and Pulay are the available options.\n", 
+                     "charge_mixing_type must be either \"Linear\" or \"Pulay\". Terminating.\n");
+
+    If.RegisterInputKey("relax_mass", NULL, &lc.relax_mass, "Atomic",
+                     CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
+                     "Mass to use for structural relaxation, either atomic masses, or use the mass of carbon for all atoms.\n", 
+                     "relax_mass must be either \"Atomic\" or \"Equal\". Terminating.\n");
 
     If.RegisterInputKey("atomic_coordinate_type", NULL, &lc.crd_flag, "Absolute",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_coordinate_type,
@@ -207,6 +253,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Ionic time step for use in molecular dynamics and structure optimizations.\n",
                      "ionic_time_step must be greater than 0.0.\n");
 
+    If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, 0.0, 150.0, 150.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Maximum ionic time step to use.\n",
+                     "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0.\n");
+
     If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
                      "The number of unoccupied orbitals.\n", 
@@ -262,10 +313,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "How often to output eigenvalues.",
                      "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5.\n");
 
-    If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 100, 100, 100,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
+    If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 0, INT_MAX, 100,
+                     CHECK_AND_TERMINATE, OPTIONAL,
+                     "Maximum number of molecular dynamics steps to perform.",
+                     "max_md_steps must be a positive value. Terminating.\n");
 
     If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 30,
                      CHECK_AND_FIX, OPTIONAL,
@@ -421,8 +472,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
                         "Flag to test whether or not the modified metrics should be used in Pulay mixing.");
 
-//    If.RegisterInputKey("write_pseudopotential_plots", NULL, false,
-//                        "");
+    If.RegisterInputKey("write_pseudopotential_plots", NULL, false,
+                        "Flag to indicate whether or not to write pseudopotential plots.\n");
 
     If.RegisterInputKey("equal_initial_density", &lc.init_equal_density_flag, false,
                         "Specifies whether to set initial up and down density to be equal.");
@@ -431,7 +482,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "Flag to write partial density of states.");
 
     If.RegisterInputKey("mask_function_filtering", &lc.mask_function, false,
-                        "");
+                        "Flag indicating whether or not to use mask functions for pseudopotential filtering.");
 
     If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
                         "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.");
@@ -487,14 +538,14 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0).\n");
 
+    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 3.0, 1.75,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "energy_cutoff_parameter must be in the range (1.0,3.0). Resetting to default value of 3.0.\n");
+
 
 #if 0
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, min, max, 1.75,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -505,11 +556,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "");
 
     If.RegisterInputKey("md_nose_oscillation_frequency_THz", &lc.nose.fNose, min, max, 15.59,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, min, max, 150,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -529,6 +575,37 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.LoadInputKeys();
 
     // Check items that require custom handling
+    // Some hacks here to deal with code branches that are still in C
+    if(!Description.length()) Description = "RMG electronic structure calculation.";
+    std::strncpy(lc.description, Description.c_str(), sizeof(lc.description));
+
+    size_t found = Infile.find_first_of("/");
+    if(found == std::string::npos) {
+        std::string NewInfile(pelc.image_path[pelc.thisimg]);
+        NewInfile = NewInfile + Infile;
+        std::strncpy(lc.infile, NewInfile.c_str(), sizeof(lc.infile));
+    }
+    found = Outfile.find_first_of("/");
+    if(found == std::string::npos) {
+        std::string NewOutfile(pelc.image_path[pelc.thisimg]);
+        NewOutfile = NewOutfile + Outfile;
+        std::strncpy(lc.outfile, NewOutfile.c_str(), sizeof(lc.outfile));
+    }
+
+    try {
+       for(int ix = 0;ix < 3;ix++) {
+           lc.kpoint_mesh[ix] = kpoint_mesh.vals.at(ix);
+           lc.kpoint_is_shift[ix] = kpoint_is_shift.vals.at(ix);
+       }
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for kpoint_mesh and kpoint_is_shift.\n";
+    }
+
+
+    // Currently, fine grid has to be the same in each direction
+    lc.nzfgrid = lc.nyfgrid = lc.nxfgrid;
+
     try {
         pelc.pe_x = ProcessorGrid.vals.at(0);
         pelc.pe_y = ProcessorGrid.vals.at(1);
@@ -541,6 +618,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + std::to_string(pelc.pe_y) + " and only postive values are allowed.");
     CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + std::to_string(pelc.pe_z) + " and only postive values are allowed.");
 
+   // Check that NPES matches
+   if(NPES != (pelc.pe_x * pelc.pe_y * pelc.pe_z))
+        throw RmgFatalException() << "NPES value of " << NPES << " is not equal to PE_X*PE_Y*PE_Z! " << pelc.pe_x << " " << pelc.pe_y << " " << pelc.pe_z << "\n";
+
     int NX_GRID=1, NY_GRID=1, NZ_GRID=1;
     try {
         NX_GRID = CoarseGrid.vals.at(0);
@@ -550,9 +631,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n";
     }
-    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
-    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
-    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
 
     int FNX_GRID = NX_GRID * FG_RATIO;
     int FNY_GRID = NY_GRID * FG_RATIO;
@@ -591,9 +672,19 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         celldm[2] /= celldm[0];
     }
 
-
     // Set grid info up
     Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, FG_RATIO);
+
+    // Set up the lattice vectors
+    Rmg_L.latgen(celldm, &omega, a0, a1, a2, 0);
+
+    // Cutoff parameter 
+    lc.qcparm = lc.cparm / (double) FG_RATIO;
+    lc.betacparm = lc.cparm / (double) lc.nxfgrid;
+    lc.cparm /= (double) FG_RATIO;
+
+    if (lc.iondt_max < lc.iondt)
+        throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";
 
 
 }
