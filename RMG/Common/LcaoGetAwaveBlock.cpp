@@ -115,6 +115,9 @@ void LcaoGetAwaveBlock (StateType **psi, ION *iptr, int awave_idx, int l, int m,
     double *coeff = new double[ct.num_states];
     for(int st=0;st<ct.num_states;st++) coeff[st] = rand0(&idum[st]);
 
+    int st;
+//#pragma omp for schedule(static, 1) nowait private(x,ixx,iy,iyy,iz,izz,idx,r,i_r,r1,r2,coef1,coef2,fradius,st,vector)
+
     for (ix = xstart; ix < xend; ix++)
     {
         x[0] = ix * hxgrid - iptr->xtal[0];
@@ -157,7 +160,7 @@ void LcaoGetAwaveBlock (StateType **psi, ION *iptr, int awave_idx, int l, int m,
                                 + coef2 * sp->atomic_wave[l][i_r+1];
 
                             // Loop over all orbitals for this (ion,point)
-                            for(int st = 0;st < ct.num_states;st++) {
+                            for(st = 0;st < ct.num_states;st++) {
                                 psi[st][idx] += coeff[st] * fradius * ylm(yindex, vector);
                             }
 
