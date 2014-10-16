@@ -88,7 +88,6 @@ void LcaoGetPsi (State<StateType> * states)
     if(state_count <= ct.num_states)
     {
         coeff = 1.0;
-
         st = 0;
         psi = states[st].psi;
         for (ion = 0; ion < ct.num_ions; ion++)
@@ -122,39 +121,45 @@ void LcaoGetPsi (State<StateType> * states)
     }
     else
     {
-#pragma omp parallel for private(ion,iptr,sp,ip,l,m,psi,coeff,idum)
-        for(st = 0; st < ct.num_states; st++)
+
+        long *aidum = new long[ct.num_states];
+        StateType **apsi = new StateType *[ct.num_states];
+        for(int st = 0;st < ct.num_states;st++) {
+             aidum[st] = st + 3314;
+             apsi[st] = states[st].psi;
+        }
+
+        for (ion = 0; ion < ct.num_ions; ion++)
         {
-            idum = st + 3314;
-            psi = states[st].psi;
-            for (ion = 0; ion < ct.num_ions; ion++)
+            /* Generate ion pointer */
+            iptr = &ct.ions[ion];
+
+            /* Get species type */
+            sp = &ct.sp[iptr->species];
+
+            /*Make sure that the wavefunctions have been read*/
+            if (!sp->num_atomic_waves) {
+                rmg_printf("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
+                rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+            }
+
+            /*Loop over atomic wavefunctions for given ion*/
+            for (ip = 0; ip < sp->num_atomic_waves; ip++)
             {
-                /* Generate ion pointer */
-                iptr = &ct.ions[ion];
+                l = sp->atomic_wave_l[ip];
 
-                /* Get species type */
-                sp = &ct.sp[iptr->species];
-
-                /*Make sure that the wavefunctions have been read*/
-                if (!sp->num_atomic_waves) {
-                    rmg_printf("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
-                    rmg_error_handler(__FILE__,__LINE__,"Terminating.");
-                }
-
-                /*Loop over atomic wavefunctions for given ion*/
-                for (ip = 0; ip < sp->num_atomic_waves; ip++)
+                /*Loop over all m values for given l and get wavefunctions */
+                for (m=0; m < 2*l+1; m++)
                 {
-                    l = sp->atomic_wave_l[ip];
-
-                    /*Loop over all m values for given l and get wavefunctions */
-                    for (m=0; m < 2*l+1; m++)
-                    {
-                        coeff = rand0(&idum);
-                        LcaoGetAwave(psi, iptr, ip, l, m, coeff);
-                    }
+                    coeff = rand0(&idum);
+                    LcaoGetAwaveBlock(apsi, iptr, ip, l, m, aidum);
                 }
             }
         }
+
+        delete [] apsi;
+        delete [] aidum;
+
     }
 
     /*Initialize any additional states to random start*/
