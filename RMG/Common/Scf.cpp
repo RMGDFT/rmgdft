@@ -304,11 +304,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
 
     /* Take care of occupation filling */
-    if  (!firststep)
-        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+    ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
 
 
-    if (ct.occ_flag == 1 && !firststep)
+    if (ct.occ_flag == 1 )
     {
         rmg_printf ("\n");
         //progress_tag ();
