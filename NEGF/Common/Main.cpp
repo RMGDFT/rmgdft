@@ -38,13 +38,40 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "main.h"
+#include "svnrev.h"
+#include <float.h>
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <unordered_map>
+#include "const.h"
+#include "RmgTimer.h"
+#include "RmgException.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "InputKey.h"
+#include "blas.h"
+//#include "main.h"
+#include "prototypes_on.h"
 #include "init_var.h"
-#include "LCR.h"
-#include "init_var.h"
+#include "transition.h"
+
+
+#include "../Headers/common_prototypes.h"
+#include "../Headers/common_prototypes1.h"
+
+
+
 #include "twoParts.h"
 #include "pmo.h"
-#include "svnrev.h"
+#include "cei.h"
+
+
 
 
 /* Main control structure which is declared extern in main.h so any module */
@@ -66,12 +93,15 @@ int total_mem = 0;
 double b0[3], b1[3], b2[3];
 double alat;
 
+std::unordered_map<std::string, InputKey *> ControlMap;
+
 
 int main (int argc, char **argv)
 {
 
 
-  void *RT = BeginRmgTimer("1-TOTAL");
+    RmgTimer *RT = new RmgTimer("1-TOTAL");
+
 
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
@@ -82,25 +112,19 @@ int main (int argc, char **argv)
 #endif
 
     ct.images_per_node = 1;
-    init_IO(argc, argv);
-
-    /* Read in our control information */
-
-    read_trans (&cei);
-
-    read_LCR ();
-
+    InitIo(argc, argv, ControlMap);
 
     my_barrier ();
 
     /*  Begin to do the real calculations */
-    run (states, states1, states_distribute);
+    run (states, states1);
 
 
-    EndRmgTimer(RT);
+    delete(RT);
 
     if(pct.imgpe == 0) fclose(ct.logfile);
-    CompatRmgTimerPrint(ct.logname, ct.scf_steps);
+    RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
+
 
     MPI_Finalize ();
 

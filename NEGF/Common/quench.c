@@ -1,4 +1,4 @@
-************************** SVN Revision Information **************************
+/************************** SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
  
@@ -62,8 +62,6 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     int j1, k1, jdiff, kdiff;
     int idx2, FPYZ0_GRID;
     int i;
-    double complex *sigma_all;
-
 
     void *RT = BeginRmgTimer("2-Quench");
 
@@ -259,7 +257,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     if (ct.forceflag !=0 )
     {
         /* Calculate the force */
-        force (rho, rho, rhoc, vh, vxc, vnuc, states);
+        force (rho, rho, rhoc, vh, vxc, vnuc);
         /* write out the force */
         if (pct.gridpe == 0)
             write_force ();

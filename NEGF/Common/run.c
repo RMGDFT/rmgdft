@@ -42,7 +42,7 @@
 
 extern rmg_double_t *vh_old, *vxc_old;
 
-void run (STATE * states, STATE * states1, STATE *states_distribute)
+void run (STATE * states, STATE * states1)
 {
 	FILE *file;
 	int ix, iy, iz, idx;
@@ -54,6 +54,8 @@ void run (STATE * states, STATE * states1, STATE *states_distribute)
 	 * pct.pe_kpoint * ( pct.pe_column , pct.pe_row)
 	 */
 
+    read_trans(&cei);
+    read_LCR();
 	init_pe_on ();
 
 

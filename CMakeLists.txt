@@ -56,7 +56,7 @@ set(CMAKE_FIND_ROOT_PATH
 add_executable(rmg RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-on ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-tddft TDDFT/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(rmg-negf NEGF/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
+add_executable(rmg-negf NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )

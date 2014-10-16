@@ -42,7 +42,7 @@ typedef struct
      * These used to be L0_LDIM and L0_NLDIM.
      */
     //int ldim;
-    //int ldim_coar;
+    int ldim_coar;
     int nldim;
     int nlfdim;
     int qdim;
