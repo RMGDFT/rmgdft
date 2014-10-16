@@ -106,6 +106,8 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 
     for (ix = xstart; ix < xend; ix++)
     {
+        x[0] = ix * hxgrid - iptr->xtal[0];
+
         // fold the grid into the unit cell
         ixx = (ix + 20 * NX_GRID) % NX_GRID;
         if(ixx >= ilow && ixx < ihi)
@@ -113,28 +115,29 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 
             for (iy = ystart; iy < yend; iy++)
             {
+                x[1] = iy * hygrid - iptr->xtal[1];
+
                 // fold the grid into the unit cell
                 iyy = (iy + 20 * NY_GRID) % NY_GRID;
                 if(iyy >= jlow && iyy < jhi)
                 {
                     for (iz = zstart; iz < zend; iz++)
                     {
+                        x[2] = iz * hzgrid - iptr->xtal[2];
+
                         // fold the grid into the unit cell
                         izz = (iz + 20 * NZ_GRID) % NZ_GRID;
                         if(izz >= klow && izz < khi)
                         {
 
                             idx = (ixx-ilow) * PY0_GRID * PZ0_GRID + (iyy-jlow) * PZ0_GRID + izz-klow;
-                            x[0] = ix * hxgrid - iptr->xtal[0];
-                            x[1] = iy * hygrid - iptr->xtal[1];
-                            x[2] = iz * hzgrid - iptr->xtal[2];
                             r = metric (x);
 
                             to_cartesian(x, vector);
 
                         
                             i_r = (int)(log ( (r+c)/a) /b);
-                            r1 = a *exp (i_r * b) -c;
+                            r1 = a * exp (i_r * b) -c;
                             r2 = a * exp((i_r+1) *b) -c;
 
                             coef1 = (r2-r)/(r2-r1);

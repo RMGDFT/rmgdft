@@ -75,6 +75,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
            double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
+    RmgTimer RT0("Init");
     int kpt, kpt1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
     int species;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
@@ -290,8 +291,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     
 	if (ct.runflag == LCAO_START)
 	{
-        for(kpt = 0; kpt < ct.num_kpts; kpt++)
-            LcaoGetPsi(Kptr[kpt]->Kstates);
+            RmgTimer *RT2 = new RmgTimer("Init: LcaoGetPsi");
+            for(kpt = 0; kpt < ct.num_kpts; kpt++) {
+                LcaoGetPsi(Kptr[kpt]->Kstates);
+            }
+            delete(RT2);
 	}
 	
 	else
@@ -317,7 +321,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("Initialize the radial potential stuff");
+    RmgTimer *RT1 = new RmgTimer("Init: radial potentials");
     init_psp ();
+    delete(RT1);
 
     /* Initialize symmetry stuff */
     if(!ct.is_gamma)
@@ -359,25 +365,31 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     /*Do forward transform for each species and store results on the coarse grid */
+    RT1 = new RmgTimer("Init: weights");
     init_weight ();
     /*The same for derivative of beta */
     init_derweight ();
+    delete(RT1);
 
     printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
     fflush (NULL);
 
 
     /* Initialize the qfunction stuff */
+    RT1 = new RmgTimer("Init: qfunct");
     init_qfunct ();
-
+    delete(RT1);
     
     /* Update items that change when the ionic coordinates change */
+    RT1 = new RmgTimer("Init: ionic potentials");
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+    delete(RT1);
 
 
     // Normalize orbitals if not an initial run
     if (ct.runflag != RESTART) /* Initial run */
     {
+        RmgTimer *RT2 = new RmgTimer("Init: normalization");
         for (kpt = 0; kpt < ct.num_kpts; kpt++)
         {
             for (state = 0; state < ct.num_states; state++)
@@ -385,6 +397,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 Kptr[kpt]->Kstates[state].normalize(Kptr[kpt]->Kstates[state].psi, state);
             }
         }
+        delete(RT2);
     }
         
     //mix_betaxpsi(0);
