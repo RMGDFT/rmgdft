@@ -80,17 +80,6 @@ void init_kbr(void)
             psp = fopen(newname, "w+");
         sp = &ct.sp[isp];
 
-        t1 = 2.0 * scale * (rmg_double_t) get_FG_RATIO() *sp->lradius / ct.hmingrid;
-        t1 = modf(t1, &t2);
-        it1 = (int) t2;
-        if (t1 > 0.5)
-            it1++;
-        if (!(it1 % 2))
-            it1++;
-        sp->ldim = it1;
-
-        if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID()) || (sp->ldim >= get_FNZ_GRID()))
-            error_handler("local potential radius exceeds global grid size");
 
         t1 = 2.0 * scale * sp->nlradius / ct.hmingrid;
         t1 = modf(t1, &t2);
@@ -140,8 +129,7 @@ void init_kbr(void)
 
 
         /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)get_FG_NX(); */
-        t1 = sp->ldim / get_FG_RATIO() + 1;
-        sp->drlig = sqrt(3.0) * (t1 + 1.0) * ct.hmaxgrid / 2.0;
+        sp->drlig = sqrt(3.0) * (sp->lradius + 1.0);
         if (get_ibrav_type() == HEXAGONAL)
             sp->drlig *= 2.0;
         t1 = (rmg_double_t) MAX_LOCAL_LIG;

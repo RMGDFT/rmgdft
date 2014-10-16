@@ -37,10 +37,33 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "main.h"
+#include "svnrev.h"
+#include <float.h>
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <unordered_map>
+#include "const.h"
+#include "RmgTimer.h"
+#include "RmgException.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "InputKey.h"
+#include "blas.h"
+//#include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "svnrev.h"
+#include "transition.h"
+
+
+#include "../Headers/common_prototypes.h"
+#include "../Headers/common_prototypes1.h"
+
 
 
 
@@ -54,23 +77,25 @@ PE_CONTROL pct;
 int mpi_nprocs;
 int mpi_myrank;
 
+//STATE *states, *states1;
 
 /*Variables from recips.h*/
 double b0[3], b1[3], b2[3];
 double alat;
 
+std::unordered_map<std::string, InputKey *> ControlMap;
 
 int main(int argc, char **argv)
 {
 
 
-    void *RT = BeginRmgTimer("1-TOTAL");
+    RmgTimer *RT = new RmgTimer("1-TOTAL");
     
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
 
     ct.images_per_node = 1;
-    init_IO(argc, argv);
+    InitIo(argc, argv, ControlMap);
 
 
 
@@ -81,11 +106,12 @@ int main(int argc, char **argv)
     run(states, states1);
 
 
-    EndRmgTimer(RT);
+    delete(RT);
 
 
     if(pct.imgpe == 0) fclose(ct.logfile);
-    CompatRmgTimerPrint(ct.logname, ct.scf_steps);
+    RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
+
 
     MPI_Finalize();
 

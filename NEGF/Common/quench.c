@@ -1,4 +1,4 @@
-/************************** SVN Revision Information **************************
+************************** SVN Revision Information **************************
  **    $Id$    **
 ******************************************************************************/
  
@@ -62,6 +62,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
     int j1, k1, jdiff, kdiff;
     int idx2, FPYZ0_GRID;
     int i;
+    double complex *sigma_all;
 
 
     void *RT = BeginRmgTimer("2-Quench");

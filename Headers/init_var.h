@@ -67,7 +67,7 @@ int *send_to1, *recv_from1, num_sendrecv_loop1;
 rmg_double_t *vcomp, *peaks, *vext ;
 
 double *mat_local;
-double complex *sigma_all;
+//double complex *sigma_all;
 int peakNum;
 rmg_double_t *work_matrix;
 ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc; 

@@ -1,4 +1,6 @@
 add_library (US_PP
+init_nuc.c
+init_efield.c
 weight_shift_center.c
 init_weight_p.c
 ylmr2.c

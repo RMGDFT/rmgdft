@@ -69,7 +69,7 @@ void read_pseudo (void)
 //        my_malloc(sp->description, MAX_CHAR, char);
 
         /* Description */
-        get_data (sp->pseudo_filename, &sp->description, ITEM | STR, "ultrasoft pseudo-potential"); 
+    //    get_data (sp->pseudo_filename, &sp->description, ITEM | STR, "ultrasoft pseudo-potential"); 
         //dprintf( "desc=:%s:\n", sp->description );
 
 

@@ -60,8 +60,8 @@
 
 /* This is the maximum number of non-local projectors for any species
  * just an upper limit on dynamically allocated data structures. */
-#define         MAX_NL  	18
-#define         MAX_NB  	6
+#define         MAX_NL  	38
+#define         MAX_NB  	9
 
 
 /* Maximum number of species -- just an upper limit on

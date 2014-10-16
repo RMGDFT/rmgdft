@@ -54,7 +54,7 @@ set(CMAKE_FIND_ROOT_PATH
 # Executables defined by the file that contains main()
 # Main codes
 add_executable(rmg RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(rmg-on ON/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
+add_executable(rmg-on ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-tddft TDDFT/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-negf NEGF/Common/md.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 

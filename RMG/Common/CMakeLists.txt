@@ -37,7 +37,6 @@ mix_betaxpsi1.c
 open_restart_file.c
 scalapack_tools.c
 lbfgs_init.c
-init_efield.c
 nlforce.c
 pack_rho_ctof.c
 write_force.c
@@ -64,7 +63,6 @@ debug_write_rho_z.c
 write_pdb.c
 nlforce_par_omega.c
 real_min_all.c
-init_nuc.c
 partial_betaxpsi.c
 neb_relax.c
 app_smooth.cpp
