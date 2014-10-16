@@ -12,6 +12,13 @@
 #include "Kpoint.h"
 #include "transition.h"
 
+#if RMG_FAST_MATH
+   #include "fastonebigheader.h"
+#else
+   #define fasterlog log 
+   #define fasterexp exp
+#endif
+
 /*This function calculates atomic wavefunctions using wavefunctions read from PP files
  * with angular part added. The result is in psi, which is assumed to be initialized to zero*/
 
@@ -131,14 +138,13 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                         {
 
                             idx = (ixx-ilow) * PY0_GRID * PZ0_GRID + (iyy-jlow) * PZ0_GRID + izz-klow;
-                            r = metric (x);
+                            r = Rmg_L.metric(x);
 
-                            to_cartesian(x, vector);
-
+                            Rmg_L.to_cartesian(x, vector);
                         
-                            i_r = (int)(log ( (r+c)/a) /b);
-                            r1 = a * exp (i_r * b) -c;
-                            r2 = a * exp((i_r+1) *b) -c;
+                            i_r = (int)(fasterlog ( (r+c)/a) /b);
+                            r1 = a * fasterexp (i_r * b) -c;
+                            r2 = a * fasterexp((i_r+1) *b) -c;
 
                             coef1 = (r2-r)/(r2-r1);
                             coef2 = (r-r1)/(r2-r1);
