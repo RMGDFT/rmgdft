@@ -34,6 +34,7 @@
 #include "grid.h"
 #include "main.h"
 
+#define SMALL_EFIELD 1.0e-20
 
 void init_efield (rmg_double_t * vnuc)
 {
@@ -54,7 +55,7 @@ void init_efield (rmg_double_t * vnuc)
 
 
     /* normalization of the electric field direction */
-    norm_field_0 = sqrt (pow (ct.x_field_0, 2) + pow (ct.y_field_0, 2) + pow (ct.z_field_0, 2));
+    norm_field_0 = sqrt (pow (ct.x_field_0 + SMALL_EFIELD, 2) + pow (ct.y_field_0 + SMALL_EFIELD, 2) + pow (ct.z_field_0 + SMALL_EFIELD, 2));
     ct.x_field_0 = ct.x_field_0 / norm_field_0;
     ct.y_field_0 = ct.y_field_0 / norm_field_0;
     ct.z_field_0 = ct.z_field_0 / norm_field_0;
