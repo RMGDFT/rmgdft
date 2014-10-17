@@ -143,9 +143,11 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                             Rmg_L.to_cartesian(x, vector);
                         
                             i_r = (int)(fasterlog ( (r+c)/a) /b);
-                            r1 = a * fasterexp (i_r * b) -c;
-                            r2 = a * fasterexp((i_r+1) *b) -c;
+                          //  r1 = a * fasterexp (i_r * b) -c;
+                           // r2 = a * fasterexp((i_r+1) *b) -c;
 
+                            r1 = sp->r[i_r];
+                            r2 = sp->r[i_r+1];
                             coef1 = (r2-r)/(r2-r1);
                             coef2 = (r-r1)/(r2-r1);
 
