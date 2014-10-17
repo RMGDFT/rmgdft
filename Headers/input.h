@@ -83,6 +83,8 @@ int		 tagsload( void );
 int		 tagstrip( void );
 bool	 validate( char *optlist );
 bool	 verify( char *tagname, const void *optvalue );
+bool	 verify_boolean( char *tagname, const void *optvalue );
+bool     verify_opt(const char * keyname, const void *optvalue );
 bool	 get_data(char *meta, void *dest, flags_t flags, char *data);
 bool	 cast( flags_t flags );
 bool	 assign( flags_t flaga, void *dest );

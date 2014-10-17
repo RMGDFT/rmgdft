@@ -35,6 +35,8 @@ class InputKey {
         InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg);
         InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg);
         
+        // Reads stored value
+        std::string Print(void);
 
         std::string& KeyName;
         std::unordered_map<std::string, int> Range;

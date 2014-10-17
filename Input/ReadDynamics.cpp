@@ -41,9 +41,63 @@ namespace Ri = RmgInput;
 void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
-    std::set<std::string> SpeciesType;
-    std::list<std::string> Species;
+    std::set<std::string> SpeciesTypes;
+    std::list<std::string> IonSpecies;
 
-    ReadRmgAtoms(cfile, SpeciesType, Species, lc, InputMap);
+    // Determine input file format and dispatch to the correct driver routine
+    ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
+
+    // Atoms have been read, now take care of conversion to internal coordinates
+    if (Verify ("atomic_coordinate_type", "Cell Relative", InputMap)) {
+
+        for(int ion = 0;ion < lc.num_ions;ion++) {
+
+            lc.ions[ion].xtal[0] = lc.ions[ion].crds[0];
+            lc.ions[ion].xtal[1] = lc.ions[ion].crds[1];
+            lc.ions[ion].xtal[2] = lc.ions[ion].crds[2];
+            to_cartesian(lc.ions[ion].xtal, lc.ions[ion].crds);
+
+        }
+
+    }
+    else if(Verify ("crds_units", "Angstrom", InputMap)) {
+
+        for(int ion = 0;ion < lc.num_ions;ion++) {
+
+            lc.ions[ion].crds[0] *= A_a0;
+            lc.ions[ion].crds[1] *= A_a0;
+            lc.ions[ion].crds[2] *= A_a0;
+
+        }
+
+    }
+
+    // SpeciesType holds the number of species found
+    lc.num_species = SpeciesTypes.size();
+    ct.sp = new SPECIES[ct.num_species];
+    for(int i = 0;i < lc.num_species;i++) {
+        std::strncpy(lc.sp[i].pseudo_filename, "./@Internal", sizeof(lc.sp[i].pseudo_filename));
+        std::strncpy(lc.sp[i].pseudo_symbol, "C", sizeof(lc.sp[i].pseudo_symbol));
+        LoadUpf(&ct.sp[i]);
+    } 
+
+    // Assign species type for each ion
+    int species = 0;
+    for(auto it = SpeciesTypes.begin();it != SpeciesTypes.end(); ++it) {
+
+        std::string AtomicSymbol1 = *it;
+        int ion = 0;
+        for(auto it1 = IonSpecies.begin();it1 != IonSpecies.end(); ++it1) {
+
+            std::string AtomicSymbol2 = *it1;
+            if(!AtomicSymbol1.compare(AtomicSymbol2)) {
+                lc.ions[ion].species = species;
+            }
+            ion++;
+            
+        }
+        species++;
+
+    }
 
 }

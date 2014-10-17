@@ -1,6 +1,7 @@
 #include <typeinfo>
 #include <iostream>
 #include <unordered_map>
+#include <boost/lexical_cast.hpp>
 #include "InputKey.h"
 
 // This is a rather kludgy way of doing this but I didn't have much luck getting
@@ -56,10 +57,11 @@ InputKey::InputKey(std::string& KeyName, bool *ReadVal, bool Defval, const char 
     if(!ReadVal) {
         allocated = true;
         ReadVal = new bool[1];
+        *ReadVal = Defval;
     }
     InputKey::Required = false;
     InputKey::Readboolval = ReadVal;
-    InputKey::Defboolval = ReadVal;
+    InputKey::Defboolval = Defval;
     InputKey::helpmsg = helpmsg;
     InputKey::KeyType = typeid(bool).hash_code();
 
@@ -136,3 +138,39 @@ InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V,  RmgIn
 
 }
 
+std::string InputKey::Print(void) {
+
+    if(this->KeyType == typeid(int).hash_code())
+        return boost::lexical_cast<std::string>(*this->Readintval);
+
+    if(this->KeyType == typeid(double).hash_code())
+        return boost::lexical_cast<std::string>(*this->Readdoubleval);
+
+    if(this->KeyType == typeid(bool).hash_code()) {
+        if(*this->Readboolval) return "true";
+        return "false";
+    }
+
+    if(this->KeyType == typeid(std::string).hash_code())
+        return *this->Readstr;
+
+    if(this->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) {
+        std::string rstr("\"");
+        for(int i = 0;i < this->count;i++)
+            rstr = rstr + boost::lexical_cast<std::string>(this->Vint->vals.at(i)) + "  ";
+
+        rstr = rstr + "\"";
+        return rstr;
+    }
+
+    if(this->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
+        std::string rstr("\"");
+        for(int i = 0;i < this->count;i++)
+            rstr = rstr + boost::lexical_cast<std::string>(this->Vdouble->vals.at(i)) + "  ";
+
+        rstr = rstr + "\"";
+        return rstr;
+    }
+
+    return "Not done yet";
+}

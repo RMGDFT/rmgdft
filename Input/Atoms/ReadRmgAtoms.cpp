@@ -61,7 +61,7 @@ C     9.3055    15.6378    17.8881    1
     cfile        = name of the file containing the ionic information.
     SpeciesTypes = a std::set that is empty on entry and contains the
                    atomic symbol of each unique species on exit.
-    Species      = a std::list that contains the atomic symbol of each
+    IonSpecies   = a std::list that contains the atomic symbol of each
                    ion in the order in which they were read from cfile.
     InputMap     = Control Map. May not be needed by all atomic input
                    drivers but is useful for reading the RMG format.
@@ -70,19 +70,20 @@ C     9.3055    15.6378    17.8881    1
 
 namespace Ri = RmgInput;
 
-void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& Species, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& IonSpecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
     std::string AtomArray;
     std::string line_delims = "^\n";
     std::string whitespace_delims = " \n\t";
     std::vector<std::string> Atoms;
+    std::unordered_map<std::string, InputKey *> NewMap;
     int nions = 0;
 
-    RmgInputFile If(cfile, InputMap);
+    RmgInputFile If(cfile, NewMap);
 
     If.RegisterInputKey("atoms", &AtomArray, "",
-                     CHECK_AND_FIX, OPTIONAL,
+                     CHECK_AND_FIX, REQUIRED,
                      "Ionic species and coordinate information.\n",
                      "");
     
@@ -120,10 +121,10 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         // Valid atomic symbol? GetAtomicMass will throw a fatal exception if the symbol is not valid.
         GetAtomicMass(sp);
 
-        // Is valid so make an entry in the SpeciesTypes set and in the Species list. SpeciesTypes set only contains
-        // one entry for each unique species type while Species contains lc.num_ions entries (one for each ion)
+        // Is valid so make an entry in the SpeciesTypes set and in the IonSpecies list. SpeciesTypes set only contains
+        // one entry for each unique species type while IonSpecies contains lc.num_ions entries (one for each ion)
         SpeciesTypes.emplace(sp);
-        Species.emplace_back(sp);
+        IonSpecies.emplace_back(sp);
       
         // Look for the coordinates
         it1++;
@@ -153,5 +154,8 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         nions++;
 
     }
+
+    if(nions > lc.num_ions)
+        throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_ions << " was specified initially but " << nions << " were found.\n";
 
 }

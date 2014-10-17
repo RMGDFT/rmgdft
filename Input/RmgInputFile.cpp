@@ -105,7 +105,7 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, i
 void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, RmgInput::ReadVector<int> *Defintvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
     InputKey *NewKey = new InputKey(KeyName, V, Defintvec, count, Required, helpmsg, errmsg);
     if(!Required) {
-        for(int i = 0;i < count;i++) V->vals[i] = Defintvec->vals[i];
+        for(int i = 0;i < count;i++) V->vals = Defintvec->vals;
     }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
@@ -114,7 +114,7 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<in
 void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
     InputKey *NewKey = new InputKey(KeyName, V, Defdblvec, count, Required, helpmsg, errmsg);
     if(!Required) {
-        for(int i = 0;i < count;i++) V->vals[i] = Defdblvec->vals[i];
+        for(int i = 0;i < count;i++) V->vals = Defdblvec->vals;
     }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
@@ -126,6 +126,7 @@ void RmgInputFile::LoadInputKeys(void) {
     for (auto item = InputMap.begin();item != InputMap.end();item++) {
 
         std::string KeyName = item->first;
+
         InputKey *Ik = item->second;
         if(Ik->Required) {
 
@@ -135,8 +136,10 @@ void RmgInputFile::LoadInputKeys(void) {
             if(Ik->KeyType == typeid(double).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<double>(Ik->Readdoubleval)->required(), Ik->helpmsg);
 
-            if(Ik->KeyType == typeid(std::string).hash_code())
+            if(Ik->KeyType == typeid(std::string).hash_code()) {
+                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
                 control.add_options() (KeyName.c_str(), po::value<std::string>(Ik->Readstr)->required(), Ik->helpmsg);
+            }
 
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Vint)->required(), Ik->helpmsg);
@@ -156,8 +159,10 @@ void RmgInputFile::LoadInputKeys(void) {
             if(Ik->KeyType == typeid(bool).hash_code())
                 control.add_options() (KeyName.c_str(), po::value<bool>(Ik->Readboolval)->default_value(Ik->Defboolval), Ik->helpmsg);
 
-            if(Ik->KeyType == typeid(std::string).hash_code())
+            if(Ik->KeyType == typeid(std::string).hash_code()) {
+                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
                 control.add_options() (KeyName.c_str(), po::value<std::string>(Ik->Readstr)->default_value(Ik->Defstr), Ik->helpmsg);
+            }
 
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
                 control.add_options() (KeyName.c_str(), po::value(Ik->Vint), Ik->helpmsg);
@@ -207,11 +212,11 @@ void RmgInputFile::LoadInputKeys(void) {
         if(Ik->KeyType == typeid(std::string).hash_code()) {
 
             // Trim quotes
-            boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\""));
             if(Ik->MapPresent) {
                 // enumerated string so check if the value is allowed
+                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
                 if(Ik->Range.count(*Ik->Readstr) == 0) {
-                    throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
+                    throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
                 }
                 // If integer val associated with the enum is desired set it
                 if(Ik->Readintval) *Ik->Readintval = Ik->Range[*Ik->Readstr];
@@ -219,6 +224,8 @@ void RmgInputFile::LoadInputKeys(void) {
             }
             else {
                 // regular string
+                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
+                //std::cout << *Ik->Readstr << std::endl;
 
             }
 
@@ -270,7 +277,11 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
     for (it = lines.begin(); it != lines.end(); ++it) {
         std::string line = *it;
 
-        if(join) {
+        // Forward line iterator
+        std::vector<std::string>::iterator it1;
+        it1 = it + 1;
+
+        if(join && (it1 != lines.end())) {
             lines1.at(idx) = lines1.at(idx) + join_str + line;
             join = false;
         }
@@ -282,10 +293,6 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
             lines1.push_back(line);
             join = false;
         }
-
-        // Forward line
-        std::vector<std::string>::iterator it1;
-        it1 = it + 1;
 
         // Any quotes in this line?
         std::size_t f1 = line.find("\"", 1);
@@ -339,7 +346,7 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
         outbuf = outbuf + *it + "\n";
     }
 
-//    std::cout << outbuf << std::endl;exit(0);
+    //std::cout << outbuf << std::endl;exit(0);
     return outbuf;
 
 }

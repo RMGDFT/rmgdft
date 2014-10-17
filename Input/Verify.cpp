@@ -51,3 +51,21 @@ bool Verify(const std::string& KeyName, const bool& KeyVal, const std::unordered
     return false;
 }
 
+// Needed for some C functions that have not yet been converted yet
+extern std::unordered_map<std::string, InputKey *> ControlMap;
+
+extern "C" bool verify_boolean(char *tagname, const void *optvalue )
+{
+
+    std::string KeyName(tagname);
+    bool *bptr = (bool *)optvalue;
+    bool bval = *bptr;
+    return Verify(KeyName, bval, ControlMap);
+}
+extern "C" bool verify_opt(const char * keyname, const void *optvalue )
+{
+    std::string KeyName(keyname);
+    char *optr = (char *)optvalue;
+    std::string KeyVal(optr);
+    return Verify(KeyName, KeyVal, ControlMap);
+}

@@ -139,7 +139,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Three-D layout of the kpoint shift.\n", 
                      "You must specify a triplet of coordinate dimensions for kpoint_is_shift.\n");
 
-    If.RegisterInputKey("bravais_lattice_type", NULL, NULL, "",
+    int ibrav;
+    If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "",
                      CHECK_AND_TERMINATE, REQUIRED, bravais_lattice_type,
                      "Bravais Lattice Type.\n", 
                      "bravais_lattice_type not found.\n");
@@ -165,7 +166,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "charge_mixing_type must be either \"Linear\" or \"Pulay\". Terminating.\n");
 
     If.RegisterInputKey("relax_mass", NULL, &lc.relax_mass, "Atomic",
-                     CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
+                     CHECK_AND_TERMINATE, OPTIONAL, relax_mass,
                      "Mass to use for structural relaxation, either atomic masses, or use the mass of carbon for all atoms.\n", 
                      "relax_mass must be either \"Atomic\" or \"Equal\". Terminating.\n");
 
@@ -567,6 +568,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Magnitude of external electric field.\n",
                      "electric_field_magnitude must be a postive value.\n");
 
+    Ri::ReadVector<double> def_electric_field({{0.0,0.0,1.0}});
+    Ri::ReadVector<double> electric_field;
+    If.RegisterInputKey("electric_field_vector", &electric_field, &def_electric_field, 3, OPTIONAL,
+                     "Components of the electric field.\n",
+                     "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector.\n");
+
     If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "",
@@ -631,6 +638,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Some hacks here to deal with code branches that are still in C
     if(!Description.length()) Description = "RMG electronic structure calculation.";
     std::strncpy(lc.description, Description.c_str(), sizeof(lc.description));
+
+    if(!Infile.length()) Infile = "Waves/wave.out";
+    std::strncpy(lc.infile, Infile.c_str(), sizeof(lc.infile));
+
+    if(!Outfile.length()) Outfile = "Waves/wave.out";
+    std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile));
+
 
     if(lc.spin_flag) {
 
@@ -700,9 +714,24 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
 
+    // Set grid info up
+    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, FG_RATIO);
+
     int FNX_GRID = NX_GRID * FG_RATIO;
     int FNY_GRID = NY_GRID * FG_RATIO;
     int FNZ_GRID = NZ_GRID * FG_RATIO;
+
+
+    /* read the electric field vector */
+    try {
+        ct.x_field_0 = electric_field.vals.at(0);
+        ct.y_field_0 = electric_field.vals.at(1);
+        ct.z_field_0 = electric_field.vals.at(2);
+    }
+    catch (const std::out_of_range& oor) {
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) values for the electric field vector.\n";
+    }
+
 
     // If the user has not specifically set the number of poisson multigrid levels use the max
     if(lc.poi_parm.levels == -1) {
@@ -737,11 +766,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         celldm[2] /= celldm[0];
     }
 
-    // Set grid info up
-    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, FG_RATIO);
-
     // Set up the lattice vectors
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2, 0);
+    Rmg_L.set_ibrav_type(ibrav);
+    int flag = 0;
+    Rmg_L.latgen(celldm, &omega, a0, a1, a2, &flag);
 
     // Cutoff parameter 
     lc.qcparm = lc.cparm / (double) FG_RATIO;
@@ -769,10 +797,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Constraints for Neb relax. What does this magic number mean? (set constraint type for switch in Common/constrain.c)
     if(Verify("calculation_mode", "NEB Relax", InputMap)) lc.constrainforces = 5;
 
-    // Initialize k-points
-    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
-
     // Background charge is defined to be the opposite of system charge
     lc.background_charge *= -1.0;
 
+    for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
+        std::pair<std::string, InputKey*> Check = *it;
+        InputKey *CheckKey = it->second;
+        std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
+    }
 }
