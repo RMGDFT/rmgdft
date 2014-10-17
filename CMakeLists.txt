@@ -100,7 +100,7 @@ target_link_libraries (rmg RMG_Spin XC)
 target_link_libraries (rmg XC RMG_Spin)
 target_link_libraries (rmg RMG_Spin RMG_Spin_XC)
 target_link_libraries (rmg RMG_Spin_XC RMG_Spin)
-target_link_libraries (rmg US_PP)
+target_link_libraries (rmg US_PP Input)
 target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
 target_link_libraries (rmg RMG_Common US_PP)
 target_link_libraries (rmg US_PP RMG_Common)
@@ -256,6 +256,14 @@ target_link_libraries (rmg-on ${Boost_LIBRARIES})
 target_link_libraries (rmg-tddft ${Boost_LIBRARIES})
 target_link_libraries (rmg-negf ${Boost_LIBRARIES})
 
+ # Look for openbabel
+ find_package(OPENBABEL)
+ if(OPENBABEL_FOUND)
+   target_link_libraries (rmg ${OPENBABEL_LIBRARIES})
+   target_link_libraries (rmg-on ${OPENBABEL_LIBRARIES})
+   target_link_libraries (rmg-tddft ${OPENBABEL_LIBRARIES})
+   target_link_libraries (rmg-negf ${OPENBABEL_LIBRARIES})
+ endif (OPENBABEL_FOUND)
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
