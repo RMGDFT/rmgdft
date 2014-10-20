@@ -62,7 +62,6 @@
 
 static void init_alloc_nonloc_mem (void);
 
-extern "C" bool     verify( char *tagname, const void *optvalue );
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
@@ -238,7 +237,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     kpt1 = ct.num_kpts;
-    if (verify ("calculation_mode", "Band Structure Only"))
+    if (Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap))
         kpt1 = 1;
     for (kpt = 0; kpt < kpt1; kpt++)
     {

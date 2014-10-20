@@ -95,6 +95,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     boost::trim_if(AtomArray, boost::algorithm::is_any_of("\"^"));
 
     boost::algorithm::split( Atoms, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
+
     lc.num_ions = Atoms.size();
     lc.ions = new ION[lc.num_ions]();
 

@@ -35,7 +35,7 @@ void init_qfunct (void)
     for (isp = 0; isp < ct.num_species; isp++)
     {
 
-        if (verify ("write_pseudopotential_plots", &SET))
+        if (verify_boolean ("write_pseudopotential_plots", &SET))
         {
 	    snprintf (newname1, MAX_PATH, "%s.q%d.xmgr", ct.basename,isp);
 	    snprintf (newname2, MAX_PATH, "%s.drq%d.xmgr", ct.basename,isp);
@@ -100,7 +100,7 @@ void init_qfunct (void)
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_QLIG;
                     drqnmlig_tpr = sp->drqnmlig + (idx * sp->nlc + ll) * MAX_QLIG;
 
-                    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+                    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
                     {
                         for (k = 0; k < sp->kkbeta; k++)
                             fprintf (fqq, "%e  %e\n", sp->r[k], work[k]);
@@ -117,7 +117,7 @@ void init_qfunct (void)
 
                     
 		    /*Write final filtered Q function if requested*/
-		    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+		    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
 		    {
 			
 			rfil = ZERO;
@@ -136,7 +136,7 @@ void init_qfunct (void)
             }                   /*end for j */
         }                       /*end for i */
 
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
         {
             fclose (fqq);
             fclose (fdq);

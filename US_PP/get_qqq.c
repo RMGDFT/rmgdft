@@ -18,7 +18,7 @@ void get_qqq ()
     FILE *ftpr;
     char filename[MAX_PATH];
 
-    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
     {
 	snprintf (filename, MAX_PATH, "%s.q.txt", ct.basename);
         my_fopen (ftpr, filename, "w+");
@@ -38,7 +38,7 @@ void get_qqq ()
             my_malloc (pct.qqq[ion], nh * nh, rmg_double_t);
         qqq = pct.qqq[ion];
 
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
             fprintf (ftpr, "%% for ion %d :\n", ion);
 
         idx = 0;
@@ -59,7 +59,7 @@ void get_qqq ()
                 sum = sum * get_vel_f();
                 if (fabs (sum) < 1.0e-8)
                     sum = 0.0;
-                if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+                if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
                     fprintf (ftpr, "i=%d j=%d q_cal=%15.8f q_rel=%15.8f\n",
                              i, j, sum, sp->qqq[i][j]);
 
@@ -70,7 +70,7 @@ void get_qqq ()
                 idx++;
             }                   /*end for j */
         }                       /*end for i */
-        if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+        if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
             fprintf (ftpr, "\n");
     }                           /*end for ion */
 /*
@@ -83,6 +83,6 @@ void get_qqq ()
 				if(i==iptr->species) fprintf(ftpr,"ION%d   ",j);
 			}
 	*/
-    if (pct.gridpe == 0 && verify ("write_pseudopotential_plots", &SET))
+    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
         fclose (ftpr);
 }

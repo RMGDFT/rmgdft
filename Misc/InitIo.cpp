@@ -80,13 +80,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
 
-//ReadCommon(argc, argv, "in.c60.nf", ct, pct, ControlMap);
-//exit(0);
-    read_control(ct.cfile);
+//    read_control(ct.cfile);
+    ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
+    ReadDynamics(ct.cfile, ct, ControlMap);
+    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+
     Rmg_G->set_rank(pct.gridpe);
 
     InitHybridModel(ct.THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
-
 
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)

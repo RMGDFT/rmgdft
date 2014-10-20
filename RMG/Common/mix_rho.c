@@ -46,7 +46,7 @@ void mix_rho (rmg_double_t * new_rho, rmg_double_t * rho, rmg_double_t *rhocore,
     static rmg_double_t **rhohist=NULL, **residhist=NULL;
 
     /*Linear Mixing*/
-    if (verify("charge_mixing_type","Linear"))
+    if (verify_opt("charge_mixing_type","Linear"))
     {
 	
 	/* Scale old charge density first*/
@@ -57,7 +57,7 @@ void mix_rho (rmg_double_t * new_rho, rmg_double_t * rho, rmg_double_t *rhocore,
 	QMD_daxpy (length, ct.mix, new_rho, inc, rho, inc);
     }
     else {
-	if (verify("charge_mixing_type","Pulay"))
+	if (verify_opt("charge_mixing_type","Pulay"))
 	{
 	    step = ct.scf_steps;
 

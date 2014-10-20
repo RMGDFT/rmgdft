@@ -91,7 +91,7 @@ void init_psp (void)
     workr = work + MAX_RGRID;
 
     write_flag = 0;
-    if (verify ("write_pseudopotential_plots", &SET))
+    if (verify_boolean ("write_pseudopotential_plots", &SET))
         write_flag = 1;
 
     /*Initialize max_nlpoints and max_nlfpoints */

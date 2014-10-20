@@ -40,7 +40,7 @@ void read_control (char *file)
     char *tbuf, *tptr;
     float ftmp;
     static int run_count = - 1;
-
+exit(0);
     run_count ++;
     
     get_data (file, NULL, INIT | TAGS, NULL);

@@ -419,7 +419,7 @@ void write_header (void)
 	printf ("        rwidth          = %12.6f\n", sp->rwidth);
 	printf ("        gwidth          = %12.6f\n", sp->gwidth);
 
-	if (verify ("start_mode","LCAO Start"))
+	if (verify_opt ("start_mode","LCAO Start"))
 	{
 	    printf (" LCAO Parameters:             \n");
 	    printf ("        aradius         = %12.6f\n", sp->aradius);
