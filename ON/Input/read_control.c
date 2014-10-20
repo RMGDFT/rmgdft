@@ -245,6 +245,7 @@ static void read_orbitals ()
     /* read and count coordinates for each ion */
     ni = 0;
     int natom;
+    natom = 0;
     while (get_data ("orbitals", tbuf, ITEM | STR, NULL))
     {
         int args = 0;
@@ -270,7 +271,7 @@ static void read_orbitals ()
             states[ni + i].n_orbital_same_center = num_tem;
             states[ni + i].gaussian_orbital_index = i;
             state_to_ion[ni+i] = natom;
-            states[ni+1].atomic_orbital_index = i;
+            states[ni+i].atomic_orbital_index = i;
         }
 
 
