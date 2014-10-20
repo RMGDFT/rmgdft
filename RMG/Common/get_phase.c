@@ -65,7 +65,6 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
     dimz = sp->nldim;
     pbasis = dimx * dimy * dimz;
 
-        printf("\n Ionnnnn  %f %f ",iptr->crds[0],  iptr->nlxcstart);
 
     for (kpt = 0; kpt < ct.num_kpts; kpt++)
     {

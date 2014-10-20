@@ -1,5 +1,4 @@
 add_library (RMG_Common
-LcaoGetAwaveBlock.cpp
 WriteData.cpp
 MixBetaxpsi1.cpp
 WriteRestart.cpp

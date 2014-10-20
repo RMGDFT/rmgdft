@@ -54,7 +54,6 @@ void LcaoGetPsi (State<StateType> * states)
     /* Loop over ions */
     state_count = 0;
 
-
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         /* Generate ion pointer */
@@ -77,15 +76,103 @@ void LcaoGetPsi (State<StateType> * states)
             /*Loop over all m values for given l and get wavefunctions */
             for (m=0; m < 2*l+1; m++)
             {
-                coeff = rand0(&idum);
-                st = state_count % ct.num_states;
-                LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff);
+
                 state_count++;
+
             }
+
         }
 
     }
 
+    if(state_count <= ct.num_states)
+    {
+        coeff = 1.0;
+        st = 0;
+        psi = states[st].psi;
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            /* Generate ion pointer */
+            iptr = &ct.ions[ion];
+
+            /* Get species type */
+            sp = &ct.sp[iptr->species];
+
+            /*Make sure that the wavefunctions have been read*/
+            if (!sp->num_atomic_waves) {
+                rmg_printf("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
+                rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+            }
+
+            /*Loop over atomic wavefunctions for given ion*/
+            for (ip = 0; ip < sp->num_atomic_waves; ip++)
+            {
+                l = sp->atomic_wave_l[ip];
+
+                /*Loop over all m values for given l and get wavefunctions */
+                for (m=0; m < 2*l+1; m++)
+                {
+                    LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff);
+                    st++;
+                }
+            }
+
+        }
+    }
+    else
+    {
+
+        //StateType *aidum = new StateType[ct.num_states];
+        //StateType *apsi = new StateType [P0_BASIS];
+        long *aidum = new long[ct.num_states];
+        double *apsi = new double [P0_BASIS];
+        for(int st = 0;st < ct.num_states;st++) {
+            aidum[st] = idum = st + 3314;
+        }
+
+        coeff = 1.0;
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            /* Generate ion pointer */
+            iptr = &ct.ions[ion];
+
+            /* Get species type */
+            sp = &ct.sp[iptr->species];
+
+            /*Make sure that the wavefunctions have been read*/
+            if (!sp->num_atomic_waves) {
+                rmg_printf("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
+                rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+            }
+
+            /*Loop over atomic wavefunctions for given ion*/
+            for (ip = 0; ip < sp->num_atomic_waves; ip++)
+            {
+                l = sp->atomic_wave_l[ip];
+
+                /*Loop over all m values for given l and get wavefunctions */
+                for (m=0; m < 2*l+1; m++)
+                {
+                    for(idx = 0;idx < P0_BASIS;idx++)  apsi[idx] = 0.0;
+                    LcaoGetAwave(apsi, iptr, ip, l, m, coeff);
+                    for(int st = 0;st < ct.num_states;st++) 
+                    {
+                        double tem1 = rand0(&aidum[st]);
+                        for(idx = 0;idx < P0_BASIS;idx++) 
+                        {
+                            states[st].psi[idx] += tem1 * apsi[idx];
+                        }
+
+                    }
+                }
+
+            }
+        }
+
+        delete [] apsi;
+        delete [] aidum;
+
+    }
 
     /*Initialize any additional states to random start*/
     if ( ct.num_states > state_count)
