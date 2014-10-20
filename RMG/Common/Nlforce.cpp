@@ -6,29 +6,43 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
-#include "main.h"
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "prototypes.h"
+
+
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
 #define VERBOSE 0
 
-void nlforce (rmg_double_t * veff)
+template void Nlforce<double> (double *, Kpoint<double> **Kptr);
+template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr);
+
+template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType> **Kptr)
 {
     int ion, isp, index, gion, nion;
     int nh, size, size1;
-    rmg_double_t *gamma, *par_gamma, *par_omega;
+    double *gamma, *par_gamma, *par_omega;
     SPECIES *sp;
     ION *iptr;
     int num_ions;
     fftw_plan p2;
-    complex *in, *out;
-    rmg_double_t *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
-    rmg_double_t *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
+    std::complex<double> *in, *out;
+    double *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
+    double *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
     int fpt0;
 #if VERBOSE
-    rmg_double_t *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
-    my_malloc (old_force, 3 * ct.num_ions, rmg_double_t);
+    double *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
+    old_force new double[ 3 * ct.num_ions];
 #endif
 
 
@@ -38,12 +52,12 @@ void nlforce (rmg_double_t * veff)
 
     num_ions = ct.num_ions;
 
-    my_malloc (newsintR_x, 3 * size1, rmg_double_t);
+    newsintR_x = new double[3 * size1];
     newsintR_y = newsintR_x + size1;
     newsintR_z = newsintR_y + size1;
 
 #if !GAMMA_PT
-    my_malloc (newsintI_x, 3 * size1, rmg_double_t);
+    newsintI_x = new double[3 * size1];
     newsintI_y = newsintI_x + size1;
     newsintI_z = newsintI_y + size1;
 #else
@@ -63,9 +77,9 @@ void nlforce (rmg_double_t * veff)
 
 
     /*Array for q-force */
-    my_malloc (qforce, 3 * num_ions, rmg_double_t);
-    my_malloc (tmp_force_gamma, 3 * num_ions, rmg_double_t);
-    my_malloc (tmp_force_omega, 3 * num_ions, rmg_double_t);
+    qforce = new double[ 3 * num_ions];
+    tmp_force_gamma = new double[ 3 * num_ions];
+    tmp_force_omega = new double[ 3 * num_ions];
 
     for (isp = 0; isp < 3 * num_ions; isp++)
     {
@@ -78,8 +92,8 @@ void nlforce (rmg_double_t * veff)
     /*max for nh * (nh + 1) / 2 */
     size = (ct.max_nl + 1) * ct.max_nl / 2;
     
-    my_malloc (gamma, size, rmg_double_t);
-    my_malloc (par_gamma, 6 * size, rmg_double_t);
+    gamma = new double[ size];
+    par_gamma = new double[ 6 * size];
     par_omega = par_gamma + 3 * size;
 
 
@@ -99,17 +113,17 @@ void nlforce (rmg_double_t * veff)
             sp = &ct.sp[iptr->species];
 
 #if !FDIFF_BETA
-            in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-            out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-            p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out,
+            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out),
                                      FFTW_BACKWARD, FFTW_ESTIMATE);
 #else
             p2 = NULL;
 #endif
 
 
-            partial_betaxpsi (gion, p2, newsintR_x, newsintR_y, newsintR_z, newsintI_x, newsintI_y,
-                              newsintI_z, iptr);
+            PartialBetaxpsi (gion, p2, newsintR_x, newsintR_y, newsintR_z, newsintI_x, newsintI_y,
+                              newsintI_z, iptr, Kptr);
 
             /*Release memery for plans */
 #if !FDIFF_BETA
@@ -184,7 +198,10 @@ void nlforce (rmg_double_t * veff)
 	    
 	    nion++;
 	    if (nion >= pct.num_nonloc_ions)
-		error_handler("Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
+        {
+            printf("\n Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
+		rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list for owned ion ");
+        }
 	
 	} while (pct.nonloc_ions_list[nion] != gion);
         
@@ -285,18 +302,18 @@ void nlforce (rmg_double_t * veff)
     }
 #endif
 
-    my_free (par_gamma);
-    my_free (gamma);
-    my_free (tmp_force_gamma);
-    my_free (tmp_force_omega);
-    my_free (qforce);
-    my_free (newsintR_x);
+    delete[] par_gamma;
+    delete[] gamma;
+    delete[] tmp_force_gamma;
+    delete[] tmp_force_omega;
+    delete[] qforce;
+    delete[] newsintR_x;
 #if !GAMMA_PT
-    my_free (newsintI_x);
+    delete[] newsintI_x;
 #endif
 
 #if VERBOSE
-    my_free (old_force);
+    delete[] old_force;
 #endif
 
 }

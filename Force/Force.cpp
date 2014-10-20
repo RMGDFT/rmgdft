@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void force(rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *vh, rmg_double_t *vxc, STATE *states)
+ *   void force(double *rho, double *rhoc, double *vh, double *vxc, STATE *states)
  *   Driver routine to calculate ionic forces.
  * INPUTS
  *   rho: total charge density
@@ -39,8 +39,16 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
 #include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
 
 
 /*Set this to 1 to have forces written out part by part*/
@@ -48,21 +56,26 @@
  * nlforce.c*/
 #define VERBOSE 0
 
+template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, 
+        double * vxc, double * vnuc, Kpoint<double> **Kptr);
+template void Force<std::complex<double> > (double * rho, double * rho_oppo, double * rhoc, double * vh, 
+        double * vxc, double * vnuc, Kpoint<std::complex<double>> **Kptr);
 
 
-void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc)
+template <typename OrbitalType> void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, 
+        double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr)
 {
     int ion, idx;
-    rmg_double_t *vtott, *rho_tot;
+    double *vtott, *rho_tot;
 #if VERBOSE
-    rmg_double_t *old_force;
-    rmg_double_t sumx, sumy, sumz;
+    double *old_force;
+    double sumx, sumy, sumz;
 #endif
 
     int Zi;
 
 #if VERBOSE
-    my_malloc (old_force, 3 * ct.num_ions, rmg_double_t);
+    old_force = new double[ 3 * ct.num_ions];
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -72,7 +85,9 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     }
 #endif
 
-    my_malloc (vtott, get_FP0_BASIS(), rmg_double_t);
+    //my_malloc (vtott, get_FP0_BASIS(), double);
+    vtott = new double[get_FP0_BASIS()];
+
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtott[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
@@ -127,14 +142,14 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     /* Add in the local */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, get_FP0_BASIS(), rmg_double_t);
-	for (idx = 0; idx < get_FP0_BASIS(); idx++)
-		rho_tot[idx] = rho[idx] + rho_oppo[idx];
-	lforce(rho_tot, vh);
-	my_free (rho_tot);
+        rho_tot = new double[get_FP0_BASIS()];
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+            rho_tot[idx] = rho[idx] + rho_oppo[idx];
+        lforce(rho_tot, vh);
+        delete[] rho_tot;
     }
     else
-    	lforce (rho, vh);
+        lforce (rho, vh);
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -165,7 +180,7 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
 
 
     /* Add in the non-local stuff */
-    nlforce (vtott);
+    Nlforce (vtott, Kptr);
 
 
 
@@ -230,14 +245,14 @@ void force (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rm
     if (!(ct.kp[0].kpt[0] == 0.0 && ct.kp[0].kpt[1] == 0.0 && ct.kp[0].kpt[2] == 0.0))
         symforce ();
 #endif
-    my_free (vtott);
+    delete[] vtott;
 
     /* Impose force constraints, if any */
     if( ct.constrainforces )
         constrain ();
 
 #if VERBOSE
-    my_free (old_force);
+    delete[] old_force;
 #endif
 
 

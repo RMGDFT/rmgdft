@@ -149,6 +149,17 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& Species, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 
 
+template <typename OrbitalType> 
+    void Force (double * rho, double * rho_oppo, double * rhoc, double * vh,
+        double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> 
+    void Nlforce (double * , Kpoint<OrbitalType> **Kptr);
+
+
+template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, double * newsintR_x, double * newsintR_y,
+                       double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
+                       ION * iptr,Kpoint<OrbitalType> **Kptr);
+
 
 #endif
 #endif

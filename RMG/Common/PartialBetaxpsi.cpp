@@ -6,23 +6,39 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
-#include "main.h"
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
 #include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
 
-void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t * newsintR_x, rmg_double_t * newsintR_y,
-                       rmg_double_t * newsintR_z, rmg_double_t * newsintI_x, rmg_double_t * newsintI_y, rmg_double_t * newsintI_z,
-                       ION * iptr)
+
+template void PartialBetaxpsi<double> (int ion, fftw_plan p2, double * newsintR_x, double * newsintR_y,
+                       double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
+                       ION * iptr, Kpoint<double> **Kptr);
+template void PartialBetaxpsi<std::complex<double>> (int ion, fftw_plan p2, double * newsintR_x, double * newsintR_y,
+                       double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
+                       ION * iptr,Kpoint<std::complex<double>> **Kptr);
+
+template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, double * newsintR_x, double * newsintR_y,
+                       double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
+                       ION * iptr,Kpoint<OrbitalType> **Kptr)
 {
 
     int idx, kidx, istate, size, nh, index;
     int alloc, prjcount, count;
     int incx = 1, *pidx, ip;
-    rmg_double_t *workR;
-    rmg_double_t *beta_x, *beta_y, *beta_z;
-    rmg_double_t *temp_psiR;
+    double *workR;
+    double *beta_x, *beta_y, *beta_z;
+    double *temp_psiR;
     STATE *sta;
 #if !GAMMA_PT
-    rmg_double_t *workI, *pI, *temp_psiI, *pR;
+    double *workI, *pI, *temp_psiI, *pR;
 #endif
 
     nh = ct.sp[ct.ions[ion].species].nh;
@@ -36,9 +52,9 @@ void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t * newsintR_x, rmg_dou
     if (count)
     {
 #if GAMMA_PT
-        my_malloc (workR, alloc, rmg_double_t);
+        workR = new double[ alloc];
 #else
-        my_malloc (workR, 2 * alloc, rmg_double_t);
+        workR = new double[2* alloc];
         workI = workR + alloc;
 #endif
     }
@@ -48,7 +64,8 @@ void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t * newsintR_x, rmg_dou
     if (size)
     {
 #if !FDIFF_BETA
-        my_malloc (beta_x, 3 * size, rmg_double_t);
+        beta_x = new double[ 3 * size]; 
+
         beta_y = beta_x + size;
         beta_z = beta_y + size;
 
@@ -79,7 +96,6 @@ void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t * newsintR_x, rmg_dou
     for (kidx = 0; kidx < ct.num_kpts; kidx++)
     {
 
-        sta = ct.kp[kidx].kstate;
 
 #if !GAMMA_PT
         pR = pct.phaseptr[ion];
@@ -95,19 +111,14 @@ void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t * newsintR_x, rmg_dou
 
                 /*Gather_psi is not necessary, getting pointer should be enough
                    gather_psi(temp_psiR, temp_psiI, sta, 0); */
-                temp_psiR = sta->psiR;
-#if !GAMMA_PT
-                temp_psiI = sta->psiI;
-#endif
-
 
                 for (idx = 0; idx < count; idx++)
                 {
 #if GAMMA_PT
-                    workR[idx] = temp_psiR[pidx[idx]];
+                    workR[idx] = std::real(Kptr[kidx]->Kstates->psi[pidx[idx]]);
 #else
-                    workR[idx] = temp_psiR[pidx[idx]] * pR[idx] - temp_psiI[pidx[idx]] * pI[idx];
-                    workI[idx] = temp_psiI[pidx[idx]] * pR[idx] + temp_psiR[pidx[idx]] * pI[idx];
+                    workR[idx] = std::real(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pR[idx] - std::imag(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pI[idx];
+                    workI[idx] = std::imag(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pR[idx] + std::real(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pI[idx];
 #endif
                 }
 
@@ -142,10 +153,10 @@ void partial_betaxpsi (int ion, fftw_plan p2, rmg_double_t * newsintR_x, rmg_dou
     }
 
     if (count)
-        my_free (workR);
+        delete[] workR;
     /*my_free(temp_psiR); */
 # if !FDIFF_BETA
     if (size)
-        my_free (beta_x);
+        delete[] beta_x;
 #endif
 }

@@ -103,8 +103,8 @@ void init_IO (int argc, char **argv)
     printf ("\nRMG running in message passing mode with %d procs for this image.", status);
 
     /* Read in our pseudopotential information */
-    ReadPseudo(ct.num_species, &ct.sp[0]);
-   // read_pseudo();
+    //ReadPseudo(ct.num_species, &ct.sp[0]);
+    read_pseudo();
 
 
 #if GPU_ENABLED
