@@ -41,6 +41,8 @@ read_common.c
 cast.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
+if(OPENBABEL_FOUND)
 get_filename_component(OPENBABEL_PARENT_DIR ${OPENBABEL_INCLUDES} PATH)
 include_directories("${OPENBABEL_PARENT_DIR}")
+endif(OPENBABEL_FOUND)
 
