@@ -21,3 +21,6 @@
 
 /* Use Scalapack libs. */
 #define SCALAPACK_LIBS ${USE_SCALAPACK_LIBS}
+
+/* Use OPENBABEL libs. */
+#define OPENBABEL_LIBS ${USE_OPENBABEL_LIBS}

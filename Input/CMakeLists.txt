@@ -1,4 +1,5 @@
 add_library (Input
+ReadRmgAtoms.cpp
 ReadDynamics.cpp
 Verify.cpp
 InputKey.cpp
@@ -40,3 +41,6 @@ read_common.c
 cast.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
+get_filename_component(OPENBABEL_PARENT_DIR ${OPENBABEL_INCLUDES} PATH)
+include_directories("${OPENBABEL_PARENT_DIR}")
+
