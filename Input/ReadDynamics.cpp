@@ -75,11 +75,17 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     // SpeciesType holds the number of species found
     lc.num_species = SpeciesTypes.size();
     ct.sp = new SPECIES[ct.num_species];
-    for(int i = 0;i < lc.num_species;i++) {
-        std::strncpy(lc.sp[i].pseudo_filename, "./@Internal", sizeof(lc.sp[i].pseudo_filename));
-        std::strncpy(lc.sp[i].pseudo_symbol, "C", sizeof(lc.sp[i].pseudo_symbol));
-        LoadUpf(&ct.sp[i]);
-    } 
+
+    int isp = 0;
+    for(auto it = SpeciesTypes.begin();it != SpeciesTypes.end(); ++it) {
+        std::string AtomicSymbol = *it;
+        lc.sp[isp].atomic_symbol = new char[4];
+        std::strncpy(lc.sp[isp].atomic_symbol, AtomicSymbol.c_str(), 4);
+        std::strncpy(lc.sp[isp].pseudo_symbol, AtomicSymbol.c_str(), 4);
+        std::strncpy(lc.sp[isp].pseudo_filename, "./@Internal", sizeof(lc.sp[isp].pseudo_filename));
+        LoadUpf(&ct.sp[isp]);
+        isp++;
+    }
 
     // Assign species type for each ion
     int species = 0;
