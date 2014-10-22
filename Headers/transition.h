@@ -160,6 +160,14 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
                        double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
                        ION * iptr,Kpoint<OrbitalType> **Kptr);
 
+template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr);
+
+
+template <typename OrbitalType> void PartialGamma (
+                    int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
+                    double * newsintR_x, double * newsintR_y, double * newsintR_z,
+                    double * newsintI_x, double * newsintI_y, double * newsintI_z,
+                    Kpoint<OrbitalType> **Kptr);
 
 #endif
 #endif
