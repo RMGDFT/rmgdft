@@ -33,39 +33,39 @@ namespace RmgInput {
     // handles integer vectors
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<int>*, int)
     {
-        ReadVector<int> A;
+        ReadVector<int> *A = new ReadVector<int>;
         po::validators::check_first_occurrence(v);
         const std::string& s = po::validators::get_single_string(values);
         std::string t1 = s;
         boost::trim_if(t1, boost::algorithm::is_any_of("\" \t"));
 
         while(t1.size() > 0) {
-            A.vals.push_back( std::atoi(t1.c_str()));
+            A->vals.push_back( std::atoi(t1.c_str()));
             size_t f1 = t1.find_first_of(" \t");
             if(f1 == std::string::npos) break;
             t1 = t1.substr(f1, std::string::npos);
             boost::trim(t1);
         }
-        v = A;
+        v = *A;
     }
 
     // handles double vectors
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<double>*, double)
     {
-        ReadVector<double> A;
+        ReadVector<double> *A = new ReadVector<double>;
         po::validators::check_first_occurrence(v);
         const std::string& s = po::validators::get_single_string(values);
         std::string t1 = s;
         boost::trim_if(t1, boost::algorithm::is_any_of("\" \t"));
 
         while(t1.size() > 0) {
-            A.vals.push_back( std::atof(t1.c_str()));
+            A->vals.push_back( std::atof(t1.c_str()));
             size_t f1 = t1.find_first_of(" \t");
             if(f1 == std::string::npos) break;
             t1 = t1.substr(f1, std::string::npos);
             boost::trim(t1);
         }
-        v = A;
+        v = *A;
     }
 
 }

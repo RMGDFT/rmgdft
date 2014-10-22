@@ -59,7 +59,7 @@ typedef struct
     double time0;
     
     /* determine if this image is processing spin up or spin down. */
-    int spin_flag;
+    bool spin_flag;
 
     /* determine whether to initialize up and down density equally or not */
     bool init_equal_density_flag; 

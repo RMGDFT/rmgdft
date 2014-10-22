@@ -205,6 +205,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Target MD Temperature.\n",
                      "md_temperature must be a positive number.\n");
 
+    If.RegisterInputKey("md_nose_oscillation_frequency_THz", &lc.nose.fNose, 0.0, DBL_MAX, 15.59,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "md_nose_oscillation_frequency_THz must be a positive real number.");
+
     If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Mehrstellen",
                      CHECK_AND_FIX, OPTIONAL, discretization_type,
                      "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
@@ -513,6 +518,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Submatrix width to use as a fraction of the full spectrum.\n",
                      "folded_spectrum_width must lie in the range (0.2,1.0). Resetting to the default value of 0.3.\n");
 
+    If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, -DBL_MAX, DBL_MAX, 100.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "charge_pulay_special_metrics_weight must be a real number.");
+
     // Booleans next. Booleans are never required.
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
                         "Flag to test whether or not the modified metrics should be used in Pulay mixing.");
@@ -552,6 +562,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("scalapack_global_sums", &lc.scalapack_global_sums, true,
                         "");
 
+    If.RegisterInputKey("spin_polarization", &lc.spin_flag, false,
+                        "Spin polarized calculation?");
 
     If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 1.0e-14, 1.0e-4, 1.0e-7,
                      CHECK_AND_FIX, OPTIONAL,
@@ -597,7 +609,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     std::string Occup, Occdown;
     std::string Occ;
-    if(lc.spin_flag) {
+//    if(lc.spin_flag) {
 
         If.RegisterInputKey("states_count_and_occupation_spin_up", &Occup, "",
                          CHECK_AND_FIX, OPTIONAL,
@@ -610,27 +622,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                          "");
 
         
-    }
-    else {
+//    }
+//    else {
 
         If.RegisterInputKey("states_count_and_occupation", &Occ, "",
                          CHECK_AND_FIX, OPTIONAL,
                          "Occupation string for states.\n",
                          "");
 
-    }
-#if 0
-    If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, min, max, 100.0,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-    If.RegisterInputKey("md_nose_oscillation_frequency_THz", &lc.nose.fNose, min, max, 15.59,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
-#endif
+//    }
 
     If.LoadInputKeys();
 
