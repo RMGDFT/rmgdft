@@ -46,7 +46,7 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
 {
     int ik, jk, nk, is, il, idx, nspin = (ct.spin_flag + 1);
 
-    int bs = verify ("calculation_mode", "Band Structure Only");
+    int bs = Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap);
 
     Kpoint<KpointType> *kptr;
     nk = (bs) ? 1 : ct.num_kpts;
