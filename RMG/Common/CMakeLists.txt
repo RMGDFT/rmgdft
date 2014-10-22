@@ -47,7 +47,6 @@ rand0.c
 get_extrapolation_constants.c
 output_wave.c
 write_header.c
-read_data.c
 mix_rho.c
 cholesky.c
 #get_pdos.c
@@ -67,9 +66,7 @@ PartialBetaxpsi.cpp
 neb_relax.c
 app_smooth.cpp
 moldyn.c
-write_data.c
 xbsmovie.c
-write_restart.c
 init_gpu.c
 write_zstates.c
 get_phase.c
