@@ -20,6 +20,9 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
     /*Pointer to the result of forward transform on the coarse grid */
     complex *fptr_x, *fptr_y, *fptr_z;
     complex *beptr, *gbptr;
+    int P0_BASIS;
+
+    P0_BASIS = get_P0_BASIS();
 
 
 
@@ -52,6 +55,10 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
     rtptr_z = beta_z;
 
 
+
+    /*Calculate the phase factor */
+    //find_phase (sp->nldim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
+
     /* Loop over radial projectors */
     for (ip = 0; ip < sp->num_projectors; ip++)
     {
@@ -68,10 +75,14 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
                 creal(fptr_x[idx]) * iptr->fftw_phase_sin[idx]) * 1.0I;
         }
 
+
+        int idx1, idx2;
+
         /*Do the backwards transform */
         fftw_execute_dft (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
-        assign_derweight (sp, ion, beptr, rtptr_x);
+
+        assign_derweight (sp, ion, beptr, &beta_x[ip * P0_BASIS]);
 
 
     /*************** Y ********************/
@@ -88,7 +99,7 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
         /*Do the backwards transform */
         fftw_execute_dft (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
-        assign_derweight (sp, ion, beptr, rtptr_y);
+        assign_derweight (sp, ion, beptr, &beta_y[ip * P0_BASIS]);
 
 
     /*************** Z ********************/
@@ -105,7 +116,7 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
         /*Do the backwards transform */
         fftw_execute_dft (p2, gbptr, beptr);
         /*This takes and stores the part of beta that is useful for this PE */
-        assign_derweight (sp, ion, beptr, rtptr_z);
+        assign_derweight (sp, ion, beptr, &beta_z[ip * P0_BASIS]);
 
 
 
@@ -113,9 +124,6 @@ void get_derweight (int ion, rmg_double_t * beta_x, rmg_double_t * beta_y, rmg_d
         fptr_x += coarse_size;
         fptr_y += coarse_size;
         fptr_z += coarse_size;
-        rtptr_x += nh;
-        rtptr_y += nh;
-        rtptr_z += nh;
 
     }                           /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 

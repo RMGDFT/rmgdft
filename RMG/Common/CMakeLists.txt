@@ -31,7 +31,7 @@ pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
 write_occ.c
-get_gamma.c
+GetGamma.cpp
 fastrelax.c
 mix_betaxpsi1.c
 open_restart_file.c
@@ -88,7 +88,7 @@ set_pbc.c
 pulay_rho.c
 init_psp.c
 assign_derweight.c
-partial_gamma.c
+PartialGamma.cpp
 fire.c
 mg_prolong_6.c
 partial_beta_fdiff.c

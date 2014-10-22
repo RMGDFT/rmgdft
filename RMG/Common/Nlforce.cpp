@@ -22,7 +22,7 @@
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
-#define VERBOSE 0
+#define VERBOSE 1
 
 template void Nlforce<double> (double *, Kpoint<double> **Kptr);
 template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr);
@@ -42,7 +42,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     int fpt0;
 #if VERBOSE
     double *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
-    old_force new double[ 3 * ct.num_ions];
+    old_force = new double[ 3 * ct.num_ions];
 #endif
 
 
@@ -56,24 +56,16 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     newsintR_y = newsintR_x + size1;
     newsintR_z = newsintR_y + size1;
 
-#if !GAMMA_PT
     newsintI_x = new double[3 * size1];
     newsintI_y = newsintI_x + size1;
     newsintI_z = newsintI_y + size1;
-#else
-    newsintI_x = NULL;
-    newsintI_y = NULL;
-    newsintI_z = NULL;
-#endif
 
 
     /*Initialize */
     for (isp = 0; isp < 3 * size1; isp++)
         newsintR_x[isp] = 0.0;
-#if !GAMMA_PT
     for (isp = 0; isp < 3 * size1; isp++)
         newsintI_x[isp] = 0.0;
-#endif
 
 
     /*Array for q-force */
@@ -139,7 +131,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
         nh = ct.sp[iptr->species].nh;
 
-        get_gamma (gamma, ion, nh);
+        GetGamma (gamma, ion, nh, Kptr);
         nlforce_par_Q (veff, gamma, gion, iptr, nh, &qforce[3 * gion]);
 
     }                           /*end for(ion=0; ion<ions_max; ion++) */
@@ -150,11 +142,9 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     global_sums (newsintR_y, &size1, pct.grid_comm);
     global_sums (newsintR_z, &size1, pct.grid_comm);
 
-#if !GAMMA_PT
     global_sums (newsintI_x, &size1, pct.grid_comm);
     global_sums (newsintI_y, &size1, pct.grid_comm);
     global_sums (newsintI_z, &size1, pct.grid_comm);
-#endif
 
     size1 = 3 * num_ions;
     global_sums (qforce, &size1, pct.img_comm);
@@ -178,6 +168,19 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     }
 
 #if VERBOSE
+    printf("\n  Qforce");
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        iptr = &ct.ions[ion];
+
+        index = 3 * (ion);
+            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
+                    ion,
+                    iptr->force[fpt0][0] - old_force[3 * ion],
+                    iptr->force[fpt0][1] - old_force[3 * ion + 1],
+                    iptr->force[fpt0][2] - old_force[3 * ion + 2]);
+    }
+
     sum1x = 0.0;
     sum1y = 0.0;
     sum1z = 0.0;
@@ -211,8 +214,8 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         nh = ct.sp[iptr->species].nh;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
-        partial_gamma (gion, par_gamma, par_omega, nion, nh, newsintR_x, newsintR_y, newsintR_z,
-                       newsintI_x, newsintI_y, newsintI_z);
+        PartialGamma (gion, par_gamma, par_omega, nion, nh, newsintR_x, newsintR_y, newsintR_z,
+                       newsintI_x, newsintI_y, newsintI_z, Kptr);
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
 
 
@@ -308,9 +311,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     delete[] tmp_force_omega;
     delete[] qforce;
     delete[] newsintR_x;
-#if !GAMMA_PT
     delete[] newsintI_x;
-#endif
 
 #if VERBOSE
     delete[] old_force;

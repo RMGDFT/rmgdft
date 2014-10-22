@@ -16,6 +16,8 @@ void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t
     int idx1, docount;
 
     weight_shift_center(sp, beptr);
+    int *pidx = pct.nlindex[ion];
+
     dvec = pct.idxflag[ion];
     idx = docount = 0;
     for (ix = 0; ix < sp->nldim; ix++)
@@ -30,7 +32,7 @@ void assign_derweight (SPECIES * sp, int ion, fftw_complex * beptr, rmg_double_t
                 if (dvec[idx])
                 {
                     idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-                    rtptr[docount] = creal(beptr[idx1]);
+                    rtptr[pidx[docount]] = creal(beptr[idx1]);
                     if (cimag(beptr[idx1]) > 1.0e-8)
                     {
                         printf ("beptr[%d].im=%e\n", idx1, cimag(beptr[idx1]));

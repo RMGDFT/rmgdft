@@ -31,132 +31,101 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
 {
 
     int idx, kidx, istate, size, nh, index;
-    int alloc, prjcount, count;
+    int prjcount, count;
     int incx = 1, *pidx, ip;
     double *workR;
     double *beta_x, *beta_y, *beta_z;
     double *temp_psiR;
-    STATE *sta;
-#if !GAMMA_PT
+    SPECIES *sp;
+    int P0_BASIS;
     double *workI, *pI, *temp_psiI, *pR;
-#endif
 
     nh = ct.sp[ct.ions[ion].species].nh;
-    alloc = get_P0_BASIS();
-    if (alloc < ct.max_nlpoints)
-        alloc = ct.max_nlpoints;
+    sp = &ct.sp[ct.ions[ion].species];
+    P0_BASIS = get_P0_BASIS();
 
     count = pct.idxptrlen[ion];
     pidx = pct.nlindex[ion];
 
-    if (count)
+    if (!count) return;
+
+    workR = new double[2* P0_BASIS];
+    workI = workR + P0_BASIS;
+
+
+    size = nh * P0_BASIS;
+
+    beta_x = new double[ 3 * size]; 
+
+    beta_y = beta_x + size;
+    beta_z = beta_y + size;
+
+    for (idx = 0; idx < size; idx++)
     {
-#if GAMMA_PT
-        workR = new double[ alloc];
-#else
-        workR = new double[2* alloc];
-        workI = workR + alloc;
-#endif
+        beta_x[idx] = ZERO;
+        beta_y[idx] = ZERO;
+        beta_z[idx] = ZERO;
     }
 
+    /*partial_beta(ion, beta_x, beta_y,beta_z, iptr, p1, p2); */
+    get_derweight (ion, beta_x, beta_y, beta_z, iptr, p2);
 
-    size = nh * pct.idxptrlen[ion];
-    if (size)
-    {
-#if !FDIFF_BETA
-        beta_x = new double[ 3 * size]; 
-
-        beta_y = beta_x + size;
-        beta_z = beta_y + size;
-
-        for (idx = 0; idx < size; idx++)
-        {
-            beta_x[idx] = ZERO;
-            beta_y[idx] = ZERO;
-            beta_z[idx] = ZERO;
-        }
-
-        /*partial_beta(ion, beta_x, beta_y,beta_z, iptr, p1, p2); */
-        get_derweight (ion, beta_x, beta_y, beta_z, iptr, p2);
-#else
-
-        beta_x = pct.weight_derx[ion];
-        beta_y = pct.weight_dery[ion];
-        beta_z = pct.weight_derz[ion];
-
-#endif
-    }
-    else
-    {
-        beta_x = NULL;
-        beta_y = NULL;
-        beta_z = NULL;
-    }
 
     for (kidx = 0; kidx < ct.num_kpts; kidx++)
     {
 
 
-#if !GAMMA_PT
-        pR = pct.phaseptr[ion];
-        pR += 2 * kidx * count;
-        pI = pR + count;
-#endif
+        if(!ct.is_gamma)
+        {
+            pR = pct.phaseptr[ion];
+            pR += 2 * kidx * sp->nldim * sp->nldim * sp->nldim;
+            pI = pR + sp->nldim * sp->nldim * sp->nldim;
+        }
 
         for (istate = 0; istate < ct.num_states; istate++)
         {
 
-            if (count)
+
+            /*Gather_psi is not necessary, getting pointer should be enough
+              gather_psi(temp_psiR, temp_psiI, sta, 0); */
+
+            for (idx = 0; idx < P0_BASIS; idx++)
+            {
+                if(ct.is_gamma)
+                    workR[idx] = std::real(Kptr[kidx]->Kstates[istate].psi[idx]);
+                else
+                {
+                    workR[idx] = std::real(Kptr[kidx]->Kstates[istate].psi[idx]) * pR[idx] - std::imag(Kptr[kidx]->Kstates[istate].psi[idx]) * pI[idx];
+                    workI[idx] = std::imag(Kptr[kidx]->Kstates[istate].psi[idx]) * pR[idx] + std::real(Kptr[kidx]->Kstates[istate].psi[idx]) * pI[idx];
+                }
+            }
+
+            index =
+                ion * ct.num_kpts * ct.num_states * ct.max_nl +
+                kidx * ct.num_states * ct.max_nl + istate * ct.max_nl;
+            for (ip = 0; ip < nh; ip++)
             {
 
-                /*Gather_psi is not necessary, getting pointer should be enough
-                   gather_psi(temp_psiR, temp_psiI, sta, 0); */
-
-                for (idx = 0; idx < count; idx++)
+                newsintR_x[index+ip] =
+                    get_vel() * QMD_ddot (P0_BASIS, workR, incx, &beta_x[ip*P0_BASIS], incx);
+                newsintR_y[index+ip] =
+                    get_vel() * QMD_ddot (P0_BASIS, workR, incx, &beta_y[ip*P0_BASIS], incx);
+                newsintR_z[index+ip] =
+                    get_vel() * QMD_ddot (P0_BASIS, workR, incx, &beta_z[ip*P0_BASIS], incx);
+                if(!ct.is_gamma)
                 {
-#if GAMMA_PT
-                    workR[idx] = std::real(Kptr[kidx]->Kstates->psi[pidx[idx]]);
-#else
-                    workR[idx] = std::real(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pR[idx] - std::imag(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pI[idx];
-                    workI[idx] = std::imag(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pR[idx] + std::real(Kptr[kidx]->Kstates->psi[pidx[idx]]) * pI[idx];
-#endif
+                    newsintI_x[index+ip] =
+                        get_vel() * QMD_ddot (P0_BASIS, workI, incx, &beta_x[ip*P0_BASIS], incx);
+                    newsintI_y[index+ip] =
+                        get_vel() * QMD_ddot (P0_BASIS, workI, incx, &beta_y[ip*P0_BASIS], incx);
+                    newsintI_z[index+ip] =
+                        get_vel() * QMD_ddot (P0_BASIS, workI, incx, &beta_z[ip*P0_BASIS], incx);
                 }
 
-                prjcount = 0;
-                index =
-                    ion * ct.num_kpts * ct.num_states * ct.max_nl +
-                    kidx * ct.num_states * ct.max_nl + istate * ct.max_nl;
-                for (ip = 0; ip < nh; ip++)
-                {
+            }               /*end for ip */
+        }                   /*end if count */
+    }                       /* end for istate */
 
-                    newsintR_x[index] =
-                        get_vel() * QMD_ddot (count, workR, incx, &beta_x[prjcount], incx);
-                    newsintR_y[index] =
-                        get_vel() * QMD_ddot (count, workR, incx, &beta_y[prjcount], incx);
-                    newsintR_z[index] =
-                        get_vel() * QMD_ddot (count, workR, incx, &beta_z[prjcount], incx);
-#if !GAMMA_PT
-                    newsintI_x[index] =
-                        get_vel() * QMD_ddot (count, workI, incx, &beta_x[prjcount], incx);
-                    newsintI_y[index] =
-                        get_vel() * QMD_ddot (count, workI, incx, &beta_y[prjcount], incx);
-                    newsintI_z[index] =
-                        get_vel() * QMD_ddot (count, workI, incx, &beta_z[prjcount], incx);
-#endif
-                    prjcount += count;
-                    index++;
-
-                }               /*end for ip */
-            }                   /*end if count */
-            sta++;
-        }                       /* end for istate */
-    }
-
-    if (count)
-        delete[] workR;
-    /*my_free(temp_psiR); */
-# if !FDIFF_BETA
-    if (size)
-        delete[] beta_x;
-#endif
+    delete[] workR;
+    delete[] beta_x;
 }
