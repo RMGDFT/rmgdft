@@ -50,6 +50,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     fpt0 = ct.fpt[0];
 
 
+
     num_ions = ct.num_ions;
 
     newsintR_x = new double[3 * size1];

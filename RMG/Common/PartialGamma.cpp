@@ -42,8 +42,8 @@ template <typename OrbitalType> void PartialGamma (
     int i, j, idx, kidx, istate, size, index;
     double *gamma_x, *gamma_y, *gamma_z;
     double *omega_x, *omega_y, *omega_z;
-    double t1, betaxpsiNR, betaxpsiMR;
-    double betaxpsiNI, betaxpsiMI;
+    double t1;
+    OrbitalType betaxpsiN, betaxpsiM;
     double *psixbetaI_x, *psixbetaI_y, *psixbetaI_z;
     double *psixbetaR_x, *psixbetaR_y, *psixbetaR_z;
 
@@ -93,56 +93,35 @@ template <typename OrbitalType> void PartialGamma (
             {
                 for (j = i; j < nh; j++)
                 {
-                    betaxpsiNR = pct.newsintR_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
-                                                istate * ct.max_nl + i];
-                    betaxpsiMR = pct.newsintR_local[kidx * pct.num_nonloc_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
-                                                istate * ct.max_nl + j];
+                    betaxpsiN = Kptr[kidx]->newsint_local[ nion * ct.num_states * ct.max_nl +
+                        istate * ct.max_nl + i];
+                    betaxpsiM = Kptr[kidx]->newsint_local[ nion * ct.num_states * ct.max_nl +
+                        istate * ct.max_nl + j];
 
 
-if(ct.is_gamma)
-   {
-                    gamma_x[idx] +=
-                        t1 * (psixbetaR_x[i] * betaxpsiMR + betaxpsiNR * psixbetaR_x[j]);
+
+                    gamma_x[idx] += t1 * (psixbetaR_x[i] * std::real(betaxpsiM) + psixbetaI_x[i] * std::imag(betaxpsiM)
+                                + std::real(betaxpsiN) * psixbetaR_x[j] +
+                                std::imag(betaxpsiN) * psixbetaI_x[j]);
                     gamma_y[idx] +=
-                        t1 * (psixbetaR_y[i] * betaxpsiMR + betaxpsiNR * psixbetaR_y[j]);
+                        t1 * (psixbetaR_y[i] * std::real(betaxpsiM) + psixbetaI_y[i] * std::imag(betaxpsiM) +
+                                std::real(betaxpsiN) * psixbetaR_y[j] + std::imag(betaxpsiN) * psixbetaI_y[j]);
                     gamma_z[idx] +=
-                        t1 * (psixbetaR_z[i] * betaxpsiMR + betaxpsiNR * psixbetaR_z[j]);
-                    omega_x[idx] +=
-                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_x[i] * betaxpsiMR + betaxpsiNR * psixbetaR_x[j]);
-                    omega_y[idx] +=
-                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_y[i] * betaxpsiMR + betaxpsiNR * psixbetaR_y[j]);
-                    omega_z[idx] +=
-                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_z[i] * betaxpsiMR + betaxpsiNR * psixbetaR_z[j]);
-}
-else
-{
-                    betaxpsiNI = pct.newsintI_local[kidx * ct.num_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
-                                                istate * ct.max_nl + i];
-                    betaxpsiMI = pct.newsintI_local[kidx * ct.num_ions * ct.num_states * ct.max_nl + nion * ct.num_states * ct.max_nl +
-                                                istate * ct.max_nl + j];
-
-
-
-                    gamma_x[idx] += t1 * (psixbetaR_x[i] * betaxpsiMR + psixbetaI_x[i] * betaxpsiMI
-                                          + betaxpsiNR * psixbetaR_x[j] +
-                                          betaxpsiNI * psixbetaI_x[j]);
-                    gamma_y[idx] +=
-                        t1 * (psixbetaR_y[i] * betaxpsiMR + psixbetaI_y[i] * betaxpsiMI +
-                              betaxpsiNR * psixbetaR_y[j] + betaxpsiNI * psixbetaI_y[j]);
-                    gamma_z[idx] +=
-                        t1 * (psixbetaR_z[i] * betaxpsiMR + psixbetaI_z[i] * betaxpsiMI +
-                              betaxpsiNR * psixbetaR_z[j] + betaxpsiNI * psixbetaI_z[j]);
+                        t1 * (psixbetaR_z[i] * std::real(betaxpsiM) + psixbetaI_z[i] * std::imag(betaxpsiM) +
+                                std::real(betaxpsiN) * psixbetaR_z[j] + std::imag(betaxpsiN) * psixbetaI_z[j]);
 
                     omega_x[idx] +=
-                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_x[i] * betaxpsiMR + psixbetaI_x[i] * betaxpsiMI +
-                                         betaxpsiNR * psixbetaR_x[j] + betaxpsiNI * psixbetaI_x[j]);
+                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_x[i] * std::real(betaxpsiM) + psixbetaI_x[i] *
+                                std::imag(betaxpsiM) +
+                                std::real(betaxpsiN) * psixbetaR_x[j] + std::imag(betaxpsiN) * psixbetaI_x[j]);
                     omega_y[idx] +=
-                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_y[i] * betaxpsiMR + psixbetaI_y[i] * betaxpsiMI +
-                                         betaxpsiNR * psixbetaR_y[j] + betaxpsiNI * psixbetaI_y[j]);
+                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_y[i] * std::real(betaxpsiM) + psixbetaI_y[i] *
+                                std::imag(betaxpsiM) +
+                                std::real(betaxpsiN) * psixbetaR_y[j] + std::imag(betaxpsiN) * psixbetaI_y[j]);
                     omega_z[idx] +=
-                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_z[i] * betaxpsiMR + psixbetaI_z[i] * betaxpsiMI +
-                                         betaxpsiNR * psixbetaR_z[j] + betaxpsiNI * psixbetaI_z[j]);
-}
+                        t1 * Kptr[kidx]->Kstates[istate].eig[0] * (psixbetaR_z[i] * std::real(betaxpsiM) + psixbetaI_z[i] *
+                                std::imag(betaxpsiM) +
+                                std::real(betaxpsiN) * psixbetaR_z[j] + std::imag(betaxpsiN) * psixbetaI_z[j]);
                     ++idx;
                 }               /* end for j */
             }                   /*end for i */

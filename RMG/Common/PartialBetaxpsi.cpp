@@ -34,7 +34,7 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
     int prjcount, count;
     int incx = 1, *pidx, ip;
     double *workR;
-    double *beta_x, *beta_y, *beta_z;
+    OrbitalType *beta_x, *beta_y, *beta_z, temx, temy, temz;
     double *temp_psiR;
     SPECIES *sp;
     int P0_BASIS;
@@ -43,10 +43,12 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
     nh = ct.sp[ct.ions[ion].species].nh;
     sp = &ct.sp[ct.ions[ion].species];
     P0_BASIS = get_P0_BASIS();
+    int xoff = get_PX_OFFSET();
 
     count = pct.idxptrlen[ion];
     pidx = pct.nlindex[ion];
 
+    double tem, tem1;
     if (!count) return;
 
     workR = new double[2* P0_BASIS];
@@ -55,32 +57,25 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
 
     size = nh * P0_BASIS;
 
-    beta_x = new double[ 3 * size]; 
+    beta_x = new OrbitalType[ 3 * size]; 
 
     beta_y = beta_x + size;
     beta_z = beta_y + size;
 
-    for (idx = 0; idx < size; idx++)
-    {
-        beta_x[idx] = ZERO;
-        beta_y[idx] = ZERO;
-        beta_z[idx] = ZERO;
-    }
-
-    /*partial_beta(ion, beta_x, beta_y,beta_z, iptr, p1, p2); */
-    get_derweight (ion, beta_x, beta_y, beta_z, iptr, p2);
 
 
     for (kidx = 0; kidx < ct.num_kpts; kidx++)
     {
 
-
-        if(!ct.is_gamma)
+        for (idx = 0; idx < size; idx++)
         {
-            pR = pct.phaseptr[ion];
-            pR += 2 * kidx * sp->nldim * sp->nldim * sp->nldim;
-            pI = pR + sp->nldim * sp->nldim * sp->nldim;
+            beta_x[idx] = 0.0;
+            beta_y[idx] = 0.0;
+            beta_z[idx] = 0.0;
         }
+
+        /*partial_beta(ion, beta_x, beta_y,beta_z, iptr, p1, p2); */
+        GetDerweight (ion, beta_x, beta_y, beta_z, iptr, p2, Kptr[kidx]);
 
         for (istate = 0; istate < ct.num_states; istate++)
         {
@@ -89,37 +84,28 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
             /*Gather_psi is not necessary, getting pointer should be enough
               gather_psi(temp_psiR, temp_psiI, sta, 0); */
 
-            for (idx = 0; idx < P0_BASIS; idx++)
-            {
-                if(ct.is_gamma)
-                    workR[idx] = std::real(Kptr[kidx]->Kstates[istate].psi[idx]);
-                else
-                {
-                    workR[idx] = std::real(Kptr[kidx]->Kstates[istate].psi[idx]) * pR[idx] - std::imag(Kptr[kidx]->Kstates[istate].psi[idx]) * pI[idx];
-                    workI[idx] = std::imag(Kptr[kidx]->Kstates[istate].psi[idx]) * pR[idx] + std::real(Kptr[kidx]->Kstates[istate].psi[idx]) * pI[idx];
-                }
-            }
-
             index =
                 ion * ct.num_kpts * ct.num_states * ct.max_nl +
                 kidx * ct.num_states * ct.max_nl + istate * ct.max_nl;
             for (ip = 0; ip < nh; ip++)
             {
 
-                newsintR_x[index+ip] =
-                    get_vel() * QMD_ddot (P0_BASIS, workR, incx, &beta_x[ip*P0_BASIS], incx);
-                newsintR_y[index+ip] =
-                    get_vel() * QMD_ddot (P0_BASIS, workR, incx, &beta_y[ip*P0_BASIS], incx);
-                newsintR_z[index+ip] =
-                    get_vel() * QMD_ddot (P0_BASIS, workR, incx, &beta_z[ip*P0_BASIS], incx);
+                temx = 0.0; temy = 0.0; temz = 0.0;
+            for (idx = 0; idx < P0_BASIS; idx++)
+            {
+                temx += Kptr[kidx]->Kstates[istate].psi[idx] * std::conj(beta_x[ip * P0_BASIS + idx]);
+                temy += Kptr[kidx]->Kstates[istate].psi[idx] * std::conj(beta_y[ip * P0_BASIS + idx]);
+                temz += Kptr[kidx]->Kstates[istate].psi[idx] * std::conj(beta_z[ip * P0_BASIS + idx]);
+            }
+
+                newsintR_x[index+ip] = get_vel() * std::real(temx);
+                newsintR_y[index+ip] = get_vel() * std::real(temy);
+                newsintR_z[index+ip] = get_vel() * std::real(temz);
                 if(!ct.is_gamma)
                 {
-                    newsintI_x[index+ip] =
-                        get_vel() * QMD_ddot (P0_BASIS, workI, incx, &beta_x[ip*P0_BASIS], incx);
-                    newsintI_y[index+ip] =
-                        get_vel() * QMD_ddot (P0_BASIS, workI, incx, &beta_y[ip*P0_BASIS], incx);
-                    newsintI_z[index+ip] =
-                        get_vel() * QMD_ddot (P0_BASIS, workI, incx, &beta_z[ip*P0_BASIS], incx);
+                    newsintI_x[index+ip] =get_vel() * std::imag(temx);
+                    newsintI_y[index+ip] =get_vel() * std::imag(temy);
+                    newsintI_z[index+ip] =get_vel() * std::imag(temz);
                 }
 
             }               /*end for ip */

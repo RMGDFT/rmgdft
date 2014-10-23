@@ -82,12 +82,12 @@ write_avgv.c
 move_ions.c
 ranv.c
 print_density_z_direction.c
-get_derweight.c
+GetDerweight.cpp
 get_ke.c
 set_pbc.c
 pulay_rho.c
 init_psp.c
-assign_derweight.c
+AssignDerweight.cpp
 PartialGamma.cpp
 fire.c
 mg_prolong_6.c

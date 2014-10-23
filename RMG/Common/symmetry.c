@@ -307,44 +307,26 @@ void symmetrize_rho (double * rho)
 
 
 
-/* This routine is used to symmetrize the forces (MBN)*/
-void symforce (void)
+
+void symforce ()
 {
-    int ion;
-    double celldm[6], force[MAX_IONS][3];
+    int ion, isy, i, j;
 
-    int NX_GRID = get_NX_GRID();
-    int NY_GRID = get_NY_GRID();
-    int NZ_GRID = get_NZ_GRID();
+    double force[3];
 
-    int ibrav = get_ibrav_type();
-
-    celldm[0] = get_celldm(0);
-    celldm[1] = get_celldm(1);
-    celldm[2] = get_celldm(2);
-    celldm[3] = 0.0;
-    celldm[4] = 0.0;
-    celldm[5] = 0.0;
-
-    /* Convert forces to format expected by fortran routines */
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        force[ion][0] = ct.ions[ion].force[ct.fpt[0]][0];
-        force[ion][1] = ct.ions[ion].force[ct.fpt[0]][1];
-        force[ion][2] = ct.ions[ion].force[ct.fpt[0]][2];
-    }
+        for(i = 0; i < 3; i++) force[i] = 0.0;
+        for(isy = 0; isy < nsym; isy++)
+        for(i = 0; i < 3; i++)
+        for(j = 0; j < 3; j++)
+            force[i] += s[isy *9 + i* 3 + j] * ct.ions[ion].force[ct.fpt[0]][j];
 
-    fsymforces (&force[0][0], s, irg, &irt[0][0], &ct.num_ions, &ibrav,
-            &nsym, celldm, &NX_GRID, &NY_GRID, &NZ_GRID);
+       
+        for(i = 0; i < 3; i++) 
+            ct.ions[ion].force[ct.fpt[0]][i] = force[i] /nsym;
 
-    /* Store forces back in c format */
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        ct.ions[ion].force[ct.fpt[0]][0] = force[ion][0];
-        ct.ions[ion].force[ct.fpt[0]][1] = force[ion][1];
-        ct.ions[ion].force[ct.fpt[0]][2] = force[ion][2];
     }
 
 }                               /* end symforce */

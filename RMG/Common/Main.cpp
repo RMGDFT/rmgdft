@@ -289,7 +289,7 @@ void initialize(int argc, char **argv)
     {
     
         /* Write header to stdout */
-        write_header (); 
+        //write_header (); 
 
     }
 

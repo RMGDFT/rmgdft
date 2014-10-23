@@ -122,8 +122,10 @@ void lcao_get_rho (rmg_double_t * arho_f)
                                 x[1] = iy * hyygrid - iptr->xtal[1];
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
-
-                                i_r = (int)(log ( (r+c)/a) /b);
+                                if(r <= sp->r[0])
+                                     i_r= 0;
+                                else
+                                    i_r = (int)(log ( (r+c)/a) /b);
                                 r1 = a *exp (i_r * b) -c;
                                 r2 = a * exp((i_r+1) *b) -c;
 
