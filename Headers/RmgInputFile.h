@@ -36,10 +36,10 @@ class RmgInputFile {
         void LoadInputKeys(void);
 
     private:
-        std::string PreprocessInputFile(char *cfile);
-        std::string sfile;
+        void PreprocessInputFile(char *cfile);
         po::options_description control;
         std::unordered_map<std::string, InputKey *>& InputMap;
+        std::unordered_map<std::string, std::string> InputPairs;
         po::variables_map vm;
 
 

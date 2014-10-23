@@ -5,6 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -72,7 +73,7 @@ namespace RmgInput {
 
 
 RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map) : InputMap(Map)  {
-    sfile = PreprocessInputFile(inputfile);
+    PreprocessInputFile(inputfile);
 
 }
 
@@ -122,11 +123,35 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<do
 
 void RmgInputFile::LoadInputKeys(void) {
 
+    std::string sfile;
+    InputKey *Key;
+    for (auto item = InputPairs.begin();item != InputPairs.end();item++) {
+
+        std::string PairName = item->first;
+        std::string PairValue = item->second;
+
+        try {
+            Key = InputMap.at(PairName);
+            std::string val(PairValue);
+            boost::trim_if(val, boost::algorithm::is_any_of("\" "));
+            if((Key->KeyType == typeid(int).hash_code()) || (Key->KeyType == typeid(double).hash_code()) || (Key->KeyType == typeid(bool).hash_code())) {
+                sfile = sfile + PairName + "=" + val + "\n";
+            }
+            else {
+                sfile = sfile + PairName + "=" + "\"" + val + "\"\n";
+            }
+        }
+        catch (const std::out_of_range& oor) {
+//            std::cout << "Warning!! Unknown input tag: " << PairName << std::endl;
+        }
+
+    }
+    //std::cout << sfile << std::endl;exit(0);
+
     // Load the keys into the map
     for (auto item = InputMap.begin();item != InputMap.end();item++) {
 
         std::string KeyName = item->first;
-
         InputKey *Ik = item->second;
         if(Ik->Required) {
 
@@ -237,7 +262,7 @@ void RmgInputFile::LoadInputKeys(void) {
 }
 
 
-std::string RmgInputFile::PreprocessInputFile(char *cfile)
+void RmgInputFile::PreprocessInputFile(char *cfile)
 {
     std::string config_file(cfile);
     std::string outbuf;
@@ -245,7 +270,7 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
 
     std::ifstream ifs(cfile);
 
-    // First pass to clean it up
+    // First pass to remove leading and trailing comments
     for(std::string line; std::getline(ifs, line); ) {
 
         // Strip leading and trailing whitespace
@@ -264,90 +289,98 @@ std::string RmgInputFile::PreprocessInputFile(char *cfile)
         }
 
     }
-    // Split into individual lines again
-    std::string delims = "\n";
-    std::vector<std::string> lines;
-    std::vector<std::string> lines1;
-    std::vector<std::string>::iterator it;
-    boost::algorithm::split( lines, tbuf, boost::is_any_of(delims), boost::token_compress_on );
-    tbuf.clear();
-    int idx = -1;
-    bool join = false;
-    std::string join_str("^");
-    for (it = lines.begin(); it != lines.end(); ++it) {
-        std::string line = *it;
 
-        // Forward line iterator
-        std::vector<std::string>::iterator it1;
-        it1 = it + 1;
+    // First tokenizer pass to get rid of empty tokens
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    boost::char_separator<char> sep("", "\"=");
+    tokenizer tokens(tbuf, sep);
+    bool breakflag = false;
+    for (tokenizer::iterator tok_iter = tokens.begin();tok_iter != tokens.end(); ++tok_iter) {
+        std::string line(*tok_iter);
+        boost::trim(line);
 
-        if(join && (it1 != lines.end())) {
-            lines1.at(idx) = lines1.at(idx) + join_str + line;
-            join = false;
-        }
-
-        // If line contains "=" then it's a new key-value pair
-        if(std::string::npos != line.find("=")) {
-            idx++;
-            // new key-value pair
-            lines1.push_back(line);
-            join = false;
-        }
-
-        // Any quotes in this line?
-        std::size_t f1 = line.find("\"", 1);
-        if(f1 != std::string::npos) {
-            std::size_t f2 = line.find("\"", f1 + 1);
-            // If two quotes then we are done, if one quote then join with next line unless it contains an =
-            if(f2 != std::string::npos) {
-                join = false;
+        while(!line.size()) {
+            tok_iter++;
+            if(tok_iter == tokens.end()) {
+                breakflag = true;
+                break;
             }
-            else {
-                join = true;
-                if(it1 != lines.end()) {
-                    std::string fline = *it1;
-                    f1 = fline.find("=", 1);
-                    if(f1 != std::string::npos) join = false;
-                }
-            }
+            line.erase();
+            line = *tok_iter;
+            boost::trim(line);
         }
-        else {
-            // no quotes so join unless next line contains an equal sign
-            join = true;
-            if(it1 != lines.end()) {
-                std::string fline = *it1;
-                f1 = fline.find("=", 1);
-                if(f1 != std::string::npos) join = false;
+        if(breakflag) break;
+
+        // Should be an input tag so throw if it's an = or a "
+        if(std::string::npos != line.find("=")) RmgFatalException() << "Malformed input file near " << line << "\n";
+        if(std::string::npos != line.find("\"")) RmgFatalException() << "Malformed input file near " << line << "\n";
+        outbuf = outbuf + line; 
+
+        // Advance to next non empty token
+        line.erase();
+        while(!line.size()) {
+            tok_iter++;
+            if(tok_iter == tokens.end()) {
+                RmgFatalException() << "Malformed input file near " << line << "\n";
             }
+            line.erase();
+            line = *tok_iter;
+            boost::trim(line);
         }
+
+        // Should be an = so throw if not
+        if(std::string::npos == line.find("=")) RmgFatalException() << "Malformed input file near " << line << "\n";
+        outbuf = outbuf + line; 
+
+        // Advance to next non empty token
+        line.erase();
+        while(!line.size()) {
+            tok_iter++;
+            if(tok_iter == tokens.end()) {
+                RmgFatalException() << "Malformed input file near " << line << "\n";
+            }
+            line.erase();
+            line = *tok_iter;
+            boost::trim(line);
+        }
+
+        // Should be a " so throw if not
+        if(std::string::npos == line.find("\"")) RmgFatalException() << "Malformed input file near " << line << "\n";
+
+        outbuf = outbuf + line;
+        tok_iter++;
+        if(tok_iter == tokens.end()) RmgFatalException() << "Malformed input file near " << line << "\n";
+        line.erase();
+        line = *tok_iter;
+        boost::trim(line);
+        while(std::string::npos == line.find("\"")) {
+             outbuf = outbuf + line;
+             tok_iter++;
+             if(tok_iter == tokens.end()) break;
+             line.erase();
+             line = *tok_iter;
+             boost::trim(line);
+        }
+        outbuf = outbuf + "\"\n";
+
     }
 
-    for (it = lines1.begin(); it != lines1.end(); ++it) {
-        // if *it does not contain quotes but does contain true or false then it's a boolean field so
-        // we turn the actual value into a 0 or 1 for the next level parsing routines
-        std::string& fline = *it;
-        std::size_t f1 = fline.find("\"", 1);
-        if(f1 == std::string::npos) {
-            // no quotes
-            std::size_t f2 = fline.find("true");
-            std::size_t f3 = fline.find("false");
-            if((f2 != std::string::npos) && (f3 != std::string::npos)) {
-                // Both true and false so some sort of error            
-                throw RmgFatalException() << "Syntax error in " << cfile << " near " << fline;
-            }
-            if(f2 != std::string::npos) {
-               fline.replace(f2, 4, "1");
-            }
-            if(f3 != std::string::npos) {
-               fline.replace(f3, 5, "0");
-            }
-        }
-
-        outbuf = outbuf + *it + "\n";
+    // Second tokenizer pass to make the InputPairs map
+    boost::char_separator<char> pairsep("\"=");
+    tokenizer pairtokens(outbuf, pairsep);
+    for (tokenizer::iterator tok_iter = pairtokens.begin();tok_iter != tokens.end(); ++tok_iter) {
+        std::string line1(*tok_iter);
+        tok_iter++;
+        if(tok_iter == tokens.end()) break;
+        std::string line2(*tok_iter);
+        boost::trim_if(line1, boost::algorithm::is_any_of("\" \t\n\r"));
+        boost::trim_if(line2, boost::algorithm::is_any_of("\" \t\n\r"));
+        std::replace( line2.begin(), line2.end(), '\n', '^');
+        std::pair <std::string, std::string> NewEntry(line1, line2);
+        InputPairs.insert(NewEntry);
     }
 
     //std::cout << outbuf << std::endl;exit(0);
-    return outbuf;
 
 }
 

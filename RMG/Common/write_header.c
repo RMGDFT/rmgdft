@@ -428,7 +428,7 @@ void write_header (void)
 	    printf ("        arwidth         = %12.6f\n", sp->arwidth);
 	}
 
-
+        printf ("\n%s\n", sp->INFO);
 
     }                           /* end for(idx = 0;idx < ct.num_species;idx++) */
 
