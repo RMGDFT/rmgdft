@@ -106,11 +106,11 @@ typedef struct
     int kkbeta;
 
     /*matrix ddd0(nbeta,nbeta) */
-    double ddd0[18][18];
-    double ddd[18][18];
+    double ddd0[MAX_NL][MAX_NL];
+    double ddd[MAX_NL][MAX_NL];
 
     /*matrix qqq(nbeta,nbeta) */
-    double qqq[18][18];
+    double qqq[MAX_NL][MAX_NL];
 
     /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */
     int nlc;
@@ -222,9 +222,9 @@ typedef struct
     char *backward_wisdom;
 
     /*Some parameters for Q function*/
-    int indv[18];
-    int nhtol[18];
-    int nhtom[18];
+    int indv[MAX_NL];
+    int nhtol[MAX_NL];
+    int nhtom[MAX_NL];
     int nh;
 
     /*Atomic charge density on linear grid*/

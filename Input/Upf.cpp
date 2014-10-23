@@ -248,8 +248,7 @@ void LoadUpf(SPECIES *sp)
     if(sp->nlccflag) {
         std::string PP_NLCC = upf_tree.get<std::string>("UPF.PP_NLCC");
         sp->rspsco = UPF_read_mesh_array(PP_NLCC, r_total, ibegin);
-
-
+        for(int ix = 0;ix < sp->rg_points;ix++) sp->rspsco[ix] = sp->rspsco[ix] * 4.0 * PI;
     }
 
     // Number of atomic orbitals
@@ -393,7 +392,7 @@ void LoadUpf(SPECIES *sp)
 
     }
 
-    for (int j = 0; j < 18; j++)
+    for (int j = 0; j < MAX_NL; j++)
     {
         sp->nhtol[j] = 0;
         sp->nhtom[j] = 0;
