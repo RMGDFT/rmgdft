@@ -83,8 +83,45 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         std::strncpy(lc.sp[isp].atomic_symbol, AtomicSymbol.c_str(), 4);
         std::strncpy(lc.sp[isp].pseudo_symbol, AtomicSymbol.c_str(), 4);
         std::strncpy(lc.sp[isp].pseudo_filename, "./@Internal", sizeof(lc.sp[isp].pseudo_filename));
-        LoadUpf(&ct.sp[isp]);
         isp++;
+    }
+
+    // Next determine if an external pseudopotential has been specified that overrides the internal one.
+    InputKey *Key;
+    try {
+        std::vector<std::string> lines;
+        std::string delims = "\r\n^";
+        std::string field_delims = " \t";
+        Key = InputMap.at("pseudopotential");
+        boost::algorithm::split( lines, *Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
+        std::vector<std::string>::iterator it;
+        for (it = lines.begin(); it != lines.end(); ++it) {
+            std::string pline = *it;
+            boost::trim_if(pline, boost::algorithm::is_any_of("\" \t"));
+            std::vector<std::string> fields;
+            boost::algorithm::split( fields, pline, boost::is_any_of(field_delims), boost::token_compress_on );
+            if(fields.size() == 2) {
+
+                // Search the species structure for a matching symbol
+                boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
+                for(int isp = 0;isp < lc.num_species;isp++) {
+                    if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol)) {
+                        std::strncpy(lc.sp[isp].pseudo_filename, fields[1].c_str(), sizeof(lc.sp[isp].pseudo_filename));
+                    }
+                }
+
+            }
+
+        }
+ 
+    }
+    catch (const std::out_of_range& oor) {
+        // no pseudpopotential tag which means only use internals
+    }
+
+    // Load pseudopotentials
+    for(int isp = 0;isp < lc.num_species;isp++) {
+        LoadUpf(&ct.sp[isp]);
     }
 
     // Assign species type for each ion

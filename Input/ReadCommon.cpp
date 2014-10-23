@@ -113,6 +113,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Description of the run.\n", 
                      "");
 
+    If.RegisterInputKey("pseudopotential", NULL , "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "External pseudopotentials.\n", 
+                     "");
+
     If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
@@ -803,6 +808,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
         std::pair<std::string, InputKey*> Check = *it;
         InputKey *CheckKey = it->second;
-        std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
+        //std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
     }
 }
