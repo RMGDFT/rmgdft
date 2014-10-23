@@ -141,6 +141,8 @@ void LoadUpf(SPECIES *sp)
     // Get the compulsory stuff first
     read_xml(ss, upf_tree);
     std::string PP_INFO = upf_tree.get<std::string>("UPF.PP_INFO"); 
+    sp->INFO = new char[PP_INFO.size() + 1]();
+    std::strncpy(sp->INFO, PP_INFO.c_str(), PP_INFO.size());
    
     // Atomic symbol, mass, number and zvalence and mesh size
     std::string atomic_symbol = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.element");
