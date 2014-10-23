@@ -84,7 +84,7 @@ void LoadUpf(SPECIES *sp)
     std::string Msg;
     if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
  
-        std::string pp_string = GetInternalPseudo(&sp->pseudo_symbol[0]);
+        std::string pp_string = GetInternalPseudo(&sp->atomic_symbol[0]);
         ss << pp_string;
 
     }
@@ -147,8 +147,7 @@ void LoadUpf(SPECIES *sp)
     // Atomic symbol, mass, number and zvalence and mesh size
     std::string atomic_symbol = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.element");
     boost::trim(atomic_symbol);
-    sp->atomic_symbol = new char[4]();
-    std::strncpy(sp->atomic_symbol, atomic_symbol.c_str(), 3);
+    // Maybe check symbols here
     sp->atomic_mass = GetAtomicMass(atomic_symbol);
     sp->atomic_number = GetAtomicNumber(atomic_symbol);
     sp->zvalence = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.z_valence");

@@ -397,7 +397,7 @@ void write_header (void)
         sp = &ct.sp[idx];
 
         printf ("\n");
-        printf ("      Species %d '%s'\n", idx + 1, sp->pseudo_symbol);
+        printf ("      Species %d '%s'\n", idx + 1, sp->atomic_symbol);
         printf ("      %s\n", sp->description);
         printf ("        Atomic symbol   = %s\n", sp->atomic_symbol);
         printf ("        Atomic number   = %d\n", sp->atomic_number);

@@ -16,7 +16,7 @@ int assign_species (CONTROL * c, char *buf)
     /*Loop over species and see if symbol is known */
     for (i = 0; i < c->num_species; i++)
     {
-        if (!strcmp (c->sp[i].pseudo_symbol, buf))
+        if (!strcmp (c->sp[i].atomic_symbol, buf))
         {
             sp_number = i;
             symbol_nonexistant = FALSE;
@@ -29,9 +29,9 @@ int assign_species (CONTROL * c, char *buf)
         printf ("\n\n PE:%d Specified symbol \"%s\" does not match any of known species symbol",
                 pct.gridpe, buf);
         for (i = 0; i < c->num_species; i++)
-            printf ("\n \"%s\"", c->sp[i].pseudo_symbol);
+            printf ("\n \"%s\"", c->sp[i].atomic_symbol);
 
-        error_handler ("Wrong specification of pseudo_symbol (%s)", buf);
+        error_handler ("Wrong specification of atomic_symbol (%s)", buf);
     }
 
     return sp_number;

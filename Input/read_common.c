@@ -382,10 +382,11 @@ void read_common ()
     {
 
         ct.sp[is].pseudo_filename[0] = 0;
-        if (sscanf (tbuf, "%s %s", ct.sp[is].pseudo_symbol, temp) != 2)
+        my_malloc(ct.sp[is].atomic_symbol, 4, char);
+        if (sscanf (tbuf, "%s %s", ct.sp[is].atomic_symbol, temp) != 2)
         {
 
-            printf ("\n pseudopotential data: no external file specified for %s using internal potential\n", ct.sp[is].pseudo_symbol);
+            printf ("\n pseudopotential data: no external file specified for %s using internal potential\n", ct.sp[is].atomic_symbol);
 
         }
         else {

@@ -39,7 +39,7 @@ void write_pdb (void)
         //printf("%6s      ", iptr->pdb_tempFactor);
         printf ("%6.2f          ", iptr->pdb.tempFactor);
         //printf("%4s", iptr->pdb_segID);
-        printf ("%2s", ct.sp[iptr->species].pseudo_symbol);
+        printf ("%2s", ct.sp[iptr->species].atomic_symbol);
         printf ("%2s", iptr->pdb.charge);
 #endif
 

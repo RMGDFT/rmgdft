@@ -6,9 +6,6 @@
 typedef struct
 {
 
-    /* symbol read from control file */
-    char pseudo_symbol[32];
-
     /* Text header with extra information. For UPF pseudopotentials it is the PP_INFO node */
     char *INFO;
 

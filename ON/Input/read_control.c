@@ -191,7 +191,7 @@ void read_control (char *file)
         {
             /* search for the species among the known species */
             is = 0;
-            while (is < ns && strcmp (s, ct.sp[is].pseudo_symbol))
+            while (is < ns && strcmp (s, ct.sp[is].atomic_symbol))
                 is++;
 
             if (is < ns)        /* we've found it */
