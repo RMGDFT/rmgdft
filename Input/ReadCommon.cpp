@@ -805,6 +805,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Background charge is defined to be the opposite of system charge
     lc.background_charge *= -1.0;
 
+    lc.occ_width *= eV_Ha;
+
     for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
         std::pair<std::string, InputKey*> Check = *it;
         InputKey *CheckKey = it->second;
