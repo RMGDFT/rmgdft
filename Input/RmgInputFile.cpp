@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -20,6 +21,13 @@
 #include "RmgInputFile.h"
 #include "RmgException.h"
 #include "CheckValue.h"
+
+#include "make_conf.h"
+#include "const.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "transition.h"
 
 namespace po = boost::program_options;
 
@@ -74,7 +82,6 @@ namespace RmgInput {
 
 RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map) : InputMap(Map)  {
     PreprocessInputFile(inputfile);
-
 }
 
 
@@ -267,8 +274,56 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
     std::string config_file(cfile);
     std::string outbuf;
     std::string tbuf;
+    std::string Msg;
+    std::stringstream ifs;
+    char *input_buffer;
+    int input_buffer_len;
 
-    std::ifstream ifs(cfile);
+
+    // Open on one pe and read entire file into a character buffer
+    if(pct.worldrank == 0) {
+
+        // Check for file existence
+        boost::filesystem::path input_filepath(cfile);
+        if( !boost::filesystem::exists(input_filepath) ) {
+
+            Msg = "Input file " + boost::lexical_cast<std::string>(cfile) + " does not exist.\n";
+
+        }
+        else {
+
+            try {
+                std::ifstream input_file;
+                input_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+                input_file.open(cfile);
+                input_file.seekg(0, std::ios::end);
+                input_buffer_len = input_file.tellg();
+                input_file.seekg(0, std::ios::beg);
+                input_buffer = new char[input_buffer_len + 1]();
+                input_file.read(input_buffer, input_buffer_len);       // read the whole file into the buffer
+                input_file.close();
+            }
+            // Catch any file io errors and rethrow later with our own error message
+            catch (std::exception &e) {
+                Msg = "Unable to read from input file " + boost::lexical_cast<std::string>(cfile) + "\n";
+            }
+        }
+
+    }
+
+    int openfail = Msg.length();
+    MPI_Bcast(&openfail, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if(openfail)
+        throw RmgFatalException() << Msg;
+
+    // Send it to everyone else
+    MPI_Bcast (&input_buffer_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if(pct.worldrank != 0) {
+        input_buffer = new char[input_buffer_len + 1]();
+    }
+    MPI_Bcast (input_buffer, input_buffer_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+    std::string input_string(input_buffer);
+    ifs << input_string;
 
     // First pass to remove leading and trailing comments
     for(std::string line; std::getline(ifs, line); ) {
