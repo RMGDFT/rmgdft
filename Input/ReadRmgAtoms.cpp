@@ -120,7 +120,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     }
     else {
 
-        RmgFatalException() << "No atomic coordinates defined! Terminating.\n";
+        throw RmgFatalException() << "No atomic coordinates defined! Terminating.\n";
 
     }
     
@@ -134,16 +134,16 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         OpenBabel::OBConversion conv;
         OpenBabel::OBFormat* inFormat = conv.FormatFromExt(atomfile);
         if(!inFormat) {
-            RmgFatalException() << "Unable to process atom input file. " << atomfile << " Terminating.\n";
+            throw RmgFatalException() << "Unable to process atom input file. " << atomfile << " Terminating.\n";
         }
 
         if(!conv.SetOutFormat("XYZ")) {
-            RmgFatalException() << "Unable to set output file format to XYZ in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
+            throw RmgFatalException() << "Unable to set output file format to XYZ in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
         }
 
         OpenBabel::OBFormat* outFormat = conv.GetOutFormat();
         if(!outFormat) {
-            RmgFatalException() << "Unable to process atom input file. " << atomfile << " Terminating.\n";
+            throw RmgFatalException() << "Unable to process atom input file. " << atomfile << " Terminating.\n";
         }
 
         std::istream* pIn = &ifs;
@@ -181,7 +181,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 #else
 
     if(external_atoms)
-        RmgFatalException() << "This version of RMG was not built with OpenBabel support so external atomic coordinate formats are not supported. Terminating.\n";
+        throw RmgFatalException() << "This version of RMG was not built with OpenBabel support so external atomic coordinate formats are not supported. Terminating.\n";
 
 #endif
 

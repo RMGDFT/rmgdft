@@ -109,27 +109,27 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
     
     if(tot_pe != pelc.total_npes) 
     {
-        RmgFatalException() << "\n require " << tot_pe << " npes != from job/pe_kpoint " << pelc.total_npes;
+        throw RmgFatalException() << "\n require " << tot_pe << " npes != from job/pe_kpoint " << pelc.total_npes;
     }
     if(num_image != pelc.images) 
     {
-        RmgFatalException() << "\n number of image and image info not consistent";
+        throw RmgFatalException() << "\n number of image and image info not consistent";
     }
     if(pelc.images > MAX_IMGS)
     {
-        RmgFatalException() << "\n number of image " << pelc.images << " > " << MAX_IMGS << " MAX_IMGS";
+        throw RmgFatalException() << "\n number of image " << pelc.images << " > " << MAX_IMGS << " MAX_IMGS";
     }
 
     if(pelc.images % ct.images_per_node != 0)
     {
-        RmgFatalException() << "\nyou are crazy to use the multiple image per node feature"; 
+        throw RmgFatalException() << "\nyou are crazy to use the multiple image per node feature"; 
     }
     if(ct.images_per_node >1 )
     {
         for(int i = 1; i < pelc.images; i++) 
             if(pelc.image_npes[i] != pelc.image_npes[0])
             {
-                RmgFatalException() << "\n image " << pelc.image_npes[i] << " has different NPES " << pelc.image_npes[0];
+                throw RmgFatalException() << "\n image " << pelc.image_npes[i] << " has different NPES " << pelc.image_npes[0];
             }
     }
 }
