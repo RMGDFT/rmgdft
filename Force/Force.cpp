@@ -240,11 +240,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     }
 #endif
 
-#if !GAMMA_PT
-    /* Now symmetrize the forces */
-    if (!(ct.kp[0].kpt[0] == 0.0 && ct.kp[0].kpt[1] == 0.0 && ct.kp[0].kpt[2] == 0.0))
-        symforce ();
-#endif
+    if (!ct.is_gamma) symforce ();
     delete[] vtott;
 
     /* Impose force constraints, if any */

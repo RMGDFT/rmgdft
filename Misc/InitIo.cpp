@@ -88,7 +88,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 //    read_control(ct.cfile);
     ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
     ReadDynamics(ct.cfile, ct, ControlMap);
-    init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+    if((ct.kpoint_mesh[0] < 1) | (ct.kpoint_mesh[1] < 1) | (ct.kpoint_mesh[2] < 1) ) 
+    {
+        ReadKpoints(ct.cfile, ct, ControlMap);
+    }
+    else
+    {
+        init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
+    }
 
     Rmg_G->set_rank(pct.gridpe);
 

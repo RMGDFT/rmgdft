@@ -254,14 +254,14 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, rmg_doub
 
 
     /* added by shuchun for force calculation */
-    if (ct.forceflag !=0 )
-    {
+   // if (ct.forceflag !=0 )
+    //{
         /* Calculate the force */
-        force (rho, rho, rhoc, vh, vxc, vnuc);
+ //       force (rho, rho, rhoc, vh, vxc, vnuc);
         /* write out the force */
-        if (pct.gridpe == 0)
-            write_force ();
-    }
+   //     if (pct.gridpe == 0)
+  //          write_force ();
+    //}
     /* end of addition */
 
 

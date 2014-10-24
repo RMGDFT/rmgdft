@@ -2,6 +2,7 @@ add_library (Input
 ReadInit.cpp
 ReadRmgAtoms.cpp
 ReadDynamics.cpp
+ReadKpoints.cpp
 Verify.cpp
 InputKey.cpp
 CheckValue.cpp

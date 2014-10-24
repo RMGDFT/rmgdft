@@ -178,6 +178,8 @@ template <typename OrbitalType> void GetDerweight (int ion, OrbitalType * beta_x
 template <typename OrbitalType> void AssignDerweight (SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType *rtptr,
         Kpoint<OrbitalType> *kptr);
 
+void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+
 
 #endif
 #endif

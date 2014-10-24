@@ -81,7 +81,7 @@ int init_kpoints (int *mesh, int *is_shift)
 
     my_malloc(tau, ct.num_ions*3, double);
     my_malloc(ityp, ct.num_ions, int);
-    
+
     /* Set up atomic positions and species for fortran routines */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -94,13 +94,13 @@ int init_kpoints (int *mesh, int *is_shift)
 
 
     num_kpts = spg_get_ir_reciprocal_mesh(grid_address, map,mesh, is_shift, 
-        is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec);
+            is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec);
 
-//    printf("\n num_k %d", num_kpts);
-//    for(kpt = 0; kpt < meshsize; kpt++)
-//        printf("\n kvec %d  %d %d %d %d", kpt, grid_address[kpt*3 +0], grid_address[kpt*3 +1], grid_address[kpt*3 +2], map[kpt]);
+    //    printf("\n num_k %d", num_kpts);
+    //    for(kpt = 0; kpt < meshsize; kpt++)
+    //        printf("\n kvec %d  %d %d %d %d", kpt, grid_address[kpt*3 +0], grid_address[kpt*3 +1], grid_address[kpt*3 +2], map[kpt]);
 
-    
+
     my_malloc (ct.kp, num_kpts, KPOINT);
     ct.num_kpts = num_kpts;
     for(kpt = 0; kpt < meshsize; kpt++)
