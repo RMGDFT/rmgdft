@@ -367,8 +367,8 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
         if(breakflag) break;
 
         // Should be an input tag so throw if it's an = or a "
-        if(std::string::npos != line.find("=")) RmgFatalException() << "Malformed input file near " << line << "\n";
-        if(std::string::npos != line.find("\"")) RmgFatalException() << "Malformed input file near " << line << "\n";
+        if(std::string::npos != line.find("=")) throw RmgFatalException() << "Malformed input file near " << line << "\n";
+        if(std::string::npos != line.find("\"")) throw RmgFatalException() << "Malformed input file near " << line << "\n";
         outbuf = outbuf + line; 
 
         // Advance to next non empty token
@@ -376,7 +376,7 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
         while(!line.size()) {
             tok_iter++;
             if(tok_iter == tokens.end()) {
-                RmgFatalException() << "Malformed input file near " << line << "\n";
+                throw RmgFatalException() << "Malformed input file near " << line << "\n";
             }
             line.erase();
             line = *tok_iter;
@@ -384,7 +384,7 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
         }
 
         // Should be an = so throw if not
-        if(std::string::npos == line.find("=")) RmgFatalException() << "Malformed input file near " << line << "\n";
+        if(std::string::npos == line.find("=")) throw RmgFatalException() << "Malformed input file near " << line << "\n";
         outbuf = outbuf + line; 
 
         // Advance to next non empty token
@@ -392,7 +392,7 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
         while(!line.size()) {
             tok_iter++;
             if(tok_iter == tokens.end()) {
-                RmgFatalException() << "Malformed input file near " << line << "\n";
+                throw RmgFatalException() << "Malformed input file near " << line << "\n";
             }
             line.erase();
             line = *tok_iter;
@@ -400,16 +400,19 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
         }
 
         // Should be a " so throw if not
-        if(std::string::npos == line.find("\"")) RmgFatalException() << "Malformed input file near " << line << "\n";
 
         outbuf = outbuf + line;
+        if(std::string::npos == line.find("\"")) 
+            throw RmgFatalException() << "Malformed input file near " << outbuf << "\n";
         tok_iter++;
-        if(tok_iter == tokens.end()) RmgFatalException() << "Malformed input file near " << line << "\n";
+        if(tok_iter == tokens.end()) throw RmgFatalException() << "Malformed input file near " << line << "\n";
         line.erase();
         line = *tok_iter;
         boost::trim(line);
         while(std::string::npos == line.find("\"")) {
              outbuf = outbuf + line;
+             if(std::string::npos != line.find("=")) 
+                throw RmgFatalException() << "Malformed input file near " << outbuf << "\n";
              tok_iter++;
              if(tok_iter == tokens.end()) break;
              line.erase();
