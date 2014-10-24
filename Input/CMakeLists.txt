@@ -10,7 +10,6 @@ ReadCommon.cpp
 MapElements.cpp
 Upf.cpp
 ReadPseudo.cpp
-read_init.c
 countItems.c
 pdb_clean.c
 assign.c
@@ -25,9 +24,8 @@ get_data.c
 pushItem.c
 tagstrip.c
 input.c
-read_pseudo.c
 fcatNode.c
-get_symbol.c
+#get_symbol.c
 newItem.c
 newNode.c
 findNode.c
@@ -38,7 +36,7 @@ catNodes.c
 filetostr.c
 itemize.c
 validate.c
-read_common.c
+#read_common.c
 cast.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
