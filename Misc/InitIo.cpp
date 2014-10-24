@@ -68,11 +68,16 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     if(argc == 2)
     {
-        read_init(argv[1]);
-    }
-    else
-        read_init("ctrl_init.dat");
+        std::unordered_map<std::string, InputKey *> SetupMap;
+        ReadInit(argv[1], ct, pct, SetupMap);
 
+    }
+    else {
+
+        std::unordered_map<std::string, InputKey *> SetupMap;
+        ReadInit("ctrl_init.dat", ct, pct, SetupMap);
+
+    }
 
     init_pestr ();
 

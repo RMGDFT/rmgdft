@@ -1,4 +1,5 @@
 add_library (Input
+ReadInit.cpp
 ReadRmgAtoms.cpp
 ReadDynamics.cpp
 Verify.cpp
