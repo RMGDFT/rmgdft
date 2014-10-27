@@ -319,7 +319,7 @@ void LoadUpf(SPECIES *sp)
     if(!sp->is_norm_conserving) {
        char q_with_l = upf_tree.get<char>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
        sp->nqf = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqf", 0);
-       sp->nlc = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nlqc", 2*l_max + 1);
+       sp->nlc = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqlc", 2*l_max + 1);
        int tnlc = (sp->nbeta * (sp->nbeta + 1)) / 2;
 
        // read in the rinner for Q_L(r) function */
