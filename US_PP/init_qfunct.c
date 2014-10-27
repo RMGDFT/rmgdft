@@ -21,6 +21,7 @@ void init_qfunct (void)
     char newname1[MAX_PATH], newname2[MAX_PATH];
     FILE *fqq = NULL;
     FILE *fdq = NULL;
+    const bool SET = true;
 
     if(ct.norm_conserving_pp) return;
     ibrav = get_ibrav_type();

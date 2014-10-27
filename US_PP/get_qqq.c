@@ -17,6 +17,7 @@ void get_qqq ()
     SPECIES *sp;
     FILE *ftpr;
     char filename[MAX_PATH];
+    const bool SET=true;
 
     if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
     {

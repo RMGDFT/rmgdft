@@ -650,7 +650,7 @@ typedef struct
     int max_orbit_ny;
     int max_orbit_nz;
 
-    int movingCenter;
+    bool movingCenter;
     int movingSteps;
     int mg_method;
     int mg_steps;

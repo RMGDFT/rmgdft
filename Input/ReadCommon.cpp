@@ -353,7 +353,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
 
-    If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 0, 0, 0,
+    If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 1, INT_MAX, 100,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");

@@ -96,9 +96,9 @@ void write_header(void)
     printf("\n       Data output file         %s", ct.outfile);
 
 
-    printf ("\n#######Control input file parameters#####\n\n");
-    findNode ("description");
-    get_data (NULL, NULL, END, NULL);
+//    printf ("\n#######Control input file parameters#####\n\n");
+//    findNode ("description");
+//    get_data (NULL, NULL, END, NULL);
 
     printf("\n\n    Number of steps = %d", ct.max_md_steps);
     printf("\n    Output every %d steps", ct.outcount);

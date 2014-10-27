@@ -21,6 +21,7 @@ typedef struct
     int image_npes[MAX_IMGS];
     int worldrank;
     int total_npes;
+    int grid_npes;
 
     /* MPI communicators for each code grid (grid_comm) and one (rmg_comm)
      * for all group rank 0 pe's. The later effectively replaces MPI_COMM_WORLD

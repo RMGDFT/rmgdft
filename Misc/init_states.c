@@ -127,10 +127,7 @@ STATE *init_states ()
     }
 
     /* Allocate memory for the states */
-    if (verify ("calculation_mode", "Band Structure Only"))
-        nk = 1;
-    else
-        nk = ct.num_kpts; 
+    nk = ct.num_kpts; 
 
     my_malloc (states, ct.num_states * nk, STATE); 
 

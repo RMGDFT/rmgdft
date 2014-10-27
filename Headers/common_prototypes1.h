@@ -480,6 +480,7 @@ void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 
+void allocate_states();
 #if __cplusplus
 }
 #endif

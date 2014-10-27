@@ -1,4 +1,5 @@
 add_library (Misc
+prime_factors.c
 InitIo.cpp
 Output_rho_xsf.cpp
 InitHybridModel.cpp

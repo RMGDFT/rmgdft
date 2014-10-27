@@ -38,7 +38,36 @@ void init_dimension(int *MXLLDA, int *MXLCOL)
 
     int NNBB, NNBBR, NNBBRB;
     int NB;
+    int i, n_factors, *factors, npcol, nprow;
 
+    my_malloc(factors, pct.grid_npes, int);
+    n_factors = prime_factors(pct.grid_npes, factors);
+    
+
+    nprow = 1;
+    npcol = 1;
+    for(i = n_factors ; i < 0; i--)
+    {
+        if(npcol <= nprow) npcol =npcol * factors[i-1];
+        if(nprow <  npcol) nprow =nprow * factors[i-1];
+    }
+    
+    if(nprow > npcol)
+    {
+        pct.scalapack_npcol = nprow;
+        pct.scalapack_nprow = npcol;
+    }
+    else
+    {
+        pct.scalapack_npcol = npcol;
+        pct.scalapack_nprow = nprow;
+    }
+
+
+    my_free(factors);
+
+    
+    dprintf("\n scalapcak %d %d\n", pct.scalapack_nprow, pct.scalapack_npcol);
     NB = ct.scalapack_block_factor;
     if (ct.num_states < NB)
         NB = ct.num_states;

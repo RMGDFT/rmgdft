@@ -1,4 +1,5 @@
 add_library (ON_Input
+ReadBranchON.cpp
 read_atoms.c
 read_control.c
 read_pdb.c

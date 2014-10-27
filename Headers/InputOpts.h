@@ -80,7 +80,12 @@ static std::unordered_map<std::string, int> interpolation_type = {
 static std::unordered_map<std::string, int> start_mode = {
         {"Random Start", 0},
         {"Restart From File", 1},
-        {"LCAO Start", 2}};
+        {"LCAO Start", 2},
+        {"FIREBALL Start", 2},
+        {"Gaussian Start", 3},
+        {"Restart TDDFT", 4}
+        
+        };
 
 static std::unordered_map<std::string, int> boundary_condition_type = {
         {"Periodic", 0}};
@@ -106,5 +111,10 @@ static std::unordered_map<std::string, int> relax_method = {
         {"Quick Min", 2},
         {"MD Min", 3},
         {"LBFGS", 4}};
+static std::unordered_map<std::string, int> mg_method = {
+        {"Steepest Descent", 0},
+        {"Pulay", 1},
+        {"Kain", 2}
+        };
 
 #endif

@@ -17,6 +17,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "InputKey.h"
+#include "typedefs.h"
 
 
 extern BaseGrid *Rmg_G;
@@ -179,6 +180,8 @@ template <typename OrbitalType> void AssignDerweight (SPECIES * sp, int ion, fft
         Kpoint<OrbitalType> *kptr);
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+void ReadOrbitals(char *cfile, STATE  *states, int *state_to_ion, std::unordered_map<std::string, InputKey *>& InputMap);
+void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 
 
 #endif

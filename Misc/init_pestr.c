@@ -137,6 +137,7 @@ void init_pestr()
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
     MPI_Comm_rank (pct.kpsub_comm, &pct.kstart);
     MPI_Comm_size (pct.grid_comm, &NPES);
+    MPI_Comm_size (pct.grid_comm, &pct.grid_npes);
     Dprintf("My grid rank is %d and my image rank is %d\n", pct.gridpe, pct.imgpe);
 
     // Set up grids and neighbors

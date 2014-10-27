@@ -89,15 +89,22 @@ int main(int argc, char **argv)
 {
 
 
+
+
+
     RmgTimer *RT = new RmgTimer("1-TOTAL");
     
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
+   // tem();
 
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
-
+    ReadBranchON(ct.cfile, ct, ControlMap);
+    allocate_states();
+    get_state_to_proc(states);
+    ReadOrbitals (ct.cfile, states, state_to_ion, ControlMap);
 
     init_states();
     my_barrier();
