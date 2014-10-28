@@ -107,8 +107,6 @@ void write_header (void)
     /*  printf("       Pseudopotential file     %s\n", ct.pspfile); */
 
     printf ("\n#######Control input file parameters#####\n\n");
-    findNode ("description");
-    get_data (NULL, NULL, END, NULL);
     printf ("\n\n#######End input file parameters#########\n");
 
     printf ("\n\n");
@@ -404,18 +402,18 @@ void write_header (void)
         printf ("        Atomic mass     = %12.6f mu\n", sp->atomic_mass);
         printf ("        Zvalence        = %12.6f\n", sp->zvalence);
         printf ("        Core rc         = %12.6f\n", sp->rc);
-        printf ("        L potentials    = %d\n", sp->num_potentials);
+        //printf ("        L potentials    = %d\n", sp->num_potentials);
         printf ("        L local         = %d\n", sp->local);
         printf ("        lrcut           = %12.6f\n", sp->lrcut);
         printf ("        local radius    = %12.6f\n", sp->lradius);
         printf ("    non-local radius    = %12.6f\n", sp->nlradius);
-	for (j = 0; j < sp->num_potentials; j++)
-	{
-	    if (sp->lval[j] != sp->local)
-	    {
-		printf ("        nlrcut  state %d = %12.6f\n", j, sp->nlrcut[sp->lval[j]]);
-	    }
-	}
+//	for (j = 0; j < sp->num_potentials; j++)
+//	{
+//	    if (sp->lval[j] != sp->local)
+//	    {
+//		printf ("        nlrcut  state %d = %12.6f\n", j, sp->nlrcut[sp->lval[j]]);
+//	    }
+//	}
 	printf ("        rwidth          = %12.6f\n", sp->rwidth);
 	printf ("        gwidth          = %12.6f\n", sp->gwidth);
 
