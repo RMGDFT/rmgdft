@@ -403,7 +403,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
                      "kohn_sham_fd_order must lie in the range (4,8). Resetting to the default value of 6.\n");
 
-    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.2, 0.5, 0.3,
+    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.2, 1.5, 0.3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
                      "kohn_sham_time_step must lie in the range (0.2,0.5). Resetting to the default value of 0.3.\n");
