@@ -45,6 +45,7 @@
 
 static int *s;
 static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
+static int *sym_atom;  //  atom B = sym(atom A)
 static int *ftau;
 static int nsym;
 
@@ -76,6 +77,8 @@ void init_sym (void)
     double a0[3], a1[3], a2[3], omega;
     double frac1, frac2, frac3, intpart, symprec = 1.0e-5;
     double *tau, *translation;
+    double xtal[3];
+    double ndim[3];
     int *ityp, *sa;
 
 
@@ -115,6 +118,9 @@ void init_sym (void)
     nr1 = get_FNX_GRID();
     nr2 = get_FNY_GRID();
     nr3 = get_FNZ_GRID();
+    ndim[0] = nr1;
+    ndim[1] = nr2;
+    ndim[2] = nr3;
 
     /* Only have PE zero output symmetry information */
     wflag = pct.gridpe;
@@ -190,6 +196,51 @@ void init_sym (void)
 
     assert(nsym >0);
     if(nsym == 1) ct.is_use_symmetry = 0;
+
+    my_malloc (sym_atom,  ct.num_ions* nsym, int);
+
+//  determine equivenlent ions after symmetry operation
+    bool find_atom;
+    double r;
+    int ionb, isym;
+    for(isym = 0; isym < nsym; isym++)
+    {
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+
+            // xtal is the coordinates of atom operated by symmetry operatio isym.
+            for(i = 0; i < 3; i++)
+            {
+                xtal[i] = s[isym *9 + i *3 + 0] * ct.ions[ion].xtal[0]
+                    + s[isym *9 + i *3 + 1] * ct.ions[ion].xtal[1]
+                    + s[isym *9 + i *3 + 2] * ct.ions[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
+
+                if(xtal[i] < 0.0) xtal[i]= xtal[i] + 1.0;
+                if(xtal[i] >= 1.0) xtal[i]= xtal[i] - 1.0;
+            }
+
+            find_atom = false;
+            for (ionb = 0; ionb < ct.num_ions; ionb++)
+            {
+                if(ityp[ion] == ityp[ionb])
+                {
+                    r =  (xtal[0] - ct.ions[ionb].xtal[0]) *(xtal[0] - ct.ions[ionb].xtal[0])
+                        +(xtal[1] - ct.ions[ionb].xtal[1]) *(xtal[1] - ct.ions[ionb].xtal[1])
+                        +(xtal[2] - ct.ions[ionb].xtal[2]) *(xtal[2] - ct.ions[ionb].xtal[2]);
+                    r = sqrt(r);
+                    if(r < symprec * 10) 
+                    {
+                        sym_atom[isym * ct.num_ions + ion] = ionb;
+                        find_atom = true;
+                    } 
+
+                }
+
+                if(find_atom) break;
+
+            }
+        }
+    }
 
 
     my_free (tau);
@@ -287,9 +338,9 @@ void symmetrize_rho (double * rho)
                     ix1 = ix + xoff;
                     iy1 = iy + yoff;
                     iz1 = iz + zoff;
-                    
+
                     symm_ijk(&s[isy *9], &ftau[isy*3], ix1, iy1, iz1, &ixx, &iyy, &izz, 
-                             FNX_GRID, FNY_GRID, FNZ_GRID);
+                            FNX_GRID, FNY_GRID, FNZ_GRID);
                     tem += da[izz *incz1 + iyy *incy1 + ixx *incx1];
                 }
                 rho[ix * incx + iy*incy + iz] = tem *t1;
@@ -310,29 +361,35 @@ void symmetrize_rho (double * rho)
 
 void symforce ()
 {
-    int ion, isy, i, j;
+    int ion, isy, i, j, ion1;
 
-    double force[3];
+    double *force;
 
+    my_malloc (force, 3* ct.num_ions, double);
 
+    for(i = 0; i < 3 * ct.num_ions; i++ ) force[i] = 0.0;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        for(i = 0; i < 3; i++) force[i] = 0.0;
         for(isy = 0; isy < nsym; isy++)
-        for(i = 0; i < 3; i++)
-        for(j = 0; j < 3; j++)
-            force[i] += s[isy *9 + i* 3 + j] * ct.ions[ion].force[ct.fpt[0]][j];
+        {
+            ion1 = sym_atom[isy * ct.num_ions + ion];
+            for(i = 0; i < 3; i++)
+                for(j = 0; j < 3; j++)
+                    force[3* ion1 + i] += s[isy *9 + i* 3 + j] * ct.ions[ion].force[ct.fpt[0]][j];
+        }
 
-       
-        for(i = 0; i < 3; i++) 
-            ct.ions[ion].force[ct.fpt[0]][i] = force[i] /nsym;
+
 
     }
 
+    for (ion = 0; ion < ct.num_ions; ion++)
+        for(i = 0; i < 3; i++) 
+            ct.ions[ion].force[ct.fpt[0]][i] = force[3*ion + i] /nsym;
+    my_free(force);
 }                               /* end symforce */
 
 void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int *iyy, int *izz,
-              int nx, int ny, int nz)
+        int nx, int ny, int nz)
 {
 
 
@@ -342,7 +399,7 @@ void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int 
     ipoint[0] = ix;
     ipoint[1] = iy;
     ipoint[2] = iz;
-    
+
     for(i = 0; i < 3; i++)
     {
         opoint[i] = 0;
@@ -357,6 +414,6 @@ void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int 
     *iyy = (opoint[1] + ny)%ny;
     *izz = (opoint[2] + nz)%nz;
 
-    
+
 }
 /******/
