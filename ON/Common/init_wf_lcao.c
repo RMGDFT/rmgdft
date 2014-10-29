@@ -155,6 +155,8 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
     c = (sp->r[0] * exp(b) - sp->r[1])/(1.0 -exp(b) );
     a = sp->r[0] + c;
 
+    for(ix = 0; ix < sp->rg_points; ix++)printf("\n %f %f  rrrr", sp->r[ix], sp->atomic_wave[ip][ix]);
+    printf("\n &&  rrrr");
 
 
     for(ix = 0; ix < ixx; ix++ )
@@ -189,8 +191,8 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
                     coef1 = (r2-r)/(r2-r1);
                     coef2 = (r-r1)/(r2-r1);
 
-                    fradius = coef1 * sp->atomic_wave[l][i_r]
-                        + coef2 * sp->atomic_wave[l][i_r+1];
+                    fradius = coef1 * sp->atomic_wave[ip][i_r]
+                        + coef2 * sp->atomic_wave[ip][i_r+1];
                 }
 
                 st->psiR[idx] = fradius * ylm(yindex, vector);

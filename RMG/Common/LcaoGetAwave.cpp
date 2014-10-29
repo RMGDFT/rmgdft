@@ -144,7 +144,7 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                         
                             if(r < sp->r[0])
                             {
-                                fradius = sp->atomic_wave[l][0]; 
+                                fradius = sp->atomic_wave[awave_idx][0]; 
                             }
                             else
                             {
@@ -155,8 +155,8 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                                 coef1 = (r2-r)/(r2-r1);
                                 coef2 = (r-r1)/(r2-r1);
 
-                                fradius = coef1 * sp->atomic_wave[l][i_r] 
-                                    + coef2 * sp->atomic_wave[l][i_r+1];
+                                fradius = coef1 * sp->atomic_wave[awave_idx][i_r] 
+                                    + coef2 * sp->atomic_wave[awave_idx][i_r+1];
                             }
 
                             psi[idx] += coeff * fradius * ylm(yindex, vector);
