@@ -401,7 +401,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
             t1 = TWO * eig;
             t2 = ZERO;
-            t4 = ct.eig_parm.gl_step * diag;
+            t4 = ct.eig_parm.gl_step * diag * ct.hmingrid;
 
             for (int idx = 0; idx <pbasis; idx++)
             {

@@ -278,7 +278,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
-    If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
+    If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 2, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Ratio of the fine grid to the coarse grid.", 
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
@@ -403,10 +403,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
                      "kohn_sham_fd_order must lie in the range (4,8). Resetting to the default value of 6.\n");
 
-    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.2, 1.5, 0.3,
+    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.4, 2.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_time_step must lie in the range (0.2,0.5). Resetting to the default value of 0.3.\n");
+                     "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 1.0.\n");
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
                      CHECK_AND_FIX, OPTIONAL,
@@ -448,7 +448,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of multigrid levels to use in the hartree multigrid solver.\n",
                      "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1).\n");
 
-    If.RegisterInputKey("fine_grid_non_local_pp", &lc.nxfgrid, 1, 4, 4,
+    If.RegisterInputKey("fine_grid_non_local_pp", &lc.nxfgrid, 1, 8, 4,
                      CHECK_AND_FIX, OPTIONAL,
                      "Fine grid for non-local pseudopotential.\n",
                      "fine_grid_non_local_pp must lie in the range (1,4). Resetting to the default value of 4.\n");
