@@ -45,6 +45,7 @@
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 
 void init_wf_atom(STATE *);
+void init_wf_lcao(STATE *);
 
 void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old)
@@ -176,6 +177,11 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
         
             }
             break;
+        case LCAO_START:
+            init_wf_lcao(states);
+            lcao_get_rho(rho);
+
+            break;
         case INIT_FIREBALL:
             init_wf_atom(states);
             init_rho_atom(rho);
@@ -196,7 +202,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
             break;
 
         case 1:
-        case 4:
+        case 5:
             read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
             break;
@@ -206,6 +212,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     switch(ct.runflag)
     {
         case 0:
+        case LCAO_START:
         case INIT_FIREBALL:
         case INIT_GAUSSIAN:
             get_vxc(rho, rho_oppo, rhocore, vxc);

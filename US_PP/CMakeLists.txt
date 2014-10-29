@@ -1,4 +1,5 @@
 add_library (US_PP
+lcao_get_rho.c
 init_nuc.c
 init_efield.c
 weight_shift_center.c

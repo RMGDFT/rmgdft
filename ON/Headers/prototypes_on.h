@@ -601,6 +601,8 @@ void get_ion_ion_overlap_region_orbit ();
 
 
 void is_state_overlap (STATE * states, char *);
+void init_wf_lcao(STATE * states);
+
 
 #ifdef __cplusplus
 }

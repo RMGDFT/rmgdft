@@ -226,8 +226,6 @@
 #define CIL_TIME 77
 
 
-#define INIT_FIREBALL  2
-#define INIT_GAUSSIAN  3
 
 
 /* Some stuff for timing and performance measurements */
@@ -396,5 +394,7 @@
 #define RANDOM_START 0
 #define RESTART 1
 #define LCAO_START 2
+#define INIT_FIREBALL  3
+#define INIT_GAUSSIAN  4
 
 #endif /* CONST_H_INCLUDED */
