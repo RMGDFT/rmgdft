@@ -47,8 +47,9 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     // Read atoms
     ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
 
-    // Forces (if present)
+    // Forces and velocities (if present)
     ReadForces(cfile, lc, InputMap);
+    ReadVelocities(cfile, lc, InputMap);
 
     // Atoms have been read, now take care of conversion to internal coordinates
     if (Verify ("atomic_coordinate_type", "Cell Relative", InputMap)) {
