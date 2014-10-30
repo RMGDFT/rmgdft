@@ -704,6 +704,8 @@ typedef struct
     int is_gamma;
     int is_use_symmetry;
 
+    // Maximum number of valence electrons for any atomic species
+    double max_zvalence;
 
 } CONTROL;
 
