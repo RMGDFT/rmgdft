@@ -20,10 +20,8 @@ void get_vtot_psi (rmg_double_t * vtot_psi, rmg_double_t * vtot, int grid_ratio)
         idx = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
         QMD_dcopy (idx, vtot, ione, vtot_psi, ione);
     }
-    /* For different grids, restriction algorithm is used to obtain potential on coarse grid */
-    else
-    {
-//        mg_restrict_6 (vtot, vtot_psi, get_FPX0_GRID, get_FPY0_GRID, get_FPZ0_GRID, grid_ratio);
+    else if(grid_ratio == 2) {
+
         for(ix = 0; ix < get_FPX0_GRID()/2; ix++)
         for(iy = 0; iy < get_FPY0_GRID()/2; iy++)
         for(iz = 0; iz < get_FPZ0_GRID()/2; iz++)
@@ -33,5 +31,21 @@ void get_vtot_psi (rmg_double_t * vtot_psi, rmg_double_t * vtot, int grid_ratio)
             vtot_psi[idx] = vtot[idx1];
         }
 
+    }
+    else if(grid_ratio == 3) {
+
+        for(ix = 0; ix < get_FPX0_GRID()/3; ix++)
+        for(iy = 0; iy < get_FPY0_GRID()/3; iy++)
+        for(iz = 0; iz < get_FPZ0_GRID()/3; iz++)
+        {
+            idx = ix * get_FPY0_GRID()/3 * get_FPZ0_GRID()/3 + iy * get_FPZ0_GRID()/3 + iz;
+            idx1 = 3 *ix * get_FPY0_GRID() * get_FPZ0_GRID() + 3 *iy * get_FPZ0_GRID() + 3*iz;
+            vtot_psi[idx] = vtot[idx1];
+        }
+
+    }
+    else
+    {
+        mg_restrict_6 (vtot, vtot_psi, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), grid_ratio);
     }
 }
