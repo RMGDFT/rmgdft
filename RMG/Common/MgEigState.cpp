@@ -194,7 +194,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         levels = 0;
     }
 
-    double sb_step = 1.0;
+    double sb_step = ct.eig_parm.gl_step / ct.max_zvalence;
     int pbasis = kptr->pbasis;
     int sbasis = sp->sbasis;
 
@@ -401,7 +401,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
             t1 = TWO * eig;
             t2 = ZERO;
-            t4 = ct.eig_parm.gl_step * diag * ct.hmingrid;
+double t5 = 1.0 / diag;
+t5 = t5 + 2.0*ct.max_zvalence;
+t5 = 1.0 / t5;
+//std::cout << "PPPPPP " << ct.eig_parm.gl_step*diag << "  " << ct.eig_parm.gl_step * t5 << std::endl;
+//            t4 = ct.eig_parm.gl_step * diag;
+t4 = ct.eig_parm.gl_step * t5;
 
             for (int idx = 0; idx <pbasis; idx++)
             {

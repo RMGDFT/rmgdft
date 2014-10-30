@@ -151,6 +151,7 @@ void LoadUpf(SPECIES *sp)
     sp->atomic_mass = GetAtomicMass(atomic_symbol);
     sp->atomic_number = GetAtomicNumber(atomic_symbol);
     sp->zvalence = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.z_valence");
+    if(sp->zvalence > ct.max_zvalence) ct.max_zvalence = sp->zvalence;
 
     // Functional is a bit tricky
     std::vector<std::string> func_components;

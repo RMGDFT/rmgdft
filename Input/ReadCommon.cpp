@@ -278,7 +278,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
-    If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 2, 2, 
+    If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Ratio of the fine grid to the coarse grid.", 
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
@@ -403,10 +403,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
                      "kohn_sham_fd_order must lie in the range (4,8). Resetting to the default value of 6.\n");
 
-    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.4, 2.0, 1.0,
+    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.4, 2.0, 0.66,
                      CHECK_AND_FIX, OPTIONAL,
                      "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 1.0.\n");
+                     "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66.\n");
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
                      CHECK_AND_FIX, OPTIONAL,
@@ -438,10 +438,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
                      "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25.\n");
 
-    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 2, 1,
+    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 3, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of multigrid levels to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mg_levels must lie in the range (0,2). Resetting to the default value of 1.\n");
+                     "kohn_sham_mg_levels must lie in the range (0,3). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
