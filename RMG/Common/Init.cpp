@@ -233,7 +233,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-        rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS];
+        rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS]();
     }
 
     kpt1 = ct.num_kpts;

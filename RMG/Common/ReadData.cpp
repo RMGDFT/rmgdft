@@ -158,7 +158,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
-    if (ns != ct.num_states) {
+    if (ns > ct.num_states) {
 	rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
         rmg_error_handler (__FILE__, __LINE__,"Terminating.");
     }
@@ -181,7 +181,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read state occupations */
     {
-	double *occ = new double[nk * ns];
+	double *occ = new double[nk * ct.num_states]();
         
 	read_double (fhand, occ, (nk * ns));
 
@@ -193,7 +193,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 	    double occ_total = 0.0; 
 
 	    for (ik = 0; ik < nk; ik++)
-		for (is = 0; is < ns; is++)
+		for (is = 0; is < ct.num_states; is++)
 		{
 		    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
 		}
@@ -213,11 +213,11 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 		double fac = iocc_total / occ_total;
 
 		    for (ik = 0; ik < nk; ik++)
-			for (is = 0; is < ns; is++)
+			for (is = 0; is < ct.num_states; is++)
 			{
 			    Kptr[ik]->Kstates[is].occupation[0] *= fac;
 			}
-		/* end of normailization*/
+		/* end of normalization*/
 	    }
 
 	}             /* end if */
@@ -268,6 +268,107 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     }
 
+
+    // If we have added unoccupied orbitals initialize them to a random state
+    if(ct.num_states > ns) {
+
+	for (ik = 0; ik < nk; ik++) {
+
+            int PX0_GRID = Rmg_G->get_PX0_GRID(1);
+            int PY0_GRID = Rmg_G->get_PY0_GRID(1);
+            int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
+
+            int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
+            double *tmp_psiR = new double[pbasis];
+            double *tmp_psiI = new double[pbasis];
+
+            double *xrand = new double[2 * Rmg_G->get_NX_GRID(1)];
+            double *yrand = new double[2 * Rmg_G->get_NY_GRID(1)];
+            double *zrand = new double[2 * Rmg_G->get_NZ_GRID(1)];
+
+            int factor = 2;
+            if(ct.is_gamma) factor = 1;
+
+            long int idum = 7493;
+            int xoff = Rmg_G->get_PX_OFFSET(1);
+            int yoff = Rmg_G->get_PY_OFFSET(1);
+            int zoff = Rmg_G->get_PZ_OFFSET(1);
+
+            /* Initialize the random number generator */
+            rand0 (&idum);
+
+            for (int state = ns; state < ct.num_states; state++)
+            {
+
+
+                /* Generate x, y, z random number sequences */
+                for (int idx = 0; idx < factor*Rmg_G->get_NX_GRID(1); idx++)
+                    xrand[idx] = rand0 (&idum) - 0.5;
+                for (int idx = 0; idx < factor*Rmg_G->get_NY_GRID(1); idx++)
+                    yrand[idx] = rand0 (&idum) - 0.5;
+                for (int idx = 0; idx < factor*Rmg_G->get_NZ_GRID(1); idx++)
+                    zrand[idx] = rand0 (&idum) - 0.5;
+
+
+                int idx = 0;
+                for (int ix = 0; ix < PX0_GRID; ix++)
+                {
+
+                    for (int iy = 0; iy < PY0_GRID; iy++)
+                    {
+
+                        for (int iz = 0; iz < PZ0_GRID; iz++)
+                        {
+
+                            
+                            tmp_psiR[idx] = xrand[xoff + ix] * 
+                                            yrand[yoff + iy] * 
+                                            zrand[zoff + iz];
+                            tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
+
+
+                            if(!ct.is_gamma) {
+
+                                tmp_psiI[idx] = xrand[Rmg_G->get_NX_GRID(1) + xoff + ix] * 
+                                                yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
+                                                zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
+                                tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
+
+                            }
+
+                            idx++;
+
+                        }               /* end for */
+                    }                   /* end for */
+                }                       /* end for */
+
+                // Copy data from tmp_psi into orbital storage
+                for(idx = 0;idx < pbasis;idx++) {
+                    Kptr[ik]->Kstates[state].psi[idx] = tmp_psiR[idx];
+                }
+                if(typeid(KpointType) == typeid(std::complex<double>)) {
+                    for(idx = 0;idx < pbasis;idx++) {
+                        double *a = (double *)&Kptr[ik]->Kstates[state].psi[idx];
+                        if(!ct.is_gamma)
+                            a[1] = tmp_psiI[idx];
+
+                    }
+
+                }
+
+                // Hit the orbital with the right hand mehrstellen operator which should smooth it a bit
+                //        CPP_app_cir_driver (this->L, this->T, this->Kstates[state].psi, this->Kstates[state].psi, PX0_GRID, PY0_GRID, PZ0_GRID, APP_CI_FOURTH);
+
+            }                           /* end for */
+
+            delete [] zrand;
+            delete [] yrand;
+            delete [] xrand;
+            delete [] tmp_psiI;
+            delete [] tmp_psiR;
+        }                           /* end for */
+
+    }
 
     close (fhand);
 
