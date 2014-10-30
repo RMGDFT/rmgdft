@@ -44,8 +44,11 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     std::set<std::string> SpeciesTypes;
     std::list<std::string> IonSpecies;
 
-    // Determine input file format and dispatch to the correct driver routine
+    // Read atoms
     ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
+
+    // Forces (if present)
+    ReadForces(cfile, lc, InputMap);
 
     // Atoms have been read, now take care of conversion to internal coordinates
     if (Verify ("atomic_coordinate_type", "Cell Relative", InputMap)) {
@@ -71,6 +74,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         }
 
     }
+
 
     // SpeciesType holds the number of species found
     lc.num_species = SpeciesTypes.size();
