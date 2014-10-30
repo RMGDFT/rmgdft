@@ -83,9 +83,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* my_barrier (); */
     MPI_Barrier(pct.img_comm);	
 
-    sprintf(newname, "%s.restart", name);
-    read_control(newname);
-
     /* Make the new output file name */
     rmg_printf("\nspin flag =%d\n", ct.spin_flag);
     if (ct.spin_flag)
