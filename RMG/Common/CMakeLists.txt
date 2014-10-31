@@ -48,7 +48,6 @@ get_extrapolation_constants.c
 output_wave.c
 write_header.c
 mix_rho.c
-cholesky.c
 #get_pdos.c
 bandstructure.c
 del_space.c
