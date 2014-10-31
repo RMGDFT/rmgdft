@@ -165,7 +165,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
         {
             for (is = 0; is < ns; is++)
             {
-                write_float (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+                write_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
             }
         }
     }

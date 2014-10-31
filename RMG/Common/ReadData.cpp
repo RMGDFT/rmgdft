@@ -255,7 +255,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 	    for (is = 0; is < ns; is++)
 	    {
 
-		read_float (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+		read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
 
 	    }
 	    /*  for calculating band structures, 
