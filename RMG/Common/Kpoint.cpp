@@ -45,6 +45,7 @@
 #include "rmg_error.h"
 #include "InputKey.h"
 #include "Kpoint.h"
+#include "RmgException.h"
 #include "blas.h"
 #include <complex>
 #include <omp.h>
@@ -474,8 +475,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
         double zero = 0.0;
         double one = 1.0;
         double *sarr;
-        const char *transt = "t";
-        const char *uplo = "l";
+        char *transt = "t";
+        char *uplo = "l";
 
         double *tarr = new double[this->nstates];
         double *global_matrix = new double[this->nstates * this->nstates];
@@ -489,7 +490,10 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
 
         /* compute the cholesky factor of the overlap matrix */
-        cholesky(global_matrix, this->nstates);
+        int info;
+        dpotrf(uplo, &this->nstates, global_matrix, &this->nstates, &info);
+        if (info != 0)
+            throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << ". Matrix not positive definite or argument error. Terminating";
 
 
         // Get inverse of diagonal elements
