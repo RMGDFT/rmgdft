@@ -93,11 +93,16 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                      CHECK_AND_FIX, REQUIRED,
                      "Ionic species and coordinate information.\n",
                      "");
+
+    If.RegisterInputKey("atomic_coordinate_type", NULL, &lc.crd_flag, "Absolute",
+                     CHECK_AND_TERMINATE, OPTIONAL, atomic_coordinate_type,
+                     "Flag indicated whether or not atomic coordinates are absolute or cell relative.\n",
+                     "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating.\n");
     
     
     If.LoadInputKeys();
 
-    
+    InputMap["atomic_coordinate_type"]->Readstr = NewMap["atomic_coordinate_type"]->Readstr; 
 
     // Process atoms
     boost::trim(AtomArray);

@@ -89,6 +89,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         std::string dynfile(ct.infile);
         dynfile = dynfile + ".restart";
         ReadDynamics((char *)dynfile.c_str(), ct, ControlMap);
+
+        // Always use absolute coords in restart file
+        InputKey *Ik = ControlMap["atomic_coordinate_type"];
+        static std::string AbsoluteCoords("Absolute");
+        Ik->Readstr = &AbsoluteCoords;
     }
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
