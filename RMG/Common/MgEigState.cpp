@@ -169,6 +169,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 {
 
     RmgTimer RT("Mg_eig");
+    bool update_psi = true;
+
+    // We can't just skip the occupied orbitals if they are frozen since we process states in blocks and
+    // combine communications. So for now set a flag indicating whether we update the orbital or not. It should
+    // be possible to fix this at a higher level at some point though so unneccessary work is not done.
+    if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) update_psi = false;
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
@@ -317,28 +323,34 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
-            if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
-            {
-                if (ct.scf_steps == 0)
+            if(update_psi) {
+
+                if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
+                {
+                    if (ct.scf_steps == 0)
+                    {
+                        sp->eig[0] = eig;
+                        sp->oldeig[0] = eig;
+                    }
+                    else
+                        eig = sp->eig[0];
+                }
+                else
                 {
                     sp->eig[0] = eig;
-                    sp->oldeig[0] = eig;
+                    if(ct.scf_steps == 0) {
+                        sp->oldeig[0] = eig;
+                    }
                 }
-		else
-                    eig = sp->eig[0];
-	    }
-            else
-            {
-                sp->eig[0] = eig;
-                if(ct.scf_steps == 0) {
-                    sp->oldeig[0] = eig;
+                
+                if(potential_acceleration) {
+                    t1 = eig;
+                    eig = 0.3 * eig + 0.7 * sp->oldeig[0];
+                    sp->oldeig[0] = t1;
                 }
             }
-            
-            if(potential_acceleration) {
-                t1 = eig;
-                eig = 0.3 * eig + 0.7 * sp->oldeig[0];
-                sp->oldeig[0] = t1;
+            else {
+                eig = sp->eig[0];
             }
 
         }
@@ -434,7 +446,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 
     // Copy single precision orbital back to double precision
-    CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
+    if(update_psi)
+        CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
 
 
     /* Release our memory */

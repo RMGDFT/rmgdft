@@ -45,6 +45,8 @@ void mix_rho (rmg_double_t * new_rho, rmg_double_t * rho, rmg_double_t *rhocore,
     int step, idx, inc = 1;
     static rmg_double_t **rhohist=NULL, **residhist=NULL;
 
+    if(verify_boolean ("freeze_occupied", &SET)) return;
+
     /*Linear Mixing*/
     if (verify_opt("charge_mixing_type","Linear"))
     {

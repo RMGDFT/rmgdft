@@ -556,6 +556,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
                         "Flag indicating whether or not to use dynamic timesteps in relaxation mode.\n");
 
+    If.RegisterInputKey("freeze_occupied", NULL, false,
+                        "Flag indicating whether or not to freeze the density and occupied orbitals after a restart.\n");
+
     If.RegisterInputKey("relax_max_force", &lc.thr_frc, 0.0, DBL_MAX, 2.5E-3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Force value at which an ionic relaxation is considered to be converged.\n",
@@ -804,9 +807,18 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     lc.occ_width *= eV_Ha;
 
+    // Potential acceleration must be disabled if freeze_occupied is true
+    if(Verify ("freeze_occupied", true, InputMap) ) {
+        lc.potential_acceleration_constant_step = 0.0;
+        lc.potential_acceleration_poisson_step = 0.0;
+        std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
+    }
+
     for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
         std::pair<std::string, InputKey*> Check = *it;
         InputKey *CheckKey = it->second;
         //std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
     }
+
+
 }
