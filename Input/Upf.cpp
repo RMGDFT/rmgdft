@@ -215,6 +215,13 @@ void LoadUpf(SPECIES *sp)
     if(!s_is_ultrasoft.compare(0,1,"T")) sp->is_norm_conserving = false;
     if(!s_is_ultrasoft.compare(0,4,"TRUE")) sp->is_norm_conserving = false;
 
+    // Check for full relativistic and thrown an error if found
+    std::string s_is_relativistic = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.relativistic");
+    boost::to_upper(s_is_relativistic);
+    if(!s_is_relativistic.compare(0,4,"FULL")) {
+        throw RmgFatalException() << "RMG does not support fully relativistic pseudopotentials. Terminating.\n";
+    }
+
     // Core correction flag
     std::string s_core_correction = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.core_correction");
     if(!s_core_correction.compare(0,1,"F")) sp->nlccflag = false;
@@ -455,8 +462,8 @@ void LoadUpf(SPECIES *sp)
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
     sp->rc = 0.50;
     sp->lradius = 9.0;
-    sp->nlradius = 3.0425;
-    sp->qradius = 3.0425;
+    sp->nlradius = 5.0425;
+    sp->qradius = 4.0425;
     sp->lrcut = 7.5;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
