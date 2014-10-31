@@ -325,7 +325,15 @@ void LoadUpf(SPECIES *sp)
     sp->nlc=0;
     // Charge augmentation for US
     if(!sp->is_norm_conserving) {
-       char q_with_l = upf_tree.get<char>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
+
+       std::string q_with_l = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
+       boost::to_upper(q_with_l);
+       if(!q_with_l.compare(0,1,"T") || !q_with_l.compare(0,4,"TRUE")) {
+           throw RmgFatalException() << "RMG does not support pseudopotentials with an angular momentum dependence of the augmentation charges. Terminating.\n";  
+       }
+
+
+
        sp->nqf = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqf", 0);
        sp->nlc = upf_tree.get<int>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.nqlc", 2*l_max + 1);
        int tnlc = (sp->nbeta * (sp->nbeta + 1)) / 2;
