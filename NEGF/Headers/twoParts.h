@@ -16,5 +16,5 @@ struct COMPASS {
 typedef	struct	COMPASS	COMPASS;
 
 
-COMPASS 	chargeDensityCompass; 
-COMPASS 	potentialCompass; 
+extern COMPASS 	chargeDensityCompass; 
+extern COMPASS 	potentialCompass; 

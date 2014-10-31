@@ -74,4 +74,3 @@ ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc;
 rmg_double_t *vnuc_x, *vnuc_y, *vnuc_z;
 
 
-

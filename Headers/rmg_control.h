@@ -669,7 +669,7 @@ typedef struct
     /*  for negf  */
 
 
-    int metal;
+    bool metal;
     int num_blocks;
     int block_dim[MAX_BLOCKS];
 

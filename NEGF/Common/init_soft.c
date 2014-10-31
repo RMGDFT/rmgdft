@@ -142,7 +142,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     nameC = lcr[0].name;
     nameR = lcr[2].name;
 */
-        read_orbital(states);
+    read_orbital(states);
     interpolation_orbit (states);
     init_state_distribute(states, states_distribute);
 

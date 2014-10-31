@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
-#include "init_var.h"
+//#include "init_var.h"
 
 int spg_get_ir_reciprocal_mesh(int *grid_address,
                                int map[],

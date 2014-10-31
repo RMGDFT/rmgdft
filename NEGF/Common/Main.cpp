@@ -58,7 +58,6 @@
 #include "blas.h"
 //#include "main.h"
 #include "prototypes_on.h"
-#include "init_var.h"
 #include "transition.h"
 
 
@@ -72,6 +71,7 @@
 #include "cei.h"
 
 
+#include "init_var.h"
 
 
 /* Main control structure which is declared extern in main.h so any module */
@@ -95,6 +95,10 @@ double alat;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
+COMPASS potentialCompass, chargeDensityCompass;
+
+
+void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMPASS& potcompass, COMPASS& rhocompass);
 
 int main (int argc, char **argv)
 {
@@ -113,6 +117,11 @@ int main (int argc, char **argv)
 
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
+
+    ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
+    allocate_states();
+    ReadOrbitals (ct.cfile, states, state_to_ion, ControlMap);
+    get_state_to_proc(states);
 
     my_barrier ();
 

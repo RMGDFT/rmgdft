@@ -1,4 +1,5 @@
 add_library (NEGF_Input
+ReadBranchNEGF.cpp
 read_atoms.c
 read_control.c
 read_pdb.c

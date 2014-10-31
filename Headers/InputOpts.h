@@ -117,4 +117,10 @@ static std::unordered_map<std::string, int> mg_method = {
         {"Kain", 2}
         };
 
+static std::unordered_map<std::string, int> energy_point_insert_mode = {
+        {"None", 0},
+        {"Simpson", 1},
+        {"Sharp Peaks", 2}
+        };
+
 #endif
