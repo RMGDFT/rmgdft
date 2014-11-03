@@ -103,7 +103,8 @@ static std::unordered_map<std::string, int> exchange_correlation_type = {
         {"GGA XB CP", 2},
         {"GGA XP CP", 3},
         {"GGA PBE", 4},
-        {"MGGA TB09", 5}};
+        {"MGGA TB09", 5},
+        {"AUTO_XC", 99}};
 
 static std::unordered_map<std::string, int> relax_method = {
         {"Fast Relax", 0},

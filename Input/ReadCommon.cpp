@@ -225,7 +225,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Boundary condition type Only periodic is currently implemented.\n", 
                      "discretization_type must be Periodic.\n");
 
-    If.RegisterInputKey("exchange_correlation_type", NULL, &lc.xctype, "LDA",
+    If.RegisterInputKey("exchange_correlation_type", NULL, &lc.xctype, "AUTO_XC",
                      CHECK_AND_TERMINATE, OPTIONAL, exchange_correlation_type,
                      "Type of functional for exchange-correlation.\n", 
                      "exchange_correlation_type not supported. Terminating.\n");

@@ -153,13 +153,9 @@ void LoadUpf(SPECIES *sp)
     sp->zvalence = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.z_valence");
     if(sp->zvalence > ct.max_zvalence) ct.max_zvalence = sp->zvalence;
 
-    // Functional is a bit tricky
-    std::vector<std::string> func_components;
-    std::string delims = " \t\n";
+    // Store UPF functional string for later processing
     std::string PP_FUNC = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.functional");
-    boost::trim(PP_FUNC);
-    boost::algorithm::split( func_components, PP_FUNC, boost::is_any_of(delims), boost::token_compress_on );
-
+    std::strncpy(sp->functional, PP_FUNC.c_str(), sizeof(sp->functional));
 
 
     // Read in the radial mesh and keep values between 1.0e-05 < r < 50.0

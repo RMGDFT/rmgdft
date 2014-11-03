@@ -32,6 +32,9 @@ typedef struct
     /** Number of valence electrons */
     double zvalence;
 
+    // Exchange correlation string as read from UPF pseudopotential format
+    char functional[24];
+
     /** Gaussian charge parameter used for compensating the 1/r Coulomb
      * tail of the pseudopotentials
      */

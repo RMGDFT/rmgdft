@@ -143,6 +143,7 @@
 #define       	GGA_XP_CP       3
 #define       	GGA_PBE         4
 #define       	MGGA_TB09         5
+#define       	AUTO_XC         99
 
 
 

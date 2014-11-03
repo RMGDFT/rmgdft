@@ -134,7 +134,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     printf ("\nRMG running in message passing mode with %d procs for this image.", status);
 
     /* Read in our pseudopotential information */
-    ReadPseudo(ct.num_species, &ct.sp[0]);
+    ReadPseudo(ct.num_species, ct, ControlMap);
 
 
 #if GPU_ENABLED
