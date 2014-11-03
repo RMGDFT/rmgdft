@@ -55,7 +55,7 @@ set(CMAKE_FIND_ROOT_PATH
 # Main codes
 add_executable(rmg RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-on ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(rmg-tddft TDDFT/Common/main.c ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
+add_executable(rmg-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 add_executable(rmg-negf NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
 
 # Require a 64 bit system
@@ -481,6 +481,7 @@ include_directories("${RMG_SOURCE_DIR}/RmgLib/")
 include_directories("${RMG_SOURCE_DIR}/RmgLib/include")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
+include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
 #include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 #include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

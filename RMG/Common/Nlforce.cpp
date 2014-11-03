@@ -251,9 +251,9 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
             iptr = &ct.ions[ion];
             printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
                     ion,
-                    iptr->force[fpt0][0] - old_force[3 * ion],
-                    iptr->force[fpt0][1] - old_force[3 * ion + 1],
-                    iptr->force[fpt0][2] - old_force[3 * ion + 2]);
+                    tmp_force_gamma[3 * ion],
+                    tmp_force_gamma[3 * ion+1],
+                    tmp_force_gamma[3 * ion+2]);
 
             sum1x += iptr->force[fpt0][0] - old_force[3 * ion];
             sum1y += iptr->force[fpt0][1] - old_force[3 * ion + 1];
