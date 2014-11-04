@@ -46,6 +46,10 @@
 #include "InputKey.h"
 #include "hybrid.h"
 
+#if MAGMA_LIBS
+    #include <magma.h>
+#endif
+
 
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
@@ -147,9 +151,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
     }
     cudaSetDevice(ct.cu_dev);
-    if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
-        fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
-    }
+//    if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
+//        fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
+//    }
     if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
         fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
     }
