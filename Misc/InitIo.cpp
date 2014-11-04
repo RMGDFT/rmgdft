@@ -46,8 +46,16 @@
 #include "InputKey.h"
 #include "hybrid.h"
 
-#if MAGMA_LIBS
-    #include <magma.h>
+#if GPU_ENABLED
+    #if MAGMA_LIBS
+        #include <magma.h>
+        #include <magmablas.h>
+    #endif
+
+    #include <cuda.h>
+    #include <cuda_runtime_api.h>
+    #include <cublas_v2.h>
+
 #endif
 
 

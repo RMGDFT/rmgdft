@@ -49,3 +49,6 @@ get_opposite_eigvals.c
 fill.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
+include_directories(${MAGMA_INCLUDES})
+include_directories(${MAGMA_INCLUDES}/magma)
+
