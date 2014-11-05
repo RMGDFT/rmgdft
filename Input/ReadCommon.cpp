@@ -65,7 +65,7 @@ namespace po = boost::program_options;
    RmgInputFile If(inputfile);
    If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Ratio of the fine grid to the coarse grid.",
+                     "Ratio of the fine grid to the wavefunction grid.",
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
 
    No matter what type of key is being registered the first argument of RegisterInputKey
@@ -97,8 +97,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
  
     Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
-    Ri::ReadVector<int> CoarseGrid;
-    Ri::ReadVector<int> DefCoarseGrid({{1,1,1}});
+    Ri::ReadVector<int> WavefunctionGrid;
+    Ri::ReadVector<int> DefWavefunctionGrid({{1,1,1}});
     Ri::ReadVector<int> kpoint_mesh;
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
@@ -132,9 +132,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
 
-    If.RegisterInputKey("coarse_grid", &CoarseGrid, &DefCoarseGrid, 3, REQUIRED, 
+    If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, REQUIRED, 
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
-                     "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n");
+                     "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n");
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh.\n", 
@@ -280,7 +280,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Ratio of the fine grid to the coarse grid.", 
+                     "Ratio of the fine grid to the wavefunction grid.", 
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 2.0, 0.0, 
@@ -708,12 +708,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     int NX_GRID=1, NY_GRID=1, NZ_GRID=1;
     try {
-        NX_GRID = CoarseGrid.vals.at(0);
-        NY_GRID = CoarseGrid.vals.at(1);
-        NZ_GRID = CoarseGrid.vals.at(2);
+        NX_GRID = WavefunctionGrid.vals.at(0);
+        NY_GRID = WavefunctionGrid.vals.at(1);
+        NZ_GRID = WavefunctionGrid.vals.at(2);
     }
     catch (const std::out_of_range& oor) {
-        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the coarse grid.\n";
+        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n";
     }
     CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
