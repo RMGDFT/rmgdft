@@ -29,7 +29,6 @@
 
 
 
-
 template void Subdiag<double>(Kpoint<double> *, double *, double *, double *, int);
 template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, double *, double *, double *, int);
 
@@ -52,10 +51,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     BaseThread *T = BaseThread::getBaseThread(0);
 
-    static KpointType *tmp_arrayT = NULL;
-    static KpointType *tmp_array2T = NULL;
-    static KpointType *global_matrix1 = NULL;
-    static KpointType *global_matrix2 = NULL;
+    static KpointType *tmp_arrayT;
+    static KpointType *tmp_array2T;
+    static KpointType *global_matrix1;
+    static KpointType *global_matrix2;
 
     KpointType *Agpu = NULL;
     KpointType *gpu_eigvectors = NULL;
@@ -64,9 +63,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 #if GPU_ENABLED
 
     cublasStatus_t custat;
-    static KpointType *Aij = NULL;
-    static KpointType *Bij = NULL;
-    static KpointType *Sij = NULL;
+    static KpointType *Aij;
+    static KpointType *Bij;
+    static KpointType *Sij;
 
     // Grab some gpu memory
     gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
@@ -194,14 +193,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType alpha1(vel);
     RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
-    // Asynchronously reduce it
+    // Wait for Aij request to finish
+    MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+
+    // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
     MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
 
-    // Wait for A request to finish and when done store in Aij
-    MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+    // Store reduced Aij back in Aij matrix
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
-
 
     // We need B matrix for US pseudopotentials and/or MEHRSTELLEN_DISCRETIZATION
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
