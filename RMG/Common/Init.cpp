@@ -209,6 +209,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Next is page locked memory for transferring data back and forth
     size_t gpu_hostbufsize;
     gpu_hostbufsize = 7 * ct.num_states * ct.num_states * sizeof(OrbitalType);
+    if(Verify ("folded_spectrum", true, Kptr[0]->ControlMap)) {
+        gpu_hostbufsize += 3 * ct.num_states * ct.num_states * sizeof(OrbitalType);
+    }
+
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here

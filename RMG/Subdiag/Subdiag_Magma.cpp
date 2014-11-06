@@ -60,12 +60,13 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
     int num_states = kptr->nstates;
     int ione = 1;
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     cublasStatus_t custat;
 
     // Magma is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
-    if(pct.is_local_master) {
+    if(pct.is_local_master || use_folded) {
 
         KpointType *gpuAij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
         KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
@@ -157,16 +158,43 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         int eigs_found;
         double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
         int *iwork = new int[2*liwork];
+        double *work2 = new double[2*lwork];
         double vx = 0.0;
         double tol = 1e-15;
 
         if(ct.is_gamma) {
 
-            int info = Rmg_dsygvd_gpu(num_states, (double *)gpuCij, num_states, (double *)gpuSij, num_states,
-                                  eigs, work, lwork, iwork, liwork, (double *)Cij);
-            // We have to transfer this back in order to rotate the betaxpsi
-            custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+            if(use_folded) {
+
+                GpuFree(gpuSij);
+                GpuFree(gpuBij);
+                GpuFree(gpuAij);
+
+                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
+                for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx];
+                custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpu_eigvectors, ione );
+
+                delete [] work2;
+                delete [] iwork;
+                GpuFreeHost(work);
+                delete [] ifail;
+
+
+                delete(RT1);
+                GpuFreeHost(Cij);
+
+                return trans_t;
+
+            }
+            else {
+
+                int info = Rmg_dsygvd_gpu(num_states, (double *)gpuCij, num_states, (double *)gpuSij, num_states,
+                                      eigs, work, lwork, iwork, liwork, (double *)Cij);
+                // We have to transfer this back in order to rotate the betaxpsi
+                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
+                RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+
+            }
 
         }
         else {
@@ -182,6 +210,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
         }
 
+        delete [] work2;
         delete [] iwork;
         GpuFreeHost(work);
         delete [] ifail;
@@ -198,7 +227,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     } // end if is_local_master
 
     // If only one proc on this host participated broadcast results to the rest
-    if(pct.procs_per_host > 1) {
+    if((pct.procs_per_host > 1) && !use_folded) {
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);

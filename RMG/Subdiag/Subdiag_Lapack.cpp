@@ -42,12 +42,12 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
     // Lapack is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
-    if(pct.is_local_master) {
+    if(pct.is_local_master || use_folded) {
 
         // Increase the resources available to this proc since the others on the local node
         // will be idle
         int nthreads = ct.THREADS_PER_NODE;
-        if(pct.procs_per_host > 1) nthreads = pct.ncpus;
+        if((pct.procs_per_host > 1) && !use_folded) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
 
 
@@ -180,7 +180,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
 
     // If only one proc on this host participated broadcast results to the rest
-    if(pct.procs_per_host > 1) {
+    if((pct.procs_per_host > 1) && !use_folded) {
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);
