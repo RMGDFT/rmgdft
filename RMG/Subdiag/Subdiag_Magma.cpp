@@ -166,12 +166,14 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             if(use_folded) {
 
+                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
+                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuSij, 1, Sij, 1 );
+                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuAij, 1, Aij, 1 );
                 GpuFree(gpuSij);
                 GpuFree(gpuBij);
                 GpuFree(gpuAij);
 
-                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
-                for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx];
+                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij);
                 custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpu_eigvectors, ione );
 
                 delete [] work2;
