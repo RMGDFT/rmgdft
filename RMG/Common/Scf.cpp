@@ -43,6 +43,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 #include "transition.h"
 #include "const.h"
 #include "State.h"
@@ -88,6 +89,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double *vtot, *vtot_psi, *new_rho;
     double time1;
     double t[3];                  /* SCF checks and average potential */
+    double mean_occ_res = DBL_MAX;
+    double mean_unocc_res = DBL_MAX;
+
     int ist, istop, P0_BASIS, FP0_BASIS;
     BaseThread *T = BaseThread::getBaseThread(0);
 
@@ -195,9 +199,15 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         rmg_printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
     }
 
-    if (!firststep && t[1] < ct.thr_rms)
-    {
-	    CONVERGED = true;
+    if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
+
+        if(!firststep && (mean_unocc_res < 1.0e-7)) CONVERGED = true;
+
+    }
+    else {
+
+        if (!firststep && t[1] < ct.thr_rms) CONVERGED = true;
+
     }
 
     get_vtot_psi (vtot_psi, vtot, get_FG_RATIO());
@@ -207,6 +217,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
+
+        mean_occ_res = 0.0;
+        mean_unocc_res = 0.0;
 
         for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
@@ -249,6 +262,35 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             }
             delete(RT1);
 
+            if(Verify ("freeze_occupied", true, Kptr[kpt]->ControlMap)) {
+
+                // Orbital residual measures (used for some types of calculations
+                Kptr[kpt]->mean_occ_res = 0.0;
+                Kptr[kpt]->min_occ_res = DBL_MAX;
+                Kptr[kpt]->max_occ_res = 0.0;
+                Kptr[kpt]->mean_unocc_res = 0.0;
+                Kptr[kpt]->min_unocc_res = DBL_MAX;
+                Kptr[kpt]->max_unocc_res = 0.0;
+                Kptr[kpt]->highest_occupied = 0;
+                for(int istate = 0;istate < Kptr[kpt]->nstates;istate++) {
+                    if(Kptr[kpt]->Kstates[istate].occupation[0] > 0.0) {
+                        Kptr[kpt]->mean_occ_res += Kptr[kpt]->Kstates[istate].res;
+                        if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_occ_res)  Kptr[kpt]->max_occ_res = Kptr[kpt]->Kstates[istate].res;
+                        if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_occ_res)  Kptr[kpt]->min_occ_res = Kptr[kpt]->Kstates[istate].res;
+                        Kptr[kpt]->highest_occupied = istate;
+                    }
+                    else {
+                        Kptr[kpt]->mean_unocc_res += Kptr[kpt]->Kstates[istate].res;
+                        if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_unocc_res)  Kptr[kpt]->max_unocc_res = Kptr[kpt]->Kstates[istate].res;
+                        if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_unocc_res)  Kptr[kpt]->min_unocc_res = Kptr[kpt]->Kstates[istate].res;
+                    }
+                }
+                Kptr[kpt]->mean_occ_res = Kptr[kpt]->mean_occ_res / (double)(Kptr[kpt]->highest_occupied + 1);
+                Kptr[kpt]->mean_unocc_res = Kptr[kpt]->mean_unocc_res / (double)(Kptr[kpt]->nstates - (Kptr[kpt]->highest_occupied + 1));
+
+                rmg_printf("Mean/Min/Max unoccupied wavefunction residual for kpoint %d  =  %10.5e  %10.5e  %10.5e\n", kpt, Kptr[kpt]->mean_unocc_res, Kptr[kpt]->min_unocc_res, Kptr[kpt]->max_unocc_res);
+
+            }
 
         }
 

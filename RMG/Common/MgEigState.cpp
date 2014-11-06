@@ -31,6 +31,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
+#include "RmgSumAll.h"
 #include "BlasWrappers.h"
 #include "auxiliary.h"
 #include "const.h"
@@ -169,12 +170,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 {
 
     RmgTimer RT("Mg_eig");
-    bool update_psi = true;
+    bool freeze_occupied = true;
 
     // We can't just skip the occupied orbitals if they are frozen since we process states in blocks and
     // combine communications. So for now set a flag indicating whether we update the orbital or not. It should
     // be possible to fix this at a higher level at some point though so unneccessary work is not done.
-    if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) update_psi = false;
+    if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
@@ -323,7 +324,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/
-            if(update_psi) {
+            if(freeze_occupied) {
 
                 if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
                 {
@@ -423,7 +424,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 OrbitalType t5;
                 t5 = t1 * (OrbitalType)res_t[idx] - (OrbitalType)work1_t[idx];
-                //RRRRt2 += t5 * t5;
+                t2 += std::abs(t5 * t5);
                 tmp_psi_t[idx] += t4 * t5;
 
             }
@@ -431,9 +432,13 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             if (cycles == 0)
             {
 
-                t2 = real_sum_all (t2, pct.grid_comm);
-                t1 = (double) (ct.psi_nbasis);
-                sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
+                // If occupied orbitals are frozen we compute residuals 
+                if(freeze_occupied) {
+                    t2 = RmgSumAll (t2, pct.grid_comm);
+                    t1 = (double) (ct.psi_nbasis);
+                    sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
+                    if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
+                }
 
             }
 
@@ -446,7 +451,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 
     // Copy single precision orbital back to double precision
-    if(update_psi)
+    if(freeze_occupied)
         CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
 
 

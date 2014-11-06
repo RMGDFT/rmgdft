@@ -275,7 +275,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
                 Agpu, NULLptr, NULLptr, false, true, false, true);
 
         // And finally copy them back
-        for(int idx = 0;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
+        int istart = 0;
+        if(Verify ("freeze_occupied", true, kptr->ControlMap)) istart = kptr->highest_occupied + 1;
+
+        for(int idx = istart;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
     }
 
     delete(RT1);

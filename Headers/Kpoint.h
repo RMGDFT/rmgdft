@@ -120,9 +120,17 @@ public:
     int pbasis;
 
     // Mean min, and max wavefunction residuals for occupied space
-    double meanres;
-    double minres;
-    double maxres;
+    double mean_occ_res;
+    double min_occ_res;
+    double max_occ_res;
+
+    // Mean min, and max wavefunction residuals for unoccupied space
+    double mean_unocc_res;
+    double min_unocc_res;
+    double max_unocc_res;
+
+    // Highest occupied orbital
+    int highest_occupied;
 
     // Total energies */
     double ES;
