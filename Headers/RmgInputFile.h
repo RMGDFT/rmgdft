@@ -9,6 +9,7 @@
 #include <climits>
 #include <unordered_map>
 #include <typeinfo>
+#include <mpi.h>
 #include "InputKey.h"
 
 namespace po = boost::program_options;
@@ -21,7 +22,7 @@ namespace po = boost::program_options;
 
 class RmgInputFile {
     public:
-        RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map);
+        RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map, MPI_Comm comm);
         ~RmgInputFile(void);
 
         template <typename T>
@@ -36,12 +37,11 @@ class RmgInputFile {
         void LoadInputKeys(void);
 
     private:
-        void PreprocessInputFile(char *cfile);
+        void PreprocessInputFile(char *cfile, MPI_Comm comm);
         po::options_description control;
         std::unordered_map<std::string, InputKey *>& InputMap;
         std::unordered_map<std::string, std::string> InputPairs;
         po::variables_map vm;
-
 
 };
 

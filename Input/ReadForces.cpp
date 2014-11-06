@@ -40,7 +40,7 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
     std::vector<std::string> Forces;
     std::unordered_map<std::string, InputKey *> NewMap;
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     If.RegisterInputKey("ionic_forces", &ForceArray, "",
                      CHECK_AND_FIX, OPTIONAL,

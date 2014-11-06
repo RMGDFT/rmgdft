@@ -80,8 +80,8 @@ namespace RmgInput {
 }
 
 
-RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map) : InputMap(Map)  {
-    PreprocessInputFile(inputfile);
+RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map, MPI_Comm comm) : InputMap(Map)  {
+    PreprocessInputFile(inputfile, comm);
 }
 
 
@@ -269,7 +269,7 @@ void RmgInputFile::LoadInputKeys(void) {
 }
 
 
-void RmgInputFile::PreprocessInputFile(char *cfile)
+void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
 {
     std::string config_file(cfile);
     std::string outbuf;
@@ -310,18 +310,17 @@ void RmgInputFile::PreprocessInputFile(char *cfile)
         }
 
     }
-
     int openfail = Msg.length();
-    MPI_Bcast(&openfail, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&openfail, 1, MPI_INT, 0, comm);
     if(openfail)
         throw RmgFatalException() << Msg;
 
     // Send it to everyone else
-    MPI_Bcast (&input_buffer_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast (&input_buffer_len, 1, MPI_INT, 0, comm);
     if(pct.worldrank != 0) {
         input_buffer = new char[input_buffer_len + 1]();
     }
-    MPI_Bcast (input_buffer, input_buffer_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast (input_buffer, input_buffer_len, MPI_CHAR, 0, comm);
     std::string input_string(input_buffer);
     ifs << input_string;
 

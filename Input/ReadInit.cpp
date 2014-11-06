@@ -46,7 +46,7 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
         return;
     }
 
-    RmgInputFile If(meta, InputMap);
+    RmgInputFile If(meta, InputMap, MPI_COMM_WORLD);
 
     /* do spin polarized calculation? */
     If.RegisterInputKey("spin_polarization", &lc.spin_flag, false,

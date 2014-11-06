@@ -67,7 +67,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     std::unordered_map<std::string, InputKey *> NewMap;
     int nkpts;
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     If.RegisterInputKey("kpoints", &KpointArray, "",
                      CHECK_AND_FIX, REQUIRED,

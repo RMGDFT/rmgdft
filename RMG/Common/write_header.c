@@ -363,6 +363,7 @@ void write_header (void)
         error_handler ("Unknown molecular dynamics method.");
     }
 
+#if 0
     /* Forces are updated under normalized constraint field */
     if (verify ("atom_constraints", NULL))
     {
@@ -376,6 +377,7 @@ void write_header (void)
                     ct.ions[idx].constraint.setA_weight);
         }
     }
+#endif
 
     if (ct.forceflag != MD_QUENCH)
     {
@@ -434,9 +436,10 @@ void write_header (void)
     /* Write out the ionic positions and displacements */
     init_write_pos ();
 
-
+#if 0
     if ((pct.imgpe == 0) && (verify ("pdb_atoms", NULL)))
         write_pdb ();
+#endif
 
 
 

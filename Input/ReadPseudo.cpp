@@ -1,3 +1,18 @@
+#include <exception>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+
+
+
 #include "make_conf.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -45,9 +60,32 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
    // User specified the type explicity so we are done
    if(lc.xctype != AUTO_XC) return;
    
+   std::string delims = " \t\n";
+
+   bool uniform = true;
+   std::set<std::string> short_names;
+
    for(int isp = 0;isp < nspecies;isp++) {
 
- 
+        SPECIES *sp = &lc.sp[isp];
+        std::vector<std::string> func_components;
+        std::string funcstr(sp->functional);
+        boost::trim(funcstr);
+        boost::algorithm::split( func_components, funcstr, boost::is_any_of(delims), boost::token_compress_on );
+
+        // If there is only one entry then it must be a short name so insert it
+        if(func_components.size() == 1) {
+
+            std::string abbr = func_components.at(0);
+            boost::to_upper(abbr); 
+            short_names.emplace(abbr);
+
+        }
+        else {
+
+
+        }
+    
 
    }
 

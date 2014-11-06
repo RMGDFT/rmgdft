@@ -88,7 +88,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 {
 
 
-    RmgInputFile If(cfile, InputMap);
+    RmgInputFile If(cfile, InputMap, pct.img_comm);
     std::string CalculationMode;
     std::string DiscretizationType;
     std::string Description;

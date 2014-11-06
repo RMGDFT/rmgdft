@@ -87,7 +87,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     std::unordered_map<std::string, InputKey *> NewMap;
     int nions = 0;
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     If.RegisterInputKey("atoms", &AtomArray, "",
                      CHECK_AND_FIX, REQUIRED,

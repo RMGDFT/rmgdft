@@ -40,7 +40,7 @@ void ReadVelocities(char *cfile, CONTROL& lc, std::unordered_map<std::string, In
     std::vector<std::string> Velocities;
     std::unordered_map<std::string, InputKey *> NewMap;
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     If.RegisterInputKey("ionic_velocities", &VelocityArray, "",
                      CHECK_AND_FIX, OPTIONAL,
