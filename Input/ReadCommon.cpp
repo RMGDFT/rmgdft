@@ -574,6 +574,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
                      "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
 
+    If.RegisterInputKey("gw_residual_convergence_criterion", &lc.gw_threshold, 1.0e-14, 1.0e-4, 1.0e-6,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "The mean value of the residual for unoccupied orbitals when performing a GW calculation.\n",
+                     "gw_residual_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-6.\n");
+
+
     If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, 100000.0, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Ratio between target RMS for get_vh and RMS total potential.\n",

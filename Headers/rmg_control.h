@@ -146,6 +146,9 @@ typedef struct
     /* force convergence criterion */
     double thr_frc;
 
+    /* GW convergence criterion */
+    double gw_threshold;
+
     /* Number of steps after which to perform checkpointing */
     int checkpoint;
 

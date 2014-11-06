@@ -201,7 +201,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-        if(!firststep && (mean_unocc_res < 1.0e-7)) CONVERGED = true;
+        if(!firststep && (mean_unocc_res < ct.gw_threshold)) CONVERGED = true;
 
     }
     else {
