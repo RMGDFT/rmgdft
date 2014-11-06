@@ -91,7 +91,7 @@ void LoadUpf(SPECIES *sp)
     else {
 
         // Open on one pe and read entire file into a character buffer
-        if(pct.worldrank == 0) {
+        if(pct.imgpe == 0) {
 
             // Check for file existence
             boost::filesystem::path pp_filepath(sp->pseudo_filename);
@@ -122,17 +122,17 @@ void LoadUpf(SPECIES *sp)
         }
 
         int openfail = Msg.length();
-        MPI_Bcast(&openfail, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&openfail, 1, MPI_INT, 0, pct.img_comm);
         if(openfail) 
             throw RmgFatalException() << Msg;
 
 
         // Send it to everyone else
-        MPI_Bcast (&pp_buffer_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast (&pp_buffer_len, 1, MPI_INT, 0, pct.img_comm);
         if(pct.worldrank != 0) {
             pp_buffer = new char[pp_buffer_len + 1]();
         }
-        MPI_Bcast (pp_buffer, pp_buffer_len, MPI_CHAR, 0, MPI_COMM_WORLD);
+        MPI_Bcast (pp_buffer, pp_buffer_len, MPI_CHAR, 0, pct.img_comm);
         std::string pp_string(pp_buffer);
         ss << pp_string;
 

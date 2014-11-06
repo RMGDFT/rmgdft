@@ -87,7 +87,6 @@ namespace Ri = RmgInput;
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
-
     RmgInputFile If(cfile, InputMap, pct.img_comm);
     std::string CalculationMode;
     std::string DiscretizationType;

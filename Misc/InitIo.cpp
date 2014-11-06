@@ -96,7 +96,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
     snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
-    ReadCommon(argc, argv, pct.image_input[pct.thisimg], ct, pct, ControlMap);
+    ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
     if(Verify("start_mode", "Restart From File", ControlMap)) {
         std::string dynfile(ct.infile);
         dynfile = dynfile + ".restart";
@@ -128,7 +128,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if (pct.imgpe == 0)
     {
         snprintf (logname, MAX_PATH, "%s.log", ct.basename);
-
         int name_incr;
         name_incr = filename_increment(logname);
         snprintf (ct.logname, MAX_PATH, "%s.%02d", logname, name_incr);

@@ -279,9 +279,11 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
     char *input_buffer;
     int input_buffer_len;
 
+    int rank = pct.imgpe;
+    if(comm == MPI_COMM_WORLD) rank = pct.worldrank;
 
     // Open on one pe and read entire file into a character buffer
-    if(pct.worldrank == 0) {
+    if(rank == 0) {
 
         // Check for file existence
         boost::filesystem::path input_filepath(cfile);
@@ -317,7 +319,7 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
 
     // Send it to everyone else
     MPI_Bcast (&input_buffer_len, 1, MPI_INT, 0, comm);
-    if(pct.worldrank != 0) {
+    if(rank != 0) {
         input_buffer = new char[input_buffer_len + 1]();
     }
     MPI_Bcast (input_buffer, input_buffer_len, MPI_CHAR, 0, comm);
