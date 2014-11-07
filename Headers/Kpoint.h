@@ -129,6 +129,9 @@ public:
     double min_unocc_res;
     double max_unocc_res;
 
+    // Index of the highest orbital included in the calculation of mean/min/max
+    int max_unocc_res_index;
+
     // Highest occupied orbital
     int highest_occupied;
 

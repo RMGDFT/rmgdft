@@ -149,6 +149,9 @@ typedef struct
     /* GW convergence criterion */
     double gw_threshold;
 
+    /* Fraction of full spectrum that gw_threshold is applied to */
+    double gw_residual_fraction;
+
     /* Number of steps after which to perform checkpointing */
     int checkpoint;
 

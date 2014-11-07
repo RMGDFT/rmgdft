@@ -91,6 +91,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double t[3];                  /* SCF checks and average potential */
     double mean_occ_res = DBL_MAX;
     double mean_unocc_res = DBL_MAX;
+    double max_occ_res = 0.0;
+    double max_unocc_res = 0.0;
+    double min_occ_res = DBL_MAX;
+    double min_unocc_res = DBL_MAX;
 
     int ist, istop, P0_BASIS, FP0_BASIS;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -201,7 +205,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-        if(!firststep && (mean_unocc_res < ct.gw_threshold)) CONVERGED = true;
+        if(!firststep && (max_unocc_res < ct.gw_threshold)) {
+            rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
+            rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
+            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
+
+            CONVERGED = true;
+        }
 
     }
     else {
@@ -262,37 +272,49 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             }
             delete(RT1);
 
-            if(Verify ("freeze_occupied", true, Kptr[kpt]->ControlMap)) {
+        }
 
-                // Orbital residual measures (used for some types of calculations
-                Kptr[kpt]->mean_occ_res = 0.0;
-                Kptr[kpt]->min_occ_res = DBL_MAX;
-                Kptr[kpt]->max_occ_res = 0.0;
-                Kptr[kpt]->mean_unocc_res = 0.0;
-                Kptr[kpt]->min_unocc_res = DBL_MAX;
-                Kptr[kpt]->max_unocc_res = 0.0;
-                Kptr[kpt]->highest_occupied = 0;
-                for(int istate = 0;istate < Kptr[kpt]->nstates;istate++) {
-                    if(Kptr[kpt]->Kstates[istate].occupation[0] > 0.0) {
-                        Kptr[kpt]->mean_occ_res += Kptr[kpt]->Kstates[istate].res;
-                        if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_occ_res)  Kptr[kpt]->max_occ_res = Kptr[kpt]->Kstates[istate].res;
-                        if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_occ_res)  Kptr[kpt]->min_occ_res = Kptr[kpt]->Kstates[istate].res;
-                        Kptr[kpt]->highest_occupied = istate;
-                    }
-                    else {
+        if(Verify ("freeze_occupied", true, Kptr[kpt]->ControlMap)) {
+
+            // Orbital residual measures (used for some types of calculations
+            Kptr[kpt]->max_unocc_res_index = (int)(ct.gw_residual_fraction * (double)Kptr[kpt]->nstates);
+            Kptr[kpt]->mean_occ_res = 0.0;
+            Kptr[kpt]->min_occ_res = DBL_MAX;
+            Kptr[kpt]->max_occ_res = 0.0;
+            Kptr[kpt]->mean_unocc_res = 0.0;
+            Kptr[kpt]->min_unocc_res = DBL_MAX;
+            Kptr[kpt]->max_unocc_res = 0.0;
+            Kptr[kpt]->highest_occupied = 0;
+            for(int istate = 0;istate < Kptr[kpt]->nstates;istate++) {
+                if(Kptr[kpt]->Kstates[istate].occupation[0] > 0.0) {
+                    Kptr[kpt]->mean_occ_res += Kptr[kpt]->Kstates[istate].res;
+                    mean_occ_res += Kptr[kpt]->Kstates[istate].res;
+                    if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_occ_res)  Kptr[kpt]->max_occ_res = Kptr[kpt]->Kstates[istate].res;
+                    if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_occ_res)  Kptr[kpt]->min_occ_res = Kptr[kpt]->Kstates[istate].res;
+                    if(Kptr[kpt]->Kstates[istate].res >  max_occ_res)  max_occ_res = Kptr[kpt]->Kstates[istate].res;
+                    if(Kptr[kpt]->Kstates[istate].res <  min_occ_res)  min_occ_res = Kptr[kpt]->Kstates[istate].res;
+                    Kptr[kpt]->highest_occupied = istate;
+                }
+                else {
+                    if(istate <= Kptr[kpt]->max_unocc_res_index) {
                         Kptr[kpt]->mean_unocc_res += Kptr[kpt]->Kstates[istate].res;
+                        mean_unocc_res += Kptr[kpt]->Kstates[istate].res;
                         if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_unocc_res)  Kptr[kpt]->max_unocc_res = Kptr[kpt]->Kstates[istate].res;
                         if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_unocc_res)  Kptr[kpt]->min_unocc_res = Kptr[kpt]->Kstates[istate].res;
+                        if(Kptr[kpt]->Kstates[istate].res >  max_unocc_res)  max_unocc_res = Kptr[kpt]->Kstates[istate].res;
+                        if(Kptr[kpt]->Kstates[istate].res <  min_unocc_res)  min_unocc_res = Kptr[kpt]->Kstates[istate].res;
                     }
                 }
-                Kptr[kpt]->mean_occ_res = Kptr[kpt]->mean_occ_res / (double)(Kptr[kpt]->highest_occupied + 1);
-                Kptr[kpt]->mean_unocc_res = Kptr[kpt]->mean_unocc_res / (double)(Kptr[kpt]->nstates - (Kptr[kpt]->highest_occupied + 1));
-
-                rmg_printf("Mean/Min/Max unoccupied wavefunction residual for kpoint %d  =  %10.5e  %10.5e  %10.5e\n", kpt, Kptr[kpt]->mean_unocc_res, Kptr[kpt]->min_unocc_res, Kptr[kpt]->max_unocc_res);
-
             }
+            Kptr[kpt]->mean_occ_res = Kptr[kpt]->mean_occ_res / (double)(Kptr[kpt]->highest_occupied + 1);
+            Kptr[kpt]->mean_unocc_res = Kptr[kpt]->mean_unocc_res / (double)(Kptr[kpt]->max_unocc_res_index -(Kptr[kpt]->highest_occupied + 1));
+            mean_occ_res = mean_occ_res / (double)(ct.num_kpts*(Kptr[kpt]->highest_occupied + 1));
+            mean_unocc_res = mean_unocc_res / (double)(ct.num_kpts*Kptr[kpt]->max_unocc_res_index -(Kptr[kpt]->highest_occupied + 1));
+
+            rmg_printf("Mean/Min/Max unoccupied wavefunction residual for kpoint %d  =  %10.5e  %10.5e  %10.5e\n", kpt, Kptr[kpt]->mean_unocc_res, Kptr[kpt]->min_unocc_res, Kptr[kpt]->max_unocc_res);
 
         }
+
 
         /*wavefunctions have changed, projectors have to be recalculated */
         RT1 = new RmgTimer("Scf steps: Beta x psi");
