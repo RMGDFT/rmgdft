@@ -1,0 +1,26 @@
+rm -rf ../rmg-release
+mkdir ../rmg-release
+sed -n '/rmg-on/!p' CMakeLists.txt >temp
+sed -n '/rmg-negf/!p' temp > temp1
+sed -n '/TDDFT/!p' temp1 >temp
+sed -n '/NEGF/!p' temp >temp1
+sed -n '/TestLib/!p' temp1 >temp
+sed -n '/ON\//!p' temp >temp1
+sed -n '/rmg-tddft/!p' temp1 > ../rmg-release/CMakeLists.txt 
+rm temp temp1
+cp -r cmake ../rmg-release
+cp -r Finite_diff ../rmg-release
+cp -r Force ../rmg-release
+cp -r Headers ../rmg-release
+cp -r Input ../rmg-release
+cp -r InternalPseudo ../rmg-release
+cp -r lib ../rmg-release
+cp make_conf.h.in ../rmg-release
+cp -r MG ../rmg-release
+cp -r Misc ../rmg-release
+cp -r RMG ../rmg-release
+cp -r RmgLib ../rmg-release
+cp -r US_PP ../rmg-release
+cp -r XC_useLIBXC ../rmg-release
+cp make_conf.h.in ../rmg-release
+cp svnrev.h.in ../rmg-release

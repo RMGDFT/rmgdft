@@ -583,18 +583,25 @@ configure_file (
   )
 
 execute_process (
-    COMMAND svn info OUTPUT_VARIABLE foo)
-string(REPLACE "Last Changed" ";" foo2 ${foo})
-list(GET foo2 2 foo3)
-string(REPLACE ":" ";" foo4 ${foo3})
-list(GET foo4 1 CodeRevision)
-
-list(GET foo2 3 foo3)
-string(REPLACE " " ";" foo4 ${foo3})
-list(GET foo4 2 LastChangeDate)
-execute_process (
-    COMMAND date OUTPUT_VARIABLE foo5)
+  COMMAND date OUTPUT_VARIABLE foo5)
 string(REPLACE "\n" "" BuildDate ${foo5})
+
+set (Use_svn 1)
+if(Use_svn)
+  execute_process (
+      COMMAND svn info OUTPUT_VARIABLE foo)
+  string(REPLACE "Last Changed" ";" foo2 ${foo})
+  list(GET foo2 2 foo3)
+  string(REPLACE ":" ";" foo4 ${foo3})
+  list(GET foo4 1 CodeRevision)
+
+  list(GET foo2 3 foo3)
+  string(REPLACE " " ";" foo4 ${foo3})
+  list(GET foo4 2 LastChangeDate)
+else(Use_svn)
+  set(CodeRevision "\"release 0.0\"")
+  set(LastChangeDate ${BuildDate})
+endif(Use_svn)
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/svnrev.h.in"
