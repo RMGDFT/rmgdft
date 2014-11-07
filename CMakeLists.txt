@@ -25,22 +25,22 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(DEFINED ENV{CRAY_LIBSCI})
     set (CRAY_XK 1)
-#set (RMG_GPU_ENABLED 1)
 endif()
 
-option (RMG_GPU_ENABLED "Use GPU acceleration." OFF)
+set (RMG_GPU_ENABLED 0)
+set (RMG_MAGMA_LIBS 0) 
+
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
-   set (MAGMA_LIBS 1)
+   if(RMG_MAGMA_LIBS)
+      set (MAGMA_LIBS 1)
+   else (RMG_MAGMA_LIBS)
+      set (MAGMA_LIBS 0)
+   endif(RMG_MAGMA_LIBS) 
 else (RMG_GPU_ENABLED)
    set (GPU_ENABLED 0)
    set (MAGMA_LIBS 0)
 endif(RMG_GPU_ENABLED)
-
-option (RMG_MAGMA_LIBS "Use MAGMA libraries." OFF)
-if (NOT RMG_MAGMA_LIBS)
-    set (MAGMA_LIBS 0)
-endif(NOT RMG_MAGMA_LIBS)
 
 set(CMAKE_FIND_ROOT_PATH 
 /opt/fftw/default/x86_64     #fftw3 path for bluewater
