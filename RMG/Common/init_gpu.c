@@ -36,7 +36,7 @@
     #include <cublas_v2.h>
 
     #if MAGMA_LIBS
-        #include <magma/magma.h>
+        #include <magma.h>
     #endif
 
 void rmg_printout_devices( )
