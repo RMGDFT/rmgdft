@@ -424,7 +424,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 OrbitalType t5;
                 t5 = t1 * (OrbitalType)res_t[idx] - (OrbitalType)work1_t[idx];
-                t2 += std::abs(t5 * t5);
+                t2 += std::norm(t5);
                 tmp_psi_t[idx] += t4 * t5;
 
             }
@@ -436,8 +436,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 if(freeze_occupied) {
                     t2 = RmgSumAll (t2, pct.grid_comm);
                     t1 = (double) (ct.psi_nbasis);
-                    sp->res = ct.hmaxgrid * ct.hmaxgrid * sqrt (t2 / t1) * 0.25;
-                    if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
+                    sp->res = sqrt (t2 / t1);
+                    //if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
                 }
 
             }

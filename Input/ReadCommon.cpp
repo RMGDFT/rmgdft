@@ -392,7 +392,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of global grid post-smoothing steps to perform after a multigrid preconditioner iteration.\n",
                      "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2.\n");
 
-    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 3, 1,
+    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 1,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner.\n",
                      "kohn_sham_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
@@ -437,10 +437,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
                      "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25.\n");
 
-    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 3, 2,
+    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 4, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of multigrid levels to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mg_levels must lie in the range (0,3). Resetting to the default value of 2.\n");
+                     "kohn_sham_mg_levels must lie in the range (0,4). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
