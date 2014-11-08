@@ -132,7 +132,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
 
     If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, REQUIRED, 
-                     "Three-D (x,y,z) layout of the MPI processes.\n", 
+                     "Three-D (x,y,z) dimensions of the grid the wavefunctions are defined on.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n");
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
@@ -509,7 +509,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Proportion of the current charge density to replace with the new density after each scf step.\n",
+                     "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used.\n",
                      "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
 
     If.RegisterInputKey("projector_mixing", &lc.prjmix, 0.0, 1.0, 0.5,
@@ -546,7 +546,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
                         "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.");
 
-    If.RegisterInputKey("initial_diagonalization", &lc.initdiag, false, 
+    If.RegisterInputKey("initial_diagonalization", &lc.initdiag, true, 
                         "Perform initial subspace diagonalization.");
 
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 

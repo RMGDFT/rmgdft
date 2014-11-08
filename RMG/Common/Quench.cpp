@@ -38,7 +38,9 @@
  */
 
 
-
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -52,6 +54,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
+#include "RmgException.h"
 #include "Kpoint.h"
 #include "transition.h"
 #include "../Headers/prototypes.h"
@@ -65,6 +68,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 {
 
     bool CONVERGED;
+    std::vector<double> RMSdV;
+
     int numacc = 1, ic;
     /*int ist, ik;
        double KE; */
@@ -82,7 +87,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
         /* perform a single self-consistent step */
-        CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.boundaryflag, Kptr);
+        CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.boundaryflag, Kptr, RMSdV);
 
 
 	GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
@@ -130,6 +135,30 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 //    wvfn_residual (Kptr[0]->kstates);
 
 
+    // Output RMSdV for convergence analysis
+    if(pct.imgpe == 0) {
+        // Write out convergence file
+        std::string ConvergenceFile(ct.basename);
+        ConvergenceFile = ConvergenceFile + ".rmsdv.xmgr";
+        mode_t mode = O_CREAT |O_TRUNC |O_RDWR;
+        if(ct.md_steps > 0) mode = O_RDWR | O_APPEND;
+
+        int fhand = open(ConvergenceFile.c_str(), mode, S_IREAD | S_IWRITE);
+        if (fhand < 0)
+            throw RmgFatalException() <<  "Unable to write file in " << __FILE__ << " at line " << __LINE__ << "\n";
+        char tbuf[100];
+
+        int idx = 0;
+        snprintf(tbuf, sizeof(tbuf), "@    title \"RMG convergence plot\"\n@    xaxis  label \"SCF steps\"@    yaxis  label \"log10(RMSdV)\"\n");
+
+        for(auto it = RMSdV.begin();it != RMSdV.end();it++) {
+            snprintf(tbuf, sizeof(tbuf), "%d %12.6f\n", idx, log10(*it));
+            write(fhand, tbuf, strlen(tbuf));
+            idx++;
+        }
+
+    }
+        
 
 
     /*When running MD, force pointers need to be rotated before calculating new forces */

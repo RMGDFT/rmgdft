@@ -71,14 +71,14 @@ static int firststep = true;
 
 template bool Scf<double> (double *, double *, double *,
           double *, double *, double *, double *, double *, int ,
-          int , int , int , Kpoint<double> **);
+          int , int , int , Kpoint<double> **, std::vector<double> &);
 template bool Scf<std::complex<double> > (double *, double *, double *,
           double *, double *, double *, double *, double *, int ,
-          int , int , int , Kpoint<std::complex<double>> **);
+          int , int , int , Kpoint<std::complex<double>> **, std::vector<double> &);
 
 template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr)
+          int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
 
     RmgTimer RT0("Scf steps");
@@ -199,6 +199,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         rmg_printf ("SCF CHECKS: <rho dv>  = %15.8e\n", t[0]);
         //progress_tag ();
         rmg_printf ("SCF CHECKS: RMS[dv]   = %15.8e\n", t[1]);
+        RMSdV.emplace_back(t[1]);
         //progress_tag ();
         rmg_printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
     }
