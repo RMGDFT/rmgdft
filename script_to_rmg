@@ -22,5 +22,6 @@ cp -r RMG ../rmg-release
 cp -r RmgLib ../rmg-release
 cp -r US_PP ../rmg-release
 cp -r XC_useLIBXC ../rmg-release
+cp -r ../Examples ../rmg-release
 cp make_conf.h.in ../rmg-release
 cp svnrev.h.in ../rmg-release
