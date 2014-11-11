@@ -147,8 +147,14 @@ std::string InputKey::Print(void) {
 
     if(this->KeyType == typeid(double).hash_code()) {
         std::ostringstream ss;
-        ss << std::fixed << std::setprecision(8);
-        ss << *this->Readdoubleval;
+        if(fabs(*this->Readdoubleval) > 0.0001) {
+            ss << std::fixed << std::setprecision(8);
+            ss << *this->Readdoubleval;
+        }
+        else {
+            ss << std::scientific << std::setprecision(8);
+            ss << *this->Readdoubleval;
+        }
         return ss.str();
         //return boost::lexical_cast<std::string>(*this->Readdoubleval);
     }
