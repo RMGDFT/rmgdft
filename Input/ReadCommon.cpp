@@ -804,8 +804,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
             }
             token++;
             if(token == 3) token = 0;
-            //if(pct.imgpe == 0)std::cout << *it << " " << pelc.pe_x << " " << pelc.pe_y << " " << pelc.pe_z << std::endl;
         }
+        if(pct.imgpe == 0)std::cout << "Auto processor grid settings: NPES=" <<  NPES << " PE_X=" << pelc.pe_x << " PE_Y=" << pelc.pe_y << " PE_Z=" << pelc.pe_z << std::endl;
 
     }
 
