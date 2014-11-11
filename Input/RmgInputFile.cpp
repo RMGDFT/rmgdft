@@ -113,7 +113,8 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, i
 void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, RmgInput::ReadVector<int> *Defintvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
     InputKey *NewKey = new InputKey(KeyName, V, Defintvec, count, Required, helpmsg, errmsg);
     if(!Required) {
-        for(int i = 0;i < count;i++) V->vals = Defintvec->vals;
+//        for(int i = 0;i < count;i++) NewKey->Vint.vals = Defintvec->vals;
+NewKey->Vint.vals = Defintvec->vals;
     }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
@@ -122,7 +123,8 @@ void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<in
 void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
     InputKey *NewKey = new InputKey(KeyName, V, Defdblvec, count, Required, helpmsg, errmsg);
     if(!Required) {
-        for(int i = 0;i < count;i++) V->vals = Defdblvec->vals;
+//        for(int i = 0;i < count;i++) NewKey->Vdouble.vals = Defdblvec->vals;
+NewKey->Vdouble.vals = Defdblvec->vals;
     }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
@@ -169,15 +171,15 @@ void RmgInputFile::LoadInputKeys(void) {
                 control.add_options() (KeyName.c_str(), po::value<double>(Ik->Readdoubleval)->required(), Ik->helpmsg);
 
             if(Ik->KeyType == typeid(std::string).hash_code()) {
-                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
-                control.add_options() (KeyName.c_str(), po::value<std::string>(Ik->Readstr)->required(), Ik->helpmsg);
+                boost::trim_if(Ik->Readstr, boost::algorithm::is_any_of("\"^"));
+                control.add_options() (KeyName.c_str(), po::value<std::string>(&Ik->Readstr)->required(), Ik->helpmsg);
             }
 
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Vint)->required(), Ik->helpmsg);
+                control.add_options() (KeyName.c_str(), po::value(&Ik->Vint)->required(), Ik->helpmsg);
 
             if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Vdouble)->required(), Ik->helpmsg);
+                control.add_options() (KeyName.c_str(), po::value(&Ik->Vdouble)->required(), Ik->helpmsg);
 
         }
         else {
@@ -192,15 +194,15 @@ void RmgInputFile::LoadInputKeys(void) {
                 control.add_options() (KeyName.c_str(), po::value<bool>(Ik->Readboolval)->default_value(Ik->Defboolval), Ik->helpmsg);
 
             if(Ik->KeyType == typeid(std::string).hash_code()) {
-                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
-                control.add_options() (KeyName.c_str(), po::value<std::string>(Ik->Readstr)->default_value(Ik->Defstr), Ik->helpmsg);
+                boost::trim_if(Ik->Readstr, boost::algorithm::is_any_of("\"^"));
+                control.add_options() (KeyName.c_str(), po::value<std::string>(&Ik->Readstr)->default_value(Ik->Defstr), Ik->helpmsg);
             }
 
             if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Vint), Ik->helpmsg);
+                control.add_options() (KeyName.c_str(), po::value(&Ik->Vint), Ik->helpmsg);
 
             if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code())
-                control.add_options() (KeyName.c_str(), po::value(Ik->Vdouble), Ik->helpmsg);
+                control.add_options() (KeyName.c_str(), po::value(&Ik->Vdouble), Ik->helpmsg);
 
         }
         
@@ -230,15 +232,17 @@ void RmgInputFile::LoadInputKeys(void) {
         if((Ik->Fix == CHECK_AND_FIX) && (Ik->KeyType==typeid(double).hash_code())) CheckAndFix<double>(Ik->Readdoubleval, Ik->Mindoubleval, Ik->Maxdoubleval, Ik->Defdoubleval, Ik->errmsg);
         
         if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) {
-            if(Ik->Vint->vals.size() != Ik->count) {
-                throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
+            if(Ik->Vint.vals.size() != Ik->count) {
+                throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
             }
+            *Ik->Vintorig = Ik->Vint;
         }
 
         if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
-            if(Ik->Vdouble->vals.size() != Ik->count) {
-                throw RmgFatalException() << Ik->KeyName << Ik->errmsg;
+            if(Ik->Vdouble.vals.size() != Ik->count) {
+                throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
             }
+            *Ik->Vdoubleorig = Ik->Vdouble;
         }
 
         if(Ik->KeyType == typeid(std::string).hash_code()) {
@@ -246,17 +250,19 @@ void RmgInputFile::LoadInputKeys(void) {
             // Trim quotes
             if(Ik->MapPresent) {
                 // enumerated string so check if the value is allowed
-                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
-                if(Ik->Range.count(*Ik->Readstr) == 0) {
+                boost::trim_if(Ik->Readstr, boost::algorithm::is_any_of("\"^"));
+                if(Ik->Range.count(Ik->Readstr) == 0) {
                     throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
                 }
                 // If integer val associated with the enum is desired set it
-                if(Ik->Readintval) *Ik->Readintval = Ik->Range[*Ik->Readstr];
+                if(Ik->Readintval) *Ik->Readintval = Ik->Range[Ik->Readstr];
+                if(Ik->Readstrorig) *Ik->Readstrorig = Ik->Readstr;
                 
             }
             else {
                 // regular string
-                boost::trim_if(*Ik->Readstr, boost::algorithm::is_any_of("\"^"));
+                boost::trim_if(Ik->Readstr, boost::algorithm::is_any_of("\"^"));
+                if(Ik->Readstrorig) *Ik->Readstrorig = Ik->Readstr;
                 //std::cout << *Ik->Readstr << std::endl;
 
             }
@@ -439,6 +445,18 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
         InputPairs.insert(NewEntry);
     }
 
+//    if(pct.imgpe == 0) {
+
+        // Write out options file
+//        std::string OptionsFile(ct.basename);
+//        OptionsFile = OptionsFile + ".options";
+
+//        FILE *fhand = fopen(OptionsFile.c_str(), "w");
+//        if (!fhand)
+//            throw RmgFatalException() <<  "Unable to write file in " << __FILE__ << " at line " << __LINE__ << "\n";
+//        fprintf(fhand, "%s", outbuf.c_str());
+//        fclose(fhand);
+//    }
     //std::cout << outbuf << std::endl;exit(0);
 
 }

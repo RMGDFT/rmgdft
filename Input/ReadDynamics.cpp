@@ -97,7 +97,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         std::string delims = "\r\n^";
         std::string field_delims = " \t";
         Key = InputMap.at("pseudopotential");
-        boost::algorithm::split( lines, *Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
+        boost::algorithm::split( lines, Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
         std::vector<std::string>::iterator it;
         for (it = lines.begin(); it != lines.end(); ++it) {
             std::string pline = *it;

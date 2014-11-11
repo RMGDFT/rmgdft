@@ -2,6 +2,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
+#include <sstream>
+#include <iomanip>
 #include "InputKey.h"
 
 // This is a rather kludgy way of doing this but I didn't have much luck getting
@@ -14,7 +16,7 @@
 // some means of tracking whether or not the memory needs to be freed in the des
 
 // ints
-InputKey::InputKey(std::string& KeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -33,7 +35,7 @@ InputKey::InputKey(std::string& KeyName, int *ReadVal, int Minval, int Maxval, i
 }
 
 // doubles
-InputKey::InputKey(std::string& KeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -52,7 +54,7 @@ InputKey::InputKey(std::string& KeyName, double *ReadVal, double Minval, double 
 }
 
 // booleans
-InputKey::InputKey(std::string& KeyName, bool *ReadVal, bool Defval, const char *helpmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -68,13 +70,12 @@ InputKey::InputKey(std::string& KeyName, bool *ReadVal, bool Defval, const char 
 }
 
 // Regular string
-InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
 
-    if(!ReadStr) {
-        allocated = true;
-        ReadStr = new std::string[1];
+    if(ReadStr) {
+        InputKey::Readstr = *ReadStr;
     }
-    InputKey::Readstr = ReadStr;
+    InputKey::Readstrorig = ReadStr;
     InputKey::Defstr = Defstr;
     InputKey::Fix = Fix;
     InputKey::Required = Required;
@@ -86,13 +87,12 @@ InputKey::InputKey(std::string& KeyName, std::string *ReadStr, const char *Defst
 }
 
 // Enumerated string
-InputKey::InputKey(std::string& KeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
 
-    if(!ReadStr) {
-        allocated = true;
-        ReadStr = new std::string[1];
+    if(ReadStr) {
+        InputKey::Readstr = *ReadStr;
     }
-    InputKey::Readstr = ReadStr;
+    InputKey::Readstrorig = ReadStr;
     InputKey::Readintval = ReadVal;
     InputKey::Range = Allowed;
     InputKey::Defstr = Defstr;
@@ -106,34 +106,36 @@ InputKey::InputKey(std::string& KeyName, std::string *ReadStr, int *ReadVal, con
 }
 
 // Integer vector
-InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(NewKeyName) {
 
     if(!V) {
         allocated = true;
         V = new RmgInput::ReadVector<int>[1];
     }
-    InputKey::Vint = V;
+    InputKey::Vintorig = V;
+    InputKey::Vint = *V;
     InputKey::Required = Required;
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::count = count;
-    InputKey::Defintvec = Defintvec;
+    InputKey::Defintvec = *Defintvec;
     InputKey::KeyType = typeid(RmgInput::ReadVector<int>).hash_code();
 }
 
 // Double vector
-InputKey::InputKey(std::string& KeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(KeyName) {
+InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(NewKeyName) {
 
     if(!V) {
         allocated = true;
         V = new RmgInput::ReadVector<double>[1];
     }
-    InputKey::Vdouble = V;
+    InputKey::Vdoubleorig = V;
+    InputKey::Vdouble = *V;
     InputKey::Required = Required;
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::count = count;
-    InputKey::Defdblvec = Defdblvec;
+    InputKey::Defdblvec = *Defdblvec;
     InputKey::KeyType = typeid(RmgInput::ReadVector<double>).hash_code();
 
 }
@@ -143,21 +145,27 @@ std::string InputKey::Print(void) {
     if(this->KeyType == typeid(int).hash_code())
         return boost::lexical_cast<std::string>(*this->Readintval);
 
-    if(this->KeyType == typeid(double).hash_code())
-        return boost::lexical_cast<std::string>(*this->Readdoubleval);
+    if(this->KeyType == typeid(double).hash_code()) {
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(8);
+        ss << *this->Readdoubleval;
+        return ss.str();
+        //return boost::lexical_cast<std::string>(*this->Readdoubleval);
+    }
 
     if(this->KeyType == typeid(bool).hash_code()) {
         if(*this->Readboolval) return "true";
         return "false";
     }
 
-    if(this->KeyType == typeid(std::string).hash_code())
-        return *this->Readstr;
+    if(this->KeyType == typeid(std::string).hash_code()) {
+        return this->Readstr;
+    }
 
     if(this->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) {
         std::string rstr("\"");
-        for(int i = 0;i < this->count;i++)
-            rstr = rstr + boost::lexical_cast<std::string>(this->Vint->vals.at(i)) + "  ";
+        for(size_t i = 0;i < this->count;i++)
+            rstr = rstr + boost::lexical_cast<std::string>(this->Vint.vals.at(i)) + "  ";
 
         rstr = rstr + "\"";
         return rstr;
@@ -165,8 +173,8 @@ std::string InputKey::Print(void) {
 
     if(this->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
         std::string rstr("\"");
-        for(int i = 0;i < this->count;i++)
-            rstr = rstr + boost::lexical_cast<std::string>(this->Vdouble->vals.at(i)) + "  ";
+        for(size_t i = 0;i < this->count;i++)
+            rstr = rstr + boost::lexical_cast<std::string>(this->Vdouble.vals.at(i)) + "  ";
 
         rstr = rstr + "\"";
         return rstr;

@@ -176,11 +176,11 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         // Openbabel always uses Angstroms and absolute coordinates
         InputKey *Ik = InputMap["crds_units"]; 
         static std::string Angstroms("Angstrom");
-        Ik->Readstr = &Angstroms;
+        Ik->Readstr = Angstroms;
 
         Ik = InputMap["atomic_coordinate_type"]; 
         static std::string AbsoluteCoords("Absolute");
-        Ik->Readstr = &AbsoluteCoords;
+        Ik->Readstr = AbsoluteCoords;
     }
 
 #else

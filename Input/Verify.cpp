@@ -18,7 +18,7 @@ bool Verify(const std::string& KeyName, const std::string& KeyVal, const std::un
     if(Key->KeyType != typeid(std::string).hash_code()) return false;
 
     // Types match so check if vals match
-    if(KeyVal.compare(*Key->Readstr)) return false;
+    if(KeyVal.compare(Key->Readstr)) return false;
     
     return true;
 }

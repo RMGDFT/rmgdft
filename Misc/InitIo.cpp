@@ -43,6 +43,7 @@
 #include "transition.h"
 #include "macros.h"
 #include "GlobalSums.h"
+#include "RmgException.h"
 #include "InputKey.h"
 #include "hybrid.h"
 
@@ -105,7 +106,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         // Always use absolute coords in restart file
         InputKey *Ik = ControlMap["atomic_coordinate_type"];
         static std::string AbsoluteCoords("Absolute");
-        Ik->Readstr = &AbsoluteCoords;
+        Ik->Readstr = AbsoluteCoords;
     }
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
@@ -188,6 +189,28 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     Rmg_T->set_MPI_comm(pct.grid_comm);
 
     GlobalSumsInit();
+
+    // Write a copy of the options file
+    if(pct.imgpe == 0) {
+
+        // Write out options file
+        std::string OptionsFile(ct.basename);
+        OptionsFile = OptionsFile + ".options";
+
+        FILE *fhand = fopen(OptionsFile.c_str(), "w");
+        if (!fhand)
+            throw RmgFatalException() <<  "Unable to write file in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+        for(auto it = ControlMap.begin();it != ControlMap.end(); ++it) {
+
+            std::string KeyName = it->first;
+            InputKey *ik = it->second;
+            std::string KeyVal = ik->Print();
+            fprintf(fhand, "%s = \"%s\"\n", KeyName.c_str(), KeyVal.c_str());fflush(NULL);
+        }
+
+        fclose(fhand);
+    }
 
 
 }
