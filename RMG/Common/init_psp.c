@@ -126,13 +126,22 @@ void init_psp (void)
 
 
         /*Get nldim */
-        sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
-        sp->nldim = sp->nldim/2*2 +1;
-        sp->nlfdim = ct.nxfgrid * sp->nldim;
-        
-	if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID())
-            || (sp->nldim >= get_NZ_GRID()))
-            error_handler ("Non-local potential radius exceeds global grid size");
+        int done = false;
+        while(!done) {
+
+            sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
+            sp->nldim = sp->nldim/2*2 +1;
+            sp->nlfdim = ct.nxfgrid * sp->nldim;
+            
+            if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
+                printf("Warning: diameter of non-local projectors %8.4f exceeds cell size. Reducing.\n", sp->nlradius);
+                sp->nlradius *= 0.95;
+            }
+            else {
+                done = true;
+            }
+
+        }
 
         /*Get drnlig */
         sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
