@@ -82,6 +82,18 @@ namespace po = boost::program_options;
 
 **********************************************************************/
 
+
+// Auxiliary function to get all factors of an integer
+void GetFactors(std::vector<int>& factors, int val) {
+    int stop = val;
+    for(int i = 2;i <= NPES;i++) {
+       while( !(val % i) ) {
+           factors.push_back(i);
+           val = val / i;
+       }
+    }
+}
+
 namespace Ri = RmgInput;
 
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
@@ -95,7 +107,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string Outfile;
  
     Ri::ReadVector<int> ProcessorGrid;
-    Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
+    Ri::ReadVector<int> DefProcessorGrid({{0,0,0}});
     Ri::ReadVector<int> WavefunctionGrid;
     Ri::ReadVector<int> DefWavefunctionGrid({{1,1,1}});
     Ri::ReadVector<int> kpoint_mesh;
@@ -127,7 +139,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Output file/path to store wavefunctions and other binary data.\n", 
                      "");
 
-    If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, REQUIRED, 
+    If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
 
@@ -699,21 +711,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Currently, fine grid has to be the same in each direction
     lc.nzfgrid = lc.nyfgrid = lc.nxfgrid;
 
-    try {
-        pelc.pe_x = ProcessorGrid.vals.at(0);
-        pelc.pe_y = ProcessorGrid.vals.at(1);
-        pelc.pe_z = ProcessorGrid.vals.at(2);
-    }
-    catch (const std::out_of_range& oor) {
-        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n";
-    }
-    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + std::to_string(pelc.pe_x) + " and only postive values are allowed.");
-    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + std::to_string(pelc.pe_y) + " and only postive values are allowed.");
-    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + std::to_string(pelc.pe_z) + " and only postive values are allowed.");
-
-   // Check that NPES matches
-   if(NPES != (pelc.pe_x * pelc.pe_y * pelc.pe_z))
-        throw RmgFatalException() << "NPES value of " << NPES << " is not equal to PE_X*PE_Y*PE_Z! " << pelc.pe_x << " " << pelc.pe_y << " " << pelc.pe_z << "\n";
 
     int NX_GRID=1, NY_GRID=1, NZ_GRID=1;
     try {
@@ -727,6 +724,41 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
+
+    // If Processor grid is not specified or is specified incorrectly then we try to set it automatically
+    pelc.pe_x = ProcessorGrid.vals.at(0);
+    pelc.pe_y = ProcessorGrid.vals.at(1);
+    pelc.pe_z = ProcessorGrid.vals.at(2);
+    int ReqNPES = pelc.pe_x * pelc.pe_y * pelc.pe_z; 
+    
+    if((NPES != ReqNPES) && (NPES > 1)) {
+        std::vector<int> npe_factors = {1};
+        std::vector<int> nx_factors = {1};
+        std::vector<int> ny_factors = {1};
+        std::vector<int> nz_factors = {1};
+        GetFactors(npe_factors, NPES);
+        GetFactors(nx_factors, NX_GRID);
+        GetFactors(ny_factors, NY_GRID);
+        GetFactors(nz_factors, NZ_GRID);
+        for(auto it = nx_factors.begin();it != nx_factors.end(); ++it) {
+            std::cout << "YYY " << *it << std::endl;
+        }
+
+    }
+
+
+    if(NPES == 1) {
+        pelc.pe_x = 1;
+        pelc.pe_y = 1;
+        pelc.pe_z = 1;
+    }
+
+
+    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + std::to_string(pelc.pe_x) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + std::to_string(pelc.pe_y) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + std::to_string(pelc.pe_z) + " and only postive values are allowed.");
+
+
 
     // Set grid info up
     Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, FG_RATIO);
