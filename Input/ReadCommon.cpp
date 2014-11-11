@@ -740,8 +740,71 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         GetFactors(nx_factors, NX_GRID);
         GetFactors(ny_factors, NY_GRID);
         GetFactors(nz_factors, NZ_GRID);
-        for(auto it = nx_factors.begin();it != nx_factors.end(); ++it) {
-            std::cout << "YYY " << *it << std::endl;
+        pelc.pe_x = 1;
+        pelc.pe_y = 1;
+        pelc.pe_z = 1;
+        int token = 0;
+        npe_factors.erase(npe_factors.begin());
+        std::reverse(npe_factors.begin(),npe_factors.end()); 
+        for(auto it = npe_factors.begin();it != npe_factors.end(); ++it) {
+            std::vector<int>::iterator nx_it, ny_it, nz_it;
+            nx_it = std::find(nx_factors.begin(), nx_factors.end(), *it);
+            ny_it = std::find(ny_factors.begin(), ny_factors.end(), *it);
+            nz_it = std::find(nz_factors.begin(), nz_factors.end(), *it);
+            if(token == 0) {
+                if(nx_it != nx_factors.end()) {
+                    pelc.pe_x *= *it;
+                    nx_factors.erase(nx_it);
+                }
+                else if(ny_it != ny_factors.end()) {
+                    pelc.pe_y *= *it;
+                    ny_factors.erase(ny_it);
+                }
+                else if(nz_it != nz_factors.end()) {
+                    pelc.pe_z *= *it;
+                    nz_factors.erase(nz_it);
+                }
+                else {
+                    pelc.pe_x *= *it;
+                }
+            }
+            else if(token == 1) {
+                if(ny_it != ny_factors.end()) {
+                    pelc.pe_y *= *it;
+                    ny_factors.erase(ny_it);
+                }
+                else if(nz_it != nz_factors.end()) {
+                    pelc.pe_z *= *it;
+                    nz_factors.erase(nz_it);
+                }
+                else if(nx_it != nx_factors.end()) {
+                    pelc.pe_x *= *it;
+                    nx_factors.erase(nx_it);
+                }
+                else {
+                    pelc.pe_y *= *it;
+                }
+            }
+            else if(token == 2) {
+                if(nz_it != nz_factors.end()) {
+                    pelc.pe_z *= *it;
+                    nz_factors.erase(nz_it);
+                }
+                else if(nx_it != nx_factors.end()) {
+                    pelc.pe_x *= *it;
+                    nx_factors.erase(nx_it);
+                }
+                else if(ny_it != ny_factors.end()) {
+                    pelc.pe_y *= *it;
+                    ny_factors.erase(ny_it);
+                }
+                else {
+                    pelc.pe_z *= *it;
+                }
+            }
+            token++;
+            if(token == 3) token = 0;
+            //if(pct.imgpe == 0)std::cout << *it << " " << pelc.pe_x << " " << pelc.pe_y << " " << pelc.pe_z << std::endl;
         }
 
     }
