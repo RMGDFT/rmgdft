@@ -93,7 +93,7 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
                 boost::trim_if(*it, boost::algorithm::is_any_of(" \t"));
                 nstr = nstr + *it;
             }
-std::cout << "FFF " << nstr << std::endl;
+//std::cout << "FFF " << nstr << std::endl;
             if(!nstr.compare("SLAPZ")) {
                 short_names.push_back("PZ");
                 lc.xctype = LDA_PZ81; 
