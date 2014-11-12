@@ -93,7 +93,6 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
                 boost::trim_if(*it, boost::algorithm::is_any_of(" \t"));
                 nstr = nstr + *it;
             }
-//std::cout << "FFF " << nstr << std::endl;
             if(!nstr.compare("SLAPZ")) {
                 short_names.push_back("PZ");
                 lc.xctype = LDA_PZ81; 
@@ -113,8 +112,15 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
             else {
                 throw RmgFatalException() << "Unknown XC type in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
             }
+            //std::cout << "FFF " << nstr << "LLL " << short_names.size() << std::endl;
             
         }
+
+        // Remove any duplicates
+        std::sort(short_names.begin(), short_names.end());
+        std::vector<std::string>::iterator it;
+        it = std::unique(short_names.begin(), short_names.end());
+        short_names.resize(std::distance(short_names.begin(),it) );
 
         if(short_names.size() > 1) {
             throw RmgFatalException() << "Error: the pseudopotentials specified in the calculation have different exchange correlation types.\nEither switch to pseudopotentials with identical exchange correlation types or set a manual override in your input file using the exchange_correlation_type option.\n";
