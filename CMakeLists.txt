@@ -608,3 +608,36 @@ configure_file (
   "${PROJECT_BINARY_DIR}/Headers/svnrev.h"
   )
 
+install(TARGETS rmg 
+DESTINATION rmg
+RUNTIME DESTINATION rmg/bin)
+
+# Packaging section next
+SET(CPACK_GENERATOR "RPM")
+
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+set(CPACK_PACKAGE_NAME "rmg")
+set(CPACK_PACKAGE_RELEASE 1)
+set(CPACK_PACKAGE_CONTACT "Emil Briggs")
+set(CPACK_PACKAGE_VENDOR "North Carolina State University")
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+
+# RPM specific tags
+set(CPACK_RPM_PACKAGE_NAME "rmg")
+set(CPACK_RPM_PACKAGE_VERSION ${COMPLETE_VERSION})
+set(CPACK_RPM_PACKAGE_RELOCATABLE "ON")
+set(CPACK_RPM_PACKAGE_SUMMARY "Ab-initio dft based electronic structure code")
+set(CPACK_RPM_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space
+ grids to represent quantities of interest such as the electronic orbitals and
+charge density.")
+set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
+set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
+set(CPACK_RPM_PACKAGE_RELEASE "OpenSuse_13.1")
+#set(CPACK_RPM_PACKAGE_REQUIRES "liblapack3 >= 3.4.0,libopenblas0 >= 0.2.8")
+
+include(CPack)
+
