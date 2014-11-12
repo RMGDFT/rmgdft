@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>  
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
@@ -19,6 +20,7 @@
 #include "params.h"
 #include "typedefs.h"
 #include "rmg_error.h"
+#include "RmgException.h"
 #include "MapElements.h"
 #include "transition.h"
 
@@ -63,14 +65,15 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
    std::string delims = " \t\n";
 
    bool uniform = true;
-   std::set<std::string> short_names;
+   std::vector<std::string> short_names;
 
    for(int isp = 0;isp < nspecies;isp++) {
 
         SPECIES *sp = &lc.sp[isp];
         std::vector<std::string> func_components;
         std::string funcstr(sp->functional);
-        boost::trim(funcstr);
+        boost::trim_if(funcstr, boost::algorithm::is_any_of(" \t"));
+        boost::to_upper(funcstr);
         boost::algorithm::split( func_components, funcstr, boost::is_any_of(delims), boost::token_compress_on );
 
         // If there is only one entry then it must be a short name so insert it
@@ -78,15 +81,47 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
 
             std::string abbr = func_components.at(0);
             boost::to_upper(abbr); 
-            short_names.emplace(abbr);
+            short_names.push_back(abbr);
 
         }
         else {
 
-
+            // Must be a long name so search for the ones we support by
+            // combining components into a single uppper case string and looking for a match
+            std::string nstr;
+            for(auto it = func_components.begin();it != func_components.end(); ++it) {
+                boost::trim_if(*it, boost::algorithm::is_any_of(" \t"));
+                nstr = nstr + *it;
+            }
+std::cout << "FFF " << nstr << std::endl;
+            if(!nstr.compare("SLAPZ")) {
+                short_names.push_back("PZ");
+                lc.xctype = LDA_PZ81; 
+            }
+            else if(!nstr.compare("SLAPWPBXPBC")) {
+                short_names.push_back("PBE");
+                lc.xctype = GGA_PBE;
+            }
+            else if(!nstr.compare("SLAPWPBEPBE")) {
+                short_names.push_back("PBE");
+                lc.xctype = GGA_PBE;
+            }
+            else if(!nstr.compare("SLAB88LYPBLYP")) {
+                short_names.push_back("BLYP");
+                lc.xctype = GGA_BLYP;
+            }
+            else {
+                throw RmgFatalException() << "Unknown XC type in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
+            }
+            
         }
-    
 
+        if(short_names.size() > 1) {
+            throw RmgFatalException() << "Error: the pseudopotentials specified in the calculation have different exchange correlation types.\nEither switch to pseudopotentials with identical exchange correlation types or set a manual override in your input file using the exchange_correlation_type option.\n";
+        }
+        if(short_names.size() == 0) {
+            throw RmgFatalException() << "No supported exchange_correlation_type found in the specified pseudopotentials. Try setting a manual override in your input file if you wish to use these pseudopotentials.\n";
+        }
    }
 
 }
