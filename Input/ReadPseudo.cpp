@@ -109,6 +109,14 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
                 short_names.push_back("BLYP");
                 lc.xctype = GGA_BLYP;
             }
+            else if(!nstr.compare("B88P86")) {
+                short_names.push_back("BP");
+                lc.xctype = GGA_XB_CP;
+            }
+            else if(!nstr.compare("SLAPWGGXGGC")) {
+                short_names.push_back("pw91");
+                lc.xctype = GGA_XP_CP;
+            }
             else {
                 throw RmgFatalException() << "Unknown XC type in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
             }
