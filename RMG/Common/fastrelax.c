@@ -44,11 +44,12 @@ void fastrelax (rmg_double_t *dt, rmg_double_t dt_max, rmg_double_t dt_inc, rmg_
     double mass, magf, dotfv, force[3];
     double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
     double move_x, move_y, move_z, move_sq, move, p = 0.0;
+    bool set = true;
 
 
     fpt = ct.fpt[0];
 
-    if (verify_boolean("relax_dynamic_timestep",&SET))
+    if (verify_boolean("relax_dynamic_timestep",&set))
     {
 
         for (ion = 0; ion < ct.num_ions; ion++)

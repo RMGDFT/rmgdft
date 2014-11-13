@@ -46,10 +46,10 @@
 
 /*For a quantity localized around ionic positions, this function finds radius in number of grid points
  * given a radius in a.u.*/
-int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing)
+int radius2grid (double radius, double mingrid_spacing)
 {
 
-    rmg_double_t scale, t1, t2;
+    double scale, t1, t2;
     int it1, dim, ibrav;
 
     ibrav = get_ibrav_type();
@@ -77,22 +77,23 @@ int radius2grid (rmg_double_t radius, rmg_double_t mingrid_spacing)
 void init_psp (void)
 {
 
-    int isp, idx, ip, write_flag, ibrav;
+    int isp, idx, ip, ibrav;
+    bool write_flag;
     SPECIES *sp;
-    rmg_double_t *work, *workr, Zv, rc, rfil, t1;
-    rmg_double_t rcut, exp_fac;
+    double *work, *workr, Zv, rc, rfil, t1;
+    double rcut, exp_fac;
     char newname[MAX_PATH];
     FILE *psp = NULL;
     FILE *psp2 = NULL;
 
     ibrav = get_ibrav_type();
 
-    my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t);
+    my_malloc (work, MAX_RGRID + MAX_LOCAL_LIG, double);
     workr = work + MAX_RGRID;
 
     write_flag = 0;
-    if (verify_boolean ("write_pseudopotential_plots", &SET))
-        write_flag = 1;
+    bool set = true;
+    write_flag = verify_boolean ("write_pseudopotential_plots", &set);
 
     /*Initialize max_nlpoints and max_nlfpoints */
     ct.max_nlpoints = 0;
@@ -110,18 +111,18 @@ void init_psp (void)
         sp = &ct.sp[isp];
 
         /*Get ldim */
-//	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (rmg_double_t) get_FG_RATIO());
+//	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (double) get_FG_RATIO());
        // if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID())
         //    || (sp->ldim >= get_FNZ_GRID()))
         //    error_handler ("local potential radius exceeds global grid size");
 
 
         /*Get drnlig */
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)FG_NX; */
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(double)FG_NX; */
         sp->drlig = sqrt (3.0) * (sp->lradius +1.0);
         if (ibrav == HEXAGONAL)
             sp->drlig *= 2.0;
-        t1 = (rmg_double_t) MAX_LOCAL_LIG;
+        t1 = (double) MAX_LOCAL_LIG;
         sp->drlig /= t1;
 
 
@@ -147,7 +148,7 @@ void init_psp (void)
         sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
         if (ibrav == HEXAGONAL)
             sp->drnlig *= 2.0;
-        t1 = (rmg_double_t) MAX_LOCAL_LIG;
+        t1 = (double) MAX_LOCAL_LIG;
         sp->drnlig /= t1;
 
 

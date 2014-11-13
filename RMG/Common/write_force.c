@@ -47,19 +47,19 @@ void write_force (void)
     int ion;
     ION *iptr;
     int num_movable = 0, maxfx_ion = 0, maxfy_ion = 0, maxfz_ion = 0, maxf_ion = 0;
-    rmg_double_t avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
-    rmg_double_t sumx = 0.0, sumy = 0.0, sumz = 0.0;
-    rmg_double_t avf = 0.0;
-    rmg_double_t maxf = 0.0, max_all_f = 0.0;
-    rmg_double_t f2;
-    rmg_double_t *fp;
+    double avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
+    double sumx = 0.0, sumy = 0.0, sumz = 0.0;
+    double avf = 0.0;
+    double maxf = 0.0, max_all_f = 0.0;
+    double f2;
+    double *fp;
 
     printf ("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
 
-    if (verify ("atom_constraints", NULL))
-    {
-        printf ("  CONSTRAINTS ON FORCES HAVE BEEN IMPOSED:\n\n");
-    }
+//    if (verify ("atom_constraints", NULL))
+//    {
+//        printf ("  CONSTRAINTS ON FORCES HAVE BEEN IMPOSED:\n\n");
+//    }
     printf
         ("@ION Ion Species           X           Y           Z          FX          FY          FZ movable\n");
 
@@ -178,8 +178,8 @@ void write_force (void)
 
     }
 
-    if ((pct.imgpe == 0) && (verify ("pdb_atoms", NULL)))
-        write_pdb ();
+//    if ((pct.imgpe == 0) && (verify ("pdb_atoms", NULL)))
+//        write_pdb ();
 
 }                               /* end write_force */
 
