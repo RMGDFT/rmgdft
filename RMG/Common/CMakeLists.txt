@@ -34,7 +34,6 @@ MgEigState.cpp
 write_occ.c
 GetGamma.cpp
 fastrelax.c
-mix_betaxpsi1.c
 open_restart_file.c
 scalapack_tools.c
 lbfgs_init.c
