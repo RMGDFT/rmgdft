@@ -1,4 +1,5 @@
 add_library (RMG_Common
+MixRho.cpp
 WriteData.cpp
 MixBetaxpsi1.cpp
 WriteRestart.cpp
@@ -47,7 +48,6 @@ rand0.c
 get_extrapolation_constants.c
 output_wave.c
 write_header.c
-mix_rho.c
 #get_pdos.c
 bandstructure.c
 wvfn_residual.c

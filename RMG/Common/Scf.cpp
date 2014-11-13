@@ -388,7 +388,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     GetNewRho(Kptr, new_rho);
 
     /*Takes care of mixing and checks whether the charge density is negative*/
-    mix_rho(new_rho, rho, rhocore, FP0_BASIS, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID());
+    MixRho(new_rho, rho, rhocore, FP0_BASIS, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), Kptr[0]->ControlMap);
+    
 
     if (spin_flag)
 	get_rho_oppo (rho,  rho_oppo);
