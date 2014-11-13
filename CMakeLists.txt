@@ -557,6 +557,18 @@ if(MAGMA_LIBS)
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
 
+set(USE_PLPLOT_LIBS 0)
+find_package(PLplot)
+if(PLplot_LIBRARY)
+    unset (USE_PLPLOT_LIBS CACHE)
+    set(USE_PLPLOT_LIBS 1)
+    target_link_libraries (rmg ${PLplot_LIBRARIES} )
+    target_link_libraries (rmg-on ${PLplot_LIBRARIES} )
+    target_link_libraries (rmg-tddft ${PLplot_LIBRARIES} )
+    target_link_libraries (rmg-negf ${PLplot_LIBRARIES} )
+endif(PLplot_LIBRARY)
+
+
 option (RMG_GAMMA_PT "Turn on for a gamma point only calculation." ON)
 if (RMG_GAMMA_PT)
     set (GAMMA_PT 1)
@@ -624,20 +636,23 @@ set(CPACK_PACKAGE_RELEASE 1)
 set(CPACK_PACKAGE_CONTACT "Emil Briggs")
 set(CPACK_PACKAGE_VENDOR "North Carolina State University")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
 
+if(CPACK_GENERATOR STREQUAL "RPM")
 # RPM specific tags
-set(CPACK_RPM_PACKAGE_NAME "rmg")
-set(CPACK_RPM_PACKAGE_VERSION ${COMPLETE_VERSION})
-set(CPACK_RPM_PACKAGE_RELOCATABLE "ON")
-set(CPACK_RPM_PACKAGE_SUMMARY "Ab-initio dft based electronic structure code")
-set(CPACK_RPM_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space
+    set(CPACK_RPM_PACKAGE_NAME "rmg")
+    set(CPACK_RPM_PACKAGE_VERSION ${COMPLETE_VERSION})
+    set(CPACK_RPM_PACKAGE_RELOCATABLE "ON")
+    set(CPACK_RPM_PACKAGE_SUMMARY "Ab-initio dft based electronic structure code")
+    set(CPACK_RPM_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space
  grids to represent quantities of interest such as the electronic orbitals and
 charge density.")
-set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
-set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
-set(CPACK_RPM_PACKAGE_RELEASE "OpenSuse_13.1")
+    set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
+    set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
+    set(CPACK_RPM_PACKAGE_RELEASE "OpenSuse_13.1")
 #set(CPACK_RPM_PACKAGE_REQUIRES "liblapack3 >= 3.4.0,libopenblas0 >= 0.2.8")
+endif(CPACK_GENERATOR STREQUAL "RPM")
+
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${COMPLETE_VERSION}-${CPACK_PACKAGE_RELEASE}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
 
 include(CPack)
 

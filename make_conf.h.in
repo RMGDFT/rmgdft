@@ -24,3 +24,6 @@
 
 /* Use OPENBABEL libs. */
 #define OPENBABEL_LIBS ${USE_OPENBABEL_LIBS}
+
+/* Use PLPLOT. */
+#define PLPLOT_LIBS ${USE_PLPLOT_LIBS}
