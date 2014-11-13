@@ -1,0 +1,13 @@
+
+epsilon_cutoff 6.0
+
+number_bands 499
+band_occupation 15*1 484*0
+
+cell_box_truncation
+
+number_qpoints 1
+begin qpoints
+  0.000000000  0.000000000  0.000000000  1.0  1
+end
+

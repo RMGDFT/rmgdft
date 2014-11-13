@@ -1,0 +1,26 @@
+diagonalization
+
+number_val_bands_coarse 15
+number_val_bands_fine 15
+number_cond_bands_coarse 32
+number_cond_bands_fine 32
+
+coarse_grid_points 1
+
+no_symmetries_coarse_grid
+no_symmetries_fine_grid
+no_symmetries_shifted_grid
+
+screening_semiconductor
+
+cell_box_truncation
+
+use_momentum
+polarization 0.0 0.0 1.0
+
+gaussian_broadening
+energy_resolution 0.15
+
+skip_interpolation
+
+eqp_corrections

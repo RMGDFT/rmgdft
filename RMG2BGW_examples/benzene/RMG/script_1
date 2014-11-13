@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#
+#
+ln -s ../RMG/1-quench/wfn.complex ../5-gw/WFN
+ln -s ../RMG/1-quench/wfn.complex ../5-gw/WFNq
+ln -s ..//RMG/1-quench/vxc.dat ../5-gw/vxc.dat
+ln -s ../RMG/1-quench/rho.complex ../5-gw/RHO
+ln -s ../RMG/1-quench/wfn.complex ../5-gw/WFN_inner
+ln -s ../RMG/1-quench/wfn.complex ../5-gw/WFN_outer
+#
+#
