@@ -207,7 +207,6 @@ void gcxcblyp_spin (rmg_double_t rho_up, rmg_double_t rho_dw,
 void gram (KPOINT *kpoint, rmg_double_t h, int numst, int maxst, int numpt,
            int maxpt);
 int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
-rmg_double_t get_ke (STATE *sp, int tid);
 void get_vh (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target);
 char *get_symbol (int atomic_number);
 void global_sums (rmg_double_t *vect, int *length, MPI_Comm comm);
@@ -451,7 +450,6 @@ void partial_beta_fdiff (fftw_complex *beptr, int nldim, rmg_double_t *beta_x,
 void mulliken (STATE *states);
 rmg_double_t ylm(int l, rmg_double_t *r);
 int listlen (FILE * fh, char *id);
-int del_space (FILE * fh, int *tchr, int isdata);
 void print_matrix(double *b, int n, int ldb);
 void sl_init(int *ictxt, int size);
 void sl_exit(int ictxt);
@@ -469,11 +467,6 @@ int claim_ion (rmg_double_t *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgr
 int find_grid_1d_owner(int igrid, int tgrid, int pgrid);
 void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid, int nzgrid, int *xnode, int *ynode, int *znode);
 int is_loop_over_states(void);
-int rmg_is_open_mp_safe(void);
-void RMG_set_omp_parallel(void);
-void RMG_set_omp_single(void);
-void Papi_init_omp_threads(int ithread);
-void Papi_finalize_omp_threads(int ithread);
 void fastrelax (rmg_double_t *dt, rmg_double_t dt_max, rmg_double_t dt_inc, rmg_double_t dt_dec, int n_min, int *n_count);
 void fire (rmg_double_t *step, rmg_double_t step_max, rmg_double_t f_inc, rmg_double_t f_dec, int n_min, int *n_count );
 void quick_min (void);

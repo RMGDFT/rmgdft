@@ -50,7 +50,6 @@ write_header.c
 mix_rho.c
 #get_pdos.c
 bandstructure.c
-del_space.c
 wvfn_residual.c
 init_img_topo.c
 #mulliken.c
