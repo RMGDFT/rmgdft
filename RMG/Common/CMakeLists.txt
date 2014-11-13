@@ -81,7 +81,6 @@ move_ions.c
 ranv.c
 print_density_z_direction.c
 GetDerweight.cpp
-get_ke.c
 set_pbc.c
 pulay_rho.c
 init_psp.c
