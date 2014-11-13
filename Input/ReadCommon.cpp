@@ -671,6 +671,14 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if(!Outfile.length()) Outfile = "Waves/wave.out";
     std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile));
 
+    if(lc.outfile[0] !='/') 
+    {
+        char *temp = new char[255];
+        std::snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
+        std::strncpy(lc.outfile, temp, sizeof(lc.outfile));
+        delete [] temp;
+    }
+
 
     if(lc.spin_flag) {
 

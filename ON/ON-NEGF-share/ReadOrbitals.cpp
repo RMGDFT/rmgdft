@@ -61,7 +61,7 @@ kpoints = "
 
 namespace Ri = RmgInput;
 
-void ReadOrbitals(char *cfile, STATE  *states, int *state_to_ion, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadOrbitals(char *cfile, STATE  *states, int *state_to_ion, MPI_Comm comm)
 {
 
     std::string OrbitalArray;
@@ -76,7 +76,7 @@ void ReadOrbitals(char *cfile, STATE  *states, int *state_to_ion, std::unordered
     int num_tem, movable, frozen;
 
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, comm);
 
     If.RegisterInputKey("orbitals", &OrbitalArray, "",
             CHECK_AND_FIX, REQUIRED,

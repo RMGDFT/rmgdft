@@ -50,7 +50,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     std::unordered_map<std::string, InputKey *> NewMap;
     int nkpts;
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     
 
@@ -82,7 +82,35 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      CHECK_AND_FIX, OPTIONAL, "", "");
     If.RegisterInputKey("number_of_atoms", &lc.num_states, 1, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
+    If.RegisterInputKey("atomic_orbital_files", NULL, "", CHECK_AND_FIX, OPTIONAL, "","");
 
 
     If.LoadInputKeys();
+
+    InputKey *Key;
+    std::vector<std::string> lines;
+    std::string delims = "\r\n^";
+    std::string field_delims = " \t";
+    Key = NewMap.at("atomic_orbital_files");
+    boost::algorithm::split( lines, Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
+    std::vector<std::string>::iterator it;
+    for (it = lines.begin(); it != lines.end(); ++it) {
+        std::string pline = *it;
+        boost::trim_if(pline, boost::algorithm::is_any_of("\" \t"));
+        std::vector<std::string> fields;
+        boost::algorithm::split( fields, pline, boost::is_any_of(field_delims), boost::token_compress_on );
+        if(fields.size() == 2) {
+
+            // Search the species structure for a matching symbol
+            boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
+            for(int isp = 0;isp < lc.num_species;isp++) {
+                if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol)) {
+                    std::strncpy(lc.file_atomic_orbit[isp], fields[1].c_str(), sizeof(lc.file_atomic_orbit[isp]));
+                }
+            }
+
+        }
+
+    }
+
 }

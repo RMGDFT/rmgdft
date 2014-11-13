@@ -46,10 +46,12 @@ void init_dimension(int *MXLLDA, int *MXLCOL)
 
     nprow = 1;
     npcol = 1;
-    for(i = n_factors ; i < 0; i--)
+    for(i = n_factors ; i > 0; i--)
     {
-        if(npcol <= nprow) npcol =npcol * factors[i-1];
-        if(nprow <  npcol) nprow =nprow * factors[i-1];
+        if(npcol <= nprow)
+            npcol =npcol * factors[i-1];
+        else
+            nprow =nprow * factors[i-1];
     }
     
     if(nprow > npcol)
@@ -67,7 +69,6 @@ void init_dimension(int *MXLLDA, int *MXLCOL)
     my_free(factors);
 
     
-    dprintf("\n scalapcak %d %d\n", pct.scalapack_nprow, pct.scalapack_npcol);
     NB = ct.scalapack_block_factor;
     if (ct.num_states < NB)
         NB = ct.num_states;

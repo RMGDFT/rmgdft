@@ -184,7 +184,7 @@ template <typename OrbitalType> void AssignDerweight (SPECIES * sp, int ion, fft
         Kpoint<OrbitalType> *kptr);
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadOrbitals(char *cfile, STATE  *states, int *state_to_ion, std::unordered_map<std::string, InputKey *>& InputMap);
+void ReadOrbitals(char *cfile, STATE  *states,  int *, MPI_Comm comm);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 
 

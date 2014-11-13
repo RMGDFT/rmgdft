@@ -120,7 +120,7 @@ int main (int argc, char **argv)
 
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
     allocate_states();
-    ReadOrbitals (ct.cfile, states, state_to_ion, ControlMap);
+    ReadOrbitals (ct.cfile, states, state_to_ion, pct.img_comm);
     get_state_to_proc(states);
 
     my_barrier ();

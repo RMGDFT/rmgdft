@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();
     get_state_to_proc(states);
-    ReadOrbitals (ct.cfile, states, state_to_ion, ControlMap);
+    ReadOrbitals (ct.cfile, states, state_to_ion, pct.img_comm);
 
     init_states();
     my_barrier();

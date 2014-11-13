@@ -57,7 +57,7 @@ void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMP
     std::string RhoCompass;
     std::string AveragePlane;
 
-    RmgInputFile If(cfile, NewMap);
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     
 
@@ -155,6 +155,5 @@ void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMP
     if((n_block != lc.num_blocks) | (num_st != ct.num_states) )
        throw RmgFatalException()<<"block_dim is not right\n"<< BlockDim.c_str()<<"\n";
 
-    printf("\n ddd\n");
 
 }
