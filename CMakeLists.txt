@@ -77,6 +77,19 @@ endif(${UNIX})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
+set(USE_PLPLOT_LIBS 1)
+if(USE_PLPLOT_LIBS)
+    find_package(PLplot)
+    if(PLplot_LIBRARY)
+        unset (USE_PLPLOT_LIBS CACHE)
+        target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+        target_link_libraries (rmg-on ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+        target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+        target_link_libraries (rmg-negf ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+    elseif(PLplot_LIBRARY)
+        set(USE_PLPLOT_LIBS 0)
+    endif(PLplot_LIBRARY)
+endif(USE_PLPLOT_LIBS)
 
 
 # static libraries are created for the object files in each subdir. Duplicates
@@ -557,21 +570,6 @@ if(MAGMA_LIBS)
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
 
-set(USE_PLPLOT_LIBS 0)
-if(USE_PLPLOT_LIBS)
-    find_package(PLplot)
-    if(PLplot_LIBRARY)
-        unset (USE_PLPLOT_LIBS CACHE)
-        set(USE_PLPLOT_LIBS 1)
-        include_directories(${PLplot_INCLUDE_DIR})
-        target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg-on ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg-negf ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-    elseif(PLplot_LIBRARY)
-        set(USE_PLPLOT_LIBS 0)
-    endif(PLplot_LIBRARY)
-endif(USE_PLPLOT_LIBS)
 
 
 option (RMG_GAMMA_PT "Turn on for a gamma point only calculation." ON)
