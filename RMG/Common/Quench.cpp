@@ -57,6 +57,7 @@
 #include "RmgException.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "Plots.h"
 #include "../Headers/prototypes.h"
 
 // Instantiate gamma and non-gamma versions
@@ -105,6 +106,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 	    }
 	}
 
+#if PLPLOT_LIBS
+        if(pct.imgpe == 0) {
+            std::vector<double> x;
+            std::string ConvergencePlot(ct.basename);
+            ConvergencePlot = ConvergencePlot + ".rmsdv.png";
+            LinePlotLog10y(ConvergencePlot.c_str(), "SCF Steps", "RMS[dV]", "RMG convergence", x, RMSdV);
+        }
+#endif
 
     }
 
