@@ -64,7 +64,7 @@ void LinePlot(const char * filename, const char * xlegend, const char * ylegend,
     plscol0(15, 0, 0, 0);
 
     // Line width
-    plwidth( 2 );
+    //plwidth( 2 );
 
 
     // Initialize plot library
