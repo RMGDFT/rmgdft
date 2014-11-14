@@ -13,6 +13,7 @@
 
 #include "Plots.h"
 
+// Version that takes std::vector args.
 void LinePlotLog10y(const char * filename, const char * xlegend, const char * ylegend, const char * title, std::vector<double>& x, std::vector<double>& y)
 {
     int nsize = y.size();
@@ -24,6 +25,22 @@ void LinePlotLog10y(const char * filename, const char * xlegend, const char * yl
 
 }
 
+// Version that takes double array args. If x is NULL then the index of each element will be used as the x-value.
+void LinePlotLog10y(const char * filename, const char * xlegend, const char * ylegend, const char * title, double *x, double *y, int nsize)
+{
+    std::vector<double> yn(nsize);
+    std::vector<double> xn;
+
+    for(int i = 0;i < nsize;i++) yn[i] = y[i];
+    if(x) {
+        for(int i = 0;i < nsize;i++) xn.push_back((double)i);
+    }
+
+    LinePlotLog10y(filename, xlegend, ylegend, title, xn, yn);
+
+}
+
+// If x has no entries then the index of each element will be used as the x-value.
 void LinePlot(const char * filename, const char * xlegend, const char * ylegend, const char * title, std::vector<double>& x, std::vector<double>& y)
 {
 
@@ -84,3 +101,19 @@ void LinePlot(const char * filename, const char * xlegend, const char * ylegend,
     delete [] yp;
     delete [] xp; 
 }
+
+// Version that takes double arrays as arguments
+void LinePlot(const char * filename, const char * xlegend, const char * ylegend, const char * title, double *x, double *y, int nsize)
+{
+    std::vector<double> yn(nsize);
+    std::vector<double> xn;
+
+    for(int i = 0;i < nsize;i++) yn[i] = y[i];
+    if(x) {
+        for(int i = 0;i < nsize;i++) xn.push_back((double)i);
+    }
+
+    LinePlot(filename, xlegend, ylegend, title, xn, yn);
+
+}
+
