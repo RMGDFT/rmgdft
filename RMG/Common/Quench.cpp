@@ -111,7 +111,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             std::vector<double> x;
             std::string ConvergencePlot(ct.basename);
             ConvergencePlot = ConvergencePlot + ".rmsdv.png";
-            LinePlotLog10y(ConvergencePlot.c_str(), "SCF Steps", "RMS[dV]", "RMG convergence", x, RMSdV);
+            std::string ConvergenceTitle("RMG convergence:");
+            if(CONVERGED) {
+                ConvergenceTitle = ConvergenceTitle + " quench completed.";
+            }
+            else {
+                ConvergenceTitle = ConvergenceTitle + " quenching electrons.";
+            }
+            LinePlotLog10y(ConvergencePlot.c_str(), "SCF Steps", "log10(RMS[dV])", ConvergenceTitle.c_str(), x, RMSdV);
         }
 #endif
 
