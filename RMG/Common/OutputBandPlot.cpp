@@ -22,6 +22,7 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "../Headers/prototypes.h"
+#include "Plots.h"
 
 extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
                                int map[],
@@ -53,12 +54,16 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 {
 
     int num_energy, k, l, q, r, gp;
-    double energy;
+    double energy, kx, ky, kz;
     double max_eig, min_eig, t1;
+    char filename[MAX_PATH], pngfile[MAX_PATH];
     FILE *bs_f, *dos_f; 
     if(pct.gridpe == 0)
     {
-        bs_f = fopen ("band.dat", "w");
+
+        
+        snprintf(filename, MAX_PATH, "%s%s", ct.basename, ".bandstructure");
+        bs_f = fopen (filename, "w");
         if(!bs_f) {
             rmg_printf("Unable to write band plot data.\n");
             return;
@@ -86,7 +91,28 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     if(pct.gridpe ==0) fclose (bs_f);
 
+#if PLPLOT_LIBS
+    if(pct.gridpe == 0)
+    {
+        double *x = new double[ct.num_kpts];
+        double *y = new double[ct.num_kpts * ct.num_states];
+        snprintf(pngfile, MAX_PATH, "%s%s", filename, ".png");
+        x[0] = 0.0;
+        for(int ik = 1; ik < ct.num_kpts; ik++)
+        {
+            kx = (Kptr[ik]->kpt[0] - Kptr[ik-1]->kpt[0]);
+            ky = (Kptr[ik]->kpt[1] - Kptr[ik-1]->kpt[1]);
+            kz = (Kptr[ik]->kpt[2] - Kptr[ik-1]->kpt[2]);
+            x[ik] = x[ik-1] + sqrt(kx*kx + ky*ky + kz*kz);
+        }
 
+        for (int is = 0; is < ct.num_states; is++)
+            for(int ik = 0; ik < ct.num_kpts; ik++)
+                y[is * ct.num_kpts + ik] = Kptr[ik]->Kstates[is].eig[0] * Ha_eV;
+        MultiLinePlot(pngfile, "", "E(eV)", "Band Strucutre", x, y, ct.num_kpts, ct.num_states);
+    }
+
+#endif
 
     modf(max_eig, &t1);
     max_eig = t1;
@@ -217,7 +243,8 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     GlobalSums (dos_g, num_energy, pct.grid_comm);
     if(pct.gridpe == 0)
     {
-        dos_f = fopen ("dos.dat", "w");
+        snprintf(filename, MAX_PATH, "%s%s", ct.basename, ".dos");
+        dos_f = fopen (filename, "w");
 
         for( i = 0; i < num_energy; i++)
         {
