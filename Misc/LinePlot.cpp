@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+#include "make_conf.h"
 
 #if PLPLOT_LIBS
 #include <plstream.h>
