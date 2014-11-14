@@ -45,7 +45,7 @@ void LinePlot(const char * filename, const char * xlegend, const char * ylegend,
 {
 
     int nsize = y.size();
-    if(nsize < 2) return;
+    if(nsize < 2) return;   // Not much point in plotting only 1 point
 
     PLFLT xmin = DBL_MAX, xmax = -DBL_MAX, ymin = DBL_MAX, ymax = -DBL_MAX;
 
@@ -73,7 +73,7 @@ void LinePlot(const char * filename, const char * xlegend, const char * ylegend,
     if(!x.size()) {
         for(int i = 0;i < nsize;i++) xp[i] = (PLFLT)i;
         xmin = 0.0;
-        xmax = (double)nsize;
+        xmax = (double)(5*(nsize/5) + 5);
     }
     else {
         for(int i = 0;i < nsize;i++) xp[i] = (PLFLT)x[i];
