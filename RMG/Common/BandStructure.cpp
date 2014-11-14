@@ -133,7 +133,8 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
         } // end loop scf
 
-        rmg_printf("\n BAND STRUCTURE: max_res %10.5e at steps %d", max_res, ct.scf_steps);
+        for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
+        rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
 
     } // end loop over kpoints
 

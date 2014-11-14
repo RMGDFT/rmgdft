@@ -270,7 +270,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("If not an initial run read data from files");
-    if (ct.runflag == RESTART)
+    if ((ct.runflag == RESTART) | (ct.runflag == BAND_STRUCTURE) )
     {
         int THREADS_PER_NODE = ct.THREADS_PER_NODE;
         ReadData (ct.infile, vh, rho, vxc, Kptr);
