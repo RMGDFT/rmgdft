@@ -9,6 +9,8 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+
+#if PLPLOT_LIBS
 #include <plstream.h>
 
 #include "Plots.h"
@@ -117,3 +119,4 @@ void LinePlot(const char * filename, const char * xlegend, const char * ylegend,
 
 }
 
+#endif

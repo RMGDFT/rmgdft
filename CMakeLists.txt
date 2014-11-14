@@ -557,7 +557,7 @@ if(MAGMA_LIBS)
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
 
-set(USE_PLPLOT_LIBS 1)
+set(USE_PLPLOT_LIBS 0)
 if(USE_PLPLOT_LIBS)
     find_package(PLplot)
     if(PLplot_LIBRARY)
