@@ -60,9 +60,13 @@ void init_qfunct (void)
         sp->qdim = it1;
 /*		sp->qdim = 2 * FG_NX * (it1 / 2) + 1;*/
 
-        if ((sp->qdim >= get_FNX_GRID()) || (sp->qdim >= get_FNY_GRID())
-            || (sp->qdim >= get_FNZ_GRID()))
-            error_handler ("nlocal potential radius exceeds global grid size");
+//        if ((sp->qdim >= get_FNX_GRID()) || (sp->qdim >= get_FNY_GRID())
+//            || (sp->qdim >= get_FNZ_GRID()))
+//            error_handler ("nlocal potential radius exceeds global grid size");
+        if (sp->qdim >= get_FNX_GRID()) sp->qdim = get_FNX_GRID();
+        if (sp->qdim >= get_FNY_GRID()) sp->qdim = get_FNY_GRID();
+        if (sp->qdim >= get_FNZ_GRID()) sp->qdim = get_FNZ_GRID();
+
         if (ct.max_Qpoints < (sp->qdim * sp->qdim * sp->qdim))
             ct.max_Qpoints = sp->qdim * sp->qdim * sp->qdim;
 

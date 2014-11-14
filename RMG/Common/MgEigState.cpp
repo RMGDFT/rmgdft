@@ -177,6 +177,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // be possible to fix this at a higher level at some point though so unneccessary work is not done.
     if(Verify ("freeze_occupied", true, kptr->ControlMap) && (sp->occupation[0] > 0.0)) freeze_occupied = false;
 
+    if(Verify ("calculation_mode", "Band Structure Only", kptr->ControlMap) )
+         freeze_occupied = true;
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;

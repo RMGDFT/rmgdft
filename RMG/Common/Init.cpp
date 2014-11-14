@@ -241,8 +241,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     kpt1 = ct.num_kpts;
-    if (Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap))
-        kpt1 = 1;
+//    if (Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap))
+//        kpt1 = 1;
     for (kpt = 0; kpt < kpt1; kpt++)
     {
 

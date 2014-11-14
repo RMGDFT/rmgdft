@@ -48,7 +48,7 @@ get_extrapolation_constants.c
 output_wave.c
 write_header.c
 #get_pdos.c
-bandstructure.c
+BandStructure.cpp
 wvfn_residual.c
 init_img_topo.c
 #mulliken.c

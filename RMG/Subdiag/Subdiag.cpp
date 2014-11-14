@@ -36,7 +36,7 @@ template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, int subdiag_driver)
 {
     RmgTimer RT0("Diagonalization");
-    rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
+    //rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
 
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
