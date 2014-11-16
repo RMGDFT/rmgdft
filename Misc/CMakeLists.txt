@@ -52,5 +52,7 @@ fill.c
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})
 include_directories(${MAGMA_INCLUDES}/magma)
-include_directories(${PLplot_INCLUDE_DIR})
+if(PLplot_LIBRARY)
+    include_directories(${PLplot_INCLUDE_DIR})
+endif(PLplot_LIBRARY)
 
