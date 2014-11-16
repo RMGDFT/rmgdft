@@ -54,5 +54,6 @@ include_directories(${MAGMA_INCLUDES})
 include_directories(${MAGMA_INCLUDES}/magma)
 if(PLplot_LIBRARY)
     include_directories(${PLplot_INCLUDE_DIR})
+    include_directories(${PLplot_INCLUDE_DIR}/plplot)
 endif(PLplot_LIBRARY)
 

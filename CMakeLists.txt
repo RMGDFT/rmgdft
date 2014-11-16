@@ -77,17 +77,16 @@ endif(${UNIX})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
-unset (USE_PLPLOT_LIBS CACHE)
-find_package(PLplot)
-if(PLplot_LIBRARY)
+set(USE_PLPLOT_LIBS 0)
+find_package(PLPLOT)
+if(PLPLOT_FOUND)
+    unset (USE_PLPLOT_LIBS CACHE)
     set(USE_PLPLOT_LIBS 1)
     target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
     target_link_libraries (rmg-on ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
     target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
     target_link_libraries (rmg-negf ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-elseif(PLplot_LIBRARY)
-    set(USE_PLPLOT_LIBS 0)
-endif(PLplot_LIBRARY)
+endif(PLPLOT_FOUND)
 
 
 # static libraries are created for the object files in each subdir. Duplicates
