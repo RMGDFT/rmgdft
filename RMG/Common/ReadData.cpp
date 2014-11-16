@@ -178,7 +178,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     read_double (fhand, vxc, fgrid_size);
     rmg_printf ("read_data: read 'vxc'\n");
 
-    if(ct.runflag = BAND_STRUCTURE) return;
+    if(ct.runflag == BAND_STRUCTURE) return;
         
 
     /* read state occupations */
