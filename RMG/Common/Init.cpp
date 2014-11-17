@@ -270,57 +270,57 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("If not an initial run read data from files");
-    if ((ct.runflag == RESTART) || (ct.runflag == BAND_STRUCTURE) )
+    if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) )
     {
         int THREADS_PER_NODE = ct.THREADS_PER_NODE;
         ReadData (ct.infile, vh, rho, vxc, Kptr);
         ct.THREADS_PER_NODE = THREADS_PER_NODE;
-    
-	/*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
-	if (ct.spin_flag)
-	{
-	    get_rho_oppo (rho, rho_oppo);
+
+        /*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
+        if (ct.spin_flag)
+        {
+            get_rho_oppo (rho, rho_oppo);
             GetOppositeEigvals (Kptr);
-	    GetOppositeOccupancies (Kptr);
-	}
+            GetOppositeOccupancies (Kptr);
+        }
     }
     else 
     {
         /* Set the initial hartree potential to a constant */
         for (idx = 0; idx < FP0_BASIS; idx++)
             vh[idx] = 0.0;
+    }
 
-        /* Set initial states to random start */
-    
-	if (ct.runflag == LCAO_START)
-	{
-            RmgTimer *RT2 = new RmgTimer("Init: LcaoGetPsi");
-            for(kpt = 0; kpt < ct.num_kpts; kpt++) {
-                LcaoGetPsi(Kptr[kpt]->Kstates);
-            }
-            delete(RT2);
-	}
-	
-	else
-	{
-	    for (kpt = 0; kpt < ct.num_kpts; kpt++)
-		//init_wf (&Kptr[0]->kstates[kpt * ct.num_states]);
-                Kptr[kpt]->random_init();
-	}
+    /* Set initial states to random start */
 
-
-        /* Set initial ionic coordinates to the current ones. */
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-            for (ic = 0; ic < 3; ic++)
-            {
-                ct.ions[ion].icrds[ic] = ct.ions[ion].crds[ic];
-                ct.ions[ion].ixtal[ic] = ct.ions[ion].xtal[ic];
-            }
+    if (ct.runflag == LCAO_START || (ct.forceflag == BAND_STRUCTURE))
+    {
+        RmgTimer *RT2 = new RmgTimer("Init: LcaoGetPsi");
+        for(kpt = 0; kpt < ct.num_kpts; kpt++) {
+            LcaoGetPsi(Kptr[kpt]->Kstates);
         }
+        delete(RT2);
+    }
+
+    if (ct.runflag == RANDOM_START)
+    {
+        for (kpt = 0; kpt < ct.num_kpts; kpt++)
+            //init_wf (&Kptr[0]->kstates[kpt * ct.num_states]);
+            Kptr[kpt]->random_init();
+    }
 
 
-    }                           /* end if */
+    /* Set initial ionic coordinates to the current ones. */
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        for (ic = 0; ic < 3; ic++)
+        {
+            ct.ions[ion].icrds[ic] = ct.ions[ion].crds[ic];
+            ct.ions[ion].ixtal[ic] = ct.ions[ion].xtal[ic];
+        }
+    }
+
+
 
 
     //Dprintf ("Initialize the radial potential stuff");
@@ -348,7 +348,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     time2 = my_crtc ();
 
-	printf ("\n\n init: Starting FFTW initialization ...");
+    printf ("\n\n init: Starting FFTW initialization ...");
 
     fflush (NULL);
 
@@ -382,7 +382,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RT1 = new RmgTimer("Init: qfunct");
     init_qfunct ();
     delete(RT1);
-    
+
     /* Update items that change when the ionic coordinates change */
     RT1 = new RmgTimer("Init: ionic potentials");
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
@@ -402,47 +402,47 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
         delete(RT2);
     }
-        
+
     //mix_betaxpsi(0);
 
     //Dprintf ("Set the initial density to be equal to the compensating charges");
-	
+
     /*For random start, use charge density equal to compensating charge */
     if (ct.runflag == RANDOM_START)
     {
-	if (ct.spin_flag)
+        if (ct.spin_flag)
         {   
-	       fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
-       	       for (idx = 0; idx < FP0_BASIS; idx++)
-	       {
+            fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
+            for (idx = 0; idx < FP0_BASIS; idx++)
+            {
 
-                    if (pct.spinpe == 0)
-   		    {				    
-		    	rho[idx] = rhoc[idx] * fac;
-		    	rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
-		    }
-		    else         /* if pct.spinpe = 1  */
-		    {
-		    	rho_oppo[idx] = rhoc[idx] * fac;
-		    	rho[idx] = rhoc[idx] * (1.0 - fac);
-		     }
-	       }
+                if (pct.spinpe == 0)
+                {				    
+                    rho[idx] = rhoc[idx] * fac;
+                    rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
+                }
+                else         /* if pct.spinpe = 1  */
+                {
+                    rho_oppo[idx] = rhoc[idx] * fac;
+                    rho[idx] = rhoc[idx] * (1.0 - fac);
+                }
+            }
 
-	}
+        }
 
-	else
-	{
-  	    for (idx = 0; idx < FP0_BASIS; idx++)
-            	rho[idx] = rhoc[idx];
-	}
+        else
+        {
+            for (idx = 0; idx < FP0_BASIS; idx++)
+                rho[idx] = rhoc[idx];
+        }
     }
-    
-    if (ct.runflag == LCAO_START)
-	lcao_get_rho(rho);
+
+    if (ct.runflag == LCAO_START && (ct.forceflag != BAND_STRUCTURE))
+        lcao_get_rho(rho);
 
 
     ct.rms = 0.0;
-    
+
     //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
@@ -452,19 +452,19 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
     if (ct.runflag != RESTART)
     {
-       	get_vxc (rho, rho_oppo, rhocore, vxc);
+        get_vxc (rho, rho_oppo, rhocore, vxc);
 
-	if (ct.spin_flag)
-	{
-                rho_tot = new double[FP0_BASIS];
-  	    	for (idx = 0; idx < FP0_BASIS; idx++)
-            		rho_tot[idx] = rho[idx] + rho_oppo[idx];
+        if (ct.spin_flag)
+        {
+            rho_tot = new double[FP0_BASIS];
+            for (idx = 0; idx < FP0_BASIS; idx++)
+                rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
-        	get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-    		delete [] rho_tot;
-	}
-	else
-        	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+            get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+            delete [] rho_tot;
+        }
+        else
+            get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
 
     }
 
@@ -503,98 +503,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             for (kpt = 0; kpt < ct.num_kpts; kpt++) {
                 Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
             }
-            
+
         }
 
     }
 
-
-#if 0
-    /*Setup things for mulliken population analysis */
-    if (ct.domilliken)
-    {
-
-        int i, it1;
-        double t1, t2, scale;
-        /* Find milliken radius in number of grid points */
-        /* Set the scaling factor for determining the radius of the local grids */
-        scale = 1.0;
-        if (ct.ibrav == CUBIC_BC)
-            scale = 1.1;
-        if (ct.ibrav == CUBIC_FC)
-            scale = 1.3;
-
-        /*Loop over species */
-        for (species = 0; species < ct.num_species; species++)
-        {
-
-            /* Get species type */
-            sp = &ct.sp[species];
-
-            t1 = 2.0 * scale * sp->mill_radius / ct.hmingrid;
-            t1 = modf (t1, &t2);
-            it1 = (int) t2;
-            if (t1 > 0.5)
-                it1++;
-            if (!(it1 % 2))
-                it1++;
-            sp->mill_dim = it1;
-
-            if ((sp->mill_dim >= get_NX_GRID()) || (sp->mill_dim >= get_NY_GRID())
-                || (sp->mill_dim >= get_NZ_GRID()))
-                error_handler ("Milliken radius exceeds global grid size");
-
-            /*Find total number of states -i.e. we only know that we have states s,p, d etc
-             * but we need number of s, px, py, pz, etc*/
-            sp->sum_atomic_waves = 0;
-
-            i = 0;
-            for (st1 = 0; st1 < sp->num_atomic_waves; st1++)
-            {
-                sp->sum_atomic_waves += 2 * sp->lstate_atomic_wave[st1] + 1;
-
-                switch (sp->lstate_atomic_wave[st1])
-                {
-                case 0:
-                    strcpy (sp->atomic_wave_symbol[i], "s");
-                    i++;
-                    break;
-
-                case 1:
-                    strcpy (sp->atomic_wave_symbol[i], "px");
-                    strcpy (sp->atomic_wave_symbol[i + 1], "pz");
-                    strcpy (sp->atomic_wave_symbol[i + 2], "py");
-                    i += 3;
-                    break;
-
-                case 2:
-                    strcpy (sp->atomic_wave_symbol[i], "dxy");
-                    strcpy (sp->atomic_wave_symbol[i + 1], "dxz");
-                    strcpy (sp->atomic_wave_symbol[i + 2], "dzz");
-                    strcpy (sp->atomic_wave_symbol[i + 3], "dyz");
-                    strcpy (sp->atomic_wave_symbol[i + 4], "dxx-yy");
-                    i += 5;
-                    break;
-
-                case 3:
-                    strcpy (sp->atomic_wave_symbol[i], "Fxxx");
-                    strcpy (sp->atomic_wave_symbol[i + 1], "Fyyy");
-                    strcpy (sp->atomic_wave_symbol[i + 2], "Fxyz");
-                    strcpy (sp->atomic_wave_symbol[i + 3], "Fzzz");
-                    strcpy (sp->atomic_wave_symbol[i + 4], "Fz(xx-yy)");
-                    strcpy (sp->atomic_wave_symbol[i + 5], "Fy(zz-xx)");
-                    strcpy (sp->atomic_wave_symbol[i + 6], "Fx(yy-zz)");
-                    i += 7;
-                }               /*end switch */
-
-            }
-
-
-
-        }                       /*end loop over species */
-
-    }                           /*end if (ct.domilliken) */
-#endif
 
 
 
@@ -658,4 +571,4 @@ static void init_alloc_nonloc_mem (void)
 
 }                               /*end init_alloc_nonloc_mem */
 
-    /******/
+/******/

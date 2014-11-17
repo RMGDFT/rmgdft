@@ -178,7 +178,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     read_double (fhand, vxc, fgrid_size);
     rmg_printf ("read_data: read 'vxc'\n");
 
-    if(ct.runflag == BAND_STRUCTURE) return;
+    if(ct.forceflag == BAND_STRUCTURE) return;
         
 
     /* read state occupations */
@@ -260,10 +260,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 		read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
 
 	    }
-	    /*  for calculating band structures, 
-		only read-in one wave function (?) */
-	    if (ct.forceflag == BAND_STRUCTURE)
-		return;
 	}
 
 	printf ("read_data: read 'wfns'\n");
