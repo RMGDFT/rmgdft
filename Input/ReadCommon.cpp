@@ -674,7 +674,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if(lc.outfile[0] !='/') 
     {
         char *temp = new char[255];
-        std::snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
+        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
         std::strncpy(lc.outfile, temp, sizeof(lc.outfile));
         delete [] temp;
     }
@@ -729,9 +729,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     catch (const std::out_of_range& oor) {
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n";
     }
-    CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + std::to_string(NX_GRID) + " and only postive values are allowed.");
-    CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + std::to_string(NY_GRID) + " and only postive values are allowed.");
-    CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + std::to_string(NZ_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + boost::lexical_cast<std::string>(NX_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + boost::lexical_cast<std::string>(NZ_GRID) + " and only postive values are allowed.");
 
     // If Processor grid is not specified or is specified incorrectly then we try to set it automatically
     pelc.pe_x = ProcessorGrid.vals.at(0);
@@ -825,9 +825,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     }
 
 
-    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + std::to_string(pelc.pe_x) + " and only postive values are allowed.");
-    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + std::to_string(pelc.pe_y) + " and only postive values are allowed.");
-    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + std::to_string(pelc.pe_z) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + boost::lexical_cast<std::string>(pelc.pe_x) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + boost::lexical_cast<std::string>(pelc.pe_y) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + boost::lexical_cast<std::string>(pelc.pe_z) + " and only postive values are allowed.");
 
 
 
