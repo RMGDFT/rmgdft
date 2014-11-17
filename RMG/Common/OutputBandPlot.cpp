@@ -62,7 +62,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     {
 
         
-        snprintf(filename, MAX_PATH, "%s%s", ct.basename, ".bandstructure");
+        snprintf(filename, MAX_PATH, "%s%s", ct.basename, ".bandstructure.xmgr");
         bs_f = fopen (filename, "w");
         if(!bs_f) {
             rmg_printf("Unable to write band plot data.\n");
@@ -243,7 +243,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     GlobalSums (dos_g, num_energy, pct.grid_comm);
     if(pct.gridpe == 0)
     {
-        snprintf(filename, MAX_PATH, "%s%s", ct.basename, ".dos");
+        snprintf(filename, MAX_PATH, "%s%s", ct.basename, ".dos.xmgr");
         dos_f = fopen (filename, "w");
 
         for( i = 0; i < num_energy; i++)

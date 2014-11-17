@@ -40,17 +40,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     BaseThread *T = BaseThread::getBaseThread(0);
 
 
-    FILE *bs_f, *dos_f; 
-    if(pct.gridpe == 0)
-    {
-        bs_f = fopen ("band.dat", "w");
-        if(!bs_f) {
-            rmg_printf("Unable to write band plot data.\n");
-            return;
-        }
-    }
-
-
     
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
