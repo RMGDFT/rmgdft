@@ -352,10 +352,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     fflush (NULL);
 
-    /*Setup some fftw stuff */
-    /*Setup fftw wisdom */
-    //init_fftw_wisdom ();
-
     //Dprintf ("Get memory for fourier transform phase");
     for (ion = 0; ion < ct.num_ions; ion++)
     {

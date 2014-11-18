@@ -71,7 +71,6 @@ betaxpsi1.c
 symmetry.c
 lbfgs.c
 nlforce_par_Q.c
-init_fftw_wisdom.c
 rmg_lbfgs.c
 test_overlap.c
 write_avgv.c

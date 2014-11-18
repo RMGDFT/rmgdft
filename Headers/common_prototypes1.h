@@ -194,7 +194,6 @@ void init_derweight_p (SPECIES *sp, fftw_complex *rtptr_x,
 void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
                        fftw_plan p1);
-void init_fftw_wisdom (void);
 void init_kbr (void);
 void init_IO ( int argc, char **argv );
 void init_pe ( int image );
