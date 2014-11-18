@@ -266,21 +266,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Third lattice constant.\n", 
                      "c_length must be a positive number. Terminating.\n");
 
-    If.RegisterInputKey("alpha", &celldm[3], -DBL_MAX, DBL_MAX, 0.0, 
-                     CHECK_AND_TERMINATE, REQUIRED, 
-                     "First lattice angle.\n", 
-                     "\n");
-
-    If.RegisterInputKey("beta", &celldm[4], -DBL_MAX, DBL_MAX, 0.0, 
-                     CHECK_AND_TERMINATE, REQUIRED, 
-                     "Second lattice angle.\n", 
-                     "\n");
-
-    If.RegisterInputKey("gamma", &celldm[5], -DBL_MAX, DBL_MAX, 0.0, 
-                     CHECK_AND_TERMINATE, REQUIRED, 
-                     "Third lattice angle.\n", 
-                     "\n");
-
     // Deault of zero is OK because this means to try to set it automatically later on.
     // The value of 64 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.
@@ -882,6 +867,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
     }
+
+    // Lattice vectors are orthogonal except for Hex which is setup inside latgen
+    celldm[3] = 0.0;
+    celldm[4] = 0.0;
+    celldm[5] = 0.0;
 
     // Set up the lattice vectors
     Rmg_L.set_ibrav_type(ibrav);
