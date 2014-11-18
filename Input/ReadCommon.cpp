@@ -434,10 +434,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
                      "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25.\n");
 
-    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, 0, 4, 2,
+    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, -1, 4, -1,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of multigrid levels to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mg_levels must lie in the range (0,4). Resetting to the default value of 2.\n");
+                     "kohn_sham_mg_levels must lie in the range (-1,4) where -1=automatic. Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
@@ -798,7 +798,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
             token++;
             if(token == 3) token = 0;
         }
-        if(pct.imgpe == 0)std::cout << "Auto processor grid settings: NPES=" <<  NPES << " PE_X=" << pelc.pe_x << " PE_Y=" << pelc.pe_y << " PE_Z=" << pelc.pe_z << std::endl;
+        if(pct.imgpe == 0) std::cout << "Auto processor grid settings: NPES=" <<  NPES << " PE_X=" << pelc.pe_x << " PE_Y=" << pelc.pe_y << " PE_Z=" << pelc.pe_z << std::endl;
 
     }
 
@@ -886,20 +886,26 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";
 
-    // We check multigrid levels last since we have to be sure that the grid dims have already 
-    // been read in.
-    if ((NX_GRID / (1 << lc.eig_parm.levels)) < 3)
-        throw RmgFatalException() << "NX_GRID: too many eigenvalue MG levels";
-    if ((NY_GRID / (1 << lc.eig_parm.levels)) < 3)
-        throw RmgFatalException() << "NY_GRID: too many eigenvalue MG levels";
-    if ((NZ_GRID / (1 << lc.eig_parm.levels)) < 3)
-        throw RmgFatalException() << "NZ_GRID: too many eigenvalue MG levels";
-    if ((NX_GRID % (1 << lc.eig_parm.levels)) != 0)
-        throw RmgFatalException() << "NX_GRID not evenly divisible by 2^(eig_parm.levels)";
-    if ((NY_GRID % (1 << lc.eig_parm.levels)) != 0)
-        throw RmgFatalException() << "NY_GRID not evenly divisible by 2^(eig_parm.levels)";
-    if ((NZ_GRID % (1 << lc.eig_parm.levels)) != 0)
-        throw RmgFatalException() << "NZ_GRID not evenly divisible by 2^(eig_parm.levels)";
+    // If the user has not specifically set the number of kohn-sham multigrid levels use 2
+    if(lc.eig_parm.levels == -1) lc.eig_parm.levels = 2;
+
+    int checklevel;
+
+    for(checklevel = 1;checklevel <= lc.eig_parm.levels;checklevel++) {
+        bool eig_level_err = false;
+        if ((NX_GRID / (1 << checklevel)) < 3) eig_level_err = true;
+        if ((NY_GRID / (1 << checklevel)) < 3) eig_level_err = true;
+        if ((NZ_GRID / (1 << checklevel)) < 3) eig_level_err = true;
+        if ((NX_GRID % (1 << checklevel)) != 0) eig_level_err = true;
+        if ((NY_GRID % (1 << checklevel)) != 0) eig_level_err = true;
+        if ((NZ_GRID % (1 << checklevel)) != 0) eig_level_err = true;
+        if (eig_level_err) {
+            lc.eig_parm.levels = checklevel - 1;
+            if(lc.eig_parm.levels > 2) lc.eig_parm.levels = 2;
+            if(pct.imgpe == 0) std::cout << "Too many eigenvalue multigrid levels specified. Resetting to " << lc.eig_parm.levels << std::endl;
+            break;
+        }
+    }
 
     // Constraints for Neb relax. What does this magic number mean? (set constraint type for switch in Common/constrain.c)
     if(Verify("calculation_mode", "NEB Relax", InputMap)) lc.constrainforces = 5;
