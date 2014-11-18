@@ -1,0 +1,18 @@
+#
+# BENZENE MOLECULE for RMG
+#
+#
+# create symbolic links
+#
+# Enter RMG directory.
+sh ./script_1
+#
+# RMG: run quench calculation, generate WFN/RHO/VXC/vxc.dat 
+#
+RMG: Submit script_2. Suggested ncpu = 32, walltime = 1:00:00
+#
+#
+# compute inverse dielectric matrix, calculate quasiparticle energies
+#
+Submit script_6. Suggested ncpu = 32, walltime = 3:30:00
+#

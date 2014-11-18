@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+#
+RMG="$RMG_directory/rmg"
+MPIRUN="mpirun"
+#
+cd ./1-quench
+#$MPIRUN $RMG in.benzene 
+cd ..
+#

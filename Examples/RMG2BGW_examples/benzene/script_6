@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#
+EPSILON="$BGW/bin/epsilon.cplx.x"
+SIGMA="$BGW/bin/sigma.cplx.x"
+EQP="$BGW/bin/eqp.py"
+KERNEL="$BGW/bin/kernel.cplx.x"
+ABSORPTION="$BGW/bin/absorption.cplx.x"
+MPIRUN="mpirun"
+#
+cd ./5-gw
+$MPIRUN $EPSILON &> ./OUT.eps
+$MPIRUN $SIGMA &> ./OUT.sig
+$MPIRUN $KERNEL &> ./OUT.krn
+$EQP eqp1 ./sigma_hp.log ./eqp.dat
+$MPIRUN $ABSORPTION &> ./OUT.abs
+cd ..
+#
