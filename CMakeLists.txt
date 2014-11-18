@@ -50,6 +50,7 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
+/opt/local/lib/libxc         #libxc from Macports
 /home/luw/Downloads/magma-1.4.1)
 
 # Executables defined by the file that contains main()
