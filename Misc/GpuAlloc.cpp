@@ -58,7 +58,7 @@ void *GpuMalloc(size_t size)
     new_block = (new_block + 1) * GPU_ALIGNMENT;
     new_size = cur_size + new_block; 
     if(new_size > max_size) {
-        rmg_printf("GPU memory of %d bytes exceeds reserved size.\n", size);
+        rmg_printf("GPU memory of %d bytes exceeds reserved size of %d.\n", new_size, max_size);
         rmg_error_handler (__FILE__, __LINE__, "Error: Reservation too large. Consider increasing reserved GPU memory.\n");
     }
 
