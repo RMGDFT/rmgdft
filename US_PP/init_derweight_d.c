@@ -21,7 +21,6 @@ void init_derweight_d (SPECIES * sp,
                        double complex * rtptr_x,
                        double complex * rtptr_y, fftw_complex * rtptr_z, int ip, fftw_plan p1)
 {
-#if !FDIFF_BETA
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
     rmg_double_t r, ax[3], bx[3], xc, yc, zc, t1, t2, t3, invdr;
@@ -297,5 +296,4 @@ void init_derweight_d (SPECIES * sp,
 
 
     my_free (weptr1x);
-#endif
 }

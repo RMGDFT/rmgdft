@@ -111,7 +111,6 @@ void init_pestr()
         exit(0);
     }
 
-    dprintf("\n %d  imge_npes ", pct.image_npes[pct.thisimg]);
     int dims[] = { nspin, pct.pe_kpoint, pct.image_npes[pct.thisimg]/nspin/pct.pe_kpoint};
     int periods[] = { 0, 0, 0 };
     int reorder = 1;

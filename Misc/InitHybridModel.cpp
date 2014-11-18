@@ -42,7 +42,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             ranks[i] = -1;
         }
     }
-    
+
 
     pct.mpi_local_ranks = new int[pct.procs_per_host];
     int j = 0;
@@ -81,25 +81,29 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     // If user has set nthreads manually then we don't try to adjust it
     if(nthreads > 0) {
 
-        std::cout << "Running with " << nthreads << " threads set manually via input file." << std::endl;
+        if(pct.worldrank == 0)
+            std::cout << "Running with " << nthreads << " threads set manually via input file." << std::endl;
 
         // User set threads in input file but did not set OMP_NUM_THREADS so use input file value
         if(omp_num_threads_set < 0) { 
 
             omp_set_num_threads(nthreads);
-            std::cout << "OMP_NUM_THREADS environment variable was not set so using input file value for threads_per_node." << std::endl;
+            if(pct.worldrank == 0)
+                std::cout << "OMP_NUM_THREADS environment variable was not set so using input file value for threads_per_node." << std::endl;
 
         }
         else {
 
             // Both input file and OMP_NUM_THREADS set so check if they are equal and issue warning if not
             if(nthreads != omp_num_threads_set) {
-                std::cout << "Warning: OMP_NUM_THREADS = " << omp_num_threads_set << " and threads_per_node = " << nthreads << "." << std::endl;
-                std::cout << "This may be OK but just checking if that is what you intended." << std::endl;
+                if(pct.worldrank == 0)
+                    std::cout << "Warning: OMP_NUM_THREADS = " << omp_num_threads_set << " and threads_per_node = " << nthreads << "." << std::endl;
+                if(pct.worldrank == 0)
+                    std::cout << "This may be OK but just checking if that is what you intended." << std::endl;
             }
 
         }
-         
+
     }
     else {
 
@@ -107,7 +111,8 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
             // set nthreads to OMP_NUM_THREADS
             nthreads = omp_num_threads_set;
-            std::cout << "Running with " << nthreads << " threads set via OMP_NUM_THREADS." << std::endl;
+            if(pct.worldrank == 0)
+                std::cout << "Running with " << nthreads << " threads set via OMP_NUM_THREADS." << std::endl;
 
         }
         else {
@@ -120,8 +125,10 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             }
 
             omp_set_num_threads(nthreads);
-            std::cout << "Running with " << pct.procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
-            std::cout << "OMP_NUM_THREADS environment variable was not set so using automatically determined value of " << nthreads << "." << std::endl;
+            if(pct.worldrank == 0)
+                std::cout << "Running with " << pct.procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
+            if(pct.worldrank == 0)
+                std::cout << "OMP_NUM_THREADS environment variable was not set so using automatically determined value of " << nthreads << "." << std::endl;
 
         }
 

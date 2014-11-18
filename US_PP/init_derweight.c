@@ -16,7 +16,6 @@
 void init_derweight (void)
 {
 
-#if !FDIFF_BETA
     int ip, prjcount, isp, size;
     SPECIES *sp;
     fftw_plan p1;
@@ -104,5 +103,4 @@ void init_derweight (void)
 
 
 
-#endif
 }                               /* end get_weight */

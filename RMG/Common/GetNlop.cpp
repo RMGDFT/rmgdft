@@ -183,26 +183,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
 
 
-            if ((icount * prj_per_ion))
-            {
-
-#if FDIFF_BETA
-                size_t weight_size = prj_per_ion * get_P0_BASIS() + 128;
-                pct.weight_derx[ion] = new double[weight_size]();
-                pct.weight_dery[ion] = new double[weight_size]();
-                pct.weight_derz[ion] = new double[weight_size]();
-#endif
-            }
-            else
-            {
-#if FDIFF_BETA
-                pct.weight_derx[ion] = NULL;
-                pct.weight_dery[ion] = NULL;
-                pct.weight_derz[ion] = NULL;
-#endif
-            }
-
-
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion)) {
                 itmp = sp->nldim * sp->nldim * sp->nldim;
@@ -485,8 +465,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
 		pct.num_owners++;
 
-		rmg_printf("Owner of ion %d PE %d has not been previously recorded: pct.owners_list[%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d, pct.list_ions_per_owner[%d][0]=%d, pct.num_owners=%d", 
-			ion, owner, pct.num_owners, pct.owners_list[pct.num_owners], pct.num_owners, pct.num_nonowned_ions_per_pe[pct.num_owners], pct.num_owners, pct.list_ions_per_owner[pct.num_owners][0], pct.num_owners); 
+		//rmg_printf("Owner of ion %d PE %d has not been previously recorded: pct.owners_list[%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d, pct.list_ions_per_owner[%d][0]=%d, pct.num_owners=%d", 
+		//	ion, owner, pct.num_owners, pct.owners_list[pct.num_owners], pct.num_owners, pct.num_nonowned_ions_per_pe[pct.num_owners], pct.num_owners, pct.list_ions_per_owner[pct.num_owners][0], pct.num_owners); 
 	    }
 
 	    else
@@ -539,15 +519,6 @@ static void reset_pct_arrays (int num_ions)
 
         if (pct.nlindex[ion])
             delete [] pct.nlindex[ion];
-#if FDIFF_BETA
-        if (pct.weight_derx[ion])
-            delete [] pct.weight_derx[ion];
-        if (pct.weight_dery[ion])
-            delete [] pct.weight_dery[ion];
-        if (pct.weight_derz[ion])
-            delete [] pct.weight_derz[ion];
-#endif
-
 
         if (pct.phaseptr[ion])
             delete [] pct.phaseptr[ion];

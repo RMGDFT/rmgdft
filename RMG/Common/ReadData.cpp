@@ -187,7 +187,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         
 	read_double (fhand, occ, (nk * ns));
 
-	printf ("read_data: read 'occupations'\n"); 
+	rmg_printf ("read_data: read 'occupations'\n"); 
 
 
 	if (ct.forceflag != BAND_STRUCTURE)
@@ -242,7 +242,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 		read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
 	    }
 
-	printf ("read_data: read 'eigenvalues'\n");
+	rmg_printf ("read_data: read 'eigenvalues'\n");
 
     }      /* end of read eigenvalues */
 
@@ -262,7 +262,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 	    }
 	}
 
-	printf ("read_data: read 'wfns'\n");
+	rmg_printf ("read_data: read 'wfns'\n");
 
     }
 

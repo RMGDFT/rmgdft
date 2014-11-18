@@ -20,10 +20,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
     KpointType *Bweight, *Nlweight;
     std::complex<double> I_t(0.0, 1.0);
 
-#if FDIFF_BETA
-    double *rtptr_x, *rtptr_y, *rtptr_z;
-    double *r1, *r2, *r3;
-#endif
     SPECIES *sp;
     ION *iptr;
     fftw_plan p2;
@@ -47,12 +43,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
         rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     gbptr = beptr + max_size;
-
-#if FDIFF_BETA
-    my_malloc (r1, 3 * max_size, double);
-    r2 = r1 + max_size;
-    r3 = r2 + max_size;
-#endif
 
 
     for(idx = 0; idx < pct.num_tot_proj * P0_BASIS; idx++)
@@ -100,13 +90,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)sp->forward_beta;
 
-            /*Pointer to where calculated beta will be stored */
-    #if FDIFF_BETA
-            rtptr_x = pct.weight_derx[ion];
-            rtptr_y = pct.weight_dery[ion];
-            rtptr_z = pct.weight_derz[ion];
-    #endif
-
 
             /* Loop over radial projectors */
             for (ip = 0; ip < sp->num_projectors; ip++)
@@ -128,13 +111,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), rtptr, Bweight, Nlweight);
 
                 /*Calculate derivative of beta */
-    #if FDIFF_BETA
-                partial_beta_fdiff (beptr, sp->nldim, r1, r2, r3);
-
-                assign_weight2 (sp->nldim, ion, r1, rtptr_x);
-                assign_weight2 (sp->nldim, ion, r2, rtptr_y);
-                assign_weight2 (sp->nldim, ion, r3, rtptr_z);
-    #endif
 
 
 
@@ -143,11 +119,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 rtptr += P0_BASIS;
                 Bweight += P0_BASIS;
                 Nlweight += P0_BASIS;
-    #if FDIFF_BETA
-                rtptr_x += pct.idxptrlen[ion];
-                rtptr_y += pct.idxptrlen[ion];
-                rtptr_z += pct.idxptrlen[ion];
-    #endif
 
             }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 
@@ -162,9 +133,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     } // end for(kpt)
 
-#if FDIFF_BETA
-    my_free (r1);
-#endif
     fftw_free (beptr);
 
 

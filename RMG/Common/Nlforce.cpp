@@ -22,7 +22,7 @@
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
-#define VERBOSE 1
+#define VERBOSE 0
 
 template void Nlforce<double> (double *, Kpoint<double> **Kptr);
 template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr);
@@ -105,26 +105,19 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         {
             sp = &ct.sp[iptr->species];
 
-#if !FDIFF_BETA
             in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
             out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
             p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out),
                                      FFTW_BACKWARD, FFTW_ESTIMATE);
-#else
-            p2 = NULL;
-#endif
 
 
             PartialBetaxpsi (gion, p2, newsintR_x, newsintR_y, newsintR_z, newsintI_x, newsintI_y,
                               newsintI_z, iptr, Kptr);
 
             /*Release memery for plans */
-#if !FDIFF_BETA
             fftw_destroy_plan (p2);
             fftw_free(out);
             fftw_free(in);
-#endif
-
 
 
 

@@ -78,11 +78,11 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
             il = 0;
             for (is = 0; is < ct.num_states; is++)
             {
-                if (is % 4 == 0)
+                if (is % 5 == 0)
                     rmg_printf ("[kpt %3d %3d %3d]", jk, iscf, il++);
 
                 rmg_printf ("   %8.4f [%5.3f]%s",
-                        kptr->Kstates[is].eig[idx] * Ha_eV, kptr->Kstates[is].occupation[idx], ((is % 4 == 3) ? "\n" : ""));
+                        kptr->Kstates[is].eig[idx] * Ha_eV, kptr->Kstates[is].occupation[idx], ((is % 5 == 4) ? "\n" : ""));
             }
             rmg_printf ("\n");
         }

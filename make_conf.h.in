@@ -3,13 +3,6 @@
 /* Gamma point only set to 1, otherwise, 0 */
 #define GAMMA_PT ${GAMMA_PT}
 
-/* Set this to 1 if you want to use finite difference method for calculating
- * derivatives of beta. This is faster since it avoids doing 3 backwards fourier
- * transforms per ion, but it may not be very accurate since the finite diff
- * derivative is done on the coarse grid.
- * Leave this set to 0 unless you know what you are doing */
-#define FDIFF_BETA ${FDIFF_BETA}
-
 /* Experimental fast ortho. Disabled by default. */
 #define FAST_ORTHO ${FAST_ORTHO}
 

@@ -348,7 +348,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     time2 = my_crtc ();
 
-    printf ("\n\n init: Starting FFTW initialization ...");
+    rmg_printf ("\n\n init: Starting FFTW initialization ...");
 
     fflush (NULL);
 
@@ -370,7 +370,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     init_derweight ();
     delete(RT1);
 
-    printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
+    rmg_printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
     fflush (NULL);
 
 
@@ -517,11 +517,6 @@ static void init_alloc_nonloc_mem (void)
 {
     int ion;
 
-#if FDIFF_BETA
-    pct.weight_derx = new double *[ct.num_ions];
-    pct.weight_dery = new double *[ct.num_ions];
-    pct.weight_derz = new double *[ct.num_ions];
-#endif
 
     pct.nlindex = new int *[ct.num_ions];
     pct.Qindex = new int *[ct.num_ions];
@@ -542,12 +537,6 @@ static void init_alloc_nonloc_mem (void)
     pct.weight = NULL;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-
-#if FDIFF_BETA
-        pct.weight_derx[ion] = NULL;
-        pct.weight_dery[ion] = NULL;
-        pct.weight_derz[ion] = NULL;
-#endif
 
         pct.idxptrlen[ion] = 0;
         pct.Qidxptrlen[ion] = 0;

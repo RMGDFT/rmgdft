@@ -246,7 +246,15 @@ void initialize(int argc, char **argv)
         if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
     }
 
-    if(!ct.is_gamma) ct.is_use_symmetry = 1;
+    if(!ct.is_gamma) 
+    {
+        ct.is_use_symmetry = 1;
+        rmg_printf("\nUSING COMPLEX ORBITALS\n");
+    }
+    else
+    {
+        rmg_printf("\nUSING REAL ORBITALS\n");
+    }
 
     for (int kpt = 0; kpt < ct.num_kpts; kpt++)
     {
@@ -254,14 +262,12 @@ void initialize(int argc, char **argv)
         if(ct.is_gamma) {
 
             // Gamma point
-            rmg_printf("\nUSING REAL ORBITALS\n");
             Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         else {
 
             // General case
-            rmg_printf("\nUSING COMPLEX ORBITALS\n");
             Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
