@@ -31,9 +31,6 @@ bravais_lattice_type=
 a_length="25.917768986"
 b_length="14.496126116"
 c_length="28.284379996"
-alpha="90.0"
-beta="90.0"
-gamma="90.0"
 
 atomic_coordinate_type=
 "Absolute"
