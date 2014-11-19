@@ -1,0 +1,20 @@
+#
+RMG="$RMG_directory/rmg"
+MPIRUN="mpirun"
+#
+#cd ./1-scf
+#$MPIRUN $RMG  ./in.cnt
+#cd ..
+#
+#cd ./2-wfn
+#$MPIRUN $RMG  ./in.cnt
+#cd ..
+#
+#cd ./3-wfnq
+#$MPIRUN $RMG  ./in.cnt
+#cd ..
+#
+cd ./4-wfn_fi
+$MPIRUN $RMG  ./in.cnt
+cd ..
+#

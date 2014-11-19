@@ -1,0 +1,27 @@
+diagonalization
+
+number_val_bands_coarse 4
+number_val_bands_fine 4
+number_cond_bands_coarse 7
+number_cond_bands_fine 7
+
+coarse_grid_points 8
+
+no_symmetries_coarse_grid
+no_symmetries_fine_grid
+no_symmetries_shifted_grid
+
+screening_semiconductor
+
+cell_wire_truncation   
+
+use_momentum
+polarization 0.0 0.0 1.0
+
+gaussian_broadening
+energy_resolution 0.15
+
+write_eigenvectors -1
+
+eqp_co_corrections
+

@@ -1,0 +1,24 @@
+# (8,0) semiconducting SWCNT
+#
+# Enter RMG directory.
+#
+# RMG: generate k-points (directory 0); you must manually add the k-points to RMG input files
+RMG: sh ./script_0
+#
+# create symbolic links
+#
+sh ./script_1
+#
+# generate charge density (directory 1)
+# run nscf calculations (directories 2-4)
+Submit script_2. Suggested ncpu = 32, walltime = 24:00:00
+#
+cd ..
+#
+# generate dielectric matrix (directory 5)
+# calculate self-energy corrections (directory 6)
+# generate electron-hole interaction kernel (directory 7)
+# solve BSE and calculate optical absorption (directory 8)
+#
+Submit script. Suggested ncpu = 32, walltime = 24:00:00
+#

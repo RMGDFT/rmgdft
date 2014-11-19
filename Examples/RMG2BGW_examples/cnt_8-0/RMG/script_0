@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#
+KGRID="$BGW/bin/kgrid.x"
+#
+cd ./0-kgrid
+$KGRID ./WFN.in ./WFN.out ./WFN.log
+$KGRID ./WFNq.in ./WFNq.out ./WFNq.log
+$KGRID ./WFN_fi.in ./WFN_fi.out ./WFN_fi.log
+cd ..
+#

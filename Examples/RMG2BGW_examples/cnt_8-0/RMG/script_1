@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#
+ln -s ../RMG/2-wfn/wfn.complex ../5-epsilon/WFN
+ln -s ../RMG/3-wfnq/wfn.complex ../5-epsilon/WFNq
+#
+ln -s ../RMG/2-wfn/vxc.dat ../6-sigma/vxc.dat
+ln -s ../RMG/2-wfn/rho.complex ../6-sigma/RHO
+ln -s ../RMG/2-wfn/wfn.complex ../6-sigma/WFN_inner
+ln -s ../5-epsilon/eps0mat ../6-sigma
+ln -s ../5-epsilon/epsmat ../6-sigma
+#
+ln -s ../RMG/2-wfn/wfn.complex ../7-kernel/WFN_co
+ln -s ../5-epsilon/eps0mat ../7-kernel
+ln -s ../5-epsilon/epsmat ../7-kernel
+#
+ln -s ../RMG/2-wfn/wfn.complex ../8-absorption/WFN_co
+ln -s ../RMG/4-wfn_fi/wfn.complex ../8-absorption/WFN_fi
+ln -s ../5-epsilon/eps0mat ../8-absorption
+ln -s ../5-epsilon/epsmat ../8-absorption
+ln -s ../7-kernel/bsedmat ../8-absorption
+ln -s ../7-kernel/bsexmat ../8-absorption
+#
