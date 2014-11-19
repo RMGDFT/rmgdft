@@ -338,7 +338,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Maximum number of self consistent steps to perform.\n", 
                      "max_scf_steps must be greater than 0. Resetting to the default value of 500\n");
 
-    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 5, 5, 5,
+    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 5, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -353,7 +353,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
-    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 5, 5,
+    If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -838,12 +838,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if(lc.poi_parm.levels == -1) {
         for(lc.poi_parm.levels = 6;lc.poi_parm.levels >= 0;lc.poi_parm.levels--) {
             bool poi_level_err = false;
-            if ((FNX_GRID / (1 << lc.poi_parm.levels)) < 3) poi_level_err = true;
-            if ((FNY_GRID / (1 << lc.poi_parm.levels)) < 3) poi_level_err = true;
-            if ((FNZ_GRID / (1 << lc.poi_parm.levels)) < 3) poi_level_err = true;
-            if ((FNX_GRID % (1 << lc.poi_parm.levels)) != 0) poi_level_err = true;
-            if ((FNY_GRID % (1 << lc.poi_parm.levels)) != 0) poi_level_err = true;
-            if ((FNZ_GRID % (1 << lc.poi_parm.levels)) != 0) poi_level_err = true;
+            if ((FNX_GRID / (1 << (lc.poi_parm.levels+1))) < 3) poi_level_err = true;
+            if ((FNY_GRID / (1 << (lc.poi_parm.levels+1))) < 3) poi_level_err = true;
+            if ((FNZ_GRID / (1 << (lc.poi_parm.levels+1))) < 3) poi_level_err = true;
+            if ((FNX_GRID % (1 << (lc.poi_parm.levels+1))) != 0) poi_level_err = true;
+            if ((FNY_GRID % (1 << (lc.poi_parm.levels+1))) != 0) poi_level_err = true;
+            if ((FNZ_GRID % (1 << (lc.poi_parm.levels+1))) != 0) poi_level_err = true;
             if (!poi_level_err) break;
         }
     }

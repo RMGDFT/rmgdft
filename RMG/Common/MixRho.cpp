@@ -22,7 +22,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, int length, int le
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
-    if (Verify("charge_mixing_type","Linear", ControlMap))
+    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1)
     {
 	
 	/* Scale old charge density first*/
