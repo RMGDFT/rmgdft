@@ -65,11 +65,11 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
     array_in_char = new char[sizes[0] * sizes[1] * sizes[2] *charspernum];
 
     int count = 0;
-            for (int i=0; i<subsizes[0]; i++) {
-        for (int j=0; j<subsizes[1]; j++) {
     for (int k=0; k<subsizes[2]; k++) {
+        for (int j=0; j<subsizes[1]; j++) {
+            for (int i=0; i<subsizes[0]; i++) {
                 idx = i * subsizes[1] * subsizes[2] + j * subsizes[2] + k;
-                if( (((k+starts[2] + 1)%5) == 0) | ((k +starts[2]) == sizes[2] -1) )
+                if( (((i+starts[0] + 1)%5) == 0) | ((i +starts[0]) == sizes[0] -1) )
                     sprintf(&array_in_char[count*charspernum], endfmt, array_3d[idx]);
                 else
                     sprintf(&array_in_char[count*charspernum], fmt, array_3d[idx]);
@@ -83,8 +83,8 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
 
 
 
-    //int order = MPI_ORDER_FORTRAN;
-    int order = MPI_ORDER_C;
+    int order = MPI_ORDER_FORTRAN;
+    //int order = MPI_ORDER_C;
     MPI_Type_create_subarray(3, sizes, subsizes, starts, order, num_as_string, &localarray);
     MPI_Type_commit(&localarray);
 
