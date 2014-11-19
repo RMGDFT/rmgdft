@@ -187,6 +187,9 @@ typedef struct
     /** Number of species */
     int num_species;
 
+    // potential grid refinement
+    int FG_RATIO;
+
     /* Cutoff parameter */
     double cparm;
     double betacparm;

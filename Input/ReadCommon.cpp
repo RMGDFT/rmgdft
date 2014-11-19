@@ -63,7 +63,7 @@ namespace po = boost::program_options;
    values are registered in the following way.
 
    RmgInputFile If(inputfile);
-   If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2,
+   If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 3, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Ratio of the fine grid to the wavefunction grid.",
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
@@ -114,7 +114,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
-    int FG_RATIO;
     double celldm[6];
     double a0[3], a1[3], a2[3], omega;
 
@@ -274,7 +273,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
-    If.RegisterInputKey("potential_grid_refinement", &FG_RATIO, 0, 3, 2, 
+    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 3, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Ratio of the fine grid to the wavefunction grid.", 
                      "potential_grid_refinement must be in the range (1 <= ratio <= 2). Resetting to the default value of 2.\n");
@@ -817,11 +816,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
 
     // Set grid info up
-    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, FG_RATIO);
+    Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, lc.FG_RATIO);
 
-    int FNX_GRID = NX_GRID * FG_RATIO;
-    int FNY_GRID = NY_GRID * FG_RATIO;
-    int FNZ_GRID = NZ_GRID * FG_RATIO;
+    int FNX_GRID = NX_GRID * lc.FG_RATIO;
+    int FNY_GRID = NY_GRID * lc.FG_RATIO;
+    int FNZ_GRID = NZ_GRID * lc.FG_RATIO;
 
 
     /* read the electric field vector */
@@ -848,6 +847,20 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
             if (!poi_level_err) break;
         }
     }
+
+
+    // This is an ugly hack but it's necessary for now since we want to print the
+    // original options back out for reuse and the code modifies these
+    static double orig_celldm[3];
+    orig_celldm[0] = celldm[0];
+    orig_celldm[1] = celldm[1];
+    orig_celldm[2] = celldm[2];
+    InputKey *ik = InputMap["a_length"];
+    ik->Readdoubleval = &orig_celldm[0];
+    ik = InputMap["b_length"];
+    ik->Readdoubleval = &orig_celldm[1];
+    ik = InputMap["c_length"];
+    ik->Readdoubleval = &orig_celldm[2];
 
 
     // Transform to atomic units, which are used internally if input is in angstrom 
@@ -879,9 +892,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     Rmg_L.latgen(celldm, &omega, a0, a1, a2, &flag);
 
     // Cutoff parameter 
-    lc.qcparm = lc.cparm / (double) FG_RATIO;
+    lc.qcparm = lc.cparm / (double) lc.FG_RATIO;
     lc.betacparm = lc.cparm / (double) lc.nxfgrid;
-    lc.cparm /= (double) FG_RATIO;
+    lc.cparm /= (double) lc.FG_RATIO;
 
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";
