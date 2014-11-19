@@ -96,7 +96,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     {
         double *x = new double[ct.num_kpts];
         double *y = new double[ct.num_kpts * ct.num_states];
-        snprintf(pngfile, MAX_PATH, "%s%s", filename, ".png");
+        snprintf(pngfile, MAX_PATH, "%s%s", ct.basename, ".bandstructure.png");
         x[0] = 0.0;
         for(int ik = 1; ik < ct.num_kpts; ik++)
         {

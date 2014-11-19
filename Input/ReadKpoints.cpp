@@ -122,10 +122,10 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     }
 
         
-    rmg_printf("\n num_k %d", ct.num_kpts);
-    for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-        rmg_printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
-    rmg_printf("\n");
+    //rmg_printf("\n num_k %d", ct.num_kpts);
+    //for(int kpt = 0; kpt < ct.num_kpts; kpt++)
+     //   rmg_printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+    //rmg_printf("\n");
 
 
 }
