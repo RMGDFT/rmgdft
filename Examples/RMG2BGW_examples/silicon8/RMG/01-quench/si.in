@@ -1,0 +1,97 @@
+description="benzene molecule"
+
+processor_grid="2 2 2"
+
+wavefunction_grid="32 32 32"
+
+
+occupations_type=
+"Fixed" 
+#"Fermi Dirac"
+
+unoccupied_states_per_kpoint="15"
+system_charge="0"
+
+occupation_electron_temperature_eV="0.025"
+occupation_number_mixing="1.00"
+
+kpoint_mesh="2 2 2"
+kpoint_is_shift="0 0 0"
+
+
+#kpoints=
+#"
+#	0.00  0.00  0.00 1.0
+#"
+
+length_units=
+"Bohr"
+#"Angstrom"
+
+bravais_lattice_type=
+"Orthorhombic Primitive"
+
+# Lattice constants 
+a_length="9.638"
+b_length="9.638"
+c_length="9.638"
+
+atomic_coordinate_type=
+#"Absolute"
+"Cell Relative"
+
+atoms =
+"
+ Si 0.0 0.0 0.0     1
+ Si 0.5 0.5 0.0     1
+ Si 0.5 0.0 0.5     1
+ Si 0.0 0.5 0.5     1
+ Si 0.25 0.25 0.25  1
+ Si 0.75 0.75 0.25  1
+ Si 0.75 0.25 0.75  1
+ Si 0.25 0.75 0.75  1
+"
+
+pseudopotential="
+	Si   ./Si.UPF
+"
+
+start_mode=
+#"Random Start"
+#"Restart From File"
+"LCAO Start"
+
+calculation_mode=
+"Quench Electrons"
+#"Band Structure Only"
+
+exchange_correlation_type=
+"LDA"
+
+rms_convergence_criterion="1e-11"
+
+charge_density_mixing="0.55"
+projector_mixing="0.6"
+
+charge_mixing_type=
+#"Linear"
+"Pulay"
+
+charge_pulay_order="5"
+charge_pulay_scale="0.3"
+
+max_scf_steps="200"
+
+##RMG2BGW options
+
+#wfng_flag="true"
+#wfng_file="wfn.complex"
+
+#rhog_flag="true"
+#rhog_file="rho.complex"
+
+#vxc_flag="true"
+#vxc_file="vxc.dat"
+
+#vxc_diag_nmin="1"
+#vxc_diag_nmax="47"

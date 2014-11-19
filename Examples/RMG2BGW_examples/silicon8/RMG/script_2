@@ -1,0 +1,28 @@
+#
+RMG="$RMG_directory/rmg"
+MPIRUN="mpirun"
+#
+#cd ./01-quench
+#$MPIRUN $RMG ./si.in
+#cd ..
+#
+#cd ./02-wfn
+#$MPIRUN $RMG ./si.in
+#cd ..
+#
+#cd ./03-wfnq
+#$MPIRUN $RMG ./si.in
+#cd ..
+#
+#cd ./04-wfn_co
+#$MPIRUN $RMG ./si.in
+#cd ..
+#
+#cd ./05-wfn_fi
+#$MPIRUN $RMG ./si.in
+#cd ..
+#
+cd ./06-wfnq_fi
+#$MPIRUN $RMG ./si.in
+cd ..
+#

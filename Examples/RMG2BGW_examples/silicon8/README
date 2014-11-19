@@ -1,0 +1,26 @@
+# BULK SILICON - 8 Si atoms Cubic Cell
+#
+# Enter RMG directory.
+#
+# RMG: generate k-points (directory 00)
+# RMG: you must manually add the k-points to RMG input files
+RMG: sh ./script_0
+#
+# create symbolic links
+#
+sh ./script_1
+#
+# generate charge density (directory 01)
+# run nscf calculations (directories 02 to 06)
+#
+RMG: Submit script_2. Suggested ncpu = 24, walltime = 0:30:00
+#
+# cd ..
+#
+# generate dielectric matrix (directory 07)
+# calculate self-energy corrections (directory 08)
+# generate electron-hole interaction kernel (directory 09)
+# solve BSE and calculate optical absorption (directory 10)
+#
+Submit script_3. Suggested ncpu = 48, walltime = 0:30:00
+#

@@ -1,0 +1,24 @@
+diagonalization
+
+number_val_bands_coarse 16
+number_val_bands_fine 16
+number_cond_bands_coarse 40
+number_cond_bands_fine 16
+
+coarse_grid_points 8
+
+use_symmetries_coarse_grid
+no_symmetries_fine_grid
+no_symmetries_shifted_grid
+
+screening_semiconductor
+
+use_velocity
+q_shift 0.001 0.0 0.0
+
+gaussian_broadening
+energy_resolution 0.1
+
+eqp_co_corrections
+
+write_eigenvectors 10

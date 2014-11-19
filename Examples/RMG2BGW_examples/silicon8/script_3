@@ -1,0 +1,29 @@
+#edit these line as needed
+MPIRUN="mpirun"
+BGW_BIN="$BGW/bin"
+
+###############################################################################
+EPSILON="$BGW_BIN/epsilon.cplx.x"
+SIGMA="$BGW_BIN/sigma.cplx.x"
+EQP="$BGW_BIN/eqp.py"
+KERNEL="$BGW_BIN/kernel.cplx.x"
+ABSORPTION="$BGW_BIN/absorption.cplx.x"
+#
+#cd ./07-epsilon
+#$MPIRUN $EPSILON &> ./OUT.eps
+#cd ..
+#
+#cd ./08-sigma
+#$MPIRUN $SIGMA &> ./OUT.sig
+#cd ..
+#
+#$EQP eqp1 ./08-sigma/sigma_hp.log ./10-absorption/eqp_co.dat
+#
+#cd ./09-kernel
+#$MPIRUN $KERNEL &> ./OUT.krn
+#cd ..
+#
+cd ./10-absorption
+$MPIRUN $ABSORPTION &> ./OUT.abs
+cd ..
+#
