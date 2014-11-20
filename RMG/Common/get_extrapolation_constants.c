@@ -1,43 +1,35 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
-/****f* QMD-MGDFT/rmg_fastrelax.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   Calculates constants alpha and beta for wave function and charge extrapolation
- *   between MD steps. See PRB 45, 1538 (1992) and Comp. Phys. Comm. 118. 31 (1999).
- * INPUTS
- *   no explict input
- * OUTPUT
- *   atomic coordinates are updated
- * PARENTS
- *   
- * CHILDREN
- *   
- * SOURCE
- */
 
 #define VERBOSE 0
 
 #include "main.h"
-void get_extrapolation_constants (rmg_double_t *alpha, rmg_double_t *beta)
+void get_extrapolation_constants (double *alpha, double *beta)
 {
     int ion;
     ION *iptr;
-    rmg_double_t d01x, d01y, d01z, d12x, d12y, d12z, d23x, d23y, d23z, detA;
-    rmg_double_t a11, a12, a22, b1, b2, a21;
+    double d01x, d01y, d01z, d12x, d12y, d12z, d23x, d23y, d23z, detA;
+    double a11, a12, a22, b1, b2, a21;
 
 
     a11 = 0.0;
