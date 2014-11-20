@@ -1,3 +1,25 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 
 #include "main.h"
@@ -7,14 +29,14 @@
 #define SMALL 1.e-10
 #define  EPSR   1.e-6
 
-void gcxcblyp_spin (rmg_double_t rho_up, rmg_double_t rho_dw,
-  rmg_double_t grad_up, rmg_double_t grad_dw, rmg_double_t grad_updw2, rmg_double_t *enxc,
-  rmg_double_t *vxc1_up, rmg_double_t *vxc1_dw, rmg_double_t *vxc2_upup, rmg_double_t *vxc2_dwdw,
-  rmg_double_t *vxc2_updw, rmg_double_t *vxc2_dwup)
+void gcxcblyp_spin (double rho_up, double rho_dw,
+  double grad_up, double grad_dw, double grad_updw2, double *enxc,
+  double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
+  double *vxc2_updw, double *vxc2_dwup)
 {
-	rmg_double_t rhotot;	
-        rmg_double_t sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw;
-	rmg_double_t sc, v1cup, v1cdw, v2cup, v2cdw, v2cupdw;
+	double rhotot;	
+        double sxup, sxdw, sx, v1xup, v1xdw, v2xup, v2xdw;
+	double sc, v1cup, v1cdw, v2cup, v2cdw, v2cupdw;
 
 	
 	/* exchange correction for spin up */

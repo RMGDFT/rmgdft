@@ -1,3 +1,25 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 
 #include "main.h"
@@ -5,11 +27,11 @@
 #include <math.h>
 
 
-void lsd_glyp ( rmg_double_t rhoa, rmg_double_t rhob, rmg_double_t grhoaa, rmg_double_t grhoab2, rmg_double_t grhobb, rmg_double_t * sc, rmg_double_t * v1ca, rmg_double_t * v2ca, rmg_double_t * v1cb, rmg_double_t * v2cb, rmg_double_t * v2cab )
+void lsd_glyp ( double rhoa, double rhob, double grhoaa, double grhoab2, double grhobb, double * sc, double * v1ca, double * v2ca, double * v1cb, double * v2cb, double * v2cab )
 {
-	rmg_double_t a=0.04918, b=0.132, c=0.2533, d=0.349;
-	rmg_double_t rho, rm3, dr, or, dor, der, dder;
-	rmg_double_t dlaa, dlab, dlbb, dlaaa, dlaab, dlaba, dlabb, dlbba, dlbbb;
+	double a=0.04918, b=0.132, c=0.2533, d=0.349;
+	double rho, rm3, dr, or, dor, der, dder;
+	double dlaa, dlab, dlbb, dlaaa, dlaab, dlaba, dlabb, dlbba, dlbbb;
 
 	rho = rhoa + rhob;
 	rm3 = pow( rho, - 1.0 / 3.0 );
@@ -47,13 +69,13 @@ void lsd_glyp ( rmg_double_t rhoa, rmg_double_t rhob, rmg_double_t grhoaa, rmg_d
 
 
 
-void lsd_lyp ( rmg_double_t rho, rmg_double_t zeta, rmg_double_t * elyp, rmg_double_t * valyp, rmg_double_t * vblyp )
+void lsd_lyp ( double rho, double zeta, double * elyp, double * valyp, double * vblyp )
 {
 	/* C. Lee, W. Yang and R. G. Parr, PRB 37, 785 ( 1988 ) 
 	 * only the correlation for LDA part */
 
-	rmg_double_t rhoa, rhob, rm3, dr, en1, or, dor, en2, de1a, de1b, de2a, de2b;
-	rmg_double_t small=1.e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
+	double rhoa, rhob, rm3, dr, en1, or, dor, en2, de1a, de1b, de2a, de2b;
+	double small=1.e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
 
 	rhoa = rho * 0.5 * ( 1.0 + zeta );
 	rhoa = max ( rhoa, small );

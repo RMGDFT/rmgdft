@@ -1,3 +1,25 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 
 #include "main.h"
@@ -5,15 +27,15 @@
 #include <math.h> 
 
 
-void lyp ( rmg_double_t rs, rmg_double_t * ec, rmg_double_t * vc )
+void lyp ( double rs, double * ec, double * vc )
 {
 	/* C. Lee. W. Yang and R.G. Parr, PRB 37, 785 (1988 ) - LDA part only */
 	
-	rmg_double_t a=0.04918, b=0.132*2.87123400018819108;
-	rmg_double_t pi43=1.61199195401647, c=0.2533*pi43, d=0.349*pi43;
+	double a=0.04918, b=0.132*2.87123400018819108;
+	double pi43=1.61199195401647, c=0.2533*pi43, d=0.349*pi43;
 	/* pi43 = (4 * pi / 3)^(1 / 3) */
 
-	rmg_double_t ecrs, ox;
+	double ecrs, ox;
 
 	ecrs = b * exp ( - c * rs );
 	ox = 1.0 / ( 1.0 + d * rs );
@@ -22,12 +44,12 @@ void lyp ( rmg_double_t rs, rmg_double_t * ec, rmg_double_t * vc )
 }
 
 
-void glyp ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1c, rmg_double_t * v2c )
+void glyp ( double rho, double grho, double * sc, double * v1c, double * v2c )
 {
 	/* Lee Yang Parr: gradient correction part */
 
-	rmg_double_t a=0.04918, b=0.132, c=0.2533, d=0.349;
-	rmg_double_t rhom13, rhom43, rhom53, om, xl, ff, dom, dxl;
+	double a=0.04918, b=0.132, c=0.2533, d=0.349;
+	double rhom13, rhom43, rhom53, om, xl, ff, dom, dxl;
 
 	rhom13 = pow ( rho, - 1.0 / 3.0 );
 	om = exp ( -c * rhom13 ) / ( 1.0 + d * rhom13 );

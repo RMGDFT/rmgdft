@@ -1,3 +1,25 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 #include "main.h"
 #include "common_prototypes.h"
@@ -9,14 +31,14 @@
 #define    SMALL  1.e-10
 
 
-void xclsda_spin(rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc, rmg_double_t * exc)
+void xclsda_spin(double * rho, double * rho_oppo, double * vxc, double * exc)
 {
     int idx;
 
-    rmg_double_t pisq3, ex, ec, vx, vx_oppo, vc, vc_oppo;
-    rmg_double_t zeta, rs, kf;
+    double pisq3, ex, ec, vx, vx_oppo, vc, vc_oppo;
+    double zeta, rs, kf;
     
-    rmg_double_t rhox, arhox; /* the total charge in each grid point and the abosolute value of the charge */
+    double rhox, arhox; /* the total charge in each grid point and the abosolute value of the charge */
    
     pisq3 = THREE * PI * PI;
 
@@ -57,10 +79,10 @@ void xclsda_spin(rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * vxc
 
 
 
-void slater_spin(rmg_double_t arhox, rmg_double_t zeta, rmg_double_t * ex, rmg_double_t * vx, rmg_double_t * vx_oppo)
+void slater_spin(double arhox, double zeta, double * ex, double * vx, double * vx_oppo)
 {
-	rmg_double_t vxup, vxdw, f, alpha, third, p43;
-	rmg_double_t exup, exdw, rho13, rhoup, rhodw;
+	double vxup, vxdw, f, alpha, third, p43;
+	double exup, exdw, rho13, rhoup, rhodw;
 
 	f = -1.10783814957303361;  /* -9/8*(3/pi)^(1/3) */
 	alpha = 2.0 / 3.0;
@@ -85,12 +107,12 @@ void slater_spin(rmg_double_t arhox, rmg_double_t zeta, rmg_double_t * ex, rmg_d
 
 
 
-void pz_spin(rmg_double_t rs, rmg_double_t zeta, rmg_double_t * ec, rmg_double_t * vc, rmg_double_t * vc_oppo)
+void pz_spin(double rs, double zeta, double * ec, double * vc, double * vc_oppo)
 {
-	rmg_double_t ecu, vcu, ecp, vcp, fz, dfz;
-	rmg_double_t p43, third;
+	double ecu, vcu, ecp, vcp, fz, dfz;
+	double p43, third;
 	int iflag = 0;
-	rmg_double_t p1, p2, p3;
+	double p1, p2, p3;
 
 	p43 = 4.0 / 3.0;
 	third = 1.0 / 3.0;
@@ -122,11 +144,11 @@ void pz_spin(rmg_double_t rs, rmg_double_t zeta, rmg_double_t * ec, rmg_double_t
 /* J.P.Perdew and A.Zunger, PRB 23, 5048 (1981) 
  * Spin-polarized energy and potential*/
 
-void pz_polarized(rmg_double_t rs, rmg_double_t * ec, rmg_double_t * vc)
+void pz_polarized(double rs, double * ec, double * vc)
 {
-	rmg_double_t a = 0.01555, b = -0.0269, c = 0.0007, d = -0.0048;
-        rmg_double_t gc = -0.0843, b1 = 1.3981, b2 = 0.2611;
-	rmg_double_t lnrs, rs12, ox, dox;
+	double a = 0.01555, b = -0.0269, c = 0.0007, d = -0.0048;
+        double gc = -0.0843, b1 = 1.3981, b2 = 0.2611;
+	double lnrs, rs12, ox, dox;
 
 	if (rs < 1.0)   /* high density formula */
 	{

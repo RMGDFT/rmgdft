@@ -1,3 +1,25 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 #include "main.h"
 #include <float.h>
@@ -5,9 +27,9 @@
 
 #define SMALL 1.e-10
 
-void gcxbcp (rmg_double_t rho, rmg_double_t grad, rmg_double_t * enxc, rmg_double_t * vxc1, rmg_double_t * vxc2)
+void gcxbcp (double rho, double grad, double * enxc, double * vxc1, double * vxc2)
 {
-	rmg_double_t sx, sc, v1x, v2x, v1c, v2c, arho;
+	double sx, sc, v1x, v2x, v1c, v2c, arho;
 
 
 	sx = v1x = v2x = 0.0;

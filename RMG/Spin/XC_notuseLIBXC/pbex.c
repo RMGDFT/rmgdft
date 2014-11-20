@@ -1,25 +1,47 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 #include "main.h"
 #include <float.h>
 #include <math.h> 
 
 
-void pbex (rmg_double_t rho, rmg_double_t grho, int iflag, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x)
+void pbex (double rho, double grho, int iflag, double * sx, double * v1x, double * v2x)
 {
 	/* PBE exchange without Slater exchange */
 	/* iflag=0 J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996)
 	 * iflag=1 "revised" PBE: Y.Zhang et al., PRL 80, 890 (1998)
 	 * iflag=2 PBEsol: J.P.Perdew et al., PRL 100, 136406 (2008) */
 	
-	rmg_double_t kf, s1, s2, ds, dsg, exunif, fx;
-	rmg_double_t dxunif, dfx, f1, f2, f3, dfx1;
-	rmg_double_t third, c1, c2, c5;
+	double kf, s1, s2, ds, dsg, exunif, fx;
+	double dxunif, dfx, f1, f2, f3, dfx1;
+	double third, c1, c2, c5;
 	third = 1.0 / 3.0;
 	c1 = 0.75 / PI;
 	c2 = 3.093667726280136; /* (3 pi^2)^(1/3) */
 	c5 = 4.0 / 3.0;
 	
-	rmg_double_t k[]={0.804, 1.2450, 0.804}, mu[]={0.21951, 0.21951, 0.12345679012345679012};
+	double k[]={0.804, 1.2450, 0.804}, mu[]={0.21951, 0.21951, 0.12345679012345679012};
 
 	kf = c2 * pow (rho, third);    /* kf = (3 pi^2 |rho|)^(1/3)*/
 	dsg = 0.5 / kf;  
@@ -44,22 +66,22 @@ void pbex (rmg_double_t rho, rmg_double_t grho, int iflag, rmg_double_t * sx, rm
 }
 
 
-void pbec_spin (rmg_double_t rho, rmg_double_t zeta, rmg_double_t grho, int iflag, rmg_double_t * sc, rmg_double_t * v1cup, rmg_double_t * v1cdw, rmg_double_t * v2c)
+void pbec_spin (double rho, double zeta, double grho, int iflag, double * sc, double * v1cup, double * v1cdw, double * v2c)
 {
 	/* PBE correction without LDA part - spin-polarized */
 	/* iflag=1 J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996) 
 	 * iflag=2 J.P.Perdew et al., PRL 100, 136406 (2008)*/
 
-	rmg_double_t ga=0.031091, be[]={0.066725, 0.046};
-	rmg_double_t third, third2, pi34, xkf, xks;
+	double ga=0.031091, be[]={0.066725, 0.046};
+	double third, third2, pi34, xkf, xks;
 	third = 1.0 / 3.0;
 	third2 = 2.0 / 3.0;
 	pi34 = 0.6203504908994;    /* (3/(4 *pi))^(1/3) */
 	xkf = 1.919158292677513;    /* (9*pi/4)^(1/3) */
 	xks = 1.128379167095513;	/* sqrt(pi/4)*/
 
-	rmg_double_t kf, ks, rs, ec, vcup, vcdw, t, expe, af, y, xy, qy, s1, h0, ddh0;
-	rmg_double_t fz, fz2, fz3, fz4, dfz, bfup, bfdw, dh0up, dh0dw, dh0zup, dh0zdw; 
+	double kf, ks, rs, ec, vcup, vcdw, t, expe, af, y, xy, qy, s1, h0, ddh0;
+	double fz, fz2, fz3, fz4, dfz, bfup, bfdw, dh0up, dh0dw, dh0zup, dh0zdw; 
 
 	rs = pi34 / pow (rho, third); 
 	pw_spin(rs, zeta, &ec, &vcup, &vcdw);
@@ -97,26 +119,26 @@ void pbec_spin (rmg_double_t rho, rmg_double_t zeta, rmg_double_t grho, int ifla
 
 
 
-void pw_spin (rmg_double_t rs, rmg_double_t zeta, rmg_double_t * ec, rmg_double_t * vcup, rmg_double_t * vcdw)
+void pw_spin (double rs, double zeta, double * ec, double * vcup, double * vcdw)
 {
 	/* J.P.Perdew and Y. Wang, PRB 45, 13244 (1992) */
 
 	/* xc parameter, unpolarized */
-	 rmg_double_t a=0.031091, a1=0.21370, b1=7.5957, b2=3.5876, b3=1.6382, b4=0.49294;
+	 double a=0.031091, a1=0.21370, b1=7.5957, b2=3.5876, b3=1.6382, b4=0.49294;
 
 	/* xc parameter, polarized */
-	rmg_double_t ap=0.015545, a1p=0.20548, b1p=14.1189, b2p=6.1977, b3p=3.3662, b4p=0.62517;
+	double ap=0.015545, a1p=0.20548, b1p=14.1189, b2p=6.1977, b3p=3.3662, b4p=0.62517;
 
 	/* xc parameter, antiferro */
-	rmg_double_t aa=0.016887, a1a=0.11125, b1a=10.357, b2a=3.6231, b3a=0.88026, b4a=0.49671;
+	double aa=0.016887, a1a=0.11125, b1a=10.357, b2a=3.6231, b3a=0.88026, b4a=0.49671;
 
-	rmg_double_t fz0=1.709921;
+	double fz0=1.709921;
 
-	rmg_double_t rs12, rs32, rs2, zeta2, zeta3, zeta4, fz, dfz;
-	rmg_double_t om, dom, olog, epwc, vpwc;
-	rmg_double_t omp, domp, ologp, epwcp, vpwcp;
-	rmg_double_t oma, doma, ologa, alpha, vpwca;
-	rmg_double_t third, third4;
+	double rs12, rs32, rs2, zeta2, zeta3, zeta4, fz, dfz;
+	double om, dom, olog, epwc, vpwc;
+	double omp, domp, ologp, epwcp, vpwcp;
+	double oma, doma, ologa, alpha, vpwca;
+	double third, third4;
 	third = 1.0 / 3.0;
 	third4 = 4.0 / 3.0;
 

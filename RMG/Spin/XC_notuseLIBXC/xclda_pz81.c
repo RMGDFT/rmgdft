@@ -1,23 +1,31 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 /****f* QMD-MGDFT/xclda_pz81.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
+ *
  * FUNCTION
- *   void xclda_pz81(rmg_double_t *rho, rmg_double_t *vxc)
- *   void exclda_pz81(rmg_double_t *rho, rmg_double_t *exc)
+ *   void xclda_pz81(double *rho, double *vxc)
+ *   void exclda_pz81(double *rho, double *exc)
  *   Functions to generate the exchange-correlation potential and
  *   energy density using the Ceperley - Alder exchange-correlation
  *   potential and energy as parameterized by Perdew and Zunger, 
@@ -138,7 +146,7 @@ double mu_pz (double rho)
 
 
 
-void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc_f, int n)
+void xclda_pz81 (double * rho, double * vxc_f, int n)
 {
 
     int i;
@@ -158,7 +166,7 @@ void xclda_pz81 (rmg_double_t * rho, rmg_double_t * vxc_f, int n)
 
 
 
-void exclda_pz81 (rmg_double_t * rho, rmg_double_t * exc, int n)
+void exclda_pz81 (double * rho, double * exc, int n)
 {
 
     int i;

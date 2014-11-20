@@ -1,3 +1,25 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 #include "common_prototypes.h"
 #include "main.h"
@@ -8,13 +30,13 @@
 #define    SMALL  1.e-10
 
 
-void xclda(rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
+void xclda(double * rho, double * vxc, double * exc)
 {
     int  idx, iflag;
-    rmg_double_t d, kf;
+    double d, kf;
     
-    rmg_double_t pisq3, ex, vx, ec, vc;
-    rmg_double_t rs;
+    double pisq3, ex, vx, ec, vc;
+    double rs;
    
     pisq3 = THREE * PI * PI;
 
@@ -50,9 +72,9 @@ void xclda(rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
 
 /* slater exchange with alpha = 2.0 / 3.0 */
 
-void slater(rmg_double_t rs, rmg_double_t * ex, rmg_double_t * vx)
+void slater(double rs, double * ex, double * vx)
 {
-	rmg_double_t f, alpha;
+	double f, alpha;
 	f = -0.687247939924714;   /* -9/8*(3/(2*pi))^(2/3) */
         alpha = 2.0 / 3.0;
 	*ex = f * alpha / rs;
@@ -65,12 +87,12 @@ void slater(rmg_double_t rs, rmg_double_t * ex, rmg_double_t * vx)
  * iflag=0: J.P.Perdew and A. Zunger, PRB 23, 5048 (1981)
  * iflag=1: G.Ortiz and P.Ballone, PRB 50, 1391 (1994)*/
 
-void pz(rmg_double_t rs, int iflag, rmg_double_t * ec, rmg_double_t * vc)
+void pz(double rs, int iflag, double * ec, double * vc)
 {
-	rmg_double_t lnrs, rs12, ox, dox;
-	rmg_double_t a[]={0.0311, 0.031091}, b[]={-0.048, -0.046644};
-	rmg_double_t c[]={0.0020, 0.00419}, d[]={-0.0116, -0.00983};
-	rmg_double_t gc[]={-0.1423, -0.103756}, b1[]={1.0529, 0.56371}, b2[]={0.3334, 0.27358};
+	double lnrs, rs12, ox, dox;
+	double a[]={0.0311, 0.031091}, b[]={-0.048, -0.046644};
+	double c[]={0.0020, 0.00419}, d[]={-0.0116, -0.00983};
+	double gc[]={-0.1423, -0.103756}, b1[]={1.0529, 0.56371}, b2[]={0.3334, 0.27358};
 
 	if ( rs < 1.0)         /* high density formula*/
 	{

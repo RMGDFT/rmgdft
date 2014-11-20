@@ -1,20 +1,28 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 /****f* QMD-MGDFT/xcgga.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
+ *
  * FUNCTION
  *   void xcgga(P0_GRID *rho, P0_GRID *vxc, P0_GRID *exc, int mode)
  *   Functions to generate the exchange-correlation potential and
@@ -51,18 +59,18 @@
 /* up and dn are convenient for naming the processor's own spin the the opposite spin, 
  doesn't mean the real physics */
 
-void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc_up, rmg_double_t * exc, int mode)
+void xcgga_spin(double * rho_up, double * rho_dw, double * vxc_up, double * exc, int mode)
 
 {
     int idx, sizr;
-    rmg_double_t *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
-    rmg_double_t *gx_up, *gy_up, *gz_up, *agg_up;
-    rmg_double_t *gx_dw, *gy_dw, *gz_dw, *agg_dw; 
-    rmg_double_t *gx_vuu, *gy_vuu, *gz_vuu, *gx_vud, *gy_vud, *gz_vud; 
+    double *d2rho_up, *d2rho_dw, *agg, *agg_updw2;
+    double *gx_up, *gy_up, *gz_up, *agg_up;
+    double *gx_dw, *gy_dw, *gz_dw, *agg_dw; 
+    double *gx_vuu, *gy_vuu, *gz_vuu, *gx_vud, *gy_vud, *gz_vud; 
 
-    rmg_double_t pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
-    rmg_double_t rhotot, arhox, zeta, rs, kf;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double pisq3, ex, ec, vxup, vxdw, vcup, vcdw;
+    double rhotot, arhox, zeta, rs, kf;
+    double hxxgrid, hyygrid, hzzgrid;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
     hxxgrid = get_hxxgrid();
@@ -79,45 +87,45 @@ void xcgga_spin(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc
     
     pisq3 = THREE * PI * PI;
 
-    rmg_double_t *vxc2_upup, *vxc2_updw, vxc2_dwdw, vxc2_dwup;
-    rmg_double_t vxc1_up, vxc1_dw, grad_up, grad_dw, grad, grad_updw2, enxc, gx, gy, gz;
+    double *vxc2_upup, *vxc2_updw, vxc2_dwdw, vxc2_dwup;
+    double vxc1_up, vxc1_dw, grad_up, grad_dw, grad, grad_updw2, enxc, gx, gy, gz;
 
 
     /* Grab some memory */ 
     /* to hold gradient of spin up charge density */ 
-    my_malloc (gx_up, sizr, rmg_double_t);
-    my_malloc (gy_up, sizr, rmg_double_t);
-    my_malloc (gz_up, sizr, rmg_double_t);
+    my_malloc (gx_up, sizr, double);
+    my_malloc (gy_up, sizr, double);
+    my_malloc (gz_up, sizr, double);
 
     /* to hold gradient of spin down charge density */
-    my_malloc (gx_dw, sizr, rmg_double_t);
-    my_malloc (gy_dw, sizr, rmg_double_t);
-    my_malloc (gz_dw, sizr, rmg_double_t);
+    my_malloc (gx_dw, sizr, double);
+    my_malloc (gy_dw, sizr, double);
+    my_malloc (gz_dw, sizr, double);
 
     /* to hold the absolute of the gradient of total, up and down density */
-    my_malloc (agg, sizr, rmg_double_t);
-    my_malloc (agg_up, sizr, rmg_double_t);
-    my_malloc (agg_dw, sizr, rmg_double_t);
+    my_malloc (agg, sizr, double);
+    my_malloc (agg_up, sizr, double);
+    my_malloc (agg_dw, sizr, double);
 
     if ( mode == GGA_BLYP )
-    	my_malloc (agg_updw2, sizr, rmg_double_t);
+    	my_malloc (agg_updw2, sizr, double);
         /* to holde  (grad rhoup) \dot (grad rhodw)  */
 
     
     /* to hold laplaciant of the spin up and down charge density */
-    my_malloc (d2rho_up,  sizr, rmg_double_t);
-    my_malloc (d2rho_dw,  sizr, rmg_double_t);
+    my_malloc (d2rho_up,  sizr, double);
+    my_malloc (d2rho_dw,  sizr, double);
 
     /* to hold the gradient of potentials */
-    my_malloc (gx_vuu,  sizr, rmg_double_t);
-    my_malloc (gy_vuu,  sizr, rmg_double_t);
-    my_malloc (gz_vuu,  sizr, rmg_double_t);
+    my_malloc (gx_vuu,  sizr, double);
+    my_malloc (gy_vuu,  sizr, double);
+    my_malloc (gz_vuu,  sizr, double);
 
-    my_malloc (gx_vud,  sizr, rmg_double_t);
-    my_malloc (gy_vud,  sizr, rmg_double_t);
-    my_malloc (gz_vud,  sizr, rmg_double_t);
-    my_malloc (vxc2_upup, sizr, rmg_double_t);
-    my_malloc (vxc2_updw, sizr, rmg_double_t);
+    my_malloc (gx_vud,  sizr, double);
+    my_malloc (gy_vud,  sizr, double);
+    my_malloc (gz_vud,  sizr, double);
+    my_malloc (vxc2_upup, sizr, double);
+    my_malloc (vxc2_updw, sizr, double);
 
 
     /* Generate the gradient of the density */

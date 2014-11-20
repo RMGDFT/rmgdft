@@ -1,17 +1,39 @@
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 
 #include "main.h"
 #include <float.h>
 #include <math.h> 
 
-void perdew86 ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1c, rmg_double_t * v2c )
+void perdew86 ( double rho, double grho, double * sc, double * v1c, double * v2c )
 {
 	/* Perdew gradient correction on correlation: PRB 33, 8822 (1986) */
 	
-	rmg_double_t p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
-	rmg_double_t pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
-	rmg_double_t third=1.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
-	rmg_double_t rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi;
+	double p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
+	double pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
+	double third=1.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
+	double rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi;
 
 	rho13 = pow ( rho, third );
 	rho43 = pow ( rho13, 4 );
@@ -36,13 +58,13 @@ void perdew86 ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sc, rmg_doub
 }
 
 
-void becke88 ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x )
+void becke88 ( double rho, double grho, double * sx, double * v1x, double * v2x )
 {
 	/* Becke exchange: A.D. Becke, PRA 38, 3098 (1988) 
 	 * only gradient-corrected part, no Slater term included*/
 
-	rmg_double_t beta=0.0042, third=1.0/3.0, two13=1.259921049894873; /* two13 = 2^(1/3) */
-	rmg_double_t rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
+	double beta=0.0042, third=1.0/3.0, two13=1.259921049894873; /* two13 = 2^(1/3) */
+	double rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
 
 	rho13 = pow ( rho, third );
 	rho43 = pow ( rho13, 4 );
@@ -60,12 +82,12 @@ void becke88 ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_doubl
 }
 
 
-void becke88_spin ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_double_t * v1x, rmg_double_t * v2x )
+void becke88_spin ( double rho, double grho, double * sx, double * v1x, double * v2x )
 {
 	/* Becke exchange: A.D. Becke, PRA 38, 3098 (1988)  - Spin polarized case */
 	
-	rmg_double_t beta=0.0042, third=1.0/3.0;
-	rmg_double_t rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
+	double beta=0.0042, third=1.0/3.0;
+	double rho13, rho43, xs, xs2, sa2b8, shm1, dd, dd2, ee;
 	
 	rho13 = pow ( rho, third );
 	rho43 = pow ( rho13, 4 );
@@ -85,15 +107,15 @@ void becke88_spin ( rmg_double_t rho, rmg_double_t grho, rmg_double_t * sx, rmg_
 
 
 
-void perdew86_spin ( rmg_double_t rho, rmg_double_t zeta, rmg_double_t grho, rmg_double_t * sc, rmg_double_t * v1cup, rmg_double_t * v1cdw, rmg_double_t * v2c )
+void perdew86_spin ( double rho, double zeta, double grho, double * sc, double * v1cup, double * v1cdw, double * v2c )
 {
 	/* Perdew gradient correction on correlation: PRB 33, 8822 (1986)  - Spin polarized case*/
 	
-	rmg_double_t p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
-	rmg_double_t pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
-	rmg_double_t third=1.0/3.0, third2=2.0/3.0, third5=5.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
-	rmg_double_t rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi, dd, ddd;
-	rmg_double_t g1, g2, gg;
+	double p1=0.023266, p2=7.389e-6, p3=8.723, p4=0.472;
+	double pc1=0.001667, pc2=0.002568, pci=pc1+pc2;
+	double third=1.0/3.0, third2=2.0/3.0, third5=5.0/3.0, pi34=0.6203504908994;   /* (3/(4*pi))^(1/3) */
+	double rho13, rho43, rs, rs2, rs3, cna, cnb, cn, drs, dcna, dcnb, dcn, phi, ephi, dd, ddd;
+	double g1, g2, gg;
 		
 
 	rho13 = pow ( rho, third );

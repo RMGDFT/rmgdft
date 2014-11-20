@@ -1,20 +1,28 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
+
 
 /****f* QMD-MGDFT/xcgga.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
+ *
  * FUNCTION
  *   void xcgga(P0_GRID *rho, P0_GRID *vxc, P0_GRID *exc, int mode)
  *   Functions to generate the exchange-correlation potential and
@@ -47,13 +55,13 @@
 #define    SMALL  1.e-10
 
 
-void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode)
+void xcgga (double * rho, double * vxc, double * exc, int mode)
 {
     int idx, iflag, sizr;
-    rmg_double_t *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
-    rmg_double_t d, grad, vxc1, *vxc2, enxc;
-    rmg_double_t kf, pisq3, ex, vx, ec, vc, rs;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double *gx, *gy, *gz, *vgx, *vgy, *vgz, *agg, *d2rho;
+    double d, grad, vxc1, *vxc2, enxc;
+    double kf, pisq3, ex, vx, ec, vc, rs;
+    double hxxgrid, hyygrid, hzzgrid;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
     hxxgrid = get_hxxgrid();
@@ -71,17 +79,17 @@ void xcgga (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc, int mode
 
 
     /* Grab some memory */
-    my_malloc (gx, sizr, rmg_double_t);
-    my_malloc (gy, sizr, rmg_double_t);
-    my_malloc (gz, sizr, rmg_double_t);
-    my_malloc (vgx, sizr, rmg_double_t);
-    my_malloc (vgy, sizr, rmg_double_t);
-    my_malloc (vgz, sizr, rmg_double_t);
-    my_malloc (agg, sizr, rmg_double_t);
-    my_malloc (d2rho, sizr, rmg_double_t);
+    my_malloc (gx, sizr, double);
+    my_malloc (gy, sizr, double);
+    my_malloc (gz, sizr, double);
+    my_malloc (vgx, sizr, double);
+    my_malloc (vgy, sizr, double);
+    my_malloc (vgz, sizr, double);
+    my_malloc (agg, sizr, double);
+    my_malloc (d2rho, sizr, double);
 
 
-    my_malloc (vxc2, FP0_BASIS, rmg_double_t);
+    my_malloc (vxc2, FP0_BASIS, double);
 
 
 
