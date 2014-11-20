@@ -6,7 +6,8 @@ sed -n '/TDDFT/!p' temp1 >temp
 sed -n '/NEGF/!p' temp >temp1
 sed -n '/TestLib/!p' temp1 >temp
 sed -n '/ON\//!p' temp >temp1
-sed -n '/rmg-tddft/!p' temp1 > ../rmg-release/CMakeLists.txt 
+sed -n '/rmg-tddft/!p' temp1 > temp
+sed 's/Use_svn 1/Use_svn 0/g' temp > ../rmg-release/CMakeLists.txt 
 rm temp temp1
 cp -r cmake ../rmg-release
 cp -r Finite_diff ../rmg-release

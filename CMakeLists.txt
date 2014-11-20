@@ -612,7 +612,7 @@ if(Use_svn)
   string(REPLACE " " ";" foo4 ${foo3})
   list(GET foo4 2 LastChangeDate)
 else(Use_svn)
-  set(CodeRevision "\"release 0.0\"")
+  set(CodeRevision "\"release 1.0\"")
   set(LastChangeDate ${BuildDate})
 endif(Use_svn)
 
