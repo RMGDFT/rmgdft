@@ -4,5 +4,5 @@ input.log.00:  standard output file
 input.band:  input file for band structure calculation with 26 kpoint along Gamma-X
 input.band.bandstructure.xmgr: data file for band structure
 input.band.bandstructrue.png:  band structure plot with PLplot libs
-band.ps: modified band structrue plot around Fermi energy   
+band.png: modified band structrue plot around Fermi energy   
 rho.png: charge density image created by xcrysden.
