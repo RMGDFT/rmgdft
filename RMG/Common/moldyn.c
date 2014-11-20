@@ -1,40 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/moldyn.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void moldyn(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
- *               rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *rhocore)
- *   Molecular Dynamics driver routine
- * INPUTS
- *   states: point to orbital structure (see main.h)
- *   vxc:    exchange-correlation potential
- *   vh:     Hartree potential
- *   vnuc:   pseudopotential
- *   rho:    total charge density
- *   rhoc:   compensating charge density
- *   rhocore: core charge density
- * OUTPUT
- *   coordinates are updated, and all above are also updated
- * PARENTS
- *   main.c
- * CHILDREN
- *   to_crystal.c to_cartesian.c get_nlop.c scf.c sortpsi.c subdiag.c get_te.c force.c
- * SOURCE
- */
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 
 #include <float.h>

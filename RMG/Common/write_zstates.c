@@ -1,34 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/write_zstates.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void write_zstates(STATE *states)
- *   Generates the average of each state along the z-axis.
- *   Integrates over the x and y axes.
- * INPUTS
- *   states: points to orbital structure
- * OUTPUT
- *   print out z-average states
- * PARENTS
- *   main.c 
- * CHILDREN
- *   global_sums.c pe2xyz.c
- * SOURCE
- */
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 
 #include <stdio.h>

@@ -1,40 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/symmetry.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   C wrapper routines to call fortran functions which actually do the
- *   symmetrization.
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
  * 
- *   void init_sym(void)
- *     This routine is used to initialize the symmetry structures 
- *   void symmetrize_rho(P0_GRID *rho)
- *     Symmetrizes the density
- *   void symforce(void)
- *     This routine is used to symmetrize the forces (MBN)
- * INPUTS
- *   nothing
- * OUTPUT
- *   charge density and forces are updated 
- * PARENTS
- *   force.c get_rho.c init.c
- * CHILDREN
- *   to_crystal.c symmetry.f
- * SOURCE
- */
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 #include <float.h>
 #include <math.h>

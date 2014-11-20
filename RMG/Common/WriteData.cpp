@@ -1,41 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id: write_data.c 2426 2014-08-22 14:14:37Z ebriggs $    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/write_data.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void write_data(char *name, double *vh, double *rho, double *vxc, STATE *states)
- *   Writes the hartree potential, the wavefunctions, the 
- *   charge density and various other things to a file.
- *   This file is useful for re-run (ct.runflag =1)
- * INPUTS
- *   name: file name
- *   vh:  Hartree potential
- *   rho: total valence charge density
- *   vxc: exchange correlation potential
- *   states: points to orbital structure
- * OUTPUT
- *   write to a file 
- * PARENTS
- *   main.c
- * CHILDREN
- *   gather_psi.c 
- * SEE ALSO
- *   read_data.c
- * SOURCE
- */
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -56,7 +39,7 @@
 static size_t totalsize;
 
 
-/* To save disk space 'floats' are written instead of 'doubles'. */
+/* To save disk space 'floats' may be written instead of 'doubles'. Default is doubles. */
 /* The following routine accepts a buffer of doubles (doubles) but writes floats */
 static void write_float (int fh, double * rp, int count);
 static void write_double (int fh, double * rp, int count);

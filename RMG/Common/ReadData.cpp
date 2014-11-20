@@ -1,41 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id: read_data.c 2426 2014-08-22 14:14:37Z ebriggs $    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/read_data.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   void read_data(char *name, double *vh, double *rho, double *vxc, STATE *states)
- *   when ct.runflag == 1,
- *   Reads the hartree potential, the wavefunctions
- *   and various other things from a file which is created by the 
- *   previous run.          
- * INPUTS
- *   name:  file name
- * OUTPUT
- *   vh: Hartree potential
- *   rho:  total valence charge density
- *   vxc:  exchange correlation potential
- *   states: point to orbital structure
- * PARENTS
- *   init.c
- * CHILDREN
- *   scatter_psi.c
- * SEE ALSO
- *   write_data.c
- * SOURCE
- */
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 #include <sys/types.h>
 #include <sys/stat.h>

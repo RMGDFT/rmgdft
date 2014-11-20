@@ -1,37 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/rand0.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 1995  Emil Briggs
- *   Copyright (C) 1998  Emil Briggs, Charles Brabec, Mark Wensell, 
- *                       Dan Sullivan, Chris Rapcewicz, Jerzy Bernholc
- *   Copyright (C) 2001  Emil Briggs, Wenchang Lu,
- *                       Marco Buongiorno Nardelli,Charles Brabec, 
- *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
- *                       Jerzy Bernholc
- * FUNCTION
- *   rmg_double_t rand0(long *idum)
- *   Portable random number generator for producing repeatable random
- *   starts across computer architectures and processor topologies.
- *   The basic random algorithm used here is based on the Minimal Standard 
- *   Generator proposed by Lewis, Goodman, and Miller in 1969 as implemented in
- *   "Numerical Recipes in C. 2nd. Edition"
- * INPUTS
- *   idum: random number
- * OUTPUT
- *   a random number is returned
- * PARENTS
- *   init_wf.c init_wflcao.c
- * CHILDREN
- *   nothing
- * SOURCE
- */
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 
 #include <float.h>

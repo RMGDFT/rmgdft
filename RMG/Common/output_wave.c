@@ -1,29 +1,24 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
-/****f* QMD-MGDFT/output_wave.c *****
- * NAME
- *   Ab initio real space code with multigrid acceleration
- *   Quantum molecular dynamics package.
- *   Version: 2.1.5
- * COPYRIGHT
- *   Copyright (C) 2001  Serge Nakhmanson, Wenchang Lu, Jerzy Bernholc
- * FUNCTION
- *   void output_wave(STATE *states, int kpt, int fhand)
- *   output the wavefunction for bandstructure calculations
- * INPUTS
- *   states: pointer to wavefunctions
- *   kpt:    k-point index
- *   fhand:  file name 
- * OUTPUT
- *   write to a file 
- * PARENTS
- *   bandstructure.c
- * CHILDREN
- *   nothing
- * SOURCE
- */
+/*
+ *
+ * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
+ * at the top-level directory of this distribution or in the current
+ * directory.
+ * 
+ * This file is part of RMG. 
+ * RMG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * RMG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+*/
 
 
 #include <unistd.h>
