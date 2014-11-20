@@ -311,7 +311,6 @@ void gather_psi (rmg_double_t *tmp_psiR, rmg_double_t *tmp_psiI, STATE *sp, int 
 void scatter_psi (rmg_double_t *tmp_psiR, rmg_double_t *tmp_psiI, STATE *sp, int tid);
 void get_milliken (STATE *states);
 
-void bandstructure( STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc );
 void output_wave( STATE *states, int kpt, int fhand );
 
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,

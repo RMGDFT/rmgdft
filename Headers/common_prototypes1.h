@@ -286,7 +286,6 @@ void gather_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
 void scatter_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
 void get_milliken (STATE *states);
 
-void bandstructure( STATE *states, double *vxc, double *vh, double *vnuc );
 void output_wave( STATE *states, int kpt, int fhand );
 
 
