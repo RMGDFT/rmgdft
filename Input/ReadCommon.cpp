@@ -105,6 +105,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string Description;
     std::string Infile;
     std::string Outfile;
+    std::string wfng_file;
+    std::string rhog_file;
+    std::string vxc_file;
  
     Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> DefProcessorGrid({{0,0,0}});
@@ -522,6 +525,52 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "charge_pulay_special_metrics_weight must be a real number.");
+
+    //RMG2BGW options
+    If.RegisterInputKey("wfng_flag", &lc.wfng_flag, false, 
+                        "Write wavefunction in G-space to BerkeleyGW WFN file.");
+
+    If.RegisterInputKey("rhog_flag", &lc.rhog_flag, false, 
+                        "Write charge density in G-space to BerkeleyGW WFN file.");
+
+    If.RegisterInputKey("vxc_flag", &lc.vxc_flag, false, 
+                        "Write matrix elements of exchange-correlation potential to text file. Only used in Sigma code in BerkeleyGW.");
+
+    If.RegisterInputKey("wfng_file", &wfng_file, "wfn.complex",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Name of BerkeleyGW WFN output file.\n", 
+                     "");
+
+    If.RegisterInputKey("rhog_file", &rhog_file, "rho.complex",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Name of BerkeleyGW RHO output file.\n", 
+                     "");
+
+    If.RegisterInputKey("vxc_file", &vxc_file, "vxc.dat",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Name of output text file for Vxc matrix elements. Only used in Sigma code in BerkeleyGW.\n", 
+                     "");
+
+    If.RegisterInputKey("vxc_diag_nmin", &lc.vxc_diag_nmin, 1, 10000, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Minumum band index for diagonal Vxc matrix elements.\n ",
+                     "vxc_diag_nmin must lie in the range (1, 10000). Resetting to the default value of 1.\n");
+
+    If.RegisterInputKey("vxc_diag_nmax", &lc.vxc_diag_nmax, 1, 10000, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Maximum band index for diagonal Vxc matrix elements.\n ",
+                     "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
+
+    if(!wfng_file.length()) wfng_file = "wfn.complex";
+    std::strncpy(lc.wfng_file, wfng_file.c_str(), sizeof(lc.wfng_file));
+
+    if(!rhog_file.length()) rhog_file = "rho.complex";
+    std::strncpy(lc.rhog_file, rhog_file.c_str(), sizeof(lc.rhog_file));
+
+    if(!vxc_file.length()) vxc_file = "vxc.dat";
+    std::strncpy(lc.vxc_file, vxc_file.c_str(), sizeof(lc.vxc_file));
+
+
 
     // Booleans next. Booleans are never required.
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,

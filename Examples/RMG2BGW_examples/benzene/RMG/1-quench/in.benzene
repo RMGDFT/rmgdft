@@ -81,7 +81,7 @@ charge_mixing_type=
 charge_pulay_order="5"
 charge_pulay_scale="0.3"
 
-max_scf_steps="200"
+max_scf_steps="50"
 
 ##RMG2BGW options
 

@@ -1,6 +1,7 @@
 add_library (RMG_Common
 MixRho.cpp
 WriteData.cpp
+WriteBGW.cpp
 MixBetaxpsi1.cpp
 WriteRestart.cpp
 LcaoGetAwave.cpp

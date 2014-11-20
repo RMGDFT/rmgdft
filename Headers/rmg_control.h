@@ -531,7 +531,17 @@ typedef struct
     int trade_compression_level;
 
     
+   /* RMG2BGW options */
+   bool wfng_flag;
+   bool rhog_flag;
+   bool vxc_flag;
 
+   char wfng_file[256];
+   char rhog_file[256];
+   char vxc_file[256]; 
+   
+   int vxc_diag_nmin;
+   int vxc_diag_nmax;
 
     
     /** File to read the pseudopotentials from */
