@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <complex>
 #include "transition.h"
+#include "cnpy.h"
 #include "main.h"
 
 
@@ -25,6 +26,7 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
     MPI_Datatype num_as_string;
     MPI_Datatype localarray;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET, idx; 
+    int idx1;
     char *const fmt="%12.6e ";
     char *const endfmt="%12.6e\n";
     const int charspernum=13;
@@ -158,7 +160,36 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
         fclose(fhand);
     }
 
+    snprintf(newname, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], "electron_density.npz");
     delete array_in_char;
+    double cell[9];
+    for(int i = 0; i < 3; i++) 
+    {  
+        cell[i] = Rmg_L.a0[i];
+        cell[i+3] = Rmg_L.a1[i];
+        cell[i+6] = Rmg_L.a2[i];
+    }
+    const unsigned int shape[] = {3,3};
+    cnpy::npz_save(newname, "cell", cell, shape, 2, "w");
+
+    int length = sizes[0] * sizes[1] * sizes[2];
+    double *g_array = new double[sizes[0] * sizes[1] * sizes[2]];
+    for(idx = 0; idx < sizes[0] * sizes[1] * sizes[2]; idx++) g_array[idx] = 0.0;
+    for(int i = 0; i < subsizes[0]; i++)
+    for(int j = 0; j < subsizes[1]; j++)
+    for(int k = 0; k < subsizes[2]; k++)
+    { 
+
+      idx = i * subsizes[1] * subsizes[2] + j * subsizes[2] + k;
+      idx1 = (i+starts[0]) * sizes[1] * sizes[2] + (j+ starts[1]) * sizes[2] + k + starts[2];
+      g_array[idx1] = array_3d[idx];
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, g_array, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+ 
+    const unsigned int shape1[] = {sizes[0], sizes[1], sizes[2]};
+    cnpy::npz_save(newname, "density", g_array, shape1, 3, "a");
+
 
 }                               /* end write_data */
 

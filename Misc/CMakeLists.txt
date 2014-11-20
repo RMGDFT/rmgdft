@@ -1,4 +1,5 @@
 add_library (Misc
+cnpy.cpp
 LinePlot.cpp
 prime_factors.c
 InitIo.cpp
