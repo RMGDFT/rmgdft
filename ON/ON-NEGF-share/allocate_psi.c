@@ -42,6 +42,7 @@ void allocate_psi(STATE * states, STATE * states1)
 
 
     item = (ct.max_orbit_nx + 2) * (ct.max_orbit_ny + 2) * (ct.max_orbit_nz + 2);
+dprintf("\n %d %d ttt", item, pct.psi_size);
     my_malloc_init( sg_orbit, item, rmg_double_t );
     my_malloc_init( sg_orbit_res, item, rmg_double_t );
     my_malloc_init( orbit_tem, ct.max_orbit_size, rmg_double_t );

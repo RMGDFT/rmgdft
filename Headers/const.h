@@ -206,5 +206,6 @@
 #define LCAO_START 2
 #define INIT_FIREBALL  3
 #define INIT_GAUSSIAN  4
+#define Restart_TDDFT  5
 
 #endif /* CONST_H_INCLUDED */

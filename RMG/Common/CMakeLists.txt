@@ -35,7 +35,6 @@ MgEigState.cpp
 write_occ.c
 GetGamma.cpp
 fastrelax.c
-open_restart_file.c
 scalapack_tools.c
 lbfgs_init.c
 Nlforce.cpp

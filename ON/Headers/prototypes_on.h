@@ -602,6 +602,13 @@ void get_ion_ion_overlap_region_orbit ();
 
 void is_state_overlap (STATE * states, char *);
 void init_wf_lcao(STATE * states);
+void write_data(char *name, double *vh, double *vxc, double *vh_old,
+        double *vxc_old, double *rho, STATE * states);
+
+void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
+          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
+
+
 
 
 #ifdef __cplusplus

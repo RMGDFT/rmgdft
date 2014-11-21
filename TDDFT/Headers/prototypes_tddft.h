@@ -3,7 +3,7 @@
 extern "C" {
 #endif
 
-void init_TDDFT();
+void init_TDDFT(STATE *states, STATE *states1);
 void get_phi_xyz_phi(STATE *states, double *, double *, double *);
 void dipole_calculation(double *, double *);
 void update_TDDFT(double *);

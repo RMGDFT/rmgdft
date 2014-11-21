@@ -1,4 +1,5 @@
 add_library (ON_Common
+ write_restart.c
  init_wf_lcao.c
  add_orbit_to_wave.c
  allocate_matrix.c

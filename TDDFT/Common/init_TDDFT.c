@@ -11,10 +11,12 @@
 #include <assert.h>
 #include "main.h"
 #include "init_var.h"
+#include "prototypes_on.h"
+#include "transition.h"
 
 extern double *vh_old, *vxc_old;
 
-void init_TDDFT()
+void init_TDDFT(STATE *states, STATE *states1)
 {
     double time1;
     int MAT_TRANSFER = 0;
@@ -38,7 +40,7 @@ void init_TDDFT()
     my_malloc_init( vxc_old, get_FP0_BASIS(), double );
     my_malloc_init( vh_old, get_FP0_BASIS(), double );
 
-    init(vh, rho, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
+    init(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 
     my_barrier();
 

@@ -96,6 +96,7 @@ int main(int argc, char **argv)
     char filename[MAX_PATH+200];
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
+    amode = S_IREAD | S_IWRITE;
 
 
     ct.images_per_node = 1;
@@ -117,7 +118,7 @@ int main(int argc, char **argv)
     RmgTimer *RT1 = new RmgTimer("Main: init");
 
     /*  Begin to do the real calculations */
-    init_TDDFT();
+    init_TDDFT(states, states1);
 
     numst = ct.num_states;
 
@@ -168,9 +169,9 @@ int main(int argc, char **argv)
     dipole_calculation(rho, dipole_ele);
 
 
-    printf("\n  x dipolll  %f %f", dipole_ion[0], dipole_ele[0]);
-    printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
-    printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
+    rmg_printf("\n  x dipolll  %f %f", dipole_ion[0], dipole_ele[0]);
+    rmg_printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
+    rmg_printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
 
 
 
@@ -202,7 +203,7 @@ int main(int argc, char **argv)
 
     pre_steps = 0;
 
-    if(ct.runflag == 4) 
+    if(ct.runflag == Restart_TDDFT) 
     {
         sprintf(filename, "%s%s", ct.infile, ".TDDFT_restart");
         fhand = open(filename, O_RDWR);
@@ -266,7 +267,7 @@ int main(int argc, char **argv)
             if(pct.gridpe == 0)
             {
                 sprintf(filename, "%s%s", ct.outfile, ".TDDFT_restart");
-                fhand = open(filename, O_CREAT |O_TRUNC |O_RDWR);
+                fhand = open(filename, O_CREAT |O_TRUNC |O_RDWR, amode);
                 if (fhand < 0)
                     rmg_error_handler(__FILE__, __LINE__, " Unable to write file ");
 
@@ -288,7 +289,7 @@ int main(int argc, char **argv)
     if(pct.gridpe == 0)
     {
         sprintf(filename, "%s%s", ct.outfile, ".TDDFT_restart");
-        fhand = open(filename, O_CREAT |O_TRUNC |O_RDWR);
+        fhand = open(filename, O_CREAT |O_TRUNC |O_RDWR, amode);
         if (fhand < 0)
             rmg_error_handler(__FILE__, __LINE__, " Unable to write file ");
 

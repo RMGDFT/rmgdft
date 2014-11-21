@@ -38,6 +38,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "transition.h"
 extern rmg_double_t *vh_old, *vxc_old;
 
 
@@ -96,7 +97,7 @@ void run(STATE * states, STATE * states1)
 
     /* Save data to output file */
     void *RT2 = BeginRmgTimer("1-TOTAL: write");
-    write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
+    write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
 
     /* Save state information to file */
     write_states_info(ct.outfile, &states[0]);
