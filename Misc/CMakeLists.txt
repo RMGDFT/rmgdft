@@ -14,7 +14,6 @@ RmgGemm.cpp
 RmgSymm.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
-black_box.f
 RmgTimer_Cbindings.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp
@@ -27,7 +26,6 @@ pack_stod.cpp
 BaseGrid_Cbindings.cpp
 Lattice_Cbindings.cpp
 transition.cpp
-init_IO.c
 init_pestr.c
 init_states.c
 get_index.c
