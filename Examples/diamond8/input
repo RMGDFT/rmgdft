@@ -1,0 +1,90 @@
+# Description of run.
+#
+# Small test cell
+description="8 atom diamond cell"
+
+# Wavefunction grid
+wavefunction_grid="16 16 16"
+
+#input_wave_function_file="Diamond"
+#output_wave_function_file="Diamond"
+
+write_eigvals_period = "1"
+
+occupations_type=
+"Fixed"  #i.e. use occupations as specified elswhere in this file
+#"Fermi Dirac"
+#"Gaussian"
+#"Error Function" 
+
+# Occupations for the states, 
+states_count_and_occupation="16 2.0  16 0.0"
+
+# Units for bravais_lattice_type and atoms
+length_units=
+"Bohr"
+#"Angstrom"
+
+bravais_lattice_type=
+"Cubic Primitive"
+#"Cubic Face Centered"
+#"Cubic Body Centered"
+#"Hexagonal Primitive"
+#"Hexagonal Rhombohedral (Trigonal)"
+#"Tetragonal Primitive"
+#"Tetragonal Body Centered"
+#"Orthorhombic Primitive"
+#"Monoclinic Primitive"
+#"Triclinic Primitive"
+
+# Lattice constants 
+a_length="6.72"
+b_length="6.72"
+c_length="6.72"
+
+atomic_coordinate_type=
+"Cell Relative"
+#"Absolute"
+
+# List  atomic symbol, coordinates, and movable flag (1 == movable) 
+# symbol and coordinates are required, moveable is optional, default is 1
+atoms =
+"
+C       0.125000      0.125000      0.125000   1
+C       0.125000      0.625000      0.625000   1
+C       0.625000      0.125000      0.625000   1
+C       0.625000      0.625000      0.125000   1
+C       0.375000      0.375000      0.375000   1
+C       0.375000      0.875000      0.875000   1
+C       0.875000      0.375000      0.875000   1
+C       0.875000      0.875000      0.375000   1
+"
+
+
+start_mode=
+"LCAO Start"
+#"Restart From File"
+#"Random Start"
+
+calculation_mode= "Quench Electrons"
+
+
+# Criterion used to judge SCF convergency 
+rms_convergence_criterion="5e-8"
+
+charge_density_mixing="0.72"
+charge_mixing_type= "Linear"
+max_scf_steps="50"
+
+
+# Subspace diagonalization options
+initial_diagonalization = "true"
+subdiag_driver="lapack"
+
+# Potential acceleration options
+# By default poisson is set to zero but it may work better for some systems
+# Setting it to 1.0 is a good option.
+potential_acceleration_constant_step="1.0"
+potential_acceleration_poisson_step="0.0"
+
+kohn_sham_mucycles = "3"

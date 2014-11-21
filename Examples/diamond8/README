@@ -1,0 +1,4 @@
+Small example calculation for an 8 atom diamond cell.
+input: input file for a gamma point calculation
+input.log.00:  standard output file
+input.rmsdv.png: convergence plot
