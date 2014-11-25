@@ -44,6 +44,8 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     std::set<std::string> SpeciesTypes;
     std::list<std::string> IonSpecies;
 
+    std::string string_tem;
+
     // Read atoms
     ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
 
@@ -110,7 +112,10 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                 boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
                 for(int isp = 0;isp < lc.num_species;isp++) {
                     if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol)) {
-                        std::strncpy(lc.sp[isp].pseudo_filename, fields[1].c_str(), sizeof(lc.sp[isp].pseudo_filename));
+                        
+                        string_tem = std::string(pct.image_path[pct.thisimg]) + fields[1];  
+                        std::strncpy(lc.sp[isp].pseudo_filename, string_tem.c_str(), sizeof(lc.sp[isp].pseudo_filename));
+
                     }
                 }
 
