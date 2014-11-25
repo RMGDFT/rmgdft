@@ -129,7 +129,7 @@ void LoadUpf(SPECIES *sp)
 
         // Send it to everyone else
         MPI_Bcast (&pp_buffer_len, 1, MPI_INT, 0, pct.img_comm);
-        if(pct.worldrank != 0) {
+        if(pct.imgpe != 0) {
             pp_buffer = new char[pp_buffer_len + 1]();
         }
         MPI_Bcast (pp_buffer, pp_buffer_len, MPI_CHAR, 0, pct.img_comm);
