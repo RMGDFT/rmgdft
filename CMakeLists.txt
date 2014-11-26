@@ -101,7 +101,7 @@ target_link_libraries (rmg RMG_Common Force)
 target_link_libraries (rmg Force RMG_Common)
 target_link_libraries (rmg Input InternalPseudo)
 target_link_libraries (rmg MG RMG_Common RmgLib)
-target_link_libraries (rmg Misc)
+target_link_libraries (rmg Misc ${PLplot_LIBRARY})
 target_link_libraries (rmg Finite_diff Misc)
 target_link_libraries (rmg Misc Finite_diff)
 target_link_libraries (rmg Input)
@@ -132,7 +132,7 @@ target_link_libraries (rmg-on ON_Common Force)
 target_link_libraries (rmg-on Force ON_Common)
 target_link_libraries (rmg-on Input ON_Input ON_NEGF_share)
 target_link_libraries (rmg-on MG ON_Common RmgLib)
-target_link_libraries (rmg-on Misc)
+target_link_libraries (rmg-on Misc ${PLplot_LIBRARY})
 target_link_libraries (rmg-on Finite_diff Misc)
 target_link_libraries (rmg-on Misc Finite_diff)
 target_link_libraries (rmg-on ON_Input Input)
@@ -158,7 +158,7 @@ target_link_libraries (rmg-negf NEGF_Common Force)
 target_link_libraries (rmg-negf Force NEGF_Common)
 target_link_libraries (rmg-negf Input NEGF_Input ON_NEGF_share)
 target_link_libraries (rmg-negf MG NEGF_Common RmgLib)
-target_link_libraries (rmg-negf Misc)
+target_link_libraries (rmg-negf Misc ${PLplot_LIBRARY})
 target_link_libraries (rmg-negf Finite_diff Misc)
 target_link_libraries (rmg-negf Misc Finite_diff)
 target_link_libraries (rmg-negf NEGF_Input Input)
@@ -194,7 +194,7 @@ target_link_libraries (rmg-tddft Force ON_Common)
 target_link_libraries (rmg-tddft Input ON_Input ON_NEGF_share)
 target_link_libraries (rmg-tddft MG ON_Common RmgLib)
 target_link_libraries (rmg-tddft US_PP InternalPseudo)
-target_link_libraries (rmg-tddft Misc)
+target_link_libraries (rmg-tddft Misc ${PLplot_LIBRARY})
 target_link_libraries (rmg-tddft Finite_diff Misc)
 target_link_libraries (rmg-tddft Misc Finite_diff)
 target_link_libraries (rmg-tddft ON_Input Input)
@@ -599,7 +599,7 @@ execute_process (
   COMMAND date OUTPUT_VARIABLE foo5)
 string(REPLACE "\n" "" BuildDate ${foo5})
 
-set (Use_svn 1)
+set (Use_svn 0)
 if(Use_svn)
   execute_process (
       COMMAND svn info OUTPUT_VARIABLE foo)
@@ -625,12 +625,15 @@ install(TARGETS rmg
 DESTINATION rmg
 RUNTIME DESTINATION rmg/bin)
 
+install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
+DESTINATION rmg/lib)
+
 # Packaging section next
-SET(CPACK_GENERATOR "RPM")
+SET(CPACK_GENERATOR "DEB")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
 SET(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)
@@ -640,8 +643,6 @@ set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
 if(CPACK_GENERATOR STREQUAL "RPM")
 # RPM specific tags
-    set(CPACK_RPM_PACKAGE_NAME "rmg")
-    set(CPACK_RPM_PACKAGE_VERSION ${COMPLETE_VERSION})
     set(CPACK_RPM_PACKAGE_RELOCATABLE "ON")
     set(CPACK_RPM_PACKAGE_SUMMARY "Ab-initio dft based electronic structure code")
     set(CPACK_RPM_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space
@@ -651,9 +652,17 @@ charge density.")
     set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
     set(CPACK_RPM_PACKAGE_RELEASE "OpenSuse_13.1")
 #set(CPACK_RPM_PACKAGE_REQUIRES "liblapack3 >= 3.4.0,libopenblas0 >= 0.2.8")
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${COMPLETE_VERSION}-${CPACK_PACKAGE_RELEASE}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+
 endif(CPACK_GENERATOR STREQUAL "RPM")
 
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${COMPLETE_VERSION}-${CPACK_PACKAGE_RELEASE}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+if(CPACK_GENERATOR STREQUAL "DEB")
+
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space grids to represent quantities of interest such as the electronic orbitals and charge density.")
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libplplot12, libfftw3-double3, libmpich10, libboost-thread1.55.0, libboost-system1.55.0, libboost-iostreams1.55.0, libboost-program-options1.55.0, libboost-filesystem1.55.0, libopenbabel4, libopenblas-base, libgfortran3, libstdc++6, libgomp1, libgcc1, libc6, plplot12-driver-cairo")
+
+endif(CPACK_GENERATOR STREQUAL "DEB")
 
 include(CPack)
 

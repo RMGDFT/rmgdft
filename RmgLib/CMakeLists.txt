@@ -56,6 +56,7 @@ src/packfuncs.cpp
 add_library (RmgLibShared SHARED ${RmgLibSources})
 add_library (RmgLib STATIC ${RmgLibSources})
 add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
+target_link_libraries (poisson_pbc ${Boost_LIBRARIES})
 if(DEFINED ENV{CRAY_LIBSCI})
     target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLib)
 else(DEFINED ENV{CRAY_LIBSCI})
