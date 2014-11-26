@@ -52,8 +52,10 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     sprintf(newname, "%s%s", name, ".basis");
     fhand = open(newname, O_RDWR);
     if (fhand < 0)
+    {
+        dprintf("\n no file '%s' \n", newname);
         error_handler(" Unable to open file ");
-
+    }
 
     /* Some control information */
 

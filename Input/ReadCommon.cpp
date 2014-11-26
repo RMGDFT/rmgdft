@@ -711,6 +711,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         std::strncpy(lc.outfile, temp, sizeof(lc.outfile));
         delete [] temp;
     }
+    if(lc.infile[0] !='/') 
+    {
+        char *temp = new char[255];
+        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.infile);
+        std::strncpy(lc.infile, temp, sizeof(lc.infile));
+        delete [] temp;
+    }
 
 
     if(lc.spin_flag) {
@@ -725,18 +732,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     }
 
-    size_t found = Infile.find_first_of("/");
-    if(found == std::string::npos) {
-        std::string NewInfile(pelc.image_path[pelc.thisimg]);
-        NewInfile = NewInfile + Infile;
-        std::strncpy(lc.infile, NewInfile.c_str(), sizeof(lc.infile));
-    }
-    found = Outfile.find_first_of("/");
-    if(found == std::string::npos) {
-        std::string NewOutfile(pelc.image_path[pelc.thisimg]);
-        NewOutfile = NewOutfile + Outfile;
-        std::strncpy(lc.outfile, NewOutfile.c_str(), sizeof(lc.outfile));
-    }
 
     try {
        for(int ix = 0;ix < 3;ix++) {
