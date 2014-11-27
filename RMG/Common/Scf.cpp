@@ -186,18 +186,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         rmg_printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
     }
 
-    if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-
-        if(!firststep && (max_unocc_res < ct.gw_threshold)) {
-            rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
-            rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
-            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
-
-            CONVERGED = true;
-        }
-
-    }
-    else {
+    if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
         if (!firststep && t[1] < ct.thr_rms) CONVERGED = true;
 
@@ -396,6 +385,18 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     }
 
     rmg_printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time1);
+
+    if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
+
+        if(!firststep && (max_unocc_res < ct.gw_threshold)) {
+            rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
+            rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
+            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
+
+            CONVERGED = true;
+        }
+
+    }
 
     return CONVERGED;
 }                               /* end scf */
