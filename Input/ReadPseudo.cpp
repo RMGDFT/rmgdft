@@ -93,29 +93,24 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
                 boost::trim_if(*it, boost::algorithm::is_any_of(" \t"));
                 nstr = nstr + *it;
             }
+            boost::to_upper(nstr); 
             if(!nstr.compare("SLAPZ")) {
                 short_names.push_back("PZ");
-                lc.xctype = LDA_PZ81; 
             }
             else if(!nstr.compare("SLAPWPBXPBC")) {
                 short_names.push_back("PBE");
-                lc.xctype = GGA_PBE;
             }
             else if(!nstr.compare("SLAPWPBEPBE")) {
                 short_names.push_back("PBE");
-                lc.xctype = GGA_PBE;
             }
             else if(!nstr.compare("SLAB88LYPBLYP")) {
                 short_names.push_back("BLYP");
-                lc.xctype = GGA_BLYP;
             }
             else if(!nstr.compare("B88P86")) {
                 short_names.push_back("BP");
-                lc.xctype = GGA_XB_CP;
             }
             else if(!nstr.compare("SLAPWGGXGGC")) {
-                short_names.push_back("pw91");
-                lc.xctype = GGA_XP_CP;
+                short_names.push_back("PW91");
             }
             else {
                 throw RmgFatalException() << "Unknown XC type in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
@@ -136,6 +131,28 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
         if(short_names.size() == 0) {
             throw RmgFatalException() << "No supported exchange_correlation_type found in the specified pseudopotentials. Try setting a manual override in your input file if you wish to use these pseudopotentials.\n";
         }
+
+        // Finally classify
+        std::string short_name = short_names.at(0);
+        if(!short_name.compare("PZ")) {
+            lc.xctype = LDA_PZ81; 
+        }
+        else if(!short_name.compare("PBE")) {
+            lc.xctype = GGA_PBE;
+        }
+        else if(!short_name.compare("PBE")) {
+            lc.xctype = GGA_PBE;
+        }
+        else if(!short_name.compare("BLYP")) {
+            lc.xctype = GGA_BLYP;
+        }
+        else if(!short_name.compare("BP")) {
+            lc.xctype = GGA_XB_CP;
+        }
+        else if(!short_name.compare("PW91")) {
+            lc.xctype = GGA_XP_CP;
+        }
+        
    }
 
 }
