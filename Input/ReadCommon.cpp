@@ -107,7 +107,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
     double celldm[6];
-    double grid_spacing;
+    static double grid_spacing;
     double a0[3], a1[3], a2[3], omega;
 
  
@@ -797,7 +797,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // if this is equal to 1 then user did not try to manually set the
     // wavefunction grid so we have to set it ourselves which this test
     // will determine.
-    bool autoset_wavefunctiongrid = (1 == (NX_GRID * NY_GRID * NZ_GRID));
+    bool autoset_wavefunction_grid = (1 == (NX_GRID * NY_GRID * NZ_GRID));
 
     // If Processor grid is not specified or is specified incorrectly then we try to set it automatically
     // If the user does not specify a processor grid then pe_x = pe_y = pe_z = 1 so ReqNPES=1. If this
@@ -806,17 +806,24 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     pelc.pe_y = ProcessorGrid.vals.at(1);
     pelc.pe_z = ProcessorGrid.vals.at(2);
     int ReqNPES = pelc.pe_x * pelc.pe_y * pelc.pe_z; 
-    
+    bool autoset_processor_grid = ((NPES != ReqNPES) && (NPES > 1)); 
+
     // We take this path if wavefunction grid is specified but processor grid is not
-    if((NPES != ReqNPES) && (NPES > 1) && (!autoset_wavefunctiongrid)) {
+    if(autoset_processor_grid && (!autoset_wavefunction_grid)) {
 
         SetupProcessorGrid(NPES, NX_GRID, NY_GRID, NZ_GRID, pelc);
 
     }
-    else {
+    else if(autoset_processor_grid && autoset_wavefunction_grid) {
 
         // Neither the wavefunction grid or the processor grid was set so we do them both here.
-        SetupGrids(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, lc, pelc, InputMap);
+        SetupGrids(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, pelc);
+
+    }
+    else {
+
+        // Processor grid specified but wavefunction grid was not
+        SetupWavefunctionGrid(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);
 
     }
 
@@ -832,6 +839,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     WavefunctionGrid.vals[2] = NZ_GRID;
     ik = InputMap["wavefunction_grid"];
     ik->Vint = WavefunctionGrid;
+    ik = InputMap["grid_spacing"];
+    ik->Readdoubleval = &grid_spacing;
 
 
     // Sanity check

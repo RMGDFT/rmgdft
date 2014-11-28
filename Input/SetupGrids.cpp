@@ -26,7 +26,7 @@
 
 
 // Sets up both processor grid and wavefunction grid at the same time
-void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *celldm, double h, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
+void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *celldm, double h, PE_CONTROL& pelc)
 {
 
  
@@ -40,7 +40,7 @@ void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *cell
     std::vector<int> npe_factors = {1};
     GetPrimeFactors(npe_factors, npes, npes);
 
-    int iptr = 0;
+    int iptr = 0;  // used to rotate over the three coordinate dimensions
     while(npe_factors.size()) {
 
         // Get the estimated values of NX_GRID, NY_GRID and NZ_GRID 
@@ -64,7 +64,7 @@ void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *cell
         GetPrimeFactors(n_factors[1], NY_GRID, NY_GRID);
         GetPrimeFactors(n_factors[2], NZ_GRID, NZ_GRID);
 
-        // If the largest prime factor of NX_GRID is also a prime
+        // If the largest prime factor of the dim references by iptr is also a prime
         // factor of npes then make that the processor x-grid dimension
         int osize = npe_factors.size();
         for(int i = 0;i < 3;i++) {
@@ -176,3 +176,26 @@ void SetupProcessorGrid(int npes, int NX_GRID, int NY_GRID, int NZ_GRID, PE_CONT
     if(pct.imgpe == 0) std::cout << "Auto processor grid settings: npes=" <<  npes << " PE_X=" << pelc.pe_x << " PE_Y=" << pelc.pe_y << " PE_Z=" << pelc.pe_z << std::endl;
 
 }
+
+
+// Sets up the wavefunction grid assuming the processor grid was specified
+void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *celldm, double h)
+{
+
+    // Get the estimated values of NX_GRID, NY_GRID and NZ_GRID 
+    // may need some adjustments for hexagonal grids
+    std::fesetround(FE_TONEAREST);
+    NX_GRID = std::rint(celldm[0] / h);
+    NY_GRID = std::rint(celldm[1] / h);
+    NZ_GRID = std::rint(celldm[2] / h);
+
+    // Adjust to make sure they are divisible by 4
+    int ix = NX_GRID % 4;
+    int iy = NY_GRID % 4;
+    int iz = NZ_GRID % 4;
+    NX_GRID = (ix <= 2) ? NX_GRID - ix: NX_GRID + 4 - ix;
+    NY_GRID = (iy <= 2) ? NY_GRID - iy: NY_GRID + 4 - iy;
+    NZ_GRID = (iz <= 2) ? NZ_GRID - iz: NZ_GRID + 4 - iz;
+
+}
+
