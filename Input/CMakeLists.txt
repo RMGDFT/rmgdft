@@ -1,4 +1,6 @@
 add_library (Input
+SetupGrids.cpp
+GetPrimeFactors.cpp
 ReadForces.cpp
 ReadVelocities.cpp
 ReadInit.cpp

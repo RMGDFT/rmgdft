@@ -190,6 +190,9 @@ void ReadOrbitals(char *cfile, STATE  *states,  int *, MPI_Comm comm);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 template <typename KpointType>
 void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc);
+void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
+void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap);
+void SetupProcessorGrid(int npes, int NX_GRID, int NY_GRID, int NZ_GRID, PE_CONTROL& pelc);
 
 
 

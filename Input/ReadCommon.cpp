@@ -83,17 +83,6 @@ namespace po = boost::program_options;
 **********************************************************************/
 
 
-// Auxiliary function to get all factors of an integer
-void GetFactors(std::vector<int>& factors, int val) {
-    int stop = val;
-    for(int i = 2;i <= NPES;i++) {
-       while( !(val % i) ) {
-           factors.push_back(i);
-           val = val / i;
-       }
-    }
-}
-
 namespace Ri = RmgInput;
 
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
@@ -110,7 +99,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string vxc_file;
  
     Ri::ReadVector<int> ProcessorGrid;
-    Ri::ReadVector<int> DefProcessorGrid({{0,0,0}});
+    Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
     Ri::ReadVector<int> WavefunctionGrid;
     Ri::ReadVector<int> DefWavefunctionGrid({{1,1,1}});
     Ri::ReadVector<int> kpoint_mesh;
@@ -118,6 +107,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
     double celldm[6];
+    double grid_spacing;
     double a0[3], a1[3], a2[3], omega;
 
  
@@ -145,7 +135,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
 
-    If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, REQUIRED, 
+    If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) dimensions of the grid the wavefunctions are defined on.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n");
 
@@ -267,6 +257,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_TERMINATE, REQUIRED, 
                      "Third lattice constant.\n", 
                      "c_length must be a positive number. Terminating.\n");
+
+    If.RegisterInputKey("grid_spacing", &grid_spacing, 0.0, DBL_MAX, 0.35, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
+                     "Approximate grid spacing (bohr).\n", 
+                     "grid_spacing must be a positive number. Terminating.\n");
 
     // Deault of zero is OK because this means to try to set it automatically later on.
     // The value of 64 covers any possible hardware scenario I can imagine currently but might
@@ -747,119 +742,92 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Currently, fine grid has to be the same in each direction
     lc.nzfgrid = lc.nyfgrid = lc.nxfgrid;
 
+    // This is an ugly hack but it's necessary for now since we want to print the
+    // original options back out for reuse and the code modifies these
+    static double orig_celldm[3];
+    orig_celldm[0] = celldm[0];
+    orig_celldm[1] = celldm[1];
+    orig_celldm[2] = celldm[2];
+    InputKey *ik = InputMap["a_length"];
+    ik->Readdoubleval = &orig_celldm[0];
+    ik = InputMap["b_length"];
+    ik->Readdoubleval = &orig_celldm[1];
+    ik = InputMap["c_length"];
+    ik->Readdoubleval = &orig_celldm[2];
 
-    int NX_GRID=1, NY_GRID=1, NZ_GRID=1;
-    try {
-        NX_GRID = WavefunctionGrid.vals.at(0);
-        NY_GRID = WavefunctionGrid.vals.at(1);
-        NZ_GRID = WavefunctionGrid.vals.at(2);
+
+    // Transform to atomic units, which are used internally if input is in angstrom 
+    if (Verify ("crds_units", "Angstrom", InputMap))
+    {
+        celldm[0] *= A_a0;
+        celldm[1] *= A_a0;
+        celldm[2] *= A_a0;
     }
-    catch (const std::out_of_range& oor) {
-        throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n";
+
+
+    // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
+    // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
+    if (!Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) &&
+            !Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
+            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+    {
+        celldm[1] /= celldm[0];
+        celldm[2] /= celldm[0];
     }
+
+    // Lattice vectors are orthogonal except for Hex which is setup inside latgen
+    celldm[3] = 0.0;
+    celldm[4] = 0.0;
+    celldm[5] = 0.0;
+
+    // Set up the lattice vectors
+    Rmg_L.set_ibrav_type(ibrav);
+    int flag = 0;
+    Rmg_L.latgen(celldm, &omega, a0, a1, a2, &flag);
+
+
+    int NX_GRID = WavefunctionGrid.vals.at(0);
+    int NY_GRID = WavefunctionGrid.vals.at(1);
+    int NZ_GRID = WavefunctionGrid.vals.at(2);
+
     CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + boost::lexical_cast<std::string>(NX_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + boost::lexical_cast<std::string>(NZ_GRID) + " and only postive values are allowed.");
 
+    // if this is equal to 1 then user did not try to manually set the
+    // wavefunction grid so we have to set it ourselves which this test
+    // will determine.
+    bool autoset_wavefunctiongrid = (1 == (NX_GRID * NY_GRID * NZ_GRID));
+
     // If Processor grid is not specified or is specified incorrectly then we try to set it automatically
+    // If the user does not specify a processor grid then pe_x = pe_y = pe_z = 1 so ReqNPES=1. If this
+    // does not equal the number of PE's obtained from the MPI system then we need to correct it.
     pelc.pe_x = ProcessorGrid.vals.at(0);
     pelc.pe_y = ProcessorGrid.vals.at(1);
     pelc.pe_z = ProcessorGrid.vals.at(2);
     int ReqNPES = pelc.pe_x * pelc.pe_y * pelc.pe_z; 
     
-    if((NPES != ReqNPES) && (NPES > 1)) {
-        std::vector<int> npe_factors = {1};
-        std::vector<int> nx_factors = {1};
-        std::vector<int> ny_factors = {1};
-        std::vector<int> nz_factors = {1};
-        GetFactors(npe_factors, NPES);
-        GetFactors(nx_factors, NX_GRID);
-        GetFactors(ny_factors, NY_GRID);
-        GetFactors(nz_factors, NZ_GRID);
-        pelc.pe_x = 1;
-        pelc.pe_y = 1;
-        pelc.pe_z = 1;
-        int token = 0;
-        npe_factors.erase(npe_factors.begin());
-        std::reverse(npe_factors.begin(),npe_factors.end()); 
-        for(auto it = npe_factors.begin();it != npe_factors.end(); ++it) {
-            std::vector<int>::iterator nx_it, ny_it, nz_it;
-            nx_it = std::find(nx_factors.begin(), nx_factors.end(), *it);
-            ny_it = std::find(ny_factors.begin(), ny_factors.end(), *it);
-            nz_it = std::find(nz_factors.begin(), nz_factors.end(), *it);
-            if(token == 0) {
-                if(nx_it != nx_factors.end()) {
-                    pelc.pe_x *= *it;
-                    nx_factors.erase(nx_it);
-                }
-                else if(ny_it != ny_factors.end()) {
-                    pelc.pe_y *= *it;
-                    ny_factors.erase(ny_it);
-                }
-                else if(nz_it != nz_factors.end()) {
-                    pelc.pe_z *= *it;
-                    nz_factors.erase(nz_it);
-                }
-                else {
-                    pelc.pe_x *= *it;
-                }
-            }
-            else if(token == 1) {
-                if(ny_it != ny_factors.end()) {
-                    pelc.pe_y *= *it;
-                    ny_factors.erase(ny_it);
-                }
-                else if(nz_it != nz_factors.end()) {
-                    pelc.pe_z *= *it;
-                    nz_factors.erase(nz_it);
-                }
-                else if(nx_it != nx_factors.end()) {
-                    pelc.pe_x *= *it;
-                    nx_factors.erase(nx_it);
-                }
-                else {
-                    pelc.pe_y *= *it;
-                }
-            }
-            else if(token == 2) {
-                if(nz_it != nz_factors.end()) {
-                    pelc.pe_z *= *it;
-                    nz_factors.erase(nz_it);
-                }
-                else if(nx_it != nx_factors.end()) {
-                    pelc.pe_x *= *it;
-                    nx_factors.erase(nx_it);
-                }
-                else if(ny_it != ny_factors.end()) {
-                    pelc.pe_y *= *it;
-                    ny_factors.erase(ny_it);
-                }
-                else {
-                    pelc.pe_z *= *it;
-                }
-            }
-            token++;
-            if(token == 3) token = 0;
-        }
-        if(pct.imgpe == 0) std::cout << "Auto processor grid settings: NPES=" <<  NPES << " PE_X=" << pelc.pe_x << " PE_Y=" << pelc.pe_y << " PE_Z=" << pelc.pe_z << std::endl;
+    // We take this path if wavefunction grid is specified but processor grid is not
+    if((NPES != ReqNPES) && (NPES > 1) && (!autoset_wavefunctiongrid)) {
+
+        SetupProcessorGrid(NPES, NX_GRID, NY_GRID, NZ_GRID, pelc);
+
+    }
+    else {
+
+        // Neither the wavefunction grid or the processor grid was set so we do them both here.
+        SetupGrids(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, lc, pelc, InputMap);
 
     }
 
 
-    if(NPES == 1) {
-        pelc.pe_x = 1;
-        pelc.pe_y = 1;
-        pelc.pe_z = 1;
-    }
-
-
+    // Sanity check
     CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the processor grid X dimension is " + boost::lexical_cast<std::string>(pelc.pe_x) + " and only postive values are allowed.");
     CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the processor grid Y dimension is " + boost::lexical_cast<std::string>(pelc.pe_y) + " and only postive values are allowed.");
     CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the processor grid Z dimension is " + boost::lexical_cast<std::string>(pelc.pe_z) + " and only postive values are allowed.");
 
 
-
-    // Set grid info up
+    // Set grid object up
     Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, lc.FG_RATIO);
 
     int FNX_GRID = NX_GRID * lc.FG_RATIO;
@@ -891,49 +859,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
             if (!poi_level_err) break;
         }
     }
-
-
-    // This is an ugly hack but it's necessary for now since we want to print the
-    // original options back out for reuse and the code modifies these
-    static double orig_celldm[3];
-    orig_celldm[0] = celldm[0];
-    orig_celldm[1] = celldm[1];
-    orig_celldm[2] = celldm[2];
-    InputKey *ik = InputMap["a_length"];
-    ik->Readdoubleval = &orig_celldm[0];
-    ik = InputMap["b_length"];
-    ik->Readdoubleval = &orig_celldm[1];
-    ik = InputMap["c_length"];
-    ik->Readdoubleval = &orig_celldm[2];
-
-
-    // Transform to atomic units, which are used internally if input is in angstrom 
-    if (Verify ("crds_units", "Angstrom", InputMap))
-    {
-        celldm[0] *= A_a0;
-        celldm[1] *= A_a0;
-        celldm[2] *= A_a0;
-    }
-
-    // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
-    // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
-    if (!Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
-    {
-        celldm[1] /= celldm[0];
-        celldm[2] /= celldm[0];
-    }
-
-    // Lattice vectors are orthogonal except for Hex which is setup inside latgen
-    celldm[3] = 0.0;
-    celldm[4] = 0.0;
-    celldm[5] = 0.0;
-
-    // Set up the lattice vectors
-    Rmg_L.set_ibrav_type(ibrav);
-    int flag = 0;
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2, &flag);
 
     // Cutoff parameter 
     lc.qcparm = lc.cparm / (double) lc.FG_RATIO;
