@@ -171,7 +171,7 @@ std::string InputKey::Print(void) {
     if(this->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) {
         std::string rstr;
         for(size_t i = 0;i < this->count;i++)
-            rstr = rstr + boost::lexical_cast<std::string>(this->Vint.vals.at(i));
+            rstr = rstr + boost::lexical_cast<std::string>(this->Vint.vals.at(i)) + " ";
 
         return rstr;
     }
@@ -179,7 +179,7 @@ std::string InputKey::Print(void) {
     if(this->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
         std::string rstr;
         for(size_t i = 0;i < this->count;i++)
-            rstr = rstr + boost::lexical_cast<std::string>(this->Vdouble.vals.at(i));
+            rstr = rstr + boost::lexical_cast<std::string>(this->Vdouble.vals.at(i)) + " ";
 
     }
 

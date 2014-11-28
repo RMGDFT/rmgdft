@@ -44,6 +44,7 @@ void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *cell
     while(npe_factors.size()) {
 
         // Get the estimated values of NX_GRID, NY_GRID and NZ_GRID 
+        // may need some adjustments for hexagonal grids
         std::fesetround(FE_TONEAREST);
         NX_GRID = std::rint(AX / h);
         NY_GRID = std::rint(AY / h);

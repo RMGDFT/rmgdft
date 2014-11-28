@@ -98,9 +98,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string rhog_file;
     std::string vxc_file;
  
-    Ri::ReadVector<int> ProcessorGrid;
+    static Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
-    Ri::ReadVector<int> WavefunctionGrid;
+    static Ri::ReadVector<int> WavefunctionGrid;
     Ri::ReadVector<int> DefWavefunctionGrid({{1,1,1}});
     Ri::ReadVector<int> kpoint_mesh;
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
@@ -819,6 +819,19 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         SetupGrids(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, lc, pelc, InputMap);
 
     }
+
+    // Save results in Input map. Will clean up in the future when all code branches
+    // are converted to C++
+    ProcessorGrid.vals[0] = pelc.pe_x;
+    ProcessorGrid.vals[1] = pelc.pe_y;
+    ProcessorGrid.vals[2] = pelc.pe_z;
+    ik = InputMap["processor_grid"];
+    ik->Vint = ProcessorGrid;
+    WavefunctionGrid.vals[0] = NX_GRID;
+    WavefunctionGrid.vals[1] = NY_GRID;
+    WavefunctionGrid.vals[2] = NZ_GRID;
+    ik = InputMap["wavefunction_grid"];
+    ik->Vint = WavefunctionGrid;
 
 
     // Sanity check
