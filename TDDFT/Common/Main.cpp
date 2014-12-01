@@ -94,6 +94,7 @@ int main(int argc, char **argv)
     int amode, fhand;
 
     char filename[MAX_PATH+200];
+    char char_tem[MAX_PATH+200];
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
     amode = S_IREAD | S_IWRITE;
@@ -193,10 +194,11 @@ int main(int argc, char **argv)
     double fs= 0.02418884;  // 1fs = 0.02418884 *10^-15 second 
     if(pct.gridpe == 0)
     {
-        int name_incr = filename_increment("dipole.dat");
-        sprintf(filename, "%s.%02d", "dipole.dat", name_incr);
+        sprintf(char_tem, "%s%s", pct.image_path[pct.thisimg], "dipole.dat");
+        int name_incr = filename_increment(char_tem);
+        sprintf(filename, "%s.%02d", char_tem, name_incr);
         
-            dfi = fopen(filename, "w");
+        dfi = fopen(filename, "w");
     }
 
     if(pct.gridpe == 0)fprintf(dfi, "\n  electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
