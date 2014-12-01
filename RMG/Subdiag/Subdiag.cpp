@@ -146,7 +146,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
-    double *vtot = new double[4*FP0_BASIS];
+    double *vtot = new double[FP0_BASIS];
     double *vtot_eig = new double[kptr->pbasis];
     double *eigs = new double[2*kptr->nstates];
 
