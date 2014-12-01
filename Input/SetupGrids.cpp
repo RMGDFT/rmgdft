@@ -5,7 +5,7 @@
 #include <string>
 #include <cfloat>
 #include <climits>
-#include <fenv.h>
+#include <cfenv>
 #include <unordered_map>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
