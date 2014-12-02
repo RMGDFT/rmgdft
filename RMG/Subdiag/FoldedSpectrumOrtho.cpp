@@ -135,37 +135,37 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
     int idx, omp_tid;
-    double *darr, *sarr;
+    double *darr;
     int st, st1;
-#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+#pragma omp parallel private(idx,st,st1,omp_tid, darr)
 {
     omp_tid = omp_get_thread_num();
-    if(omp_tid == 0) darr = new double[n * omp_get_num_threads()];
+    darr = new double[n];
 #pragma omp barrier
 
 #pragma omp for schedule(static, 1) nowait
     for(idx = eig_start;idx < eig_stop;idx++) {
 
-        sarr = &darr[omp_tid*n];
-
-        for (int st = 0; st < n; st++) sarr[st] = V[st*n + idx];
+        for (int st = 0; st < n; st++) darr[st] = V[st*n + idx];
 
         for (int st = 0; st < n; st++) {
 
-            sarr[st] *= tarr[st];
+            darr[st] *= tarr[st];
 
             for (int st1 = st+1; st1 < n; st1++) {
-                sarr[st1] -= C[st1 + n*st] * sarr[st];
+                darr[st1] -= C[st1 + n*st] * darr[st];
             }
 
         }
 
-        for (st = 0; st < n; st++) G[st*n + idx] = sarr[st];
+        for (st = 0; st < n; st++) G[st*n + idx] = darr[st];
 
     }
-} // end omp section
 
     delete [] darr;
+
+} // end omp section
+
     delete(RT1);
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
