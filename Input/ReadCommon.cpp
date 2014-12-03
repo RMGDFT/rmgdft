@@ -918,6 +918,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     lc.background_charge *= -1.0;
 
     lc.occ_width *= eV_Ha;
+    lc.e_field *= eV_Ha;
 
     // Potential acceleration must be disabled if freeze_occupied is true
     if(Verify ("freeze_occupied", true, InputMap) ) {
