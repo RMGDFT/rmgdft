@@ -767,9 +767,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
     // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
-    if (!Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+    if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
+        !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
     {
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
@@ -820,7 +819,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         SetupGrids(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, pelc);
 
     }
-    else {
+    else if (autoset_wavefunction_grid) {
 
         // Processor grid specified but wavefunction grid was not
         SetupWavefunctionGrid(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);

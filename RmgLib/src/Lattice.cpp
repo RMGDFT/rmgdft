@@ -159,8 +159,8 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
     {
 
         crystal[0] = cartesian[0] / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / Lattice::celldm[0];
-        crystal[2] = cartesian[2] / Lattice::celldm[0];
+        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
+        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
 
         if (crystal[0] < 0.0)
             crystal[0] += 1.0;
@@ -256,15 +256,6 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
     switch (Lattice::ibrav)
     {
 
-        case CUBIC_PRIMITIVE:
-            Lattice::a0[0] = celldm[0];
-            Lattice::a1[1] = celldm[1];
-            if (celldm[1] <= 0.0)
-                Lattice::a1[1] = celldm[0];
-            Lattice::a2[2] = celldm[2];
-            if (celldm[2] <= 0.0)
-                Lattice::a2[2] = celldm[0];
-            break;
 
         case CUBIC_FC:
 
@@ -335,6 +326,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             Lattice::a2[2] = Lattice::a0[2];
             break;
 
+        case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
 
             Lattice::a0[0] = alat;

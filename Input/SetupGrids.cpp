@@ -34,8 +34,8 @@ void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *cell
     int P_GRID[3] = {1, 1, 1};
 
     double AX = celldm[0];
-    double AY = celldm[1];
-    double AZ = celldm[2];
+    double AY = celldm[1] * celldm[0];
+    double AZ = celldm[2] * celldm[0];
 
     // Get the prime factors of npes
     std::vector<int> npe_factors = {1};
@@ -187,8 +187,8 @@ void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, d
     // may need some adjustments for hexagonal grids
     std::fesetround(FE_TONEAREST);
     NX_GRID = std::rint(celldm[0] / h);
-    NY_GRID = std::rint(celldm[1] / h);
-    NZ_GRID = std::rint(celldm[2] / h);
+    NY_GRID = std::rint(celldm[1]*celldm[0] / h);
+    NZ_GRID = std::rint(celldm[2]*celldm[0] / h);
 
     // Adjust to make sure they are divisible by 4
     int ix = NX_GRID % 4;
