@@ -161,7 +161,7 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
     }
 
     snprintf(newname, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], "electron_density.npz");
-    delete array_in_char;
+    delete [] array_in_char;
     double cell[9];
     for(int i = 0; i < 3; i++) 
     {  
