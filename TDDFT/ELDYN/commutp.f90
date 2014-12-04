@@ -51,7 +51,7 @@ subroutine commutp (P0,P1,Om,N,thrs,maxiter,niter,errmax,iprint)
         if (tConv) exit lp_bch 
         iter= iter +1 
       end do lp_bch
-      write(*,*)'Converged: Niter, errmax =',  iter,errmax
+      if(iprint>0) write(*,*)'Converged: Niter, errmax =',  iter,errmax
 
       niter= iter
       if(iprint >0) write(*,*)'bch:  errmax= ', errmax,  ' Niter =',iter
@@ -74,7 +74,7 @@ subroutine  tstconv(C,M,N,thrs,ierr,err,tconv)
       !Ix = modulo(ierr,N)
       Iy = (ierr-1)/N    +1    -(Im-1)*N
       Ix = modulo(ierr-1,N)
-      write(*,1000)ix,iy,im,err,thrs
+      !write(*,1000)ix,iy,im,err,thrs
 1000  format('Err: dP(i,j,k)=',I6,I6,I6, E16.6,'   Thrs =',E12.4)
       tconv=.false.
       if (abs(err) <= thrs) tconv= .true.

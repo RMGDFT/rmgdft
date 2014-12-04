@@ -20,7 +20,7 @@ integer :: iPn2Po, iPo2Pn, iFo2Fn, iFn2Fo
 real :: t0,t1
 logical  :: tCommutp,  tDiagp
 
-write(*,*) "enter eldyn"
+!write(*,*) "enter eldyn"
 
 !
 ! select a propagator
@@ -82,7 +82,7 @@ write(*,*) "enter eldyn"
 
 !write(*,*)'-- eldyn -4'
 
-   if(iprint.gt.0) then ; 
+   if(iprint.gt.0) then  
      write(*,*)'*******  S :' ; call dumpm(S,iprint)  !iprint)
      write(*,*)'******* Pn0:' ; call dumpm(Pn0,iprint)
      write(*,*)'******* F  :' ; call dumpm(F,iprint)

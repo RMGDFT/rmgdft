@@ -28,8 +28,8 @@ if(DEFINED ENV{CRAY_LIBSCI})
     set (CRAY_XK 1)
 endif()
 
-set (RMG_GPU_ENABLED 0)
-set (RMG_MAGMA_LIBS 0) 
+set (RMG_GPU_ENABLED 1)
+set (RMG_MAGMA_LIBS 1) 
 
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
@@ -47,7 +47,7 @@ set(CMAKE_FIND_ROOT_PATH
 /opt/fftw/default/x86_64     #fftw3 path for bluewater
 /usr/local/apps/fftw/intel101_hydra/2.1.5
 /usr/local/apps/mvapich2/220b-intel140
-/sw/xe/magma/1.3.0/cnl4.2_gnu4.7.2
+/sw/xe/magma/1.5.0/magma-1.5.0
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /opt/local/lib/libxc         #libxc from Macports
@@ -569,7 +569,6 @@ if(MAGMA_LIBS)
 endif(MAGMA_LIBS)
 
 
-
 option (RMG_GAMMA_PT "Turn on for a gamma point only calculation." ON)
 if (RMG_GAMMA_PT)
     set (GAMMA_PT 1)
@@ -599,7 +598,7 @@ execute_process (
   COMMAND date OUTPUT_VARIABLE foo5)
 string(REPLACE "\n" "" BuildDate ${foo5})
 
-set (Use_svn 0)
+set (Use_svn 1)
 if(Use_svn)
   execute_process (
       COMMAND svn info OUTPUT_VARIABLE foo)

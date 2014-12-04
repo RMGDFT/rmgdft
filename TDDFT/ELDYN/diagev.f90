@@ -18,7 +18,7 @@ subroutine diagev (P0,P1,Fdt,N,iprint)
 
    lwork =5*N*N
    call   DSYEV( 'Vectors', 'Upper', N, C, N, eig, Work, LWORK, INFO ) 
-    write(*,*)  'Eig-max =', eig(idamax(N,eig,1)) 
+    !write(*,*)  'Eig-max =', eig(idamax(N,eig,1)) 
     if (iprint>0) write(*,1000)( eig(i),i=1,N)
 1000 format(10(' ',E12.6))
 

@@ -111,10 +111,6 @@ int main (int argc, char **argv)
     ct.logfile = stdout;
 
  
-#if GPU_ENABLED
-    magma_init();
-#endif
-
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
