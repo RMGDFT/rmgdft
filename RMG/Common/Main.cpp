@@ -346,7 +346,9 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     }
 
-    OutputBandPlot(Kptr);
+    if(!ct.is_gamma)
+        OutputBandPlot(Kptr);
+
     Output_rho_xsf(rho, pct.grid_comm);
 
 }                               /* end run */
