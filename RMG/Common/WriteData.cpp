@@ -84,7 +84,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     write_int (fhand, pe, 3);
 
     npe = (pe[0] * pe[1] * pe[2]);
-    grid_size = (grid[0] * grid[1] * grid[2]) / npe;
+    grid_size = Kptr[0]->pbasis;
 
     /* write fine grid info */
     fine[0] = get_FPX0_GRID() / get_PX0_GRID();

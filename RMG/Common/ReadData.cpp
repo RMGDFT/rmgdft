@@ -106,7 +106,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 	rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
 
     npe = (pe[0] * pe[1] * pe[2]);
-    grid_size = (grid[0] * grid[1] * grid[2]) / npe;
+    grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
