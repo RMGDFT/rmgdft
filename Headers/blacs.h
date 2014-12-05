@@ -1,6 +1,9 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
+#ifndef RMG_blacs_h
+#define RMG_blacs_h 1
+
+#if __cplusplus
+extern "C" {
+#endif
  
 /* initialization */
 void Cblacs_pinfo (int *, int *);
@@ -52,3 +55,9 @@ void igesd2d (int *, int *, int *, int *, int *, int *, int *);
 void igerv2d (int *, int *, int *, int *, int *, int *, int *);
 void igamn2d (int *, char *, char *, int *, int *, int *, int *,
               int *, int *, int *, int *, int *);
+
+#if __cplusplus
+}
+#endif
+
+#endif
