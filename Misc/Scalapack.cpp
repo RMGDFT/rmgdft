@@ -27,10 +27,15 @@
 #include "Scalapack.h"
 #include "blacs.h"
 
-Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int block_factor, MPI_Comm rootcomm)
+Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N, int MB, int NB, MPI_Comm rootcomm)
 {
 
     this->ngroups = ngroups;
+    this->msize = msize;
+    this->M = M;
+    this->N = N;
+    this->MB = MB;
+    this->NB = NB;
 
     MPI_Comm_size(rootcomm, &this->npes);
     MPI_Comm_rank(rootcomm, &this->root_rank);
@@ -70,7 +75,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int block_fa
 
     pmap = new int[this->npes];
     tgmap = new int[this->npes];
-    this->desca = new int[this->npes * DLEN];
 
 
 
@@ -99,6 +103,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int block_fa
 
     // Variable participates will tell use whether the PE participates in scalapack calculations
     this->participates = (this->my_row >= 0);
+//std::cout << "JJJ " << this->group_index << "  " <<this->my_row << "  " << this->my_col << "  " << this->participates << std::endl;
     #if 0
 
         if(pct.scalapack_pe) {
@@ -113,7 +118,67 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int block_fa
     #endif
 
 
+    // Set up descriptors for a local matrix (one block on (0,0)
+    int izero = 0, info = 0;
+    int lld = std::max( NUMROC( &this->N, &this->N, &this->my_row, &izero, &this->group_rows ), 1 );
+    this->local_desca = new int[this->npes*DLEN];
+    DESCINIT( this->local_desca, &this->M, &this->N, &this->M, &this->N, &izero, &izero, &this->context, &lld, &info );
+
+    // Get dimensions of the local part of the distributed matrix
+    this->m_dist = NUMROC( &this->M, &this->MB, &this->my_row, &izero, &this->group_rows );
+    this->n_dist = NUMROC( &this->M, &this->NB, &this->my_col, &izero, &this->group_cols );
+    
+    // descriptors for the distributed matrix 
+    int lld_distr = std::max( this->m_dist, 1 );
+    DESCINIT( this->dist_desca, &this->M, &this->N, &this->MB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
+
+
+
     delete [] tgmap;
     delete [] pmap;
+
+}
+
+
+void Scalapack::DistributeMatrix(double *A, double *A_dist, int m, int n)
+{
+    // Check that this scalapack instance matches the specified matrix sizes
+    if((m != this->M) || (n != this->N)) {
+        throw RmgFatalException() << "Error: Scalapack instance was set up with (M,N)=(" << this->M << "," << this->N << ") but request was for (M,N)=(" << m << "," << n << "). Terminating.\n";
+    }
+
+    // Call pdgeadd_ to distribute matrix (i.e. copy A into A_dist)
+    int ione = 1;
+    double rone = 1.0, rzero = 0.0;
+    pdgeadd_( "N", &this->M, &this->N, &rone, A, &ione, &ione, this->local_desca, &rzero, A_dist, &ione, &ione, this->dist_desca );
+}
+
+void Scalapack::GatherMatrix(double *A, double *A_dist, int m, int n)
+{
+
+    // Check that this scalapack instance matches the specified matrix sizes
+    if((m != this->M) || (n != this->N)) {
+        throw RmgFatalException() << "Error: Scalapack instance was set up with (M,N)=(" << this->M << "," << this->N << ") but request was for (M,N)=(" << m << "," << n << "). Terminating.\n";
+    }
+
+    // Call pdgeadd_ to gather matrix (i.e. copy A_dist into A)
+    int ione = 1;
+    double rone = 1.0, rzero = 0.0;
+    pdgeadd_( "N", &this->M, &this->N, &rone, A_dist, &ione, &ione, this->dist_desca, &rzero, A, &ione, &ione, this->local_desca );
+
+}
+
+
+// Clean up
+Scalapack::~Scalapack(void)
+{
+
+    Cblacs_gridexit(this->context);
+    MPI_Comm_free(&this->comm);
+    delete this->group_sizes;
+    delete this->group_starts;
+    delete [] this->local_desca;
+    delete [] this->dist_desca;
+
 
 }

@@ -38,10 +38,17 @@ class Scalapack {
 
 public:
 
-    Scalapack(int ngroups, int thisimg, int images_per_node, int block_factor, MPI_Comm rootcomm);
+    Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N, int MB, int NB, MPI_Comm rootcomm);
+    void DistributeMatrix(double *A, double *A_dist, int m, int n);
+    void GatherMatrix(double *A, double *A_dist, int m, int n);
+    ~Scalapack(void);
 
 private:
 
+    int M;              // Operates on matrices of size (M,N)
+    int N;              // Operates on matrices of size (M,N)
+    int MB;             // Blocking factors
+    int NB;
     int context;        // blacs context of this group of pes
     int npes;           // total number of pes
     int ngroups;        // total number of groups
@@ -55,12 +62,62 @@ private:
     int comm_rank;      // rank in this comm
     int *group_sizes;   // number of pes in this group
     int *group_starts;  // starting rank in rootrank assigned to this group
-    int *desca;         // scalapack desca for this group
+    int msize;          // Matrix size this scalapack instance will operate on
+    int *local_desca;   // desca for local matrix
+    int *dist_desca;    // desca for distributed matrix
     bool participates;  // whether or not this PE participates in scalapack calculations
+    int m_dist;         // rows of distributed matrix
+    int n_dist;         // cols of distributed matrix
     MPI_Comm comm;      // communicator for this object
 
 };
 
+extern "C" {
+
+int NUMROC (int *, int *, int *, int *, int *);
+int INDXG2P (int *, int *, int *, int *, int *);
+void DESCINIT (int[], int *, int *, int *, int *, int *, int *, int *, int *,
+               int *);
+void PDGESV(int *, int *, double *, int * , int *, int *, int *, double *,
+        int *, int *, int *, int *);
+void PZGESV(int *, int *, double *, int * , int *, int *, int *, double *,
+        int *, int *, int *, int *);
+void PDGEMM (char *, char *, int *, int *, int *, double *, double *, int *,
+             int *, int *, double *, int *, int *, int *, double *, double *,
+             int *, int *, int *);
+void PZGEMM (char *, char *, int *, int *, int *, double *, double *, int *,
+             int *, int *, double *, int *, int *, int *, double *, double *,
+             int *, int *, int *);
+void PDSYEV (char *, char *, int *, double *, int *, int *, int *, double *,
+             double *, int *, int *, int *, double *, int *, int *);
+void PCHEEV (char *, char *, int *, double *, int *, int *, int *, double *,
+             double *, int *, int *, int *, double *, int *, double *, int *, int *);
+void PSPOCON (char *, int *, double *, int *, int *, int *, double *, double *,
+              double *, int *, int *, int *, int *);
+void PSPOTRF (char *, int *, double *, int *, int *, int *, int *);
+void PSPOTRI (char *, int *, double *, int *, int *, int *, int *);
+void PSSYGST (int *, char *, int *, double *, int *, int *, int *, double *,
+              int *, int *, int *, double *, int *);
+void PSTRTRS (char *, char *, char *, int *, int *, double *, int *, int *, int *,
+              double *, int *, int *, int *, int *);
+void PSSYMM (char *, char *, int *, int *, double *, double *, int *, int *,
+             int *, double *, int *, int *, int *, double *, double *, int *,
+             int *, int *);
+
+void PSUBDIAG (char *, char *, int, double *, int, double *, int *);
+void PDSYGVX(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
+       int*, double*, double *, int*, int*, double*, int*, int*, double*, double*, double*, int*,
+       int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
+void PZHEGVX(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
+       int*, double*, double *, int*, int*, double*, int*, int*, double*, double*, double*, int*,
+       int*, int*, double*, int *, double *, int*, int*, int*, int*, int*, double*, int*);
+void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, double*, int*,
+       int*, double*, int*, int*, double*, double*, double*, int*,
+       int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
+void pdgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
+       double *, int *, int *, int *);               
+
+}
 
 
 #endif
