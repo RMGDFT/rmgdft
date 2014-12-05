@@ -1,4 +1,5 @@
 add_library (Misc
+Scalapack.cpp
 open_restart_file.c
 cnpy.cpp
 LinePlot.cpp
