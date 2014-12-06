@@ -54,10 +54,10 @@
 // else <i|j> = I
 //
 
-template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *);
+template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *, int);
 
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B)
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver)
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);

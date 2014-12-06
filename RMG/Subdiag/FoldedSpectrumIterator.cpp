@@ -53,7 +53,7 @@
 //         alpha is the multiplicative factor
 //         iterations is the number of iterations
 
-void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations)
+void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations, int driver)
 {
 
     int ione = 1;

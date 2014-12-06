@@ -64,11 +64,11 @@ static int *fs_eigcounts = NULL;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrum<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *);
+template int FoldedSpectrum<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *, int);
 
 template <typename KpointType>
 int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
-		double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C)
+		double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C, int driver)
 {
 
     RmgTimer RT0("Diagonalization: fs:");
@@ -150,7 +150,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     double *T = new double[n*n];
 #endif
     for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
-    FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its);
+    FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver);
 
     // Copy back to A
     for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
@@ -241,7 +241,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 
     // Apply folded spectrum to this PE's range of eigenvectors
     RT2 = new RmgTimer("Diagonalization: fs: iteration");
-    FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10);
+    FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10, driver);
     delete(RT2);
 
     // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
@@ -258,9 +258,9 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
 
 #if !FOLDED_GSE
-    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, NULLptr);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, NULLptr, driver);
 #else
-    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver);
 #endif
     for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
     delete(RT2);

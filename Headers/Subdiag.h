@@ -57,15 +57,12 @@ template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
 int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb,
-                double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C);
-void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations);
-void FoldedSpectrumIterator(std::complex<double> *A, int n, double *eigs, int k, std::complex<double> *X, double alpha, int iterations, int istart);
+                double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C, int driver);
+void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations, int driver);
+void FoldedSpectrumIterator(std::complex<double> *A, int n, double *eigs, int k, std::complex<double> *X, double alpha, int iterations, int istart, int driver);
 
 template <typename DataType>
-void FoldedSpectrumMinverse(DataType *A, DataType *Ainv, int n, int iterations);
-
-template <typename DataType>
-void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations);
+void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver);
 
 int Rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,
                 double *w, double *work, int lwork, int *iwork, int liwork, double *wa);
@@ -76,7 +73,7 @@ void FoldedSpectrumSetup(int n, int NPES, int THISPE,
                          int *n_start, int *n_win,
                          int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts);
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B);
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver);
 
 
 

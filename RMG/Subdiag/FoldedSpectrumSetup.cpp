@@ -32,9 +32,11 @@
 
 
 // Sets up the parallel decomposition across processing elements
-//
+// A processing element in this case is not necessarily a single
+// MPI process but could be a group of MPI processes (e.g. scalapack)
+// 
 // n = size of square matrix to be diagonalized
-// NPES = number of processing elements
+// FS_PES = number of processing elements
 // THISPE = index of this PE starting from 0
 // fs_eigstart, fs_eigstop, fs_eigcounts = arrays used in MPI calls
 // eigstart = index of starting eigenvector this PE is responsible for starting from 0
@@ -48,15 +50,15 @@
 //     |      |           |             |            |                   |
 //     0      n_start     eig_start     eig_stop     n_start+n_win       n               
 //
-void FoldedSpectrumSetup(int n, int NPES, int THISPE, 
+void FoldedSpectrumSetup(int n, int FS_PES, int THISPE, 
                          int *eig_start, int *eig_stop, int *eig_step,
                          int *n_start, int *n_win,
                          int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts)
 {
 
-    for(int idx = 0;idx < NPES;idx++) {
+    for(int idx = 0;idx < FS_PES;idx++) {
         double t1 = (double)n;
-        t1 = t1 / ((double)NPES);
+        t1 = t1 / ((double)FS_PES);
         double t2 = t1 * (double)idx;
         fs_eigstart[idx] = (int)rint(t2);
         fs_eigstop[idx] = (int)rint(t1 + t2);
@@ -71,12 +73,12 @@ void FoldedSpectrumSetup(int n, int NPES, int THISPE,
     // Folded spectrum method is parallelized over PE's. Each PE gets assigned
     // a subset of the eigenvectors.
     double t1 = (double)n;
-    t1 = t1 / ((double)NPES);
+    t1 = t1 / ((double)FS_PES);
     double t2 = t1 * (double)THISPE;
     *eig_start = (int)rint(t2);
     *eig_stop = (int)rint(t1 + t2);
     *eig_step = *eig_stop - *eig_start;
-    if(THISPE == (NPES - 1)) *eig_stop = n;
+    if(THISPE == (FS_PES - 1)) *eig_stop = n;
 
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.

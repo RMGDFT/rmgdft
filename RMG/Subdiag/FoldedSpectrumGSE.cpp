@@ -58,9 +58,9 @@
 // fs_eigcounts and fs_eigstart are used to collect the data in the MPI_Allgatherv call
 // at the end. A and B are both overwritten.
 //
-template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int, int, int *, int *, int);
+template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int, int, int *, int *, int, int);
 template <typename DataType>
-void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations)
+void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver)
 {
     RmgTimer RT0("Diagonalization: fs: GSE");
     DataType ZERO_t(0.0);
