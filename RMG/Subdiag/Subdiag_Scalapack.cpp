@@ -44,6 +44,7 @@
 #include <cublas_v2.h>
 #endif
 
+#include "Scalapack.h"
 
 
 template char * Subdiag_Scalapack<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
@@ -65,6 +66,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     static char *trans_t = "t";
     static char *trans_n = "n";
 
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+
     int izero = 0;
     int ione=1;
     int dist_length=1;
@@ -72,20 +75,23 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     int factor = 1;
     if(!ct.is_gamma) factor=2;
 
-
-    if (pct.scalapack_pe)
-    {
-
-        /*Length of distributed matrices (different on each processor) */
-        dist_length = NUMROC (&num_states, &pct.desca[4], &pct.scalapack_myrow, &izero,
-                      &pct.scalapack_nprow) * NUMROC (&num_states, &pct.desca[4], &pct.scalapack_mycol,
-                      &izero, &pct.scalapack_npcol);
-
-        /* Every processor for which pct.scalapack_pe should have some data and so dist_length cannot be 0*/
-        if (dist_length == 0)
-        rmg_error_handler(__FILE__, __LINE__, " function NUMROC returned 0, that should not happen");
+    // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
+    static Scalapack *MainSp;
+    if(!MainSp) {
+        MainSp = new Scalapack(4, pct.thisimg, ct.images_per_node, num_states, num_states, ct.scalapack_block_factor, ct.scalapack_block_factor, pct.grid_comm);
 
     }
+
+
+    dist_length = MainSp->GetDistMdim() * MainSp->GetDistNdim();
+    int *desca = MainSp->GetDistDesca();
+    bool participates = MainSp->Participates();
+    MPI_Comm scalapack_comm = MainSp->GetComm();
+    int scalapack_nprow = MainSp->GetRows();
+    int scalapack_npcol = MainSp->GetCols();
+
+    if(dist_length == 0) dist_length = 1;   // Just to keep allocations from complaining
+
 
     // Allocate and clear distributed matrices */
     KpointType *distAij = new KpointType[dist_length]();
@@ -97,9 +103,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     // Reduce and distribute matrices
     RmgTimer *RT1 = new RmgTimer("Diagonalization: distribute matrices.");
-    distribute_mat (pct.desca, (double *)Aij, (double *)distAij, &num_states);
-    distribute_mat (pct.desca, (double *)Sij, (double *)distSij, &num_states);
-    distribute_mat (pct.desca, (double *)eigvectors, (double *)distBij, &num_states);
+    MainSp->DistributeMatrix(Aij, distAij, num_states, num_states);
+    MainSp->DistributeMatrix(Sij, distSij, num_states, num_states);
+    MainSp->DistributeMatrix(eigvectors, distBij, num_states, num_states);
     delete(RT1);
 
     // Create unitary matrix
@@ -109,10 +115,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     }
 
 
-    if (pct.scalapack_pe) {
+    if (participates) {
 
         // distribute unitary matrix
-        distribute_mat (pct.desca, (double *)Cij, (double *)distCij, &num_states);
+        MainSp->DistributeMatrix(Cij, distCij, num_states, num_states);
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
@@ -120,19 +126,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             // Get matrix that is inverse to B
             {
                 int info=0;
-                int ipiv_size = NUMROC (&pct.desca[2], &pct.desca[4], &pct.scalapack_myrow, &pct.desca[6],
-                                &pct.scalapack_nprow) + pct.desca[4];
+
+                int ipiv_size = MainSp->GetIpivSize();
                 int *ipiv = new int[ipiv_size]();
 
                 /*Inverse of B should be in Cij */
-                if(ct.is_gamma) {
-                    PDGESV (&num_states, &num_states, (double *)distBij, &ione, &ione, pct.desca, ipiv, (double *)distCij, &ione,
-                            &ione, pct.desca, &info);
-                }
-                else {
-                    PZGESV (&num_states, &num_states, (double *)distBij, &ione, &ione, pct.desca, ipiv, (double *)distCij, &ione,
-                            &ione, pct.desca, &info);
-                }
+                MainSp->Pgesv (&num_states, &num_states, distBij, &ione, &ione, desca, ipiv, distCij, &ione,
+                            &ione, desca, &info);
 
                 if (info)
                 {
@@ -153,30 +153,14 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 KpointType beta(0.0);
 
                 /*B^-1*A */
-                if(ct.is_gamma) {
+                MainSp->Pgemm(trans, trans, &num_states, &num_states, &num_states, &alpha,
+                            distCij, &ione, &ione, desca, distAij, &ione, 
+                            &ione, desca, &beta, distBij, &ione, &ione, desca);
 
-                    PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, 
-                            &ione, pct.desca, (double *)&beta, (double *)distBij, &ione, &ione, pct.desca);
-
-                    /*Multiply the result with Sij, result is in distCij */
-                    PDGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, 
-                            &ione, pct.desca, (double *)&beta, (double *)distCij, &ione, &ione, pct.desca);
-
-                }
-                else {
-
-                    PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distCij, &ione, &ione, pct.desca, (double *)distAij, &ione, 
-                            &ione, pct.desca, (double *)&beta, (double *)distBij, &ione, &ione, pct.desca);
-
-                    /*Multiply the result with Sij, result is in distCij */
-                    PZGEMM (trans, trans, &num_states, &num_states, &num_states, (double *)&alpha,
-                            (double *)distSij, &ione, &ione, pct.desca, (double *)distBij, &ione, 
-                            &ione, pct.desca, (double *)&beta, (double *)distCij, &ione, &ione, pct.desca);
-
-                }
+                /*Multiply the result with Sij, result is in distCij */
+                MainSp->Pgemm (trans, trans, &num_states, &num_states, &num_states, &alpha,
+                            distSij, &ione, &ione, desca, distBij, &ione, 
+                            &ione, desca, &beta, distCij, &ione, &ione, desca);
 
                 // Copy result into Bij
                 for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
@@ -217,15 +201,15 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             int liwork = -1;
 
             if(ct.is_gamma) {
-                PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, pct.desca,
-                         (double *)distSij, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, pct.desca, &lwork_tmp, &lwork,
+                PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork,
                          &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
             }
             else {
-                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, pct.desca,
-                         (double *)distSij, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, pct.desca, &lwork_tmp, &lwork,
+                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork,
                          &rwork_tmp, &lrwork,
                          &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
             }
@@ -246,9 +230,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             tol = 1e-15;
 
             if(ct.is_gamma) {
-                PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, pct.desca,
-                         (double *)distSij, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, pct.desca, work2, &lwork, iwork,
+                PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork, iwork,
                          &liwork, ifail, iclustr, gap, &info);
             }
             else {
@@ -256,9 +240,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 rwork2 = (double *)Aij;
                 lrwork = (int)rwork_tmp + 1;
                 std::complex<double> *rwork2 = new  std::complex<double>[lrwork];
-                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, pct.desca,
-                         (double *)distSij, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, pct.desca, work2, &lwork,
+                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork,
                          (double *)rwork2, &lrwork,
                          iwork, &liwork, ifail, iclustr, gap, &info);
                 delete [] rwork2;
@@ -280,21 +264,26 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         }
         delete(RT1);
         
-        // Gather result onto global_matrix
-        matgather ((double *)distAij, pct.desca, (double *)eigvectors, num_states);
+        // Clear eigvectors
+        for (int idx = 0; idx < num_states*num_states; idx++) {
+            eigvectors[idx] = ZERO_t;
+        }
+        // Gather distributed results from distAij into eigvectors
+        MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
+
 
 
     }
     else {
-        // Non-scalapack nodes should have Aij set to zero
+        // Non-participating nodes need eigvectors set to zero as well
         for (int idx = 0; idx < num_states*num_states; idx++) {
             eigvectors[idx] = ZERO_t;
         }
     }
 
-    // Finally, sum eigvectors over all PEs
+    // Finally, sum eigvectors over all PE's in this scalapack instance
     RT1 = new RmgTimer("Diagonalization: MPI_Allreduce");
-    MPI_Allreduce(MPI_IN_PLACE, eigvectors, factor * num_states * num_states, MPI_DOUBLE, MPI_SUM, pct.scalapack_comm);
+    MainSp->Allreduce(MPI_IN_PLACE, eigvectors, factor * num_states * num_states, MPI_DOUBLE, MPI_SUM);
     delete(RT1);
 
 
@@ -305,12 +294,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     {
         int item;
         item = pct.thisimg % ct.images_per_node;
-        item = item * pct.scalapack_nprow * pct.scalapack_npcol;
+        item = item * scalapack_nprow * scalapack_npcol;
 
         int ppp;
-        MPI_Comm_size(pct.scalapack_comm, &ppp);
+        MPI_Comm_size(scalapack_comm, &ppp);
 
-        MPI_Bcast (eigs, num_states, MPI_DOUBLE, item, pct.scalapack_comm);
+        MPI_Bcast (eigs, num_states, MPI_DOUBLE, item, scalapack_comm);
     }
 
 

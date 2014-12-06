@@ -32,7 +32,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N
 {
 
     this->ngroups = ngroups;
-    this->msize = msize;
     this->M = M;
     this->N = N;
     this->MB = MB;
@@ -45,26 +44,18 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N
     MPI_Group grp_world, grp_this;
 
 
+    int num_blocks_M = M / MB;
+    if(M % MB) num_blocks_M++;
+
+    int num_blocks_N = N / NB;
+    if(N % NB) num_blocks_N++;
+
+
     // Make sure we have enough pes for the number of groups requested. We'll reset group_pes later
     this->group_pes = this->npes / this->ngroups / images_per_node;
     if(this->group_pes < 1) 
         throw RmgFatalException() << "Too many Scalapack groups requested in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
-    this->group_sizes = new int[this->ngroups]();
-    this->group_starts = new int[this->ngroups]();
-    int j = 0;
-    for(int i = 0;i < this->npes;i++) {
-        this->group_sizes[j]++;
-        j++;
-        j = j % this->ngroups; 
-    }
-
-    this->group_index = 0;
-    for(int i = 1;i < this->ngroups;i++) {
-        this->group_starts[i] = this->group_starts[i-1] + this->group_sizes[i-1]; 
-        if(this->root_rank >= this->group_starts[i]) this->group_index++;
-    }
-    this->group_pes = this->group_sizes[this->group_index];
 
     // Get 2-d grid dimensions for this group
     int sqrtnpe = (int) (sqrt (this->group_pes)) + 1;
@@ -73,11 +64,19 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N
     }
     this->group_cols = this->group_pes / this->group_rows;
 
+    /*Number of processor in any given direction cannot be more than number of blocks*/
+    if(num_blocks_M < this->group_rows) this->group_rows = num_blocks_M;
+    if(num_blocks_N < this->group_cols) this->group_cols = num_blocks_N;
+
+    // Reset after check
+    this->group_pes = this->group_rows * this->group_cols;
+    this->group_index = this->root_rank / this->group_pes;
+    
+
     int *pmap, *tgmap;
 
     pmap = new int[this->npes];
     tgmap = new int[this->npes];
-
 
 
     Cblacs_get (0, 0, &this->context);
@@ -103,23 +102,10 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N
     // which processors are participating in scalapack operations
     Cblacs_gridinfo (this->context, &this->group_rows, &this->group_cols, &this->my_row, &this->my_col);
 
-//    printf("\n  myrow, mycol nprow npcol %d %d %d %d", this->my_row, this->my_col, this->group_rows, this->group_cols);
+    //printf("\n  myrow, mycol nprow npcol %d %d %d %d", this->my_row, this->my_col, this->group_rows, this->group_cols);
 
     // Variable participates will tell use whether the PE participates in scalapack calculations
     this->participates = (this->my_row >= 0);
-//std::cout << "JJJ " << this->group_index << "  " <<this->my_row << "  " << this->my_col << "  " << this->participates << std::endl;
-    #if 0
-
-        if(pct.scalapack_pe) {
-            pct.scalapack_mpi_rank[myrow*npcol + mycol] = pct.gridpe;
-        }
-        MPI_Allreduce(MPI_IN_PLACE, pct.scalapack_mpi_rank, npes, MPI_INT, MPI_SUM, pct.grid_comm);
-
-        pct.scalapack_max_dist_size = numroc_ (&ct.num_states, &NB, &myrow, &izero, &nprow) *
-                                      numroc_ (&ct.num_states, &NB, &mycol, &izero, &npcol);
-
-        MPI_Allreduce(MPI_IN_PLACE, &pct.scalapack_max_dist_size, 1, MPI_INT, MPI_MAX, pct.grid_comm);
-    #endif
 
 
     // Set up descriptors for a local matrix (one block on (0,0)
@@ -136,6 +122,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N
     int lld_distr = std::max( this->m_dist, 1 );
     this->dist_desca = new int[this->npes*DLEN];
     descinit_( this->dist_desca, &this->M, &this->N, &this->MB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
+//std::cout << "JJJ " << this->group_index << "  " <<this->my_row << "  " << this->my_col << "  " << this->participates << std::endl;
 
 
 
@@ -168,6 +155,27 @@ int *Scalapack::GetDistDesca(void)
 {
     return this->dist_desca;
 }
+
+bool Scalapack::Participates(void)
+{
+    return this->participates;
+}
+
+MPI_Comm Scalapack::GetComm(void)
+{
+    return this->comm;
+}
+
+int Scalapack::GetRows(void)
+{
+    return this->group_rows;
+}
+
+int Scalapack::GetCols(void)
+{
+    return this->group_cols;
+}
+
 
 // Returns ipiv size required by PDGESV
 int Scalapack::GetIpivSize(void)
@@ -253,14 +261,28 @@ void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::
     pzgemm_ (transa, transb, M, N, K, (double *)alpha, (double *)A, IA, JA, desca, (double *)B, IB, JB, descb, (double *)beta, (double *)C, IC, JC, descc);
 }
 
+void Scalapack::Pgesv (int *N, int *NRHS, double *A, int *IA, int *JA, int *desca, int *ipiv, double *B, int *IB,
+                            int *JB, int *descb, int *info)
+{
+    pdgesv_(N, NRHS, A, IA, JA, desca, ipiv, B, IB, JB, descb, info);
+}
+
+void Scalapack::Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int *JA, int *desca, int *ipiv, std::complex<double> *B, int *IB,
+                            int *JB, int *descb, int *info)
+{
+    pzgesv_(N, NRHS, (double *)A, IA, JA, desca, ipiv, (double *)B, IB, JB, descb, info);
+}
+
+void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op) {
+    MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, this->comm);
+}
+
 
 // Clean up
 Scalapack::~Scalapack(void)
 {
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
-    delete [] this->group_sizes;
-    delete [] this->group_starts;
     delete [] this->local_desca;
     delete [] this->dist_desca;
 }

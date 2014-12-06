@@ -45,12 +45,18 @@ public:
     void DistributeMatrix(std::complex<double> *A, std::complex<double> *A_dist, int m, int n);
     void GatherMatrix(std::complex<double> *A, std::complex<double> *A_dist, int m, int n);
 
+    int GetRows(void);
+    int GetCols(void);
     int GetDistMdim(void);
     int GetDistNdim(void);
     int GetCommRank(void);
     int GetRootRank(void);
     int *GetDistDesca(void);
     int GetIpivSize(void);
+    bool Participates(void);
+    MPI_Comm GetComm(void);
+
+    void Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op);
 
     void Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha,
                        double *A, int *IA, int *JA, int *desca,
@@ -62,6 +68,11 @@ public:
                        std::complex<double> *B, int *IB, int *JB, int *descb,
                        std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc);
 
+    void Pgesv (int *N, int *NRHS, double *A, int *IA, int *JA, int *desca, int *ipiv, double *B, int *IB,
+                            int *JB, int *descb, int *info);
+
+    void Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int *JA, int *desca, int *ipiv, std::complex<double> *B, int *IB,
+                            int *JB, int *descb, int *info);
 
     ~Scalapack(void);
 
@@ -82,9 +93,6 @@ private:
     int my_col;         // blacs col of this PE
     int root_rank;      // rank in rootcomm
     int comm_rank;      // rank in this comm
-    int *group_sizes;   // number of pes in this group
-    int *group_starts;  // starting rank in rootrank assigned to this group
-    int msize;          // Matrix size this scalapack instance will operate on
     int *local_desca;   // desca for local matrix
     int *dist_desca;    // desca for distributed matrix
     bool participates;  // whether or not this PE participates in scalapack calculations
