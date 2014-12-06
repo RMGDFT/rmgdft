@@ -237,6 +237,22 @@ void Scalapack::GatherMatrix(std::complex<double> *A, std::complex<double> *A_di
 }
 
 
+void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha, 
+                       double *A, int *IA, int *JA, int *desca, 
+                       double *B, int *IB, int *JB, int *descb, 
+                       double *beta, double *C, int *IC, int *JC, int *descc)
+{
+    pdgemm_ (transa, transb, M, N, K, alpha, A, IA, JA, desca, B, IB, JB, descb, beta, C, IC, JC, descc);
+}
+
+void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::complex<double> *alpha, 
+                       std::complex<double> *A, int *IA, int *JA, int*desca,
+                       std::complex<double> *B, int *IB, int *JB, int *descb,
+                       std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc)
+{
+    pzgemm_ (transa, transb, M, N, K, (double *)alpha, (double *)A, IA, JA, desca, (double *)B, IB, JB, descb, (double *)beta, (double *)C, IC, JC, descc);
+}
+
 
 // Clean up
 Scalapack::~Scalapack(void)

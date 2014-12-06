@@ -52,6 +52,17 @@ public:
     int *GetDistDesca(void);
     int GetIpivSize(void);
 
+    void Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha,
+                       double *A, int *IA, int *JA, int *desca,
+                       double *B, int *IB, int *JB, int *descb,
+                       double *beta, double *C, int *IC, int *JC, int *descc);
+
+    void Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::complex<double> *alpha,
+                       std::complex<double> *A, int *IA, int *JA, int*desca,
+                       std::complex<double> *B, int *IB, int *JB, int *descb,
+                       std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc);
+
+
     ~Scalapack(void);
 
 private:
