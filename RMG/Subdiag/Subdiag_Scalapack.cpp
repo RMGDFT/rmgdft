@@ -105,9 +105,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     // Reduce and distribute matrices
     RmgTimer *RT1 = new RmgTimer("Diagonalization: distribute matrices.");
-    MainSp->DistributeMatrix(Aij, distAij, num_states, num_states);
-    MainSp->DistributeMatrix(Sij, distSij, num_states, num_states);
-    MainSp->DistributeMatrix(eigvectors, distBij, num_states, num_states);
+    MainSp->CopySquareMatrixToDistArray(Aij, distAij, num_states, desca);
+    MainSp->CopySquareMatrixToDistArray(Sij, distSij, num_states, desca);
+    MainSp->CopySquareMatrixToDistArray(eigvectors, distBij, num_states, desca);
     delete(RT1);
 
     // Create unitary matrix
@@ -120,7 +120,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     if (participates) {
 
         // distribute unitary matrix
-        MainSp->DistributeMatrix(Cij, distCij, num_states, num_states);
+        MainSp->CopySquareMatrixToDistArray(Cij, distCij, num_states, desca);
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 

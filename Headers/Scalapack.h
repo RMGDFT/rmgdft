@@ -74,9 +74,14 @@ public:
     void Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int *JA, int *desca, int *ipiv, std::complex<double> *B, int *IB,
                             int *JB, int *descb, int *info);
 
+    void CopySquareMatrixToDistArray(double *A, double *A_dist, int n, int *desca);
+    void CopySquareMatrixToDistArray(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca);
+
     ~Scalapack(void);
 
 private:
+
+    void matinit (double *globmat, double *dismat, int size, int *desca, bool isreal);
 
     int M;              // Operates on matrices of size (M,N)
     int N;              // Operates on matrices of size (M,N)

@@ -277,6 +277,88 @@ void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype 
     MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, this->comm);
 }
 
+void Scalapack::CopySquareMatrixToDistArray(double *A, double *A_dist, int n, int *desca)
+{
+    if(this->participates) {
+        matinit(A, A_dist, n, desca, true);
+    }
+}
+
+void Scalapack::CopySquareMatrixToDistArray(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca)
+{
+    if(this->participates) {
+        matinit((double *)A, (double *)A_dist, n, desca, false);
+    }
+}
+
+
+// Currently only for use on square matrices with desca set up
+// during the constructor. Copies global matrix into distributed
+// matrix.
+void Scalapack::matinit (double *globmat, double *dismat, int size, int *desca, bool isreal)
+{
+    int i, j, ii, jj, iii, jjj, li, lj, maxrow, maxcol;
+    int iistart, jjstart, limb, ljnb, izero = 0;
+    int mycol, myrow, nprow, npcol;
+    int mb = desca[4], nb = desca[5], mxllda = desca[8];
+    int mxlloc = numroc_ (&size, &nb, &this->my_col, &izero, &this->group_cols);
+
+    mycol = this->my_col;
+    myrow = this->my_row;
+    nprow = this->group_rows;
+    npcol = this->group_cols;
+
+
+    maxrow = (size / (nprow * mb)) + 1;
+    maxcol = (size / (npcol * mb)) + 1;
+
+
+    for (li = 0; li < maxrow; li++)
+    {
+
+        iistart = (li * nprow + myrow) * mb;
+        limb = li * mb;
+
+        for (lj = 0; lj < maxcol; lj++)
+        {
+
+            jjstart = (lj * npcol + mycol) * nb;
+            ljnb = lj * nb;
+
+            for (i = 0; i < mb; i++)
+            {
+
+                ii = iistart + i;
+                iii = i + limb;
+
+                if (iii < mxllda && ii < size)
+                {
+
+                    for (j = 0; j < nb; j++)
+                    {
+
+                        jj = jjstart + j;
+                        jjj = j + ljnb;
+
+                        if (jjj < mxlloc && jj < size)
+                        {
+                            if(isreal) {
+                                dismat[iii + jjj * mxllda] = globmat[ii + jj * size];
+                            }
+                            else {
+                                dismat[2 * (iii + jjj * mxllda)] = globmat[2 * (ii + jj * size)];
+                                dismat[2 * (iii + jjj * mxllda) + 1] =
+                                    globmat[2 * (ii + jj * size) + 1];
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+}
 
 // Clean up
 Scalapack::~Scalapack(void)
