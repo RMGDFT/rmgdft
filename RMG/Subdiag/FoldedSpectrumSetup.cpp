@@ -36,7 +36,7 @@
 // MPI process but could be a group of MPI processes (e.g. scalapack)
 // 
 // n = size of square matrix to be diagonalized
-// FS_PES = number of processing elements
+// FS_NPES = number of processing elements
 // THISPE = index of this PE starting from 0
 // fs_eigstart, fs_eigstop, fs_eigcounts = arrays used in MPI calls
 // eigstart = index of starting eigenvector this PE is responsible for starting from 0
@@ -50,15 +50,15 @@
 //     |      |           |             |            |                   |
 //     0      n_start     eig_start     eig_stop     n_start+n_win       n               
 //
-void FoldedSpectrumSetup(int n, int FS_PES, int THISPE, 
+void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE, 
                          int *eig_start, int *eig_stop, int *eig_step,
                          int *n_start, int *n_win,
                          int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts)
 {
 
-    for(int idx = 0;idx < FS_PES;idx++) {
+    for(int idx = 0;idx < FS_NPES;idx++) {
         double t1 = (double)n;
-        t1 = t1 / ((double)FS_PES);
+        t1 = t1 / ((double)FS_NPES);
         double t2 = t1 * (double)idx;
         fs_eigstart[idx] = (int)rint(t2);
         fs_eigstop[idx] = (int)rint(t1 + t2);
@@ -73,12 +73,12 @@ void FoldedSpectrumSetup(int n, int FS_PES, int THISPE,
     // Folded spectrum method is parallelized over PE's. Each PE gets assigned
     // a subset of the eigenvectors.
     double t1 = (double)n;
-    t1 = t1 / ((double)FS_PES);
+    t1 = t1 / ((double)FS_NPES);
     double t2 = t1 * (double)THISPE;
     *eig_start = (int)rint(t2);
     *eig_stop = (int)rint(t1 + t2);
     *eig_step = *eig_stop - *eig_start;
-    if(THISPE == (FS_PES - 1)) *eig_stop = n;
+    if(THISPE == (FS_NPES - 1)) *eig_stop = n;
 
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.

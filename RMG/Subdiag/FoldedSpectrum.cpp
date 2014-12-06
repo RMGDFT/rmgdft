@@ -80,6 +80,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     BaseGrid *Grid = kptr->G;
     Lattice *L = kptr->L;
 
+
     char *trans_t="t", *trans_n="n";
     char *cuplo = "l", *side="l", *diag="n", *jobz="V";
 
@@ -91,21 +92,22 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     if(ct.is_gamma) factor = 1;
 
 
-    int NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
-
+    int FS_NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
+#if SCALAPACK_LIBS
+    if(driver == SUBDIAG_SCALAPACK) FS_NPES = 16;               // Need to find a better way of setting this at some point.
+#endif
 
     // Allocate some memory for our communication book keeping arrays
     if(!fs_eigstart) {
-        fs_eigstart = new int[NPES];
-        fs_eigstop = new int[NPES];
-        fs_eigcounts = new int[NPES];
+        fs_eigstart = new int[FS_NPES];
+        fs_eigstop = new int[FS_NPES];
+        fs_eigcounts = new int[FS_NPES];
     }
 
     // Set up partition indices and bookeeping arrays
     int eig_start, eig_stop, eig_step;
     int n_start, n_win;
-//if(ct.scf_steps > 15)ct.folded_spectrum_width=0.25;
-    FoldedSpectrumSetup(n, NPES, pct.gridpe, &eig_start, &eig_stop, &eig_step,
+    FoldedSpectrumSetup(n, FS_NPES, pct.gridpe, &eig_start, &eig_stop, &eig_step,
                         &n_start, &n_win, fs_eigstart, fs_eigstop, fs_eigcounts);
 
 
