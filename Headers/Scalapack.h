@@ -77,11 +77,16 @@ public:
     void CopySquareMatrixToDistArray(double *A, double *A_dist, int n, int *desca);
     void CopySquareMatrixToDistArray(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca);
 
+    void CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, int *desca);
+    void CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca);
+
     ~Scalapack(void);
 
 private:
 
-    void matinit (double *globmat, double *dismat, int size, int *desca, bool isreal);
+    void matscatter (double *globmat, double *dismat, int size, int *desca, bool isreal);
+    void matgather (double *globmat, double *dismat, int size, int *desca, bool isreal);
+
 
     int M;              // Operates on matrices of size (M,N)
     int N;              // Operates on matrices of size (M,N)

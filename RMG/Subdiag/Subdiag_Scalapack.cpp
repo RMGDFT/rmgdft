@@ -271,7 +271,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             eigvectors[idx] = ZERO_t;
         }
         // Gather distributed results from distAij into eigvectors
-        MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
+        //MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
+        MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
 
 
 
