@@ -78,7 +78,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     static Scalapack *MainSp;
     if(!MainSp) {
-        MainSp = new Scalapack(4, pct.thisimg, ct.images_per_node, num_states, num_states, ct.scalapack_block_factor, ct.scalapack_block_factor, pct.grid_comm);
+        // Need some code here to decide how to set the number of scalapack groups
+        int scalapack_groups = 1;
+        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, num_states, num_states, ct.scalapack_block_factor, ct.scalapack_block_factor, pct.grid_comm);
 
     }
 
