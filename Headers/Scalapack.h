@@ -41,6 +41,17 @@ public:
     Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N, int MB, int NB, MPI_Comm rootcomm);
     void DistributeMatrix(double *A, double *A_dist, int m, int n);
     void GatherMatrix(double *A, double *A_dist, int m, int n);
+
+    void DistributeMatrix(std::complex<double> *A, std::complex<double> *A_dist, int m, int n);
+    void GatherMatrix(std::complex<double> *A, std::complex<double> *A_dist, int m, int n);
+
+    int GetDistMdim(void);
+    int GetDistNdim(void);
+    int GetCommRank(void);
+    int GetRootRank(void);
+    int *GetDistDesca(void);
+    int GetIpivSize(void);
+
     ~Scalapack(void);
 
 private:
@@ -69,28 +80,29 @@ private:
     int m_dist;         // rows of distributed matrix
     int n_dist;         // cols of distributed matrix
     MPI_Comm comm;      // communicator for this object
+    MPI_Comm root_comm; // parent communicator
 
 };
 
 extern "C" {
 
-int NUMROC (int *, int *, int *, int *, int *);
+int numroc_ (int *, int *, int *, int *, int *);
 int INDXG2P (int *, int *, int *, int *, int *);
-void DESCINIT (int[], int *, int *, int *, int *, int *, int *, int *, int *,
+void descinit_ (int[], int *, int *, int *, int *, int *, int *, int *, int *,
                int *);
-void PDGESV(int *, int *, double *, int * , int *, int *, int *, double *,
+void pdgesv_ (int *, int *, double *, int * , int *, int *, int *, double *,
         int *, int *, int *, int *);
-void PZGESV(int *, int *, double *, int * , int *, int *, int *, double *,
+void pzgesv_ (int *, int *, double *, int * , int *, int *, int *, double *,
         int *, int *, int *, int *);
-void PDGEMM (char *, char *, int *, int *, int *, double *, double *, int *,
+void pdgemm_ (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
              int *, int *, int *);
-void PZGEMM (char *, char *, int *, int *, int *, double *, double *, int *,
+void pzgemm_ (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
              int *, int *, int *);
-void PDSYEV (char *, char *, int *, double *, int *, int *, int *, double *,
+void pdsyev_ (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, int *);
-void PCHEEV (char *, char *, int *, double *, int *, int *, int *, double *,
+void pcheev_ (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, double *, int *, int *);
 void PSPOCON (char *, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
@@ -115,6 +127,8 @@ void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, dou
        int*, double*, int*, int*, double*, double*, double*, int*,
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
 void pdgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
+       double *, int *, int *, int *);               
+void pzgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
 
 }
