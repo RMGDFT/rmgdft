@@ -61,7 +61,7 @@ vxc_old, rmg_double_t * rho, double * rho_oppo, rmg_double_t * rhoc, rmg_double_
 
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
-            scf(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
+            Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
 
 
         if (CONVERGENCE)

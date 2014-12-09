@@ -39,7 +39,6 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "transition.h"
-extern rmg_double_t *vh_old, *vxc_old;
 
 
 void run(STATE * states, STATE * states1)

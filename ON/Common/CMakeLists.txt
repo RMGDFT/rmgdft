@@ -54,7 +54,7 @@ ortho_norm_local.c
  real_max_all.c
  rmg_timings.c
  run.c
- scf.c
+ Scf_on.cpp
  sd.c
  theta_phi_new.c
  tools_submat.c

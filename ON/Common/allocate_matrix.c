@@ -48,7 +48,7 @@ void allocate_matrix()
     nn = ct.num_states;
     NN = ct.num_states;
     
-    S0_BASIS = (get_PX0_GRID()+2) * (get_PY0_GRID()+2) * (get_PZ0_GRID()+2);
+    int S0_BASIS = (get_PX0_GRID()+2) * (get_PY0_GRID()+2) * (get_PZ0_GRID()+2);
 
     my_malloc_init( rho, get_FP0_BASIS() *2, rmg_double_t );
     rho_oppo = rho + get_FP0_BASIS() ;

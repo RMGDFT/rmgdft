@@ -74,6 +74,44 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
+double *projectors, *projectors_x, *projectors_y, *projectors_z;
+int *num_nonlocal_ion;
+double *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
+char *state_overlap_or_not;
+int *send_to, *recv_from, num_sendrecv_loop;
+int *send_to1, *recv_from1, num_sendrecv_loop1;
+int *ionidx_allproc;
+int max_ion_nonlocal;
+int NPES;
+STATE *states_tem;
+int *state_to_ion;
+int *state_to_proc;
+STATE *states;
+STATE *states1;
+STATE *states_distribute;
+ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
+double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
+double *rho_oppo, *rho_tot;
+int MXLLDA, MXLCOL;
+double *sg_twovpsi, *sg_res;
+double *statearray, *l_s, *matB, *mat_hb, *mat_X, *Hij, *theta, *work_dis;
+double *Hij_00, *Bij_00;
+double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
+double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
+ORBIT_ORBIT_OVERLAP *orbit_overlap_region;
+char *vloc_state_overlap_or_not;
+double *orbit_tem;
+double *sg_orbit;
+double *sg_orbit_res;
+int *state_begin;
+int *state_end;
+double *vtot_global;
+double *work_memory;
+double *wave_global;
+double *rho_global;
+double *vxc_old, *vh_old;
+
+
 int mpi_nprocs;
 int mpi_myrank;
 

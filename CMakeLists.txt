@@ -28,8 +28,8 @@ if(DEFINED ENV{CRAY_LIBSCI})
     set (CRAY_XK 1)
 endif()
 
-set (RMG_GPU_ENABLED 1)
-set (RMG_MAGMA_LIBS 1) 
+set (RMG_GPU_ENABLED 0)
+set (RMG_MAGMA_LIBS 0) 
 
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)

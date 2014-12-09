@@ -607,10 +607,20 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
+void get_te (double *rho, double *rho_oppo, double *rhocore, double *rhoc, double *vh, double *vxc,
+             STATE *states, int ii_flag);
 
+void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
+        double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
+        rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE);
+void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
+                int Nrefresh, double scale, int preconditioning);
 
 
 
 #ifdef __cplusplus
 }
 #endif
+
+
+

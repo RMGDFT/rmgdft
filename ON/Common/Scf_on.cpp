@@ -11,10 +11,17 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
+//#include "main.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
+#include "blas.h"
+
+
 #include "prototypes_on.h"
 #include "init_var.h"
-#define min(a,b) (((a)>(b)) ? (b) : (a))
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *, double *,
@@ -25,7 +32,7 @@ static double t[2];
 extern int it_scf;
 double tem1;
 
-void scf(STATE * states, STATE * states1, double *vxc, double *vh,
+void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE)
 {
@@ -35,10 +42,9 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     double tem;
     int flag;
     int steps;
-    int nfp0 = get_FP0_BASIS();
+    int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
-
-    void *RT = BeginRmgTimer("2-SCF");
+    RmgTimer *RT = new RmgTimer("2-SCF");
 
     ct.move_centers_at_this_step = 0;
     if ((ct.scf_steps % ct.movingSteps == 0) && if_update_centers(states)
@@ -58,9 +64,9 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+= pct.pe_kpoint)
     {
         flag = 0;
-        void *RT1 = BeginRmgTimer("2-SCF: matrix_and_diag");
+        RmgTimer *RT1 = new RmgTimer("2-SCF: matrix_and_diag");
         matrix_and_diag(ct.kp[kpt].kstate, states1, vtot_c, flag);
-        EndRmgTimer(RT1);
+        delete(RT1);
     }
 
     if(ct.spin_flag)
@@ -71,16 +77,16 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     if(pct.gridpe == 0) write_eigs(states);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
-        printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
+        rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
-    scopy(&nfp0, rho, &ione, rho_old, &ione);
+    dcopy(&nfp0, rho, &ione, rho_old, &ione);
 
-    void *RT2 = BeginRmgTimer("2-SCF: get_new_rho");
+    RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
     get_new_rho(states, rho);
-    EndRmgTimer(RT2);
+    delete(RT2);
 
     tem1 = 0.0;
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+    for (idx = 0; idx < nfp0; idx++)
     {
         tem = rho_old[idx];
         rho_old[idx] = -rho[idx] + rho_old[idx];
@@ -90,21 +96,21 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
 
     tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) )/ ((double) (ct.vh_nbasis));
     steps = ct.scf_steps;
-    void *RT3 = BeginRmgTimer("2-SCF: pulay mix");
-    pulay_rho_on (steps, get_FP0_BASIS(), rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
-    EndRmgTimer(RT3);
+    RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
+    pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+    delete(RT3);
 
     if(ct.spin_flag) get_rho_oppo(rho, rho_oppo);
 
     /* Update potential */
-    void *RT4 = BeginRmgTimer("2-SCF: update_pot");
+    RmgTimer *RT4 = new RmgTimer("2-SCF: update_pot");
     update_pot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore, CONVERGENCE, states);
-    EndRmgTimer(RT4);
+    delete(RT4);
 
 
-    void *RT5 = BeginRmgTimer("2-SCF: get_te");
+    RmgTimer *RT5 = new RmgTimer("2-SCF: get_te");
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
-    EndRmgTimer(RT5);
+    delete(RT5);
 
     /* Update the orbitals */
 
@@ -113,9 +119,9 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
     if(ct.scf_steps < ct.freeze_orbital_step)
     {
         steps = ct.scf_steps;
-        void *RT6 = BeginRmgTimer("2-SCF: mg_eig");
+        RmgTimer *RT6 = new RmgTimer("2-SCF: mg_eig");
         mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
-        EndRmgTimer(RT6);
+        delete(RT6);
     }
     else
     {
@@ -123,7 +129,7 @@ void scf(STATE * states, STATE * states1, double *vxc, double *vh,
         if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
     }
 
-    EndRmgTimer(RT);
+    delete(RT);
 }                               /* end scf */
 
 
@@ -139,26 +145,30 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         int *CONVERGENCE, STATE * states)
 {
-    int n = get_FP0_BASIS(), idx, ione = 1;
+    int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
+    int FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
+    int FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
+    int idx, ione = 1;
     double tem;
 
 
 
 
     /* save old vtot, vxc, vh */
-    scopy(&n, vxc, &ione, vxc_old, &ione);
-    scopy(&n, vh, &ione, vh_old, &ione);
+    dcopy(&nfp0, vxc, &ione, vxc_old, &ione);
+    dcopy(&nfp0, vh, &ione, vh_old, &ione);
 
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+    for (idx = 0; idx < nfp0; idx++)
         vtot[idx] = vxc[idx] + vh[idx];
 
     /* Generate exchange-correlation potential */
     get_vxc(rho, rho_oppo, rhocore, vxc);
 
-    pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
+    pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
     /* Keep in memory vh*rho_new before updating vh */
-    tem = ddot(&n, rho, &ione, vh, &ione);
+    tem = ddot(&nfp0, rho, &ione, vh, &ione);
     ct.Evhold_rho = 0.5 * get_vel_f() * real_sum_all(tem, pct.grid_comm);
 
 
@@ -167,12 +177,12 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
     if(ct.spin_flag == 1)
     {
-        for (idx = 0; idx < get_FP0_BASIS(); idx++) 
+        for (idx = 0; idx < nfp0; idx++) 
             rho_tot[idx] = rho[idx] + rho_oppo[idx];
     }
     else
     {
-        for (idx = 0; idx < get_FP0_BASIS(); idx++) 
+        for (idx = 0; idx < nfp0; idx++) 
             rho_tot[idx] = rho[idx] ;
     }
 
@@ -181,23 +191,23 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
 
     /* Compute quantities function of rho only */
-    tem = ddot(&n, rho, &ione, vh, &ione);
+    tem = ddot(&nfp0, rho, &ione, vh, &ione);
     ct.Evh_rho = 0.5 * get_vel_f() * real_sum_all(tem, pct.grid_comm);
 
-    tem = ddot(&n, rhoc, &ione, vh, &ione);
+    tem = ddot(&nfp0, rhoc, &ione, vh, &ione);
     ct.Evh_rhoc = 0.5 * get_vel_f() * real_sum_all(tem, pct.grid_comm);
 
 
 
     /* evaluate correction vh+vxc */
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+    for (idx = 0; idx < nfp0; idx++)
         vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
 
 
     /* evaluate SC correction */
     t[0] = t[1] = 0.;
 
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+    for (idx = 0; idx < nfp0; idx++)
     {
         t[0] += rho[idx] * vtot[idx];
         t[1] += vtot[idx] * vtot[idx];
@@ -210,26 +220,27 @@ void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * 
 
     ct.rms = t[1];
     if (pct.gridpe == 0)
-        printf(" SCF CHECKS: RMS[dv] = %15.10e RMS[drho] = %15.10e \n", t[1], tem1);
+        rmg_printf(" SCF CHECKS: RMS[dv] = %15.10e RMS[drho] = %15.10e \n", t[1], tem1);
+
 
     fflush(NULL);
     my_barrier();
 
     if (ct.scf_steps < 4 && ct.runflag == 0)
     {
-        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        for (idx = 0; idx < nfp0; idx++)
         {
             vxc[idx] = vxc_old[idx];
             vh[idx] = vh_old[idx];
         }
     }
 
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+    for (idx = 0; idx < nfp0; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     get_ddd(vtot);
 
-    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+    get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
     if (t[1] < ct.thr_rms)
         *CONVERGENCE = TRUE;

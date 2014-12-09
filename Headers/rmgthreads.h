@@ -19,7 +19,12 @@ typedef struct
     /* Pointer to current state assigned to the thread when used in sections that process a single state */
     void *sp;
 
-    rmg_double_t *vtot;
+    double *vtot;
+
+    double *rho_neutral;
+    double rms_target;
+    int min_sweeps, max_sweeps,mg_level;
+    int boundaryflag;
 
     // Pointers to special args
     void *p1;
@@ -27,9 +32,9 @@ typedef struct
     void *p3;
     int ion;        // Used for threaded beta_xpsi
     int nion;       // Used for threaded beta_xpsi
-    rmg_double_t *sintR;    // Used for threaded beta_xpsi
-    rmg_double_t *sintI;    // Used for threaded beta_xpsi
-    rmg_double_t *weiptr;   // Used for threaded beta_xpsi
+    double *sintR;    // Used for threaded beta_xpsi
+    double *sintI;    // Used for threaded beta_xpsi
+    double *weiptr;   // Used for threaded beta_xpsi
     int kpt;    // Used for threaded beta_xpsi
 } SCF_THREAD_CONTROL;
 
