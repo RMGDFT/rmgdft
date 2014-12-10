@@ -41,7 +41,13 @@ extern double *wave_global;
 extern double *rho_global;
 extern double *vh_old, *vxc_old;
 
+extern double *mat_local;
 
+extern double *vcomp, *peaks, *vext ;
+extern ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc; 
+extern double *work_matrix;
+extern double *vnuc_x, *vnuc_y, *vnuc_z;
+extern int peakNum;
 #if 0
 
 
@@ -66,14 +72,8 @@ int PZ0_GRID;
 
 
 
-double *vcomp, *peaks, *vext ;
 
-double *mat_local;
 //double complex *sigma_all;
-int peakNum;
-double *work_matrix;
-ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc; 
-double *vnuc_x, *vnuc_y, *vnuc_z;
 #endif
 
 
