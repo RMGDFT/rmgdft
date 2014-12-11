@@ -135,7 +135,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     if(this->participates) {
         Cblacs_gridinfo (this->context, &this->group_rows, &this->group_cols, &this->my_row, &this->my_col);
         if(this->my_row < 0) this->participates = false;
-        std::cout << "PP " << this->participates <<  " " << this->group_index << "  " << this->context << std::endl;
+        //std::cout << "PP " << this->participates <<  " " << this->group_index << "  " << this->context << std::endl;
 
         // Set up descriptors for a local matrix (one block on (0,0)
         int izero = 0, info = 0;

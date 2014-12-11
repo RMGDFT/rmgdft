@@ -66,12 +66,12 @@ static int *fs_eigcounts = NULL;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *, Scalapack*, int);
+template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, Scalapack*, int);
 
 // Just to note here the inputs rdistA,rdistB and rdistC are distributed matrices in the root communicator
 template <typename KpointType>
 int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int lda, KpointType *rB, int ldb, 
-		double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *rC, Scalapack* MainSp, int driver)
+		double *eigs, KpointType *rC, Scalapack* MainSp, int driver)
 {
 
     RmgTimer RT0("Diagonalization: fs:");
@@ -200,9 +200,19 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
         RT2 = new RmgTimer("Diagonalization: fs: transform");
 
 #if !FOLDED_GSE
-        pdsyngst_(&itype, cuplo, &n, distA, &ione, &ione, p_desca, distB, &ione, &ione, p_desca, &scale, work, &lwork, &info);
+        {
+            // Get pdsyngst_ workspace
+            int lwork = -1;
+            double lwork_tmp;
+            pdsyngst_(&itype, cuplo, &n, distA, &ione, &ione, p_desca, distB, &ione, &ione, p_desca, &scale, &lwork_tmp, &lwork, &info);
+            lwork = 2*(int)lwork_tmp;
+            double *work = new double[lwork];
+
+            pdsyngst_(&itype, cuplo, &n, distA, &ione, &ione, p_desca, distB, &ione, &ione, p_desca, &scale, work, &lwork, &info);
+            delete [] work;
+        }
         if( info != 0 )
-            rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
+            rmg_error_handler(__FILE__, __LINE__, "pdsyngst failure");
 #else
 
         int its=7;
@@ -229,18 +239,27 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
         // Do the submatrix along the diagonal to get starting values for folded spectrum
         //--------------------------------------------------------------------
         RT2 = new RmgTimer("Diagonalization: fs: submatrix");
-        int f_n_start = n_start + 1;
-printf("DDD %d %d  %d  %d  %d  %d  %d  %d  %d  %d\n",pct.imgpe,p_desca[0],p_desca[1],p_desca[2],p_desca[3],
-       p_desca[4],p_desca[5],p_desca[6],p_desca[7],p_desca[8]);
-        pdsyevd_(jobz, cuplo, &n_win, distA, &f_n_start, &f_n_start, p_desca, &eigs[n_start],
-                 distV, &f_n_start, &f_n_start, p_desca, work, &lwork, iwork, &liwork, &info);
-    //    dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
-    //                    work, &lwork,
-    //                    iwork, &liwork,
-    //                    &info);
-std::cout << "FFF " << info << "  " << n_win << "  " << n_start << "  " << f_desca[3] << std::endl;
+        {
+            int lwork=-1, liwork=-1, liwork_tmp;
+            double lwork_tmp;
+            lwork = -1;
+            int f_n_start = 1;
+            pdsyevd_(jobz, cuplo, &n_win, distA, &f_n_start, &f_n_start, p_desca, &eigs[n_start],
+                    distV, &f_n_start, &f_n_start, p_desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+            lwork = 2*(int)lwork_tmp;
+            liwork = liwork_tmp;
+            double *work = new double[lwork];
+            int *iwork = new int[liwork];
+
+            f_n_start = n_start + 1;
+            pdsyevd_(jobz, cuplo, &n_win, distA, &f_n_start, &f_n_start, p_desca, &eigs[n_start],
+                     distV, &f_n_start, &f_n_start, p_desca, work, &lwork, iwork, &liwork, &info);
+
+            delete [] iwork;
+            delete [] iwork;
+        }
         if( info != 0 ) 
-                rmg_error_handler(__FILE__, __LINE__, "dsyevd failure");
+                rmg_error_handler(__FILE__, __LINE__, "pdsyevd failure");
 
         //--------------------------------------------------------------------
 
