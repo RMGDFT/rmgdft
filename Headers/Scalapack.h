@@ -30,6 +30,14 @@
 /* Blacs dimension */
 #define DLEN    9
 
+// Maximum number of scalapack groups
+#define MAX_SCALAPACK_GROUPS 32
+// Maximum number of folded spectrum scalapack instances
+#define MAX_FOLDED_SCALAPACKS 32
+
+extern "C" int Csys2blacs_handle(MPI_Comm SysCtxt );
+extern "C" MPI_Comm Cblacs2sys_handle (int BlacsCtxt);
+
 // npes is the total number of pes, ngroups is the number of
 // scalapack groups that should be created out of npes where
 // npes <= group_pes * ngroups * images_per_node
@@ -38,25 +46,34 @@ class Scalapack {
 
 public:
 
-    Scalapack(int ngroups, int thisimg, int images_per_node, int M, int N, int MB, int NB, MPI_Comm rootcomm);
-    void DistributeMatrix(double *A, double *A_dist, int m, int n);
-    void GatherMatrix(double *A, double *A_dist, int m, int n);
+    Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm);
+    void DistributeMatrix(double *A, double *A_dist);
+    void GatherMatrix(double *A, double *A_dist);
 
-    void DistributeMatrix(std::complex<double> *A, std::complex<double> *A_dist, int m, int n);
-    void GatherMatrix(std::complex<double> *A, std::complex<double> *A_dist, int m, int n);
+    void DistributeMatrix(std::complex<double> *A, std::complex<double> *A_dist);
+    void GatherMatrix(std::complex<double> *A, std::complex<double> *A_dist);
 
+    int GetNpes(void);
+    int GetGroupIndex(void);
     int GetRows(void);
     int GetCols(void);
+    int GetRow(void);
+    int GetCol(void);
     int GetDistMdim(void);
     int GetDistNdim(void);
+    int ComputeMdim(int m);
+    int ComputeNdim(int n);
     int GetCommRank(void);
     int GetRootRank(void);
     int *GetDistDesca(void);
+    int ComputeDesca(int m, int n, int *desca);
     int GetIpivSize(void);
     bool Participates(void);
+    Scalapack *GetNextScalapack(void);
     MPI_Comm GetComm(void);
 
     void Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op);
+    void Bcast(void *buffer, int count, MPI_Datatype datatype);
 
     void Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha,
                        double *A, int *IA, int *JA, int *desca,
@@ -80,6 +97,9 @@ public:
     void CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, int *desca);
     void CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca);
 
+    // Next level of scalapack
+    Scalapack *next;
+
     ~Scalapack(void);
 
 private:
@@ -88,10 +108,9 @@ private:
     void matgather (double *globmat, double *dismat, int size, int *desca, bool isreal);
 
 
-    int M;              // Operates on matrices of size (M,N)
-    int N;              // Operates on matrices of size (M,N)
-    int MB;             // Blocking factors
-    int NB;
+    int N;              // Operates on matrices of size (N,N)
+    int scalapack_npes; // Processors that participate in sp operatrions
+    int NB;             // Blocking factors
     int context;        // blacs context of this group of pes
     int npes;           // total number of pes
     int ngroups;        // total number of groups
@@ -108,8 +127,11 @@ private:
     bool participates;  // whether or not this PE participates in scalapack calculations
     int m_dist;         // rows of distributed matrix
     int n_dist;         // cols of distributed matrix
-    MPI_Comm comm;      // communicator for this object
+    MPI_Comm comm;      // communicator for a specific group
     MPI_Comm root_comm; // parent communicator
+    MPI_Comm used_comm; // holds processes that participate in scalapack ops
+                        // may include more than one group
+    MPI_Comm broadcast_comm;  // holds root process in group 0 and any leftovers
 
 };
 
@@ -131,8 +153,20 @@ void pzgemm_ (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, int *);
 void pdsyev_ (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, int *);
+void pdsyevd_ (char *, char *, int *, double *, int *, int *, int *, double *, double *, int *, int *, int *, double *, int *, int *, int *, int *);
+void pzheevd_ (char *, char *, int *, double *, int *, int *, int *, double *, double *, int *, int *, int *, double *, int *, double *, int *, int *, int *, int *);
 void pcheev_ (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, double *, int *, int *);
+void pdsygst_(int *, char *, int *, double *, int *, int *, int *, double *, int *,
+              int *, int *, double *, int *);
+void pdsyngst_(int *, char *, int *, double *, int *, int *, int *, double *, int *,
+              int *, int *, double *, double *, int *, int *);
+
+void pzhegst_(int *, char *, int *, double *, int *, int *, int *, double *, int *,
+              int *, int *, double *, int *);
+void pdpotrf_(char *, int*, double*, int*, int*, int*, int*);
+void pzpotrf_(char *, int*, double*, int*, int*, int*, int*);
+
 void PSPOCON (char *, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
 void PSPOTRF (char *, int *, double *, int *, int *, int *, int *);
@@ -159,6 +193,11 @@ void pdgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, dou
        double *, int *, int *, int *);               
 void pzgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
+void pdtrsm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
+             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
+void pztrmm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
+             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
+
 
 }
 

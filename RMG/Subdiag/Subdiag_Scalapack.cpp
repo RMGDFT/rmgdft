@@ -70,54 +70,62 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     int izero = 0;
     int ione=1;
-    int dist_length=1;
     int num_states = kptr->nstates;
     int factor = 1;
-    if(!ct.is_gamma) factor=2;
+    if(!ct.is_gamma) factor=1;
 
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     static Scalapack *MainSp;
     if(!MainSp) {
         // Need some code here to decide how to set the number of scalapack groups
-        int scalapack_groups = 1;
-        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, num_states, num_states, ct.scalapack_block_factor, ct.scalapack_block_factor, pct.grid_comm);
+        int scalapack_groups = 2;
+        int last = !ct.use_folded_spectrum;
+        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
+                     ct.scalapack_block_factor, last, pct.grid_comm);
 
     }
 
-
-    dist_length = MainSp->GetDistMdim() * MainSp->GetDistNdim();
-    int *desca = MainSp->GetDistDesca();
     bool participates = MainSp->Participates();
-    MPI_Comm scalapack_comm = MainSp->GetComm();
-    int scalapack_nprow = MainSp->GetRows();
-    int scalapack_npcol = MainSp->GetCols();
-
-    if(dist_length == 0) dist_length = 1;   // Just to keep allocations from complaining
-
 
     // Allocate and clear distributed matrices */
-    KpointType *distAij = new KpointType[dist_length]();
-    KpointType *distBij = new KpointType[dist_length]();
-    KpointType *distSij = new KpointType[dist_length]();
-    KpointType *distCij = new KpointType[dist_length]();
+    static KpointType *distAij;
+    static KpointType *distBij;
+    static KpointType *distSij;
+    static KpointType *distCij;
 
 
-
-    // Reduce and distribute matrices
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: distribute matrices.");
-    MainSp->CopySquareMatrixToDistArray(Aij, distAij, num_states, desca);
-    MainSp->CopySquareMatrixToDistArray(Sij, distSij, num_states, desca);
-    MainSp->CopySquareMatrixToDistArray(eigvectors, distBij, num_states, desca);
-    delete(RT1);
-
-    // Create unitary matrix
-    KpointType *Cij = new KpointType[num_states * num_states]();
-    for (int idx = 0; idx < num_states; idx++) {
-        Cij[idx * num_states + idx] = ONE_t;
-    }
-
+    RmgTimer *RT1;
 
     if (participates) {
+
+        int dist_length = MainSp->GetDistMdim() * MainSp->GetDistNdim();
+        int *desca = MainSp->GetDistDesca();
+        int scalapack_nprow = MainSp->GetRows();
+        int scalapack_npcol = MainSp->GetCols();
+
+
+        if(!distAij) {
+            int retval1 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distAij);
+            int retval2 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distBij);
+            int retval3 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distSij);
+            int retval4 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distCij);
+            if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS)) {
+                rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag_Scalapack");
+            }
+        }
+
+        // Copy matrices to dist arrays
+        RT1 = new RmgTimer("Diagonalization: distribute matrices.");
+        MainSp->CopySquareMatrixToDistArray(Aij, distAij, num_states, desca);
+        MainSp->CopySquareMatrixToDistArray(Sij, distSij, num_states, desca);
+        MainSp->CopySquareMatrixToDistArray(eigvectors, distBij, num_states, desca);
+        delete(RT1);
+
+        // Create unitary matrix
+        KpointType *Cij = new KpointType[num_states * num_states]();
+        for (int idx = 0; idx < num_states; idx++) {
+            Cij[idx * num_states + idx] = ONE_t;
+        }
 
         // distribute unitary matrix
         MainSp->CopySquareMatrixToDistArray(Cij, distCij, num_states, desca);
@@ -194,11 +202,11 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             double lwork_tmp, rwork_tmp, *work2, *rwork2;
             int liwork_tmp;
             int lrwork=-1;
-            int info=0;
+            int info;
 
             int *ifail = new int[num_states];
-            int *iclustr = new int[2 * pct.scalapack_nprow * pct.scalapack_npcol];
-            double *gap = new double[pct.scalapack_nprow * pct.scalapack_npcol];
+            int *iclustr = new int[2 * scalapack_nprow * scalapack_npcol];
+            double *gap = new double[scalapack_nprow * scalapack_npcol];
             int lwork = -1;
             int liwork = -1;
 
@@ -207,6 +215,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                          (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
                          &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork,
                          &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
+
             }
             else {
                 PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
@@ -223,31 +232,71 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             }
 
             /*set lwork and liwork */
-            lwork = (int) lwork_tmp + 1;
-            liwork = liwork_tmp;
+            lwork = 3*(int) lwork_tmp + 1;
+            liwork = 10*liwork_tmp;
 
             work2 = new double[2*lwork];
-            iwork = new int[liwork];
+            iwork = new int[2*liwork];
+
 
             tol = 1e-15;
 
             if(ct.is_gamma) {
-                PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork, iwork,
-                         &liwork, ifail, iclustr, gap, &info);
+
+                if(use_folded) {
+
+                    FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)distBij, num_states, (double *)distSij, num_states, eigs, work2, lwork, iwork, liwork, (double *)distAij, MainSp, SUBDIAG_LAPACK);
+
+                }
+                else {
+
+//                    PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+//                             (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+//                             &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork, iwork,
+//                             &liwork, ifail, iclustr, gap, &info);
+
+                    int ibtype = 1;izero = 0;
+                    double scale=1.0, rone = 1.0;
+
+                    pdpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+
+                    pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            (double *)distSij, &ione, &ione, desca, &scale, work2, &lwork, &info);
+
+                    pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            eigs, (double *)distAij, &ione, &ione, desca, work2, &lwork, iwork, &liwork, &info);
+
+                    pdtrsm_("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
+                            (double *)distAij, &ione, &ione, desca);
+
+                }
+
             }
             else {
+
+                int ibtype = 1;izero = 0;
+                double scale=1.0, rone = 1.0;
                 // use Aij for workspace
                 rwork2 = (double *)Aij;
                 lrwork = (int)rwork_tmp + 1;
                 std::complex<double> *rwork2 = new  std::complex<double>[lrwork];
-                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork,
-                         (double *)rwork2, &lrwork,
-                         iwork, &liwork, ifail, iclustr, gap, &info);
-                delete [] rwork2;
+//                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+//                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
+//                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork,
+//                         (double *)rwork2, &lrwork,
+//                         iwork, &liwork, ifail, iclustr, gap, &info);
+
+                pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+
+                pzhegst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            (double *)distSij, &ione, &ione, desca, &scale, &info);
+
+                pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            eigs, (double *)distAij, &ione, &ione, desca, work2, &lwork, (double *)rwork2, &lrwork, iwork, &liwork, &info);
+
+                pztrmm_("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
+                            (double *)distAij, &ione, &ione, desca);
+
             }
 
             if (info)
@@ -273,45 +322,20 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         // Gather distributed results from distAij into eigvectors
         //MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
         MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
+        MainSp->Allreduce(MPI_IN_PLACE, eigvectors, num_states*num_states, MPI_DOUBLE, MPI_SUM);
 
 
+        delete [] Cij;
 
     }
-    else {
-        // Non-participating nodes need eigvectors set to zero as well
-        for (int idx = 0; idx < num_states*num_states; idx++) {
-            eigvectors[idx] = ZERO_t;
-        }
-    }
 
-    // Finally, sum eigvectors over all PE's in this scalapack instance
-    RT1 = new RmgTimer("Diagonalization: MPI_Allreduce");
-    MainSp->Allreduce(MPI_IN_PLACE, eigvectors, factor * num_states * num_states, MPI_DOUBLE, MPI_SUM);
+    // Finally send eigenvalues and vectors to everyone 
+    RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
+    MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
+    MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
     delete(RT1);
 
 
-
-    /*If some processors did not participate in Scalapack,
-     * broadcast eigenvalues, since only Scalapack processors have updated eigenvalues*/
-    if ((pct.scalapack_nprow * pct.scalapack_npcol != pct.scalapack_npes) && (ct.diag == 1))
-    {
-        int item;
-        item = pct.thisimg % ct.images_per_node;
-        item = item * scalapack_nprow * scalapack_npcol;
-
-        int ppp;
-        MPI_Comm_size(scalapack_comm, &ppp);
-
-        MPI_Bcast (eigs, num_states, MPI_DOUBLE, item, scalapack_comm);
-    }
-
-
-
-    delete [] Cij;
-    delete [] distCij;
-    delete [] distSij;
-    delete [] distBij;
-    delete [] distAij;
     return trans_n;
 #endif
 

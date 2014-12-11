@@ -93,9 +93,6 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 
 
     int FS_NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
-#if SCALAPACK_LIBS
-    if(driver == SUBDIAG_SCALAPACK) FS_NPES = 16;               // Need to find a better way of setting this at some point.
-#endif
 
     // Allocate some memory for our communication book keeping arrays
     if(!fs_eigstart) {
@@ -137,7 +134,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     KpointType *NULLptr = NULL;
 
     //  Transform problem to standard eigenvalue problem
-    RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: tridiagonal");
+    RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: transform");
 
 #if !FOLDED_GSE
     dsygst(&itype, cuplo, &n, A, &lda, B, &ldb, &info);

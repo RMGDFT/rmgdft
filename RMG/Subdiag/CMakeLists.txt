@@ -5,6 +5,7 @@ Subdiag_Lapack.cpp
 Subdiag_Magma.cpp
 Subdiag_Scalapack.cpp
 FoldedSpectrum.cpp
+FoldedSpectrumScalapack.cpp
 FoldedSpectrumIterator.cpp
 FoldedSpectrumSetup.cpp
 Rmg_dsygvd_gpu.cpp

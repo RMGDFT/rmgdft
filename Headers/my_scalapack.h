@@ -18,7 +18,6 @@
 #define 	PSPOCON		pdpocon
 #define 	PSPOTRF		pdpotrf
 #define 	PSPOTRI		pdpotri
-#define 	PSSYGST		pdsygst
 #define 	PSSYEV		pdsyev
 #define 	PSTRTRS		pdtrtrs
 #define 	PDGEMM 		pdgemm
@@ -50,7 +49,6 @@
 #define 	PSPOCON		pdpocon_
 #define 	PSPOTRF		pdpotrf_
 #define 	PSPOTRI		pdpotri_
-#define 	PSSYGST		pdsygst_
 #define 	PSTRTRS		pdtrtrs_
 #define 	PDGEMM 		pdgemm_
 #define 	PSGEMM 		pdgemm_
@@ -99,8 +97,6 @@ void PSPOCON (_fcd, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
 void PSPOTRF (_fcd, int *, double *, int *, int *, int *, int *);
 void PSPOTRI (_fcd, int *, double *, int *, int *, int *, int *);
-void PSSYGST (int *, _fcd, int *, double *, int *, int *, int *, double *,
-              int *, int *, int *, double *, int *);
 void PSTRTRS (_fcd, _fcd, _fcd, int *, int *, double *, int *, int *, int *,
               double *, int *, int *, int *, int *);
 void PSSYMM (_fcd, _fcd, int *, int *, double *, double *, int *, int *,
