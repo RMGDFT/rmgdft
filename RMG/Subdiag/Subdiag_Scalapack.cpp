@@ -294,7 +294,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             eigs, (double *)distAij, &ione, &ione, desca, work2, &lwork, (double *)rwork2, &lrwork, iwork, &liwork, &info);
 
-                pztrmm_("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
+                pztrmm_("Left", uplo, "T", "C", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
                             (double *)distAij, &ione, &ione, desca);
 
             }
