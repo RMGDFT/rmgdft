@@ -78,7 +78,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     static Scalapack *MainSp;
     if(!MainSp) {
         // Need some code here to decide how to set the number of scalapack groups
-        int scalapack_groups = 2;
+        int scalapack_groups = 1;
         int last = !ct.use_folded_spectrum;
         MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
                      ct.scalapack_block_factor, last, pct.grid_comm);
