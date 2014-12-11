@@ -23,6 +23,10 @@
 #include <vector>
 #include <math.h>
 #include <complex>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 
 #include "RmgException.h"
 #include "Scalapack.h"
