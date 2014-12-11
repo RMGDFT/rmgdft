@@ -194,80 +194,53 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         {
             char *range = "a";
             char *uplo = "l", *jobz = "v";
-            double vx = 0.0;
-            double tol = 0.0;
-            int eigs_found, eigvs_found;
-            double orfac = 0.0;
-            int *iwork;
-            double lwork_tmp, rwork_tmp, *work2, *rwork2;
-            int liwork_tmp;
-            int lrwork=-1;
             int info;
-
-            int *ifail = new int[num_states];
-            int *iclustr = new int[2 * scalapack_nprow * scalapack_npcol];
-            double *gap = new double[scalapack_nprow * scalapack_npcol];
-            int lwork = -1;
-            int liwork = -1;
-
-            if(ct.is_gamma) {
-                PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork,
-                         &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
-
-            }
-            else {
-                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork,
-                         &rwork_tmp, &lrwork,
-                         &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
-            }
-
-            if (info)
-            {
-                rmg_printf ("\n PDSYGVX query failed, info is %d", info);
-                rmg_error_handler (__FILE__, __LINE__, "PDSYGVX query failed");
-            }
-
-            /*set lwork and liwork */
-            lwork = 3*(int) lwork_tmp + 1;
-            liwork = 10*liwork_tmp;
-
-            work2 = new double[2*lwork];
-            iwork = new int[2*liwork];
-
-
-            tol = 1e-15;
 
             if(ct.is_gamma) {
 
                 if(use_folded) {
 
-                    FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)distBij, num_states, (double *)distSij, num_states, eigs, work2, lwork, iwork, liwork, (double *)distAij, MainSp, SUBDIAG_LAPACK);
+//                    FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)distBij, num_states, (double *)distSij, num_states, eigs, work2, lwork, iwork, liwork, (double *)distAij, MainSp, SUBDIAG_LAPACK);
 
                 }
                 else {
-
-//                    PDSYGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-//                             (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-//                             &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork, iwork,
-//                             &liwork, ifail, iclustr, gap, &info);
 
                     int ibtype = 1;izero = 0;
                     double scale=1.0, rone = 1.0;
 
                     pdpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
 
+                    // Get pdsyngst_ workspace
+                    int lwork = -1;
+                    double lwork_tmp;
+                    pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            (double *)distSij, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
+                    lwork = 2*(int)lwork_tmp; 
+                    double *work2 = new double[lwork];
+                    
                     pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             (double *)distSij, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
+                    // Get workspace required
+                    lwork = -1;
+                    int liwork=-1;
+                    int liwork_tmp;
                     pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            eigs, (double *)distAij, &ione, &ione, desca, work2, &lwork, iwork, &liwork, &info);
+                            eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+                    lwork = 2*(int)lwork_tmp;
+                    liwork = 15*num_states + 2;
+                    double *nwork = new double[lwork];
+                    int *iwork = new int[liwork];
+
+                    // and now solve it 
+                    pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 
                     pdtrsm_("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
                             (double *)distAij, &ione, &ione, desca);
+                    delete [] iwork;
+                    delete [] nwork;
+                    delete [] work2;
 
                 }
 
@@ -276,26 +249,35 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
                 int ibtype = 1;izero = 0;
                 double scale=1.0, rone = 1.0;
-                // use Aij for workspace
-                rwork2 = (double *)Aij;
-                lrwork = (int)rwork_tmp + 1;
-                std::complex<double> *rwork2 = new  std::complex<double>[lrwork];
-//                PZHEGVX (&ione, jobz, range, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-//                         (double *)distSij, &ione, &ione, desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-//                         &eigvs_found, eigs, &orfac, (double *)distAij, &ione, &ione, desca, work2, &lwork,
-//                         (double *)rwork2, &lrwork,
-//                         iwork, &liwork, ifail, iclustr, gap, &info);
 
                 pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
 
                 pzhegst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             (double *)distSij, &ione, &ione, desca, &scale, &info);
 
+                // Get workspace required
+                int lwork = -1, liwork=-1, lrwork=-1;
+                double lwork_tmp, lrwork_tmp;
+                int liwork_tmp;
                 pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            eigs, (double *)distAij, &ione, &ione, desca, work2, &lwork, (double *)rwork2, &lrwork, iwork, &liwork, &info);
+                            eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
+                lwork = 2*(int)lwork_tmp;
+                liwork = 15*num_states + 2;
+                lrwork = (int)lrwork_tmp;
+                double *rwork = new double[lrwork];
+                double *nwork = new double[lwork];
+                int *iwork = new int[liwork];
+
+                // and now solve it
+                pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
 
                 pztrmm_("Left", uplo, "T", "C", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
                             (double *)distAij, &ione, &ione, desca);
+
+                delete [] iwork;
+                delete [] nwork;
+                delete [] rwork;
 
             }
 
@@ -305,12 +287,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 rmg_error_handler (__FILE__, __LINE__, "PDSYGVX failed");
             }
 
-
-            delete [] ifail;
-            delete [] iclustr;
-            delete [] gap;
-            delete [] work2;
-            delete [] iwork;
 
         }
         delete(RT1);
