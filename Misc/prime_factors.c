@@ -21,16 +21,8 @@ int prime_factors(int n, int *factors)
     }
     n_factors = 0;
 
-//  find how many of power 2
-    while (n%2 == 0)
-    {
-        factors[n_factors] = 2;
-        n_factors++;
-        n = n/2;
-    }
-
 //  find how many powe of i
-    for(i=3; i <= sqrt(n); i=i+2)
+    for(i=2; i <= n; i++)
     {
         while (n%i == 0)
         {
@@ -38,13 +30,6 @@ int prime_factors(int n, int *factors)
             n_factors++;
             n = n/i;
         }
-    }
-
-    // if n is a prime number, so it is
-    if(n_factors == 0)
-    {
-        n_factors = 1;
-        factors[0] = n;
     }
 
     return n_factors;
