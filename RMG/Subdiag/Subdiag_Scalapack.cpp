@@ -86,22 +86,28 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     }
 
     bool participates = MainSp->Participates();
+    int scalapack_nprow = MainSp->GetRows();
+    int scalapack_npcol = MainSp->GetCols();
+    int scalapack_npes = scalapack_nprow * scalapack_npcol;
+    int root_npes = MainSp->GetRootNpes();
 
     // Allocate and clear distributed matrices */
     static KpointType *distAij;
     static KpointType *distBij;
     static KpointType *distSij;
     static KpointType *distCij;
+    KpointType *Cij = new KpointType[num_states * num_states]();
 
 
     RmgTimer *RT1;
 
+    int *desca;
+    int dist_length;
+    
     if (participates) {
 
-        int dist_length = MainSp->GetDistMdim() * MainSp->GetDistNdim();
-        int *desca = MainSp->GetDistDesca();
-        int scalapack_nprow = MainSp->GetRows();
-        int scalapack_npcol = MainSp->GetCols();
+        dist_length = MainSp->GetDistMdim() * MainSp->GetDistNdim();
+        desca = MainSp->GetDistDesca();
 
 
         if(!distAij) {
@@ -122,7 +128,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         delete(RT1);
 
         // Create unitary matrix
-        KpointType *Cij = new KpointType[num_states * num_states]();
         for (int idx = 0; idx < num_states; idx++) {
             Cij[idx * num_states + idx] = ONE_t;
         }
@@ -187,23 +192,51 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         }
 
+    }
 
-        /****************** Find Matrix of Eigenvectors *****************************/
-        /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
-        RT1 = new RmgTimer("Diagonalization: PDSYGVX/PZHEGVX");
-        {
-            char *range = "a";
-            char *uplo = "l", *jobz = "v";
-            int info;
 
-            if(ct.is_gamma) {
+    if(use_folded) {
 
-                if(use_folded) {
+        // We have to gather distBij back to Bij and then broadcast it to all nodes in the root
+        // Sij is still present on all nodes in original form
+        MainSp->GatherMatrix(Bij, distBij);
+        MainSp->Bcast(Bij, factor * num_states * num_states, MPI_DOUBLE);
 
-                    FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)distBij, num_states, (double *)distSij, num_states, eigs, (double *)distAij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
+//        FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
 
-                }
-                else {
+        int lwork = 2 * num_states * num_states + 6 * num_states + 2;
+        int liwork = 6*num_states;
+        double *work2 = new double[2*lwork];
+        int *iwork = new int[liwork];
+        
+        FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, 
+                                work2, lwork, iwork, liwork, (double *)Aij, SUBDIAG_LAPACK);
+        for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
+        delete [] iwork;
+        delete [] work2;
+
+        // Broadcast results if required
+        if(root_npes != scalapack_npes) { 
+            RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
+            MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
+            MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
+            delete(RT1);
+        }
+
+    }
+    else {
+
+        if(participates) {
+
+            /****************** Find Matrix of Eigenvectors *****************************/
+            /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
+            RT1 = new RmgTimer("Diagonalization: PDSYGVX/PZHEGVX");
+            {
+                char *range = "a";
+                char *uplo = "l", *jobz = "v";
+                int info;
+
+                if(ct.is_gamma) {
 
                     int ibtype = 1;izero = 0;
                     double scale=1.0, rone = 1.0;
@@ -243,75 +276,76 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     delete [] work2;
 
                 }
+                else {
+
+                    int ibtype = 1;izero = 0;
+                    double scale=1.0, rone = 1.0;
+
+                    pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+
+                    pzhegst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                                (double *)distSij, &ione, &ione, desca, &scale, &info);
+
+                    // Get workspace required
+                    int lwork = -1, liwork=-1, lrwork=-1;
+                    double lwork_tmp, lrwork_tmp;
+                    int liwork_tmp;
+                    pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                                eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
+                    lwork = 2*(int)lwork_tmp;
+                    liwork = 15*num_states + 2;
+                    lrwork = (int)lrwork_tmp;
+                    double *rwork = new double[lrwork];
+                    double *nwork = new double[lwork];
+                    int *iwork = new int[liwork];
+
+                    // and now solve it
+                    pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                                eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+
+                    pztrmm_("Left", uplo, "T", "C", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
+                                (double *)distAij, &ione, &ione, desca);
+
+                    delete [] iwork;
+                    delete [] nwork;
+                    delete [] rwork;
+
+                }
+
+                if (info)
+                {
+                    rmg_printf ("\n PDSYGVX failed, info is %d", info);
+                    rmg_error_handler (__FILE__, __LINE__, "PDSYGVX failed");
+                }
+
 
             }
-            else {
-
-                int ibtype = 1;izero = 0;
-                double scale=1.0, rone = 1.0;
-
-                pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
-
-                pzhegst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            (double *)distSij, &ione, &ione, desca, &scale, &info);
-
-                // Get workspace required
-                int lwork = -1, liwork=-1, lrwork=-1;
-                double lwork_tmp, lrwork_tmp;
-                int liwork_tmp;
-                pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
-                lwork = 2*(int)lwork_tmp;
-                liwork = 15*num_states + 2;
-                lrwork = (int)lrwork_tmp;
-                double *rwork = new double[lrwork];
-                double *nwork = new double[lwork];
-                int *iwork = new int[liwork];
-
-                // and now solve it
-                pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                            eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
-
-                pztrmm_("Left", uplo, "T", "C", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
-                            (double *)distAij, &ione, &ione, desca);
-
-                delete [] iwork;
-                delete [] nwork;
-                delete [] rwork;
-
+            delete(RT1);
+            
+            // Clear eigvectors
+            for (int idx = 0; idx < num_states*num_states; idx++) {
+                eigvectors[idx] = ZERO_t;
             }
-
-            if (info)
-            {
-                rmg_printf ("\n PDSYGVX failed, info is %d", info);
-                rmg_error_handler (__FILE__, __LINE__, "PDSYGVX failed");
-            }
+            // Gather distributed results from distAij into eigvectors
+            //MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
+            MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
+            MainSp->Allreduce(MPI_IN_PLACE, eigvectors, num_states*num_states, MPI_DOUBLE, MPI_SUM);
 
 
         }
+
+        // Finally send eigenvalues and vectors to everyone 
+        RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
+        MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
+        MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
         delete(RT1);
-        
-        // Clear eigvectors
-        for (int idx = 0; idx < num_states*num_states; idx++) {
-            eigvectors[idx] = ZERO_t;
-        }
-        // Gather distributed results from distAij into eigvectors
-        //MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
-        MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
-        MainSp->Allreduce(MPI_IN_PLACE, eigvectors, num_states*num_states, MPI_DOUBLE, MPI_SUM);
-
-
-        delete [] Cij;
 
     }
 
-    // Finally send eigenvalues and vectors to everyone 
-    RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
-    MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
-    MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
-    delete(RT1);
 
+    delete [] Cij;
 
+    if(use_folded) return trans_t;
     return trans_n;
 #endif
 

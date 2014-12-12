@@ -53,7 +53,8 @@ public:
     void DistributeMatrix(std::complex<double> *A, std::complex<double> *A_dist);
     void GatherMatrix(std::complex<double> *A, std::complex<double> *A_dist);
 
-    int GetNpes(void);
+    int GetRootNpes(void);
+    int GetScalapackNpes(void);
     int GetGroupIndex(void);
     int GetRows(void);
     int GetCols(void);
@@ -109,10 +110,10 @@ private:
 
 
     int N;              // Operates on matrices of size (N,N)
-    int scalapack_npes; // Processors that participate in sp operatrions
+    int scalapack_npes; // number of processors from the root_com that participate in sp operatrions
     int NB;             // Blocking factors
     int context;        // blacs context of this group of pes
-    int npes;           // total number of pes
+    int npes;           // total number of pes in the root_comm
     int ngroups;        // total number of groups
     int group_pes;      // number of pes in this group
     int group_index;    // index of this group

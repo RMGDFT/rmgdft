@@ -109,15 +109,14 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
 
     // Get the world rank mapping of this groups processes since blacs uses world group ranking
-    int num_pe_scalapack;
     int item = thisimg % images_per_node;
     MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
     MPI_Comm_group (this->comm, &grp_this);
-    MPI_Comm_size (this->comm, &num_pe_scalapack);
-    MPI_Group_translate_ranks (grp_this, num_pe_scalapack, tgmap, grp_world, pmap);
+    MPI_Comm_size (this->comm, &this->scalapack_npes);
+    MPI_Group_translate_ranks (grp_this, this->scalapack_npes, tgmap, grp_world, pmap);
 
     // Now set up the blacs with nprow*npcol
-    //std::cout << "num_pe_scalapack =  " << num_pe_scalapack << std::endl;
+    std::cout << "scalapack_npes=  " << this->scalapack_npes << std::endl;
     this->context = sys_context;
     Cblacs_gridmap (&this->context, pmap, this->group_rows, this->group_rows, this->group_cols);
 
@@ -255,9 +254,14 @@ int Scalapack::GetGroupIndex(void)
     return this->group_index;
 }
 
-int Scalapack::GetNpes(void)
+int Scalapack::GetRootNpes(void)
 {
     return this->npes;
+}
+
+int Scalapack::GetScalapackNpes(void)
+{
+    return this->scalapack_npes;
 }
 
 Scalapack *Scalapack::GetNextScalapack(void)

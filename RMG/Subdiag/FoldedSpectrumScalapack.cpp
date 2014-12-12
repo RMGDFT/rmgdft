@@ -53,7 +53,7 @@
 #endif
 
 
-#define FOLDED_GSE 0
+#define FOLDED_GSE 1
 
 
 
@@ -68,10 +68,10 @@ static int *fs_eigcounts = NULL;
 // be straightforward enough to finish.
 template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, Scalapack*, int, int);
 
-// Just to note here the inputs rdistA,rdistB and rdistC are distributed matrices in the root communicator
+// Just to note here the inputs A,B and C are full matrices in the root communicator
 template <typename KpointType>
-int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int lda, KpointType *rB, int ldb, 
-		double *eigs, KpointType *rC, Scalapack* MainSp, int driver, int blocksize)
+int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
+		double *eigs, KpointType *C, Scalapack* MainSp, int driver, int blocksize)
 {
 
     RmgTimer RT0("Diagonalization: fs:");
@@ -96,7 +96,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
 
 
     int NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
-    int root_pes = MainSp->GetNpes();
+    int root_pes = MainSp->GetRootNpes();
     if(root_pes < 8) {
         // Not much point in trying to use folded spectrum in this case
         throw RmgFatalException() << "Insufficient PE's to use folded spectrum in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
@@ -161,17 +161,10 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
          }
     }
 
-    // Gather distributed results back into compact array located on MainSp node with group_index=0;
-    MainSp->GatherMatrix(Asave, rA);
-    MainSp->GatherMatrix(Bsave, rB);
-
-    // broadcast data to rest of nodes in main communicator that participate
-    MPI_Bcast(Asave, n*n, MPI_DOUBLE, 0, MainSp->GetComm()); 
-    MPI_Bcast(Bsave, n*n, MPI_DOUBLE, 0, MainSp->GetComm()); 
-
     // Copy A and B into distA, distB and distAsave and distBsave
-    FSp->CopySquareMatrixToDistArray(Asave, distA, n, p_desca);
-    FSp->CopySquareMatrixToDistArray(Bsave, distB, n, p_desca);
+    FSp->CopySquareMatrixToDistArray(A, distA, n, p_desca);
+    FSp->CopySquareMatrixToDistArray(B, distB, n, p_desca);
+    for(int i = 0;i < f_dist_length;i++) distAsave[i] = distA[i];
     for(int i = 0;i < f_dist_length;i++) distBsave[i] = distB[i];
 
     double *Vdiag = new double[n];
@@ -183,37 +176,12 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
     RmgTimer *RT2;
     if(participates) {
 
-#if !FOLDED_GSE
-        RT1 = new RmgTimer("Diagonalization: fs: cholesky");
-        //  Form a Cholesky factorization of B
-        pdpotrf_ (cuplo, &n, distB, &ione, &ione, p_desca, &info);
-        if( info != 0 )
-            rmg_error_handler(__FILE__, __LINE__, "pdpotrf failure");
-        delete(RT1);
-#endif
-
 
         RT1 = new RmgTimer("Diagonalization: fs: folded");
         KpointType *NULLptr = NULL;
 
         //  Transform problem to standard eigenvalue form
         RT2 = new RmgTimer("Diagonalization: fs: transform");
-
-#if !FOLDED_GSE
-        {
-            // Get pdsyngst_ workspace
-            int lwork = -1;
-            double lwork_tmp;
-            pdsyngst_(&itype, cuplo, &n, distA, &ione, &ione, p_desca, distB, &ione, &ione, p_desca, &scale, &lwork_tmp, &lwork, &info);
-            lwork = 2*(int)lwork_tmp;
-            double *work = new double[lwork];
-
-            pdsyngst_(&itype, cuplo, &n, distA, &ione, &ione, p_desca, distB, &ione, &ione, p_desca, &scale, work, &lwork, &info);
-            delete [] work;
-        }
-        if( info != 0 )
-            rmg_error_handler(__FILE__, __LINE__, "pdsyngst failure");
-#else
 
         int its=7;
         double *T = new double[n*n];
@@ -225,7 +193,6 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
         for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
         delete [] T;
 
-#endif
         delete(RT2);
 
         // Zero out matrix of eigenvectors (V)
@@ -302,22 +269,13 @@ std::cout << "NSTART = " << n_start << " N_WIN = " << n_win << std::endl;exit(0)
         // Gram-Schmidt ortho for eigenvectors.
         RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
 
-#if !FOLDED_GSE
-        FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, NULLptr, driver);
-#else
         FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver);
-#endif
         //for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
         delete(RT2);
 
 
-#if !FOLDED_GSE
-        RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
-        //dtrsm (side, cuplo, trans_t, diag, &n, &n, &rone, B, &ldb, A, &lda);
-        delete(RT2);
-#endif
-
         delete(RT1);
+
     } // end if participates
 
     delete [] G;
