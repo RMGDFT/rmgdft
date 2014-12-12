@@ -66,6 +66,7 @@
 
 
 
+#include "LCR.h"
 #include "twoParts.h"
 #include "pmo.h"
 #include "cei.h"
@@ -78,7 +79,6 @@
 /* may access it.					                 */
 CONTROL ct;
 
-complex_energy_integral cei;
 parallel_matrix_operation pmo;
 
 /* PE control structure which is also declared extern in main.h */
@@ -144,6 +144,11 @@ double *work_matrix;
 double *vnuc_x, *vnuc_y, *vnuc_z;
 int peakNum;
 
+complex double *sigma_all;
+
+NON_LINEAR_THREE_PART lcr[NUM_SUBSYSTEM_MAX];
+
+complex_energy_integral cei;
 
 
 

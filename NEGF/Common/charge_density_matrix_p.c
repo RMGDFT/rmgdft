@@ -113,8 +113,8 @@ void charge_density_matrix_p (complex double * sigma_all)
 
 
         if(cei.probe_noneq > 0) break;
-        //        if (ct.runflag == 111 | ct.runflag == 112 |ct.runflag ==1121)
-        //           break;
+                if (ct.runflag == 111 | ct.runflag == 112 |ct.runflag ==1121)
+                   break;
 
     }
 

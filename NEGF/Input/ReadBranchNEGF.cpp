@@ -26,7 +26,7 @@ namespace po = boost::program_options;
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
-#include "cei.h"
+#include "LCR.h"
 #include "twoParts.h"
 
 
