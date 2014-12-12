@@ -21,7 +21,9 @@
 */
 
 #include <complex>
-#include <omp.h>
+#include <cfloat>
+#include <cmath>
+#include <cfenv>
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -51,9 +53,9 @@
 //     0      n_start     eig_start     eig_stop     n_start+n_win       n               
 //
 void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE, 
-                         int *eig_start, int *eig_stop, int *eig_step,
-                         int *n_start, int *n_win,
-                         int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts)
+                         int& eig_start, int& eig_stop, int& eig_step,
+                         int& n_start, int& n_win,
+                         int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts, int blocksize)
 {
 
     for(int idx = 0;idx < FS_NPES;idx++) {
@@ -75,10 +77,10 @@ void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE,
     double t1 = (double)n;
     t1 = t1 / ((double)FS_NPES);
     double t2 = t1 * (double)THISPE;
-    *eig_start = (int)rint(t2);
-    *eig_stop = (int)rint(t1 + t2);
-    *eig_step = *eig_stop - *eig_start;
-    if(THISPE == (FS_NPES - 1)) *eig_stop = n;
+    eig_start = (int)rint(t2);
+    eig_stop = (int)rint(t1 + t2);
+    eig_step = eig_stop - eig_start;
+    if(THISPE == (FS_NPES - 1)) eig_stop = n;
 
     // Set width of window in terms of a percentage of n. Larger values will be slower but
     // exhibit behavior closer to full diagonalization.
@@ -89,21 +91,31 @@ void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE,
 
     double r_width = ct.folded_spectrum_width;
     t1 = (double)n;
-    *n_win = (int)(r_width * t1);
+    n_win = (int)(r_width * t1);
 
     // Find start of interval
-    int ix = *n_win - *eig_step;
+    int ix = n_win - eig_step;
     if(ix < 4)
         rmg_error_handler(__FILE__, __LINE__, "Too few PE's to use folded spectrum method for this problem");
     if(ix % 2) {
-        *n_win = *n_win + 1;
-        ix = *n_win - *eig_step;
+        n_win = n_win + 1;
+        ix = n_win - eig_step;
     }
 
-    *n_start = *eig_start - ix/2;
-    if(*n_start < 0)*n_start = 0;
-    if((*n_start + *n_win) > n) {
-        *n_start = n - *n_win;
+    n_start = eig_start - ix/2;
+    // force n_start to begin on the closest lower block boundary
+    n_start = blocksize * (n_start / blocksize);
+std::cout << "BBBBBBBB " << n_start << "  " << blocksize << std::endl;
+    if(n_start < 0) n_start = 0;
+    if((n_start + n_win) > n) {
+        if(blocksize == 1) {
+            n_start = n - n_win;
+        }
+        else {
+            n_start = blocksize * (n / blocksize);
+            n_win = n - n_start;
+        }
     }
 
 }
+

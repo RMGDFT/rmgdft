@@ -66,12 +66,12 @@ static int *fs_eigcounts = NULL;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, Scalapack*, int);
+template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, Scalapack*, int, int);
 
 // Just to note here the inputs rdistA,rdistB and rdistC are distributed matrices in the root communicator
 template <typename KpointType>
 int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int lda, KpointType *rB, int ldb, 
-		double *eigs, KpointType *rC, Scalapack* MainSp, int driver)
+		double *eigs, KpointType *rC, Scalapack* MainSp, int driver, int blocksize)
 {
 
     RmgTimer RT0("Diagonalization: fs:");
@@ -111,14 +111,14 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
         fs_eigcounts = new int[FS_NPES];
     }
 
+    // Folded spectrum scalapack instances use the Main scalapack instance as their root communicator.
+    Scalapack *FSp = MainSp->GetNextScalapack();
+
     // Set up partition indices and bookeeping arrays
     int eig_start, eig_stop, eig_step;
     int n_start, n_win;
-    FoldedSpectrumSetup(n, FS_NPES, pct.gridpe, &eig_start, &eig_stop, &eig_step,
-                        &n_start, &n_win, fs_eigstart, fs_eigstop, fs_eigcounts);
-
-    // Folded spectrum scalapack instances use the Main scalapack instance as their root communicator.
-    Scalapack *FSp = MainSp->GetNextScalapack();
+    FoldedSpectrumSetup(n, FS_NPES, FSp->GetGroupIndex(), eig_start, eig_stop, eig_step,
+                        n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, blocksize);
 
     bool participates = FSp->Participates();
     int THIS_PE = FSp->GetGroupIndex();
@@ -243,7 +243,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
             int lwork=-1, liwork=-1, liwork_tmp;
             double lwork_tmp;
             lwork = -1;
-            int f_n_start = 1;
+            int f_n_start = n_start + 1;
             pdsyevd_(jobz, cuplo, &n_win, distA, &f_n_start, &f_n_start, p_desca, &eigs[n_start],
                     distV, &f_n_start, &f_n_start, p_desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
             lwork = 2*(int)lwork_tmp;
@@ -251,12 +251,13 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *rA, int
             double *work = new double[lwork];
             int *iwork = new int[liwork];
 
+std::cout << "NSTART = " << n_start << " N_WIN = " << n_win << std::endl;exit(0);
             f_n_start = n_start + 1;
             pdsyevd_(jobz, cuplo, &n_win, distA, &f_n_start, &f_n_start, p_desca, &eigs[n_start],
                      distV, &f_n_start, &f_n_start, p_desca, work, &lwork, iwork, &liwork, &info);
 
             delete [] iwork;
-            delete [] iwork;
+            delete [] work;
         }
         if( info != 0 ) 
                 rmg_error_handler(__FILE__, __LINE__, "pdsyevd failure");

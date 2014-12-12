@@ -104,8 +104,8 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     // Set up partition indices and bookeeping arrays
     int eig_start, eig_stop, eig_step;
     int n_start, n_win;
-    FoldedSpectrumSetup(n, FS_NPES, pct.gridpe, &eig_start, &eig_stop, &eig_step,
-                        &n_start, &n_win, fs_eigstart, fs_eigstop, fs_eigcounts);
+    FoldedSpectrumSetup(n, FS_NPES, pct.gridpe, eig_start, eig_stop, eig_step,
+                        n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
 
     double *Vdiag = new double[n];

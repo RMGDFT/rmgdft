@@ -200,7 +200,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
                 if(use_folded) {
 
-//                    FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)distBij, num_states, (double *)distSij, num_states, eigs, work2, lwork, iwork, liwork, (double *)distAij, MainSp, SUBDIAG_LAPACK);
+                    FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)distBij, num_states, (double *)distSij, num_states, eigs, (double *)distAij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
 
                 }
                 else {

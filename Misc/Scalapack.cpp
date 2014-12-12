@@ -166,7 +166,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     // Do we need to create any groups under this level
     if(!last) {
-        int newgroups = 12;
+        int newgroups = 16;
         this->next = new Scalapack(newgroups, thisimg, images_per_node, N, NB, true, this->root_comm);
 
     }
@@ -401,8 +401,8 @@ void Scalapack::CopyDistArrayToSquareMatrix(std::complex<double> *A, std::comple
 
 
 // Currently only for use on square matrices with desca set up
-// during the constructor. Copies global matrix into distributed
-// matrix.
+// during the constructor. Copies global matrix which is duplicated
+// on all nodes into distributed matrix.
 void Scalapack::matscatter (double *globmat, double *dismat, int size, int *desca, bool isreal)
 {
     if(!this->participates) return;

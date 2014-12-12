@@ -61,7 +61,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
                 double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C, int driver);
 template <typename KpointType>
 int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb,
-                double *eigs, KpointType *C, Scalapack *MainSp, int driver);
+                double *eigs, KpointType *C, Scalapack *MainSp, int driver, int blocksize);
 void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations, int driver);
 void FoldedSpectrumIterator(std::complex<double> *A, int n, double *eigs, int k, std::complex<double> *X, double alpha, int iterations, int istart, int driver);
 
@@ -73,9 +73,9 @@ int Rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,
 int Rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double> *b, int ldb,
                 double *eigs, double *work, int lwork, double *rwork, int lrwork, int *iwork, int liwork, double *wa);
 void FoldedSpectrumSetup(int n, int NPES, int THISPE, 
-                         int *eigstart, int *eigstop, int *eigstep,
-                         int *n_start, int *n_win,
-                         int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts);
+                         int& eigstart, int& eigstop, int& eigstep,
+                         int& n_start, int& n_win,
+                         int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts, int blocksize);
 template <typename KpointType>
 void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver);
 
