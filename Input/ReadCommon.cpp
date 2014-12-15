@@ -609,6 +609,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("scalapack_global_sums", &lc.scalapack_global_sums, true,
                         "");
 
+    If.RegisterInputKey("output_rho_xsf", NULL, false,
+                        "Generate xsf format for electronic density.");
+
     If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 1.0e-14, 1.0e-4, 1.0e-7,
                      CHECK_AND_FIX, OPTIONAL,
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
