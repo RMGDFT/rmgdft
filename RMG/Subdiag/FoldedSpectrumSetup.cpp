@@ -105,7 +105,7 @@ void FoldedSpectrumSetup(int n, int FS_NPES, int THISPE,
     n_start = eig_start - ix/2;
     // force n_start to begin on the closest lower block boundary
     n_start = blocksize * (n_start / blocksize);
-std::cout << "BBBBBBBB " << n_start << "  " << blocksize << std::endl;
+//std::cout << "BBBBBBBB " << n_start << "  " << blocksize << std::endl;
     if(n_start < 0) n_start = 0;
     if((n_start + n_win) > n) {
         if(blocksize == 1) {

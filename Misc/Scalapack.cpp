@@ -165,12 +165,28 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
     // Do we need to create any groups under this level
     if(!last) {
-        int newgroups = 16;
-        this->next = new Scalapack(newgroups, thisimg, images_per_node, N, NB, true, this->root_comm);
+        this->ngroups_next = 12;
+        this->next = new Scalapack(this->ngroups_next, thisimg, images_per_node, N, NB, true, this->root_comm);
 
     }
 }
 
+MPI_Comm Scalapack::GetRootComm(void)
+{
+    return this->root_comm;
+}
+
+int Scalapack::GetNumGroups(void)
+{
+    return this->ngroups;
+}
+
+int Scalapack::GetNumGroupsNext(void)
+{
+    return this->ngroups_next;
+}
+
+// Returns dist_length or < 0 if an error occurred
 int Scalapack::ComputeDesca(int m, int n, int *desca)
 {
     if(!this->participates) return 0;
@@ -179,7 +195,8 @@ int Scalapack::ComputeDesca(int m, int n, int *desca)
     int n_dist = numroc_( &n, &this->NB, &this->my_col, &izero, &this->group_cols );
     int lld_distr = std::max( m_dist, 1 );
     descinit_( desca, &m, &n, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
-    return info;
+    if(info < 0) return info;
+    return m_dist * n_dist;
 }
 
 int Scalapack::ComputeMdim(int m)
@@ -202,6 +219,11 @@ int Scalapack::GetRootRank(void)
 int Scalapack::GetCommRank(void)
 {
     return this->comm_rank;
+}
+
+int Scalapack::GetContext(void)
+{
+    return this->context;
 }
 
 int Scalapack::GetDistMdim(void)

@@ -77,7 +77,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     static Scalapack *MainSp;
     if(!MainSp) {
-        // Need some code here to decide how to set the number of scalapack groups
+        // Need some code here to decide how to set the number of scalapack groups but for now use just 1
         int scalapack_groups = 1;
         int last = !ct.use_folded_spectrum;
         MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
@@ -202,8 +202,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         MainSp->GatherMatrix(Bij, distBij);
         MainSp->Bcast(Bij, factor * num_states * num_states, MPI_DOUBLE);
 
-//        FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
+        FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
 
+#if 0
         int lwork = 2 * num_states * num_states + 6 * num_states + 2;
         int liwork = 6*num_states;
         double *work2 = new double[2*lwork];
@@ -214,7 +215,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
         delete [] iwork;
         delete [] work2;
-
+#endif
         // Broadcast results if required
         if(root_npes != scalapack_npes) { 
             RT1 = new RmgTimer("Diagonalization: MPI_Bcast");

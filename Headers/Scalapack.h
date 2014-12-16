@@ -54,6 +54,8 @@ public:
     void GatherMatrix(std::complex<double> *A, std::complex<double> *A_dist);
 
     int GetRootNpes(void);
+    int GetNumGroups(void);
+    int GetNumGroupsNext(void);
     int GetScalapackNpes(void);
     int GetGroupIndex(void);
     int GetRows(void);
@@ -69,9 +71,11 @@ public:
     int *GetDistDesca(void);
     int ComputeDesca(int m, int n, int *desca);
     int GetIpivSize(void);
+    int GetContext(void);
     bool Participates(void);
     Scalapack *GetNextScalapack(void);
     MPI_Comm GetComm(void);
+    MPI_Comm GetRootComm(void);
 
     void Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op);
     void Bcast(void *buffer, int count, MPI_Datatype datatype);
@@ -115,6 +119,7 @@ private:
     int context;        // blacs context of this group of pes
     int npes;           // total number of pes in the root_comm
     int ngroups;        // total number of groups
+    int ngroups_next;   // total number of groups at the next level
     int group_pes;      // number of pes in this group
     int group_index;    // index of this group
     int group_rows;     // rows in this group
