@@ -116,7 +116,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     MPI_Group_translate_ranks (grp_this, this->scalapack_npes, tgmap, grp_world, pmap);
 
     // Now set up the blacs with nprow*npcol
-    std::cout << "scalapack_npes=  " << this->scalapack_npes << std::endl;
+    //std::cout << "scalapack_npes=  " << this->scalapack_npes << std::endl;
     this->context = sys_context;
     Cblacs_gridmap (&this->context, pmap, this->group_rows, this->group_rows, this->group_cols);
 

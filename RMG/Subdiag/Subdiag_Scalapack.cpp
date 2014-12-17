@@ -204,25 +204,14 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
 
-#if 0
-        int lwork = 2 * num_states * num_states + 6 * num_states + 2;
-        int liwork = 6*num_states;
-        double *work2 = new double[2*lwork];
-        int *iwork = new int[liwork];
-        
-        FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, 
-                                work2, lwork, iwork, liwork, (double *)Aij, SUBDIAG_LAPACK);
         for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
-        delete [] iwork;
-        delete [] work2;
-#endif
         // Broadcast results if required
-        if(root_npes != scalapack_npes) { 
+//        if(root_npes != scalapack_npes) { 
             RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
             MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
             MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
             delete(RT1);
-        }
+//        }
 
     }
     else {
@@ -346,7 +335,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     delete [] Cij;
 
-    if(use_folded) return trans_t;
+//    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
+//    switch to FOLDED_GSE must uncomment
     return trans_n;
 #endif
 

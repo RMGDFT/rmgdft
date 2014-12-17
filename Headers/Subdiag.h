@@ -78,6 +78,8 @@ void FoldedSpectrumSetup(int n, int NPES, int THISPE,
                          int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts, int blocksize);
 template <typename KpointType>
 void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver);
+template <typename KpointType>
+void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *Vdist, KpointType *B, Scalapack *);
 
 
 

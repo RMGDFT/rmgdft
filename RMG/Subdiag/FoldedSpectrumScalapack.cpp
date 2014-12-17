@@ -82,7 +82,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int 
     KpointType *NULLptr = NULL;
 
     char *trans_t="t", *trans_n="n";
-    char *cuplo = "l", *jobz="V";
+    char *cuplo = "L", *jobz="V";
 
     int ione=1, itype=1, info=0, izero=0;
     double rone = 1.0, rzero = 0.0;
@@ -247,7 +247,7 @@ lwork = 6*n*n;
     int lld = std::max( numroc_( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
     int local_desca[DLEN];
     descinit_( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
-    pdgeadd_( "N", &n_win, &n_win, &rone, distA, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
+    pdgeadd_( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
 
     // Make sure the sign is the same for all groups when copied back to the main array
     double *Vdiag = new double[n];
@@ -257,31 +257,21 @@ lwork = 6*n*n;
         if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -ONE_t;
     }
 
-    // Store the eigen vector from the submatrix
-    for(int ix = 0;ix < n_win;ix++) {
+    // Store the eigen vectors from the submatrix
+    if(FSp_my_index == 0) {
+        for(int ix = 0;ix < n_win;ix++) {
 
-        if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
+            if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
 
-            for(int iy = 0;iy < n_win;iy++) {
-                  V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
+                for(int iy = 0;iy < n_win;iy++) {
+                      V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
+                }
+
             }
 
         }
-
     }
 
-    // Store the eigen vectors from the submatrix in V
-    for(int ix = 0;ix < n_win;ix++) {
-
-        if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
-
-            for(int iy = 0;iy < n_win;iy++) {
-                  V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[(ix + n_start)*n + n_start + iy];
-            }
-
-        }
-
-    }
     delete [] Vdiag;
     delete(RT2);  // submatrix part done
 
@@ -326,25 +316,20 @@ lwork = 6*n*n;
 
     // Make sure all nodes in this scalapack have copies of the eigenvectors
 //    MPI_Allreduce(MPI_IN_PLACE, &V[eig_start*n], n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm());
-    MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
-    
-
 #if 0
-
         // Make sure all PE's have all eigenvectors.
         RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
         MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
         delete(RT2);
-
-
-        // Gram-Schmidt ortho for eigenvectors.
-        RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
-
-        FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, NULLptr, driver);
-        //for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
-        delete(RT2);
-
 #endif
+    MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
+
+    // Gram-Schmidt ortho for eigenvectors.
+    RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
+    MainSp->CopySquareMatrixToDistArray(V, m_distA, n, m_f_desca);
+    FoldedSpectrumScalapackOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, m_distA, V, NULLptr, MainSp);
+    delete(RT2);
+
 
     // Back transform eigenvectors
     {
@@ -353,6 +338,8 @@ lwork = 6*n*n;
                         (double *)m_distA, &ione, &ione, m_f_desca);
         delete(RT2);
     }
+    MainSp->GatherMatrix(A, m_distA);
+    MainSp->Bcast(A, factor * n * n, MPI_DOUBLE);
 
 
     delete [] G;

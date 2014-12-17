@@ -172,7 +172,8 @@ void pzhegst_(int *, char *, int *, double *, int *, int *, int *, double *, int
               int *, int *, double *, int *);
 void pdpotrf_(char *, int*, double*, int*, int*, int*, int*);
 void pzpotrf_(char *, int*, double*, int*, int*, int*, int*);
-
+void pdsyrk_( char *, char *, int *, int *, double *, double *, int *, int *, int *,
+             double *, double *, int *, int *, int *);
 void PSPOCON (char *, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
 void PSPOTRF (char *, int *, double *, int *, int *, int *, int *);
