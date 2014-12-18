@@ -151,8 +151,10 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 #endif
     delete(RT1);
 
+for(int i=0;i<n*n;i++)C[i]=0.0;
     MainSp->GatherMatrix(C, m_distC);
     MainSp->Bcast(C, factor * n * n, MPI_DOUBLE);
+
 
     RT1 = new RmgTimer("Diagonalization: fs: Gram-update");
     // Get inverse of diagonal elements
@@ -162,8 +164,6 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 //----------------------------------------------------------------
     for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
-// Only do it on the first node in a scalapack for now
-if(!FSp_my_index) {
     int idx, omp_tid;
     double *darr;
     int st, st1;
@@ -195,7 +195,6 @@ if(!FSp_my_index) {
     delete [] darr;
 
 } // end omp section
-}
 
     delete(RT1);
 
@@ -203,6 +202,7 @@ if(!FSp_my_index) {
     // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("Diagonalization: fs: Gram-allreduce");
     for(int i=0;i < n*n;i++)V[i] = ZERO_t;
+#if 1
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
         for(int st2 = 0;st2 < n;st2++) {
             V[st1*n + st2] = G[st1 + st2*n];
@@ -211,7 +211,7 @@ if(!FSp_my_index) {
     MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
 //for(int i=0;i < n*n;i++)V[i]=G[i];
     MainSp->CopySquareMatrixToDistArray(G, Vdist, n, m_f_desca);
-
+#endif
 #if 0
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
         for(int st2 = 0;st2 < n;st2++) {
@@ -219,11 +219,10 @@ if(!FSp_my_index) {
         }
     }
 
-MPI_Barrier(MainSp->GetComm());
-std::cout << "G4" << std::endl;exit(0);
-MPI_Barrier(MainSp->GetComm());
     int eig_step = eig_stop - eig_start;
-    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, MainSp->GetComm());
+    MainSp->CopySquareMatrixToDistArray(G, Vdist, n, m_f_desca);
+
 #endif
 
 #if GPU_ENABLED

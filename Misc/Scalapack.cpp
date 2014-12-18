@@ -98,6 +98,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
         color = this->group_index + 1;
         //std::cout << "COLOR1 = " << color << "  " << this->group_index << std::endl;   
         MPI_Comm_split(this->used_comm, color, 1, &this->comm);
+        MPI_Comm_rank(this->comm, &this->comm_rank);
     }
 
     // Allocate space on the assumption that the group size is smaller than npes

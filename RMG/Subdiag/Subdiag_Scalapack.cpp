@@ -206,12 +206,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
         // Broadcast results if required
-//        if(root_npes != scalapack_npes) { 
+        if(root_npes != scalapack_npes) { 
             RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
             MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
             MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
             delete(RT1);
-//        }
+        }
 
     }
     else {

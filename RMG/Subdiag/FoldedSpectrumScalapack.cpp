@@ -61,6 +61,9 @@
 static int *fs_eigstart = NULL;
 static int *fs_eigstop = NULL;
 static int *fs_eigcounts = NULL;
+static int *fs_chunkstart = NULL;
+static int *fs_chunkstop = NULL;
+static int *fs_chunkcounts = NULL;
 
 
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
@@ -103,7 +106,12 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int 
     int FSp_cols = FSp->GetCols();
     int FSp_nodes = FSp_rows * FSp_cols;
     int FSp_context = FSp->GetContext();
-    int FSp_my_index = FSp_my_row*FSp_cols + FSp_my_col;
+    int FSp_my_index = FSp->GetCommRank();
+    MPI_Comm scalapack_comm = FSp->GetComm();
+
+    // A PE is actually a scalapack instance
+    int THIS_PE = FSp->GetGroupIndex();
+    int my_root_index = MainSp->GetCommRank();
 
     // descriptor for full matrix in main scalapack instance
     int *m_f_desca = MainSp->GetDistDesca();
@@ -115,6 +123,8 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int 
     if(FS_NPES < 12) // Not much point in trying to use folded spectrum in this case
         throw RmgFatalException() << "Insufficient PE's to use folded spectrum in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
 
+    // Number of PES in those groups
+    int ROOT_NPES = MainSp->GetScalapackNpes();
 
     // Allocate some memory for our communication book keeping arrays
     if(!fs_eigstart) {
@@ -128,11 +138,8 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int 
     int eig_start, eig_stop, eig_step;
     int n_start, n_win;
 blocksize = 1;
-    FoldedSpectrumSetup(n, FS_NPES, FSp->GetGroupIndex(), eig_start, eig_stop, eig_step,
+    FoldedSpectrumSetup(n, FS_NPES, THIS_PE, eig_start, eig_stop, eig_step,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, blocksize);
-
-    // A PE is actually a scalapack instance
-    int THIS_PE = FSp->GetGroupIndex();
 
     // Get dist length and desca for the submatrices
     int s_s_desca[DLEN];
@@ -140,8 +147,30 @@ blocksize = 1;
     int s_f_desca[DLEN];
     int s_f_dist_length = FSp->ComputeDesca(n, n, s_f_desca);
 
+    // Set up the chunk arrays
+    int chunksize = (eig_stop - eig_start) / FSp_nodes;
+    int offset = chunksize * FSp_my_index;
+    int rem = (eig_stop - eig_start) % FSp_nodes;
+    if(FSp_my_index < rem) {
+        chunksize++;
+        offset += FSp_my_index;
+    }
+    else {
+        offset += rem;
+    }
 
-    MPI_Comm scalapack_comm = FSp->GetComm();
+    if(!fs_chunkstart) {
+        fs_chunkstart = new int[ROOT_NPES]();
+        fs_chunkstop = new int[ROOT_NPES]();
+        fs_chunkcounts = new int[ROOT_NPES]();
+//        fs_chunkstart[my_root_index] = n*(fs_eigstart[THIS_PE]/n + offset);
+        fs_chunkstart[my_root_index] = n*(eig_start + offset);
+        fs_chunkstop[my_root_index] = fs_chunkstart[my_root_index] + n*chunksize;
+        fs_chunkcounts[my_root_index] = n*chunksize;
+        MPI_Allreduce(MPI_IN_PLACE, fs_chunkstart, ROOT_NPES, MPI_INT, MPI_SUM, MainSp->GetComm());
+        MPI_Allreduce(MPI_IN_PLACE, fs_chunkstop, ROOT_NPES, MPI_INT, MPI_SUM, MainSp->GetComm());
+        MPI_Allreduce(MPI_IN_PLACE, fs_chunkcounts, ROOT_NPES, MPI_INT, MPI_SUM, MainSp->GetComm());
+    }
 
     static double *distAsave;
     static double *distBsave;
@@ -151,7 +180,8 @@ blocksize = 1;
     static double *m_distB;
     static double *distV;
     static double *Asave;
-    static double *Bsave;
+    static KpointType *V;
+    static KpointType *G;
     static double *n_eigs;
     if(!distAsave) {
          int retval1 = MPI_Alloc_mem(s_f_dist_length * sizeof(double) , MPI_INFO_NULL, &distAsave);
@@ -162,11 +192,12 @@ blocksize = 1;
          int retval6 = MPI_Alloc_mem(m_f_dist_length * sizeof(double) , MPI_INFO_NULL, &m_distB);
          int retval7 = MPI_Alloc_mem(s_f_dist_length * sizeof(double) , MPI_INFO_NULL, &distV);
          int retval8 = MPI_Alloc_mem(n * n * sizeof(double) , MPI_INFO_NULL, &Asave);
-         int retval9 = MPI_Alloc_mem(n * n * sizeof(double) , MPI_INFO_NULL, &Bsave);
-         int retval10 = MPI_Alloc_mem(n * sizeof(double) , MPI_INFO_NULL, &n_eigs);
+         int retval9 = MPI_Alloc_mem(n * n * sizeof(KpointType) , MPI_INFO_NULL, &V);
+         int retval10 = MPI_Alloc_mem(n * n * sizeof(KpointType) , MPI_INFO_NULL, &G);
+         int retval11 = MPI_Alloc_mem(n * sizeof(double) , MPI_INFO_NULL, &n_eigs);
          if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS) || 
             (retval5 != MPI_SUCCESS) || (retval6 != MPI_SUCCESS) || (retval7 != MPI_SUCCESS) || (retval8 != MPI_SUCCESS) ||
-            (retval9 != MPI_SUCCESS) || (retval10 != MPI_SUCCESS)) {
+            (retval9 != MPI_SUCCESS) || (retval10 != MPI_SUCCESS) || (retval11 != MPI_SUCCESS)) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in FoldedSpectrum_Scalapack");
          }
     }
@@ -194,10 +225,9 @@ blocksize = 1;
     MainSp->GatherMatrix(A, m_distA);
     MainSp->Bcast(A, factor * n * n, MPI_DOUBLE);
 
-
-    KpointType *V = new KpointType[n*n]();
-    KpointType *G = new KpointType[n*n]();
     for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+    for(int idx = 0;idx < n*n;idx++) V[idx] = ZERO_t;
+    for(int idx = 0;idx < n*n;idx++) G[idx] = ZERO_t;
 
     // Zero out matrix of eigenvectors (V)
     for(int ix = 0;ix < s_f_dist_length;ix++) distV[ix] = ZERO_t;
@@ -244,10 +274,15 @@ lwork = 6*n*n;
 
     // Copy distributed matrix into local. All nodes in the local scalapack will get
     // a copy
-    int lld = std::max( numroc_( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
-    int local_desca[DLEN];
-    descinit_( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
-    pdgeadd_( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
+//    int lld = std::max( numroc_( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
+//    int local_desca[DLEN];
+//    descinit_( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
+//    pdgeadd_( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
+//FSp->Bcast(G, factor * n_win * n_win, MPI_DOUBLE);
+for(int i=0;i<n_win*n_win;i++)G[i]=0.0;
+FSp->CopyDistArrayToSquareMatrix(G, distV, n_win, s_s_desca);
+MPI_Allreduce(MPI_IN_PLACE, G, n_win*n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm());
+
 
     // Make sure the sign is the same for all groups when copied back to the main array
     double *Vdiag = new double[n];
@@ -258,7 +293,7 @@ lwork = 6*n*n;
     }
 
     // Store the eigen vectors from the submatrix
-    if(FSp_my_index == 0) {
+    //if(FSp_my_index == 0) {
         for(int ix = 0;ix < n_win;ix++) {
 
             if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
@@ -270,7 +305,7 @@ lwork = 6*n*n;
             }
 
         }
-    }
+    //}
 
     delete [] Vdiag;
     delete(RT2);  // submatrix part done
@@ -290,44 +325,35 @@ lwork = 6*n*n;
     MPI_Request MPI_reqeigs;
     MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm(), &MPI_reqeigs);
 
+    // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
+    MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
+    for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Since we have the full Asave present on every physical node we can parallelize the iteration over
     // all of them without communication but we have to recompute our starting and stopping points since
     // each scalapack instance may consist of many physical nodes
     RT2 = new RmgTimer("Diagonalization: fs: iteration");
-    int chunksize = (eig_stop - eig_start) / FSp_nodes;
-    int offset = chunksize * FSp_my_index;
-    int rem = (eig_stop - eig_start) % FSp_nodes;
-    if(FSp_my_index < rem) {
-        chunksize++;
-        offset += FSp_my_index;
-    }
-    else {
-        offset += rem;
-    }
-
-    if(chunksize)
-        FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
+//printf("CHUNKS  %d  %d  %d  %d  %d\n", my_root_index, (eig_start + offset) * n, fs_chunkstart[my_root_index], offset, chunksize);
+    FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
     delete(RT2);
      
-    // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
-    MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
-    for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Make sure all nodes in this scalapack have copies of the eigenvectors
 //    MPI_Allreduce(MPI_IN_PLACE, &V[eig_start*n], n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm());
-#if 0
+#if 1
         // Make sure all PE's have all eigenvectors.
         RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
-        MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+        MPI_Allgatherv(MPI_IN_PLACE, chunksize * n * factor, MPI_DOUBLE, V, fs_chunkcounts, fs_chunkstart, MPI_DOUBLE, MainSp->GetComm());
         delete(RT2);
 #endif
-    MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
+    //MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
 
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
     MainSp->CopySquareMatrixToDistArray(V, m_distA, n, m_f_desca);
-    FoldedSpectrumScalapackOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, m_distA, V, NULLptr, MainSp);
+//    FoldedSpectrumScalapackOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, m_distA, V, NULLptr, MainSp);
+    FoldedSpectrumScalapackOrtho(n, eig_start + offset, eig_start + offset + chunksize, 
+                                fs_chunkcounts, fs_chunkstart, m_distA, V, NULLptr, MainSp);
     delete(RT2);
 
 
@@ -341,9 +367,6 @@ lwork = 6*n*n;
     MainSp->GatherMatrix(A, m_distA);
     MainSp->Bcast(A, factor * n * n, MPI_DOUBLE);
 
-
-    delete [] G;
-    delete [] V;
 
     return 0;
 } 
