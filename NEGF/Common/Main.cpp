@@ -144,7 +144,7 @@ double *work_matrix;
 double *vnuc_x, *vnuc_y, *vnuc_z;
 int peakNum;
 
-complex double *sigma_all;
+double _Complex *sigma_all;
 
 NON_LINEAR_THREE_PART lcr[NUM_SUBSYSTEM_MAX];
 

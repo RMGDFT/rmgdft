@@ -10,14 +10,14 @@
 #define 	NUM_PROBE_MAX 	4 
 #define 	NUM_SUBSYSTEM_MAX   15
 
-extern complex double *sigma_all;
+extern double _Complex *sigma_all;
 
 struct NON_LINEAR_THREE_PART2
 {
  int nenergy_ne;
 
- complex double *ene_ne;
- complex double *weight_ne;
+ double _Complex *ene_ne;
+ double _Complex *weight_ne;
 
  rmg_double_t *density_matrix_ne;
  rmg_double_t *density_matrix_ne_tri;
@@ -53,8 +53,8 @@ struct NON_LINEAR_THREE_PART
 
  rmg_double_t *density_matrix;
 
- complex double *ene;
- complex double *weight;
+ double _Complex *ene;
+ double _Complex *weight;
 
 
  rmg_double_t bias;
