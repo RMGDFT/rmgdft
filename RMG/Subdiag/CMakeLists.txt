@@ -11,6 +11,7 @@ FoldedSpectrumSetup.cpp
 Rmg_dsygvd_gpu.cpp
 Rmg_zhegvd_gpu.cpp
 FoldedSpectrumGSE.cpp
+FoldedSpectrumScalapackGSE.cpp
 FoldedSpectrumOrtho.cpp
 FoldedSpectrumScalapackOrtho.cpp
 )

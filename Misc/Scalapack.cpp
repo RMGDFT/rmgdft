@@ -97,7 +97,7 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
         // Now split color=2 into ngroups comms 
         color = this->group_index + 1;
         //std::cout << "COLOR1 = " << color << "  " << this->group_index << std::endl;   
-        MPI_Comm_split(this->used_comm, color, 1, &this->comm);
+        MPI_Comm_split(this->used_comm, color, this->root_rank, &this->comm);
         MPI_Comm_rank(this->comm, &this->comm_rank);
     }
 
@@ -388,13 +388,19 @@ void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype 
      MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, this->comm);
 }
 
-// Broadcast to everyone in the root but might also need a broadcast
-// to the group.
-void Scalapack::Bcast(void *buffer, int count, MPI_Datatype datatype)
+// Broadcast to everyone in the root
+void Scalapack::BcastRoot(void *buffer, int count, MPI_Datatype datatype)
 {
     //if((this->group_index > this->ngroups) || this->root_rank == 0)
 //    MPI_Bcast(buffer, count, datatype, 0, this->broadcast_comm);
     MPI_Bcast(buffer, count, datatype, 0, this->root_comm);
+}
+
+// Broadcast to everyone in the comm
+void Scalapack::BcastComm(void *buffer, int count, MPI_Datatype datatype)
+{
+    //if((this->group_index > this->ngroups) || this->root_rank == 0)
+    MPI_Bcast(buffer, count, datatype, 0, this->comm);
 }
 
 void Scalapack::CopySquareMatrixToDistArray(double *A, double *A_dist, int n, int *desca)

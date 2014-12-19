@@ -54,11 +54,11 @@
 // else <i|j> = I
 //
 
-template void FoldedSpectrumScalapackOrtho<double> (int, int, int, int *, int *, double *, double *, double *, Scalapack *);
+template void FoldedSpectrumScalapackOrtho<double> (int, int, int, int *, int *, double *, double *, double *, double *, double *, Scalapack *);
 
 // Note V and B are dist matrices
 template <typename KpointType>
-void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *Vdist, KpointType *V, KpointType *B, Scalapack *MainSp)
+void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *Vdist, KpointType *V, KpointType *B, KpointType *work1, KpointType *work2, Scalapack *MainSp)
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
@@ -78,8 +78,8 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     Vgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
     Cgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
 #else
-    KpointType *C = new KpointType[n * n];
-    KpointType *G = new KpointType[n * n];
+    KpointType *C = work1;
+    KpointType *G = work2;
 #endif
     double *tarr = new double[n];
     int info = 0, ione = 1;
@@ -153,13 +153,12 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
 for(int i=0;i<n*n;i++)C[i]=0.0;
     MainSp->GatherMatrix(C, m_distC);
-    MainSp->Bcast(C, factor * n * n, MPI_DOUBLE);
+    MainSp->BcastRoot(C, factor * n * n, MPI_DOUBLE);
 
 
     RT1 = new RmgTimer("Diagonalization: fs: Gram-update");
     // Get inverse of diagonal elements
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
-
 
 //----------------------------------------------------------------
     for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
@@ -202,17 +201,15 @@ for(int i=0;i<n*n;i++)C[i]=0.0;
     // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("Diagonalization: fs: Gram-allreduce");
     for(int i=0;i < n*n;i++)V[i] = ZERO_t;
-#if 1
+#if 0
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
         for(int st2 = 0;st2 < n;st2++) {
             V[st1*n + st2] = G[st1 + st2*n];
         }
     }
     MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
-//for(int i=0;i < n*n;i++)V[i]=G[i];
     MainSp->CopySquareMatrixToDistArray(G, Vdist, n, m_f_desca);
-#endif
-#if 0
+#else
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
         for(int st2 = 0;st2 < n;st2++) {
             V[st1*n + st2] = G[st1 + st2*n];
@@ -220,7 +217,12 @@ for(int i=0;i<n*n;i++)C[i]=0.0;
     }
 
     int eig_step = eig_stop - eig_start;
-    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, MainSp->GetComm());
+    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, MainSp->GetComm());
+for(int st1 = 0;st1 < n;st1++) {
+    for(int st2 = 0;st2 < n;st2++) {
+        G[st1*n + st2] = V[st1 + st2*n];
+    }
+}
     MainSp->CopySquareMatrixToDistArray(G, Vdist, n, m_f_desca);
 
 #endif
@@ -237,9 +239,6 @@ for(int i=0;i<n*n;i++)C[i]=0.0;
 #if GPU_ENABLED
     GpuFreeHost(G);
     GpuFreeHost(C);
-#else
-    delete [] G;
-    delete [] C;
 #endif
 }
 

@@ -78,7 +78,8 @@ public:
     MPI_Comm GetRootComm(void);
 
     void Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op);
-    void Bcast(void *buffer, int count, MPI_Datatype datatype);
+    void BcastRoot(void *buffer, int count, MPI_Datatype datatype);
+    void BcastComm(void *buffer, int count, MPI_Datatype datatype);
 
     void Pgemm (char *transa, char *transb, int *M, int *N, int *K, double *alpha,
                        double *A, int *IA, int *JA, int *desca,
@@ -174,6 +175,8 @@ void pdpotrf_(char *, int*, double*, int*, int*, int*, int*);
 void pzpotrf_(char *, int*, double*, int*, int*, int*, int*);
 void pdsyrk_( char *, char *, int *, int *, double *, double *, int *, int *, int *,
              double *, double *, int *, int *, int *);
+void pdlaset_(char *, int *, int *, double *, double *, double *, int *, int *, int *);
+
 void PSPOCON (char *, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
 void PSPOTRF (char *, int *, double *, int *, int *, int *, int *);

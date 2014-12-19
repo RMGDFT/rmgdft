@@ -199,17 +199,17 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         // We have to gather distBij back to Bij and then broadcast it to all nodes in the root
         // Sij is still present on all nodes in original form
-        MainSp->GatherMatrix(Bij, distBij);
-        MainSp->Bcast(Bij, factor * num_states * num_states, MPI_DOUBLE);
+        //MainSp->GatherMatrix(Bij, distBij);
+        //MainSp->BcastRoot(Bij, factor * num_states * num_states, MPI_DOUBLE);
 
-        FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
+        FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, (double *)distBij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
 
         for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
         // Broadcast results if required
         if(root_npes != scalapack_npes) { 
             RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
-            MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
-            MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
+            MainSp->BcastRoot(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
+            MainSp->BcastRoot(eigs, num_states, MPI_DOUBLE);
             delete(RT1);
         }
 
@@ -326,8 +326,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         // Finally send eigenvalues and vectors to everyone 
         RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
-        MainSp->Bcast(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
-        MainSp->Bcast (eigs, num_states, MPI_DOUBLE);
+        MainSp->BcastRoot(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
+        MainSp->BcastRoot(eigs, num_states, MPI_DOUBLE);
         delete(RT1);
 
     }

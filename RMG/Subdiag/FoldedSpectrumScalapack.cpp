@@ -53,7 +53,7 @@
 #endif
 
 
-#define FOLDED_GSE 1
+#define FOLDED_GSE 0
 
 
 
@@ -69,11 +69,11 @@ static int *fs_chunkcounts = NULL;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, Scalapack*, int, int);
+template int FoldedSpectrumScalapack<double> (Kpoint<double> *, int, double *, double *, int, double *, int, double *, double *, Scalapack*, int, int);
 
 // Just to note here the inputs A,B and C are full matrices in the root communicator
 template <typename KpointType>
-int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
+int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, KpointType *Adist, int lda, KpointType *B, int ldb, 
 		double *eigs, KpointType *C, Scalapack* MainSp, int driver, int blocksize)
 {
 
@@ -137,7 +137,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, int 
     // Set up partition indices and bookeeping arrays
     int eig_start, eig_stop, eig_step;
     int n_start, n_win;
-blocksize = 1;
+    blocksize = 1;
     FoldedSpectrumSetup(n, FS_NPES, THIS_PE, eig_start, eig_stop, eig_step,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, blocksize);
 
@@ -163,7 +163,6 @@ blocksize = 1;
         fs_chunkstart = new int[ROOT_NPES]();
         fs_chunkstop = new int[ROOT_NPES]();
         fs_chunkcounts = new int[ROOT_NPES]();
-//        fs_chunkstart[my_root_index] = n*(fs_eigstart[THIS_PE]/n + offset);
         fs_chunkstart[my_root_index] = n*(eig_start + offset);
         fs_chunkstop[my_root_index] = fs_chunkstart[my_root_index] + n*chunksize;
         fs_chunkcounts[my_root_index] = n*chunksize;
@@ -180,6 +179,7 @@ blocksize = 1;
     static double *m_distB;
     static double *distV;
     static double *Asave;
+    static double *Bsave;
     static KpointType *V;
     static KpointType *G;
     static double *n_eigs;
@@ -192,24 +192,27 @@ blocksize = 1;
          int retval6 = MPI_Alloc_mem(m_f_dist_length * sizeof(double) , MPI_INFO_NULL, &m_distB);
          int retval7 = MPI_Alloc_mem(s_f_dist_length * sizeof(double) , MPI_INFO_NULL, &distV);
          int retval8 = MPI_Alloc_mem(n * n * sizeof(double) , MPI_INFO_NULL, &Asave);
-         int retval9 = MPI_Alloc_mem(n * n * sizeof(KpointType) , MPI_INFO_NULL, &V);
-         int retval10 = MPI_Alloc_mem(n * n * sizeof(KpointType) , MPI_INFO_NULL, &G);
-         int retval11 = MPI_Alloc_mem(n * sizeof(double) , MPI_INFO_NULL, &n_eigs);
+         int retval9 = MPI_Alloc_mem(n * n * sizeof(double) , MPI_INFO_NULL, &Bsave);
+         int retval10 = MPI_Alloc_mem(n * n * sizeof(KpointType) , MPI_INFO_NULL, &V);
+         int retval11 = MPI_Alloc_mem(n * n * sizeof(KpointType) , MPI_INFO_NULL, &G);
+         int retval12 = MPI_Alloc_mem(n * sizeof(double) , MPI_INFO_NULL, &n_eigs);
          if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS) || 
             (retval5 != MPI_SUCCESS) || (retval6 != MPI_SUCCESS) || (retval7 != MPI_SUCCESS) || (retval8 != MPI_SUCCESS) ||
-            (retval9 != MPI_SUCCESS) || (retval10 != MPI_SUCCESS) || (retval11 != MPI_SUCCESS)) {
+            (retval9 != MPI_SUCCESS) || (retval10 != MPI_SUCCESS) || (retval11 != MPI_SUCCESS) || (retval12 != MPI_SUCCESS)) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in FoldedSpectrum_Scalapack");
          }
     }
 
+#if !FOLDED_GSE
     //  Transform problem to standard eigenvalue form. For now this is done in the Main sp using
     // pdsygst which is equivalent to FOLDED_GSE=1 in the non-scalapack case.
     {
         RT2 = new RmgTimer("Diagonalization: fs: transform");
 
         // Copy A and B into m_distA, m_distB
-        MainSp->CopySquareMatrixToDistArray(A, m_distA, n, m_f_desca);
+        //MainSp->CopySquareMatrixToDistArray(A, m_distA, n, m_f_desca);
         MainSp->CopySquareMatrixToDistArray(B, m_distB, n, m_f_desca);
+        for(int i=0;i < m_f_dist_length;i++) m_distA[i] = Adist[i];
 
         double scale = 1.0;
         pdpotrf_( cuplo, &n, m_distB, &ione, &ione, m_f_desca, &info );
@@ -218,12 +221,33 @@ blocksize = 1;
 
         delete(RT2);
     }
+#else
+    {
+        RT2 = new RmgTimer("Diagonalization: fs: transform");
 
+        // We have to gather Adist back to A and then broadcast it to all nodes in the root
+        MainSp->GatherMatrix(A, Adist);
+        MainSp->BcastRoot(A, factor * num_states * num_states, MPI_DOUBLE);
+
+        int its=7;
+        double *T = new double[n*n];
+        for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+        FoldedSpectrumScalapackGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, MainSp);
+
+        // Copy back to A
+        for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
+        delete [] T;
+
+        delete(RT2);
+    }
+#endif
 
     // Copy transformed matrix back to local matrix and then broadcast to other nodes
     // Possible optimization is to only broadcast to root of each subscalapack
+    RT2 = new RmgTimer("Diagonalization: fs: Gather2");
     MainSp->GatherMatrix(A, m_distA);
-    MainSp->Bcast(A, factor * n * n, MPI_DOUBLE);
+    MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
+    delete(RT2);
 
     for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
     for(int idx = 0;idx < n*n;idx++) V[idx] = ZERO_t;
@@ -274,14 +298,15 @@ lwork = 6*n*n;
 
     // Copy distributed matrix into local. All nodes in the local scalapack will get
     // a copy
-//    int lld = std::max( numroc_( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
-//    int local_desca[DLEN];
-//    descinit_( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
-//    pdgeadd_( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
-//FSp->Bcast(G, factor * n_win * n_win, MPI_DOUBLE);
-for(int i=0;i<n_win*n_win;i++)G[i]=0.0;
-FSp->CopyDistArrayToSquareMatrix(G, distV, n_win, s_s_desca);
-MPI_Allreduce(MPI_IN_PLACE, G, n_win*n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm());
+    int lld = std::max( numroc_( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
+    int local_desca[DLEN];
+    descinit_( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
+    pdgeadd_( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
+    FSp->BcastComm(G, factor * n_win * n_win, MPI_DOUBLE);
+    // This may be faster or slower than the above on a big system. Have to test to find out.
+    //for(int i=0;i<n_win*n_win;i++)G[i]=0.0;
+    //FSp->CopyDistArrayToSquareMatrix(G, distV, n_win, s_s_desca);
+    //MPI_Allreduce(MPI_IN_PLACE, G, n_win*n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm());
 
 
     // Make sure the sign is the same for all groups when copied back to the main array
@@ -293,19 +318,17 @@ MPI_Allreduce(MPI_IN_PLACE, G, n_win*n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm())
     }
 
     // Store the eigen vectors from the submatrix
-    //if(FSp_my_index == 0) {
-        for(int ix = 0;ix < n_win;ix++) {
+    for(int ix = 0;ix < n_win;ix++) {
 
-            if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
+        if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
 
-                for(int iy = 0;iy < n_win;iy++) {
-                      V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
-                }
-
+            for(int iy = 0;iy < n_win;iy++) {
+                  V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
             }
 
         }
-    //}
+
+    }
 
     delete [] Vdiag;
     delete(RT2);  // submatrix part done
@@ -321,41 +344,34 @@ MPI_Allreduce(MPI_IN_PLACE, G, n_win*n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm())
     }
 
     // Use async MPI to get a copy of the eigs to everyone. Will overlap with the iterator
-    MPI_Barrier(MainSp->GetComm());
+    //MPI_Barrier(MainSp->GetComm());
     MPI_Request MPI_reqeigs;
     MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm(), &MPI_reqeigs);
-
-    // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
-    MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
-    for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Since we have the full Asave present on every physical node we can parallelize the iteration over
     // all of them without communication but we have to recompute our starting and stopping points since
     // each scalapack instance may consist of many physical nodes
     RT2 = new RmgTimer("Diagonalization: fs: iteration");
-//printf("CHUNKS  %d  %d  %d  %d  %d\n", my_root_index, (eig_start + offset) * n, fs_chunkstart[my_root_index], offset, chunksize);
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
     delete(RT2);
      
+    // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
+    MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
+    for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
-    // Make sure all nodes in this scalapack have copies of the eigenvectors
-//    MPI_Allreduce(MPI_IN_PLACE, &V[eig_start*n], n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm());
-#if 1
-        // Make sure all PE's have all eigenvectors.
-        RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
-        MPI_Allgatherv(MPI_IN_PLACE, chunksize * n * factor, MPI_DOUBLE, V, fs_chunkcounts, fs_chunkstart, MPI_DOUBLE, MainSp->GetComm());
-        delete(RT2);
-#endif
-    //MPI_Allreduce(MPI_IN_PLACE, V, n*n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
+    // Make sure all PE's have all eigenvectors.
+    RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
+    MPI_Allgatherv(MPI_IN_PLACE, chunksize * n * factor, MPI_DOUBLE, V, fs_chunkcounts, fs_chunkstart, MPI_DOUBLE, MainSp->GetComm());
+    delete(RT2);
+
+
+#if !FOLDED_GSE
 
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
     MainSp->CopySquareMatrixToDistArray(V, m_distA, n, m_f_desca);
-//    FoldedSpectrumScalapackOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, m_distA, V, NULLptr, MainSp);
-    FoldedSpectrumScalapackOrtho(n, eig_start + offset, eig_start + offset + chunksize, 
-                                fs_chunkcounts, fs_chunkstart, m_distA, V, NULLptr, MainSp);
+    FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, NULLptr, Asave, Bsave, MainSp);
     delete(RT2);
-
 
     // Back transform eigenvectors
     {
@@ -364,8 +380,15 @@ MPI_Allreduce(MPI_IN_PLACE, G, n_win*n_win, MPI_DOUBLE, MPI_SUM, FSp->GetComm())
                         (double *)m_distA, &ione, &ione, m_f_desca);
         delete(RT2);
     }
+    RT2 = new RmgTimer("Diagonalization: fs: Gather3");
     MainSp->GatherMatrix(A, m_distA);
-    MainSp->Bcast(A, factor * n * n, MPI_DOUBLE);
+    MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
+    delete(RT2);
+#else
+
+    FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, m_distB, MainSp);
+
+#endif
 
 
     return 0;
