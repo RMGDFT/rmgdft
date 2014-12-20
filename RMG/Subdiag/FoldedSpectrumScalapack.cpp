@@ -53,7 +53,7 @@
 #endif
 
 
-#define FOLDED_GSE 0
+#define FOLDED_GSE 1
 
 
 
@@ -227,7 +227,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
 
         // We have to gather Adist back to A and then broadcast it to all nodes in the root
         MainSp->GatherMatrix(A, Adist);
-        MainSp->BcastRoot(A, factor * num_states * num_states, MPI_DOUBLE);
+        MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
 
         int its=7;
         double *T = new double[n*n];
@@ -386,7 +386,7 @@ lwork = 6*n*n;
     delete(RT2);
 #else
 
-    FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, m_distB, MainSp);
+//    FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, m_distB, MainSp);
 
 #endif
 

@@ -250,8 +250,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int liwork_tmp;
                     pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-                    lwork = 2*(int)lwork_tmp;
-                    liwork = 15*num_states + 2;
+                    lwork = 4*(int)lwork_tmp;
+                    liwork = 16*num_states;
                     double *nwork = new double[lwork];
                     int *iwork = new int[liwork];
 
@@ -282,8 +282,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int liwork_tmp;
                     pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                                 eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
-                    lwork = 2*(int)lwork_tmp;
-                    liwork = 15*num_states + 2;
+                    lwork = 4*(int)lwork_tmp;
+                    liwork = 16*num_states;
                     lrwork = (int)lrwork_tmp;
                     double *rwork = new double[lrwork];
                     double *nwork = new double[lwork];
@@ -317,7 +317,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 eigvectors[idx] = ZERO_t;
             }
             // Gather distributed results from distAij into eigvectors
-            //MainSp->GatherMatrix(eigvectors, distAij, num_states, num_states);
+            //MainSp->GatherMatrix(eigvectors, distAij);
             MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
             MainSp->Allreduce(MPI_IN_PLACE, eigvectors, num_states*num_states, MPI_DOUBLE, MPI_SUM);
 

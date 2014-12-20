@@ -147,13 +147,13 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 #else
     //dpotrf(cuplo, &n, C, &n, &info);
     pdpotrf_( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
+    for(int i=0;i<n*n;i++)C[i]=0.0;
+    MainSp->GatherMatrix(C, m_distC);
 
 #endif
+    MainSp->BcastRoot(C, factor * n * n, MPI_DOUBLE);
     delete(RT1);
 
-for(int i=0;i<n*n;i++)C[i]=0.0;
-    MainSp->GatherMatrix(C, m_distC);
-    MainSp->BcastRoot(C, factor * n * n, MPI_DOUBLE);
 
 
     RT1 = new RmgTimer("Diagonalization: fs: Gram-update");
