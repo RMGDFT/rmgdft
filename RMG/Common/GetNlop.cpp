@@ -537,14 +537,20 @@ static void reset_pct_arrays (int num_ions)
     {
         pct.idxptrlen[ion] = 0;
 
-        if (pct.idxflag[ion])
+        if (pct.idxflag[ion]) {
             delete [] pct.idxflag[ion];
+            pct.idxflag[ion] = NULL;
+        }
 
-        if (pct.nlindex[ion])
+        if (pct.nlindex[ion]) {
             delete [] pct.nlindex[ion];
+            pct.nlindex[ion] = NULL;
+        }
 
-        if (pct.phaseptr[ion])
+        if (pct.phaseptr[ion]) {
             delete [] pct.phaseptr[ion];
+            pct.phaseptr[ion] = NULL;
+        }
     }
 
 
