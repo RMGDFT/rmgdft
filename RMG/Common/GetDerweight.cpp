@@ -164,7 +164,7 @@ template <typename OrbitalType> void GetDerweight (int ion, OrbitalType * beta_x
 
 
 
-    delete[] beptr;
+    fftw_free(beptr);
 
 
 }                               /* end get_weight */
