@@ -182,7 +182,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Two buffers for rotating the orbitals. Make sure they are big enough to use
     // as additional diagonalization arrays as well
     t1 = ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
-    gpu_bufsize += 2 * t1;
+    gpu_bufsize += 3 * t1;
     // and multiply by 2 just for kicks
     //gpu_bufsize *= 2;
     InitGpuMalloc(gpu_bufsize);
@@ -191,7 +191,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     size_t gpu_hostbufsize;
     gpu_hostbufsize = 7 * ct.num_states * ct.num_states * sizeof(OrbitalType);
     if(Verify ("folded_spectrum", true, Kptr[0]->ControlMap)) {
-        gpu_hostbufsize += 3 * ct.num_states * ct.num_states * sizeof(OrbitalType);
+        gpu_hostbufsize += 4 * ct.num_states * ct.num_states * sizeof(OrbitalType);
     }
 
     InitGpuMallocHost(gpu_hostbufsize);
