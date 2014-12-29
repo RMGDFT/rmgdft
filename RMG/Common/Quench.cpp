@@ -42,6 +42,7 @@
 #include "transition.h"
 #include "Plots.h"
 #include "../Headers/prototypes.h"
+#include "../Headers/macros.h"
 
 // Instantiate gamma and non-gamma versions
 template bool Quench<double> (double *, double *, double *, double *, double *, double *, double *, Kpoint<double> **Kptr);
@@ -121,7 +122,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     }
 
     rmg_printf ("\n");
-    //progress_tag ();
+    progress_tag ();
     rmg_printf ("final total energy = %14.7f Ha\n", ct.TOTAL);
 
 
