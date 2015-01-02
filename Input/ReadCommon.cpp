@@ -295,6 +295,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "Factor by which iondt is increased when dynamic timesteps are enabled.\n",
                      "ionic_time_step_increase must lie in the range (1.0,1.1). Resetting to the default value of 1.1.\n");
+    
+    If.RegisterInputKey("ionic_time_step_decrease", &lc.iondt_dec, 0.0, 1.0, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Factor by which iondt is decreased when dynamic timesteps are enabled.\n",
+                     "ionic_time_step_decrease must lie in the range (0.0,1.0). Resetting to the default value of 0.5.\n");
 
     If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, 0.0, 150.0, 150.0,
                      CHECK_AND_FIX, OPTIONAL,
