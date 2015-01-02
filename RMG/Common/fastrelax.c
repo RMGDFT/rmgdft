@@ -85,7 +85,8 @@ void fastrelax (rmg_double_t *dt, rmg_double_t dt_max, rmg_double_t dt_inc, rmg_
                     *dt = dt_max;
             }   
 
-            *n_count ++;
+            //*n_count ++;
+            *n_count = (*n_count) + 1;
 
             printf ("\n");
             progress_tag ();
