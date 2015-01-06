@@ -117,27 +117,40 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
         else {
 
             // split over PE's if n is large enough
-            custat = cublasSetVector(n * n , sizeof(KpointType), B, 1, Bgpu, 1 );
-            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
-            custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
-            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+//            custat = cublasSetVector(n * n , sizeof(KpointType), B, 1, Bgpu, 1 );
+//            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+//            custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
+//            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
 
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, V, n, ZERO_t, G, n, 
-                    Bgpu, &Vgpu[eig_start*n], &Ggpu[eig_start*n], false, false, false, false);
+            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n, 
+                    Bgpu, &Vgpu[eig_start*n], &Ggpu[eig_start*n], true, true, false, false);
 
-            custat = cublasGetVector(eig_step * n, sizeof( KpointType ), &Ggpu[eig_start*n], 1, &C[eig_start*n], 1 );
+#if GPU_ENABLED
+            custat = cublasGetVector(eig_step * n, sizeof( KpointType ), &Ggpu[eig_start*n], 1, &G[eig_start*n], 1 );
             RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring G matrix from GPU to system memory.");
-            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
-            custat = cublasSetVector(n * n , sizeof(KpointType), C, 1, Ggpu, 1 );
+#endif
+
+            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+
+#if GPU_ENABLED
+            custat = cublasSetVector(n * n , sizeof(KpointType), G, 1, Ggpu, 1 );
             RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+#endif
 
             RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n, 
                                                 Ggpu, &Vgpu[eig_start*n], &Cgpu[eig_start*n], false, false, false, false);
+
+#if GPU_ENABLED
             custat = cublasGetVector(eig_step * n, sizeof( KpointType ), &Cgpu[eig_start*n], 1, &C[eig_start*n], 1 );
             RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+#endif
+
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+
+#if GPU_ENABLED
             custat = cublasSetVector(n * n , sizeof(KpointType), C, 1, Cgpu, 1 );
             RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+#endif
         }
 
     }
