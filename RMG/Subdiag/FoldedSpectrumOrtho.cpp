@@ -61,6 +61,9 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
+    double rzero = 0.0;
+    double rone = 1.0;
+
     KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
@@ -82,6 +85,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 #endif
     double *tarr = new double[n];
     int info = 0;
+    int eig_step = eig_stop - eig_start;
 
     char *trans_t="t", *trans_n="n", *cuplo = "l", *side = "l";
 
@@ -103,13 +107,41 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
-//        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Vgpu, Bgpu, Ggpu, true, true, false, false);
-        RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Bgpu, Vgpu, Ggpu, true, true, false, false);
         // Multiply G by V and leave result in Cgpu for the magma_dpotrf_gpu call coming up next
-        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n, Vgpu, Ggpu, Cgpu, false, false, false, false);
+       if(n < 128) {
+
+            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Bgpu, Vgpu, Ggpu, true, true, false, false);
+            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n, Vgpu, Ggpu, Cgpu, false, false, false, false);
+
+        }
+        else {
+
+            // split over PE's if n is large enough
+            custat = cublasSetVector(n * n , sizeof(KpointType), B, 1, Bgpu, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+            custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+
+            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, V, n, ZERO_t, G, n, 
+                    Bgpu, &Vgpu[eig_start*n], &Ggpu[eig_start*n], false, false, false, false);
+
+            custat = cublasGetVector(eig_step * n, sizeof( KpointType ), &Ggpu[eig_start*n], 1, &C[eig_start*n], 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring G matrix from GPU to system memory.");
+            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+            custat = cublasSetVector(n * n , sizeof(KpointType), C, 1, Ggpu, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+
+            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n, 
+                                                Ggpu, &Vgpu[eig_start*n], &Cgpu[eig_start*n], false, false, false, false);
+            custat = cublasGetVector(eig_step * n, sizeof( KpointType ), &Cgpu[eig_start*n], 1, &C[eig_start*n], 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+            custat = cublasSetVector(n * n , sizeof(KpointType), C, 1, Cgpu, 1 );
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
+        }
+
     }
     delete(RT1);
-
 
     // Cholesky factorization
     RT1 = new RmgTimer("Diagonalization: fs: Gram-cholesky");
@@ -179,7 +211,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
         }
     }
 
-    int eig_step = eig_stop - eig_start;
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
 
 
