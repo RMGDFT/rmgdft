@@ -225,6 +225,9 @@ target_link_libraries (rmg-tddft MG tddft_Common RmgLib)
 target_link_libraries (rmg-tddft ON_Common US_PP)
 target_link_libraries (rmg-tddft US_PP Misc)
 target_link_libraries (rmg-tddft ON_Common XC)
+target_link_libraries (rmg-tddft RMG_Spin_XC Finite_diff)
+target_link_libraries (rmg-tddft RMG_Spin RMG_Spin_XC)
+target_link_libraries (rmg-tddft RMG_Spin_XC RMG_Spin)
 
 
 # Search for an MPI implementation
