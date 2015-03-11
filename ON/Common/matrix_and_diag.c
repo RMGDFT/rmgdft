@@ -59,7 +59,6 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 //    get_cholesky_real(matB);
 
     get_dm_diag_p(states, matB, mat_X, Hij);
-    gw_correction_matrix(matB, zz_dis);
 
 #else
     error_handler("not programmed for non-Gamma point");
