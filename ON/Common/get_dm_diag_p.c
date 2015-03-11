@@ -183,6 +183,9 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
         states[st1].eig[0] = eigs[st1];
     }
 
+    printf("\n aaaaaaaaa\n  ");
+    if(pct.gridpe == 0) write_eigs(states);
+
     /* my_free(work); */
     my_barrier();
 

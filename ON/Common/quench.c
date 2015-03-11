@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "init_var.h"
 #include "prototypes_on.h"
 
 void quench(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * vh,
@@ -82,6 +83,7 @@ vxc_old, rmg_double_t * rho, double * rho_oppo, rmg_double_t * rhoc, rmg_double_
         outcount++;
     }
     
+    gw_correction_matrix(matB, zz_dis);
 
     printf ("\n print relative eigenvalue list for plotted states\n");
 
@@ -111,3 +113,4 @@ vxc_old, rmg_double_t * rho, double * rho_oppo, rmg_double_t * rhoc, rmg_double_
 
 
 }
+
