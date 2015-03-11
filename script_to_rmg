@@ -26,3 +26,6 @@ cp -r XC_useLIBXC ../rmg-release
 cp -r Examples ../rmg-release
 cp make_conf.h.in ../rmg-release
 cp svnrev.h.in ../rmg-release
+cp COPYING ../rmg-release
+cp COPYRIGHT ../rmg-release
+cp CREDITS ../rmg-release
