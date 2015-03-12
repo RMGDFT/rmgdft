@@ -1,0 +1,40 @@
+Example of using the partitioned folded spectrum option to reduce the
+execution time for an initial quench of a 512 atom diamond cell. The
+base diagonalizer is lapack which the code uses for the first 6 steps.
+The improvement in execution time may be seen by looking at the per
+step times in the output file diamond512_lapackfolded_0.3.log.00.
+Excluding the first step we see that lapack steps take around 16-17
+seconds per step while the lapack-pfsm steps take around 11-12
+seconds.
+
+ SCF STEP TIME =      35.40
+ SCF STEP TIME =      17.20
+ SCF STEP TIME =      17.89
+ SCF STEP TIME =      16.93
+ SCF STEP TIME =      16.77
+ SCF STEP TIME =      16.79
+ SCF STEP TIME =      16.69
+ SCF STEP TIME =      11.20
+ SCF STEP TIME =      11.48
+ SCF STEP TIME =      11.34
+ SCF STEP TIME =      11.41
+ SCF STEP TIME =      11.43
+ SCF STEP TIME =      11.34
+ SCF STEP TIME =      11.45
+ SCF STEP TIME =      11.40
+ SCF STEP TIME =      11.54
+ SCF STEP TIME =      11.30
+ SCF STEP TIME =      11.57
+ SCF STEP TIME =      11.33
+ SCF STEP TIME =      11.47
+ SCF STEP TIME =      11.39
+ SCF STEP TIME =      11.41
+ SCF STEP TIME =      11.49
+ SCF STEP TIME =      11.35
+ SCF STEP TIME =      11.42
+ SCF STEP TIME =      11.33
+ SCF STEP TIME =      11.54
+ SCF STEP TIME =      11.35
+ SCF STEP TIME =      11.61
+ SCF STEP TIME =      11.42
+
