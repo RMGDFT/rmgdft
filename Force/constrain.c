@@ -45,17 +45,19 @@ void constrain (void)
     int ion;
     ION *iptr;
     printf("Entering constrained forces for image %d", pct.thisimg+1);
+    double *Tau, *Img_L, *Img_R;
+    my_malloc(Tau, 3*ct.num_ions, double);
+    my_malloc(Img_L, 3*ct.num_ions, double);
+    my_malloc(Img_R, 3*ct.num_ions, double);
+
     switch (ct.constrainforces)
     {
         case 5:   /* NEB tangent to higher energy adjacent image with climbing/descending extrema */
             {
-                rmg_double_t Mag_T = 0.0;
-                rmg_double_t Mag_L = 0.0;
-                rmg_double_t Mag_R = 0.0;
-                rmg_double_t FdotT = 0.0;
-                rmg_double_t Tau[3*ct.num_ions];
-                rmg_double_t Img_L[3*ct.num_ions];
-                rmg_double_t Img_R[3*ct.num_ions];
+                double Mag_T = 0.0;
+                double Mag_L = 0.0;
+                double Mag_R = 0.0;
+                double FdotT = 0.0;
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -174,13 +176,10 @@ void constrain (void)
             break;
         case 4:                    /* NEB tangent to higher energy adjacent image */
             {
-                rmg_double_t Mag_T = 0.0;
-                rmg_double_t Mag_L = 0.0;
-                rmg_double_t Mag_R = 0.0;
-                rmg_double_t FdotT = 0.0;
-                rmg_double_t Tau[3*ct.num_ions];
-                rmg_double_t Img_L[3*ct.num_ions];
-                rmg_double_t Img_R[3*ct.num_ions];
+                double Mag_T = 0.0;
+                double Mag_L = 0.0;
+                double Mag_R = 0.0;
+                double FdotT = 0.0;
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -283,13 +282,10 @@ void constrain (void)
 
         case 3:                    /* NEB tangent to normalized adjacent images */
             {
-                rmg_double_t Mag_T = 0.0;
-                rmg_double_t Mag_L = 0.0;
-                rmg_double_t Mag_R = 0.0;
-                rmg_double_t FdotT = 0.0;
-                rmg_double_t Tau[3*ct.num_ions];
-                rmg_double_t Img_L[3*ct.num_ions];
-                rmg_double_t Img_R[3*ct.num_ions];
+                double Mag_T = 0.0;
+                double Mag_L = 0.0;
+                double Mag_R = 0.0;
+                double FdotT = 0.0;
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -369,13 +365,10 @@ void constrain (void)
 
         case 2:                    /* NEB tangent to adjacent images */
             {
-                rmg_double_t Mag_T = 0.0;
-                rmg_double_t Mag_L = 0.0;
-                rmg_double_t Mag_R = 0.0;
-                rmg_double_t FdotT = 0.0;
-                rmg_double_t Tau[3*ct.num_ions];
-                rmg_double_t Img_L[3*ct.num_ions];
-                rmg_double_t Img_R[3*ct.num_ions];
+                double Mag_T = 0.0;
+                double Mag_L = 0.0;
+                double Mag_R = 0.0;
+                double FdotT = 0.0;
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
@@ -454,7 +447,7 @@ void constrain (void)
 
         case 1:                    /* In plane, 2-D restriction (typical). */
             {
-                rmg_double_t FdotC;
+                double FdotC;
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
                     iptr = &ct.ions[ion];
@@ -473,6 +466,9 @@ void constrain (void)
             break;
     }
 
+    my_free(Img_R);
+    my_free(Img_L);
+    my_free(Tau);
     return;
 }
 
