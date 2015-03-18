@@ -26,7 +26,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+#if (defined(_WIN32) || defined(_WIN64))
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
 #include <unordered_map>
 #include "const.h"
 #include "RmgTimer.h"
