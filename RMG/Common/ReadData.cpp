@@ -29,6 +29,8 @@
     #include <unistd.h>
 #else
     #include <io.h>
+    #include <BaseTsd.h>
+    #define ssize_t SSIZE_T
 #endif
 #include <complex>
 #include "const.h"
