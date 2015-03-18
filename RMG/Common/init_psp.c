@@ -26,6 +26,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "portability.h"
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
