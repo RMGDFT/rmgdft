@@ -200,6 +200,11 @@ void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, d
 #endif
 #endif
 
-#define rmg_printf( message... ) \
+#if !(defined(_WIN32) || defined(_WIN64))
+    #define rmg_printf( message... ) \
          fprintf( ct.logfile, message )
+#else
+    #define rmg_printf( message,... ) \
+         fprintf( ct.logfile, message )
+#endif
 
