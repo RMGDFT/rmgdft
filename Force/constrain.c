@@ -27,21 +27,23 @@
  * SOURCE
  */
 
-#define X 0
-#define Y 1
-#define Z 2
 
-
+#include "portability.h"
+#include <float.h>
+#include <math.h>
 #include "const.h"
 #include "rmgtypes.h"
 #include "rmgtypedefs.h"
 #include "common_prototypes.h"
 #include "main.h"
-#include <float.h>
-#include <math.h>
+
+#define X 0
+#define Y 1
+#define Z 2
 
 void constrain (void)
 {
+
     int ion;
     ION *iptr;
     printf("Entering constrained forces for image %d", pct.thisimg+1);
@@ -470,6 +472,7 @@ void constrain (void)
     my_free(Img_L);
     my_free(Tau);
     return;
+
 }
 
 

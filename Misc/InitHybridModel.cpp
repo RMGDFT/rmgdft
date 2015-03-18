@@ -20,7 +20,7 @@
  *
 */
 
-#include <unistd.h>
+#include "portability.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <cstring>

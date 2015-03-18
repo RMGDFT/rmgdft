@@ -42,6 +42,7 @@
  * SOURCE
  */
 
+#include "portability.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
