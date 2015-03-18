@@ -6,7 +6,11 @@
 #define MACROS_H_INCLUDED
 
 #include <stdlib.h>
-#include <unistd.h>
+#if !(defined(_WIN32) || defined(_WIN64))
+    #include <unistd.h>
+#else
+    #include <io.h>
+#endif
 
 /* macros */
 
