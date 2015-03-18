@@ -54,6 +54,9 @@
 #include <stdbool.h>
 #include <complex.h>
 
+/* constants */
+#include "const.h"
+
 /* Typedefs */
 #include    "rmgtypedefs.h"
 
@@ -76,9 +79,6 @@
 
 /* other general macros */
 #include "macros.h"
-
-/* routines for input parsing */
-#include "input.h"
 
 
 /* Custom types used in the code*/
