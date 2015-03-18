@@ -21,8 +21,8 @@
 */
 
 
-#include <unistd.h>
 #include <errno.h>
+#include "portability.h"
 #include "main.h"
 #include "common_prototypes.h"
 

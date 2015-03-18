@@ -28,13 +28,25 @@
 #define DEBUG 0
 
 #if DEBUG
-#define Dprintf( format, args...) fprintf (stderr, "\n#DEBUG from PE %d in %s line %d:    \t" format "\n", pct.gridpe, __FILE__, __LINE__, ##args), fflush(NULL)
+  #if (defined(_WIN32) || defined(_WIN64))
+    #define Dprintf( format, args,...) fprintf (stderr, "\n#DEBUG from PE %d in %s line %d:    \t" format "\n", pct.gridpe, __FILE__, __LINE__, ##args), fflush(NULL)
+  #else
+    #define Dprintf( format, args...) fprintf (stderr, "\n#DEBUG from PE %d in %s line %d:    \t" format "\n", pct.gridpe, __FILE__, __LINE__, ##args), fflush(NULL)
+  #endif
 #else
-#define Dprintf( format, args...) ;
+  #if (defined(_WIN32) || defined(_WIN64))
+    #define Dprintf( format, args,...) ;
+  #else
+    #define Dprintf( format, args...) ;
+  #endif
 #endif
 
 //#define dprintf( format, args...) fprintf (stderr, "\ngrid rank %d of spin %d:    \t"format"\n", pct.gridpe, pct.spinpe,  ##args), fflush(NULL), fsync ( fileno (ct.logfile))
-#define dprintf( format, args...) fprintf (stderr, "\nIMG %d/%d:PE %d, GRID %d/%d:PE %d,\t" format "\n", pct.thisimg+1, pct.images, pct.imgpe, pct.spinpe+1, pct.grids, pct.gridpe,  ##args), fflush(NULL)
+#if (defined(_WIN32) || defined(_WIN64))
+  #define dprintf( format, args,...) fprintf (stderr, "\nIMG %d/%d:PE %d, GRID %d/%d:PE %d,\t" format "\n", pct.thisimg+1, pct.images, pct.imgpe, pct.spinpe+1, pct.grids, pct.gridpe,  ##args), fflush(NULL)
+#else
+  #define dprintf( format, args...) fprintf (stderr, "\nIMG %d/%d:PE %d, GRID %d/%d:PE %d,\t" format "\n", pct.thisimg+1, pct.images, pct.imgpe, pct.spinpe+1, pct.grids, pct.gridpe,  ##args), fflush(NULL)
+#endif
 //#define dprintf( format, args...) fprintf (stderr, "\n#WARNING from IMG PE %d in IMG %d  of grid rank %d of spin %d:    \t"format"\n", pct.imgpe, pct.thisimg, pct.gridpe, pct.thisspin,  ##args), fflush(NULL)
 
 
@@ -47,13 +59,31 @@
 #define odd(a)   ( (a) % 2 == 1 )
 
 
-#define printf( message... ) \
+#if (defined(_WIN32) || defined(_WIN64))
+    #define printf( message,... ) \
 	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
 //	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ), fflush (NULL), fsync ( fileno (ct.logfile) ): 0)
+#else
+    #define printf( message... ) \
+	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
+//	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ), fflush (NULL), fsync ( fileno (ct.logfile) ): 0)
+#endif
 	
 
 /* variadic error_handler, use is the same as printf. Calls MPI_Abort, since MPI_Finalize hangs if called on single PE. */
-#define error_handler( message... ) \
+#if (defined(_WIN32) || defined(_WIN64))
+  #define error_handler( message,... ) \
+    fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
+    printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
+	fprintf (stderr,  message ), \
+	fprintf (stderr,  "\n\n" ), \
+	printf ( message ), \
+	printf ( "\n\n" ), \
+    fflush (NULL), \
+    sleep (2), \
+	MPI_Abort( MPI_COMM_WORLD, 0 )
+#else
+  #define error_handler( message... ) \
     fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
     printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
 	fprintf (stderr,  message ), \
@@ -64,7 +94,7 @@
 	fsync ( fileno (ct.logfile) ), \
     sleep (2), \
 	MPI_Abort( MPI_COMM_WORLD, 0 )
-
+#endif
 
 #define progress_tag() printf("[ %3d %3d %4d %8.0f ] %s: ", \
                               ct.md_steps, ct.scf_steps, ct.total_scf_steps, \
