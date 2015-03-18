@@ -17,6 +17,10 @@ namespace po = boost::program_options;
 #define CHECK_AND_FIX 0
 #define CHECK_AND_TERMINATE 1
 #define REQUIRED true
+#if (defined(_WIN32) || defined(_WIN64))
+  #undef OPTIONAL
+#endif
+
 #define OPTIONAL false
 
 

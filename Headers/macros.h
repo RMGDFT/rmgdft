@@ -10,6 +10,8 @@
     #include <unistd.h>
 #else
     #include <io.h>
+    #define NOMINMAX
+    #include <windows.h>
 #endif
 
 /* macros */
@@ -115,5 +117,8 @@
         error_handler("macro my_open: can't open file %s", _filename_);\
 } while (0)
 
+#if (defined(_WIN32) || defined(_WIN64))
+    #define sleep(x) Sleep(1000.0*x)
+#endif
 
 #endif

@@ -87,7 +87,11 @@
 #define		MAX_CHAR	255
 
 /* Maximum pathname length for input file names */
-#define         MAX_PATH        MAX_CHAR
+#if (defined(_WIN32) || defined(_WIN64))
+    #include <windows.h>
+#else
+    #define         MAX_PATH        MAX_CHAR
+#endif
 
 /* Maximum image count */
 #define         MAX_IMGS        99
