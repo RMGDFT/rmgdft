@@ -22,6 +22,7 @@
 
 #include <complex>
 #include <omp.h>
+#include "portability.h"
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -345,8 +346,12 @@ lwork = 6*n*n;
 
     // Use async MPI to get a copy of the eigs to everyone. Will overlap with the iterator
     //MPI_Barrier(MainSp->GetComm());
+#if !(defined(_WIN32) || defined(_WIN64))
     MPI_Request MPI_reqeigs;
     MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm(), &MPI_reqeigs);
+#else
+    MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm());
+#endif
 
     // Since we have the full Asave present on every physical node we can parallelize the iteration over
     // all of them without communication but we have to recompute our starting and stopping points since
@@ -355,8 +360,10 @@ lwork = 6*n*n;
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
     delete(RT2);
      
+#if !(defined(_WIN32) || defined(_WIN64))
     // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
     MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
+#endif
     for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Make sure all PE's have all eigenvectors.

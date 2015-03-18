@@ -233,9 +233,13 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
         n_eigs[eig_index] = eigs[eig_index];
     }
 
+#if !(defined(_WIN32) || defined(_WIN64))
     // Use async MPI to get a copy of the eigs to everyone. Will overlap with the iterator
     MPI_Request MPI_reqeigs;
     MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqeigs);
+#else
+    MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
 
 
     // Apply folded spectrum to this PE's range of eigenvectors
@@ -243,8 +247,10 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10, driver);
     delete(RT2);
 
+#if !(defined(_WIN32) || defined(_WIN64))
     // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
     MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
+#endif
     for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Make sure all PE's have all eigenvectors.

@@ -114,8 +114,8 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
                Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
            }
         }
-        daxpy(&sizr, &alpha, Y, &ione, X, &ione);
-        //for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
+        //daxpy(&sizr, &alpha, Y, &ione, X, &ione);
+        for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
 #endif
 
 

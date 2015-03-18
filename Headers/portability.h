@@ -2,7 +2,9 @@
 #define PORTABILITY_H
 
 #if (defined(_WIN32) || defined(_WIN64))
-    #define NOMINMAX
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
     #include <windows.h>
     #define snprintf _snprintf
     typedef int mode_t;

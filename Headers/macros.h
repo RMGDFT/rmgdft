@@ -5,14 +5,16 @@
 #ifndef MACROS_H_INCLUDED
 #define MACROS_H_INCLUDED
 
-#include <stdlib.h>
 #if !(defined(_WIN32) || defined(_WIN64))
     #include <unistd.h>
 #else
+    #ifndef NOMINMAX
+      #define NOMINMAX
+    #endif
     #include <io.h>
-    #define NOMINMAX
     #include <windows.h>
 #endif
+#include <stdlib.h>
 
 /* macros */
 

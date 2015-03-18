@@ -207,20 +207,30 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType beta(0.0);
     RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
+#if !(defined(_WIN32) || defined(_WIN64))
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
     MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+#else
+    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
 
     // Compute S matrix
     KpointType alpha1(vel);
     RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
+#if !(defined(_WIN32) || defined(_WIN64))
     // Wait for Aij request to finish
     MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+#endif
 
+#if !(defined(_WIN32) || defined(_WIN64))
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
     MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+#else
+    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix2, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
 
     // Store reduced Aij back in Aij matrix
     for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
@@ -237,8 +247,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     }
 
+#if !(defined(_WIN32) || defined(_WIN64))
     // Wait for S request to finish and when done store copy in Sij
     MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+#endif
     for(int idx = 0;idx < num_states*num_states;idx++) Sij[idx] = global_matrix2[idx];
     delete(RT1);
 
