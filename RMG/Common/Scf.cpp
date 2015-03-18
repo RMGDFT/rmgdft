@@ -370,7 +370,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     /* Make sure we see output, e.g. so we can shut down errant runs */
     fflush( ct.logfile );
-#if !__CYGWIN__
+#if !(__CYGWIN__ || __MINGW64__ || _WIN32 || _WIN64)
     fsync( fileno(ct.logfile) );
 #endif
 

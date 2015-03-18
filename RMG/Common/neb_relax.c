@@ -64,7 +64,10 @@ void neb_relax (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_doubl
         if ( pct.imgpe == 0 )
         {
 			printf("\tNEB adjacent image coords L:%d, S:%d, R:%d.\n", img_rank_map[LEFT], img_rank_map[SELF], img_rank_map[RIGHT]);
-			fflush (NULL); fsync( fileno(ct.logfile) );
+			fflush (NULL);
+#if !(_WIN32 || _WIN64)
+                        fsync( fileno(ct.logfile) );
+#endif
             /* pack coordinates for mpi transfer */
             for ( count = 0; count < ct.num_ions; count++ )
             {
@@ -187,8 +190,12 @@ void neb_relax (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_doubl
         /* Call fastrelax for max_md_steps steps */
 		MPI_Barrier( MPI_COMM_WORLD );
 		printf("\tNEB call fast relax.\n");
-		fflush(NULL);fsync( fileno(ct.logfile) );
-		MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+		fflush(NULL);
+#if !(_WIN32 || _WIN64)
+		fsync( fileno(ct.logfile) );
+#endif
+
+	MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
         relax (2, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
         /* Check for NEB convergence */
@@ -204,7 +211,10 @@ void neb_relax (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_doubl
         }
 
         printf(" Find max force amongst all images ");
-		fflush(NULL);fsync( fileno(ct.logfile) );
+		fflush(NULL);
+#if !(_WIN32 || _WIN64)
+                fsync( fileno(ct.logfile) );
+#endif
 
 		tmp_mag = max_frc;
 

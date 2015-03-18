@@ -24,7 +24,6 @@
  *     Wenchang Lu, NCSU, June, 2014
  */
     
-#include <semaphore.h>
 
 #include "grid.h"
 #include "rmgtypes.h"
