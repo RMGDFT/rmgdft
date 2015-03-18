@@ -13,7 +13,9 @@
  *  Jerzy Bernholc
  */
 
+#if !(defined(_WIN32) || defined(_WIN64))
 #include <semaphore.h>
+#endif
 #include <mpi.h>
 #include "typedefs.h"
 #include "rmgtypes.h"
