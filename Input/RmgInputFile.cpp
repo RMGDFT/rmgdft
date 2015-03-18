@@ -17,6 +17,7 @@
 #include <climits>
 #include <unordered_map>
 #include <typeinfo>
+#include "portability.h"
 #include "InputKey.h"
 #include "RmgInputFile.h"
 #include "RmgException.h"
