@@ -45,10 +45,11 @@
  * SOURCE
  */
 
-#include "common_prototypes.h"
-#include "main.h"
+#include "portability.h"
 #include <float.h>
 #include <math.h>
+#include "common_prototypes.h"
+#include "main.h"
 
 
 #define    crs    1.91915829267751281

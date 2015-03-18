@@ -298,7 +298,9 @@ bool scf_tau (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_
 
     /* Make sure we see output, e.g. so we can shut down errant runs */
     fflush( ct.logfile );
-	fsync( fileno(ct.logfile) );
+#if !(_WIN32 || _WIN64)
+    fsync( fileno(ct.logfile) );
+#endif
 
     /* release memory */
     my_free (new_rho);

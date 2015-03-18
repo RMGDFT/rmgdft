@@ -22,9 +22,10 @@
 
 
 
-#include "main.h"
+#include "portability.h"
 #include <float.h>
 #include <math.h>
+#include "main.h"
 
 
 void lsd_glyp ( double rhoa, double rhob, double grhoaa, double grhoab2, double grhobb, double * sc, double * v1ca, double * v2ca, double * v1cb, double * v2cb, double * v2cab )
@@ -75,12 +76,12 @@ void lsd_lyp ( double rho, double zeta, double * elyp, double * valyp, double * 
 	 * only the correlation for LDA part */
 
 	double rhoa, rhob, rm3, dr, en1, or, dor, en2, de1a, de1b, de2a, de2b;
-	double small=1.e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
+	double small_val=1.0e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
 
 	rhoa = rho * 0.5 * ( 1.0 + zeta );
-	rhoa = max ( rhoa, small );
+	rhoa = max ( rhoa, small_val );
 	rhob = rho * 0.5 * ( 1.0 - zeta );
-	rhob = max ( rhob, small );
+	rhob = max ( rhob, small_val );
 
 	rm3 = pow ( rho, - 1.0 / 3.0 );
 	dr = 1.0 + d * rm3;

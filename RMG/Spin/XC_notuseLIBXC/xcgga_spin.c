@@ -46,10 +46,11 @@
  */
 
 
-#include "common_prototypes.h"
-#include "main.h"
+#include "portability.h"
 #include <float.h>
 #include <math.h>
+#include "common_prototypes.h"
+#include "main.h"
 
 /* crs = (9*pi/4)^(1/3) */
 #define    crs    1.91915829267751281
