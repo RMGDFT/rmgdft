@@ -36,6 +36,9 @@
 
 #include <unordered_map>
 #include <fstream>
+#include <ctime>
+#include <ratio>
+#include <chrono>
 #include "BaseThread.h"
 #include "BaseGrid.h"
 
@@ -43,8 +46,8 @@
 class RmgTimer {
 
 private:
-    volatile double start_time;
-    volatile double end_time;
+    std::chrono::high_resolution_clock::time_point start_time;
+    std::chrono::high_resolution_clock::time_point end_time;
     const char *sname;
 
 public:

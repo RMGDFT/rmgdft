@@ -34,11 +34,14 @@
 #include <functional>
 #include <string>
 #include <iomanip>
+#include <ctime>
+#include <ratio>
+#include <chrono>
 #include "RmgTimer.h"
 
 
-volatile double start_time;
-volatile double end_time;
+std::chrono::high_resolution_clock::time_point start_time;
+std::chrono::high_resolution_clock::time_point end_time;
 const char *sname;
 bool RmgTimer::enabled = true;
 std::unordered_map<std::string, double> RmgTimer::timings[MAX_RMG_THREADS+1];
@@ -48,19 +51,15 @@ std::unordered_map<std::string, double> RmgTimer::timings[MAX_RMG_THREADS+1];
 RmgTimer::RmgTimer(const char *what) 
 {
     if(!RmgTimer::enabled) return;
-    struct timeval t1;
-    gettimeofday (&t1, NULL);
+    start_time = std::chrono::high_resolution_clock::now();
     sname = what;
-    start_time = t1.tv_sec + 1e-6 * t1.tv_usec;
 }
 
 RmgTimer::~RmgTimer(void) 
 {
     if(!RmgTimer::enabled) return;
     if(!sname) return;  // Bit of a hack for the temporary C interfaces
-    struct timeval t1;
-    gettimeofday (&t1, NULL);
-    end_time = t1.tv_sec + 1e-6 * t1.tv_usec;
+    end_time = std::chrono::high_resolution_clock::now();
 
     int tid;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -81,11 +80,12 @@ RmgTimer::~RmgTimer(void)
         }
     }
 
+    std::chrono::duration<double, std::milli> time_length = end_time - start_time;
     if(timings[tid].count(sname)) {
-        RmgTimer::timings[tid][sname] += end_time - start_time;
+        RmgTimer::timings[tid][sname] += time_length.count() / 1000.0;
     }
     else {
-        RmgTimer::timings[tid][sname] = end_time - start_time;
+        RmgTimer::timings[tid][sname] += time_length.count() / 1000.0;
     }
 }
 
@@ -119,9 +119,10 @@ extern "C" void EndRmgTimer(void *ptr)
 
 double MyCrtc (void)
 {
-    struct timeval t1;
-    gettimeofday (&t1, NULL);
-    return t1.tv_sec + 1e-6 * t1.tv_usec;
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> time_length = t1 - t1.min();
+    return time_length.count() / 1000.0;
+
 }
 
 extern "C" double my_crtc (void)
