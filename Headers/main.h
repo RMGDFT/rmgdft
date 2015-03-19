@@ -52,7 +52,11 @@
 
 /* Use predefined booleans */
 #include <stdbool.h>
-#include <complex.h>
+#ifdef __cplusplus
+    #include <complex>
+#else
+    #include <complex.h>
+#endif
 
 /* constants */
 #include "const.h"
