@@ -27,7 +27,9 @@
  * 
 */
 
-#include <sys/time.h>
+#if !(defined(_WIN32) || defined(_WIN64))
+    #include <sys/time.h>
+#endif
 #include <stdio.h>
 #include <string>
 #include <iostream>
