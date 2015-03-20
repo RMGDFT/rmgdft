@@ -31,7 +31,7 @@
  * SOURCE
  */
 
-
+#include "portability.h"
 #include "main.h"
 #include "common_prototypes.h"
 #include <float.h>

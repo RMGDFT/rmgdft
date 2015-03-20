@@ -11,7 +11,7 @@
 #include "main.h"
 
 
-void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhocore_f)
+void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
 {
 
     int ix, iy, iz, ixx, iyy, izz;
@@ -24,12 +24,13 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    rmg_double_t r, Zv, rc, rc2, rcnorm, t1;
-    rmg_double_t x[3], invdr;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double r, Zv, rc, rc2, rcnorm, t1;
+    double x[3], invdr;
+    double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;
+    int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -61,7 +62,7 @@ void init_nuc (rmg_double_t * vnuc_f, rmg_double_t * rhoc_f, rmg_double_t * rhoc
     /* Initialize the compensating charge array and the core charge array */
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
-        rhoc_f[idx] = ct.background_charge / FP0_BASIS / get_vel_f() / NPES;
+        rhoc_f[idx] = ct.background_charge / FP0_BASIS / get_vel_f() / npes;
         rhocore_f[idx] = 0.0;
         vnuc_f[idx] = 0.0;
     }

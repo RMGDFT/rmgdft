@@ -1,7 +1,7 @@
 #ifndef PORTABILITY_H_INCLUDED
 #define PORTABILITY_H
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32) || defined(WIN64))
     #ifndef NOMINMAX
         #define NOMINMAX
     #endif

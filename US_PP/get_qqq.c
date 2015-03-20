@@ -2,6 +2,7 @@
  **    $Id$    **
 ******************************************************************************/
 
+#include "portability.h"
 #include <float.h>
 #include <stdlib.h>
 #include <stdio.h>

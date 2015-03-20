@@ -222,7 +222,11 @@ typedef struct
 
 
 /* Extern declaration for the processor control structure */
+#if __cplusplus
+extern "C" PE_CONTROL pct;
+#else
 extern PE_CONTROL pct;
+#endif
 
 
 #endif

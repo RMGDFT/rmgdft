@@ -32,6 +32,7 @@
     #include <unistd.h>
 #endif
 #include <unordered_map>
+#include "grid.h"
 #include "const.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
@@ -58,8 +59,6 @@ void report (void);
 
 void finish (void);
 
-/* Global MPI stuff. Overridden by input params */
-int NPES=1;
 
 /* Electronic charge density or charge density of own spin in polarized case */
 double *rho;
@@ -93,6 +92,9 @@ double *tau;
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
 CONTROL ct;
+
+/* Global MPI stuff. Overridden by input params */
+int NPES=1;
 
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
