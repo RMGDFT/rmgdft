@@ -71,7 +71,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
     If.RegisterInputKey("kpoints", &KpointArray, "",
                      CHECK_AND_FIX, REQUIRED,
-                     "kpointis list and their weight \n",
+                     "kpoints list and their weight \n",
                      "");
     
     
