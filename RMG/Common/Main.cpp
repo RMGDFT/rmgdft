@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h> 
 #if (defined(_WIN32) || defined(_WIN64))
     #include <io.h>
 #else
@@ -103,6 +104,11 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 
 int main (int argc, char **argv)
 {
+
+#if (defined(_WIN32) || defined(_WIN64))
+    // make default io binary
+     _set_fmode( _O_BINARY);
+#endif
 
     RmgTimer *RT = new RmgTimer("Main");
     char *tptr;

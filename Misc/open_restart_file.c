@@ -20,15 +20,16 @@
  *
 */
 
-
+#include "portability.h"
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <libgen.h>
+#if !(defined(_WIN32) || defined(_WIN64))
+    #include <libgen.h>
+#endif
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include "main.h"
 
 
@@ -64,8 +65,14 @@ FILE *open_restart_file (char *filename)
 	printf ("\n write_data: Opening output file '%s' failed\n"
 		"  Trying to create subdirectory in case it does not exist\n", newname);
 
-
+#if !(defined(_WIN32) || defined(_WIN64))
 	if (!mkdir (dirname (tmpname), S_IRWXU))
+#else
+        char dirname[_MAX_DIR];
+        _splitpath(tmpname, NULL, dirname, NULL, NULL);
+        if (!_mkdir(dirname))
+#endif
+	if (1)
 	    printf ("\n Creating directory %s succesfull\n\n", tmpname);
 	else
 	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
