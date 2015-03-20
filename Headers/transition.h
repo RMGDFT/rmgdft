@@ -204,7 +204,7 @@ void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, d
     #define rmg_printf( message... ) \
          fprintf( ct.logfile, message )
 #else
-    #define rmg_printf( message,... ) \
-         fprintf( ct.logfile, message )
+    #define rmg_printf( message, ... ) \
+         fprintf( ct.logfile, message, __VA_ARGS__ )
 #endif
 

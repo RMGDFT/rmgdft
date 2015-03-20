@@ -136,7 +136,6 @@ int main (int argc, char **argv)
         ct.mpi_threadlevel = atoi(tptr);
     }
 
-
     try {
 
         RmgTimer *RT1 =  new RmgTimer("Main: init");

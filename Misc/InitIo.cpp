@@ -49,6 +49,11 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <unordered_map>
+#if (defined(_WIN32) || defined(_WIN64))
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
 
 
 #include "grid.h"
@@ -157,7 +162,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ct.logfile = fopen(ct.logname, "w");
     }
     else {
+#if (defined(_WIN32) || defined(_WIN64))
+        ct.logfile = fopen("NUL:", "w");
+#else
         ct.logfile = fopen("/dev/null", "w");
+#endif
     }
 
     MPI_Comm_size (pct.img_comm, &status);
@@ -231,7 +240,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
         fclose(fhand);
     }
-
 
 }
 

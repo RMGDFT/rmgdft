@@ -133,8 +133,7 @@ int init_kpoints (int *mesh, int *is_shift)
     return num_kpts;
 
 
-
-}                               /* end init_sym */
+}                               /* end init_kpoints */
 
 
 

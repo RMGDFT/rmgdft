@@ -13,6 +13,8 @@
     #endif
     #include <io.h>
     #include <windows.h>
+    #define sleep(x) Sleep(1000.0*x)
+
 #endif
 #include <stdlib.h>
 
@@ -65,7 +67,7 @@
 
 #if (defined(_WIN32) || defined(_WIN64))
     #define printf( message,... ) \
-	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ): 0)
+	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message, __VA_ARGS__ ): 0)
 //	 ((pct.imgpe == 0) ? fprintf( ct.logfile, message ), fflush (NULL), fsync ( fileno (ct.logfile) ): 0)
 #else
     #define printf( message... ) \
@@ -79,9 +81,9 @@
   #define error_handler( message,... ) \
     fprintf (stderr, "\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
     printf ("\nExit from PE %d of image %d, in file %s, line %d\nPE %d Error Message is: ", pct.gridpe, pct.thisimg+1, __FILE__, __LINE__, pct.gridpe), \
-	fprintf (stderr,  message ), \
+	fprintf (stderr,  message, __VA_ARGS__ ), \
 	fprintf (stderr,  "\n\n" ), \
-	printf ( message ), \
+	printf ( message, __VA_ARGS__ ), \
 	printf ( "\n\n" ), \
     fflush (NULL), \
     sleep (2), \
@@ -118,9 +120,5 @@
     if (_fhandle_ < 0)\
         error_handler("macro my_open: can't open file %s", _filename_);\
 } while (0)
-
-#if (defined(_WIN32) || defined(_WIN64))
-    #define sleep(x) Sleep(1000.0*x)
-#endif
 
 #endif

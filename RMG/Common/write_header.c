@@ -27,7 +27,9 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
+#if !(_WIN32 || _WIN64)
 #include "svnrev.h"
+#endif
 
 static void init_write_pos (void);
 
@@ -85,8 +87,10 @@ void write_header (void)
     }                           /* end switch */
 
     /*printf (" Code %s\n\n", QMD_VERSION); */
+#if !(_WIN32 || _WIN64)
     printf ("\n    Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
     printf ("\n    Build Date:%s", BUILD_DATE);
+#endif
     printf ("\n    %s", ct.description);
     printf ("\n    Run started at %s", timeptr);
 
