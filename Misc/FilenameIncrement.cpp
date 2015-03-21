@@ -1,3 +1,4 @@
+#include "portability.h"
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -38,14 +39,14 @@ int FilenameIncrement(char *pathname)
 
     
     char lognum_str[4]; 
-    std::snprintf(lognum_str, 3, "%02d", lognum);
+    snprintf(lognum_str, 3, "%02d", lognum);
     std::string nextname = std::string(pathname) + "." + lognum_str;
     while (boost::filesystem::exists(nextname))
     {
         if (++lognum > 99)
             throw RmgFatalException() << "You have over 100 logfiles, you need to think of a better job scenario!" << "\n";
         nextname.erase();
-        std::snprintf(lognum_str, 3, "%02d", lognum);
+        snprintf(lognum_str, 3, "%02d", lognum);
         nextname = std::string(pathname) + "." + lognum_str;
     }
 
