@@ -34,7 +34,6 @@ get_index.c
 get_te.c
 minimage.c
 get_vtot_psi.c
-filename_increment.c
 my_mpi.c
 blaswrappers.c
 set_bc.c
