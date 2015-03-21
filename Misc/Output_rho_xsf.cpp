@@ -14,6 +14,7 @@
 void Output_rho_xsf(double *array_3d, MPI_Comm comm)
 {
 
+#if !(defined(_WIN32) || defined(_WIN64))
 
     char newname[MAX_PATH + 20];
 
@@ -189,7 +190,7 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
  
     const unsigned int shape1[] = {sizes[0], sizes[1], sizes[2]};
     cnpy::npz_save(newname, "density", g_array, shape1, 3, "a");
+#endif
 
-
-}                               /* end write_data */
+}
 
