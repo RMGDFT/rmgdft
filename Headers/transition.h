@@ -194,6 +194,7 @@ void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
 void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h, PE_CONTROL& pelc);
 void SetupProcessorGrid(int npes, int NX_GRID, int NY_GRID, int NZ_GRID, PE_CONTROL& pelc);
 void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h);
+extern "C" int FilenameIncrement(char *pathname);
 
 
 

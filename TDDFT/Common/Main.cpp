@@ -242,7 +242,7 @@ int main(int argc, char **argv)
     if(pct.gridpe == 0)
     {
         sprintf(char_tem, "%s%s", pct.image_path[pct.thisimg], "dipole.dat");
-        int name_incr = filename_increment(char_tem);
+        int name_incr = FilenameIncrement(char_tem);
         sprintf(filename, "%s.%02d", char_tem, name_incr);
         
         dfi = fopen(filename, "w");

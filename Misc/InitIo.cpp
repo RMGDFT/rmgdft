@@ -155,7 +155,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         snprintf (logname, MAX_PATH, "%s.log", ct.basename);
         int name_incr;
-        name_incr = filename_increment(logname);
+        name_incr = FilenameIncrement(logname);
         snprintf (ct.logname, MAX_PATH, "%s.%02d", logname, name_incr);
 
         /* open and save logfile handle, printf is stdout before here */
