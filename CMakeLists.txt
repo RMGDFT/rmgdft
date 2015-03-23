@@ -16,17 +16,52 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 cmake_minimum_required (VERSION 2.6) 
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
+# Load custom cmake modules for FFTW and Magma
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 # Detect system type
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Linux specific code
-    SET(OperatingSystem "Linux")
-    SET(RMG_SYSTEM_COMPILER_FLAG "-DLINUX=1")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(OperatingSystem "Linux")
+    set(RMG_SYSTEM_COMPILER_FLAG "-DLINUX=1")
+    set(ZLIB "z")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    # Windows specific code. RMG currently only builds on Windows with
+    # the Intel compilers and MKL math library. Prebuilt versions of
+    # the libxc and spglib libraries are also supplied in the source distribtion
+    set(OperatingSystem "Windows")
+    set(MKLROOT "C:/Program Files (x86)/Intel/Composer XE 2015/mkl/")
+    set(CMAKE_Fortran_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/ifort.exe")
+    set(CMAKE_C_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/icl.exe")
+    set(CMAKE_CXX_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/icl.exe")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /GR /EHsc /Qstd=c++11 /DNOMINMAX /D_NOMINMAX /Qopenmp" CACHE STRING "" FORCE)
+    set(CMAKE_C_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /Qstd=c99 /DNOMINMAX /D_NOMINMAX /Qopenmp" CACHE STRING "" FORCE)
+
+    set(LIBXC_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/LIBXC.lib")
+    set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 if(DEFINED ENV{CRAY_LIBSCI})
     set (CRAY_XK 1)
 endif()
+
+
+# Compiler flags
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+#    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
+#    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
+    set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
+endif()
+
+if (CRAY_XK)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
+endif(CRAY_XK)
 
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
@@ -75,9 +110,6 @@ if (${UNIX})
     endif(CMAKE_USE_PTHREADS_INIT)
 endif(${UNIX})
 
-# Load custom cmake modules for FFTW and Magma
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
-
 
 set(USE_PLPLOT_LIBS 0)
 find_package(PLPLOT)
@@ -99,8 +131,8 @@ endif(PLPLOT_FOUND)
 # are needed to handle circular references
 target_link_libraries (rmg RmgLib)
 target_link_libraries (rmg InternalPseudo)
-target_link_libraries (rmg Finite_diff RMG_Common RmgLib)
-target_link_libraries (rmg Misc RMG_Common Finite_diff z)
+target_link_libraries (rmg Finite_diff RMG_Common RmgLib ${ZLIB})
+target_link_libraries (rmg Misc RMG_Common Finite_diff)
 target_link_libraries (rmg RMG_Common Force)
 target_link_libraries (rmg Force RMG_Common)
 target_link_libraries (rmg Input InternalPseudo)
@@ -116,7 +148,6 @@ target_link_libraries (rmg XC RMG_Spin)
 target_link_libraries (rmg RMG_Spin RMG_Spin_XC)
 target_link_libraries (rmg RMG_Spin_XC RMG_Spin)
 target_link_libraries (rmg US_PP Input)
-target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
 target_link_libraries (rmg RMG_Common US_PP)
 target_link_libraries (rmg US_PP RMG_Common)
 target_link_libraries (rmg Force)
@@ -128,7 +159,7 @@ target_link_libraries (rmg RMG_Subdiag Misc)
 
 target_link_libraries (rmg-on RmgLib)
 target_link_libraries (rmg-on Finite_diff ON_Common RmgLib)
-target_link_libraries (rmg-on Misc ON_Common Finite_diff z)
+target_link_libraries (rmg-on Misc ON_Common Finite_diff ${ZLIB})
 target_link_libraries (rmg-on ON_Common ON_NEGF_share)
 target_link_libraries (rmg-on Misc ON_NEGF_share)
 target_link_libraries (rmg-on ON_Common Force)
@@ -153,7 +184,7 @@ target_link_libraries (rmg-on US_PP Misc)
 
 target_link_libraries (rmg-negf RmgLib)
 target_link_libraries (rmg-negf Finite_diff NEGF_Common RmgLib)
-target_link_libraries (rmg-negf Misc NEGF_Common Finite_diff z)
+target_link_libraries (rmg-negf Misc NEGF_Common Finite_diff ${ZLIB})
 target_link_libraries (rmg-negf NEGF_Common ON_NEGF_share)
 target_link_libraries (rmg-negf Misc ON_NEGF_share)
 target_link_libraries (rmg-negf NEGF_Common Force)
@@ -187,7 +218,7 @@ target_link_libraries (rmg-negf NEGF_Cudafunc NEGF_Common)
 
 target_link_libraries (rmg-tddft RmgLib)
 target_link_libraries (rmg-tddft Finite_diff ON_Common RmgLib)
-target_link_libraries (rmg-tddft Misc ON_Common Finite_diff z)
+target_link_libraries (rmg-tddft Misc ON_Common Finite_diff ${ZLIB})
 target_link_libraries (rmg-tddft ON_Common ON_NEGF_share)
 target_link_libraries (rmg-tddft Misc ON_NEGF_share)
 target_link_libraries (rmg-tddft ON_Common Force)
@@ -257,14 +288,22 @@ else(MPI_C_FOUND)
   CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 endif (MPI_C_FOUND)
 
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDES})
-target_link_libraries (rmg ${FFTW_LIBRARIES})
-target_link_libraries (rmg-on ${FFTW_LIBRARIES})
-target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
-target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
 
-find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    #message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+    set(Boost_USE_STATIC_LIBS        ON)
+    set(Boost_USE_MULTITHREADED      ON)
+    set(Boost_USE_STATIC_RUNTIME    OFF)
+    set(Boost_COMPILER "-vc120")
+    set(BOOST_ROOT "C:/local/boost_1_57_0/")
+    set(Boost_DEBUG ON)
+    set(BOOST_LIBRARYDIR "C:/local/boost_1_57_0/lib64-msvc-12.0/")
+    set(Boost_ADDITIONAL_VERSIONS "1.57" "1.57.0")
+    find_package(Boost COMPONENTS thread system iostreams program_options filesystem date_time chrono zlib bzip2 REQUIRED)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries (rmg ${Boost_LIBRARIES})
 target_link_libraries (rmg-on ${Boost_LIBRARIES})
@@ -287,50 +326,70 @@ endif (OPENBABEL_FOUND)
 # Check if environment variable is set
 set(MKLROOT $ENV{MKLROOT})
 if (NOT MKLROOT)
-    # Check the default location
-    if (EXISTS "/opt/intel/mkl")
-        set(MKLROOT "/opt/intel/mkl")
-    endif (EXISTS "/opt/intel/mkl")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        # Check the default location
+        if (EXISTS "/opt/intel/mkl")
+            set(MKLROOT "/opt/intel/mkl")
+        endif (EXISTS "/opt/intel/mkl")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif (NOT MKLROOT)
 
-
 if(NOT CRAY_XK)
-if(MKLROOT)
-    set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
-    set(MKL_LIB64 "${MKLROOT}/lib/intel64")
-    if(EXISTS "${MKL_LIB64}")
-        target_link_libraries (rmg "${MKL_LIB64}/libmkl_scalapack_lp64.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
-#        target_link_libraries (rmg "/usr/local/intel_fftw/libfftw2xc_double_gnu.a")
-        target_link_libraries (rmg "${MKL_LIB64}/libmkl_cdft_core.a")
-        target_link_libraries (rmg "${MKL_LIB64}/libmkl_intel_lp64.a")
-        target_link_libraries (rmg "${MKL_LIB64}/libmkl_core.a")
-        target_link_libraries (rmg "${MKL_LIB64}/libmkl_gnu_thread.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
-        target_link_libraries (rmg "${MKL_LIB64}/libmkl_blacs_openmpi_lp64.a")
-        set(RMG_MATH_LIBS "done")
-    else(EXISTS "${MKL_LIB64}")
-        message( SEND_ERROR "RMG requires 64 bit MKL." )
-    endif(EXISTS "${MKL_LIB64}")
-endif(MKLROOT)
+    if(MKLROOT)
+        set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
+        set(MKL_LIB64 "${MKLROOT}/lib/intel64")
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+            if(EXISTS "${MKL_LIB64}")
+                target_link_libraries (rmg "${MKL_LIB64}/mkl_intel_lp64.lib")
+                target_link_libraries (rmg "${MKL_LIB64}/mkl_core.lib")
+                target_link_libraries (rmg "${MKL_LIB64}/mkl_intel_thread.lib")
+                set(RMG_MATH_LIBS "done")
+            else(EXISTS "${MKL_LIB64}")
+                message( SEND_ERROR "RMG requires 64 bit MKL." )
+            endif(EXISTS "${MKL_LIB64}")
+        else(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+            if(EXISTS "${MKL_LIB64}")
+                target_link_libraries (rmg "${MKL_LIB64}/libmkl_scalapack_lp64.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
+                target_link_libraries (rmg "${MKL_LIB64}/libmkl_cdft_core.a")
+                target_link_libraries (rmg "${MKL_LIB64}/libmkl_intel_lp64.a")
+                target_link_libraries (rmg "${MKL_LIB64}/libmkl_core.a")
+                target_link_libraries (rmg "${MKL_LIB64}/libmkl_gnu_thread.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
+                target_link_libraries (rmg "${MKL_LIB64}/libmkl_blacs_openmpi_lp64.a")
+                set(RMG_MATH_LIBS "done")
+            else(EXISTS "${MKL_LIB64}")
+                message( SEND_ERROR "RMG requires 64 bit MKL." )
+            endif(EXISTS "${MKL_LIB64}")
+        endif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    endif(MKLROOT)
 endif(NOT CRAY_XK)
 
 
 set(USE_SCALAPACK_LIBS 1)
-# MKL includes blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
+# MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
 if(NOT RMG_MATH_LIBS)
 
     if(NOT CRAY_XK)
 
-        # First look for openblas
-        SET(OPEN_BLAS_SEARCH_PATHS  /lib/ /lib64/  /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/OpenBLAS/lib $ENV{OPENBLAS_HOME}/lib )
+        # FFTW
+        find_package(FFTW REQUIRED)
+        include_directories(${FFTW_INCLUDES})
+        target_link_libraries (rmg ${FFTW_LIBRARIES})
+        target_link_libraries (rmg-on ${FFTW_LIBRARIES})
+        target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
+        target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
+        target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
+
+        # OPENBLAS
+        set(OPEN_BLAS_SEARCH_PATHS  /lib/ /lib64/  /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/OpenBLAS/lib $ENV{OPENBLAS_HOME}/lib )
         FIND_LIBRARY(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
-        IF (OPENBLAS)
+        if (OPENBLAS)
             set(BLAS_FOUND TRUE)
             set(BLAS_LIBRARIES ${OPENBLAS})
             set(BLAS_blas_LIBRARY ${OPENBLAS})
-        ELSE (OPENBLAS)
+        else (OPENBLAS)
             find_package(BLAS REQUIRED)
-        ENDIF (OPENBLAS)
+        endif (OPENBLAS)
 
         if(BLAS_FOUND)
             target_link_libraries (rmg ${BLAS_LIBRARIES})
@@ -398,11 +457,11 @@ if(RMG_GPU_ENABLED)
   include_directories(${CUDA_INCLUDE_DIRS})
 
 
-  SET(CUDA_NVCC_FLAGS "-arch=sm_13" CACHE STRING "nvcc flags" FORCE)
+  set(CUDA_NVCC_FLAGS "-arch=sm_13" CACHE STRING "nvcc flags" FORCE)
  
 #HW capability 1.3
-  SET (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-  SET(LIB_TYPE STATIC) #set the lib type
+  set (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+  set(LIB_TYPE STATIC) #set the lib type
   CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
   ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
   ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
@@ -474,22 +533,6 @@ target_link_libraries (rmg-negf ${LIBSPG_LIBRARIES})
 
 
 
-# Compiler flags
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-#    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-#    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
-    set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
-endif()
-set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
-
-if (CRAY_XK)
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
-endif(CRAY_XK)
-
-#message(${CMAKE_C_FLAGS})
 # include files
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_SOURCE_DIR}/RmgLib/")
@@ -498,9 +541,6 @@ include_directories("${RMG_SOURCE_DIR}/RmgLib/include")
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
-#include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
-#include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
-#include_directories("/opt/openmpi/include")
 
 
 # Common code subdirectories
@@ -597,12 +637,19 @@ configure_file (
   "${PROJECT_BINARY_DIR}/Headers/make_conf.h"
   )
 
-execute_process (
-  COMMAND date OUTPUT_VARIABLE foo5)
-string(REPLACE "\n" "" BuildDate ${foo5})
+# Build date and time revisions
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    execute_process (COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE foo1) 
+    execute_process (COMMAND "cmd" " /C time /T" OUTPUT_VARIABLE foo2) 
+    string(CONCAT foo3 ${foo1} ${foo2})
+    string(REPLACE "\n" "" BuildDate ${foo3})
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    execute_process (COMMAND date OUTPUT_VARIABLE foo5) 
+    string(REPLACE "\n" "" BuildDate ${foo5})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set (Use_svn 1)
-if(Use_svn)
+include(FindSubversion)
+if(Subversion_FOUND)
   execute_process (
       COMMAND svn info OUTPUT_VARIABLE foo)
   string(REPLACE "Last Changed" ";" foo2 ${foo})
@@ -613,10 +660,10 @@ if(Use_svn)
   list(GET foo2 3 foo3)
   string(REPLACE " " ";" foo4 ${foo3})
   list(GET foo4 2 LastChangeDate)
-else(Use_svn)
-  set(CodeRevision "\"release 1.0\"")
-  set(LastChangeDate ${BuildDate})
-endif(Use_svn)
+else(Subversion_FOUND)
+  set(CodeRevision "\"release 1.1\"")
+endif(Subversion_FOUND)
+
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/svnrev.h.in"
@@ -631,12 +678,12 @@ install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
 DESTINATION rmg/lib)
 
 # Packaging section next
-SET(CPACK_GENERATOR "DEB")
+set(CPACK_GENERATOR "DEB")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)
 set(CPACK_PACKAGE_CONTACT "Emil Briggs")
