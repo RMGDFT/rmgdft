@@ -63,8 +63,8 @@ if (CRAY_XK)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
 endif(CRAY_XK)
 
-set (RMG_GPU_ENABLED 1)
-set (RMG_MAGMA_LIBS 1) 
+set (RMG_GPU_ENABLED 0)
+set (RMG_MAGMA_LIBS 0) 
 
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
