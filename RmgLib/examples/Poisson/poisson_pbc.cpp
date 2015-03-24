@@ -108,8 +108,8 @@ int main(int argc, char **argv)
     Lattice L;
     L.set_ibrav_type(CUBIC_PRIMITIVE);
     celldim[0] = 20.0;
-    celldim[1] = 20.0;
-    celldim[2] = 20.0;
+    celldim[1] = 1.0;   // b/a
+    celldim[2] = 1.0;   // c/a
     celldim[3] = 0.0;
     celldim[4] = 0.0;
     celldim[5] = 0.0;
@@ -181,8 +181,8 @@ int main(int argc, char **argv)
     int global_postsweeps = 3;
     int mucycles = 2;
     double rms_target = 1.0e-08;
-    double global_step = 0.6;
-    double coarse_step = 0.6;
+    double global_step = 0.6666;
+    double coarse_step = 0.6666;
     int boundaryflag = PERIODIC;
 
     // Show convergence acceleration from adding levels
