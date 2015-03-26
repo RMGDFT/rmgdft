@@ -375,16 +375,16 @@ set(USE_SCALAPACK_LIBS 1)
 # individually
 if(NOT RMG_MATH_LIBS)
 
-    if(NOT CRAY_XK)
+    # FFTW
+    find_package(FFTW REQUIRED)
+    include_directories(${FFTW_INCLUDES})
+    target_link_libraries (rmg ${FFTW_LIBRARIES})
+    target_link_libraries (rmg-on ${FFTW_LIBRARIES})
+    target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
+    target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
+    target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
 
-        # FFTW
-        find_package(FFTW REQUIRED)
-        include_directories(${FFTW_INCLUDES})
-        target_link_libraries (rmg ${FFTW_LIBRARIES})
-        target_link_libraries (rmg-on ${FFTW_LIBRARIES})
-        target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
-        target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
-        target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
+    if(NOT CRAY_XK)
 
         # OPENBLAS
         set(OPEN_BLAS_SEARCH_PATHS  /lib/ /lib64/  /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/OpenBLAS/lib $ENV{OPENBLAS_HOME}/lib )
