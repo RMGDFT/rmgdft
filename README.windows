@@ -1,0 +1,22 @@
+Toolchain requirements.
+
+cmake
+Visual Studio 2013 Professional.
+Intel Parallel Studio XE 2015 including MKL.
+If building libxc from scratch rather than using the static
+library included in the distribution then mingw-w64 is
+is required as well.
+Jom.exe is helpful for enabling parallel makes but not required.
+
+Library requirements.
+Boost libraries for Windows. Binary package from here has been used
+successfully http://www.boost.org/users/history/version_1_57_0.html.
+MSMPI v5.
+
+Open a cmd prompt.
+Set up the Intel compiler environment by running the supplied batch file.
+C:\Program Files (x86)\Intel\Composer XE 2015\bin\ipsxe-comp-vars.bat
+start the cmake-gui
+specify the Intel compilers explicitly.
+configure the build for nmake Makefiles or nmake with jom.
+build from the command line using jom or nmake.
