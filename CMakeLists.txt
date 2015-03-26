@@ -43,7 +43,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-if(DEFINED ENV{CRAY_LIBSCI})
+if(DEFINED ENV{CRAY_LIBSCI_VERSION})
     set (CRAY_XK 1)
 endif()
 
@@ -649,21 +649,24 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-include(FindSubversion)
-if(Subversion_FOUND)
-  execute_process (
-      COMMAND svn info OUTPUT_VARIABLE foo)
-  string(REPLACE "Last Changed" ";" foo2 ${foo})
-  list(GET foo2 2 foo3)
-  string(REPLACE ":" ";" foo4 ${foo3})
-  list(GET foo4 1 CodeRevision)
+set(USE_SVN 1)
+if(USE_SVN)
+    include(FindSubversion)
+    if(Subversion_FOUND)
+        execute_process (
+            COMMAND svn info OUTPUT_VARIABLE foo)
+        string(REPLACE "Last Changed" ";" foo2 ${foo})
+        list(GET foo2 2 foo3)
+        string(REPLACE ":" ";" foo4 ${foo3})
+        list(GET foo4 1 CodeRevision)
 
-  list(GET foo2 3 foo3)
-  string(REPLACE " " ";" foo4 ${foo3})
-  list(GET foo4 2 LastChangeDate)
-else(Subversion_FOUND)
-  set(CodeRevision "\"release 1.1\"")
-endif(Subversion_FOUND)
+        list(GET foo2 3 foo3)
+        string(REPLACE " " ";" foo4 ${foo3})
+        list(GET foo4 2 LastChangeDate)
+    else(Subversion_FOUND)
+        set(CodeRevision "\"release 1.1\"")
+     endif(Subversion_FOUND)
+endif()
 
 
 configure_file (
