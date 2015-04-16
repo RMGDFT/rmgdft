@@ -17,7 +17,7 @@ endif(NOT FFTW_INCLUDES)
 
 find_library (FFTW_LIBRARIES NAMES dfftw3)
 if(NOT FFTW_LIBRARIES)
-    find_library (FFTW_LIBRARIES NAMES fftw3)
+    find_library (FFTW_LIBRARIES NAMES libfftw3.a)
 endif(NOT FFTW_LIBRARIES)
 
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if

@@ -15,6 +15,9 @@
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 cmake_minimum_required (VERSION 2.6) 
 enable_language(Fortran)
+#   the following lines are for titan. comment theses two lines for other machines
+ set(CMAKE_C_COMPILER "/opt/cray/craype/2.2.1/bin/cc")
+ set(CMAKE_CXX_COMPILER "/opt/cray/craype/2.2.1/bin/CC")
 project (RMG C CXX Fortran) 
 # Load custom cmake modules for FFTW and Magma
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -46,7 +49,6 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
     set (CRAY_XK 1)
 endif()
-
 
 # Compiler flags
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -86,6 +88,7 @@ set(CMAKE_FIND_ROOT_PATH
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /opt/local/lib/libxc         #libxc from Macports
+/sw/xk6/boost/1.57.0/cle5.2_gnu4.8.2
 /home/luw/Downloads/magma-1.4.1)
 
 # Executables defined by the file that contains main()
@@ -265,7 +268,7 @@ target_link_libraries (rmg-tddft RMG_Spin_XC RMG_Spin)
 #set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
 #find_package(MPI REQUIRED)
 find_package(MPI)
-  include_directories(${MPI_INCLUDE_PATH})
+#  include_directories(${MPI_INCLUDE_PATH})
 if(MPI_CXX_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH})
   target_link_libraries (rmg ${MPI_CXX_LIBRARIES})
@@ -299,6 +302,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(Boost_ADDITIONAL_VERSIONS "1.57" "1.57.0")
     find_package(Boost COMPONENTS thread system iostreams program_options filesystem date_time chrono zlib bzip2 REQUIRED)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#    set(BOOST_ROOT "...")
     set(Boost_USE_STATIC_LIBS        OFF)
     set(Boost_USE_MULTITHREADED      ON)
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
@@ -309,6 +313,18 @@ target_link_libraries (rmg ${Boost_LIBRARIES})
 target_link_libraries (rmg-on ${Boost_LIBRARIES})
 target_link_libraries (rmg-tddft ${Boost_LIBRARIES})
 target_link_libraries (rmg-negf ${Boost_LIBRARIES})
+
+find_package(BZ2 REQUIRED)
+find_package(Z REQUIRED)
+
+target_link_libraries (rmg ${BZ2_LIBRARIES})
+target_link_libraries (rmg-on ${BZ2_LIBRARIES})
+target_link_libraries (rmg-tddft ${BZ2_LIBRARIES})
+target_link_libraries (rmg-negf ${BZ2_LIBRARIES})
+target_link_libraries (rmg ${Z_LIBRARIES})
+target_link_libraries (rmg-on ${Z_LIBRARIES})
+target_link_libraries (rmg-tddft ${Z_LIBRARIES})
+target_link_libraries (rmg-negf ${Z_LIBRARIES})
 
 # Look for openbabel
 set (USE_OPENBABEL_LIBS 0)
