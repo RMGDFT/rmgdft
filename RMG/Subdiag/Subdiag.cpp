@@ -67,6 +67,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     int pbasis = kptr->pbasis;
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
+    // If num_states is less than 64 force use of lapack
+    if(num_states < 64) subdiag_driver = SUBDIAG_LAPACK;
+
     // For MPI routines
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
