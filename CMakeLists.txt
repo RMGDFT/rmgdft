@@ -314,17 +314,19 @@ target_link_libraries (rmg-on ${Boost_LIBRARIES})
 target_link_libraries (rmg-tddft ${Boost_LIBRARIES})
 target_link_libraries (rmg-negf ${Boost_LIBRARIES})
 
-find_package(BZ2 REQUIRED)
-find_package(Z REQUIRED)
+if(CRAY_XK)
+    find_package(BZ2 REQUIRED)
+    find_package(Z REQUIRED)
+    target_link_libraries (rmg ${BZ2_LIBRARIES})
+    target_link_libraries (rmg-on ${BZ2_LIBRARIES})
+    target_link_libraries (rmg-tddft ${BZ2_LIBRARIES})
+    target_link_libraries (rmg-negf ${BZ2_LIBRARIES})
+    target_link_libraries (rmg ${Z_LIBRARIES})
+    target_link_libraries (rmg-on ${Z_LIBRARIES})
+    target_link_libraries (rmg-tddft ${Z_LIBRARIES})
+    target_link_libraries (rmg-negf ${Z_LIBRARIES})
+endif(CRAY_XK)
 
-target_link_libraries (rmg ${BZ2_LIBRARIES})
-target_link_libraries (rmg-on ${BZ2_LIBRARIES})
-target_link_libraries (rmg-tddft ${BZ2_LIBRARIES})
-target_link_libraries (rmg-negf ${BZ2_LIBRARIES})
-target_link_libraries (rmg ${Z_LIBRARIES})
-target_link_libraries (rmg-on ${Z_LIBRARIES})
-target_link_libraries (rmg-tddft ${Z_LIBRARIES})
-target_link_libraries (rmg-negf ${Z_LIBRARIES})
 
 # Look for openbabel
 set (USE_OPENBABEL_LIBS 0)
@@ -699,40 +701,20 @@ install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
 DESTINATION rmg/lib)
 
 # Packaging section next
-set(CPACK_GENERATOR "DEB")
+SET(cpack_input_file "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
+SET(CPACK_INPUT_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
+SET(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
+set(CPACK_GENERATOR "RPM")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "2")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)
 set(CPACK_PACKAGE_CONTACT "Emil Briggs")
 set(CPACK_PACKAGE_VENDOR "North Carolina State University")
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-
-if(CPACK_GENERATOR STREQUAL "RPM")
-# RPM specific tags
-    set(CPACK_RPM_PACKAGE_RELOCATABLE "ON")
-    set(CPACK_RPM_PACKAGE_SUMMARY "Ab-initio dft based electronic structure code")
-    set(CPACK_RPM_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space
- grids to represent quantities of interest such as the electronic orbitals and
-charge density.")
-    set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
-    set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
-    set(CPACK_RPM_PACKAGE_RELEASE "OpenSuse_13.1")
-#set(CPACK_RPM_PACKAGE_REQUIRES "liblapack3 >= 3.4.0,libopenblas0 >= 0.2.8")
-    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${COMPLETE_VERSION}-${CPACK_PACKAGE_RELEASE}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
-
-endif(CPACK_GENERATOR STREQUAL "RPM")
-
-if(CPACK_GENERATOR STREQUAL "DEB")
-
-    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "RMG is an ab-initio dft based electronic structure code that uses real space grids to represent quantities of interest such as the electronic orbitals and charge density.")
-    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libplplot12, libfftw3-double3, libmpich10, libboost-thread1.55.0, libboost-system1.55.0, libboost-iostreams1.55.0, libboost-program-options1.55.0, libboost-filesystem1.55.0, libopenbabel4, libopenblas-base, libgfortran3, libstdc++6, libgomp1, libgcc1, libc6, plplot12-driver-cairo")
-
-endif(CPACK_GENERATOR STREQUAL "DEB")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
 
 include(CPack)
 
