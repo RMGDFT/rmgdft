@@ -20,6 +20,10 @@ if(NOT FFTW_LIBRARIES)
     find_library (FFTW_LIBRARIES NAMES libfftw3.a)
 endif(NOT FFTW_LIBRARIES)
 
+if(NOT FFTW_LIBRARIES)
+    find_library (FFTW_LIBRARIES NAMES fftw3)
+endif(NOT FFTW_LIBRARIES)
+
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
