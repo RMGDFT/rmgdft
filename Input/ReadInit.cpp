@@ -33,14 +33,24 @@ namespace po = boost::program_options;
 void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
-    if(!boost::filesystem::exists(meta) )
+    char *meta1;
+#if (defined(_WIN32) || defined(_WIN64))
+    meta1 = new char[MAX_PATH];
+    // On Windows if the input file does not begin with a drive letter, ./ or .\ then we
+    // add a ./
+    boost::filesystem::path p{meta};
+    //std::cout << "PREFERRED = " << p.make_preferred() << std::endl;
+    boost::filesystem::path np{p.make_preferred()};
+    std::strncpy(meta1, np.string().c_str(), MAX_PATH);
+#else
+    meta1 = meta;
+#endif
+
+    if(!boost::filesystem::exists(meta1) )
     {
         std::cout << "\n using default path and input"; 
-#if !(defined(_WIN32) || defined(_WIN64))
         std::strncpy(pelc.image_path[0], "./", sizeof(pelc.image_path[0]));
-#else
         std::strncpy(pelc.image_path[0], "", sizeof(pelc.image_path[0]));
-#endif
         std::strncpy(pelc.image_input[0], "input", sizeof(pelc.image_input[0]));
         pelc.images = 1;
         pelc.image_npes[0] = pelc.total_npes;
@@ -50,7 +60,7 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
         return;
     }
 
-    RmgInputFile If(meta, InputMap, MPI_COMM_WORLD);
+    RmgInputFile If(meta1, InputMap, MPI_COMM_WORLD);
 
     /* do spin polarized calculation? */
     If.RegisterInputKey("spin_polarization", &lc.spin_flag, false,
@@ -104,12 +114,9 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
     if(num_image == 0) 
     {
         tot_pe = pelc.total_npes;
-#if !(defined(_WIN32) || defined(_WIN64))
         std::strcpy(pelc.image_path[0],  "./");
-#else
         std::strcpy(pelc.image_path[0],  "");
-#endif
-        std::strcpy(pelc.image_input[0] , meta);
+        std::strcpy(pelc.image_input[0] , meta1);
         pelc.image_npes[0] = pelc.total_npes;
         num_image = 1;
     }
@@ -140,5 +147,10 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
                 throw RmgFatalException() << "\n image " << pelc.image_npes[i] << " has different NPES " << pelc.image_npes[0];
             }
     }
+
+#if (defined(_WIN32) || defined(_WIN64))
+    delete [] meta1;
+#endif
+
 }
 
