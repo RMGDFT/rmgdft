@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <complex>
 #include "transition.h"
+#if !(defined(_WIN32) || defined(_WIN64))
 #include "cnpy.h"
+#endif
 #include "main.h"
 
 
