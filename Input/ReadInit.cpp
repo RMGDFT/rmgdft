@@ -36,7 +36,11 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
     if(!boost::filesystem::exists(meta) )
     {
         std::cout << "\n using default path and input"; 
+#if !(defined(_WIN32) || defined(_WIN64))
         std::strncpy(pelc.image_path[0], "./", sizeof(pelc.image_path[0]));
+#else
+        std::strncpy(pelc.image_path[0], "", sizeof(pelc.image_path[0]));
+#endif
         std::strncpy(pelc.image_input[0], "input", sizeof(pelc.image_input[0]));
         pelc.images = 1;
         pelc.image_npes[0] = pelc.total_npes;
@@ -100,7 +104,11 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
     if(num_image == 0) 
     {
         tot_pe = pelc.total_npes;
+#if !(defined(_WIN32) || defined(_WIN64))
         std::strcpy(pelc.image_path[0],  "./");
+#else
+        std::strcpy(pelc.image_path[0],  "");
+#endif
         std::strcpy(pelc.image_input[0] , meta);
         pelc.image_npes[0] = pelc.total_npes;
         num_image = 1;
