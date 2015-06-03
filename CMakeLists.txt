@@ -16,11 +16,15 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 cmake_minimum_required (VERSION 2.6) 
 enable_language(Fortran)
 #   the following lines are for titan. comment theses two lines for other machines
- set(CMAKE_C_COMPILER "/opt/cray/craype/2.2.1/bin/cc")
- set(CMAKE_CXX_COMPILER "/opt/cray/craype/2.2.1/bin/CC")
+# set(CMAKE_C_COMPILER "/opt/cray/craype/2.2.1/bin/cc")
+# set(CMAKE_CXX_COMPILER "/opt/cray/craype/2.2.1/bin/CC")
 project (RMG C CXX Fortran) 
 # Load custom cmake modules for FFTW and Magma
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
+# Required to check include files for certain function definitions
+INCLUDE (CheckFunctionExists)
+INCLUDE (CheckSymbolExists)
+INCLUDE(CheckCSourceCompiles)
 
 # Detect system type
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -28,6 +32,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(OperatingSystem "Linux")
     set(RMG_SYSTEM_COMPILER_FLAG "-DLINUX=1")
     set(ZLIB "z")
+    set (RMG_ASYNC_ALLREDUCE 1)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -44,6 +49,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
     set(LIBXC_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/LIBXC.lib")
     set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
+    set(RMG_ASYNC_ALLREDUCE 0)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
@@ -65,6 +71,7 @@ if (CRAY_XK)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
 endif(CRAY_XK)
 
+# User editable options
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
 
@@ -631,7 +638,6 @@ if(MAGMA_LIBS)
     endif(MAGMABLAS_FOUND) 
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
-
 
 option (RMG_GAMMA_PT "Turn on for a gamma point only calculation." ON)
 if (RMG_GAMMA_PT)

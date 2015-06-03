@@ -346,7 +346,7 @@ lwork = 6*n*n;
 
     // Use async MPI to get a copy of the eigs to everyone. Will overlap with the iterator
     //MPI_Barrier(MainSp->GetComm());
-#if !(defined(_WIN32) || defined(_WIN64))
+#if HAVE_ASYNC_ALLREDUCE
     MPI_Request MPI_reqeigs;
     MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, MainSp->GetComm(), &MPI_reqeigs);
 #else
@@ -360,7 +360,7 @@ lwork = 6*n*n;
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
     delete(RT2);
      
-#if !(defined(_WIN32) || defined(_WIN64))
+#if HAVE_ASYNC_ALLREDUCE
     // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
     MPI_Wait(&MPI_reqeigs, MPI_STATUS_IGNORE);
 #endif

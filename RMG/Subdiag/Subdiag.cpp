@@ -210,7 +210,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType beta(0.0);
     RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
-#if !(defined(_WIN32) || defined(_WIN64))
+#if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
     MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
@@ -222,12 +222,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     KpointType alpha1(vel);
     RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
-#if !(defined(_WIN32) || defined(_WIN64))
+#if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
     MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
 #endif
 
-#if !(defined(_WIN32) || defined(_WIN64))
+#if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
     MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
@@ -250,7 +250,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     }
 
-#if !(defined(_WIN32) || defined(_WIN64))
+#if HAVE_ASYNC_ALLREDUCE
     // Wait for S request to finish and when done store copy in Sij
     MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif

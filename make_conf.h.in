@@ -20,3 +20,6 @@
 
 /* Use PLPLOT. */
 #define PLPLOT_LIBS ${USE_PLPLOT_LIBS}
+
+/* Use async all reduce */
+#define HAVE_ASYNC_ALLREDUCE ${RMG_ASYNC_ALLREDUCE}
