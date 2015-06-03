@@ -57,12 +57,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_library (RmgLibShared SHARED ${RmgLibSources})
 endif()
 add_library (RmgLib STATIC ${RmgLibSources})
-add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
-target_link_libraries (poisson_pbc ${Boost_LIBRARIES})
-if(DEFINED ENV{CRAY_LIBSCI_VERSION})
-    target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLib)
-else(DEFINED ENV{CRAY_LIBSCI_VERSION})
-    target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLib)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+    add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
+    target_link_libraries (poisson_pbc ${Boost_LIBRARIES})
+    if(DEFINED ENV{CRAY_LIBSCI_VERSION})
+        target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLib)
+    else(DEFINED ENV{CRAY_LIBSCI_VERSION})
+        target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLib)
+    endif()
+
 endif()
 
 
