@@ -29,3 +29,7 @@ cp svnrev.h.in ../rmg-release
 cp COPYING ../rmg-release
 cp COPYRIGHT ../rmg-release
 cp CREDITS ../rmg-release
+cp README.windows ../rmg-release/
+cp CMakeCPackOptions.cmake.in ../rmg-release/
+cp rmgwin.bat ../rmg-release/
+
