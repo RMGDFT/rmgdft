@@ -44,7 +44,7 @@ if(CPACK_GENERATOR STREQUAL "NSIS")
 #    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
     set(CPACK_INSTALL_PREFIX "RMG")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
-        CreateShortCut \"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Rmgwin.lnk\" \"$INSTDIR\\\\rmg\\\\bin\\\\rmgwin.bat\"
+        CreateShortCut \"$SMPROGRAMS\\$STARTMENU_FOLDER\\Rmgwin.lnk\" \"$INSTDIR\\rmg\\bin\\rmgwin.bat\"
     ")
 
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
