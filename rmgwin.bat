@@ -1,6 +1,7 @@
 @ECHO OFF
 doskey mpirun="C:\Program Files\Microsoft MPI\Bin\mpiexec.exe" $1 $2 $3 $4
 set RMGBINARY="C:\Program Files\rmg\bin\rmg.exe"
+set RMGEXAMPLES="C:\Program Files\rmg\Examples"
 cls
 mode con: cols=120 lines=40
 @ECHO:
