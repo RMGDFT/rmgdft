@@ -92,6 +92,7 @@ set(CMAKE_FIND_ROOT_PATH
 /usr/local/apps/fftw/intel101_hydra/2.1.5
 /usr/local/apps/mvapich2/220b-intel140
 /sw/xe/magma/1.5.0/magma-1.5.0
+/sw/xe/magma/1.6.1/cnl5.2_gnu4.8.2
 /usr/lib64/mpi/gcc/openmpi/
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /opt/local/lib/libxc         #libxc from Macports
@@ -494,12 +495,12 @@ if(RMG_GPU_ENABLED)
  
 #HW capability 1.3
   set (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-  set(LIB_TYPE STATIC) #set the lib type
-  CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
-  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
-  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
-  target_link_libraries(rmg-negf TestLib)
-  ADD_DEPENDENCIES(rmg-negf TestLib)
+#  set(LIB_TYPE STATIC) #set the lib type
+#  CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
+#  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
+#  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
+#  target_link_libraries(rmg-negf TestLib)
+#  ADD_DEPENDENCIES(rmg-negf TestLib)
  
 endif(RMG_GPU_ENABLED)
 
@@ -675,7 +676,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set(USE_SVN 0)
+set(USE_SVN 1)
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (

@@ -44,24 +44,24 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
 
     if(pct.num_local_orbit > 0)
     {
-#if GPU_ENABLED
-        cublasOperation_t transN = CUBLAS_OP_N, transT = CUBLAS_OP_T;
+//#if GPU_ENABLED
+//        cublasOperation_t transN = CUBLAS_OP_N, transT = CUBLAS_OP_T;
 
-        int n2 = pct.num_local_orbit * pct.num_local_orbit;
-        cublasSetVector( n2, sizeof( double ), mat_local, ione, ct.gpu_host_temp2, ione );
+//        int n2 = pct.num_local_orbit * pct.num_local_orbit;
+//        cublasSetVector( n2, sizeof( double ), mat_local, ione, ct.gpu_host_temp2, ione );
 
-        cublasDgemm (ct.cublas_handle, transN, transN, pbasis, pct.num_local_orbit, pct.num_local_orbit,
-                &one, ct.gpu_states, pbasis, ct.gpu_host_temp2,
-pct.num_local_orbit, &zero, ct.gpu_host_temp1, pbasis);
+////        cublasDgemm (ct.cublas_handle, transN, transN, pbasis, pct.num_local_orbit, pct.num_local_orbit,
+//                &one, ct.gpu_states, pbasis, ct.gpu_host_temp2,
+//pct.num_local_orbit, &zero, ct.gpu_host_temp1, pbasis);
 
 //        cublasGetVector( get_P0_BASIS() * pct.num_local_orbit, sizeof( double ), ct.gpu_host_temp1, ione, psi, ione );
-        cublasDscal (ct.cublas_handle, pbasis, &zero, ct.gpu_host_temp2, ione);
-        rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states,
-ct.gpu_host_temp2, pct.num_local_orbit, pbasis);
+//        cublasDscal (ct.cublas_handle, pbasis, &zero, ct.gpu_host_temp2, ione);
+//        rho_psi_times_psi(ct.gpu_host_temp1, ct.gpu_states,
+//ct.gpu_host_temp2, pct.num_local_orbit, pbasis);
 
-        cublasGetVector( pbasis, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
+//        cublasGetVector( pbasis, sizeof( double ), ct.gpu_host_temp2, ione, rho_temp, ione );
 
-#else
+//#else
 
 
         dgemm ("N", "N", &pbasis, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
@@ -74,7 +74,7 @@ ct.gpu_host_temp2, pct.num_local_orbit, pbasis);
             for(idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += states_distribute[st1].psiR[idx] *
 psi[st1 * pbasis + idx];
-#endif
+//#endif
     }
 
 
