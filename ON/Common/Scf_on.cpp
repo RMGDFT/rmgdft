@@ -95,8 +95,16 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) )/ ((double) (ct.vh_nbasis));
-    steps = ct.scf_steps;
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
+    if(ct.scf_steps <ct.freeze_orbital_step)
+    {
+        steps = ct.scf_steps;
+    }
+    else
+    {
+        if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
+        steps = ct.scf_steps - ct.freeze_orbital_step;
+    }
     pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     delete(RT3);
 
@@ -122,11 +130,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         RmgTimer *RT6 = new RmgTimer("2-SCF: mg_eig");
         mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
         delete(RT6);
-    }
-    else
-    {
-        steps = ct.scf_steps - ct.freeze_orbital_step;
-        if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
     }
 
     delete(RT);
