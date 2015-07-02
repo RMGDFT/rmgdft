@@ -12,19 +12,25 @@
 #
 #
 #
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 cmake_minimum_required (VERSION 2.6) 
+
+# Modules for platform checks
+INCLUDE (CheckFunctionExists)
+INCLUDE (CheckSymbolExists)
+INCLUDE(CheckCSourceCompiles)
+INCLUDE (CheckIncludeFiles)
+INCLUDE (CheckLibraryExists)
 enable_language(Fortran)
+
+
 #   the following lines are for titan. comment theses two lines for other machines
 # set(CMAKE_C_COMPILER "/opt/cray/craype/2.2.1/bin/cc")
 # set(CMAKE_CXX_COMPILER "/opt/cray/craype/2.2.1/bin/CC")
 project (RMG C CXX Fortran) 
+
 # Load custom cmake modules for FFTW and Magma
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
-# Required to check include files for certain function definitions
-INCLUDE (CheckFunctionExists)
-INCLUDE (CheckSymbolExists)
-INCLUDE(CheckCSourceCompiles)
+
 
 # Detect system type
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -32,7 +38,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(OperatingSystem "Linux")
     set(RMG_SYSTEM_COMPILER_FLAG "-DLINUX=1")
     set(ZLIB "z")
-    set (RMG_ASYNC_ALLREDUCE 1)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -49,7 +54,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
     set(LIBXC_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/LIBXC.lib")
     set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
-    set(RMG_ASYNC_ALLREDUCE 0)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
@@ -300,7 +304,21 @@ else(MPI_C_FOUND)
 endif (MPI_C_FOUND)
 
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+set(CMAKE_REQUIRED_INCLUDES "${MPI_C_INCLUDE_PATH}")
+set(CMAKE_REQUIRED_LIBRARIES "${MPI_C_LIBRARIES}")
+CHECK_C_SOURCE_COMPILES("#include <mpi.h>
+                         int main(int argc, char **argv) {
+                           int tarray[100], n=100;
+                           MPI_Comm  comm;
+                           MPI_Request MPI_reqeigs;
+                           MPI_Iallreduce(MPI_IN_PLACE, tarray, n, MPI_INT, MPI_SUM, comm, &MPI_reqeigs);                           
+                         }" RMG_ASYNC_ALLREDUCE)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(RMG_ASYNC_ALLREDUCE 0)
     #message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
     set(Boost_USE_STATIC_RUNTIME    OFF)
     set(Boost_COMPILER "-vc120")
