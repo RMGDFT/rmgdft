@@ -301,6 +301,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                            MPI_Iallreduce(MPI_IN_PLACE, tarray, n, MPI_INT, MPI_SUM, comm, &MPI_reqeigs);                           
                          }" RMG_ASYNC_ALLREDUCE)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(CRAY_XK)
+    set(RMG_ASYNC_ALLREDUCE 1)
+endif(CRAY_XK)
 
 find_package(PLPLOT)
 if(PLPLOT_FOUND)
