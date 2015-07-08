@@ -92,6 +92,11 @@ void get_cond_frommatrix_kyz ()
 	my_malloc( kweight, ntot, double );
 
 	kpoints(nkp, kvecx, kvecy, kvecz, &nkp_tot, kweight);
+    if(nkp_tot == 1)
+    {
+        get_cond_frommatrix();
+        return;
+    }
 
 	if (pct.gridpe == 0)
 	{
