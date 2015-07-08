@@ -40,7 +40,7 @@ void pmo_init ()
         printf("\n pmo.nrow, ncol, NPES %d %d %d \n", pmo.nrow, pmo.ncol, NPES);
         exit(0);
     }
-    pmo.mblock = 8;
+    pmo.mblock = ct.scalapack_block_factor;
 
 
     ndims =2;

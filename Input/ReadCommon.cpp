@@ -452,10 +452,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Fine grid for non-local pseudopotential.\n",
                      "fine_grid_non_local_pp must lie in the range (1,4). Resetting to the default value of 4.\n");
 
-    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 32, 512,64,
+    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 512,64,
                      CHECK_AND_FIX, OPTIONAL,
                      "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware.\n",
-                     "scalapack_block_factor must lie in the range (32,512). Resetting to the default value of 64.\n");
+                     "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 64.\n");
 
     If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
                      CHECK_AND_FIX, OPTIONAL,

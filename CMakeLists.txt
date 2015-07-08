@@ -101,7 +101,7 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /opt/local/lib/libxc         #libxc from Macports
 /sw/xk6/boost/1.57.0/cle5.2_gnu4.8.2
-/home/luw/Downloads/magma-1.4.1)
+/home/luw/Downloads/magma-1.6.2/build)
 
 # Executables defined by the file that contains main()
 # Main codes

@@ -97,7 +97,7 @@ void row_to_tri_p (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
 
 
                 A_tri[ pmo.diag_begin[i] + k * pmo.mxllda_cond[i] + j] 
-                    += work_matrix[k * ct.block_dim[i] + j];
+                    += work_matrix[kk * ct.block_dim[i] + jj];
             }
 
         }
