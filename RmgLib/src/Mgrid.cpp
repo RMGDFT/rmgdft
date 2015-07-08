@@ -54,6 +54,14 @@ template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, s
 
 template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
+template void Mgrid::eval_residual (double *, double *, int, int, int, double, double, double, double *);
+
+template void Mgrid::eval_residual (float *, float *, int, int, int, double, double, double, float *);
+
+template void Mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double);
+
+template void Mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double);
+
 //template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 
