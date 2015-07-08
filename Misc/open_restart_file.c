@@ -49,7 +49,7 @@ FILE *open_restart_file (char *filename)
     /* Make the new output file name */
     sprintf (newname, "%s.restart", filename);
 
-    amode = S_IREAD | S_IWRITE;
+    amode = S_IRUSR | S_IWUSR;
 
 
     fhand = fopen (newname, "w");
