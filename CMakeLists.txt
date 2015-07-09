@@ -9,30 +9,34 @@
 #
 # Environment variables that may also control configuration
 # MKLROOT = root directory of Intel MKL libraries if installed.
+# BOOST_ROOT = root directory of Boost installation
+# CC = Full path to C compiler
+# CXX = Full path to C++ compiler
 #
 #
-#
-cmake_minimum_required (VERSION 2.6) 
+cmake_minimum_required (VERSION 2.8) 
 
-# Modules for platform checks
+# Standard modules for platform checks
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckSymbolExists)
-INCLUDE(CheckCSourceCompiles)
+INCLUDE (CheckCSourceCompiles)
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
+INCLUDE (CMakeForceCompiler)
+
 enable_language(Fortran)
-
-
-#   the following lines are for titan. comment theses two lines for other machines
-# set(CMAKE_C_COMPILER "/opt/cray/craype/2.2.1/bin/cc")
-# set(CMAKE_CXX_COMPILER "/opt/cray/craype/2.2.1/bin/CC")
 project (RMG C CXX Fortran) 
 
-# Load custom cmake modules for FFTW and Magma
+
+# Here set any extra compiler flags required for a specific platform
+# This is for stampede
+#set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
+
+# Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
-# Detect system type
+# Detect system type and set appropriate flags
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Linux specific code
     set(OperatingSystem "Linux")
@@ -57,23 +61,32 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
+    # Cray platforms
     set (CRAY_XK 1)
 endif()
 
-# Compiler flags
+
+# Compiler flags. We currently only support GNU and Intel compilers so if
+# GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-#    set(CMAKE_C_FLAGS "-Wall -Werror-implicit-function-declaration -O3 -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")        ## Optimize
-#    set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
-    set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")  ## Strip binary
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c")
+    set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
+else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    # Intel compiler
+    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include")
+    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include")
+    set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
 endif()
+
 
 if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
 endif(CRAY_XK)
+
 
 # User editable options
 set (RMG_GPU_ENABLED 0)
@@ -101,7 +114,7 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /opt/local/lib/libxc         #libxc from Macports
 /sw/xk6/boost/1.57.0/cle5.2_gnu4.8.2
-/home/luw/Downloads/magma-1.6.2/build)
+/home/luw/Downloads/magma-1.4.1)
 
 # Executables defined by the file that contains main()
 # Main codes
@@ -115,7 +128,6 @@ if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
     message( SEND_ERROR "RMG requires a 64 bit architechture." )
 endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
 
-
 # Require pthreads on UNIX
 if (${UNIX})
     set (CMAKE_THREAD_PREFER_PTHREAD)
@@ -124,8 +136,6 @@ if (${UNIX})
         target_link_libraries (rmg ${CMAKE_THREAD_LIBS_INIT})
     endif(CMAKE_USE_PTHREADS_INIT)
 endif(${UNIX})
-
-
 
 
 # static libraries are created for the object files in each subdir. Duplicates
@@ -138,6 +148,7 @@ target_link_libraries (rmg RMG_Common Force)
 target_link_libraries (rmg Force RMG_Common)
 target_link_libraries (rmg Input InternalPseudo)
 target_link_libraries (rmg MG RMG_Common RmgLib)
+target_link_libraries (rmg RMG_Common RmgLib MG)
 target_link_libraries (rmg Finite_diff Misc)
 target_link_libraries (rmg Misc Finite_diff)
 target_link_libraries (rmg Input)
@@ -274,7 +285,6 @@ if(MPI_CXX_FOUND)
     target_link_libraries (rmg-tddft ${MPI_CXX_LIBRARIES})
     target_link_libraries (rmg-negf ${MPI_CXX_LIBRARIES})
 else (MPI_CXX_FOUND)
-    include(CMakeForceCompiler)
     if(CRAY_XK)
 	CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
     endif(CRAY_XK)	
@@ -299,11 +309,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                            MPI_Comm  comm;
                            MPI_Request MPI_reqeigs;
                            MPI_Iallreduce(MPI_IN_PLACE, tarray, n, MPI_INT, MPI_SUM, comm, &MPI_reqeigs);                           
-                         }" RMG_ASYNC_ALLREDUCE)
+                         }" RMG_ASYNC_ALLREDUCE_INTERNAL)
+    if(RMG_ASYNC_ALLREDUCE_INTERNAL)
+        set(RMG_ASYNC_ALLREDUCE 1)
+    else(RMG_ASYNC_ALLREDUCE_INTERNAL)
+        set(RMG_ASYNC_ALLREDUCE 0)
+    endif(RMG_ASYNC_ALLREDUCE_INTERNAL)
+
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-if(CRAY_XK)
-    set(RMG_ASYNC_ALLREDUCE 1)
-endif(CRAY_XK)
 
 find_package(PLPLOT)
 if(PLPLOT_FOUND)
@@ -342,6 +355,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     find_package(Boost COMPONENTS thread system iostreams program_options filesystem date_time chrono zlib bzip2 REQUIRED)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #    set(BOOST_ROOT "...")
+    if(DEFINED ENV{BOOST_ROOT})
+        set(BOOST_ROOT  $ENV{BOOST_ROOT})
+    endif()
     set(Boost_USE_STATIC_LIBS        OFF)
     set(Boost_USE_MULTITHREADED      ON)
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
@@ -368,7 +384,7 @@ endif(CRAY_XK)
 
 
 # Look for openbabel
-set (USE_OPENBABEL_LIBS 0)
+set (USE_OPENBABEL_LIBS 1)
 find_package(OPENBABEL)
 if(OPENBABEL_FOUND)
     target_link_libraries (rmg ${OPENBABEL_LIBRARIES})
@@ -377,6 +393,9 @@ if(OPENBABEL_FOUND)
     target_link_libraries (rmg-negf ${OPENBABEL_LIBRARIES})
     unset (USE_OPENBABEL_LIBS CACHE)
     set(USE_OPENBABEL_LIBS 1)
+else(OPENBABEL_FOUND)
+    unset (USE_OPENBABEL_LIBS CACHE)
+    set(USE_OPENBABEL_LIBS 0)
 endif (OPENBABEL_FOUND)
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
@@ -393,6 +412,7 @@ endif (NOT MKLROOT)
 
 if(NOT CRAY_XK)
     if(MKLROOT)
+        set(FFTW_INCLUDES "${MKLROOT}/include/fftw")
         set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
         set(MKL_LIB64 "${MKLROOT}/lib/intel64")
         if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -429,7 +449,8 @@ if(NOT CRAY_XK)
     endif(MKLROOT)
 endif(NOT CRAY_XK)
 
-set(USE_SCALAPACK_LIBS 1)
+set(USE_SCALAPACK_LIBS 0)
+include_directories(${FFTW_INCLUDES})
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
 if(NOT RMG_MATH_LIBS)
@@ -707,7 +728,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set(USE_SVN 1)
+set(USE_SVN 0)
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (
