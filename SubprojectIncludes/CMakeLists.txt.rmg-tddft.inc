@@ -1,4 +1,5 @@
 add_dependencies(rmg-tddft libxc)
+target_link_libraries (rmg-tddft ${LIBXC_LIBRARIES})
 add_dependencies(rmg-tddft libspg)
 target_link_libraries (rmg-tddft RmgLib)
 target_link_libraries (rmg-tddft Finite_diff ON_Common RmgLib)
@@ -47,4 +48,10 @@ if(USE_PLPLOT_LIBS)
     target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
     target_link_libraries (rmg-tddft Misc ${PLplot_LIBRARY})
 endif(USE_PLPLOT_LIBS)
+target_link_libraries (rmg-tddft ${Boost_LIBRARIES})
+if(USE_OPENBABEL_LIBS)
+    target_link_libraries (rmg-tddft ${OPENBABEL_LIBRARIES})
+endif(USE_OPENBABEL_LIBS)
+target_link_libraries (rmg-tddft ${LIBSPG_LIBRARIES})
+
 

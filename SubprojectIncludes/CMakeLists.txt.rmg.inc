@@ -1,4 +1,5 @@
 add_dependencies(rmg libxc)
+target_link_libraries (rmg ${LIBXC_LIBRARIES})
 add_dependencies(rmg libspg)
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
@@ -33,5 +34,9 @@ if(USE_PLPLOT_LIBS)
     target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
     target_link_libraries (rmg Misc ${PLplot_LIBRARY})
 endif(USE_PLPLOT_LIBS)
-
+target_link_libraries (rmg ${Boost_LIBRARIES})
+if(USE_OPENBABEL_LIBS)
+    target_link_libraries (rmg ${OPENBABEL_LIBRARIES})
+endif(USE_OPENBABEL_LIBS)
+target_link_libraries (rmg ${LIBSPG_LIBRARIES})
 

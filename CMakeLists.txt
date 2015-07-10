@@ -212,19 +212,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
-# These include files include some subproject specific stuff
-# in order to keep from cluttering up the main CMakeLists.txt
-# file.
-include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
-
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries (rmg ${Boost_LIBRARIES})
-target_link_libraries (rmg-on ${Boost_LIBRARIES})
-target_link_libraries (rmg-tddft ${Boost_LIBRARIES})
-target_link_libraries (rmg-negf ${Boost_LIBRARIES})
 
 if(CRAY_XK)
     find_package(BZ2 REQUIRED)
@@ -246,10 +233,6 @@ find_package(OPENBABEL)
 include("PlatformChecks/CheckOpenbabel.inc")
 
 if(CHECK_OPENBABEL_INTERNAL)
-    target_link_libraries (rmg ${OPENBABEL_LIBRARIES})
-    target_link_libraries (rmg-on ${OPENBABEL_LIBRARIES})
-    target_link_libraries (rmg-tddft ${OPENBABEL_LIBRARIES})
-    target_link_libraries (rmg-negf ${OPENBABEL_LIBRARIES})
     include_directories(${OPENBABEL_INCLUDES})
     unset (USE_OPENBABEL_LIBS CACHE)
     set(USE_OPENBABEL_LIBS 1)
@@ -257,6 +240,17 @@ else(CHECK_OPENBABEL_INTERNAL)
     unset (USE_OPENBABEL_LIBS CACHE)
     set(USE_OPENBABEL_LIBS 0)
 endif (CHECK_OPENBABEL_INTERNAL)
+
+
+# These include files include some subproject specific stuff
+# in order to keep from cluttering up the main CMakeLists.txt
+# file.
+include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
+
+
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
@@ -433,13 +427,8 @@ if(NOT LIBXC_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
 endif(NOT LIBXC_FOUND)
 
-
 find_package(LIBXC REQUIRED)
 include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/")
-target_link_libraries (rmg ${LIBXC_LIBRARIES})
-target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
-target_link_libraries (rmg-tddft ${LIBXC_LIBRARIES})
-target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
 
 
 find_package(LIBSPG)
@@ -461,17 +450,12 @@ if(NOT LIBSPG_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
 endif(NOT LIBSPG_FOUND)
 
-
 find_package(LIBSPG REQUIRED)
-target_link_libraries (rmg ${LIBSPG_LIBRARIES})
-target_link_libraries (rmg-on ${LIBSPG_LIBRARIES})
-target_link_libraries (rmg-tddft ${LIBSPG_LIBRARIES})
-target_link_libraries (rmg-negf ${LIBSPG_LIBRARIES})
-
 
 
 
 # include files
+include_directories(${Boost_INCLUDE_DIRS})
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_SOURCE_DIR}/RmgLib/")
 include_directories("${RMG_SOURCE_DIR}/RmgLib/include")
