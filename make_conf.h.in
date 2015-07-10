@@ -3,9 +3,6 @@
 /* Gamma point only set to 1, otherwise, 0 */
 #define GAMMA_PT ${GAMMA_PT}
 
-/* Experimental fast ortho. Disabled by default. */
-#define FAST_ORTHO ${FAST_ORTHO}
-
 /* Use GPU accelerations. */
 #define GPU_ENABLED ${GPU_ENABLED}
 
