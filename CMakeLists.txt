@@ -28,6 +28,14 @@ INCLUDE (CMakeForceCompiler)
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
 
+# User editable options
+set (RMG_GPU_ENABLED 1)
+set (RMG_MAGMA_LIBS 1) 
+if(RMG_GPU_ENABLED)
+    set(rmg-negf "rmg-negf-gpu")
+else(RMG_GPU_ENABLED)
+    set(rmg-negf "rmg-negf-cpu")
+endif(RMG_GPU_ENABLED)
 
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
@@ -89,9 +97,6 @@ if (CRAY_XK)
 endif(CRAY_XK)
 
 
-# User editable options
-set (RMG_GPU_ENABLED 0)
-set (RMG_MAGMA_LIBS 0) 
 
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
@@ -115,7 +120,7 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
 /opt/local/lib/libxc         #libxc from Macports
 /sw/xk6/boost/1.57.0/cle5.2_gnu4.8.2
-/home/luw/Downloads/magma-1.4.1)
+)
 
 # Executables defined by the file that contains main()
 # Main codes
@@ -123,7 +128,7 @@ add_executable(rmg RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# 
 add_executable(rmg-gpu RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)	# Base code with GPU support
 add_executable(rmg-on ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# ON code
 add_executable(rmg-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-add_executable(rmg-negf NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
 target_compile_definitions(rmg-gpu PUBLIC GPU_ENABLED=1)
 
@@ -154,7 +159,7 @@ if(MPI_CXX_FOUND)
     target_link_libraries (rmg ${MPI_CXX_LIBRARIES})
     target_link_libraries (rmg-on ${MPI_CXX_LIBRARIES})
     target_link_libraries (rmg-tddft ${MPI_CXX_LIBRARIES})
-    target_link_libraries (rmg-negf ${MPI_CXX_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${MPI_CXX_LIBRARIES})
 else (MPI_CXX_FOUND)
     if(CRAY_XK)
 	CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
@@ -165,7 +170,7 @@ if(MPI_C_FOUND)
     target_link_libraries (rmg ${MPI_C_LIBRARIES})
     target_link_libraries (rmg-on ${MPI_C_LIBRARIES})
     target_link_libraries (rmg-tddft ${MPI_C_LIBRARIES})
-    target_link_libraries (rmg-negf ${MPI_C_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${MPI_C_LIBRARIES})
 else(MPI_C_FOUND)
     CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 endif (MPI_C_FOUND)
@@ -222,11 +227,11 @@ if(CRAY_XK)
     target_link_libraries (rmg ${BZ2_LIBRARIES})
     target_link_libraries (rmg-on ${BZ2_LIBRARIES})
     target_link_libraries (rmg-tddft ${BZ2_LIBRARIES})
-    target_link_libraries (rmg-negf ${BZ2_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${BZ2_LIBRARIES})
     target_link_libraries (rmg ${Z_LIBRARIES})
     target_link_libraries (rmg-on ${Z_LIBRARIES})
     target_link_libraries (rmg-tddft ${Z_LIBRARIES})
-    target_link_libraries (rmg-negf ${Z_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${Z_LIBRARIES})
 endif(CRAY_XK)
 
 
@@ -245,14 +250,6 @@ else(CHECK_OPENBABEL_INTERNAL)
 endif (CHECK_OPENBABEL_INTERNAL)
 
 
-# These include files include some subproject specific stuff
-# in order to keep from cluttering up the main CMakeLists.txt
-# file.
-include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-gpu.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
 
 
 
@@ -319,7 +316,7 @@ if(NOT RMG_MATH_LIBS)
     target_link_libraries (rmg ${FFTW_LIBRARIES})
     target_link_libraries (rmg-on ${FFTW_LIBRARIES})
     target_link_libraries (rmg-tddft ${FFTW_LIBRARIES})
-    target_link_libraries (rmg-negf ${FFTW_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${FFTW_LIBRARIES})
     target_link_libraries (rmg RMG_Common ${FFTW_LIBRARIES})
 
     if(NOT CRAY_XK)
@@ -339,7 +336,7 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (rmg ${BLAS_LIBRARIES})
             target_link_libraries (rmg-on ${BLAS_LIBRARIES})
             target_link_libraries (rmg-tddft ${BLAS_LIBRARIES})
-            target_link_libraries (rmg-negf ${BLAS_LIBRARIES})
+            target_link_libraries (${rmg-negf} ${BLAS_LIBRARIES})
         endif (BLAS_FOUND)
 
         find_package(LAPACK REQUIRED)
@@ -347,7 +344,7 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (rmg ${LAPACK_LIBRARIES})
             target_link_libraries (rmg-on ${LAPACK_LIBRARIES})
             target_link_libraries (rmg-tddft ${LAPACK_LIBRARIES})
-            target_link_libraries (rmg-negf ${LAPACK_LIBRARIES})
+            target_link_libraries (${rmg-negf} ${LAPACK_LIBRARIES})
         endif (LAPACK_FOUND)
 
         find_package(BLACS)
@@ -360,8 +357,8 @@ if(NOT RMG_MATH_LIBS)
 
             target_link_libraries (rmg-tddft ${BLACS_LIBRARIES})
             target_link_libraries (rmg-tddft ${BLACSCINIT_LIBRARIES})
-            target_link_libraries (rmg-negf ${BLACS_LIBRARIES})     
-            target_link_libraries (rmg-negf ${BLACSCINIT_LIBRARIES})
+            target_link_libraries (${rmg-negf} ${BLACS_LIBRARIES})     
+            target_link_libraries (${rmg-negf} ${BLACSCINIT_LIBRARIES})
         endif(BLACS_FOUND)
 
         set(USE_SCALAPACK_LIBS 0)
@@ -372,7 +369,7 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (rmg ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
             target_link_libraries (rmg-on ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
             target_link_libraries (rmg-tddft ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
-            target_link_libraries (rmg-negf ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
+            target_link_libraries (${rmg-negf} ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
         endif (SCALAPACK_FOUND)
 
     else (NOT CRAY_XK)
@@ -389,15 +386,15 @@ if(RMG_GPU_ENABLED)
       target_link_libraries(rmg ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
       target_link_libraries(rmg-on ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
       target_link_libraries(rmg-tddft ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
-      target_link_libraries(rmg-negf ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
+      target_link_libraries(${rmg-negf} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
   endif(NOT CRAY_XK)
   target_link_libraries(rmg ${CUDA_cublas_LIBRARY})
   target_link_libraries(rmg-on ${CUDA_CUDART_LIBRARY})
   target_link_libraries(rmg-on ${CUDA_cublas_LIBRARY})
   target_link_libraries(rmg-tddft ${CUDA_CUDART_LIBRARY})
   target_link_libraries(rmg-tddft ${CUDA_cublas_LIBRARY})
-  target_link_libraries(rmg-negf ${CUDA_CUDART_LIBRARY})
-  target_link_libraries(rmg-negf ${CUDA_cublas_LIBRARY})
+  target_link_libraries(${rmg-negf} ${CUDA_CUDART_LIBRARY})
+  target_link_libraries(${rmg-negf} ${CUDA_cublas_LIBRARY})
   include_directories(${CUDA_INCLUDE_DIRS})
 
 
@@ -522,12 +519,12 @@ if(MAGMA_LIBS)
         target_link_libraries (rmg ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
         target_link_libraries (rmg-on ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
         target_link_libraries (rmg-tddft ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
-        target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES} )
+        target_link_libraries (${rmg-negf} ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES} )
     else(MAGMABLAS_FOUND) 
         target_link_libraries (rmg ${MAGMA_LIBRARIES} )
         target_link_libraries (rmg-on ${MAGMA_LIBRARIES} )
         target_link_libraries (rmg-tddft ${MAGMA_LIBRARIES} )
-        target_link_libraries (rmg-negf ${MAGMA_LIBRARIES} )
+        target_link_libraries (${rmg-negf} ${MAGMA_LIBRARIES} )
     endif(MAGMABLAS_FOUND) 
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
@@ -592,6 +589,14 @@ configure_file (
   "${PROJECT_BINARY_DIR}/Headers/svnrev.h"
   )
 
+# These include files include some subproject specific stuff
+# in order to keep from cluttering up the main CMakeLists.txt
+# file.
+include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-gpu.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
 install(TARGETS rmg 
 DESTINATION rmg
 RUNTIME DESTINATION rmg/bin)
