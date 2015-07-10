@@ -120,9 +120,12 @@ set(CMAKE_FIND_ROOT_PATH
 # Executables defined by the file that contains main()
 # Main codes
 add_executable(rmg RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(rmg-on ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(rmg-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(rmg-negf NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
+add_executable(rmg-gpu RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)	# Base code with GPU support
+add_executable(rmg-on ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# ON code
+add_executable(rmg-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+add_executable(rmg-negf NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+
+target_compile_definitions(rmg-gpu PUBLIC GPU_ENABLED=1)
 
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
@@ -246,6 +249,7 @@ endif (CHECK_OPENBABEL_INTERNAL)
 # in order to keep from cluttering up the main CMakeLists.txt
 # file.
 include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-gpu.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
