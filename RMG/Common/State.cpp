@@ -43,8 +43,6 @@
 #include "../Headers/prototypes.h"
 
 
-template class State<double>;
-template class State<std::complex <double> >;
 template State<double>::State(void);
 template State<std::complex<double> >::State(void);
 
