@@ -1,0 +1,2 @@
+Place platform specific checks that are to be included in the main
+CMakeLists.txt file in this directory.
