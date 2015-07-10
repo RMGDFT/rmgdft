@@ -33,7 +33,7 @@ template <typename DataType>
 void CheckAndTerminate(DataType val, DataType min, DataType max, std::string msg)
 {
     if((val < min) || (val > max)) {
-        throw RmgFatalException() << msg;
+        throw RmgFatalException() << msg << " in " << __FILE__ << " at line " << __LINE__ << "\n";
     }
 }
 

@@ -124,7 +124,7 @@ void LoadUpf(SPECIES *sp)
         int openfail = Msg.length();
         MPI_Bcast(&openfail, 1, MPI_INT, 0, pct.img_comm);
         if(openfail) 
-            throw RmgFatalException() << Msg;
+            throw RmgFatalException() << Msg << " in " << __FILE__ << " at line " << __LINE__ << " file name: " + boost::lexical_cast<std::string>(sp->pseudo_filename) + "\n";
 
 
         // Send it to everyone else

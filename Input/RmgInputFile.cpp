@@ -234,14 +234,16 @@ void RmgInputFile::LoadInputKeys(void) {
         
         if(Ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) {
             if(Ik->Vint.vals.size() != Ik->count) {
-                throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
+                throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg
+<< " in " << __FILE__ << " at line " << __LINE__ << "\n";
             }
             *Ik->Vintorig = Ik->Vint;
         }
 
         if(Ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) {
             if(Ik->Vdouble.vals.size() != Ik->count) {
-                throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
+                throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg
+<< " in " << __FILE__ << " at line " << __LINE__ << "\n";
             }
             *Ik->Vdoubleorig = Ik->Vdouble;
         }
@@ -322,7 +324,7 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
     int openfail = Msg.length();
     MPI_Bcast(&openfail, 1, MPI_INT, 0, comm);
     if(openfail)
-        throw RmgFatalException() << Msg;
+        throw RmgFatalException() << Msg << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
     // Send it to everyone else
     MPI_Bcast (&input_buffer_len, 1, MPI_INT, 0, comm);
