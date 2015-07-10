@@ -29,8 +29,10 @@ enable_language(Fortran)
 project (RMG C CXX Fortran) 
 
 # User editable options
-set (RMG_GPU_ENABLED 1)
-set (RMG_MAGMA_LIBS 1) 
+set (RMG_GPU_ENABLED 0)
+set (RMG_MAGMA_LIBS 0) 
+
+
 if(RMG_GPU_ENABLED)
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
@@ -269,21 +271,9 @@ if(NOT CRAY_XK)
             endif(EXISTS "${MKL_LIB64}")
         else(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
             if(EXISTS "${MKL_LIB64}")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_scalapack_lp64.a" "${MKL_LIB64}/libmkl_intel_lp64.a" ${MAGMA_LIBRARIES} )
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_intel_lp64.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_core.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_gnu_thread.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_blacs_openmpi_lp64.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_intel_lp64.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_core.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_gnu_thread.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_intel_lp64.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_core.a")
-                target_link_libraries (${rmg} "${MKL_LIB64}/libmkl_gnu_thread.a" "${MKL_LIB64}/libmkl_intel_lp64.a")
-
-                set(BLAS_LIBRARIES "${MKL_LIB64}/libmkl_core.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "${MKL_LIB64}/libmkl_gnu_thread.a")
-                set(LAPACK_LIBRARIES "${MKL_LIB64}/libmkl_core.a" "${MKL_LIB64}/libmkl_intel_lp64.a" "${MKL_LIB64}/libmkl_gnu_thread.a")
-
+                set(USE_LINUX_MKL_LIBS 1)
+                target_link_libraries (${rmg} -Wl,--start-group ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
+                set(FFTW_LIBRARIES ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_gnu_thread.a)
                 set(RMG_MATH_LIBS "done")
             else(EXISTS "${MKL_LIB64}")
                 message( SEND_ERROR "RMG requires 64 bit MKL." )
@@ -584,6 +574,10 @@ include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
+if(USE_LINUX_MKL_LIBS)
+    target_link_libraries (${rmg} -Wl,--start-group ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
+endif(USE_LINUX_MKL_LIBS)
+
 install(TARGETS ${rmg} 
 DESTINATION rmg
 RUNTIME DESTINATION rmg/bin)
