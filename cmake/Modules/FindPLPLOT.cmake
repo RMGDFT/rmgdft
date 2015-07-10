@@ -16,8 +16,8 @@ if(NOT PLplot_INCLUDE_DIR)
     find_path (PLplot_INCLUDE_DIR plplot/plplot.h)
 endif(NOT PLplot_INCLUDE_DIR)
 
-find_library (PLplot_LIBRARY NAMES plplotd)
-find_library (PLplot_cxx_LIBRARY NAMES plplotcxxd)
+find_library (PLplot_LIBRARY NAMES plplot)
+find_library (PLplot_cxx_LIBRARY NAMES plplotcxx)
 
 # handle the QUIETLY and REQUIRED arguments and set PLPLOT_FOUND to TRUE if
 # all listed variables are TRUE

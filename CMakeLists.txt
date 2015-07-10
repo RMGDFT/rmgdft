@@ -139,14 +139,6 @@ if (${UNIX})
 endif(${UNIX})
 
 
-# These include files include some subproject specific stuff
-# in order to keep from cluttering up the main CMakeLists.txt
-# file.
-include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
-
 
 
 # Search for an MPI implementation
@@ -186,19 +178,18 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 find_package(PLPLOT)
-include("PlatformChecks/CheckPlplot.inc")
-if(USE_PLPLOT_LIBS)
-    include_directories(${PLplot_INCLUDE_DIR})
-    include_directories("${PLplot_INCLUDE_DIR}/plplot")
-    target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-    target_link_libraries (rmg-on ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-    target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-    target_link_libraries (rmg-negf ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-    target_link_libraries (rmg Misc ${PLplot_LIBRARY})
-    target_link_libraries (rmg-on Misc ${PLplot_LIBRARY})
-    target_link_libraries (rmg-negf Misc ${PLplot_LIBRARY})
-    target_link_libraries (rmg-tddft Misc ${PLplot_LIBRARY})
-endif(USE_PLPLOT_LIBS)
+if(PLPLOT_FOUND)
+    include("PlatformChecks/CheckPlplot.inc")
+    if(USE_PLPLOT_LIBS_INTERNAL)
+        include_directories(${PLplot_INCLUDE_DIR})
+        include_directories("${PLplot_INCLUDE_DIR}/plplot")
+        set(USE_PLPLOT_LIBS 1)
+    else(USE_PLPLOT_LIBS_INTERNAL)
+        set(USE_PLPLOT_LIBS 0)
+    endif(USE_PLPLOT_LIBS_INTERNAL)
+else(PLPLOT_FOUND)
+    set(USE_PLPLOT_LIBS 0)
+endif(PLPLOT_FOUND)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(RMG_ASYNC_ALLREDUCE 0)
@@ -219,6 +210,15 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(Boost_USE_MULTITHREADED      ON)
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+
+# These include files include some subproject specific stuff
+# in order to keep from cluttering up the main CMakeLists.txt
+# file.
+include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
+include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
 
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries (rmg ${Boost_LIBRARIES})
@@ -417,10 +417,6 @@ if(RMG_GPU_ENABLED)
 endif(RMG_GPU_ENABLED)
 
 #include_directories(rmg "/usr/local/magma/include")
-add_dependencies(rmg libxc)
-add_dependencies(rmg-on libxc)
-add_dependencies(rmg-tddft libxc)
-add_dependencies(rmg-negf libxc)
 
 find_package(LIBXC)
 if(NOT LIBXC_FOUND)
@@ -445,10 +441,6 @@ target_link_libraries (rmg-on ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-tddft ${LIBXC_LIBRARIES})
 target_link_libraries (rmg-negf ${LIBXC_LIBRARIES})
 
-add_dependencies(rmg libspg)
-add_dependencies(rmg-on libspg)
-add_dependencies(rmg-tddft libspg)
-add_dependencies(rmg-negf libspg)
 
 find_package(LIBSPG)
 if(NOT LIBSPG_FOUND)
