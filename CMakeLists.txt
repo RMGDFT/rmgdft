@@ -20,6 +20,7 @@ cmake_minimum_required (VERSION 2.8)
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckSymbolExists)
 INCLUDE (CheckCSourceCompiles)
+INCLUDE (CheckCXXSourceCompiles)
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 INCLUDE (CMakeForceCompiler)
@@ -301,47 +302,28 @@ endif (MPI_C_FOUND)
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(CMAKE_REQUIRED_INCLUDES "${MPI_C_INCLUDE_PATH}")
-    set(CMAKE_REQUIRED_LIBRARIES "${MPI_C_LIBRARIES}")
-    CHECK_C_SOURCE_COMPILES("#include <mpi.h>
-                           int main(int argc, char **argv) {
-                           int tarray[100], n=100;
-                           MPI_Comm  comm;
-                           MPI_Request MPI_reqeigs;
-                           MPI_Iallreduce(MPI_IN_PLACE, tarray, n, MPI_INT, MPI_SUM, comm, &MPI_reqeigs);                           
-                         }" RMG_ASYNC_ALLREDUCE_INTERNAL)
+    include("PlatformChecks/CheckAsyncAllreduce.inc")
     if(RMG_ASYNC_ALLREDUCE_INTERNAL)
         set(RMG_ASYNC_ALLREDUCE 1)
     else(RMG_ASYNC_ALLREDUCE_INTERNAL)
         set(RMG_ASYNC_ALLREDUCE 0)
     endif(RMG_ASYNC_ALLREDUCE_INTERNAL)
-
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 find_package(PLPLOT)
-if(PLPLOT_FOUND)
-
-    set(CMAKE_REQUIRED_INCLUDES "${PLplot_INCLUDE_DIR};${PLplot_INCLUDE_DIR}/plplot")
-    set(CMAKE_REQUIRED_LIBRARIES "${PLplot_LIBRARY}")
-    CHECK_C_SOURCE_COMPILES("#include <plplot.h>
-                           int main(int argc, char **argv) {
-                           plinit();
-                         }" USE_PLPLOT_LIBS)
-    if(USE_PLPLOT_LIBS)
-        include_directories(${PLplot_INCLUDE_DIR})
-        include_directories("${PLplot_INCLUDE_DIR}/plplot")
-        target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg-on ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg-negf ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
-        target_link_libraries (rmg Misc ${PLplot_LIBRARY})
-        target_link_libraries (rmg-on Misc ${PLplot_LIBRARY})
-        target_link_libraries (rmg-negf Misc ${PLplot_LIBRARY})
-        target_link_libraries (rmg-tddft Misc ${PLplot_LIBRARY})
-    endif(USE_PLPLOT_LIBS)
-else(PLPLOT_FOUND)
-    set(USE_PLPLOT_LIBS 0)
-endif(PLPLOT_FOUND)
+include("PlatformChecks/CheckPlplot.inc")
+if(USE_PLPLOT_LIBS)
+    include_directories(${PLplot_INCLUDE_DIR})
+    include_directories("${PLplot_INCLUDE_DIR}/plplot")
+    target_link_libraries (rmg ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+    target_link_libraries (rmg-on ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+    target_link_libraries (rmg-tddft ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+    target_link_libraries (rmg-negf ${PLplot_cxx_LIBRARY} ${PLplot_LIBRARY} )
+    target_link_libraries (rmg Misc ${PLplot_LIBRARY})
+    target_link_libraries (rmg-on Misc ${PLplot_LIBRARY})
+    target_link_libraries (rmg-negf Misc ${PLplot_LIBRARY})
+    target_link_libraries (rmg-tddft Misc ${PLplot_LIBRARY})
+endif(USE_PLPLOT_LIBS)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(RMG_ASYNC_ALLREDUCE 0)
@@ -386,17 +368,20 @@ endif(CRAY_XK)
 # Look for openbabel
 set (USE_OPENBABEL_LIBS 1)
 find_package(OPENBABEL)
-if(OPENBABEL_FOUND)
+include("PlatformChecks/CheckOpenbabel.inc")
+
+if(CHECK_OPENBABEL_INTERNAL)
     target_link_libraries (rmg ${OPENBABEL_LIBRARIES})
     target_link_libraries (rmg-on ${OPENBABEL_LIBRARIES})
     target_link_libraries (rmg-tddft ${OPENBABEL_LIBRARIES})
     target_link_libraries (rmg-negf ${OPENBABEL_LIBRARIES})
+    include_directories(${OPENBABEL_INCLUDES})
     unset (USE_OPENBABEL_LIBS CACHE)
     set(USE_OPENBABEL_LIBS 1)
-else(OPENBABEL_FOUND)
+else(CHECK_OPENBABEL_INTERNAL)
     unset (USE_OPENBABEL_LIBS CACHE)
     set(USE_OPENBABEL_LIBS 0)
-endif (OPENBABEL_FOUND)
+endif (CHECK_OPENBABEL_INTERNAL)
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set

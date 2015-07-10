@@ -10,7 +10,7 @@ if (OPENBABEL_INCLUDES)
 endif (OPENBABEL_INCLUDES)
 
 #find_path (OPENBABEL_INCLUDES babelconfig.h HINTS "/usr/include/openbabel-2.0/openbabel")
-find_path (OPENBABEL_INCLUDES babelconfig.h HINTS "/usr/include/openbabel")
+find_path (OPENBABEL_INCLUDES babelconfig.h HINTS "/usr/include/openbabel" "/usr/include/openbabel-2.0/openbabel")
 find_library (OPENBABEL_LIBRARIES NAMES openbabel)
 
 # handle the QUIETLY and REQUIRED arguments and set OPENBABEL_FOUND to TRUE if
