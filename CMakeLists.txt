@@ -99,7 +99,6 @@ if (CRAY_XK)
 endif(CRAY_XK)
 
 
-
 if (RMG_GPU_ENABLED)
    set (GPU_ENABLED 1)
    if(RMG_MAGMA_LIBS)
@@ -112,18 +111,7 @@ else (RMG_GPU_ENABLED)
    set (MAGMA_LIBS 0)
 endif(RMG_GPU_ENABLED)
 
-set(CMAKE_FIND_ROOT_PATH 
-/opt/fftw/default/x86_64     #fftw3 path for bluewater
-/usr/local/apps/fftw/intel101_hydra/2.1.5
-/usr/local/apps/mvapich2/220b-intel140
-/sw/xe/magma/1.5.0/magma-1.5.0
-/sw/xe/magma/1.6.1/cnl5.2_gnu4.8.2
-/usr/lib64/mpi/gcc/openmpi/
-/sw/xc30/boost/1.55.0/cle5.1_gnu4.8.2
-/opt/local/lib/libxc         #libxc from Macports
-/sw/xk6/boost/1.57.0/cle5.2_gnu4.8.2
-)
-
+include(CMakeFindRootPath.inc)
 # Executables defined by the file that contains main()
 # Main codes
 add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
