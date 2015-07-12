@@ -371,8 +371,8 @@ void init_psp_soft (void)
 
 
         /* Make sure that a local potential was specified */
-        if (sp->localidx < 0)
-            error_handler ("No local potential defined");
+       // if (sp->localidx < 0)
+       //     error_handler ("No local potential defined");
 
         if (pct.gridpe == 0)
             fclose (psp);
