@@ -238,6 +238,10 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
                     hx_old = lcr[idx0].xside / lcr[idx0].NX_GRID;
                     x1_old = lcr[idx0].x_shift + ixmin_old  * hx_old;
 
+                    item = (x1_new - x1_old)/hx_old;
+                    if(item < -2) 
+                        dprintf("\n inpterpolation alon x error: ixmin_new old, shift %d %d %f", states[st].ixmin, ixmin_old,
+lcr[idx0].x_shift);
                     /* ==== Interpolation along x-direction ==== */
                     for (iy = 0; iy < NY; iy++)
                     {
