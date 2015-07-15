@@ -42,12 +42,12 @@ struct NON_LINEAR_THREE_PART
  short int NY_GRID;
  short int NZ_GRID;
 
- short int num_states;
- short int num_ions;
- short int state_begin;
- short int state_middle;
- short int state_end;
- short int ion_begin;
+ int num_states;
+ int num_ions;
+ int state_begin;
+ int state_middle;
+ int state_end;
+ int ion_begin;
  char name[MAX_PATH];
  char lead_name[MAX_PATH];
 
