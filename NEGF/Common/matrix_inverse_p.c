@@ -105,7 +105,7 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     matrix_inverse_driver((double *)Hii, desca);
 
     n1 = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
-    zcopy (&n1, Hii, &ione, Gii, &ione);
+    zcopy_driver (n1, Hii,ione, Gii, ione);
     zcopy (&n1, Gii, &ione, G_tri, &ione);
 
     /*  iterate to get one more block  */
@@ -137,8 +137,10 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         descc = &pmo.desc_cond[ (i+1 +     i * ct.num_blocks) * DLEN];
         descd = &pmo.desc_cond[ (i+1 + (i+1) * ct.num_blocks) * DLEN];
 
-        PZGEMM ("N", "N", &n1, &n2, &n2, &one, Hlower, &ione, &ione, descc,
-                Gii0, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+        zgemm_driver ("N", "N", n1, n2, n2, one, Hlower, ione, ione, descc,
+                Gii0, ione, ione, descb, zero, temp, ione, ione, descc);
+        //PZGEMM ("N", "N", &n1, &n2, &n2, &one, Hlower, &ione, &ione, descc,
+        //        Gii0, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
         PZGEMM ("N", "N", &n1, &n1, &n2, &mone, temp, &ione, &ione, descc,
                 Hupper, &ione, &ione, desca, &one, Hii, &ione, &ione, descd);
 

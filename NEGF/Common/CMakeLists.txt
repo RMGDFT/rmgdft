@@ -1,4 +1,6 @@
 add_library (NEGF_Common
+zcopy_driver.c
+zgemm_driver.c
 matrix_inverse_driver.c
 allocate_matrix_LCR.c
 allocate_matrix_soft.c

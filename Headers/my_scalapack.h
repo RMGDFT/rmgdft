@@ -53,6 +53,7 @@
 #define 	PDGEMM 		pdgemm_
 #define 	PSGEMM 		pdgemm_
 #define 	PZGEMM 		pzgemm_
+#define 	pzgemm 		pzgemm_
 #define 	PSSYMM 		pdsymm_
 #define 	PSSYEV		pdsyev_
 #define 	PDGESV 		pdgesv_

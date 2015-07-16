@@ -37,7 +37,7 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
  */
 
 #if GPU_ENABLED
-    int *desca, *descb, *descc;
+    int *desca, *descb, *descc, *descd;
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
     int *ipiv;
     complex double *Gii, *Imatrix;
@@ -129,7 +129,7 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
     desca = &pmo.desc_cond[0];
     matrix_inverse_driver((double *)ct.gpu_Hii, desca);
 
-    cublasZcopy (ct.cublas_handle, n2, ct.gpu_Hii, ione, ct.gpu_Gii, ione);
+    zcopy_driver (n2, ct.gpu_Hii, ione, ct.gpu_Gii, ione);
     cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, ct.gpu_Gtri, ione);
 
     //    cublasGetVector( n2, sizeof( complex double ), ct.gpu_Gtri, ione, G_tri, ione );
@@ -166,9 +166,16 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
         n1 = ni[i + 1];
         n2 = ni[i];
 
+        desca = &pmo.desc_cond[ (i   + (i+1) * ct.num_blocks) * DLEN];
+        descb = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
+        descc = &pmo.desc_cond[ (i+1 +     i * ct.num_blocks) * DLEN];
+        descd = &pmo.desc_cond[ (i+1 + (i+1) * ct.num_blocks) * DLEN];
+        zgemm_driver ("N", "N", n1, n2, n2, one, Hlower, ione, ione, descc,
+                Gii0, ione, ione, descb, zero, ct.gpu_temp, ione, ione, descc);
 
-        cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, Hlower, n1,
-                Gii0, n2, &cuzero, ct.gpu_temp, n1);
+
+        //cublasZgemm (ct.cublas_handle, transN, transN, n1, n2, n2, &cuone, Hlower, n1,
+         //       Gii0, n2, &cuzero, ct.gpu_temp, n1);
         cublasZgemm (ct.cublas_handle, transN, transN, n1, n1, n2, &cumone, ct.gpu_temp, n1,
                 Hupper, n2, &cuone, ct.gpu_Hii, n1);
 
