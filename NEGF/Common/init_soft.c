@@ -64,6 +64,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
         int ione = 1;
 
 
+    printf("\n  time_init a:  %f", my_crtc());
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
     ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
@@ -86,6 +87,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     /* Get the crystal or cartesian coordinates of the ions */
     init_pos ();
 
+    printf("\n  time_init b:  %f", my_crtc());
 
     /* Set initial ionic coordinates to the current ones. */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -111,6 +113,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 
     my_barrier ();
 
+    printf("\n  time_init c:  %f", my_crtc());
     /* Initialize the mehrstellen weights */
     /*get_mehr (); */
 
@@ -127,6 +130,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     fflush (NULL);
 
 
+    printf("\n  time_init d:  %f", my_crtc());
     is_state_overlap (states, state_overlap_or_not);
     get_orbit_overlap_region (states);
     init_comm (states);
@@ -135,6 +139,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     duplicate_states_info (states, states1);
     my_barrier ();
 
+    printf("\n  time_init e:  %f", my_crtc());
 
     pmo_init();
 /*
@@ -143,14 +148,18 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     nameR = lcr[2].name;
 */
 
+    printf("\n  time_init f:  %f", my_crtc());
     void *RT1 = BeginRmgTimer("1-TOTAL: init:  read_orbital");
     read_orbital(states);
+    printf("\n  time_init g:  %f", my_crtc());
     interpolation_orbit (states);
+    printf("\n  time_init h:  %f", my_crtc());
     EndRmgTimer(RT1);
     void *RT2 = BeginRmgTimer("1-TOTAL: init:  state_distribtute");
     init_state_distribute(states, states_distribute);
     EndRmgTimer(RT2);
 
+    printf("\n  time_init i:  %f", my_crtc());
     scale_orbital(states, states_distribute);
 #if GPU_ENABLED
     init_gpu();
@@ -166,6 +175,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
         if (pct.gridpe == 0) printf ("completed: read_lead_matrix \n");
     }
 
+    printf("\n  time_init j:  %f", my_crtc());
     /*exit(0); */ 
 
 /*
@@ -186,6 +196,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     }
     EndRmgTimer(RT3);
 
+    printf("\n  time_init k:  %f", my_crtc());
     if(ct.runflag == 300) 
     {
         plane_average_rho(rho); 
@@ -208,11 +219,13 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 /*  interpolation for the orbits if the grid space is slightly different between lead and conductor */
 
 
+    printf("\n  time_init l:  %f", my_crtc());
     allocate_masks (states);
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state (level, states);
 
+    printf("\n  time_init m:  %f", my_crtc());
 
 /*    normalize_orbits(states);
 */
@@ -251,15 +264,18 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 
     void *RT4 = BeginRmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
+    printf("\n  time_init n:  %f", my_crtc());
     init_psp_soft ();
 
     /* Initialize the radial qfunction stuff */
+    printf("\n  time_init o:  %f", my_crtc());
     init_qfunct ();
 
     /* Initialize symmetry stuff */
     //init_sym ();
 
     /* Initialize the nuclear local potential and the compensating charges */
+    printf("\n  time_init p:  %f", my_crtc());
     init_nuc (vnuc, rhoc, rhocore);
 
     EndRmgTimer(RT4);
@@ -268,20 +284,25 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
  
     write_rho_x (rho, "rho_init1");
 
-
     void *RT5 = BeginRmgTimer("1-TOTAL: init:  non-local");
     /* Initialize Non-local operators */
+    printf("\n  time_init q:  %f", my_crtc());
     init_nl_xyz ();
     get_ion_orbit_overlap_nl (states);
 
+    printf("\n  time_init r:  %f", my_crtc());
     get_nlop ();
+    printf("\n  time_init s:  %f", my_crtc());
     init_nonlocal_comm ();
 
     /* Initialize qfuction in Cartesin coordinates */
+    printf("\n  time_init t:  %f", my_crtc());
     get_QI ();
 
+    printf("\n  time_init u:  %f", my_crtc());
     /* Get the qqq */
     get_qqq ();
+    printf("\n  time_init v:  %f", my_crtc());
     EndRmgTimer(RT5);
 
 
