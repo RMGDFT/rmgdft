@@ -142,9 +142,14 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     nameC = lcr[0].name;
     nameR = lcr[2].name;
 */
+
+    void *RT1 = BeginRmgTimer("1-TOTAL: init:  read_orbital");
     read_orbital(states);
     interpolation_orbit (states);
+    EndRmgTimer(RT1);
+    void *RT2 = BeginRmgTimer("1-TOTAL: init:  state_distribtute");
     init_state_distribute(states, states_distribute);
+    EndRmgTimer(RT2);
 
     scale_orbital(states, states_distribute);
 #if GPU_ENABLED
@@ -168,6 +173,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     nameC = lcr[0].lead_name;
     nameR = lcr[2].lead_name;
 */
+    void *RT3 = BeginRmgTimer("1-TOTAL: init:  read_potrho");
     if(ct.runflag <113)
     {
         read_potrho_LCR (vh, vxc, rho);
@@ -178,7 +184,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
         read_rho_and_pot (ct.infile, vh, vxc, vh_old, vxc_old, rho);
         if (pct.gridpe == 0) printf ("completed: read_rho_and_pot \n");
     }
-     
+    EndRmgTimer(RT3);
 
     if(ct.runflag == 300) 
     {
@@ -243,6 +249,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state (level, states);
 
+    void *RT4 = BeginRmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
     init_psp_soft ();
 
@@ -255,11 +262,14 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc (vnuc, rhoc, rhocore);
 
+    EndRmgTimer(RT4);
+
     init_ext (vext, ct.gbias_begin, ct.gbias_end, ct.BT, ct.gate_bias);
  
     write_rho_x (rho, "rho_init1");
 
 
+    void *RT5 = BeginRmgTimer("1-TOTAL: init:  non-local");
     /* Initialize Non-local operators */
     init_nl_xyz ();
     get_ion_orbit_overlap_nl (states);
@@ -272,6 +282,7 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 
     /* Get the qqq */
     get_qqq ();
+    EndRmgTimer(RT5);
 
 
 
