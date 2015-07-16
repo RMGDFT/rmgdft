@@ -1,4 +1,5 @@
 add_library (NEGF_Common
+matrix_inverse_driver.c
 allocate_matrix_LCR.c
 allocate_matrix_soft.c
 apply_potential_drop.c

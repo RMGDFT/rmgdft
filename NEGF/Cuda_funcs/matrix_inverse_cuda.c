@@ -12,6 +12,8 @@
 #include "pmo.h"
 
 
+void matrix_inverse_driver(double *, int *);
+
 void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
@@ -35,6 +37,7 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
  */
 
 #if GPU_ENABLED
+    int *desca, *descb, *descc;
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
     int *ipiv;
     complex double *Gii, *Imatrix;
@@ -122,8 +125,11 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
             ct.gpu_Imatrix, maxrow, &cuzero, ct.gpu_Gii, n1);
     cublasZcopy (ct.cublas_handle, n2, ct.gpu_Htri, ione, ct.gpu_Hii, ione);
 
-    magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
+    //magma_zgesv_gpu( n1, n1, ct.gpu_Hii, n1, ipiv, ct.gpu_Gii, n1, &info );
+    desca = &pmo.desc_cond[0];
+    matrix_inverse_driver((double *)ct.gpu_Hii, desca);
 
+    cublasZcopy (ct.cublas_handle, n2, ct.gpu_Hii, ione, ct.gpu_Gii, ione);
     cublasZcopy (ct.cublas_handle, n2, ct.gpu_Gii, ione, ct.gpu_Gtri, ione);
 
     //    cublasGetVector( n2, sizeof( complex double ), ct.gpu_Gtri, ione, G_tri, ione );
@@ -274,7 +280,6 @@ void matrix_inverse_cuda (complex double * H_tri, complex double * G_tri)
 
 
     double complex half = 0.5;
-    int *desca, *descb, *descc;
     for(i = 0; i < ct.num_blocks - 1; i++)
     {
         n1 = ct.block_dim[i];

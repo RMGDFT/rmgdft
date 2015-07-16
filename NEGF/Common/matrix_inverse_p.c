@@ -11,7 +11,7 @@
 #include "LCR.h"
 #include "pmo.h"
 
-
+void matrix_inverse_driver(double *, int *);
 void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
@@ -101,9 +101,11 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     }
 
     desca = &pmo.desc_cond[0];
-    get_inverse_block_p (Hii, Gii, ipiv, desca);
+    //get_inverse_block_p (Hii, Gii, ipiv, desca);
+    matrix_inverse_driver((double *)Hii, desca);
 
     n1 = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
+    zcopy (&n1, Hii, &ione, Gii, &ione);
     zcopy (&n1, Gii, &ione, G_tri, &ione);
 
     /*  iterate to get one more block  */

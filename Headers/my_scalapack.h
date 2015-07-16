@@ -113,6 +113,8 @@ void PZHEGVX(int *, char*, char*, char*, int*, double *, int*, int*, int*, doubl
 void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, double*, int*,
        int*, double*, int*, int*, double*, double*, double*, int*,                                           
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
+void pzgetri(int *, double *, int *, int*, int*, int*, double*, int*, int*, int*,int*);
+void pzgetrf(int *, int*,  double *, int *, int*, int*, int*,int*);
 
 
 
