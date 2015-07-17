@@ -16,6 +16,9 @@
 #
 cmake_minimum_required (VERSION 2.8) 
 
+enable_language(Fortran)
+project (RMG C CXX Fortran) 
+
 # Standard modules for platform checks
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckSymbolExists)
@@ -25,12 +28,15 @@ INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 INCLUDE (CMakeForceCompiler)
 
-enable_language(Fortran)
-project (RMG C CXX Fortran) 
 
 # User editable options
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
+set (USE_SCALAPACK_LIBS 0)
+
+
+# Load custom cmake modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
 if(RMG_GPU_ENABLED)
@@ -44,9 +50,6 @@ endif(RMG_GPU_ENABLED)
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
 #set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
-
-# Load custom cmake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
 # Detect system type and set appropriate flags
@@ -89,8 +92,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++ -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
-    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include")
-    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include")
+    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
 endif()
 
@@ -272,8 +275,7 @@ if(NOT CRAY_XK)
         else(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
             if(EXISTS "${MKL_LIB64}")
                 set(USE_LINUX_MKL_LIBS 1)
-                target_link_libraries (${rmg} -Wl,--start-group ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
-                set(FFTW_LIBRARIES ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_gnu_thread.a)
+                target_link_libraries (${rmg} -Wl,--start-group ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a ${MKL_LIB64}/libmkl_blacs_lp64.a -Wl,--end-group)
                 set(RMG_MATH_LIBS "done")
             else(EXISTS "${MKL_LIB64}")
                 message( SEND_ERROR "RMG requires 64 bit MKL." )
@@ -282,7 +284,6 @@ if(NOT CRAY_XK)
     endif(MKLROOT)
 endif(NOT CRAY_XK)
 
-set(USE_SCALAPACK_LIBS 0)
 include_directories(${FFTW_INCLUDES})
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
