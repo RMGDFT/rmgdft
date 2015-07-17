@@ -35,9 +35,10 @@
 void read_potrho (double *vh, int iflag, int data_indicator)
 {
     long fhand;
-    long nbytes, position, nbytes_first, nbytes_last;
+    long nbytes, nbytes_first, nbytes_last;
     char newname[MAX_PATH + 200];
     char msg[200];
+    MPI_Offset position;
 
     long idx0, idx, idx1, idx_sub;
     double x0_old, hx_new, hx_old;
@@ -55,12 +56,24 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     double *vh_old, *vh_new;
     int dis1, dis2, dis12;
     double fac1, fac2, V1, V2;
-    int ii, jj, kk;
+    int i, ii, jj, kk;
     int MaxNumBytes = 2000000000;  //maximum number of bytes one can read from ON calculation for each read
     long NumBytesLeft;  //number of bytes one need to read from ON calculation for each read
 
+    
+    int amode,  subsizes[1], starts[1];
+    int *rcount, *rdisp;
+    MPI_Info fileinfo;
+    MPI_Datatype  filetype, newtype;
+    MPI_Status status;
+    MPI_Offset disp;
+
+
     /* Wait until everybody gets here */
     my_barrier ();
+
+    rcount = (int *) malloc(pct.grid_npes * sizeof(int));
+    rdisp = (int *) malloc(pct.grid_npes * sizeof(int));
 
     FPYZ0 = get_FPZ0_GRID() * get_FPY0_GRID();
     FNYPZ = get_FPZ0_GRID() * get_FNY_GRID(); 
@@ -96,60 +109,44 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         NZ0 = lcr[subsystem].NZ_GRID *get_FG_RATIO();
 
         idx = NX0 * NY0 * NZ0;
-        /*if(pct.gridpe ==0) printf (" idx +++++  =   %d \n", idx );*/
+
+        for(i = 0; i < pct.grid_npes; i++)
+        {
+            rcount[i] = idx/pct.grid_npes;
+            rdisp[i] = (idx/pct.grid_npes) * i;
+        }
+        rcount[pct.grid_npes-1] += idx%pct.grid_npes;
+        subsizes[0] = rcount[pct.gridpe];
+        starts[0] = rdisp[pct.gridpe];
 
         my_malloc_init(array_tmp, idx, double);
 
-        if(pct.gridpe == 0)
-        {
-            sprintf(newname, "%s%s", lcr[subsystem].lead_name, ".pot_rho");
-            my_open( fhand, newname, O_RDWR, S_IREAD | S_IWRITE );
+        int order = MPI_ORDER_C;
 
-            position = ( idx * data_indicator) * sizeof(double);
-            lseek(fhand, position, 0);
+        MPI_Type_create_subarray(1, &idx, subsizes, starts, order, MPI_DOUBLE, &filetype);
+        MPI_Type_commit(&filetype);
 
-            NumBytesLeft = idx * sizeof(double); // this is the number of bytes we need to read at the very beginning
+        MPI_Info_create(&fileinfo);
+        amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
+        MPI_File mpi_fhand ;
 
-            printf ("\n  NumBytes to read at the beginning is %ld ", NumBytesLeft);
+        sprintf(newname, "%s%s", lcr[subsystem].lead_name, ".pot_rho");
+        MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+        disp=0;
+        MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
 
-            array_tmp_tmp = array_tmp;  //initialize the two pointers point to the same location
-            int time = 0;
-            nbytes = 0;
-            while (NumBytesLeft > MaxNumBytes)
-            {
+        //position = ( idx * data_indicator) * sizeof(double);
+        position =  subsizes[0] * data_indicator;
+        MPI_File_seek(mpi_fhand, position, MPI_SEEK_SET);
+        MPI_File_read(mpi_fhand, &array_tmp[starts[0]], subsizes[0],MPI_DOUBLE, &status);
+        MPI_File_get_position(mpi_fhand, &position);
 
-                nbytes_first = read (fhand, array_tmp_tmp, MaxNumBytes );
-                array_tmp_tmp = array_tmp_tmp + MaxNumBytes / sizeof(double);  //shift the tmp_tmp pointer by num of doubles read already
-                NumBytesLeft = NumBytesLeft - MaxNumBytes;// read the bytes left behind
-                printf ("\n  NumBytes to read is %ld after the %d time", NumBytesLeft, time);
-                nbytes = nbytes + nbytes_first;
-                printf ("\n  NumBytes already read is %ld after the %d time", nbytes, time);
-                time++;
-            } 
-
-            nbytes_last = read (fhand, array_tmp_tmp, NumBytesLeft ); 
-            printf ("\n  NumBytes read is  %ld from the last time %d", nbytes_last, time);
-            //out of the while loop, means NumBytesLeft is less than MaxNumBytes
-            // read one last time to collect whatever is left from the while loop
-
-            nbytes = nbytes + nbytes_last;
-
-
-            if(nbytes != idx * sizeof(double)) 
-            {
-                dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
-                dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
-                error_handler ("\n Unexpected end of file vh");
-            }
-
-
-            close(fhand);
-        }
-
+        MPI_File_close(&mpi_fhand);
         printf("\n time_readpotrho b: %f", my_crtc());
 
-        MPI_Bcast(array_tmp, idx, MPI_DOUBLE, 0, pct.grid_comm);
-        printf("\n time_readpotrho bicast: %f", my_crtc());
+        fflush(NULL);
+        MPI_Allgatherv(MPI_IN_PLACE, subsizes[0], MPI_DOUBLE, array_tmp, rcount, rdisp, MPI_DOUBLE, pct.grid_comm);
+        printf("\n time_readpotrho bgather: %f", my_crtc());
         /* ================ Patches the potentials and rhos ================ */
 
 
