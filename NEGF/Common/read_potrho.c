@@ -78,6 +78,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 /* =========== Allocate memory & Reading ON2 data ================ */
 
+    printf("\n time_readpotrho a: %f", my_crtc());
 
     idx = get_FNX_GRID() * get_FNY_GRID();
     my_malloc_init(xold_global, idx, double);   
@@ -143,6 +144,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         close(fhand);
 
 
+    printf("\n time_readpotrho b: %f", my_crtc());
         /* ================ Patches the potentials and rhos ================ */
 
 
@@ -234,6 +236,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     } /*  subsystem loop ends here */
 
 
+    printf("\n time_readpotrho c: %f", my_crtc());
     /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
 
     /* ====== Fillin the vaccuam space: put a ramp ============== */
@@ -481,6 +484,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     my_malloc_init(vh_new,  get_FNX_GRID(), double);   
 
 
+    printf("\n time_readpotrho d: %f", my_crtc());
     for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
     {
         for (iy = 0; iy < get_FNY_GRID(); iy++)
@@ -514,6 +518,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         }
     }
 
+    printf("\n time_readpotrho e: %f", my_crtc());
     /*if(pct.gridpe ==0) printf (" x-interpolation is done \n" );*/
 
 
@@ -591,6 +596,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     }
 
 
+    printf("\n time_readpotrho f: %f", my_crtc());
 
     my_free(vh_global);
     my_free(xold_global);
