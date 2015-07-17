@@ -100,51 +100,56 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
         my_malloc_init(array_tmp, idx, double);
 
-        sprintf(newname, "%s%s", lcr[subsystem].lead_name, ".pot_rho");
-        my_open( fhand, newname, O_RDWR, S_IREAD | S_IWRITE );
+        if(pct.gridpe == 0)
+        {
+            sprintf(newname, "%s%s", lcr[subsystem].lead_name, ".pot_rho");
+            my_open( fhand, newname, O_RDWR, S_IREAD | S_IWRITE );
 
-        position = ( idx * data_indicator) * sizeof(double);
-        lseek(fhand, position, 0);
-        
-        NumBytesLeft = idx * sizeof(double); // this is the number of bytes we need to read at the very beginning
-        
-	printf ("\n  NumBytes to read at the beginning is %ld ", NumBytesLeft);
-        
-        array_tmp_tmp = array_tmp;  //initialize the two pointers point to the same location
-        int time = 0;
-        nbytes = 0;
-	while (NumBytesLeft > MaxNumBytes)
-	{
+            position = ( idx * data_indicator) * sizeof(double);
+            lseek(fhand, position, 0);
 
-		nbytes_first = read (fhand, array_tmp_tmp, MaxNumBytes );
+            NumBytesLeft = idx * sizeof(double); // this is the number of bytes we need to read at the very beginning
+
+            printf ("\n  NumBytes to read at the beginning is %ld ", NumBytesLeft);
+
+            array_tmp_tmp = array_tmp;  //initialize the two pointers point to the same location
+            int time = 0;
+            nbytes = 0;
+            while (NumBytesLeft > MaxNumBytes)
+            {
+
+                nbytes_first = read (fhand, array_tmp_tmp, MaxNumBytes );
                 array_tmp_tmp = array_tmp_tmp + MaxNumBytes / sizeof(double);  //shift the tmp_tmp pointer by num of doubles read already
-		NumBytesLeft = NumBytesLeft - MaxNumBytes;// read the bytes left behind
-		printf ("\n  NumBytes to read is %ld after the %d time", NumBytesLeft, time);
+                NumBytesLeft = NumBytesLeft - MaxNumBytes;// read the bytes left behind
+                printf ("\n  NumBytes to read is %ld after the %d time", NumBytesLeft, time);
                 nbytes = nbytes + nbytes_first;
-		printf ("\n  NumBytes already read is %ld after the %d time", nbytes, time);
-		time++;
-	} 
-	
-	nbytes_last = read (fhand, array_tmp_tmp, NumBytesLeft ); 
-	printf ("\n  NumBytes read is  %ld from the last time %d", nbytes_last, time);
-	//out of the while loop, means NumBytesLeft is less than MaxNumBytes
-	// read one last time to collect whatever is left from the while loop
+                printf ("\n  NumBytes already read is %ld after the %d time", nbytes, time);
+                time++;
+            } 
 
-	nbytes = nbytes + nbytes_last;
+            nbytes_last = read (fhand, array_tmp_tmp, NumBytesLeft ); 
+            printf ("\n  NumBytes read is  %ld from the last time %d", nbytes_last, time);
+            //out of the while loop, means NumBytesLeft is less than MaxNumBytes
+            // read one last time to collect whatever is left from the while loop
 
-
-	if(nbytes != idx * sizeof(double)) 
-	{
-		dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
-		dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
-		error_handler ("\n Unexpected end of file vh");
-	}
+            nbytes = nbytes + nbytes_last;
 
 
-        close(fhand);
+            if(nbytes != idx * sizeof(double)) 
+            {
+                dprintf ("\n read %ld is different from %ld ", nbytes, idx * sizeof(double));
+                dprintf ("\n NX0 = %d NY0 = %d NZ0= %d subsystem = %d", NX0, NY0, NZ0, subsystem);
+                error_handler ("\n Unexpected end of file vh");
+            }
 
 
-    printf("\n time_readpotrho b: %f", my_crtc());
+            close(fhand);
+        }
+
+        printf("\n time_readpotrho b: %f", my_crtc());
+
+        MPI_Bcast(array_tmp, idx, MPI_DOUBLE, 0, pct.grid_comm);
+        printf("\n time_readpotrho bicast: %f", my_crtc());
         /* ================ Patches the potentials and rhos ================ */
 
 
@@ -551,7 +556,7 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
                 /* 
                    diff_hx_interpolation2 (vh_new,  vh_old,  get_FNY_GRID(), hy_new, yold, 0.0, 0.0); 
-                   */
+                 */
 
                 spline(yold, vh_old, get_FNY_GRID(), 0.0, 0.0, vh_new); 
 
