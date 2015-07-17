@@ -51,7 +51,7 @@ static rmg_double_t ef (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg
 rmg_double_t fill (STATE * states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix, int num_st, int occ_flag)
 {
 
-    const int maxit = 50;
+    const int maxit = 500;
     const rmg_double_t charge_tol = 1.0e-10;
 
     int iter, st, st1, kpt, idx, nks, nspin = (ct.spin_flag + 1);
