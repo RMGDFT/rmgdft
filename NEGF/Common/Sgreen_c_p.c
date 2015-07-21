@@ -72,11 +72,11 @@ void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigm
     }	
 
 
-#if GPU_ENABLED
-    matrix_inverse_cuda (H_tri, Green_C);
-#else
+//#if GPU_ENABLED
+//    matrix_inverse_cuda (H_tri, Green_C);
+//#else
     matrix_inverse_p (H_tri, Green_C);
-#endif
+//#endif
 
 
 

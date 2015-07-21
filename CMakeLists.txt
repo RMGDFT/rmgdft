@@ -544,7 +544,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set(USE_SVN 0)
+set(USE_SVN 1)
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (

@@ -54,6 +54,7 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
     d_ipiv = nn;
     lwork = magma_get_zgetri_nb(nn);
     lwork = lwork * nn;
+    //lwork = nn * nn;
 
     cudaError_t cuerr;
 

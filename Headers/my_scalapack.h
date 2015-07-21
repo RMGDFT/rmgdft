@@ -116,6 +116,7 @@ void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, dou
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
 void pzgetri(int *, double *, int *, int*, int*, int*, double*, int*, int*, int*,int*);
 void pzgetrf(int *, int*,  double *, int *, int*, int*, int*,int*);
+void pztranu_(int *, int*,  double *, double *, int *, int*, int*, double *, double *, int *, int*,int*);
 
 
 

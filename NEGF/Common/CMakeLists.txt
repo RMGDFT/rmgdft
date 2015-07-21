@@ -1,4 +1,5 @@
 add_library (NEGF_Common
+host_device_wraper.c
 zcopy_driver.c
 zgemm_driver.c
 matrix_inverse_driver.c

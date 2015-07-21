@@ -12,8 +12,9 @@
 #include "pmo.h"
 #include "my_scalapack.h"
 
+void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
 void matrix_inverse_driver(double *, int *);
-void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
+void matrix_inverse_p (complex double * H_tri_host, complex double * G_tri_host)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -37,6 +38,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
     complex double *Gii, *G_tem, *G_col, *temp, *Hlower, *Hupper, *Gii0;
+    complex double *Gii_host, *G_tem_host, *G_col_host, *temp_host;
+    complex double *H_tri, *G_tri;
     complex double half, mone, one, zero;
     int ione = 1, *ntem_begin, *ncol_begin;
     int ntot_row, ntot_col;
@@ -45,6 +48,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     int *desce, *descf, *descg, *desch;
     int *desci, *descj, *desck, *descl;
     int *ni, N;
+
+    complex double tttt[1];
 
     ni = ct.block_dim;
     N = ct.num_blocks;
@@ -74,15 +79,21 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     my_malloc_init( ncol_begin, ct.num_blocks, int);
     size_t n_alloc;
     n_alloc = maxrow * maxcol * sizeof(complex double);
-    Gii = (complex double *) malloc_host_or_device(n_alloc);
-    temp = (complex double *) malloc_host_or_device(n_alloc);
+    Gii_host = (complex double *) malloc(n_alloc);
+    temp_host = (complex double *) malloc(n_alloc);
 
     n_alloc = ntot_row * maxcol * sizeof(complex double);
-    G_tem = (complex double *) malloc_host_or_device(n_alloc);
+    G_tem_host = (complex double *) malloc(n_alloc);
 
     n_alloc = ntot_col * maxrow * sizeof(complex double);
-    G_col = (complex double *) malloc_host_or_device(n_alloc);
+    G_col_host = (complex double *) malloc(n_alloc);
 
+    Gii = memory_ptr_host_device(Gii_host, ct.gpu_Gii);
+    temp = memory_ptr_host_device(temp_host, ct.gpu_temp);
+    G_tem = memory_ptr_host_device(G_tem_host, ct.gpu_Grow);
+    G_col = memory_ptr_host_device(G_col_host, ct.gpu_Gcol);
+    H_tri = memory_ptr_host_device(H_tri_host, ct.gpu_Htri);
+    G_tri = memory_ptr_host_device(G_tri_host, ct.gpu_Gtri);
 
     /*
      *  ntem_begin: starting address of one column of G_tem for each block
@@ -95,18 +106,17 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         ntem_begin[i] = ntem_begin[i - 1] + pmo.mxllda_cond[i - 1] * maxcol;
         ncol_begin[i] = ncol_begin[i - 1] + pmo.mxlocc_cond[i - 1] * maxrow;
     }
+    
 
     /*  calculate the inverse of the first block  */
 
-    for (i = 0; i < pmo.mxllda_cond[0] * pmo.mxlocc_cond[0]; i++)
-    {
-        Gii[i] = H_tri[i];
-    }
-
-    desca = &pmo.desc_cond[0];
-    matrix_inverse_driver(Gii, desca);
+    setvector_host_device (pmo.ntot_low, sizeof(complex double), H_tri_host, ione, ct.gpu_Htri, ione);
 
     n1 = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
+    desca = &pmo.desc_cond[0];
+
+    zcopy_driver (n1, H_tri, ione, Gii, ione);
+    matrix_inverse_driver(Gii, desca);
     zcopy_driver (n1, Gii, ione, G_tri, ione);
 
     /*  iterate to get one more block  */
@@ -122,10 +132,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
         /* Hii now has the matrix Hi+1,i+1  */
 
-        for (j = 0; j < pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; j++)
-        {
-            Gii[j] = H_tri[j + pmo.diag_begin[i+ 1]];
-        }
+        n1 = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; 
+        zcopy_driver (n1, &H_tri[pmo.diag_begin[i + 1]], ione, Gii, ione);
 
 
         /* calculate Hi+1,i+1 - Hi+1,i * Gii^0 * Hi,i+1  */
@@ -249,8 +257,10 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     }                           /* end  for(i = 0; i < N-1; i++) */
 
+    getvector_device_host (pmo.ntot_low, sizeof(complex double),ct.gpu_Gtri,ione, G_tri_host, ione);
+
     int up_and_low = 1;
-    green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
+    green_kpoint_phase(G_tri_host, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
     for(i = 0; i < ct.num_blocks - 1; i++)
     {
@@ -262,11 +272,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
         descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
 
-        pztranu_(&n1, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
-                &half, &G_tri[n3], &ione, &ione, desca);
-
-//        PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
-//                Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
+        pztranu_(&n1, &n2, &half, &G_tri_host[n4], &ione, &ione, descc, 
+                &half, &G_tri_host[n3], &ione, &ione, desca);
 
     }
 
@@ -274,8 +281,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     my_free( ntem_begin );
     my_free( ncol_begin );
-    free_host_or_device( Gii );
-    free_host_or_device( temp );
-    free_host_or_device( G_tem);
-    free_host_or_device( G_col );
+    free( Gii_host );
+    free( temp_host );
+    free( G_tem_host);
+    free( G_col_host );
 }

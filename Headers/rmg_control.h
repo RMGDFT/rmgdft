@@ -486,26 +486,8 @@ typedef struct
     double *gpu_states;
 
     // GPU temporary storage space for wavefunctions
-    double *gpu_temp;
 
     // GPU temporary storage space for weights
-//    double *gpu_weight;
-//    double *gpu_Bweight;
-
-    // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    double *gpu_work1;
-
-    // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    double *gpu_work2;
-
-    // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    double *gpu_work3;
-
-    // GPU work space. Sized as sbasis*THREADS_PER_NODE
-//    double *gpu_work4;
-
-    // GPU storage space for matrix dimensioned (ct.num_states, ct.num_states)
-//    double *gpu_global_matrix;
 
     // Pinned host memory for finite difference routines. Allocation is slow so it
     // needs to be done once at initializatio time for each thread.
@@ -518,16 +500,19 @@ typedef struct
     double *gpu_host_work;
 
 
-    cuDoubleComplex *gpu_Htri, *gpu_Gtri;
-    cuDoubleComplex *gpu_Grow;
-    cuDoubleComplex *gpu_Gcol;
-    cuDoubleComplex *gpu_Gii;
+//    cuDoubleComplex *gpu_Htri, *gpu_Gtri;
+//    cuDoubleComplex *gpu_Grow;
+//    cuDoubleComplex *gpu_Gcol;
+//    cuDoubleComplex *gpu_Gii;
     cuDoubleComplex *gpu_Hii;
     cuDoubleComplex *gpu_Imatrix;
     int *gpu_ipiv;
 
 
+
 #endif    
+    double *gpu_Htri, *gpu_Gtri;
+    double *gpu_temp, *gpu_Grow, *gpu_Gcol, *gpu_Gii;
 
     /* Compression level for some trade images routines */
     int trade_compression_level;
