@@ -2,6 +2,7 @@ add_library (NEGF_Common
 zcopy_driver.c
 zgemm_driver.c
 matrix_inverse_driver.c
+malloc_host_or_device.c
 allocate_matrix_LCR.c
 allocate_matrix_soft.c
 apply_potential_drop.c

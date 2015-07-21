@@ -10,6 +10,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "my_scalapack.h"
 
 void matrix_inverse_driver(double *, int *);
 void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
@@ -35,8 +36,7 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
  */
 
     int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
-    int *ipiv;
-    complex double *Hii, *Gii, *G_tem, *G_col, *temp, *Hlower, *Hupper, *Gii0;
+    complex double *Gii, *G_tem, *G_col, *temp, *Hlower, *Hupper, *Gii0;
     complex double half, mone, one, zero;
     int ione = 1, *ntem_begin, *ncol_begin;
     int ntot_row, ntot_col;
@@ -46,14 +46,14 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
     int *desci, *descj, *desck, *descl;
     int *ni, N;
 
-        ni = ct.block_dim;
-        N = ct.num_blocks;
+    ni = ct.block_dim;
+    N = ct.num_blocks;
     mone = -1.0;
     one = 1.0;
     half = 0.5;
     zero = 0.0;
 
-/*  find the maximum dimension of the blocks  */
+    /*  find the maximum dimension of the blocks  */
 
 
     ntot_row = 0;
@@ -69,16 +69,19 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     }
 
-    my_malloc_init( ipiv, maxrow + pmo.mblock, int );
-
 
     my_malloc_init( ntem_begin, ct.num_blocks, int);
     my_malloc_init( ncol_begin, ct.num_blocks, int);
-    my_malloc_init( Hii, maxrow * maxcol, complex double );
-    my_malloc_init( Gii, maxrow * maxcol, complex double );
-    my_malloc_init( temp, maxrow * maxcol, complex double );
-    my_malloc_init( G_tem, ntot_row * maxcol, complex double );
-    my_malloc_init( G_col, ntot_col * maxrow, complex double );
+    size_t n_alloc;
+    n_alloc = maxrow * maxcol * sizeof(complex double);
+    Gii = (complex double *) malloc_host_or_device(n_alloc);
+    temp = (complex double *) malloc_host_or_device(n_alloc);
+
+    n_alloc = ntot_row * maxcol * sizeof(complex double);
+    G_tem = (complex double *) malloc_host_or_device(n_alloc);
+
+    n_alloc = ntot_col * maxrow * sizeof(complex double);
+    G_col = (complex double *) malloc_host_or_device(n_alloc);
 
 
     /*
@@ -97,16 +100,14 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     for (i = 0; i < pmo.mxllda_cond[0] * pmo.mxlocc_cond[0]; i++)
     {
-        Hii[i] = H_tri[i];
+        Gii[i] = H_tri[i];
     }
 
     desca = &pmo.desc_cond[0];
-    //get_inverse_block_p (Hii, Gii, ipiv, desca);
-    matrix_inverse_driver((double *)Hii, desca);
+    matrix_inverse_driver(Gii, desca);
 
     n1 = pmo.mxllda_cond[0] * pmo.mxlocc_cond[0];
-    zcopy_driver (n1, Hii,ione, Gii, ione);
-    zcopy (&n1, Gii, &ione, G_tri, &ione);
+    zcopy_driver (n1, Gii, ione, G_tri, ione);
 
     /*  iterate to get one more block  */
 
@@ -123,7 +124,7 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
         for (j = 0; j < pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i + 1]; j++)
         {
-            Hii[j] = H_tri[j + pmo.diag_begin[i+ 1]];
+            Gii[j] = H_tri[j + pmo.diag_begin[i+ 1]];
         }
 
 
@@ -139,20 +140,18 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
         zgemm_driver ("N", "N", n1, n2, n2, one, Hlower, ione, ione, descc,
                 Gii0, ione, ione, descb, zero, temp, ione, ione, descc);
-        //PZGEMM ("N", "N", &n1, &n2, &n2, &one, Hlower, &ione, &ione, descc,
-        //        Gii0, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
-        PZGEMM ("N", "N", &n1, &n1, &n2, &mone, temp, &ione, &ione, descc,
-                Hupper, &ione, &ione, desca, &one, Hii, &ione, &ione, descd);
+        zgemm_driver ("N", "N", n1, n1, n2, mone, temp, ione, ione, descc,
+                Hupper, ione, ione, desca, one, Gii, ione, ione, descd);
 
 
         /* now Hii store the matrix Hi+1,i+1 - Hi+1,i * Gii^0 * Hi,i+1
          * Gi+1,i+1, stored in Gii, = Hii^(-1)
          */
 
-        get_inverse_block_p (Hii, Gii, ipiv, descd);
+        matrix_inverse_driver(Gii, descd);
 
         n1 = pmo.mxllda_cond[i + 1] * pmo.mxlocc_cond[i + 1];
-        zcopy (&n1, Gii, &ione, &G_tri[pmo.diag_begin[i + 1]], &ione);
+        zcopy_driver (n1, Gii, ione, &G_tri[pmo.diag_begin[i + 1]], ione);
 
         /*  Gi,i+1 =  Gii^0 * Hi,i+1 * Gi+1,i+1  */
 
@@ -161,30 +160,30 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         n3 = pmo.offdiag_begin[i];
 
         /* temp = Hi+1,i * Gii^0  eq. 11 for j = I term*/
-        PZGEMM ("N", "N", &n2, &n1, &n1, &mone, Hlower, &ione, &ione, descc,
-                Gii0, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+        zgemm_driver ("N", "N", n2, n1, n1, mone, Hlower, ione, ione, descc,
+                Gii0, ione, ione, descb, zero, temp, ione, ione, descc);
 
-        PZGEMM ("N", "N", &n2, &n1, &n2, &one, &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descd,
-                temp, &ione, &ione, descc, &zero, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &ione, descc);
+        zgemm_driver ("N", "N", n2, n1, n2, one, &G_tri[pmo.diag_begin[i+1]], ione, ione, descd,
+                temp, ione, ione, descc, zero, &G_tri[pmo.lowoffdiag_begin[i]], ione, ione, descc);
 
         n4 = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i];
-        zcopy(&n4, &G_tri[pmo.lowoffdiag_begin[i]], &ione, &G_col[ncol_begin[i]], &ione); 
+        zcopy_driver(n4, &G_tri[pmo.lowoffdiag_begin[i]], ione, &G_col[ncol_begin[i]], ione); 
 
         /* temp = Gii^0 * Hi,i+1 */
-        PZGEMM ("N", "N", &n1, &n2, &n1, &mone, Gii0, &ione, &ione, descb,
-                Hupper, &ione, &ione, desca, &zero, temp, &ione, &ione, desca);
+        zgemm_driver ("N", "N", n1, n2, n1, mone, Gii0, ione, ione, descb,
+                Hupper, ione, ione, desca, zero, temp, ione, ione, desca);
 
         /* G(i,i+1) = temp * G(i+1,i+1)  also == G_tem(i,i+1)  */
-        PZGEMM ("N", "N", &n1, &n2, &n2, &one, temp, &ione, &ione, desca,
-                Gii, &ione, &ione, descd, &zero, &G_tri[n3], &ione, &ione, desca);
+        zgemm_driver ("N", "N", n1, n2, n2, one, temp, ione, ione, desca,
+                Gii, ione, ione, descd, zero, &G_tri[n3], ione, ione, desca);
 
         n4 = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i + 1];
-        zcopy (&n4, &G_tri[n3], &ione, &G_tem[ntem_begin[i]], &ione);
+        zcopy_driver (n4, &G_tri[n3], ione, &G_tem[ntem_begin[i]], ione);
 
         /* update Gii  */
 
-        PZGEMM ("N", "N", &n1, &n1, &n2, &one, temp, &ione, &ione, desca,
-                &G_tri[pmo.lowoffdiag_begin[i]], &ione, &ione, descc, &one, &G_tri[pmo.diag_begin[i]], &ione, &ione, descb);
+        zgemm_driver ("N", "N", n1, n1, n2, one, temp, ione, ione, desca,
+                &G_tri[pmo.lowoffdiag_begin[i]], ione, ione, descc, one, &G_tri[pmo.diag_begin[i]], ione, ione, descb);
 
         for (j = i - 1; j >= 0; j--)
         {
@@ -214,37 +213,37 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
             /* gpu_Gii = -Hi+1,i * G0(i,j)   */
 
-            PZGEMM ("N", "N", &n3, &n1, &n2, &mone, Hlower, &ione, &ione, descd,
-                    &G_col[ncol_begin[j]], &ione, &ione, desce, &zero, Gii, &ione, &ione, descf);
+            zgemm_driver ("N", "N", n3, n1, n2, mone, Hlower, ione, ione, descd,
+                    &G_col[ncol_begin[j]], ione, ione, desce, zero, Gii, ione, ione, descf);
 
             /*  G(I+1, j) = G(I+1, I+1) * gpu_Gii  eq. 11 */
-            PZGEMM ("N", "N", &n3, &n1, &n3, &one, &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descg,
-                    Gii, &ione, &ione, descf, &zero, &G_col[ncol_begin[j]], &ione, &ione, descf);
+            zgemm_driver ("N", "N", n3, n1, n3, one, &G_tri[pmo.diag_begin[i+1]], ione, ione, descg,
+                    Gii, ione, ione, descf, zero, &G_col[ncol_begin[j]], ione, ione, descf);
 
 
             /* temp = -G0(j,i) * Hi,i+1  */
-            PZGEMM ("N", "N", &n1, &n3, &n2, &mone, &G_tem[n4], &ione, &ione, desca,
-                    Hupper, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+            zgemm_driver ("N", "N", n1, n3, n2, mone, &G_tem[n4], ione, ione, desca,
+                    Hupper, ione, ione, descb, zero, temp, ione, ione, descc);
 
             /* G0(j, i+1) = temp * G(i+1,i+1) eq 8 */
 
-            PZGEMM ("N", "N", &n1, &n3, &n3, &one, temp, &ione, &ione, descc,
-                    &G_tri[pmo.diag_begin[i+1]], &ione, &ione, descg, &zero, &G_tem[n4], &ione, &ione, descc);
+            zgemm_driver ("N", "N", n1, n3, n3, one, temp, ione, ione, descc,
+                    &G_tri[pmo.diag_begin[i+1]], ione, ione, descg, zero, &G_tem[n4], ione, ione, descc);
 
             /* G(j,j) = G0(j,j) + temp * G(i+1,j) eq.9  */
 
-            PZGEMM ("N", "N", &n1, &n1, &n3, &one, temp, &ione, &ione, descc, 
-                    &G_col[ncol_begin[j]], &ione, &ione, descf, &one, &G_tri[n5], &ione, &ione, desch);
+            zgemm_driver ("N", "N", n1, n1, n3, one, temp, ione, ione, descc, 
+                    &G_col[ncol_begin[j]], ione, ione, descf, one, &G_tri[n5], ione, ione, desch);
 
             /* G(j,j+1) = G0(j,j+1) + temp * G(i+1,j+1) eq. 10 */
-            PZGEMM ("N", "N", &n1, &n8, &n3, &one, temp, &ione, &ione, descc, 
-                    &G_col[ncol_begin[j+1]], &ione, &ione, desci, &one, &G_tri[n6],
-                    &ione, &ione, descj);
+            zgemm_driver ("N", "N", n1, n8, n3, one, temp, ione, ione, descc, 
+                    &G_col[ncol_begin[j+1]], ione, ione, desci, one, &G_tri[n6],
+                    ione, ione, descj);
 
             /* G(j,j+1) = G0(j,j+1) + temp * G(i+1,j+1)  eq. 12 */
-            PZGEMM ("N", "N", &n8, &n1, &n3, &one, &G_tem[n7], &ione, &ione, desck, 
-                    Gii, &ione, &ione, descf, &one, &G_tri[pmo.lowoffdiag_begin[j]],
-                    &ione, &ione, descl);
+            zgemm_driver ("N", "N", n8, n1, n3, one, &G_tem[n7], ione, ione, desck, 
+                    Gii, ione, ione, descf, one, &G_tri[pmo.lowoffdiag_begin[j]],
+                    ione, ione, descl);
 
         }                       /* end for (j--) */
 
@@ -261,14 +260,13 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
         n4 = pmo.lowoffdiag_begin[i];
 
         desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
-        descb = &pmo.desc_cond[ ( i+1 +  (i+1)  * ct.num_blocks) * DLEN];
         descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
-        
-        pmo_unitary_matrix(Gii, descb);
 
+        pztranu_(&n1, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
+                &half, &G_tri[n3], &ione, &ione, desca);
 
-        PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
-                Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
+//        PZGEMM ("T", "N", &n1, &n2, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
+//                Gii, &ione, &ione, descb, &half, &G_tri[n3], &ione, &ione, desca);
 
     }
 
@@ -276,10 +274,8 @@ void matrix_inverse_p (complex double * H_tri, complex double * G_tri)
 
     my_free( ntem_begin );
     my_free( ncol_begin );
-    my_free( ipiv );
-    my_free( Hii );
-    my_free( Gii );
-    my_free( temp );
-    my_free( G_tem );
-    my_free( G_col );
+    free_host_or_device( Gii );
+    free_host_or_device( temp );
+    free_host_or_device( G_tem);
+    free_host_or_device( G_col );
 }
