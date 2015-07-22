@@ -78,11 +78,12 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, complex double * sigma,
 
 
 
-#if GPU_ENABLED
-   matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
-#else
-   matrix_inverse_anyprobe_p (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
-#endif
+  matrix_inverse_anyprobe (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
+//#if GPU_ENABLED
+ // matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
+//#else
+//   matrix_inverse_anyprobe_p (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
+//#endif
 
 
 

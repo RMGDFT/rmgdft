@@ -3,7 +3,6 @@ host_device_wraper.c
 zcopy_driver.c
 zgemm_driver.c
 matrix_inverse_driver.c
-malloc_host_or_device.c
 allocate_matrix_LCR.c
 allocate_matrix_soft.c
 apply_potential_drop.c
@@ -46,7 +45,7 @@ lead_bandstructure.c
 lead_mat_distribute.c
 local_to_tri.c
 map_orbital_to_process.c
-matrix_inverse_anyprobe_p.c
+matrix_inverse_anyprobe.c
 matrix_inverse_blocknm.c
 matrix_inverse_p.c
 matrix_kpoint.c

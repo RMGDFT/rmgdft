@@ -175,6 +175,7 @@ void pmo_init ()
 
 
         /* Initialize the array descriptors for the matrices */
+dprintf("\n %d iprobe", iprobe);
         DESCINIT (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &pmo.ictxt[pmo.myblacs], &mxllda, &info);
         if (info != 0)
         {
@@ -200,6 +201,8 @@ void pmo_init ()
 
             mxllda = NUMROC(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
             desca = &pmo.desc_cond[ idx * DLEN];
+
+dprintf("\n %d %d block", i, j);
 
             DESCINIT (desca, &ct.block_dim[i], &ct.block_dim[j], &nb, &nb, &rsrc, &csrc, 
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);

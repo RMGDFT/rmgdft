@@ -91,8 +91,12 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
     {
 
         d_ipiv = mb + numroc_( &nn, &mb, &myrow, &izero, &nprow);
-        lwork = d_ipiv * nb;
-        liwork = d_ipiv + mb + ceil(nn/mb);
+        double work_tem;
+        int ltem = -1;
+        pzgetri_(&nn, (double *)Hii, &ione, &ione, desca, ipiv, &work_tem, &ltem,  &liwork, &ltem, &info);
+
+        lwork = (int)work_tem +1;
+
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
         iwork = (int *) malloc(liwork * sizeof(int));
         work = (complex double *)malloc(lwork * sizeof(complex double));

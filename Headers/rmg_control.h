@@ -2,6 +2,12 @@
 #define RMG_control_H 1
 
 #include <stdbool.h>
+#ifdef __cplusplus
+    #include <complex>
+#else
+    #include <complex.h>
+#endif
+
 
 /* multigrid-parameter structure */
 typedef struct
@@ -499,20 +505,18 @@ typedef struct
     double *gpu_host_fdbuf2;
     double *gpu_host_work;
 
+    cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow,  *gpu_Gcol;
+    cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 
-//    cuDoubleComplex *gpu_Htri, *gpu_Gtri;
-//    cuDoubleComplex *gpu_Grow;
-//    cuDoubleComplex *gpu_Gcol;
-//    cuDoubleComplex *gpu_Gii;
-    cuDoubleComplex *gpu_Hii;
-    cuDoubleComplex *gpu_Imatrix;
+
     int *gpu_ipiv;
 
-
-
-#endif    
+#else
     double *gpu_Htri, *gpu_Gtri;
-    double *gpu_temp, *gpu_Grow, *gpu_Gcol, *gpu_Gii;
+    double *gpu_Grow;
+    double *gpu_Gcol;
+    double *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
+#endif
 
     /* Compression level for some trade images routines */
     int trade_compression_level;

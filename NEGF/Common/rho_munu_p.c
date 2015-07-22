@@ -16,7 +16,7 @@
 
 
 
-void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double * gamma, int iprobe)
+void rho_munu_p (complex double * rho_mn, complex double * green_C, complex double *Gcol, complex double * gamma, int iprobe)
 {
 
     complex double *temp;

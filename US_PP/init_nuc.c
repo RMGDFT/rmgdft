@@ -102,6 +102,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         for (ix = xstart; ix < xend; ix++)
         {
             // fold the grid into the unit cell
+            // maxium fold 20 times, local potential can extend to 20-1 unit cell
             ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
             if(ixx >= ilow && ixx < ihi)
             {

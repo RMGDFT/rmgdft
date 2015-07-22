@@ -1,5 +1,4 @@
 ADD_LIBRARY (NEGF_Cudafunc
-matrix_inverse_anyprobe_cuda.c
 rho_munu_cuda.c
 Sgreen_cuda.c
 )
