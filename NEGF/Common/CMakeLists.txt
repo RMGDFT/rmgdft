@@ -78,7 +78,7 @@ read_potrho.c
 read_potrho_LCR.c
 read_rho_and_pot.c
 read_trans.c
-rho_munu_p.c
+rho_munu.c
 rho_nm_mat.c
 rmg_timings.c
 run.c

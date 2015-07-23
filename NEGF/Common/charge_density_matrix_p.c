@@ -210,12 +210,8 @@ void charge_density_matrix_p (complex double * sigma_all)
                         {
                             gamma[i] = I * (sigma[i] - gamma[i]);
                         }
-#if GPU_ENABLED
-                        rho_munu_cuda (rho_mn, green_C_row, green_C_col, gamma, idx_delta); 
-#else
-                        rho_munu_p (rho_mn, green_C_row, green_C_col, gamma, idx_delta); 
-#endif
 
+                        rho_munu (rho_mn, green_C_row, green_C_col, gamma, idx_delta); 
 
 
                         for (st1 = 0; st1 < ntot; st1++)
