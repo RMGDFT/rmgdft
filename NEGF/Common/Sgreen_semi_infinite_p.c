@@ -19,20 +19,21 @@
 
 #define 	MAX_STEP 	40
 
+void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
+void matrix_inverse_driver(double *, int *);
 
-void Sgreen_semi_infinite_p (complex double * green, complex double
-        *ch00, complex double *ch01, complex double *ch10, int jprobe)
+
+void Sgreen_semi_infinite_p (complex double * green_host, complex double
+        *ch00_host, complex double *ch01_host, complex double *ch10_host, int jprobe)
 {
 
     double converge1, converge2, tem;
-    complex double *chnn, *chtem;
-    complex double alpha, beta, mone;
+    complex double *chtem, *chtem_host, *green, *ch00, *ch01, *ch10;
+    complex double one=1.0, zero=0.0, mone=-1.0;
     int info;
-    int *ipiv;
     int i, j, step;
     int ione = 1, n1;
     int maxrow, maxcol, *desca, nmax;
-    char fcd1, fcd2;
 
 
     desca = &pmo.desc_lead[(jprobe -1) * DLEN];
@@ -45,50 +46,46 @@ void Sgreen_semi_infinite_p (complex double * green, complex double
     n1 = maxrow * maxcol;
 
     /* allocate matrix and initialization  */
-    alpha = 1.0;
-    beta = 0.0;
-    mone = -1.0;
 
-    my_malloc_init( chnn, n1, complex double );
-    my_malloc_init( chtem, n1, complex double );
-    my_malloc_init( ipiv, maxrow + pmo.mblock, int );
+    my_malloc_init( chtem_host, n1, complex double );
+
+
+    ch00 = memory_ptr_host_device(ch00_host, ct.gpu_Htri);
+    ch10 = memory_ptr_host_device(ch10_host, ct.gpu_temp);
+    ch01 = memory_ptr_host_device(ch01_host, ct.gpu_Hii);
+    setvector_host_device (n1, sizeof(complex double), ch00_host, ione, ct.gpu_Htri, ione);
+    setvector_host_device (n1, sizeof(complex double), ch10_host, ione, ct.gpu_temp, ione);
+    setvector_host_device (n1, sizeof(complex double), ch01_host, ione, ct.gpu_Hii, ione);
+
+    chtem  = memory_ptr_host_device(chtem_host, ct.gpu_Gtri);
+    green= memory_ptr_host_device(green_host, ct.gpu_Gii);
+
 
 
     /*  green = (e S00- H00)^-1  */
 
-    ZCOPY (&n1, ch00, &ione, chnn, &ione);
-    get_inverse_block_p (chnn, green, ipiv, desca);
+    zcopy_driver (n1, ch00, ione, green, ione);
+    matrix_inverse_driver(green, desca);
 
-    converge1 = 0.0;
-    for (i = 0; i < n1; i++)
-    {
-        converge1 += cabs(green[i]) * cabs(green[i]);
-    }
+    dzasum_driver(n1, green, ione, &converge1);
 
     comm_sums(&converge1, &ione, COMM_EN2);
 
-    converge1 = sqrt (converge1);
 
     for (step = 0; step < MAX_STEP; step++)
     {
 
         /*  calculate chnn = ch00 - Hn+1, n * Gnn * Hn,n+1  */
 
+        zgemm_driver ("N", "N", nmax, nmax, nmax, one, ch01, ione, ione, desca,
+                green, ione, ione, desca,  zero, chtem, ione, ione, desca);
+        zcopy_driver (n1, ch00, ione, green, ione);
+        zgemm_driver ("N", "N", nmax, nmax, nmax, mone, chtem, ione, ione, desca,
+                ch10, ione, ione, desca, one, green, ione, ione, desca);
 
-        ZCOPY (&n1, ch00, &ione, chnn, &ione);
-        PZGEMM ("N", "N", &nmax, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
-                green, &ione, &ione, desca,  &beta, chtem, &ione, &ione, desca);
-        PZGEMM ("N", "N", &nmax, &nmax, &nmax, &mone, chtem, &ione, &ione, desca,
-                ch10, &ione, &ione, desca, &alpha, chnn, &ione, &ione, desca);
+        matrix_inverse_driver(green, desca);
+        dzasum_driver(n1, green, ione, &converge2);
 
-        get_inverse_block_p (chnn, green, ipiv, desca);
-
-        converge2 = 0.0;
-        for (i = 0; i < n1; i++)
-        {
-            converge2 += cabs(green[i]) ;
-            /* don't know what is the call to get norm */
-        }
         comm_sums(&converge2, &ione, COMM_EN2);
 
         /* printf("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
@@ -108,7 +105,8 @@ void Sgreen_semi_infinite_p (complex double * green, complex double
     }
     /*    printf("\n %d %f %f converge\n", step, eneR, eneI); */
 
-    my_free( chnn );
-    my_free( chtem );
-    my_free( ipiv );
+    
+    getvector_device_host (n1, sizeof(complex double), green, ione, green_host, ione);
+
+    my_free( chtem_host );
 }
