@@ -86,12 +86,11 @@ void Sgreen_semi_infinite_p (complex double * green, complex double
         converge2 = 0.0;
         for (i = 0; i < n1; i++)
         {
-            converge2 += cabs(green[i]) * cabs(green[i]) ;
+            converge2 += cabs(green[i]) ;
             /* don't know what is the call to get norm */
         }
         comm_sums(&converge2, &ione, COMM_EN2);
 
-        converge2 = sqrt (converge2);
         /* printf("\n  %d %f %f %16.8e converge \n", step, converge1, converge2, converge1-converge2); */
 
         tem = converge1 - converge2;

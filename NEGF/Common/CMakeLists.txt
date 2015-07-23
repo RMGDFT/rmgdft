@@ -1,6 +1,7 @@
 add_library (NEGF_Common
+green_lead.c
 host_device_wraper.c
-zcopy_driver.c
+blas_driver.c
 zgemm_driver.c
 matrix_inverse_driver.c
 allocate_matrix_LCR.c

@@ -20,7 +20,7 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
     int iprobe, jprobe, idx_delta, j;
     int iene;
     int st1, n2;
-    complex double *sigma, *tot, *tott, *g;          
+    complex double *sigma, *g;          
 
     complex double *ch0, *ch01, *ch10;
     complex double *S00, *H00, *H10, *S10, *H01, *S01, *HCL, *SCL;
@@ -46,8 +46,6 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
     }
 
 
-    my_malloc_init( tot, maxrow * maxcol, complex double);
-    my_malloc_init( tott, maxrow * maxcol, complex double);
     my_malloc_init( g, maxrow * maxcol, complex double);
     my_malloc_init( ch0, maxrow * maxcol, complex double);
     my_malloc_init( ch01, maxrow * maxcol, complex double);
@@ -132,8 +130,7 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                 else
                 {
 
-                    Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
-                    Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
+                    green_lead(ch0, ch01, ch10, g, jprobe);
 
                 }
                 //#endif
@@ -231,14 +228,8 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                             ch10[i] = ene * S10[i] - Ha_eV * H10[i];
                         }
 
-                        //#if GPU_ENABLED
-                        //                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
 
-                        //#else
-                        Stransfer_p (tot, tott, ch0, ch01, ch10, jprobe);
-                        Sgreen_p (tot, tott, ch0, ch01, g, jprobe);
-                        //#endif
-
+                        green_lead(ch0, ch01, ch10, g, jprobe);
 
 
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -290,8 +281,6 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
 
 
 
-    my_free(tot);
-    my_free(tott);
     my_free(g);
     my_free(sigma);
     my_free(ch0);

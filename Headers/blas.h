@@ -49,6 +49,7 @@
 #  define		saxpy		daxpy_
 #  define		daxpy		daxpy_
 #  define		zaxpy		zaxpy_
+#  define	    dzasum      dzasum_	
 #  define		ZAXPY		zaxpy_
 #  define		scopy   	dcopy_
 #  define		dcopy   	dcopy_
@@ -207,6 +208,7 @@ void dsyevx (char *, char *, char *, int *, double *, int *, double *, double *,
 void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, int *, double *, int *, int *, int *, int *);
 void dtrsm(char *side, char *uplo, char *transa, char *diag, int *M, int *N, double *alpha, double *A, int *lda, double *B, int *ldb);
 void dsygst( int *itype, char *uplo, int *N, double *A, int *LDA, double *B, int *LDB, int *INFO );
+double dzasum(int *, double *A, int *);
 
 
 

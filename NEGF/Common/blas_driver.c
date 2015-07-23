@@ -31,3 +31,25 @@ void zcopy_driver (int n, complex double *A, int ia, complex double *B, int ib)
     zcopy (&n, A, &ia, B, &ib);
 #endif
 }
+
+
+void zaxpy_driver (int n, complex double alpha, complex double *A, int ia, complex double *B, int ib) 
+{
+
+#if GPU_ENABLED
+    cublasZaxpy (ct.cublas_handle, n, &alpha, A, ia, B, ib);
+#else
+    zaxpy (&n, &alpha, A, &ia, B, &ib);
+#endif
+}
+
+dzasum_driver(int n, complex double *A, int ia, double *sum)
+{
+#if GPU_ENABLED
+    cublasDzasum (ct.cublas_handle, n, A, ia, sum);
+#else
+    *sum = dzasum(&n, (double *)A, &ia);
+#endif
+}
+
+
