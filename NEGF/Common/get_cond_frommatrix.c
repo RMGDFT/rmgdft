@@ -26,7 +26,7 @@ void get_cond_frommatrix ()
 {
     int iprobe, iprobe1, iprobe2;
     int iene, icond;
-    complex double * H_tri,*tot, *tott, *g;
+    complex double * H_tri,*g;
     complex double *green_C;
     complex double *temp_matrix1, *temp_matrix2;
     complex double *Gamma1, *Gamma2, *sigma;
@@ -156,8 +156,6 @@ void get_cond_frommatrix ()
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
  
-    my_malloc_init( tot,  idx, complex double );
-    my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, complex double );
     my_malloc_init( ch01,  idx, complex double );
@@ -239,10 +237,7 @@ void get_cond_frommatrix ()
                 }
 
 
-                Stransfer_p (tot, tott, ch0, ch01, ch10, iprobe);
-
-                Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
-
+                green_lead (ch0, ch01, ch10, g, iprobe);
 
                 idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
                 idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
@@ -381,8 +376,6 @@ void get_cond_frommatrix ()
     my_free(ener1);
     my_free(cond);
 
-    my_free(tot);
-    my_free(tott);
     my_free(g);
     my_free(sigma);
     my_free(sigma_all);

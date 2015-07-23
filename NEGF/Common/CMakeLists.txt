@@ -93,7 +93,6 @@ Sgreen_c.c
 Sgreen_c_noneq_p.c
 Sgreen_cond_p.c
 Sgreen_c_p.c
-Sgreen_p.c
 Sgreen_semi_infinite_p.c
 sigma_all_energy_point.c
 Sigma_p.c
@@ -101,7 +100,6 @@ spline.c
 splint.c
 split_matrix_center.c
 split_matrix_lead.c
-Stransfer_p.c
 tools_submat.c
 trace_AB_tri.c
 tri_to_local.c

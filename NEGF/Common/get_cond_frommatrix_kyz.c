@@ -27,7 +27,7 @@ void get_cond_frommatrix_kyz ()
 {
 	int iprobe, iprobe1, iprobe2, iter;
 	int iene, icond, count, insert_num;
-	complex double *H_tri,*S_tri, *tot, *tott, *g;
+	complex double *H_tri,*S_tri, *g;
 	complex double *green_C;
 	complex double *temp_matrix1, *temp_matrix2;
 	complex double *Gamma1, *Gamma2, *sigma;
@@ -248,8 +248,6 @@ void get_cond_frommatrix_kyz ()
 		idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
 	}
 
-	my_malloc_init( tot,  idx, complex double );
-	my_malloc_init( tott, idx, complex double );
 	my_malloc_init( g,    idx, complex double );
 	my_malloc_init( ch0,  idx, complex double );
 	my_malloc_init( ch01,  idx, complex double );
@@ -362,10 +360,7 @@ void get_cond_frommatrix_kyz ()
                         }
 
 
-                        Stransfer_p (tot, tott, ch0, ch01, ch10,iprobe);
-
-                        Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
-
+                        green_lead (ch0, ch01, ch10, g, iprobe);
 
                         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
                         idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
@@ -569,8 +564,6 @@ dprintf("\n cei.energ  %d", EP);
     my_free(ener1_temp);
     my_free(cond_temp);
 
-    my_free(tot);
-    my_free(tott);
     my_free(g);
     my_free(sigma);
     my_free(sigma_all);

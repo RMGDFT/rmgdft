@@ -27,7 +27,7 @@ void local_current ()
 {
     int iprobe, iprobe1, iprobe2;
     int iene, icond;
-    complex double *H_tri,*S_tri, *tot, *tott, *g;
+    complex double *H_tri,*S_tri, *g;
     complex double *green_C;
     complex double *temp_matrix1, *temp_matrix2;
     complex double *Gamma1, *Gamma2, *sigma;
@@ -248,8 +248,6 @@ void local_current ()
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
 
-    my_malloc_init( tot,  idx, complex double );
-    my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, complex double );
     my_malloc_init( ch01,  idx, complex double );
@@ -351,9 +349,7 @@ void local_current ()
                     }
 
 
-                    Stransfer_p (tot, tott, ch0, ch01, ch10,iprobe);
-
-                    Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
+                    green_lead (ch0, ch01, ch10, g, iprobe);
 
 
                     idx_C = cei.probe_in_block[iprobe - 1];  /* block index */

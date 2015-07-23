@@ -217,10 +217,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
             }
 
 
-            Stransfer_p (tot, tott, ch0, ch01, ch10,iprobe);
-
-            Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
-
+            green_lead (ch0, ch01, ch10, g, iprobe);
 
             idx_C = cei.probe_in_block[iprobe - 1];  /* block index
                                                       */

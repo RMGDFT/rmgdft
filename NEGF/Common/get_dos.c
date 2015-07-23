@@ -24,7 +24,7 @@ void get_dos (STATE * states)
 {
     int iprobe, idx_e;
     int iene, st1;
-    complex double *tot, *tott, *g;
+    complex double *g;
     complex double *sigma;
     rmg_double_t *temp_matrix_tri, *temp_matrix, *matrix_product;
     rmg_double_t de, emin, emax;
@@ -139,8 +139,6 @@ void get_dos (STATE * states)
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
                                                                                 
-    my_malloc_init( tot,  idx, complex double );
-    my_malloc_init( tott, idx, complex double );
     my_malloc_init( g,    idx, complex double );
     my_malloc_init( ch0,  idx, complex double );
     my_malloc_init( ch01,  idx, complex double );
@@ -220,10 +218,7 @@ void get_dos (STATE * states)
             }
 
 
-            Stransfer_p (tot, tott, ch0, ch01, ch10,iprobe);
-
-            Sgreen_p (tot, tott, ch0, ch01, g, iprobe);
-
+            green_lead (ch0, ch01, ch10, g, iprobe);
 
             idx_C = cei.probe_in_block[iprobe - 1];  /* block index
                                                       */
@@ -413,8 +408,6 @@ void get_dos (STATE * states)
     fflush (NULL);
 
     /*===============================*/
-    my_free(tot);
-    my_free(tott);
     my_free(g);
     my_free(sigma_all);
     my_free(sigma_idx);
