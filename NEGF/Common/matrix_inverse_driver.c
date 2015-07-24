@@ -35,6 +35,8 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
     int nn = desca[2], mb= desca[4], nb=desca[5];
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
+void *RT5 = BeginRmgTimer("matrix inverse");
+
 
     if(nprow*npcol <1) 
     {
@@ -150,6 +152,7 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
     }
 #endif
 
+EndRmgTimer(RT5);
 
 }
 

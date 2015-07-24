@@ -13,8 +13,12 @@
 #include "pmo.h"
 
 
-void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
-        int m, int n, complex double * Green_C)
+
+void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
+void matrix_inverse_driver(double *, int *);
+
+void matrix_inverse_blocknm (complex double * H_tri_host, int N_blocks, int * ni,
+        int m, int n, complex double * Green_C_host)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -37,13 +41,14 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
  *               Hi,i+1 is a ni[i] x ni[i+1] matrix 
  */
 
-    int nmax, i, j, n1, n2, n3, n4;
-    int *ipiv, *n_begin1;
-    complex double *Hii, *temp, *Hii1;
-    complex double *Hmm1, *temp2, *temp3, *identity;
-    complex double *Gmm, *Gnm, *Gnn;
+    int nz, nmax, i, j, n1, n2, n3, n4;
+    int *n_begin1;
+    complex double *temp, *Hii1;
+    complex double *Hmm1, *temp2;
+    complex double *Gmm, *Gnm, *Gnn, *H_tri, *Green_C;
+    complex double *temp_host, *Imatrix, *Imatrix_host;
     complex double mone, one, zero;
-    int ione = 1, ntot, k, maxrow, maxcol; 
+    int ione = 1, k, maxrow, maxcol; 
 	int *desca, *descb, *descc, *descd;
 
     mone = -1.0;
@@ -54,7 +59,6 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
     assert(m <= n);
     assert(m != N_blocks);
 
-    ntot = pmo.ntot;
     maxrow = 0;
     maxcol = 0;
     for (i = 0; i < N_blocks; i++)
@@ -64,13 +68,29 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
     }
 
     my_malloc( n_begin1, N_blocks, int );
-    my_malloc( ipiv, maxrow + pmo.mblock, int ); 
 
-    my_malloc_init( Hii, maxrow * maxcol, complex double );
-    my_malloc_init( Gnn, maxrow * maxcol, complex double );
-    my_malloc_init( Gmm, maxrow * maxcol, complex double );
-    my_malloc_init( Gnm, maxrow * maxcol, complex double );
-    my_malloc_init( temp, maxrow * maxcol, complex double );
+    nz = maxrow * maxcol;
+    my_malloc_init( temp_host, nz * 5, complex double );
+    my_malloc_init( Imatrix_host, nz, complex double );  
+
+
+    Gnn   = memory_ptr_host_device(&temp_host[0*nz], ct.gpu_Gii);
+    Gmm   = memory_ptr_host_device(&temp_host[1*nz], ct.gpu_Hii);
+    Gnm   = memory_ptr_host_device(&temp_host[2*nz], ct.gpu_Grow);
+    temp  = memory_ptr_host_device(&temp_host[3*nz], ct.gpu_temp);
+    temp2 = memory_ptr_host_device(&temp_host[4*nz], ct.gpu_Gcol);
+    Imatrix = memory_ptr_host_device(Imatrix_host, ct.gpu_Imatrix);
+
+    H_tri = memory_ptr_host_device(H_tri_host, ct.gpu_Htri);
+    Green_C = memory_ptr_host_device(Green_C_host, ct.gpu_Gtri);
+
+void *RT5 = BeginRmgTimer("data copy cpu-gpu");
+    setvector_host_device (pmo.ntot, sizeof(complex double), H_tri_host, ione, ct.gpu_Htri, ione);
+ EndRmgTimer(RT5);
+
+
+    desca = &pmo.desc_cond[ (m + m * N_blocks) * DLEN]; 
+    pmo_unitary_matrix(Imatrix_host, desca); 
 
 
 /*  n_begin: starting address of each diagonal block in H_tri and G_tri
@@ -90,13 +110,11 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
    
 /*  calculate the inverse of the first block  */
 
-    for (i = 0; i < pmo.mxllda_cond[0] * pmo.mxlocc_cond[0]; i++)
-    {
-        Hii[i] = H_tri[ i];
-    }
+    nz =  pmo.mxllda_cond[0] * pmo.mxlocc_cond[0]; 
+    zcopy_driver(nz, H_tri, ione, Gmm, ione);
 
     desca = &pmo.desc_cond[0];
-    get_inverse_block_p (Hii, Gmm, ipiv, desca);
+    matrix_inverse_driver(Gmm, desca);
 
 
 /*----------------------------
@@ -115,12 +133,6 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
          */
         Hii1 = &H_tri[pmo.offdiag_begin[i] ];
 
-        /* Hii now has the matrix Hi+1,i+1  */
-        for (j = 0; j < pmo.mxllda_cond[i + 1] * pmo.mxlocc_cond[i + 1]; j++)
-        {
-            Hii[j] = H_tri[j + pmo.diag_begin[i + 1]];
-        }
-
 
         /* calculate Hi+1,i+1 - Hi+1,i * Gii^0 * Hi,i+1  */
 		
@@ -133,18 +145,22 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
         descd = &pmo.desc_cond[ ( i+1 + (i+1) * N_blocks) * DLEN ];
 
         /* calculate Hi+1,i * Gmm^0 = tempi+1,i */
-        PZGEMM ("C", "N", &n1, &n2, &n2, &one, Hii1, &ione, &ione, desca, 
-               Gmm, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+        zgemm_driver ("C", "N", n1, n2, n2, one, Hii1, ione, ione, desca, 
+               Gmm, ione, ione, descb, zero, temp, ione, ione, descc);
+
+        /* Gmm now has the matrix Hi+1,i+1  */
+        nz = pmo.mxllda_cond[i + 1] * pmo.mxlocc_cond[i + 1]; 
+        zcopy_driver(nz, &H_tri[pmo.diag_begin[i+1]], ione, Gmm, ione);
         /* calculate Hi+1,i+1 - tempi+1,i * Hi,i+1 = Hi+1,i+1 */
-        PZGEMM ("N", "N", &n1, &n1, &n2, &mone, temp, &ione, &ione, descc, 
-               Hii1, &ione, &ione, desca, &one, Hii, &ione, &ione, descd);
+        zgemm_driver ("N", "N", n1, n1, n2, mone, temp, ione, ione, descc, 
+               Hii1, ione, ione, desca, one, Gmm, ione, ione, descd);
 
 
         /* now Hii store the matrix Hi+1,i+1 - Hi+1,i * Gii^0 * Hi,i+1
          * Gi+1,i+1, stored in Gii, = Hii^(-1)
          */
 
-        get_inverse_block_p (Hii, Gmm, ipiv, descd);
+        matrix_inverse_driver(Gmm, descd);
 
 
     }                           /* end  for(i = 0; i < m; i++) */
@@ -156,13 +172,11 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
 
 /*  calculate the inverse of the last block  */
 
-    for (i = 0; i < pmo.mxllda_cond[N_blocks - 1] * pmo.mxlocc_cond[N_blocks - 1]; i++)
-    {
-        Hii[i] = H_tri[pmo.diag_begin[N_blocks - 1] + i];
-    }
+    nz =  pmo.mxllda_cond[N_blocks - 1] * pmo.mxlocc_cond[N_blocks - 1]; 
+    zcopy_driver(nz, &H_tri[pmo.diag_begin[N_blocks-1]], ione, Gnn, ione);
 
     desca = &pmo.desc_cond[ (N_blocks-1 + (N_blocks-1) * N_blocks) * DLEN];
-    get_inverse_block_p (Hii, Gnn, ipiv, desca);
+    matrix_inverse_driver(Gnn, desca);
 
 
 /*  iterate to get one more block  */
@@ -175,12 +189,6 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
          */
         Hii1 = &H_tri[pmo.offdiag_begin[i-1] ];
 
-        /* Hii now has the matrix Hi+1,i+1  */
-
-        for (j = 0; j < pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i - 1]; j++)
-        {
-            Hii[j] = H_tri[j + pmo.diag_begin[i - 1]];
-        }
 
 
         /* calculate Hi-1,i-1 - Hi-1,i * Gii^0 * Hi,i-1  */
@@ -192,27 +200,31 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
         descc = &pmo.desc_cond[ (i-1 + (i-1) * N_blocks ) * DLEN ];
 
         /* calculate Hi-1,i * Gii^0 = tempi-1,i */
-        PZGEMM ("N", "N", &n1, &n2, &n2, &one, Hii1, &ione, &ione, desca, 
-                Gnn, &ione, &ione, descb, &zero, temp, &ione, &ione, desca);
+        zgemm_driver ("N", "N", n1, n2, n2, one, Hii1, ione, ione, desca, 
+                Gnn, ione, ione, descb, zero, temp, ione, ione, desca);
+
+        // Gnn now store Hi-1, i-1 
+        nz =  pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i - 1];
+        zcopy_driver(nz, &H_tri[pmo.diag_begin[i-1]], ione, Gnn, ione);
 
         /* calculate Hi-1,i-1 - tempi-1,i * Hi,i-1 = Hi-1,i-1 */
-        PZGEMM ("N", "C", &n1, &n1, &n2, &mone, temp, &ione, &ione, desca, 
-                Hii1, &ione, &ione, desca, &one, Hii, &ione, &ione, descc);
+        zgemm_driver ("N", "C", n1, n1, n2, mone, temp, ione, ione, desca, 
+                Hii1, ione, ione, desca, one, Gnn, ione, ione, descc);
 
 
         /* now Hii store the matrix Hi-1,i-1 - Hi-1,i * Gii^0 * Hi,i-1
          * Gi-1,i-1, stored in Gii, = Hii^(-1)
          */
+        matrix_inverse_driver(Gnn, descc);
 
-        get_inverse_block_p (Hii, Gnn, ipiv, descc);
     }
 
-/* ========================== Part-III starts here ============================ */
+    /* ========================== Part-III starts here ============================ */
 
     /*  copy Gnn to Gnm  */
 
-    n1 = pmo.mxllda_cond[n] * pmo.mxlocc_cond[n];
-    zcopy (&n1, Gnn, &ione, Gnm, &ione);
+    nz = pmo.mxllda_cond[n] * pmo.mxlocc_cond[n];
+    zcopy_driver (nz, Gnn, ione, Gnm, ione);
 
     for (i = n; i > m+1 ; i--) 
     {
@@ -221,12 +233,6 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
          */
         Hii1 = &H_tri[pmo.offdiag_begin[i-1] ];
 
-        /* Hii now has the matrix Hi+1,i+1  */
-
-        for (j = 0; j < pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i - 1]; j++)
-        {
-            Hii[j] = H_tri[j + pmo.diag_begin[i - 1]];
-        }
 
 
         /* calculate Hi-1,i-1 - Hi-1,i * Gii^0 * Hi,i-1  */
@@ -238,19 +244,23 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
         descc = &pmo.desc_cond[ (i-1 + (i-1) * N_blocks ) * DLEN ];
 
         /* calculate Hi-1,i * Gii^0 = tempi-1,i */
-        PZGEMM ("N", "N", &n1, &n2, &n2, &one, Hii1, &ione, &ione, desca, 
-                Gnn, &ione, &ione, descb, &zero, temp, &ione, &ione, desca);
+        zgemm_driver ("N", "N", n1, n2, n2, one, Hii1, ione, ione, desca, 
+                Gnn, ione, ione, descb, zero, temp, ione, ione, desca);
+
+        // Gnn now store Hi-1, i-1 
+        nz =  pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i - 1];
+        zcopy_driver(nz, &H_tri[pmo.diag_begin[i-1]], ione, Gnn, ione);
 
         /* calculate Hi-1,i-1 - tempi-1,i * Hi,i-1 = Hi-1,i-1 */
-        PZGEMM ("N", "C", &n1, &n1, &n2, &mone, temp, &ione, &ione, desca, 
-                Hii1, &ione, &ione, desca, &one, Hii, &ione, &ione, descc);
+        zgemm_driver ("N", "C", n1, n1, n2, mone, temp, ione, ione, desca, 
+                Hii1, ione, ione, desca, one, Gnn, ione, ione, descc);
 
 
         /* now Hii store the matrix Hi-1,i-1 - Hi-1,i * Gii^0 * Hi,i-1
          * Gi-1,i-1, stored in Gnn, = Hii^(-1)
          */
 
-        get_inverse_block_p (Hii, Gnn, ipiv, descc);
+        matrix_inverse_driver(Gnn, descc);
 
 
         /*  temp[n,i-1] = - G[n,i) Hi,i-1  */
@@ -261,8 +271,8 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
         desca = &pmo.desc_cond[ (n   +  i    * N_blocks ) * DLEN ];
         descb = &pmo.desc_cond[ (i-1 +  i    * N_blocks ) * DLEN ];
         descc = &pmo.desc_cond[ (n   + (i-1) * N_blocks ) * DLEN ];
-        PZGEMM ("N", "C", &n1, &n3, &n2, &mone, Gnm, &ione, &ione, desca, 
-                Hii1, &ione, &ione, descb, &zero, temp, &ione, &ione, descc);
+        zgemm_driver ("N", "C", n1, n3, n2, mone, Gnm, ione, ione, desca, 
+                Hii1, ione, ione, descb, zero, temp, ione, ione, descc);
 
 
         /* Gn, i-1 =  temp[n,i-1] * G[i-1,i-1] , j = i, n-1 */
@@ -274,8 +284,8 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
         desca = &pmo.desc_cond[ (n   + (i-1) * N_blocks ) * DLEN ];
         descc = &pmo.desc_cond[ (i-1 + (i-1) * N_blocks ) * DLEN ];
 
-        PZGEMM ("N", "N", &n1, &n2, &n2, &one, temp, &ione, &ione, desca, 
-                Gnn, &ione, &ione, descc, &zero, Gnm, &ione, &ione, desca);
+        zgemm_driver ("N", "N", n1, n2, n2, one, temp, ione, ione, desca, 
+                Gnn, ione, ione, descc, zero, Gnm, ione, ione, desca);
 
 
     }
@@ -286,20 +296,14 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
      */
 
 
-/* ========================== Part-IV starts here ========================== */
-/*        printf (" value of m ....  %d \n", m);        */
+    /* ========================== Part-IV starts here ========================== */
+    /*        printf (" value of m ....  %d \n", m);        */
 
 
     /* call the identity matrix and allocate its memory */
 
-    my_malloc_init( identity, maxrow * maxcol, complex double );  
-    desca = &pmo.desc_cond[ (m + m * N_blocks) * DLEN]; 
-    pmo_unitary_matrix(identity, desca); 
 
 
-    /* allocate memory for temp2 and temp3 */
-    my_malloc_init( temp2, maxrow * maxcol, complex double );
-    my_malloc_init( temp3, maxrow * maxcol, complex double );
 
     /* get the interaction Hm,m+1 from input H_tri */
     Hmm1 = &H_tri[pmo.offdiag_begin[m] ];
@@ -315,37 +319,36 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
 
 
     /* calculate Gmm * Hm,m+1 = temp[m,m+1] */
-    PZGEMM ("N", "N", &n1, &n2, &n1, &one, Gmm, &ione, &ione, desca, 
-            Hmm1, &ione, &ione, descb, &zero, temp, &ione, &ione, descb);
+    zgemm_driver ("N", "N", n1, n2, n1, one, Gmm, ione, ione, desca, 
+            Hmm1, ione, ione, descb, zero, temp, ione, ione, descb);
 
 
     /* calculate  temp[m,m+1] * Gm+1,m+1 = temp2[m,m+1] */
-    PZGEMM ("N", "N", &n1, &n2, &n2, &one, temp, &ione, &ione, descb, 
-            Gnn, &ione, &ione, descc, &zero, temp2, &ione, &ione, descb);
+    zgemm_driver ("N", "N", n1, n2, n2, one, temp, ione, ione, descb, 
+            Gnn, ione, ione, descc, zero, temp2, ione, ione, descb);
 
 
     /* calculate identity[m,m] - temp2[m,m+1] * Hm+1,m = identity[m,m] */
-    PZGEMM ("N", "C", &n1, &n1, &n2, &mone, temp2, &ione, &ione, descb, 
-            Hmm1, &ione, &ione, descb, &one, identity, &ione, &ione, desca);
+    zgemm_driver ("N", "C", n1, n1, n2, mone, temp2, ione, ione, descb, 
+            Hmm1, ione, ione, descb, one, Imatrix, ione, ione, desca);
 
-    /* Now 1 - Gmm * Hm,m+1 * Gm+1,m+1 * Hm+1,m is stored in identity[m,m] */
+    /* Now 1 - Gmm * Hm,m+1 * Gm+1,m+1 * Hm+1,m is stored in Imatrix[m,m] */
 
-    /* get the inverse of identity[m,m] and stored in temp2[m,m]           */
-    get_inverse_block_p (identity, temp2, ipiv, desca); /* check ipiv for iprobe */
+    matrix_inverse_driver(Imatrix, desca);
 
 
     /* calculate G[m,m] = temp2[m,m] * G^0[m,m] */
-    PZGEMM ("N", "N", &n1, &n1, &n1, &one, temp2, &ione, &ione, desca, 
-            Gmm, &ione, &ione, desca, &zero, temp3, &ione, &ione, desca);
+    zgemm_driver ("N", "N", n1, n1, n1, one, Imatrix, ione, ione, desca, 
+            Gmm, ione, ione, desca, zero, temp2, ione, ione, desca);
 
     n4 = pmo.mxllda_cond[m] * pmo.mxlocc_cond[m];
-    zcopy (&n4, temp3, &ione, Gmm, &ione);
+    zcopy_driver(n4, temp2, ione, Gmm, ione);
 
     if(n == m)
     {
 
         n4 = pmo.mxllda_cond[m] * pmo.mxlocc_cond[m];
-        zcopy (&n4, Gmm, &ione, Green_C, &ione);
+        zcopy_driver(n4, Gmm, ione, Green_C, ione);
     }
     else
     {
@@ -362,25 +365,21 @@ void matrix_inverse_blocknm (complex double * H_tri, int N_blocks, int * ni,
 
 
         /* temp[n,m] = -G^0[n, m+1] * Hm+1,m */
-        PZGEMM ("N", "C", &n1, &n2, &n3, &mone,  Gnm, &ione, &ione, desca, 
-                Hmm1, &ione, &ione, descc, &zero, temp, &ione, &ione, descb);
+        zgemm_driver ("N", "C", n1, n2, n3, mone,  Gnm, ione, ione, desca, 
+                Hmm1, ione, ione, descc, zero, temp, ione, ione, descb);
 
         /* Gnm = temp[n,m] * G[m,m] */
-        PZGEMM ("N", "N", &n1, &n2, &n2, &one,  temp, &ione, &ione, descb, 
-                Gmm, &ione, &ione, descd, &zero, Green_C, &ione, &ione, descb);
+        zgemm_driver ("N", "N", n1, n2, n2, one,  temp, ione, ione, descb, 
+                Gmm, ione, ione, descd, zero, Green_C, ione, ione, descb);
     }
 
+    nz = pmo.mxllda_cond[n] * pmo.mxlocc_cond[m];
+void *RT6 = BeginRmgTimer("data copy gpu-cpu");
+    getvector_device_host (nz, sizeof(complex double), Green_C, ione, Green_C_host, ione);
+ EndRmgTimer(RT6);
     my_free(n_begin1);
-    my_free(ipiv);
-    my_free( Hii );
-    my_free( Gmm );
-    my_free( Gnn );
-    my_free( Gnm );
-    my_free( temp );
-
-    my_free( temp2 );
-    my_free( temp3 );
-    my_free( identity );
+    my_free( temp_host);
+    my_free( Imatrix_host);
 
 
 }   
