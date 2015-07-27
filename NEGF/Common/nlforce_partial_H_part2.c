@@ -17,7 +17,7 @@
 
 void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG, rmg_double_t *force)
 {
-    int i, ion, ion1, st1, st2, idx, idx1, idx2;
+    int i, ion1, st1, st2, idx, idx1, idx2;
     rmg_double_t temp;
     rmg_double_t *psi, *psi1, *psi2, *old_psi, *vloc_psi;
     rmg_double_t *vloc_x, *vloc_y, *vloc_z;
@@ -47,9 +47,8 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
             vloc_z = vnuc_z;
             psi = states[st2].psiR;
             vloc_psi = states1[st2].psiR;
-            for (ion = 0; ion < pct.n_ion_center_loc; ion++)
+            for (ion1 = 0; ion1 < pct.n_ion_center_loc; ion1++)
             {
-                ion1 = pct.ionidx_loc[ion];
                 if (ct.ions[ion1].movable)
                 {
                     if(vloc_state_overlap_or_not[ion1 * ct.num_states + st2] == 1) 
@@ -126,9 +125,8 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
                 psi = states[st1].psiR;
                 vloc_psi = states1[st1].psiR;
 
-                for (ion = 0; ion < pct.n_ion_center_loc; ion++)
+                for (ion1 = 0; ion1 < pct.n_ion_center_loc; ion1++)
                 {
-                    ion1 = pct.ionidx_loc[ion];
                     if (ct.ions[ion1].movable)
                     {
 
@@ -190,9 +188,8 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG
                     psi = states[st1].psiR;
                     vloc_psi = states1[st1].psiR;
 
-                    for (ion = 0; ion < pct.n_ion_center_loc; ion++)
+                    for (ion1 = 0; ion1 < pct.n_ion_center_loc; ion1++)
                     {
-                        ion1 = pct.ionidx_loc[ion];
                         if (ct.ions[ion1].movable)
                         {
 

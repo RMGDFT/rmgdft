@@ -91,11 +91,11 @@ void nlforce (rmg_double_t * veff)
     }
 
     /* Initialize Non-local operators */
-    is_vloc_state_overlap (states);
 
     init_loc_xyz ();
     get_ion_orbit_overlap_loc (states);
     partial_vloc ();
+    is_vloc_state_overlap (states);
 
     nlforce_par_D (states, forces_tem);
 

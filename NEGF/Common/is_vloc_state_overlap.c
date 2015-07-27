@@ -26,11 +26,13 @@ void is_vloc_state_overlap (STATE *states)
     SPECIES *sp;
     ION *iptr;
 
-    for (ion = 0; ion < ct.num_ions; ion++)
+    my_malloc(vloc_state_overlap_or_not, pct.n_ion_center_loc * ct.num_states, char);
+
+    for (ion = 0; ion < pct.n_ion_center_loc; ion++)
     {
-	iptr = &ct.ions[ion];
-	sp = &ct.sp[iptr->species];
-	r1 = sp->lradius;
+        iptr = &ct.ions[ion];
+        sp = &ct.sp[iptr->species];
+        r1 = sp->lradius;
 
         for (ista = 0; ista < ct.num_states; ista++)
         {

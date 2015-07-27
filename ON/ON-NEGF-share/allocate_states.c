@@ -45,6 +45,5 @@ void allocate_states()
     my_malloc(state_to_ion, ct.num_states, int);
     my_malloc(state_to_proc, ct.num_states, int);
 
-    my_malloc(vloc_state_overlap_or_not, ct.num_ions * ct.num_states, char);
 }
 
