@@ -48,6 +48,7 @@ void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int
 
     /* initialize matrices statearray and matB */
     get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+//    DiagElemental(numst, Hij_00, Bij_00);
 
     Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
            pct.desca, pct.desca[1]);
