@@ -60,10 +60,6 @@ void allocate_psi(STATE * states, STATE * states1)
         rptr2 += states[st1].size;
     }
 
-    int size = (ct.state_end - ct.state_begin) * ct.num_states;
-
-    my_malloc( state_overlap_or_not, size,  char);
-
     if (pct.gridpe == 0)
         printf("\n allocate_psi Done! ");
 
