@@ -435,27 +435,27 @@ endif(NOT LIBSPG_FOUND)
 
 find_package(LIBSPG REQUIRED)
 
-find_package(ELEMENTAL)
-if(NOT ELEMENTAL_FOUND)
-    execute_process(
-    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85.tgz -C ${PROJECT_SOURCE_DIR}/lib )
-    execute_process(
-    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-    execute_process(
-    COMMAND cmake .. -j 16
-        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-    execute_process(COMMAND make 
-        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-endif(NOT ELEMENTAL_FOUND)
-
-find_package(ELEMENTAL REQUIRED)
-include_directories(${ELEMENTAL_INCLUDES})
-target_link_libraries (rmg-on ${ELEMENTAL_LIBRARIES})
-target_link_libraries (rmg-on ON_Common ${ELEMENTAL_LIBRARIES})
-find_package(PMRRR)
-include_directories(${PMRRR_INCLUDES})
-target_link_libraries (rmg-on ${PMRRR_LIBRARIES})
-target_link_libraries (rmg-on ON_Common ${PMRRR_LIBRARIES})
+#find_package(ELEMENTAL)
+#if(NOT ELEMENTAL_FOUND)
+#    execute_process(
+#    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85.tgz -C ${PROJECT_SOURCE_DIR}/lib )
+#    execute_process(
+#    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
+#    execute_process(
+#    COMMAND cmake .. 
+#        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
+#    execute_process(COMMAND make  -j 16
+#        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
+#endif(NOT ELEMENTAL_FOUND)
+#
+#find_package(ELEMENTAL REQUIRED)
+#include_directories(${ELEMENTAL_INCLUDES})
+#target_link_libraries (rmg-on ${ELEMENTAL_LIBRARIES})
+#target_link_libraries (rmg-on ON_Common ${ELEMENTAL_LIBRARIES})
+#find_package(PMRRR)
+#include_directories(${PMRRR_INCLUDES})
+#target_link_libraries (rmg-on ${PMRRR_LIBRARIES})
+#target_link_libraries (rmg-on ON_Common ${PMRRR_LIBRARIES})
 
 
 # include files

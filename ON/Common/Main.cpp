@@ -123,9 +123,9 @@ double alat;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
-#include "El.hpp"
-using namespace std;
-using namespace El;
+//#include "El.hpp"
+//using namespace std;
+//using namespace El;
 
 int main(int argc, char **argv)
 {
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
     InitIo(argc, argv, ControlMap);
 
     //  initialize for ELEMENTAl lib
-    Initialize( argc, argv );
+    //Initialize( argc, argv );
 
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();
