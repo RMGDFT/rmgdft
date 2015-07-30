@@ -26,7 +26,8 @@ void is_vloc_state_overlap (STATE *states)
     SPECIES *sp;
     ION *iptr;
 
-    my_malloc(vloc_state_overlap_or_not, pct.n_ion_center_loc * ct.num_states, char);
+    if(vloc_state_overlap_or_not == NULL)
+        my_malloc(vloc_state_overlap_or_not, pct.n_ion_center_loc * ct.num_states, char);
 
     for (ion = 0; ion < pct.n_ion_center_loc; ion++)
     {

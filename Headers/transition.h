@@ -85,6 +85,7 @@ template  <typename OrbitalType> void AppCilrDriver (TradeImages *T, OrbitalType
     int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
 void MixRho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z, std::unordered_map<std::string, InputKey *>& ControlMap);
 
+void DiagElemental(int, double *, double*);
 
 
 extern "C" void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s,
