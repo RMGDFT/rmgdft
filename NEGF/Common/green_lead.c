@@ -53,13 +53,14 @@ void green_lead (complex double *ch0_host, complex double *ch01_host,
     my_malloc_init( temp_host, n1 * 11, complex double );
     my_malloc_init( Imatrix_host, n1, complex double );
 
-
+#if GPU_ENABLED
     if(pmo.ntot_low < 7 * n1)
     {
         printf("\n the central part is even smaller than lead, don't use gpu version \n");
         fflush(NULL);
         exit(0);
     }
+#endif
 
     ch0 = memory_ptr_host_device(ch0_host, ct.gpu_Htri);
     ch10 = memory_ptr_host_device(ch10_host, ct.gpu_temp);
