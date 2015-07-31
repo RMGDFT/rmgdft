@@ -38,7 +38,7 @@ void allocate_psi(STATE * states, STATE * states1)
 {
 
     int kpt, ispin, kpt1, st1, item;
-    rmg_double_t *rptr, *rptr1, *rptr2;
+    rmg_double_t *rptr, *rptr1, *rptr2, *rptr3;
 
 
     item = (ct.max_orbit_nx + 2) * (ct.max_orbit_ny + 2) * (ct.max_orbit_nz + 2);
@@ -63,5 +63,34 @@ void allocate_psi(STATE * states, STATE * states1)
     if (pct.gridpe == 0)
         printf("\n allocate_psi Done! ");
 
-}
+//  count how many orbtials will be received from other processor and 
+//    allocate memory for them in states[].psiR
 
+    int state_per_proc = ct.state_per_proc + 2;
+
+    int i, loop, num_recv, tot_recv;
+    
+    tot_recv = 0;
+    for (loop = 0; loop < num_sendrecv_loop1; loop++)
+    {
+        num_recv = recv_from1[loop * state_per_proc + 1];
+        tot_recv += num_recv;
+    }
+
+    item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
+    my_malloc_init(rptr3, tot_recv * item, double);
+
+    for (loop = 0; loop < num_sendrecv_loop1; loop++)
+    {
+        num_recv = recv_from1[loop * state_per_proc + 1];
+        for(i = 0; i< num_recv; i++)
+        {
+            st1 = recv_from1[loop * state_per_proc + i + 2];
+            states[st1].psiR = rptr3;
+            rptr3  += item;
+        }
+
+    }
+
+
+}

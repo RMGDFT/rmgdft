@@ -252,7 +252,7 @@ void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void get_qnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
 void qnm_beta_betapsi (STATE *sp, int ion2, double * prjptr, double * work);
-void get_dnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
+void get_dnmpsi (STATE *sp, double *kbpsi_one_state, double *kbpsi_res_one_state, double *work);
 void dnm_beta_betapsi (STATE *sp, int ion2, double scale, int ip2, double * prjptr,
         double * work);
 void pack_rho_ctof (double * rho1, double * rho_f);
@@ -504,7 +504,6 @@ void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void get_qnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
 void qnm_beta_betapsi (STATE *sp, int ion2, double * prjptr, double * work);
-void get_dnmpsi (STATE *sp, double *kbpsi_one_state, double *work);
 void dnm_beta_betapsi (STATE *sp, int ion2, double scale, int ip2, double * prjptr,
         double * work);
 void pack_rho_ctof (double * rho1, double * rho_f);

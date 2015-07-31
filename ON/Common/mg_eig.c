@@ -21,6 +21,7 @@ int firstflag = FALSE;
 static int mix_steps;
 rmg_double_t *work1;                    /* Smoothing grids */
 
+static void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res);
 static void get_nonortho_res(STATE *, double *, STATE *);
 extern int it_scf;
 
@@ -89,19 +90,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
-    for (istate = ct.state_begin; istate < ct.state_end; istate++)
-    {
+    get_nonortho_res(states, work_matrix_row, states1);
+    get_qnm_res(work_matrix_row, kbpsi, kbpsi_res);
 
-        /* calculate the q_n,m |beta_n><beta_m|psi>  on this processor and stored in states1[].psiR[] */
-        item = (istate - ct.state_begin) * pct.n_ion_center * ct.max_nl;
-        get_qnmpsi(&states[istate], &kbpsi[item], orbit_tem);
-        t1 = 1.0;
-        saxpy(&states[istate].size, &t1, orbit_tem, &ione, states_tem[istate].psiR, &ione);
-    }
-
-
-
-    get_nonortho_res(states_tem, work_matrix_row, states1);
     my_barrier();
     /* end shuchun wang */
 
@@ -139,10 +130,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
          */
         app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
-        for (idx = 0; idx < ixx * iyy * izz; idx++)
-            states1[st1].psiR[idx] += orbit_tem[idx];
+        t1 = 1.0;
+        saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
 
-        app_mask(st1, states1[st1].psiR, 0);
 
         /*                                                                     
          * Add the contribution of the non-local potential to the 
@@ -150,12 +140,12 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
          */
         /* Get the non-local operator acting on psi and store in nvtot */
         item = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
-        get_dnmpsi(&states[st1], &kbpsi[item], orbit_tem);       /*shuchun wang */
+        get_dnmpsi(&states[st1], &kbpsi[item], &kbpsi_res[item], orbit_tem);       /*shuchun wang */
 
-        app_mask(st1, orbit_tem, 0);
 
-        t1 = -2.0;
+        t1 = 2.0;
         saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
+        app_mask(st1, states1[st1].psiR, 0);
     }                           /* end for st1 = .. */
 
      
@@ -241,8 +231,6 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
 
     state_per_proc = ct.state_per_proc + 2;
-    psi2 = orbit_tem;
-    my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t);
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         for (idx = 0; idx < states[st1].size; idx++)
@@ -264,79 +252,117 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
 
 
-    max_ii = 0;
-    for (loop = 0; loop < num_sendrecv_loop1; loop++)
-    {
-        num_send = send_to1[loop * state_per_proc + 1];
-        num_recv = recv_from1[loop * state_per_proc + 1];
-        max_ii = max(max_ii, num_send);
-        max_ii = max(max_ii, num_recv);
-    }
-
-    max_ii = int_max_all(max_ii);
-
-    ii = num_sendrecv_loop1 * (max_ii +10) +1;
-
-    my_calloc(mr_recv, ii, MPI_Request);
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
-        my_barrier();
 
-        proc1 = send_to1[loop * state_per_proc];
-        proc2 = recv_from1[loop * state_per_proc];
-        num_send = send_to1[loop * state_per_proc + 1];
         num_recv = recv_from1[loop * state_per_proc + 1];
 
-        ii = loop * max_ii+1;
-        if(num_recv>0)
+        for (i = 0; i < num_recv; i++)
         {
-            i=0;
-            ii++;
             st2 = recv_from1[loop * state_per_proc + i + 2];
-            size2 = states[st2].size;
-            if(ii %2 ==0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-            if(ii %2 ==1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-        }
-
-
-
-        ii = loop * max_ii+1;
-        for (i = 0; i < num_send; i++)
-        {
-            ii++;
-            st1 = send_to1[loop * state_per_proc + i + 2];
-            psi1 = states[st1].psiR;
-            size1 = states[st1].size;
-            MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
-            MPI_Request_free(&mr_send);
-        }
-
-
-        ii = loop * max_ii+2;
-        for (i = 1; i < num_recv+1; i++)
-        {
-            ii++;
-            MPI_Wait(&mr_recv[ii-1],&mstatus); 
-            st2 = recv_from1[loop * state_per_proc + i-1 + 2];
-            size2 = states[st2].size;
-            if(i != num_recv && ii%2 ==0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-            if(i != num_recv && ii%2 ==1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-            if(ii%2 ==0) psi_pointer = psi3;
-            if(ii%2 ==1) psi_pointer = psi2;
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
                 st11 = st1-ct.state_begin;
                 if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                 {
                     theta_ion = work_theta[st11 * ct.num_states + st2];
-                    theta_phi_new(st1, st2, theta_ion, psi_pointer, states1[st1].psiR, 0, states);
+                    theta_phi_new(st1, st2, theta_ion, states[st2].psiR, states1[st1].psiR, 0, states);
                 }
             }
         }
 
     }
 
-    my_free(mr_recv);
-    my_free(psi3);
+}
+
+void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
+{
+
+    int ion, ip1, ip2, st1, st2, ist;
+    MPI_Status mstatus;
+    int ion1, ion2, ion1_global, ion2_global;
+    int iip1, iip2, iip1a, iip2a;
+    int size, proc, proc1, proc2, idx;
+    int nh;
+    int st11;
+    double one = 1.0, zero= 0.0;
+    int size_projector, numst_thispe;
+
+    size_projector = max_ion_nonlocal * ct.max_nl;
+    size = ct.state_per_proc * size_projector;
+    for(st1 = 0; st1 < size; st1++) kbpsi_res[st1] = 0.0;
+
+    /* Loop over states on this proce onle 
+       (distribution of work AND Aij contributions) */
+    proc = pct.gridpe;
+    numst_thispe = ct.state_end - ct.state_begin;
+
+    for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
+        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+        {
+            st11 = st1 - ct.state_begin;
+
+            iip1 = (st1 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
+            iip1 += ion1 * ct.max_nl;
+
+            for (st2 = state_begin[proc]; st2 < state_end[proc]; st2++)
+            {
+                //if(state_overlap_or_not[st11 * ct.num_states + st2] == 1)
+                {
+                    iip2 = (st2 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
+                    iip2 += ion1 * ct.max_nl;
+                    for (ip1 = 0; ip1 < ct.max_nl; ip1++)
+                        kbpsi_res[iip1 + ip1] += kbpsi[iip2 + ip1] * work_theta[st11 * ct.num_states + st2];
+                }
+            }
+
+        }         
+
+
+    for (idx = 1; idx < NPES; idx++)
+    {
+
+        proc1 = pct.gridpe + idx;
+        if (proc1 >= NPES)
+            proc1 = proc1 - NPES;
+        proc2 = pct.gridpe - idx;
+        if (proc2 < 0)
+            proc2 += NPES;
+
+
+        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
+                MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
+
+
+
+        for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
+            for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)
+            {
+                ion1_global = ionidx_allproc[proc * max_ion_nonlocal + ion1];
+                ion2_global = ionidx_allproc[proc2 * max_ion_nonlocal + ion2];
+
+                if (ion1_global == ion2_global)
+                {
+                    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+                    {
+                        st11 = st1 - ct.state_begin;
+
+                        iip1 = (st1 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
+                        iip1 += ion1 * ct.max_nl;
+
+                        for (st2 = state_begin[proc2]; st2 < state_end[proc2]; st2++)
+                        {
+
+                            iip2 = (st2 - state_begin[proc2]) * num_nonlocal_ion[proc2] * ct.max_nl;
+                            iip2 += ion2 * ct.max_nl;
+                            for (ip1 = 0; ip1 < ct.max_nl; ip1++)
+                                kbpsi_res[iip1+ip1] += kbpsi_comm[iip2+ip1] * work_theta[st11 * ct.num_states + st2];
+                        }
+
+                    }         
+                }            
+
+            }
+    } 
 }

@@ -6,7 +6,7 @@
 
 extern double *projectors, *projectors_x, *projectors_y, *projectors_z;
 extern int *num_nonlocal_ion;
-extern double *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
+extern double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
 extern char *state_overlap_or_not;
 extern int *send_to, *recv_from, num_sendrecv_loop;
 extern int *send_to1, *recv_from1, num_sendrecv_loop1;

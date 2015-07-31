@@ -33,7 +33,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
     MPI_Request mr_send, *mr_recv;
-    int st11;
+    int st11, ione = 1;
     double H, S;
 
 
@@ -127,8 +127,8 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
                 if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
             }
 
-            if(ii%2 == 1) states[st2].psiR = psi2;
-            if(ii%2 == 0) states[st2].psiR = psi3;
+            if(ii%2 == 1) dcopy(&size2, psi2, &ione, states[st2].psiR, &ione);
+            if(ii%2 == 0)  dcopy(&size2, psi3, &ione, states[st2].psiR, &ione);
 
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
