@@ -39,6 +39,7 @@ void *run_threads(void *v) {
 
     // Quick hack fix
     sleep(1000000);
+    T->thread_sleep();
 #if 0
     while(1) {
 
