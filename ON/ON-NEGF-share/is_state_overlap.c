@@ -29,9 +29,9 @@ void is_state_overlap(STATE * states, char *state_overlap_or_not)
 
     int xoverlap, yoverlap, zoverlap;
 
-    int size = (ct.state_end - ct.state_begin) * ct.num_states;
+//    int size = (ct.state_end - ct.state_begin) * ct.num_states;
 
-    my_malloc( state_overlap_or_not, size,  char);
+//    my_malloc( state_overlap_or_not, size,  char);
 
 
     for (state1 = ct.state_begin; state1 < ct.state_end; state1++)

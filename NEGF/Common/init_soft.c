@@ -124,10 +124,14 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
 
 
     /* allocate memory for wave functions states.psiR and psiI */
-    allocate_psi (states, states1);
     if (pct.gridpe == 0)
         printf ("Allocate_psi is done \n");
     fflush (NULL);
+
+
+    int size = (ct.state_end - ct.state_begin) * ct.num_states;
+
+    my_malloc( state_overlap_or_not, size,  char);
 
 
     printf("\n  time_init d:  %f", my_crtc());
@@ -135,6 +139,8 @@ void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, r
     get_orbit_overlap_region (states);
     init_comm (states);
     init_comm_res (states);
+
+    allocate_psi (states, states1);
 
     duplicate_states_info (states, states1);
     my_barrier ();

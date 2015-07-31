@@ -102,8 +102,12 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
     state_corner_xyz(states);
 
-    allocate_psi(states, states1);
 
+
+
+    int size = (ct.state_end - ct.state_begin) * ct.num_states;
+
+    my_malloc( state_overlap_or_not, size,  char);
 
 
     is_state_overlap(states, state_overlap_or_not);
@@ -114,6 +118,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     init_comm(states);
 
     init_comm_res(states);
+    allocate_psi(states, states1);
 
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);
