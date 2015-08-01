@@ -320,18 +320,13 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
         }         
 
 
-    for (idx = 1; idx < NPES; idx++)
+    for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
 
-        proc1 = pct.gridpe + idx;
-        if (proc1 >= NPES)
-            proc1 = proc1 - NPES;
-        proc2 = pct.gridpe - idx;
-        if (proc2 < 0)
-            proc2 += NPES;
+        proc2 = kbpsi_comm_pair[idx];
 
 
-        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
+        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc2, idx, kbpsi_comm, size,
                 MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
@@ -365,4 +360,6 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
 
             }
     } 
+
+//    for(st1 = 0; st1 <100; st1++) printf("\n kbpsi_res %d %f", st1, kbpsi_res[st1]);
 }

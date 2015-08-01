@@ -19,6 +19,7 @@ and add them into Aij.
 #include "main.h"
 #include "grid.h"
 #include "prototypes_on.h"
+#include "init_var.h"
 
 
 void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X, int
@@ -75,18 +76,13 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
 
-    for (idx = 1; idx < NPES; idx++)
+    for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
 
-        proc1 = pct.gridpe + idx;
-        if (proc1 >= NPES)
-            proc1 = proc1 - NPES;
-        proc2 = pct.gridpe - idx;
-        if (proc2 < 0)
-            proc2 += NPES;
+        proc2 = kbpsi_comm_pair[idx];
 
 
-        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
+        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc2, idx, kbpsi_comm, size,
                 MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 

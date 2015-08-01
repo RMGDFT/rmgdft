@@ -34,6 +34,8 @@ void init_nonlocal_comm(void)
 {
     int ion, idx, item;
     int size;
+    int pair_find, num_loop;
+    int i, j, ion1, ion2, ion_global1, ion_global2;
 
 
     my_malloc(num_nonlocal_ion, NPES, int);
@@ -86,5 +88,91 @@ void init_nonlocal_comm(void)
     my_malloc_init( partial_kbpsi_x, size, rmg_double_t );
     my_malloc_init( partial_kbpsi_y, size, rmg_double_t );
     my_malloc_init( partial_kbpsi_z, size, rmg_double_t );
+
+
+    int proc1, proc2;
+    int loop;
+    int *matrix_pairs, *proc_mark;
+
+    my_calloc( matrix_pairs, NPES * NPES, int );
+    my_calloc( proc_mark, NPES, int );
+
+    my_calloc( kbpsi_comm_pair, NPES, int );
+
+    for (loop = 0; loop < NPES; loop++)
+    {
+        kbpsi_comm_pair[loop] = MPI_PROC_NULL;
+    }
+
+
+    for (proc1 = 0; proc1 < NPES * NPES; proc1++)
+        matrix_pairs[proc1] = 0;
+
+    for (proc1 = 0; proc1 < NPES; proc1++)
+        for (proc2 = proc1; proc2 < NPES; proc2++)
+        {
+            for (ion1 = 0; ion1 <num_nonlocal_ion[proc1]; ion1++)
+                for (ion2 = 0; ion2 <num_nonlocal_ion[proc2]; ion2++)
+                {
+                    ion_global1 = ionidx_allproc[proc1 * max_ion_nonlocal + ion1] ;
+                    ion_global2 = ionidx_allproc[proc2 * max_ion_nonlocal + ion2] ;
+                    if(ion_global1 == ion_global2) 
+                    {
+                        matrix_pairs[proc1 * NPES + proc2] = 1;
+                        break;
+                    }
+                }
+        }
+
+
+    
+ //   if (pct.gridpe == 0)
+ //   {
+ //       printf("\n initial communication matrix ");
+ //       for (i = 0; i < NPES; i++)
+ //       {
+ //           printf("\n");
+ //           for (j = 0; j < NPES; j++)
+ //               printf(" %d ", matrix_pairs[i * NPES + j]);
+ //       }
+ //   }
+
+    kbpsi_num_loop = 0;
+    for (loop = 0; loop < NPES; loop++)
+    {
+        for (proc1 = 0; proc1 < NPES; proc1++)
+            proc_mark[proc1] = 1;
+        pair_find = 0;
+        for (proc1 = 0; proc1 < NPES; proc1++)
+        {
+            for (proc2 = proc1+1; proc2 < NPES; proc2++)
+            {
+                if (proc_mark[proc1] && proc_mark[proc2] && matrix_pairs[proc1 * NPES + proc2]) 
+                {
+                    pair_find++;
+                    if(pct.gridpe == proc1) kbpsi_comm_pair[kbpsi_num_loop] = proc2;
+                    if(pct.gridpe == proc2) kbpsi_comm_pair[kbpsi_num_loop] = proc1;
+                    proc_mark[proc1] = 0;
+                    proc_mark[proc2] = 0;
+                    matrix_pairs[proc1 * NPES + proc2]=0;
+
+                    if(pct.gridpe == proc1 || pct.gridpe == proc2) kbpsi_num_loop++;
+
+                }
+            } 
+        }
+
+        if (pair_find == 0)break;
+    }
+    dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
+
+    //    for (loop = 0; loop < num_loop_kbpsi; loop++)
+    //    {
+    //        dprintf("\nLoop: %d  PE:%d send %d  ", loop, pct.gridpe, comm_pair[loop]);
+    //
+    //    }
+
+    my_free(matrix_pairs);
+    my_free(proc_mark);
 
 }
