@@ -67,7 +67,8 @@ void init_rho_atom(double *rho)
     }
 
 
-    for (ion = 0; ion < ct.num_ions; ion++)
+    void *RT1 = BeginRmgTimer("1-TOTAL: init: init_rho_map");
+    for (ion = pct.gridpe; ion < ct.num_ions; ion+=pct.grid_npes)
     {
         species = ct.ions[ion].species;
 
@@ -138,11 +139,14 @@ void init_rho_atom(double *rho)
 
     }
 
+    global_sums_int(map, &ct.num_ions);
+    EndRmgTimer(RT1);
     my_malloc_init( rho_tem, ixdim * iydim * izdim, rmg_double_t );
     my_malloc_init( rho_out, ixdim * iydim * izdim, rmg_double_t );
 
 
 
+    void *RT2 = BeginRmgTimer("1-TOTAL: init: init_rho_value");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
@@ -238,6 +242,7 @@ void init_rho_atom(double *rho)
 
 
     my_barrier();
+    EndRmgTimer(RT2);
     my_free(rho_tem);
     my_free(rho_out);
     my_free(map);
