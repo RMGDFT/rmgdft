@@ -31,11 +31,17 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
     for (idx = 0; idx < size; idx++)
         product[idx] = 0.0;
 
+    
+
+    void *RT5 = BeginRmgTimer("2-SCF: get_new_rho: augmented : Qnm");
+
     rho_Qnm_mat(product, global_mat_X, state_begin, state_end, num_nonlocal_ion, 
             kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
+    EndRmgTimer(RT5);
 
     global_sums(product, &size, pct.grid_comm);
 
+    void *RT6 = BeginRmgTimer("2-SCF: get_new_rho: augmented : other");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];
@@ -73,6 +79,7 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 
     }                           /*end for ion */
 
+    EndRmgTimer(RT6);
     /* release our memory */
     my_free(product);
 

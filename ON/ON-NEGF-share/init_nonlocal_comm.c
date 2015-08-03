@@ -90,81 +90,89 @@ void init_nonlocal_comm(void)
     my_malloc_init( partial_kbpsi_z, size, rmg_double_t );
 
 
-    int proc1, proc2;
+    int proc1, proc2, proc3;
     int loop;
     int *matrix_pairs, *proc_mark;
 
     my_calloc( matrix_pairs, NPES * NPES, int );
     my_calloc( proc_mark, NPES, int );
 
-    my_calloc( kbpsi_comm_pair, NPES, int );
-
-    for (loop = 0; loop < NPES; loop++)
-    {
-        kbpsi_comm_pair[loop] = MPI_PROC_NULL;
-    }
+    my_calloc( kbpsi_comm_send, NPES, int );
+    my_calloc( kbpsi_comm_recv, NPES, int );
 
 
     for (proc1 = 0; proc1 < NPES * NPES; proc1++)
         matrix_pairs[proc1] = 0;
 
-    for (proc1 = 0; proc1 < NPES; proc1++)
-        for (proc2 = proc1; proc2 < NPES; proc2++)
-        {
-            for (ion1 = 0; ion1 <num_nonlocal_ion[proc1]; ion1++)
-                for (ion2 = 0; ion2 <num_nonlocal_ion[proc2]; ion2++)
+    proc1 = pct.gridpe;
+    for (proc2 = proc1 + 1; proc2 < NPES; proc2++)
+    {
+        for (ion1 = 0; ion1 <num_nonlocal_ion[proc1]; ion1++)
+            for (ion2 = 0; ion2 <num_nonlocal_ion[proc2]; ion2++)
+            {
+                ion_global1 = ionidx_allproc[proc1 * max_ion_nonlocal + ion1] ;
+                ion_global2 = ionidx_allproc[proc2 * max_ion_nonlocal + ion2] ;
+                if(ion_global1 == ion_global2) 
                 {
-                    ion_global1 = ionidx_allproc[proc1 * max_ion_nonlocal + ion1] ;
-                    ion_global2 = ionidx_allproc[proc2 * max_ion_nonlocal + ion2] ;
-                    if(ion_global1 == ion_global2) 
-                    {
-                        matrix_pairs[proc1 * NPES + proc2] = 1;
-                        break;
-                    }
+                    matrix_pairs[proc1 * NPES + proc2] = 1;
+                    matrix_pairs[proc2 * NPES + proc1] = 1;
+                    break;
                 }
-        }
+            }
+    }
+
+    item = NPES * NPES;
+    global_sums_int(matrix_pairs, item);
 
 
-    
- //   if (pct.gridpe == 0)
- //   {
- //       printf("\n initial communication matrix ");
- //       for (i = 0; i < NPES; i++)
- //       {
- //           printf("\n");
- //           for (j = 0; j < NPES; j++)
- //               printf(" %d ", matrix_pairs[i * NPES + j]);
- //       }
- //   }
+    //   if (pct.gridpe == 0)
+    //   {
+    //       printf("\n initial communication matrix ");
+    //       for (i = 0; i < NPES; i++)
+    //       {
+    //           printf("\n");
+    //           for (j = 0; j < NPES; j++)
+    //               printf(" %d ", matrix_pairs[i * NPES + j]);
+    //       }
+    //   }
 
     kbpsi_num_loop = 0;
     for (loop = 0; loop < NPES; loop++)
     {
+        kbpsi_comm_send[loop] = -1;
+        kbpsi_comm_recv[loop] = -1;
         for (proc1 = 0; proc1 < NPES; proc1++)
             proc_mark[proc1] = 1;
         pair_find = 0;
         for (proc1 = 0; proc1 < NPES; proc1++)
         {
-            for (proc2 = proc1+1; proc2 < NPES; proc2++)
+            for (proc3 = proc1+1; proc3 < NPES + proc1 + 1; proc3++)
             {
-                if (proc_mark[proc1] && proc_mark[proc2] && matrix_pairs[proc1 * NPES + proc2]) 
+                proc2 = proc3%NPES;
+                if (proc_mark[proc2] && matrix_pairs[proc1 * NPES + proc2]) 
                 {
                     pair_find++;
-                    if(pct.gridpe == proc1) kbpsi_comm_pair[kbpsi_num_loop] = proc2;
-                    if(pct.gridpe == proc2) kbpsi_comm_pair[kbpsi_num_loop] = proc1;
-                    proc_mark[proc1] = 0;
-                    proc_mark[proc2] = 0;
+                    if(pct.gridpe == proc1) kbpsi_comm_send[loop] = proc2;
+                    if(pct.gridpe == proc2) kbpsi_comm_recv[loop] = proc1;
                     matrix_pairs[proc1 * NPES + proc2]=0;
-
-                    if(pct.gridpe == proc1 || pct.gridpe == proc2) kbpsi_num_loop++;
-
+                    proc_mark[proc2] = 0;
+                    break;
                 }
             } 
         }
 
-        if (pair_find == 0)break;
+        if (pair_find == 0)
+        {
+            kbpsi_num_loop = loop;
+            break;
+        }
     }
+
+
     dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
+    //    for (loop = 0; loop < NPES; loop++)
+    //      dprintf("\n\n %d  %d  %d  %d   loooop\n\n", pct.gridpe, loop,
+    //kbpsi_comm_send[loop], kbpsi_comm_recv[loop]);
 
     //    for (loop = 0; loop < num_loop_kbpsi; loop++)
     //    {

@@ -59,6 +59,7 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
     }
 
     
+#if 0
     /*Only one processor will write restart file*/
     if (pct.imgpe == 0)
     {
@@ -139,6 +140,7 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
 
     } /*end if (pct.imgpe == 0) */
 
+#endif
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
@@ -162,7 +164,7 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
     
 
     /* force change mode of output file */
-    chmod (newname, amode);
+//    chmod (newname, amode);
 
 }                               /* end write_data */
 

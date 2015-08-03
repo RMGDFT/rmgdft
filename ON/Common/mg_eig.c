@@ -59,12 +59,17 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     /* Grab some memory */
     work1 = work_memory;
 
+    void *RT = BeginRmgTimer("3-mg_eig");
+
 
 
     distribute_to_global(vtot_c, vtot_global);
 
+    void *RT1 = BeginRmgTimer("3-mg_eig: invert MatB");
 
     get_invmat(matB);
+
+    EndRmgTimer(RT1);
 
     /* Compute matrix theta = matB * Hij  */
     dsymm_dis(&side, &uplo, &numst, matB, Hij, theta);
@@ -72,8 +77,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     t1 = 2.0;
     sscal(&mxllda2, &t1, theta, &ione);
 
+    void *RT2 = BeginRmgTimer("3-mg_eig: cpdgemr2d");
     Cpdgemr2d(numst, numst, theta, IA, JA, pct.desca, work_matrix_row, IB, JB,
             pct.descb, pct.desca[1]);
+    EndRmgTimer(RT2);
 
 
 
@@ -90,8 +97,12 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
+    void *RT3 = BeginRmgTimer("3-mg_eig: nonortho");
     get_nonortho_res(states, work_matrix_row, states1);
+    EndRmgTimer(RT3);
+    void *RT4 = BeginRmgTimer("3-mg_eig: qnm");
     get_qnm_res(work_matrix_row, kbpsi, kbpsi_res);
+    EndRmgTimer(RT4);
 
     my_barrier();
     /* end shuchun wang */
@@ -140,7 +151,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
          */
         /* Get the non-local operator acting on psi and store in nvtot */
         item = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
+    void *RT5 = BeginRmgTimer("3-mg_eig: dnm");
         get_dnmpsi(&states[st1], &kbpsi[item], &kbpsi_res[item], orbit_tem);       /*shuchun wang */
+    EndRmgTimer(RT5);
 
 
         t1 = 2.0;
@@ -173,6 +186,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
+    void *RT6 = BeginRmgTimer("3-mg_eig: mixing+precond");
 
     switch (ct.mg_method)
     {
@@ -198,7 +212,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     mix_steps++;
 
-     	ortho_norm_local(states); 
+    EndRmgTimer(RT6);
+
+    ortho_norm_local(states); 
+
 
    // normalize_orbits(states);
 
@@ -211,6 +228,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     print_status(states, vh, vxc, vnuc, vh_old, "before leaving mg_eig.c  ");
     print_state_sum(states1);
 #endif
+    EndRmgTimer(RT);
 
 }                               /* end mg_eig */
 
@@ -319,17 +337,31 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
 
         }         
 
+    void *RT1 = BeginRmgTimer("3-mg_eig: qnm: comm_loop");
 
     for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
 
-        proc2 = kbpsi_comm_pair[idx];
+
+    //    MPI_Barrier(pct.grid_comm);
+
+        proc1 = kbpsi_comm_send[idx];
+        proc2 = kbpsi_comm_recv[idx];
+        
+        MPI_Request request;
+        if(proc1 >=0) MPI_Isend(kbpsi, size, MPI_DOUBLE, proc1, idx,
+                pct.grid_comm, &request);
+
+        if(proc2 >=0)
+            MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, idx,
+                    pct.grid_comm, &mstatus);
+        MPI_Wait(&request, &mstatus);
+        if(proc2 < 0) continue;
 
 
-        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc2, idx, kbpsi_comm, size,
-                MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
 
+        void *RT2 = BeginRmgTimer("3-mg_eig: qnm: comm_loop: calcu");
 
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
             for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)
@@ -359,7 +391,11 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
                 }            
 
             }
+        EndRmgTimer(RT2);
     } 
+    EndRmgTimer(RT1);
 
-//    for(st1 = 0; st1 <100; st1++) printf("\n kbpsi_res %d %f", st1, kbpsi_res[st1]);
+    //    for(st1 = 0; st1 <100; st1++) printf("\n kbpsi_res %d %f", st1, kbpsi_res[st1]);
 }
+
+

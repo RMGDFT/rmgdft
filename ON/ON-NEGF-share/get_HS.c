@@ -29,6 +29,9 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, dou
     int ixx, iyy, izz;
 
 
+    void *RT = BeginRmgTimer("4-get_HS");
+
+
     maxst = ct.num_states;
 
     distribute_to_global(vtot_c, vtot_global);
@@ -75,18 +78,26 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, dou
 
     my_barrier();
 
+    void *RT1 = BeginRmgTimer("4-get_HS: orbit_dot_orbit");
     orbit_dot_orbit(states, states1, Hij_00, Bij_00);
+    EndRmgTimer(RT1);
 
 
     my_barrier();
 
+    void *RT2 = BeginRmgTimer("4-get_HS: kbpsi");
     get_all_kbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
+    EndRmgTimer(RT2);
 
+    void *RT3 = BeginRmgTimer("4-get_HS: Hvnlij");
     get_Hvnlij(Hij_00);
+    EndRmgTimer(RT3);
 
 
         /** Add sum_n,m,I(q_n,m * <phi|beta_n,I> * <beta_m,I|phi>) **/
+    void *RT4 = BeginRmgTimer("4-get_HS: matB_qnm");
     get_matB_qnm(Bij_00);          /* shuchun wang */
+    EndRmgTimer(RT4);
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
     double vel = get_vel();
@@ -101,5 +112,6 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, dou
         print_matrix(Bij_00, 5, maxst);
     }
 
+    EndRmgTimer(RT);
 
 }

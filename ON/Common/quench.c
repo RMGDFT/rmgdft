@@ -83,24 +83,24 @@ vxc_old, rmg_double_t * rho, double * rho_oppo, rmg_double_t * rhoc, rmg_double_
         outcount++;
     }
     
-    gw_correction_matrix(matB, zz_dis);
+//    gw_correction_matrix(matB, zz_dis);
 
-    printf ("\n print relative eigenvalue list for plotted states\n");
+//    printf ("\n print relative eigenvalue list for plotted states\n");
 
-    state_plot = ct.nel/2 + 3; // start from a state slightly above the Fermi level, and then go deeper  
-    for (i = 0; i < ct.num_waves; i++)
-    {
-	    printf ("\n %f \n",(states[state_plot].eig[0] - ct.efermi)* Ha_eV);
-            state_plot--;
-    }
+//    state_plot = ct.nel/2 + 3; // start from a state slightly above the Fermi level, and then go deeper  
+//    for (i = 0; i < ct.num_waves; i++)
+//    {
+//	    printf ("\n %f \n",(states[state_plot].eig[0] - ct.efermi)* Ha_eV);
+ //           state_plot--;
+ //   }
 
-    state_plot = ct.nel/2 + 3;   
-    for (i = 0; i < ct.num_waves; i++)
-    {
-	    get_wave(state_plot, states);
-            print_wave(state_plot, states, 2); //use coarse_level = 2, otherwise file too big
-            state_plot--;
-    }
+ //   state_plot = ct.nel/2 + 3;   
+ //   for (i = 0; i < ct.num_waves; i++)
+ //   {
+//	    get_wave(state_plot, states);
+//            print_wave(state_plot, states, 2); //use coarse_level = 2, otherwise file too big
+ //           state_plot--;
+  //  }
 
 
 //    get_mat_Omega(states, mat_Omega);

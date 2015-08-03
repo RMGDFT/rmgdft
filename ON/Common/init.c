@@ -97,6 +97,8 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     get_mehr();
 
 
+     void *RT = BeginRmgTimer("1-TOTAL: init: state_init");
+
     /* allocate memory for wave functions states.psiR and psiI */
     init_state_size(states);
 
@@ -114,10 +116,17 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
 
     get_orbit_overlap_region(states);
+    
+    EndRmgTimer(RT);
+
+    void *RT1 = BeginRmgTimer("1-TOTAL: init: init_comm");
 
     init_comm(states);
 
     init_comm_res(states);
+    EndRmgTimer(RT1);
+
+    void *RT2 = BeginRmgTimer("1-TOTAL: init: init_nuc");
     allocate_psi(states, states1);
 
     duplicate_states_info(states, states1);
@@ -148,28 +157,37 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
     get_nlop();
 
-    fflush(NULL);
-
     my_barrier();
-    fflush(NULL);
+    EndRmgTimer(RT2);
+
+    void *RT3 = BeginRmgTimer("1-TOTAL: init: init_commi_nonlo");
 
     init_nonlocal_comm();
+    EndRmgTimer(RT3);
+
     fflush(NULL);
 
     /* Initialize qfuction in Cartesin coordinates */
+    void *RT4 = BeginRmgTimer("1-TOTAL: init: init_qfunc");
     init_qfunct();
+    EndRmgTimer(RT4);
+    void *RT5 = BeginRmgTimer("1-TOTAL: init: init_QI");
+
     fflush(NULL);
     get_QI();
-    fflush(NULL);
+    EndRmgTimer(RT5);
+    void *RT6 = BeginRmgTimer("1-TOTAL: init: init_qqq");
 
     /* Get the qqq */
     get_qqq();
+    EndRmgTimer(RT6);
     fflush(NULL);
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
     double fac;
     fac = 1.0 - ct.spin_flag * 2.0/3.0 /(1.0 + pct.spinpe);
     if(ct.init_equal_density_flag) fac = 0.5; 
+    void *RT7 = BeginRmgTimer("1-TOTAL: init: init_orbital_rho");
     switch(ct.runflag)
     {
         case 0:
@@ -214,6 +232,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
     }
 
+    EndRmgTimer(RT7);
     switch(ct.runflag)
     {
         case 0:
@@ -234,11 +253,13 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     }
 
 
+    void *RT8 = BeginRmgTimer("1-TOTAL: init: init_ddd");
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
 
     get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
     get_ddd(vtot);
+    EndRmgTimer(RT8);
 
 
     my_barrier();

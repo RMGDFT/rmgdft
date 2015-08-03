@@ -32,6 +32,7 @@ void get_new_rho(STATE * states, double *rho)
     int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
     int st11;
 
+    void *RT0 = BeginRmgTimer("3-get_new_rho");
     state_per_proc = ct.state_per_proc + 2;
     if (pct.gridpe == 0)
         printf(" Compute new density\n");
@@ -43,15 +44,17 @@ void get_new_rho(STATE * states, double *rho)
 #endif
 
 
-
+    void *RT = BeginRmgTimer("3-get_new_rho: Cpdgemr2d");
 
    Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, work_matrix_row, IB, JB,
             pct.descb, pct.desca[1]);
 
+    EndRmgTimer(RT);
 
    for (idx = 0; idx < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx++)
        rho_global[idx] = 0.;
 
+    void *RT1 = BeginRmgTimer("3-get_new_rho: states in this proc");
    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
        for (st2 = st1; st2 < ct.state_end; st2++)
        {
@@ -68,6 +71,9 @@ void get_new_rho(STATE * states, double *rho)
 
        }
 
+    EndRmgTimer(RT1);
+
+    void *RT2 = BeginRmgTimer("3-get_new_rho: states other proc");
    int max_ii = 0;
    for (loop = 0; loop < num_sendrecv_loop; loop++)
    {
@@ -278,19 +284,29 @@ void get_new_rho(STATE * states, double *rho)
    my_free(mr_recv);
    my_barrier();
 
+    EndRmgTimer(RT2);
+
+    void *RT3 = BeginRmgTimer("3-get_new_rho: distribution");
    idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
    global_sums(rho_global, &idx, pct.grid_comm);
 
    global_to_distribute(rho_global, rho_temp);
 
+    EndRmgTimer(RT3);
+
+    void *RT4 = BeginRmgTimer("3-get_new_rho: interpolation");
    mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
 
    my_free(rho_temp);
 
+    EndRmgTimer(RT4);
+
+    void *RT5 = BeginRmgTimer("3-get_new_rho: augmented");
 
    rho_augmented(rho, work_matrix_row, state_begin, state_end, num_nonlocal_ion, 
            kbpsi, max_ion_nonlocal, kbpsi_comm, ionidx_allproc);
 
+    EndRmgTimer(RT5);
 
    int iii = get_FP0_BASIS();
 
@@ -310,6 +326,7 @@ void get_new_rho(STATE * states, double *rho)
    if (pct.gridpe == 0)
        printf("\n total charge Normalization constant = %f  \n", t2);
 
+    EndRmgTimer(RT0);
 
 
 #if  	DEBUG
