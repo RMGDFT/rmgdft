@@ -36,6 +36,7 @@ void init_rho_atom(double *rho)
     int pex, pey, pez;
     int *map;
 
+    void *RT = BeginRmgTimer("1-TOTAL: init: init_rho");
     my_malloc_init( map, ct.num_ions, int );
     hxgrid_new = get_hxxgrid() * get_xside();
     hygrid_new = get_hyygrid() * get_yside();
@@ -243,5 +244,9 @@ void init_rho_atom(double *rho)
     if (pct.gridpe == 0)
         printf(" initial rho  done  \n");
 
+    EndRmgTimer(RT);
 
 }                               /* end init_rho_atom */
+
+
+

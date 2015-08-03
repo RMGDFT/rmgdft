@@ -205,12 +205,8 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
             break;
         case INIT_FIREBALL:
-            void *RTa = BeginRmgTimer("1-TOTAL: init: init_orbital");
             init_wf_atom(states);
-            EndRmgTimer(RTa);
-            void *RTb = BeginRmgTimer("1-TOTAL: init: init_rho");
             init_rho_atom(rho);
-            EndRmgTimer(RTb);
 
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
             {

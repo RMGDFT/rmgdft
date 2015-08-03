@@ -25,6 +25,8 @@ void init_wf_atom(STATE * states)
     char newname[MAX_PATH + 200];
     int ion, species, ist, fhand, nbytes;
 
+    
+    void *RT1 = BeginRmgTimer("1-TOTAL: init: aromic orbita");
 
     if (pct.gridpe == 0)
         printf(" readin initial wavefunction \n");
@@ -63,6 +65,9 @@ void init_wf_atom(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" readin initial orbitals  done  \n");
+    EndRmgTimer(RT1);
 
 
 }                               /* end init_wf_atom */
+
+
