@@ -37,6 +37,7 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
     int ione = 1;
 
 
+    void *RT1 = BeginRmgTimer("4-get_HS: orbit_dot_orbit: dotproduct");
 
     *H = 0.0;
     *S = 0.0;
@@ -373,6 +374,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
             break;
 
     }
+
+    EndRmgTimer(RT1);
 
 }
 

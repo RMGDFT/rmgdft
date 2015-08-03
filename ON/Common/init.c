@@ -187,7 +187,6 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     double fac;
     fac = 1.0 - ct.spin_flag * 2.0/3.0 /(1.0 + pct.spinpe);
     if(ct.init_equal_density_flag) fac = 0.5; 
-    void *RT7 = BeginRmgTimer("1-TOTAL: init: init_orbital_rho");
     switch(ct.runflag)
     {
         case 0:
@@ -206,8 +205,14 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
             break;
         case INIT_FIREBALL:
+            void *RTa = BeginRmgTimer("1-TOTAL: init: init_orbital");
             init_wf_atom(states);
+            EndRmgTimer(RTa);
+            void *RTb = BeginRmgTimer("1-TOTAL: init: init_rho");
             init_rho_atom(rho);
+            EndRmgTimer(RTb);
+
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
             {
                 rho_oppo[idx] = rho[idx] * (1.0 - fac);
                 rho[idx] = rho[idx] * fac;
@@ -221,7 +226,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
                 rho[idx] = rhoc[idx] * fac;
                 rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
             }
-        
+
             break;
 
         case 1:
@@ -232,7 +237,6 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
     }
 
-    EndRmgTimer(RT7);
     switch(ct.runflag)
     {
         case 0:
@@ -241,7 +245,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
         case INIT_GAUSSIAN:
             get_vxc(rho, rho_oppo, rhocore, vxc);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
-            
+
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
