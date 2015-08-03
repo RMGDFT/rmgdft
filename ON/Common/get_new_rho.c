@@ -74,214 +74,36 @@ void get_new_rho(STATE * states, double *rho)
     EndRmgTimer(RT1);
 
     void *RT2 = BeginRmgTimer("3-get_new_rho: states other proc");
-   int max_ii = 0;
-   for (loop = 0; loop < num_sendrecv_loop; loop++)
-   {
-       num_send = send_to[loop * state_per_proc + 1];
-       num_recv = recv_from[loop * state_per_proc + 1];
-       max_ii = max(max_ii, num_send);
-       max_ii = max(max_ii, num_recv);
-   }
-
-   max_ii = int_max_all(max_ii);
-
-   ii = num_sendrecv_loop * (max_ii +10) +1;
-
-   my_calloc(mr_recv, ii, MPI_Request);
-
-   psi2 = orbit_tem;
    my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t );
 
    for (loop = 0; loop < num_sendrecv_loop; loop++)
    {
-       my_barrier();
-       ii = loop * max_ii +1;
-       proc1 = send_to[loop * state_per_proc];
        proc2 = recv_from[loop * state_per_proc];
-       num_send = send_to[loop * state_per_proc + 1];
        num_recv = recv_from[loop * state_per_proc + 1];
-       num_sendrecv = min(num_send, num_recv);
 
-       if(num_sendrecv >0)
+       for (i = 0; i < num_recv; i++)
        {
-           ii++;
-           i=0;
-           st1 = send_to[loop * state_per_proc + i + 2];
-           st2 = recv_from[loop * state_per_proc + i + 2];
-           size1 = states[st1].size;
-           size2 = states[st2].size;
-           psi1 = states[st1].psiR;
-
-           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
-           MPI_Request_free(&mr_send);
-           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-       }
-
-
-
-       for (i = 1; i < num_sendrecv; i++)
-       {
-           ii++;
-           st1 = send_to[loop * state_per_proc + i + 2];
            st2 = recv_from[loop * state_per_proc + i + 2];
 
-           psi1 = states[st1].psiR;
-           size1 = states[st1].size;
-           size2 = states[st2].size;
-
-           MPI_Wait(&mr_recv[ii-1], &mstatus);
-
-           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
-           MPI_Request_free(&mr_send);
-
-           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-
-           st2 = recv_from[loop * state_per_proc + i-1 + 2];
-           if(ii%2 == 1) psi_p = psi2;
-           if(ii%2 == 0) psi_p = psi3;
-
-
+           psi2= states[st2].psiR;
            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
            {
-
-               st11 = st1 - ct.state_begin;
-
-               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-               {
-                   psi1 = states[st1].psiR;
-                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p,
-                           rho_global, 0, states, orbit_overlap_region);
-               }
-           }
-       }
-
-       ii++;
-
-
-       if (num_send < num_recv)
-       {
-           i = num_send;
-           st2 = recv_from[loop * state_per_proc + i + 2];
-           size2 = states[st2].size;
-
-
-           if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-           if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-       }
-
-
-       if (num_send > num_recv)
-       {
-           i = num_recv;
-           st1 = send_to[loop * state_per_proc + i + 2];
-           size1 = states[st1].size;
-           psi1 = states[st1].psiR;
-           MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
-           MPI_Request_free(&mr_send);
-       }
-
-       if(num_sendrecv >0)
-       {
-
-           MPI_Wait(&mr_recv[ii-1], &mstatus);
-
-           st2 = recv_from[loop * state_per_proc + i-1 + 2];
-           if(ii%2 == 1) psi_p = psi2;
-           if(ii%2 == 0) psi_p = psi3;
-
-           for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-           {
-               st11 = st1 - ct.state_begin;
-               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-               {
-                   psi1 = states[st1].psiR;
-                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                   density_orbit_X_orbit(st1, st2, scale, psi1, psi_p,
-                           rho_global, 0, states, orbit_overlap_region);
-               }
-           }
-
-
-       }
-
-
-
-       if (num_send < num_recv)
-       {
-           for (i = num_send+1; i < num_recv; i++)
-           {
-               ii++;
-               st2 = recv_from[loop * state_per_proc + i + 2];
-               size2 = states[st2].size;
-
-
-               MPI_Wait(&mr_recv[ii-1], &mstatus);
-
-               if(ii%2 == 0) MPI_Irecv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-               if(ii%2 == 1) MPI_Irecv(psi3, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mr_recv[ii]);
-
-               st2 = recv_from[loop * state_per_proc + i-1 + 2];
-               if(ii%2 == 1) psi_p = psi2;
-               if(ii%2 == 0) psi_p = psi3;
-
-
-
-               for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-               {
-                   st11 = st1 - ct.state_begin;
-                   if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-                   {
-                       psi1 = states[st1].psiR;
-                       scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                       density_orbit_X_orbit(st1, st2, scale, psi1,
-                               psi_p, rho_global, 0, states, orbit_overlap_region);
-                   }
-               }
-           }
-
-           ii++;
-           MPI_Wait(&mr_recv[ii-1], &mstatus);
-           st2 = recv_from[loop * state_per_proc + i-1 + 2];
-           if(ii%2 == 1) psi_p = psi2;
-           if(ii%2 == 0) psi_p = psi3;
-
-           for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-           {
-               st11 = st1 - ct.state_begin;
-               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-               {
-                   psi1 = states[st1].psiR;
-                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
-                   density_orbit_X_orbit(st1, st2, scale, psi1, 
-                           psi_p, rho_global, 0, states, orbit_overlap_region);
-               }
-           }
-
-
-       }
-
-       if (num_send > num_recv)
-           for (i = num_recv+1; i < num_send; i++)
-           {
-               ii++;
-               st1 = send_to[loop * state_per_proc + i + 2];
                psi1 = states[st1].psiR;
-               size1 = states[st1].size;
 
+               st11 = st1 - ct.state_begin;
 
-               MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_send);
-               MPI_Request_free(&mr_send);
-
+               if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
+               {
+                   psi1 = states[st1].psiR;
+                   scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
+                   density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
+                           rho_global, 0, states, orbit_overlap_region);
+               }
            }
-
+       }
 
    }                           /* end of loop  */
 
-   my_free(psi3);
-   my_free(mr_recv);
    my_barrier();
 
     EndRmgTimer(RT2);

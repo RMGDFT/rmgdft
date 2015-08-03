@@ -122,7 +122,7 @@ void init_nonlocal_comm(void)
     }
 
     item = NPES * NPES;
-    global_sums_int(matrix_pairs, item);
+    global_sums_int(matrix_pairs, &item);
 
 
     //   if (pct.gridpe == 0)
