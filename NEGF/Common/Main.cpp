@@ -102,6 +102,8 @@ COMPASS potentialCompass, chargeDensityCompass;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;
 double *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
+double *kbpsi_res;
+int *kbpsi_comm_send, *kbpsi_comm_recv,  kbpsi_num_loop;
 char *state_overlap_or_not;
 int *send_to, *recv_from, num_sendrecv_loop;
 int *send_to1, *recv_from1, num_sendrecv_loop1;
