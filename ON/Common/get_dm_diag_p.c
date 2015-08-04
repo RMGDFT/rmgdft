@@ -148,7 +148,10 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
 
         st_g = indxl2g_(&st1, &mb, &pct.scalapack_mycol, &izero, &pct.scalapack_npcol);
 
-        alpha = states[st_g].occupation[0];
+        if(st_g >= ct.num_states) 
+            alpha = 0.0;
+        else
+            alpha = states[st_g].occupation[0];
         dscal(&MXLLDA, &alpha, &uu_dis[st1 * MXLLDA], &ione);
     }
 

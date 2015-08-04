@@ -76,24 +76,16 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
 
-    void *RT1 = BeginRmgTimer("3-get_new_rho: augmented: 4Qnm: comm_loop ");
+    void *RT1 = BeginRmgTimer("3-get_new_rho: augmented_comm_loop ");
     for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
 
         proc1 = kbpsi_comm_send[idx];
         proc2 = kbpsi_comm_recv[idx];
- //       dprintf("\n loop %d  proc1 %d  proc2 %d thispe %d", idx, proc1, proc2, pct.gridpe);
+
         int tag1 = idx * NPES  + pct.gridpe;
         int tag2 = idx * NPES  + proc2;
         MPI_Request request;
-#if 0
-        if( proc1 >=0 && proc2 >=0)
-            MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, tag1, kbpsi_comm, size, MPI_DOUBLE, proc2, tag2, pct.grid_comm, &mstatus);
-        else if(proc1 >=0)
-            MPI_Send(kbpsi, size, MPI_DOUBLE, proc1, tag1, pct.grid_comm);
-        else if(proc2 >=0)
-            MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, tag2, pct.grid_comm, &mstatus);
-#endif
 
         if(proc1 >=0)
         {
@@ -109,7 +101,7 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
 //pct.gridpe);
 
 
-    void *RT2 = BeginRmgTimer("3-get_new_rho: augmented: 4Qnm: comm_loop: calc ");
+    void *RT2 = BeginRmgTimer("3-get_new_rho: augmented_comm_loop_calc ");
 
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
             for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)

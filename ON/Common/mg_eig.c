@@ -64,7 +64,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
+    void *RT1a = BeginRmgTimer("3-mg_eig: distribute");
     distribute_to_global(vtot_c, vtot_global);
+    EndRmgTimer(RT1a);
 
     void *RT1 = BeginRmgTimer("3-mg_eig: invert MatB");
 
@@ -88,8 +90,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     EndRmgTimer(RT1);
 
 
+    void *RT11 = BeginRmgTimer("3-mg_eig: scale theta");
     t1 = 2.0;
     sscal(&mxllda2, &t1, theta, &ione);
+    EndRmgTimer(RT11);
 
     void *RT2 = BeginRmgTimer("3-mg_eig: cpdgemr2d");
     Cpdgemr2d(numst, numst, theta, IA, JA, pct.desca, work_matrix_row, IB, JB,
@@ -104,8 +108,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
      */
 
     /*begin shuchun wang */
+    void *RT12 = BeginRmgTimer("3-mg_eig: scopya");
     scopy(&pct.psi_size, states[ct.state_begin].psiR, &ione,
             states_tem[ct.state_begin].psiR, &ione);
+    EndRmgTimer(RT12);
 
     /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
 
@@ -116,26 +122,29 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     EndRmgTimer(RT3);
     void *RT4 = BeginRmgTimer("3-mg_eig: qnm");
     get_qnm_res(work_matrix_row, kbpsi, kbpsi_res);
-    EndRmgTimer(RT4);
 
     my_barrier();
+    EndRmgTimer(RT4);
     /* end shuchun wang */
 
 
 
 
     /* Loop over states istate (correction of state istate) */
+    void *RT2a = BeginRmgTimer("3-mg_eig: mask");
 
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
         app_mask(istate, states1[istate].psiR, 0);
     }
 
+    EndRmgTimer(RT2a);
 
     /* Loop over states istate to compute the whole matrix Hij 
        and all the vectors H|psi> */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
+    void *RTa = BeginRmgTimer("3-mg_eig: Hpsi");
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         ixx = states[st1].ixmax - states[st1].ixmin + 1;
@@ -175,6 +184,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         app_mask(st1, states1[st1].psiR, 0);
     }                           /* end for st1 = .. */
 
+    EndRmgTimer(RTa);
      
 
     /*
@@ -186,12 +196,14 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     /*  SD, Pulay or KAIN method for Linear and Nonlinear equations */
 
+    void *RT6a = BeginRmgTimer("3-mg_eig: scale");
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
         t1 = -1.0;
         sscal(&states1[istate].size, &t1, states1[istate].psiR, &ione);
     }
 
+    EndRmgTimer(RT6a);
     if (ct.restart_mix == 1 || ct.move_centers_at_this_step == 1)
     {
         mix_steps = 0;
@@ -228,8 +240,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     EndRmgTimer(RT6);
 
+    void *RT7 = BeginRmgTimer("3-mg_eig: ortho_norm");
     ortho_norm_local(states); 
 
+    EndRmgTimer(RT7);
 
    // normalize_orbits(states);
 

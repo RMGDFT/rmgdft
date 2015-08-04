@@ -44,6 +44,7 @@ void get_new_rho(STATE * states, double *rho)
 #endif
 
 
+    my_barrier();
     void *RT = BeginRmgTimer("3-get_new_rho: Cpdgemr2d");
 
    Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, work_matrix_row, IB, JB,
