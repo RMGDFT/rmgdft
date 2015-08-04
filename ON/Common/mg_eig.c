@@ -44,6 +44,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
     rmg_double_t tem_luw = -1.0;
+    int *ipiv, info;
 
 
     int IA =1, JA =1, IB =1, JB=1;
@@ -67,12 +68,25 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     void *RT1 = BeginRmgTimer("3-mg_eig: invert MatB");
 
-    get_invmat(matB);
+    my_malloc(ipiv, numst, int);
+    /* Compute matrix theta = matB * Hij  */
+    pdgetrf(&numst, &numst, matB, &IA, &JA, pct.desca, ipiv, &info);
+    if(info !=0)
+    { 
+        printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
+        fflush(NULL);
+        exit(0);
+    }
 
+    dcopy(&mxllda2, Hij, &ione, theta, &ione);
+
+    pdgetrs("N", &numst, &numst, matB, &IA, &JA, pct.desca, ipiv, 
+            theta, &IA, &JA, pct.desca, &info);
+    //get_invmat(matB);
+
+    my_free(ipiv);
     EndRmgTimer(RT1);
 
-    /* Compute matrix theta = matB * Hij  */
-    dsymm_dis(&side, &uplo, &numst, matB, Hij, theta);
 
     t1 = 2.0;
     sscal(&mxllda2, &t1, theta, &ione);

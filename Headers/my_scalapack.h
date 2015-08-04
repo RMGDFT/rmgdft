@@ -67,6 +67,8 @@
 #define 	PDTRAN  	pdtran_
 #define 	PZTRANC  	pztranc_
 #define 	PZHEGVX         pzhegvx_
+#define 	pdgetrf     pdgetrf_
+#define 	pdgetrs     pdgetrs_
 
 #endif
 #endif
@@ -116,6 +118,8 @@ void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, dou
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
 void pzgetri(int *, double *, int *, int*, int*, int*, double*, int*, int*, int*,int*);
 void pzgetrf(int *, int*,  double *, int *, int*, int*, int*,int*);
+void pdgetrf(int *, int*,  double *, int *, int*, int*, int*,int*);
+void pdgetrs(char *, int *, int*,  double *, int *, int*, int*, int*, double *, int*, int*, int*, int*);
 void pztranu_(int *, int*,  double *, double *, int *, int*, int*, double *, double *, int *, int*,int*);
 
 
