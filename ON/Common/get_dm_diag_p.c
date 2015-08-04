@@ -47,13 +47,13 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
     char *uplo = "l", *jobz = "v";
 
     int info, numst = ct.num_states;
-    double zero = 0., one = 1.;
-    int st1, itype = 1;
+    double zero = 0., one = 1., alpha;
+    int st1, st_g, itype = 1;
     char diag, side, transa, transb;
     double *eigs;
 
     /* for parallel libraries */
-    int nb, npcol, nprow;
+    int mb= pct.desca[4], npcol, nprow;
     int mycol, myrow;
     int lwork;
     int  mxllda2;
@@ -141,30 +141,17 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
     EndRmgTimer(RT);
 
 
-
-    /* generalize the gamma for charge density matrix X */
-    for (st1 = 0; st1 < numst; st1++)
+//   uu_dis = zz_dis *(occ_diag)
+    dcopy(&mxllda2, zz_dis, &ione, uu_dis, &ione);
+    for(st1 = 0; st1 <  MXLCOL; st1++)
     {
-        work_matrix_row[st1] = states[st1].occupation[0];
+
+        st_g = indxl2g_(&st1, &mb, &pct.scalapack_mycol, &izero, &pct.scalapack_npcol);
+
+        alpha = states[st_g].occupation[0];
+        dscal(&MXLLDA, &alpha, &uu_dis[st1 * MXLLDA], &ione);
     }
 
-    diag_eig_matrix(gamma_dis, work_matrix_row, pct.desca);
-
-
-
-    /* 
-     * Build the density matrix X 
-     */
-
-
-    /* X = Z * gamma * Z^*  */
-    side = 'r';
-    uplo = 'l';
-    char_fcd1 = &side;
-    char_fcd2 = &uplo;
-    PSSYMM(char_fcd1, char_fcd2, &numst, &numst, &one,
-            gamma_dis, &ione, &ione, pct.desca,
-            zz_dis, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
 
     transa = 'n';
     transb = 't';
