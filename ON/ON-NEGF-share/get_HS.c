@@ -90,14 +90,8 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, dou
     EndRmgTimer(RT2);
 
     void *RT3 = BeginRmgTimer("4-get_HS: Hvnlij");
-    get_Hvnlij(Hij_00);
+    get_Hvnlij(Hij_00, Bij_00);
     EndRmgTimer(RT3);
-
-
-        /** Add sum_n,m,I(q_n,m * <phi|beta_n,I> * <beta_m,I|phi>) **/
-    void *RT4 = BeginRmgTimer("4-get_HS: matB_qnm");
-    get_matB_qnm(Bij_00);          /* shuchun wang */
-    EndRmgTimer(RT4);
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
     double vel = get_vel();

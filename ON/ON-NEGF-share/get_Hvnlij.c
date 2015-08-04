@@ -21,7 +21,7 @@ potential, and add them into Aij.
 #include "init_var.h"
 
 
-void get_Hvnlij(double *Aij)
+void get_Hvnlij(double *Aij, double *Bij)
 {
     int nh, ion, ip1, ip2, st1, st2, ist;
     double time1, time2, alpha;
@@ -29,9 +29,9 @@ void get_Hvnlij(double *Aij)
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
-    rmg_double_t *dnmI;
+    rmg_double_t *dnmI, *qnmI;
     ION *iptr;
-    double tem;
+    double temA, temB;
 
 
 
@@ -49,7 +49,6 @@ void get_Hvnlij(double *Aij)
             ist = (st1 - ct.state_begin) * ct.num_states + st2;
             iip1 = (st1 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
             iip2 = (st2 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
-            tem = 0.0;
             for (ion = 0; ion < num_nonlocal_ion[proc]; ion++)
             {
                 /* begin shuchun wang */
@@ -57,14 +56,20 @@ void get_Hvnlij(double *Aij)
                 iptr = &ct.ions[ion1];
                 nh = pct.prj_per_ion[ion1];
                 dnmI = pct.dnmI[ion1];
+                qnmI = pct.qqq[ion1];
                 for (ip1 = 0; ip1 < nh; ip1++)
                 {
                     for (ip2 = 0; ip2 < nh; ip2++)
                     {
                         if (fabs(kbpsi[iip1 + ip1]) > 0.)
+                        {
                             Aij[ist] +=
                                 alpha * dnmI[ip2 * nh + ip1] * kbpsi[iip1 +
                                 ip1] * kbpsi[iip2 + ip2];
+                            Bij[ist] +=
+                                alpha * qnmI[ip2 * nh + ip1] * kbpsi[iip1 +
+                                ip1] * kbpsi[iip2 + ip2];
+                        }
 
 
                     }
@@ -83,19 +88,24 @@ void get_Hvnlij(double *Aij)
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
 
-    for (idx = 1; idx < NPES; idx++)
+   for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
 
-        proc1 = pct.gridpe + idx;
-        if (proc1 >= NPES)
-            proc1 = proc1 - NPES;
-        proc2 = pct.gridpe - idx;
-        if (proc2 < 0)
-            proc2 += NPES;
+        proc1 = kbpsi_comm_send[idx];
+        proc2 = kbpsi_comm_recv[idx];
+        int tag1 = idx * NPES  + pct.gridpe;
+        int tag2 = idx * NPES  + proc2;
+        MPI_Request request;
+        if(proc1 >=0)
+        {
+            MPI_Isend(kbpsi, size, MPI_DOUBLE, proc1, tag1, pct.grid_comm, &request);
+        }
+        if(proc2 >=0)
+            MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, tag2, pct.grid_comm, &mstatus);
+        MPI_Wait(&request, &mstatus);
 
+        if(proc2 < 0) continue;
 
-        MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,
-                MPI_DOUBLE, proc2, idx, pct.grid_comm, &mstatus);
 
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
             for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)
@@ -110,6 +120,7 @@ void get_Hvnlij(double *Aij)
                     iptr = &ct.ions[ion1_global];
                     nh = pct.prj_per_ion[ion1_global];
                     dnmI = pct.dnmI[ion1_global];
+                    qnmI = pct.qqq[ion1_global];
 
                     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
                     {
@@ -118,11 +129,13 @@ void get_Hvnlij(double *Aij)
                         for (ip2 = 0; ip2 < nh; ip2++)
                         {
 
-                            tem = 0.0;
+                            temA = 0.0;
+                            temB = 0.0;
                             for (ip1 = 0; ip1 < nh; ip1++)
                             {
                                 iip1a = iip1 + ion1 * ct.max_nl + ip1;
-                                tem += alpha * dnmI[ip2 * nh + ip1] * kbpsi[iip1a] ;
+                                temA += alpha * dnmI[ip2 * nh + ip1] * kbpsi[iip1a] ;
+                                temB += alpha * qnmI[ip2 * nh + ip1] * kbpsi[iip1a] ;
                             }
 
                             for (st2 = state_begin[proc2]; st2 < state_end[proc2]; st2++)
@@ -133,7 +146,8 @@ void get_Hvnlij(double *Aij)
 
                                 iip2a = iip2 + ion2 * ct.max_nl + ip2;
 
-                                Aij[ist] += tem * kbpsi_comm[iip2a];
+                                Aij[ist] += temA * kbpsi_comm[iip2a];
+                                Bij[ist] += temB * kbpsi_comm[iip2a];
                             }
                         }   /* end shuchun wang */
                     }       /* end if (ion1_glo... */

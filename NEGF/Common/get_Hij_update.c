@@ -37,7 +37,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     for (st1 = 0; st1 < ct.num_states * (ct.state_end-ct.state_begin); st1++)
         Hij_00[st1] = 0.;
 
-    get_Hvnlij (Hij_00);
+    get_Hvnlij (Hij_00, Bij_00);
     double vel = get_vel();
 
     n2 = ct.num_states * (ct.state_end-ct.state_begin);

@@ -211,7 +211,7 @@ void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
 void get_all_kbpsi (STATE * states1, STATE * states, ION_ORBIT_OVERLAP *, double *, double *);
-void get_Hvnlij (double *Aij);
+void get_Hvnlij (double *Aij, double *Bij);
 void genvlocpsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
@@ -459,7 +459,6 @@ void print_matrix (double *b, int n, int ldb);
 void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
-void get_Hvnlij (double *Aij);
 void genvlocpsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
