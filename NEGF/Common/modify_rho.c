@@ -92,7 +92,7 @@ void modify_rho (rmg_double_t * rho, rmg_double_t * rho_old)
 
         t2 = ct.nel / ct.tcharge;
 
-        sscal (&fpbasis, &t2, &rho[0], &ione);
+        dscal (&fpbasis, &t2, &rho[0], &ione);
     }
 
     if (chargeDensityCompass.type == 1)

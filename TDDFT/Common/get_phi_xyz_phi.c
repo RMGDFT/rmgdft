@@ -58,9 +58,9 @@ void get_phi_xyz_phi(STATE * states, double *Xij, double *Yij, double *Zij)
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
     vel = get_vel();
-    sscal (&n2, &vel, Xij, &ione);
-    sscal (&n2, &vel, Yij, &ione);
-    sscal (&n2, &vel, Zij, &ione);
+    dscal (&n2, &vel, Xij, &ione);
+    dscal (&n2, &vel, Yij, &ione);
+    dscal (&n2, &vel, Zij, &ione);
 
     if (pct.gridpe == 0)
     {

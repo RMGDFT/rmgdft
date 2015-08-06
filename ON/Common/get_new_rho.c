@@ -143,7 +143,7 @@ void get_new_rho(STATE * states, double *rho)
    ct.tcharge *= get_vel_f();
 
    t2 = ct.nel / ct.tcharge;
-   sscal(&iii, &t2, &rho[0], &ione);
+   dscal(&iii, &t2, &rho[0], &ione);
     
 
    if (pct.gridpe == 0)

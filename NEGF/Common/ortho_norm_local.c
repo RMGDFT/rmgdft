@@ -49,7 +49,7 @@ void ortho_norm_local (STATE *states)
                 }
                 norm = QMD_ddot (states[j].size, states[j].psiR, ione, states[j].psiR, ione);
                 norm = 1.0 / (sqrt (norm));
-                sscal (&states[j].size, &norm, states[j].psiR, &ione);
+                dscal (&states[j].size, &norm, states[j].psiR, &ione);
 
             }
         }
@@ -58,7 +58,7 @@ void ortho_norm_local (STATE *states)
     for (j = ct.state_begin; j < ct.state_end; j++)
     {
         norm = 1.0 / (sqrt (get_vel()));
-        sscal (&states[j].size, &norm, states[j].psiR, &ione);
+        dscal (&states[j].size, &norm, states[j].psiR, &ione);
     }
 
 }

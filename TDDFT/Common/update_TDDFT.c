@@ -28,7 +28,7 @@ void update_TDDFT(double *mat_X)
 
     void *RT = BeginRmgTimer("update");
 
-    scopy(&n, rho, &ione, rho_old, &ione);
+    dcopy(&n, rho, &ione, rho_old, &ione);
 
     void *RT1 = BeginRmgTimer("Main: update: get_rho");
     get_new_rho(states, rho);
@@ -61,8 +61,8 @@ void update_pot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     double tem;
 
     /* save old vtot, vxc, vh */
-    scopy(&n, vxc, &ione, vxc_old, &ione);
-    scopy(&n, vh, &ione, vh_old, &ione);
+    dcopy(&n, vxc, &ione, vxc_old, &ione);
+    dcopy(&n, vh, &ione, vh_old, &ione);
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx];

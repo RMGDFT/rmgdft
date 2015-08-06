@@ -111,7 +111,7 @@ void cgen_prolong (rmg_double_t coef[], rmg_double_t fraction, int order)
 
 
     /*  solving Ac=b for c using  b = A^(-1) * b  */
-    sgesv (&order, &ione, A, &order, ipvt, b, &order, &info);
+    dgesv (&order, &ione, A, &order, ipvt, b, &order, &info);
 
 
 

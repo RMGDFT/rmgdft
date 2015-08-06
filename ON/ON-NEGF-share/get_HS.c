@@ -95,8 +95,8 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, dou
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
     double vel = get_vel();
-    sscal (&n2, &vel, Hij_00, &ione);
-    sscal (&n2, &vel, Bij_00, &ione);
+    dscal (&n2, &vel, Hij_00, &ione);
+    dscal (&n2, &vel, Bij_00, &ione);
 
     if (pct.gridpe == 0)
     {

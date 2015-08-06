@@ -60,7 +60,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
         diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
         diag = -1.0/diag;
-        saxpy(&stopp0, &one, res, &ione, work2, &ione);
+        daxpy(&stopp0, &one, res, &ione, work2, &ione);
 
 
         /*app_mask(istate, work2, 0); */
@@ -95,7 +95,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
         }                       /* end if cycles == ct.eig_parm.gl_pre */
 
         /* Update correction for wavefuntion */
-        saxpy(&stopp0, &t1, work2, &ione, work1, &ione);
+        daxpy(&stopp0, &t1, work2, &ione, work1, &ione);
 
         app_mask(istate, work1, 0);
 

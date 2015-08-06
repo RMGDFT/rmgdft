@@ -33,5 +33,5 @@ void sd(int step, int N, double *xm, double *fm)
     double gamma = -0.5;
 
     precond(fm);
-    saxpy(&N, &gamma, fm, &ione, xm, &ione);
+    daxpy(&N, &gamma, fm, &ione, xm, &ione);
 }

@@ -474,7 +474,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
         double *tarr = new double[this->nstates];
         double *global_matrix = new double[this->nstates * this->nstates];
 
-        ssyrk( uplo, transt, &this->nstates, &this->pbasis, &one, this->orbital_storage, &this->pbasis,
+        dsyrk( uplo, transt, &this->nstates, &this->pbasis, &one, this->orbital_storage, &this->pbasis,
                     &zero, global_matrix, &this->nstates);
 
         /* get the global part */

@@ -33,7 +33,7 @@ void normalize_orbits(STATE * states)
         for (i = 0; i < states[st].size; i++)
             states[st].psiR[i] /= sum;
         tmp = 1. / sqrt(get_vel());
-        sscal(&states[st].size, &tmp, states[st].psiR, &ione);
+        dscal(&states[st].size, &tmp, states[st].psiR, &ione);
 
     }
 

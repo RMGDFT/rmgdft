@@ -46,32 +46,20 @@
 
 #define                 sger            dger_
 //#  define		global_sums     global_sums_
-#  define		saxpy		daxpy_
 #  define		daxpy		daxpy_
 #  define		zaxpy		zaxpy_
 #  define	    dzasum      dzasum_	
 #  define		ZAXPY		zaxpy_
-#  define		scopy   	dcopy_
 #  define		dcopy   	dcopy_
 #  define		zcopy   	zcopy_
 #  define		ZCOPY   	zcopy_
-#  define		sdot    	ddot_
 #  define		ddot    	ddot_
-#  define		sscal   	dscal_
 #  define		dscal   	dscal_
-#  define		ssyrk   	dsyrk_
 #  define		dsyrk   	dsyrk_
 #  define		zsyrk   	zsyrk_
-#  define		spotrf  	dpotrf_
 #  define		dpotrf  	dpotrf_
 #  define		zpotrf  	zpotrf_
-#  define		spotri  	dpotri_
-#  define		cpotrf  	zpotrf_
-#  define		cpotri  	zpotri_
-#  define		snrm2   	dnrm2_
-#  define		sswap   	dswap_
 #  define		dswap   	dswap_
-#  define		ssyev		dsyev_
 #  define		cheev		zheev_
 #  define		xbecke		xbecke_
 #  define		corlyp_f90      corlyp_f90_
@@ -93,7 +81,6 @@
 #  define		zgetrf 	        zgetrf_
 #  define		zgetri 	        zgetri_
 #  define		dgesv 	        dgesv_
-#  define               sgesv           dgesv_
 #  define		zgesv 	        zgesv_
 #  define		ZGESV 	        zgesv_
 #  define               dgemv           dgemv_
@@ -113,19 +100,6 @@
 #else
 #ifdef AIX
 
-#  define		saxpy		daxpy
-#  define		scopy   	dcopy
-#  define		sdot    	ddot
-#  define		sscal   	dscal
-#  define		ssyrk   	dsyrk
-#  define		spotrf  	dpotrf
-#  define		spotri  	dpotri
-#  define		snrm2   	dnrm2
-#  define		sswap   	dswap
-#  define		ssyev		dsyev
-#  define		cpotrf  	zpotrf
-#  define		cpotri  	zpotri
-#  define		cheev   	zheev
 #  define		fgram   	dfgram
 
 #endif
@@ -147,16 +121,14 @@ void fsymforces (double * force, int *s, int *irg, int *irt,
                  double * celldm, int *nr1, int *nr2, int *nr3);
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
-void saxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);
-void sscal (int *n, double * alpha, double * x, int *incx);
-void scopy (int *n, double * x, int *incx, double * y, int *incy);
-double sdot (int *n, double * x, int *incx, double * y, int *incy);
-double snrm2 (int *n, double * x, int *incx);
-void ssyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
-            int *lda, double * beta, double * c, int *ldc);
+void daxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);
+void dscal (int *n, double * alpha, double * x, int *incx);
+void dcopy (int *n, double * x, int *incx, double * y, int *incy);
+double ddot (int *n, double * x, int *incx, double * y, int *incy);
+double dnrm2 (int *n, double * x, int *incx);
 void dsyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
             int *lda, double * beta, double * c, int *ldc);
-void sswap (int *n, double * x, int *incx, double * y, int *incy);
+void dswap (int *n, double * x, int *incx, double * y, int *incy);
 void xbecke (double * d, double * s, double * u, double * v, double * ex, double * vx);
 void corlyp_f90 (double * dp, double * dm, double * dp1, double * dm1, double * dp2,
                  double * dm2, double * ec, double * vcp0, double * vcm0, int *ndm);

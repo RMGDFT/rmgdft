@@ -69,12 +69,12 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
     }
     if (step == 0)
     {
-        scopy(&N, xm, &ione, x, &ione);
-        scopy(&N, fm, &ione, f, &ione);
+        dcopy(&N, xm, &ione, x, &ione);
+        dcopy(&N, fm, &ione, f, &ione);
 
         precond(fm);
 
-        saxpy(&N, &sd_step, fm, &ione, xm, &ione);
+        daxpy(&N, &sd_step, fm, &ione, xm, &ione);
     }
     else
     {
@@ -88,14 +88,14 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
             {
                 x1 = x + i * N;
                 f1 = f + j * N;
-                xifj[i * size + j] = sdot(&N, x1, &ione, f1, &ione);
+                xifj[i * size + j] = ddot(&N, x1, &ione, f1, &ione);
             }
             x1 = x + i * N;
             f1 = f + i * N;
-            xmfj[i] = sdot(&N, xm, &ione, f1, &ione);
-            xifm[i] = sdot(&N, x1, &ione, fm, &ione);
+            xmfj[i] = ddot(&N, xm, &ione, f1, &ione);
+            xifm[i] = ddot(&N, x1, &ione, fm, &ione);
         }
-        xmfm = sdot(&N, xm, &ione, fm, &ione);
+        xmfm = ddot(&N, xm, &ione, fm, &ione);
 
         for (i = 0; i < size; i++)
         {
@@ -113,7 +113,7 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
 
 
         /*   b = A^(-1) * b     */
-        sgesv(&size, &ione, A, &size, ipvt, b, &size, &info);
+        dgesv(&size, &ione, A, &size, ipvt, b, &size, &info);
 
 
         if (pct.gridpe == 0)
@@ -133,72 +133,72 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
             /*  xm = xm +sum(ci*(xi-xm)) - D*(sum(fj-fm)*cj+fm)   */
             x1 = x + size * N;
             f1 = f + size * N;
-            scopy(&N, xm, &ione, x1, &ione);
-            scopy(&N, fm, &ione, f1, &ione);
+            dcopy(&N, xm, &ione, x1, &ione);
+            dcopy(&N, fm, &ione, f1, &ione);
 
             t1 = 1.0 - sum_ci;
-            sscal(&N, &t1, xm, &ione);
+            dscal(&N, &t1, xm, &ione);
             for (i = 0; i < size; i++)
             {
                 x1 = x + i * N;
-                saxpy(&N, &b[i], x1, &ione, xm, &ione);
+                daxpy(&N, &b[i], x1, &ione, xm, &ione);
             }
-            sscal(&N, &t1, fm, &ione);
+            dscal(&N, &t1, fm, &ione);
             for (i = 0; i < size; i++)
             {
                 f1 = f + i * N;
-                saxpy(&N, &b[i], f1, &ione, fm, &ione);
+                daxpy(&N, &b[i], f1, &ione, fm, &ione);
             }
 
             precond(fm);
-            saxpy(&N, &gamma, fm, &ione, xm, &ione);
+            daxpy(&N, &gamma, fm, &ione, xm, &ione);
 
         }
         else
         {
             t1 = b[0];
-            sscal(&N, &t1, x, &ione);
+            dscal(&N, &t1, x, &ione);
             for (i = 1; i < size; i++)
             {
                 x1 = x + i * N;
-                saxpy(&N, &b[i], x1, &ione, x, &ione);
+                daxpy(&N, &b[i], x1, &ione, x, &ione);
             }
             t1 = 1.0 - sum_ci;
-            saxpy(&N, &t1, xm, &ione, x, &ione);
+            daxpy(&N, &t1, xm, &ione, x, &ione);
 
             t1 = b[0];
-            sscal(&N, &t1, f, &ione);
+            dscal(&N, &t1, f, &ione);
             for (i = 1; i < size; i++)
             {
                 f1 = f + i * N;
-                saxpy(&N, &b[i], f1, &ione, f, &ione);
+                daxpy(&N, &b[i], f1, &ione, f, &ione);
             }
             t1 = 1.0 - sum_ci;
-            saxpy(&N, &t1, fm, &ione, f, &ione);
+            daxpy(&N, &t1, fm, &ione, f, &ione);
 
             precond(f);
-            sscal(&N, &gamma, f, &ione);
-            saxpy(&N, &one, x, &ione, f, &ione);
+            dscal(&N, &gamma, f, &ione);
+            daxpy(&N, &one, x, &ione, f, &ione);
 
             for (i = 0; i < (size - 1); i++)
             {
                 x1 = x + i * N;
                 x2 = x + i * N + N;
-                scopy(&N, x2, &ione, x1, &ione);
+                dcopy(&N, x2, &ione, x1, &ione);
             }
             x1 = x + (size - 1) * N;
-            scopy(&N, xm, &ione, x1, &ione);
+            dcopy(&N, xm, &ione, x1, &ione);
 
-            scopy(&N, f, &ione, xm, &ione);
+            dcopy(&N, f, &ione, xm, &ione);
 
             for (i = 0; i < (size - 1); i++)
             {
                 f1 = f + i * N;
                 f2 = f + i * N + N;
-                scopy(&N, f2, &ione, f1, &ione);
+                dcopy(&N, f2, &ione, f1, &ione);
             }
             f1 = f + (size - 1) * N;
-            scopy(&N, fm, &ione, f1, &ione);
+            dcopy(&N, fm, &ione, f1, &ione);
 
         }
 

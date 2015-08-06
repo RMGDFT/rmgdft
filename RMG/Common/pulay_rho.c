@@ -169,7 +169,7 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
 
 
         /*   b = A^(-1) * b     */
-        sgesv(&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
+        dgesv(&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
 
 	
 	/*Print pulay constants*/

@@ -74,8 +74,8 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
 
         /* Transform the generalized eigenvalue problem to a sStandard form */
         mxllda2 = MXLLDA * MXLCOL;
-        scopy(&mxllda2, hb, &ione, uu_dis, &ione);
-        scopy(&mxllda2, matS, &ione, l_s, &ione);
+        dcopy(&mxllda2, hb, &ione, uu_dis, &ione);
+        dcopy(&mxllda2, matS, &ione, l_s, &ione);
 
         char *range = "a";
         rmg_double_t vx = 0.0;

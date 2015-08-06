@@ -126,7 +126,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
 
     /* Generate new density */
-    scopy (&fpbasis, rho, &ione, rho_old, &ione);
+    dcopy (&fpbasis, rho, &ione, rho_old, &ione);
 
     my_barrier ();
     if (ct.runflag == 111 && ct.metal == 1)
@@ -249,8 +249,8 @@ void update_pot (double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t *
 
 
     /* save old vtot, vxc, vh */
-    scopy (&n, vxc, &ione, vxc_old, &ione);
-    scopy (&n, vh, &ione, vh_old, &ione);
+    dcopy (&n, vxc, &ione, vxc_old, &ione);
+    dcopy (&n, vh, &ione, vh_old, &ione);
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {

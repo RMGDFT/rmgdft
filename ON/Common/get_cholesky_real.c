@@ -65,7 +65,7 @@ void get_cholesky_real(double *matS)
 
 
         /*  Distribute matrices on the process grid */
-        scopy(&mxllda2, matS, &ione, l_s, &ione);
+        dcopy(&mxllda2, matS, &ione, l_s, &ione);
 
 
         /* Compute the Cholesky decomposition of statearray */

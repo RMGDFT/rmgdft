@@ -92,7 +92,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     void *RT11 = BeginRmgTimer("3-mg_eig: scale theta");
     t1 = 2.0;
-    sscal(&mxllda2, &t1, theta, &ione);
+    dscal(&mxllda2, &t1, theta, &ione);
     EndRmgTimer(RT11);
 
     void *RT2 = BeginRmgTimer("3-mg_eig: cpdgemr2d");
@@ -108,8 +108,8 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
      */
 
     /*begin shuchun wang */
-    void *RT12 = BeginRmgTimer("3-mg_eig: scopya");
-    scopy(&pct.psi_size, states[ct.state_begin].psiR, &ione,
+    void *RT12 = BeginRmgTimer("3-mg_eig: dcopya");
+    dcopy(&pct.psi_size, states[ct.state_begin].psiR, &ione,
             states_tem[ct.state_begin].psiR, &ione);
     EndRmgTimer(RT12);
 
@@ -154,7 +154,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(states[st1].psiR, st1, orbit_tem, vtot_global, states);
         t1 = -1.0;
-        saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
+        daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
 
         /* Pack psi into smoothing array */
         /*		pack_ptos(sg_orbit, states[st1].psiR, ixx, iyy, izz); 
@@ -165,7 +165,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
         t1 = 1.0;
-        saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
+        daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
 
 
         /*                                                                     
@@ -180,7 +180,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
         t1 = 2.0;
-        saxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
+        daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
         app_mask(st1, states1[st1].psiR, 0);
     }                           /* end for st1 = .. */
 
@@ -190,7 +190,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     /*
      *    precond(states1[ct.state_begin].psiR);
      *    t1 = 0.1; 
-     *    saxpy(&pct.psi_size, &t1, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione); 
+     *    daxpy(&pct.psi_size, &t1, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione); 
      */
 
 
@@ -200,7 +200,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
         t1 = -1.0;
-        sscal(&states1[istate].size, &t1, states1[istate].psiR, &ione);
+        dscal(&states1[istate].size, &t1, states1[istate].psiR, &ione);
     }
 
     EndRmgTimer(RT6a);
