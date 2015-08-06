@@ -6,22 +6,22 @@
 
 
 
-void get_mgga_vxc (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * tau, rmg_double_t * vxc)
+void get_mgga_vxc (double * rho, double * rho_oppo, double * rhocore, double * tau, double * vxc)
 {
 
     int idx;
     int FP0_BASIS;
-    rmg_double_t *exc, *nrho, *nrho_oppo;
+    double *exc, *nrho, *nrho_oppo;
 
     FP0_BASIS = get_FP0_BASIS();
  
     if (ct.spin_flag)
     {
-    	my_malloc (exc, 3 * FP0_BASIS, rmg_double_t);
+    	my_malloc (exc, 3 * FP0_BASIS, double);
 	nrho_oppo = exc + 2 * FP0_BASIS;
     }
     else
-    	my_malloc (exc, 2 * FP0_BASIS, rmg_double_t);
+    	my_malloc (exc, 2 * FP0_BASIS, double);
     
     nrho = exc + FP0_BASIS;
 

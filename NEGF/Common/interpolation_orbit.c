@@ -37,9 +37,9 @@ void interpolation_orbit (STATE * states)
     int ixmin_old, ixmin_new, iymin_old, iymin_new;
     int st, st1, st_new, max_orbit_nx_ny;
 
-    rmg_double_t *psi_old, *psi_new; 
-    rmg_double_t hx_old, hx_new, hy_old, hy_new;
-    rmg_double_t x1_old, x1_new, y1_old, y1_new;
+    double *psi_old, *psi_new; 
+    double hx_old, hx_new, hy_old, hy_new;
+    double x1_old, x1_new, y1_old, y1_new;
 
 /*  when the transport calculation use different gird space hx because of the different length
  *  in lead and conductor, interpolate the readin potential and rho to the current grid
@@ -50,8 +50,8 @@ void interpolation_orbit (STATE * states)
     hy_new = get_hygrid() * get_yside();
 
     max_orbit_nx_ny = max(ct.max_orbit_nx, ct.max_orbit_ny);
-    my_malloc_init( psi_old, max_orbit_nx_ny, rmg_double_t );
-    my_malloc_init( psi_new, max_orbit_nx_ny, rmg_double_t );
+    my_malloc_init( psi_old, max_orbit_nx_ny, double );
+    my_malloc_init( psi_new, max_orbit_nx_ny, double );
 
 #if 	LDEBUG
     printf ("\n PE: %d  xside %f  %f %f  ", pct.gridpe, lcr[1].xside, lcr[0].xside, lcr[2].xside);

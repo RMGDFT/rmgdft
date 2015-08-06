@@ -27,7 +27,7 @@
 #include "main.h"
 #include "common_prototypes.h"
 
-void get_vtot_psi (rmg_double_t * vtot_psi, rmg_double_t * vtot, int grid_ratio)
+void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio)
 {
     int idx, ione = 1;
     int ix, iy,iz, idx1;

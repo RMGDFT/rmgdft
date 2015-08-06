@@ -52,26 +52,26 @@ void allocate_matrix_soft ()
     ispin = ct.spin + 1;
 
     sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
-    my_malloc_init( peaks, 100, rmg_double_t );
+    my_malloc_init( peaks, 100, double );
 
-    my_malloc_init( rho, get_FP0_BASIS() * ispin, rmg_double_t );
-    my_malloc_init( rhoc, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vh, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vnuc, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vext, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vcomp, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vxc, get_FP0_BASIS() * ispin, rmg_double_t );
-    my_malloc_init( vtot, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vtot_c, get_P0_BASIS(), rmg_double_t );
-    my_malloc_init( rhocore, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
-/*  my_malloc_init( nlarray1, get_P0_BASIS()/MAX_FUNC_PE, rmg_double_t );*/
+    my_malloc_init( rho, get_FP0_BASIS() * ispin, double );
+    my_malloc_init( rhoc, get_FP0_BASIS(), double );
+    my_malloc_init( vh, get_FP0_BASIS(), double );
+    my_malloc_init( vnuc, get_FP0_BASIS(), double );
+    my_malloc_init( vext, get_FP0_BASIS(), double );
+    my_malloc_init( vcomp, get_FP0_BASIS(), double );
+    my_malloc_init( vxc, get_FP0_BASIS() * ispin, double );
+    my_malloc_init( vtot, get_FP0_BASIS(), double );
+    my_malloc_init( vtot_c, get_P0_BASIS(), double );
+    my_malloc_init( rhocore, get_FP0_BASIS(), double );
+    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), double );
+/*  my_malloc_init( nlarray1, get_P0_BASIS()/MAX_FUNC_PE, double );*/
  /* rho_global = vtot_global;
  */
 
-    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, rmg_double_t );
+    my_malloc_init( rho_old, get_FP0_BASIS() * ispin, double );
 
-    my_malloc_init( sg_res, sbasis, rmg_double_t );
+    my_malloc_init( sg_res, sbasis, double );
     sizeofmatrix = ct.num_states * ct.num_states;
 
 #if !GAMMA_PT

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void nlccforce(rmg_double_t *rho, rmg_double_t *vxc)
+ *   void nlccforce(double *rho, double *vxc)
  *   Evaluates the ionic force component due to the non-linear core
  *   correction terms. 
  * INPUTS
@@ -45,15 +45,15 @@
 
 
 
-void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
+void nlccforce (double * rho, double * vxc)
 {
 
     int ishift;
-    rmg_double_t axs[3], bx[3];
-    rmg_double_t shift[4];
-    rmg_double_t fl[3];
-    rmg_double_t deltac;
-    rmg_double_t sumxc2, sumx, sumy, sumz;
+    double axs[3], bx[3];
+    double shift[4];
+    double fl[3];
+    double deltac;
+    double sumxc2, sumx, sumy, sumz;
 
     int ix, iy, iz, ixx, iyy, izz;
     int xstart, ystart, zstart, xend, yend, zend;
@@ -65,9 +65,9 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    rmg_double_t r, Zv, rc, rc2, rcnorm, t1;
-    rmg_double_t x[3], invdr;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double r, Zv, rc, rc2, rcnorm, t1;
+    double x[3], invdr;
+    double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;
@@ -99,7 +99,7 @@ void nlccforce (rmg_double_t * rho, rmg_double_t * vxc)
     khi = klow + FPZ0_GRID;
 
 
-    deltac = ct.hmaxgrid / 200.0 / (rmg_double_t) get_FG_RATIO();
+    deltac = ct.hmaxgrid / 200.0 / (double) get_FG_RATIO();
     shift[0] = -TWO * deltac;
     shift[1] = TWO * deltac;
     shift[2] = -deltac;

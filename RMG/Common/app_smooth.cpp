@@ -22,7 +22,6 @@
 
 
 
-#include "rmgtypes.h"
 #include <complex>
 
 template <typename RmgType>
@@ -116,12 +115,12 @@ void CPP_app_smooth (RmgType * f, RmgType * work, int dimx, int dimy, int dimz)
 }
 
 
-extern "C" void app_smooth (rmg_double_t * f, rmg_double_t * work, int dimx, int dimy, int dimz)
+extern "C" void app_smooth (double * f, double * work, int dimx, int dimy, int dimz)
 {
-    CPP_app_smooth<rmg_double_t> (f, work, dimx, dimy, dimz);
+    CPP_app_smooth<double> (f, work, dimx, dimy, dimz);
 }
 
-extern "C" void app_smooth_f (rmg_float_t * f, rmg_float_t * work, int dimx, int dimy, int dimz)
+extern "C" void app_smooth_f (float * f, float * work, int dimx, int dimy, int dimz)
 {
-    CPP_app_smooth<rmg_float_t> (f, work, dimx, dimy, dimz);
+    CPP_app_smooth<float> (f, work, dimx, dimy, dimz);
 }

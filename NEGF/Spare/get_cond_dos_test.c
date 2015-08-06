@@ -24,27 +24,27 @@ void get_cond_dos_test (STATE * states)
     int iprobe, jprobe;
     int iene;
     int st1;
-    rmg_double_t eneR;
-    rmg_double_t eneI;
-    rmg_double_t *tot;
-    rmg_double_t *tott;
-    rmg_double_t *green_tem;
-    rmg_double_t *g;
-    rmg_double_t *sigma, *green_C;
+    double eneR;
+    double eneI;
+    double *tot;
+    double *tott;
+    double *green_tem;
+    double *g;
+    double *sigma, *green_C;
     complex double *sigma_all;
-    rmg_double_t *temp_matrix_tri, *temp_matrix, *matrix_product;
-    rmg_double_t de, emin, emax;
+    double *temp_matrix_tri, *temp_matrix, *matrix_product;
+    double de, emin, emax;
 
     int nC;
-    rmg_double_t alpha[2], beta[2];
+    double alpha[2], beta[2];
     int i, j, *sigma_idx, idx_C, llda, locc;
     char fcd_n = 'N', fcd_c = 'C';
     FILE *file;
 
-    rmg_double_t *ener1, *dos;
+    double *ener1, *dos;
     int ntot, ndim;
     int ii, jj, kk, xoff;
-    rmg_double_t *Green_store, *rho_energy;
+    double *Green_store, *rho_energy;
     int root_pe, idx, ix;
 
     int E_POINTS, kpoint;
@@ -54,8 +54,8 @@ void get_cond_dos_test (STATE * states)
     read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, &kpoint);
     de = (emax - emin) / (E_POINTS - 1);
 
-    my_malloc_init( ener1, E_POINTS, rmg_double_t );
-    my_malloc_init( dos, E_POINTS, rmg_double_t );
+    my_malloc_init( ener1, E_POINTS, double );
+    my_malloc_init( dos, E_POINTS, double );
 
 
     alpha[0] = 1.0;
@@ -90,16 +90,16 @@ void get_cond_dos_test (STATE * states)
 
 /*========================== Reading Matrices =======================*/
 
-    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
-    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Htri, ntot, double );
+    my_malloc_init( lcr[0].Stri, ntot, double );
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H00, idx, double );
+        my_malloc_init( lcr[iprobe].S00, idx, double );
+        my_malloc_init( lcr[iprobe].H01, idx, double );
+        my_malloc_init( lcr[iprobe].S01, idx, double );
     }
 
 
@@ -107,8 +107,8 @@ void get_cond_dos_test (STATE * states)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].HCL, idx, double );
+        my_malloc_init( lcr[iprobe].SCL, idx, double );
     }
 
 
@@ -123,7 +123,7 @@ void get_cond_dos_test (STATE * states)
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
-    my_malloc_init( sigma, 2 * idx, rmg_double_t );
+    my_malloc_init( sigma, 2 * idx, double );
                                                                                              
                                                                   
     my_malloc_init( sigma_idx, cei.num_probe, int );
@@ -147,18 +147,18 @@ void get_cond_dos_test (STATE * states)
         idx = max(idx, pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1]);
     }
 
-    my_malloc_init( tot,  2 * idx, rmg_double_t );
-    my_malloc_init( tott, 2 * idx, rmg_double_t );
-    my_malloc_init( g,    2 * idx, rmg_double_t );
+    my_malloc_init( tot,  2 * idx, double );
+    my_malloc_init( tott, 2 * idx, double );
+    my_malloc_init( g,    2 * idx, double );
 
-    my_malloc_init( green_tem, 2 * idx, rmg_double_t );
-    my_malloc_init( green_C, 2 * ntot, rmg_double_t );
+    my_malloc_init( green_tem, 2 * idx, double );
+    my_malloc_init( green_C, 2 * ntot, double );
     st1 = (E_POINTS + NPES - 1) / NPES;
-    my_malloc_init( Green_store, st1 * ntot, rmg_double_t );
+    my_malloc_init( Green_store, st1 * ntot, double );
 
 /*===================================================================*/
 
-    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), rmg_double_t );
+    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), double );
 
 
     for (iene = 0; iene < E_POINTS; iene++)

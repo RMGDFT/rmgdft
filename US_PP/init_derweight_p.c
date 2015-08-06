@@ -10,7 +10,6 @@
 #include "grid.h"
 #include "const.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -23,8 +22,8 @@ void init_derweight_p (SPECIES * sp,
 {
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
-    rmg_double_t r, rsq, r3, rsqd, ax[3], bx[3], x, y, z, xc, yc, zc, cc, t1, t2, invdr;
-    rmg_double_t hxx, hyy, hzz;
+    double r, rsq, r3, rsqd, ax[3], bx[3], x, y, z, xc, yc, zc, cc, t1, t2, invdr;
+    double hxx, hyy, hzz;
     double complex *weptr1x, *weptr1y, *weptr1z, *gwptr;
     double complex *weptr2x, *weptr2y, *weptr2z;
     double complex *weptr3x, *weptr3y, *weptr3z;
@@ -55,9 +54,9 @@ void init_derweight_p (SPECIES * sp,
 
     gwptr = weptr3z + size;
 
-    hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
-    hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
-    hzz = get_hzgrid() / (rmg_double_t) ct.nzfgrid;
+    hxx = get_hxgrid() / (double) ct.nxfgrid;
+    hyy = get_hygrid() / (double) ct.nyfgrid;
+    hzz = get_hzgrid() / (double) ct.nzfgrid;
 
     r1x = rtptr_x;
     r1y = rtptr_y;
@@ -81,13 +80,13 @@ void init_derweight_p (SPECIES * sp,
     {
         ixx = ix;
         if (ixx < 0) ixx = ix + sp->nlfdim;
-        xc = (rmg_double_t) ix *hxx;
+        xc = (double) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
             iyy = iy;
             if (iyy < 0) iyy = iy + sp->nlfdim;
-            yc = (rmg_double_t) iy *hyy;
+            yc = (double) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
@@ -96,7 +95,7 @@ void init_derweight_p (SPECIES * sp,
                 if (izz < 0) izz = iz + sp->nlfdim;
                 idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
 
-                zc = (rmg_double_t) iz *hzz;
+                zc = (double) iz *hzz;
 
 
                 ax[0] = xc;

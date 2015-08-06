@@ -8,14 +8,14 @@
 #include "main.h"
 #include "prototypes_on.h"
 
-void write_rho_y(rmg_double_t * rho, char *ab)
+void write_rho_y(double * rho, char *ab)
 {
 
     int ix, iy, iz, poff;
-    rmg_double_t t1;
-    rmg_double_t *zvec;
+    double t1;
+    double *zvec;
 
-    my_malloc_init( zvec, get_FNY_GRID(), rmg_double_t );
+    my_malloc_init( zvec, get_FNY_GRID(), double );
     /* Get this processors offset */
     poff = get_FPY_OFFSET();
 

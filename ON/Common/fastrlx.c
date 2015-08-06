@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void fastrlx(STATE *states, rmg_double_t *vxc, rmg_double_t *vh, rmg_double_t *vnuc,
- *                rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc)
+ *   void fastrlx(STATE *states, double *vxc, double *vh, double *vnuc,
+ *                double *rho, double *rhocore, double *rhoc)
  *   drive routine for fast relax.
  * INPUTS
  *   states: all wave functions (see main.h)
@@ -55,8 +55,8 @@ void movie(FILE *);
 
 
 
-void fastrlx(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vh_old,
-             rmg_double_t * vxc_old, rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * rhoc)
+void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double * vnuc, double * vh_old,
+             double * vxc_old, double * rho, double * rhocore, double * rhoc)
 {
 
     int it, ion, level;
@@ -134,7 +134,7 @@ void fastrlx(STATE * states, STATE * states1, rmg_double_t * vxc, rmg_double_t *
 
             if (ct.ions[ion].movable)
             {
-                rmg_double_t *fp;
+                double *fp;
                 fp = ct.ions[ion].force[ct.fpt[0]];
                 CONV_FORCE &= ((fabs(fp[0]) < ct.thr_frc) &&
                                (fabs(fp[1]) < ct.thr_frc) && (fabs(fp[2]) < ct.thr_frc));

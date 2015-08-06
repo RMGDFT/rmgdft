@@ -44,7 +44,6 @@
 
 #include <float.h>
 #include <math.h>
-#include "rmgtypes.h"
 #include "const.h"
 #include "rmg_xc.h"
 

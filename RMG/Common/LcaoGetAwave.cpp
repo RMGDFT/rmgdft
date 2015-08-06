@@ -49,7 +49,7 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 
 
     int  yindex;
-    rmg_double_t r, vector[3];
+    double r, vector[3];
 
     int ix, iy, iz, ixx, iyy, izz;
     int xstart, ystart, zstart, xend, yend, zend;
@@ -62,8 +62,8 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 
 
     double r1, r2, fradius, coef1, coef2;
-    rmg_double_t x[3];
-    rmg_double_t hxgrid, hygrid, hzgrid;
+    double x[3];
+    double hxgrid, hygrid, hzgrid;
     double xside, yside, zside;
     double a, b, c;
     SPECIES *sp;

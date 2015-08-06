@@ -140,8 +140,8 @@ void init_rho_atom(double *rho)
     }
 
     EndRmgTimer(RT1);
-    my_malloc_init( rho_tem, ixdim * iydim * izdim, rmg_double_t );
-    my_malloc_init( rho_out, ixdim * iydim * izdim, rmg_double_t );
+    my_malloc_init( rho_tem, ixdim * iydim * izdim, double );
+    my_malloc_init( rho_out, ixdim * iydim * izdim, double );
 
 
 

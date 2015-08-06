@@ -48,18 +48,18 @@
 #define SMALL 1.e-8
 
 
-void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t * vxc_up, rmg_double_t * exc, int mode) 
+void xcgga_spin_libxc(double * rho_up, double * rho_dw, double * vxc_up, double * exc, int mode) 
 {
 
     int idx, sizr;
-    rmg_double_t *d2rho_up, *d2rho_dw;
-    rmg_double_t *gx_up, *gy_up, *gz_up;
-    rmg_double_t *gx_dw, *gy_dw, *gz_dw; 
-    rmg_double_t *gx_vsigmauu, *gy_vsigmauu, *gz_vsigmauu, *gx_vsigmaud, *gy_vsigmaud, *gz_vsigmaud; 
+    double *d2rho_up, *d2rho_dw;
+    double *gx_up, *gy_up, *gz_up;
+    double *gx_dw, *gy_dw, *gz_dw; 
+    double *gx_vsigmauu, *gy_vsigmauu, *gz_vsigmauu, *gx_vsigmaud, *gy_vsigmaud, *gz_vsigmaud; 
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
-    rmg_double_t *ec, *vsigma_upup, *vsigma_updw;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double *ec, *vsigma_upup, *vsigma_updw;
+    double hxxgrid, hyygrid, hzzgrid;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
     hxxgrid = get_hxxgrid();
@@ -71,7 +71,7 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     FPZ0_GRID = get_FPZ0_GRID();
 
 
-    rmg_double_t rhospin[FP0_BASIS][2], sigma[FP0_BASIS][3], vsigma[FP0_BASIS][3], vspin[FP0_BASIS][2];
+    double rhospin[FP0_BASIS][2], sigma[FP0_BASIS][3], vsigma[FP0_BASIS][3], vspin[FP0_BASIS][2];
 
     sizr = FP0_BASIS;
     
@@ -113,37 +113,37 @@ void xcgga_spin_libxc(rmg_double_t * rho_up, rmg_double_t * rho_dw, rmg_double_t
     } 
 
 
-    my_calloc (ec, 3 * FP0_BASIS, rmg_double_t);
+    my_calloc (ec, 3 * FP0_BASIS, double);
     vsigma_upup = ec + FP0_BASIS; 
     vsigma_updw = ec + 2 * FP0_BASIS; 
 
 
     /* Grab some memory */ 
     /* to hold gradient of spin up charge density */ 
-    my_malloc (gx_up, sizr, rmg_double_t);
-    my_malloc (gy_up, sizr, rmg_double_t);
-    my_malloc (gz_up, sizr, rmg_double_t);
+    my_malloc (gx_up, sizr, double);
+    my_malloc (gy_up, sizr, double);
+    my_malloc (gz_up, sizr, double);
 
     /* to hold gradient of spin down charge density */
-    my_malloc (gx_dw, sizr, rmg_double_t);
-    my_malloc (gy_dw, sizr, rmg_double_t);
-    my_malloc (gz_dw, sizr, rmg_double_t);
+    my_malloc (gx_dw, sizr, double);
+    my_malloc (gy_dw, sizr, double);
+    my_malloc (gz_dw, sizr, double);
 
 
 
     
     /* to hold laplaciant of the spin up and down charge density */
-    my_malloc (d2rho_up, sizr, rmg_double_t);
-    my_malloc (d2rho_dw, sizr, rmg_double_t);
+    my_malloc (d2rho_up, sizr, double);
+    my_malloc (d2rho_dw, sizr, double);
 
     /* to hold the gradient of potentials */
-    my_malloc (gx_vsigmauu, sizr, rmg_double_t);
-    my_malloc (gy_vsigmauu, sizr, rmg_double_t);
-    my_malloc (gz_vsigmauu, sizr, rmg_double_t);
+    my_malloc (gx_vsigmauu, sizr, double);
+    my_malloc (gy_vsigmauu, sizr, double);
+    my_malloc (gz_vsigmauu, sizr, double);
 
-    my_malloc (gx_vsigmaud, sizr, rmg_double_t);
-    my_malloc (gy_vsigmaud, sizr, rmg_double_t);
-    my_malloc (gz_vsigmaud, sizr, rmg_double_t);
+    my_malloc (gx_vsigmaud, sizr, double);
+    my_malloc (gy_vsigmaud, sizr, double);
+    my_malloc (gz_vsigmaud, sizr, double);
 
 
     /* Generate the gradient of the density */

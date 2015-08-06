@@ -4,14 +4,14 @@
 #include <stdio.h>
 #include "main.h"
 
-bool quench_tau (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * rho,
-             rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc, rmg_double_t * tau)
+bool quench_tau (STATE * states, double * vxc, double * vh, double * vnuc, double * rho,
+             double * rho_oppo, double * rhocore, double * rhoc, double * tau)
 {
 
     bool CONVERGED;
     int numacc = 1, ic;
     /*int ist, ik;
-       rmg_double_t KE; */
+       double KE; */
 
     /* ---------- begin scf loop ---------- */
     

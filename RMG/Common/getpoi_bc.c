@@ -33,19 +33,19 @@
 
 
 
-void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, int dimz)
+void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz, idx, stop, PX0_GRID, PY0_GRID, PZ0_GRID;
     int ix1, iy1;
     int ixdim, iydim, izdim;
     int pex, pey, pez;
-    rmg_double_t ir2, q, px, py, pz, sxx, syy, szz, sxy, syz, szx, temp;
-    rmg_double_t r, xc, yc, zc, x, y, z;
-    rmg_double_t ax[3], bx[3];
-    rmg_double_t xoff, yoff, zoff;
-    rmg_double_t *mask;
-    rmg_double_t hxgrid, hygrid, hzgrid;
+    double ir2, q, px, py, pz, sxx, syy, szz, sxy, syz, szx, temp;
+    double r, xc, yc, zc, x, y, z;
+    double ax[3], bx[3];
+    double xoff, yoff, zoff;
+    double *mask;
+    double hxgrid, hygrid, hzgrid;
     int incx, incy, incz;
 
     PX0_GRID = get_PX0_GRID();
@@ -73,7 +73,7 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
     }                           /* end if */
 
     stop = (ixdim + 2) * (iydim + 2) * (izdim + 2);
-    my_malloc (mask, stop, rmg_double_t);
+    my_malloc (mask, stop, double);
 
     for (idx = 0; idx < stop; idx++)
         mask[idx] = 0.0;
@@ -196,7 +196,7 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
             for (iz = 0; iz < izdim + 2; iz += incz)
             {
 
-                zc = pez * hzgrid * izdim + ((rmg_double_t) iz) * hzgrid - zoff - hzgrid;
+                zc = pez * hzgrid * izdim + ((double) iz) * hzgrid - zoff - hzgrid;
                 ax[0] = xc;
                 ax[1] = yc;
                 ax[2] = zc;
@@ -227,8 +227,8 @@ void getpoi_bc (rmg_double_t * rho, rmg_double_t * vh_bc, int dimx, int dimy, in
                         for (iy1 = -2; iy1 <= 2; iy1++)
                         {
 
-                            ax[0] = xc + (rmg_double_t) ix1;
-                            ax[1] = yc + (rmg_double_t) iy1;
+                            ax[0] = xc + (double) ix1;
+                            ax[1] = yc + (double) iy1;
                             ax[2] = zc;
                             r = metric (ax);
                             to_cartesian (ax, bx);

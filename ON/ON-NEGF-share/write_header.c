@@ -65,7 +65,7 @@ void write_header(void)
 
     int kpt, idx;
     time_t tt;
-    rmg_double_t t1;
+    double t1;
 
     time(&tt);
 

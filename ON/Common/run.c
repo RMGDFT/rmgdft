@@ -66,8 +66,8 @@ void run(STATE * states, STATE * states1)
 
     /* Perform some necessary initializations no matter localized or not  
      */
-    my_malloc_init( vxc_old, get_FP0_BASIS(), rmg_double_t );
-    my_malloc_init( vh_old, get_FP0_BASIS(), rmg_double_t );
+    my_malloc_init( vxc_old, get_FP0_BASIS(), double );
+    my_malloc_init( vh_old, get_FP0_BASIS(), double );
 
     init(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 

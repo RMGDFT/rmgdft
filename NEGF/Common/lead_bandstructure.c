@@ -32,7 +32,7 @@ void  pmo_unitary_matrix_double(double *, int *);
 
 void lead_bandstructure ()
 {
-    rmg_double_t de, emin, emax, E_image, kbt, current;
+    double de, emin, emax, E_image, kbt, current;
 
 
     int nmax, nC, nL, nR;
@@ -102,8 +102,8 @@ void lead_bandstructure ()
 
      int num_offdiag_yz = 9;
 
-    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
-    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Htri, ntot, double );
+    my_malloc_init( lcr[0].Stri, ntot, double );
 
     my_malloc_init( lcr[0].Htri_yz, num_offdiag_yz *ntot, double );
     my_malloc_init( lcr[0].Stri_yz, num_offdiag_yz *ntot, double );
@@ -113,10 +113,10 @@ void lead_bandstructure ()
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H00, idx, double );
+        my_malloc_init( lcr[iprobe].S00, idx, double );
+        my_malloc_init( lcr[iprobe].H01, idx, double );
+        my_malloc_init( lcr[iprobe].S01, idx, double );
 
 
         my_malloc_init( lcr[iprobe].H00_yz, num_offdiag_yz * idx, double);
@@ -131,8 +131,8 @@ void lead_bandstructure ()
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].HCL, idx, double );
+        my_malloc_init( lcr[iprobe].SCL, idx, double );
 
 
         my_malloc_init( lcr[iprobe].HCL_yz, num_offdiag_yz *idx, double );
@@ -143,14 +143,14 @@ void lead_bandstructure ()
 
 
 
-    my_malloc_init( GAP, pmo.nrow * pmo.ncol, rmg_double_t );
+    my_malloc_init( GAP, pmo.nrow * pmo.ncol, double );
     my_malloc_init( ICLUSTR, 2* pmo.nrow * pmo.ncol, int );
     my_malloc_init( IFAIL, nL, int );
     my_malloc_init( matH, mxllda * mxlocc, complex double );
     my_malloc_init( matS, mxllda * mxlocc, complex double );
     my_malloc_init( z_vec, mxllda * mxlocc, complex double );
-    my_malloc_init( unitary_matrix, mxllda * mxlocc, rmg_double_t );
-    my_malloc_init( temp, mxllda * mxlocc, rmg_double_t );
+    my_malloc_init( unitary_matrix, mxllda * mxlocc, double );
+    my_malloc_init( temp, mxllda * mxlocc, double );
 
 
     idx = mxllda * mxlocc;
@@ -164,9 +164,9 @@ void lead_bandstructure ()
     my_malloc_init( HCL,  idx, complex double );
 
 
-    my_malloc_init( ener_band, kpoints[0] * nL, rmg_double_t );
+    my_malloc_init( ener_band, kpoints[0] * nL, double );
 
-    my_malloc_init( eig_val, nL, rmg_double_t );
+    my_malloc_init( eig_val, nL, double );
 
     pmo_unitary_matrix_double(unitary_matrix, desca);
 

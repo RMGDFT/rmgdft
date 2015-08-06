@@ -29,7 +29,7 @@ void get_Hvnlij(double *Aij, double *Bij)
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
-    rmg_double_t *dnmI, *qnmI;
+    double *dnmI, *qnmI;
     ION *iptr;
     double temA, temB;
 
@@ -102,7 +102,7 @@ void get_Hvnlij(double *Aij, double *Bij)
         }
         if(proc2 >=0)
             MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, tag2, pct.grid_comm, &mstatus);
-        MPI_Wait(&request, &mstatus);
+        if(proc1 >=0) MPI_Wait(&request, &mstatus);
 
         if(proc2 < 0) continue;
 

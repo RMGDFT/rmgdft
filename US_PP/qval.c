@@ -8,12 +8,12 @@
 #include "main.h"
 #include <float.h>
 
-rmg_double_t qval (int ih, int jh, rmg_double_t r, rmg_double_t invdr, rmg_double_t * ptpr, int *nhtol, int *nhtom,
-           int *indv, rmg_double_t * ylm, rmg_double_t ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES * sp)
+double qval (int ih, int jh, double r, double invdr, double * ptpr, int *nhtol, int *nhtom,
+           int *indv, double * ylm, double ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES * sp)
 {
     int ivl, jvl;
     int nb, mb, nmb, lm, lp, l;
-    rmg_double_t qrad, sum, *ptpr1;
+    double qrad, sum, *ptpr1;
 
     nb = indv[ih];
     mb = indv[jh];

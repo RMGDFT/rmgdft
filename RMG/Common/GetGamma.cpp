@@ -45,7 +45,7 @@ template void GetGamma<std::complex<double>> (double * gammaR, int ion, int nh, 
 template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr)
 {
     int i, j, idx, kidx, istate;
-    rmg_double_t t1;
+    double t1;
     OrbitalType sintN, sintM;
 
 

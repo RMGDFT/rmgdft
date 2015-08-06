@@ -47,7 +47,7 @@ void read_pseudo_soft (void)
 
     int i, j, k, idx, indx, idx1, idx2, idx3, idx4, nmb;
     int l, ih, indv[18], nhtol[18], nhtom[18];
-    rmg_double_t temp, ddd0[6][6], qqq[6][6], ddd[6][6];
+    double temp, ddd0[6][6], qqq[6][6], ddd[6][6];
     int max_num_projectors = 0, nlc;
     FILE *fhand;
     SPECIES *sp;
@@ -189,7 +189,7 @@ void read_pseudo_soft (void)
 
         /*read in the coefficient of the pseudoized Q_L(r) function */
         nlc = (sp->nbeta * (sp->nbeta + 1)) / 2;
-        my_malloc_init( sp->qfcoef, nlc * sp->nlc * sp->nqf, rmg_double_t );
+        my_malloc_init( sp->qfcoef, nlc * sp->nlc * sp->nqf, double );
         idx = 0;
         for (idx1 = 0; idx1 < sp->nbeta; idx1++)
         {
@@ -261,7 +261,7 @@ void read_pseudo_soft (void)
             }
         }
 
-        my_malloc_init( sp->qnm, nlc * MAX_RGRID, rmg_double_t );
+        my_malloc_init( sp->qnm, nlc * MAX_RGRID, double );
         for (idx = 0; idx < nlc; idx++)
         {
             for (idx1 = 0; idx1 < MAX_RGRID; idx1++)

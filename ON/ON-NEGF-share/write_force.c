@@ -48,11 +48,11 @@ void write_force(void)
     int ion;
     ION *iptr;
     int num_movable = 0;
-    rmg_double_t avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
-    rmg_double_t sumx = 0.0, sumy = 0.0, sumz = 0.0;
-    rmg_double_t avf = 0.0;
-    rmg_double_t maxf = 0.0, max_all_f = 0.0;
-    rmg_double_t f2;
+    double avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
+    double sumx = 0.0, sumy = 0.0, sumz = 0.0;
+    double avf = 0.0;
+    double maxf = 0.0, max_all_f = 0.0;
+    double f2;
 
     printf("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
 
@@ -61,7 +61,7 @@ void write_force(void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         SPECIES *sp;
-        rmg_double_t *fp;
+        double *fp;
       
         iptr = &ct.ions[ion];
 

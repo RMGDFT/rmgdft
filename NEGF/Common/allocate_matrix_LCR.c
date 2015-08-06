@@ -78,17 +78,17 @@ void allocate_matrix_LCR ()
     }
 
 
-    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
-    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Stri, ntot, double );
+    my_malloc_init( lcr[0].Htri, ntot, double );
 
     /* allocate memory for H00, H01, S00, S01  */
     for (iprobe =1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].S00, idx, double );
+        my_malloc_init( lcr[iprobe].S01, idx, double );
+        my_malloc_init( lcr[iprobe].H00, idx, double );
+        my_malloc_init( lcr[iprobe].H01, idx, double );
 
     }
 
@@ -98,8 +98,8 @@ void allocate_matrix_LCR ()
     {
 		i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].SCL, idx, double );
+        my_malloc_init( lcr[iprobe].HCL, idx, double );
 
     }
 	
@@ -107,7 +107,7 @@ void allocate_matrix_LCR ()
 
     /*  allocate memory for density matrix  */
 
-    my_malloc_init( lcr[0].density_matrix_tri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].density_matrix_tri, ntot, double );
 
     if (ct.runflag == 111 | ct.runflag == 112 | ct.runflag == 1121)
     {
@@ -122,10 +122,10 @@ void allocate_matrix_LCR ()
         {
             for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
             {
-                my_malloc_init( lcr[iprobe].density_matrix_tri, ntot, rmg_double_t );
+                my_malloc_init( lcr[iprobe].density_matrix_tri, ntot, double );
                 for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
                 {	
-                    my_malloc_init( lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, rmg_double_t );
+                    my_malloc_init( lcr[iprobe].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, double );
                 }
             }
 
@@ -135,10 +135,10 @@ void allocate_matrix_LCR ()
 
         {
 
-            my_malloc_init( lcr[1].density_matrix_tri, ntot, rmg_double_t );
+            my_malloc_init( lcr[1].density_matrix_tri, ntot, double );
             for (idx_delta = 1; idx_delta < cei.num_probe; idx_delta++)
             {	
-                my_malloc_init( lcr[1].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, rmg_double_t );
+                my_malloc_init( lcr[1].lcr_ne[idx_delta - 1].density_matrix_ne_tri, ntot, double );
             }
 
             for (iprobe = 2; iprobe <= cei.num_probe; iprobe++)
@@ -155,7 +155,7 @@ void allocate_matrix_LCR ()
 
 
     int size = pct.num_local_orbit * pct.num_local_orbit;
-    my_malloc_init( mat_local, size+1024, rmg_double_t );
+    my_malloc_init( mat_local, size+1024, double );
 
     size  = (ct.state_end - ct.state_begin) * ct.num_states;
     if(size == 0 ) st = ct.num_states;

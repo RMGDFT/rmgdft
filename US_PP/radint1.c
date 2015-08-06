@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t radint1( rmg_double_t *f, rmg_double_t *r, rmg_double_t *dr_di, int n )
+ *   double radint1( double *f, double *r, double *dr_di, int n )
  *   Radial integration function for data defined on a almost-log grid.
  *   The Simpson's rule is used.
  *   We assume that the function being integrated goes to zero 
@@ -48,7 +48,7 @@
  * It is assumed that 'f' goes to zero for large 'r' faster than 'r^2'.
  */
 
-rmg_double_t radint1 (rmg_double_t * f, rmg_double_t * r, rmg_double_t * dr_di, int n)
+double radint1 (double * f, double * r, double * dr_di, int n)
 {
     int i;
 

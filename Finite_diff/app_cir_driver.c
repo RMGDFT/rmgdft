@@ -14,7 +14,7 @@
 
 
 
-void app_cir_beta_driver (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz, int order)
+void app_cir_beta_driver (double * a, double * b, int dimx, int dimy, int dimz, int order)
 {
 
 

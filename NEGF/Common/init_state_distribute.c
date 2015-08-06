@@ -43,17 +43,17 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     int x_off, y_off, z_off;
     int istart, block_i, st_in_block;
 
-    rmg_double_t *psi_old, *psi_new, *psi_whole; 
-    rmg_double_t hx_old, hx_new, hy_old, hy_new;
-    rmg_double_t x1_old, x1_new, y1_old, y1_new;
+    double *psi_old, *psi_new, *psi_whole; 
+    double hx_old, hx_new, hy_old, hy_new;
+    double x1_old, x1_new, y1_old, y1_new;
 
     max_orbit_nx_ny = max(ct.max_orbit_nx, ct.max_orbit_ny);
-    my_malloc_init( psi_old, max_orbit_nx_ny, rmg_double_t );
-    my_malloc_init( psi_new, max_orbit_nx_ny, rmg_double_t );
+    my_malloc_init( psi_old, max_orbit_nx_ny, double );
+    my_malloc_init( psi_new, max_orbit_nx_ny, double );
 
     size = ct.max_orbit_nx * ct.max_orbit_ny * ct.max_orbit_nz;
-    my_malloc_init( psi_whole, size, rmg_double_t );
-    my_malloc_init( array_tmp, size, rmg_double_t );
+    my_malloc_init( psi_whole, size, double );
+    my_malloc_init( array_tmp, size, double );
 
     hx_new = get_hxgrid() * get_xside();
     hy_new = get_hygrid() * get_yside();
@@ -142,8 +142,8 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     double *rptr;
     size = pct.num_local_orbit * get_P0_BASIS()+1024;
     printf("\n pct.num_local_orbit = %d size = %d", pct.num_local_orbit, size);
-    my_malloc_init( rptr, size, rmg_double_t );
-    my_malloc_init( work_memory, size, rmg_double_t );
+    my_malloc_init( rptr, size, double );
+    my_malloc_init( work_memory, size, double );
 
     for (st1 = 0; st1 < pct.num_local_orbit; st1++)
     {

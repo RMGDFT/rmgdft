@@ -26,8 +26,8 @@ void find_fermi (complex double * sigma_all)
 {
 
     int fermi_step, st1, st2;
-    rmg_double_t tem1, tem2, bias1, bias2, bias1a, bias2a, tchargea;
-    rmg_double_t *matrix_SxRHO;
+    double tem1, tem2, bias1, bias2, bias1a, bias2a, tchargea;
+    double *matrix_SxRHO;
     double tem3;
     int ntot, i;
     int ione = 1;
@@ -43,7 +43,7 @@ void find_fermi (complex double * sigma_all)
         ntot += pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i];
     }
 
-    my_malloc_init( matrix_SxRHO, ntot, rmg_double_t );
+    my_malloc_init( matrix_SxRHO, ntot, double );
 
     for (fermi_step = 0; fermi_step < 4; fermi_step++)
     {

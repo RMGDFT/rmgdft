@@ -19,8 +19,8 @@ struct NON_LINEAR_THREE_PART2
  double _Complex *ene_ne;
  double _Complex *weight_ne;
 
- rmg_double_t *density_matrix_ne;
- rmg_double_t *density_matrix_ne_tri;
+ double *density_matrix_ne;
+ double *density_matrix_ne_tri;
 
 };
 typedef struct  NON_LINEAR_THREE_PART2 NON_LINEAR_THREE_PART2;
@@ -51,44 +51,44 @@ struct NON_LINEAR_THREE_PART
  char name[MAX_PATH];
  char lead_name[MAX_PATH];
 
- rmg_double_t *density_matrix;
+ double *density_matrix;
 
  double _Complex *ene;
  double _Complex *weight;
 
 
- rmg_double_t bias;
- rmg_double_t EF_old;
- rmg_double_t EF_new;
+ double bias;
+ double EF_old;
+ double EF_new;
 
  int nenergy;
 
- rmg_double_t *S00;
- rmg_double_t *H00;
- rmg_double_t *S01;
- rmg_double_t *H01;
+ double *S00;
+ double *H00;
+ double *S01;
+ double *H01;
 
- rmg_double_t *HCL;
- rmg_double_t *SCL;
+ double *HCL;
+ double *SCL;
 
- rmg_double_t *Htri;
- rmg_double_t *Stri;
- rmg_double_t *density_matrix_tri;
+ double *Htri;
+ double *Stri;
+ double *density_matrix_tri;
 
- rmg_double_t xside;
- rmg_double_t yside;
+ double xside;
+ double yside;
 
- rmg_double_t 	x_shift; 
- rmg_double_t 	y_shift; 
+ double 	x_shift; 
+ double 	y_shift; 
 
- rmg_double_t  *S00_yz;
- rmg_double_t  *H00_yz;
- rmg_double_t  *S01_yz;
- rmg_double_t  *H01_yz;
- rmg_double_t  *HCL_yz;
- rmg_double_t  *SCL_yz;
- rmg_double_t *Htri_yz;
- rmg_double_t *Stri_yz;
+ double  *S00_yz;
+ double  *H00_yz;
+ double  *S01_yz;
+ double  *H01_yz;
+ double  *HCL_yz;
+ double  *SCL_yz;
+ double *Htri_yz;
+ double *Stri_yz;
 
 
 NON_LINEAR_THREE_PART2 lcr_ne[NUM_PROBE_MAX];

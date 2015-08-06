@@ -21,7 +21,6 @@
 */
 
 #include "make_conf.h"
-#include "rmgtypes.h"
 #include "auxiliary.h"
 #include "packfuncs.h"
 #include <complex>
@@ -77,9 +76,9 @@ extern "C" void pack_stop_axpy (double * sg, double * pg, double alpha, int dimx
 }
 
 
-extern "C" void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, double alpha, int dimx, int dimy, int dimz)
+extern "C" void pack_stop_axpy_f (float * sg, float * pg, double alpha, int dimx, int dimy, int dimz)
 {
-    CPP_pack_stop_axpy<rmg_float_t> (sg, pg, alpha, dimx, dimy, dimz);
+    CPP_pack_stop_axpy<float> (sg, pg, alpha, dimx, dimy, dimz);
 }
 
 

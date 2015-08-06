@@ -9,7 +9,6 @@
 #include "grid.h"
 #include "const.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -18,13 +17,13 @@
 
 
 /*This calculates phase factor that will be used when calculating backwards fourier transform*/
-void find_phase (int nldim, rmg_double_t * nlcdrs, rmg_double_t * phase_sin, rmg_double_t * phase_cos)
+void find_phase (int nldim, double * nlcdrs, double * phase_sin, double * phase_cos)
 {
 
     int idx1, i, j, k;
     int i1, j1, k1, nldim_sq;
-    rmg_double_t theta;
-    rmg_double_t rgs_x, rgs_y, rgs_z;
+    double theta;
+    double rgs_x, rgs_y, rgs_z;
 
     /*Reciprocal grid spacings in x, y and z directions */
     rgs_x = 1.0 / (get_hxgrid() * get_xside());
@@ -59,8 +58,8 @@ void find_phase (int nldim, rmg_double_t * nlcdrs, rmg_double_t * phase_sin, rmg
 
                 /* Phase factor */
                 theta = 2.0 * PI / nldim *
-                    (((nlcdrs[0] * (rmg_double_t) i) * rgs_x)
-                     + ((nlcdrs[1] * (rmg_double_t) j) * rgs_y) + ((nlcdrs[2] * (rmg_double_t) k) * rgs_z));
+                    (((nlcdrs[0] * (double) i) * rgs_x)
+                     + ((nlcdrs[1] * (double) j) * rgs_y) + ((nlcdrs[2] * (double) k) * rgs_z));
 
                 idx1 = i1 * nldim_sq + j1 * nldim + k1;
 

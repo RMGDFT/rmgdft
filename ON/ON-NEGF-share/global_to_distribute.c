@@ -21,7 +21,7 @@ get  global array  get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()
 #include "prototypes_on.h"
 
 
-void global_to_distribute(rmg_double_t * global_array, rmg_double_t * distr_array)
+void global_to_distribute(double * global_array, double * distr_array)
 {
 
     int ix, iy, iz, ii, jj, kk;

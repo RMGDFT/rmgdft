@@ -610,7 +610,7 @@ void get_te (double *rho, double *rho_oppo, double *rhocore, double *rhoc, doubl
 
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
-        rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE);
+        double * vxc_old, double * vh_old, int *CONVERGENCE);
 void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning);
 

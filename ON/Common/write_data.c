@@ -185,7 +185,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	iydim = iymax - iymin;
 	izdim = izmax - izmin;
 
-	my_malloc_init( rho_tem, ixdim * iydim * izdim, rmg_double_t );
+	my_malloc_init( rho_tem, ixdim * iydim * izdim, double );
 	for(idx = 0; idx < ixdim * iydim * izdim; idx++)
 	{
 		rho_tem[idx] = 0.0;

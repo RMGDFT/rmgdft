@@ -13,15 +13,15 @@
 
 #define 	MAX_ORBIT_ON_ION 	24
 
-void state_minus_state (STATE *state1, STATE *state2, rmg_double_t factor);
+void state_minus_state (STATE *state1, STATE *state2, double factor);
 
 
 void ortho_norm_local (STATE *states)
 {
     int ione = 1, i, j, k;
     int num_state_on_this_center;
-    rmg_double_t norm;
-    rmg_double_t overlap[MAX_ORBIT_ON_ION];
+    double norm;
+    double overlap[MAX_ORBIT_ON_ION];
     double scale, x, y, z, center_dis;
     
 

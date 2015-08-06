@@ -216,9 +216,9 @@ int NUMROC (int *, int *, int *, int *, int *);
 int INDXG2P (int *, int *, int *, int *, int *);
 void DESCINIT (int[], int *, int *, int *, int *, int *, int *, int *, int *,
                int *);
-void PDGESV(int *, int *, rmg_double_t *, int * , int *, int *, int *, rmg_double_t *,
+void PDGESV(int *, int *, double *, int * , int *, int *, int *, double *,
 	int *, int *, int *, int *);
-void PZGESV(int *, int *, rmg_double_t *, int * , int *, int *, int *, rmg_double_t *,
+void PZGESV(int *, int *, double *, int * , int *, int *, int *, double *,
 	int *, int *, int *, int *);
 void PDGEMM (_fcd, _fcd, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
@@ -229,7 +229,7 @@ void PZGEMM (_fcd, _fcd, int *, int *, int *, double *, double *, int *,
 void PDSYEV (_fcd, _fcd, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, int *);
 void PCHEEV (_fcd, _fcd, int *, double *, int *, int *, int *, double *,
-             double *, int *, int *, int *, double *, int *, rmg_double_t *, int *, int *);
+             double *, int *, int *, int *, double *, int *, double *, int *, int *);
 void PSPOCON (_fcd, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
 void PSPOTRF (_fcd, int *, double *, int *, int *, int *, int *);
@@ -243,12 +243,12 @@ void PSSYMM (_fcd, _fcd, int *, int *, double *, double *, int *, int *,
              int *, int *);
 
 void PSUBDIAG (char *, char *, int, double *, int, double *, int *);
-void PDSYGVX(int *, char*, char*, char*, int*, rmg_double_t *, int*, int*, int*, rmg_double_t*, int*, int*, 
-       int*, rmg_double_t*, rmg_double_t *, int*, int*, rmg_double_t*, int*, int*, rmg_double_t*, rmg_double_t*, rmg_double_t*, int*, 
-       int*, int*, rmg_double_t*, int*, int*, int*, int*, int*, rmg_double_t*, int*);       
-void PDSYEVX(char*, char*, char*, int*, rmg_double_t *, int*, int*, int*, rmg_double_t*, rmg_double_t*, int*,
-       int*, rmg_double_t*, int*, int*, rmg_double_t*, rmg_double_t*, rmg_double_t*, int*,                                           
-       int*, int*, rmg_double_t*, int*, int*, int*, int*, int*, rmg_double_t*, int*);
+void PDSYGVX(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*, 
+       int*, double*, double *, int*, int*, double*, int*, int*, double*, double*, double*, int*, 
+       int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);       
+void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, double*, int*,
+       int*, double*, int*, int*, double*, double*, double*, int*,                                           
+       int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
 
 
 

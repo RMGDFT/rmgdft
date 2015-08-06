@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void set_bc( rmg_double_t *mat, int dimx, int dimy, int dimz, rmg_double_t val, int *nb_ids )
+ *   void set_bc( double *mat, int dimx, int dimy, int dimz, double val, int *nb_ids )
  *   Sets the boundaries of a smoothing grid to a specified value
  *   only usefule for SURFACE or CLUSTER conditions
  * INPUTS
@@ -41,7 +41,7 @@
 
 
 
-void set_bc (rmg_double_t * mat, int dimx, int dimy, int dimz, int images, rmg_double_t val)
+void set_bc (double * mat, int dimx, int dimy, int dimz, int images, double val)
 {
     int ix, iy, iz, tim;
     int dimx_max, dimy_max, dimz_max;

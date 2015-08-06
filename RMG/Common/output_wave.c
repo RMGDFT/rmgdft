@@ -36,16 +36,16 @@ void output_wave (STATE * states, int ik, int fhand)
     status = write (fhand, &ik, sizeof (int));
     if (status == -1)
         error_handler ("Unable to write wave state. ERRNO is %d.", errno);
-    status = write (fhand, &ct.kp[ik].kpt[0], sizeof (rmg_double_t));
+    status = write (fhand, &ct.kp[ik].kpt[0], sizeof (double));
     if (status == -1)
         error_handler ("Unable to write wave state. ERRNO is %d.", errno);
-    status = write (fhand, &ct.kp[ik].kpt[1], sizeof (rmg_double_t));
+    status = write (fhand, &ct.kp[ik].kpt[1], sizeof (double));
     if (status == -1)
         error_handler ("Unable to write wave state. ERRNO is %d.", errno);
-    status = write (fhand, &ct.kp[ik].kpt[2], sizeof (rmg_double_t));
+    status = write (fhand, &ct.kp[ik].kpt[2], sizeof (double));
     if (status == -1)
         error_handler ("Unable to write wave state. ERRNO is %d.", errno);
-    status = write (fhand, &ct.kp[ik].kweight, sizeof (rmg_double_t));
+    status = write (fhand, &ct.kp[ik].kweight, sizeof (double));
     if (status == -1)
         error_handler ("Unable to write wave state. ERRNO is %d.", errno);
 
@@ -54,10 +54,10 @@ void output_wave (STATE * states, int ik, int fhand)
 
     for (is = 0; is < ct.num_states; is++)
     {
-        status = write (fhand, &states[is].eig, sizeof (rmg_double_t));
+        status = write (fhand, &states[is].eig, sizeof (double));
         if (status == -1)
             error_handler ("Unable to write wave state. ERRNO is %d.", errno);
-        status = write (fhand, states[is].psiR, size * sizeof (rmg_double_t));
+        status = write (fhand, states[is].psiR, size * sizeof (double));
         if (status == -1)
             error_handler ("Unable to write wave state. ERRNO is %d.", errno);
     }

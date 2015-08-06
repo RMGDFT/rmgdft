@@ -26,12 +26,12 @@
 #include <float.h>
 #include "main.h"
 
-void nlforce_par_Q (rmg_double_t * veff, rmg_double_t * gamma, int ion, ION * iptr, int nh, rmg_double_t * forces)
+void nlforce_par_Q (double * veff, double * gamma, int ion, ION * iptr, int nh, double * forces)
 {
     int idx1, idx2, n, m, count, icount, size;
     int *pidx;
-    rmg_double_t tmp[3];
-    rmg_double_t *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z;
+    double tmp[3];
+    double *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z;
 
     /*Forces array is assumed to be already initialized */
     /*for(idx1=0;idx1<3;idx1++)  forces[idx1]=0.0; */
@@ -42,7 +42,7 @@ void nlforce_par_Q (rmg_double_t * veff, rmg_double_t * gamma, int ion, ION * ip
     if (count)
     {
         size = (nh * (nh + 1) / 2) * count;
-        my_malloc (QnmI_R, 3 * size, rmg_double_t);
+        my_malloc (QnmI_R, 3 * size, double);
         QnmI_x = QnmI_R;
         QnmI_y = QnmI_x + size;
         QnmI_z = QnmI_y + size;

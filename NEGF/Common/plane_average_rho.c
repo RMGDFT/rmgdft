@@ -31,8 +31,8 @@ void plane_average_rho (double *rho)
 
 
     int ix, iy, iz;
-    rmg_double_t t1;
-    rmg_double_t *zvec;
+    double t1;
+    double *zvec;
     int pxoff, pyoff, pzoff;
     FILE *file;
 
@@ -53,7 +53,7 @@ void plane_average_rho (double *rho)
     if(ct.plane[0] == 1) 
     {
 
-        my_calloc(zvec, get_FNY_GRID() * get_FNZ_GRID(), rmg_double_t );
+        my_calloc(zvec, get_FNY_GRID() * get_FNZ_GRID(), double );
 
 
         /* Loop over this processor */
@@ -96,7 +96,7 @@ void plane_average_rho (double *rho)
     if(ct.plane[1] == 1) 
     {
 
-        my_calloc(zvec, get_FNX_GRID() * get_FNZ_GRID(), rmg_double_t );
+        my_calloc(zvec, get_FNX_GRID() * get_FNZ_GRID(), double );
 
 
         /* Loop over this processor */
@@ -140,7 +140,7 @@ void plane_average_rho (double *rho)
     if(ct.plane[2] == 1) 
     {
 
-        my_calloc(zvec, get_FNX_GRID() * get_FNY_GRID(), rmg_double_t );
+        my_calloc(zvec, get_FNX_GRID() * get_FNY_GRID(), double );
 
 
         /* Loop over this processor */

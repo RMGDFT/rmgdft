@@ -36,9 +36,9 @@ void mulliken (STATE * states)
 
     int ion, idx, species, state, dim, icenter, i, j, icut, map, ilow, ihi, jlow, jhi, klow, khi;
     int ix, iy, iz, grid_index, count, l_state, m, index, oindex, st, nindex;
-    rmg_double_t *awave, *overlap, xcstart, ycstart, zcstart, xc, yc, zc, x[3], r, cx[3], radial_wave,
+    double *awave, *overlap, xcstart, ycstart, zcstart, xc, yc, zc, x[3], r, cx[3], radial_wave,
         dot_product;
-    rmg_double_t a, b, rdiff, rleft, rright, *norm_factor, max1, max2, max3;
+    double a, b, rdiff, rleft, rright, *norm_factor, max1, max2, max3;
     int basis =get_P0_BASIS();
     int tot_atomic_states;
     int Aix[NX_GRID], Aiy[NY_GRID], Aiz[NZ_GRID];
@@ -59,12 +59,12 @@ void mulliken (STATE * states)
     }
 
     /*Allocate memory to hold overlap between atomic waves and wavefunctions */
-    my_malloc (overlap, tot_atomic_states * ct.num_states, rmg_double_t);
+    my_malloc (overlap, tot_atomic_states * ct.num_states, double);
 
     awave_max = 16 * basis;
-    my_malloc (awave, awave_max, rmg_double_t);
+    my_malloc (awave, awave_max, double);
 
-    my_malloc (norm_factor, tot_atomic_states, rmg_double_t);
+    my_malloc (norm_factor, tot_atomic_states, double);
 
 
 

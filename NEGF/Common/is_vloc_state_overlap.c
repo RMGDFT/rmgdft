@@ -22,7 +22,7 @@ void is_vloc_state_overlap (STATE *states)
 {
 
     int ion, ista;
-    rmg_double_t r, r1, r2;
+    double r, r1, r2;
     SPECIES *sp;
     ION *iptr;
 

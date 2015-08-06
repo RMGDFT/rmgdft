@@ -23,11 +23,9 @@
 // Some transitional routines
 
 
-#include "rmgtypes.h"
 #include "mpi.h"
 #include "transition.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "Subdiag.h"
@@ -49,14 +47,14 @@ extern double *rhocore;
 extern double *rhoc;
 
 #if 0
-extern "C" void subdiag_gamma (STATE * states, rmg_double_t * vh, rmg_double_t * vnuc, rmg_double_t * vxc)
+extern "C" void subdiag_gamma (STATE * states, double * vh, double * vnuc, double * vxc)
 {
      Kpoint<double>* kptr = (Kpoint<double> *)Kptr[0]; 
      Subdiag<double> (kptr, vh, vnuc, vxc, ct.subdiag_driver);
 }
 
-extern "C" bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
-          rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc )
+extern "C" bool scf (STATE * states, double * vxc, double * vh, double * vnuc,
+          double * rho, double * rho_oppo, double * rhocore, double * rhoc )
 {
 
      if(ct.is_gamma) {
@@ -73,7 +71,7 @@ extern "C" bool scf (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_
      }
 }
 
-extern "C" void get_new_rho (STATE * states, rmg_double_t * rho)
+extern "C" void get_new_rho (STATE * states, double * rho)
 {
 
      if(ct.is_gamma) {

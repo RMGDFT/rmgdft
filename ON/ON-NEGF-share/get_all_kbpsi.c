@@ -18,14 +18,14 @@
 
 
 void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi,
-        ION_ORBIT_OVERLAP *, rmg_double_t *);
+        ION_ORBIT_OVERLAP *, double *);
 void get_kbpsi (STATE *sp1, double *kbpsi_one_state,
-        ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, rmg_double_t *projectors);
+        ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, double *projectors);
 
 
 void get_all_kbpsi (STATE *states1, STATE * states, 
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, 
-        rmg_double_t *projectors, rmg_double_t *kbpsi)
+        double *projectors, double *kbpsi)
 {
     int st1, idx;
     int size;
@@ -64,7 +64,7 @@ void get_all_kbpsi (STATE *states1, STATE * states,
     
 */
 void get_kbpsi (STATE *sp1, double *kbpsi_one_state,
-        ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, rmg_double_t *projectors)
+        ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, double *projectors)
 {
     int ixx, iyy, izz;
     double *psi;
@@ -83,7 +83,7 @@ void get_kbpsi (STATE *sp1, double *kbpsi_one_state,
     Get <KB|psi> for one ion and one function psi 
 */
 void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state,
-        ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, rmg_double_t *projectors)
+        ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, double *projectors)
 {
 
     int ip;

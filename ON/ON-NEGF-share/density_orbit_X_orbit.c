@@ -18,8 +18,8 @@
 
 static int fold_to_unitcell(int, int);
 
-void density_orbit_X_orbit(int st1, int st2, rmg_double_t scale, rmg_double_t * psi1,
-                           rmg_double_t * psi2, rmg_double_t * rho_global, int mode, 
+void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
+                           double * psi2, double * rho_global, int mode, 
                            STATE * states, ORBIT_ORBIT_OVERLAP *orbit_overlap_region)
 {
 

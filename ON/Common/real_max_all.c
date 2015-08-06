@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t real_max_all(rmg_double_t x)
+ *   double real_max_all(double x)
  *   Performs a scalar sum over all processors.
  * INPUTS
  *   x: defined in each processor
@@ -37,11 +37,11 @@
 #include <math.h>
 
 
-rmg_double_t real_max_all(rmg_double_t x)
+double real_max_all(double x)
 {
 
-    rmg_double_t inreg;
-    rmg_double_t outreg;
+    double inreg;
+    double outreg;
 
     inreg = x;
 #if SERIAL

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t fill (STATE *states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix,
+ *   double fill (STATE *states, double width, double nel, double mix,
  *              int num_st, int occ_flag)
  *   Sets the occupations of the electronic orbitals and stored in
  *   ct.kp[kpt].kstate[st].occupation 
@@ -42,23 +42,23 @@
 #include "main.h"
 
 
-static rmg_double_t fd (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);
-static rmg_double_t gs (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);
-static rmg_double_t ef (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st);
+static double fd (double mu, double * occ, STATE * states, double width, double nel, int num_st);
+static double gs (double mu, double * occ, STATE * states, double width, double nel, int num_st);
+static double ef (double mu, double * occ, STATE * states, double width, double nel, int num_st);
 
 
 
-rmg_double_t fill (STATE * states, rmg_double_t width, rmg_double_t nel, rmg_double_t mix, int num_st, int occ_flag)
+double fill (STATE * states, double width, double nel, double mix, int num_st, int occ_flag)
 {
 
     const int maxit = 500;
-    const rmg_double_t charge_tol = 1.0e-10;
+    const double charge_tol = 1.0e-10;
 
     int iter, st, st1, kpt, idx, nks, nspin = (ct.spin_flag + 1);
     STATE *sp;
-    rmg_double_t mu, dmu, mu1, mu2, f, fmid, eig;
-    rmg_double_t (*func) () = NULL;
-    rmg_double_t *occ;
+    double mu, dmu, mu1, mu2, f, fmid, eig;
+    double (*func) () = NULL;
+    double *occ;
 
 
     if(nel == 1 && ct.num_kpts == 1 && ct.spin_flag == 0)
@@ -104,7 +104,7 @@ rmg_double_t fill (STATE * states, rmg_double_t width, rmg_double_t nel, rmg_dou
     }                           /* end switch */
     
     nks = ct.num_kpts * ct.num_states;
-    my_malloc (occ, nspin * nks, rmg_double_t);
+    my_malloc (occ, nspin * nks, double);
 
 
     /* find the root by bisection: this algorithm was adapted
@@ -213,10 +213,10 @@ rmg_double_t fill (STATE * states, rmg_double_t width, rmg_double_t nel, rmg_dou
 
 
 
-static rmg_double_t fd (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st)
+static double fd (double mu, double * occ, STATE * states, double width, double nel, int num_st)
 {
     int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
-    rmg_double_t t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
+    double t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
@@ -258,10 +258,10 @@ static rmg_double_t fd (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg
 }                               /* fd */
 
 
-static rmg_double_t gs (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st)
+static double gs (double mu, double * occ, STATE * states, double width, double nel, int num_st)
 {
     int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
-    rmg_double_t t1, sumf, eig, fac;
+    double t1, sumf, eig, fac;
     
     fac = (2.0 - ct.spin_flag) * 0.5;
 
@@ -303,10 +303,10 @@ static rmg_double_t gs (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg
 }                               /* gs */
 
 
-static rmg_double_t ef (rmg_double_t mu, rmg_double_t * occ, STATE * states, rmg_double_t width, rmg_double_t nel, int num_st)
+static double ef (double mu, double * occ, STATE * states, double width, double nel, int num_st)
 {
     int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
-    rmg_double_t t1, t2, sumf, eig, fac;
+    double t1, t2, sumf, eig, fac;
 
     fac = (2.0 - ct.spin_flag) * 0.5;
 

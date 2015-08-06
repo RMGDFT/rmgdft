@@ -8,12 +8,12 @@
 #include <float.h>
 #include "main.h"
 
-void nlforce_par_Q(rmg_double_t * veff, rmg_double_t * rho_nm, int ion, int nh, double *forces)
+void nlforce_par_Q(double * veff, double * rho_nm, int ion, int nh, double *forces)
 {
     int idx1, idx2, n, m, count, icount, size;
     int *pidx, max_nl;
-    rmg_double_t tmp[3], gamma_nm;
-    rmg_double_t *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z, *gamma;
+    double tmp[3], gamma_nm;
+    double *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z, *gamma;
     ION *iptr;
 
 
@@ -32,7 +32,7 @@ void nlforce_par_Q(rmg_double_t * veff, rmg_double_t * rho_nm, int ion, int nh, 
     if (count)
     {
         size = (nh * (nh + 1) / 2) * count;
-        my_malloc_init( QnmI_R, 3 * size, rmg_double_t );
+        my_malloc_init( QnmI_R, 3 * size, double );
         QnmI_x = QnmI_R;
         QnmI_y = QnmI_x + size;
         QnmI_z = QnmI_y + size;

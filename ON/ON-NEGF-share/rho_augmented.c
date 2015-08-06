@@ -10,24 +10,24 @@
 #include "prototypes_on.h"
 
 /* begin shuchun wang */
-void rho_augmented(rmg_double_t * rho, rmg_double_t * global_mat_X,
-int *state_begin, int *state_end, int *num_nonlocal_ion, rmg_double_t *kbpsi,
-int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
+void rho_augmented(double * rho, double * global_mat_X,
+int *state_begin, int *state_end, int *num_nonlocal_ion, double *kbpsi,
+int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
 
 {
 
     int idx;
     int *ivec, size, idx1, idx2;
     int nh, icount, ncount, i, j, ion;
-    rmg_double_t *qnmI, *qtpr;
-    rmg_double_t *product, *ptr_product;
+    double *qnmI, *qtpr;
+    double *product, *ptr_product;
     ION *iptr;
     SPECIES *sp;
 
 
 
     size = ct.num_ions * ct.max_nl * ct.max_nl;
-    my_malloc_init( product, size, rmg_double_t );
+    my_malloc_init( product, size, double );
     for (idx = 0; idx < size; idx++)
         product[idx] = 0.0;
 

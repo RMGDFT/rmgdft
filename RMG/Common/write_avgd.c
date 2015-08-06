@@ -26,7 +26,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 
-void write_avgd (rmg_double_t * rho)
+void write_avgd (double * rho)
 {
 
     int ix, iy, iz, poff;
@@ -34,9 +34,9 @@ void write_avgd (rmg_double_t * rho)
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FNZ_GRID;
 
-    rmg_double_t t1;
-    rmg_double_t *zvec;
-    rmg_double_t hzzgrid;
+    double t1;
+    double *zvec;
+    double hzzgrid;
 
     hzzgrid = get_hzzgrid();
 
@@ -45,7 +45,7 @@ void write_avgd (rmg_double_t * rho)
     FPZ0_GRID = get_FPZ0_GRID();
     FNZ_GRID = get_FNZ_GRID();
 
-    my_malloc(zvec, FNZ_GRID, rmg_double_t);
+    my_malloc(zvec, FNZ_GRID, double);
 
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);

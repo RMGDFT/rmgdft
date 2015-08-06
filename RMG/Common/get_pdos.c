@@ -34,7 +34,7 @@
 
 
 
-void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINTS)
+void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS)
 {
 
     int istate, kpt, n, incx, idx, max_product, iene, P0_BASIS, FP0_BASIS;
@@ -42,9 +42,9 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion, ix, iy, iz, ii, jj, kk, xoff, yoff, zoff;
-    rmg_double_t *qnmI, *sintR, *qtpr;
-    rmg_double_t t1, *work, *work_temp, *rho_temp, *rho_energy, *product, de, E;
-    rmg_double_t time1;
+    double *qnmI, *sintR, *qtpr;
+    double t1, *work, *work_temp, *rho_temp, *rho_energy, *product, de, E;
+    double time1;
     FILE *file;
 
     PX0_GRID = get_PX0_GRID();
@@ -55,7 +55,7 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
     FPZ0_GRID = get_FPZ0_GRID();
 
 #if !GAMMA_PT
-    rmg_double_t *sintI;
+    double *sintI;
 #endif
     STATE *sp;
     ION *iptr;
@@ -64,19 +64,19 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
     P0_BASIS = get_P0_BASIS();
     FP0_BASIS = get_FP0_BASIS();
 
-    my_calloc (work, P0_BASIS, rmg_double_t);
+    my_calloc (work, P0_BASIS, double);
 
 #if GAMMA_PT
-    my_malloc (sintR, ct.max_nl, rmg_double_t);
+    my_malloc (sintR, ct.max_nl, double);
 #else
-    my_malloc (sintR, 2 * ct.max_nl, rmg_double_t);
+    my_malloc (sintR, 2 * ct.max_nl, double);
     sintI = sintR + ct.max_nl;
 #endif
             
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    my_malloc (product, max_product, rmg_double_t);
+    my_malloc (product, max_product, double);
 
-    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), rmg_double_t );
+    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), double );
                                                                                               
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
     xoff = ii * get_FPX0_GRID();
@@ -91,8 +91,8 @@ void get_pdos (STATE * states, rmg_double_t Emin, rmg_double_t Emax, int E_POINT
 for (iene = 0; iene < E_POINTS; iene++)
 {
 
-	my_malloc_init (work_temp, P0_BASIS, rmg_double_t);
-	my_malloc_init (rho_temp, FP0_BASIS, rmg_double_t);
+	my_malloc_init (work_temp, P0_BASIS, double);
+	my_malloc_init (rho_temp, FP0_BASIS, double);
 
 	sp = ct.kp[0].kstate;
 	E =  iene * de  + Emin;

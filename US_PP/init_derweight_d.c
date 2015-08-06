@@ -10,7 +10,6 @@
 #include "grid.h"
 #include "const.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -23,12 +22,12 @@ void init_derweight_d (SPECIES * sp,
 {
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
-    rmg_double_t r, ax[3], bx[3], xc, yc, zc, t1, t2, t3, invdr;
-    rmg_double_t x, y, z, rsq, rsqd, r4, xsq, ysq, zsq, y1, y2, y3, y4, y5;
-    rmg_double_t dy1_dx, dy1_dy, dy1_dz, dy2_dx, dy2_dy, dy2_dz, dy3_dx, dy3_dy, dy3_dz, dy4_dx, dy4_dy,
+    double r, ax[3], bx[3], xc, yc, zc, t1, t2, t3, invdr;
+    double x, y, z, rsq, rsqd, r4, xsq, ysq, zsq, y1, y2, y3, y4, y5;
+    double dy1_dx, dy1_dy, dy1_dz, dy2_dx, dy2_dy, dy2_dz, dy3_dx, dy3_dy, dy3_dz, dy4_dx, dy4_dy,
         dy4_dz, dy5_dx, dy5_dy, dy5_dz;
-    rmg_double_t dt2_dx, dt2_dy, dt2_dz;
-    rmg_double_t cc, hxx, hyy, hzz;
+    double dt2_dx, dt2_dy, dt2_dz;
+    double cc, hxx, hyy, hzz;
     double complex *weptr1x, *weptr1y, *weptr1z, *gwptr;
     double complex *weptr2x, *weptr2y, *weptr2z;
     double complex *weptr3x, *weptr3y, *weptr3z;
@@ -75,9 +74,9 @@ void init_derweight_d (SPECIES * sp,
     gwptr = weptr5z + size;
 
 
-    hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
-    hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
-    hzz = get_hzgrid() / (rmg_double_t) ct.nzfgrid;
+    hxx = get_hxgrid() / (double) ct.nxfgrid;
+    hyy = get_hygrid() / (double) ct.nyfgrid;
+    hzz = get_hzgrid() / (double) ct.nzfgrid;
 
     r1x = rtptr_x;
     r1y = rtptr_y;
@@ -112,13 +111,13 @@ void init_derweight_d (SPECIES * sp,
 
         ixx = ix;
         if (ixx < 0) ixx = ix + sp->nlfdim;
-        xc = (rmg_double_t) ix *hxx;
+        xc = (double) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
             iyy = iy;
             if (iyy < 0) iyy = iy + sp->nlfdim;
-            yc = (rmg_double_t) iy *hyy;
+            yc = (double) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
@@ -127,7 +126,7 @@ void init_derweight_d (SPECIES * sp,
                 if (izz < 0) izz = iz + sp->nlfdim;
                 idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
 
-                zc = (rmg_double_t) iz *hzz;
+                zc = (double) iz *hzz;
 
 
                 ax[0] = xc;

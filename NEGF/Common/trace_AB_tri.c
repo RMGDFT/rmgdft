@@ -11,7 +11,7 @@
 #include "LCR.h"
 
 
-double trace_AB_tri(rmg_double_t * H_tri, rmg_double_t * par_D_tri, int N, int *ni)
+double trace_AB_tri(double * H_tri, double * par_D_tri, int N, int *ni)
 {
 /* Semi_tridiagonal matrix  
  *

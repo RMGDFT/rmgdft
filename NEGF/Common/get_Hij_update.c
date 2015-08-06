@@ -22,7 +22,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     int maxst, n2;
     STATE *sp;
     int ione = 1;
-    rmg_double_t tem, tem1;
+    double tem, tem1;
     int ixx, iyy, izz;
     char msg[100];
     double *psi, one = 1.0, zero = 0.0;

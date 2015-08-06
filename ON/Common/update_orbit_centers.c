@@ -29,9 +29,9 @@ void update_orbit_centers(STATE * states)
     int new_i, new_j, new_k;
     int new_idx, old_idx;
     int level;
-    rmg_double_t x, y, z;
-    rmg_double_t *new_centers;
-    rmg_double_t *temp;
+    double x, y, z;
+    double *new_centers;
+    double *temp;
 
 
 
@@ -39,8 +39,8 @@ void update_orbit_centers(STATE * states)
         printf("\n Update the localization centers.. \n");
 
     size = ct.num_states * 3;
-    my_malloc_init( new_centers, size, rmg_double_t );
-    my_malloc_init( temp, ct.max_orbit_size, rmg_double_t );
+    my_malloc_init( new_centers, size, double );
+    my_malloc_init( temp, ct.max_orbit_size, double );
 
 
 
@@ -170,14 +170,14 @@ int if_update_centers(STATE * states)
     int size;
     int shift_x, shift_y, shift_z;
     int i, j, k;
-    rmg_double_t x, y, z;
-    rmg_double_t *new_centers;
+    double x, y, z;
+    double *new_centers;
     int N_moving_orbits;
 
 
 
     size = ct.num_states * 3;
-    my_malloc_init( new_centers, size, rmg_double_t );
+    my_malloc_init( new_centers, size, double );
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {

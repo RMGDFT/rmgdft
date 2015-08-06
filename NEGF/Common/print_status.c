@@ -12,10 +12,10 @@
 #include "LCR.h"
 
 
-void print_status (STATE * states, rmg_double_t * vh, rmg_double_t * vxc, rmg_double_t * vnuc, rmg_double_t * vh_old, char *msg)
+void print_status (STATE * states, double * vh, double * vxc, double * vnuc, double * vh_old, char *msg)
 {
     int i, j;
-    rmg_double_t total;
+    double total;
 
     printf ("\n print_status ----%s ", msg);
 
@@ -59,7 +59,7 @@ void print_state_sum (STATE * states)
 {
     int st;
     int i;
-    rmg_double_t temp;
+    double temp;
 
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
@@ -75,7 +75,7 @@ void print_state (STATE * state)
 {
     int st;
     int i;
-    rmg_double_t temp;
+    double temp;
 
     temp = 0.0;
     for (i = 0; i < state->size; i++)
@@ -122,7 +122,7 @@ void print_states_dot_product (STATE * states)
 {
     int st;
     int i;
-    rmg_double_t temp;
+    double temp;
     for (st = ct.state_begin; st < ct.state_end; st++)
     {
         temp = 0.0;

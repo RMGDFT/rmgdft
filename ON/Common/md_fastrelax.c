@@ -42,7 +42,7 @@ void md_fastrelax(void)
 {
     int ion, fpt;
     ION *iptr;
-    rmg_double_t step, mass, magf, dotfv;
+    double step, mass, magf, dotfv;
 
 
     fpt = ct.fpt[0];

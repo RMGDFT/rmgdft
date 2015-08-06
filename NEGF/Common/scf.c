@@ -36,7 +36,7 @@ extern int it_scf;
 
 void scf (complex double * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore,
-          rmg_double_t * vxc_old, rmg_double_t * vh_old, rmg_double_t * vbias, int *CONVERGENCE)
+          double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE)
 {
     int st1, st2, idx, idx1, ione = 1;
     int st11, st22;
@@ -238,7 +238,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
    of the old ones (input "vh" and "vxc") and the ones 
    corresponding to the input "rho".
    */
-void update_pot (double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * vh_old, double *vnuc, double *vext,
+void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, double *vnuc, double *vext,
         double *rho, double *rhoc, double *rhocore, int *CONVERGENCE)
 {
 

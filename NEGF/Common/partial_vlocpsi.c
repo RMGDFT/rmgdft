@@ -18,7 +18,7 @@ multiplication of (orbit,  local projector )
 #include "LCR.h"
 
 
-void partial_vlocpsi (STATE st1, int ion2, rmg_double_t * psi, rmg_double_t * prjptr, rmg_double_t *vlpsi)
+void partial_vlocpsi (STATE st1, int ion2, double * psi, double * prjptr, double *vlpsi)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;

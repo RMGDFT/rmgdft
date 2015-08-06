@@ -34,19 +34,19 @@
 
 
 
-rmg_double_t rand0 (long *idum)
+double rand0 (long *idum)
 {
 
 
     long k;
-    rmg_double_t ans;
+    double ans;
 
     *idum ^= MASK;
     k = (*idum) / IQ;
     *idum = IA * (*idum - k * IQ) - IR * k;
     if (*idum < 0)
         *idum += IM;
-    ans = AM * (rmg_double_t) (*idum);
+    ans = AM * (double) (*idum);
     *idum ^= MASK;
     return ans;
 

@@ -22,10 +22,10 @@
 
 
 void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
-        *ion_orbit_overlap_region_nl, rmg_double_t *projectors_x, 
-        rmg_double_t *projectors_y, rmg_double_t *projectors_z, 
-        rmg_double_t *partial_kbpsi_x,
-        rmg_double_t *partial_kbpsi_y,rmg_double_t *partial_kbpsi_z)
+        *ion_orbit_overlap_region_nl, double *projectors_x, 
+        double *projectors_y, double *projectors_z, 
+        double *partial_kbpsi_x,
+        double *partial_kbpsi_y,double *partial_kbpsi_z)
 {
     int st1, idx1, idx2, idx;
     int size;

@@ -16,8 +16,8 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    rmg_double_t app_cil(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz,
- *                 rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+ *    double app_cil(double *a, double *b, int dimx, int dimy, int dimz,
+ *                 double gridhx, double gridhy, double gridhz)
  *    Applies left hand side (LHS) Mehrstellen operator to function  
  * INPUTS
  *    a[(dimx+2) * (dimy+2) * (dimz+2)]: function to be applied
@@ -39,16 +39,16 @@
 #include <stdlib.h>
 
 
-rmg_double_t app_cil_orbital6 (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz,
-              rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+double app_cil_orbital6 (double * a, double * b, int dimx, int dimy, int dimz,
+              double gridhx, double gridhy, double gridhz)
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    rmg_double_t ihx, ihy, ihz;
-    rmg_double_t *rptr;
+    double ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
+    double fc2x, fc2y, fc2z, tcx, tcy, tcz;
+    double ihx, ihy, ihz;
+    double *rptr;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;

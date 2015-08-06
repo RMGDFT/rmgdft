@@ -31,7 +31,7 @@
 
 
 
-void  get_rho_oppo (rmg_double_t * rho, rmg_double_t * rho_oppo)
+void  get_rho_oppo (double * rho, double * rho_oppo)
 {
     MPI_Status status;
 

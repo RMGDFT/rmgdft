@@ -27,7 +27,7 @@
  *   Version: 2.1.5
 
  * FUNCTION
- *   void cgen_prolong(rmg_double_t  coef[], rmg_double_t fraction, int order)
+ *   void cgen_prolong(double  coef[], double fraction, int order)
  * INPUTS
  *   int order,(total number of neighbour points we need)
  *   double fraction,(the relative position of the interpolated point inside two nearest neighbour)
@@ -54,13 +54,13 @@
 
 
 
-void cgen_prolong (rmg_double_t coef[], rmg_double_t fraction, int order)
+void cgen_prolong (double coef[], double fraction, int order)
 {
 
     int ix, iy;
-    rmg_double_t A[order * order];
-    rmg_double_t b[order];
-    rmg_double_t d[order];
+    double A[order * order];
+    double b[order];
+    double d[order];
     int ipvt[order];
     int info;
     int ione = 1;

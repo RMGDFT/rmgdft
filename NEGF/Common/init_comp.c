@@ -21,7 +21,7 @@
 #include "LCR.h"
 
 
-void init_comp (rmg_double_t *vh)
+void init_comp (double *vh)
 {
 
     int ix, iy, iz, i;
@@ -37,9 +37,9 @@ void init_comp (rmg_double_t *vh)
     int rb = ct.vcomp_Rbegin * 2;
     int re = ct.vcomp_Rend * 2;
     
-    rmg_double_t t1;
-    rmg_double_t *zvec;
-    my_malloc_init( zvec, get_FNX_GRID(), rmg_double_t );
+    double t1;
+    double *zvec;
+    my_malloc_init( zvec, get_FNX_GRID(), double );
 
     if (pct.gridpe == 0)
     {

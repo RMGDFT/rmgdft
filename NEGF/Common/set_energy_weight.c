@@ -33,15 +33,15 @@
 
 
 /* This function returns a pointer to a block of memory of size nelem. */
-void set_energy_weight (complex double * ene, complex double * weight, rmg_double_t EF, int *nenergy)
+void set_energy_weight (complex double * ene, complex double * weight, double EF, int *nenergy)
 {
 
     int nen, nloop, i;
-    rmg_double_t tem, emax, emin, rad, theta0, thetamax, thetamin;
-    rmg_double_t center;
+    double tem, emax, emin, rad, theta0, thetamax, thetamin;
+    double center;
     complex double  distri;
 
-    rmg_double_t KT, DELTA, DELTA2, GAMMA, EB;
+    double KT, DELTA, DELTA2, GAMMA, EB;
     int size,ncircle, nmax_gq1;
     double *xc, *wc;
 

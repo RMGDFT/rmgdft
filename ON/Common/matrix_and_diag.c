@@ -35,7 +35,7 @@
 #include "init_var.h"
 
 
-void matrix_and_diag(STATE * states, STATE * states1, rmg_double_t * vtot_c, int flag)
+void matrix_and_diag(STATE * states, STATE * states1, double * vtot_c, int flag)
 {
 
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;

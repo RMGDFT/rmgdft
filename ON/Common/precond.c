@@ -17,8 +17,8 @@ void precond(double *x)
     int istate;
 
 
-    my_malloc_init( work1, 4 * ct.max_orbit_size, rmg_double_t );
-    my_malloc_init( work2, 4 * ct.max_orbit_size, rmg_double_t );
+    my_malloc_init( work1, 4 * ct.max_orbit_size, double );
+    my_malloc_init( work2, 4 * ct.max_orbit_size, double );
 
     gamma = get_gamma_precond(vtot_c, states[0].eig[0]);
 

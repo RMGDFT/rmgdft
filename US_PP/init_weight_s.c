@@ -14,8 +14,8 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
 
     int idx, ix, iy, iz, size, ibegin, iend;
-    rmg_double_t r, ax[3], xc, yc, zc;
-    rmg_double_t invdr, t1, hxx, hyy, hzz;
+    double r, ax[3], xc, yc, zc;
+    double invdr, t1, hxx, hyy, hzz;
     double complex *weptr, *gwptr;
 
 
@@ -29,9 +29,9 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     if ((weptr == NULL) || (gwptr == NULL))
         error_handler ("can't allocate memory\n");
 
-    hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
-    hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
-    hzz = get_hzgrid() / (rmg_double_t) ct.nzfgrid;
+    hxx = get_hxgrid() / (double) ct.nxfgrid;
+    hyy = get_hygrid() / (double) ct.nyfgrid;
+    hzz = get_hzgrid() / (double) ct.nzfgrid;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -45,20 +45,20 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     {
         ixx = ix;
         if (ixx < 0) ixx = ix + sp->nlfdim;
-        xc = (rmg_double_t) ix *hxx;
+        xc = (double) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
             iyy = iy;
             if (iyy < 0) iyy = iy + sp->nlfdim;
-            yc = (rmg_double_t) iy *hyy;
+            yc = (double) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
 
                 izz = iz;
                 if (izz < 0) izz = iz + sp->nlfdim;
-                zc = (rmg_double_t) iz *hzz;
+                zc = (double) iz *hzz;
 
                 ax[0] = xc;
                 ax[1] = yc;

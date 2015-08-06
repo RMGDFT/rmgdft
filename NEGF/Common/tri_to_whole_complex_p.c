@@ -123,7 +123,7 @@ void tri_to_whole_complex_p (complex double * A_tri, complex double * Aii, int N
     }
 
     i = 2 * ndim * ndim;
-    comm_sums((rmg_double_t *)Aii, &i, COMM_EN2);
+    comm_sums((double *)Aii, &i, COMM_EN2);
 
 }
 

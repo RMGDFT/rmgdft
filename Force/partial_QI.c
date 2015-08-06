@@ -9,18 +9,18 @@
 #include "main.h"
 
 
-void partial_QI (int ion, rmg_double_t * QI_R, ION * iptr)
+void partial_QI (int ion, double * QI_R, ION * iptr)
 {
     int idx, idx1, i, j, num;
     int ix, iy, iz, size, *dvec;
     int lpx[9][9], lpl[9][9][9];
     int  nh, icount;
-    rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9];
-    rmg_double_t ylm[25], ylm_x[25], ylm_y[25], ylm_z[25];
-    rmg_double_t xc, yc, zc;
-    rmg_double_t *QI_x, *QI_y, *QI_z;
-    rmg_double_t *qnmlig_tpr, *drqnmlig_tpr;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double x[3], cx[3], r, invdr, ap[25][9][9];
+    double ylm[25], ylm_x[25], ylm_y[25], ylm_z[25];
+    double xc, yc, zc;
+    double *QI_x, *QI_y, *QI_z;
+    double *qnmlig_tpr, *drqnmlig_tpr;
+    double hxxgrid, hyygrid, hzzgrid;
     SPECIES *sp;
 
     hxxgrid = get_hxxgrid();

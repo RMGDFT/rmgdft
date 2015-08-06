@@ -19,7 +19,7 @@
 /* Flag for projector mixing */
 int firstflag = FALSE;
 static int mix_steps;
-rmg_double_t *work1;                    /* Smoothing grids */
+double *work1;                    /* Smoothing grids */
 
 static void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res);
 static void get_nonortho_res(STATE *, double *, STATE *);
@@ -27,7 +27,7 @@ extern int it_scf;
 
 
 void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
-            double *vnuc, double *rho, double *rhoc, rmg_double_t * vxc_old, rmg_double_t * vh_old)
+            double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
 {
     int idx, istate, ione = 1;
     double diag, t1, d1, gamma;
@@ -36,14 +36,14 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     char side = 'l', uplo = 'l';
     int n2 = ct.num_states * ct.num_states, numst = ct.num_states;
     int item;
-    rmg_double_t alpha1, alpha2;
-    rmg_double_t tem;
+    double alpha1, alpha2;
+    double tem;
     int mxllda2;
-    rmg_double_t A11, A12, A21, A22, c1, c2, b1, b2;
-    rmg_double_t x1r1, x2r1, x3r1, x1r2, x2r2, x3r2, x1r3, x2r3, x3r3;
+    double A11, A12, A21, A22, c1, c2, b1, b2;
+    double x1r1, x2r1, x3r1, x1r2, x2r2, x3r2, x1r3, x2r3, x3r3;
 
 
-    rmg_double_t tem_luw = -1.0;
+    double tem_luw = -1.0;
     int *ipiv, info;
 
 
@@ -266,11 +266,11 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 {
     int i,ii,max_ii;
     int idx, st1, st2;
-    rmg_double_t theta_ion;
-    rmg_double_t *psi_pointer,*psi3,*psi2, *psi1;
+    double theta_ion;
+    double *psi_pointer,*psi3,*psi2, *psi1;
     int loop, state_per_proc, proc1, proc2;
     int num_send, num_recv, num_sendrecv, size1, size2;
-    rmg_double_t temp;
+    double temp;
     MPI_Status mstatus;
     MPI_Request  mr_send,*mr_recv;
     int st11;
@@ -383,7 +383,7 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
         if(proc2 >=0)
             MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, idx,
                     pct.grid_comm, &mstatus);
-        MPI_Wait(&request, &mstatus);
+        if(proc1 >=0) MPI_Wait(&request, &mstatus);
         if(proc2 < 0) continue;
 
 

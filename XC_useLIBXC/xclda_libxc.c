@@ -9,13 +9,13 @@
 /* include Libxc's header file */
 
 
-void xclda_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
+void xclda_libxc (double * rho, double * vxc, double * exc)
 {
    /* XC_LDA_X = 1, XC_LDA_C_PZ = 9, XC_LDA_C_PW = 12*/
     int func_id_x = 1, func_id_c = 9; 
     int FP0_BASIS;
     xc_func_type func_x, func_c;
-    rmg_double_t *ec, *vc; 
+    double *ec, *vc; 
     int idx;
 
     FP0_BASIS = get_FP0_BASIS();
@@ -34,7 +34,7 @@ void xclda_libxc (rmg_double_t * rho, rmg_double_t * vxc, rmg_double_t * exc)
     	exit(1);
     } 
 
-    my_calloc (ec, 2 * FP0_BASIS, rmg_double_t);
+    my_calloc (ec, 2 * FP0_BASIS, double);
     vc = ec + FP0_BASIS; 
 
     

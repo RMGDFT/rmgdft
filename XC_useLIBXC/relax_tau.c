@@ -9,8 +9,8 @@
 
 
 
-void relax_tau (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
-              rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc, rmg_double_t * tau)
+void relax_tau (int steps, STATE * states, double * vxc, double * vh, double * vnuc,
+              double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * tau)
 {
 
     int iion;
@@ -83,7 +83,7 @@ void relax_tau (int steps, STATE * states, rmg_double_t * vxc, rmg_double_t * vh
         {
             if (ct.ions[iion].movable)
             {
-                rmg_double_t *fp;
+                double *fp;
                 fp = ct.ions[iion].force[ct.fpt[0]];
                 CONV_FORCE &=
                     ((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);

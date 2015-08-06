@@ -15,12 +15,12 @@
 
 
 
-void nlforce_partial_H_part2 (STATE * states, STATE * states1, rmg_double_t *GHG, rmg_double_t *force)
+void nlforce_partial_H_part2 (STATE * states, STATE * states1, double *GHG, double *force)
 {
     int i, ion1, st1, st2, idx, idx1, idx2;
-    rmg_double_t temp;
-    rmg_double_t *psi, *psi1, *psi2, *old_psi, *vloc_psi;
-    rmg_double_t *vloc_x, *vloc_y, *vloc_z;
+    double temp;
+    double *psi, *psi1, *psi2, *old_psi, *vloc_psi;
+    double *vloc_x, *vloc_y, *vloc_z;
     MPI_Status mstatus;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_sendrecv, num_send, num_recv;

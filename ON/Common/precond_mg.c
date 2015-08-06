@@ -47,7 +47,7 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
 
     idx = (ixx + 4) * (iyy +4) * (izz+4);
-    my_malloc (work3, idx, rmg_double_t);
+    my_malloc (work3, idx, double);
 
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)

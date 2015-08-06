@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include "main.h"
 
-rmg_double_t ylm (int l, rmg_double_t * r)
+double ylm (int l, double * r)
 {
-    rmg_double_t rmod, rhat[3], rr1, rr2, rr3, c, out;
+    double rmod, rhat[3], rr1, rr2, rr3, c, out;
     int i;
 
     rmod = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];

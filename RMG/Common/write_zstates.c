@@ -38,17 +38,17 @@ rmg_error_handler("Requires updating.");
     int idx, incix, inciy;
     char newname[MAX_PATH + 20];
     STATE *sp;
-    rmg_double_t t1;
-    rmg_double_t *zvec;
-    rmg_double_t *tmp_psi;
+    double t1;
+    double *zvec;
+    double *tmp_psi;
     FILE *avg;
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
 
-    my_malloc (tmp_psi, get_P0_BASIS(), rmg_double_t);
-    my_malloc (zvec, get_NZ_GRID(), rmg_double_t);
+    my_malloc (tmp_psi, get_P0_BASIS(), double);
+    my_malloc (zvec, get_NZ_GRID(), double);
     /* Get this processors offset */
     pe2xyz (pct.gridpe, &px, &py, &pz);
     poff = pz * PZ0_GRID;

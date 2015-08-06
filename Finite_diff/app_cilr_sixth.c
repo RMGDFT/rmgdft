@@ -12,18 +12,18 @@
 #include "TradeImages.h"
 
 
-rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s, int dimx, int dimy, int dimz,
-                    rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+double app_cilr_sixth (double * psi, double *a_psi, double *b_psi, double *vtot_eig_s, int dimx, int dimy, int dimz,
+                    double gridhx, double gridhy, double gridhz)
 {
 
-    rmg_double_t *rptr;
+    double *rptr;
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
-    rmg_double_t ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
-    rmg_double_t fc2x, fc2y, fc2z, tcx, tcy, tcz;
-    rmg_double_t ihx, ihy, ihz;
-    rmg_double_t c000, c100, c110, c200;
+    double ecxy, ecxz, ecyz, cc, fcx, fcy, fcz, cor;
+    double fc2x, fc2y, fc2z, tcx, tcy, tcz;
+    double ihx, ihy, ihz;
+    double c000, c100, c110, c200;
     int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
 
 
@@ -33,7 +33,7 @@ rmg_double_t app_cilr_sixth (rmg_double_t * psi, rmg_double_t *a_psi, rmg_double
     c200 = -1.0 / 240.0;
 
 
-    my_malloc (rptr, sbasis + 64, rmg_double_t);
+    my_malloc (rptr, sbasis + 64, double);
     trade_imagesx (psi, rptr, dimx, dimy, dimz, 2, FULL_TRADE);
 
     incx = (dimz + 4) * (dimy + 4);

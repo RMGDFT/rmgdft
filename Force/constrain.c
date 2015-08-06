@@ -32,7 +32,6 @@
 #include <float.h>
 #include <math.h>
 #include "const.h"
-#include "rmgtypes.h"
 #include "rmgtypedefs.h"
 #include "common_prototypes.h"
 #include "main.h"
@@ -225,7 +224,7 @@ void constrain (void)
                             + Tau[3*ion+Z]*Tau[3*ion+Z];
                     }
 
-                    Mag_T = Mag_T > 0.0 ? sqrt(Mag_T) : error_handler("Left/Right image collision in NEB", pct.thisimg);
+                    Mag_T = Mag_T > 0.0 ? sqrt(Mag_T) : error_handler("Left/Right image collision in NEB");
                 }
                 else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
                 {   /* this image energy is in a decreasing to the right section */

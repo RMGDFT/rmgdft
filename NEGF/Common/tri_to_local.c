@@ -12,7 +12,7 @@
 #include "pmo.h"
 
 
-void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t * Aii_local)
+void tri_to_local (STATE *states_distribute, double * A_tri, double * Aii_local)
 {
     /* Semi_tridiagonal matrix  
      *
@@ -106,7 +106,7 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
         }
 
         size = ct.block_dim[i] * ct.block_dim[i];
-        comm_sums((rmg_double_t *)work_matrix, &size, COMM_EN2);
+        comm_sums((double *)work_matrix, &size, COMM_EN2);
 
         for(j =0; j < ct.block_dim[i]; j++)
         {
@@ -157,7 +157,7 @@ void tri_to_local (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t 
         }
 
         size = ct.block_dim[i-1] * ct.block_dim[i];
-        comm_sums((rmg_double_t *)work_matrix, &size, COMM_EN2);
+        comm_sums((double *)work_matrix, &size, COMM_EN2);
 
 
         for(j =0; j < ct.block_dim[i-1]; j++)

@@ -28,12 +28,12 @@
 #include <stdio.h>
 #include "main.h"
 
-void move_ions (rmg_double_t dt)
+void move_ions (double dt)
 {
     int ion, which = 0, count = 0;
     ION *iptr;
-    rmg_double_t max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    rmg_double_t move_x, move_y, move_z, move_sq, move;
+    double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
+    double move_x, move_y, move_z, move_sq, move;
 
 
     /* Loop over ions */

@@ -38,20 +38,20 @@
 #include <math.h>
 
 
-int claim_ion (rmg_double_t *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid)
+int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid)
 {
 
     int  pe;
     int ii, jj, kk, ilow, ihi, klow, khi, jlow, jhi;
     int igridx, igridy, igridz;
     int xnode, ynode, znode;
-    rmg_double_t t1, t2;
+    double t1, t2;
 
 
 
     /*Figure out grid coordinates of a grid point closest to position of ion
      * under consideration*/
-    t1 = (xtal[0]) * (rmg_double_t) nxgrid;
+    t1 = (xtal[0]) * (double) nxgrid;
     t1 = modf (t1, &t2);
     igridx = (int) t2;
     if (t1 > 0.5)
@@ -59,7 +59,7 @@ int claim_ion (rmg_double_t *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgr
     
     if (igridx >= nxgrid) igridx -= nxgrid ;
     
-    t1 = (xtal[1]) * (rmg_double_t) nygrid;
+    t1 = (xtal[1]) * (double) nygrid;
     t1 = modf (t1, &t2);
     igridy = (int) t2;
     if (t1 > 0.5)
@@ -67,7 +67,7 @@ int claim_ion (rmg_double_t *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgr
     
     if (igridy >= nygrid) igridy -= nygrid ;
     
-    t1 = (xtal[2]) * (rmg_double_t) nzgrid;
+    t1 = (xtal[2]) * (double) nzgrid;
     t1 = modf (t1, &t2);
     igridz = (int) t2;
     if (t1 > 0.5)

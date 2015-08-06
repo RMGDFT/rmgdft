@@ -21,7 +21,7 @@
 #include "init_var.h"
 
 
-void partial_Mat_nm_R(double *partial_x, double *partial_y, double *partial_z, rmg_double_t * global_mat_X)
+void partial_Mat_nm_R(double *partial_x, double *partial_y, double *partial_z, double * global_mat_X)
 {
     int ion, ip1, ip2, st1, st2, ist;
     MPI_Status mstatus;
@@ -29,13 +29,13 @@ void partial_Mat_nm_R(double *partial_x, double *partial_y, double *partial_z, r
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
     int nh;
-    rmg_double_t *kbpsi_comm_x, *kbpsi_comm_y, *kbpsi_comm_z;
+    double *kbpsi_comm_x, *kbpsi_comm_y, *kbpsi_comm_z;
     int st11;
 
 
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
-    my_malloc_init( kbpsi_comm_x, 3 * size, rmg_double_t );
+    my_malloc_init( kbpsi_comm_x, 3 * size, double );
     kbpsi_comm_y = kbpsi_comm_x + size;
     kbpsi_comm_z = kbpsi_comm_y + size;
 

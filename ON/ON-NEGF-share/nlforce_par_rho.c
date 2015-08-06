@@ -9,11 +9,11 @@
 #include "main.h"
 #include "prototypes_on.h"
 
-void nlforce_par_rho(rmg_double_t * par_gamma_x, rmg_double_t * par_gamma_y, rmg_double_t * par_gamma_z, int ion, int nh)
+void nlforce_par_rho(double * par_gamma_x, double * par_gamma_y, double * par_gamma_z, int ion, int nh)
 {
     int idx, idx1, idx2, size, n, m, max_nl;
-    rmg_double_t forces[3];
-    rmg_double_t *gamma_x, *gamma_y, *gamma_z, *dnmI;
+    double forces[3];
+    double *gamma_x, *gamma_y, *gamma_z, *dnmI;
     ION *iptr;
 
 

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void get_vh(rmg_double_t *rho, rmg_double_t *rhoc, rmg_double_t *vh_eig, int sweeps, int maxlevel)
+ *   void get_vh(double *rho, double *rhoc, double *vh_eig, int sweeps, int maxlevel)
  *   Iterative procedure to obtain the hartree potential.
  *   Uses Mehrstallen finite differencing with multigrid accelerations.
  *   The multigrid scheme uses a standard W-cycle with Jacobi relaxation.
@@ -47,7 +47,6 @@
 #include "grid.h"
 #include "const.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -69,13 +68,13 @@ static int poi_pre[5] = { 0, 3, 3, 3, 3 };
 static int poi_post[5] = { 0, 3, 3, 3, 3 };
 
 
-void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, rmg_double_t rms_target)
+void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target)
 {
 
     int idx, its, nits, sbasis, pbasis;
-    rmg_double_t t1, vavgcor, diag;
-    rmg_double_t *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    rmg_double_t *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
+    double t1, vavgcor, diag;
+    double *mgrhsarr, *mglhsarr, *mgresarr, *work;
+    double *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
 
@@ -90,14 +89,14 @@ void get_vh_negf (rmg_double_t * rho, rmg_double_t * rhoc, rmg_double_t * vh_eig
 
 
     /* Grab some memory for our multigrid structures */
-    my_malloc (mgrhsarr, sbasis, rmg_double_t);
-    my_malloc (mglhsarr, sbasis, rmg_double_t);
-    my_malloc (mgresarr, sbasis, rmg_double_t);
-    my_malloc (work, 4*sbasis, rmg_double_t);
-    my_malloc (sg_rho, sbasis, rmg_double_t);
-    my_malloc (sg_vh, sbasis, rmg_double_t);
-    my_malloc (sg_res, sbasis, rmg_double_t);
-    my_malloc (nrho, sbasis, rmg_double_t);
+    my_malloc (mgrhsarr, sbasis, double);
+    my_malloc (mglhsarr, sbasis, double);
+    my_malloc (mgresarr, sbasis, double);
+    my_malloc (work, 4*sbasis, double);
+    my_malloc (sg_rho, sbasis, double);
+    my_malloc (sg_vh, sbasis, double);
+    my_malloc (sg_res, sbasis, double);
+    my_malloc (nrho, sbasis, double);
 
     /* Subtract off compensating charges from rho */
     for (idx = 0; idx < pbasis; idx++)

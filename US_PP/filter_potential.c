@@ -43,11 +43,11 @@
 #define SMALL 1.e-35
 
 
-void filter_potential (rmg_double_t *potential, rmg_double_t *r, int rg_points, rmg_double_t rmax, rmg_double_t offset, rmg_double_t parm, rmg_double_t* potential_lgrid, 
-	rmg_double_t *rab, int l_value, rmg_double_t dr, rmg_double_t  gwidth, int lgrid_points, rmg_double_t rcut, rmg_double_t rwidth, rmg_double_t * drpotential_lgrid)
+void filter_potential (double *potential, double *r, int rg_points, double rmax, double offset, double parm, double* potential_lgrid, 
+	double *rab, int l_value, double dr, double  gwidth, int lgrid_points, double rcut, double rwidth, double * drpotential_lgrid)
 {
 
-    rmg_double_t *work, rdist, t1, exp_fac;
+    double *work, rdist, t1, exp_fac;
     int idx, der_flag = 0;
 
     if(drpotential_lgrid)
@@ -67,10 +67,10 @@ void filter_potential (rmg_double_t *potential, rmg_double_t *r, int rg_points, 
     /*Evaluate radial derivative, if requested*/
     if (der_flag)
     {
-	my_malloc(work, lgrid_points, rmg_double_t);
+	my_malloc(work, lgrid_points, double);
 
 	for (idx = 0; idx < lgrid_points; idx++)
-	    work[idx] = dr * ((rmg_double_t) idx);
+	    work[idx] = dr * ((double) idx);
 
 	radiff (potential_lgrid, drpotential_lgrid, work, lgrid_points, 0.0);
 

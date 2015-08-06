@@ -28,9 +28,9 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
     ix1 = dimy * dimz;
     iy1 = dimz;
 
-    wxr = (rmg_double_t *) wx;
-    wyr = (rmg_double_t *) wy;
-    wzr = (rmg_double_t *) wz;
+    wxr = (double *) wx;
+    wyr = (double *) wy;
+    wzr = (double *) wz;
 
     my_malloc_init( rptr, (dimx + 6) * (dimy + 6) * (dimz + 6), double );
 

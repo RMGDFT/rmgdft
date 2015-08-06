@@ -14,8 +14,8 @@
 void normalize_orbits(STATE * states)
 {
     int st, i;
-    rmg_double_t sum;
-    rmg_double_t tmp;
+    double sum;
+    double tmp;
     int ione = 1;
 
     if (pct.gridpe == 0)

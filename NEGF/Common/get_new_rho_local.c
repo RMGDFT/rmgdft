@@ -17,16 +17,16 @@
 void get_new_rho_local (STATE * states_distribute, double *rho)
 {
     int idx, ione = 1;
-    rmg_double_t t2;
+    double t2;
     register double tcharge;
 
     /* for parallel libraries */
 
-    rmg_double_t *psi1, *psi2, scale;
+    double *psi1, *psi2, scale;
     int i, st1, st2, proc1, proc2, st11;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
-    rmg_double_t *rho_temp;
+    double *rho_temp;
     int ix, iy; 
     double tem;
     char filename[MAX_PATH];
@@ -35,7 +35,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho)
     int pbasis = get_P0_BASIS();
 
     psi = work_memory;
-    my_malloc_init( rho_temp, pbasis, rmg_double_t );
+    my_malloc_init( rho_temp, pbasis, double );
 
 
 

@@ -29,18 +29,18 @@
 #include <stdio.h>
 #include "main.h"
 
-void fire (rmg_double_t *step, rmg_double_t step_max, rmg_double_t f_inc, rmg_double_t f_dec, int n_min, int *n_count )
+void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count )
 {
     int ion, fpt, which = -1, count = 0;
     ION *iptr;
-    rmg_double_t  magf = 0.0, magv = 0.0, dotfv, p=0.0, unitf[3], eff_mass = 6.0 * mu_me;
-    rmg_double_t max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    rmg_double_t move_x, move_y, move_z, move_sq, move;
+    double  magf = 0.0, magv = 0.0, dotfv, p=0.0, unitf[3], eff_mass = 6.0 * mu_me;
+    double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
+    double move_x, move_y, move_z, move_sq, move;
 
     /*Fire parameters*/
-    rmg_double_t alpha_start = 0.1;
-    rmg_double_t f_alpha = 0.99;
-    static rmg_double_t alpha = 0.1;
+    double alpha_start = 0.1;
+    double f_alpha = 0.99;
+    static double alpha = 0.1;
 
     fpt = ct.fpt[0];
 	

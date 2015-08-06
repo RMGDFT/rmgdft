@@ -10,7 +10,7 @@
  * COPYRIGHT
  *   Copyright (C) 2001  Vincent Meunier, Wenchang Lu, Jerzy Bernholc
  * FUNCTION
- *   void init_efield(rmg_double_t *vnuc)
+ *   void init_efield(double *vnuc)
  *   Set up the electric field (add it to vnuc already defined)
  *   sawtooth potential
  * INPUTS
@@ -36,18 +36,18 @@
 
 #define SMALL_EFIELD 1.0e-20
 
-void init_efield (rmg_double_t * vnuc)
+void init_efield (double * vnuc)
 {
 
-    rmg_double_t norm_field_0;
+    double norm_field_0;
     int ix, iy, iz;
     int jx, jy, jz;
     int idx;
     int incix, inciy;
-    rmg_double_t xoff, yoff, zoff;
-    rmg_double_t rx, ry, rz;
-    rmg_double_t d_field;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double xoff, yoff, zoff;
+    double rx, ry, rz;
+    double d_field;
+    double hxxgrid, hyygrid, hzzgrid;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();

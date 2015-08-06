@@ -6,11 +6,11 @@
 #include "common_prototypes.h"
 
 
-void mix_tau (rmg_double_t * new_tau, rmg_double_t * tau, int length, int length_x, int length_y, int length_z)
+void mix_tau (double * new_tau, double * tau, int length, int length_x, int length_y, int length_z)
 {
-    rmg_double_t t1;
+    double t1;
     int step, inc = 1;
-    static rmg_double_t **rhohist=NULL, **residhist=NULL;
+    static double **rhohist=NULL, **residhist=NULL;
 
     /*Linear Mixing*/
     if (verify("charge_mixing_type","Linear"))

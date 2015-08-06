@@ -32,8 +32,8 @@ void ranv (void)
 {
     int i, ii, N, ion;
     ION *iptr;
-    rmg_double_t c, p, tmass, vtot[3], ek, scale;
-    rmg_double_t kB, mass;
+    double c, p, tmass, vtot[3], ek, scale;
+    double kB, mass;
 
     /* init the random number generator */
     srand (123);
@@ -75,7 +75,7 @@ void ranv (void)
                 {
 
                     ii = rand ();
-                    p = (rmg_double_t) ii / (rmg_double_t) RAND_MAX;
+                    p = (double) ii / (double) RAND_MAX;
 
                     iptr->velocity[i] = sqrt (c * log (p));
 

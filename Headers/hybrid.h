@@ -18,7 +18,6 @@
 #endif
 #include <mpi.h>
 #include "typedefs.h"
-#include "rmgtypes.h"
 #include "rmgtypedefs.h"
 #include "rmgthreads.h"
 

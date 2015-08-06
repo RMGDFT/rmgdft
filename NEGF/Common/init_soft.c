@@ -11,8 +11,8 @@
  *   Copyright (C) 2001  Wenchang Lu,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init(rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, 
- *             STATE *states, rmg_double_t *vnuc, rmg_double_t *vxc)
+ *   void init(double *vh, double *rho, double *rhocore, double *rhoc, 
+ *             STATE *states, double *vnuc, double *vxc)
  *   Basic initialization stuff.
  * INPUTS
  *   rhocore: core charge density for non-linear core corection
@@ -49,15 +49,15 @@
 
 void is_state_overlap (STATE *, char *);
 
-void init_soft (rmg_double_t * vh, rmg_double_t * rho, rmg_double_t * rhocore, rmg_double_t * rhoc,
-                STATE * states, STATE * states1, rmg_double_t * vnuc, rmg_double_t * vext, rmg_double_t * vxc, rmg_double_t * vh_old,
-                rmg_double_t * vxc_old, STATE *states_distribute)
+void init_soft (double * vh, double * rho, double * rhocore, double * rhoc,
+                STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
+                double * vxc_old, STATE *states_distribute)
 {
 
     int kpt, ic, idx, ion, ispin, kpt1;
     int flag, level;
-    rmg_double_t cut_init;
-    rmg_double_t tem;
+    double cut_init;
+    double tem;
     int item;
     char *nameL, *nameC, *nameR;
     int st1, iprobe, i;

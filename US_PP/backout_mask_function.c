@@ -17,11 +17,11 @@
  *           that at the distance (rcut-offset) f is zero and set f/mask to zero for r> (rcut-offset).
  * */           
 
-void backout_mask_function (rmg_double_t *f, rmg_double_t dr, int lg_points, rmg_double_t rmax)
+void backout_mask_function (double *f, double dr, int lg_points, double rmax)
 {
 
     int idx;
-    rmg_double_t r = 0.0;
+    double r = 0.0;
 
     for (idx = 0; idx < lg_points; idx++)
         {   

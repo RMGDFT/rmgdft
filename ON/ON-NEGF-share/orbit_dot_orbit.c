@@ -22,13 +22,13 @@
 #include "init_var.h"
 
 
-void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_double_t *Bij)
+void orbit_dot_orbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 {
     int i, ii;
     int st1, st2;
-    rmg_double_t *psi1;
-    rmg_double_t *psi2;
-    rmg_double_t *psi3;
+    double *psi1;
+    double *psi2;
+    double *psi3;
     MPI_Status mstatus;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
@@ -70,7 +70,7 @@ void orbit_dot_orbit(STATE * states, STATE * states1, rmg_double_t *Aij, rmg_dou
     my_calloc(mr_recv, ii, MPI_Request);
 
     psi2 = orbit_tem;
-    my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t );
+    my_malloc_init(psi3, ct.max_orbit_size, double );
 
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)

@@ -13,24 +13,24 @@
 
 static int firststep = TRUE;
 
-bool scf_tau (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
-          rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc, rmg_double_t * tau)
+bool scf_tau (STATE * states, double * vxc, double * vh, double * vnuc,
+          double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * tau)
 {
 
     void *RT = BeginRmgTimer("Scf steps");
     void *RT1;
     int kpt, st1, idx, ik, st, diag_this_step, nspin = (ct.spin_flag + 1), istop, vcycle, P0_BASIS, FP0_BASIS;
     bool CONVERGED = false;
-    rmg_double_t t3;
-    rmg_double_t *vtot, *vtot_psi, *new_rho, *new_tau;
-    rmg_double_t time1, time2, time3, time4;
-    rmg_double_t t[3];                  /* SCF checks and average potential */
+    double t3;
+    double *vtot, *vtot_psi, *new_rho, *new_tau;
+    double time1, time2, time3, time4;
+    double t[3];                  /* SCF checks and average potential */
     int ist;
 
     MPI_Status status, stat[2]; 
     MPI_Request req[2];   
     /* to hold the send data and receive data of eigenvalues */
-    rmg_double_t *eigval_sd, *eigval_rv, *rho_tot;   
+    double *eigval_sd, *eigval_rv, *rho_tot;   
     
     time3 = my_crtc ();
 
@@ -40,15 +40,15 @@ bool scf_tau (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_
     /* allocate memory for eigenvalue send array and receive array */
     if (ct.spin_flag)
     {
-    	my_malloc (rho_tot, FP0_BASIS, rmg_double_t);
+    	my_malloc (rho_tot, FP0_BASIS, double);
     }
 
-    my_malloc (new_rho, FP0_BASIS, rmg_double_t);
-    my_malloc (vtot, FP0_BASIS, rmg_double_t);
-    my_malloc (vtot_psi, P0_BASIS, rmg_double_t);
+    my_malloc (new_rho, FP0_BASIS, double);
+    my_malloc (vtot, FP0_BASIS, double);
+    my_malloc (vtot_psi, P0_BASIS, double);
 
     if (ct.xctype == MGGA_TB09) 
-    	my_malloc (new_tau, FP0_BASIS, rmg_double_t);
+    	my_malloc (new_tau, FP0_BASIS, double);
     /* save old vhxc + vnuc */
     for (idx = 0; idx < FP0_BASIS; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -110,8 +110,8 @@ bool scf_tau (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_
     t[0] *= get_vel_f();
     
     /* get the averaged value over each spin and each fine grid */
-    t[1] = sqrt (t[1] / ((rmg_double_t) (nspin * ct.psi_fnbasis)));  
-    t[2] /= ((rmg_double_t) (nspin * ct.psi_fnbasis));   
+    t[1] = sqrt (t[1] / ((double) (nspin * ct.psi_fnbasis)));  
+    t[2] /= ((double) (nspin * ct.psi_fnbasis));   
     
     ct.rms = t[1];
 

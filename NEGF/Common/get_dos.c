@@ -26,8 +26,8 @@ void get_dos (STATE * states)
     int iene, st1;
     complex double *g;
     complex double *sigma;
-    rmg_double_t *temp_matrix_tri, *temp_matrix, *matrix_product;
-    rmg_double_t de, emin, emax;
+    double *temp_matrix_tri, *temp_matrix, *matrix_product;
+    double de, emin, emax;
 
     complex double *green_C, *ch0, *ch01, *ch10;
     complex double ene, ctem;
@@ -41,7 +41,7 @@ void get_dos (STATE * states)
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
-    rmg_double_t *Green_store, *rho_energy, *rho_energy2;
+    double *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
     int E_POINTS, kpoint[3];
@@ -82,24 +82,24 @@ void get_dos (STATE * states)
     }
 
 
-    my_malloc_init( lcr[0].Htri, ntot, rmg_double_t );
-    my_malloc_init( lcr[0].Stri, ntot, rmg_double_t );
+    my_malloc_init( lcr[0].Htri, ntot, double );
+    my_malloc_init( lcr[0].Stri, ntot, double );
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S00, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].H01, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].S01, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].H00, idx, double );
+        my_malloc_init( lcr[iprobe].S00, idx, double );
+        my_malloc_init( lcr[iprobe].H01, idx, double );
+        my_malloc_init( lcr[iprobe].S01, idx, double );
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, rmg_double_t );
-        my_malloc_init( lcr[iprobe].SCL, idx, rmg_double_t );
+        my_malloc_init( lcr[iprobe].HCL, idx, double );
+        my_malloc_init( lcr[iprobe].SCL, idx, double );
     }
 
 
@@ -151,7 +151,7 @@ void get_dos (STATE * states)
     /*st1 = (E_POINTS + NPES - 1) / NPES;*/
     st1 = (E_POINTS + pmo.npe_energy - 1) / pmo.npe_energy;
    
-    my_malloc_init( Green_store, st1 * ntot, rmg_double_t );
+    my_malloc_init( Green_store, st1 * ntot, double );
 
 /*===================================================================*/
 
@@ -165,9 +165,9 @@ void get_dos (STATE * states)
                                                                                               
                                                                                               
                                                                                               
-    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), rmg_double_t );
+    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), double );
     if (cei.num_probe > 2)
-        my_malloc_init( rho_energy2, E_POINTS * get_FNY_GRID(), rmg_double_t );
+        my_malloc_init( rho_energy2, E_POINTS * get_FNY_GRID(), double );
                                                                                               
                                                                                               
                                                                                               

@@ -26,7 +26,6 @@
     
 
 #include "grid.h"
-#include "rmgtypes.h"
 #include "common_prototypes.h"
 #include "main.h"
 #include "rmgthreads.h"

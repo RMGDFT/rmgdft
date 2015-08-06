@@ -53,14 +53,14 @@
 /* Computes exchange correlation energy density */
 /* rho_up & rho_dn are the normalized realspace */
 /* spin electron charge densities (in Hartrees) */
-rmg_double_t e_lsd_pz(rmg_double_t rho_up, rmg_double_t rho_dn)
+double e_lsd_pz(double rho_up, double rho_dn)
 {
 
-    rmg_double_t rho, zeta, rs;
-    rmg_double_t sqrt_rs, log_rs;
-    rmg_double_t Ex_U, Ec_U, Ex_P, Ec_P, Exc_U, Exc_P, Exc;
-    rmg_double_t Bpr_U, Bpr_P, f;
-    rmg_double_t tmp, tmp1, tmp2;
+    double rho, zeta, rs;
+    double sqrt_rs, log_rs;
+    double Ex_U, Ec_U, Ex_P, Ec_P, Exc_U, Exc_P, Exc;
+    double Bpr_U, Bpr_P, f;
+    double tmp, tmp1, tmp2;
 
     /* get total charge */
     rho = rho_up + rho_dn;
@@ -232,15 +232,15 @@ rmg_double_t e_lsd_pz(rmg_double_t rho_up, rmg_double_t rho_dn)
 /* Computes spin up & dn exchange correlation potential */
 /* rho_up & rho_dn are the normalized realspace         */
 /* spin electron charge densities (in Hartrees)         */
-void mu_lsd_pz(rmg_double_t rho_up, rmg_double_t rho_dn, rmg_double_t * Vxc_up, rmg_double_t * Vxc_dn)
+void mu_lsd_pz(double rho_up, double rho_dn, double * Vxc_up, double * Vxc_dn)
 {
 
-    rmg_double_t rho, zeta, rs;
-    rmg_double_t sqrt_rs, log_rs;
-    rmg_double_t Ex_U, Ec_U, Ex_P, Ec_P, Exc_U, Exc_P;
-    rmg_double_t Vx_U, Vc_U, Vx_P, Vc_P, Vxc_U, Vxc_P, VVxc;
-    rmg_double_t Bpr_U, Bpr_P, f, df, E;
-    rmg_double_t tmp, tmp1, tmp2;
+    double rho, zeta, rs;
+    double sqrt_rs, log_rs;
+    double Ex_U, Ec_U, Ex_P, Ec_P, Exc_U, Exc_P;
+    double Vx_U, Vc_U, Vx_P, Vc_P, Vxc_U, Vxc_P, VVxc;
+    double Bpr_U, Bpr_P, f, df, E;
+    double tmp, tmp1, tmp2;
 
     /* get total charge */
     rho = rho_up + rho_dn;
@@ -438,12 +438,12 @@ void mu_lsd_pz(rmg_double_t rho_up, rmg_double_t rho_dn, rmg_double_t * Vxc_up, 
 
 
 
-void xclsd_pz81(rmg_double_t * rho, rmg_double_t * vxc)
+void xclsd_pz81(double * rho, double * vxc)
 {
 
     int i;
-    rmg_double_t *rho_up, *rho_dn;
-    rmg_double_t *vxc_up, *vxc_dn;
+    double *rho_up, *rho_dn;
+    double *vxc_up, *vxc_dn;
 
     /* set up the pointers to the up and down rho and vxc */
     rho_up = &rho[0];
@@ -467,11 +467,11 @@ void xclsd_pz81(rmg_double_t * rho, rmg_double_t * vxc)
 
 
 
-void exclsd_pz81(rmg_double_t * rho, rmg_double_t * exc)
+void exclsd_pz81(double * rho, double * exc)
 {
 
     int i;
-    rmg_double_t *rho_up, *rho_dn;
+    double *rho_up, *rho_dn;
 
     /* set up the pointers to the up and down rho and vxc */
     rho_up = &rho[0];

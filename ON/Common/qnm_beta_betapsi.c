@@ -20,7 +20,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 /*shuchun wang */
-void qnm_beta_betapsi(STATE *state1, int ion2, rmg_double_t * pptr, rmg_double_t * work)
+void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;

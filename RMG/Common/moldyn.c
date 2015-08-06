@@ -33,29 +33,29 @@ void init_nose (void);
 void nose_velup1 (void);
 void nose_posup (void);
 void nose_velup2 (void);
-void nose_energy (rmg_double_t *, rmg_double_t *);
+void nose_energy (double *, double *);
 
 void velup1 (void);
 //void posup (void);
 void velup2 (void);
 
-void rms_disp (rmg_double_t *, rmg_double_t *);
+void rms_disp (double *, double *);
 
 int stepcount = 0;
 
-void moldyn (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
-             rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhoc, rmg_double_t * rhocore)
+void moldyn (STATE * states, double * vxc, double * vh, double * vnuc,
+             double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 {
 rmg_error_handler("Requires updating.");
 #if 0
 
-    rmg_double_t target;
-    rmg_double_t *crdsx, *crdsy, *crdsz, rsteps;
-    rmg_double_t kB, step;
-    rmg_double_t tmix, tprjmix;
-    rmg_double_t rms[3], trms;
-    rmg_double_t nosekin, nosepot;
-    rmg_double_t iontemp;
+    double target;
+    double *crdsx, *crdsy, *crdsz, rsteps;
+    double kB, step;
+    double tmix, tprjmix;
+    double rms[3], trms;
+    double nosekin, nosepot;
+    double iontemp;
     int ion, it, steps1, isteps, nsteps = 1, nmsteps, N;
     int ic;
     ION *iptr;
@@ -70,9 +70,9 @@ rmg_error_handler("Requires updating.");
 
 
     /*Get some memory */
-    my_malloc (crdsx, ct.num_ions, rmg_double_t);
-    my_malloc (crdsy, ct.num_ions, rmg_double_t);
-    my_malloc (crdsz, ct.num_ions, rmg_double_t);
+    my_malloc (crdsx, ct.num_ions, double);
+    my_malloc (crdsy, ct.num_ions, double);
+    my_malloc (crdsz, ct.num_ions, double);
 
 
 
@@ -219,7 +219,7 @@ rmg_error_handler("Requires updating.");
         /* Do a halfstep update of the velocities */
         velup1 ();
 
-        rsteps = 1.0 / (rmg_double_t) isteps;
+        rsteps = 1.0 / (double) isteps;
 
         /* do nmsteps iterations to move the hamiltonian smoothly */
         /* to the next positions                            */
@@ -384,7 +384,7 @@ rmg_error_handler("Requires updating.");
         rms_disp (&rms[0], &trms);
 
         /* get the total T of the system */
-        iontemp = ct.ionke * 2.0 / (3.0 * (rmg_double_t) N * kB);
+        iontemp = ct.ionke * 2.0 / (3.0 * (double) N * kB);
 
 
         /*write data to output file */
@@ -455,9 +455,9 @@ void init_nose ()
 {
     int ion, N, jc;
     ION *iptr;
-    rmg_double_t wNose, tau_nose, kB, mass, step;
-    rmg_double_t inittemp, nosesteps;
-    rmg_double_t v1, v2, v3;
+    double wNose, tau_nose, kB, mass, step;
+    double inittemp, nosesteps;
+    double v1, v2, v3;
 
     step = ct.iondt;
 
@@ -498,7 +498,7 @@ void init_nose ()
 
     }
 
-    inittemp = ct.ionke * 2.0 / (3.0 * (rmg_double_t) N * kB);
+    inittemp = ct.ionke * 2.0 / (3.0 * (double) N * kB);
 
     /* init thermostat forces */
     ct.nose.xf[ct.fpt[0]][0] = 2.0 * (ct.ionke - ct.nose.k0) / ct.nose.xq[0];
@@ -534,10 +534,10 @@ void velup1 ()
 {
     int ion, ic;
     ION *iptr;
-    rmg_double_t step, mass, kB;
-    rmg_double_t t1, t2, v1, v2, v3;
-    rmg_double_t scale = 1.0;
-    rmg_double_t temperature;
+    double step, mass, kB;
+    double t1, t2, v1, v2, v3;
+    double scale = 1.0;
+    double temperature;
 
     step = ct.iondt;
 
@@ -681,7 +681,7 @@ void posup ()
 {
     int ion;
     ION *iptr;
-    rmg_double_t step;
+    double step;
 
     step = ct.iondt;
 
@@ -721,10 +721,10 @@ void velup2 ()
 {
     int ion, ic;
     ION *iptr;
-    rmg_double_t step, mass;
-    rmg_double_t t1, t2;
-    rmg_double_t v1, v2, v3;
-    rmg_double_t scale = 1.0, kB;
+    double step, mass;
+    double t1, t2;
+    double v1, v2, v3;
+    double scale = 1.0, kB;
 
     step = ct.iondt;
 
@@ -832,12 +832,12 @@ void velup2 ()
 
 
 
-void rms_disp (rmg_double_t * rms, rmg_double_t * trms)
+void rms_disp (double * rms, double * trms)
 {
 
     int it;
     ION *iptr;
-    rmg_double_t t1, t2, t3;
+    double t1, t2, t3;
 
     *trms = 0.0;
     rms[0] = rms[1] = rms[2] = 0.0;
@@ -868,7 +868,7 @@ void rms_disp (rmg_double_t * rms, rmg_double_t * trms)
         rms[1] = t2;
         rms[2] = t3;
 
-        *trms += metric (rms) / ((rmg_double_t) ct.nose.N);
+        *trms += metric (rms) / ((double) ct.nose.N);
 
     }
 
@@ -877,8 +877,8 @@ void rms_disp (rmg_double_t * rms, rmg_double_t * trms)
 void nose_velup1 ()
 {
     int jc;
-    rmg_double_t step;
-    rmg_double_t scale;
+    double step;
+    double scale;
     int mn;
 
     step = ct.iondt;
@@ -932,7 +932,7 @@ void nose_posup ()
 {
 
     int jc;
-    rmg_double_t step;
+    double step;
 
     step = ct.iondt;
 
@@ -949,8 +949,8 @@ void nose_posup ()
 void nose_velup2 ()
 {
     int jc;
-    rmg_double_t kB, step;
-    rmg_double_t scale;
+    double kB, step;
+    double scale;
     int mn;
 
     step = ct.iondt;
@@ -1074,10 +1074,10 @@ void nose_velup2 ()
 }                               /* end of nose_velup2 */
 
 
-void nose_energy (rmg_double_t * nosekin, rmg_double_t * nosepot)
+void nose_energy (double * nosekin, double * nosepot)
 {
     int jc;
-    rmg_double_t kB;
+    double kB;
 
     /* define Boltzmann param */
     kB = 1.0 / (11605.0 * Ha_eV);

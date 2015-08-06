@@ -21,12 +21,12 @@
 #include "prototypes_on.h"
 
 
-void get_orbit_center(STATE *state, rmg_double_t * x, rmg_double_t * y, rmg_double_t * z)
+void get_orbit_center(STATE *state, double * x, double * y, double * z)
 {
     int ix, iy, iz;
     int index;
-    rmg_double_t temp;
-    rmg_double_t sum;
+    double temp;
+    double sum;
 
     *x = 0.0;
     *y = 0.0;

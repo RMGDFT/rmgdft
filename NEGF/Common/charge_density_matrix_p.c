@@ -24,7 +24,7 @@ void charge_density_matrix_p (complex double * sigma_all)
     complex double weight;
     complex double *green_C, *rho_mn;
     complex double *sigma, *gamma;
-    rmg_double_t denominator, numerator, dum, sum, *wmn;
+    double denominator, numerator, dum, sum, *wmn;
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
     complex double *green_C_row, *green_C_col;
     int maxrow, maxcol;
@@ -250,7 +250,7 @@ void charge_density_matrix_p (complex double * sigma_all)
         for (st1 = 0; st1 < ntot; st1++)
             lcr[0].density_matrix_tri[st1] = 0.0;
 
-        my_malloc_init( wmn, cei.num_probe, rmg_double_t );
+        my_malloc_init( wmn, cei.num_probe, double );
         for (st1 = 0; st1 < ntot; st1++)
         {
 

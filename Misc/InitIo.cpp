@@ -59,7 +59,6 @@
 #include "grid.h"
 #include "const.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"

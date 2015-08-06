@@ -29,13 +29,13 @@ Apply linear potential drop
 #define eps 1.0E-8
 #define nmax 800000000
 
-void apply_potential_drop (rmg_double_t *vbias)
+void apply_potential_drop (double *vbias)
 {
     int idx;
     int i, j, k, xoff, yoff;
     int ii, jj, kk;
-    rmg_double_t V1, V2, V3, V4;
-    rmg_double_t Vx, Vxp, Vy, Vyp, xx, xx2, yy, yy2;
+    double V1, V2, V3, V4;
+    double Vx, Vxp, Vy, Vyp, xx, xx2, yy, yy2;
     int x1, y1, x2, y2, x3, y3, x4, y4, FPYZ0_GRID;
     int x, y;
 

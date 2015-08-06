@@ -40,25 +40,25 @@
 
 
 
-void app6_del2 (rmg_double_t *rho, rmg_double_t * work, int dimx, int dimy, int dimz,
-                rmg_double_t gridhx, rmg_double_t gridhy, rmg_double_t gridhz)
+void app6_del2 (double *rho, double * work, int dimx, int dimy, int dimz,
+                double gridhx, double gridhy, double gridhz)
 
 {
 
     int iz, ix, iy, incx, incy, incxr, incyr;
     int ixs, iys, ixms, ixps, iyms, iyps, ixmms, ixpps, iymms, iypps;
 
-    rmg_double_t h2, t0, t1x, t2x;
-    rmg_double_t t1y, t2y;
-    rmg_double_t t1z, t2z;
-    rmg_double_t *f;
+    double h2, t0, t1x, t2x;
+    double t1y, t2y;
+    double t1z, t2z;
+    double *f;
 
     incx = (dimz + 4) * (dimy + 4);
     incy = dimz + 4;
     incxr = dimz * dimy;
     incyr = dimz;
 
-    my_malloc(f, (dimx+4) * (dimy+4 ) * (dimz+4), rmg_double_t);
+    my_malloc(f, (dimx+4) * (dimy+4 ) * (dimz+4), double);
 
     trade_imagesx (rho, f, dimx, dimy, dimz, 2, CENTRAL_TRADE);
 

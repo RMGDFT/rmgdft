@@ -34,7 +34,7 @@ double tem1;
 
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
-        rmg_double_t * vxc_old, rmg_double_t * vh_old, int *CONVERGENCE)
+        double * vxc_old, double * vh_old, int *CONVERGENCE)
 {
     int numst = ct.num_states;
     int  kpt, kpt1;
@@ -145,7 +145,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
    of the old ones (input "vh" and "vxc") and the ones 
    corresponding to the input "rho".
  */
-void update_pot(double *vxc, double *vh, rmg_double_t * vxc_old, rmg_double_t * vh_old,
+void update_pot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         int *CONVERGENCE, STATE * states)
 {

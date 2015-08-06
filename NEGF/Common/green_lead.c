@@ -30,7 +30,7 @@ void green_lead (complex double *ch0_host, complex double *ch01_host,
                 complex double *ch10_host, complex double *green_host, int iprobe)
 {
 
-    rmg_double_t converge1, converge2;
+    double converge1, converge2;
     complex double *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1;
     complex double one = 1.0, zero = 0.0, mone = -1.0;
     complex double *green, *tot, *tott, *ch0, *ch01, *ch10; 

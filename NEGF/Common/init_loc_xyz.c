@@ -32,7 +32,7 @@ void init_loc_xyz ()
 
 
     int L0_NLDIM;
-    rmg_double_t hxgrid, hygrid, hzgrid;
+    double hxgrid, hygrid, hzgrid;
 
 
 

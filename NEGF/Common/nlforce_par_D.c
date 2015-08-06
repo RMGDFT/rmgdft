@@ -14,13 +14,13 @@
 
 #define         LDEBUG  0
 
-void nlforce_par_D (STATE *states, rmg_double_t *forces)
+void nlforce_par_D (STATE *states, double *forces)
 {
     int st1, st2, ixyz;
     int nC, nL, i, ntot, ion;
     int idx1, idx2, size;
     int N_res, N_int, Num_ene_points;
-    rmg_double_t *par_Hij_tri, *par_Sij_tri, *GHG_tri, *GHG_en_tri, *S_matrix;
+    double *par_Hij_tri, *par_Sij_tri, *GHG_tri, *GHG_en_tri, *S_matrix;
     ION *iptr;
 
 
@@ -30,18 +30,18 @@ void nlforce_par_D (STATE *states, rmg_double_t *forces)
         ntot += (ct.block_dim[i] * ct.block_dim[i] + ct.block_dim[i] * ct.block_dim[i + 1]);
     ntot += ct.block_dim[ct.num_blocks - 1] * ct.block_dim[ct.num_blocks - 1];
 
-    my_malloc_init( GHG_tri, ntot, rmg_double_t );
-    my_malloc_init( GHG_en_tri, ntot, rmg_double_t );
+    my_malloc_init( GHG_tri, ntot, double );
+    my_malloc_init( GHG_en_tri, ntot, double );
 
     /* get the integration of multipliation of GHG and GHG*epslion over energy points */
     multi_GHG_munu (GHG_tri, GHG_en_tri);
     my_free (sigma_all);
 
-    my_malloc_init( par_Hij_tri, ntot, rmg_double_t );
-    my_malloc_init( par_Sij_tri, ntot, rmg_double_t );
+    my_malloc_init( par_Hij_tri, ntot, double );
+    my_malloc_init( par_Sij_tri, ntot, double );
 
     size = ct.num_states * ct.num_states;
-    my_malloc_init( S_matrix, size, rmg_double_t );
+    my_malloc_init( S_matrix, size, double );
 
     idx1 = ct.num_states - lcr[2].num_states;
     idx2 = ct.num_states - lcr[2].num_states / 2;

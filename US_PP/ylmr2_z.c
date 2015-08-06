@@ -9,7 +9,7 @@
 void ylmr2_z (double *r, double *ylm_z)
 {
     int l, i;
-    rmg_double_t c, rmod, rhat[3];
+    double c, rmod, rhat[3];
 
     rmod = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
     rmod = sqrt (rmod);

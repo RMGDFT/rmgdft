@@ -14,7 +14,7 @@
 void state_corner_xyz(STATE * states)
 {
     int state;
-    rmg_double_t hgrid[3];
+    double hgrid[3];
     int ixx, iyy, izz;
     int item;
 

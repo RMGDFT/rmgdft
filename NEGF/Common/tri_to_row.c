@@ -12,7 +12,7 @@
 #include "pmo.h"
 
 
-void tri_to_row (rmg_double_t * A_tri, rmg_double_t * Aii_row, int N, int *ni)
+void tri_to_row (double * A_tri, double * Aii_row, int N, int *ni)
 {
     /* Semi_tridiagonal matrix  
      *

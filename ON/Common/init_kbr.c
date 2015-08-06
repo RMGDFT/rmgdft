@@ -47,8 +47,8 @@ void init_kbr(void)
 
     int isp, idx, ip, it1;
     SPECIES *sp;
-    rmg_double_t *work, *workr, Zv, rc, rfil;
-    rmg_double_t t1, t2, rcut, scale;
+    double *work, *workr, Zv, rc, rfil;
+    double t1, t2, rcut, scale;
     char name[] = "projectors";
     char newname[20];
     FILE *psp = NULL;
@@ -62,7 +62,7 @@ void init_kbr(void)
     }                           /* end if */
 
 
-    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, rmg_double_t );
+    my_malloc_init( work, MAX_RGRID + MAX_LOCAL_LIG, double );
     workr = work + MAX_RGRID;
 
 
@@ -128,11 +128,11 @@ void init_kbr(void)
 
 
 
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(rmg_double_t)get_FG_NX(); */
+        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(double)get_FG_NX(); */
         sp->drlig = sqrt(3.0) * (sp->lradius + 1.0);
         if (get_ibrav_type() == HEXAGONAL)
             sp->drlig *= 2.0;
-        t1 = (rmg_double_t) MAX_LOCAL_LIG;
+        t1 = (double) MAX_LOCAL_LIG;
         sp->drlig = sp->drlig / t1;
 
 
@@ -145,7 +145,7 @@ void init_kbr(void)
         for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
         {
 
-            workr[idx] = sp->drlig * ((rmg_double_t) idx);
+            workr[idx] = sp->drlig * ((double) idx);
 
         }                       /* end for */
         radiff(sp->localig, sp->drlocalig, workr, MAX_LOCAL_LIG, 0.0);
@@ -204,7 +204,7 @@ void init_kbr(void)
         sp->drnlig = sqrt(3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
         if (get_ibrav_type() == HEXAGONAL)
             sp->drnlig *= 2.0;
-        t1 = (rmg_double_t) MAX_LOCAL_LIG;
+        t1 = (double) MAX_LOCAL_LIG;
         sp->drnlig = sp->drnlig / t1;
 
         for (ip = 0; ip < sp->nbeta; ip++)
@@ -227,7 +227,7 @@ void init_kbr(void)
             for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
             {
 
-                workr[idx] = sp->drnlig * ((rmg_double_t) idx);
+                workr[idx] = sp->drnlig * ((double) idx);
 
             }                   /* end for */
             radiff(&sp->betalig[ip][0], &sp->drbetalig[ip][0], workr, MAX_LOCAL_LIG, 0.0);

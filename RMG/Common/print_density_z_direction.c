@@ -38,12 +38,12 @@
  * 		    px0_grid, py0_grid, pz0_grid : Number of grid points in x, y and z directions (per processor)
  * 		    zside: length of cell in z direction */
 
-void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, int px0_grid, int py0_grid,
-                                int pz0_grid, rmg_double_t zside)
+void print_density_z_direction (int grid_x, int grid_y, double * density, int px0_grid, int py0_grid,
+                                int pz0_grid, double zside)
 {
     int i, j, ii, jj, kk, counter;
     MPI_Status mstatus;
-    rmg_double_t *temp_buff;
+    double *temp_buff;
     int p0_basis, xgrid, ygrid, zgrid;
     int min_grid_x, min_grid_y, min_grid_z, max_grid_x, max_grid_y, max_grid_z;
 
@@ -56,7 +56,7 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, 
 
     p0_basis = px0_grid * py0_grid * pz0_grid;
 
-    my_malloc (temp_buff, p0_basis, rmg_double_t);
+    my_malloc (temp_buff, p0_basis, double);
 
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
@@ -125,7 +125,7 @@ void print_density_z_direction (int grid_x, int grid_y, rmg_double_t * density, 
                       &mstatus);
 
             for (j = 0; j < pz0_grid; j++)
-                printf ("\n%f\t%e", (i * pz0_grid + j) / ((rmg_double_t) (pz0_grid * get_PE_Z())) * zside,
+                printf ("\n%f\t%e", (i * pz0_grid + j) / ((double) (pz0_grid * get_PE_Z())) * zside,
                         temp_buff[j]);
 
             fflush (NULL);

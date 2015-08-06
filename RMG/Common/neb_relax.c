@@ -32,14 +32,14 @@
 #define Y 1
 #define Z 2
 
-void neb_relax (STATE * states, rmg_double_t * vxc, rmg_double_t * vh, rmg_double_t * vnuc,
-              rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc)
+void neb_relax (STATE * states, double * vxc, double * vh, double * vnuc,
+              double * rho, double * rho_oppo, double * rhocore, double * rhoc)
 {
     /* This may need to be malloced if we start using large ion counts */
     int constrain, count, neb_steps = 0, img_rank_map[3];
-    rmg_double_t imgA[3*ct.num_ions], imgB[3*ct.num_ions], imgC[3*ct.num_ions];
-    rmg_double_t tmp_mag, max_frc, *fp, *L_ptr, *S_ptr, *R_ptr;
-	rmg_double_t L_total, S_total, R_total;
+    double imgA[3*ct.num_ions], imgB[3*ct.num_ions], imgC[3*ct.num_ions];
+    double tmp_mag, max_frc, *fp, *L_ptr, *S_ptr, *R_ptr;
+	double L_total, S_total, R_total;
     bool CONV_FORCE, DONE = false;
     MPI_Request req[3];
     MPI_Status status;

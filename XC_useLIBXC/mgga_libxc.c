@@ -6,17 +6,17 @@
 #include "xc.h"   
 /* include Libxc's header file */
 
-void mgga_libxc (rmg_double_t * rho, rmg_double_t * tau, rmg_double_t * vxc, rmg_double_t * exc, int mode)
+void mgga_libxc (double * rho, double * tau, double * vxc, double * exc, int mode)
 {
 
     int idx, sizr;
-    rmg_double_t *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
+    double *gx, *gy, *gz, *vgx, *vgy, *vgz, *d2rho;
     int func_id_x, func_id_c;
     xc_func_type func_x, func_c;
-    rmg_double_t *ec, *vc, *vsigma, *sigma;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double *ec, *vc, *vsigma, *sigma;
+    double hxxgrid, hyygrid, hzzgrid;
     
-    rmg_double_t *vtau, *vlapl_rho;
+    double *vtau, *vlapl_rho;
 
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
 
@@ -45,24 +45,24 @@ void mgga_libxc (rmg_double_t * rho, rmg_double_t * tau, rmg_double_t * vxc, rmg
     if(xc_func_init(&func_c, func_id_c, XC_UNPOLARIZED) != 0)
         error_handler("Functional %d not found\n", func_id_c);
 
-    my_calloc (ec, 4 * FP0_BASIS, rmg_double_t);
+    my_calloc (ec, 4 * FP0_BASIS, double);
     vc = ec + FP0_BASIS; 
     sigma = ec + 2 * FP0_BASIS; 
     vsigma = ec + 3 * FP0_BASIS; 
 
 
-    my_calloc (vtau, 2 * FP0_BASIS, rmg_double_t);
+    my_calloc (vtau, 2 * FP0_BASIS, double);
     vlapl_rho = vtau + FP0_BASIS; 
     
     /* Grab some memory */
-    my_malloc (gx, sizr, rmg_double_t);
-    my_malloc (gy, sizr, rmg_double_t);
-    my_malloc (gz, sizr, rmg_double_t);
-    my_malloc (vgx, sizr, rmg_double_t);
-    my_malloc (vgy, sizr, rmg_double_t);
-    my_malloc (vgz, sizr, rmg_double_t);
-//    my_malloc (agg, sizr, rmg_double_t);
-    my_malloc (d2rho, sizr, rmg_double_t);
+    my_malloc (gx, sizr, double);
+    my_malloc (gy, sizr, double);
+    my_malloc (gz, sizr, double);
+    my_malloc (vgx, sizr, double);
+    my_malloc (vgy, sizr, double);
+    my_malloc (vgz, sizr, double);
+//    my_malloc (agg, sizr, double);
+    my_malloc (d2rho, sizr, double);
 
 
 

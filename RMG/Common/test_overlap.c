@@ -27,7 +27,7 @@
  *                 int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
  *                 int *khi, int cdim, int pxgrid, int pygrid, int pzgrid,
  *                 int nxgrid, int nygrid, int nzgrid,
- *                 rmg_double_t *xcstart, rmg_double_t *ycstart, rmg_double_t *zcstart)
+ *                 double *xcstart, double *ycstart, double *zcstart)
  *   This function generates the indices needed to map a spherical 
  *   short-ranged operator onto a rectangular grid. This is required
  *   for the non-local potential operators. Since the code uses
@@ -74,37 +74,37 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     int ixstart, iystart, izstart, icut;
     int pxoffset, pyoffset, pzoffset;
     int pxsize, pysize, pzsize;
-    rmg_double_t t1, t2, vect [3];
-    rmg_double_t xcstart, ycstart, zcstart;
+    double t1, t2, vect [3];
+    double xcstart, ycstart, zcstart;
 
 
     /* Generate range of indices over which the operator */
     /* will be mapped onto the global grid.              */
-    t1 = iptr->xtal[0] * (rmg_double_t) nxgrid;
+    t1 = iptr->xtal[0] * (double) nxgrid;
     t1 = modf (t1, &t2);
     ic = (int) t2;
     if (t1 > 0.5)
         ic++;
     ixstart = ic - cdim / 2;
-    xcstart = ixstart / (rmg_double_t) nxgrid;
+    xcstart = ixstart / (double) nxgrid;
     
 
-    t1 = iptr->xtal[1]  * (rmg_double_t) nygrid;
+    t1 = iptr->xtal[1]  * (double) nygrid;
     t1 = modf (t1, &t2);
     ic = (int) t2;
     if (t1 > 0.5)
         ic++;
     iystart = ic - cdim / 2;
-    ycstart = iystart / (rmg_double_t) nygrid;
+    ycstart = iystart / (double) nygrid;
 
 
-    t1 = iptr->xtal[2] * (rmg_double_t) nzgrid;
+    t1 = iptr->xtal[2] * (double) nzgrid;
     t1 = modf (t1, &t2);
     ic = (int) t2;
     if (t1 > 0.5)
         ic++;
     izstart = ic - cdim / 2;
-    zcstart = izstart / (rmg_double_t) nzgrid;
+    zcstart = izstart / (double) nzgrid;
 
 
 
@@ -251,13 +251,13 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     /*xtal vector between ion and left bottom corner of the box */
     /*Then, substract vector between left bottom corner of the box and center of the box */
     vect[0] = iptr->xtal[0] -  xcstart;
-    vect[0] -= (cdim / 2) / (rmg_double_t) nxgrid;
+    vect[0] -= (cdim / 2) / (double) nxgrid;
     
     vect[1] = iptr->xtal[1] -  ycstart;
-    vect[1] -= (cdim / 2) / (rmg_double_t) nygrid;
+    vect[1] -= (cdim / 2) / (double) nygrid;
     
     vect[2] = iptr->xtal[2] -  zcstart;
-    vect[2] -= (cdim / 2) / (rmg_double_t) nzgrid;
+    vect[2] -= (cdim / 2) / (double) nzgrid;
         
         
     icenter = cdim / 2;

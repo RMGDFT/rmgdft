@@ -13,7 +13,7 @@
 #include "LCR.h"
 
 
-void Sgreen_c (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigma1, complex double * sigma2,
+void Sgreen_c (double * Htri, double * Stri, complex double * sigma1, complex double * sigma2,
                     complex double ene, complex double * Green_C, int nC)
 {
 /*   H00, S00: nC * nC real matrix
@@ -29,7 +29,7 @@ void Sgreen_c (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigma1
     int nmax, *ipiv;
     int ni[MAX_BLOCKS], ntot, ndim;
     int N;
-    rmg_double_t tem;
+    double tem;
 
 
     nmax = nC;

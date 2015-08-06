@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t linint(rmg_double_t *y, rmg_double_t r, rmg_double_t invdr)
+ *   double linint(double *y, double r, double invdr)
  *   Interpolation routine for data defined on a linear grid.
  * INPUTS
  *   y:     array of y-values
@@ -37,11 +37,11 @@
 #include <math.h>
 #include "main.h"
 
-rmg_double_t linint (rmg_double_t * y, rmg_double_t r, rmg_double_t invdr)
+double linint (double * y, double r, double invdr)
 {
 
-    rmg_double_t d0, d1, dm;
-    rmg_double_t f0, g0, g1, g2, h1, h2, i2;
+    double d0, d1, dm;
+    double f0, g0, g1, g2, h1, h2, i2;
     int ic;
 
     d0 = r * invdr;
@@ -49,7 +49,7 @@ rmg_double_t linint (rmg_double_t * y, rmg_double_t r, rmg_double_t invdr)
     ic = (ic > 0) ? ic : 1;
 
     /* cubic interpolation using forward differences */
-    d0 -= (rmg_double_t) (ic);
+    d0 -= (double) (ic);
     d1 = (d0 - 1.0) * 0.5;
     dm = (d0 - 2.0) / 3.0;
 

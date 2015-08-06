@@ -28,20 +28,20 @@
 #include "main.h"
 
 
-void write_avgv (rmg_double_t * vh, rmg_double_t * vnuc)
+void write_avgv (double * vh, double * vnuc)
 {
 
     int ix, iy, iz, poff;
     int px, py, pz;
-    rmg_double_t t1;
-    rmg_double_t *zvec;
+    double t1;
+    double *zvec;
     int PX0_GRID, PY0_GRID, PZ0_GRID;
 
     PX0_GRID = get_PX0_GRID();
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
 
-    my_malloc (zvec, get_NZ_GRID(), rmg_double_t);
+    my_malloc (zvec, get_NZ_GRID(), double);
 
 
     /* Get this processors offset */

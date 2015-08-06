@@ -31,14 +31,14 @@
 
 
 
-void mg_prolong_6 (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy, int dimz)
+void mg_prolong_6 (double * full, double * half, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int incz, incy, incx, incz2, incy2, incx2, incx3;
-    rmg_double_t scale,  a1, a2, a3, a4, a5;
-    rmg_double_t * fulla;
-    rmg_double_t * fullb;
+    double scale,  a1, a2, a3, a4, a5;
+    double * fulla;
+    double * fullb;
 
 
     incz = 1;
@@ -57,8 +57,8 @@ void mg_prolong_6 (rmg_double_t * full, rmg_double_t * half, int dimx, int dimy,
     a4 = 0.0;
     a5 = 0.0;
 
-   my_malloc (fulla,(get_FPX0_GRID())*(get_FPY0_GRID() / 2+ 10)*(get_FPZ0_GRID() / 2 + 10),rmg_double_t);
-   my_malloc (fullb,(get_FPX0_GRID())*(get_FPY0_GRID())*(get_FPZ0_GRID() / 2 + 10),rmg_double_t);
+   my_malloc (fulla,(get_FPX0_GRID())*(get_FPY0_GRID() / 2+ 10)*(get_FPZ0_GRID() / 2 + 10),double);
+   my_malloc (fullb,(get_FPX0_GRID())*(get_FPY0_GRID())*(get_FPZ0_GRID() / 2 + 10),double);
 
 
         for (ix = 0; ix < dimx / 2; ix++)

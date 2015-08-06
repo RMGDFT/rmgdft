@@ -18,7 +18,7 @@
 #include "pmo.h"
 
 
-void Sgreen_c_p (rmg_double_t * Htri, rmg_double_t * Stri, complex double * sigma, int * sigma_idx,
+void Sgreen_c_p (double * Htri, double * Stri, complex double * sigma, int * sigma_idx,
                        complex double ene, complex double * Green_C)
 {
 /*   H00, S00: nC * nC real matrix

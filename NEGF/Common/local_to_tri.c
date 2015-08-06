@@ -12,7 +12,7 @@
 #include "pmo.h"
 
 
-void local_to_tri (STATE *states_distribute, rmg_double_t * A_tri, rmg_double_t * Aii_local)
+void local_to_tri (STATE *states_distribute, double * A_tri, double * Aii_local)
 {
     /* Semi_tridiagonal matrix  
      *

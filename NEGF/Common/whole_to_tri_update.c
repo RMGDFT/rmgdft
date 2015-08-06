@@ -12,7 +12,7 @@
 #include "pmo.h"
 
 
-void whole_to_tri_update (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
+void whole_to_tri_update (double * A_tri, double * Aii, int N, int *ni)
 {
     /* Semi_tridiagonal matrix  
      *

@@ -38,7 +38,7 @@
 
 
 
-rmg_double_t my_crtc1 (void)
+double my_crtc1 (void)
 {
     struct timeval t1;
     gettimeofday (&t1, NULL);

@@ -10,7 +10,6 @@
 #include "grid.h"
 #include "const.h"
 #include "params.h"
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -23,8 +22,8 @@ void init_derweight_s (SPECIES * sp,
 {
 
     int idx, ix, iy, iz, size, ibegin, iend;
-    rmg_double_t r, ax[3], bx[3], xc, yc, zc;
-    rmg_double_t invdr, t1, hxx, hyy, hzz;
+    double r, ax[3], bx[3], xc, yc, zc;
+    double invdr, t1, hxx, hyy, hzz;
     double complex *weptrx, *weptry, *weptrz, *gwptr;
     int ixx, iyy, izz;
 
@@ -40,9 +39,9 @@ void init_derweight_s (SPECIES * sp,
     weptrz = weptry + size;
     gwptr = weptrz + size;
 
-    hxx = get_hxgrid() / (rmg_double_t) ct.nxfgrid;
-    hyy = get_hygrid() / (rmg_double_t) ct.nyfgrid;
-    hzz = get_hzgrid() / (rmg_double_t) ct.nzfgrid;
+    hxx = get_hxgrid() / (double) ct.nxfgrid;
+    hyy = get_hygrid() / (double) ct.nyfgrid;
+    hzz = get_hzgrid() / (double) ct.nzfgrid;
 
     invdr = 1.0 / sp->drnlig;
 
@@ -55,13 +54,13 @@ void init_derweight_s (SPECIES * sp,
     {
         ixx = ix;
         if (ixx < 0) ixx = ix + sp->nlfdim;
-        xc = (rmg_double_t) ix *hxx;
+        xc = (double) ix *hxx;
 
         for (iy = ibegin; iy < iend; iy++)
         {
             iyy = iy;
             if (iyy < 0) iyy = iy + sp->nlfdim;
-            yc = (rmg_double_t) iy *hyy;
+            yc = (double) iy *hyy;
 
             for (iz = ibegin; iz < iend; iz++)
             {
@@ -70,7 +69,7 @@ void init_derweight_s (SPECIES * sp,
                 if (izz < 0) izz = iz + sp->nlfdim;
                 idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
 
-                zc = (rmg_double_t) iz *hzz;
+                zc = (double) iz *hzz;
 
 
                 ax[0] = xc;

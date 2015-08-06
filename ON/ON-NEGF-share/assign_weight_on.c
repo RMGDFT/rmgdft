@@ -11,7 +11,7 @@
 #include "prototypes_on.h"
 
 void weight_shift(SPECIES *sp, fftw_complex *weptr);
-void assign_weight_on(SPECIES * sp, fftw_complex * weptr, rmg_double_t * rtptr)
+void assign_weight_on(SPECIES * sp, fftw_complex * weptr, double * rtptr)
 {
 
     int idx, ix, iy, iz;

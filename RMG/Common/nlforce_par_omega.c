@@ -26,11 +26,11 @@
 #include <math.h>
 #include "main.h"
 
-void nlforce_par_omega (rmg_double_t * par_omega, int ion, int nh, rmg_double_t *force)
+void nlforce_par_omega (double * par_omega, int ion, int nh, double *force)
 {
     int idx, idx1, size, n, m;
-    rmg_double_t forces[3];
-    rmg_double_t *omega_x, *omega_y, *omega_z, *qqq;
+    double forces[3];
+    double *omega_x, *omega_y, *omega_z, *qqq;
 
     size = nh * (nh + 1) / 2;
 

@@ -15,9 +15,9 @@
 void init_qfunct (void)
 {
     int isp, idx, i, j, k, num, il, jl, ll, it1, ibrav;
-    rmg_double_t rcut, rfil, t1, t2, scale;
-    rmg_double_t work[MAX_RGRID];
-    rmg_double_t *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr, *workr;
+    double rcut, rfil, t1, t2, scale;
+    double work[MAX_RGRID];
+    double *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr, *workr;
     SPECIES *sp;
     char newname1[MAX_PATH], newname2[MAX_PATH];
     FILE *fqq = NULL;
@@ -27,7 +27,7 @@ void init_qfunct (void)
     if(ct.norm_conserving_pp) return;
     ibrav = get_ibrav_type();
 
-    my_malloc (workr, MAX_QLIG, rmg_double_t);
+    my_malloc (workr, MAX_QLIG, double);
 
     scale = 1.0;
     if (ibrav == CUBIC_BC)
@@ -50,7 +50,7 @@ void init_qfunct (void)
 
         sp = &ct.sp[isp];
 
-        t1 = 2.0 * scale * (rmg_double_t) get_FG_RATIO() *sp->qradius / ct.hmingrid;
+        t1 = 2.0 * scale * (double) get_FG_RATIO() *sp->qradius / ct.hmingrid;
 /*		t1=2.0 *  scale * sp->qradius / ct.hmingrid;*/
         t1 = modf (t1, &t2);
         it1 = (int) t2;
@@ -72,15 +72,15 @@ void init_qfunct (void)
             ct.max_Qpoints = sp->qdim * sp->qdim * sp->qdim;
 
         num = (sp->nbeta * (sp->nbeta + 1)) * sp->nlc / 2;
-        my_malloc (sp->qnmlig, num * MAX_QLIG, rmg_double_t);
-        my_malloc (sp->drqnmlig, num * MAX_QLIG, rmg_double_t);
+        my_malloc (sp->qnmlig, num * MAX_QLIG, double);
+        my_malloc (sp->drqnmlig, num * MAX_QLIG, double);
         idx = 0;
 
         t1 = sp->qdim / get_FG_RATIO() + 1;
         sp->drqlig = 2.0 * sqrt (THREE) * (t1 + 1.0) * ct.hmaxgrid / TWO;
         if (ibrav == HEXAGONAL)
             sp->drqlig *= 2.0;
-        t1 = (rmg_double_t) MAX_QLIG;
+        t1 = (double) MAX_QLIG;
         sp->drqlig = sp->drqlig / t1;
 
         for (i = 0; i < sp->nbeta; i++)

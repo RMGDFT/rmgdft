@@ -4,7 +4,7 @@
 
 
 
-void get_vxc_exc (rmg_double_t * nrho, rmg_double_t * nrho_oppo,  rmg_double_t * vxc, rmg_double_t * exc, int xctype)
+void get_vxc_exc (double * nrho, double * nrho_oppo,  double * vxc, double * exc, int xctype)
 {   
 	int libflag;
  

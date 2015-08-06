@@ -58,13 +58,13 @@ void *run_threads(void *v) {
                break;
 #if GAMMA_PT
             case HYBRID_SUBDIAG_APP_AB:
-               subdiag_app_AB_one(ss->sp, (rmg_double_t *)ss->p1, (rmg_double_t *)ss->p2, ss->vtot);
+               subdiag_app_AB_one(ss->sp, (double *)ss->p1, (double *)ss->p2, ss->vtot);
                break;
             case HYBRID_SUBDIAG_APP_A:
-               subdiag_app_A_one(ss->sp, (rmg_double_t *)ss->p1, (rmg_double_t *)ss->p2, ss->vtot);
+               subdiag_app_A_one(ss->sp, (double *)ss->p1, (double *)ss->p2, ss->vtot);
                break;
             case HYBRID_SUBDIAG_APP_B:
-               subdiag_app_B_one(ss->sp, (rmg_double_t *)ss->p1);
+               subdiag_app_B_one(ss->sp, (double *)ss->p1);
                break;
 #endif 
             case HYBRID_BETAX_PSI1_CALCULATE:

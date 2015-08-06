@@ -28,11 +28,11 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
     int incx, incy, incx1, incy1;
     int zcase, ix, iy, iz;
     int ix1, ix2, iy1, iy2, idx1, idx2;
-    rmg_double_t time1;
+    double time1;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
-    rmg_double_t *p1, *p2, *p3;
-    rmg_double_t *psi1, *psi2, *psi3;
+    double *p1, *p2, *p3;
+    double *psi1, *psi2, *psi3;
 
     int ione = 1;
 

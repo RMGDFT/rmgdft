@@ -16,14 +16,14 @@
 #include "init_var.h"
 
 
-void nlforce(rmg_double_t * veff)
+void nlforce(double * veff)
 {
     int ion;
     int nh, size, idx;
-    rmg_double_t *rho_nm;
-    rmg_double_t *part_rho_nm_x, *part_omega_nm_x;
-    rmg_double_t *part_rho_nm_y, *part_omega_nm_y;
-    rmg_double_t *part_rho_nm_z, *part_omega_nm_z;
+    double *rho_nm;
+    double *part_rho_nm_x, *part_omega_nm_x;
+    double *part_rho_nm_y, *part_omega_nm_y;
+    double *part_rho_nm_z, *part_omega_nm_z;
     ION *iptr;
     SPECIES *sp;
     double *forces_tem;
@@ -32,8 +32,8 @@ void nlforce(rmg_double_t * veff)
 
 
     size = ct.num_ions * ct.max_nl * ct.max_nl;
-    my_malloc_init( rho_nm, 7 * size, rmg_double_t );
-    my_malloc_init( forces_tem, ct.num_ions*3, rmg_double_t );
+    my_malloc_init( rho_nm, 7 * size, double );
+    my_malloc_init( forces_tem, ct.num_ions*3, double );
     part_rho_nm_x = rho_nm + size;
     part_rho_nm_y = part_rho_nm_x + size;
     part_rho_nm_z = part_rho_nm_y + size;

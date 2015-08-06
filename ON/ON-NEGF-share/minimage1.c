@@ -14,11 +14,11 @@
 #include "main.h"
 #include "prototypes_on.h"
 
-rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
+double minimage1(double aa[3], double bb[3])
 {
 
     int ix, iy, iz, idx, nn = 0;
-    rmg_double_t r[27], ax, ay, az, rmin, x, y, z;
+    double r[27], ax, ay, az, rmin, x, y, z;
 
 
     /* Get lattice vectors */
@@ -43,9 +43,9 @@ rmg_double_t minimage1(rmg_double_t aa[3], rmg_double_t bb[3])
                 for (iz = -1; iz <= 1; iz++)
                 {
 
-                    x = aa[0] - bb[0] + (rmg_double_t) ix *ax;
-                    y = aa[1] - bb[1] + (rmg_double_t) iy *ay;
-                    z = aa[2] - bb[2] + (rmg_double_t) iz *az;
+                    x = aa[0] - bb[0] + (double) ix *ax;
+                    y = aa[1] - bb[1] + (double) iy *ay;
+                    z = aa[2] - bb[2] + (double) iz *az;
 
                     r[idx] = (x * x + y * y + z * z);
 

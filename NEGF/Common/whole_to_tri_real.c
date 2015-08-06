@@ -11,7 +11,7 @@
 #include "LCR.h"
 
 
-void whole_to_tri_real (rmg_double_t * A_tri, rmg_double_t * Aii, int N, int *ni)
+void whole_to_tri_real (double * A_tri, double * Aii, int N, int *ni)
 {
 /* Semi_tridiagonal matrix  
  *

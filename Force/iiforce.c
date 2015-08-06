@@ -43,10 +43,10 @@ void iiforce (void)
 {
 
     int i, j;
-    rmg_double_t Zi, Zj, rci, rcj, t1, t2, s1, s2, s3, n1, r;
-    rmg_double_t xtal_r[3], crd_r[3];
+    double Zi, Zj, rci, rcj, t1, t2, s1, s2, s3, n1, r;
+    double xtal_r[3], crd_r[3];
     ION *iptr1, *iptr2;
-    rmg_double_t tx, ty, tz;
+    double tx, ty, tz;
 
 
     n1 = 2.0 / sqrt (PI);

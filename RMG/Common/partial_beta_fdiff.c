@@ -30,17 +30,17 @@
 
 /*This calulates gradient of beta  using finite differences on the coarse grid*/
 /*This function is actually sligtly modified get_grad*/
-void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x, rmg_double_t * beta_y,
-                         rmg_double_t * beta_z)
+void partial_beta_fdiff (fftw_complex * beptr, int nldim, double * beta_x, double * beta_y,
+                         double * beta_z)
 {
 
 
 
 
     int iz, ix, iy, index, index2, ibrav;
-    rmg_double_t t1x, t2x, t1y, t2y, t1z, t2z;
-    rmg_double_t *rptr;
-    rmg_double_t *wxr, *wyr, *wzr;
+    double t1x, t2x, t1y, t2y, t1z, t2z;
+    double *rptr;
+    double *wxr, *wyr, *wzr;
     /*CSS0_GRID *SSSptr; */
     int ixs, iys;
     int ix1, iy1;
@@ -56,7 +56,7 @@ void partial_beta_fdiff (fftw_complex * beptr, int nldim, rmg_double_t * beta_x,
     wyr = beta_y;
     wzr = beta_z;
 
-    my_malloc (rptr, (nldim + 4) * (nldim + 4) * (nldim + 4), rmg_double_t);
+    my_malloc (rptr, (nldim + 4) * (nldim + 4) * (nldim + 4), double);
     /*SSSptr = (CSS0_GRID *)rptr; */
 
 

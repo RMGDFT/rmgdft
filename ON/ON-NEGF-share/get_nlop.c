@@ -104,22 +104,22 @@ void get_nlop(void)
     PROJECTOR_SPACE = ct.max_nlpoints * tot_prj;
     if (projectors != NULL)
         my_free(projectors);
-    my_malloc_init( projectors, PROJECTOR_SPACE, rmg_double_t );
+    my_malloc_init( projectors, PROJECTOR_SPACE, double );
 
     /*allocate memorry for weight factor of partial_beta/partial_x */
     if (projectors_x != NULL)
         my_free(projectors_x);
-    my_malloc_init( projectors_x, PROJECTOR_SPACE, rmg_double_t );
+    my_malloc_init( projectors_x, PROJECTOR_SPACE, double );
 
     /*allocate memorry for weight factor of partial_beta/partial_y */
     if (projectors_y != NULL)
         my_free(projectors_y);
-    my_malloc_init( projectors_y, PROJECTOR_SPACE, rmg_double_t );
+    my_malloc_init( projectors_y, PROJECTOR_SPACE, double );
 
     /*allocate memorry for weight factor of partial_beta/partial_z */
     if (projectors_z != NULL)
         my_free(projectors_z);
-    my_malloc_init( projectors_z, PROJECTOR_SPACE, rmg_double_t );
+    my_malloc_init( projectors_z, PROJECTOR_SPACE, double );
 
 
 //    for (isp = 0; isp < ct.num_species; isp++)
@@ -168,9 +168,9 @@ void get_nlop(void)
         vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
         /*Substract vector between left bottom corner of the box and center of the box */
-        vect[0] -= (sp->nldim / 2) / (rmg_double_t) get_NX_GRID();
-        vect[1] -= (sp->nldim / 2) / (rmg_double_t) get_NY_GRID();
-        vect[2] -= (sp->nldim / 2) / (rmg_double_t) get_NZ_GRID();
+        vect[0] -= (sp->nldim / 2) / (double) get_NX_GRID();
+        vect[1] -= (sp->nldim / 2) / (double) get_NY_GRID();
+        vect[2] -= (sp->nldim / 2) / (double) get_NZ_GRID();
 
         /*The vector we are looking for should be */
         to_cartesian (vect, nlcrds);
@@ -309,12 +309,12 @@ static void init_alloc_nonloc_mem (void)
     my_malloc (pct.ionidx, ct.num_ions, int);
     my_malloc (pct.prj_per_ion, ct.num_ions, int);
 
-    my_malloc (pct.augfunc, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.dnmI, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.dnmI_x, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.dnmI_x, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.dnmI_x, ct.num_ions, rmg_double_t *);
-    my_malloc (pct.qqq, ct.num_ions, rmg_double_t *);
+    my_malloc (pct.augfunc, ct.num_ions, double *);
+    my_malloc (pct.dnmI, ct.num_ions, double *);
+    my_malloc (pct.dnmI_x, ct.num_ions, double *);
+    my_malloc (pct.dnmI_x, ct.num_ions, double *);
+    my_malloc (pct.dnmI_x, ct.num_ions, double *);
+    my_malloc (pct.qqq, ct.num_ions, double *);
 
 
     my_malloc (pct.ionidx_loc, ct.num_ions, int);

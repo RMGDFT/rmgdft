@@ -11,8 +11,8 @@
  *   Copyright (C) 2001  Wenchang Lu,
  *                       Jerzy Bernholc
  * FUNCTION
- *   void init(rmg_double_t *vh, rmg_double_t *rho, rmg_double_t *rhocore, rmg_double_t *rhoc, 
- *             STATE *states, rmg_double_t *vnuc, rmg_double_t *vxc)
+ *   void init(double *vh, double *rho, double *rhocore, double *rhoc, 
+ *             STATE *states, double *vnuc, double *vxc)
  *   Basic initialization stuff.
  * INPUTS
  *   rhocore: core charge density for non-linear core corection

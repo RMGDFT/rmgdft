@@ -33,7 +33,7 @@ void init_nl_xyz (void)
 
 
     int L0_NLDIM;
-    rmg_double_t hxgrid, hygrid, hzgrid;
+    double hxgrid, hygrid, hzgrid;
 
 
 

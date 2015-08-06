@@ -40,7 +40,7 @@
 #include "init_var.h"
 #include "LCR.h"
 
-extern rmg_double_t *vh_old, *vxc_old;
+extern double *vh_old, *vxc_old;
 
 void run (STATE * states, STATE * states1)
 {
@@ -97,8 +97,8 @@ void run (STATE * states, STATE * states1)
 	/* Perform some necessary initializations 
 	 * no matter localized or not  
 	 */
-	my_malloc_init( vxc_old, get_FP0_BASIS(), rmg_double_t );
-	my_malloc_init( vh_old, get_FP0_BASIS(), rmg_double_t );
+	my_malloc_init( vxc_old, get_FP0_BASIS(), double );
+	my_malloc_init( vh_old, get_FP0_BASIS(), double );
 
 
 	void *RT3 = BeginRmgTimer("1-TOTAL: init");
@@ -110,7 +110,7 @@ void run (STATE * states, STATE * states1)
 	size = max(size, ct.num_states * (ct.state_end - ct.state_begin));
 	size = max(size, pct.num_local_orbit * pct.num_local_orbit);
 
-	my_malloc_init( work_matrix, size, rmg_double_t );
+	my_malloc_init( work_matrix, size, double );
 
 
 	if (pct.gridpe == 0)

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *    void app_cir_fcc(rmg_double_t *a, rmg_double_t *b, int dimx, int dimy, int dimz)
+ *    void app_cir_fcc(double *a, double *b, int dimx, int dimy, int dimz)
  *    Applies the Mehrstellen RHS operator to a matrix for FCC lattice 
  * INPUTS
  *    a[(dimx+2) * (dimy+2) * (dimz+2)]: the matrix to be applied
@@ -40,7 +40,7 @@
 #include "TradeImages.h"
 
 
-void app_cir_fcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int dimz)
+void app_cir_fcc (double * a, double * b, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
@@ -48,7 +48,7 @@ void app_cir_fcc (rmg_double_t * a, rmg_double_t * b, int dimx, int dimy, int di
     int incy, incx;
     int incyr, incxr;
 
-    rmg_double_t Bc, Bf;
+    double Bc, Bf;
 
 
     incy = dimz + 2;

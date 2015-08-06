@@ -21,8 +21,8 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx, idx1, idx2;
-    rmg_double_t *dnmI_R, *dnmI, *qqq, temp;
-    rmg_double_t alpha, *partial_kbpsi, *partial_kbpsi_comm;
+    double *dnmI_R, *dnmI, *qqq, temp;
+    double alpha, *partial_kbpsi, *partial_kbpsi_comm;
 
 
 
@@ -34,7 +34,7 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
     alpha = 1.0 / get_vel();
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
-    my_malloc_init( partial_kbpsi_comm, size, rmg_double_t );
+    my_malloc_init( partial_kbpsi_comm, size, double );
 
     switch (flag)
     {

@@ -22,9 +22,9 @@ and add them into Aij.
 #include "init_var.h"
 
 
-void rho_Qnm_mat(double *Aij, rmg_double_t * global_mat_X, int
-*state_begin, int *state_end, int *num_nonlocal_ion, rmg_double_t *kbpsi,
-int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
+void rho_Qnm_mat(double *Aij, double * global_mat_X, int
+*state_begin, int *state_end, int *num_nonlocal_ion, double *kbpsi,
+int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
 {
     int ion, ip1, ip2, st1, st2, ist;
     MPI_Status mstatus;
@@ -93,7 +93,7 @@ int max_ion_nonlocal, rmg_double_t *kbpsi_comm, int *ionidx_allproc)
         }
         if(proc2 >=0)
             MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, tag2, pct.grid_comm, &mstatus);
-        MPI_Wait(&request, &mstatus);
+        if(proc1 >=0) MPI_Wait(&request, &mstatus);
 
         if(proc2 < 0) continue;
 

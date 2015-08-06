@@ -33,13 +33,13 @@
 #include "LCR.h"
 
 /* This function returns a pointer to a block of memory of size nelem. */
-void distri_fermi (complex double ene,  rmg_double_t EF, complex double *distri)
+void distri_fermi (complex double ene,  double EF, complex double *distri)
 {
 
-    rmg_double_t temR, temI, tem1, tem2;
+    double temR, temI, tem1, tem2;
     
     complex double ctem;
-    rmg_double_t KT;
+    double KT;
 
     KT = cei.KT;
     ctem = (ene - EF) / KT;

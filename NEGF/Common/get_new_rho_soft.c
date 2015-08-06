@@ -17,16 +17,16 @@
 void get_new_rho_soft (STATE * states, double *rho)
 {
     int idx, ione = 1;
-    rmg_double_t t2;
+    double t2;
     register double tcharge;
 
     /* for parallel libraries */
 
-    rmg_double_t *psi1, *psi2, scale;
+    double *psi1, *psi2, scale;
     int i, st1, st2, proc1, proc2, st11;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
-    rmg_double_t *rho_temp;
+    double *rho_temp;
     char filename[MAX_PATH];
 
     int ix, iy;
@@ -36,8 +36,8 @@ void get_new_rho_soft (STATE * states, double *rho)
     /*    if (pct.gridpe == 0)
           printf (" Compute new density\n");*/
 
-    my_malloc_init( rho_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), rmg_double_t );
-    my_malloc_init( rho_temp, get_P0_BASIS(), rmg_double_t );
+    my_malloc_init( rho_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), double );
+    my_malloc_init( rho_temp, get_P0_BASIS(), double );
 
 
 

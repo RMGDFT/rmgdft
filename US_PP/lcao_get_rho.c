@@ -11,7 +11,7 @@
 #include "main.h"
 
 
-void lcao_get_rho (rmg_double_t * arho_f)
+void lcao_get_rho (double * arho_f)
 {
 
     int n, incx;
@@ -25,9 +25,9 @@ void lcao_get_rho (rmg_double_t * arho_f)
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    rmg_double_t r, Zv, rc, rc2, rcnorm, t1, t2;
-    rmg_double_t x[3];
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double r, Zv, rc, rc2, rcnorm, t1, t2;
+    double x[3];
+    double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;

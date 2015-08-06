@@ -14,18 +14,18 @@
 #include "twoParts.h"
 
 
-void modify_rho (rmg_double_t * rho, rmg_double_t * rho_old)
+void modify_rho (double * rho, double * rho_old)
 {
     int idx, ione = 1;
-    rmg_double_t t2;
+    double t2;
     register double tcharge;
     int i, j, k;
-    rmg_double_t total_charge, tcharge_fixed, t_fixed;
+    double total_charge, tcharge_fixed, t_fixed;
     int xoff, yoff, zoff;
     int test;
     int x1, x2, y1, y2, z1, z2;
     int idx1, idx2, item;
-    rmg_double_t *array_global;
+    double *array_global;
     int fpbasis;
     
     fpbasis = get_FP0_BASIS();
@@ -34,7 +34,7 @@ void modify_rho (rmg_double_t * rho, rmg_double_t * rho_old)
     {
 
         idx1 = get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-        my_malloc_init( array_global, idx1, rmg_double_t );
+        my_malloc_init( array_global, idx1, double );
 
         item = get_FNX_GRID() / 3;
         if (item * 3 - get_FNX_GRID() != 0)

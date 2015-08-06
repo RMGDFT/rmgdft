@@ -14,14 +14,14 @@
 
 #define 	LDEBUG 	0
 
-void multi_GHG_munu (rmg_double_t *GHG_tri, rmg_double_t *GHG_en_tri)
+void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
 {
     int iprobe, jprobe, iene;
     int st1, st2, idx_sigma;
     int nC, nL, i, ntot, ion;
     int idx1, idx2, nmax, size;
     complex double ene, weight;
-    rmg_double_t wmn, wmn1, wmn2;
+    double wmn, wmn1, wmn2;
     complex double *green_C, *complex_H, *temp_matrix_tri, *temp_matrix1;
     complex double *sigma_sum1, *sigma_sum2, *sigma_L;
     complex double one, zero;

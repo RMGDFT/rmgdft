@@ -20,8 +20,8 @@ dot_product of (orbit,  non-local projector )
 #include "prototypes_on.h"
 
 
-rmg_double_t dot_product_orbit_nl(STATE *st1, int ion2, rmg_double_t *
-psi, rmg_double_t * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
+double dot_product_orbit_nl(STATE *st1, int ion2, double *
+psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -32,7 +32,7 @@ psi, rmg_double_t * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
     int ix, iy, iz, ix1, ix2, iy1, iy2, iz1, iz2;
     int idx1, idx2;
     int index;
-    rmg_double_t tem;
+    double tem;
 
     index = (st1->index - ct.state_begin) * ct.num_ions + ion2;
 

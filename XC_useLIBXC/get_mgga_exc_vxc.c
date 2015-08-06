@@ -6,7 +6,7 @@
 
 
 
-void get_mgga_exc_vxc (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * tau, rmg_double_t * vxc, rmg_double_t * exc)
+void get_mgga_exc_vxc (double * rho, double * rho_oppo, double * tau, double * vxc, double * exc)
 {
 
 

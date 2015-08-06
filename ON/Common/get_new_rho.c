@@ -17,16 +17,16 @@
 void get_new_rho(STATE * states, double *rho)
 {
     int ii, idx, ione = 1;
-    rmg_double_t t2;
+    double t2;
     register double tcharge;
 
     /* for parallel libraries */
 
-    rmg_double_t *psi1, *psi2, *psi3, *psi_p, scale;
+    double *psi1, *psi2, *psi3, *psi_p, scale;
     int i, st1, st2, proc1, proc2;
     int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
     MPI_Status mstatus;
-    rmg_double_t *rho_temp;
+    double *rho_temp;
     MPI_Request mr_send, *mr_recv;
 
     int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
@@ -37,7 +37,7 @@ void get_new_rho(STATE * states, double *rho)
     if (pct.gridpe == 0)
         printf(" Compute new density\n");
 
-    my_malloc_init( rho_temp, get_P0_BASIS(), rmg_double_t );
+    my_malloc_init( rho_temp, get_P0_BASIS(), double );
 
 #if  	DEBUG
     print_sum_square(get_P0_BASIS(), rho, "rho_sum_square before get_new_rho  ");
@@ -75,7 +75,7 @@ void get_new_rho(STATE * states, double *rho)
     EndRmgTimer(RT1);
 
     void *RT2 = BeginRmgTimer("3-get_new_rho: states other proc");
-   my_malloc_init(psi3, ct.max_orbit_size, rmg_double_t );
+   my_malloc_init(psi3, ct.max_orbit_size, double );
 
    for (loop = 0; loop < num_sendrecv_loop; loop++)
    {

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <complex.h>
-#include "rmgtypes.h"
 #include "rmg_error.h"
 #include "fftw3.h"
 
@@ -76,9 +75,9 @@ static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
         for (i = 0; i < n; i++)
             p[i] = 0.0;
     }
-    else if (strcmp (type, "rmg_double_t") == 0)
+    else if (strcmp (type, "double") == 0)
     {
-        rmg_double_t *p = (rmg_double_t *) ptr;
+        double *p = (double *) ptr;
         for (i = 0; i < n; i ++ )
             p[i] = 0.0;
     }

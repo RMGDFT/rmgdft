@@ -13,7 +13,7 @@
 
 #define 	MAX_ORBIT_ON_ION 	24
 
-void state_minus_state (STATE *state1, STATE *state2, rmg_double_t factor);
+void state_minus_state (STATE *state1, STATE *state2, double factor);
 
 
 void ortho_norm_local (STATE *states)
@@ -21,8 +21,8 @@ void ortho_norm_local (STATE *states)
     int ione = 1, i, j, k;
     int n;
     int num_state_on_this_ion;
-    rmg_double_t norm;
-    rmg_double_t overlap[MAX_ORBIT_ON_ION];
+    double norm;
+    double overlap[MAX_ORBIT_ON_ION];
 
 
     if (pct.gridpe == 0)
@@ -64,7 +64,7 @@ void ortho_norm_local (STATE *states)
 }
 
 
-void state_minus_state (STATE *orbit1, STATE *orbit2, rmg_double_t factor)
+void state_minus_state (STATE *orbit1, STATE *orbit2, double factor)
 {
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
     int ylow1, yhigh1, ylow2, yhigh2, yshift;
@@ -75,8 +75,8 @@ void state_minus_state (STATE *orbit1, STATE *orbit2, rmg_double_t factor)
     int ix1, ix2, iy1, iy2, idx1, idx2;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
-    rmg_double_t *p1, *p2;
-    rmg_double_t *psi1, *psi2;
+    double *p1, *p2;
+    double *psi1, *psi2;
     int mode;
 
     mode = 0;

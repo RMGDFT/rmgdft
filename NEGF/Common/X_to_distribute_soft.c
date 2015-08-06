@@ -20,7 +20,7 @@ get  global array  get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID()
 #include "LCR.h"
 
 
-void X_to_distribute_soft (rmg_double_t * global_array, rmg_double_t * distr_array)
+void X_to_distribute_soft (double * global_array, double * distr_array)
 {
 
     int ix, iy, iz, ii;

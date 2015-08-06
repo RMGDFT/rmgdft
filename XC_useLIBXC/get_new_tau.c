@@ -10,18 +10,18 @@
 
 
 
-void get_new_tau (STATE * states, rmg_double_t * tau)
+void get_new_tau (STATE * states, double * tau)
 {
 
     int istate, kpt, idx, P0_BASIS, PX0_GRID, PY0_GRID, PZ0_GRID;
     
-    rmg_double_t t1, *work, *wfn; 
-    rmg_double_t time1;
+    double t1, *work, *wfn; 
+    double time1;
 
     STATE *sp;
     
-    rmg_double_t *gx, *gy, *gz;
-    rmg_double_t hxgrid, hygrid, hzgrid;
+    double *gx, *gy, *gz;
+    double hxgrid, hygrid, hzgrid;
 
 
     P0_BASIS = get_P0_BASIS();
@@ -33,13 +33,13 @@ void get_new_tau (STATE * states, rmg_double_t * tau)
     hygrid=get_hygrid();
     hzgrid=get_hzgrid();
     
-    my_malloc (wfn, P0_BASIS, rmg_double_t);
-    my_malloc (gx, P0_BASIS, rmg_double_t);
-    my_malloc (gy, P0_BASIS, rmg_double_t);
-    my_malloc (gz, P0_BASIS, rmg_double_t);
+    my_malloc (wfn, P0_BASIS, double);
+    my_malloc (gx, P0_BASIS, double);
+    my_malloc (gy, P0_BASIS, double);
+    my_malloc (gz, P0_BASIS, double);
 
 
-    my_malloc (work, P0_BASIS, rmg_double_t);
+    my_malloc (work, P0_BASIS, double);
 
             
    printf("\nPO_BASIS: %d, PX0_GRID: %d, PY0_GRID: %d, PZ0_GRID: %d", P0_BASIS, PX0_GRID, PY0_GRID, PZ0_GRID);

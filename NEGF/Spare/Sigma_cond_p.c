@@ -24,7 +24,7 @@
 
 
 
-void Sigma_cond_p (complex double *sigma, rmg_double_t *HLC, rmg_double_t *SLC, rmg_double_t eneR, rmg_double_t eneI, complex double *green, int iprobe)
+void Sigma_cond_p (complex double *sigma, double *HLC, double *SLC, double eneR, double eneI, complex double *green, int iprobe)
 {
 
     complex double *ch, *ch1;

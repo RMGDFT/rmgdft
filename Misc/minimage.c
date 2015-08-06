@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t minimage(ION *ip1, ION *ip2, rmg_double_t *xtal_r)
+ *   double minimage(ION *ip1, ION *ip2, double *xtal_r)
  *   This function returns the minimum distance between two ions in the
  *   supercell. It also returns the x, y, and z coordinates for the minimum
  *   distance. 
@@ -41,11 +41,11 @@
 #include <math.h>
 
 
-rmg_double_t minimage (ION * ip1, ION * ip2, rmg_double_t * xtal_r)
+double minimage (ION * ip1, ION * ip2, double * xtal_r)
 {
 
     int ix, iy, iz, idx, idxmin = 0;
-    rmg_double_t r[27], ax[3], rmin, x[27], y[27], z[27];
+    double r[27], ax[3], rmin, x[27], y[27], z[27];
 
 
 
@@ -74,9 +74,9 @@ rmg_double_t minimage (ION * ip1, ION * ip2, rmg_double_t * xtal_r)
             for (iz = -1; iz <= 1; iz++)
             {
 
-                x[idx] = ip1->xtal[0] - ip2->xtal[0] + (rmg_double_t) ix;
-                y[idx] = ip1->xtal[1] - ip2->xtal[1] + (rmg_double_t) iy;
-                z[idx] = ip1->xtal[2] - ip2->xtal[2] + (rmg_double_t) iz;
+                x[idx] = ip1->xtal[0] - ip2->xtal[0] + (double) ix;
+                y[idx] = ip1->xtal[1] - ip2->xtal[1] + (double) iy;
+                z[idx] = ip1->xtal[2] - ip2->xtal[2] + (double) iz;
                 if (ct.boundaryflag == SURFACE)
                 {
 

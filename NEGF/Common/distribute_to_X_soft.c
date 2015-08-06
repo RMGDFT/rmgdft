@@ -22,7 +22,7 @@ get X  array  get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID()
 #include "LCR.h"
 
 
-void distribute_to_X_soft (rmg_double_t * distr_array, rmg_double_t * global_array)
+void distribute_to_X_soft (double * distr_array, double * global_array)
 {
 
     int ix, iy, iz, ii, jj, kk;

@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include "main.h"
 
-void fastrelax (rmg_double_t *dt, rmg_double_t dt_max, rmg_double_t dt_inc, rmg_double_t dt_dec, int n_min, int *n_count)
+void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count)
 {
     int ion, fpt, which = 0, count = 0;
     ION *iptr;

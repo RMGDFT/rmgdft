@@ -38,8 +38,8 @@ void get_dnmpsi(STATE *sp, double *kbpsi_one_state, double *kbpsi_res_one_state,
      * prj_sum(r) = sum_i nm_weight[i] *beta_i(r)  
      */
 
-    my_malloc_init( qnm_weight, ct.max_nl, rmg_double_t );
-    my_malloc_init( prj_sum, ct.max_nlpoints, rmg_double_t );
+    my_malloc_init( qnm_weight, ct.max_nl, double );
+    my_malloc_init( prj_sum, ct.max_nlpoints, double );
 
 
     /* Zero out the work array */

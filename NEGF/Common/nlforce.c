@@ -17,20 +17,20 @@
 
 
 
-void nlforce (rmg_double_t * veff)
+void nlforce (double * veff)
 {
     int ion, i, isp, count;
     int nh, size, n2, idx;
-    rmg_double_t *rho_nm, *QnmI_R, *forces_tem;
-    rmg_double_t *part_rho_nm_x, *part_rho_nm_y, *part_rho_nm_z;
+    double *rho_nm, *QnmI_R, *forces_tem;
+    double *part_rho_nm_x, *part_rho_nm_y, *part_rho_nm_z;
     ION *iptr;
     SPECIES *sp;
 
 
  
     size = ct.num_ions * ct.max_nl * ct.max_nl;
-    my_malloc_init( rho_nm, 4 * size, rmg_double_t );
-    my_malloc_init( forces_tem, ct.num_ions*3, rmg_double_t );
+    my_malloc_init( rho_nm, 4 * size, double );
+    my_malloc_init( forces_tem, ct.num_ions*3, double );
     part_rho_nm_x = rho_nm + size;
     part_rho_nm_y = part_rho_nm_x + size;
     part_rho_nm_z = part_rho_nm_y + size;

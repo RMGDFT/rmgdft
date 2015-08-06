@@ -38,14 +38,14 @@
 
 #include <sys/time.h>
 
-rmg_double_t my_crtc (void)
+double my_crtc (void)
 {
-    rmg_double_t val, val1;
+    double val, val1;
     struct timeval t1;
     gettimeofday (&t1, NULL);
-    val1 = (rmg_double_t) t1.tv_usec;
+    val1 = (double) t1.tv_usec;
     val1 /= 1000000.0;
-    val = (rmg_double_t) t1.tv_sec;
+    val = (double) t1.tv_sec;
     val += val1;
     return val;
 }

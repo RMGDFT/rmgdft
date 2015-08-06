@@ -13,7 +13,7 @@ void get_qqq ()
 {
     int idx, i, j, ion, ispe;
     int nh, ncount, icount;
-    rmg_double_t *qnmI, *qqq, sum;
+    double *qnmI, *qqq, sum;
     ION *iptr;
     SPECIES *sp;
     FILE *ftpr;
@@ -37,7 +37,7 @@ void get_qqq ()
         qnmI = pct.augfunc[ion];
 
         if (pct.qqq[ion] == NULL)
-            my_malloc (pct.qqq[ion], nh * nh, rmg_double_t);
+            my_malloc (pct.qqq[ion], nh * nh, double);
         qqq = pct.qqq[ion];
 
         if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))

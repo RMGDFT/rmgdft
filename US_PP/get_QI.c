@@ -23,11 +23,11 @@ void get_QI (void)
     int *Aix, *Aiy, *Aiz;
     int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
-    rmg_double_t x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
-    rmg_double_t xc, yc, zc;
-    rmg_double_t hxxgrid, hyygrid, hzzgrid;
+    double x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
+    double xc, yc, zc;
+    double hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
-    rmg_double_t *qnmlig, *QI_tpr;
+    double *qnmlig, *QI_tpr;
     SPECIES *sp;
 
     hxxgrid = get_hxxgrid();
@@ -155,7 +155,7 @@ void get_QI (void)
 
 
                 size = nh * (nh + 1) / 2;
-                my_calloc (pct.augfunc[ion], size * icount + 128, rmg_double_t);
+                my_calloc (pct.augfunc[ion], size * icount + 128, double);
 
             }
 

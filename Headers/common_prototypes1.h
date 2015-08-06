@@ -40,15 +40,15 @@ extern "C" {
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_smooth (double *f, double *work, int dimx, int dimy, int dimz);
-void app_smooth_f (rmg_float_t * f, rmg_float_t * work, int dimx, int dimy, int dimz);
+void app_smooth_f (float * f, float * work, int dimx, int dimy, int dimz);
 void app_smooth1 (double *f, double *work, int dimx, int dimy, int dimz);
-void app_smooth1_f (rmg_float_t *f, rmg_float_t *work, int dimx, int dimy, int dimz);
+void app_smooth1_f (float *f, float *work, int dimx, int dimy, int dimz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
-void app_cir_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, int order);
+void app_cir_driver_f (float * a, float * b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz);
+void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_sixth_f (rmg_float_t *a, rmg_float_t *b, int dimx, int dimy, int dimz);
+void app_cir_sixth_f (float *a, float *b, int dimx, int dimy, int dimz);
 void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_ortho (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_bcc (double *a, double *b, int dimx, int dimy, int dimz);
@@ -67,14 +67,14 @@ double app_cilr_ortho (double *a, double *b, double *c, int dimx, int dimy,
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
 double app_cil_driver (double * a, double * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
-double app_cil_driver_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
+double app_cil_driver_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
-double app_cil_fourth_f (rmg_float_t * a, rmg_float_t * b, int dimx, int dimy, int dimz, double gridhx, 
+double app_cil_fourth_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, 
               double gridhy, double gridhz);
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
-double app_cil_sixth_f (rmg_float_t *psi, rmg_float_t *b, int dimx, int dimy, int dimz,
+double app_cil_sixth_f (float *psi, float *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
 void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
@@ -87,7 +87,7 @@ void find_phase (int nldim, double *nlcdrs, double *phase_sin,
                  double *phase_cos);
 //void genvpsi (double *psi, double *twovpsi, double *pvtot, 
 //              double *kd, double kmag, int dimx, int dimy, int dimz);
-void genvpsi_f (rmg_float_t * psi, rmg_float_t * sg_twovpsi, double * vtot, double * kd,
+void genvpsi_f (float * psi, float * sg_twovpsi, double * vtot, double * kd,
               double kmag, int dimx, int dimy, int dimz);
 void get_nlop (void);
 void get_weight (void);
@@ -224,11 +224,11 @@ void ortho_bcc (STATE *states);
 void ortho_ncpp(STATE *states);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
 void pack_ptos (double *sg, double *pg, int dimx, int dimy, int dimz);
-void pack_ptos_f(rmg_float_t * sg, rmg_float_t * pg, int dimx, int dimy, int dimz);
+void pack_ptos_f(float * sg, float * pg, int dimx, int dimy, int dimz);
 void pack_stop (double *sg, double *pg, int dimx, int dimy, int dimz);
-void pack_stop_f (rmg_float_t *sg, rmg_float_t *pg, int dimx, int dimy, int dimz);
+void pack_stop_f (float *sg, float *pg, int dimx, int dimy, int dimz);
 void pack_stop_axpy (double *sg, double *pg, double alpha, int dimx, int dimy, int dimz);
-void pack_stop_axpy_f (rmg_float_t * sg, rmg_float_t * pg, double alpha, int dimx, int dimy, int dimz);
+void pack_stop_axpy_f (float * sg, float * pg, double alpha, int dimx, int dimy, int dimz);
 void pack_ptos_trade (double *sg, double *pg, int dimx, int dimy, int dimz);
 void pack_vhstod (double *s, double *d, int dimx, int dimy, int dimz, int boundaryflag);
 void pack_vhdtos (double *s, double *d, int dimx, int dimy, int dimz, int boundaryflag);
@@ -251,14 +251,14 @@ double real_min_all (double x, MPI_Comm comm);
 void sortpsi (STATE *states);
 /*
 void trade_images (double *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
-void trade_images_f (rmg_float_t *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
+void trade_images_f (float *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
 void trade_imagesx (double *f, double *w, int dimx, int dimy, int dimz, int images, int type);
-void trade_imagesx_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images, int type);
+void trade_imagesx_f (float *f, float *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (double *f, double *w, int dimx, int dimy, int dimz, int images);
-void trade_imagesx_async_f (rmg_float_t *f, rmg_float_t *w, int dimx, int dimy, int dimz, int images);
+void trade_imagesx_async_f (float *f, float *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (double * f, int dimx, int dimy, int dimz);
 */
-void trade_images1_async_f (rmg_float_t * f, int dimx, int dimy, int dimz);
+void trade_images1_async_f (float * f, int dimx, int dimy, int dimz);
 void set_bc (double *mat, int dimx, int dimy, int dimz, int images, double val);
 void set_bcx (double *mat, int dimx, int dimy, int dimz, int images, double val);
 void getpoi_bc (double *rho, double *vh_bc, int dimx, int dimy, int dimz);
@@ -464,7 +464,7 @@ int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int cdim, int pxgrid, int pygrid, int pzgrid,
                int nxgrid, int nygrid, int nzgrid);
 void RMG_MPI_trade(double *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
-void RMG_MPI_trade_f(rmg_float_t *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
+void RMG_MPI_trade_f(float *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
 void init_trade_imagesx_async(void);
 void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);

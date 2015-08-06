@@ -1,5 +1,4 @@
 
-#include "rmgtypes.h"
 #include "params.h"
 
 #ifndef RMG_TYPEDEFS_H
@@ -36,10 +35,10 @@ int resSeq;
 char iCode[2];
 
 /* 55 - 60 Occupancy*/
-rmg_double_t occupancy;
+double occupancy;
 
 /* 61 - 66 Temperature factor*/
-rmg_double_t tempFactor;
+double tempFactor;
 
 /* 77 - 78  Element symbol, right-justified. */
 char element[3];
@@ -56,69 +55,69 @@ typedef struct
 {
 
     /* Initial physical coordinates at start of run */
-    rmg_double_t icrds[3];
+    double icrds[3];
 
     /* Actual Physical coordinates at current time step */
-    rmg_double_t crds[3];
+    double crds[3];
 
     /* Positions at the previous time step */
-    rmg_double_t ocrds1[3];
+    double ocrds1[3];
 
     /* Positions at  2dt back */
-    rmg_double_t ocrds2[3];
+    double ocrds2[3];
 
     /* Positions at  3dt back */
-    rmg_double_t ocrds3[3];
+    double ocrds3[3];
 
     /* Initial crystal coordinates at start of run */
-    rmg_double_t ixtal[3];
+    double ixtal[3];
 
     /* Actual crystal coordinates at current time step */
-    rmg_double_t xtal[3];
+    double xtal[3];
 
     /* Crystal coordinates  at the previous time step */
-    rmg_double_t oxtal[3];
+    double oxtal[3];
 
     /*Position of ion relative to the middle of non-local box around the ion 
      *          * determined in get_nlop, AIget_cindex sets this up*/
-    rmg_double_t nlcrds[3];
+    double nlcrds[3];
 
 
     /* Coordinates of the corner of the grid that the local */
     /* difference potential is nonzero on.                  */
-    rmg_double_t lxcstart;
-    rmg_double_t lycstart;
-    rmg_double_t lzcstart;
+    double lxcstart;
+    double lycstart;
+    double lzcstart;
 
 
     /* Coordinates of the corner of the grid that the non-local */
     /* potential is nonzero on.                                 */
-    rmg_double_t nlxcstart;
-    rmg_double_t nlycstart;
-    rmg_double_t nlzcstart;
+    double nlxcstart;
+    double nlycstart;
+    double nlzcstart;
 
 
     /* Coordinates of the corner of the grid that the Qfunction */
     /* potential is nonzero on.                                 */
-    rmg_double_t Qxcstart;
-    rmg_double_t Qycstart;
-    rmg_double_t Qzcstart;
+    double Qxcstart;
+    double Qycstart;
+    double Qzcstart;
 
 
     /* Integer species type when using a raw pseudopotential */
     int species;
 
     /* Forces on the ion */
-    rmg_double_t force[4][3];
+    double force[4][3];
 
     /* Current velocity of the ion */
-    rmg_double_t velocity[3];
+    double velocity[3];
 
     /* Kleinman-Bylander normalization coefficients */
-    rmg_double_t pd[(MAX_L + 1) * (MAX_L + 1)];
+    double pd[(MAX_L + 1) * (MAX_L + 1)];
 
     /* Milliken normalization coefficients */
-    rmg_double_t mnorm[(MAX_L + 1) * (MAX_L + 1)];
+    double mnorm[(MAX_L + 1) * (MAX_L + 1)];
 
     /* Total number of projectors */
     int prjcount;
@@ -128,10 +127,10 @@ typedef struct
 
         /* Force modifier parameters */
         struct {
-                rmg_double_t setA_weight;
-                rmg_double_t setA_coord[3];
-                rmg_double_t setB_weight;
-                rmg_double_t setB_coord[3];
+                double setA_weight;
+                double setA_coord[3];
+                double setB_weight;
+                double setB_coord[3];
         double forcemask[3];
         } constraint;
 
@@ -169,9 +168,9 @@ typedef struct
     int iyend_loc;
     int izend_loc;
 
-    rmg_double_t xcstart_loc;
-    rmg_double_t ycstart_loc;
-    rmg_double_t zcstart_loc;
+    double xcstart_loc;
+    double ycstart_loc;
+    double zcstart_loc;
 
 
 

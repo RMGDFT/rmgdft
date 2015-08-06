@@ -78,18 +78,18 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
         dcopy(&mxllda2, matS, &ione, l_s, &ione);
 
         char *range = "a";
-        rmg_double_t vx = 0.0;
-        rmg_double_t tol = 0.0;
+        double vx = 0.0;
+        double tol = 0.0;
         int eigs_found, eigvs_found;
-        rmg_double_t orfac = 0.0;
+        double orfac = 0.0;
         int *iwork, *ifail, *iclustr, lwork;
-        rmg_double_t *gap, lwork_tmp, *work2;
+        double *gap, lwork_tmp, *work2;
         int liwork_tmp, liwork;
 
         my_malloc (ifail, num_states, int);
         my_malloc (eigs, num_states, double);
         my_malloc (iclustr, 2 * pct.scalapack_nprow * pct.scalapack_npcol, int);
-        my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, rmg_double_t);
+        my_malloc (gap, pct.scalapack_nprow * pct.scalapack_npcol, double);
 
         lwork = -1;
         liwork = -1;
@@ -111,7 +111,7 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
         lwork = (int) lwork_tmp + 1;
         liwork = liwork_tmp;
 
-        my_malloc (work2, lwork, rmg_double_t);
+        my_malloc (work2, lwork, double);
         my_malloc (iwork, liwork, int);
 
 

@@ -16,7 +16,7 @@
  *                       Mark Wensell,Dan Sullivan, Chris Rapcewicz,
  *                       Jerzy Bernholc
  * FUNCTION
- *   rmg_double_t rand0(long *idum)
+ *   double rand0(long *idum)
  *   Portable random number generator for producing repeatable random
  *   starts across computer architectures and processor topologies.
  *   The basic random algorithm used here is based on the Minimal Standard 
@@ -48,19 +48,19 @@
 
 
 
-rmg_double_t rand0(long *idum)
+double rand0(long *idum)
 {
 
 
     long k;
-    rmg_double_t ans;
+    double ans;
 
     *idum ^= MASK;
     k = (*idum) / IQ;
     *idum = IA * (*idum - k * IQ) - IR * k;
     if (*idum < 0)
         *idum += IM;
-    ans = AM * (rmg_double_t) (*idum);
+    ans = AM * (double) (*idum);
     *idum ^= MASK;
     return ans;
 

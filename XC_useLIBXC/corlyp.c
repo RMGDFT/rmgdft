@@ -41,7 +41,6 @@ cc    subroutine corlyp_f90(dp,dm,dp1,dm1,dp2,dm2,ec,vcp0,vcm0,ndm,tpot)
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "rmgtypes.h"
 #include "rmg_alloc.h"
 #include "rmg_xc.h"
 
@@ -49,8 +48,8 @@ cc    subroutine corlyp_f90(dp,dm,dp1,dm1,dp2,dm2,ec,vcp0,vcm0,ndm,tpot)
 /*
       subroutine corlyp_f90(dp,dm,dp1,dm1,dp2,dm2,ec,vcp0,vcm0,ndm)
 */
-void corlyp (rmg_double_t * dp, rmg_double_t * dm, rmg_double_t * dp1, rmg_double_t * dm1, rmg_double_t * dp2, rmg_double_t * dm2, rmg_double_t * ec,
-             rmg_double_t * vcp0, rmg_double_t * vcm0, int *ndm)
+void corlyp (double * dp, double * dm, double * dp1, double * dm1, double * dp2, double * dm2, double * ec,
+             double * vcp0, double * vcm0, int *ndm)
 {
 /*
 c
@@ -67,21 +66,21 @@ c     real*8, dimension(size(dp1)) :: d1,yy1,yz1,z1,yb1
 */
     //My added type declarations, var substitution to make the algebra cleaner.
     int i;
-    rmg_double_t dtmp1, dtmp2, dtmp3;
+    double dtmp1, dtmp2, dtmp3;
     int NDM = *ndm;
-    rmg_double_t DP = *dp, DM = *dm, DP2 = *dp2, DM2 = *dm2, EC = *ec, VCP0 = *vcp0, VCM0 = *vcm0;
+    double DP = *dp, DM = *dm, DP2 = *dp2, DM2 = *dm2, EC = *ec, VCP0 = *vcp0, VCM0 = *vcm0;
     //declare variables (including implicit declarations from fortran)
-    rmg_double_t *d1, *yy1, *yz1, *z1, *yb1;
+    double *d1, *yy1, *yz1, *z1, *yb1;
     int tpot;
-    rmg_double_t d0, dxsq, d2, d0xt13, d0xt53, dpt53, dmt53, z, sc, h, ga, gb;
-    rmg_double_t gafp, gafm, scf, sc2, chf, hf, hff, h2, zfp, zfm, yz, yz2, z2, yafp;
-    rmg_double_t yafm, yb, ybfp, ybfm, yb2, d1sq, d1_x_z1;
+    double d0, dxsq, d2, d0xt13, d0xt53, dpt53, dmt53, z, sc, h, ga, gb;
+    double gafp, gafm, scf, sc2, chf, hf, hff, h2, zfp, zfm, yz, yz2, z2, yafp;
+    double yafm, yb, ybfp, ybfm, yb2, d1sq, d1_x_z1;
 
-    my_malloc (d1, NDM, rmg_double_t);
-    my_malloc (yy1, NDM, rmg_double_t);
-    my_malloc (yz1, NDM, rmg_double_t);
-    my_malloc (z1, NDM, rmg_double_t);
-    my_malloc (yb1, NDM, rmg_double_t);
+    my_malloc (d1, NDM, double);
+    my_malloc (yy1, NDM, double);
+    my_malloc (yz1, NDM, double);
+    my_malloc (z1, NDM, double);
+    my_malloc (yb1, NDM, double);
 
 /*   parameter(aa=0.04918d0,bb=0.132d0,cc=0.2533d0,dd=0.349d0,
      &         c1=-4*aa,c2=dd,c3=2*bb,c4=cc,c5=4.55779986d0,

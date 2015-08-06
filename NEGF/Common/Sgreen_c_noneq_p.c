@@ -34,7 +34,7 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, complex double * sigma,
     int i, j, nprobe; 
     int ni[MAX_BLOCKS], ntot, ndim;
     int N, N1, N2;
-    rmg_double_t tem;
+    double tem;
     
 
     N = ct.num_blocks;

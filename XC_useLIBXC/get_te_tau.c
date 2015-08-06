@@ -8,14 +8,14 @@
 #include "main.h"
 
 
-void get_te_tau (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rhocore, rmg_double_t * rhoc, rmg_double_t * vh, rmg_double_t * vxc, STATE * states, int ii_flag, rmg_double_t * tau)
+void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, STATE * states, int ii_flag, double * tau)
 {
     int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    rmg_double_t r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
-    rmg_double_t vel, loc_sum;
-    rmg_double_t *exc, *nrho, *nrho_oppo;
+    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
+    double vel, loc_sum;
+    double *exc, *nrho, *nrho_oppo;
     ION *iptr1, *iptr2;
-    rmg_double_t time1, time2;
+    double time1, time2;
 
     time1 = my_crtc ();
 
@@ -26,11 +26,11 @@ void get_te_tau (rmg_double_t * rho, rmg_double_t * rho_oppo, rmg_double_t * rho
     /* Grab some memory */
     if (ct.spin_flag)
     {
-    	my_malloc (exc, 3 * FP0_BASIS, rmg_double_t);
+    	my_malloc (exc, 3 * FP0_BASIS, double);
     	nrho_oppo = exc + 2 * FP0_BASIS;
     }
     else
-    	my_malloc (exc, 2 * FP0_BASIS, rmg_double_t);
+    	my_malloc (exc, 2 * FP0_BASIS, double);
     
     nrho = exc + FP0_BASIS;
 

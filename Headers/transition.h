@@ -32,9 +32,9 @@ void thread_barrier_wait(void);
 int transition_get_gridpe(void);
 void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
 void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
-               int *ftau, int *nat, rmg_double_t * tau, int *ityp, int *nks,
-               rmg_double_t * xk, rmg_double_t * wk, rmg_double_t * celldm, int *nr1, int *nr2,
-               int *nr3, rmg_double_t *a1, rmg_double_t *a2, rmg_double_t *a3, rmg_double_t *omega, int *wflag);
+               int *ftau, int *nat, double * tau, int *ityp, int *nks,
+               double * xk, double * wk, double * celldm, int *nr1, int *nr2,
+               int *nr3, double *a1, double *a2, double *a3, double *omega, int *wflag);
 }
 extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 extern "C" void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
@@ -88,8 +88,8 @@ void MixRho (double * new_rho, double * rho, double *rhocore, int length, int le
 void DiagElemental(int, double *, double*);
 
 
-extern "C" void app_cilr_driver (rmg_double_t * psi, rmg_double_t * a_psi, rmg_double_t *b_psi, rmg_double_t *vtot_eig_s,
-    int dimx, int dimy, int dimz, rmg_double_t hx, rmg_double_t hy, rmg_double_t hz, int order);
+extern "C" void app_cilr_driver (double * psi, double * a_psi, double *b_psi, double *vtot_eig_s,
+    int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
 
 template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);

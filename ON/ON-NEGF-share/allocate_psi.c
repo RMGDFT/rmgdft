@@ -38,17 +38,17 @@ void allocate_psi(STATE * states, STATE * states1)
 {
 
     int kpt, ispin, kpt1, st1, item;
-    rmg_double_t *rptr, *rptr1, *rptr2, *rptr3;
+    double *rptr, *rptr1, *rptr2, *rptr3;
 
 
     item = (ct.max_orbit_nx + 2) * (ct.max_orbit_ny + 2) * (ct.max_orbit_nz + 2);
-    my_malloc_init( sg_orbit, item, rmg_double_t );
-    my_malloc_init( sg_orbit_res, item, rmg_double_t );
-    my_malloc_init( orbit_tem, ct.max_orbit_size, rmg_double_t );
+    my_malloc_init( sg_orbit, item, double );
+    my_malloc_init( sg_orbit_res, item, double );
+    my_malloc_init( orbit_tem, ct.max_orbit_size, double );
 
-    my_malloc_init( rptr, pct.psi_size, rmg_double_t );
-    my_malloc_init( rptr1, pct.psi_size, rmg_double_t );
-    my_malloc_init( rptr2, pct.psi_size, rmg_double_t );
+    my_malloc_init( rptr, pct.psi_size, double );
+    my_malloc_init( rptr1, pct.psi_size, double );
+    my_malloc_init( rptr2, pct.psi_size, double );
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {

@@ -26,7 +26,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 
-void debug_write_rho_z (rmg_double_t * rhoz)
+void debug_write_rho_z (double * rhoz)
 {
     int k;
     int basis;

@@ -19,7 +19,7 @@
 #include "twoParts.h"
 
 
-void confine (rmg_double_t * mat, int size_x, int size_y, int size_z, COMPASS compass, int level)
+void confine (double * mat, int size_x, int size_y, int size_z, COMPASS compass, int level)
 {
     int i, j, k;
     int x, y, z;
