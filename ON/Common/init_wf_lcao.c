@@ -32,8 +32,7 @@ void init_wf_lcao(STATE * states)
 {
 
     int idx, state;
-    char newname[MAX_PATH + 200];
-    int ion, species, ist, fhand, nbytes;
+    int ion, species, ist, fhand;
     STATE *st;
     SPECIES *sp;
     int state_count, ip, l, m, ix, iy, iz, ixx, iyy, izz;

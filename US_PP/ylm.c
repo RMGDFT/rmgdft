@@ -184,5 +184,6 @@ double ylm (int l, double * r)
     }
 
     error_handler ("l higher than 24 not programmed");
+    return(1.0);
 
 }

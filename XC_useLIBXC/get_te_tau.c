@@ -15,9 +15,7 @@ void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rho
     double vel, loc_sum;
     double *exc, *nrho, *nrho_oppo;
     ION *iptr1, *iptr2;
-    double time1, time2;
 
-    time1 = my_crtc ();
 
     FP0_BASIS = get_FP0_BASIS();
 
@@ -73,7 +71,6 @@ void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rho
     }
 
 
-    time2 = my_crtc (); 
 
     /* Add the nonlinear core correction charge if there is any */
     if (ct.spin_flag)
@@ -119,7 +116,6 @@ void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rho
     for (idx = 0; idx < FP0_BASIS; idx++)
         esum[2] += rho[idx] * vxc[idx];
 
-    //rmg_timings (GET_TE_XC_TIME, (my_crtc () - time2));
 
 
     /*Sum emergies over all processors */
@@ -146,7 +142,6 @@ void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rho
 
     if(ii_flag) {
 
-        time2 = my_crtc ();
         /* Evaluate total ion-ion energy */
         ct.II = 0.0;
         for (i = 0; i < ct.num_ions; i++)
@@ -178,7 +173,6 @@ void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rho
             ct.II += loc_sum;
         }
 
-        //rmg_timings (GET_TE_II_TIME, (my_crtc () - time2));
 
     }
 
@@ -215,6 +209,5 @@ void get_te_tau (double * rho, double * rho_oppo, double * rhocore, double * rho
     my_free (exc);
 
 
-    //rmg_timings (GET_TE_TIME, (my_crtc () - time1));
 
 }                               /* end get_te */

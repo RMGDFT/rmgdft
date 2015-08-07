@@ -37,7 +37,7 @@
 void allocate_psi(STATE * states, STATE * states1)
 {
 
-    int kpt, ispin, kpt1, st1, item;
+    int st1, item;
     double *rptr, *rptr1, *rptr2, *rptr3;
 
 

@@ -54,14 +54,14 @@ int init_kpoints (int *mesh, int *is_shift)
 
     double *tau;
     int *grid_address, *map, *weight;
-    int is_time_reversal = 1;
+    const int is_time_reversal = 1;
     int meshsize, num_kpts, count;
 
     int ion, *ityp;
     double symprec = 1.0e-5;
 
     double lattice[3][3];
-    int i, j, kpt;
+    int kpt;
 
     lattice[0][0] = get_a0(0);
     lattice[0][1] = get_a0(1);

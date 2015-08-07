@@ -16,7 +16,7 @@ void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int 
 {
 
     int iz, ix, iy;
-    double t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
+    double  t1x, t2x, t1y, t2y, t1z, t2z;
     double t3x,t3y,t3z;
     double *rptr;
     double *wxr, *wyr, *wzr;

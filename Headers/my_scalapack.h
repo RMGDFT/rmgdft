@@ -123,10 +123,15 @@ void pdgetrs(char *, int *, int*,  double *, int *, int*, int*, int*, double *, 
 void pztranu_(int *, int*,  double *, double *, int *, int*, int*, double *, double *, int *, int*,int*);
 
 
+void pdtran_(int *, int*,  double *, double *, int *, int*, int*, double *, double *, int *, int*,int*);
 
 void matgather (double *, int *, double *, int);
 void dsymm_dis (char *, char *, int *, double *, double *, double *);
-void proc_gridsetup(int nproc, int *nprow, int *npcol);
+void proc_gridsetup(int nproc, int *nprow, int *npcol); 
+
+void Cpdgemr2d(int n, int m, double *A, int ia, int ja, int *desca, 
+        double *B, int ib, int jb, int *descb, int ictxt);
+int indxl2g(int *, int *, int*, int *, int*);
 
 #ifdef __cplusplus
 }

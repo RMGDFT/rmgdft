@@ -15,7 +15,7 @@
 void init_qfunct (void)
 {
     int isp, idx, i, j, k, num, il, jl, ll, it1, ibrav;
-    double rcut, rfil, t1, t2, scale;
+    double rfil, t1, t2, scale;
     double work[MAX_RGRID];
     double *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr, *workr;
     SPECIES *sp;

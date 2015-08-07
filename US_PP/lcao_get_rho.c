@@ -20,12 +20,11 @@ void lcao_get_rho (double * arho_f)
     int ion, idx;
     int ilow, jlow, klow, ihi, jhi, khi;
     int dimx, dimy, dimz;
-    int FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    double r, Zv, rc, rc2, rcnorm, t1, t2;
+    double r, t1, t2;
     double x[3];
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
@@ -41,7 +40,6 @@ void lcao_get_rho (double * arho_f)
     yside = get_yside();
     zside = get_zside();
 
-    FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();

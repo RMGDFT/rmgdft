@@ -15,7 +15,7 @@
 void precond_mg(double *res, double *work1, double *work2, int istate)
 {
     int cycles, ione = 1, nits, stopp0;
-    double diag, t1, d1, one = 1.;
+    double diag, t1, one = 1.;
     STATE *sp;
 
     int idx;

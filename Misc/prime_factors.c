@@ -11,9 +11,9 @@
 int prime_factors(int n, int *factors)
 {
 
-    int n_factors, i, j;
+    int n_factors, i;
 
-    if(n <= 0) 
+    if(n <= 1) 
     {
         n_factors = 1;
         factors[0] = n;

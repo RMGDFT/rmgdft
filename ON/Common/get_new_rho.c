@@ -16,18 +16,16 @@
 
 void get_new_rho(STATE * states, double *rho)
 {
-    int ii, idx, ione = 1;
+    int idx, ione = 1;
     double t2;
     register double tcharge;
 
     /* for parallel libraries */
 
-    double *psi1, *psi2, *psi3, *psi_p, scale;
-    int i, st1, st2, proc1, proc2;
-    int loop, state_per_proc, num_send, num_recv, num_sendrecv, size1, size2;
-    MPI_Status mstatus;
+    double *psi1, *psi2, scale;
+    int i, st1, st2;
+    int loop, state_per_proc, num_recv;
     double *rho_temp;
-    MPI_Request mr_send, *mr_recv;
 
     int IA=1,JA=1,IB=1,JB=1, numst = ct.num_states;
     int st11;
@@ -75,11 +73,9 @@ void get_new_rho(STATE * states, double *rho)
     EndRmgTimer(RT1);
 
     void *RT2 = BeginRmgTimer("3-get_new_rho: states other proc");
-   my_malloc_init(psi3, ct.max_orbit_size, double );
 
    for (loop = 0; loop < num_sendrecv_loop; loop++)
    {
-       proc2 = recv_from[loop * state_per_proc];
        num_recv = recv_from[loop * state_per_proc + 1];
 
        for (i = 0; i < num_recv; i++)

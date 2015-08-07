@@ -5,6 +5,10 @@ extern "C" {
 
 
 
+void quench(STATE *, STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
+void app10_del2(double *, double *, int, int, int, double, double, double);
+void sl_init_comm(int *, int, int, MPI_Comm comm);
+void read_data(char *, double *, double *, double *, double *, double *, STATE *);
 void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 double app_cil_orbital (double * a, double * b, int dimx, int dimy, int dimz,
               double gridhx, double gridhy, double gridhz);

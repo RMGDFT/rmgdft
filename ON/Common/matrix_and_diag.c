@@ -39,7 +39,6 @@ void matrix_and_diag(STATE * states, STATE * states1, double * vtot_c, int flag)
 {
 
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
-    int level;
 
 
 

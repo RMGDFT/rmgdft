@@ -29,21 +29,14 @@ extern int it_scf;
 void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
             double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
 {
-    int idx, istate, ione = 1;
-    double diag, t1, d1, gamma;
-    STATE *sp, *sp1;
+    int istate, ione = 1;
+    double t1;
     int st1, ixx, iyy, izz;
-    char side = 'l', uplo = 'l';
-    int n2 = ct.num_states * ct.num_states, numst = ct.num_states;
+    int numst = ct.num_states;
     int item;
-    double alpha1, alpha2;
-    double tem;
     int mxllda2;
-    double A11, A12, A21, A22, c1, c2, b1, b2;
-    double x1r1, x2r1, x3r1, x1r2, x2r2, x3r2, x1r3, x2r3, x3r3;
 
 
-    double tem_luw = -1.0;
     int *ipiv, info;
 
 
@@ -52,7 +45,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     numst = ct.num_states;
 
     mxllda2 = MXLLDA * MXLCOL;
-    diag = -1. / ct.Ac;
     ct.meanres = 0.;
     ct.minres = 100000.0;
     ct.maxres = 0.;
@@ -264,15 +256,12 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1)
 {
-    int i,ii,max_ii;
+    int i;
     int idx, st1, st2;
     double theta_ion;
-    double *psi_pointer,*psi3,*psi2, *psi1;
-    int loop, state_per_proc, proc1, proc2;
-    int num_send, num_recv, num_sendrecv, size1, size2;
+    int loop, state_per_proc;
+    int num_recv;
     double temp;
-    MPI_Status mstatus;
-    MPI_Request  mr_send,*mr_recv;
     int st11;
 
 
@@ -325,15 +314,13 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
 {
 
-    int ion, ip1, ip2, st1, st2, ist;
+    int ip1, st1, st2;
     MPI_Status mstatus;
     int ion1, ion2, ion1_global, ion2_global;
-    int iip1, iip2, iip1a, iip2a;
+    int iip1, iip2;
     int size, proc, proc1, proc2, idx;
-    int nh;
     int st11;
-    double one = 1.0, zero= 0.0;
-    int size_projector, numst_thispe;
+    int size_projector;
 
     size_projector = max_ion_nonlocal * ct.max_nl;
     size = ct.state_per_proc * size_projector;
@@ -342,7 +329,6 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
     /* Loop over states on this proce onle 
        (distribution of work AND Aij contributions) */
     proc = pct.gridpe;
-    numst_thispe = ct.state_end - ct.state_begin;
 
     for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
         for (st1 = ct.state_begin; st1 < ct.state_end; st1++)

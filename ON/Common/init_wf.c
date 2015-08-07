@@ -34,10 +34,7 @@ static void init_wf_gamma(STATE * states)
     int idx, state, ix, iy, iz;
     STATE *sp;
     long idum;
-    int ix1, iy1, iz1;
     int ixx, iyy, izz;
-    double temp;
-    int i;
     int idx1, idx2, idx3, idx4, idx5,idx6;
 
 

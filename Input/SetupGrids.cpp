@@ -67,7 +67,7 @@ void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *cell
 
         // If the largest prime factor of the dim references by iptr is also a prime
         // factor of npes then make that the processor x-grid dimension
-        int osize = npe_factors.size();
+        unsigned int osize = npe_factors.size();
         for(int i = 0;i < 3;i++) {
             if(n_factors[iptr].back() == npe_factors.back()) {
                 P_GRID[iptr] *= npe_factors.back();

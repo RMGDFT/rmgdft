@@ -12,9 +12,8 @@
 void fill_orbit_borders4(double * sg, double * pg, int dimx, int dimy, int dimz)
 {
 
-    int ix, iy, iz, ixh, iyh;
+    int ix, iy, iz;
     int incx, incy, incxs, incys;
-    int ione = 1;
     incys = dimz;
     incxs = dimy * dimz;
     incx = (dimy + 8) * (dimz + 8);

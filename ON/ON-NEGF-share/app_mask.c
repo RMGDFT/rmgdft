@@ -11,7 +11,7 @@
 void app_mask(int istate, double *u, int level)
 {
     char *maskptr;
-    int idx, istart;
+    int idx;
     int size, nx, ny, nz, item;
 
 

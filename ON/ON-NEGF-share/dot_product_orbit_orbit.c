@@ -26,9 +26,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
     int zlow1, zhigh1, zlow2, zhigh2, zshift;
     int iyy, izz, iyy1, izz1;
     int incx, incy, incx1, incy1;
-    int zcase, ix, iy, iz;
+    int zcase, ix, iy;
     int ix1, ix2, iy1, iy2, idx1, idx2;
-    double time1;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
     double *p1, *p2, *p3;

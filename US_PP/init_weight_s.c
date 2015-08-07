@@ -69,7 +69,7 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
                 weptr[idx] = sqrt (1.0 / (4.0 * PI)) * t1 + 0.0I;
 
-                if((ix*2 + sp->nlfdim) == 0 | (iy*2 + sp->nlfdim) == 0 | (iz*2 + sp->nlfdim) == 0 ) 
+                if((ix*2 + sp->nlfdim) == 0 || (iy*2 + sp->nlfdim) == 0 || (iz*2 + sp->nlfdim) == 0 ) 
                     weptr[idx] = 0.0;
 
             }                   /* end for */

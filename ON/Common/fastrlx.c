@@ -103,7 +103,7 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
             printf("\nfastrlx: ---------- [md: %d/%d] ----------\n", ct.md_steps, ct.max_md_steps);
 
         /* quench the electrons and calculate forces */
-        quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhoc, rhocore);
+        quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
 
 
         /* to_crystal enforces periodic boundary conditions */

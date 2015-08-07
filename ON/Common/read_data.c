@@ -34,12 +34,8 @@
 void read_data(char *name, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, STATE * states)
 {
-    int fhand, ion;
-    int state, t1;
-    int i;
-    STATE *sp;
-    double temp_occ;
-    double temp_pos[3];
+    int fhand;
+    int state;
     unsigned nbytes;
     char newname[MAX_PATH + 200];
     int idx;

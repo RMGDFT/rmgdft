@@ -42,6 +42,8 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "transition.h"
+
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 
 void init_wf_atom(STATE *);
@@ -54,7 +56,6 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     int ic, idx, ion;
     int level;
 
-   int  gridpe = pct.gridpe;
 
     /* initialize the lattice basis vectors */
 
@@ -269,18 +270,11 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 #if	DEBUG
     print_state_sum(states);
     print_status(states, vh, vxc, vnuc, vh_old, "before leaving init.c  ");
+    print_state(&states[0]);
     print_sum(pct.psi_size, states[ct.state_begin].psiR, "init.c states sum ");
 #endif
 
     /* some utilities, used in debuging */
-
-    if (pct.gridpe > 100000)
-    {
-        print_status(states, vh, vxc, vnuc, vh_old, "before leaving init.c  ");
-        print_state_sum(states1);
-        print_state(&states[0]);
-        print_sum(pct.psi_size, states[ct.state_begin].psiR, "init.c states sum ");
-    }
 
 
 }

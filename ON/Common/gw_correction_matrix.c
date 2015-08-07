@@ -24,27 +24,20 @@
 void gw_correction_matrix(double *matS, double *Cij)
 {
     int num_states = ct.num_states;
-    int ione = 1, izero = 0;    /* blas constants */
-    char *uplo = "l", *jobz = "v";
+    int numst = ct.num_states;
+    int ione = 1;    /* blas constants */
 
-    int info, numst = ct.num_states;
     double zero = 0., one = 1.;
-    int st1, itype = 1;
-    char diag, side, transa, transb;
+    int st1;
 
     int i, j, li, lj, idx;
     /* for parallel libraries */
     int ictxt, mb, nb, npcol, nprow, llda, locc;
     int mycol, myrow;
-    int lwork;
-    int  mxllda2;
     llda =  MXLLDA;
     locc =  MXLCOL;
     double *gw_shift, *correction_matrix00, *correction_matrix01;
     double xvec, xvec1;
-    _fcd char_fcd1;
-    _fcd char_fcd2;
-    _fcd char_fcd3;
 
 
     my_malloc(gw_shift, numst, double);
@@ -60,32 +53,20 @@ void gw_correction_matrix(double *matS, double *Cij)
 
 
     /* work_dis = C * gamma_dis * C^*  */
-    side = 'r';
-    uplo = 'l';
-    char_fcd1 = &side;
-    char_fcd2 = &uplo;
-    PSSYMM(char_fcd1, char_fcd2, &numst, &numst, &one,
+    PSSYMM("r", "l", &numst, &numst, &one,
             gamma_dis, &ione, &ione, pct.desca,
             Cij, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
 
-    transa = 'n';
-    transb = 't';
-    char_fcd1 = &transa;
-    char_fcd2 = &transb;
-    PSGEMM(char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
+    PSGEMM("N", "T", &numst, &numst, &numst, &one,
             uu_dis, &ione, &ione, pct.desca,
             Cij, &ione, &ione, pct.desca, &zero, work_dis, &ione, &ione, pct.desca);
 
     //work_dis2 = work_dis * S
-    transa = 'n';
-    transb = 'n';
-    char_fcd1 = &transa;
-    char_fcd2 = &transb;
-    PSGEMM(char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
+    PSGEMM("N", "N", &numst, &numst, &numst, &one,
             work_dis, &ione, &ione, pct.desca,
             matS, &ione, &ione, pct.desca, &zero, work_dis2, &ione, &ione, pct.desca);
     // work_dis = S * work_dis1 , the final correction matrix 
-    PSGEMM(char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
+    PSGEMM("N", "N", &numst, &numst, &numst, &one,
             matS, &ione, &ione, pct.desca,
             work_dis2, &ione, &ione, pct.desca, &zero, work_dis, &ione, &ione, pct.desca);
 
@@ -138,7 +119,7 @@ void gw_correction_matrix(double *matS, double *Cij)
 	MPI_File mpi_fhand ;
 	MPI_Info fileinfo;
 	MPI_Status status;
-	MPI_Offset disp, offset;
+	MPI_Offset disp;
 
 
 
@@ -154,7 +135,7 @@ void gw_correction_matrix(double *matS, double *Cij)
 
 	gsizes[0] = ct.num_states;
 	gsizes[1] = ct.num_states;
-
+    rank = pct.gridpe;
 	MPI_Type_create_darray(size, rank, ndims, gsizes, distribs, 
 			dargs, psizes, order, MPI_DOUBLE, &mpi_darray_lead);
 	MPI_Type_commit(&mpi_darray_lead);

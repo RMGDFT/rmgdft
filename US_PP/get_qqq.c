@@ -11,7 +11,7 @@
 
 void get_qqq ()
 {
-    int idx, i, j, ion, ispe;
+    int idx, i, j, ion;
     int nh, ncount, icount;
     double *qnmI, *qqq, sum;
     ION *iptr;

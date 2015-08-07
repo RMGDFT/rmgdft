@@ -15,8 +15,8 @@
 
 void get_QI (void)
 {
-    int is, idx, idx1, i, j, k, l, ion, size;
-    int ix, iy, iz, species, ih, num;
+    int idx, idx1, i, j,ion, size;
+    int ix, iy, iz, species, num;
     int lpx[9][9], lpl[9][9][9];
     int nh;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;

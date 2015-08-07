@@ -40,12 +40,6 @@ extern int mpi_myrank;
 void init_pe_on(void)
 {
 
-    int npes;
-    int ndims, dims[2], periods[2], reorder, kpdelta, remains[2];
-    int coords[2];
-
-
-
     my_barrier();
     /* INITIALIZE THE PROCESS GRID */
     int ictxt, info;

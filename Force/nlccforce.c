@@ -60,12 +60,11 @@ void nlccforce (double * rho, double * vxc)
     int ion, idx;
     int ilow, jlow, klow, ihi, jhi, khi;
     int dimx, dimy, dimz;
-    int FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    double r, Zv, rc, rc2, rcnorm, t1;
+    double r;
     double x[3], invdr;
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
@@ -79,7 +78,6 @@ void nlccforce (double * rho, double * vxc)
     yside = get_yside();
     zside = get_zside();
 
-    FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();

@@ -91,7 +91,7 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 weptr3[idx] = cc * bx[1] * t1 / r + 0.0I;
 
 
-                if((ix*2 + sp->nlfdim) == 0 | (iy*2 + sp->nlfdim) == 0 | (iz*2 + sp->nlfdim) == 0 )
+                if((ix*2 + sp->nlfdim) == 0 || (iy*2 + sp->nlfdim) == 0 || (iz*2 + sp->nlfdim) == 0 )
                 {
                     weptr1[idx] = 0.0;
                     weptr2[idx] = 0.0;
