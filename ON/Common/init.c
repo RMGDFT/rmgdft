@@ -42,7 +42,6 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "transition.h"
 
 #define min(a,b) (((a)>(b)) ? (b) : (a))
 

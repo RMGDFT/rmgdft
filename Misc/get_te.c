@@ -74,9 +74,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     double vel, loc_sum;
     double *exc, *nrho, *nrho_oppo;
     ION *iptr1, *iptr2;
-    double time1, time2;
 
-    time1 = my_crtc ();
 
     FP0_BASIS = get_FP0_BASIS();
 
@@ -130,7 +128,6 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     }
 
 
-    time2 = my_crtc (); 
 
     /* Add the nonlinear core correction charge if there is any */
     if (ct.spin_flag)
@@ -200,7 +197,6 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
     if(ii_flag) {
 
-        time2 = my_crtc ();
         /* Evaluate total ion-ion energy */
         ct.II = 0.0;
         for (i = 0; i < ct.num_ions; i++)

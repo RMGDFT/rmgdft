@@ -24,13 +24,12 @@ potential, and add them into Aij.
 void get_Hvnlij(double *Aij, double *Bij)
 {
     int nh, ion, ip1, ip2, st1, st2, ist;
-    double time1, time2, alpha;
+    double alpha;
     MPI_Status mstatus;
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2, iip1a, iip2a;
     int size, proc, proc1, proc2, idx;
     double *dnmI, *qnmI;
-    ION *iptr;
     double temA, temB;
 
 
@@ -53,7 +52,6 @@ void get_Hvnlij(double *Aij, double *Bij)
             {
                 /* begin shuchun wang */
                 ion1 = pct.ionidx[ion];
-                iptr = &ct.ions[ion1];
                 nh = pct.prj_per_ion[ion1];
                 dnmI = pct.dnmI[ion1];
                 qnmI = pct.qqq[ion1];
@@ -117,7 +115,6 @@ void get_Hvnlij(double *Aij, double *Bij)
                 {
 
                     /* begin shuchun wang */
-                    iptr = &ct.ions[ion1_global];
                     nh = pct.prj_per_ion[ion1_global];
                     dnmI = pct.dnmI[ion1_global];
                     qnmI = pct.qqq[ion1_global];

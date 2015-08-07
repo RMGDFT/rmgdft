@@ -42,14 +42,12 @@ FILE *open_restart_file (char *filename)
 {
 
     char newname[MAX_PATH + 20], tmpname[MAX_PATH];
-    int amode;
     FILE *fhand;
 
 
     /* Make the new output file name */
     sprintf (newname, "%s.restart", filename);
 
-    amode = S_IRUSR | S_IWUSR;
 
 
     fhand = fopen (newname, "w");

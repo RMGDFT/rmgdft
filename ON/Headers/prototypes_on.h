@@ -4,7 +4,12 @@ extern "C" {
 #endif
 
 
-
+void nlforce_par_omega(double *, double *, double *, int, int);
+void nlforce_par_rho(double *, double *, double *, int, int);
+void nlforce_par_Q(double *, double *, int, int, double *);
+int prime_factors(int, int *);
+void get_vxc(double*, double *, double *, double*);
+void assign_weight_on(SPECIES *, fftw_complex *, double *);
 void quench(STATE *, STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
 void app10_del2(double *, double *, int, int, int, double, double, double);
 void sl_init_comm(int *, int, int, MPI_Comm comm);

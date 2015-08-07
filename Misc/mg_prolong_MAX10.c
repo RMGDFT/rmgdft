@@ -42,7 +42,7 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
 {
 
     int ix, iy, iz, i, k;
-    int incz, incy, incx, incz2, incy2, incx2, incx3;
+    int incy, incx,  incy2, incx2, incx3;
     double a[MAX_ORDER][MAX_ORDER];
     double *fulla, *sg_half;
     double *fullb;
@@ -53,11 +53,9 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_TRADE);
 
 
-    incz = 1;
     incy = dimz / grid_ratio + 10;
     incx = (dimz / grid_ratio + 10) * (dimy / grid_ratio + 10);
 
-    incz2 = 1;
     incy2 = dimz;
     incx2 = dimz * dimy;
 

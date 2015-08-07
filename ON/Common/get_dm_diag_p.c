@@ -144,7 +144,7 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
     for(st1 = 0; st1 <  MXLCOL; st1++)
     {
 
-        st_g = indxl2g_(&st1, &mb, &pct.scalapack_mycol, &izero, &pct.scalapack_npcol);
+        st_g = (st1/mb) * pct.scalapack_npcol * mb + pct.scalapack_mycol *mb +st1%mb;
 
         if(st_g >= ct.num_states) 
             alpha = 0.0;

@@ -37,7 +37,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double * vxc_old, double * vh_old, int *CONVERGENCE)
 {
     int numst = ct.num_states;
-    int  kpt, kpt1;
+    int  kpt;
     int idx, ione = 1;
     double tem;
     int flag;

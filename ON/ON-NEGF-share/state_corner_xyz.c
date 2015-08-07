@@ -16,7 +16,6 @@ void state_corner_xyz(STATE * states)
     int state;
     double hgrid[3];
     int ixx, iyy, izz;
-    int item;
 
     hgrid[0] = get_hxgrid() * get_xside();
     hgrid[1] = get_hygrid() * get_yside();

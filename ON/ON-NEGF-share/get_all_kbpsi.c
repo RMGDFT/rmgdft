@@ -29,7 +29,6 @@ void get_all_kbpsi (STATE *states1, STATE * states,
 {
     int st1, idx;
     int size;
-    int ion, ion1, ip;
 
 
     /* size of the <psi|kb> in each processor */
@@ -66,7 +65,6 @@ void get_all_kbpsi (STATE *states1, STATE * states,
 void get_kbpsi (STATE *sp1, double *kbpsi_one_state,
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, double *projectors)
 {
-    int ixx, iyy, izz;
     double *psi;
 
 

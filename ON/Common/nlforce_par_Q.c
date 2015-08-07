@@ -8,12 +8,12 @@
 #include <float.h>
 #include "main.h"
 
-void nlforce_par_Q(REAL * veff, REAL * rho_nm, int ion, int nh, double *forces)
+void nlforce_par_Q(double * veff, double * rho_nm, int ion, int nh, double *forces)
 {
     int idx1, idx2, n, m, count, icount, size;
     int *pidx, max_nl;
-    REAL tmp[3], gamma_nm;
-    REAL *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z, *gamma;
+    double tmp[3], gamma_nm;
+    double *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z, *gamma;
     ION *iptr;
 
 

@@ -35,10 +35,13 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
 
     if (mode == 0)
         index = (st1 - ct.state_begin) * ct.num_states + st2;
-    if (mode == 1)
+    else if (mode == 1)
         index = (st2 - ct.state_end) * ct.num_states + st1;
-    if (mode < 0 || mode > 1)
-        error_handler(" mode is not right");
+    else
+    {
+        index = 0;
+        error_handler(" mode is not right %d", mode);
+    }
 
     xlow1 = orbit_overlap_region[index].xlow1;
     xhigh1 = orbit_overlap_region[index].xhigh1;

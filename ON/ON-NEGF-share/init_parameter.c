@@ -35,7 +35,7 @@
 void init_parameter(STATE * states)
 {
 
-    int kpt, kst1, state, ion, st1;
+    int kpt, kst1, ion, st1;
     ION *iptr;
     double v1, v2, v3;
     int ispin;
@@ -125,9 +125,9 @@ void init_parameter(STATE * states)
     /* Some multigrid parameters */
     ct.poi_parm.sb_step = 1.0;
     ct.eig_parm.sb_step = 1.0;
-    double t1, t2, part_occ;
+    double t2, part_occ;
     int full_occ;
-    t1 = modf(ct.nel/2.0, &t2);
+    modf(ct.nel/2.0, &t2);
     full_occ = (int)(t2);
      
     part_occ = ct.nel - full_occ *2.0;

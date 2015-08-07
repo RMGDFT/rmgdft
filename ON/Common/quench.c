@@ -50,7 +50,6 @@ void quench(STATE * states, STATE * states1, double * vxc, double * vh,
 vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 {
     int outcount = 0;
-    int state_plot, i;
     static int CONVERGENCE = FALSE;
 
 

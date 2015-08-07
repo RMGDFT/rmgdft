@@ -34,8 +34,8 @@ void init_nonlocal_comm(void)
 {
     int ion, idx, item;
     int size;
-    int pair_find, num_loop;
-    int i, j, ion1, ion2, ion_global1, ion_global2;
+    int pair_find;
+    int ion1, ion2, ion_global1, ion_global2;
 
 
     my_malloc(num_nonlocal_ion, NPES, int);

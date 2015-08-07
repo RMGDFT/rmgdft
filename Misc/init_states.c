@@ -36,7 +36,7 @@
 
 STATE *init_states ()
 {
-    int ii, is, ns, ik, nk, max_num_states, idx, i, j;
+    int ii, is, ns, ik, nk, idx, i, j;
     STATE *states;
     int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin = (ct.spin_flag + 1);
     char *tbuf[2];

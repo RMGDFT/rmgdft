@@ -32,7 +32,7 @@ void init_wf_lcao(STATE * states)
 {
 
     int idx, state;
-    int ion, species, ist, fhand;
+    int ion, species, ist;
     STATE *st;
     SPECIES *sp;
     int state_count, ip, l, m, ix, iy, iz, ixx, iyy, izz;

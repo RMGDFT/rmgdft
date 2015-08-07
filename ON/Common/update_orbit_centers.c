@@ -25,10 +25,10 @@ void update_orbit_centers(STATE * states)
     int size;
     int shift_x, shift_y, shift_z;
     int size_x, size_y, size_z;
-    int i, j, k;
     int new_i, new_j, new_k;
     int new_idx, old_idx;
     int level;
+    int i, j, k;
     double x, y, z;
     double *new_centers;
     double *temp;
@@ -169,7 +169,6 @@ int if_update_centers(STATE * states)
     int st;
     int size;
     int shift_x, shift_y, shift_z;
-    int i, j, k;
     double x, y, z;
     double *new_centers;
     int N_moving_orbits;

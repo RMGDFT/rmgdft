@@ -23,7 +23,6 @@
 
 void gw_correction_matrix(double *matS, double *Cij)
 {
-    int num_states = ct.num_states;
     int numst = ct.num_states;
     int ione = 1;    /* blas constants */
 
@@ -110,7 +109,6 @@ void gw_correction_matrix(double *matS, double *Cij)
 
 //  write out the matrix
 
-	int fhand;
 
 	int size, rank, ndims, gsizes[2], distribs[2];
 	int order,  dargs[2], psizes[2];

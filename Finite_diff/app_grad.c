@@ -43,7 +43,7 @@ void app_grad (double  * rho, double *wxr, double *wyr, double *wzr, int dimx, i
 
     int iz, ix, iy, ibrav;
     double t1, t2, t1x, t2x, t1y, t2y, t1z, t2z;
-    double time1, time2, *rptr;
+    double *rptr;
     int ixs, iys;
     int ix1, iy1;
 

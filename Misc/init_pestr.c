@@ -34,12 +34,10 @@
 void init_pestr()
 {
 
-    int ii, jj, kk, ix, iy, iz, idx, ioffset, rem, ierr, thread;
-    int image_grp_map[MAX_IMGS], range[1][3], neighbors[6];
+    int image_grp_map[MAX_IMGS], range[1][3];
     MPI_Group group, world_grp, img_masters;
-    int pe1, pe2, i, j, k, image;
+    int pe1, pe2, i, j, k;
     int pemin[MAX_IMGS], pemax[MAX_IMGS];
-    int npes_tem;
 
     /* Setup MPI */
     /* get world group handle */
@@ -83,10 +81,8 @@ void init_pestr()
     range[0][1] = pemax[pct.thisimg]-ct.images_per_node;
 
 
-    ierr=MPI_Group_range_incl (world_grp, 1, range, &group);
-    Dprintf("IERR0 = %d  WPE=%d",ierr, worldpe);fflush(NULL);
-    ierr=MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
-    Dprintf("IERR1 = %d  WPE=%d",ierr, worldpe);fflush(NULL);
+    MPI_Group_range_incl (world_grp, 1, range, &group);
+    MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_comm);
 
     MPI_Barrier(MPI_COMM_WORLD);
     /* define master group and make its comm global */
@@ -96,7 +92,7 @@ void init_pestr()
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* set gridpe rank value to its image rank */
-    ierr = MPI_Comm_rank (pct.img_comm, &pct.imgpe);
+    MPI_Comm_rank (pct.img_comm, &pct.imgpe);
 
 
 

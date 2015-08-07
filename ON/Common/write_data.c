@@ -36,9 +36,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, STATE * states)
 {
     int amode;
-    int ion;
-    int state, i1;
-    STATE *sp;
+    int state;
     char newname[MAX_PATH + 20];
     int idx, idx1;
     int fhand;
