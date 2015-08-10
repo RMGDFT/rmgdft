@@ -34,7 +34,9 @@ void init_rho_atom(double *rho)
     int ixdim, iydim, izdim;
     int ixmin, ixmax, iymin, iymax, izmin, izmax;
     int pex, pey, pez;
-    int *map;
+    int *map, mapx, mapy, mapz;
+    int ibuf[6];
+    double dbuf[6];
 
     void *RT = BeginRmgTimer("1-TOTAL: init: init_rho");
     my_malloc_init( map, ct.num_ions, int );
@@ -73,28 +75,40 @@ void init_rho_atom(double *rho)
         species = ct.ions[ion].species;
 
         sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
-        fhand = open(newname, O_RDWR);
-        if (fhand < 0)
+        if(pct.gridpe == 0)
         {
-            printf("\n unable to open file: %s \n", newname);
-            error_handler(" Unable to open file ");
+            fhand = open(newname, O_RDWR);
+            if (fhand < 0)
+            {
+                printf("\n unable to open file: %s \n", newname);
+                error_handler(" Unable to open file ");
+            }
+
+            read(fhand, ibuf, 6*sizeof(int));
+            read(fhand, dbuf, 6*sizeof(double));
+            close(fhand);
         }
 
-        read(fhand, &ixmin, sizeof(int));
-        read(fhand, &ixmax, sizeof(int));
-        read(fhand, &iymin, sizeof(int));
-        read(fhand, &iymax, sizeof(int));
-        read(fhand, &izmin, sizeof(int));
-        read(fhand, &izmax, sizeof(int));
-        read(fhand, &hxgrid, sizeof(double));
-        read(fhand, &hygrid, sizeof(double));
-        read(fhand, &hzgrid, sizeof(double));
-        read(fhand, &crds[0], 3 * sizeof(double));
+        
+        MPI_Bcast(ibuf, 6, MPI_INT, 0, pct.grid_comm);
+        MPI_Bcast(dbuf, 6, MPI_DOUBLE, 0, pct.grid_comm);
+
+        ixmin = ibuf[0];
+        ixmax = ibuf[1];
+        iymin = ibuf[2];
+        iymax = ibuf[3];
+        izmin = ibuf[4];
+        izmax = ibuf[5];
+        hxgrid = dbuf[0];
+        hygrid = dbuf[1];
+        hzgrid = dbuf[2];
+        crds[0] = dbuf[3];
+        crds[1] = dbuf[4];
+        crds[2] = dbuf[5];
         ixdim = max(ixdim, ixmax - ixmin);
         iydim = max(iydim, iymax - iymin);
         izdim = max(izdim, izmax - izmin);
 
-        close(fhand);
 
         crds1 = &ct.ions[ion].crds[0];
         ixmin += (int) (crds1[0] / hxgrid_new) - (int) (crds[0] / hxgrid);
@@ -106,38 +120,36 @@ void init_rho_atom(double *rho)
         izmax += (int) (crds1[2] / hzgrid_new) - (int) (crds[2] / hzgrid);
 
         map[ion] = 0;
+        mapx = 0;
         for (ix = ixmin; ix < ixmax; ix++)
         {
-            for (iy = iymin; iy < iymax; iy++)
-            {
-                for (iz = izmin; iz < izmax; iz++)
-                {
-
-                    ixx = ix;
-                    iyy = iy;
-                    izz = iz;
-                    if (ixx < 0)
-                        ixx += get_FNX_GRID();
-                    if (iyy < 0)
-                        iyy += get_FNY_GRID();
-                    if (izz < 0)
-                        izz += get_FNZ_GRID();
-                    if (ixx >= get_FNX_GRID())
-                        ixx -= get_FNX_GRID();
-                    if (iyy >= get_FNY_GRID())
-                        iyy -= get_FNY_GRID();
-                    if (izz >= get_FNZ_GRID())
-                        izz -= get_FNZ_GRID();
-
-                    if (ixx >= ix0 && ixx < ix1
-                        && iyy >= iy0 && iyy < iy1 && izz >= iz0 && izz < iz1)
-                        map[ion] = 1;
-                }
-            }
+            ixx = (ix + get_FNX_GRID()) % get_FNX_GRID();
+            if (ixx >= ix0 && ixx < ix1)
+                mapx = 1;
         }
+        if(!mapx) continue;
 
+        mapy = 0;
+        for (iy = iymin; iy < iymax; iy++)
+        {
+            iyy = (iy + get_FNY_GRID()) % get_FNY_GRID();
+            if(iyy >= iy0 && iyy < iy1)
+                mapy = 1;
+        }
+        if(!mapy) continue;
+        mapz = 0;
+        for (iz = izmin; iz < izmax; iz++)
+        {
+            izz = (iz + get_FNZ_GRID()) % get_FNZ_GRID();
+            if ( izz >= iz0 && izz < iz1)
+                mapz = 1;
+        }
+        if(!mapz) continue;
 
+        map[ion] = 1;
     }
+
+
 
     EndRmgTimer(RT1);
     my_malloc_init( rho_tem, ixdim * iydim * izdim, double );
@@ -162,16 +174,20 @@ void init_rho_atom(double *rho)
                 error_handler(" Unable to open file ");
             }
 
-            read(fhand, &ixmin, sizeof(int));
-            read(fhand, &ixmax, sizeof(int));
-            read(fhand, &iymin, sizeof(int));
-            read(fhand, &iymax, sizeof(int));
-            read(fhand, &izmin, sizeof(int));
-            read(fhand, &izmax, sizeof(int));
-            read(fhand, &hxgrid, sizeof(double));
-            read(fhand, &hygrid, sizeof(double));
-            read(fhand, &hzgrid, sizeof(double));
-            read(fhand, &crds[0], 3 * sizeof(double));
+            read(fhand, ibuf, 6*sizeof(int));
+            ixmin = ibuf[0];
+            ixmax = ibuf[1];
+            iymin = ibuf[2];
+            iymax = ibuf[3];
+            izmin = ibuf[4];
+            izmax = ibuf[5];
+            read(fhand, dbuf, 6*sizeof(double));
+            hxgrid = dbuf[0];
+            hygrid = dbuf[1];
+            hzgrid = dbuf[2];
+            crds[0] = dbuf[3];
+            crds[1] = dbuf[4];
+            crds[2] = dbuf[5];
 
             ixdim = ixmax - ixmin;
             iydim = iymax - iymin;
@@ -186,8 +202,8 @@ void init_rho_atom(double *rho)
 
 
             interpolate_atom_density(rho_tem, rho_out, ixmin, ixmax, iymin, iymax, izmin,
-                                 izmax, crds, crds1, hxgrid, hygrid, hzgrid,
-                                 hxgrid_new, hygrid_new, hzgrid_new);
+                    izmax, crds, crds1, hxgrid, hygrid, hzgrid,
+                    hxgrid_new, hygrid_new, hzgrid_new);
             ixmin += (int) (crds1[0] / hxgrid_new) - (int) (crds[0] / hxgrid);
             iymin += (int) (crds1[1] / hygrid_new) - (int) (crds[1] / hygrid);
             izmin += (int) (crds1[2] / hzgrid_new) - (int) (crds[2] / hzgrid);
@@ -220,13 +236,13 @@ void init_rho_atom(double *rho)
                             izz -= get_FNZ_GRID();
 
                         if (ixx >= ix0 && ixx < ix1
-                            && iyy >= iy0 && iyy < iy1 && izz >= iz0 && izz < iz1)
+                                && iyy >= iy0 && iyy < iy1 && izz >= iz0 && izz < iz1)
 
                         {
                             idx = (ix - ixmin) * iydim * izdim + (iy - iymin) * izdim + iz - izmin;
                             idx1 =
                                 (ixx - ix0) * get_FPY0_GRID() * get_FPZ0_GRID() + (iyy -
-                                                                       iy0) * get_FPZ0_GRID() + izz - iz0;
+                                        iy0) * get_FPZ0_GRID() + izz - iz0;
 
                             rho[idx1] += rho_out[idx];
 

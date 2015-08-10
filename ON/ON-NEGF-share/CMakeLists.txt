@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+orbital_comm.c
 ReadOrbitals.cpp
 allocate_masks.c
 allocate_psi.c

@@ -29,6 +29,12 @@ void get_HS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, dou
     int ixx, iyy, izz;
 
 
+    void *RT0 = BeginRmgTimer("orbital_comm");
+    orbital_comm(states);
+    EndRmgTimer(RT0);
+
+
+
     void *RT = BeginRmgTimer("4-get_HS");
 
 
