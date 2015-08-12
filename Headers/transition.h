@@ -189,7 +189,7 @@ template <typename OrbitalType> void AssignDerweight (SPECIES * sp, int ion, fft
         Kpoint<OrbitalType> *kptr);
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadOrbitals(char *cfile, STATE  *states,  int *, MPI_Comm comm, int *);
+void ReadOrbitals(char *cfile, STATE  *states,  MPI_Comm comm, int *);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 template <typename KpointType>
 void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc);

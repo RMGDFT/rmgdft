@@ -15,7 +15,6 @@ extern int *ionidx_allproc;
 extern int max_ion_nonlocal;
 extern int NPES;
 extern STATE *states_tem;
-extern int *state_to_ion;
 extern int *state_to_proc;
 extern STATE *states;
 extern STATE *states1;

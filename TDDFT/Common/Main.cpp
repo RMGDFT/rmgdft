@@ -85,7 +85,6 @@ int *ionidx_allproc;
 int max_ion_nonlocal;
 int NPES;
 STATE *states_tem;
-int *state_to_ion;
 int *state_to_proc;
 STATE *states;
 STATE *states1;
@@ -156,7 +155,15 @@ int main(int argc, char **argv)
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();
     get_state_to_proc(states);
-    ReadOrbitals (ct.cfile, states, state_to_ion, pct.img_comm);
+    int *perm_index;
+    perm_index = (int *) malloc(ct.num_ions * sizeof(int));
+    for(int i = 0; i < ct.num_ions; i++) perm_index[i] = i;
+
+    if(pct.gridpe == 0)
+        BandwidthReduction(ct.num_ions, ct.ions, perm_index);
+    MPI_Bcast(perm_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+    PermAtoms(ct.num_ions, ct.ions, perm_index);
+    ReadOrbitals (ct.cfile, states, pct.img_comm, perm_index);
 
     init_states();
 

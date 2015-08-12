@@ -19,7 +19,7 @@ void change_states_crds(STATE * states)
     for (ist = 0; ist < ct.num_states; ist++)
     {
 
-        ion = state_to_ion[ist];
+        ion = states[ist].atom_index;
 
         if (ct.ions[ion].movable)
         {

@@ -33,7 +33,7 @@ void ortho_norm_local (STATE *states)
         num_state_on_this_ion = 0;
         for (j = ct.state_begin; j < ct.state_end; j++)
         {
-            if (state_to_ion[j] == k)
+            if (states[j].atom_index == k)
             {
                 for (n = 0; n < MAX_ORBIT_ON_ION; n++)
                     overlap[n] = 0.0;

@@ -167,6 +167,8 @@ typedef struct
     int iymin_old;
     int iymax_old;
 
+    int atom_index;
+
 
 } STATE;
 

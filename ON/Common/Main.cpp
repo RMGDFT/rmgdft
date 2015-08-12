@@ -85,7 +85,6 @@ int *ionidx_allproc;
 int max_ion_nonlocal;
 int NPES;
 STATE *states_tem;
-int *state_to_ion;
 int *state_to_proc;
 STATE *states;
 STATE *states1;
@@ -167,7 +166,7 @@ int main(int argc, char **argv)
         BandwidthReduction(ct.num_ions, ct.ions, perm_index);
     MPI_Bcast(perm_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
     PermAtoms(ct.num_ions, ct.ions, perm_index);
-    ReadOrbitals (ct.cfile, states, state_to_ion, pct.img_comm, perm_index);
+    ReadOrbitals (ct.cfile, states, pct.img_comm, perm_index);
 
     init_states();
     my_barrier();

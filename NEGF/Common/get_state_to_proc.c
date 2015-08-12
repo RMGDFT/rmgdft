@@ -65,7 +65,7 @@ void get_state_to_proc (STATE * states)
     {
 
         state_to_proc[st] = 0;
-        if (state_to_ion[st] >= ion1 && state_to_ion[st] < ion2)
+        if (states[st].atom_index >= ion1 && states[st].atom_index < ion2)
         {
             ct.state_begin = min (ct.state_begin, st);
             ct.state_end = max (ct.state_end, st);
@@ -93,7 +93,7 @@ void get_state_to_proc (STATE * states)
         st_local = 0;
         for (st = ct.state_begin; st < ct.state_end; st++)
         {
-            ion2 = state_to_ion[st];
+            ion2 = states[st].atom_index;
             if (ion1 == ion2)
             {
                 states[st].loc_index = st_local;

@@ -42,7 +42,6 @@ void allocate_states()
     my_malloc(states1, size,  STATE);
     my_malloc(states_tem, size, STATE);
     my_malloc(states_distribute, size, STATE);
-    my_malloc(state_to_ion, ct.num_states, int);
     my_malloc(state_to_proc, ct.num_states, int);
 
 }
