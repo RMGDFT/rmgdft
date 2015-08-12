@@ -174,7 +174,11 @@ int main (int argc, char **argv)
 
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
     allocate_states();
-    ReadOrbitals (ct.cfile, states, state_to_ion, pct.img_comm);
+
+    int *perm_index;
+    perm_index = (int *) malloc(ct.num_ions * sizeof(int));
+    for(int i = 0; i < ct.num_ions; i++) perm_index[i] = i;
+    ReadOrbitals (ct.cfile, states, state_to_ion, pct.img_comm, perm_index);
     get_state_to_proc(states);
 
     my_barrier ();
