@@ -162,12 +162,10 @@ void init_nonlocal_comm(void)
         }
 
         if (pair_find == 0)
-        {
-            kbpsi_num_loop = loop;
             break;
-        }
     }
 
+    kbpsi_num_loop = loop;
 
     dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
     //    for (loop = 0; loop < NPES; loop++)
