@@ -50,7 +50,7 @@
 
 
 void quench (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
-             double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * vbias)
+             double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias)
 {
 
     int outcount = 0;
@@ -219,7 +219,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
 
             void *RT4 = BeginRmgTimer("2-Quench: SCF");
             scf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
-                    rhocore, vxc_old, vh_old, vbias, &CONVERGENCE);
+                    rhocore, rho_tf, vxc_old, vh_old, vbias, &CONVERGENCE);
 
             EndRmgTimer(RT4);
 

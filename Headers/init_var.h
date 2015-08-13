@@ -20,7 +20,7 @@ extern STATE *states;
 extern STATE *states1;
 extern STATE *states_distribute;
 extern ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
-extern double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
+extern double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c, *rho_tf;
 extern double *rho_oppo, *rho_tot;
 extern int MXLLDA, MXLCOL;
 extern double *sg_twovpsi, *sg_res;

@@ -81,7 +81,7 @@ extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sw
 
     double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, ct.vh_ext, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, 
                 ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target, 
-                ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
+                ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), true);
     rmg_printf("Hartree residual = %14.6e", residual);
 
     /* Pack the portion of the hartree potential used by the wavefunctions

@@ -311,6 +311,13 @@ void write_header(void)
     /* Write out the ionic postions and displacements */
     write_pos();
 
+    printf("\n        Number of TF ions is %d", ct.num_tfions);
+
+    if (ct.num_tfions > 0)
+    {
+	write_tfions();
+    }
+
 
 
 

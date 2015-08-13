@@ -102,7 +102,7 @@ void run (STATE * states, STATE * states1)
 
 
 	void *RT3 = BeginRmgTimer("1-TOTAL: init");
-	init_soft (vh, rho, rhocore, rhoc, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
+	init_soft (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
 	EndRmgTimer(RT3);
 
 	size = 1;
@@ -210,7 +210,7 @@ void run (STATE * states, STATE * states1)
 		{
 
 		    case MD_QUENCH:            /* Quench the electrons */
-			quench (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, vbias);
+			quench (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
 
 			break;
 

@@ -27,7 +27,7 @@
 
 static double t[2];
 
-void update_pot (double *, double *, double *, double *, double *, double *, double *, double *, double *,
+void update_pot (double *, double *, double *, double *, double *, double *, double *, double *, double *, double *,
                  int *);
 
 extern int it_scf;
@@ -35,7 +35,7 @@ extern int it_scf;
 
 
 void scf (complex double * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
-          double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore,
+          double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
           double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE)
 {
     int st1, st2, idx, idx1, ione = 1;
@@ -213,7 +213,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     EndRmgTimer(RT5);
 
     void *RT6 = BeginRmgTimer("3-SCF: pot update");
-    update_pot (vxc, vh, vxc_old, vh_old, vnuc, vext, rho, rhoc, rhocore, CONVERGENCE);
+    update_pot (vxc, vh, vxc_old, vh_old, vnuc, vext, rho, rhoc, rhocore, rho_tf, CONVERGENCE);
     EndRmgTimer(RT6);
     EndRmgTimer(RT);
 
@@ -239,7 +239,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
    corresponding to the input "rho".
    */
 void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, double *vnuc, double *vext,
-        double *rho, double *rhoc, double *rhocore, int *CONVERGENCE)
+        double *rho, double *rhoc, double *rhocore, double *rho_tf, int *CONVERGENCE)
 {
 
     int n = get_FP0_BASIS(), idx, ione = 1;
@@ -263,11 +263,30 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
 
     pack_vhstod (vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
+    if (ct.num_tfions > 0)
+    {
+	/*Add charge density from simplified waters to rho and get Hartree potential*/
+	for (idx = 0; idx < get_FP0_BASIS(); idx++)
+	{
+	    rho[idx] += rho_tf[idx];
+	}
+    }	
+
+
     /* Generate hartree potential */
     //    get_vh (rho, rhoc, vh, vh_old, 15, ct.poi_parm.levels);
     get_vh_negf (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
     //   get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
 
+    
+    if (ct.num_tfions > 0)
+    {
+	/*Back out density due to simplified waters after Hartree potential is evaluated*/
+	for (idx = 0; idx < get_FP0_BASIS(); idx++)
+	{
+	    rho[idx] -= rho_tf[idx];
+	}
+    }	
 
 
     /* check convergence */

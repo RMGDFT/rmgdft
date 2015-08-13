@@ -49,7 +49,7 @@
 
 void is_state_overlap (STATE *, char *);
 
-void init_soft (double * vh, double * rho, double * rhocore, double * rhoc,
+void init_soft (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
                 STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
                 double * vxc_old, STATE *states_distribute)
 {
@@ -100,6 +100,12 @@ void init_soft (double * vh, double * rho, double * rhocore, double * rhoc,
         }                       /* end for ic */
 
     }                           /* end for */
+
+
+    if (ct.num_tfions > 0)
+    {
+	get_tf_rho(rho_tf);
+    }
 
 
 

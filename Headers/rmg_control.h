@@ -188,9 +188,17 @@ typedef struct
 
     /** Number of ions */
     int num_ions;
+    
+    /** Number of TF ions */
+    /** Used for simple solvent model */
+    int num_tfions;
 
     /** Ion structure */
     ION *ions;
+    
+    /** TF Ion structure */
+    /** Used for simple solvent model */
+    TF_ION *tf_ions;
 
     /** Number of species */
     int num_species;

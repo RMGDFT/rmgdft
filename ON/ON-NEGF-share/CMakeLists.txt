@@ -53,6 +53,7 @@ write_rho_x.c
 write_rho_y.c
 write_rho_z.c
 xyz2pe.c
+write_TFions.c
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

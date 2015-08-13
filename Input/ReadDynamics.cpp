@@ -48,6 +48,8 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     // Read atoms
     ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
+    
+    ReadTFAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
 
     // Forces and velocities (if present)
     ReadForces(cfile, lc, InputMap);

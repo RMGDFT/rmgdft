@@ -145,6 +145,8 @@ void read_control (char *file)
     /* read the atomic positions and species */
 
     read_atoms ();
+    
+    read_tfatoms ();
 
     init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
 

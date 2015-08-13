@@ -469,6 +469,8 @@ void init_trade_imagesx_async(void);
 void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
+void get_tf_rho (double * tf_rho);
+void get_dipole (double * rho);
 
 void allocate_states();
 #if __cplusplus

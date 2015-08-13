@@ -177,6 +177,37 @@ typedef struct
 } ION;
 
 
+/* structure for TF ions (simple solvent model) */
+typedef struct
+{
+
+    /* Actual Physical coordinates at current time step */
+    double crds[3];
+
+
+    /* Actual crystal coordinates at current time step */
+    double xtal[3];
+
+    /* q and alpha parameters for gaussian representing charge density and ions of TF molecules
+     * Both are gaussians: q * pow( (alpha/PI), 1.5) * exp (-1.0*alpha*r*r) 
+     * Gaussians representing ions should be sharper than for charge density
+     * For water good starting point is: 
+     * O q=7.05  alpha=0.75 for electrons and q0=6.0 alpha0= 1.5 for ions
+     * H q=0.475 alpha=0.80 for electrons and q0=1.0 alpha0= 1.6 for ions */
+    double q;
+    
+    /* alpha parameter for gaussian representing charge density*/
+    /* q * pow( (alpha/PI), 1.5) * exp (-1.0*alpha*r*r) */
+    double alpha;
+    
+    /* q parameter for gaussian representing ions*/
+    /* q * pow( (alpha/PI), 1.5) * exp (-1.0*alpha*r*r) */
+    double q0;
+    
+    /* alpha parameter for gaussian representing charge density*/
+    /* q * pow( (alpha/PI), 1.5) * exp (-1.0*alpha*r*r) */
+    double alpha0;
+} TF_ION;
 
 #endif
 

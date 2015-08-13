@@ -15,6 +15,7 @@ ReadCommon.cpp
 MapElements.cpp
 Upf.cpp
 ReadPseudo.cpp
+ReadTFAtoms.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 if(OPENBABEL_FOUND)

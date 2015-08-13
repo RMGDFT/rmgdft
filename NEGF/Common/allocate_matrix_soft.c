@@ -68,6 +68,11 @@ void allocate_matrix_soft ()
 /*  my_malloc_init( nlarray1, get_P0_BASIS()/MAX_FUNC_PE, double );*/
  /* rho_global = vtot_global;
  */
+    
+    if (ct.num_tfions > 0)
+    {
+	my_malloc_init( rho_tf, get_FP0_BASIS(), double );
+    }
 
     my_malloc_init( rho_old, get_FP0_BASIS() * ispin, double );
 
