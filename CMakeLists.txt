@@ -32,7 +32,7 @@ INCLUDE (CMakeForceCompiler)
 # User editable options
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
-set (USE_SCALAPACK_LIBS 0)
+set (USE_SCALAPACK_LIBS 1)
 
 
 # Load custom cmake modules
@@ -358,7 +358,17 @@ if(NOT RMG_MATH_LIBS)
         set(USE_SCALAPACK_LIBS 1)
     endif(NOT CRAY_XK)
 
+    # Verify that we can compile and build a scalapack app if the user has set the manual scalapack flag
+    if(USE_SCALAPACK_LIBS)
+        include("PlatformChecks/CheckScalapack.inc")
+        if(NOT RMG_SCALAPACK_INTERNAL)
+            unset (USE_SCALAPACK_LIBS CACHE)
+            set(USE_SCALAPACK_LIBS 0)
+        endif(NOT RMG_SCALAPACK_INTERNAL)
+    endif(USE_SCALAPACK_LIBS)
+
 endif(NOT RMG_MATH_LIBS)
+
 
 
 # Look for GPU libraries. Only CUDA supported for now
