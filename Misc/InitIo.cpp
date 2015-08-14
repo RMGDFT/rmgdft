@@ -79,6 +79,9 @@
 
     #include <cuda.h>
     #include <cuda_runtime_api.h>
+    #if CUDA_USE_UNIFIED_MEMORY
+        #include <cublasXt.h>
+    #endif
     #include <cublas_v2.h>
 
 #endif
@@ -193,6 +196,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
         fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
     }
+#if CUDA_USE_UNIFIED_MEMORY
+    if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
+        fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+    }
+#endif
 
 #if MAGMA_LIBS
     magma_init();
