@@ -123,12 +123,11 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
         int pbasis = dimx * dimy * dimz;
         double *rho_neutral = new double[pbasis];
-        
-	/* Subtract off compensating charges from rho */
+
+        /* Subtract off compensating charges from rho */
         for (int idx = 0; idx < pbasis; idx++) {
             rho_neutral[idx] = rho[idx] - rhoc[idx];
         }
-
 
         double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, hartree_min_sweeps, 
                     hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
@@ -148,36 +147,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     {
     	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
-        int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
-        int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
-        int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
-        int pbasis = dimx * dimy * dimz;
-        double *rho_tf = new double[pbasis];
-        double *rho_tmp = new double[pbasis];
-
-#if 1
-	get_dipole (rho);
-        rmg_printf("Calling get_tf_rho\n");
-	get_tf_rho(rho_tf);
-        rmg_printf("get_tf_rho Done\n");
-    
-	/* check TF charge */
-	t[0] = 0.0;
-
-	for (int idx = 0; idx < FP0_BASIS; idx++)
-	{
-	    rho_tmp[idx] = rho[idx] + rho_tf[idx];
-	    t[0] += rho_tf[idx];
-	}                           /* idx */
-	
-	GlobalSums (t, 1, pct.img_comm);
-	t[0] *= get_vel_f();
-        rmg_printf("tf_rho sum is %.8e\n", t[0]);
-#endif
-    	get_vh (rho_tmp, rhoc, vh, hartree_min_sweeps, 100, ct.poi_parm.levels, 10e-9, boundaryflag);
+    	get_vh (rho, rhoc, vh, hartree_min_sweeps, hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, boundaryflag);
         delete(RT1);
-        delete [] rho_tf;
-        delete [] rho_tmp;
     }
 
 
