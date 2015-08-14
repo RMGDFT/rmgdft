@@ -24,6 +24,7 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "init_var.h"
 
 
 
@@ -100,7 +101,8 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {
-        sprintf(newname, "%s%s%d", name, ".orbit_", state);
+        int state_permuted = perm_state_index[state];
+        sprintf(newname, "%s%s%d", name, ".orbit_", state_permuted);
         fhand = open(newname, O_RDWR);
         if (fhand < 0)
             error_handler(" Unable to write file ");
@@ -112,6 +114,19 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
             printf("\n read %d is different from %d for state %d", nbytes, idx, state);
             error_handler("Unexpected end of file orbit");
         }
+
+
+//      read(fhand, &states[state].ixmin, sizeof(int));
+//      read(fhand, &states[state].ixmax, sizeof(int));
+//      read(fhand, &states[state].iymin, sizeof(int));
+//      read(fhand, &states[state].iymax, sizeof(int));
+//      read(fhand, &states[state].izmin, sizeof(int));
+//      read(fhand, &states[state].izmax, sizeof(int));
+//      double hxgrid, hygrid, hzgrid;
+//      read(fhand, &hxgrid, sizeof(double));
+//      read(fhand, &hygrid, sizeof(double));
+//      read(fhand, &hzgrid, sizeof(double));
+//      read(fhand, &states[state].crds[0], 3 * sizeof(double));
 
 
         close(fhand);

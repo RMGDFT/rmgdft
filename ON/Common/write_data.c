@@ -139,7 +139,8 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 	for (state = ct.state_begin; state < ct.state_end; state++)
 	{
-		sprintf(newname, "%s%s%d", name, ".orbit_", state);
+        int state_permuted = rev_perm_state_index[state];
+		sprintf(newname, "%s%s%d", name, ".orbit_", state_permuted);
 		amode = S_IREAD | S_IWRITE;
 		fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand < 0)

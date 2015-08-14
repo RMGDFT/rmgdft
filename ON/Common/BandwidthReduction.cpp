@@ -10,7 +10,7 @@
 #include "rmgtypedefs.h"
 #include "transition.h"
 
-void BandwidthReduction(int num_ions, ION *ions, int *perm_index)
+void BandwidthReduction(int num_ions, ION *ions, unsigned int *perm_index)
 {
     using namespace boost;
     using namespace std;

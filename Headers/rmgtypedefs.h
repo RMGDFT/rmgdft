@@ -172,6 +172,8 @@ typedef struct
     double ycstart_loc;
     double zcstart_loc;
 
+    int orbital_start_index;
+    int num_orbitals;
 
 
 } ION;

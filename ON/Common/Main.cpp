@@ -74,6 +74,7 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
+unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;
 double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
@@ -158,15 +159,33 @@ int main(int argc, char **argv)
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();
     get_state_to_proc(states);
-    int *perm_index;
-    perm_index = (int *) malloc(ct.num_ions * sizeof(int));
-    for(int i = 0; i < ct.num_ions; i++) perm_index[i] = i;
+    perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
+    for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
 
-    if(pct.gridpe == 0) 
-        BandwidthReduction(ct.num_ions, ct.ions, perm_index);
-    MPI_Bcast(perm_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-    PermAtoms(ct.num_ions, ct.ions, perm_index);
-    ReadOrbitals (ct.cfile, states, pct.img_comm, perm_index);
+    perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+    rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+
+    switch(ct.runflag)
+    {
+        case 1:
+            if(pct.gridpe == 0) 
+            {
+                ReadPermInfo(ct.infile, perm_ion_index);
+            }
+            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+            break;
+        default:
+            if(pct.gridpe == 0) 
+            {
+                BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
+                WritePermInfo(ct.outfile, perm_ion_index);
+            }
+            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+            PermAtoms(ct.num_ions, ct.ions, perm_ion_index);
+            break;
+    }
+    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
+    GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
 
     init_states();
     my_barrier();

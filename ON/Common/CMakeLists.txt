@@ -1,6 +1,9 @@
 add_library (ON_Common
 # DiagElemental.cpp
+ ReadPermInfo.cpp
+ WritePermInfo.cpp
  PermAtoms.cpp
+ GetPermStateIndex.cpp
  BandwidthReduction.cpp
  gw_correction_matrix.c
  write_restart.c

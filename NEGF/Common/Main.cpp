@@ -98,7 +98,7 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 COMPASS potentialCompass, chargeDensityCompass;
 
 
-
+unsigned int *perm_ion_index;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;
 double *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
@@ -174,10 +174,9 @@ int main (int argc, char **argv)
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
     allocate_states();
 
-    int *perm_index;
-    perm_index = (int *) malloc(ct.num_ions * sizeof(int));
-    for(int i = 0; i < ct.num_ions; i++) perm_index[i] = i;
-    ReadOrbitals (ct.cfile, states, pct.img_comm, perm_index);
+    perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
+    for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
+    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
     get_state_to_proc(states);
 
     my_barrier ();

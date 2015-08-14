@@ -4,6 +4,7 @@
  
 #define ORDER_N 1
 
+extern unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 extern double *projectors, *projectors_x, *projectors_y, *projectors_z;
 extern int *num_nonlocal_ion;
 extern double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;

@@ -61,7 +61,7 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, complex double * sigma,
     /* allocate matrix and initialization  */
     my_malloc_init( H_tri, ntot, complex double );
  
-    matrix_kpoint_center(H_tri, Stri, Htri, creal(ene), ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
+    matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
     
     for (nprobe = 0; nprobe < cei.num_probe; nprobe++)

@@ -61,7 +61,7 @@ kpoints = "
 
 namespace Ri = RmgInput;
 
-void ReadOrbitals(char *cfile, STATE  *states, MPI_Comm comm, int *perm_index)
+void ReadOrbitals(char *cfile, STATE  *states, ION *ions, MPI_Comm comm, unsigned int *perm_index)
 {
 
     std::string OrbitalArray;
@@ -157,6 +157,9 @@ void ReadOrbitals(char *cfile, STATE  *states, MPI_Comm comm, int *perm_index)
             states[ni + i].atom_index = natom;
             states[ni+i].atomic_orbital_index = i;
         }
+        
+        ions[natom].num_orbitals = num_tem;
+        ions[natom].orbital_start_index = ni;
 
 
         natom++;

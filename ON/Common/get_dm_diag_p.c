@@ -138,6 +138,15 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
 
     EndRmgTimer(RT);
 
+    my_barrier();
+
+    MPI_Bcast(&eigs[0], numst, MPI_DOUBLE, 0, pct.grid_comm);
+    for (st1 = 0; st1 < ct.num_states; st1++)
+    {
+        states[st1].eig[0] = eigs[st1];
+    }
+
+    ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
     //   uu_dis = zz_dis *(occ_diag)
     dcopy(&mxllda2, zz_dis, &ione, uu_dis, &ione);
@@ -158,14 +167,6 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
             uu_dis, &ione, &ione, pct.desca,
             zz_dis, &ione, &ione, pct.desca, &zero, X, &ione, &ione, pct.desca);
 
-
-    my_barrier();
-
-    MPI_Bcast(&eigs[0], numst, MPI_DOUBLE, 0, pct.grid_comm);
-    for (st1 = 0; st1 < ct.num_states; st1++)
-    {
-        states[st1].eig[0] = eigs[st1];
-    }
 
     /* my_free(work); */
     my_barrier();
