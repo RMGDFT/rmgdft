@@ -62,6 +62,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 {
 
 #if GPU_ENABLED
+
     cublasStatus_t custat;
     cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
     DataType ZERO_t(0.0);
@@ -83,6 +84,52 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     int kb = k;
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
+
+#if CUDA_USE_UNIFIED_MEMORY
+    cudaPointerAttributes attrib_A, attrib_B, attrib_C;
+    cudaError_t cudaErrA;
+    bool useXt = false;
+
+    cudaErrA = cudaPointerGetAttributes(&attrib_A, A);
+    if(cudaErrA == cudaSuccess) {
+        cudaError_t cudaErrB;
+        cudaErrB = cudaPointerGetAttributes(&attrib_B, B);
+        if(cudaErrB == cudaSuccess) {
+            cudaError_t cudaErrC;
+            cudaErrC = cudaPointerGetAttributes(&attrib_C, C);
+
+            // Check attributes and if all matrices are located on the host then
+            // we can use the XT interface.
+            if((attrib_A.memoryType == cudaMemoryTypeHost) &&
+               (attrib_B.memoryType == cudaMemoryTypeHost) &&
+               (attrib_C.memoryType == cudaMemoryTypeHost)) {
+
+                    if(typeid(DataType) == typeid(std::complex<double>)) {
+                        custat = cublasXtZgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
+                                            (cuDoubleComplex *)&alpha,
+                                            (cuDoubleComplex*)A, lda,
+                                            (cuDoubleComplex*)B, ldb,
+                                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+                        ProcessCublasError(custat);
+                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+                    }
+                    else {
+                        custat = cublasXtDgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
+                                            (double*)&alpha,
+                                            (double*)A, lda,
+                                            (double*)B, ldb,
+                                            (double*)&beta, (double*)C, ldc );
+                        ProcessCublasError(custat);
+                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+                    }
+printf("Using unified!");
+                    return;
+
+            }
+        }
+    }
+
+#endif
 
 
     DataType *Agpu1;

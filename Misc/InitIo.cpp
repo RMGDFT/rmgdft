@@ -198,8 +198,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 #if CUDA_USE_UNIFIED_MEMORY
     if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
-        fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+        fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
     }
+    int devices[1] = { 0 };
+    if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, devices) != CUBLAS_STATUS_SUCCESS) {
+        fprintf(stderr, "XT set devices fail\n"); exit(-1);
+    } //
 #endif
 
 #if MAGMA_LIBS
