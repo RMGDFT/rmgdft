@@ -92,13 +92,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     static KpointType *Bij;
     static KpointType *Sij;
 
-    // Grab some gpu memory
+    // Grab some gpu memory if not using a version of cuda that supports unified memory
     gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
+#if !CUDA_USE_UNIFIED_MEMORY
+
     Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
 
     // Start wavefunctions transferring to the GPU
     RmgCudaError(__FILE__,__LINE__, cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 ) , "Problem transferring orbitals to GPU");
-
+#endif
 
 #else
 
@@ -208,6 +210,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
+
     RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -347,7 +350,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 #endif
 
 #if GPU_ENABLED
+#if !CUDA_USE_UNIFIED_MEMORY
     GpuFree(Agpu);
+#endif
     GpuFree(gpu_eigvectors);
 #endif
 

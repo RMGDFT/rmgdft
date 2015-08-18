@@ -122,7 +122,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                         ProcessCublasError(custat);
                         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
                     }
-//printf("Using unified!");
+//printf("Using unified!\n");
                     return;
 
             }
