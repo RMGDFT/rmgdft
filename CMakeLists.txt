@@ -33,6 +33,7 @@ INCLUDE (CMakeForceCompiler)
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
+set (USE_ELEMENTAL_LIBS 0)
 
 
 # Load custom cmake modules
@@ -449,27 +450,28 @@ endif(NOT LIBSPG_FOUND)
 
 find_package(LIBSPG REQUIRED)
 
-#find_package(ELEMENTAL)
-#if(NOT ELEMENTAL_FOUND)
-#    execute_process(
-#    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85.tgz -C ${PROJECT_SOURCE_DIR}/lib )
-#    execute_process(
-#    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-#    execute_process(
-#    COMMAND cmake .. 
-#        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-#    execute_process(COMMAND make  -j 16
-#        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-#endif(NOT ELEMENTAL_FOUND)
-#
-find_package(ELEMENTAL REQUIRED)
-include_directories(${ELEMENTAL_INCLUDES})
-target_link_libraries (rmg-on ${ELEMENTAL_LIBRARIES} /opt/cray/libsci/13.0.3/GNU/48/interlagos/lib/libsci_gnu.a)
-target_link_libraries (rmg-on ON_Common ${ELEMENTAL_LIBRARIES})
-find_package(PMRRR)
-include_directories(${PMRRR_INCLUDES})
-target_link_libraries (rmg-on ${PMRRR_LIBRARIES})
-target_link_libraries (rmg-on ON_Common ${PMRRR_LIBRARIES})
+if(USE_ELEMENTAL_LIBS)
+find_package(ELEMENTAL)
+    if(NOT ELEMENTAL_FOUND)
+        execute_process(
+        COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85.tgz -C ${PROJECT_SOURCE_DIR}/lib )
+        execute_process(
+        COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
+        execute_process(
+        COMMAND cmake .. 
+            WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
+        execute_process(COMMAND make  -j 16
+            WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
+    endif(NOT ELEMENTAL_FOUND)
+
+    find_package(ELEMENTAL REQUIRED)
+    include_directories(${ELEMENTAL_INCLUDES})
+    target_link_libraries (rmg-on ON_Common ${ELEMENTAL_LIBRARIES})
+    find_package(PMRRR)
+    include_directories(${PMRRR_INCLUDES})
+    target_link_libraries (rmg-on ${PMRRR_LIBRARIES})
+    target_link_libraries (rmg-on ON_Common ${PMRRR_LIBRARIES})
+endif(USE_ELEMENTAL_LIBS)
 
 
 # include files
