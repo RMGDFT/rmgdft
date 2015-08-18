@@ -56,6 +56,7 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
     int  mxllda2;
 
 
+    my_barrier();
     void *RT = BeginRmgTimer("Diagonalization: scalapack");
     /* If I'm in the process grid, execute the program */
     if (pct.scalapack_myrow < 0)
@@ -136,9 +137,9 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
     my_free (work2);
     my_free (iwork);
 
+    my_barrier();
     EndRmgTimer(RT);
 
-    my_barrier();
 
     MPI_Bcast(&eigs[0], numst, MPI_DOUBLE, 0, pct.grid_comm);
     for (st1 = 0; st1 < ct.num_states; st1++)

@@ -80,6 +80,7 @@ void allocate_psi(STATE * states, STATE * states1)
     dprintf("\n total recv orbitals %d", tot_recv);
     item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
     my_malloc_init(rptr3, tot_recv * item, double);
+    dprintf("\n tot_recv  %d", tot_recv);
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {

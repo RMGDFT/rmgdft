@@ -66,8 +66,14 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         flag = 0;
         RmgTimer *RT1 = new RmgTimer("2-SCF: matrix_and_diag");
         matrix_and_diag(ct.kp[kpt].kstate, states1, vtot_c, flag);
-        //DiagElemental(ct.num_states, Hij_00, Bij_00);
+        
+//        get_HS(states, states1, vtot_c, Hij_00, Bij_00);
         delete(RT1);
+    my_barrier();
+        RmgTimer *RTa = new RmgTimer("diag_ele");
+        DiagElemental(ct.num_states, Hij_00, Bij_00);
+    my_barrier();
+        delete(RTa);
     }
 
     if(ct.spin_flag)

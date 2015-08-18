@@ -1,5 +1,5 @@
 add_library (ON_Common
-# DiagElemental.cpp
+ DiagElemental.cpp
  ReadPermInfo.cpp
  WritePermInfo.cpp
  PermAtoms.cpp

@@ -30,7 +30,7 @@ INCLUDE (CMakeForceCompiler)
 
 
 # User editable options
-set (RMG_GPU_ENABLED 1)
+set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 
@@ -462,14 +462,14 @@ find_package(LIBSPG REQUIRED)
 #        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
 #endif(NOT ELEMENTAL_FOUND)
 #
-#find_package(ELEMENTAL REQUIRED)
-#include_directories(${ELEMENTAL_INCLUDES})
-#target_link_libraries (rmg-on ${ELEMENTAL_LIBRARIES})
-#target_link_libraries (rmg-on ON_Common ${ELEMENTAL_LIBRARIES})
-#find_package(PMRRR)
-#include_directories(${PMRRR_INCLUDES})
-#target_link_libraries (rmg-on ${PMRRR_LIBRARIES})
-#target_link_libraries (rmg-on ON_Common ${PMRRR_LIBRARIES})
+find_package(ELEMENTAL REQUIRED)
+include_directories(${ELEMENTAL_INCLUDES})
+target_link_libraries (rmg-on ${ELEMENTAL_LIBRARIES} /opt/cray/libsci/13.0.3/GNU/48/interlagos/lib/libsci_gnu.a)
+target_link_libraries (rmg-on ON_Common ${ELEMENTAL_LIBRARIES})
+find_package(PMRRR)
+include_directories(${PMRRR_INCLUDES})
+target_link_libraries (rmg-on ${PMRRR_LIBRARIES})
+target_link_libraries (rmg-on ON_Common ${PMRRR_LIBRARIES})
 
 
 # include files

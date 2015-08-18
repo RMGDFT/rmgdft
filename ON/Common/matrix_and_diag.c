@@ -64,8 +64,10 @@ void *RT2 = BeginRmgTimer("3-matrix_and_diag: cpdgemr2d");
 
 //    get_cholesky_real(matB);
 
+my_barrier();
 void *RT3 = BeginRmgTimer("3-matrix_and_diag: diag");
     get_dm_diag_p(states, matB, mat_X, Hij);
+my_barrier();
     EndRmgTimer(RT3);
 
     EndRmgTimer(RT);
