@@ -48,7 +48,7 @@ static double ef (double mu, double * occ, STATE * states, double width, double 
 
 
 
-double fill (STATE * states, double width, double nel, double mix, int num_st, int occ_flag)
+double fill_on (STATE * states, double width, double nel, double mix, int num_st, int occ_flag)
 {
 
     const int maxit = 500;

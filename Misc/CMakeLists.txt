@@ -48,7 +48,7 @@ ions.c
 sl_init_comm.c
 get_opposite_occupancies.c
 get_opposite_eigvals.c
-fill.c
+fill_on.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})

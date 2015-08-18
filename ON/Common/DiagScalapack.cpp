@@ -9,6 +9,9 @@
 #include "main.h"
 #include "init_var.h"
 #include "RmgTimer.h"
+
+
+#if !ELEMENTAL_LIBS
 #include "blas.h"
 
 
@@ -30,6 +33,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     int mb= pct.desca[4];
     int  mxllda2;
 
+    RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
 
     my_barrier();
     RmgTimer  *RT2 = new RmgTimer("3-DiagScalapack: cpdgemr2d");
@@ -133,7 +137,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     delete [] iwork;
     delete [] eigs;
 
-    ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
+    ct.efermi = fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
     my_barrier();
     delete(RT1);
@@ -170,7 +174,9 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
             pct.descb, pct.desca[1]);
     my_barrier();
     delete(RT4);
+    delete(RT0);
 
 
 
 }
+#endif

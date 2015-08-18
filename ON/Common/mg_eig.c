@@ -60,6 +60,13 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     distribute_to_global(vtot_c, vtot_global);
     EndRmgTimer(RT1a);
 
+
+   Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
+            pct.desca, pct.desca[1]);
+    Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
+            pct.desca, pct.desca[1]);
+
+
     void *RT1 = BeginRmgTimer("3-mg_eig: invert MatB");
 
     my_malloc(ipiv, numst, int);
