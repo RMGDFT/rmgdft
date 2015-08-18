@@ -105,9 +105,9 @@ void init_rho_atom(double *rho)
         crds[0] = dbuf[3];
         crds[1] = dbuf[4];
         crds[2] = dbuf[5];
-        ixdim = max(ixdim, ixmax - ixmin);
-        iydim = max(iydim, iymax - iymin);
-        izdim = max(izdim, izmax - izmin);
+        ixdim = rmg_max(ixdim, ixmax - ixmin);
+        iydim = rmg_max(iydim, iymax - iymin);
+        izdim = rmg_max(izdim, izmax - izmin);
 
 
         crds1 = &ct.ions[ion].crds[0];

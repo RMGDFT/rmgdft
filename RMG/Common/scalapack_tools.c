@@ -242,7 +242,7 @@ void set_desca (int *desca, int *ictxt, int size)
     int mxllda, myindex;
 
     mxllda = NUMROC (&size, &NB, &pct.scalapack_myrow, &izero, &pct.scalapack_nprow);
-    mxllda = max (1, mxllda);
+    mxllda = rmg_max (1, mxllda);
 
 
     if (pct.scalapack_pe)

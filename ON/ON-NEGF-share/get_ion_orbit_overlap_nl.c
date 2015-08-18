@@ -55,8 +55,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             i2 = states[st1].ixmax;
             i3 = ct.ions[ion2].ixstart;
             i4 = ct.ions[ion2].ixend;
-            i5 = max(i1, i3);
-            i6 = min(i2, i4);
+            i5 = rmg_max(i1, i3);
+            i6 = rmg_min(i2, i4);
             if (i6 >= i5)
                 flagx = 1;
             ion_orbit_overlap_region_nl[index].xlow1 = i5;
@@ -64,8 +64,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
 
             i3 = ct.ions[ion2].ixstart + get_NX_GRID();
             i4 = ct.ions[ion2].ixend + get_NX_GRID();
-            i5 = max(i1, i3);
-            i6 = min(i2, i4);
+            i5 = rmg_max(i1, i3);
+            i6 = rmg_min(i2, i4);
             if (i6 >= i5)
             {
                 flagx = 1;
@@ -77,8 +77,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             {
                 i3 = ct.ions[ion2].ixstart - get_NX_GRID();
                 i4 = ct.ions[ion2].ixend - get_NX_GRID();
-                i5 = max(i1, i3);
-                i6 = min(i2, i4);
+                i5 = rmg_max(i1, i3);
+                i6 = rmg_min(i2, i4);
                 if (i6 >= i5)
                     flagx = 1;
                 ion_orbit_overlap_region_nl[index].xlow2 = i5;
@@ -90,8 +90,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             i2 = states[st1].iymax;
             i3 = ct.ions[ion2].iystart;
             i4 = ct.ions[ion2].iyend;
-            i5 = max(i1, i3);
-            i6 = min(i2, i4);
+            i5 = rmg_max(i1, i3);
+            i6 = rmg_min(i2, i4);
             if (i6 >= i5)
                 flagy = 1;
             ion_orbit_overlap_region_nl[index].ylow1 = i5;
@@ -100,8 +100,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             i3 = ct.ions[ion2].iystart + get_NY_GRID();
             i4 = ct.ions[ion2].iyend + get_NY_GRID();
 
-            i5 = max(i1, i3);
-            i6 = min(i2, i4);
+            i5 = rmg_max(i1, i3);
+            i6 = rmg_min(i2, i4);
             if (i6 >= i5)
             {
                 flagy = 1;
@@ -113,8 +113,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             {
                 i3 = ct.ions[ion2].iystart - get_NY_GRID();
                 i4 = ct.ions[ion2].iyend - get_NY_GRID();
-                i5 = max(i1, i3);
-                i6 = min(i2, i4);
+                i5 = rmg_max(i1, i3);
+                i6 = rmg_min(i2, i4);
                 if (i6 >= i5)
                     flagy = 1;
                 ion_orbit_overlap_region_nl[index].ylow2 = i5;
@@ -127,8 +127,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             i3 = ct.ions[ion2].izstart;
             i4 = ct.ions[ion2].izend;
 
-            i5 = max(i1, i3);
-            i6 = min(i2, i4);
+            i5 = rmg_max(i1, i3);
+            i6 = rmg_min(i2, i4);
 
             if (i6 >= i5)
                 flagz = 1;
@@ -138,8 +138,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             i3 = ct.ions[ion2].izstart + get_NZ_GRID();
             i4 = ct.ions[ion2].izend + get_NZ_GRID();
 
-            i5 = max(i1, i3);
-            i6 = min(i2, i4);
+            i5 = rmg_max(i1, i3);
+            i6 = rmg_min(i2, i4);
 
             if (i6 >= i5)
             {
@@ -152,8 +152,8 @@ void get_ion_orbit_overlap_nl(STATE * states)
             {
                 i3 = ct.ions[ion2].izstart - get_NZ_GRID();
                 i4 = ct.ions[ion2].izend - get_NZ_GRID();
-                i5 = max(i1, i3);
-                i6 = min(i2, i4);
+                i5 = rmg_max(i1, i3);
+                i6 = rmg_min(i2, i4);
                 if (i6 >= i5)
                     flagz = 1;
                 ion_orbit_overlap_region_nl[index].zlow2 = i5;

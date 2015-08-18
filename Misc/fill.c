@@ -125,8 +125,8 @@ double fill (STATE * states, double width, double nel, double mix, int num_st, i
     		{
             		/* sp = &ct.kp[kpt].kstate[st]; */
 	    		eig = ct.kp[kpt].kstate[st].eig[idx]; 
-            		mu1 = min (eig, mu1);
-            		mu2 = max (eig, mu2); 
+            		mu1 = rmg_min (eig, mu1);
+            		mu2 = rmg_max (eig, mu2); 
 		}
     	}                           
     } 

@@ -48,7 +48,7 @@ void  setback_corner_matrix_S()
     for(iprobe = 1; iprobe <= cei.num_probe ; iprobe++)
     {
 
-        nmax = max (nmax, lcr[iprobe].num_states);
+        nmax = rmg_max (nmax, lcr[iprobe].num_states);
     }
     
     my_malloc(temp, nmax * nmax, double);

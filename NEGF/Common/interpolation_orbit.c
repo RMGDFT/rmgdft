@@ -49,7 +49,7 @@ void interpolation_orbit (STATE * states)
     hx_new = get_hxgrid() * get_xside();
     hy_new = get_hygrid() * get_yside();
 
-    max_orbit_nx_ny = max(ct.max_orbit_nx, ct.max_orbit_ny);
+    max_orbit_nx_ny = rmg_max(ct.max_orbit_nx, ct.max_orbit_ny);
     my_malloc_init( psi_old, max_orbit_nx_ny, double );
     my_malloc_init( psi_new, max_orbit_nx_ny, double );
 

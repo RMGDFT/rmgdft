@@ -134,8 +134,8 @@ void charge_density_matrix_p (complex double * sigma_all)
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
             idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-            maxrow = max(maxrow, pmo.mxllda_cond[idx_C]);
-            maxcol = max(maxcol, pmo.mxlocc_cond[idx_C]);
+            maxrow = rmg_max(maxrow, pmo.mxllda_cond[idx_C]);
+            maxcol = rmg_max(maxcol, pmo.mxlocc_cond[idx_C]);
         }
 
         my_malloc_init( sigma, maxrow * maxcol, complex double ); 
@@ -148,8 +148,8 @@ void charge_density_matrix_p (complex double * sigma_all)
         int totcol = 0;
         for(i = 0; i < ct.num_blocks; i++)
         {
-            maxrow = max(maxrow, pmo.mxllda_cond[i]);
-            maxcol = max(maxcol, pmo.mxlocc_cond[i]);
+            maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
+            maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
             totrow += pmo.mxllda_cond[i];
             totcol += pmo.mxlocc_cond[i];
         }

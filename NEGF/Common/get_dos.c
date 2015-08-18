@@ -112,7 +112,7 @@ void get_dos (STATE * states)
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
+        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
     my_malloc_init( sigma, idx, complex double );
 
@@ -136,7 +136,7 @@ void get_dos (STATE * states)
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
+        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
                                                                                 
     my_malloc_init( g,    idx, complex double );

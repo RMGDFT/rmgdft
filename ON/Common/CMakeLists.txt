@@ -1,4 +1,5 @@
 add_library (ON_Common
+ DiagScalapack.cpp
  DiagElemental.cpp
  ReadPermInfo.cpp
  WritePermInfo.cpp

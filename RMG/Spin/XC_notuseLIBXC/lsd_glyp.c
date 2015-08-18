@@ -79,9 +79,9 @@ void lsd_lyp ( double rho, double zeta, double * elyp, double * valyp, double * 
 	double small_val=1.0e-24, a=0.04918, b=0.132, c=0.2533, d=0.349, cf=2.87123400018819108;
 
 	rhoa = rho * 0.5 * ( 1.0 + zeta );
-	rhoa = max ( rhoa, small_val );
+	rhoa = rmg_max ( rhoa, small_val );
 	rhob = rho * 0.5 * ( 1.0 - zeta );
-	rhob = max ( rhob, small_val );
+	rhob = rmg_max ( rhob, small_val );
 
 	rm3 = pow ( rho, - 1.0 / 3.0 );
 	dr = 1.0 + d * rm3;

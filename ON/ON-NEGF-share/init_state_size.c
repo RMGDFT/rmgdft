@@ -67,9 +67,9 @@ void init_state_size(STATE * states)
 
         states[state].size = states[state].orbit_nx * states[state].orbit_ny
             * states[state].orbit_nz;
-        max_nx = max(max_nx, states[state].orbit_nx);
-        max_ny = max(max_ny, states[state].orbit_ny);
-        max_nz = max(max_nz, states[state].orbit_nz);
+        max_nx = rmg_max(max_nx, states[state].orbit_nx);
+        max_ny = rmg_max(max_ny, states[state].orbit_ny);
+        max_nz = rmg_max(max_nz, states[state].orbit_nz);
 /*		if(pct.gridpe == 0) 
 *			printf(" %d: %d.%d.%d ", 
 *					state, states[state].orbit_nx, states[state].orbit_ny, 

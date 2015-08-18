@@ -46,8 +46,8 @@ void orbital_comm(STATE * states)
     {
         num_send = send_to1[loop * state_per_proc + 1];
         num_recv = recv_from1[loop * state_per_proc + 1];
-        max_ii = max(max_ii, num_send);
-        max_ii = max(max_ii, num_recv);
+        max_ii = rmg_max(max_ii, num_send);
+        max_ii = rmg_max(max_ii, num_recv);
     }
 
     max_ii = int_max_all(max_ii);

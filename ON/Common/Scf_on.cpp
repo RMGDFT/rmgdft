@@ -58,28 +58,34 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
-
-
-
-    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+= pct.pe_kpoint)
-    {
-        flag = 0;
-        RmgTimer *RT1 = new RmgTimer("2-SCF: matrix_and_diag");
-        matrix_and_diag(ct.kp[kpt].kstate, states1, vtot_c, flag);
-        
-//        get_HS(states, states1, vtot_c, Hij_00, Bij_00);
-        delete(RT1);
+    flag = 0;
     my_barrier();
-        RmgTimer *RTa = new RmgTimer("diag_ele");
-        DiagElemental(ct.num_states, Hij_00, Bij_00);
+    RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
+    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
     my_barrier();
-        delete(RTa);
-    }
+    delete(RT1);
+#if ELEMENTAL_LIBS
+    RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
+    DiagElemental(ct.num_states, Hij_00, Bij_00);
+    my_barrier();
+    delete(RTa);
+#else
+    RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
+    DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row);
+    my_barrier();
+    delete(RTb);
+#endif
+
 
     if(ct.spin_flag)
+    {
+        printf("\n need to split Diag* to take care of fill for spin_polarized");
+        fflush(NULL);
+        exit(0);
         get_opposite_eigvals( states );
+    }
     /* Generate new density */
-    ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
+//    ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
     if(pct.gridpe == 0) write_eigs(states);
 

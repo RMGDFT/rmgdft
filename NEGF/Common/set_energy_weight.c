@@ -53,7 +53,7 @@ void set_energy_weight (complex double * ene, complex double * weight, double EF
     ncircle = cei.ncircle;
     nmax_gq1 = cei.nmax_gq1;
 
-    size = max(ncircle, nmax_gq1); 
+    size = rmg_max(ncircle, nmax_gq1); 
     my_malloc( xc, size, double );
     my_malloc( wc, size, double );
 

@@ -64,8 +64,8 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
     totrow = 0;
     for (i = 0; i < N; i++)
     {
-        maxrow = max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
         totrow += pmo.mxllda_cond[i];
         totcol += pmo.mxlocc_cond[i];
 

@@ -47,7 +47,7 @@ void init_state_distribute (STATE * states, STATE *states_distribute)
     double hx_old, hx_new, hy_old, hy_new;
     double x1_old, x1_new, y1_old, y1_new;
 
-    max_orbit_nx_ny = max(ct.max_orbit_nx, ct.max_orbit_ny);
+    max_orbit_nx_ny = rmg_max(ct.max_orbit_nx, ct.max_orbit_ny);
     my_malloc_init( psi_old, max_orbit_nx_ny, double );
     my_malloc_init( psi_new, max_orbit_nx_ny, double );
 

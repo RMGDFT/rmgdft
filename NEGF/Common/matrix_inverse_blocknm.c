@@ -63,8 +63,8 @@ void matrix_inverse_blocknm (complex double * H_tri_host, int N_blocks, int * ni
     maxcol = 0;
     for (i = 0; i < N_blocks; i++)
     {
-        maxrow = max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
     }
 
     my_malloc( n_begin1, N_blocks, int );

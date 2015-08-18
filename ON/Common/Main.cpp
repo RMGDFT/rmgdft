@@ -124,9 +124,11 @@ double alat;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
-#include "El.hpp"
+#if ELEMENTAL_LIBS
+    #include "El.hpp"
+    using namespace El;
+#endif
 using namespace std;
-using namespace El;
 
 int main(int argc, char **argv)
 {
@@ -134,8 +136,8 @@ int main(int argc, char **argv)
 
 
 
-   // double a[4], b[4];
-   // MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
+    // double a[4], b[4];
+    // MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
     //MPI_Init(&argc, &argv);
 
     //DiagElemental(4, a, b);    
@@ -143,18 +145,20 @@ int main(int argc, char **argv)
 
     ct.mpi_threadlevel = MPI_THREAD_SERIALIZED;
     ct.mpi_threadlevel = 0;
-   // mpi::Initialize(argc, argv);
+    // mpi::Initialize(argc, argv);
     RmgTimer *RT = new RmgTimer("1-TOTAL");
-    
+
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
-   // tem();
+    // tem();
 
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
     //  initialize for ELEMENTAl lib
+#if ELEMENTAL_LIBS
     Initialize( argc, argv );
+#endif
 
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();

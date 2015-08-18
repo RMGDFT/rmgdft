@@ -58,8 +58,8 @@
 
 #define my_strncpy(buf1, buf2, num) strncpy(buf1, buf2, num), buf1[num]=0
 
-#define min(a,b) (((a)>(b)) ? (b) : (a))
-#define max(a,b) (((a)>(b)) ? (a) : (b))
+#define rmg_min(a,b) (((a)>(b)) ? (b) : (a))
+#define rmg_max(a,b) (((a)>(b)) ? (a) : (b))
 
 #define even(a)  ( (a) % 2 == 0 )
 #define odd(a)   ( (a) % 2 == 1 )

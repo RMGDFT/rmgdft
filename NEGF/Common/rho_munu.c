@@ -48,8 +48,8 @@ void rho_munu (complex double * rho_mn_host, complex double * G_row_host,
     maxcol = 0;
     for (i = 0; i < N; i++)
     {
-        maxrow = max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
     }
 
     n1 = maxrow * maxcol;

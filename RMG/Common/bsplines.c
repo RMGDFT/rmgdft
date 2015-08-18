@@ -268,8 +268,8 @@ void dbsint (int nx, double *xvec, double *xdata, int kx, double *xknot, double 
     {
         xveci = xvec[ix];
         i2 = ix + kx + 1;
-        ilp1mx = min (i2, nxp1);
-        leftx = max (leftx, ix + 1);
+        ilp1mx = rmg_min (i2, nxp1);
+        leftx = rmg_max (leftx, ix + 1);
 
         if (xveci < xknot[leftx - 1])
         {
@@ -629,13 +629,13 @@ double dbsval (double x, int kx, double *xknot, int nx, double *bcoef)
             return;
         }
         i2 = nbandl, i3 = nrow - i - 1;
-        jmax = min (i2, i3);
+        jmax = rmg_min (i2, i3);
 
         for (j = 0; j < jmax; ++j)
             w[middle + j + i * w_dim1] /= pivot;
 
         i2 = nbandu, i3 = nrow - i - 1;
-        kmax = min (i2, i3);
+        kmax = rmg_min (i2, i3);
 
         for (k = 0; k < kmax; ++k)
         {
@@ -695,7 +695,7 @@ double dbsval (double x, int kx, double *xknot, int nx, double *bcoef)
         {
             /* Computing MIN */
             i2 = nbandl, i3 = nrow - i - 1;
-            jmax = min (i2, i3);
+            jmax = rmg_min (i2, i3);
             i2 = jmax;
 
             for (j = 0; j < i2; ++j)
@@ -721,7 +721,7 @@ double dbsval (double x, int kx, double *xknot, int nx, double *bcoef)
         b[i] /= w[middle + i * w_dim1 - 1];
         i1 = nbandu, i2 = i;
 
-        jmax = min (i1, i2);
+        jmax = rmg_min (i1, i2);
         i1 = jmax;
 
         for (j = 0; j < i1; ++j)
@@ -913,8 +913,8 @@ static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef,
 /*                  work1(max(nx,ny),max(nx,ny)) */
 /*                  work2(max(nx,ny)) */
 /*                  work3(max((2*kx-1)*nx,(2*ky-1)*ny)) */
-    maxnxny = max (nx, ny);
-    max2 = max ((2 * kx - 1) * nx, (2 * ky - 1) * ny);
+    maxnxny = rmg_max (nx, ny);
+    max2 = rmg_max ((2 * kx - 1) * nx, (2 * ky - 1) * ny);
 
     my_malloc (work1, maxnxny * maxnxny, double);
     my_malloc (work2, maxnxny, double);
@@ -984,8 +984,8 @@ static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n
         xyveci = xyvec[i];
 /* Computing MIN */
         i2 = i + 1 + k;
-        ilp1mx = min (i2, np1);
-        left = max (left, i + 1);
+        ilp1mx = rmg_min (i2, np1);
+        left = rmg_max (left, i + 1);
 
 #if 0
         if (xyveci < xyknot[left - 1])
@@ -1392,8 +1392,8 @@ static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
         xyzveci = xyzvec[i];
 /* Computing MIN */
         i2 = i + 1 + k;
-        ilp1mx = min (i2, np1);
-        left = max (left, i + 1);
+        ilp1mx = rmg_min (i2, np1);
+        left = rmg_max (left, i + 1);
 #if 0
         if (xyzveci < xyzknot[left - 1])
         {
@@ -1666,12 +1666,12 @@ static void get_biats (int nxvec, double *xvec, int nyvec, double *yvec,
     int dl_dim, dr_dim, biatx_dim, biaty_dim, biatz_dim;
 
     /*find max of nxvec,nyvec,nzvec */
-    maxnvec = max (nxvec, nyvec);
-    maxnvec = max (maxnvec, nzvec);
+    maxnvec = rmg_max (nxvec, nyvec);
+    maxnvec = rmg_max (maxnvec, nzvec);
 
     /*find max of kx,ky,kz */
-    maxk = max (kx, ky);
-    maxk = max (maxk, kz);
+    maxk = rmg_max (kx, ky);
+    maxk = rmg_max (maxk, kz);
 
     dl_dim = maxnvec;
     dr_dim = maxnvec;

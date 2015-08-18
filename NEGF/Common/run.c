@@ -106,9 +106,9 @@ void run (STATE * states, STATE * states1)
 	EndRmgTimer(RT3);
 
 	size = 1;
-	for (i = 0; i < ct.num_blocks; i++) size = max(size, ct.block_dim[i] * ct.block_dim[i]);
-	size = max(size, ct.num_states * (ct.state_end - ct.state_begin));
-	size = max(size, pct.num_local_orbit * pct.num_local_orbit);
+	for (i = 0; i < ct.num_blocks; i++) size = rmg_max(size, ct.block_dim[i] * ct.block_dim[i]);
+	size = rmg_max(size, ct.num_states * (ct.state_end - ct.state_begin));
+	size = rmg_max(size, pct.num_local_orbit * pct.num_local_orbit);
 
 	my_malloc_init( work_matrix, size, double );
 

@@ -67,8 +67,8 @@ void get_state_to_proc (STATE * states)
         state_to_proc[st] = 0;
         if (states[st].atom_index >= ion1 && states[st].atom_index < ion2)
         {
-            ct.state_begin = min (ct.state_begin, st);
-            ct.state_end = max (ct.state_end, st);
+            ct.state_begin = rmg_min (ct.state_begin, st);
+            ct.state_end = rmg_max (ct.state_end, st);
             state_to_proc[st] = pct.gridpe;
         }
     }

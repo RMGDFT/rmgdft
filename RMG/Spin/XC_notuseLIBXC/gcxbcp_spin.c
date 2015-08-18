@@ -81,7 +81,7 @@ void gcxbcp_spin (double rho_up, double rho_dw,
 		}
 		else
 		{
-			lim = min(fabs(zeta), (1.0 - EPSR) );
+			lim = rmg_min(fabs(zeta), (1.0 - EPSR) );
 			if (zeta >= 0.0 )
 				zeta = fabs(lim);
 			else if (zeta < 0.0)

@@ -79,7 +79,7 @@ void get_new_rho_soft (STATE * states, double *rho)
         proc2 = recv_from[loop * state_per_proc];
         num_send = send_to[loop * state_per_proc + 1];
         num_recv = recv_from[loop * state_per_proc + 1];
-        num_sendrecv = min (num_send, num_recv);
+        num_sendrecv = rmg_min (num_send, num_recv);
 
         for (i = 0; i < num_sendrecv; i++)
         {

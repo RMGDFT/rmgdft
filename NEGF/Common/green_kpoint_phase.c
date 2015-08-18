@@ -154,8 +154,8 @@ void green_kpoint_phase (double complex *green, double kvecy, double kvecz, int 
 
     for(n = 0; n < ct.num_blocks; n++)
     {
-        maxrow = max(maxrow, pmo.mxllda_cond[n]);
-        maxcol = max(maxcol, pmo.mxlocc_cond[n]);
+        maxrow = rmg_max(maxrow, pmo.mxllda_cond[n]);
+        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[n]);
     }
 
     maxsize = maxrow * maxcol;

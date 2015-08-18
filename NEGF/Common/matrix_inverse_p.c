@@ -69,8 +69,8 @@ void matrix_inverse_p (complex double * H_tri_host, complex double * G_tri_host)
     {
         ntot_row += pmo.mxllda_cond[i];
         ntot_col += pmo.mxlocc_cond[i];
-        maxrow = max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
 
     }
 
