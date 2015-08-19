@@ -24,7 +24,8 @@ using namespace std;
 using namespace El;
 
 // Typedef our real and complex types to 'Real' and 'C' for convenience
-void DiagElemental(STATE *states, int n, double *H, double *S, double *rho_matrix)
+void DiagElemental(STATE *states, int n, double *H, double *S, 
+        double *rho_matrix, double *theta_ptr)
 {
 
     // MPI_COMM_WORLD. There is another constructor that allows you to 
@@ -42,8 +43,8 @@ void DiagElemental(STATE *states, int n, double *H, double *S, double *rho_matri
     // top-left element)
     DistMatrix<double, VC, STAR> A( n, n, g );
     DistMatrix<double, VC, STAR> B( n, n, g );
-   // DistMatrix<double> A( n, n, g );
-   // DistMatrix<double> B( n, n, g );
+    // DistMatrix<double> A( n, n, g );
+    // DistMatrix<double> B( n, n, g );
 
     // Fill the matrix since we did not pass in a buffer. 
     //
@@ -53,13 +54,47 @@ void DiagElemental(STATE *states, int n, double *H, double *S, double *rho_matri
     //
     const Int localHeight = A.LocalHeight();
     const Int localWidth = A.LocalWidth();
+
     int npes = mpi::Size(mpi::COMM_WORLD);
     int *perm;
-    perm = new int[n+npes];
+    int i,j, index_restart, index_pe;
     int num_local = (n + npes -1)/npes;
-    for (int i = 0; i < npes; i++)
-        for(int j = 0; j < num_local;j++)
-            perm[i + j * npes] = i * num_local + j;
+        
+
+
+    perm = new int[n+npes];
+    index_restart =0;
+    for (i = 0; i < npes; i++)
+    {
+        for(j = 0; j < num_local;j++)
+        {
+
+            if (j * npes + i >= n)
+            {
+                index_restart = i*num_local +j;
+                index_pe = i+1;
+                i+= npes;
+                break;
+            }
+            perm[j * npes + i]=  i * num_local + j;
+        }
+    }
+    if(index_restart >0)
+    {
+
+        for (i = index_pe; i < npes; i++)
+        {
+            for(j = 0; j < num_local-1; j++)
+            {
+                int item= index_restart + (i-index_pe) * (num_local-1) +j;
+                perm[j * npes + i] = item;
+            }
+        }
+    }
+
+
+    //    if(g.Rank() == 0) 
+    //        for(int i = 0; i < n; i++) printf("\n aaaxx %d  %d\n", i, perm[i]);
 
     for( Int jLoc=0; jLoc<localWidth; ++jLoc )
     {
@@ -90,7 +125,7 @@ void DiagElemental(STATE *states, int n, double *H, double *S, double *rho_matri
     RmgTimer *RT1= new RmgTimer("3-DiagElemental: AXBX");
     HermitianGenDefEig(AXBX, LOWER, A, B, w, X, ASCENDING);
     delete(RT1);
-    
+
     //Print(w, "w");
 
     for (int st1 = 0; st1 < n; st1++)
@@ -128,6 +163,29 @@ void DiagElemental(STATE *states, int n, double *H, double *S, double *rho_matri
         }
     }
     delete(RT);
+
+    RmgTimer *RT3= new RmgTimer("3-mg_eig: (S^-1)H");
+    //  calculating  S^-1 H
+    for( Int jLoc=0; jLoc<localWidth; ++jLoc )
+    {
+        for( Int iLoc=0; iLoc<localHeight; ++iLoc )
+        {
+            A.SetLocal( iLoc, jLoc, H[iLoc*n+perm[jLoc]]);
+            B.SetLocal( iLoc, jLoc, S[iLoc*n+perm[jLoc]]);
+        }
+    }
+
+    SymmetricSolve(LOWER, NORMAL, B,A);
+
+    Transpose(A, B);
+    for( Int jLoc=0; jLoc<localWidth; ++jLoc )
+    {
+        for( Int iLoc=0; iLoc<localHeight; ++iLoc )
+        {
+            theta_ptr[iLoc*n+perm[jLoc]]= 2.0 * B.GetLocal( iLoc, jLoc);
+        }
+    }
+    delete(RT3);
 
 }
 #endif

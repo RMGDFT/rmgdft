@@ -66,12 +66,12 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     delete(RT1);
 #if ELEMENTAL_LIBS
     RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
-    DiagElemental(states, ct.num_states, Hij_00, Bij_00, work_matrix_row);
+    DiagElemental(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
     my_barrier();
     delete(RTa);
 #else
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
-    DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row);
+    DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
     my_barrier();
     delete(RTb);
 #endif

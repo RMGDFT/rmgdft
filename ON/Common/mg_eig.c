@@ -61,45 +61,6 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     EndRmgTimer(RT1a);
 
 
-   Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-            pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
-            pct.desca, pct.desca[1]);
-
-
-    void *RT1 = BeginRmgTimer("3-mg_eig: invert MatB");
-
-    my_malloc(ipiv, numst, int);
-    /* Compute matrix theta = matB * Hij  */
-    pdgetrf(&numst, &numst, matB, &IA, &JA, pct.desca, ipiv, &info);
-    if(info !=0)
-    { 
-        printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
-        fflush(NULL);
-        exit(0);
-    }
-
-    dcopy(&mxllda2, Hij, &ione, theta, &ione);
-
-    pdgetrs("N", &numst, &numst, matB, &IA, &JA, pct.desca, ipiv, 
-            theta, &IA, &JA, pct.desca, &info);
-    //get_invmat(matB);
-
-    my_free(ipiv);
-    EndRmgTimer(RT1);
-
-
-    void *RT11 = BeginRmgTimer("3-mg_eig: scale theta");
-    t1 = 2.0;
-    dscal(&mxllda2, &t1, theta, &ione);
-    EndRmgTimer(RT11);
-
-    void *RT2 = BeginRmgTimer("3-mg_eig: cpdgemr2d");
-    Cpdgemr2d(numst, numst, theta, IA, JA, pct.desca, work_matrix_row, IB, JB,
-            pct.descb, pct.desca[1]);
-    EndRmgTimer(RT2);
-
-
 
 
     /* calculate  Theta * S * |states[].psiR > and stored in  states1[].psiR 
@@ -117,10 +78,10 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
     void *RT3 = BeginRmgTimer("3-mg_eig: nonortho");
-    get_nonortho_res(states, work_matrix_row, states1);
+    get_nonortho_res(states, theta, states1);
     EndRmgTimer(RT3);
     void *RT4 = BeginRmgTimer("3-mg_eig: qnm");
-    get_qnm_res(work_matrix_row, kbpsi, kbpsi_res);
+    get_qnm_res(theta, kbpsi, kbpsi_res);
 
     my_barrier();
     EndRmgTimer(RT4);

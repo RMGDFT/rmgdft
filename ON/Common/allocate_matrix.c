@@ -80,7 +80,6 @@ void allocate_matrix()
     my_malloc_init( matB, sizeofmatrix, double );
     my_malloc_init( mat_X, sizeofmatrix, double );
     my_malloc_init( Hij, sizeofmatrix, double );
-    my_malloc_init( theta, sizeofmatrix, double );
     my_malloc_init( work_dis, sizeofmatrix, double );
     my_malloc_init( work_dis2, sizeofmatrix, double );
     my_malloc_init( zz_dis, sizeofmatrix, double );

@@ -30,9 +30,9 @@
 
 
 
-void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, double *rho_matrix)
+void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, double *rho_matrix, double *theta_ptr)
 {
-    int ione = 1, izero = 0;    /* blas constants */
+    int ione = 1;    /* blas constants */
     char *uplo = "l", *jobz = "v";
 
     int info;
@@ -181,8 +181,32 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     delete(RT4);
     delete(RT0);
 
-printf("\n ffff\n");
-fflush(NULL);
+    RmgTimer *RT1b = new RmgTimer("3-mg_eig: (S^-1)H");
+
+    int *ipiv;
+    ipiv = new int[numst];
+    /* Compute matrix theta = matB^-1 * Hij  */
+    pdgetrf(&numst, &numst, matB, &ione, &ione, pct.desca, ipiv, &info);
+    if(info !=0)
+    { 
+        printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
+        fflush(NULL);
+        exit(0);
+    }
+
+    pdgetrs("N", &numst, &numst, matB, &ione, &ione, pct.desca, ipiv, 
+            Hij, &ione, &ione, pct.desca, &info);
+
+    delete [] ipiv;
+
+
+    double t1 = 2.0;
+    dscal(&mxllda2, &t1, Hij, &ione);
+
+    Cpdgemr2d(numst, numst, Hij, ione, ione, pct.desca, theta_ptr, ione, ione,
+            pct.descb, pct.desca[1]);
+    delete(RT1b);
+
 
 
 }
