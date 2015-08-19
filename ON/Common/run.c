@@ -96,10 +96,10 @@ void run(STATE * states, STATE * states1)
 
     /* Save data to output file */
     void *RT2 = BeginRmgTimer("1-TOTAL: write");
-   // write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
+    write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
 
     /* Save state information to file */
-    write_states_info(ct.outfile, &states[0]);
+   // write_states_info(ct.outfile, &states[0]);
 
     my_barrier();
     EndRmgTimer(RT2);

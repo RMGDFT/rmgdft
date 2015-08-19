@@ -6,9 +6,20 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
+
+
+#include "make_conf.h"
+#include "params.h"
+
+#include "rmgtypedefs.h"
+#include "typedefs.h"
 #include "init_var.h"
 #include "RmgTimer.h"
+#include "common_prototypes1.h"
+
+//#include "main.h"
+//#include "init_var.h"
+//#include "RmgTimer.h"
 
 
 #if !ELEMENTAL_LIBS
@@ -35,13 +46,11 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
 
-    my_barrier();
     RmgTimer  *RT2 = new RmgTimer("3-DiagScalapack: cpdgemr2d");
     Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
             pct.desca, pct.desca[1]);
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
-    my_barrier();
     delete(RT2);
 
 
@@ -49,9 +58,9 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     /* If I'm in the process grid, execute the program */
     if (pct.scalapack_myrow < 0)
     {  
-        dprintf("\n nprow, npcol %d %d", pct.scalapack_nprow, pct.scalapack_npcol);
-        dprintf("\n we should use all proc for diag. somthing wrong");
-        dprintf("\n gridpe = %d", pct.gridpe);
+        printf("\n nprow, npcol %d %d", pct.scalapack_nprow, pct.scalapack_npcol);
+        printf("\n we should use all proc for diag. somthing wrong");
+        printf("\n gridpe = %d", pct.gridpe);
         exit(0);
     }
 
@@ -91,7 +100,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     if (info)
     {
         printf ("\n PDSYGVX query failed, info is %d", info);
-        error_handler ("PDSYGVX query failed");
+        exit(0);
     }
 
 
@@ -120,7 +129,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
 
 
-    my_barrier();
     delete(RT);
 
 
@@ -139,7 +147,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
     ct.efermi = fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
-    my_barrier();
     delete(RT1);
 
     RmgTimer *RT5 = new RmgTimer("3-DiagScalapack: pscal occ ");
@@ -165,17 +172,17 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
             uu_dis, &ione, &ione, pct.desca,
             zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
 
-    my_barrier();
     delete(RT3);
 
 
     RmgTimer *RT4 = new RmgTimer("3-DiagScalapack: XtoRow ");
-    Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, work_matrix_row, ione, ione,
+    Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
             pct.descb, pct.desca[1]);
-    my_barrier();
     delete(RT4);
     delete(RT0);
 
+printf("\n ffff\n");
+fflush(NULL);
 
 
 }
