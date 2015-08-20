@@ -155,6 +155,7 @@ void DiagElemental(STATE *states, int n, double *H, double *S,
 
     // A = X *occ * X
 
+    
     for( Int jLoc=0; jLoc<localWidth; ++jLoc )
     {
         for( Int iLoc=0; iLoc<localHeight; ++iLoc )
@@ -175,7 +176,9 @@ void DiagElemental(STATE *states, int n, double *H, double *S,
         }
     }
 
-    SymmetricSolve(LOWER, NORMAL, B,A);
+// HPD Solve is a little faster than SymmetricSolve
+    //SymmetricSolve(LOWER, NORMAL, B,A);
+    HPDSolve(LOWER, NORMAL, B,A);
 
     Transpose(A, B);
     for( Int jLoc=0; jLoc<localWidth; ++jLoc )
@@ -186,6 +189,11 @@ void DiagElemental(STATE *states, int n, double *H, double *S,
         }
     }
     delete(RT3);
+
+    A.Empty();
+    B.Empty();
+    X.Empty();
+    w.Empty();
 
 }
 #endif

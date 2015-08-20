@@ -7,8 +7,6 @@
 
    orbit_dot_orbit.c
 
-   work_matrix_row(i,j) = <states[i].psiR in this pe | states1[j].psiR>
-
 
  */
 
