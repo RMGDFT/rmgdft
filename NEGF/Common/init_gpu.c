@@ -95,7 +95,7 @@ void init_gpu (void)
 	for(i = 0; i < ct.num_blocks; i++)
 	{
 		ntot_row += ct.block_dim[i];
-		maxrow = max(maxrow, ct.block_dim[i]);
+		maxrow = rmg_max(maxrow, ct.block_dim[i]);
 	}
 
 	alloc = ntot_row * maxrow * sizeof(complex double);
