@@ -36,6 +36,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "RmgGemm.h"
+#include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
 
 #include "GlobalSums.h"
@@ -79,12 +80,20 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
         return;
     }
 
-    KpointType *M_dnm = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
-    KpointType *M_qqq = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
 
     int alloc = pct.num_tot_proj * num_states;
+#if GPU_ENABLED
+    KpointType *sint_compack = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nwork = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc);
+    KpointType *M_dnm = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * pct.num_tot_proj);
+    KpointType *M_qqq = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * pct.num_tot_proj);
+    for(int i = 0;i < alloc;i++) sint_compack[i] = 0.0;
+#else
     KpointType *sint_compack = new KpointType[alloc]();
     KpointType *nwork = new KpointType[alloc];
+    KpointType *M_dnm = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
+    KpointType *M_qqq = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
+#endif
 
 
     for(int istate = 0; istate < num_states; istate++)
@@ -178,10 +187,17 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
                 ZERO_t,  Bns, P0_BASIS, kpoint->nl_Bweight_gpu, NULLptr, NULLptr, false, false, false, true);
     }
 
+#if GPU_ENABLED
+    GpuFreeHost(M_qqq);
+    GpuFreeHost(M_dnm);
+    GpuFreeHost(nwork);
+    GpuFreeHost(sint_compack);
+#else
     delete [] nwork;
     delete [] sint_compack;
     delete [] M_qqq;
     delete [] M_dnm;
+#endif
 
 }
 

@@ -50,7 +50,6 @@
 #endif
 
 
-
 template void Subdiag<double>(Kpoint<double> *, double *, double *, double *, int);
 template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, double *, double *, double *, int);
 
@@ -91,23 +90,16 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     static KpointType *Aij;
     static KpointType *Bij;
     static KpointType *Sij;
+static KpointType *WCorbitals;
 
     // Grab some gpu memory if not using a version of cuda that supports unified memory
     gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
-#if !CUDA_USE_UNIFIED_MEMORY
-
-    Agpu = (KpointType *)GpuMalloc(pbasis * num_states * sizeof( KpointType ));
-
-    // Start wavefunctions transferring to the GPU
-    RmgCudaError(__FILE__,__LINE__, cublasSetVector(pbasis * num_states, sizeof( KpointType ), kptr->orbital_storage, 1, Agpu, 1 ) , "Problem transferring orbitals to GPU");
-#endif
 
 #else
 
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
-
 #endif
 
 
@@ -142,12 +134,14 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&WCorbitals, kptr->nstates * kptr->pbasis * sizeof(KpointType), cudaHostAllocWriteCombined), "Error allocating memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Bij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Sij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
         #endif
 
     }
 
+for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_storage[i];
 
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
@@ -210,8 +204,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+//    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, WCorbitals, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -223,7 +217,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Compute S matrix
     KpointType alpha1(vel);
-    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+//    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, WCorbitals, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -245,7 +240,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
         // Compute B matrix
-        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+        //RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, WCorbitals, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
         // Reduce matrix and store copy in Bij
         MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -294,7 +290,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
         }
     }
 
-
     // Update the orbitals
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
     if(subdiag_driver == SUBDIAG_MAGMA) {
@@ -310,8 +305,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
     else {
 
+//        RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
+//                kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
+//                Agpu, NULLptr, NULLptr, false, true, false, true);
         RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
-                kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
+                WCorbitals, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
                 Agpu, NULLptr, NULLptr, false, true, false, true);
 
         // And finally copy them back
@@ -322,37 +320,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
 
     delete(RT1);
-#if 0
-    // Rotate new betaxpsi
-    int size = kptr->sint_size;
-    KpointType *sint_ptr = kptr->newsint_local;
-    KpointType *work = new KpointType[num_states];
-    KpointType *tmp_sint_ptr = new KpointType[size];
-    KpointType ZERO_t(0.0);
-
-    for(int ion=0;ion < pct.num_nonloc_ions;ion++) {
-
-        for(int ip = 0; ip < ct.max_nl; ip++) {
-            for(int st1=0;st1 < num_states;st1++) {
-                work[st1] = ZERO_t;
-                for(int st2=0;st2 < num_states;st2++) {
-                    work[st1] += global_matrix1[st1*num_states + st2] * sint_ptr[ion*num_states*ct.max_nl  + st2*ct.max_nl + ip];
-                }
-            }
-            for(int st1=0;st1 < num_states;st1++) {
-                sint_ptr[ion*num_states*ct.max_nl + st1*ct.max_nl + ip] = work[st1];
-            }
-        }
-
-    }
-    delete [] tmp_sint_ptr;
-    delete [] work;
-#endif
 
 #if GPU_ENABLED
-#if !CUDA_USE_UNIFIED_MEMORY
-    GpuFree(Agpu);
-#endif
     GpuFree(gpu_eigvectors);
 #endif
 

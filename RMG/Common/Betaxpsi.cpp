@@ -34,6 +34,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "GpuAlloc.h"
 #include "RmgGemm.h"
 #include "blas.h"
 #include "../Headers/prototypes.h"
@@ -218,8 +219,11 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
     if(pct.num_tot_proj == 0) return;
     int pbasis = kptr->pbasis;
 
+#if GPU_ENABLED
+    KpointType *nlarray = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * ct.num_states);
+#else
     KpointType *nlarray = new KpointType[pct.num_tot_proj * ct.num_states];
-    
+#endif
     RmgGemm (transa, transn, pct.num_tot_proj, kptr->nstates, pbasis, alpha, 
             kptr->nl_weight, pbasis, psi, pbasis, 
             rzero, nlarray, pct.num_tot_proj, kptr->nl_weight_gpu, NULLptr, NULLptr, false, false, false, true);
@@ -239,7 +243,12 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
         }
     }
 
+#if GPU_ENABLED
+    GpuFreeHost(nlarray);
+#else
     delete [] nlarray;
+#endif
+
 }
 
 

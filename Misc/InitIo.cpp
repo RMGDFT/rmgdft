@@ -79,14 +79,12 @@
 
     #include <cuda.h>
     #include <cuda_runtime_api.h>
-    #if CUDA_USE_UNIFIED_MEMORY
-        #include <cublasXt.h>
-    #endif
+    #include <cublasXt.h>
     #include <cublas_v2.h>
 
 #endif
 
-
+extern "C" void dgemm_(void);
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
@@ -190,13 +188,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
     }
     cudaSetDevice(ct.cu_dev);
-//    if( CUBLAS_STATUS_SUCCESS != cublasInit( ) ) {
-//        fprintf(stderr, "CUBLAS: Not initialized\n"); exit(-1);
-//    }
     if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
         fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
     }
-#if CUDA_USE_UNIFIED_MEMORY
+
     if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
         fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
     }
@@ -204,7 +199,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, devices) != CUBLAS_STATUS_SUCCESS) {
         fprintf(stderr, "XT set devices fail\n"); exit(-1);
     } //
-#endif
+
+    cublasXtSetBlockDim(ct.cublasXt_handle, 1536);
+    void *fptr;
+    fptr = (void *)&dgemm_;
+    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);
+    //cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.1);
 
 #if MAGMA_LIBS
     magma_init();

@@ -30,7 +30,7 @@ INCLUDE (CMakeForceCompiler)
 
 
 # User editable options
-set (RMG_GPU_ENABLED 0)
+set (RMG_GPU_ENABLED 1)
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
@@ -376,9 +376,9 @@ endif(NOT RMG_MATH_LIBS)
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
   find_package(CUDA REQUIRED)
-  if((${CUDA_VERSION_MAJOR} GREATER 5) AND (${CUDA_VERSION_MINOR} GREATER 4))
-      add_definitions( -DCUDA_USE_UNIFIED_MEMORY=1)
-  endif((${CUDA_VERSION_MAJOR} GREATER 5) AND (${CUDA_VERSION_MINOR} GREATER 4))
+  if(${CUDA_VERSION_MAJOR} LESS 6)
+      message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set GPU_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
+  endif(${CUDA_VERSION_MAJOR} LESS 6)
 
   if(NOT CRAY_XK)
       target_link_libraries(${rmg} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})

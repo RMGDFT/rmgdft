@@ -85,10 +85,9 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
 
-#if CUDA_USE_UNIFIED_MEMORY
+
     cudaPointerAttributes attrib_A, attrib_B, attrib_C;
     cudaError_t cudaErrA;
-    bool useXt = false;
 
     cudaErrA = cudaPointerGetAttributes(&attrib_A, A);
     if(cudaErrA == cudaSuccess) {
@@ -122,14 +121,12 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                         ProcessCublasError(custat);
                         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
                     }
-//printf("Using unified!\n");
                     return;
 
             }
         }
     }
 
-#endif
 
 
     DataType *Agpu1;

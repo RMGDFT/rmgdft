@@ -8,11 +8,6 @@
     #include <complex.h>
 #endif
 
-#if GPU_ENABLED
-    #if CUDA_USE_UNIFIED_MEMORY
-        #include <cublasXt.h>
-    #endif
-#endif
 
 /* multigrid-parameter structure */
 typedef struct
@@ -495,12 +490,9 @@ typedef struct
     // Cuda device context
     CUcontext cu_context;
 
-    // CUBLAS library handle
+    // CUBLAS library handles
     cublasHandle_t cublas_handle;
-
-#if CUDA_USE_UNIFIED_MEMORY
     cublasXtHandle_t cublasXt_handle;
-#endif
 
     // cuda stream
     cudaStream_t cuda_stream;

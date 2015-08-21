@@ -69,27 +69,12 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 #if GPU_ENABLED
         cudaError_t cuerr;
 
-#if !CUDA_USE_UNIFIED_MEMORY
         if(Kptr[kpt]->nl_weight_gpu != NULL) cudaFree(Kptr[kpt]->nl_weight_gpu);
         if(Kptr[kpt]->nl_Bweight_gpu != NULL) cudaFree(Kptr[kpt]->nl_Bweight_gpu);
-#else
-        if(Kptr[kpt]->nl_weight_gpu != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_gpu);
-        if(Kptr[kpt]->nl_Bweight_gpu != NULL) cudaFreeHost(Kptr[kpt]->nl_Bweight_gpu);
-#endif
 
         // Allocate new storage
         if(pct.num_tot_proj) {
 
-#if CUDA_USE_UNIFIED_MEMORY
-            cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_gpu , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-            if(cuerr != cudaSuccess)
-                RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-
-            cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_Bweight_gpu , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-            if(cuerr != cudaSuccess)
-                RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-
-#else
             cuerr = cudaMalloc((void **)&Kptr[kpt]->nl_weight_gpu , pbasis * pct.num_tot_proj * sizeof(KpointType) );
             if(cuerr != cudaSuccess)
                 RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
@@ -97,7 +82,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             cuerr = cudaMalloc((void **)&Kptr[kpt]->nl_Bweight_gpu , pbasis * pct.num_tot_proj * sizeof(KpointType) );
             if(cuerr != cudaSuccess)
                 RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-#endif
 
         }
 #endif
@@ -116,10 +100,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
         if(pct.num_tot_proj) {
 
-#if CUDA_USE_UNIFIED_MEMORY
-            for(int i = 0;i < pbasis * pct.num_tot_proj;i++) Kptr[kpt]->nl_weight_gpu[i] = Kptr[kpt]->nl_weight[i];
-            for(int i = 0;i < pbasis * pct.num_tot_proj;i++) Kptr[kpt]->nl_Bweight_gpu[i] = Kptr[kpt]->nl_Bweight[i];
-#else
             // Transfer copy of weights to GPU
             custat = cublasSetVector( pbasis * pct.num_tot_proj, sizeof( KpointType ), Kptr[kpt]->nl_weight, 1, Kptr[kpt]->nl_weight_gpu, 1 );
             if(custat != CUBLAS_STATUS_SUCCESS)
@@ -128,7 +108,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             custat = cublasSetVector( pbasis * pct.num_tot_proj, sizeof( KpointType ), Kptr[kpt]->nl_Bweight, 1, Kptr[kpt]->nl_Bweight_gpu, 1 );
             if(custat != CUBLAS_STATUS_SUCCESS)
                 rmg_error_handler(__FILE__, __LINE__, "Problem transferring non-local weight matrix from system memory to GPU.");
-#endif
 
         }
 
