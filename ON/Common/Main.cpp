@@ -1,7 +1,7 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 /****f* QMD-MGDFT/md.c *****
  * NAME
  *   Ab initio O(n) real space code with 
@@ -56,9 +56,10 @@
 #include "InputKey.h"
 #include "blas.h"
 //#include "main.h"
-#include "prototypes_on.h"
+//#include "Kbpsi.h"
 #include "init_var.h"
 #include "transition.h"
+#include "prototypes_on.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -74,6 +75,7 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
+//KBPSI *Kbpsi_str;
 unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;
@@ -125,8 +127,8 @@ double alat;
 std::unordered_map<std::string, InputKey *> ControlMap;
 
 #if ELEMENTAL_LIBS
-    #include "El.hpp"
-    using namespace El;
+#include "El.hpp"
+using namespace El;
 #endif
 using namespace std;
 
@@ -153,50 +155,127 @@ int main(int argc, char **argv)
     // tem();
 
     ct.images_per_node = 1;
-    InitIo(argc, argv, ControlMap);
+    try 
+    {
+        InitIo(argc, argv, ControlMap);
 
-    //  initialize for ELEMENTAl lib
+        //  initialize for ELEMENTAl lib
 #if ELEMENTAL_LIBS
-    Initialize( argc, argv );
+        Initialize( argc, argv );
 #endif
 
-    ReadBranchON(ct.cfile, ct, ControlMap);
-    allocate_states();
-    get_state_to_proc(states);
-    perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
-    for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
+        ReadBranchON(ct.cfile, ct, ControlMap);
+        allocate_states();
+        get_state_to_proc(states);
+        perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
+        for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
 
-    perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
-    rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+        perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+        rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
 
-    switch(ct.runflag)
-    {
-        case 1:
-            if(pct.gridpe == 0) 
-            {
-                ReadPermInfo(ct.infile, perm_ion_index);
-            }
-            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-            break;
-        default:
-            if(pct.gridpe == 0) 
-            {
-                BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
-                WritePermInfo(ct.outfile, perm_ion_index);
-            }
-            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-            PermAtoms(ct.num_ions, ct.ions, perm_ion_index);
-            break;
+        switch(ct.runflag)
+        {
+            case 1:
+                if(pct.gridpe == 0) 
+                {
+                    ReadPermInfo(ct.infile, perm_ion_index);
+                }
+                MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+                break;
+            default:
+                if(pct.gridpe == 0) 
+                {
+                    BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
+                    WritePermInfo(ct.outfile, perm_ion_index);
+                }
+                MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+                PermAtoms(ct.num_ions, ct.ions, perm_ion_index);
+                break;
+        }
+        ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
+        GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
+
+        init_states();
+        my_barrier();
+
+
+
+
+        RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
+
+        init_dimension(&MXLLDA, &MXLCOL);
+        init_pe_on();
+
+
+        if (pct.gridpe == 0)
+            printf("\n  MXLLDA: %d ", MXLLDA);
+
+        /* allocate memory for matrixs  */
+        allocate_matrix();
+
+        /* Perform some necessary initializations no matter localized or not  
+         */
+        vxc_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+        vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+
+
+        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
+
+        my_barrier();
+
+        delete(RTi);
+        /* Dispatch to the correct driver routine */
+
+        RmgTimer *RTq = new RmgTimer("1-TOTAL: quench");
+        switch (ct.forceflag)
+        {
+            case MD_QUENCH:            /* Quench the electrons */
+
+                quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                break;
+
+            case MD_FASTRLX:           /* Fast relax */
+                fastrlx(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhocore, rhoc);
+                /* error_handler ("Undefined MD method"); */
+                break;
+            default:
+                printf("\n undifined MD Method");
+                exit(0);
+        }
+
+        delete(RTq);
+
+        /* Save data to output file */
+        RmgTimer *RTw = new RmgTimer("1-TOTAL: write");
+        write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
+
+        /* Save state information to file */
+        // write_states_info(ct.outfile, &states[0]);
+
+        my_barrier();
+        delete(RTw);
+
     }
-    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
-    GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
+    // Catch exceptions issued by us.
+    catch(RmgFatalException const &e) {
+        std::cout << e.rwhat() << std::endl;
+        MPI_Finalize();
+        exit(0);
+    }
 
-    init_states();
-    my_barrier();
+    // By std
+    catch (std::exception &e) {
+        std::cout << "Caught a std exception: " << e.what () << std::endl;
+        MPI_Finalize();
+        exit(0);
+    } 
 
-    /*  Begin to do the real calculations */
-    run(states, states1);
-
+    // Catchall
+    catch (...) {
+        std::cout << "Caught an unknown exception of some type." << std::endl;
+        MPI_Finalize();
+        exit(0);
+    } 
 
     delete(RT);
 
@@ -209,5 +288,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
 

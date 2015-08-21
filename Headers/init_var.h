@@ -49,32 +49,7 @@ extern ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc;
 extern double *work_matrix;
 extern double *vnuc_x, *vnuc_y, *vnuc_z;
 extern int peakNum;
-#if 0
 
-
-int *nlindex;
-
-
-int NX_GRID, NY_GRID, NZ_GRID;
-int P0_BASIS;
-int S0_BASIS;
-int PX0_GRID;
-int PY0_GRID;
-int PZ0_GRID;
-
-
-
-
-
-
-
-
-
-
-
-
-
-//double complex *sigma_all;
-#endif
+//extern Kbpsi *Kbpsi_str;
 
 

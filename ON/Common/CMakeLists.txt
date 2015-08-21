@@ -31,7 +31,7 @@ add_library (ON_Common
  get_state_to_proc.c
  get_sum_eig.c
  get_wave.c
- init.c
+ InitON.cpp
  init_kbr.c
  init_pe_on.c
  init_rho_atom.c
@@ -61,7 +61,6 @@ ortho_norm_local.c
  read_data.c
  real_max_all.c
  rmg_timings.c
- run.c
  Scf_on.cpp
  sd.c
  theta_phi_new.c

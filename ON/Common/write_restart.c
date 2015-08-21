@@ -37,7 +37,7 @@
 
 
 FILE *open_restart_file (char *);
-void write_restart (char *name, double * vh, double *vxc, double *vh_old, double *vxc_old,  double * rho, STATE *states)
+void write_restart (char *name, double * vh, double *vxc, double *vh_old, double *vxc_old,  double * rho, double *rho_oppo, STATE *states)
 {
     char newname[MAX_PATH + 20];
     FILE *fhandle;

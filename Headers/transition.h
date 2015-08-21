@@ -43,7 +43,9 @@ extern "C" void  get_rho_oppo (double * rho, double * rho_oppo);
 extern "C" void get_ddd (double *veff);
 extern "C" void mix_betaxpsi (int mix);
 extern "C" void rmg_lbfgs (void);
-extern "C" void write_restart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, STATE * states);
+extern "C" void write_restart (char *name, double * vh, double *vxc, double *vh_old, 
+        double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
+
 extern "C" int init_kpoints (int *mesh, int *is_shift);
 
 

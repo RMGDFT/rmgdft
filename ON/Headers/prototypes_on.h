@@ -1,8 +1,13 @@
 //#include "typedefs.h"
+void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
+          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+void init_wf_atom(STATE *);
+void init_wf_lcao(STATE *);
 
 void nlforce_par_omega(double *, double *, double *, int, int);
 void nlforce_par_rho(double *, double *, double *, int, int);

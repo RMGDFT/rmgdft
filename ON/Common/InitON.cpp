@@ -39,16 +39,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+
+
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "transition.h"
 
-#define min(a,b) (((a)>(b)) ? (b) : (a))
 
-void init_wf_atom(STATE *);
-void init_wf_lcao(STATE *);
-
-void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
+void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old)
 {
 
@@ -58,16 +60,15 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
     /* initialize the lattice basis vectors */
 
-    ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    ct.psi_nbasis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
 
-    ct.psi_fnbasis = get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID();
+    ct.psi_fnbasis = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO) *
+        Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) *
+        Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO) ;
 
-
-    my_malloc_init( ct.energies, ct.max_scf_steps, double );
+    ct.energies = new double[ct.max_scf_steps];
 
     ct.states = states;
-
-    init_parameter(states);
 
 
     init_parameter(states);
@@ -97,7 +98,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     get_mehr();
 
 
-     void *RT = BeginRmgTimer("1-TOTAL: init: state_init");
+    RmgTimer *RT = new RmgTimer("1-TOTAL: init: state_init");
 
     /* allocate memory for wave functions states.psiR and psiI */
     init_state_size(states);
@@ -109,24 +110,25 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
 
     int size = (ct.state_end - ct.state_begin) * ct.num_states;
 
-    my_malloc( state_overlap_or_not, size,  char);
+    state_overlap_or_not = new char[size];
+    //my_malloc( state_overlap_or_not, size,  char);
 
 
     is_state_overlap(states, state_overlap_or_not);
 
 
     get_orbit_overlap_region(states);
-    
-    EndRmgTimer(RT);
 
-    void *RT1 = BeginRmgTimer("1-TOTAL: init: init_comm");
+    delete(RT);
+
+    RmgTimer *RT1 = new RmgTimer("1-TOTAL: init: init_comm");
 
     init_comm(states);
 
     init_comm_res(states);
-    EndRmgTimer(RT1);
+    delete(RT1);
 
-    void *RT2 = BeginRmgTimer("1-TOTAL: init: init_nuc");
+    RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
     allocate_psi(states, states1);
 
     duplicate_states_info(states, states1);
@@ -144,7 +146,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     init_kbr();
 
     /* Initialize symmetry stuff */
-   //  init_sym();
+    //  init_sym();
 
     /* Initialize the nuclear local potential and the compensating charges */
     init_nuc(vnuc, rhoc, rhocore);
@@ -158,29 +160,29 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     get_nlop();
 
     my_barrier();
-    EndRmgTimer(RT2);
+    delete(RT2);
 
-    void *RT3 = BeginRmgTimer("1-TOTAL: init: init_commi_nonlo");
+    RmgTimer *RT3 = new RmgTimer("1-TOTAL: init: init_commi_nonlo");
 
     init_nonlocal_comm();
-    EndRmgTimer(RT3);
+    delete(RT3);
 
     fflush(NULL);
 
     /* Initialize qfuction in Cartesin coordinates */
-    void *RT4 = BeginRmgTimer("1-TOTAL: init: init_qfunc");
+    RmgTimer *RT4 = new RmgTimer("1-TOTAL: init: init_qfunc");
     init_qfunct();
-    EndRmgTimer(RT4);
-    void *RT5 = BeginRmgTimer("1-TOTAL: init: init_QI");
+    delete(RT4);
+    RmgTimer *RT5 = new RmgTimer("1-TOTAL: init: init_QI");
 
     fflush(NULL);
     get_QI();
-    EndRmgTimer(RT5);
-    void *RT6 = BeginRmgTimer("1-TOTAL: init: init_qqq");
+    delete(RT5);
+    RmgTimer *RT6 = new RmgTimer("1-TOTAL: init: init_qqq");
 
     /* Get the qqq */
     get_qqq();
-    EndRmgTimer(RT6);
+    delete(RT6);
     fflush(NULL);
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
@@ -196,7 +198,7 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
             {
                 rho[idx] = rhoc[idx] * fac;
                 rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
-        
+
             }
             break;
         case LCAO_START:
@@ -253,13 +255,13 @@ void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double
     }
 
 
-    void *RT8 = BeginRmgTimer("1-TOTAL: init: init_ddd");
+    RmgTimer *RT8 = new RmgTimer("1-TOTAL: init: init_ddd");
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
 
     get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
     get_ddd(vtot);
-    EndRmgTimer(RT8);
+    delete(RT8);
 
 
     my_barrier();

@@ -30,7 +30,7 @@ INCLUDE (CMakeForceCompiler)
 
 
 # User editable options
-set (RMG_GPU_ENABLED 1)
+set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
@@ -367,7 +367,7 @@ if(NOT RMG_MATH_LIBS)
             unset (USE_SCALAPACK_LIBS CACHE)
             set(USE_SCALAPACK_LIBS 0)
         endif(NOT RMG_SCALAPACK_INTERNAL)
-    endif(USE_SCALAPACK_LIBS)
+    endif(USE_SCALAPACK_LIBS AND NOT CRAY_XK)
 
 endif(NOT RMG_MATH_LIBS)
 
@@ -584,7 +584,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set(USE_SVN 0)
+set(USE_SVN 1)
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (
