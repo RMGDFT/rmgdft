@@ -33,6 +33,7 @@ void orbital_comm(STATE * states)
     MPI_Request mr_send, *mr_recv;
     int st11, ione = 1;
 
+    int send_size, recv_size, position;
 
     my_barrier();
     state_per_proc = ct.state_per_proc + 2;
@@ -69,38 +70,56 @@ void orbital_comm(STATE * states)
 
         ii = loop * max_ii +1;
 
+        send_size = 0; 
         for (i = 0; i < num_send; i++)
         {
-            ii++;
             st1 = send_to1[loop * state_per_proc + i + 2];
-            psi1 = states[st1].psiR;
             size1 = states[st1].size;
+            send_size += size1 * sizeof(double);
+        }
 
-            MPI_Isend(psi1, size1, MPI_DOUBLE, proc1, ii, pct.grid_comm, &mr_recv[ii]);
-        }   
+
+        if(send_size >0)
+        {
+            position = 0;
+            for (i = 0; i < num_send; i++)
+            {
+                st1 = send_to1[loop * state_per_proc + i + 2];
+                size1 = states[st1].size;
+                MPI_Pack(states[st1].psiR, size1, MPI_DOUBLE, states1[ct.state_begin].psiR, 
+                        send_size, &position, pct.grid_comm);
+            }
+
+            MPI_Isend(states1[ct.state_begin].psiR, send_size, MPI_BYTE, proc1, ii, pct.grid_comm, &mr_recv[ii]);
+        }
 
 
-        ii = loop * max_ii +1;
 
+        recv_size = 0;
         for(i = 0; i< num_recv; i++)
         {
-            ii++;
-
             st2 = recv_from1[loop * state_per_proc + i + 2];
-            size2= states[st2].size;
-
-            psi2 = states[st2].psiR;
-            MPI_Recv(psi2, size2, MPI_DOUBLE, proc2, ii, pct.grid_comm, &mstatus);
-
-
+            recv_size += states[st2].size * sizeof(double);
         }
-        ii = loop * max_ii +1;
 
-        for (i = 0; i < num_send; i++)
+        if(recv_size >0 )
         {
-            ii++;
-            MPI_Wait(&mr_recv[ii], &mstatus);
+            MPI_Recv(states_tem[ct.state_begin].psiR, recv_size, MPI_BYTE, proc2, ii, pct.grid_comm, &mstatus);
+            position = 0;
+            for(i = 0; i< num_recv; i++)
+            {
+                st2 = recv_from1[loop * state_per_proc + i + 2];
+                size2 = states[st2].size;
+                MPI_Unpack(states_tem[ct.state_begin].psiR, recv_size, &position, states[st2].psiR, size2, 
+                        MPI_DOUBLE, pct.grid_comm);
+            }
         }
+
+
+
+
+        if(send_size >0) 
+            MPI_Wait(&mr_recv[ii], &mstatus);
 
     }
 

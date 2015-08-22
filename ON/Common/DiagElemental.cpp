@@ -119,10 +119,12 @@ void DiagElemental(STATE *states, int n, double *H, double *S,
 
     ctrl_d.tridiagCtrl.approach = HERMITIAN_TRIDIAG_SQUARE;
     ctrl_d.tridiagCtrl.order = COLUMN_MAJOR;
+    ctrl_d.useSDC= true;   //  does not work
+    ctrl_d.sdcCtrl.tol = 1.0e-15;
 
-    //HermitianGenDefEig(AXBX, LOWER, A, B, w, X, ASCENDING, subset, ctrl_d); 
     SetBlocksize(128);
     RmgTimer *RT1= new RmgTimer("3-DiagElemental: AXBX");
+   // HermitianGenDefEig(AXBX, LOWER, A, B, w, X, ASCENDING, subset, ctrl_d); 
     HermitianGenDefEig(AXBX, LOWER, A, B, w, X, ASCENDING);
     delete(RT1);
 
