@@ -61,7 +61,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     flag = 0;
     my_barrier();
     RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
-    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+    GetHS(states, states1, vtot_c, Hij_00, Bij_00);
     my_barrier();
     delete(RT1);
 #if ELEMENTAL_LIBS

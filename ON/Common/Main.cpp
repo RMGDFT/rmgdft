@@ -56,10 +56,10 @@
 #include "InputKey.h"
 #include "blas.h"
 //#include "main.h"
-//#include "Kbpsi.h"
 #include "init_var.h"
 #include "transition.h"
 #include "prototypes_on.h"
+#include "Kbpsi.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -75,7 +75,7 @@ CONTROL ct;
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 
-//KBPSI *Kbpsi_str;
+KBPSI Kbpsi_str;
 unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;

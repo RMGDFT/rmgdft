@@ -165,6 +165,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     RmgTimer *RT3 = new RmgTimer("1-TOTAL: init: init_commi_nonlo");
 
     init_nonlocal_comm();
+    InitNonlocalComm();
     delete(RT3);
 
     fflush(NULL);

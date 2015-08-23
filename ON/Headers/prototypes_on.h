@@ -1,11 +1,15 @@
 //#include "typedefs.h"
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
+void InitNonlocalComm();
+void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);
+void GetHvnlij (double *Aij, double *Bij);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+void orbital_comm(STATE *);
 void init_wf_atom(STATE *);
 void init_wf_lcao(STATE *);
 

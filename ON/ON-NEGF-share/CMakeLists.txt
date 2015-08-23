@@ -1,4 +1,7 @@
 add_library (ON_NEGF_share
+GetHS.cpp
+GetHvnlij.cpp
+InitNonlocalComm.cpp
 orbital_comm.c
 ReadOrbitals.cpp
 allocate_masks.c

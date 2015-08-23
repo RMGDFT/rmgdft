@@ -46,9 +46,11 @@ void allocate_psi(STATE * states, STATE * states1)
     my_malloc_init( sg_orbit_res, item, double );
     my_malloc_init( orbit_tem, ct.max_orbit_size, double );
 
-    my_malloc_init( rptr, pct.psi_size, double );
-    my_malloc_init( rptr1, pct.psi_size, double );
-    my_malloc_init( rptr2, pct.psi_size, double );
+    int size;
+    size = rmg_max(pct.psi_size, ct.state_per_proc * states[0].size);
+    my_malloc_init( rptr, 3*size, double );
+    rptr1 = rptr + size;
+    rptr2 = rptr + 2 *size;
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {

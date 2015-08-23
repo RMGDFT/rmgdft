@@ -50,6 +50,5 @@ extern double *work_matrix;
 extern double *vnuc_x, *vnuc_y, *vnuc_z;
 extern int peakNum;
 
-//extern Kbpsi *Kbpsi_str;
 
 
