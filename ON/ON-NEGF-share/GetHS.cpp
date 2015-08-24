@@ -25,6 +25,7 @@
 
 #include "my_scalapack.h"
 #include "blas.h"
+#include "Kbpsi.h"
 
 
 
@@ -35,6 +36,8 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     STATE *sp;
     int ione = 1;
     int ixx, iyy, izz;
+    unsigned int ion, num_orbital_thision, num_proj;
+    int ip, iip1;
 
     double hxgrid, hygrid, hzgrid;
 
@@ -109,9 +112,48 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     get_all_kbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
     delete(RT2);
 
+    for(ion = 0; ion < pct.n_ion_center; ion++)
+    {
+        Kbpsi_str.kbpsi_ion[ion].clear();
+        num_orbital_thision = Kbpsi_str.num_orbital_thision[ion];
+        num_proj = pct.prj_per_ion[pct.ionidx[ion]];
+        Kbpsi_str.orbital_index[ion].resize(num_orbital_thision);
+
+
+        // uopdate values from this process
+        for(idx = 0; idx < num_orbital_thision; idx++)
+        {
+            st1 =Kbpsi_str.orbital_index[ion][idx];
+            iip1 = (st1-ct.state_begin) * pct.n_ion_center * ct.max_nl + ion * ct.max_nl;
+            for(ip = 0; ip < num_proj; ip++)
+                Kbpsi_str.kbpsi_ion[ion].emplace_back(kbpsi[iip1 + ip]);
+        }
+
+
+    }
+
+    KbpsiComm();
+
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
+//    for (st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
+//    {
+ //       Hij_00[st1] = 0.;
+  //      Bij_00[st1] = 0.;
+   // }
     GetHvnlij(Hij_00, Bij_00);
+
+/*
+    for (st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
+    {
+        Hij_00[st1] = 0.;
+        Bij_00[st1] = 0.;
+    }
+    get_Hvnlij(Hij_00, Bij_00);
+ */
     delete(RT3);
+
+    fflush(NULL);
+  //  exit(0);
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
 

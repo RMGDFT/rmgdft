@@ -1,4 +1,5 @@
 //#include "typedefs.h"
+void KbpsiComm();
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
 void InitNonlocalComm();

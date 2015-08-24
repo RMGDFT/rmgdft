@@ -44,14 +44,16 @@ void InitNonlocalComm(void)
     int send_size, recv_size, size_perstate;
     int proc, proc1, proc2, st1, num_proj;
     int ion1, ion2, ion1_global, ion2_global;
-    KBPSI_ION tem_kbpsi_ion;
-    std::vector<double> tem_vector;
     MPI_Request request;
     KBPSI_COMM_INFO kbpsi_oneloop;
     Kbpsi_str.kbpsi_comm_loop = kbpsi_num_loop;
 
-    Kbpsi_str.kbpsi_ion = new std::vector<KBPSI_ION>[pct.n_ion_center];
+    Kbpsi_str.kbpsi_ion = new std::vector<double>[pct.n_ion_center];
+    Kbpsi_str.orbital_index = new std::vector<int>[pct.n_ion_center];
     Kbpsi_str.comm_info = new KBPSI_COMM_INFO[Kbpsi_str.kbpsi_comm_loop];
+    Kbpsi_str.num_orbital_thision = new int[pct.n_ion_center];
+    Kbpsi_str.max_send_size = 0;
+    Kbpsi_str.max_recv_size = 0;
     
 
     proc = pct.gridpe;
@@ -59,18 +61,16 @@ void InitNonlocalComm(void)
     {
         ion1_global = ionidx_allproc[proc * max_ion_nonlocal + ion1];
         num_proj = pct.prj_per_ion[ion1_global];
-        tem_vector.resize(num_proj);
 
         for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         {
             idx = (st1 - ct.state_begin) * ct.num_ions + ion1_global;
             if (ion_orbit_overlap_region_nl[idx].flag == 1)
             {
-                tem_kbpsi_ion.orbital_index = st1;
-                tem_kbpsi_ion.kbpsi = tem_vector;
-                Kbpsi_str.kbpsi_ion[ion1].emplace_back(tem_kbpsi_ion);
+                Kbpsi_str.orbital_index[ion1].emplace_back(st1);
             }
         }
+        Kbpsi_str.num_orbital_thision[ion1] = Kbpsi_str.orbital_index[ion1].size();
     }
 
 
@@ -82,21 +82,28 @@ void InitNonlocalComm(void)
 
         kbpsi_oneloop.send_to_pe = proc1;
         kbpsi_oneloop.recv_from_pe = proc2;
+        kbpsi_oneloop.send_ions.clear();
+        kbpsi_oneloop.recv_ions.clear();
 
         send_size = 0;
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
             for (ion2 = 0; ion2 < num_nonlocal_ion[proc1]; ion2++)
             {
                 ion1_global = ionidx_allproc[proc * max_ion_nonlocal + ion1];
-                ion2_global = ionidx_allproc[proc2 * max_ion_nonlocal + ion2];
+                ion2_global = ionidx_allproc[proc1 * max_ion_nonlocal + ion2];
 
                 if (ion1_global == ion2_global)
                 {
                     kbpsi_oneloop.send_ions.emplace_back(ion1);
 
                     num_proj = pct.prj_per_ion[ion1_global];
+
+                    //for hom many orbital for this ion
+                    send_size += sizeof(int);  
+
+                    // for each orbital: orbital_index, + num_proj kbpsi values
                     size_perstate = sizeof(int) + num_proj * sizeof(double);
-                    send_size += Kbpsi_str.kbpsi_ion[ion1].size() * size_perstate;
+                    send_size += Kbpsi_str.orbital_index[ion1].size() * size_perstate;
                 }
             }
 
@@ -125,6 +132,9 @@ void InitNonlocalComm(void)
         kbpsi_oneloop.send_size = send_size;
         kbpsi_oneloop.recv_size = recv_size;
         Kbpsi_str.comm_info[idx] = kbpsi_oneloop;
+
+        Kbpsi_str.max_send_size = std::max(Kbpsi_str.max_send_size, send_size);
+        Kbpsi_str.max_recv_size = std::max(Kbpsi_str.max_recv_size, recv_size);
 
     }
 
