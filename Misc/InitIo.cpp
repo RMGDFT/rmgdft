@@ -85,6 +85,8 @@
 #endif
 
 extern "C" void dgemm_(void);
+extern "C" void zgemm_(void);
+
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
@@ -200,11 +202,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         fprintf(stderr, "XT set devices fail\n"); exit(-1);
     } //
 
-    cublasXtSetBlockDim(ct.cublasXt_handle, 1536);
+    cublasXtSetBlockDim(ct.cublasXt_handle, 2048);
     void *fptr;
     fptr = (void *)&dgemm_;
     cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);
-    //cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.1);
+    fptr = (void *)&zgemm_;
+    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_COMPLEX, fptr);
+//    cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.5);
 
 #if MAGMA_LIBS
     magma_init();

@@ -90,10 +90,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     static KpointType *Aij;
     static KpointType *Bij;
     static KpointType *Sij;
-static KpointType *WCorbitals;
-
-    // Grab some gpu memory if not using a version of cuda that supports unified memory
-    gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
 
 #else
 
@@ -134,14 +130,12 @@ static KpointType *WCorbitals;
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&WCorbitals, kptr->nstates * kptr->pbasis * sizeof(KpointType), cudaHostAllocWriteCombined), "Error allocating memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Bij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Sij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
         #endif
 
     }
 
-for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_storage[i];
 
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
@@ -204,8 +198,7 @@ for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_sto
     RT1 = new RmgTimer("Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-//    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, WCorbitals, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -217,8 +210,7 @@ for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_sto
 
     // Compute S matrix
     KpointType alpha1(vel);
-//    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
-    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, WCorbitals, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -240,8 +232,7 @@ for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_sto
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
         // Compute B matrix
-        //RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
-        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, WCorbitals, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
         // Reduce matrix and store copy in Bij
         MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -273,6 +264,8 @@ for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_sto
             trans_b = Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
             break;
         case SUBDIAG_MAGMA:
+            // Grab some gpu memory if not using a version of cuda that supports unified memory
+            gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
             trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1, (KpointType *)gpu_eigvectors);
             break;
         default:
@@ -302,14 +295,12 @@ for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_sto
         RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
                 NULLptr, pbasis, NULLptr, num_states, beta, kptr->orbital_storage, pbasis, 
                 Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
+                GpuFree(gpu_eigvectors);
     }
     else {
 
-//        RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
-//                kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
-//                Agpu, NULLptr, NULLptr, false, true, false, true);
         RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
-                WCorbitals, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
+                kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
                 Agpu, NULLptr, NULLptr, false, true, false, true);
 
         // And finally copy them back
@@ -320,10 +311,6 @@ for(int i=0;i<kptr->pbasis * kptr->nstates;i++)WCorbitals[i] = kptr->orbital_sto
     }
 
     delete(RT1);
-
-#if GPU_ENABLED
-    GpuFree(gpu_eigvectors);
-#endif
 
     // free memory
     delete [] eigs;

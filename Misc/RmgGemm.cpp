@@ -110,7 +110,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                                             (cuDoubleComplex*)B, ldb,
                                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
                         ProcessCublasError(custat);
-                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
                     }
                     else {
                         custat = cublasXtDgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
@@ -119,11 +119,38 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                                             (double*)B, ldb,
                                             (double*)&beta, (double*)C, ldc );
                         ProcessCublasError(custat);
-                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtDgemm");
                     }
                     return;
 
             }
+
+            // If all matrices are located on the device then we can use the regular interface
+            if((attrib_A.memoryType == cudaMemoryTypeDevice) &&
+               (attrib_B.memoryType == cudaMemoryTypeDevice) &&
+               (attrib_C.memoryType == cudaMemoryTypeDevice)) {
+
+                    if(typeid(DataType) == typeid(std::complex<double>)) {
+                        custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+                                            (cuDoubleComplex *)&alpha,
+                                            (cuDoubleComplex*)A, lda,
+                                            (cuDoubleComplex*)B, ldb,
+                                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+                        ProcessCublasError(custat);
+                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+                    }
+                    else {
+                        custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+                                            (double*)&alpha,
+                                            (double*)A, lda,
+                                            (double*)B, ldb,
+                                            (double*)&beta, (double*)C, ldc );
+                        ProcessCublasError(custat);
+                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+                    }
+                    return;
+            }
+
         }
     }
 
