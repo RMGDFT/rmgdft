@@ -8,6 +8,9 @@ void GetHvnlij (double *Aij, double *Bij);
 void OrbitalOptimize (STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, double * vxc_old,
         double * vh_old);
+void GetNewRho_on (STATE * states, double *rho);
+void RhoQnmMat (double *Aij, double * global_mat_X);
+void RhoAugmented (double * rho, double * global_mat_X);
 
 #ifdef __cplusplus
 extern "C" {
@@ -237,7 +240,6 @@ void get_Hvnlij (double *Aij, double *Bij);
 void genvlocpsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
-void get_new_rho (STATE * states, double *rho);
 void get_wave(int st, STATE * states);
 void add_orbit_to_wave(int st1, double scale, double * psi1, double * wave_global, STATE * states);
 void print_wave(int wave_plot, STATE * states, int coarse_level);
@@ -477,7 +479,6 @@ void get_cholesky_real (double *matS);
 void genvlocpsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
-void get_new_rho (STATE * states, double *rho);
 void get_wave(int st, STATE * states);
 void add_orbit_to_wave(int st1, double scale, double * psi1, double * wave_global, STATE * states);
 void print_wave(int wave_plot, STATE * states, int coarse_level);

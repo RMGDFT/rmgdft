@@ -70,7 +70,7 @@ void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMP
 
     If.RegisterInputKey("number_of_orbitals", &lc.num_states, 1, INT_MAX, 4, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
-    If.RegisterInputKey("number_of_atoms", &lc.num_states, 1, INT_MAX, 1, 
+    If.RegisterInputKey("number_of_atoms", &lc.num_ions, 1, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
     If.RegisterInputKey("energy_point_insert", NULL, &cei.energy_point_insert, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, energy_point_insert_mode,

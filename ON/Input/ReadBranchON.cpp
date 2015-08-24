@@ -79,7 +79,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     If.RegisterInputKey("number_of_orbitals", &lc.num_states, 1, INT_MAX, 4, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
-    If.RegisterInputKey("number_of_atoms", &lc.num_states, 1, INT_MAX, 1, 
+    If.RegisterInputKey("number_of_atoms", &lc.num_ions, 1, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
     If.RegisterInputKey("atomic_orbital_files", NULL, "", CHECK_AND_FIX, OPTIONAL, "","");
 

@@ -1,4 +1,6 @@
 add_library (ON_NEGF_share
+RhoQnmMat.cpp
+RhoAugmented.cpp
 KbpsiComm.cpp
 InitNonlocalComm.cpp
 GetHS.cpp

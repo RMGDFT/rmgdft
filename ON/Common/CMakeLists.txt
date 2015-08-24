@@ -1,4 +1,5 @@
 add_library (ON_Common
+ GetNewRho_on.cpp
  OrbitalOptimize.cpp
  DiagScalapack.cpp
  DiagElemental.cpp
@@ -25,7 +26,6 @@ add_library (ON_Common
  get_invmat.c
  get_mat_Omega.c
  get_mehr.c
- get_new_rho.c
  get_orbit_center.c
  get_state_to_proc.c
  get_sum_eig.c
