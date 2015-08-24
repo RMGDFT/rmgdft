@@ -109,9 +109,9 @@ extern "C" void set_grids(int newNX_GRID, int newNY_GRID, int newNZ_GRID, int ne
   Rmg_G = new BaseGrid(newNX_GRID, newNY_GRID, newNZ_GRID, newPE_X, newPE_Y, newPE_Z, 0, newFG_RATIO);
 }
 /// C interface function
-extern "C" void set_rank(int newrank)
+extern "C" void set_rank(int newrank, MPI_Comm comm)
 {
-  Rmg_G->set_rank(newrank);
+  Rmg_G->set_rank(newrank, comm);
 }
 /// C interface function
 extern "C" int get_PX0_GRID(void)

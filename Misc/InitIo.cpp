@@ -148,7 +148,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
     }
 
-    Rmg_G->set_rank(pct.gridpe);
+    Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
 
     InitHybridModel(ct.THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
 

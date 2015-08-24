@@ -88,7 +88,7 @@ public:
     int default_FG_RATIO;
 
     /* Function prototypes */
-    void set_rank(int new_rank);
+    void set_rank(int new_rank, MPI_Comm comm);
     void find_node_sizes(int rank, int nxgrid, int nygrid, int nzgrid, int *pxsize, int *pysize, int *pzsize);
     void find_node_offsets(int rank, int nxgrid, int nygrid, int nzgrid, int *pxoffset, int *pyoffset, int *pzoffset);
 
@@ -126,6 +126,7 @@ public:
 
     // Returns the rank of this process
     int get_rank(void);
+    MPI_Comm comm;
 
 };
 

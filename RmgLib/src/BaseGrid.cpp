@@ -56,14 +56,15 @@
 
         BaseGrid::default_FG_RATIO = newFG_RATIO;
 
-        BaseGrid::set_rank(new_rank);
+//        BaseGrid::set_rank(new_rank);
     }
 
-    void BaseGrid::set_rank(int new_rank)
+    void BaseGrid::set_rank(int new_rank, MPI_Comm comm)
     {
         int rem;
 
         BaseGrid::rank = new_rank;
+        BaseGrid::comm = comm;
 
         /// Have each node figure out who it's neighbors are
         int ii, jj, kk;
