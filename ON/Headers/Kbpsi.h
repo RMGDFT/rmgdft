@@ -35,6 +35,7 @@ typedef struct
 // pair.first:  orbital index
 // pair.second: list of kbpsi values for diffenent projectors. length = num_projectors.
    std::vector<double> *kbpsi_ion;
+   std::vector<double> *kbpsi_res_ion;
    std::vector<int> *orbital_index;
 
 } KBPSI;

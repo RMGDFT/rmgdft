@@ -20,7 +20,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 /*shuchun wang */
-void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
+void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -81,7 +81,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow1 */
 
             for (iz = zlow2; iz <= zhigh2; iz++)
@@ -92,7 +92,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow2 */
         }                       /* end for iy = ylow1 */
 
@@ -109,7 +109,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow1 */
 
             for (iz = zlow2; iz <= zhigh2; iz++)
@@ -120,7 +120,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow2 */
         }                       /* end for iy = ylow2 */
     }                           /* end for ix = xlow1 */
@@ -143,7 +143,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow1 */
 
             for (iz = zlow2; iz <= zhigh2; iz++)
@@ -154,7 +154,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow2 */
         }                       /* end for iy = ylow1 */
 
@@ -171,7 +171,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow1 */
 
             for (iz = zlow2; iz <= zhigh2; iz++)
@@ -182,7 +182,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr, double * work)
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
 
-                work[idx1] += pptr[idx2];
+                state1->psiR[idx1] += pptr[idx2];
             }                   /* end for iz = zlow2 */
         }                       /* end for iy = ylow2 */
     }                           /* end for ix = xlow2 */

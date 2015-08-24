@@ -21,14 +21,12 @@ add_library (ON_Common
  genvpsi.c
  get_cholesky_real.c
  get_dm_diag_p.c
- get_dnmpsi.c
  get_gamma_precond.c
  get_invmat.c
  get_mat_Omega.c
  get_mehr.c
  get_new_rho.c
  get_orbit_center.c
- get_qnmpsi.c
  get_state_to_proc.c
  get_sum_eig.c
  get_wave.c

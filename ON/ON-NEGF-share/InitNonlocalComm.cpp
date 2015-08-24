@@ -49,6 +49,7 @@ void InitNonlocalComm(void)
     Kbpsi_str.kbpsi_comm_loop = kbpsi_num_loop;
 
     Kbpsi_str.kbpsi_ion = new std::vector<double>[pct.n_ion_center];
+    Kbpsi_str.kbpsi_res_ion = new std::vector<double>[pct.n_ion_center];
     Kbpsi_str.orbital_index = new std::vector<int>[pct.n_ion_center];
     Kbpsi_str.comm_info = new KBPSI_COMM_INFO[Kbpsi_str.kbpsi_comm_loop];
     Kbpsi_str.num_orbital_thision = new int[pct.n_ion_center];

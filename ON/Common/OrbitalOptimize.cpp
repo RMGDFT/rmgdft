@@ -27,8 +27,9 @@
 static int mix_steps;
 double *work1;                    /* Smoothing grids */
 
-static void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res);
+static void get_qnm_res(double *work_theta);
 static void get_nonortho_res(STATE *, double *, STATE *);
+static void get_dnmpsi(STATE *);
 
 
 void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
@@ -83,7 +84,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     get_nonortho_res(states, theta, states1);
     delete(RT3);
     RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
-    get_qnm_res(theta, kbpsi, kbpsi_res);
+    get_qnm_res(theta);
 
     my_barrier();
     delete(RT4);
@@ -136,15 +137,18 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
          */
         /* Get the non-local operator acting on psi and store in nvtot */
         item = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
+
+
+    }                           /* end for st1 = .. */
     RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
-        get_dnmpsi(&states[st1], &kbpsi[item], &kbpsi_res[item], orbit_tem);       /*shuchun wang */
+        get_dnmpsi(states1);
     delete(RT5);
 
 
-        t1 = 2.0;
-        daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
-        app_mask(st1, states1[st1].psiR, 0);
-    }                           /* end for st1 = .. */
+    for (istate = ct.state_begin; istate < ct.state_end; istate++)
+    {
+        app_mask(istate, states1[istate].psiR, 0);
+    }
 
     delete(RTa);
      
@@ -282,105 +286,138 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
 }
 
-void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
+void get_qnm_res(double *work_theta)
 {
 
     int ip1, st1, st2;
-    MPI_Status mstatus;
     int ion1, ion2, ion1_global, ion2_global;
     int iip1, iip2;
     int size, proc, proc1, proc2, idx;
     int st11;
     int size_projector;
+    int num_prj, num_orb, tot_orb, idx1, idx2;
 
-    size_projector = max_ion_nonlocal * ct.max_nl;
-    size = ct.state_per_proc * size_projector;
-    for(st1 = 0; st1 < size; st1++) kbpsi_res[st1] = 0.0;
 
-    /* Loop over states on this proce onle 
-       (distribution of work AND Aij contributions) */
-    proc = pct.gridpe;
-
-    for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
-        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-        {
-            st11 = st1 - ct.state_begin;
-
-            iip1 = (st1 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
-            iip1 += ion1 * ct.max_nl;
-
-            for (st2 = state_begin[proc]; st2 < state_end[proc]; st2++)
-            {
-                //if(state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-                {
-                    iip2 = (st2 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
-                    iip2 += ion1 * ct.max_nl;
-                    for (ip1 = 0; ip1 < ct.max_nl; ip1++)
-                        kbpsi_res[iip1 + ip1] += kbpsi[iip2 + ip1] * work_theta[st11 * ct.num_states + st2];
-                }
-            }
-
-        }         
-
-    RmgTimer *RT1 = new RmgTimer("3-OrbitalOptimize: qnm: comm_loop");
-
-    for (idx = 0; idx < kbpsi_num_loop; idx++)
+    for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
 
+        num_prj = pct.prj_per_ion[pct.ionidx[ion1]];
+        num_orb = Kbpsi_str.num_orbital_thision[ion1]; 
+        tot_orb = Kbpsi_str.orbital_index[ion1].size();
 
-    //    MPI_Barrier(pct.grid_comm);
+        //  set the length of vector and set their value to 0.0
+        Kbpsi_str.kbpsi_res_ion[ion1].resize(num_orb * num_prj);
+        std::fill(Kbpsi_str.kbpsi_res_ion[ion1].begin(), 
+                Kbpsi_str.kbpsi_res_ion[ion1].end(), 0.0);
 
-        proc1 = kbpsi_comm_send[idx];
-        proc2 = kbpsi_comm_recv[idx];
-        
-        MPI_Request request;
-        if(proc1 >=0) MPI_Isend(kbpsi, size, MPI_DOUBLE, proc1, idx,
-                pct.grid_comm, &request);
+        for(idx1 = 0; idx1 < num_orb; idx1++)
+        {
+            st1 = Kbpsi_str.orbital_index[ion1][idx1];
+            st11 = st1 - ct.state_begin;
 
-        if(proc2 >=0)
-            MPI_Recv(kbpsi_comm, size, MPI_DOUBLE, proc2, idx,
-                    pct.grid_comm, &mstatus);
-        if(proc1 >=0) MPI_Wait(&request, &mstatus);
-        if(proc2 < 0) continue;
-
-
-
-
-        RmgTimer *RT2 = new RmgTimer("3-OrbitalOptimize: qnm: comm_loop: calcu");
-
-        for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
-            for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)
+            for(idx2 = 0; idx2 < tot_orb; idx2++)
             {
-                ion1_global = ionidx_allproc[proc * max_ion_nonlocal + ion1];
-                ion2_global = ionidx_allproc[proc2 * max_ion_nonlocal + ion2];
+                st2 = Kbpsi_str.orbital_index[ion1][idx2];
 
-                if (ion1_global == ion2_global)
-                {
-                    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-                    {
-                        st11 = st1 - ct.state_begin;
-
-                        iip1 = (st1 - state_begin[proc]) * num_nonlocal_ion[proc] * ct.max_nl;
-                        iip1 += ion1 * ct.max_nl;
-
-                        for (st2 = state_begin[proc2]; st2 < state_end[proc2]; st2++)
-                        {
-
-                            iip2 = (st2 - state_begin[proc2]) * num_nonlocal_ion[proc2] * ct.max_nl;
-                            iip2 += ion2 * ct.max_nl;
-                            for (ip1 = 0; ip1 < ct.max_nl; ip1++)
-                                kbpsi_res[iip1+ip1] += kbpsi_comm[iip2+ip1] * work_theta[st11 * ct.num_states + st2];
-                        }
-
-                    }         
-                }            
-
+                for (ip1 = 0; ip1 < num_prj; ip1++)
+                    Kbpsi_str.kbpsi_res_ion[ion1][idx1 * num_prj + ip1] += 
+                        Kbpsi_str.kbpsi_ion[ion1][idx2 * num_prj + ip1] *
+                        work_theta[st11 * ct.num_states + st2];
             }
-        delete(RT2);
-    } 
-    delete(RT1);
+        }
 
-    //    for(st1 = 0; st1 <100; st1++) printf("\n kbpsi_res %d %f", st1, kbpsi_res[st1]);
+    }         
+
+
+
 }
 
 
+void get_dnmpsi(STATE *states1)
+{
+    int ion, ipindex, idx, ip1, ip2;
+    double *prjptr;
+    int ion2, num_prj, st0, st1;
+    double *ddd, *qnm_weight;
+    double *qqq;
+    double *prj_sum;
+    double qsum;
+
+    
+
+    /*
+     *  dnm_weght[i] = sum_j dnm[i, j] *<beta_j|phi> 
+     * prj_sum(r) = sum_i nm_weight[i] *beta_i(r)  
+     */
+
+    qnm_weight = new double[ct.max_nl];
+    prj_sum = new double[ct.max_nlpoints];
+
+
+    prjptr = projectors;
+
+    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    {
+        ion = pct.ionidx[ion2];
+        ipindex = ion2 * ct.max_nl;
+        qqq = pct.qqq[ion];
+        ddd = pct.dnmI[ion];
+
+        num_prj = pct.prj_per_ion[ion];
+
+        for(st0 = 0; st0 < Kbpsi_str.num_orbital_thision[ion2]; st0++)
+        {
+            st1 = Kbpsi_str.orbital_index[ion2][st0];
+
+            for (ip1 = 0; ip1 < num_prj; ip1++)
+            {
+
+                qsum = 0.0;
+
+                for (ip2 = 0; ip2 < num_prj; ip2++)
+                {
+
+                    qsum -= ddd[ip1 * num_prj + ip2] * Kbpsi_str.kbpsi_ion[ion2][st0 * num_prj + ip2];
+                    qsum += 0.5*qqq[ip1 * num_prj + ip2] * Kbpsi_str.kbpsi_res_ion[ion2][st0 * num_prj + ip2];
+                }
+
+                qnm_weight[ip1] = 2.0 * qsum;
+
+            }
+
+
+            for (idx = 0; idx < ct.max_nlpoints; idx++)
+            {
+                prj_sum[idx] = 0.0;
+            }
+
+
+            for (ip1 = 0; ip1 < num_prj; ip1++)
+            {
+                for (idx = 0; idx < ct.max_nlpoints; idx++)
+                {
+
+                    prj_sum[idx] += qnm_weight[ip1] * prjptr[ip1 * ct.max_nlpoints + idx];
+                }
+            }
+
+            /*
+             *  project the prj_sum to the orbital |phi>  and stored in work 
+             */
+
+
+
+            qnm_beta_betapsi(&states1[st1], ion, prj_sum);
+
+
+        }
+
+        prjptr += pct.prj_per_ion[ion] * ct.max_nlpoints;       
+
+    }                           /* end for ion */
+
+    delete [] qnm_weight;
+    delete [] prj_sum;
+
+
+}

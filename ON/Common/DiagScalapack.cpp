@@ -181,7 +181,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     delete(RT4);
     delete(RT0);
 
-    RmgTimer *RT1b = new RmgTimer("3-mg_eig: (S^-1)H");
+    RmgTimer *RT1b = new RmgTimer("3-DiagScalapack: (S^-1)H");
 
     int *ipiv;
     ipiv = new int[numst];
