@@ -5,6 +5,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);
 void GetHvnlij (double *Aij, double *Bij);
+void OrbitalOptimize (STATE * states, STATE * states1, double *vxc, double *vh,
+        double *vnuc, double *rho, double *rhoc, double * vxc_old,
+        double * vh_old);
 
 #ifdef __cplusplus
 extern "C" {
@@ -238,9 +241,6 @@ void get_new_rho (STATE * states, double *rho);
 void get_wave(int st, STATE * states);
 void add_orbit_to_wave(int st1, double scale, double * psi1, double * wave_global, STATE * states);
 void print_wave(int wave_plot, STATE * states, int coarse_level);
-void mg_eig (STATE * states, STATE * states1, double *vxc, double *vh,
-        double *vnuc, double *rho, double *rhoc, double * vxc_old,
-        double * vh_old);
 void fsymforces (double * force, int *s, int *irg, int *irt, int *nat,
         int *ibrav, int *nsym, double * celldm, int *nr1, int *nr2,
         int *nr3);

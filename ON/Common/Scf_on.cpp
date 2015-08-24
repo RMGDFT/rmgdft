@@ -140,8 +140,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     if(ct.scf_steps < ct.freeze_orbital_step)
     {
         steps = ct.scf_steps;
-        RmgTimer *RT6 = new RmgTimer("2-SCF: mg_eig");
-        mg_eig(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
+        RmgTimer *RT6 = new RmgTimer("2-SCF: OrbitalOptimize");
+        OrbitalOptimize(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
         delete(RT6);
     }
 

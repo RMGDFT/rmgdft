@@ -2,49 +2,51 @@
  **    $Id$    **
 ******************************************************************************/
  
-/*
-                            mg_eig.c 
-*/
-
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+
+
+
+#include "make_conf.h"
+#include "params.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "my_scalapack.h"
+#include "transition.h"
+#include "blas.h"
+#include "Kbpsi.h"
 
 /* Flag for projector mixing */
-int firstflag = FALSE;
 static int mix_steps;
 double *work1;                    /* Smoothing grids */
 
 static void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res);
 static void get_nonortho_res(STATE *, double *, STATE *);
-extern int it_scf;
 
 
-void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
+void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
 {
     int istate, ione = 1;
     double t1;
     int st1, ixx, iyy, izz;
-    int numst = ct.num_states;
     int item;
-    int mxllda2;
+
+    double hxgrid, hygrid, hzgrid;
+
+    hxgrid = Rmg_G->get_hxgrid(1);
+    hygrid = Rmg_G->get_hygrid(1);
+    hzgrid = Rmg_G->get_hzgrid(1);
 
 
-    int *ipiv, info;
 
-
-    int IA =1, JA =1, IB =1, JB=1;
-
-    numst = ct.num_states;
-
-    mxllda2 = MXLLDA * MXLCOL;
     ct.meanres = 0.;
     ct.minres = 100000.0;
     ct.maxres = 0.;
@@ -52,13 +54,13 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     /* Grab some memory */
     work1 = work_memory;
 
-    void *RT = BeginRmgTimer("3-mg_eig");
+    RmgTimer *RT = new RmgTimer("3-OrbitalOptimize");
 
 
 
-    void *RT1a = BeginRmgTimer("3-mg_eig: distribute");
+    RmgTimer *RT1a = new RmgTimer("3-OrbitalOptimize: distribute");
     distribute_to_global(vtot_c, vtot_global);
-    EndRmgTimer(RT1a);
+    delete(RT1a);
 
 
 
@@ -68,43 +70,43 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
      */
 
     /*begin shuchun wang */
-    void *RT12 = BeginRmgTimer("3-mg_eig: dcopya");
+    RmgTimer *RT12 = new RmgTimer("3-OrbitalOptimize: dcopya");
     dcopy(&pct.psi_size, states[ct.state_begin].psiR, &ione,
             states_tem[ct.state_begin].psiR, &ione);
-    EndRmgTimer(RT12);
+    delete(RT12);
 
     /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
 
 
 
-    void *RT3 = BeginRmgTimer("3-mg_eig: nonortho");
+    RmgTimer *RT3 = new RmgTimer("3-OrbitalOptimize: nonortho");
     get_nonortho_res(states, theta, states1);
-    EndRmgTimer(RT3);
-    void *RT4 = BeginRmgTimer("3-mg_eig: qnm");
+    delete(RT3);
+    RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
     get_qnm_res(theta, kbpsi, kbpsi_res);
 
     my_barrier();
-    EndRmgTimer(RT4);
+    delete(RT4);
     /* end shuchun wang */
 
 
 
 
     /* Loop over states istate (correction of state istate) */
-    void *RT2a = BeginRmgTimer("3-mg_eig: mask");
+    RmgTimer *RT2a = new RmgTimer("3-OrbitalOptimize: mask");
 
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
         app_mask(istate, states1[istate].psiR, 0);
     }
 
-    EndRmgTimer(RT2a);
+    delete(RT2a);
 
     /* Loop over states istate to compute the whole matrix Hij 
        and all the vectors H|psi> */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
-    void *RTa = BeginRmgTimer("3-mg_eig: Hpsi");
+    RmgTimer *RTa = new RmgTimer("3-OrbitalOptimize: Hpsi");
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         ixx = states[st1].ixmax - states[st1].ixmin + 1;
@@ -122,7 +124,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         /* A operating on psi stored in work2 */
         /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid()); 
          */
-        app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
+        app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
         t1 = 1.0;
         daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
@@ -134,9 +136,9 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
          */
         /* Get the non-local operator acting on psi and store in nvtot */
         item = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
-    void *RT5 = BeginRmgTimer("3-mg_eig: dnm");
+    RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
         get_dnmpsi(&states[st1], &kbpsi[item], &kbpsi_res[item], orbit_tem);       /*shuchun wang */
-    EndRmgTimer(RT5);
+    delete(RT5);
 
 
         t1 = 2.0;
@@ -144,7 +146,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
         app_mask(st1, states1[st1].psiR, 0);
     }                           /* end for st1 = .. */
 
-    EndRmgTimer(RTa);
+    delete(RTa);
      
 
     /*
@@ -156,14 +158,14 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
 
     /*  SD, Pulay or KAIN method for Linear and Nonlinear equations */
 
-    void *RT6a = BeginRmgTimer("3-mg_eig: scale");
+    RmgTimer *RT6a = new RmgTimer("3-OrbitalOptimize: scale");
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
         t1 = -1.0;
         dscal(&states1[istate].size, &t1, states1[istate].psiR, &ione);
     }
 
-    EndRmgTimer(RT6a);
+    delete(RT6a);
     if (ct.restart_mix == 1 || ct.move_centers_at_this_step == 1)
     {
         mix_steps = 0;
@@ -172,7 +174,7 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
-    void *RT6 = BeginRmgTimer("3-mg_eig: mixing+precond");
+    RmgTimer *RT6 = new RmgTimer("3-OrbitalOptimize: mixing+precond");
 
     switch (ct.mg_method)
     {
@@ -192,33 +194,34 @@ void mg_eig(STATE * states, STATE * states1, double *vxc, double *vh,
                     states1[ct.state_begin].psiR, ct.mg_steps, 100, 0.5, 1);
             break;
         default:
-            error_handler("Undefined mg_method ");
+            printf("\n Undefined mg_method \n ");
+            fflush(NULL);
+            exit(0);
     }
 
 
     mix_steps++;
 
-    EndRmgTimer(RT6);
+    delete(RT6);
 
-    void *RT7 = BeginRmgTimer("3-mg_eig: ortho_norm");
+    RmgTimer *RT7 = new RmgTimer("3-OrbitalOptimize: ortho_norm");
     ortho_norm_local(states); 
 
-    EndRmgTimer(RT7);
+    delete(RT7);
 
    // normalize_orbits(states);
 
 
 
 
-    firstflag++;
 
 #if     DEBUG
-    print_status(states, vh, vxc, vnuc, vh_old, "before leaving mg_eig.c  ");
+    print_status(states, vh, vxc, vnuc, vh_old, "before leaving OrbitalOptimize.c  ");
     print_state_sum(states1);
 #endif
-    EndRmgTimer(RT);
+    delete(RT);
 
-}                               /* end mg_eig */
+} 
 
 /*-----------------------------------------------------------------*/
 
@@ -319,7 +322,7 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
 
         }         
 
-    void *RT1 = BeginRmgTimer("3-mg_eig: qnm: comm_loop");
+    RmgTimer *RT1 = new RmgTimer("3-OrbitalOptimize: qnm: comm_loop");
 
     for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
@@ -343,7 +346,7 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
 
 
 
-        void *RT2 = BeginRmgTimer("3-mg_eig: qnm: comm_loop: calcu");
+        RmgTimer *RT2 = new RmgTimer("3-OrbitalOptimize: qnm: comm_loop: calcu");
 
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
             for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)
@@ -373,9 +376,9 @@ void get_qnm_res(double *work_theta, double *kbpsi, double *kbpsi_res)
                 }            
 
             }
-        EndRmgTimer(RT2);
+        delete(RT2);
     } 
-    EndRmgTimer(RT1);
+    delete(RT1);
 
     //    for(st1 = 0; st1 <100; st1++) printf("\n kbpsi_res %d %f", st1, kbpsi_res[st1]);
 }

@@ -1,4 +1,5 @@
 add_library (ON_Common
+ OrbitalOptimize.cpp
  DiagScalapack.cpp
  DiagElemental.cpp
  ReadPermInfo.cpp
@@ -42,7 +43,6 @@ add_library (ON_Common
  kain.c
  matrix_and_diag.c
  md_fastrelax.c
- mg_eig.c
  mgrid_solv_local.c
  movie.c
  nlforce.c
