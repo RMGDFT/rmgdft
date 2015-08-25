@@ -165,7 +165,6 @@ int main(int argc, char **argv)
 #endif
 
         ReadBranchON(ct.cfile, ct, ControlMap);
-        printf("\n num_sttt %d  \n", ct.num_states);
         allocate_states();
         get_state_to_proc(states);
         perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));

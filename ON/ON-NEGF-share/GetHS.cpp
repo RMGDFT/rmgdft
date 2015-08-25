@@ -99,14 +99,12 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     /* calculate the < states.psiR | states1.psiR>  */
 
-    my_barrier();
 
     RmgTimer *RT1 = new RmgTimer("4-get_HS: orbit_dot_orbit");
     orbit_dot_orbit(states, states1, Hij_00, Bij_00);
     delete(RT1);
 
 
-    my_barrier();
 
     RmgTimer *RT2 = new RmgTimer("4-get_HS: kbpsi");
     get_all_kbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
@@ -132,7 +130,9 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     }
 
+    RmgTimer *RT2a = new RmgTimer("4-get_HS: kbpsi_comm");
     KbpsiComm();
+    delete(RT2a);
 
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
 //    for (st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)

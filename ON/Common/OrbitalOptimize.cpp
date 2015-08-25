@@ -86,7 +86,6 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
     get_qnm_res(theta);
 
-    my_barrier();
     delete(RT4);
     /* end shuchun wang */
 
@@ -291,11 +290,21 @@ void get_qnm_res(double *work_theta)
 
     int ip1, st1, st2;
     int ion1, ion2, ion1_global, ion2_global;
-    int iip1, iip2;
-    int size, proc, proc1, proc2, idx;
     int st11;
     int size_projector;
     int num_prj, num_orb, tot_orb, idx1, idx2;
+    int max_orb;
+    double one = 1.0, zero = 0.0, *work_mat;
+
+    max_orb = 0;
+    
+    for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    {
+        tot_orb = Kbpsi_str.orbital_index[ion1].size();
+        max_orb = std::max(max_orb, tot_orb);
+    }
+
+    work_mat = new double[(ct.state_end-ct.state_begin) *max_orb];
 
 
     for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
@@ -305,10 +314,28 @@ void get_qnm_res(double *work_theta)
         num_orb = Kbpsi_str.num_orbital_thision[ion1]; 
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
 
+        for(idx1 = 0; idx1 < num_orb; idx1++)
+        {
+            st1 = Kbpsi_str.orbital_index[ion1][idx1];
+            st11 = st1 - ct.state_begin;
+
+            for(idx2 = 0; idx2 < tot_orb; idx2++)
+            {
+                st2 = Kbpsi_str.orbital_index[ion1][idx2];
+                work_mat[idx1 * tot_orb + idx2] = work_theta[st11 *ct.num_states + st2];
+            }
+        }
+
         //  set the length of vector and set their value to 0.0
         Kbpsi_str.kbpsi_res_ion[ion1].resize(num_orb * num_prj);
+
+        dgemm("N", "N", &num_prj, &num_orb, &tot_orb,  &one, Kbpsi_str.kbpsi_ion[ion1].data(), &num_prj,
+            work_mat, &tot_orb, &zero, Kbpsi_str.kbpsi_res_ion[ion1].data(), &num_prj);
+
+#if 0
         std::fill(Kbpsi_str.kbpsi_res_ion[ion1].begin(), 
                 Kbpsi_str.kbpsi_res_ion[ion1].end(), 0.0);
+
 
         for(idx1 = 0; idx1 < num_orb; idx1++)
         {
@@ -325,9 +352,11 @@ void get_qnm_res(double *work_theta)
                         work_theta[st11 * ct.num_states + st2];
             }
         }
+ #endif
 
     }         
 
+    delete [] work_mat;
 
 
 }
@@ -335,15 +364,16 @@ void get_qnm_res(double *work_theta)
 
 void get_dnmpsi(STATE *states1)
 {
-    int ion, ipindex, idx, ip1, ip2;
+    int ion, idx, ip1, ip2;
     double *prjptr;
-    int ion2, num_prj, st0, st1;
+    int ion2, st0, st1;
     double *ddd, *qnm_weight;
     double *qqq;
     double *prj_sum;
     double qsum;
 
-    
+    double one=1.0, zero=0.0, mtwo=-2.0, *work_kbpsi; 
+    int ione=1, num_orb, num_prj;
 
     /*
      *  dnm_weght[i] = sum_j dnm[i, j] *<beta_j|phi> 
@@ -352,6 +382,7 @@ void get_dnmpsi(STATE *states1)
 
     qnm_weight = new double[ct.max_nl];
     prj_sum = new double[ct.max_nlpoints];
+    work_kbpsi = new double[ct.max_nl * (ct.state_end-ct.state_begin)];
 
 
     prjptr = projectors;
@@ -359,33 +390,27 @@ void get_dnmpsi(STATE *states1)
     for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         ion = pct.ionidx[ion2];
-        ipindex = ion2 * ct.max_nl;
         qqq = pct.qqq[ion];
         ddd = pct.dnmI[ion];
-
+        num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
         num_prj = pct.prj_per_ion[ion];
 
-        for(st0 = 0; st0 < Kbpsi_str.num_orbital_thision[ion2]; st0++)
+        dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
+                    Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
+
+        dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
+                    Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
+
+
+        for(st0 = 0; st0 < num_orb; st0++)
         {
             st1 = Kbpsi_str.orbital_index[ion2][st0];
 
-            for (ip1 = 0; ip1 < num_prj; ip1++)
-            {
 
-                qsum = 0.0;
+            dgemv("N", &ct.max_nlpoints, &num_prj, &one, prjptr, &ct.max_nlpoints, 
+                    &work_kbpsi[st0 * num_prj], &ione, &zero, prj_sum, &ione);
 
-                for (ip2 = 0; ip2 < num_prj; ip2++)
-                {
-
-                    qsum -= ddd[ip1 * num_prj + ip2] * Kbpsi_str.kbpsi_ion[ion2][st0 * num_prj + ip2];
-                    qsum += 0.5*qqq[ip1 * num_prj + ip2] * Kbpsi_str.kbpsi_res_ion[ion2][st0 * num_prj + ip2];
-                }
-
-                qnm_weight[ip1] = 2.0 * qsum;
-
-            }
-
-
+#if 0
             for (idx = 0; idx < ct.max_nlpoints; idx++)
             {
                 prj_sum[idx] = 0.0;
@@ -400,6 +425,7 @@ void get_dnmpsi(STATE *states1)
                     prj_sum[idx] += qnm_weight[ip1] * prjptr[ip1 * ct.max_nlpoints + idx];
                 }
             }
+#endif
 
             /*
              *  project the prj_sum to the orbital |phi>  and stored in work 
@@ -418,6 +444,7 @@ void get_dnmpsi(STATE *states1)
 
     delete [] qnm_weight;
     delete [] prj_sum;
+    delete [] work_kbpsi;
 
 
 }

@@ -34,23 +34,33 @@ potential, and add them into Aij.
 
 void GetHvnlij(double *Aij, double *Bij)
 {
-    int nh, ion, ip1, ip2, st1, st2, ist;
-    double alpha;
-    MPI_Status mstatus;
-    int ion1, ion2, ion1_global, ion2_global;
-    int iip1, iip2, iip1a, iip2a;
-    int size, proc, proc1, proc2, idx;
+    int nh, ion, st1, st2, ist;
+    double alpha, zero = 0.0, one = 1.0;
+    int ion1;
     double *dnmI, *qnmI;
-    double temA, temB;
+    double *temA, *temB;
     double *double_ptr;
     int *int_ptr;
-    unsigned int tot_orbital, idx1, idx2;
+    int num_orb, tot_orb, idx1, idx2, max_state, max_nl;
 
 
 
 
     double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     alpha = t1/Rmg_L.get_omega();
+
+    max_state = 0;
+    max_nl = 0;
+    for (ion = 0; ion < pct.n_ion_center; ion++)
+    {
+        nh = pct.prj_per_ion[pct.ionidx[ion]];
+        tot_orb = Kbpsi_str.orbital_index[ion].size();
+        max_state = std::max(max_state, tot_orb);
+        max_nl = std::max(max_nl, nh);
+    }
+
+    temA = new double[(ct.state_end-ct.state_begin) * max_nl];
+    temB = new double[(ct.state_end-ct.state_begin) * max_state];
 
     for (ion = 0; ion < pct.n_ion_center; ion++)
     {
@@ -61,35 +71,44 @@ void GetHvnlij(double *Aij, double *Bij)
         qnmI = pct.qqq[ion1];
         double_ptr = Kbpsi_str.kbpsi_ion[ion].data();
         int_ptr = Kbpsi_str.orbital_index[ion].data();
-        tot_orbital = Kbpsi_str.orbital_index[ion].size();
+        num_orb = Kbpsi_str.num_orbital_thision[ion]; 
+        tot_orb = Kbpsi_str.orbital_index[ion].size();
 
-        for(idx1 = 0; idx1 < Kbpsi_str.num_orbital_thision[ion]; idx1++)
+
+        dgemm ("T", "N", &num_orb, &nh, &nh, &alpha, double_ptr, &nh, dnmI, &nh, &zero, temA, &num_orb);
+        dgemm ("N", "N", &num_orb, &tot_orb, &nh, &one, temA, &num_orb, double_ptr, &nh, &zero, temB, &num_orb);
+
+
+
+
+        for(idx1 = 0; idx1 < num_orb; idx1++)
         {
             st1 = int_ptr[idx1];
-            for(idx2 = 0; idx2 < tot_orbital; idx2++)
+            for(idx2 = 0; idx2 < tot_orb; idx2++)
             {
                 st2 = int_ptr[idx2];
                 ist = (st1 - ct.state_begin) * ct.num_states + st2;
 
-       //     if(st1 == 0 && st2 == 0) 
-       //     {  printf("\n aaa %d %d %d %f  %f", ion, idx1, idx2, double_ptr[idx1 * nh], double_ptr[idx1*nh + 1]);
-       //     }
+                Aij[ist] += temB[idx1 + idx2 * num_orb];
+            }
 
-                for (ip1 = 0; ip1 < nh; ip1++)
-                {
-                    for (ip2 = 0; ip2 < nh; ip2++)
-                    {
-                        Aij[ist] +=
-                            alpha * dnmI[ip2 * nh + ip1] * double_ptr[idx1*nh + ip1] * double_ptr[idx2*nh + ip2];
-                        Bij[ist] +=
-                            alpha * qnmI[ip2 * nh + ip1] * double_ptr[idx1*nh + ip1] * double_ptr[idx2*nh + ip2];
+        }
 
+        dgemm ("T", "N", &num_orb, &nh, &nh, &alpha, double_ptr, &nh, qnmI, &nh, &zero, temA, &num_orb);
+        dgemm ("N", "N", &num_orb, &tot_orb, &nh, &one, temA, &num_orb, double_ptr, &nh, &zero, temB, &num_orb);
 
-                    }
-                }
-            }                 
-        }                    
+        for(idx1 = 0; idx1 < num_orb; idx1++)
+        {
+            st1 = int_ptr[idx1];
+            for(idx2 = 0; idx2 < tot_orb; idx2++)
+            {
+                st2 = int_ptr[idx2];
+                ist = (st1 - ct.state_begin) * ct.num_states + st2;
 
+                Bij[ist] += temB[idx1 + idx2 * num_orb];
+            }
+
+        }
 
     }
 
