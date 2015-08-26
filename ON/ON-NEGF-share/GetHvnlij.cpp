@@ -67,6 +67,7 @@ void GetHvnlij(double *Aij, double *Bij)
         /* begin shuchun wang */
         ion1 = pct.ionidx[ion];
         nh = pct.prj_per_ion[ion1];
+        if(nh == 0) continue;
         dnmI = pct.dnmI[ion1];
         qnmI = pct.qqq[ion1];
         double_ptr = Kbpsi_str.kbpsi_ion[ion].data();
@@ -109,6 +110,8 @@ void GetHvnlij(double *Aij, double *Bij)
             }
 
         }
+        dgemm ("T", "N", &num_orb, &nh, &nh, &alpha, double_ptr, &nh, qnmI, &nh, &zero, temA, &num_orb);
+        dgemm ("N", "N", &num_orb, &tot_orb, &nh, &one, temA, &num_orb, double_ptr, &nh, &zero, temB, &num_orb);
 
     }
 

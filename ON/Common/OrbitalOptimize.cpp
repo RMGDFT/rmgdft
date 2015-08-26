@@ -311,6 +311,7 @@ void get_qnm_res(double *work_theta)
     {
 
         num_prj = pct.prj_per_ion[pct.ionidx[ion1]];
+        if (num_prj == 0) continue;
         num_orb = Kbpsi_str.num_orbital_thision[ion1]; 
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
 
@@ -332,27 +333,6 @@ void get_qnm_res(double *work_theta)
         dgemm("N", "N", &num_prj, &num_orb, &tot_orb,  &one, Kbpsi_str.kbpsi_ion[ion1].data(), &num_prj,
             work_mat, &tot_orb, &zero, Kbpsi_str.kbpsi_res_ion[ion1].data(), &num_prj);
 
-#if 0
-        std::fill(Kbpsi_str.kbpsi_res_ion[ion1].begin(), 
-                Kbpsi_str.kbpsi_res_ion[ion1].end(), 0.0);
-
-
-        for(idx1 = 0; idx1 < num_orb; idx1++)
-        {
-            st1 = Kbpsi_str.orbital_index[ion1][idx1];
-            st11 = st1 - ct.state_begin;
-
-            for(idx2 = 0; idx2 < tot_orb; idx2++)
-            {
-                st2 = Kbpsi_str.orbital_index[ion1][idx2];
-
-                for (ip1 = 0; ip1 < num_prj; ip1++)
-                    Kbpsi_str.kbpsi_res_ion[ion1][idx1 * num_prj + ip1] += 
-                        Kbpsi_str.kbpsi_ion[ion1][idx2 * num_prj + ip1] *
-                        work_theta[st11 * ct.num_states + st2];
-            }
-        }
- #endif
 
     }         
 
@@ -390,10 +370,11 @@ void get_dnmpsi(STATE *states1)
     for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         ion = pct.ionidx[ion2];
+        num_prj = pct.prj_per_ion[ion];
+        if (num_prj == 0) continue;
         qqq = pct.qqq[ion];
         ddd = pct.dnmI[ion];
         num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
-        num_prj = pct.prj_per_ion[ion];
 
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
                     Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
@@ -410,22 +391,6 @@ void get_dnmpsi(STATE *states1)
             dgemv("N", &ct.max_nlpoints, &num_prj, &one, prjptr, &ct.max_nlpoints, 
                     &work_kbpsi[st0 * num_prj], &ione, &zero, prj_sum, &ione);
 
-#if 0
-            for (idx = 0; idx < ct.max_nlpoints; idx++)
-            {
-                prj_sum[idx] = 0.0;
-            }
-
-
-            for (ip1 = 0; ip1 < num_prj; ip1++)
-            {
-                for (idx = 0; idx < ct.max_nlpoints; idx++)
-                {
-
-                    prj_sum[idx] += qnm_weight[ip1] * prjptr[ip1 * ct.max_nlpoints + idx];
-                }
-            }
-#endif
 
             /*
              *  project the prj_sum to the orbital |phi>  and stored in work 
