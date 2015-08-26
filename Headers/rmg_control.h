@@ -515,13 +515,14 @@ typedef struct
     double *gpu_host_work;
 
     cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow,  *gpu_Gcol;
+    cuDoubleComplex *gpu_GdiagBlocks, *gpu_Gtri, *gpu_Grow,  *gpu_Gcol;
     cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 
 
     int *gpu_ipiv;
 
 #else
-    double *gpu_Htri, *gpu_Gtri;
+    double *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
     double *gpu_Grow;
     double *gpu_Gcol;
     double *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;

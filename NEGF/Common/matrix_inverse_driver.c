@@ -136,14 +136,14 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
         zgetrf(&nn, &nn, (double *)Hii, &nn, ipiv, &info);
         if (info != 0)
         {
-            printf ("error in pzgetrf with INFO = %d \n", info);
+            printf ("error in zgetrf with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }
         zgetri(&nn, (double *)Hii, &nn, ipiv, (double *)work, &lwork, &info);
         if (info != 0)
         {
-            printf ("error in pzgetri with INFO = %d \n", info);
+            printf ("error in zgetri with INFO = %d \n", info);
             fflush (NULL);
             exit (0);
         }

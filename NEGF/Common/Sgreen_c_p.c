@@ -72,11 +72,8 @@ void Sgreen_c_p (double * Htri, double * Stri, complex double * sigma, int * sig
     }	
 
 
-//#if GPU_ENABLED
-//    matrix_inverse_cuda (H_tri, Green_C);
-//#else
-    matrix_inverse_p (H_tri, Green_C);
-//#endif
+//    matrix_inverse_p (H_tri, Green_C);
+    matrix_inverse_Gauss (H_tri, Green_C);
 
 
 

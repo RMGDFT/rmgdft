@@ -82,13 +82,27 @@ void init_gpu (void)
 
 	alloc = pmo.ntot_low * sizeof(complex double);
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Htri , alloc )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_Htri\n");
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
 		exit(-1);
 	}
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gtri , alloc )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_Gtri\n");
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
 		exit(-1);
 	}
+
+    int size;
+    size = 0;
+	for(i = 0; i < ct.num_blocks; i++)
+	{
+        size += ct.block_dim[i]*ct.block_dim[i];
+    }
+	alloc = size * sizeof(complex double);
+	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_GdiagBlocks , alloc )){
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
+        
+		exit(-1);
+	}
+
 
 	ntot_row = 0;
 	maxrow = 0;
