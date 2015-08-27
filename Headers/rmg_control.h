@@ -481,8 +481,14 @@ typedef struct
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
 
-    // Integer device id
-    int gpu_device_id;
+    // Total number of gpu devices present in the node
+    int num_gpu_devices;
+
+    // Total number of usable gpu devices present in the node
+    int num_usable_gpu_devices;
+
+    // Device ids for the usable gpus
+    int gpu_device_ids[MAX_GPU_DEVICES];
 
     // Cuda device
     CUdevice  cu_dev;
@@ -514,8 +520,8 @@ typedef struct
     double *gpu_host_fdbuf2;
     double *gpu_host_work;
 
-    cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow,  *gpu_Gcol;
-    cuDoubleComplex *gpu_GdiagBlocks, *gpu_Gtri, *gpu_Grow,  *gpu_Gcol;
+    cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
+    cuDoubleComplex *gpu_GdiagBlocks;
     cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 
 
