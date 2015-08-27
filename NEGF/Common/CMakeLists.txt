@@ -1,4 +1,5 @@
 add_library (NEGF_Common
+zgesv_driver.c
 matrix_inverse_Gauss.c
 green_lead.c
 host_device_wraper.c

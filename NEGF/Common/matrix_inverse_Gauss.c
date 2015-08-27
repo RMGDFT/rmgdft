@@ -124,8 +124,6 @@ void matrix_inverse_Gauss (complex double * H_tri_host, complex double * G_tri_h
          * Hupper is a pointer only  Hi-1, i
          * Hlower is a pointer only  Hi, i-1
          */
-    dprintf("\n  bbbb %d \n", i);
-    fflush(NULL);
         Hupper = &H_tri[pmo.offdiag_begin[i-1] ];
         Hlower = &H_tri[pmo.lowoffdiag_begin[i-1] ];
 
@@ -141,15 +139,11 @@ void matrix_inverse_Gauss (complex double * H_tri_host, complex double * G_tri_h
         matrix_inverse_driver(Gii, desca);
         n1 = ni[i-1];
         n2 = ni[i];
-    dprintf("\n  dbbb %d \n", i);
-    fflush(NULL);
 
         //  Ci = -Hi+1,i *(Di,i)^-1
         zgemm_driver ("N", "N", n1, n2, n2, mone, Hupper, ione, ione, descb,
                 Gii, ione, ione, desca, zero, &G_tri[pmo.offdiag_begin[i-1]], ione, ione, descb);
 
-    dprintf("\n  abbb %d \n", i);
-    fflush(NULL);
         //  Di+1, i+1 = Hi+1,i+1 +Ci * Hi,i+1
 
         ncopy = pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i - 1]; 
@@ -157,8 +151,6 @@ void matrix_inverse_Gauss (complex double * H_tri_host, complex double * G_tri_h
 
         zgemm_driver ("N", "N", n1, n1, n2, one, &G_tri[pmo.offdiag_begin[i-1]], ione, ione, descb,
                 Hlower, ione, ione, descc, one, &Gdiag[ndiag_begin[i-1]], ione, ione, descd);
-    dprintf("\n  cbbb %d \n", i);
-    fflush(NULL);
     }
 
      //  left side Gauss elimination  
@@ -174,8 +166,6 @@ void matrix_inverse_Gauss (complex double * H_tri_host, complex double * G_tri_h
          * Hupper is a pointer only  Hi, i+1
          * Hlower is a pointer only  Hi+1, i
          */
-    dprintf("\n  aaa %d \n", i);
-fflush(NULL);
         Hupper = &H_tri[pmo.offdiag_begin[i] ];
         Hlower = &H_tri[pmo.lowoffdiag_begin[i] ];
 
@@ -188,7 +178,6 @@ fflush(NULL);
         descd = &pmo.desc_cond[ (i+1 + (i+1) * ct.num_blocks) * DLEN];
 
         //  Gii = (Dii) ^-1
-        dprintf("\n  asas  %f %f  ", Gii[0]);
         matrix_inverse_driver(Gii, desca);
         n1 = ni[i+1];
         n2 = ni[i];
