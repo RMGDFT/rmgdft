@@ -24,7 +24,7 @@
 
 // Ax = B
 
-void zgesv_driver (complex double *A, complex double *B, int *desca )
+void zgesv_driver (complex double *A, int *desca,  complex double *B, int *descb )
 {
 
 
@@ -33,6 +33,7 @@ void zgesv_driver (complex double *A, complex double *B, int *desca )
     int nprow, npcol, myrow, mycol;
     int ictxt = desca[1];
     int nn = desca[2], mb= desca[4], nb=desca[5];
+    int nhrs = descb[3];
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 
     void *RT5 = BeginRmgTimer("Ax=B");
@@ -57,7 +58,7 @@ void zgesv_driver (complex double *A, complex double *B, int *desca )
 
 
     ipiv = (int *) malloc(d_ipiv * sizeof(int));
-    magma_zgesv_gpu (nn, nn, (magmaDoubleComplex *)A, num_states, ipiv, (magmaDoubleComplex *)B, num_states, &info);
+    magma_zgesv_gpu (nn, nhrs, (magmaDoubleComplex *)A, num_states, ipiv, (magmaDoubleComplex *)B, num_states, &info);
 
     if (info != 0)
     {
@@ -74,7 +75,7 @@ void zgesv_driver (complex double *A, complex double *B, int *desca )
         d_ipiv = mb + numroc_( &nn, &mb, &myrow, &izero, &nprow);
 
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
-        pzgesv_ (&nn, &nn, (double *)A, &ione, &ione, desca, ipiv, (double *)B, &ione, &ione, desca, &info); 
+        pzgesv_ (&nn, &nhrs, (double *)A, &ione, &ione, desca, ipiv, (double *)B, &ione, &ione, descb, &info); 
         if (info != 0)
         {
             printf ("error in pzgesv with INFO = %d \n", info);
@@ -91,7 +92,7 @@ void zgesv_driver (complex double *A, complex double *B, int *desca )
         d_ipiv = nn;
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
 
-        zgesv(&nn, &nn, (double *)A, &nn, ipiv, (double *)B, &nn, &info );
+        zgesv(&nn, &nhrs, (double *)A, &nn, ipiv, (double *)B, &nn, &info );
         if (info != 0)
         {
             printf ("error in zgesv with INFO = %d \n", info);
