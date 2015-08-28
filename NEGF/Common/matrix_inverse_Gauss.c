@@ -249,13 +249,13 @@ void matrix_inverse_Gauss (complex double * H_tri_host, complex double * G_tri_h
         n1 = ni[i+1];
         n2 = ni[i];
 
-        ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i+1]; 
         desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
         descb = &pmo.desc_cond[ ((i+1) +  i    * ct.num_blocks) * DLEN];
 
         zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri[pmo.lowoffdiag_begin[i]], ione, ione, descb,
                 &G_tri[pmo.diag_begin[i]], ione, ione, desca, zero, Gii, ione, ione, descb);
 
+        ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i]; 
         zcopy_driver (ncopy, Gii, ione, &G_tri[pmo.lowoffdiag_begin[i]], ione);
     }
 

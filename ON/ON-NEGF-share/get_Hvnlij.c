@@ -55,7 +55,6 @@ void get_Hvnlij(double *Aij, double *Bij)
                 nh = pct.prj_per_ion[ion1];
                 dnmI = pct.dnmI[ion1];
                 qnmI = pct.qqq[ion1];
-                if(st1 == 0 && st2 == 0) printf("\n bbb %d %f %f", ion, kbpsi[iip1], kbpsi[iip1+1]);
                 for (ip1 = 0; ip1 < nh; ip1++)
                 {
                     for (ip2 = 0; ip2 < nh; ip2++)
