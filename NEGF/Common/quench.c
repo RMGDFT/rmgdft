@@ -109,11 +109,11 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
 
     my_malloc_init( sigma_all, idx1, complex double );
 
-    void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
     if (ct.runflag != 111)
+    void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
         sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-    my_barrier();
     EndRmgTimer(RT1);
+    my_barrier();
     if(pct.gridpe==0) dprintf("\n sigma_all done");
 
 
