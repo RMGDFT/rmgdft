@@ -110,9 +110,11 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
     my_malloc_init( sigma_all, idx1, complex double );
 
     if (ct.runflag != 111)
-    void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
+    {
+        void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
         sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-    EndRmgTimer(RT1);
+        EndRmgTimer(RT1);
+    }
     my_barrier();
     if(pct.gridpe==0) dprintf("\n sigma_all done");
 
@@ -190,7 +192,7 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
 
 
         PDTRAN(&numst, &numst, &one, &lcr[0].Stri[size_of_matrix], &ione, &ione, desca,
-                                &zero, lcr[1].S01, &ione, &ione, desca);
+                &zero, lcr[1].S01, &ione, &ione, desca);
         dcopy (&size_of_matrix, lcr[1].S01, &ione, lcr[1].SCL, &ione);
 
 
@@ -254,13 +256,13 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
 
 
     /* added by shuchun for force calculation */
-   // if (ct.forceflag !=0 )
+    // if (ct.forceflag !=0 )
     //{
-        /* Calculate the force */
- //       force (rho, rho, rhoc, vh, vxc, vnuc);
-        /* write out the force */
-   //     if (pct.gridpe == 0)
-  //          write_force ();
+    /* Calculate the force */
+    //       force (rho, rho, rhoc, vh, vxc, vnuc);
+    /* write out the force */
+    //     if (pct.gridpe == 0)
+    //          write_force ();
     //}
     /* end of addition */
 
