@@ -33,10 +33,22 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
 
     // Reset main thread (tid=0) into an ordered map
-    for(auto it = RT.timings[0].cbegin(); it != RT.timings[0].cend(); ++it) {
+    
+
+    int num_timings;
+    num_timings = RT.timings[0].size();
+    MPI_Allreduce(MPI_IN_PLACE, &num_timings, 1, MPI_INT, MPI_MIN, G->comm);
+
+    auto it = RT.timings[0].cbegin(); 
+    for(int i = 0; i < num_timings; i++)
+    {
         tmain[it->first] = it->second;
+        
+        if(G->get_rank() == 0) std::cout<< it->first << " at  " <<  0 << std::endl;
+        if(G->get_rank() == 63) std::cout<< it->first << " at  " <<  64 << std::endl;
         MPI_Allreduce(&tmain[it->first], &tmain_min[it->first], 1, MPI_DOUBLE, MPI_MIN, G->comm);
         MPI_Allreduce(&tmain[it->first], &tmain_max[it->first], 1, MPI_DOUBLE, MPI_MAX, G->comm);
+        it++;
     }
 
     size_t maxlen = 0;
