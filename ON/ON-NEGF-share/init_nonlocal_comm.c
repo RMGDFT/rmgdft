@@ -97,8 +97,8 @@ void init_nonlocal_comm(void)
     my_calloc( matrix_pairs, NPES * NPES, int );
     my_calloc( proc_mark, NPES, int );
 
-    my_calloc( kbpsi_comm_send, NPES, int );
-    my_calloc( kbpsi_comm_recv, NPES, int );
+    my_calloc( kbpsi_comm_send, 2*NPES, int );
+    my_calloc( kbpsi_comm_recv, 2*NPES, int );
 
 
     for (proc1 = 0; proc1 < NPES * NPES; proc1++)
@@ -137,15 +137,20 @@ void init_nonlocal_comm(void)
     //   }
 
     kbpsi_num_loop = 0;
-    for (loop = 0; loop < NPES; loop++)
+    int proc0;
+    for (loop = 0; loop < 2*NPES; loop++)
     {
+
+
+        //  search pairs from 0 to NPES
         kbpsi_comm_send[loop] = -1;
         kbpsi_comm_recv[loop] = -1;
         for (proc1 = 0; proc1 < NPES; proc1++)
             proc_mark[proc1] = 1;
         pair_find = 0;
-        for (proc1 = 0; proc1 < NPES; proc1++)
+        for (proc0 = loop; proc0 < NPES+loop; proc0++)
         {
+            proc1 = proc0%NPES;
             for (proc3 = proc1+1; proc3 < NPES + proc1 + 1; proc3++)
             {
                 proc2 = proc3%NPES;
@@ -161,8 +166,21 @@ void init_nonlocal_comm(void)
             } 
         }
 
+
+//      if(pct.gridpe==0)
+//              printf("\n  matrix_pairs");
+//      if(pct.gridpe==0)
+//          for(proc1=0; proc1<NPES; proc1++)
+//          {
+//              printf("\n");
+//              for(proc2=0; proc2<NPES; proc2++)
+//                  printf("%d", matrix_pairs[proc1 * NPES + proc2]);
+//          }
+
+//      fflush(NULL);
         if (pair_find == 0)
             break;
+
     }
 
     kbpsi_num_loop = loop;

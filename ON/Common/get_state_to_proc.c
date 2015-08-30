@@ -93,7 +93,7 @@ void get_state_to_proc(STATE * states)
             states[st].pe = pe;
 
     st = (ct.state_end - ct.state_begin) * ct.num_states;
-    if(st == 0 ) st = 1;
+    if(st == 0 ) st = ct.num_states;
     my_malloc(Hij_00, st, double);
     my_malloc(Bij_00, st, double);
     my_malloc(theta, st, double);
