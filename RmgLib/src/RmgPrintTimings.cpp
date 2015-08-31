@@ -33,23 +33,33 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
 
     // Reset main thread (tid=0) into an ordered map
-    
 
-    int num_timings;
+
+    int num_timings, num_timings_max, num_timings_min;
     num_timings = RT.timings[0].size();
-    MPI_Allreduce(MPI_IN_PLACE, &num_timings, 1, MPI_INT, MPI_MIN, G->comm);
+    MPI_Allreduce(&num_timings, &num_timings_min, 1, MPI_INT, MPI_MIN, G->comm);
+    MPI_Allreduce(&num_timings, &num_timings_max, 1, MPI_INT, MPI_MAX, G->comm);
 
-    auto it = RT.timings[0].cbegin(); 
-    for(int i = 0; i < num_timings; i++)
-    {
+    for(auto it = RT.timings[0].cbegin(); it != RT.timings[0].cend(); ++it) {
         tmain[it->first] = it->second;
-        
-        if(G->get_rank() == 0) std::cout<< it->first << " at  " <<  0 << std::endl;
-        if(G->get_rank() == 63) std::cout<< it->first << " at  " <<  64 << std::endl;
-        MPI_Allreduce(&tmain[it->first], &tmain_min[it->first], 1, MPI_DOUBLE, MPI_MIN, G->comm);
-        MPI_Allreduce(&tmain[it->first], &tmain_max[it->first], 1, MPI_DOUBLE, MPI_MAX, G->comm);
-        it++;
+        tmain_min[it->first] = it->second;
+        tmain_max[it->first] = it->second;
     }
+
+
+    if(num_timings_min == num_timings_max)
+    {
+
+        for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
+            MPI_Allreduce(&tmain[it->first], &tmain_min[it->first], 1, MPI_DOUBLE, MPI_MIN, G->comm);
+            MPI_Allreduce(&tmain[it->first], &tmain_max[it->first], 1, MPI_DOUBLE, MPI_MAX, G->comm);
+        }
+    }
+    else
+    {
+        std::cout<< "at "<< G->get_rank()<<" num_timings=  " << num_timings <<std::endl;
+    }
+        
 
     size_t maxlen = 0;
     for(auto it = RT.timings[1].cbegin(); it != RT.timings[1].cend(); ++it) {
@@ -93,9 +103,9 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
             for(i = 0; i < count; i++) logfile << "  ";
             logfile << std::setw(41-count*2) << std::left << it->first << std::setw(10) << std::right  
-                    << t1->second << std::setw(10) << std::right << t2->second<< std::setw(10) << std::right  
-                    << t1->second/(double)steps << std::setw(10) << std::right << t2->second/(double)steps<< std::endl;
- 
+                << t1->second << std::setw(10) << std::right << t2->second<< std::setw(10) << std::right  
+                << t1->second/(double)steps << std::setw(10) << std::right << t2->second/(double)steps<< std::endl;
+
             t1++;
             t2++;
             count1 = count;
