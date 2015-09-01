@@ -244,41 +244,49 @@ void matrix_inverse_Gauss (complex double * H_tri_host, complex double * G_tri_h
     //calculating  lower offdiag blocks of G_tri = G_tri_ii * Ci_L
         
         
-    for(i = 0; i < N-1; i++)
+    // for gamma point, lowoffdiag = transpose(upperoffdiag)
+
+    if(!ct.is_gamma)
     {
-        n1 = ni[i+1];
-        n2 = ni[i];
+        for(i = 0; i < N-1; i++)
+        {
+            n1 = ni[i+1];
+            n2 = ni[i];
 
-        desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
-        descb = &pmo.desc_cond[ ((i+1) +  i    * ct.num_blocks) * DLEN];
+            desca = &pmo.desc_cond[ (i   +     i * ct.num_blocks) * DLEN];
+            descb = &pmo.desc_cond[ ((i+1) +  i    * ct.num_blocks) * DLEN];
 
-        zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri[pmo.lowoffdiag_begin[i]], ione, ione, descb,
-                &G_tri[pmo.diag_begin[i]], ione, ione, desca, zero, Gii, ione, ione, descb);
+            zgemm_driver ("N", "N", n1, n2, n2, mone, &G_tri[pmo.lowoffdiag_begin[i]], ione, ione, descb,
+                    &G_tri[pmo.diag_begin[i]], ione, ione, desca, zero, Gii, ione, ione, descb);
 
-        ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i]; 
-        zcopy_driver (ncopy, Gii, ione, &G_tri[pmo.lowoffdiag_begin[i]], ione);
+            ncopy = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[i]; 
+            zcopy_driver (ncopy, Gii, ione, &G_tri[pmo.lowoffdiag_begin[i]], ione);
+        }
     }
 
 
 
     getvector_device_host (pmo.ntot_low, sizeof(complex double),ct.gpu_Gtri,ione, G_tri_host, ione);
 
-    int up_and_low = 1;
-    green_kpoint_phase(G_tri_host, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
-
-    for(i = 0; i < ct.num_blocks - 1; i++)
+    if(!ct.is_gamma)
     {
-        n1 = ct.block_dim[i];
-        n2 = ct.block_dim[i+1];
-        n3 = pmo.offdiag_begin[i];
-        n4 = pmo.lowoffdiag_begin[i];
+        int up_and_low = 1;
+        green_kpoint_phase(G_tri_host, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
-        desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
-        descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
+        for(i = 0; i < ct.num_blocks - 1; i++)
+        {
+            n1 = ct.block_dim[i];
+            n2 = ct.block_dim[i+1];
+            n3 = pmo.offdiag_begin[i];
+            n4 = pmo.lowoffdiag_begin[i];
 
-        pztranu_(&n1, &n2, &half, &G_tri_host[n4], &ione, &ione, descc, 
-                &half, &G_tri_host[n3], &ione, &ione, desca);
+            desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
+            descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
 
+            pztranu_(&n1, &n2, &half, &G_tri_host[n4], &ione, &ione, descc, 
+                    &half, &G_tri_host[n3], &ione, &ione, desca);
+
+        }
     }
 
 
