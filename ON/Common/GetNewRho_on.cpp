@@ -24,7 +24,7 @@
 #include "blas.h"
 
 
-void GetNewRho_on(STATE * states, double *rho)
+void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 {
     int idx, ione = 1;
     double t2;
@@ -54,8 +54,8 @@ void GetNewRho_on(STATE * states, double *rho)
         {
             st11 = st1 - ct.state_begin;
             if (st1 == st2)
-                scale =  work_matrix_row[st11 * ct.num_states + st2];
-            if (st1 != st2) scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
+                scale =  rho_matrix[st11 * ct.num_states + st2];
+            if (st1 != st2) scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
             psi1 = states[st1].psiR;
             psi2 = states[st2].psiR;
 
@@ -87,7 +87,7 @@ void GetNewRho_on(STATE * states, double *rho)
                 if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                 {
                     psi1 = states[st1].psiR;
-                    scale = 2.0 * work_matrix_row[st11 * ct.num_states + st2];
+                    scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
                     density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
                             rho_global, 0, states, orbit_overlap_region);
                 }
@@ -116,7 +116,7 @@ void GetNewRho_on(STATE * states, double *rho)
 
     RmgTimer *RT5 = new RmgTimer("3-get_new_rho: augmented");
 
-    RhoAugmented(rho, work_matrix_row);
+    RhoAugmented(rho, rho_matrix);
 
     delete(RT5);
 

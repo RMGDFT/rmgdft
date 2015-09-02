@@ -60,6 +60,7 @@
 #include "init_var.h"
 #include "transition.h"
 
+#include "Kbpsi.h"
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
@@ -72,6 +73,9 @@ CONTROL ct;
 
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
+
+KBPSI Kbpsi_str;
+unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;
@@ -131,15 +135,18 @@ int main(int argc, char **argv)
 
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
+    double *rho_matrix;
     
     int Ieldyn=1, iprint = 0;
     int n2, numst,i;
     double *Pn0, *Pn1;
     double dipole_ion[3], dipole_ele[3];
     int IA=1, JA=1, IB=1, JB=1;
+    int ione=1;
     FILE *dfi;
     int tot_steps, pre_steps;
     int amode, fhand;
+    int FP0_BASIS;
 
     char filename[MAX_PATH+200];
     char char_tem[MAX_PATH+200];
@@ -148,6 +155,7 @@ int main(int argc, char **argv)
     amode = S_IREAD | S_IWRITE;
 
 
+    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
@@ -155,27 +163,47 @@ int main(int argc, char **argv)
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();
     get_state_to_proc(states);
-    int *perm_index;
-    perm_index = (int *) malloc(ct.num_ions * sizeof(int));
-    for(int i = 0; i < ct.num_ions; i++) perm_index[i] = i;
+    perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
+    for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
 
-    if(pct.gridpe == 0)
-        BandwidthReduction(ct.num_ions, ct.ions, perm_index);
-    MPI_Bcast(perm_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-    PermAtoms(ct.num_ions, ct.ions, perm_index);
-    ReadOrbitals (ct.cfile, states, pct.img_comm, perm_index);
+    perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+    rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+
+    if(pct.gridpe == 0) 
+    {
+        ReadPermInfo(ct.infile, perm_ion_index);
+    }
+    MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
 
     init_states();
-
-
     my_barrier();
+
+
 
 
     RmgTimer *RT = new RmgTimer("Main");
     RmgTimer *RT1 = new RmgTimer("Main: init");
 
-    /*  Begin to do the real calculations */
-    init_TDDFT(states, states1);
+
+
+    init_dimension(&MXLLDA, &MXLCOL);
+    init_pe_on();
+
+
+    /* allocate memory for matrixs  */
+    allocate_matrix();
+
+    /* Perform some necessary initializations no matter localized or not  
+     */
+    vxc_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+    vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+
+
+    InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
+
+    my_barrier();
+
 
     numst = ct.num_states;
 
@@ -195,6 +223,7 @@ int main(int argc, char **argv)
     Xij_00 = new double[n2];
     Yij_00 = new double[n2];
     Zij_00 = new double[n2];
+    rho_matrix = new double[n2];
 
 
     n2 = MXLLDA * MXLCOL;
@@ -253,7 +282,7 @@ int main(int argc, char **argv)
         sprintf(char_tem, "%s%s", pct.image_path[pct.thisimg], "dipole.dat");
         int name_incr = FilenameIncrement(char_tem);
         sprintf(filename, "%s.%02d", char_tem, name_incr);
-        
+
         dfi = fopen(filename, "w");
     }
 
@@ -300,9 +329,14 @@ int main(int argc, char **argv)
         mat_global_to_dist(Pn1, mat_X, pct.desca);
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
 
-        RmgTimer *RT3 = new RmgTimer("Main: update");
-        update_TDDFT(mat_X);
-        delete(RT3);
+        Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, rho_matrix, IB, JB,
+                pct.descb, pct.desca[1]);
+
+        dcopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
+
+        GetNewRho_on(states, rho, rho_matrix);
+
+        UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
 
         RmgTimer *RT4 = new RmgTimer("Main: get_HS");
         get_HS(states, states1, vtot_c, Hij_00, Bij_00);
@@ -356,9 +390,9 @@ int main(int argc, char **argv)
         close(fhand);
     }
 
-     get_dm_diag_p(states, matB, mat_X, Hij);
+    get_dm_diag_p(states, matB, mat_X, Hij);
 
-     write_eigs(states);
+    write_eigs(states);
 
     if(pct.imgpe == 0) fclose(ct.logfile);
     RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
@@ -367,4 +401,5 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
 

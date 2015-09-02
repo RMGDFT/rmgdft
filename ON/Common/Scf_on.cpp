@@ -95,7 +95,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     dcopy(&nfp0, rho, &ione, rho_old, &ione);
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
-    GetNewRho_on(states, rho);
+    GetNewRho_on(states, rho, work_matrix_row);
     delete(RT2);
 
     tem1 = 0.0;

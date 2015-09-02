@@ -147,7 +147,7 @@ void get_dm_diag_p(STATE * states, double *matS, double *X, double *hb)
         states[st1].eig[0] = eigs[st1];
     }
 
-    ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
+    ct.efermi = fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
 
     //   uu_dis = zz_dis *(occ_diag)
     dcopy(&mxllda2, zz_dis, &ione, uu_dis, &ione);
