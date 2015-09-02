@@ -63,7 +63,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 
     /* evaluate correction vh+vxc */
     for (idx = 0; idx < nfp0; idx++)
-        vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
 
     get_ddd(vtot);
