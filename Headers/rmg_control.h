@@ -677,6 +677,7 @@ typedef struct
     int max_orbit_nz;
 
     bool movingCenter;
+    bool bandwidthreduction;
     int movingSteps;
     int mg_method;
     int mg_steps;

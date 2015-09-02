@@ -185,7 +185,8 @@ int main(int argc, char **argv)
             default:
                 if(pct.gridpe == 0) 
                 {
-                    BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
+                    if(ct.bandwidthreduction)
+                        BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
                     WritePermInfo(ct.outfile, perm_ion_index);
                 }
                 MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);

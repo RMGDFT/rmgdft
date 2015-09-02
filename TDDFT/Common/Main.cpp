@@ -30,13 +30,12 @@
  * SOURCE
  */
 
-
-
-
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <float.h>
 #include <fcntl.h>
+
+
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,6 +43,12 @@
 #include <string.h>
 #include <time.h>
 #include "svnrev.h"
+#include <float.h>
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <unordered_map>
 #include "const.h"
 #include "RmgTimer.h"
@@ -55,15 +60,16 @@
 #include "Kpoint.h"
 #include "InputKey.h"
 #include "blas.h"
-#include "prototypes_on.h"
-#include "prototypes_tddft.h"
 #include "init_var.h"
 #include "transition.h"
-
+#include "prototypes_on.h"
 #include "Kbpsi.h"
+
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
+#include "prototypes_tddft.h"
+
 
 
 
@@ -76,11 +82,9 @@ PE_CONTROL pct;
 
 KBPSI Kbpsi_str;
 unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
-
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
 int *num_nonlocal_ion;
-double *kbpsi, *kbpsi_comm, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
-double *kbpsi_res; 
+double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
 int kbpsi_num_loop, *kbpsi_comm_send, *kbpsi_comm_recv;
 char *state_overlap_or_not;
 int *send_to, *recv_from, num_sendrecv_loop;
@@ -127,38 +131,50 @@ double alat;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
+#if ELEMENTAL_LIBS
+#include "El.hpp"
+using namespace El;
+#endif
+using namespace std;
 
 int main(int argc, char **argv)
 {
 
 
-
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
     double *rho_matrix;
-    
+
     int Ieldyn=1, iprint = 0;
     int n2, numst,i;
     double *Pn0, *Pn1;
     double dipole_ion[3], dipole_ele[3];
-    int IA=1, JA=1, IB=1, JB=1;
     int ione=1;
     FILE *dfi;
     int tot_steps, pre_steps;
     int amode, fhand;
     int FP0_BASIS;
+    amode = S_IREAD | S_IWRITE;
 
     char filename[MAX_PATH+200];
     char char_tem[MAX_PATH+200];
+
+
+
+
+    ct.mpi_threadlevel = MPI_THREAD_SERIALIZED;
+    ct.mpi_threadlevel = 0;
+
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
-    amode = S_IREAD | S_IWRITE;
 
-
-    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
+    //  initialize for ELEMENTAl lib
+#if ELEMENTAL_LIBS
+    Initialize( argc, argv );
+#endif
 
     ReadBranchON(ct.cfile, ct, ControlMap);
     allocate_states();
@@ -169,12 +185,28 @@ int main(int argc, char **argv)
     perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
     rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
 
-    if(pct.gridpe == 0) 
+    switch(ct.runflag)
     {
-        ReadPermInfo(ct.infile, perm_ion_index);
+        case 1:
+        case 5:
+            if(pct.gridpe == 0) 
+            {
+                ReadPermInfo(ct.infile, perm_ion_index);
+            }
+            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+            break;
+        default:
+            if(pct.gridpe == 0) 
+            {
+                BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
+                WritePermInfo(ct.outfile, perm_ion_index);
+            }
+            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
+            PermAtoms(ct.num_ions, ct.ions, perm_ion_index);
+            break;
     }
-    MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
     ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
+    GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
 
     init_states();
     my_barrier();
@@ -182,10 +214,7 @@ int main(int argc, char **argv)
 
 
 
-    RmgTimer *RT = new RmgTimer("Main");
-    RmgTimer *RT1 = new RmgTimer("Main: init");
-
-
+    RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
 
     init_dimension(&MXLLDA, &MXLCOL);
     init_pe_on();
@@ -204,14 +233,24 @@ int main(int argc, char **argv)
 
     my_barrier();
 
+    delete(RTi);
+
+
+    orbital_comm(states);
+
 
     numst = ct.num_states;
+    FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
-    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+    GetHS(states, states1, vtot_c, Hij_00, Bij_00);
 
-    Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
+
+
+
+
+    Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
             pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Bij_00, IA, JA, pct.descb, matB, IB, JB,
+    Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
 
 
@@ -235,11 +274,11 @@ int main(int argc, char **argv)
 
     get_phi_xyz_phi(states, Xij_00, Yij_00, Zij_00);
 
-    Cpdgemr2d(numst, numst, Xij_00, IA, JA, pct.descb, Xij_dist, IB, JB,
+    Cpdgemr2d(numst, numst, Xij_00, ione, ione, pct.descb, Xij_dist, ione, ione,
             pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Yij_00, IA, JA, pct.descb, Yij_dist, IB, JB,
+    Cpdgemr2d(numst, numst, Yij_00, ione, ione, pct.descb, Yij_dist, ione, ione,
             pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Zij_00, IA, JA, pct.descb, Zij_dist, IB, JB,
+    Cpdgemr2d(numst, numst, Zij_00, ione, ione, pct.descb, Zij_dist, ione, ione,
             pct.desca, pct.desca[1]);
 
     n2 = numst * numst;
@@ -266,7 +305,6 @@ int main(int argc, char **argv)
 
     for(i = 0; i < n2; i++) Pn0[i+n2] = 0.0;
 
-    delete(RT1);
 
 
     double time_step = 0.20;
@@ -329,7 +367,7 @@ int main(int argc, char **argv)
         mat_global_to_dist(Pn1, mat_X, pct.desca);
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
 
-        Cpdgemr2d(numst, numst, mat_X, IA, JA, pct.desca, rho_matrix, IB, JB,
+        Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
                 pct.descb, pct.desca[1]);
 
         dcopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
@@ -339,10 +377,10 @@ int main(int argc, char **argv)
         UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
 
         RmgTimer *RT4 = new RmgTimer("Main: get_HS");
-        get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+        GetHS(states, states1, vtot_c, Hij_00, Bij_00);
         delete(RT4);
 
-        Cpdgemr2d(numst, numst, Hij_00, IA, JA, pct.descb, Hij, IB, JB,
+        Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
                 pct.desca, pct.desca[1]);
         dipole_calculation(rho, dipole_ele);
 
@@ -374,7 +412,6 @@ int main(int argc, char **argv)
     }
 
 
-    delete(RT);
 
     tot_steps = ct.scf_steps + pre_steps;
     write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 

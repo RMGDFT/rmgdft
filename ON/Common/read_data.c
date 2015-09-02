@@ -105,7 +105,10 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
         sprintf(newname, "%s%s%d", name, ".orbit_", state_permuted);
         fhand = open(newname, O_RDWR);
         if (fhand < 0)
-            error_handler(" Unable to write file ");
+        {
+            dprintf("\n  unable to open file %s", newname);
+            exit(0);
+        }
 
         nbytes = read(fhand, states[state].psiR, states[state].size * sizeof(double));
         idx = states[state].size * sizeof(double);

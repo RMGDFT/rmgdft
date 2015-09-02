@@ -73,6 +73,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      CHECK_AND_FIX, OPTIONAL, "", "");
 
     If.RegisterInputKey("do_movable_orbital_centers", &lc.movingCenter, false, "");
+    If.RegisterInputKey("band_width_reduction", &lc.bandwidthreduction, false, "");
 
     If.RegisterInputKey("movable_orbital_centers_steps", &lc.movingSteps, 1, 10000, 40, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
