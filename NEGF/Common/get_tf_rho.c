@@ -144,20 +144,33 @@ void get_tf_rho (double * tf_rho)
     }
     
     
-    /* Check that total charge is 0 */
-#if 0
+    /* Set net TF charge to 0 */
     t1 = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)
 	t1 += tf_rho[idx];
 
 
-    t1 = t1 * get_vel_f();
     t1 = real_sum_all (t1, pct.grid_comm);  /* sum over pct.grid_comm  */
-
+    
     if (pct.imgpe==0)
-	printf("\nTotal TF charge is %.8e\n", t1);
+	printf("\nTotal TF charge is %.8e. It is automatically being set to 0\n", t1*get_vel_f());
 
-#endif
+
+    t1 /= FP0_BASIS;
+    
+    for (idx = 0; idx < FP0_BASIS; idx++)
+	tf_rho[idx] -= t1;
+
+
+    /*Check again, disable if works correctly*/
+    t1 = 0.0;
+    for (idx = 0; idx < FP0_BASIS; idx++)
+	t1 += tf_rho[idx];
+    
+    if (pct.imgpe==0)
+	printf("\nTotal TF charge after adjustment is %.8e\n", t1*get_vel_f());
+
+
 
 
 
