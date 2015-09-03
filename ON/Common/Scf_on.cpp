@@ -60,19 +60,27 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     flag = 0;
     my_barrier();
+
+    
+
+    RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
+    orbital_comm(states);
+    delete(RT0);
+
+    RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
+    KbpsiUpdate(states);
+    delete(RTk);
+
     RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-    my_barrier();
     delete(RT1);
 #if ELEMENTAL_LIBS
     RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
     DiagElemental(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
-    my_barrier();
     delete(RTa);
 #else
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
     DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
-    my_barrier();
     delete(RTb);
 #endif
 

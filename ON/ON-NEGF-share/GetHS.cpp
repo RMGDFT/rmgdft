@@ -46,11 +46,6 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     hzgrid = Rmg_G->get_hzgrid(1);
 
 
-    RmgTimer *RT0 = new RmgTimer("orbital_comm");
-    orbital_comm(states);
-    delete(RT0);
-
-
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
 

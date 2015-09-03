@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+KbpsiUpdate.cpp
 RhoQnmMat.cpp
 RhoAugmented.cpp
 KbpsiComm.cpp

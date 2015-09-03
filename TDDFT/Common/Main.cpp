@@ -242,11 +242,10 @@ int main(int argc, char **argv)
     numst = ct.num_states;
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
+    orbital_comm(states);
+    KbpsiUpdate(states);
+
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-
-
-
-
 
     Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
             pct.desca, pct.desca[1]);
