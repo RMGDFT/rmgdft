@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "BaseGrid.h"
+#include "transition.h"
 
 #define     MAX_STEPS   300
 
@@ -35,9 +37,10 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
 {
     static double *x;
     static double *f;
+    static int step_effect = 0;
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
-    double b0[MAX_STEPS], bmin;
+    double b0[MAX_STEPS], bmin, bmax;
     int ipvt[MAX_STEPS];
     int i, j;
     int ione = 1;
@@ -51,8 +54,85 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
     double *fi, *fj;
     int A_size;
 
-    step = step0 % Nrefresh;
+    int incx, incy, dimx, dimy, dimz;
+    int ix, iy ,iz;
+    int ixs, ixms, ixps, iys, iyps, iyms;
+    double *res_s, cc, fc, ec, crn;
 
+
+    cc = 1.0/27.0;
+    fc =  1.0/27.0;
+    ec =  1.0/27.0;
+    crn =  1.0/27.0;
+ //   dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
+ //   dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
+ //   dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
+    dimx = get_FPX0_GRID();
+    dimy = get_FPY0_GRID();
+    dimz = get_FPZ0_GRID();
+    incx = (dimy+2) * (dimz+2);
+    incy = dimz+2;
+
+    res_s = (double *) malloc((dimx+2)*(dimy+2)*(dimz+2)*sizeof(double));
+
+    pack_ptos(res_s, fm, dimx, dimy, dimz);
+    trade_images(res_s, dimx, dimy, dimz, FULL_TRADE);
+    
+    for(ix = 1; ix <=dimx; ix++)
+    {
+        ixs = ix * incx;
+        ixms = (ix - 1) * incx;
+        ixps = (ix + 1) * incx;
+
+        for (iy = 1; iy <= dimy; iy++)
+        {
+
+            iys = iy * incy;
+            iyms = (iy - 1) * incy;
+            iyps = (iy + 1) * incy;
+
+            for (iz = 1; iz <= dimz; iz++)
+            {
+
+                fm[(ix-1) * dimy * dimz + (iy-1)* dimz + iz-1]
+                   = cc * res_s[ixs + iys + iz] +
+                    fc * (res_s[ixms + iys + iz] +
+                          res_s[ixps + iys + iz] +
+                          res_s[ixs + iyms + iz] +
+                          res_s[ixs + iyps + iz] +
+                          res_s[ixs + iys + (iz - 1)] +
+                          res_s[ixs + iys + (iz + 1)]) +
+                    ec * (res_s[ixms + iys + (iz + 1)] +
+                          res_s[ixps + iys + (iz + 1)] +
+                          res_s[ixms + iys + (iz - 1)] +
+                          res_s[ixps + iys + (iz - 1)] +
+                          res_s[ixs + iyms + (iz + 1)] +
+                          res_s[ixs + iyps + (iz + 1)] +
+                          res_s[ixs + iyms + (iz - 1)] +
+                          res_s[ixs + iyps + (iz - 1)] +
+                          res_s[ixms + iyms +  iz    ] +
+                          res_s[ixps + iyms +  iz    ] +
+                          res_s[ixms + iyps +  iz    ] +
+                          res_s[ixps + iyps +  iz    ]) +
+                    crn *(res_s[ixms + iyms + (iz - 1)] +
+                          res_s[ixms + iyms + (iz + 1)] +
+                          res_s[ixms + iyps + (iz - 1)] +
+                          res_s[ixms + iyps + (iz + 1)] +
+                          res_s[ixps + iyms + (iz - 1)] +
+                          res_s[ixps + iyms + (iz + 1)] +
+                          res_s[ixps + iyps + (iz - 1)] +
+                          res_s[ixps + iyps + (iz + 1)]);
+            }
+        }
+    }
+
+
+     
+    pack_stop(res_s, fm, dimx, dimy, dimz);
+
+    step = step_effect % Nrefresh;
+
+    printf("\n  step_effect  %d  %d ", step_effect, step);
     if (NsavedSteps == 1)
     {
         alpha = -ct.mix;
@@ -86,77 +166,83 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
     else
     {
         size = step + 1;
-        if (size > NsavedSteps)
-            size = NsavedSteps;
-        A_size = size + 1;
-        s2 = A_size * A_size;
+            if (size > NsavedSteps)
+                size = NsavedSteps;
+            A_size = size + 1;
+            s2 = A_size * A_size;
 
-        for (i = 0; i < MAX_STEPS * MAX_STEPS; i++)
-            A[i] = 0.0;
-        for (i = 0; i < size; i++)
-        {
-            for (j = i; j < size; j++)
+            for (i = 0; i < MAX_STEPS * MAX_STEPS; i++)
+                A[i] = 0.0;
+            for (i = 0; i < size; i++)
             {
-                fi = f + i * N;
-                fj = f + j * N;
-                if (i == (size - 1))
-                    fi = fm;
-                if (j == (size - 1))
-                    fj = fm;
+                for (j = i; j < size; j++)
+                {
+                    fi = f + i * N;
+                    fj = f + j * N;
+                    if (i == (size - 1))
+                        fi = fm;
+                    if (j == (size - 1))
+                        fj = fm;
 
-                /*  get A(i,j)  */
-                A[j * (size + 1) + i] = ddot (&N, fi, &ione, fj, &ione);
-                A[i * (size + 1) + j] = A[j * (size + 1) + i];
+                    /*  get A(i,j)  */
+                    A[j * (size + 1) + i] = ddot (&N, fi, &ione, fj, &ione);
+                    A[i * (size + 1) + j] = A[j * (size + 1) + i];
+                }
+
+                b[i] = 0.0;
+            }
+            /*  Real_sum_all ( A, b )  if mutil-processing */
+            global_sums (A, &s2, pct.grid_comm);
+            global_sums (b, &A_size, pct.grid_comm);
+
+            b[size] = 1.0;
+            for (i = 0; i < size; i++)
+            {
+                A[i * (size + 1) + size] = 1.0;
+                A[size * (size + 1) + i] = 1.0;
             }
 
-            b[i] = 0.0;
-        }
-        /*  Real_sum_all ( A, b )  if mutil-processing */
-        global_sums (A, &s2, pct.grid_comm);
-        global_sums (b, &A_size, pct.grid_comm);
 
-        b[size] = 1.0;
-        for (i = 0; i < size; i++)
+
+            /*   b = A^(-1) * b     */
+            dgesv (&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
+
+        bmin = 1000.0;
+        bmax = -1000.0;
+        for(i = 0; i < size; i++) 
         {
-            A[i * (size + 1) + size] = 1.0;
-            A[size * (size + 1) + i] = 1.0;
+            bmin = rmg_min(bmin, b[i]);
+            bmax = rmg_max(bmax, b[i]);
         }
+            
 
 
-
-        /*   b = A^(-1) * b     */
-        dgesv (&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
-
-        for (i = 0; i < size; i++) b0[i] = b[i];
-
-        
-        
+#if 0
         bmin = -1.5;
         for (i = 0; i < size; i++) 
         {
             if(b[i] < bmin)
             {
-               for(j = 0; j <size; j++)
-               {
-                   b[j] = b[j] * (1.0 + (b0[i]-bmin)/(1.0-b0[i]));
-               }
-               b[i] = bmin;
-               break;
+                for(j = 0; j <size; j++)
+                {
+                    b[j] = b[j] * (1.0 + (b0[i]-bmin)/(1.0-b0[i]));
+                }
+                b[i] = bmin;
+                break;
             }
         }
+#endif
 
 
         if (pct.gridpe == 0)
         {
             printf ("\n");
             for (i = 0; i < size; i++)
-                printf ("   pulay_b[%d]: %10.6f  ", i, b[i]);
-            printf ("\n");
-            for (i = 0; i < size; i++)
-                printf ("   pulay_b[%d]: %10.6f  ", i, b0[i]);
-            printf ("\n");
+                printf ("   pulay_b[%d]: %10.6f  \n", i, b[i]);
         }
 
+        ct.pulay[0] = b[0];
+        ct.pulay[1] = b[1];
 
         if (step <= (NsavedSteps - 2))
         {
@@ -237,4 +323,5 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         }
 
     }
+    step_effect++;
 }

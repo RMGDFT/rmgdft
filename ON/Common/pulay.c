@@ -66,13 +66,14 @@ void pulay(int step, int N, double *xm, double *fm, int NsavedSteps, int precond
             exit(-1);
         }
     }
+    if (preconditioning)
+        precond(fm);
+
     if (step == 0)
     {
         dcopy(&N, xm, &ione, x, &ione);
         dcopy(&N, fm, &ione, f, &ione);
 
-        if (preconditioning)
-            precond(fm);
         alpha = -sd_step;
         daxpy(&N, &alpha, fm, &ione, xm, &ione);
 
@@ -155,8 +156,8 @@ void pulay(int step, int N, double *xm, double *fm, int NsavedSteps, int precond
                 daxpy(&N, &t1, f1, &ione, fm, &ione);
             }
 
-            if (preconditioning)
-                precond(fm);
+    //        if (preconditioning)
+    //            precond(fm);
 
             t1 = scale;
             daxpy(&N, &t1, fm, &ione, xm, &ione);
@@ -184,8 +185,8 @@ void pulay(int step, int N, double *xm, double *fm, int NsavedSteps, int precond
             t1 = -1.0 * b[size - 1];
             daxpy(&N, &t1, fm, &ione, f, &ione);
 
-            if (preconditioning)
-                precond(f);
+  //          if (preconditioning)
+  //              precond(f);
 
             t1 = scale;
             dscal(&N, &t1, f, &ione);

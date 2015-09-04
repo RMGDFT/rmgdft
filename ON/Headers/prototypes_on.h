@@ -14,6 +14,7 @@ void RhoAugmented (double * rho, double * global_mat_X);
 void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore);
 void KbpsiUpdate(STATE *states);
+void FillOrbitalBorders(double *, double *, int, int, int, int);
 
 
 #ifdef __cplusplus

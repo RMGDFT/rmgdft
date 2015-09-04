@@ -22,6 +22,7 @@
 #include "transition.h"
 #include "blas.h"
 #include "Kbpsi.h"
+#include "FiniteDiff.h"
 
 /* Flag for projector mixing */
 static int mix_steps;
@@ -39,14 +40,19 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     double t1;
     int st1, ixx, iyy, izz;
     int item;
+    int order = 8;
 
     double hxgrid, hygrid, hzgrid;
+    double *orbital_border;
+    FiniteDiff FD(&Rmg_L);
 
     hxgrid = Rmg_G->get_hxgrid(1);
     hygrid = Rmg_G->get_hygrid(1);
     hzgrid = Rmg_G->get_hzgrid(1);
 
 
+    item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
+    orbital_border = new double[item];
 
     ct.meanres = 0.;
     ct.minres = 100000.0;
@@ -124,7 +130,9 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         /* A operating on psi stored in work2 */
         /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid()); 
          */
-        app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        FillOrbitalBorders(orbital_border, states[st1].psiR, ixx, iyy, izz, order);
+        FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+     //   app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
         t1 = 1.0;
         daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
@@ -140,7 +148,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     }                           /* end for st1 = .. */
     RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
-        get_dnmpsi(states1);
+    get_dnmpsi(states1);
     delete(RT5);
 
 
@@ -150,7 +158,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     delete(RTa);
-     
+
 
     /*
      *    precond(states1[ct.state_begin].psiR);
@@ -212,7 +220,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     delete(RT7);
 
-   // normalize_orbits(states);
+    // normalize_orbits(states);
 
 
 
@@ -222,6 +230,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     print_status(states, vh, vxc, vnuc, vh_old, "before leaving OrbitalOptimize.c  ");
     print_state_sum(states1);
 #endif
+    delete [] orbital_border;
     delete(RT);
 
 } 
@@ -297,7 +306,7 @@ void get_qnm_res(double *work_theta)
     double one = 1.0, zero = 0.0, *work_mat;
 
     max_orb = 0;
-    
+
     for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
@@ -331,7 +340,7 @@ void get_qnm_res(double *work_theta)
         Kbpsi_str.kbpsi_res_ion[ion1].resize(num_orb * num_prj);
 
         dgemm("N", "N", &num_prj, &num_orb, &tot_orb,  &one, Kbpsi_str.kbpsi_ion[ion1].data(), &num_prj,
-            work_mat, &tot_orb, &zero, Kbpsi_str.kbpsi_res_ion[ion1].data(), &num_prj);
+                work_mat, &tot_orb, &zero, Kbpsi_str.kbpsi_res_ion[ion1].data(), &num_prj);
 
 
     }         
@@ -377,10 +386,10 @@ void get_dnmpsi(STATE *states1)
         num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
 
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
-                    Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
+                Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
 
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
-                    Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
+                Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
 
 
         for(st0 = 0; st0 < num_orb; st0++)
@@ -410,6 +419,7 @@ void get_dnmpsi(STATE *states1)
     delete [] qnm_weight;
     delete [] prj_sum;
     delete [] work_kbpsi;
+    
 
 
 }

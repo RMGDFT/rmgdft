@@ -26,6 +26,7 @@
 #include "my_scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
+#include "FiniteDiff.h"
 
 
 
@@ -40,6 +41,16 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     int ip, iip1;
 
     double hxgrid, hygrid, hzgrid;
+
+    int order = 8;
+
+    double *orbital_border;
+    FiniteDiff FD(&Rmg_L);
+
+    int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
+    orbital_border = new double[item];
+
+
 
     hxgrid = Rmg_G->get_hxgrid(1);
     hygrid = Rmg_G->get_hygrid(1);
@@ -77,7 +88,8 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
         /* A operating on psi stored in orbit_tem */
 
         /* Eighth-order finite-differenital method for Laplatian operating on psi stored in orbit_tem */
-        app10_del2(sp->psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
+        FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
         /* A |psi > + 0.5 (B V|psi> + V B |psi>) */
 
@@ -136,5 +148,10 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     }
 
     delete(RT);
+    delete [] orbital_border;
 
 }
+
+
+
+
