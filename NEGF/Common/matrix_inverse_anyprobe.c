@@ -40,7 +40,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
      */
 
     int nmax, i, j, n1, n2, n3, n4, m;
-    int *n_begin1;
+    int *n_begin1, *n_begin2;
     complex double *H_tri, *Hii, *Gii, *temp, *Hii1, *Hi1i;
     complex double *Hii_host, *Gii_host, *temp_host;
     complex double *Imatrix, *Imatrix_host;
@@ -72,6 +72,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
     }
 
     my_malloc( n_begin1, N, int );
+    my_malloc( n_begin2, N, int );
 
     my_malloc_init( Imatrix_host, maxrow * maxcol, complex double );
     my_malloc_init( Hii_host, maxrow * maxcol, complex double );
@@ -94,9 +95,11 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
      */
 
     n_begin1[0] = 0;
+    n_begin2[0] = 0;
     for (i = 1; i < N; i++)
     {
         n_begin1[i] = n_begin1[i - 1] + pmo.mxllda_cond[i - 1] * maxcol;
+        n_begin2[i] = n_begin2[i - 1] + pmo.mxlocc_cond[i - 1] * maxrow;
     }
 
     /*  find the block index (corresponding to the probe) we are interested in  */
@@ -117,7 +120,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
 
     matrix_inverse_driver(Gii, desca);
     zcopy_driver (n1, Gii, ione, &Grow[n_begin1[0]], ione);
-    zcopy_driver (n1, Gii, ione, &Gcol[n_begin1[0]], ione);
+    zcopy_driver (n1, Gii, ione, &Gcol[n_begin2[0]], ione);
 
 
     /*  iterate to get one more block  */
@@ -161,7 +164,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
 
         nz = pmo.mxllda_cond[i + 1] * pmo.mxlocc_cond[i + 1];
         zcopy_driver (nz, Gii, ione, &Grow[n_begin1[i + 1]], ione);
-        zcopy_driver (nz, Gii, ione, &Gcol[n_begin1[i + 1]], ione);
+        zcopy_driver (nz, Gii, ione, &Gcol[n_begin2[i + 1]], ione);
 
 
         /*  tempi,i+1 = - Hi,i+1 * Gi+1,i+1  */
@@ -202,10 +205,10 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
             descd = &pmo.desc_cond[ ( i+1 +  j   * N) * DLEN ];
 
             zgemm_driver ("N", "N", n2, n3, n1, one, temp, ione, ione, desca, 
-                    &Gcol[n_begin1[j]], ione, ione, descc, zero, Hii, ione, ione, descd);
+                    &Gcol[n_begin2[j]], ione, ione, descc, zero, Hii, ione, ione, descd);
 
             nz = pmo.mxllda_cond[i+1] * pmo.mxlocc_cond[j];
-            zcopy_driver (nz, Hii, ione, &Gcol[n_begin1[j]], ione);
+            zcopy_driver (nz, Hii, ione, &Gcol[n_begin2[j]], ione);
         }
 
 
@@ -231,7 +234,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
 
         n1 = pmo.mxllda_cond[N - 1] * pmo.mxlocc_cond[N - 1];
         zcopy_driver (n1, Gii, ione, &Grow[n_begin1[N - 1]], ione);
-        zcopy_driver (n1, Gii, ione, &Gcol[n_begin1[N - 1]], ione);
+        zcopy_driver (n1, Gii, ione, &Gcol[n_begin2[N - 1]], ione);
 
         /*  iterate to get one more block  */
 
@@ -277,7 +280,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
 
             nz = pmo.mxllda_cond[i - 1] * pmo.mxlocc_cond[i - 1];
             zcopy_driver (nz, Gii, ione, &Grow[n_begin1[i - 1]], ione);
-            zcopy_driver (nz, Gii, ione, &Gcol[n_begin1[i - 1]], ione);
+            zcopy_driver (nz, Gii, ione, &Gcol[n_begin2[i - 1]], ione);
 
 
             /*  temp[i,i-1] = - Hi,i-1 * Gi-1,i-1  */
@@ -322,10 +325,10 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
                 descd = &pmo.desc_cond[ (i-1 +  j * N ) * DLEN ];
 
                 zgemm_driver ("N", "N", n3, n2, n1, one, temp, ione, ione, desca, 
-                        &Gcol[n_begin1[j]], ione, ione, descc, zero, Hii, ione, ione, descd);
+                        &Gcol[n_begin2[j]], ione, ione, descc, zero, Hii, ione, ione, descd);
 
                 nz = pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[j];
-                zcopy_driver (nz, Hii, ione, &Gcol[n_begin1[j]], ione);
+                zcopy_driver (nz, Hii, ione, &Gcol[n_begin2[j]], ione);
             }
 
 
@@ -413,14 +416,14 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
         /* eq. 24  */
         /* calculate Gmm * Hm,m+1 = temp[m,m+1] */
 
-        zgemm_driver ("N", "N", n1, n2, n1, one, &Gcol[n_begin1[m]], ione, ione, desca,
+        zgemm_driver ("N", "N", n1, n2, n1, one, &Gcol[n_begin2[m]], ione, ione, desca,
                 Hii1, ione, ione, descb, zero, temp, ione, ione, descb);
 
 
 
         /* calculate  temp[m,m+1] * Gm+1,m+1 = temp2[m,m+1] */
         zgemm_driver ("N", "N", n1, n2, n2, one, temp, ione, ione, descb,
-                &Gcol[n_begin1[m+1]], ione, ione, descd, zero, Hii, ione, ione, descb);
+                &Gcol[n_begin2[m+1]], ione, ione, descd, zero, Hii, ione, ione, descb);
 
         nz = pmo.mxllda_cond[m] * pmo.mxlocc_cond[m];
         zcopy_driver (nz, Imatrix, ione, Gii, ione);
@@ -443,10 +446,10 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
             desce = &pmo.desc_cond[ ( m + j * N) * DLEN ];
 
             zgemm_driver ("N", "N", n1, n3, n1, one, Gii, ione, ione, desca, 
-                    &Gcol[n_begin1[j]], ione, ione, desce, zero, temp, ione, ione, desce);
+                    &Gcol[n_begin2[j]], ione, ione, desce, zero, temp, ione, ione, desce);
 
             nz = pmo.mxllda_cond[m] * pmo.mxlocc_cond[j];
-            zcopy_driver (nz, temp, ione, &Gcol[n_begin1[j]], ione);
+            zcopy_driver (nz, temp, ione, &Gcol[n_begin2[j]], ione);
         }
 
 
@@ -457,10 +460,10 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
             desce = &pmo.desc_cond[ ( m   + j * N) * DLEN ];
             descf = &pmo.desc_cond[ ( m+1 + j * N) * DLEN ];
             zgemm_driver ("N", "N", n1, n3, n2, mone, Hii, ione, ione, descb, 
-                    &Gcol[n_begin1[j]], ione, ione, descf, zero, temp, ione, ione, desce);
+                    &Gcol[n_begin2[j]], ione, ione, descf, zero, temp, ione, ione, desce);
 
             nz = pmo.mxllda_cond[m] * pmo.mxlocc_cond[j];
-            zcopy_driver (nz, temp, ione, &Gcol[n_begin1[j]], ione);
+            zcopy_driver (nz, temp, ione, &Gcol[n_begin2[j]], ione);
 
         }
 
@@ -478,6 +481,7 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
 
 
     my_free(n_begin1);
+    my_free(n_begin2);
     my_free( Hii_host );
     my_free( Gii_host );
     my_free( temp_host );
