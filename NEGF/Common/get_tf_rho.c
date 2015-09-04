@@ -156,7 +156,7 @@ void get_tf_rho (double * tf_rho)
 	printf("\nTotal TF charge is %.8e. It is automatically being set to 0\n", t1*get_vel_f());
 
 
-    t1 /= FP0_BASIS;
+    t1 /= (FP0_BASIS*npes);
     
     for (idx = 0; idx < FP0_BASIS; idx++)
 	tf_rho[idx] -= t1;
