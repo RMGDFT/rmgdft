@@ -118,7 +118,6 @@ void charge_density_matrix_p (complex double * sigma_all)
 
     }
 
-    my_free( green_C );
 
 
     EndRmgTimer(RT1);
@@ -188,7 +187,7 @@ void charge_density_matrix_p (complex double * sigma_all)
 
                         nC = ct.num_states;
 
-                        Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene,
+                        Sgreen_c_noneq_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, ene,green_C,
                                 green_C_row, green_C_col, nC, idx_delta);
 
 
@@ -234,6 +233,7 @@ void charge_density_matrix_p (complex double * sigma_all)
             if(cei.probe_noneq > 0) break;
         }      /* iprobe loop ends here */
 
+        my_free( green_C );
         my_free( green_C_row );
         my_free( green_C_col );
         my_free( rho_mn );

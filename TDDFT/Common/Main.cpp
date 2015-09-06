@@ -165,9 +165,11 @@ int main(int argc, char **argv)
     ct.mpi_threadlevel = MPI_THREAD_SERIALIZED;
     ct.mpi_threadlevel = 0;
 
+    RmgTimer *RT = new RmgTimer("1-TOTAL");
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
 
+    RmgTimer *RT1 = new RmgTimer("1-TOTAL: read_and_alloc");
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
@@ -209,10 +211,10 @@ int main(int argc, char **argv)
     GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
 
     init_states();
-    my_barrier();
 
 
 
+    delete(RT1);
 
     RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
 
@@ -231,21 +233,24 @@ int main(int argc, char **argv)
 
     InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 
-    my_barrier();
 
     delete(RTi);
-
-
-    orbital_comm(states);
 
 
     numst = ct.num_states;
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
+    RmgTimer *RT2 = new RmgTimer("1-TOTAL: orbital_comm");
     orbital_comm(states);
-    KbpsiUpdate(states);
+    delete(RT2);
 
+    RmgTimer *RT3 = new RmgTimer("1-TOTAL: kbpsi");
+    KbpsiUpdate(states);
+    delete(RT3);
+
+    RmgTimer *RT4 = new RmgTimer("1-TOTAL: GetHS");
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
+    delete(RT4);
 
     Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
             pct.desca, pct.desca[1]);
@@ -358,9 +363,9 @@ int main(int argc, char **argv)
 
         mat_dist_to_global(Hij, Hmatrix, pct.desca);
 
-        RmgTimer *RT2 = new RmgTimer("Main: ELDYN");
+        RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
-        delete(RT2);
+        delete(RT2a);
 
         //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
         mat_global_to_dist(Pn1, mat_X, pct.desca);
@@ -371,13 +376,17 @@ int main(int argc, char **argv)
 
         dcopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
 
+        RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
         GetNewRho_on(states, rho, rho_matrix);
+        delete(RT4a);
 
+        RmgTimer *RT4b = new RmgTimer("1-TOTAL: Updatepot");
         UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
+        delete(RT4b);
 
-        RmgTimer *RT4 = new RmgTimer("Main: get_HS");
+        RmgTimer *RT4c = new RmgTimer("1-TOTAL: GetHS");
         GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-        delete(RT4);
+        delete(RT4c);
 
         Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
                 pct.desca, pct.desca[1]);
@@ -426,10 +435,11 @@ int main(int argc, char **argv)
         close(fhand);
     }
 
-    get_dm_diag_p(states, matB, mat_X, Hij);
+//    get_dm_diag_p(states, matB, mat_X, Hij);
 
-    write_eigs(states);
+//    write_eigs(states);
 
+    delete(RT);
     if(pct.imgpe == 0) fclose(ct.logfile);
     RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
 

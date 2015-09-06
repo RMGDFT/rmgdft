@@ -19,7 +19,7 @@
 
 
 void Sgreen_c_noneq_p (double *Htri, double *Stri, complex double * sigma,
-                     int *sigma_idx, complex double ene, complex double *Green_C_row, 
+                     int *sigma_idx, complex double ene, complex double *Green_C, complex double *Green_C_row, 
                      complex double *Green_C_col, int nC, int iprobe)
 {
 /*   H00, S00: nC * nC real matrix
@@ -78,7 +78,8 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, complex double * sigma,
 
 
 
-  matrix_inverse_anyprobe (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
+  matrix_inverse_rowcol (H_tri, iprobe, Green_C, Green_C_row, Green_C_col); 
+ //matrix_inverse_anyprobe (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
 //#if GPU_ENABLED
  // matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
 //#else

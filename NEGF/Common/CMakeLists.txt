@@ -1,4 +1,5 @@
 add_library (NEGF_Common
+matrix_inverse_rowcol.c
 zgesv_driver.c
 matrix_inverse_Gauss.c
 green_lead.c

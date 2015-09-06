@@ -478,6 +478,11 @@ void matrix_inverse_anyprobe (complex double * H_tri_host, int N, int * ni, int 
     n4 = totcol * maxrow;
     getvector_device_host(n4, sizeof(complex double), ct.gpu_Gcol, ione, G_col_host, ione);
 
+    for(i = 0; i < N; i++)
+    {
+     dprintf("\n saadddcol %d %d %f %f %f %f", pct.gridpe, i, G_col_host[n_begin2[i]+1], G_col_host[n_begin2[i]]);
+     dprintf("\n saadddrow %d %d %f %f %f %f", pct.gridpe, i, G_row_host[n_begin1[i]+1], G_row_host[n_begin1[i]]);
+}
 
 
     my_free(n_begin1);

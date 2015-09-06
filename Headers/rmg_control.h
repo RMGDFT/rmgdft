@@ -643,6 +643,7 @@ typedef struct
     double dE;
 
     double *energies;
+    double pulay[10];
 
     int restart_mix;
 

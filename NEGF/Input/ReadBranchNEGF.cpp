@@ -80,7 +80,7 @@ void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMP
                      CHECK_AND_FIX, OPTIONAL, "", "");
     If.RegisterInputKey("Simpson_tol", &lc.simpson_tol, 1e-10, 1.0, 1e-3, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
-    If.RegisterInputKey("probe_noneq", &cei.probe_noneq, 1, 100, 1, 
+    If.RegisterInputKey("probe_noneq", &cei.probe_noneq, 0, 100, 1, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
 
     If.RegisterInputKey("gbias_begin", &lc.gbias_begin, -DBL_MAX, DBL_MAX, -100.0,
