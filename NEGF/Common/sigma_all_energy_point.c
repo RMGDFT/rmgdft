@@ -20,10 +20,9 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
     int iprobe, jprobe, idx_delta, j;
     int iene;
     int st1, n2;
-    complex double *sigma, *g;          
+    complex double *sigma;          
 
-    complex double *ch0, *ch01, *ch10;
-    complex double *S00, *H00, *H10, *S10, *H01, *S01, *HCL, *SCL;
+    complex double *work;
     complex double ene, ctem;
 
     int idx_sigma, idx_C;
@@ -46,18 +45,7 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
     }
 
 
-    my_malloc_init( g, maxrow * maxcol, complex double);
-    my_malloc_init( ch0, maxrow * maxcol, complex double);
-    my_malloc_init( ch01, maxrow * maxcol, complex double);
-    my_malloc_init( ch10, maxrow * maxcol, complex double);
-    my_malloc_init( S00, maxrow * maxcol,  complex double);
-    my_malloc_init( H00, maxrow * maxcol,  complex double);
-    my_malloc_init( S10, maxrow * maxcol,  complex double);
-    my_malloc_init( S01, maxrow * maxcol,  complex double);
-    my_malloc_init( H01, maxrow * maxcol,  complex double);
-    my_malloc_init( H10, maxrow * maxcol,  complex double);
-    my_malloc_init( SCL, maxrow * maxcol,  complex double);
-    my_malloc_init( HCL, maxrow * maxcol,  complex double);
+    my_malloc_init( work, 12*maxrow * maxcol, complex double);
 
     max_sigma_col = 0;
     max_sigma_row = 0;
@@ -89,77 +77,11 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
             ene = lcr[iprobe].ene[iene];
 
 
-            /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
-             * it sums over all probes
-             * tot, tott,  is also a complex matrix, 
-             * their memory should be the maximum of probe dimensions, lcr[1,...].num_states
-             */
-
 
             for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
             {
 
-                matrix_kpoint_lead(S00, H00, S01, H01, SCL, HCL,  kvecy, kvecz, jprobe);
-                desca = &pmo.desc_lead[ (jprobe-1) * DLEN];
-
-                numst = lcr[jprobe].num_states;
-
-                PZTRANC(&numst, &numst, &one, S01, &ione, &ione, desca,
-                        &zero, S10, &ione, &ione, desca);
-                PZTRANC(&numst, &numst, &one, H01, &ione, &ione, desca,
-                        &zero, H10, &ione, &ione, desca);
-
-
-                idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
-                for (i = 0; i < idx; i++)
-                {
-                    ch0[i]  = ene * S00[i] - Ha_eV * H00[i];
-                    ch01[i] = ene * S01[i] - Ha_eV * H01[i];
-                    ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-                }
-
-                //#if GPU_ENABLED
-                //                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
-
-                //#else
-
-                if (cimag(ene) >0.5 )
-                {
-                    Sgreen_semi_infinite_p (g, ch0, ch01, ch10, jprobe);
-                }
-                else
-                {
-
-                    green_lead(ch0, ch01, ch10, g, jprobe);
-
-                }
-                //#endif
-
-
-                idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
-                idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
-                for (i = 0; i < idx; i++)
-                {
-
-                    ch01[i] = ene * SCL[i] - Ha_eV * HCL[i];
-                }
-                desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
-                descb = &pmo.desc_lead_cond[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
-                numst = lcr[jprobe].num_states;
-                numstC = ct.block_dim[idx_C];
-
-
-                PZTRANC(&numst, &numstC, &one, SCL, &ione, &ione, desca,
-                        &zero, S10, &ione, &ione, descb);
-                PZTRANC(&numst, &numstC, &one, HCL, &ione, &ione, desca,
-                        &zero, H10, &ione, &ione, descb);
-                idx = pmo.mxllda_lead[jprobe -1] * pmo.mxlocc_cond[idx_C];
-                for (i = 0; i < idx; i++)
-                {
-                    ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-                }
-
-                Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
+                sigma_one_energy_point(sigma, jprobe, ene, kvecy, kvecz, work);
 
                 /*-------------------------------------------------------------------*/
 
@@ -199,62 +121,11 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
                     ene = lcr[iprobe].lcr_ne[j].ene_ne[iene];
 
 
-                    /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
-                     * it sums over all probes
-                     * tot, tott,  is also a complex matrix, 
-                     * their memory should be the maximum of probe dimensions, lcr[1,...].num_states
-                     */
-
 
                     for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
                     {
 
-                        matrix_kpoint_lead(S00, H00, S01, H01, SCL, HCL,  kvecy, kvecz, jprobe);
-                        desca = &pmo.desc_lead[ (jprobe-1) * DLEN];
-
-                        numst = lcr[jprobe].num_states;
-
-                        PZTRANC(&numst, &numst, &one, S01, &ione, &ione, desca,
-                                &zero, S10, &ione, &ione, desca);
-                        PZTRANC(&numst, &numst, &one, H01, &ione, &ione, desca,
-                                &zero, H10, &ione, &ione, desca);
-
-
-                        idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
-                        for (i = 0; i < idx; i++)
-                        {
-                            ch0[i] =  ene * S00[i] - Ha_eV * H00[i];
-                            ch01[i] = ene * S01[i] - Ha_eV * H01[i];
-                            ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-                        }
-
-
-                        green_lead(ch0, ch01, ch10, g, jprobe);
-
-
-                        idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
-                        idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[jprobe-1];
-                        for (i = 0; i < idx; i++)
-                        {
-                            ch01[i] = ene * SCL[i] - Ha_eV * HCL[i];
-                        }
-                        desca = &pmo.desc_cond_lead[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
-                        descb = &pmo.desc_lead_cond[ (idx_C + (jprobe-1) * ct.num_blocks) * DLEN];
-                        numst = lcr[jprobe].num_states;
-                        numstC = ct.block_dim[idx_C];
-
-
-                        PZTRANC(&numst, &numstC, &one, SCL, &ione, &ione, desca,
-                                &zero, S10, &ione, &ione, descb);
-                        PZTRANC(&numst, &numstC, &one, HCL, &ione, &ione, desca,
-                                &zero, H10, &ione, &ione, descb);
-                        idx = pmo.mxllda_lead[jprobe -1] * pmo.mxlocc_cond[idx_C];
-                        for (i = 0; i < idx; i++)
-                        {
-                            ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-                        }
-
-                        Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
+                        sigma_one_energy_point(sigma, jprobe, ene, kvecy, kvecz, work);
 
 
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
@@ -281,18 +152,7 @@ void sigma_all_energy_point (complex double * sigma_all, double kvecy, double kv
 
 
 
-    my_free(g);
+    my_free(work);
     my_free(sigma);
-    my_free(ch0);
-    my_free(ch01);
-    my_free(ch10);
-    my_free(S10);
-    my_free(S01);
-    my_free(H10);
-    my_free(H01);
-    my_free(SCL);
-    my_free(HCL);
-    my_free(S00);
-    my_free(H00);
 
 }

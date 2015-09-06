@@ -1,4 +1,5 @@
 add_library (NEGF_Common
+matrix_inverse_nm_Gauss.c
 matrix_inverse_rowcol.c
 zgesv_driver.c
 matrix_inverse_Gauss.c
@@ -98,6 +99,7 @@ Sgreen_cond_p.c
 Sgreen_c_p.c
 Sgreen_semi_infinite_p.c
 sigma_all_energy_point.c
+sigma_one_energy_point.c
 Sigma_p.c
 spline.c
 splint.c
