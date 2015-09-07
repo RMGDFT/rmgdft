@@ -50,13 +50,13 @@ void init_kbr(void)
     double *work, *workr, Zv, rc, rfil;
     double t1, t2, rcut, scale;
     char name[] = "projectors";
-    char newname[20];
+    char newname[MAX_PATH];
     FILE *psp = NULL;
 
     if (pct.gridpe == 0)
     {
 
-        printf("QMD status message: Opening projectors.xmgr\n");
+        printf("Writing projectors files\n");
         fflush(NULL);
 
     }                           /* end if */
@@ -75,7 +75,7 @@ void init_kbr(void)
         scale = 1.3;
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        sprintf(newname, "%s%d.xmgr", name, isp);
+        sprintf(newname, "%s%s%d.xmgr", ct.basename, name, isp);
         if (pct.gridpe == 0)
             psp = fopen(newname, "w+");
         sp = &ct.sp[isp];
