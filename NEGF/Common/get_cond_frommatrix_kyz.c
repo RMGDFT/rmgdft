@@ -311,7 +311,7 @@ void get_cond_frommatrix_kyz ()
                     matrix_kpoint_center(H_tri, lcr[0].Stri, lcr[0].Htri, ene, kvecy[kp], kvecz[kp]);
 
 
-                    Sgreen_cond_p (H_tri, sigma_all, sigma_idx, green_C, nC, iprobe1, iprobe2);
+                    Sgreen_cond_p (H_tri, G_tri, sigma_all, sigma_idx, green_C, nC, iprobe1, iprobe2);
 
 
 

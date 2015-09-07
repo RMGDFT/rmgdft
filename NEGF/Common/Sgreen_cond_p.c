@@ -19,7 +19,7 @@
 #include "pmo.h"
 
 
-void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma_idx,
+void Sgreen_cond_p (complex double *H_tri, complex double *G_tri, complex double *sigma_all, int *sigma_idx,
                     complex double *green_C, int nC, int iprobe1, int iprobe2)
 {
 /*   H00, S00: nC * nC real matrix
@@ -65,7 +65,7 @@ void Sgreen_cond_p (complex double *H_tri, complex double *sigma_all, int *sigma
 
     n1 = cei.probe_in_block[iprobe1 - 1];
     n2 = cei.probe_in_block[iprobe2 - 1];
-    matrix_inverse_blocknm (H_tri, N, ni, n1, n2, green_C);
+    matrix_inverse_blocknm_Gauss (H_tri, G_tri, n1, n2, green_C);
 
 
     /*  Green_C store the (n2,n1) block of Green function */
