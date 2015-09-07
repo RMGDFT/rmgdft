@@ -50,7 +50,7 @@ void init_psp_soft (void)
     SPECIES *sp;
     double *work, *workr, Zv, rc, rfil;
     double t1, t2, rcut, scale;
-    char name[] = "projectors";
+    char name[] = ".projectors";
     char newname[MAX_PATH];
     FILE *psp = NULL;
 
