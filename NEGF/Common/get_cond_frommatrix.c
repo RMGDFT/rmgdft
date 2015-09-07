@@ -42,7 +42,7 @@ void get_cond_frommatrix ()
     complex double alpha, beta;
     double one, zero;
     int i, j, idx, E_POINTS, kpoint[3];
-    char fcd_n = 'N', fcd_c = 'C', newname[100];
+    char fcd_n = 'N', fcd_c = 'C', newname[MAX_PATH];
     FILE *file;
     int ione =1, *desca, *descb, *descc, *descd;
     int n1, n2, nC_1, nC_2, nC_11, nC_22, nC_max;
@@ -335,7 +335,7 @@ void get_cond_frommatrix ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%d%d%s", "cond_", iprobe1, iprobe2, ".dat");
+            sprintf(newname, "%s%s%d%d%s", ct.basename,".cond_", iprobe1, iprobe2, ".dat");
             file = fopen (newname, "w");
             for (iene = 0; iene < E_POINTS; iene++)
                 fprintf (file, " %f %22.12e\n", ener1[iene], cond[iene]);

@@ -44,7 +44,7 @@ void get_cond_frommatrix_kyz ()
 	complex double alpha, beta;
 	complex double one, zero;
 	int i, j, idx, E_POINTS, nkp[3];
-	char fcd_n = 'N', fcd_c = 'C', newname[100];
+	char fcd_n = 'N', fcd_c = 'C', newname[MAX_PATH];
 	FILE *file;
 	int ione =1, *desca, *descb, *descc, *descd;
 	int n1, n2, nC_1, nC_2, nC_11, nC_22, nC_max;
@@ -312,7 +312,7 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%s%d%d%s", pct.image_path[pct.thisimg], "cond_", iprobe1, iprobe2, ".dat1");
+            sprintf(newname, "%s%s%s%d%d%s", pct.image_path[pct.thisimg], ct.basename,".cond_", iprobe1, iprobe2, ".dat1");
             file = fopen (newname, "w");
         }
 
