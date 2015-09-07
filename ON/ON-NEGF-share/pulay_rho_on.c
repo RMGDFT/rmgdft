@@ -241,8 +241,6 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 printf ("   pulay_b[%d]: %10.6f  \n", i, b[i]);
         }
 
-        ct.pulay[0] = b[0];
-        ct.pulay[1] = b[1];
 
         if (step <= (NsavedSteps - 2))
         {

@@ -1,5 +1,5 @@
 add_library (NEGF_Common
-matrix_inverse_nm_Gauss.c
+matrix_inverse_blocknm_Gauss.c
 matrix_inverse_rowcol.c
 zgesv_driver.c
 matrix_inverse_Gauss.c

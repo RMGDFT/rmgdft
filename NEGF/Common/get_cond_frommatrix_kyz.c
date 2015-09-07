@@ -27,7 +27,7 @@ void get_cond_frommatrix_kyz ()
 {
 	int iprobe, iprobe1, iprobe2, iter;
 	int iene, icond, count, insert_num;
-	complex double *H_tri,*S_tri, *g;
+	complex double *H_tri,*G_tri, *g;
 	complex double *green_C;
 	complex double *temp_matrix1, *temp_matrix2;
 	complex double *Gamma1, *Gamma2, *sigma;
@@ -37,14 +37,13 @@ void get_cond_frommatrix_kyz ()
 	int ntot, ndim, nC, idx_C, *sigma_idx;
 	double cons, EF1, EF2, f1, f2;
 
-	complex double *ch0, *ch01, *ch10;
-	complex double *H10, *S10, *H01, *H00, *S01, *S00;
+	complex double *work;
 	complex double ene, ctem;
 
 	complex double alpha, beta;
 	complex double one, zero;
 	int i, j, idx, E_POINTS, nkp[3];
-	char fcd_n = 'N', fcd_c = 'C', newname[MAX_PATH];
+	char fcd_n = 'N', fcd_c = 'C', newname[100];
 	FILE *file;
 	int ione =1, *desca, *descb, *descc, *descd;
 	int n1, n2, nC_1, nC_2, nC_11, nC_22, nC_max;
@@ -92,11 +91,6 @@ void get_cond_frommatrix_kyz ()
 	my_malloc( kweight, ntot, double );
 
 	kpoints(nkp, kvecx, kvecy, kvecz, &nkp_tot, kweight);
-    if(nkp_tot == 1)
-    {
-        get_cond_frommatrix();
-        return;
-    }
 
 	if (pct.gridpe == 0)
 	{
@@ -130,151 +124,105 @@ void get_cond_frommatrix_kyz ()
 	}
 
 
-	num_offdiag_yz = 9;
-
 
 	/*======================== Reading Matrices ===============================*/
 
-	ntot = 0;
-	ndim = 0;
-	for (i = 0; i < ct.num_blocks; i++)
-	{
-		ntot += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
-		ndim += ct.block_dim[i];
-	}
-	for (i = 1; i < ct.num_blocks; i++)
-	{
-		ntot += pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i];
-	}
-	if (ndim != ct.num_states)
-	{
-		printf (" %d %d ndim not equal to nC in get_cond_frommatrix\n", ndim, ct.num_states);
-		exit (0);
-	}
+
+	my_malloc_init( H_tri, pmo.ntot_low, complex double );
+	my_malloc_init( G_tri, pmo.ntot_low, complex double );
+	my_malloc_init( lcr[0].Htri, pmo.ntot, double );
+	my_malloc_init( lcr[0].Stri, pmo.ntot, double );
 
 
-	my_malloc_init( H_tri, ntot, complex double );
-	my_malloc_init( S_tri, ntot, complex double );
-	my_malloc_init( lcr[0].Htri, ntot, double );
-	my_malloc_init( lcr[0].Stri, ntot, double );
-
-	my_malloc_init( lcr[0].Htri_yz, num_offdiag_yz *ntot, double );
-	my_malloc_init( lcr[0].Stri_yz, num_offdiag_yz *ntot, double );
-
-	for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	{	
-		idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-		my_malloc_init( lcr[iprobe].H00, idx, double );
-		my_malloc_init( lcr[iprobe].S00, idx, double );
-		my_malloc_init( lcr[iprobe].H01, idx, double );
-		my_malloc_init( lcr[iprobe].S01, idx, double );
-
-		my_malloc_init( lcr[iprobe].H00_yz, num_offdiag_yz * idx, double );
-		my_malloc_init( lcr[iprobe].S00_yz, num_offdiag_yz * idx, double );
-		my_malloc_init( lcr[iprobe].H01_yz, num_offdiag_yz * idx, double );
-		my_malloc_init( lcr[iprobe].S01_yz, num_offdiag_yz * idx, double );
-	}
-
-	for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	{	
-		i = cei.probe_in_block[iprobe - 1];
-		idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-		my_malloc_init( lcr[iprobe].HCL, idx, double );
-		my_malloc_init( lcr[iprobe].SCL, idx, double );
-
-		my_malloc_init( lcr[iprobe].HCL_yz, num_offdiag_yz *idx, double );
-		my_malloc_init( lcr[iprobe].SCL_yz, num_offdiag_yz *idx, double );
-	}
-
-	read_matrix_pp();
-
-//	if(cei.num_probe >2) 
-//		error_handler("cannot have ky and kz for more than two probes now");
-
-	/*===========   all matrix elements are splitted according to ========
-	 * (1) if two overlaping orbitals are in the same cell, the value stored
-	 *      in Matrix_yz[0+ij],  ij is the index of the matrix element.
-	 * (2) if two orbitals overlaps after one translate by unit vector in y
-	 *     and/or z, the values are stored in Matrix_yz[K+ij]
-	 *     K = size of matrix  * m 
-	 *     m = 1 for +y translation
-	 *     m = 2 for -y translation
-	 *     m = 3 for +z translation
-	 *     m = 4 for -z translation
-	 *     m = 5 for +y+z translation
-	 *     m = 6 for +y-z translation
-	 *     m = 7 for -y+z translation
-	 *     m = 8 for -y-z translation
-	 */
+    nC_max = 0;
+    for(i = 0; i < ct.num_blocks; i++)
+    {
+        idx = pmo.mxllda_cond[i] * pmo.mxlocc_cond[i]; 
+        nC_max = rmg_max(nC_max, idx);
+    }
+    
+    my_malloc_init( Gamma1, nC_max, complex double ); 
+    my_malloc_init( Gamma2, nC_max, complex double ); 
+    my_malloc_init( green_C, nC_max, complex double); 
+    my_malloc_init( temp_matrix1, nC_max, complex double );
+    my_malloc_init( temp_matrix2, nC_max, complex double );
 
 
-	/* for center part, the orbital index is just same as input*/
-	split_matrix_center ();  
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {	
+        idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
+        my_malloc_init( lcr[iprobe].H00, idx, double );
+        my_malloc_init( lcr[iprobe].S00, idx, double );
+        my_malloc_init( lcr[iprobe].H01, idx, double );
+        my_malloc_init( lcr[iprobe].S01, idx, double );
 
-	for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-    	split_matrix_lead (iprobe);
+    }
 
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {	
+        i = cei.probe_in_block[iprobe - 1];
+        idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
+        my_malloc_init( lcr[iprobe].HCL, idx, double );
+        my_malloc_init( lcr[iprobe].SCL, idx, double );
 
-	/*=================== Allocate memory for sigma ======================*/
+    }
 
-	idx = 0;
-	for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	{
-		idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-		idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
-	}
-	my_malloc_init( sigma, idx, complex double );
-
-
-	my_malloc_init( sigma_idx, cei.num_probe, int ); 
-
-	idx = 0;
-	for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	{
-		sigma_idx[iprobe - 1] = idx;
-		idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-		idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
-	}
-
-	my_malloc_init( sigma_all, idx, complex double );
+    read_matrix_pp();
 
 
-	/*============== Allocate memory for tot, tott, g ====================*/
 
-	idx = 0;
-	for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
-	{
-		idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-		idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
-	}
+    /*=================== Allocate memory for sigma ======================*/
 
-	my_malloc_init( g,    idx, complex double );
-	my_malloc_init( ch0,  idx, complex double );
-	my_malloc_init( ch01,  idx, complex double );
-	my_malloc_init( ch10,  idx, complex double );
-	my_malloc_init( H00,  idx, complex double );
-	my_malloc_init( H01,  idx, complex double );
-	my_malloc_init( H10,  idx, complex double );
-	my_malloc_init( S00,  idx, complex double );
-	my_malloc_init( S01,  idx, complex double );
-	my_malloc_init( S10,  idx, complex double );
+    idx = 0;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {
+        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
+    }
+    my_malloc_init( sigma, idx, complex double );
 
-	/*===================================================================*/
 
-	my_malloc_init( ener1, E_POINTS * (1<<simpson_depth), double );
-	my_malloc_init( cond, E_POINTS * (1<<simpson_depth), double );
-	my_malloc_init( ener1_temp,  E_POINTS * (1<<simpson_depth), double );
-	my_malloc_init( cond_temp, E_POINTS * (1<<simpson_depth), double );
-	my_malloc_init( energy_insert_index, E_POINTS * (1<<simpson_depth), int );
+    my_malloc_init( sigma_idx, cei.num_probe, int ); 
 
-	alpha = 1.0;
-	beta = 0.0;
-	one = 1.0; 
-	zero = 0.0;
+    idx = 0;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {
+        sigma_idx[iprobe - 1] = idx;
+        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+        idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
+    }
 
-	nC = ct.num_states;
+    my_malloc_init( sigma_all, idx, complex double );
 
-	/*===================================================================*/
+
+    /*============== Allocate memory for tot, tott, g ====================*/
+
+    idx = 0;
+    for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+    {
+        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
+        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
+    }
+
+
+    my_malloc_init(work,    12*idx, complex double );
+
+    /*===================================================================*/
+
+    my_malloc_init( ener1, E_POINTS * (1<<simpson_depth), double );
+    my_malloc_init( cond, E_POINTS * (1<<simpson_depth), double );
+    my_malloc_init( ener1_temp,  E_POINTS * (1<<simpson_depth), double );
+    my_malloc_init( cond_temp, E_POINTS * (1<<simpson_depth), double );
+    my_malloc_init( energy_insert_index, E_POINTS * (1<<simpson_depth), int );
+
+    alpha = 1.0;
+    beta = 0.0;
+    one = 1.0; 
+    zero = 0.0;
+
+    nC = ct.num_states;
+
+    /*===================================================================*/
 
     for (icond = 0; icond < ct.num_cond_curve; icond++)
     {
@@ -282,21 +230,11 @@ void get_cond_frommatrix_kyz ()
         iprobe1 = ct.cond_probe1[icond];
         n1 = cei.probe_in_block[iprobe1 - 1];
         nC_1 = ct.block_dim[n1];
-        nC_11 = pmo.mxllda_cond[n1] * pmo.mxlocc_cond[n1];
 
         iprobe2 = ct.cond_probe2[icond];
         n2 = cei.probe_in_block[iprobe2 - 1];
         nC_2 = ct.block_dim[n2];
-        nC_22 = pmo.mxllda_cond[n2] * pmo.mxlocc_cond[n2];
 
-        my_malloc_init( Gamma1, nC_11, complex double ); 
-        my_malloc_init( Gamma2, nC_22, complex double ); 
-
-        nC_max = rmg_max(nC_11, nC_22);
-
-        my_malloc_init( green_C, nC_max, complex double); 
-        my_malloc_init( temp_matrix1, nC_max, complex double );
-        my_malloc_init( temp_matrix2, nC_max, complex double );
 
         /*===================================================================*/
         // insert another for loop to iteratively insert fine energy points between steep neighbour points. 
@@ -312,7 +250,7 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%s%s%d%d%s", pct.image_path[pct.thisimg], ct.basename,".cond_", iprobe1, iprobe2, ".dat1");
+            sprintf(newname, "%s%s%d%d%s", pct.image_path[pct.thisimg], "cond_", iprobe1, iprobe2, ".dat1");
             file = fopen (newname, "w");
         }
 
@@ -323,75 +261,17 @@ void get_cond_frommatrix_kyz ()
         {
             for (iene =0; iene < EP; iene++)
                 cond_temp[iene] = 0.0;
-            for (iene = pmo.myblacs; iene < EP; iene += pmo.npe_energy)
+            for(kp = 0; kp < nkp_tot; kp++)
             {
-                ene = ener1_temp[iene] + I * E_imag;
-
-                for(kp = 0; kp < nkp_tot; kp++)
+                for (iene = pmo.myblacs; iene < EP; iene += pmo.npe_energy)
                 {
+                    ene = ener1_temp[iene] + I * E_imag;
 
 
                     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
                     {
 
-                        idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-
-                        matrix_kpoint(idx, S01, lcr[iprobe].S01_yz, kvecy[kp], kvecz[kp]);
-                        matrix_kpoint(idx, H01, lcr[iprobe].H01_yz, kvecy[kp], kvecz[kp]);
-                        matrix_kpoint(idx, S00, lcr[iprobe].S00_yz, kvecy[kp], kvecz[kp]);
-                        matrix_kpoint(idx, H00, lcr[iprobe].H00_yz, kvecy[kp], kvecz[kp]);
-
-                        desca = &pmo.desc_lead[ (iprobe-1) * DLEN];
-
-                        numst = lcr[iprobe].num_states;
-
-                        PZTRANC(&numst, &numst, &one, S01, &ione, &ione, desca,
-                                &zero, S10, &ione, &ione, desca);
-                        PZTRANC(&numst, &numst, &one, H01, &ione, &ione, desca,
-                                &zero, H10, &ione, &ione, desca);
-
-
-
-                        for (i = 0; i < idx; i++)
-                        {
-                            ch0 [i] = ene * S00[i] - Ha_eV * H00[i];
-                            ch01[i] = ene * S01[i] - Ha_eV * H01[i];
-                            ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-                        }
-
-
-                        green_lead (ch0, ch01, ch10, g, iprobe);
-
-                        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-                        idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
-
-                        matrix_kpoint(idx, S01, lcr[iprobe].SCL_yz, kvecy[kp], kvecz[kp]);
-                        matrix_kpoint(idx, H01, lcr[iprobe].HCL_yz, kvecy[kp], kvecz[kp]);
-
-                        for (i = 0; i < idx; i++)
-                        {
-                            ch01[i] = creal(ene) * S01[i] - Ha_eV * H01[i];
-                        }
-
-                        desca = &pmo.desc_cond_lead[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
-                        descb = &pmo.desc_lead_cond[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
-                        numst = lcr[iprobe].num_states;
-                        numstC = ct.block_dim[idx_C];
-
-
-                        PZTRANC(&numst, &numstC, &one, S01, &ione, &ione, desca,
-                                &zero, S10, &ione, &ione, descb);
-                        PZTRANC(&numst, &numstC, &one, H01, &ione, &ione, desca,
-                                &zero, H10, &ione, &ione, descb);
-                        idx = pmo.mxllda_lead[iprobe -1] * pmo.mxlocc_cond[idx_C];
-                        for (i = 0; i < idx; i++)
-                        {
-                            ch10[i] = creal(ene) * S10[i] - Ha_eV * H10[i];
-                        }
-
-                        Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
-
-
+                        sigma_one_energy_point(sigma, iprobe, ene, kvecy[kp], kvecz[kp], work); 
 
 
                         for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
@@ -427,20 +307,11 @@ void get_cond_frommatrix_kyz ()
 
                     /* Construct H = ES - H */
 
-                    matrix_kpoint(ntot, H_tri, lcr[0].Htri_yz, kvecy[kp], kvecz[kp]);
-                    matrix_kpoint(ntot, S_tri, lcr[0].Stri_yz, kvecy[kp], kvecz[kp]);
 
-
-                    for (i = 0; i < ntot; i++)
-                    {
-                        H_tri[i] = creal(ene) * S_tri[i] - H_tri[i] * Ha_eV;
-                    }
-
+                    matrix_kpoint_center(H_tri, lcr[0].Stri, lcr[0].Htri, ene, kvecy[kp], kvecz[kp]);
 
 
                     Sgreen_cond_p (H_tri, sigma_all, sigma_idx, green_C, nC, iprobe1, iprobe2);
-
-
 
 
 
@@ -448,7 +319,6 @@ void get_cond_frommatrix_kyz ()
                     descb = &pmo.desc_cond[( n2 + n2 * ct.num_blocks) * DLEN];   /* nC_2 * nC_2 matrix */
                     descc = &pmo.desc_cond[( n2 + n1 * ct.num_blocks) * DLEN];   /* nC_2 * nC_1 matrix */
                     descd = &pmo.desc_cond[( n1 + n2 * ct.num_blocks) * DLEN];   /* nC_1 * nC_2 matrix */
-
 
 
 
@@ -506,7 +376,7 @@ void get_cond_frommatrix_kyz ()
                             energy_insert_index, ener1_temp);
                     break;
             }
-dprintf("\n cei.energ  %d", EP);
+            dprintf("\n cei.energ  %d", EP);
 
             if(EP == 0) break;
 
@@ -551,11 +421,6 @@ dprintf("\n cei.energ  %d", EP);
 
 
 
-        my_free(Gamma1);
-        my_free(Gamma2);
-        my_free(green_C);
-        my_free(temp_matrix1);
-        my_free(temp_matrix2);
 
     } /* ends of icond (num_cond_curve) loop */
 
@@ -564,11 +429,17 @@ dprintf("\n cei.energ  %d", EP);
     my_free(ener1_temp);
     my_free(cond_temp);
 
-    my_free(g);
+    my_free(work);
     my_free(sigma);
     my_free(sigma_all);
     my_free(sigma_idx);
 
+    my_free(Gamma1);
+    my_free(Gamma2);
+    my_free(temp_matrix1);
+    my_free(temp_matrix2);
+    my_free(green_C);
+    my_free(H_tri);
     my_free(lcr[0].Htri);
     my_free(lcr[0].Stri);
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
