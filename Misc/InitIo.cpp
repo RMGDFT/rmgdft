@@ -91,7 +91,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 {
 
     int npes, worldpe, status, provided=0;
-    char logname[MAX_PATH];
     time_t timer;
 
     /* Set start of program time */
@@ -122,7 +121,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     init_pestr ();
 
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
-    snprintf (ct.basename, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
+    snprintf (ct.shortname, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
     ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
     if(Verify("start_mode", "Restart From File", ControlMap)) {
@@ -155,10 +154,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
-        snprintf (logname, MAX_PATH, "%s.log", ct.basename);
+        //snprintf (logname, MAX_PATH, "%s.log", ct.basename);
+        //snprintf (logname, MAX_PATH, "%s", ct.basename);
         int name_incr;
-        name_incr = FilenameIncrement(logname);
-        snprintf (ct.logname, MAX_PATH, "%s.%02d", logname, name_incr);
+        name_incr = FilenameIncrement(ct.shortname);
+        snprintf (ct.basename, MAX_PATH, "%s.%02d", ct.shortname, name_incr);
+        snprintf (ct.logname, MAX_PATH, "%s.%02d.log", ct.shortname, name_incr);
 
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");

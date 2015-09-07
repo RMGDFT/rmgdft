@@ -83,13 +83,16 @@ typedef struct
      */
     char cfile[MAX_PATH];
 
-    /* Basename for control file and other related files (beta and q function plots, etc.) */
+    /* Part of the log file name without numerical increment and ".log" added */
+    char shortname[MAX_PATH];
+
+    /* Basename for control file and other related files (beta and q function plots, etc.)  This is full name except the ".log" extension*/
     char basename[MAX_PATH];
 
-    /** HAndle of the output log file. Constructed from command line argument */
+    /** Handle of the output log file. Constructed from command line argument */
     FILE *logfile;
 
-    /** Actual path to the log file */
+    /** Actual full name to the log file */
     char logname[MAX_PATH];
 
     /** Input file name to read wavefunctions from when doing a restart */
@@ -610,10 +613,8 @@ typedef struct
     int vh_nbasis;
 
 
-    double bg_begin;
-    double bg_end;
-    double BT;
 
+    double BT;
 
    
     /* Total number of electrons */
