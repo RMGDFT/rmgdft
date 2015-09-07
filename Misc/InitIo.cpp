@@ -154,8 +154,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
-        //snprintf (logname, MAX_PATH, "%s.log", ct.basename);
-        //snprintf (logname, MAX_PATH, "%s", ct.basename);
         int name_incr;
         name_incr = FilenameIncrement(ct.shortname);
         snprintf (ct.basename, MAX_PATH, "%s.%02d", ct.shortname, name_incr);
