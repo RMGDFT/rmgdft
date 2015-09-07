@@ -124,6 +124,11 @@ void get_cond_frommatrix_kyz ()
 	}
 
 
+   // if(nkp_tot == 1) 
+    //{
+     //   get_cond_frommatrix();
+      //  return;
+   // }
 
 	/*======================== Reading Matrices ===============================*/
 
@@ -248,12 +253,6 @@ void get_cond_frommatrix_kyz ()
         for (iene = 0; iene < E_POINTS * (1<<simpson_depth); iene++)
             energy_insert_index[iene] = iene;
 
-        if (pct.gridpe == 0)
-        {
-            sprintf(newname, "%s%s%d%d%s", pct.image_path[pct.thisimg], "cond_", iprobe1, iprobe2, ".dat1");
-            file = fopen (newname, "w");
-        }
-
         EP = E_POINTS;
         tot_energy_point = 0;
         simpson_loop = 0;
@@ -308,6 +307,7 @@ void get_cond_frommatrix_kyz ()
                     /* Construct H = ES - H */
 
 
+                    ene = ener1_temp[iene];
                     matrix_kpoint_center(H_tri, lcr[0].Stri, lcr[0].Htri, ene, kvecy[kp], kvecz[kp]);
 
 
@@ -384,6 +384,9 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
+            sprintf(newname, "%s%s%s%d%d%s", pct.image_path[pct.thisimg],ct.basename,".cond_", iprobe1, iprobe2, ".dat");
+            file = fopen (newname, "w");
+
             for (iene = 0; iene < tot_energy_point; iene++)
             {
                 fprintf (file, " %f %22.12e\n", ener1[iene], cond[iene]);
