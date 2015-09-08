@@ -92,16 +92,16 @@ void init_psp (void)
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
     {
+        sp = &ct.sp[isp];
         if (pct.gridpe == 0 && write_flag)
         {
-            snprintf (newname, MAX_PATH, "%s.local%d.xmgr", ct.basename, isp);
+            snprintf (newname, MAX_PATH, "local_%s.xmgr",  sp->atomic_symbol);
             my_fopen (psp, newname, "w+");
         }
-        sp = &ct.sp[isp];
 
         /*Get ldim */
-//	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (double) get_FG_RATIO());
-       // if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID())
+        //	sp->ldim = radius2grid (sp->lradius, ct.hmingrid/ (double) get_FG_RATIO());
+        // if ((sp->ldim >= get_FNX_GRID()) || (sp->ldim >= get_FNY_GRID())
         //    || (sp->ldim >= get_FNZ_GRID()))
         //    error_handler ("local potential radius exceeds global grid size");
 
@@ -122,7 +122,7 @@ void init_psp (void)
             sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 +1;
             sp->nlfdim = ct.nxfgrid * sp->nldim;
-            
+
             if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
                 printf("Warning: diameter of non-local projectors %8.4f exceeds cell size. Reducing.\n", sp->nlradius);
                 sp->nlradius *= 0.95;
@@ -150,7 +150,7 @@ void init_psp (void)
             ct.max_nlfpoints = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
 
-	/*Filter and interpolate local potential into fine linear grid*/
+        /*Filter and interpolate local potential into fine linear grid*/
         Zv = sp->zvalence;
         rc = sp->rc;
 
@@ -162,57 +162,57 @@ void init_psp (void)
         if (pct.gridpe == 0 && write_flag)
         {
             for (idx = 0; idx < sp->rg_points; idx++)
-                    fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
-            
-	    fprintf (psp, "\n&&\n");
+                fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
+
+            fprintf (psp, "\n&&\n");
         }
 
 
 
         /* Transform to g-space and filter it */
         /*rft1 (ct.cparm, work, &sp->r[0], sp->localig, &sp->rab[0], sp->rg_points, 0, sp->drlig,
-              sp->gwidth, MAX_LOCAL_LIG);*/
-	filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, 
-		sp->localig, &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, sp->drlocalig);
+          sp->gwidth, MAX_LOCAL_LIG);*/
+        filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, 
+                sp->localig, &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, sp->drlocalig);
 
 
-	/*Write local projector into a file if requested*/
-	if ((pct.gridpe == 0) && write_flag)
-	{
-	    rfil = 0.0;
-	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-	    {
-                
-		fprintf (psp, "%e  %e \n", rfil, sp->localig[idx]);
-		rfil += sp->drlig;
-	    }
-            
-	    /* output xmgr data separator */
-	    fprintf (psp, "\n&&\n");
-	    
-	    rfil = 0.0;
-	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-	    {
-                
-		fprintf (psp, "%e  %e \n", rfil, sp->drlocalig[idx]);
-		rfil += sp->drlig;
-	    }
-            
-	    fclose (psp);
-	}
+        /*Write local projector into a file if requested*/
+        if ((pct.gridpe == 0) && write_flag)
+        {
+            rfil = 0.0;
+            for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+            {
+
+                fprintf (psp, "%e  %e \n", rfil, sp->localig[idx]);
+                rfil += sp->drlig;
+            }
+
+            /* output xmgr data separator */
+            fprintf (psp, "\n&&\n");
+
+            rfil = 0.0;
+            for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+            {
+
+                fprintf (psp, "%e  %e \n", rfil, sp->drlocalig[idx]);
+                rfil += sp->drlig;
+            }
+
+            fclose (psp);
+        }
 
 
-	/*Open file for writing beta function*/
+        /*Open file for writing beta function*/
         if (pct.gridpe == 0 && write_flag)
-	{
-            snprintf (newname, MAX_PATH, "%s.beta%d.xmgr", ct.basename, isp);
+        {
+            snprintf (newname, MAX_PATH, "beta_%s.xmgr", sp->atomic_symbol);
             my_fopen (psp, newname, "w+");
-            
-	    snprintf (newname, MAX_PATH, "%s.drbeta%d.xmgr", ct.basename, isp);
+
+            snprintf (newname, MAX_PATH, "drbeta_%s.xmgr", sp->atomic_symbol);
             my_fopen (psp2, newname, "w+");
-	}
-	
-	/* Write raw beta function into file if requested*/
+        }
+
+        /* Write raw beta function into file if requested*/
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
@@ -223,36 +223,36 @@ void init_psp (void)
                 fprintf (psp, "\n&&\n");
             }
 
-	    filter_potential(&sp->beta[ip][0], &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.betacparm, &sp->betalig[ip][0], 
-		    &sp->rab[0], sp->llbeta[ip], sp->drnlig, sp->gwidth, MAX_LOCAL_LIG, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
+            filter_potential(&sp->beta[ip][0], &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.betacparm, &sp->betalig[ip][0], 
+                    &sp->rab[0], sp->llbeta[ip], sp->drnlig, sp->gwidth, MAX_LOCAL_LIG, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
 
 
-	    /* Is this necessary ??? */
+            /* Is this necessary ??? */
             if (sp->llbeta[ip])
                 sp->betalig[ip][0] = 0.0;
 
 
-	    /* output filtered non-local projector to a file  if requested */
-	    if (pct.gridpe == 0 && write_flag)
-	    {
-		rfil = 0.0;
-		for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-		{
-		    {
-			fprintf (psp, "%e  %e\n", rfil, sp->betalig[ip][idx]);
-			fprintf (psp2, "%e  %e\n", rfil, sp->drbetalig[ip][idx]);
-		    }
+            /* output filtered non-local projector to a file  if requested */
+            if (pct.gridpe == 0 && write_flag)
+            {
+                rfil = 0.0;
+                for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+                {
+                    {
+                        fprintf (psp, "%e  %e\n", rfil, sp->betalig[ip][idx]);
+                        fprintf (psp2, "%e  %e\n", rfil, sp->drbetalig[ip][idx]);
+                    }
 
-		    rfil += sp->drnlig;
-		}                   /* end for */
-	    }
+                    rfil += sp->drnlig;
+                }                   /* end for */
+            }
 
             /* output xmgr data separator */
             if (pct.gridpe == 0 && write_flag)
-	    {
+            {
                 fprintf (psp, "\n&&\n");
                 fprintf (psp2, "\n&&\n");
-	    }
+            }
 
         }                       /* end for ip */
 
@@ -264,49 +264,49 @@ void init_psp (void)
                 work[idx] = sp->rspsco[idx] / (4.0 * PI);
 
 
-	    /*Write raw (pre-filtered) data to a file if requested */
+            /*Write raw (pre-filtered) data to a file if requested */
             if (pct.gridpe == 0 && write_flag)
             {
-		for (idx = 0; idx < sp->rg_points; idx++)
-		    fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
-		fprintf (psp, "\n&&\n");
+                for (idx = 0; idx < sp->rg_points; idx++)
+                    fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
+                fprintf (psp, "\n&&\n");
             }
 
-	
-	    filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, &sp->rhocorelig[0], 
-		    &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, NULL);
 
-	    /*Oscilations at the tail end of filtered function may cause rhocore to be negative
-	     * but I am not sure if this is the right solution, it may be better to fix charge density
-	     * this rhocore less smooth*/
-	    for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-		if (sp->rhocorelig[idx] < 0.0)
-		    sp->rhocorelig[idx] = 0.0;
+            filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, &sp->rhocorelig[0], 
+                    &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, NULL);
+
+            /*Oscilations at the tail end of filtered function may cause rhocore to be negative
+             * but I am not sure if this is the right solution, it may be better to fix charge density
+             * this rhocore less smooth*/
+            for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+                if (sp->rhocorelig[idx] < 0.0)
+                    sp->rhocorelig[idx] = 0.0;
 
 
 
-	    /*Write filtered data to a file if requested */
-	    if (pct.gridpe == 0 && write_flag)
-	    {
-		rfil = 0.0;
-		
-		for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
-		{
-		    fprintf (psp, "%e  %e\n", rfil, sp->rhocorelig[idx]);
-		    rfil += sp->drlig;
-		}
+            /*Write filtered data to a file if requested */
+            if (pct.gridpe == 0 && write_flag)
+            {
+                rfil = 0.0;
 
-		fprintf (psp, "\n&&\n");
-	    }
+                for (idx = 0; idx < MAX_LOCAL_LIG; idx++)
+                {
+                    fprintf (psp, "%e  %e\n", rfil, sp->rhocorelig[idx]);
+                    rfil += sp->drlig;
+                }
+
+                fprintf (psp, "\n&&\n");
+            }
 
         }                       /* end if */
 
 
         if (pct.gridpe == 0 && write_flag)
-	{
+        {
             fclose (psp);
             fclose (psp2);
-	}
+        }
 
     }                           /* end for */
 

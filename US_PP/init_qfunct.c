@@ -37,10 +37,11 @@ void init_qfunct (void)
     for (isp = 0; isp < ct.num_species; isp++)
     {
 
+        sp = &ct.sp[isp];
         if (verify_boolean ("write_pseudopotential_plots", &SET))
         {
-	    snprintf (newname1, MAX_PATH, "%s.q%d.xmgr", ct.basename,isp);
-	    snprintf (newname2, MAX_PATH, "%s.drq%d.xmgr", ct.basename,isp);
+            snprintf (newname1, MAX_PATH, "q_%s.xmgr", sp->atomic_symbol);
+            snprintf (newname2, MAX_PATH, "drq_%s.xmgr", sp->atomic_symbol);
             if (pct.gridpe == 0)
             {
                 my_fopen (fqq, newname1, "w+");
@@ -48,10 +49,9 @@ void init_qfunct (void)
             }
         }
 
-        sp = &ct.sp[isp];
 
         t1 = 2.0 * scale * (double) get_FG_RATIO() *sp->qradius / ct.hmingrid;
-/*		t1=2.0 *  scale * sp->qradius / ct.hmingrid;*/
+        /*		t1=2.0 *  scale * sp->qradius / ct.hmingrid;*/
         t1 = modf (t1, &t2);
         it1 = (int) t2;
         if (t1 > 0.5)
@@ -59,11 +59,11 @@ void init_qfunct (void)
         if (!(it1 % 2))
             it1++;
         sp->qdim = it1;
-/*		sp->qdim = 2 * FG_NX * (it1 / 2) + 1;*/
+        /*		sp->qdim = 2 * FG_NX * (it1 / 2) + 1;*/
 
-//        if ((sp->qdim >= get_FNX_GRID()) || (sp->qdim >= get_FNY_GRID())
-//            || (sp->qdim >= get_FNZ_GRID()))
-//            error_handler ("nlocal potential radius exceeds global grid size");
+        //        if ((sp->qdim >= get_FNX_GRID()) || (sp->qdim >= get_FNY_GRID())
+        //            || (sp->qdim >= get_FNZ_GRID()))
+        //            error_handler ("nlocal potential radius exceeds global grid size");
         if (sp->qdim >= get_FNX_GRID()) sp->qdim = get_FNX_GRID();
         if (sp->qdim >= get_FNY_GRID()) sp->qdim = get_FNY_GRID();
         if (sp->qdim >= get_FNZ_GRID()) sp->qdim = get_FNZ_GRID();
@@ -114,30 +114,30 @@ void init_qfunct (void)
 
                     }
 
-		    filter_potential(work, &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.qcparm, qnmlig_tpr, 
-			    &sp->rab[0], ll, sp->drqlig, sp->gwidth, MAX_QLIG, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr);
+                    filter_potential(work, &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.qcparm, qnmlig_tpr, 
+                            &sp->rab[0], ll, sp->drqlig, sp->gwidth, MAX_QLIG, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr);
 
-		    /*Is this necessary ???*/
+                    /*Is this necessary ???*/
                     if (ll)
                         qnmlig_tpr[0] = 0.0;
 
-                    
-		    /*Write final filtered Q function if requested*/
-		    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
-		    {
-			
-			rfil = ZERO;
-			for (k = 0; k < MAX_QLIG; k++)
+
+                    /*Write final filtered Q function if requested*/
+                    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
+                    {
+
+                        rfil = ZERO;
+                        for (k = 0; k < MAX_QLIG; k++)
                         {
                             fprintf (fqq, "%e  %e\n", rfil, qnmlig_tpr[k]);
                             fprintf (fdq, "%e  %e\n", rfil, drqnmlig_tpr[k]);
-			    
-			    rfil += sp->drqlig;
+
+                            rfil += sp->drqlig;
                         }
-                        
-			fprintf (fqq, "&\n");
-			fprintf (fdq, "&\n");
-		    }
+
+                        fprintf (fqq, "&\n");
+                        fprintf (fdq, "&\n");
+                    }
                 }               /*end for ll */
             }                   /*end for j */
         }                       /*end for i */

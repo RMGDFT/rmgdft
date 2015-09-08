@@ -50,7 +50,7 @@ void init_psp_soft (void)
     SPECIES *sp;
     double *work, *workr, Zv, rc, rfil;
     double t1, t2, rcut, scale;
-    char name[] = ".projectors";
+    char name[] = "projectors_";
     char newname[MAX_PATH];
     FILE *psp = NULL;
 
@@ -73,10 +73,10 @@ void init_psp_soft (void)
     scale = 1.0;
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        sprintf(newname, "%s%s%d.xmgr", ct.basename, name, isp);
+        sp = &ct.sp[isp];
+        sprintf(newname, "%s%s.xmgr", name, sp->atomic_symbol);
         if (pct.gridpe == 0)
             psp = fopen (newname, "w+");
-        sp = &ct.sp[isp];
 
         t1 = 2.0 * scale * sp->lradius / ct.hmingrid;
         t1 = modf (t1, &t2);

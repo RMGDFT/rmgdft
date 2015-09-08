@@ -384,7 +384,7 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "%s%s%s%d%d%s", pct.image_path[pct.thisimg],ct.basename,".cond_", iprobe1, iprobe2, ".dat");
+            sprintf(newname, "s%s%d%d%s", ct.basename,".cond_", iprobe1, iprobe2, ".dat");
             file = fopen (newname, "w");
 
             for (iene = 0; iene < tot_energy_point; iene++)

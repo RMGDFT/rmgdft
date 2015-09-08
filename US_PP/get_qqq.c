@@ -22,7 +22,7 @@ void get_qqq ()
 
     if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
     {
-	snprintf (filename, MAX_PATH, "%s.q.txt", ct.basename);
+	snprintf (filename, MAX_PATH, "q.txt");
         my_fopen (ftpr, filename, "w+");
     }
 
