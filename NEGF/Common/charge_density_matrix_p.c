@@ -51,7 +51,8 @@ void charge_density_matrix_p (complex double * sigma_all)
 
     /*  allocate memory for green_C, grenn_C is tri-diagonal */
     ntot = pmo.ntot;
-    my_malloc_init( green_C, pmo.ntot_low, complex double );
+    green_C = (complex double *)malloc(pmo.ntot_low * sizeof(complex double));
+    //my_malloc_init( green_C, pmo.ntot_low, complex double );
     my_malloc_init( sigma_idx, cei.num_probe, int );
 
     /*   Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
@@ -233,11 +234,9 @@ void charge_density_matrix_p (complex double * sigma_all)
             if(cei.probe_noneq > 0) break;
         }      /* iprobe loop ends here */
 
-        my_free( green_C );
         my_free( green_C_row );
         my_free( green_C_col );
         my_free( rho_mn );
-        my_free( sigma_idx );
 
         my_free( sigma );
         my_free( gamma );
@@ -342,6 +341,8 @@ void charge_density_matrix_p (complex double * sigma_all)
         lcr[0].density_matrix_tri[st1] *= ct.kp[pct.kstart].kweight /PI ;
 
     comm_sums (lcr[0].density_matrix_tri, &ntot, pct.kpsub_comm);
+    my_free( green_C );
+    my_free( sigma_idx );
 
     EndRmgTimer(RT);
 

@@ -33,7 +33,7 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
     int pbasis = get_P0_BASIS();
 
 
-    my_malloc(psi, pct.num_local_orbit * get_P0_BASIS()+1024, double);
+    psi = work_memory;
     for (st1 = 0; st1 < ct.num_states * (ct.state_end-ct.state_begin); st1++)
         Hij_00[st1] = 0.;
 
@@ -81,9 +81,5 @@ void get_Hij_update (STATE * states, STATE * states_distribute, double *vtot_c, 
 
     local_to_tri(states_distribute, lcr[0].Htri, mat_local);
 
-
-
-
-    my_free(psi);
 
 }
