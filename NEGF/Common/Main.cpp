@@ -57,7 +57,11 @@
 #include "InputKey.h"
 #include "blas.h"
 //#include "main.h"
+
+
+#include "LCR.h"
 #include "prototypes_on.h"
+#include "prototypes_negf.h"
 #include "transition.h"
 
 
@@ -66,7 +70,6 @@
 
 
 
-#include "LCR.h"
 #include "twoParts.h"
 #include "pmo.h"
 #include "cei.h"
@@ -145,7 +148,7 @@ double *work_matrix;
 double *vnuc_x, *vnuc_y, *vnuc_z;
 int peakNum;
 
-double _Complex *sigma_all;
+DoubleC *sigma_all;
 
 NON_LINEAR_THREE_PART lcr[NUM_SUBSYSTEM_MAX];
 
@@ -182,7 +185,7 @@ int main (int argc, char **argv)
     my_barrier ();
 
     /*  Begin to do the real calculations */
-    run (states, states1);
+    Run (states, states1);
 
 
     delete(RT);

@@ -2,7 +2,13 @@
  **    $Id$    **
 ******************************************************************************/
  
-#include <complex.h>
+#ifdef __cplusplus
+    #include <complex>
+    typedef std::complex<double> DoubleC;
+#else
+    #include <complex.h>
+    typedef complex double   DoubleC;
+#endif
 
 #define 	TOLSCF 		1.0E-9
 
@@ -10,14 +16,14 @@
 #define 	NUM_PROBE_MAX 	4 
 #define 	NUM_SUBSYSTEM_MAX   15
 
-extern double _Complex *sigma_all;
+extern DoubleC *sigma_all;
 
 struct NON_LINEAR_THREE_PART2
 {
  int nenergy_ne;
 
- double _Complex *ene_ne;
- double _Complex *weight_ne;
+ DoubleC *ene_ne;
+ DoubleC *weight_ne;
 
  double *density_matrix_ne;
  double *density_matrix_ne_tri;
@@ -53,8 +59,8 @@ struct NON_LINEAR_THREE_PART
 
  double *density_matrix;
 
- double _Complex *ene;
- double _Complex *weight;
+ DoubleC *ene;
+ DoubleC *weight;
 
 
  double bias;
@@ -129,3 +135,4 @@ struct complex_energy_integral
 typedef struct  complex_energy_integral complex_energy_integral;
 
 extern complex_energy_integral cei;
+

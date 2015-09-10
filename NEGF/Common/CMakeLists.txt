@@ -1,4 +1,6 @@
 add_library (NEGF_Common
+#SetEnergyWeight.cpp
+#SetEnergyWeightNoneq.cpp
 matrix_inverse_blocknm_Gauss.c
 matrix_inverse_rowcol.c
 zgesv_driver.c
@@ -73,7 +75,7 @@ pmo_trace.c
 pmo_unitary_matrix.c
 pmo_unitary_matrix_double.c
 print_status.c
-quench.c
+quench_negf.c
 read_cond_input.c
 read_LCR.c
 read_lead_matrix.c
@@ -86,7 +88,7 @@ read_trans.c
 rho_munu.c
 rho_nm_mat.c
 rmg_timings.c
-run.c
+Run.cpp
 scale_orbital.c
 scf.c
 setback_corner_matrix_H.c
@@ -115,7 +117,7 @@ whole_to_tri_complex.c
 row_to_tri_p.c
 whole_to_tri_real.c
 whole_to_tri_update.c
-write_data.c
+write_data_negf.c
 write_data_lead.c
 write_global_data.c
 writeout_matrix_p.c

@@ -49,7 +49,7 @@
 #include "pmo.h"
 
 
-void quench (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
+void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias)
 {
 
@@ -132,6 +132,8 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
 
     FPYZ0_GRID = get_FPY0_GRID() * get_FPZ0_GRID();
 
+    double tem =0, tem1= 0, tem2=0, tem3 = 0, tem4=0, tem5 = 0;
+
     for (i = 0; i < get_FPX0_GRID(); i++)
     {
         for (j = 0; j < get_FPY0_GRID(); j++)
@@ -142,6 +144,12 @@ void quench (STATE * states, STATE * states1, STATE *states_distribute, double *
             {
                 idx2 = k + j * get_FPZ0_GRID() + i * FPYZ0_GRID;
                 vtot[idx2] += vbias[idx];
+                tem += vtot[idx2];
+                tem1 += vh[idx2];
+                tem2 += vxc[idx2];
+                tem3 += vnuc[idx2];
+                tem4 += vext[idx2];
+                tem5 += vbias[idx];
             }
         }
     }

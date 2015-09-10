@@ -32,7 +32,7 @@
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
-void write_data (char *name, double *vh, double *vxc, double *vh_old, double *vxc_old,
+void write_data_negf (char *name, double *vh, double *vxc, double *vh_old, double *vxc_old,
                  double *rho, double *vbias, STATE * states)
 {
     int ion;

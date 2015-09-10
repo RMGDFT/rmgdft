@@ -186,12 +186,6 @@ void run (STATE * states, STATE * states1)
 		} 
 
 
-		if (ct.runflag == 1)
-		    get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
-
-		/* Wait until everybody gets here */
-		my_barrier ();
-
 		/*--------------------------------*/
 
 		my_malloc_init( vbias, get_FPX0_GRID() * get_FPY0_GRID(), double );
