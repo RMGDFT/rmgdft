@@ -61,8 +61,6 @@ extern double *vh_old, *vxc_old;
 
 void Run (STATE * states, STATE * states1)
 {
-    FILE *file;
-    int ix, iy, iz, idx;
     int size, iprobe, idx_delta, i, j;
     double *vbias;
 
@@ -120,7 +118,7 @@ void Run (STATE * states, STATE * states1)
 
 
         RmgTimer *RT3 = new RmgTimer("1-TOTAL: init");
-        init_soft (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
+        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
         delete(RT3);
 
         size = 1;
@@ -225,7 +223,7 @@ void Run (STATE * states, STATE * states1)
                 {
 
                     case MD_QUENCH:            /* Quench the electrons */
-                        quench_negf (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
+                        QuenchNegf (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
 
                         break;
 

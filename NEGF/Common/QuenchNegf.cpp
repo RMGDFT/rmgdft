@@ -43,27 +43,43 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
-#include "init_var.h"
+
+
+#include "make_conf.h"
+#include "params.h"
+
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
 #include "LCR.h"
+#include "prototypes_on.h"
+#include "prototypes_negf.h"
+#include "init_var.h"
+
+
+
+#include "my_scalapack.h"
+#include "blas.h"
+#include "Kbpsi.h"
+#include "FiniteDiff.h"
+
 #include "pmo.h"
 
 
-void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
+void QuenchNegf (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias)
 {
 
     int outcount = 0;
     static int CONVERGENCE = FALSE;
 
-    int st1, st2, st11, st22;
     int idx, idx1, nL, iprobe, jprobe;
-    int j, k, jj, kk, idx_delta, idx_C;
-    int j1, k1, jdiff, kdiff;
+    int j, k, idx_delta, idx_C;
     int idx2, FPYZ0_GRID;
     int i;
 
-    void *RT = BeginRmgTimer("2-Quench");
+    RmgTimer *RT = new RmgTimer("2-Quench");
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -72,7 +88,7 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
         vh_old[idx] = vh[idx];
     }
 
-    if (ct.runflag == 111 | ct.runflag == 112 |ct.runflag == 1121)   /* check */
+    if (ct.runflag == 111 || ct.runflag == 112 ||ct.runflag == 1121)   /* check */
     {
         for (iprobe = 2; iprobe <= cei.num_probe; iprobe++)
         {
@@ -106,23 +122,17 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
 
 
 
-
-    my_malloc_init( sigma_all, idx1, complex double );
+    sigma_all = new DoubleC[idx1];
 
     if (ct.runflag != 111)
     {
-        void *RT1 = BeginRmgTimer("2-Quench: sigma_all");
+        RmgTimer *RT1 = new RmgTimer("2-Quench: sigma_all");
         sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-        EndRmgTimer(RT1);
+        delete(RT1);
     }
     my_barrier();
-    if(pct.gridpe==0) dprintf("\n sigma_all done");
+    if(pct.gridpe==0) printf("\n sigma_all done");
 
-
-    void *RT2 = BeginRmgTimer("2-Quench: kbpsi");
-    get_all_kbpsi (states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
-    EndRmgTimer(RT2);
-    /* get lcr[0].S00 part */
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vext[idx];
@@ -132,7 +142,6 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
 
     FPYZ0_GRID = get_FPY0_GRID() * get_FPZ0_GRID();
 
-    double tem =0, tem1= 0, tem2=0, tem3 = 0, tem4=0, tem5 = 0;
 
     for (i = 0; i < get_FPX0_GRID(); i++)
     {
@@ -144,12 +153,6 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
             {
                 idx2 = k + j * get_FPZ0_GRID() + i * FPYZ0_GRID;
                 vtot[idx2] += vbias[idx];
-                tem += vtot[idx2];
-                tem1 += vh[idx2];
-                tem2 += vxc[idx2];
-                tem3 += vnuc[idx2];
-                tem4 += vext[idx2];
-                tem5 += vbias[idx];
             }
         }
     }
@@ -160,10 +163,16 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
 
     get_ddd (vtot);
 
+    RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
+    orbital_comm(states);
+    delete(RT0);
 
-    void *RT3 = BeginRmgTimer("2-Quench: set H and S first");
-    /* get lcr[0].H00 part */
-    get_HS(states, states1, vtot_c, Hij_00, Bij_00);
+    RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
+    KbpsiUpdate(states);
+    delete(RTk);
+
+    RmgTimer *RT3 = new RmgTimer("2-Quench: set H and S first");
+    GetHS(states, states1, vtot_c, Hij_00, Bij_00);
 
 
     for(i = 0; i < pmo.ntot;i++) lcr[0].Htri[i] = 0.0;
@@ -215,7 +224,7 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
 
 
 
-    EndRmgTimer(RT3);
+    delete(RT3);
 
 
     for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
@@ -227,11 +236,11 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
         if (!CONVERGENCE)
         {
 
-            void *RT4 = BeginRmgTimer("2-Quench: SCF");
+            RmgTimer *RT4 = new RmgTimer("2-Quench: SCF");
             scf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
                     rhocore, rho_tf, vxc_old, vh_old, vbias, &CONVERGENCE);
 
-            EndRmgTimer(RT4);
+            delete(RT4);
 
 
         }
@@ -263,30 +272,14 @@ void quench_negf (STATE * states, STATE * states1, STATE *states_distribute, dou
     }                           /* end for */
 
 
-    /* added by shuchun for force calculation */
-    // if (ct.forceflag !=0 )
-    //{
-    /* Calculate the force */
-    //       force (rho, rho, rhoc, vh, vxc, vnuc);
-    /* write out the force */
-    //     if (pct.gridpe == 0)
-    //          write_force ();
-    //}
-    /* end of addition */
-
-
-
-
-    if(sigma_all != NULL) my_free(sigma_all);
 
     if (pct.gridpe == 0)
         printf ("\n Quench is done \n");
 
-    EndRmgTimer(RT);
+    delete(RT);
 
 
 }                               /* end quench */
 
 /******/
-
 

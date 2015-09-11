@@ -76,6 +76,7 @@
 
 
 #include "init_var.h"
+#include "Kbpsi.h"
 
 
 /* Main control structure which is declared extern in main.h so any module */
@@ -153,6 +154,8 @@ DoubleC *sigma_all;
 NON_LINEAR_THREE_PART lcr[NUM_SUBSYSTEM_MAX];
 
 complex_energy_integral cei;
+
+KBPSI Kbpsi_str;
 
 
 

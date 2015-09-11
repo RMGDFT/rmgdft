@@ -42,7 +42,7 @@ init_gpu.c
 init_loc_xyz.c
 init_pe_on.c
 init_psp_soft.c
-init_soft.c
+InitNegf.cpp
 init_state_distribute.c
 interpolation_orbit.c
 ion_partial_Hij_and_Sij.c
@@ -75,7 +75,7 @@ pmo_trace.c
 pmo_unitary_matrix.c
 pmo_unitary_matrix_double.c
 print_status.c
-quench_negf.c
+QuenchNegf.cpp
 read_cond_input.c
 read_LCR.c
 read_lead_matrix.c
