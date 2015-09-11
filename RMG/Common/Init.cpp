@@ -181,7 +181,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Two buffers for rotating the orbitals. Make sure they are big enough to use
     // as additional diagonalization arrays as well
     t1 = ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
-    gpu_bufsize += t1;
+    gpu_bufsize += 3*t1;
 
     // and multiply by 2 just for kicks
     //gpu_bufsize *= 2;

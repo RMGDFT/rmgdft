@@ -81,7 +81,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     static KpointType *global_matrix2;
 
     KpointType *Agpu = NULL;
-    KpointType *gpu_eigvectors = NULL;
     KpointType *NULLptr = NULL;
 
 #if GPU_ENABLED
@@ -266,8 +265,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
         case SUBDIAG_MAGMA:
 #if GPU_ENABLED
             // Grab some gpu memory if not using a version of cuda that supports unified memory
-            gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
-            trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1, (KpointType *)gpu_eigvectors);
+            trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
 #endif
             break;
         default:
@@ -287,32 +285,16 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     // Update the orbitals
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
-    if(subdiag_driver == SUBDIAG_MAGMA) {
 
-#if GPU_ENABLED
-        // The magma driver leaves the eigenvectors on the gpu in gpu_eigvectors and the current
-        // orbitals are already there in Agpu. So we set C to kptr->orbital_storage and have the
-        // gpu transfer the rotated orbitals directly back there.
-        // The magma driver also brings the eigvectors back from the gpu and puts them in global_matrix1
-        // so we can rotate the betaxpsi as well.
-        RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
-                NULLptr, pbasis, NULLptr, num_states, beta, kptr->orbital_storage, pbasis, 
-                Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
-                GpuFree(gpu_eigvectors);
-#endif
-    }
-    else {
+    RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
+            kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
+            Agpu, NULLptr, NULLptr, false, true, false, true);
 
-        RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
-                kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
-                Agpu, NULLptr, NULLptr, false, true, false, true);
+    // And finally copy them back
+    int istart = 0;
+    if(Verify ("freeze_occupied", true, kptr->ControlMap)) istart = kptr->highest_occupied + 1;
 
-        // And finally copy them back
-        int istart = 0;
-        if(Verify ("freeze_occupied", true, kptr->ControlMap)) istart = kptr->highest_occupied + 1;
-
-        for(int idx = istart;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
-    }
+    for(int idx = istart;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
 
     delete(RT1);
 

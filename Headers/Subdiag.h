@@ -53,7 +53,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 template <typename KpointType>
 char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
-char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors, KpointType *gpu_eigvectors);
+char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>

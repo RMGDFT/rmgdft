@@ -85,75 +85,79 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
 
-
+    if((m <= 512) || (k <= 512)) {
+//        cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 1.0);
+    }
+    else {
+//        cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.0);
+    }
     cudaPointerAttributes attrib_A, attrib_B, attrib_C;
-    cudaError_t cudaErrA;
+    cudaError_t cudaErrA, cudaErrB, cudaErrC;
 
     cudaErrA = cudaPointerGetAttributes(&attrib_A, A);
-    if(cudaErrA == cudaSuccess) {
-        cudaError_t cudaErrB;
-        cudaErrB = cudaPointerGetAttributes(&attrib_B, B);
-        if(cudaErrB == cudaSuccess) {
-            cudaError_t cudaErrC;
-            cudaErrC = cudaPointerGetAttributes(&attrib_C, C);
+    if(cudaErrA != cudaSuccess) RmgCudaError(__FILE__, __LINE__, cudaErrA, "Problem in RmgGemm identifying cuda memory type.");
+    cudaErrB = cudaPointerGetAttributes(&attrib_B, B);
+    if(cudaErrB != cudaSuccess) RmgCudaError(__FILE__, __LINE__, cudaErrB, "Problem in RmgGemm identifying cuda memory type.");
+    cudaErrC = cudaPointerGetAttributes(&attrib_C, C);
+    if(cudaErrC != cudaSuccess) RmgCudaError(__FILE__, __LINE__, cudaErrC, "Problem in RmgGemm identifying cuda memory type.");
 
-            // Check attributes and if all matrices are located on the host then
-            // we can use the XT interface.
-            if((attrib_A.memoryType == cudaMemoryTypeHost) &&
-               (attrib_B.memoryType == cudaMemoryTypeHost) &&
-               (attrib_C.memoryType == cudaMemoryTypeHost)) {
+    // Check attributes and if all matrices are located on the host then
+    // we can use the XT interface.
+    if((attrib_A.memoryType == cudaMemoryTypeHost) &&
+       (attrib_B.memoryType == cudaMemoryTypeHost) &&
+       (attrib_C.memoryType == cudaMemoryTypeHost)) {
+//printf("HOST GEMM\n");
 
-                    if(typeid(DataType) == typeid(std::complex<double>)) {
-                        custat = cublasXtZgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
-                                            (cuDoubleComplex *)&alpha,
-                                            (cuDoubleComplex*)A, lda,
-                                            (cuDoubleComplex*)B, ldb,
-                                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-                        ProcessCublasError(custat);
-                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
-                    }
-                    else {
-                        custat = cublasXtDgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
-                                            (double*)&alpha,
-                                            (double*)A, lda,
-                                            (double*)B, ldb,
-                                            (double*)&beta, (double*)C, ldc );
-                        ProcessCublasError(custat);
-                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtDgemm");
-                    }
-                    return;
-
+            if(typeid(DataType) == typeid(std::complex<double>)) {
+                custat = cublasXtZgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
+                                    (cuDoubleComplex *)&alpha,
+                                    (cuDoubleComplex*)A, lda,
+                                    (cuDoubleComplex*)B, ldb,
+                                    (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+                ProcessCublasError(custat);
+                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
             }
-
-            // If all matrices are located on the device then we can use the regular interface
-            if((attrib_A.memoryType == cudaMemoryTypeDevice) &&
-               (attrib_B.memoryType == cudaMemoryTypeDevice) &&
-               (attrib_C.memoryType == cudaMemoryTypeDevice)) {
-
-                    if(typeid(DataType) == typeid(std::complex<double>)) {
-                        custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
-                                            (cuDoubleComplex *)&alpha,
-                                            (cuDoubleComplex*)A, lda,
-                                            (cuDoubleComplex*)B, ldb,
-                                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-                        ProcessCublasError(custat);
-                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
-                    }
-                    else {
-                        custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
-                                            (double*)&alpha,
-                                            (double*)A, lda,
-                                            (double*)B, ldb,
-                                            (double*)&beta, (double*)C, ldc );
-                        ProcessCublasError(custat);
-                        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
-                    }
-                    return;
+            else {
+                custat = cublasXtDgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
+                                    (double*)&alpha,
+                                    (double*)A, lda,
+                                    (double*)B, ldb,
+                                    (double*)&beta, (double*)C, ldc );
+                ProcessCublasError(custat);
+                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtDgemm");
             }
+            return;
 
-        }
     }
 
+    // If all matrices are located on the device then we can use the regular interface
+    if((attrib_A.memoryType == cudaMemoryTypeDevice) &&
+       (attrib_B.memoryType == cudaMemoryTypeDevice) &&
+       (attrib_C.memoryType == cudaMemoryTypeDevice)) {
+//printf("DEVICE GEMM\n");
+            if(typeid(DataType) == typeid(std::complex<double>)) {
+                custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+                                    (cuDoubleComplex *)&alpha,
+                                    (cuDoubleComplex*)A, lda,
+                                    (cuDoubleComplex*)B, ldb,
+                                    (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+                ProcessCublasError(custat);
+                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+            }
+            else {
+                custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+                                    (double*)&alpha,
+                                    (double*)A, lda,
+                                    (double*)B, ldb,
+                                    (double*)&beta, (double*)C, ldc );
+                ProcessCublasError(custat);
+                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+            }
+            return;
+    }
+
+
+//printf("MIXED GEMM\n");
 
 
     DataType *Agpu1;

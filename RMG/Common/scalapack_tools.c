@@ -125,8 +125,7 @@ void sl_init (int *ictxt, int size)
     printf ("\n Scalapack processor distribution is nprow:%d and npcol:%d, total processors %d",
 	    nprow, npcol, nprow*npcol);
 #endif
-
-    Cblacs_get (0, 0, ictxt);
+    Cblacs_get (-1, 0, ictxt);
 
     /* calculate MPI world rank range in this group to be mapped to blacs */
     if (nprow * npcol* ct.images_per_node > npes)

@@ -136,4 +136,8 @@
 #define MAX_BLOCKS      20
 
 
+#if GPU_ENABLED
 
+    #define MAX_GPU_DEVICES 256
+
+#endif

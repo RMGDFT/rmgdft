@@ -26,7 +26,6 @@
 #include "Mgrid.h"
 #include "RmgSumAll.h"
 #include "BlasWrappers.h"
-#include "auxiliary.h"
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"

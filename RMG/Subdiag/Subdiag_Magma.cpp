@@ -59,12 +59,12 @@ int rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double>
 
 
 
-template char * Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors, double *gpu_eigvectors);
-template char * Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors, std::complex<double> *gpu_eigvectors);
+template char * Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
+template char * Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
 
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
 template <typename KpointType>
-char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors, KpointType *gpu_eigvectors)
+char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
 #if !MAGMA_LIBS
@@ -92,14 +92,12 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
         KpointType *gpuAij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
         KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-        KpointType *gpuCij = gpu_eigvectors;
+        KpointType *gpuCij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
         KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
         KpointType *Cij = (KpointType *)GpuMallocHost(num_states * num_states * sizeof(KpointType));
 
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
-
-
 
             // Transfer eigvectors which holds Bij to the gpuBij
             custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpuBij, ione );
@@ -151,12 +149,12 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            Cij, num_states, Aij, num_states, beta, Bij,
+                            gpuCij, num_states, gpuAij, num_states, beta, gpuBij,
                             num_states, gpuCij, gpuAij, gpuBij, false, false, false, false);
 
             /*Multiply the result with Sij, result is in Cij */
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            Sij, num_states, Bij, num_states, beta, gpuCij,
+                            gpuSij, num_states, gpuBij, num_states, beta, gpuCij,
                             num_states, gpuSij, gpuBij, gpuCij, false, false, false, false);
             delete(RT1);
 
@@ -196,7 +194,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
                 GpuFree(gpuAij);
 
                 FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij, SUBDIAG_MAGMA);
-                custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpu_eigvectors, ione );
+//                custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpu_eigvectors, ione );
 
                 delete [] work2;
                 delete [] iwork;
@@ -244,6 +242,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         GpuFreeHost(Cij);
 
         GpuFree(gpuSij);
+        GpuFree(gpuCij);
         GpuFree(gpuBij);
         GpuFree(gpuAij);
 
@@ -257,11 +256,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);
         MPI_Bcast(eigs, num_states, MPI_DOUBLE, 0, pct.local_comm);
 
-        // And finally if not the local master transfer the data to the GPU. Could avoid this step if
-        // we could share GPU memory between processes but that is currently not possible.
-        if(!pct.is_local_master ) {
-            custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpu_eigvectors, ione );
-        }
     }
 
     return trans_n;

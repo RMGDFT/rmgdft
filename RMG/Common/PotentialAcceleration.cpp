@@ -25,7 +25,6 @@
 #include "FiniteDiff.h"
 #include "Mgrid.h"
 #include "BlasWrappers.h"
-#include "auxiliary.h"
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
