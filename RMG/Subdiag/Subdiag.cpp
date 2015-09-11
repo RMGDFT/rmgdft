@@ -264,9 +264,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
             trans_b = Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
             break;
         case SUBDIAG_MAGMA:
+#if GPU_ENABLED
             // Grab some gpu memory if not using a version of cuda that supports unified memory
             gpu_eigvectors = (KpointType *)GpuMalloc(num_states * num_states * sizeof( KpointType ));
             trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1, (KpointType *)gpu_eigvectors);
+#endif
             break;
         default:
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
@@ -287,6 +289,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     RT1 = new RmgTimer("Diagonalization: Update orbitals");
     if(subdiag_driver == SUBDIAG_MAGMA) {
 
+#if GPU_ENABLED
         // The magma driver leaves the eigenvectors on the gpu in gpu_eigvectors and the current
         // orbitals are already there in Agpu. So we set C to kptr->orbital_storage and have the
         // gpu transfer the rotated orbitals directly back there.
@@ -296,6 +299,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
                 NULLptr, pbasis, NULLptr, num_states, beta, kptr->orbital_storage, pbasis, 
                 Agpu, gpu_eigvectors, NULLptr, false, false, false, true);
                 GpuFree(gpu_eigvectors);
+#endif
     }
     else {
 
