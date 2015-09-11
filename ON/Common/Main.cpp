@@ -91,7 +91,6 @@ STATE *states_tem;
 int *state_to_proc;
 STATE *states;
 STATE *states1;
-STATE *states_distribute;
 ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
 double *rho_oppo, *rho_tot;

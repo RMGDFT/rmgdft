@@ -47,7 +47,7 @@ extern int it_scf;
 
 
 
-void ScfNegf (DoubleC *sigma_all, STATE * states, STATE * states_distribute, double *vxc,
+void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
           double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE)
 {
@@ -82,7 +82,7 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, STATE * states_distribute, dou
     idx1 = ct.num_states - lcr[2].num_states / 2;
 
     /* get lcr[0].H00 part */
-    HijUpdate (states, states_distribute, vtot_c, work_matrix);
+    HijUpdate (states, vtot_c, work_matrix);
 
 
 

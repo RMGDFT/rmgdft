@@ -118,13 +118,12 @@ void Run (STATE * states, STATE * states1)
 
 
         RmgTimer *RT3 = new RmgTimer("1-TOTAL: init");
-        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, states_distribute);
+        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old);
         delete(RT3);
 
         size = 1;
         for (i = 0; i < ct.num_blocks; i++) size = std::max(size, ct.block_dim[i] * ct.block_dim[i]);
         size = std::max(size, ct.num_states * (ct.state_end - ct.state_begin));
-        size = std::max(size, pct.num_local_orbit * pct.num_local_orbit);
 
         work_matrix = new double[size];
 
@@ -223,7 +222,7 @@ void Run (STATE * states, STATE * states1)
                 {
 
                     case MD_QUENCH:            /* Quench the electrons */
-                        QuenchNegf (states, states1, states_distribute, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
+                        QuenchNegf (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
 
                         break;
 

@@ -298,8 +298,8 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
         MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe,
                 COMM_EN1);
 
-        get_new_rho_soft (states, rho);
-
+        tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
+        GetNewRho_on_c(states, rho, work_matrix);
 
         for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {

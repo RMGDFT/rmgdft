@@ -2,11 +2,11 @@
 void SetEnergyWeight (std::complex<double> *ene, std::complex<double> *weight, double EF, int *nenergy);
 void SetEnergyWeightNoneq (std::complex<double> *ene, std::complex<double> *weight, double EF1, double EF, int *nenergy);
 void Run(STATE *, STATE *);
-void QuenchNegf (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
+void QuenchNegf (STATE * states, STATE * states1,  double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias);
 void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
                 STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
-                double * vxc_old, STATE *states_distribute);
+                double * vxc_old);
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,8 +14,7 @@ extern "C" {
 
 void read_orbital(STATE*);
 void interpolation_orbit(STATE*);
-void init_state_distribute(STATE *, STATE*);
-void scale_orbital(STATE *, STATE*);
+void scale_orbital(STATE *);
 void allocate_matrix_LCR();
 void read_lead_matrix();
 void read_potrho_LCR (double *, double *, double *);
@@ -32,7 +31,7 @@ void setback_corner_matrix_S();
 void row_to_tri_p(double *, double *, int, int*);
 void sigma_all_energy_point(DoubleC *, double, double);
 
-void ScfNegf (DoubleC * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
+void ScfNegf (DoubleC * sigma_all, STATE * states, double *vxc,
         double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
         double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE);
 
@@ -61,7 +60,7 @@ void set_energy_weight (DoubleC *ene, DoubleC *weight, double EF, int *nenergy);
 void set_energy_weight_ne (DoubleC *ene, DoubleC *weight, double EF1, double EF, int *nenergy);
 
 void get_ddd_update (double *);
-void HijUpdate (STATE *, STATE*, double *, double*);
+void HijUpdate (STATE *, double *, double*);
 void find_fermi (DoubleC *);
 void charge_density_matrix_p (DoubleC*);
 void get_new_rho_local (STATE*, double *);

@@ -67,7 +67,7 @@
 #include "pmo.h"
 
 
-void QuenchNegf (STATE * states, STATE * states1, STATE *states_distribute, double * vxc, double * vh, double * vnuc, double * vext,
+void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias)
 {
 
@@ -237,7 +237,7 @@ void QuenchNegf (STATE * states, STATE * states1, STATE *states_distribute, doub
         {
 
             RmgTimer *RT4 = new RmgTimer("2-Quench: SCF");
-            ScfNegf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
+            ScfNegf (sigma_all, states, vxc, vh, vnuc, vext, rho, rhoc,
                     rhocore, rho_tf, vxc_old, vh_old, vbias, &CONVERGENCE);
 
             delete(RT4);

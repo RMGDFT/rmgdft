@@ -66,7 +66,7 @@ void is_state_overlap (STATE *, char *);
 
 void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
                 STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
-                double * vxc_old, STATE *states_distribute)
+                double * vxc_old)
 {
 
     int kpt, ic, idx, ion, ispin, kpt1;
@@ -168,18 +168,12 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     read_orbital(states);
     interpolation_orbit (states);
     delete(RT1);
-    RmgTimer *RT2 = new RmgTimer("1-TOTAL: init:  state_distribtute");
-    init_state_distribute(states, states_distribute);
-    delete(RT2);
 
-    scale_orbital(states, states_distribute);
-#if GPU_ENABLED
-    cublasSetVector( pct.num_local_orbit * get_P0_BASIS(), sizeof( double ), states_distribute[0].psiR, ione, ct.gpu_states, ione );
+    scale_orbital(states);
 
-#endif
-        if (pct.gridpe == 0) printf ("completed: read_orbital \n");
-        allocate_matrix_LCR();
-        if (pct.gridpe == 0) printf ("completed: allocate_matrix \n");
+    if (pct.gridpe == 0) printf ("completed: read_orbital \n");
+    allocate_matrix_LCR();
+    if (pct.gridpe == 0) printf ("completed: allocate_matrix \n");
     if (ct.runflag > 111)
     {
         read_lead_matrix();
@@ -188,11 +182,11 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     /*exit(0); */ 
 
-/*
-    nameL = lcr[1].lead_name;
-    nameC = lcr[0].lead_name;
-    nameR = lcr[2].lead_name;
-*/
+    /*
+       nameL = lcr[1].lead_name;
+       nameC = lcr[0].lead_name;
+       nameR = lcr[2].lead_name;
+     */
     RmgTimer *RT3 = new RmgTimer("1-TOTAL: init:  read_potrho");
     if(ct.runflag <113)
     {
@@ -217,16 +211,16 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     if (ct.vcomp_Rend > 0) // if ct.vcomp_Rend > 0 means the user turned on the initial compensating potential correction
     {
-	    init_comp (vh);
-	    for (idx = 0; idx < get_FP0_BASIS(); idx++)
-	    {
-		    vh[idx] = vh[idx] + vcomp[idx]; //add compensating potential to align lead and center part at the very beginning
-	    }
+        init_comp (vh);
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        {
+            vh[idx] = vh[idx] + vcomp[idx]; //add compensating potential to align lead and center part at the very beginning
+        }
 
-	    write_rho_x (vh, "vh_vcomp_init");
+        write_rho_x (vh, "vh_vcomp_init");
     }
 
-/*  interpolation for the orbits if the grid space is slightly different between lead and conductor */
+    /*  interpolation for the orbits if the grid space is slightly different between lead and conductor */
 
 
     allocate_masks (states);
@@ -235,9 +229,9 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
         make_mask_grid_state (level, states);
 
 
-/*    normalize_orbits(states);
-*/
-//    ortho_norm_local (states);
+    /*    normalize_orbits(states);
+     */
+    //    ortho_norm_local (states);
 
 
     /*modify the lead Hamiltonia by bias and Fermi energy */
@@ -254,7 +248,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
         }
 
 
-		i = cei.probe_in_block[iprobe - 1];
+        i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
 
         for (st1 = 0; st1 < idx; st1++)
@@ -286,7 +280,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     delete(RT4);
 
     init_ext (vext, ct.gbias_begin, ct.gbias_end, ct.BT, ct.gate_bias);
- 
+
     write_rho_x (rho, "rho_init1");
 
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init:  non-local");

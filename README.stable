@@ -4,3 +4,5 @@ ON 3193,
 NEGF 3193
 RMG 
 TDDFT 3198
+
+NEGF 3222:  no longer use state_distrubute, use same way as in ON to calculated Hij, and rho

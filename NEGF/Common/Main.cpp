@@ -118,7 +118,6 @@ STATE *states_tem;
 int *state_to_proc;
 STATE *states;
 STATE *states1;
-STATE *states_distribute;
 ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c, *rho_tf;
 double *rho_oppo, *rho_tot;
@@ -141,7 +140,6 @@ double *wave_global;
 double *rho_global;
 double *vh_old, *vxc_old;
 
-double *mat_local;
 double *vcomp, *peaks, *vext ;
 ION_ORBIT_OVERLAP    *ion_orbit_overlap_region_loc;
 

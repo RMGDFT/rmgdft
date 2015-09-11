@@ -215,7 +215,6 @@ typedef struct
     /* pointer to former step solution, used in pulay and KAIN mixing  */
     int descb[DLEN];
 
-    int num_local_orbit;
     double *psi1, *psi2;
 
 } PE_CONTROL;

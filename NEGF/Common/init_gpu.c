@@ -72,13 +72,6 @@ void init_gpu (void)
 
 	rmg_printout_devices( );
 
-	alloc = 1024 * 1024;
-	if(alloc < pct.num_local_orbit * get_P0_BASIS()) alloc = pct.num_local_orbit * get_P0_BASIS();
-
-	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_states, alloc * sizeof(double) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_states\n");
-		exit(-1);
-	}
 
 	alloc = pmo.ntot_low * sizeof(complex double);
 	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Htri , alloc )){
@@ -148,7 +141,6 @@ void init_gpu (void)
 
 	// Make sure enough is allocated for hartree solver on fine grid
 	alloc = 1024 ;
-	if(alloc < pct.num_local_orbit * get_P0_BASIS()) alloc = pct.num_local_orbit * get_P0_BASIS();
 
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(double) )){
 		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp1\n");
@@ -157,7 +149,6 @@ void init_gpu (void)
 
 	alloc = 1024 ;
 	if(alloc < get_P0_BASIS()) alloc = get_P0_BASIS();
-	if(alloc < pct.num_local_orbit * pct.num_local_orbit) alloc = pct.num_local_orbit * pct.num_local_orbit;
 
 	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(double) )){
 		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp2\n");

@@ -23,7 +23,10 @@
 #include "my_scalapack.h"
 #include "blas.h"
 
-
+extern "C" void GetNewRho_on_c(STATE * states, double *rho, double *rho_matrix)
+{
+    GetNewRho_on(states, rho, rho_matrix);
+}
 void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 {
     int idx, ione = 1;

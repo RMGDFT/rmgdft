@@ -42,7 +42,6 @@ extern double *wave_global;
 extern double *rho_global;
 extern double *vh_old, *vxc_old;
 
-extern double *mat_local;
 
 extern double *vcomp, *peaks, *vext ;
 extern ION_ORBIT_OVERLAP 	*ion_orbit_overlap_region_loc; 

@@ -29,7 +29,7 @@
 
 
 
-void HijUpdate (STATE * states, STATE * states_distribute, double *vtot_c, double *Aij)
+void HijUpdate (STATE * states, double *vtot_c, double *Aij)
 {
     int idx, st1, st2, idx1, idx2;
     int st11, st22;

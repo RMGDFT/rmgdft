@@ -300,7 +300,9 @@ void get_dos (STATE * states)
         MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe,
                 COMM_EN1);
 
-        get_new_rho_local (states_distribute, rho);
+        tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
+        GetNewRho_on_c(states, rho, work_matrix);
+
         //get_new_rho_soft (states, rho);
 
 
