@@ -32,7 +32,7 @@ void setback_corner_matrix_S();
 void row_to_tri_p(double *, double *, int, int*);
 void sigma_all_energy_point(DoubleC *, double, double);
 
-void scf (DoubleC * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
+void ScfNegf (DoubleC * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
         double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
         double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE);
 
@@ -59,6 +59,17 @@ void write_data_lead(char *, double *, double *, double *, double *, double *);
 void write_data_negf(char *, double *,double *,double *,double *,double *,double *, STATE *);
 void set_energy_weight (DoubleC *ene, DoubleC *weight, double EF, int *nenergy);
 void set_energy_weight_ne (DoubleC *ene, DoubleC *weight, double EF1, double EF, int *nenergy);
+
+void get_ddd_update (double *);
+void HijUpdate (STATE *, STATE*, double *, double*);
+void find_fermi (DoubleC *);
+void charge_density_matrix_p (DoubleC*);
+void get_new_rho_local (STATE*, double *);
+void get_new_rho_soft (STATE*, double *);
+void modify_rho (double *, double *);
+void get_vh_negf (double*, double*, double*,int, int, int, double);
+void tri_to_row (double *, double *, int, int *);
+
 
 #ifdef __cplusplus
 }

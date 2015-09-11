@@ -237,7 +237,7 @@ void QuenchNegf (STATE * states, STATE * states1, STATE *states_distribute, doub
         {
 
             RmgTimer *RT4 = new RmgTimer("2-Quench: SCF");
-            scf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
+            ScfNegf (sigma_all, states, states_distribute, vxc, vh, vnuc, vext, rho, rhoc,
                     rhocore, rho_tf, vxc_old, vh_old, vbias, &CONVERGENCE);
 
             delete(RT4);

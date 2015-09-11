@@ -104,6 +104,28 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
     GetNewRho_on(states, rho, work_matrix_row);
+
+    int iii = get_FP0_BASIS();
+
+    double tcharge = 0.0;
+    for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        tcharge += rho[idx];
+    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
+    ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
+
+
+    ct.tcharge *= get_vel_f();
+
+    t2 = ct.nel / ct.tcharge;
+    dscal(&iii, &t2, &rho[0], &ione);
+
+
+    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
+        printf("\n Warning: total charge Normalization constant = %e  \n", t2);
+
+    delete(RT0);
+
+
     delete(RT2);
 
     tem1 = 0.0;

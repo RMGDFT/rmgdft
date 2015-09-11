@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+GetNewRho_on.cpp
 FillOrbitalBorders.cpp
 KbpsiUpdate.cpp
 RhoQnmMat.cpp

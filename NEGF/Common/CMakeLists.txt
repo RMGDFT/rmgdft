@@ -26,14 +26,14 @@ get_cond_frommatrix.c
 get_cond_frommatrix_kyz.c
 get_ddd_update.c
 get_dos.c
-get_Hij_update.c
+HijUpdate.cpp
 get_inverse_block.c
 get_inverse_block_p.c
 get_ion_orbit_overlap_loc.c
 get_line.c
+get_state_to_proc.c
 get_new_rho_local.c
 get_new_rho_soft.c
-get_state_to_proc.c
 global_to_distribute3.c
 H01_to_HCL.c
 init_comp.c
@@ -90,7 +90,7 @@ rho_nm_mat.c
 rmg_timings.c
 Run.cpp
 scale_orbital.c
-scf.c
+ScfNegf.cpp
 setback_corner_matrix_H.c
 setback_corner_matrix_S.c
 set_energy_weight.c

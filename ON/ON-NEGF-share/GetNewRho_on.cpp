@@ -36,6 +36,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     int i, st1, st2;
     int loop, state_per_proc, num_recv;
     double *rho_temp;
+    double tem;
 
     int st11;
 
@@ -69,6 +70,8 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
     RmgTimer *RT2 = new RmgTimer("3-get_new_rho: states other proc");
 
+    printf("\n  new way rho0  %d %f\n", pct.gridpe, tem);
+
     for (loop = 0; loop < num_sendrecv_loop; loop++)
     {
         num_recv = recv_from[loop * state_per_proc + 1];
@@ -99,6 +102,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
     delete(RT2);
 
+
     RmgTimer *RT3 = new RmgTimer("3-get_new_rho: distribution");
     idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
     global_sums(rho_global, &idx, pct.grid_comm);
@@ -118,25 +122,12 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
     RhoAugmented(rho, rho_matrix);
 
+    tem = 0.0;
+    for(st1 = 0; st1 < get_FPX0_GRID() *get_FPY0_GRID() *get_FPZ0_GRID(); st1++)
+        tem += rho[st1];
+
+
     delete(RT5);
-
-    int iii = get_FP0_BASIS();
-
-    tcharge = 0.0;
-    for (idx = 0; idx < get_FP0_BASIS(); idx++)
-        tcharge += rho[idx];
-    ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
-    ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
-
-
-    ct.tcharge *= get_vel_f();
-
-    t2 = ct.nel / ct.tcharge;
-    dscal(&iii, &t2, &rho[0], &ione);
-
-
-    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        printf("\n Warning: total charge Normalization constant = %e  \n", t2);
 
     delete(RT0);
 

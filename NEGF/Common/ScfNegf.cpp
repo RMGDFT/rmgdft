@@ -17,12 +17,25 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "main.h"
-#include "init_var.h"
+#include "make_conf.h"
+#include "params.h"
+
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
 #include "LCR.h"
+#include "prototypes_on.h"
+#include "prototypes_negf.h"
+#include "init_var.h"
+
+#include "my_scalapack.h"
+#include "blas.h"
+#include "Kbpsi.h"
+#include "FiniteDiff.h"
+
 #include "method.h"
 #include "pmo.h"
-#define min(a,b) (((a)>(b)) ? (b) : (a))
 
 
 static double t[2];
@@ -34,7 +47,7 @@ extern int it_scf;
 
 
 
-void scf (complex double * sigma_all, STATE * states, STATE * states_distribute, double *vxc,
+void ScfNegf (DoubleC *sigma_all, STATE * states, STATE * states_distribute, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
           double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE)
 {
@@ -51,10 +64,10 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     int fpbasis;
     fpbasis = get_FP0_BASIS();
 
-    void *RT = BeginRmgTimer("3-SCF");
+    RmgTimer *RT = new RmgTimer("3-SCF");
 
 
-    void *RT1 = BeginRmgTimer("3-SCF: Hij update");
+    RmgTimer *RT1 = new RmgTimer("3-SCF: Hij update");
     for (idx = 0; idx < fpbasis; idx++)
         vtot[idx] = vh[idx] + vxc[idx] -vh_old[idx] - vxc_old[idx];
 
@@ -69,7 +82,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     idx1 = ct.num_states - lcr[2].num_states / 2;
 
     /* get lcr[0].H00 part */
-    get_Hij_update (states, states_distribute, vtot_c, work_matrix);
+    HijUpdate (states, states_distribute, vtot_c, work_matrix);
 
 
 
@@ -122,7 +135,7 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     /* corner elements keep unchanged */
     setback_corner_matrix_H();  
  
-    EndRmgTimer(RT1);
+    delete(RT1);
 
 
     /* Generate new density */
@@ -134,21 +147,21 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
     if (ct.runflag == 111 && ct.metal == 0)
     {
 
-        void *RT2 = BeginRmgTimer("3-SCF: sigma_all for 3lead");
+        RmgTimer *RT2 = new RmgTimer("3-SCF: sigma_all for 3lead");
 
         sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
-        EndRmgTimer(RT2);
+        delete(RT2);
     }
 
     my_barrier ();
 
-    void *RT3 = BeginRmgTimer("3-SCF: charge_density_matrix");
+    RmgTimer *RT3 = new RmgTimer("3-SCF: charge_density_matrix");
     charge_density_matrix_p (sigma_all);
 
 
     my_barrier ();
 
-    EndRmgTimer(RT3);
+    delete(RT3);
 
 #if DEBUG |1
     write_rho_x (rho, "rhoooo_1");
@@ -167,17 +180,20 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
 
     //    get_new_rho_soft (states, rho);
-    void *RT4 = BeginRmgTimer("3-SCF: rho");
-    get_new_rho_local (states_distribute, rho);
-    EndRmgTimer(RT4);
+    RmgTimer *RT4 = new RmgTimer("3-SCF: rho");
+//    get_new_rho_soft (states, rho);
+    tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
+    GetNewRho_on(states, rho, work_matrix);
+//    get_new_rho_local (states_distribute, rho);
+    delete(RT4);
 
-#if DEBUG
+#if DEBUG 
     write_rho_x (rho, "rhoaaa_1");
     if (pct.gridpe == 0)
         printf ("\n %rhoaaa");
 #endif
 
-    void *RT5 = BeginRmgTimer("3-SCF: rho mixing");
+    RmgTimer *RT5 = new RmgTimer("3-SCF: rho mixing");
     modify_rho (rho, rho_old); 
     /* modify_rho_y (rho, rho_old); */
 
@@ -210,12 +226,12 @@ void scf (complex double * sigma_all, STATE * states, STATE * states_distribute,
 
     my_barrier ();
 
-    EndRmgTimer(RT5);
+    delete(RT5);
 
-    void *RT6 = BeginRmgTimer("3-SCF: pot update");
+    RmgTimer *RT6 = new RmgTimer("3-SCF: pot update");
     update_pot (vxc, vh, vxc_old, vh_old, vnuc, vext, rho, rhoc, rhocore, rho_tf, CONVERGENCE);
-    EndRmgTimer(RT6);
-    EndRmgTimer(RT);
+    delete(RT6);
+    delete(RT);
 
 
 

@@ -1,6 +1,5 @@
 add_library (ON_Common
  UpdatePot.cpp
- GetNewRho_on.cpp
  OrbitalOptimize.cpp
  DiagScalapack.cpp
  DiagElemental.cpp
