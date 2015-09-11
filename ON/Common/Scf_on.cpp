@@ -116,7 +116,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     ct.tcharge *= get_vel_f();
 
-    t2 = ct.nel / ct.tcharge;
+    double t2 = ct.nel / ct.tcharge;
     dscal(&iii, &t2, &rho[0], &ione);
 
 
