@@ -384,7 +384,7 @@ void get_cond_frommatrix_kyz ()
 
         if (pct.gridpe == 0)
         {
-            sprintf(newname, "s%s%d%d%s", ct.basename,".cond_", iprobe1, iprobe2, ".dat");
+            sprintf(newname, "%s%s%d%d%s", ct.basename,".cond_", iprobe1, iprobe2, ".dat");
             file = fopen (newname, "w");
 
             for (iene = 0; iene < tot_energy_point; iene++)
@@ -402,20 +402,24 @@ void get_cond_frommatrix_kyz ()
         EF1 = lcr[iprobe1].bias;
         EF2 = lcr[iprobe2].bias;
 
-        printf("\n ********");
+	if (pct.gridpe == 0)
+	{
+	    printf("\n ********");
 
-        file = fopen ("local_current.dat", "w");
-        for (iene = 1; iene < E_POINTS; iene++)
-        {
-            f1 = 1.0 / (1.0 + exp ((EF1 - ener1[iene]) / KT));
-            f2 = 1.0 / (1.0 + exp ((EF2 - ener1[iene]) / KT));
-            current += (f2 - f1) * cond[iene] * (ener1[iene] - ener1[iene - 1]);
-            fprintf(file, "\n  %f  %e", ener1[iene], (f2-f1) * cond[iene]);
-        }
+	    file = fopen ("local_current.dat", "w");
+	    for (iene = 1; iene < E_POINTS; iene++)
+	    {
+		f1 = 1.0 / (1.0 + exp ((EF1 - ener1[iene]) / KT));
+		f2 = 1.0 / (1.0 + exp ((EF2 - ener1[iene]) / KT));
+		current += (f2 - f1) * cond[iene] * (ener1[iene] - ener1[iene - 1]);
+		fprintf(file, "\n  %f  %e", ener1[iene], (f2-f1) * cond[iene]);
+	    }
 
-        fprintf(file, "\n  &");
-        fclose(file);
-        current *= 2.0 * e_C * e_C / h_SI;
+	    fprintf(file, "\n  &");
+	    fclose(file);
+
+	}
+	current *= 2.0 * e_C * e_C / h_SI;
 
         if (pct.gridpe == 0)
         {
