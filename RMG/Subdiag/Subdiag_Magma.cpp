@@ -72,6 +72,11 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
+#if !GPU_ENABLED
+    rmg_printf("This version of RMG was not built with GPU support so MAGMA cannot be used. Redirecting to LAPACK.");
+    return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
+#endif
+
 #if MAGMA_LIBS
 #if GPU_ENABLED
     KpointType ONE_t(1.0);

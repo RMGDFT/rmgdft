@@ -131,11 +131,14 @@ void write_header (void)
         case SUBDIAG_LAPACK:
             printf ("    Subspace diagonalization using lapack driver\n");
             break;
-#if MAGMA_LIBS
         case SUBDIAG_MAGMA:
+#if MAGMA_LIBS
             printf ("    Subspace diagonalization using magma driver\n");
-            break;
+#else
+            printf ("     This version of RMG was not built with MAGMA support. LAPACK will be used for diagonalization instead.\n");
+            ct.subdiag_driver = SUBDIAG_LAPACK;
 #endif
+            break;
         default:
             printf ("    Unknown diagonalization method\n");
     }

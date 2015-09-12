@@ -249,7 +249,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     // global_matrix1 holds Bij now, we store a copy in Bij as well and pass Bij to the driver routine in globalmatrix as well
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
-    // If the MAGMA driver is selected the eigenvectors will be stored on the GPU in gpu_global_matrix1
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
     // used. This is handled during the rotation of the orbitals by trans_b which is set by the driver routine.
     RT1 = new RmgTimer("Diagonalization: Eigensolver");
@@ -263,9 +262,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
             trans_b = Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
             break;
         case SUBDIAG_MAGMA:
-#if GPU_ENABLED
-            // Grab some gpu memory if not using a version of cuda that supports unified memory
+#if GPU_ENABLED && MAGMA_LIBS
             trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+#else
+            trans_b = Subdiag_Lapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
 #endif
             break;
         default:
