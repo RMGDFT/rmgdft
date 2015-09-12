@@ -165,17 +165,17 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
 #if DEBUG |1
     write_rho_x (rho, "rhoooo_1");
-    if (pct.gridpe == 0)
-        printf ("\n rhoooo");
+    if (pct.imgpe == 0)
+        rmg_printf ("\n rhoooo");
     write_rho_x (vtot, "vtot_1");
-    if (pct.gridpe == 0)
-        printf ("\n  vtot");
+    if (pct.imgpe == 0)
+        rmg_printf ("\n  vtot");
     write_rho_x (vh, "vhhh_1");
-    if (pct.gridpe == 0)
-        printf ("\n  vhhh");
+    if (pct.imgpe == 0)
+        rmg_printf ("\n  vhhh");
     write_rho_x (vxc, "vxc_1");
-    if (pct.gridpe == 0)
-        printf ("\n  vxccch");
+    if (pct.imgpe == 0)
+        rmg_printf ("\n  vxccch");
 #endif
 
 
@@ -189,8 +189,8 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
 #if DEBUG 
     write_rho_x (rho, "rhoaaa_1");
-    if (pct.gridpe == 0)
-        printf ("\n %rhoaaa");
+    if (pct.imgpe == 0)
+        rmg_printf ("\n %rhoaaa");
 #endif
 
     RmgTimer *RT5 = new RmgTimer("3-SCF: rho mixing");
@@ -206,8 +206,8 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
     tem = real_sum_all (tem, pct.grid_comm);
     tem = sqrt (tem);
 
-    if (pct.gridpe == 0)
-        printf (" \nSCF CHECKS: <drho>/ion = %12.6e RMS[drho/GRID] = %12.6e\n",
+    if (pct.imgpe == 0)
+        rmg_printf (" \nSCF CHECKS: <drho>/ion = %12.6e RMS[drho/GRID] = %12.6e\n",
                 tem / ct.num_ions, tem / get_FP0_BASIS() / NPES);
 
 

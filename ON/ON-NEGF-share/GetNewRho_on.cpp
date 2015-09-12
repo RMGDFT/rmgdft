@@ -73,7 +73,6 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
     RmgTimer *RT2 = new RmgTimer("3-get_new_rho: states other proc");
 
-    printf("\n  new way rho0  %d %f\n", pct.gridpe, tem);
 
     for (loop = 0; loop < num_sendrecv_loop; loop++)
     {

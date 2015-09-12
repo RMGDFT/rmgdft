@@ -77,6 +77,10 @@ void Run (STATE * states, STATE * states1)
     init_dimension (&MXLLDA, &MXLCOL);
 
     pmo_init();
+
+#if GPU_ENABLED
+        init_gpu();
+#endif
     if (ct.runflag == 100)
     {
 
@@ -87,13 +91,10 @@ void Run (STATE * states, STATE * states1)
         delete(RT1);
 
         if (pct.gridpe == 0)
-            printf ("\nband structrue file: band.dat\n");
+            rmg_printf ("\nband structrue file: band.dat\n");
     }
     else if (ct.runflag == 110)
     {
-#if GPU_ENABLED
-        init_gpu();
-#endif
 
         /* allocate memory for matrixs  */
         //get_cond_frommatrix ();
@@ -128,8 +129,8 @@ void Run (STATE * states, STATE * states1)
         work_matrix = new double[size];
 
 
-        if (pct.gridpe == 0)
-            printf ("init_soft is done\n");
+        if (pct.imgpe == 0)
+            rmg_printf ("init_soft is done\n");
 
         if (ct.runflag == 200)
         {
@@ -141,10 +142,8 @@ void Run (STATE * states, STATE * states1)
                 get_cond_frommatrix_kyz ();
 
                 /* it will automatically calculate and plot 3Ddos for each peak */
-                printf ("\n peakNum = %d", peakNum);
                 for (i = 0; i < peakNum; i++)
                 {
-                    printf ("\n peaks[%d] = %f", i, peaks[i]);
                     get_3Ddos (states, peaks[i]-0.0002 , peaks[i]+0.0002, 3, i);
                 }
             }
@@ -210,7 +209,7 @@ void Run (STATE * states, STATE * states1)
                 if (ct.runflag == 113) apply_potential_drop( vbias );
 
 
-                printf (" apply_potential_drop is done :-) \n");
+                if(pct.imgpe == 0) printf (" apply_potential_drop is done :-) \n");
 
 
                 /*--------------------------------*/
@@ -250,7 +249,7 @@ void Run (STATE * states, STATE * states1)
                 delete(RT5);
 
                 my_barrier ();
-                if (pct.gridpe == 0)
+                if (pct.imgpe == 0)
                     printf ("\n Run done...\n");
                 fflush (NULL);
 

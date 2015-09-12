@@ -171,13 +171,13 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     scale_orbital(states);
 
-    if (pct.gridpe == 0) printf ("completed: read_orbital \n");
+    if (pct.imgpe == 0) printf ("completed: read_orbital \n");
     allocate_matrix_LCR();
-    if (pct.gridpe == 0) printf ("completed: allocate_matrix \n");
+    if (pct.imgpe == 0) printf ("completed: allocate_matrix \n");
     if (ct.runflag > 111)
     {
         read_lead_matrix();
-        if (pct.gridpe == 0) printf ("completed: read_lead_matrix \n");
+        if (pct.imgpe == 0) printf ("completed: read_lead_matrix \n");
     }
 
     /*exit(0); */ 
@@ -191,16 +191,15 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     if(ct.runflag <113)
     {
         read_potrho_LCR (vh, vxc, rho);
-        if (pct.gridpe == 0) printf ("completed: read_potrho_LCR \n");
+        if (pct.imgpe == 0) printf ("completed: read_potrho_LCR \n");
     }
     else
     {    
         read_rho_and_pot (ct.infile, vh, vxc, vh_old, vxc_old, rho);
-        if (pct.gridpe == 0) printf ("completed: read_rho_and_pot \n");
+        if (pct.imgpe == 0) printf ("completed: read_rho_and_pot \n");
     }
     delete(RT3);
 
-    printf("\n  time_init k:  %f", my_crtc());
     if(ct.runflag == 300) 
     {
         plane_average_rho(rho); 

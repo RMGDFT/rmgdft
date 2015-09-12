@@ -10,8 +10,14 @@
 #include <complex.h>
 #include "make_conf.h"
 
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "LCR.h"
+#include "init_var.h"
+
 #if GPU_ENABLED
-//#include <magma.h>
+#include <magma.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -63,23 +69,16 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
 
 
     ipiv = (int *) malloc(d_ipiv * sizeof(int));
-    cuerr = cudaMalloc((void **)&work , lwork * sizeof(complex double) );
-    if(cuerr != cudaSuccess)
-    {
-        printf ("cuda allocation faild in matrix_inverse_driver lwork = %d \n", lwork);
-        fflush (NULL);
-        exit (0);
-    }
 
 
-    magma_zgetrf_gpu(nn, nn, Hii, nn, ipiv, &info);
+    magma_zgetrf_gpu(nn, nn, (magmaDoubleComplex *)Hii, nn, ipiv, &info);
     if (info != 0)
     {
         printf ("error in magma_zgetrf with INFO = %d \n", info);
         fflush (NULL);
         exit (0);
     }
-    magma_zgetri_gpu(nn, Hii, nn, ipiv, work, lwork, &info);
+    magma_zgetri_gpu(nn, (magmaDoubleComplex *)Hii, nn, ipiv, (magmaDoubleComplex *)ct.gpu_temp, lwork, &info);
     if (info != 0)
     {
         printf ("error in magma_zgetri with INFO = %d \n", info);
@@ -87,7 +86,6 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
         exit (0);
     }
     free(ipiv);
-    cudaFree(work);
 #else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  

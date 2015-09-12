@@ -131,7 +131,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         delete(RT1);
     }
     my_barrier();
-    if(pct.gridpe==0) printf("\n sigma_all done");
+    if(pct.imgpe==0) printf("\n sigma_all done");
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -230,8 +230,8 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     for (ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
 
-        if (pct.gridpe == 0)
-            printf ("\n\n\n ITERATION     %d\n", ct.scf_steps);
+        if (pct.imgpe == 0)
+            rmg_printf ("\n\n\n ITERATION     %d\n", ct.scf_steps);
         /* Perform a single self-consistent step */
         if (!CONVERGENCE)
         {
@@ -251,8 +251,8 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         if (CONVERGENCE)
         {
 
-            if (pct.gridpe == 0)
-                printf ("\n\n     convergence has been achieved. stopping ...\n");
+            if (pct.imgpe == 0)
+                rmg_printf ("\n\n     convergence has been achieved. stopping ...\n");
 
 
             break;
@@ -273,7 +273,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
 
 
-    if (pct.gridpe == 0)
+    if (pct.imgpe == 0)
         printf ("\n Quench is done \n");
 
     delete(RT);
