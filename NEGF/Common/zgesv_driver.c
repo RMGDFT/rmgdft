@@ -15,6 +15,7 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
+#include <magma.h>
 #endif
 
 #include "my_scalapack.h"
@@ -58,7 +59,7 @@ void zgesv_driver (complex double *A, int *desca,  complex double *B, int *descb
 
 
     ipiv = (int *) malloc(d_ipiv * sizeof(int));
-    magma_zgesv_gpu (nn, nhrs, (magmaDoubleComplex *)A, num_states, ipiv, (magmaDoubleComplex *)B, num_states, &info);
+    magma_zgesv_gpu (nn, nhrs, (magmaDoubleComplex *)A, nn, ipiv, (magmaDoubleComplex *)B, nn, &info);
 
     if (info != 0)
     {

@@ -526,6 +526,7 @@ typedef struct
     cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
     cuDoubleComplex *gpu_GdiagBlocks;
     cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
+    cuDoubleComplex *gpu_Gcol;
 
 
     int *gpu_ipiv;
