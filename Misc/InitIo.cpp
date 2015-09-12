@@ -203,9 +203,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     cublasXtSetBlockDim(ct.cublasXt_handle, 2048);
     void *fptr;
-//    fptr = (void *)&dgemm_;
+    fptr = (void *)&dgemm_;
 //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);
-//    fptr = (void *)&zgemm_;
+    fptr = (void *)&zgemm_;
 //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_COMPLEX, fptr);
 //    cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.5);
 

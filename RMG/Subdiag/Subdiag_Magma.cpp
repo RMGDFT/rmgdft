@@ -245,7 +245,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         GpuFree(gpuCij);
         GpuFree(gpuBij);
         GpuFree(gpuAij);
-
         
     } // end if is_local_master
 

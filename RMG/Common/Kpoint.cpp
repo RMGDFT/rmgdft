@@ -78,8 +78,6 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->kweight = kkweight;
     this->nl_weight = NULL;
     this->nl_Bweight = NULL;
-    this->nl_weight_gpu = NULL;
-    this->nl_Bweight_gpu = NULL;
 
     this->G = newG;
     this->T = newT;
