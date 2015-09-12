@@ -114,6 +114,10 @@ void read_trans (complex_energy_integral * cei)
     pmo.nrow = atoi (get_line (tbuf, fhand));
     pmo.ncol = atoi (get_line (tbuf, fhand));
 
+#if GPU_ENABLED
+    pmo.nrow = 1;
+    pmo.ncol = 1;
+#endif
 
 
     if (pct.gridpe == 0)
