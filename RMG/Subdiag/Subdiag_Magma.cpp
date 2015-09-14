@@ -81,6 +81,8 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 #if GPU_ENABLED
     KpointType ONE_t(1.0);
     KpointType ZERO_t(1.0);
+    KpointType *NULLptr = NULL;
+
 
     static char *trans_t = "t";
     static char *trans_n = "n";
@@ -95,47 +97,36 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
     if(pct.is_local_master || use_folded) {
 
-        KpointType *gpuAij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-        KpointType *gpuBij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-        KpointType *gpuCij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-        KpointType *gpuSij = (KpointType *)GpuMalloc(num_states * num_states * sizeof(KpointType));
-        KpointType *Cij = (KpointType *)GpuMallocHost(num_states * num_states * sizeof(KpointType));
-
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
-
-            // Transfer eigvectors which holds Bij to the gpuBij
-            custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpuBij, ione );
-
-            // Transfer Aij to gpuAij
-            custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Aij, ione, gpuAij, ione );
-
-            // Transfer Sij to gpuSij
-            custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Sij, ione, gpuSij, ione );
 
             // Invert Bij
             int *ipiv = new int[2*num_states]();
             int info = 0;
             if(ct.is_gamma) {
 
-                // Create unitary matrix on the gpu
-                magmablas_dlaset(MagmaFull, num_states, num_states, 0.0, 1.0, (double *)gpuCij, num_states);
+                // Create unitary matrix
+                for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = 0.0;
+                for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = 1.0;
 
-                // Inverse of B should be in Cij
+                // Inverse of B should be in eigvectors after this call
                 RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
-                magma_dgesv_gpu (num_states, num_states, (double *)gpuBij, num_states, ipiv, (double *)gpuCij, num_states, &info);
+                magma_dgesv (num_states, num_states, (double *)Bij, num_states, ipiv, (double *)eigvectors, num_states, &info);
                 delete(RT1);
 
 
             }
             else {
 
-                // Create unitary matrix on the gpu
-                magmablas_zlaset(MagmaFull, num_states, num_states, MAGMA_Z_MAKE(0.0,0.0), MAGMA_Z_MAKE(1.0,0.0), (magmaDoubleComplex *)gpuCij, num_states);
+                // Create unitary matrix
+                KpointType Zero(0.0);
+                KpointType One(0.0);
+                for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = Zero;
+                for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = One;
 
-                // Inverse of B should be in Cij
+                // Inverse of B should be in eigvectors after this call
                 RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
-                magma_zgesv_gpu (num_states, num_states, (magmaDoubleComplex *)gpuBij, num_states, ipiv, (magmaDoubleComplex *)gpuCij, num_states, &info);
+                magma_zgesv (num_states, num_states, (magmaDoubleComplex *)Bij, num_states, ipiv, (magmaDoubleComplex *)eigvectors, num_states, &info);
                 delete(RT1);
 
 
@@ -154,24 +145,20 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            gpuCij, num_states, gpuAij, num_states, beta, gpuBij,
-                            num_states, gpuCij, gpuAij, gpuBij, false, false, false, false);
+                            eigvectors, num_states, Aij, num_states, beta, Bij,
+                            num_states, NULLptr, NULLptr, NULLptr, false, false, false, false);
 
-            /*Multiply the result with Sij, result is in Cij */
+            /*Multiply the result with Sij, result is in eigvectors */
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            gpuSij, num_states, gpuBij, num_states, beta, gpuCij,
-                            num_states, gpuSij, gpuBij, gpuCij, false, false, false, false);
+                            Sij, num_states, Bij, num_states, beta, eigvectors,
+                            num_states, NULLptr, NULLptr, NULLptr, false, false, false, false);
             delete(RT1);
 
         }
         else {
 
-            // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into gpuCij
-            // to pass to eigensolver. Also need Sij on GPU
-            custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Aij, ione, gpuCij, ione );
-
-            // Transfer Sij to gpuSij
-            custat = cublasSetVector(num_states * num_states , sizeof(KpointType), Sij, ione, gpuSij, ione );
+            // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into eigvectors
+            for(int i = 0;i < num_states * num_states;i++) eigvectors[i] = Aij[i];
 
         }
 
@@ -191,15 +178,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             if(use_folded) {
 
-                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuSij, 1, Sij, 1 );
-                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuAij, 1, Aij, 1 );
-                GpuFree(gpuSij);
-                GpuFree(gpuBij);
-                GpuFree(gpuAij);
-
                 FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij, SUBDIAG_MAGMA);
-//                custat = cublasSetVector(num_states * num_states , sizeof(KpointType), eigvectors, ione, gpu_eigvectors, ione );
 
                 delete [] work2;
                 delete [] iwork;
@@ -208,32 +187,27 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
 
                 delete(RT1);
-                GpuFreeHost(Cij);
 
                 return trans_t;
 
             }
             else {
 
-                int info = Rmg_dsygvd_gpu(num_states, (double *)gpuCij, num_states, (double *)gpuSij, num_states,
-                                      eigs, work, lwork, iwork, liwork, (double *)Cij);
-                // We have to transfer this back in order to rotate the betaxpsi
-                custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-                RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
+                int info;
+                int itype = 1;
+                magma_dsygvd(itype, MagmaVec, MagmaLower, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, &info);
 
             }
 
         }
         else {
 
+            int info;
+            int itype = 1;
             int lrwork = 2 * num_states * num_states + 6 * num_states;
             double *rwork = new double[2 * lrwork];
-            int info = Rmg_zhegvd_gpu(num_states, (std::complex<double> *)gpuCij, num_states, (std::complex<double> *)gpuSij, num_states,
-                                  eigs, work, lwork, rwork, lrwork, iwork, liwork, (double *)Cij);
-            // We have to transfer this back in order to rotate the betaxpsi
-            custat = cublasGetVector(num_states * num_states, sizeof( KpointType ), gpuCij, 1, eigvectors, 1 );
-            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring eigenvector matrix from GPU to system memory.");
-            delete [] rwork;
+            magma_zhegvd(itype, MagmaVec, MagmaLower, num_states, (cuDoubleComplex *)eigvectors, num_states, (cuDoubleComplex *)Sij, num_states,
+                                  eigs, (cuDoubleComplex *)work, lwork, rwork, lrwork, iwork, liwork, &info);
 
         }
 
@@ -244,12 +218,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
 
         delete(RT1);
-        GpuFreeHost(Cij);
 
-        GpuFree(gpuSij);
-        GpuFree(gpuCij);
-        GpuFree(gpuBij);
-        GpuFree(gpuAij);
         
     } // end if is_local_master
 
