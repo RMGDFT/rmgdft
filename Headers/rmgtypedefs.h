@@ -4,6 +4,13 @@
 #ifndef RMG_TYPEDEFS_H
 #define RMG_TYPEDEFS_H 1
 
+#ifdef __cplusplus
+    #include <complex>
+    typedef std::complex<double> DoubleC;
+#else
+    #include <complex.h>
+    typedef complex double   DoubleC;
+#endif
 
 /*Structure for storing PDB information
  * Each ion should have it*/

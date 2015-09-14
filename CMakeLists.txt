@@ -528,6 +528,7 @@ add_subdirectory (TDDFT/Common EXCLUDE_FROM_ALL)
 add_subdirectory (TDDFT/ELDYN EXCLUDE_FROM_ALL) 
 
 add_subdirectory (NEGF/Common EXCLUDE_FROM_ALL) 
+add_subdirectory (NEGF/SelfEnergy EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Local_current EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Pois_for_negf EXCLUDE_FROM_ALL) 

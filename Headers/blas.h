@@ -41,6 +41,7 @@
     single.)
 
 */
+#include "rmgtypedefs.h"
 
 #if LINUX || __CYGWIN__ || _WIN32 || _WIN64
 
@@ -181,6 +182,10 @@ void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *,
 void dtrsm(char *side, char *uplo, char *transa, char *diag, int *M, int *N, double *alpha, double *A, int *lda, double *B, int *ldb);
 void dsygst( int *itype, char *uplo, int *N, double *A, int *LDA, double *B, int *LDB, int *INFO );
 double dzasum(int *, double *A, int *);
+
+void zcopy(int *, DoubleC *, int *, DoubleC *, int *);
+void zaxpy(int *, DoubleC *, DoubleC *, int *, DoubleC *, int*);
+void zgeev(char *, char *, int *, DoubleC*, int *, DoubleC*, DoubleC*, int *, DoubleC*, int *, DoubleC*, int *, double *, int * );
 
 
 
