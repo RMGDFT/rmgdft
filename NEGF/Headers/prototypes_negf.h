@@ -8,6 +8,8 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
                 STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
                 double * vxc_old);
 
+void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10, 
+        std::complex<double> *H01, std::complex<double> *sigma, double lamda_min);
 #ifdef __cplusplus
 extern "C" {
 #endif

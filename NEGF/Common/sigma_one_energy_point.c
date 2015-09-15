@@ -74,6 +74,13 @@ double kvecy, double kvecz, complex double *work)
 
 
     idx = pmo.mxllda_lead[jprobe-1] * pmo.mxlocc_lead[jprobe-1];
+ //   for (i = 0; i < idx; i++)
+ //   {
+ //       ch0[i]  = creal(ene) * S00[i] - Ha_eV * H00[i];
+ //       ch01[i] = creal(ene) * S01[i] - Ha_eV * H01[i];
+ //       ch10[i] = creal(ene) * S10[i] - Ha_eV * H10[i];
+ //   }
+
     for (i = 0; i < idx; i++)
     {
         ch0[i]  = ene * S00[i] - Ha_eV * H00[i];
@@ -81,21 +88,24 @@ double kvecy, double kvecz, complex double *work)
         ch10[i] = ene * S10[i] - Ha_eV * H10[i];
     }
 
-    //#if GPU_ENABLED
-    //                    Sgreen_cuda (g, ch0, ch01, ch10, jprobe);
 
-    //#else
+    if (cimag(ene) <0.5 )
+    {
 
-    if (cimag(ene) >0.5 )
+        KrylovSigma_c(numst, ch0, ch10, ch01,sigma, 0.01);
+        return;
+
+    }    
+    else
     {
         Sgreen_semi_infinite_p (g, ch0, ch01, ch10, jprobe);
     }
-    else
-    {
-
-        green_lead(ch0, ch01, ch10, g, jprobe);
-
-    }
+    //    else
+    //    {
+    //
+    //        green_lead(ch0, ch01, ch10, g, jprobe);
+    //
+    //    }
     //#endif
 
 
@@ -124,4 +134,6 @@ double kvecy, double kvecz, complex double *work)
 
     Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
 
+    for(i = 0; i <10; i++)
+        printf("\n sigmaold  %d %f  %f", i, sigma[i]);
 }

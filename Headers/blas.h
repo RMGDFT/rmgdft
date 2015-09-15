@@ -96,6 +96,9 @@
 #  define               zheev           zheev_
 #  define               dtrsm           dtrsm_
 #  define               dsygst          dsygst_
+#  define               zgeev           zgeev_
+#  define               zgemv           zgemv_
+#  define               zdotc           zdotc_
 
 
 #else
@@ -188,6 +191,9 @@ void zaxpy(int *, DoubleC *, DoubleC *, int *, DoubleC *, int*);
 void zgeev(char *, char *, int *, DoubleC*, int *, DoubleC*, DoubleC*, int *, DoubleC*, int *, DoubleC*, int *, double *, int * );
 
 
+void zgemv (char *, int *, int *, DoubleC *, DoubleC*, int *, DoubleC*, int *, DoubleC *,DoubleC *,  int *);
+
+DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 
 
 
