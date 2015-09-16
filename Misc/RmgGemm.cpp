@@ -95,17 +95,19 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     cudaError_t cudaErrA, cudaErrB, cudaErrC;
 
     cudaErrA = cudaPointerGetAttributes(&attrib_A, A);
-    if(cudaErrA != cudaSuccess) RmgCudaError(__FILE__, __LINE__, cudaErrA, "Problem in RmgGemm identifying cuda memory type.");
     cudaErrB = cudaPointerGetAttributes(&attrib_B, B);
-    if(cudaErrB != cudaSuccess) RmgCudaError(__FILE__, __LINE__, cudaErrB, "Problem in RmgGemm identifying cuda memory type.");
     cudaErrC = cudaPointerGetAttributes(&attrib_C, C);
-    if(cudaErrC != cudaSuccess) RmgCudaError(__FILE__, __LINE__, cudaErrC, "Problem in RmgGemm identifying cuda memory type.");
-
+    bool UsingCudaMemory = ((cudaErrA == cudaSuccess) && (cudaErrB == cudaSuccess) && (cudaErrC == cudaSuccess));
+//if(!UsingCudaMemory)printf("NOT USING\n");
     // Check attributes and if all matrices are located on the host then
     // we can use the XT interface.
     if((attrib_A.memoryType == cudaMemoryTypeHost) &&
        (attrib_B.memoryType == cudaMemoryTypeHost) &&
-       (attrib_C.memoryType == cudaMemoryTypeHost)) {
+       (attrib_C.memoryType == cudaMemoryTypeHost) &&
+       (Agpu == NULL) &&
+       (Bgpu == NULL) &&
+       (Cgpu == NULL) &&
+        UsingCudaMemory) {
 //printf("HOST GEMM\n");
 
             if(typeid(DataType) == typeid(std::complex<double>)) {
@@ -133,7 +135,8 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     // If all matrices are located on the device then we can use the regular interface
     if((attrib_A.memoryType == cudaMemoryTypeDevice) &&
        (attrib_B.memoryType == cudaMemoryTypeDevice) &&
-       (attrib_C.memoryType == cudaMemoryTypeDevice)) {
+       (attrib_C.memoryType == cudaMemoryTypeDevice) &&
+        UsingCudaMemory) {
 //printf("DEVICE GEMM\n");
             if(typeid(DataType) == typeid(std::complex<double>)) {
                 custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,

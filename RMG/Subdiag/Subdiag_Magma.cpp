@@ -178,8 +178,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             if(use_folded) {
 
-                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Aij, SUBDIAG_MAGMA);
-
+                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Sij, SUBDIAG_MAGMA);
                 delete [] work2;
                 delete [] iwork;
                 GpuFreeHost(work);

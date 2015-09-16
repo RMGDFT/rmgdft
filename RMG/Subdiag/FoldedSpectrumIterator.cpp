@@ -59,12 +59,18 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     int ione = 1;
     double ONE_t = 1.0;
     double ZERO_t = 0.0;
-    double *Y = new double[n * k]();
     double *Agpu = NULL;
     double *Xgpu = NULL;
     double *Ygpu = NULL;
     int sizr = n * k;
     char *trans_n = "n";
+
+#if GPU_ENABLED
+    double *Y = (double *)GpuMallocHost(n * k *  sizeof(double));
+    for(int i = 0;i < n * k;i++) Y[i] = 0.0;
+#else
+    double *Y = new double[n * k]();
+#endif
 
 #if GPU_ENABLED
     cublasStatus_t custat;
@@ -130,8 +136,10 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     GpuFree(Ygpu);
     GpuFree(Xgpu);
     GpuFree(Agpu);
-#endif
+    GpuFreeHost(Y);
+#else
     delete [] Y;
+#endif
 }
 
 

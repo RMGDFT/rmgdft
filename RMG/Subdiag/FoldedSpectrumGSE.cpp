@@ -86,7 +86,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     int ione = 1;
     cublasStatus_t custat;
 
-    DataType *T1 = NULL;
+    DataType *T1 = (DataType *)GpuMallocHost(n * n * sizeof(DataType));
     DataType *gpuT1 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
     DataType *gpuT2 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
     DataType *gpuA = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
@@ -110,7 +110,6 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 #if MAGMA_LIBS
     magmablas_dlaset(MagmaFull, n, n, ZERO_t, ONE_t, (double *)gpuT1, n);
 #else
-    T1 = (DataType *)GpuMallocHost(n * n * sizeof(DataType));
     for(int ix = 0;ix < n*n;ix++) T1[ix] = ZERO_t;
     for(int ix = 0;ix < n;ix++) T1[ix*n + ix] = 1.0;
     custat = cublasSetVector(n * n , sizeof(DataType), T1, ione, gpuT1, ione );
@@ -178,9 +177,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     GpuFree(gpuA);
     GpuFree(gpuT2);
     GpuFree(gpuT1);
-#if !MAGMA_LIBS
     GpuFreeHost(T1);
-#endif
     GpuFreeHost(D);
 
     delete(RT1);
@@ -254,7 +251,6 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     delete [] T1;
     delete [] D;
 #endif
-
 
     // Make sure everybody has a copy
     RT1 = new RmgTimer("Diagonalization: fs: GSE-Allgatherv");
