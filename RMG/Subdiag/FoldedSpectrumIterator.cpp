@@ -64,36 +64,46 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     double *Ygpu = NULL;
     int sizr = n * k;
     char *trans_n = "n";
+    bool usegpu;
+    double *Tgpu = NULL;
+    double *eigs_gpu = NULL;
+
 
 #if GPU_ENABLED
+    usegpu = true;
+    if(n > 60) usegpu = false;
     double *Y = (double *)GpuMallocHost(n * k *  sizeof(double));
     for(int i = 0;i < n * k;i++) Y[i] = 0.0;
 #else
+    usegpu = false; 
     double *Y = new double[n * k]();
 #endif
 
 #if GPU_ENABLED
+
     cublasStatus_t custat;
-    double *Tgpu = NULL;
-    double *eigs_gpu = NULL;
-    Agpu = (double *)GpuMalloc(n * n * sizeof(double));
-    Xgpu = (double *)GpuMalloc(n * k * sizeof(double));
-    Ygpu = (double *)GpuMalloc(n * k * sizeof(double));
-    Tgpu = (double *)GpuMalloc(n * k * sizeof(double));
-    eigs_gpu = (double *)GpuMalloc(n * sizeof(double));
-    custat = cublasSetVector(n * n , sizeof(double), A, ione, Agpu, ione );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing A from system memory to gpu.");
+    if(usegpu) {
 
-    // Must be a better way of doing this, setting matrix to zero on CPU and transferring seems wasteful
-    custat = cublasSetVector(n * k , sizeof(double), Y, ione, Ygpu, ione );     // Must be a better way of doing this
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
+        Agpu = (double *)GpuMalloc(n * n * sizeof(double));
+        Xgpu = (double *)GpuMalloc(n * k * sizeof(double));
+        Ygpu = (double *)GpuMalloc(n * k * sizeof(double));
+        Tgpu = (double *)GpuMalloc(n * k * sizeof(double));
+        eigs_gpu = (double *)GpuMalloc(n * sizeof(double));
+        custat = cublasSetVector(n * n , sizeof(double), A, ione, Agpu, ione );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing A from system memory to gpu.");
 
-    // Must be a better way of doing this, setting matrix to zero on CPU and transferring seems wasteful
-    custat = cublasSetVector(n * k , sizeof(double), X, ione, Xgpu, ione );     // Must be a better way of doing this
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing X from system memory to gpu.");
+        // Must be a better way of doing this, setting matrix to zero on CPU and transferring seems wasteful
+        custat = cublasSetVector(n * k , sizeof(double), Y, ione, Ygpu, ione );     // Must be a better way of doing this
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
 
-    custat = cublasSetVector(n, sizeof(double), eigs, ione, eigs_gpu, ione );     // Must be a better way of doing this
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
+        // Must be a better way of doing this, setting matrix to zero on CPU and transferring seems wasteful
+        custat = cublasSetVector(n * k , sizeof(double), X, ione, Xgpu, ione );     // Must be a better way of doing this
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing X from system memory to gpu.");
+
+        custat = cublasSetVector(n, sizeof(double), eigs, ione, eigs_gpu, ione );     // Must be a better way of doing this
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing Y from system memory to gpu.");
+
+    }
 
 #endif
 
@@ -105,37 +115,48 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
 #if GPU_ENABLED
+        if(usegpu) {
 
-        double neg_rone = -1.0;
-        custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
-        custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, Tgpu, ione, Ygpu, ione);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
-        custat = cublasDaxpy(ct.cublas_handle, sizr, &alpha, Ygpu, ione, Xgpu, ione);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+            double neg_rone = -1.0;
+            custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
+            custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, Tgpu, ione, Ygpu, ione);
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+            custat = cublasDaxpy(ct.cublas_handle, sizr, &alpha, Ygpu, ione, Xgpu, ione);
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
 
-#else
-        for(int kcol = 0;kcol < k;kcol++) {
-           for(int ix = 0;ix < n;ix++) {
-               Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
-           }
         }
-        //daxpy(&sizr, &alpha, Y, &ione, X, &ione);
-        for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
 #endif
+
+        if(!GPU_ENABLED || (usegpu == false)) {
+
+            for(int kcol = 0;kcol < k;kcol++) {
+               for(int ix = 0;ix < n;ix++) {
+                   Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
+               }
+            }
+            //daxpy(&sizr, &alpha, Y, &ione, X, &ione);
+            for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
+
+        }
+
 
 
     }    
 
 #if GPU_ENABLED
-    custat = cublasGetVector(n * k, sizeof( double ), Xgpu, 1, X, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");
+    if(usegpu) {
 
-    GpuFree(eigs_gpu);
-    GpuFree(Tgpu);
-    GpuFree(Ygpu);
-    GpuFree(Xgpu);
-    GpuFree(Agpu);
+        custat = cublasGetVector(n * k, sizeof( double ), Xgpu, 1, X, 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");
+
+        GpuFree(eigs_gpu);
+        GpuFree(Tgpu);
+        GpuFree(Ygpu);
+        GpuFree(Xgpu);
+        GpuFree(Agpu);
+    }
+
     GpuFreeHost(Y);
 #else
     delete [] Y;

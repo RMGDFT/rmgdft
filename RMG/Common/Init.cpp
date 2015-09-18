@@ -182,7 +182,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // as additional diagonalization arrays as well
 //    t1 = ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
     t1 = ct.num_states * ct.num_states * sizeof(OrbitalType);
-    gpu_bufsize += 6*t1;
+    gpu_bufsize += 4*t1;
 
     // and multiply by 2 just for kicks
     //gpu_bufsize *= 2;
