@@ -13,6 +13,7 @@
 
 void RmgCudaError(const char *file, int line, const cudaError_t cudaStatus, const char * errorMessage);
 void RmgCudaError(const char *file, int line, const cublasStatus_t status, const char * errorMessage);
+void ProcessCublasError(cublasStatus_t custat);
 #endif
 
 #endif

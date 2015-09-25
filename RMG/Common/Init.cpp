@@ -172,17 +172,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Figure out how much memory space to reserve on the GPU
     // 3 blocks of num_states * num_states for diagonalization arrays
     size_t gpu_bufsize, t1;
-    t1 = ct.num_states * ct.num_states * sizeof(OrbitalType);
-    gpu_bufsize = 4 * t1;
+    t1 = std::max(ct.num_states, RMG_CUBLASXT_BLOCKSIZE) * ct.num_states * sizeof(OrbitalType);
+    gpu_bufsize = 3 * t1;
 #if MAGMA_LIBS
     gpu_bufsize += t1;
 #endif
-
-    // Two buffers for rotating the orbitals. Make sure they are big enough to use
-    // as additional diagonalization arrays as well
-//    t1 = ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
-    t1 = ct.num_states * ct.num_states * sizeof(OrbitalType);
-    gpu_bufsize += 4*t1;
 
     // and multiply by 2 just for kicks
     //gpu_bufsize *= 2;

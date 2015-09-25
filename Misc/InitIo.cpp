@@ -201,7 +201,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         fprintf(stderr, "XT set devices fail\n"); exit(-1);
     } //
 
-    cublasXtSetBlockDim(ct.cublasXt_handle, 2048);
+    cublasXtSetBlockDim(ct.cublasXt_handle, RMG_CUBLASXT_BLOCKSIZE);
     void *fptr;
     fptr = (void *)&dgemm_;
 //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);

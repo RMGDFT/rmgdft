@@ -493,6 +493,9 @@ typedef struct
     // Device ids for the usable gpus
     int gpu_device_ids[MAX_GPU_DEVICES];
 
+    // GPU memory for the usable devices
+    size_t gpu_mem[MAX_GPU_DEVICES];
+
     // Cuda device
     CUdevice  cu_dev;
 

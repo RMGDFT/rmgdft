@@ -64,25 +64,25 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     double *Ygpu = NULL;
     int sizr = n * k;
     char *trans_n = "n";
-    bool usegpu;
+    bool usecuxt;
     double *Tgpu = NULL;
     double *eigs_gpu = NULL;
 
 
 #if GPU_ENABLED
-    usegpu = true;
-    if(n > 60) usegpu = false;
+    usecuxt = true;
+    if(n > RMG_CUBLASXT_BLOCKSIZE) usecuxt = false;
     double *Y = (double *)GpuMallocHost(n * k *  sizeof(double));
     for(int i = 0;i < n * k;i++) Y[i] = 0.0;
 #else
-    usegpu = false; 
+    usecuxt = false; 
     double *Y = new double[n * k]();
 #endif
 
 #if GPU_ENABLED
 
     cublasStatus_t custat;
-    if(usegpu) {
+    if(usecuxt) {
 
         Agpu = (double *)GpuMalloc(n * n * sizeof(double));
         Xgpu = (double *)GpuMalloc(n * k * sizeof(double));
@@ -115,7 +115,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
 #if GPU_ENABLED
-        if(usegpu) {
+        if(usecuxt) {
 
             double neg_rone = -1.0;
             custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
@@ -128,13 +128,18 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         }
 #endif
 
-        if(!GPU_ENABLED || (usegpu == false)) {
+        if(!GPU_ENABLED || (usecuxt == false)) {
 
-            for(int kcol = 0;kcol < k;kcol++) {
-               for(int ix = 0;ix < n;ix++) {
+            int kcol, ix;
+#pragma omp parallel private(kcol, ix)
+{
+#pragma omp for schedule(static, 1) nowait
+            for(kcol = 0;kcol < k;kcol++) {
+               for(ix = 0;ix < n;ix++) {
                    Y[kcol*n + ix] -= eigs[kcol] * X[kcol*n + ix];
                }
             }
+}
             //daxpy(&sizr, &alpha, Y, &ione, X, &ione);
             for(int ix = 0;ix < n*k;ix++) X[ix] += alpha * Y[ix];
 
@@ -145,7 +150,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     }    
 
 #if GPU_ENABLED
-    if(usegpu) {
+    if(usecuxt) {
 
         custat = cublasGetVector(n * k, sizeof( double ), Xgpu, 1, X, 1 );
         RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");
