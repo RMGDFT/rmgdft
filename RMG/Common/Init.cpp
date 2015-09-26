@@ -68,10 +68,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ION *iptr;
     double time2, fac;
 
-#if GPU_ENABLED
-    init_gpu();
-#endif
-
     nv = (OrbitalType *)pct.nv;
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -178,17 +174,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     gpu_bufsize += t1;
 #endif
 
-    // and multiply by 2 just for kicks
-    //gpu_bufsize *= 2;
     InitGpuMalloc(gpu_bufsize);
 
     // Next is page locked memory for transferring data back and forth
     size_t gpu_hostbufsize;
-    gpu_hostbufsize = 7 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
+    gpu_hostbufsize = 4 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
                       2 * ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
-    if(Verify ("folded_spectrum", true, Kptr[0]->ControlMap)) {
-        gpu_hostbufsize += 4 * ct.num_states * ct.num_states * sizeof(OrbitalType);
-    }
 
     InitGpuMallocHost(gpu_hostbufsize);
 

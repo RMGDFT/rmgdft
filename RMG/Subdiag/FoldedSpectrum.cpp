@@ -164,7 +164,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
 #if GPU_ENABLED
     KpointType *V = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocHost(n_win * n_win * sizeof(KpointType));
     for(int ix = 0;ix < n * n;ix++) V[ix] = ZERO_t;
     for(int ix = 0;ix < n * n;ix++) G[ix] = ZERO_t;
 #else

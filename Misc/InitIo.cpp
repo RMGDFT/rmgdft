@@ -49,6 +49,8 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <unordered_map>
+#include <vector>
+#include <algorithm>
 #if (defined(_WIN32) || defined(_WIN64))
     #include <io.h>
 #else
@@ -180,7 +182,36 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
 
 #if GPU_ENABLED
+    CUdevice dev;
     cudaDeviceReset();
+    cuDeviceGetCount( &ct.num_gpu_devices);
+    size_t deviceMem;
+    int clock;
+    char name[1024];
+
+    // Get device list and memory capacities. While this is not ideal under all circumstances
+    // we will find the device with the largest memory and use all devices that have just as
+    // much memory
+    std::vector<size_t> device_mem;
+    printf("\n");
+    for(int idevice = 0; idevice < ct.num_gpu_devices; idevice++ ) {
+        cuDeviceGet( &dev, idevice );
+        cuDeviceGetName( name, sizeof(name), dev );
+        cuDeviceTotalMem( &deviceMem, dev );
+        cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
+        printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        device_mem.push_back(deviceMem/1024.0/1024.0);
+    }
+
+    size_t max_mem = *std::max_element(device_mem.begin(), device_mem.end());
+    ct.num_usable_gpu_devices = 0;
+    for(auto it = device_mem.begin();it != device_mem.end();++it) {
+        if(*it == max_mem) {
+            ct.gpu_device_ids[ct.num_usable_gpu_devices] = ct.num_usable_gpu_devices;
+            ct.num_usable_gpu_devices++;
+        }
+    }
+
     cudaSetDeviceFlags(cudaDeviceScheduleSpin);
     if( CUDA_SUCCESS != cuInit( 0 ) ) {
         fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
@@ -196,8 +227,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
         fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
     }
-    int devices[1] = { 0 };
-    if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, devices) != CUBLAS_STATUS_SUCCESS) {
+    if(cublasXtDeviceSelect(ct.cublasXt_handle, ct.num_usable_gpu_devices, ct.gpu_device_ids) != CUBLAS_STATUS_SUCCESS) {
         fprintf(stderr, "XT set devices fail\n"); exit(-1);
     } //
 
