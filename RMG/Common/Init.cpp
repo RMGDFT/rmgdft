@@ -168,7 +168,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Figure out how much memory space to reserve on the GPU
     // 3 blocks of num_states * num_states for diagonalization arrays
     size_t gpu_bufsize, t1;
-    t1 = std::max(ct.num_states, RMG_CUBLASXT_BLOCKSIZE) * ct.num_states * sizeof(OrbitalType);
+    t1 = RMG_CUBLASXT_BLOCKSIZE * ct.num_states * sizeof(OrbitalType);
     gpu_bufsize = 3 * t1;
 #if MAGMA_LIBS
     gpu_bufsize += t1;
@@ -178,8 +178,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Next is page locked memory for transferring data back and forth
     size_t gpu_hostbufsize;
-    gpu_hostbufsize = 4 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
-                      2 * ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
+    gpu_hostbufsize = 6 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
+                      3 * ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
 
     InitGpuMallocHost(gpu_hostbufsize);
 

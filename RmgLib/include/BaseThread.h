@@ -111,7 +111,7 @@ public:
     void set_thread_basetag(int tid, int tag);
     BaseThreadControl *get_thread_control(void);
     int get_thread_tid(void);
-    void set_cpu_affinity(int tid);
+    void set_cpu_affinity(int tid, int procs_per_node, int local_rank);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);
     void set_pptr(int tid, void *p);

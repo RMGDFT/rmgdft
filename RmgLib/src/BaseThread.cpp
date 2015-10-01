@@ -181,17 +181,18 @@ int BaseThread::get_thread_tid(void) {
 // Used for positioning and setting processor affinity. For now assumes that
 // THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
 // does not attemp to schedule
-void BaseThread::set_cpu_affinity(int tid)
+void BaseThread::set_cpu_affinity(int tid, int procs_per_node, int local_rank)
 {
 #if __linux__
     int s;
     cpu_set_t cpuset;
     pthread_t thread;
+    int cores = sysconf( _SC_NPROCESSORS_ONLN );
 
-    if(BaseThread::THREADS_PER_NODE % sysconf( _SC_NPROCESSORS_ONLN )) return;
+    if(BaseThread::THREADS_PER_NODE % (cores / procs_per_node)) return;
 
-    s = tid % BaseThread::THREADS_PER_NODE;
-
+    s = tid % BaseThread::THREADS_PER_NODE + local_rank * BaseThread::THREADS_PER_NODE;
+//printf("THREAD1  %d  %d  %d\n",tid, s, local_rank);
 
     // Set affinity mask
     CPU_ZERO(&cpuset);
