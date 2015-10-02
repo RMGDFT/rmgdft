@@ -230,7 +230,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->Kstates[st1].pbasis =P0_BASIS;
             Kptr[kpt]->Kstates[st1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
             Kptr[kpt]->Kstates[st1].istate = st1;
-            Kptr[kpt]->Kstates[st1].vel = get_vel();
             rptr +=P0_BASIS;
             rptr1 +=P0_BASIS;
         }
