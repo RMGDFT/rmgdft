@@ -123,8 +123,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
         printf("\n Warning: total charge Normalization constant = %e  \n", t2);
 
-    delete(RT0);
-
 
     delete(RT2);
 
