@@ -25,7 +25,7 @@ void *run_threads(void *v) {
     cudaError_t cuerr;
 #endif
 
-    T->set_cpu_affinity(s->tid);
+    T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
 
     // Set up thread local storage
     rmg_set_tsd(s);
