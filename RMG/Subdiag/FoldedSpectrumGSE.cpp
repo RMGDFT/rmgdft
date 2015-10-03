@@ -89,7 +89,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     cublasStatus_t custat;
 
     DataType *T1 = (DataType *)GpuMallocHost(n * n * sizeof(DataType));
-    DataType *gpuT1 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
+    //DataType *gpuT1 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
     DataType *gpuA = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
     DataType *gpuZ = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
     DataType *gpuB = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
@@ -179,7 +179,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     GpuFree(gpuB);
     GpuFree(gpuZ);
     GpuFree(gpuA);
-    GpuFree(gpuT1);
+    //GpuFree(gpuT1);
     GpuFreeHost(T1);
     GpuFreeHost(D);
 
