@@ -86,7 +86,6 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     ipiv = new int[n2];
 
     shift.imag( 1.0/sqrt(2.0));
-    shift=1.0;
     // set up matrix A see eq 13 in PRB Kurt
 
     // first A store M eq 8, VR store C eq.9 and K eq.10
