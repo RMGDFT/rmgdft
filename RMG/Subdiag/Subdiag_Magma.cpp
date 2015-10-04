@@ -170,7 +170,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         int eigs_found;
         double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
         int *iwork = new int[2*liwork];
-        double *work2 = new double[2*lwork];
         double vx = 0.0;
         double tol = 1e-15;
 
@@ -178,8 +177,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             if(use_folded) {
 
-                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)Sij, SUBDIAG_MAGMA);
-                delete [] work2;
+                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, (double *)Sij, SUBDIAG_MAGMA);
                 delete [] iwork;
                 GpuFreeHost(work);
                 delete [] ifail;
@@ -210,7 +208,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
         }
 
-        delete [] work2;
         delete [] iwork;
         GpuFreeHost(work);
         delete [] ifail;
