@@ -165,10 +165,8 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         RmgTimer *RT1 = new RmgTimer("Diagonalization: magma");
 
         int *ifail = new int[num_states];
-        int lwork = 3 * num_states * num_states + 8 * num_states;
         int liwork = 6 * num_states + 4;
         int eigs_found;
-        double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
         int *iwork = new int[2*liwork];
         double vx = 0.0;
         double tol = 1e-15;
@@ -177,6 +175,8 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             if(use_folded) {
 
+                int lwork = 3 * num_states * num_states / 9 + num_states;
+                double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));        
                 FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, (double *)Sij, SUBDIAG_MAGMA);
                 delete [] iwork;
                 GpuFreeHost(work);
@@ -192,7 +192,10 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
                 int info;
                 int itype = 1;
+                int lwork = 3 * num_states * num_states + 8 * num_states;
+                double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
                 magma_dsygvd(itype, MagmaVec, MagmaLower, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, &info);
+                GpuFreeHost(work);
 
             }
 
@@ -201,15 +204,17 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             int info;
             int itype = 1;
+            int lwork = 3 * num_states * num_states + 8 * num_states;
+            double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
             int lrwork = 2 * num_states * num_states + 6 * num_states;
             double *rwork = new double[2 * lrwork];
             magma_zhegvd(itype, MagmaVec, MagmaLower, num_states, (cuDoubleComplex *)eigvectors, num_states, (cuDoubleComplex *)Sij, num_states,
                                   eigs, (cuDoubleComplex *)work, lwork, rwork, lrwork, iwork, liwork, &info);
 
+            GpuFreeHost(work);
         }
 
         delete [] iwork;
-        GpuFreeHost(work);
         delete [] ifail;
 
 
