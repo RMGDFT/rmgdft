@@ -51,7 +51,6 @@
 #endif
 
 
-#define FOLDED_GSE 1
 
 
 
@@ -120,27 +119,12 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
 
 
-#if !FOLDED_GSE
-    RT1 = new RmgTimer("Diagonalization: fs: cholesky");
-    //  Form a Cholesky factorization of B
-    dpotrf(cuplo, &n, B, &ldb, &info);
-    if( info != 0 )
-        rmg_error_handler(__FILE__, __LINE__, "dpotrf failure");
-    delete(RT1);
-#endif
-
 
     RT1 = new RmgTimer("Diagonalization: fs: folded");
     KpointType *NULLptr = NULL;
 
     //  Transform problem to standard eigenvalue problem
     RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: transform");
-
-#if !FOLDED_GSE
-    dsygst(&itype, cuplo, &n, A, &lda, B, &ldb, &info);
-    if( info != 0 )
-        rmg_error_handler(__FILE__, __LINE__, "dsygst failure");
-#else
 
     int its=7;
 #if GPU_ENABLED
@@ -155,21 +139,22 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
 #if GPU_ENABLED
     GpuFreeHost(T);
+    GpuFreeHost(Bsave);
 #else
     delete [] T;
+    delete [] Bsave;
 #endif
 
-#endif
     delete(RT2);
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
 #if GPU_ENABLED
     KpointType *V = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
     KpointType *G = (KpointType *)GpuMallocHost(n_win * n_win * sizeof(KpointType));
     for(int ix = 0;ix < n * n;ix++) V[ix] = ZERO_t;
-    for(int ix = 0;ix < n * n;ix++) G[ix] = ZERO_t;
+    for(int ix = 0;ix < n_win * n_win;ix++) G[ix] = ZERO_t;
 #else
     KpointType *V = new KpointType[n*n]();
-    KpointType *G = new KpointType[n*n]();
+    KpointType *G = new KpointType[n_win*n_win]();
 #endif
     double *n_eigs = new double[n]();
 
@@ -262,31 +247,20 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
 
-#if !FOLDED_GSE
-    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, NULLptr, driver);
-#else
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver);
-#endif
     for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
     delete(RT2);
 
 
-#if !FOLDED_GSE
-    RT2 = new RmgTimer("Diagonalization: fs: dtrsm");
-    dtrsm (side, cuplo, trans_t, diag, &n, &n, &rone, B, &ldb, A, &lda);
-    delete(RT2);
-#endif
 
     delete(RT1);
 #if GPU_ENABLED
     GpuFreeHost(G);
     GpuFreeHost(V);
-    GpuFreeHost(Bsave);
     GpuFreeHost(Asave);
 #else
     delete [] G;
     delete [] V;
-    delete [] Bsave;
     delete [] Asave;
 #endif
     delete [] n_eigs;
