@@ -177,9 +177,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMalloc(gpu_bufsize);
 
     // Next is page locked memory for transferring data back and forth
+    int n_win = 0;
+    if(ct.use_folded_spectrum) {
+        double r_width = ct.folded_spectrum_width;
+        double t1 = (double)ct.num_states;
+        n_win = (int)(r_width * t1) + 1;
+    }
+
     size_t gpu_hostbufsize;
-    gpu_hostbufsize = 3 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
-                      3 * ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType);
+    gpu_hostbufsize = 2 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
+                      3 * ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType) +
+                      n_win * n_win * sizeof(OrbitalType);
 
     InitGpuMallocHost(gpu_hostbufsize);
 

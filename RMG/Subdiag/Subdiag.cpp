@@ -76,7 +76,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     BaseThread *T = BaseThread::getBaseThread(0);
 
     static KpointType *tmp_arrayT;
-    static KpointType *tmp_array2T;
     static KpointType *global_matrix1;
     static KpointType *global_matrix2;
 
@@ -89,12 +88,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     static KpointType *Aij;
     static KpointType *Bij;
     static KpointType *Sij;
+    KpointType *tmp_array2T = (KpointType *)GpuMallocHost(kptr->pbasis * kptr->nstates * sizeof(KpointType));     
 
 #else
 
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
+    KpointType *tmp_array2T = new KpointType[kptr->pbasis * kptr->nstates];
+
 #endif
 
 
@@ -115,17 +117,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     if(!tmp_arrayT) {
 
         int retval1 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
-        int retval2 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_array2T);
-        int retval3 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-        int retval4 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
+        int retval2 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        int retval3 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
 
-        if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS)) {
+        if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS)) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
         }
 
         #if GPU_ENABLED
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_array2T, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
@@ -135,7 +135,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 
     }
 
-
+    
     // Get vtot on fine grid 
     int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
     double *vtot = new double[FP0_BASIS];
@@ -192,7 +192,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
          tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
-
     // Compute A matrix
     RT1 = new RmgTimer("Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
@@ -245,6 +244,13 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
 #endif
     for(int idx = 0;idx < num_states*num_states;idx++) Sij[idx] = global_matrix2[idx];
     delete(RT1);
+
+    // Free up tmp_array2T
+#if GPU_ENABLED
+    GpuFreeHost(tmp_array2T);
+#else
+    delete [] tmp_array2T;
+#endif
 
     // global_matrix1 holds Bij now, we store a copy in Bij as well and pass Bij to the driver routine in globalmatrix as well
 
