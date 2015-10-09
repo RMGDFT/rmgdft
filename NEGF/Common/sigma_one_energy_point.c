@@ -92,8 +92,9 @@ double kvecy, double kvecz, complex double *work)
     if (cimag(ene) <0.5 )
     {
 
-        KrylovSigma_c(numst, ch0, ch10, ch01,sigma, 0.01);
-        return;
+        //KrylovSigma_c(numst, ch0, ch10, ch01,sigma, 0.01);
+        //return;
+        green_lead(ch0, ch01, ch10, g, jprobe);
 
     }    
     else
@@ -103,7 +104,6 @@ double kvecy, double kvecz, complex double *work)
     //    else
     //    {
     //
-    //        green_lead(ch0, ch01, ch10, g, jprobe);
     //
     //    }
     //#endif
