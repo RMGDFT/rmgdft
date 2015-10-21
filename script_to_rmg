@@ -1,5 +1,6 @@
 rm -rf ../rmg-release
 mkdir ../rmg-release
+mkdir ../rmg-release/SubprojectIncludes
 sed -n '/rmg-on/!p' CMakeLists.txt >temp
 sed -n '/rmg-negf/!p' temp > temp1
 sed -n '/TDDFT/!p' temp1 >temp
@@ -24,6 +25,7 @@ cp -r RmgLib ../rmg-release
 cp -r US_PP ../rmg-release
 cp -r XC_useLIBXC ../rmg-release
 cp -r Examples ../rmg-release
+cp -r PlatformChecks ../rmg-release
 cp make_conf.h.in ../rmg-release
 cp svnrev.h.in ../rmg-release
 cp COPYING ../rmg-release
@@ -32,4 +34,5 @@ cp CREDITS ../rmg-release
 cp README.windows ../rmg-release/
 cp CMakeCPackOptions.cmake.in ../rmg-release/
 cp rmgwin.bat ../rmg-release/
-
+cp CMakeFindRootPath.inc ../rmg-release/
+cp SubprojectIncludes/CMakeLists.txt.rmg.inc ../rmg-release/SubprojectIncludes
