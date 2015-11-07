@@ -18,4 +18,5 @@ mix_tau.c
 #quench_tau.c
 #relax_tau.c
 #scf_tau.c
+vdw_correlation.cpp
 )
