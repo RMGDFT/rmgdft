@@ -19,6 +19,9 @@ private:
     // Lattice object
     Lattice *L;
 
+    //
+    int type;
+
     // Real space basis on this node and grid parameters
     int pbasis;
 
@@ -67,11 +70,29 @@ private:
     // largest value of q_mesh
     double q_cut;
 
+    // smallest value of q_mesh
+    double q_min;
+
+    // cutoff value for density
+    static const double epsr;
+
 public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v);
     ~Vdw(void);
 
     void get_q0_on_grid (void);
+    void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
+
+
+    double Fs(double s);
+    double dFs_ds(double s);
+    double kF(double rho);
+    double dkF_drho(double rho);
+    double ds_drho(double rho, double s);
+    double ds_dgradrho(double rho);
+    double dqx_drho(double rho, double s);
+    
+
 
 };
 

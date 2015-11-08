@@ -1,6 +1,6 @@
 /*
 
-  This function calculates the non-local correlation contribution to the
+  This double Vdw::calculates the non-local correlation contribution to the
   energy and potential according to
  
      M. Dion, H. Rydberg, E. Schroeder, D. C. Langreth, and
@@ -38,6 +38,7 @@
 
 */ 
 
+#include <math.h>
 #include "const.h"
 #include "vdW.h"
 
@@ -68,6 +69,7 @@ const double Vdw::q_mesh[20] = {
 0.665848079422965, 0.824503639537924 , 1.010254382520950 , 1.227727621364570,
 1.482340921174910, 1.780437058359530 , 2.129442028133640 , 2.538050036534580,
 3.016440085356680, 3.576529545442460 , 4.232271035198720 , 5.0 };
+const double Vdw::epsr = 1.0e-12;
 
 /*
 
@@ -93,7 +95,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->m_cut = 12;
 
   // Largest value of q_cut
-  this->q_cut = q_mesh[Nqs];
+  this->q_cut = q_mesh[Nqs-1];
+
+  // smallest value of q_min
+  this->q_min = q_mesh[0];
 
   // Local storage
   this->total_rho = new double[pbasis];
@@ -103,7 +108,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->q0 = new double[pbasis]();
   this->dq0_drho = new double[pbasis]();
   this->dq0_dgradrho = new double[pbasis]();
-  this->thetas = new double[pbasis];
+  this->thetas = new double[pbasis*Nqs];
 
 
   
@@ -119,8 +124,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // derivatives of the q0s with respect to the charge-density and the
   // gradient of the charge-density. These are needed for the potential
   // calculated below. This routine also calculates the thetas.
-
-
 
 
 }
@@ -158,6 +161,8 @@ Vdw::~Vdw(void)
 void Vdw::get_q0_on_grid (void)
 {
 
+  double ec, dq0_dq;
+
   // Initialize q0-related arrays.
   for(int ix = 0;ix < this->pbasis;ix++) {
       this->q0[ix] = this->q_cut;      
@@ -168,9 +173,197 @@ void Vdw::get_q0_on_grid (void)
   for(int ix = 0;ix < this->pbasis;ix++) {
 
       double trho = this->total_rho[ix];
-      
+
+      // -----------------------------------------------------------------
+      // This prevents numerical problems. If the charge density is
+      // negative (an unphysical situation), we simply treat it as very
+      // small. In that case, q0 will be very large and will be saturated.
+      // For a saturated q0 the derivative dq0_dq will be 0 so we set q0 =
+      // q_cut and dq0_drho = dq0_dgradrho = 0 and go on to the next
+      // point.
+      if(trho < this->epsr) continue; 
+
+      // -----------------------------------------------------------------
+      // Calculate some intermediate values needed to find q.
+
+      double r_s = pow( 3.0 / (4.0*PI*trho) , (1.0/3.0));
+
+      double s = sqrt( this->gx[ix]*this->gx[ix] + this->gy[ix]*this->gy[ix] + this->gz[ix]*this->gz[ix] ) /
+         (2.0 * kF(trho) * trho );
+
+      // -----------------------------------------------------------------
+      // This is the q value defined in equations 11 and 12 of DION.
+      // Use pw() from flib/functionals.f90 to get qc = kf/eps_x * eps_c.
+
+//       call pw(r_s, 1, ec, dq0_drho(i_grid))
+      double q = -4.0*PI/3.0 * ec + kF(trho) * Fs(s);
+
+
+      // -----------------------------------------------------------------
+      // Bring q into its proper bounds.
+
+       saturate_q ( q, q_cut, q0[ix], dq0_dq );
+       if (this->q0[ix] < this->q_min) this->q0[ix] = this->q_min;
+
+
+      // -----------------------------------------------------------------
+      // Here we find derivatives. These are actually the density times
+      // the derivative of q0 with respect to rho and grad_rho. The
+      // density factor comes in since we are really differentiating
+      // theta = (rho)*P(q0) with respect to density (or its gradient)
+      // which will be
+      //
+      //    dtheta_drho = P(q0) + dP_dq0 * [rho * dq0_dq * dq_drho]
+      //
+      // and
+      //
+      //    dtheta_dgrad_rho = dP_dq0 * [rho * dq0_dq * dq_dgrad_rho]
+      //
+      // The parts in square brackets are what is calculated here. The
+      // dP_dq0 term will be interpolated later.
+
+      this->dq0_drho[ix]     = dq0_dq * trho * ( -4.0*PI/3.0 * 
+                            (this->dq0_drho[ix] - ec)/trho + dqx_drho(trho, s) );
+      this->dq0_dgradrho[ix] = dq0_dq * trho * kF(trho) * dFs_ds(s) * ds_dgradrho(trho);
 
   }
+
+  // --------------------------------------------------------------------
+  // Here we calculate the theta functions of SOLER equation 8. These are
+  // defined as
+  //
+  //    rho * P_i(q0(rho, grad_rho))
+  //
+  // where P_i is a polynomial that interpolates a Kroneker delta
+  // function at the point q_i (taken from the q_mesh) and q0 is the
+  // saturated version of q. q is defined in equations 11 and 12 of DION
+  // and the saturation proceedure is defined in equation 5 of SOLER.
+  // This is the biggest memory consumer in the method since the thetas
+  // array is (total # of FFT points)*Nqs complex numbers. In a parallel
+  // run, each processor will hold the values of all the theta functions
+  // on just the points assigned to it. thetas are stored in reciprocal
+  // space as theta_i(k) because this is the way they are used later for
+  // the convolution (equation 8 of SOLER). Start by interpolating the
+  // P_i polynomials defined in equation 3 in SOLER for the particular q0
+  // values we have.
+
+//  CALL spline_interpolation (q_mesh, q0, thetas)
+
+  for(int iq = 0;iq < this->Nqs;iq++) {
+      for(int ix = 0;ix < this->pbasis;ix++) {
+          thetas[ix + iq*pbasis] = thetas[ix + iq*pbasis] * this->total_rho[ix];
+      }
+  }
+
+//  do idx = 1, Nqs
+//     CALL fwfft ('Dense', thetas(:,idx), dfftp)
+//  end do
+
   
+}
+
+// ####################################################################
+//                           |             |
+//                           |  functions  |
+//                           |_____________|
+//
+// Functions to be used in get_q0_on_grid and get_q0_on_grid_spin().
+
+double Vdw::Fs(double s)
+{
+  double rFs, Z_ab;
+  double fa=0.1234, fb=17.33, fc=0.163;  // Reparameterized values
+                                         // from JCTC 5, 2745 (2009).
+
+  if(this->type == 4) {
+      rFs = pow( 1 + 15.0*fa*(s*s) + fb*(s*s*s*s) + fc*(s*s*s*s*s*s) ,(1.0/15.0));
+  }
+  else 
+  {
+      // ------------------------------------------------------------
+      // Original functional choice for Fs, as definded in DION
+      if (this->type == 1) Z_ab = -0.8491;
+      if (this->type == 2) Z_ab = -1.887;
+      rFs = 1.0 - Z_ab * (s*s) / 9.0;
+
+  }
+
+  return rFs;
+}
+
+
+
+double Vdw::dFs_ds(double s)
+{
+     double rdFs_ds, Z_ab;
+     double fa=0.1234, fb=17.33, fc=0.163; // Reparameterized values
+                                           // from JCTC 5, 2745 (2009).
+
+     if(this->type == 4) {
+         rdFs_ds = ( 30.0*fa*s + 4.0*fb*(s*s*s) + 6.0*fc*(s*s*s*s*s) ) 
+                / ( 15.0*pow(( 1.0 + 15.0*fa*(s*s) + fb*(s*s*s*s) + fc*(s*s*s*s*s*s) ),(14.0/15.0)) );
+
+     }
+     else 
+     {
+         // ------------------------------------------------------------
+         // Original functional choice for Fs, as definded in DION
+         if (this->type == 1) Z_ab = -0.8491;
+         if (this->type == 2) Z_ab = -1.887;
+         rdFs_ds =  -2.0 * s * Z_ab / 9.0;
+     }
+     return rdFs_ds;
+}
+
+
+double Vdw::kF(double rho)
+{
+    return pow(( 3.0 * PI*PI * rho ), (1.0/3.0));
+}
+
+
+double Vdw::dkF_drho(double rho)
+{
+    return (1.0/3.0) * kF(rho) / rho;
+}
+
+
+double Vdw::ds_drho(double rho, double s)
+{
+    return -s * ( dkF_drho(rho) / kF(rho) + 1.0 / rho );
+}
+
+
+double Vdw::ds_dgradrho(double rho)
+{
+    return 1.0 / (2.0 * kF(rho) * rho);
+}
+
+
+double Vdw::dqx_drho(double rho, double s)
+{
+    return dkF_drho(rho) * Fs(s) + kF(rho) * dFs_ds(s) * ds_drho(rho, s);
+}
+
+void Vdw::saturate_q(double q, double q_cut, double &q0, double &dq0_dq)
+{
+
+
+    // --------------------------------------------------------------------
+    // Here, we calculate q0 by saturating q according to equation 5 of
+    // SOLER. Also, we find the derivative dq0_dq needed for the
+    // derivatives dq0_drho and dq0_dgradrh0 discussed below.
+
+    double e      = 0.0;
+    dq0_dq = 0.0;
+
+    for(int ix = 1;ix <= this->m_cut;ix++) {
+       e = e + pow((q/q_cut),(double)ix)/(double)ix;
+       dq0_dq = dq0_dq + pow((q/q_cut),(ix-1));
+    }
+
+    q0     = q_cut*(1.0 - exp(-e));
+    dq0_dq = dq0_dq * exp(-e);
+
 }
 
