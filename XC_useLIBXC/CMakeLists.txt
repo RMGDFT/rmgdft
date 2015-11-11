@@ -19,4 +19,5 @@ mix_tau.c
 #relax_tau.c
 #scf_tau.c
 vdw_correlation.cpp
+vdw_splines.f90
 )

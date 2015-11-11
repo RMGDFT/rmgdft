@@ -6,6 +6,12 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 
+extern "C" {void __vdw_splines_MOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values);}
+extern "C" {void initialize_spline_interpolation (double *x, int *Nx, double *d2y_dx2);}
+
+// Needed to deal with some issues when calling f90 module function from C++
+#define  spline_interpolation  __vdw_splines_MOD_spline_interpolation
+
 class Vdw {
 
 private:
@@ -39,7 +45,7 @@ private:
     double *q0;
     double *dq0_drho;
     double *dq0_dgradrho;
-    double *thetas;
+    std::complex<double> *thetas;
 
     // How many terms to include in the sum of SOLER equation 5.
     int m_cut;
@@ -64,8 +70,8 @@ private:
     //
     //                CHANGE THESE VALUES AT YOUR OWN RISK
 
-    static const int Nqs;
-    static const double q_mesh[20];
+    static int Nqs;
+    static double q_mesh[20];
 
     // largest value of q_mesh
     double q_cut;
@@ -91,7 +97,7 @@ public:
     double ds_drho(double rho, double s);
     double ds_dgradrho(double rho);
     double dqx_drho(double rho, double s);
-    
+    void pw(double rs, int iflag, double &ec, double &vc);
 
 
 };

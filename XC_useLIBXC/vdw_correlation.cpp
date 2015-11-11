@@ -39,8 +39,10 @@
 */ 
 
 #include <math.h>
+#include <float.h>
 #include "const.h"
 #include "vdW.h"
+#include "xc.h"
 
 // ----------------------------------------------------------------------
 // The next 2 parameters define the q mesh to be used in the vdW_DF code.
@@ -62,8 +64,8 @@
 //
 //                CHANGE THESE VALUES AT YOUR OWN RISK
 
-const int Nqs = 20;
-const double Vdw::q_mesh[20] = {
+int Vdw::Nqs = 20;
+double Vdw::q_mesh[20] = {
 1.0e-5             , 0.0449420825586261, 0.0975593700991365, 0.159162633466142,
 0.231286496836006, 0.315727667369529 , 0.414589693721418 , 0.530335368404141,
 0.665848079422965, 0.824503639537924 , 1.010254382520950 , 1.227727621364570,
@@ -95,20 +97,20 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->m_cut = 12;
 
   // Largest value of q_cut
-  this->q_cut = q_mesh[Nqs-1];
+  this->q_cut = Vdw::q_mesh[Vdw::Nqs-1];
 
   // smallest value of q_min
-  this->q_min = q_mesh[0];
+  this->q_min = Vdw::q_mesh[0];
 
   // Local storage
-  this->total_rho = new double[pbasis];
-  this->gx = new double[pbasis];
-  this->gy = new double[pbasis];
-  this->gz = new double[pbasis];
-  this->q0 = new double[pbasis]();
-  this->dq0_drho = new double[pbasis]();
-  this->dq0_dgradrho = new double[pbasis]();
-  this->thetas = new double[pbasis*Nqs];
+  this->total_rho = new double[this->pbasis];
+  this->gx = new double[this->pbasis];
+  this->gy = new double[this->pbasis];
+  this->gz = new double[this->pbasis];
+  this->q0 = new double[this->pbasis]();
+  this->dq0_drho = new double[this->pbasis]();
+  this->dq0_dgradrho = new double[this->pbasis]();
+  this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs];
 
 
   
@@ -125,6 +127,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // gradient of the charge-density. These are needed for the potential
   // calculated below. This routine also calculates the thetas.
 
+  get_q0_on_grid ();
 
 }
 
@@ -195,7 +198,7 @@ void Vdw::get_q0_on_grid (void)
       // This is the q value defined in equations 11 and 12 of DION.
       // Use pw() from flib/functionals.f90 to get qc = kf/eps_x * eps_c.
 
-//       call pw(r_s, 1, ec, dq0_drho(i_grid))
+      pw(r_s, 1, ec, dq0_drho[ix]);
       double q = -4.0*PI/3.0 * ec + kF(trho) * Fs(s);
 
 
@@ -247,11 +250,12 @@ void Vdw::get_q0_on_grid (void)
   // P_i polynomials defined in equation 3 in SOLER for the particular q0
   // values we have.
 
-//  CALL spline_interpolation (q_mesh, q0, thetas)
+  spline_interpolation (Vdw::q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas);
 
-  for(int iq = 0;iq < this->Nqs;iq++) {
+  for(int iq = 0;iq < Vdw::Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
-          thetas[ix + iq*pbasis] = thetas[ix + iq*pbasis] * this->total_rho[ix];
+          thetas[ix + iq*this->pbasis] = thetas[ix + iq*this->pbasis] * this->total_rho[ix];
+          printf("THETAS for iq=%d  ix=%d is %14.12f\n",iq,ix,thetas[ix + iq*this->pbasis]);
       }
   }
 
@@ -364,6 +368,56 @@ void Vdw::saturate_q(double q, double q_cut, double &q0, double &dq0_dq)
 
     q0     = q_cut*(1.0 - exp(-e));
     dq0_dq = dq0_dq * exp(-e);
+
+}
+
+//-----------------------------------------------------------------------
+//     iflag=1: J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)
+//     iflag=2: G. Ortiz and P. Ballone, PRB 50, 1391 (1994)
+//
+void Vdw::pw(double rs, int iflag, double &ec, double &vc)
+{
+
+  double a = 0.031091;
+  double b1 = 7.5957;
+  double b2 = 3.5876;
+  double c0 = a;
+  double c1 = 0.046644;
+  double c2 = 0.00664;
+  double c3 = 0.01043;
+  double d0 = 0.4335;
+  double d1 = 1.4408;
+  double a1[2]={0.21370, 0.026481};
+  double b3[2]={1.6382, -0.46647};
+  double b4[2] = {0.49294, 0.13354};
+  double lnrs, rs12, rs32, rs2, om, dom, olog;
+  // 
+  // high- and low-density formulae implemented but not used in PW case
+  // (reason: inconsistencies in PBE/PW91 functionals)
+  // 
+  if ((rs < 1.0) && (iflag == 2)) {
+     // high density formula
+     lnrs = log (rs);
+     ec = c0 * lnrs - c1 + c2 * rs * lnrs - c3 * rs;
+     vc = c0 * lnrs - (c1 + c0 / 3.0) + 2.0 / 3.0 * c2 * rs * lnrs - (2.0 * c3 + c2) / 3.0 * rs;
+  }
+  else if ((rs > 100.0) && (iflag==2)) {
+     // low density formula
+     ec = - d0 / rs + d1 / pow(rs,1.5);
+     vc = - 4.0 / 3.0 * d0 / rs + 1.5 * d1 / pow(rs,1.5);
+  }
+  else {
+     iflag--;
+     // interpolation formula
+     rs12 = sqrt (rs);
+     rs32 = rs * rs12;
+     rs2 = rs*rs;
+     om = 2.0 * a * (b1 * rs12 + b2 * rs + b3[iflag] * rs32 + b4[iflag] * rs2);
+     dom = 2.0 * a * (0.5 * b1 * rs12 + b2 * rs + 1.5 * b3[iflag] * rs32 + 2.0 * b4[iflag] * rs2);
+     olog = log (1.0 + 1.0 / om);
+     ec = - 2.0 * a * (1.0 + a1[iflag] * rs) * olog;
+     vc = - 2.0 * a * (1.0 + 2.0 / 3.0 * a1[iflag] * rs) * olog - 2.0 / 3.0 * a * (1.0 + a1[iflag] * rs) * dom / (om * (om + 1.0) );
+  }
 
 }
 
