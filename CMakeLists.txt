@@ -389,7 +389,10 @@ if(NOT RMG_MATH_LIBS)
 
 endif(NOT RMG_MATH_LIBS)
 
-
+find_package(PFFT)
+if(PFFT_FOUND)
+    add_definitions(-DUSE_PFFT)
+endif(PFFT_FOUND)
 
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)

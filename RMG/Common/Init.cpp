@@ -41,6 +41,9 @@
 #include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
 #include "ErrorFuncs.h"
+#if USE_PFFT
+    #include "pfft.h"
+#endif
 
 static void init_alloc_nonloc_mem (void);
 
@@ -98,6 +101,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         set_desca (pct.desca, &pct.ictxt, ct.num_states);
 
     }
+#endif
+
+#if USE_PFFT
+    pfft_init();
 #endif
 
     /* Allocate storage for non-local projectors */
