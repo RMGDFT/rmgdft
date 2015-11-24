@@ -41,6 +41,7 @@
 #include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
 #include "ErrorFuncs.h"
+#include "RmgException.h"
 #if USE_PFFT
     #include "pfft.h"
 #endif
@@ -104,7 +105,26 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 #endif
 
 #if USE_PFFT
+    int np[3];
+    ptrdiff_t densgrid[3];
+    np[0] = Rmg_G->get_PE_X();
+    np[1] = Rmg_G->get_PE_Y();
+    np[2] = Rmg_G->get_PE_Z();
+    densgrid[0] =  Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
+    densgrid[1] =  Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
+    densgrid[2] =  Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
     pfft_init();
+    if( pfft_create_procmesh(3, pct.grid_comm, np, &pct.pfft_comm) ) {
+        RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+    }
+    // check array sizes
+    ptrdiff_t local_ni[3], local_i_start[3];
+    ptrdiff_t local_no[3], local_o_start[3];
+    int alloc_local = pfft_local_size_dft_r2c_3d(densgrid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
+    local_ni, local_i_start, local_no, local_o_start);
+    if(alloc_local >  ct.psi_fnbasis)
+        RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+
 #endif
 
     /* Allocate storage for non-local projectors */

@@ -5,6 +5,9 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "FiniteDiff.h"
+#if USE_PFFT
+    #include "pfft.h"
+#endif
 
 extern "C" {void __vdw_splines_MOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values);}
 extern "C" {void initialize_spline_interpolation (double *x, int *Nx, double *d2y_dx2);}
@@ -37,7 +40,7 @@ private:
     int dimx;
     int dimy;
     int dimz;
-
+    ptrdiff_t densgrid[3];         // for passing to fft routines
     double *total_rho;
     double *gx;
     double *gy;
@@ -81,6 +84,10 @@ private:
 
     // cutoff value for density
     static const double epsr;
+
+#if USE_PFFT
+    pfft_plan plan_forward;
+#endif
 
 public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v);

@@ -40,9 +40,13 @@
 
 #include <math.h>
 #include <float.h>
+#include <complex>
 #include "const.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
 #include "vdW.h"
 #include "xc.h"
+#include "pfft.h"
 
 // ----------------------------------------------------------------------
 // The next 2 parameters define the q mesh to be used in the vdW_DF code.
@@ -92,6 +96,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->dimx = G.get_PX0_GRID(G.default_FG_RATIO);
   this->dimy = G.get_PY0_GRID(G.default_FG_RATIO);
   this->dimz = G.get_PZ0_GRID(G.default_FG_RATIO);
+  this->densgrid[0] = this->dimx;
+  this->densgrid[1] = this->dimy;
+  this->densgrid[2] = this->dimz;
 
   // How many terms to include in the sum of SOLER equation 5.
   this->m_cut = 12;
@@ -112,6 +119,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->dq0_dgradrho = new double[this->pbasis]();
   this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs];
 
+
+  this->plan_forward = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
+                                                 pct.pfft_comm, PFFT_FORWARD, PFFT_TRANSPOSED_NONE| PFFT_MEASURE);
 
   
   // Get total charge and compute it's gradient
@@ -136,6 +146,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 Vdw::~Vdw(void)
 {
 
+  pfft_destroy_plan(this->plan_forward);
   delete [] this->thetas;
   delete [] this->dq0_dgradrho;
   delete [] this->dq0_drho;
@@ -255,14 +266,20 @@ void Vdw::get_q0_on_grid (void)
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
           thetas[ix + iq*this->pbasis] = thetas[ix + iq*this->pbasis] * this->total_rho[ix];
-          printf("THETAS for iq=%d  ix=%d is %14.12f\n",iq,ix,thetas[ix + iq*this->pbasis]);
       }
   }
 
+  for(int iq = 0;iq < Vdw::Nqs;iq++) {
+      for(int ix = 0;ix < 1000;ix++)
+          printf("THETAS0 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
+      pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
+      for(int ix = 0;ix < 1000;ix++)
+          printf("THETAS1 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
+  }
 //  do idx = 1, Nqs
 //     CALL fwfft ('Dense', thetas(:,idx), dfftp)
 //  end do
-
+exit(0);
   
 }
 

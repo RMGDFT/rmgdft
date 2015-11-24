@@ -47,6 +47,10 @@ typedef struct
     // local master
     int is_local_master;
 
+#if USE_PFFT
+    MPI_Comm pfft_comm;
+#endif
+
     /* scalapack variables */
     int desca[DLEN];
     int ictxt;

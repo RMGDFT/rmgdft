@@ -57,7 +57,7 @@ CONTAINS
 
   ! --------------------------------------------------------------------
   ! Allocate the temporary array.
-WRITE(6,'(5X,A,I3,A,I6,A,F8.3)' ) "Nx    = ",Nx,"  Npoints = ", Ngrid_points," X[1] = ",x(1)
+!WRITE(6,'(5X,A,I3,A,I6,A,F8.3)' ) "Nx    = ",Nx,"  Npoints = ", Ngrid_points," X[1] = ",x(1)
   allocate( y(Nx) )
 
 
