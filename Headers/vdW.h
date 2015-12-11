@@ -9,6 +9,9 @@
     #include "pfft.h"
 #endif
 
+#define VDW_NQPOINTS  20
+#define VDW_NRPOINTS  1024
+
 extern "C" {void __vdw_splines_MOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values);}
 extern "C" {void initialize_spline_interpolation (double *x, int *Nx, double *d2y_dx2);}
 
@@ -20,7 +23,7 @@ class Vdw {
 private:
 
     // BaseGrid class
-    BaseGrid *G;
+    BaseGrid *Grid;
 
     // TradeImages object to use
     TradeImages *T;
@@ -73,8 +76,13 @@ private:
     //
     //                CHANGE THESE VALUES AT YOUR OWN RISK
 
+    static bool initialized;
     static int Nqs;
-    static double q_mesh[20];
+    static int Nrpoints;
+    static double r_max;
+    static double q_mesh[VDW_NQPOINTS];
+    static double kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
+    static double d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 
     // largest value of q_mesh
     double q_cut;
@@ -95,7 +103,7 @@ public:
 
     void get_q0_on_grid (void);
     void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
-
+    void vdW_energy(double &Ec);
 
     double Fs(double s);
     double dFs_ds(double s);
@@ -105,6 +113,7 @@ public:
     double ds_dgradrho(double rho);
     double dqx_drho(double rho, double s);
     void pw(double rs, int iflag, double &ec, double &vc);
+    void index_to_gvector(int *index, double *gvec);
 
 
 };

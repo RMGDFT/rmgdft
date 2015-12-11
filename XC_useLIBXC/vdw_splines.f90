@@ -36,7 +36,8 @@ CONTAINS
                                                          ! case) and the values of q0 for which we
                                                          ! are interpolating the function.
 
-  complex(dp), intent(inout) :: values(1:NX,1:Ngrid_points)              ! An output array (allocated outside this
+  !complex(dp), intent(inout) :: values(1:NX,1:Ngrid_points)              ! An output array (allocated outside this
+  complex(dp), intent(inout) :: values(1:Ngrid_points*NX)              ! An output array (allocated outside this
                                                          ! routine) that stores the interpolated
                                                          ! values of the P_i (SOLER equation 3)
                                                          ! polynomials. The format is
@@ -103,7 +104,8 @@ CONTAINS
         y = 0
         y(P_i) = 1
 
-        values(i_grid, P_i) = a*y(lower_bound) + b*y(upper_bound) &
+        !values(i_grid, P_i) = a*y(lower_bound) + b*y(upper_bound) &
+        values((P_i-1)*Ngrid_points + i_grid) = a*y(lower_bound) + b*y(upper_bound) &
              + (c*d2y_dx2(P_i,lower_bound) + d*d2y_dx2(P_i, upper_bound))
      end do
 

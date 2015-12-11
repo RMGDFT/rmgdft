@@ -41,10 +41,13 @@
 #include <math.h>
 #include <float.h>
 #include <complex>
+#include <iostream>
+#include <fstream>
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "vdW.h"
+#include "RmgException.h"
 #include "xc.h"
 #include "pfft.h"
 
@@ -68,13 +71,20 @@
 //
 //                CHANGE THESE VALUES AT YOUR OWN RISK
 
-int Vdw::Nqs = 20;
-double Vdw::q_mesh[20] = {
+int Vdw::Nqs = VDW_NQPOINTS;
+int Vdw::Nrpoints = VDW_NRPOINTS;
+double Vdw::r_max;
+bool Vdw::initialized = false;
+double Vdw::q_mesh[VDW_NQPOINTS] = {
 1.0e-5             , 0.0449420825586261, 0.0975593700991365, 0.159162633466142,
 0.231286496836006, 0.315727667369529 , 0.414589693721418 , 0.530335368404141,
 0.665848079422965, 0.824503639537924 , 1.010254382520950 , 1.227727621364570,
 1.482340921174910, 1.780437058359530 , 2.129442028133640 , 2.538050036534580,
 3.016440085356680, 3.576529545442460 , 4.232271035198720 , 5.0 };
+
+double Vdw::kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
+double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
+
 const double Vdw::epsr = 1.0e-12;
 
 /*
@@ -89,6 +99,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 {
 
   // Grid parameters
+  this->Grid = &G;
+  this->T = &T;
+  this->L = &L;
   this->pbasis = G.get_P0_BASIS(G.default_FG_RATIO);
   this->hxgrid = G.get_hxgrid(G.default_FG_RATIO);
   this->hygrid = G.get_hygrid(G.default_FG_RATIO);
@@ -120,6 +133,98 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs];
 
 
+  // If not initialized we must read in the kernel table
+  if(!this->initialized) {
+
+      std::ifstream kernel_file;
+      kernel_file.open("vdW_kernel_table", std::ios_base::in);
+      if (!kernel_file)  { 
+          throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+      }
+     
+      // Read in Vdw::Nqs and Vdw::Nrpoints from header and make sure it matches
+      // these are the number of q points and the number of r points used for this kernel file, 
+      std::string line;
+      std::getline(kernel_file, line);
+      std::istringstream is0(line);
+      is0 >> Vdw::Nqs >> Vdw::Nrpoints;
+
+      if((Vdw::Nqs != VDW_NQPOINTS) || (Vdw::Nrpoints != VDW_NRPOINTS)) {
+          throw RmgFatalException() << "Mismatch for Vdw::Nqs or Vdw::Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+      }
+
+      // Read in r_max the maximum allowed value of an r point
+      std::getline(kernel_file, line);
+      std::istringstream is1(line);
+      is1 >> r_max;
+      
+      // Read in the values of the q points used to generate this kernel.
+      for(int meshlines = 0;meshlines < 5;meshlines++) {
+          std::getline(kernel_file, line);
+          int idx = 0;
+          std::istringstream is2(line);
+       
+          while(is2 >> Vdw::q_mesh[idx]) {
+              idx++;
+              if(idx == Vdw::Nqs) break;
+          }
+      }
+
+      // For each pair of q values, read in the function phi_q1_q2(k).
+      // That is, the fourier transformed kernel function assuming q1 and
+      // q2 for all the values of r used.
+      int tlines = (Vdw::Nrpoints + 1) / 4;   // 4 per line
+      if((Vdw::Nrpoints + 1) % 4) tlines++;
+      
+      for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+          for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
+              for(int lines1 = 0;lines1 < tlines;lines1++) {
+                  std::getline(kernel_file, line);
+                  int idx = 0;
+                  std::istringstream is3(line);
+
+                  while(is3 >> Vdw::kernel[idx][q1_i][q2_i]) {
+                      idx++;
+                      if(idx == (Vdw::Nrpoints + 1)) break;
+                  }
+              }
+
+              for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
+                  Vdw::kernel[jdx][q2_i][q1_i] = Vdw::kernel[jdx][q1_i][q2_i];
+              }
+          }
+      }
+
+      // Again, for each pair of q values (q1 and q2), read in the value of
+      // the second derivative of the above mentiond Fourier transformed
+      // kernel function phi_alpha_beta(k). These are used for spline
+      // interpolation of the Fourier transformed kernel.
+      for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+          for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
+
+              for(int lines1 = 0;lines1 < tlines;lines1++) {
+                  std::getline(kernel_file, line);
+                  int idx = 0;
+                  std::istringstream is4(line);
+
+                  while(is4 >> Vdw::d2phi_dk2[idx][q1_i][q2_i]) {
+                      idx++;
+                      if(idx == (Vdw::Nrpoints + 1)) break;
+                  }
+              }
+              for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
+                  Vdw::d2phi_dk2[jdx][q2_i][q1_i] = Vdw::d2phi_dk2[jdx][q1_i][q2_i];
+              }
+
+          }
+      }
+
+      kernel_file.close();
+
+      this->initialized = true;
+      
+  }
+
   this->plan_forward = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
                                                  pct.pfft_comm, PFFT_FORWARD, PFFT_TRANSPOSED_NONE| PFFT_MEASURE);
 
@@ -138,6 +243,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // calculated below. This routine also calculates the thetas.
 
   get_q0_on_grid ();
+
+  double Ec_nl;
+  vdW_energy(Ec_nl); 
 
 }
 
@@ -270,19 +378,29 @@ void Vdw::get_q0_on_grid (void)
   }
 
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
-      for(int ix = 0;ix < 1000;ix++)
-          printf("THETAS0 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
+//      for(int ix = 0;ix < 1000;ix++)
+//          printf("THETAS0 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
       pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
-      for(int ix = 0;ix < 1000;ix++)
-          printf("THETAS1 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
+//      for(int ix = 0;ix < 1000;ix++)
+//          printf("THETAS1 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
   }
-//  do idx = 1, Nqs
-//     CALL fwfft ('Dense', thetas(:,idx), dfftp)
-//  end do
-exit(0);
-  
+ 
 }
 
+
+void Vdw::vdW_energy(double &Ec_nl)
+{
+  double *kernel_of_k = new double[Vdw::Nqs*Vdw::Nqs];
+  std::complex<double> *u_vdW = new std::complex<double>[Vdw::Nqs * this->pbasis];
+  double vdW_xc_energy = 0.0;
+  double G_multiplier = 1.0;
+  int last_g = -1;
+
+
+  delete [] u_vdW;
+  delete [] kernel_of_k;
+}
+  
 // ####################################################################
 //                           |             |
 //                           |  functions  |
@@ -438,3 +556,27 @@ void Vdw::pw(double rs, int iflag, double &ec, double &vc)
 
 }
 
+// Converts local index into fft array into corresponding unnormalized g-vector on global fine grid
+void Vdw::index_to_gvector(int *index, double *gvector)
+{
+
+  int ivector[3];
+  int NX = this->Grid->get_NX_GRID(this->Grid->default_FG_RATIO);
+  int NY = this->Grid->get_NY_GRID(this->Grid->default_FG_RATIO);
+  int NZ = this->Grid->get_NZ_GRID(this->Grid->default_FG_RATIO);
+
+  this->Grid->find_node_offsets(pct.gridpe, NX, NY, NZ, &ivector[0], &ivector[1], &ivector[2]);
+
+  gvector[0] = (double)ivector[0]; 
+  if(ivector[0] > NX/2) gvector[0] = (double)(ivector[0] - NX);
+  if(ivector[0] == NX/2) gvector[0] = 0.5;
+
+  gvector[1] = (double)ivector[1]; 
+  if(ivector[1] > NY/2) gvector[1] = (double)(ivector[1] - NY);
+  if(ivector[1] == NY/2) gvector[1] = 0.5;
+ 
+  gvector[2] = (double)ivector[2]; 
+  if(ivector[2] > NZ/2) gvector[2] = (double)(ivector[2] - NZ);
+  if(ivector[2] == NZ/2) gvector[2] = 0.5;
+  
+}
