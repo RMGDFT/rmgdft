@@ -83,6 +83,7 @@ private:
     static double q_mesh[VDW_NQPOINTS];
     static double kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
     static double d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
+    static double gmax;  // Maximum magnitude of g-vector
 
     // largest value of q_mesh
     double q_cut;

@@ -86,6 +86,7 @@ double Vdw::kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 
 const double Vdw::epsr = 1.0e-12;
+double Vdw::gmax;
 
 /*
 
@@ -221,9 +222,39 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       kernel_file.close();
 
+      // Get the g-vector magnitude array
+      double *gmags = new double[this->pbasis];
+      int idx=0;
+      int ivec[3];
+      double gvec[3];
+      for(int ix = 0;ix < dimx;ix++) {
+          for(int iy = 0;iy < dimy;iy++) {
+              for(int iz = 0;iz < dimz;iz++) {
+                  ivec[0] = ix;
+                  ivec[1] = iy;
+                  ivec[2] = iz;
+                  index_to_gvector(ivec, gvec);
+                  gmags[idx] = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]);
+                  idx++;
+              }
+          }
+      }
+
+      for(int ig=0;ig < this->pbasis;ig++) {
+
+          for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
+              for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+
+
+              }
+          }
+
+      }
+
       this->initialized = true;
       
   }
+
 
   this->plan_forward = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
                                                  pct.pfft_comm, PFFT_FORWARD, PFFT_TRANSPOSED_NONE| PFFT_MEASURE);
