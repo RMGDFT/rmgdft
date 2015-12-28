@@ -49,6 +49,7 @@
 #include "vdW.h"
 #include "RmgException.h"
 #include "xc.h"
+#include "Pw.h"
 #include "pfft.h"
 
 // ----------------------------------------------------------------------
@@ -87,6 +88,7 @@ double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 
 const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
+double Vdw::dk;
 
 /*
 
@@ -157,7 +159,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       // Read in r_max the maximum allowed value of an r point
       std::getline(kernel_file, line);
       std::istringstream is1(line);
-      is1 >> r_max;
+      is1 >> Vdw::r_max;
+      Vdw::dk = 2.0 * PI / Vdw::r_max;
+      
       
       // Read in the values of the q points used to generate this kernel.
       for(int meshlines = 0;meshlines < 5;meshlines++) {
@@ -222,34 +226,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       kernel_file.close();
 
-      // Get the g-vector magnitude array
-      double *gmags = new double[this->pbasis];
-      int idx=0;
-      int ivec[3];
-      double gvec[3];
-      for(int ix = 0;ix < dimx;ix++) {
-          for(int iy = 0;iy < dimy;iy++) {
-              for(int iz = 0;iz < dimz;iz++) {
-                  ivec[0] = ix;
-                  ivec[1] = iy;
-                  ivec[2] = iz;
-                  index_to_gvector(ivec, gvec);
-                  gmags[idx] = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]);
-                  idx++;
-              }
-          }
-      }
-
-      for(int ig=0;ig < this->pbasis;ig++) {
-
-          for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
-              for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
-
-
-              }
-          }
-
-      }
+      // Plane wave object
+      this->plane_waves = new Pw(G, L, G.default_FG_RATIO);
 
       this->initialized = true;
       
@@ -284,6 +262,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 // Destructor just frees memory
 Vdw::~Vdw(void)
 {
+
+  delete this->plane_waves;
 
   pfft_destroy_plan(this->plan_forward);
   delete [] this->thetas;
@@ -426,6 +406,17 @@ void Vdw::vdW_energy(double &Ec_nl)
   double vdW_xc_energy = 0.0;
   double G_multiplier = 1.0;
   int last_g = -1;
+
+      for(int ig=0;ig < this->pbasis;ig++) {
+
+          for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
+              for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+
+
+              }
+          }
+
+      }
 
 
   delete [] u_vdW;
@@ -587,27 +578,55 @@ void Vdw::pw(double rs, int iflag, double &ec, double &vc)
 
 }
 
-// Converts local index into fft array into corresponding unnormalized g-vector on global fine grid
-void Vdw::index_to_gvector(int *index, double *gvector)
+
+// This routine is modeled after an algorithm from "Numerical Recipes in C" by
+// Cambridge University Press, page 97.  Adapted for Fortran and the problem at
+// hand.  This function is used to find the Phi_alpha_beta needed for equations
+// 8 and 11 of SOLER.
+//
+// k = Input value, the magnitude of the g-vector for the current point.
+//
+// kernel_of_k = output array (allocated outside this routine)
+// that holds the interpolated value of the kernel
+// for each pair of q points (i.e. the phi_alpha_beta
+// of the Soler method.
+void Vdw::interpolate_kernel(double k, double *kernel_of_k)
 {
 
-  int ivector[3];
-  int NX = this->Grid->get_NX_GRID(this->Grid->default_FG_RATIO);
-  int NY = this->Grid->get_NY_GRID(this->Grid->default_FG_RATIO);
-  int NZ = this->Grid->get_NZ_GRID(this->Grid->default_FG_RATIO);
+  // --------------------------------------------------------------------
+  // Check to make sure that the kernel table we have is capable of
+  // dealing with this value of k. If k is larger than
+  // Nr_points*2*pi/r_max then we can't perform the interpolation. In
+  // that case, a kernel file should be generated with a larger number of
+  // radial points.
+  if ( k >= (double)Vdw::Nrpoints*Vdw::dk ) {
 
-  this->Grid->find_node_offsets(pct.gridpe, NX, NY, NZ, &ivector[0], &ivector[1], &ivector[2]);
+      throw RmgFatalException() << "k value requested is out of range in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-  gvector[0] = (double)ivector[0]; 
-  if(ivector[0] > NX/2) gvector[0] = (double)(ivector[0] - NX);
-  if(ivector[0] == NX/2) gvector[0] = 0.5;
+  }
 
-  gvector[1] = (double)ivector[1]; 
-  if(ivector[1] > NY/2) gvector[1] = (double)(ivector[1] - NY);
-  if(ivector[1] == NY/2) gvector[1] = 0.5;
- 
-  gvector[2] = (double)ivector[2]; 
-  if(ivector[2] > NZ/2) gvector[2] = (double)(ivector[2] - NZ);
-  if(ivector[2] == NZ/2) gvector[2] = 0.5;
+  for(int ix = 0;ix < Vdw::Nqs*Vdw::Nqs;ix++) kernel_of_k[ix] = 0.0;
+
+  // This integer division figures out which bin k is in since the kernel
+  // is set on a uniform grid.
+  int k_i = (int)(k / Vdw::dk);
+
+  double dk2 = dk * dk;
+  double A = (Vdw::dk * (k_i+1.0) - k) / Vdw::dk;
+  double B = (k - Vdw::dk*k_i) / Vdw::dk;
+  double C = (A*A*A - A) * dk / 6.0;
+  double D = (B*B*B - B) * dk / 6.0;
+
+  for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+      for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
+      
+          kernel_of_k[q1_i + q2_i*Vdw::Nqs] = A*kernel[k_i][q1_i][ q2_i] + B*kernel[k_i+1][q1_i][q2_i]
+             +(C*d2phi_dk2[k_i][q1_i][q2_i] + D*d2phi_dk2[k_i+1][q1_i][q2_i]);
+
+          kernel_of_k[q2_i + q1_i*Vdw::Nqs] = kernel_of_k[q1_i + q2_i*Vdw::Nqs];
+
+      }
+  }
+
   
 }

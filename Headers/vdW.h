@@ -5,6 +5,7 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "FiniteDiff.h"
+#include "Pw.h"
 #if USE_PFFT
     #include "pfft.h"
 #endif
@@ -30,6 +31,9 @@ private:
 
     // Lattice object
     Lattice *L;
+
+    // Pointer to plane wave object
+    Pw *plane_waves;
 
     //
     int type;
@@ -80,6 +84,7 @@ private:
     static int Nqs;
     static int Nrpoints;
     static double r_max;
+    static double dk;
     static double q_mesh[VDW_NQPOINTS];
     static double kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
     static double d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
@@ -115,6 +120,7 @@ public:
     double dqx_drho(double rho, double s);
     void pw(double rs, int iflag, double &ec, double &vc);
     void index_to_gvector(int *index, double *gvec);
+    void interpolate_kernel(double k, double *kernel_of_k);
 
 
 };
