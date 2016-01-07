@@ -36,6 +36,9 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 
+typedef struct {
+  double a[3];
+} gvector;
 
 class Pw {
 
@@ -66,12 +69,16 @@ private:
     int global_dimy;
     int global_dimz;
 
+    // Plane wave cutoff
+    double gcut;
+
 public:
     Pw (BaseGrid &G, Lattice &L, int ratio);
     void index_to_gvector(int *index, double *gvector);
 
     ~Pw(void);
 
+    gvector *g;
     double *gmags;
 
 };

@@ -55,6 +55,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
   this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
 
   this->gmags = new double[this->pbasis];
+  this->g = new gvector[this->pbasis];
 
   int idx=0;
   int ivec[3];
@@ -67,11 +68,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
               ivec[2] = iz;
               index_to_gvector(ivec, gvec);
               this->gmags[idx] = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]);
+
               idx++;
           }
       }
   }
-  
 
 }
 
@@ -83,23 +84,29 @@ void Pw::index_to_gvector(int *index, double *gvector)
 
   this->Grid->find_node_offsets(this->Grid->get_rank(), this->global_dimx, this->global_dimy, this->global_dimz, &ivector[0], &ivector[1], &ivector[2]);
 
-  gvector[0] = (double)ivector[0];
-  if(ivector[0] > this->global_dimx/2) gvector[0] = (double)(ivector[0] - this->global_dimx);
-  if(ivector[0] == this->global_dimx/2) gvector[0] = 0.5;
+  // Compute fft permutations
+  ivector[0] = ivector[0] + index[0];
+  if(ivector[0] > this->global_dimx/2) ivector[0] = ivector[0] - this->global_dimx;
+  if(ivector[0] == this->global_dimx/2) ivector[0] = 0;
 
-  gvector[1] = (double)ivector[1];
-  if(ivector[1] > this->global_dimy/2) gvector[1] = (double)(ivector[1] - this->global_dimy);
-  if(ivector[1] == this->global_dimy/2) gvector[1] = 0.5;
+  ivector[1] = ivector[1] + index[1];
+  if(ivector[1] > this->global_dimy/2) ivector[1] = ivector[1] - this->global_dimy;
+  if(ivector[1] == this->global_dimy/2) ivector[1] = 0;
 
-  gvector[2] = (double)ivector[2];
-  if(ivector[2] > this->global_dimz/2) gvector[2] = (double)(ivector[2] - this->global_dimz);
-  if(ivector[2] == this->global_dimz/2) gvector[2] = 0.5;
+  ivector[2] = ivector[2] + index[2];
+  if(ivector[2] > this->global_dimz/2) ivector[2] = ivector[2] - this->global_dimz;
+  if(ivector[2] == this->global_dimz/2) ivector[2] = 0;
 
+  // Generate g-vectors from reciprocal lattice vectors
+  gvector[0] = (double)ivector[0] * L->b0[0] + (double)ivector[1] * L->b1[0] + (double)ivector[2] * L->b2[0];
+  gvector[1] = (double)ivector[0] * L->b0[1] + (double)ivector[1] * L->b1[1] + (double)ivector[2] * L->b2[1];
+  gvector[2] = (double)ivector[0] * L->b0[2] + (double)ivector[1] * L->b1[2] + (double)ivector[2] * L->b2[2];
 }
 
 
 Pw::~Pw(void)
 {
+  delete [] g;
   delete [] gmags;
 }
 

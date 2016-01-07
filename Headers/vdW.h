@@ -33,7 +33,7 @@ private:
     Lattice *L;
 
     // Pointer to plane wave object
-    Pw *plane_waves;
+    static Pw *plane_waves;
 
     //
     int type;

@@ -49,6 +49,7 @@
 #include "vdW.h"
 #include "RmgException.h"
 #include "xc.h"
+#include "RmgSumAll.h"
 #include "Pw.h"
 #include "pfft.h"
 
@@ -89,6 +90,7 @@ double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
 double Vdw::dk;
+Pw *Vdw::plane_waves;
 
 /*
 
@@ -404,21 +406,33 @@ void Vdw::vdW_energy(double &Ec_nl)
   double *kernel_of_k = new double[Vdw::Nqs*Vdw::Nqs];
   std::complex<double> *u_vdW = new std::complex<double>[Vdw::Nqs * this->pbasis];
   double vdW_xc_energy = 0.0;
-  double G_multiplier = 1.0;
-  int last_g = -1;
+  double tpiba = 2.0 * PI / this->L->celldm[0];
 
-      for(int ig=0;ig < this->pbasis;ig++) {
+  for(int ig=0;ig < this->pbasis;ig++) {
 
-          for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
-              for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+      double g = this->plane_waves->gmags[ig] * tpiba;
+//printf("%12.8f   %12.8f   LLLLLLL\n", g, tpiba);
+      this->interpolate_kernel(g, kernel_of_k);
 
+      for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
 
-              }
+          for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+
+              u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] *
+                                               thetas[q1_i*this->pbasis + ig];
+
           }
+
+          vdW_xc_energy = vdW_xc_energy + std::real(u_vdW[q2_i*this->pbasis + ig] *
+                          std::conj(thetas[q2_i*this->pbasis + ig]));
 
       }
 
+  }
 
+  double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
+
+printf("Van der Walls correlation energy = %18.10f\n", t1);
   delete [] u_vdW;
   delete [] kernel_of_k;
 }
@@ -601,6 +615,7 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
   // radial points.
   if ( k >= (double)Vdw::Nrpoints*Vdw::dk ) {
 
+      //std::cout << "GGGGGGG  " <<  k  << "  "  << (double)Vdw::Nrpoints*Vdw::dk << std::endl;
       throw RmgFatalException() << "k value requested is out of range in " << __FILE__ << " at line " << __LINE__ << "\n";
 
   }
