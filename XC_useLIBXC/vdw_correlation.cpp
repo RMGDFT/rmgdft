@@ -114,9 +114,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->dimx = G.get_PX0_GRID(G.default_FG_RATIO);
   this->dimy = G.get_PY0_GRID(G.default_FG_RATIO);
   this->dimz = G.get_PZ0_GRID(G.default_FG_RATIO);
-  this->densgrid[0] = this->dimx;
-  this->densgrid[1] = this->dimy;
-  this->densgrid[2] = this->dimz;
+  this->densgrid[0] = G.get_NX_GRID(G.default_FG_RATIO);
+  this->densgrid[1] = G.get_NY_GRID(G.default_FG_RATIO);
+  this->densgrid[2] = G.get_NZ_GRID(G.default_FG_RATIO);
+
 
   // How many terms to include in the sum of SOLER equation 5.
   this->m_cut = 12;
@@ -135,7 +136,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->q0 = new double[this->pbasis]();
   this->dq0_drho = new double[this->pbasis]();
   this->dq0_dgradrho = new double[this->pbasis]();
-  this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs];
+  this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs]();
 
 
   // If not initialized we must read in the kernel table
@@ -166,9 +167,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       
       
       // Read in the values of the q points used to generate this kernel.
+      int idx = 0;
       for(int meshlines = 0;meshlines < 5;meshlines++) {
           std::getline(kernel_file, line);
-          int idx = 0;
           std::istringstream is2(line);
        
           while(is2 >> Vdw::q_mesh[idx]) {
@@ -209,9 +210,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
 
+              int idx = 0;
               for(int lines1 = 0;lines1 < tlines;lines1++) {
                   std::getline(kernel_file, line);
-                  int idx = 0;
                   std::istringstream is4(line);
 
                   while(is4 >> Vdw::d2phi_dk2[idx][q1_i][q2_i]) {
@@ -219,6 +220,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
                       if(idx == (Vdw::Nrpoints + 1)) break;
                   }
               }
+
               for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
                   Vdw::d2phi_dk2[jdx][q2_i][q1_i] = Vdw::d2phi_dk2[jdx][q1_i][q2_i];
               }
@@ -235,9 +237,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       
   }
 
-
   this->plan_forward = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
-                                                 pct.pfft_comm, PFFT_FORWARD, PFFT_TRANSPOSED_NONE| PFFT_MEASURE);
+                                                 pct.pfft_comm, PFFT_FORWARD, PFFT_TRANSPOSED_NONE| PFFT_DESTROY_INPUT | PFFT_ESTIMATE);
 
   
   // Get total charge and compute it's gradient
@@ -264,8 +265,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 // Destructor just frees memory
 Vdw::~Vdw(void)
 {
-
-  delete this->plane_waves;
 
   pfft_destroy_plan(this->plan_forward);
   delete [] this->thetas;
@@ -391,48 +390,44 @@ void Vdw::get_q0_on_grid (void)
   }
 
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
-//      for(int ix = 0;ix < 1000;ix++)
-//          printf("THETAS0 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
       pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
-//      for(int ix = 0;ix < 1000;ix++)
-//          printf("THETAS1 for iq=%d ix=%d is (%14.10f,%14.10f)\n",iq,ix,std::real(thetas[ix+iq*this->pbasis]), std::imag(thetas[ix+iq*this->pbasis]));
   }
- 
 }
 
 
 void Vdw::vdW_energy(double &Ec_nl)
 {
   double *kernel_of_k = new double[Vdw::Nqs*Vdw::Nqs];
-  std::complex<double> *u_vdW = new std::complex<double>[Vdw::Nqs * this->pbasis];
+  std::complex<double> *u_vdW = new std::complex<double>[Vdw::Nqs * this->pbasis]();
+  std::complex<double> *theta = new std::complex<double>[Vdw::Nqs];
+
   double vdW_xc_energy = 0.0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
-
   for(int ig=0;ig < this->pbasis;ig++) {
 
       double g = this->plane_waves->gmags[ig] * tpiba;
-//printf("%12.8f   %12.8f   LLLLLLL\n", g, tpiba);
       this->interpolate_kernel(g, kernel_of_k);
+      for(int idx=0;idx < Vdw::Nqs;idx++) theta[idx] = thetas[ig + idx*Vdw::Nqs];
 
       for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
 
           for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
 
-              u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] *
-                                               thetas[q1_i*this->pbasis + ig];
+              u_vdW[q2_i*Vdw::Nqs + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i];
 
           }
 
-          vdW_xc_energy = vdW_xc_energy + std::real(u_vdW[q2_i*this->pbasis + ig] *
-                          std::conj(thetas[q2_i*this->pbasis + ig]));
+          vdW_xc_energy = vdW_xc_energy + std::real(u_vdW[q2_i*Vdw::Nqs + ig] *
+                          std::conj(theta[q2_i]));
 
       }
 
   }
 
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
+  printf("Van der Waals correlation energy1 = %18.10e\n", t1);
 
-printf("Van der Walls correlation energy = %18.10f\n", t1);
+  delete [] theta;
   delete [] u_vdW;
   delete [] kernel_of_k;
 }

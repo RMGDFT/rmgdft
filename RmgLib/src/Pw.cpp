@@ -68,7 +68,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
               ivec[2] = iz;
               index_to_gvector(ivec, gvec);
               this->gmags[idx] = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]);
-
               idx++;
           }
       }
