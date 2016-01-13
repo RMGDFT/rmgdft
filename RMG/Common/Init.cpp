@@ -120,7 +120,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // check array sizes
     ptrdiff_t local_ni[3], local_i_start[3];
     ptrdiff_t local_no[3], local_o_start[3];
-    int alloc_local = pfft_local_size_dft_r2c_3d(densgrid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
+    int alloc_local = pfft_local_size_dft_3d(densgrid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
     local_ni, local_i_start, local_no, local_o_start);
     if(alloc_local >  ct.psi_fnbasis)
         RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";

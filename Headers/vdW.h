@@ -41,6 +41,9 @@ private:
     // Real space basis on this node and grid parameters
     int pbasis;
 
+    // Total number of grid points
+    int N;
+
     double hxgrid;
     double hygrid;
     double hzgrid;

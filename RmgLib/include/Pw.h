@@ -80,6 +80,7 @@ public:
 
     gvector *g;
     double *gmags;
+    double *gmask;
 
 };
 

@@ -55,11 +55,20 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
   this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
 
   this->gmags = new double[this->pbasis];
+  this->gmask = new double[this->pbasis]();
   this->g = new gvector[this->pbasis];
 
   int idx=0;
   int ivec[3];
   double gvec[3];
+
+  // Get cutoff
+  ivec[0] = (this->dimx - 1) / 2;
+  ivec[1] = (this->dimy - 1) / 2;
+  ivec[2] = (this->dimz - 1) / 2;
+  index_to_gvector(ivec, gvec);
+  this->gcut = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]) / 2.0;
+
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
           for(int iz = 0;iz < this->dimz;iz++) {
@@ -68,6 +77,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
               ivec[2] = iz;
               index_to_gvector(ivec, gvec);
               this->gmags[idx] = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]);
+              if(this->gmags[idx] <= this->gcut) this->gmask[idx] = 1.0;
               idx++;
           }
       }
@@ -106,6 +116,7 @@ void Pw::index_to_gvector(int *index, double *gvector)
 Pw::~Pw(void)
 {
   delete [] g;
+  delete [] gmask;
   delete [] gmags;
 }
 

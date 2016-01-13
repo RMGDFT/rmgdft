@@ -50,6 +50,7 @@
 #include "RmgException.h"
 #include "xc.h"
 #include "RmgSumAll.h"
+#include "transition.h"
 #include "Pw.h"
 #include "pfft.h"
 
@@ -87,6 +88,7 @@ double Vdw::q_mesh[VDW_NQPOINTS] = {
 double Vdw::kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 
+//const double Vdw::epsr = 1.0e-12;
 const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
 double Vdw::dk;
@@ -117,7 +119,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->densgrid[0] = G.get_NX_GRID(G.default_FG_RATIO);
   this->densgrid[1] = G.get_NY_GRID(G.default_FG_RATIO);
   this->densgrid[2] = G.get_NZ_GRID(G.default_FG_RATIO);
-
+  this->N = this->densgrid[0] * this->densgrid[1] * this->densgrid[2];
 
   // How many terms to include in the sum of SOLER equation 5.
   this->m_cut = 12;
@@ -397,7 +399,7 @@ void Vdw::get_q0_on_grid (void)
 
 void Vdw::vdW_energy(double &Ec_nl)
 {
-  double *kernel_of_k = new double[Vdw::Nqs*Vdw::Nqs];
+  double *kernel_of_k = new double[Vdw::Nqs*Vdw::Nqs]();
   std::complex<double> *u_vdW = new std::complex<double>[Vdw::Nqs * this->pbasis]();
   std::complex<double> *theta = new std::complex<double>[Vdw::Nqs];
 
@@ -413,7 +415,7 @@ void Vdw::vdW_energy(double &Ec_nl)
 
           for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
 
-              u_vdW[q2_i*Vdw::Nqs + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i];
+              u_vdW[q2_i*Vdw::Nqs + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i] * this->plane_waves->gmask[ig];
 
           }
 
@@ -425,7 +427,8 @@ void Vdw::vdW_energy(double &Ec_nl)
   }
 
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
-  printf("Van der Waals correlation energy1 = %18.10e\n", t1);
+  vdW_xc_energy = t1 * 0.5 * L->omega / (double)this->N;
+  rmg_printf("Van der Waals correlation energy1 = %16.9f Ha\n", vdW_xc_energy);
 
   delete [] theta;
   delete [] u_vdW;
@@ -446,7 +449,7 @@ double Vdw::Fs(double s)
                                          // from JCTC 5, 2745 (2009).
 
   if(this->type == 4) {
-      rFs = pow( 1 + 15.0*fa*(s*s) + fb*(s*s*s*s) + fc*(s*s*s*s*s*s) ,(1.0/15.0));
+      rFs = pow( 1 + 15.0*fa*(s*s) + fb*pow(s,4.0) + fc*pow(s,6.0) ,(1.0/15.0));
   }
   else 
   {
@@ -470,8 +473,8 @@ double Vdw::dFs_ds(double s)
                                            // from JCTC 5, 2745 (2009).
 
      if(this->type == 4) {
-         rdFs_ds = ( 30.0*fa*s + 4.0*fb*(s*s*s) + 6.0*fc*(s*s*s*s*s) ) 
-                / ( 15.0*pow(( 1.0 + 15.0*fa*(s*s) + fb*(s*s*s*s) + fc*(s*s*s*s*s*s) ),(14.0/15.0)) );
+         rdFs_ds = ( 30.0*fa*s + 4.0*fb*pow(s,3.0) + 6.0*fc*pow(s,5.0) ) 
+                / ( 15.0*pow(( 1.0 + 15.0*fa*(s*s) + fb*pow(s,4.0) + fc*pow(s, 6.0) ),(14.0/15.0)) );
 
      }
      else 
@@ -638,5 +641,4 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
       }
   }
 
-  
 }
