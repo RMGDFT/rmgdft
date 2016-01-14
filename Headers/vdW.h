@@ -36,6 +36,9 @@ private:
     // Pointer to plane wave object
     static Pw *plane_waves;
 
+    // Pointer to second derivatives used in the spline interpolations
+    static double *d2y_dx2;
+
     //
     int type;
 

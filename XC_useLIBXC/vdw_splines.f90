@@ -191,7 +191,6 @@ CONTAINS
      end do
 
   end do
-
   deallocate( temp_array, y)
 
   END SUBROUTINE initialize_spline_interpolation

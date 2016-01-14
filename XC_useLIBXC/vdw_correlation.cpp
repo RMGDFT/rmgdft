@@ -93,6 +93,7 @@ const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
 double Vdw::dk;
 Pw *Vdw::plane_waves;
+double *Vdw::d2y_dx2;
 
 /*
 
@@ -235,6 +236,41 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       // Plane wave object
       this->plane_waves = new Pw(G, L, G.default_FG_RATIO);
+
+      // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
+      this->d2y_dx2 = new double[Vdw::Nqs*Vdw::Nqs];
+      double *y = new double[Vdw::Nqs];
+      double *temp_array = new double[Vdw::Nqs];
+
+      for(int P_i=0;P_i < Vdw::Nqs;P_i++) {
+
+          for(int ix=0;ix < Vdw::Nqs;ix++) y[ix] = 0.0;          
+          y[P_i] = 1.0;
+          d2y_dx2[P_i] = 0.0;
+          temp_array[0] = 0.0;
+
+          for(int idx = 1;idx < Vdw::Nqs - 1;idx++) {
+              double temp1 = (Vdw::q_mesh[idx] - Vdw::q_mesh[idx-1]) / (Vdw::q_mesh[idx+1] - Vdw::q_mesh[idx-1]);
+              double temp2 = temp1 * d2y_dx2[P_i + (idx-1)*Vdw::Nqs] + 2.0;
+              d2y_dx2[P_i + idx*Vdw::Nqs] = (temp1 - 1.0) / temp2;
+
+              temp_array[idx] = (y[idx+1] - y[idx]) / (Vdw::q_mesh[idx+1] - Vdw::q_mesh[idx]) - 
+                                (y[idx] - y[idx-1]) / (Vdw::q_mesh[idx] - Vdw::q_mesh[idx-1]);
+              temp_array[idx] = (6.0*temp_array[idx] / (Vdw::q_mesh[idx+1] - Vdw::q_mesh[idx-1]) - 
+                                 temp1*temp_array[idx-1]) / temp2;
+              
+          }
+
+          d2y_dx2[P_i + Vdw::Nqs*(Vdw::Nqs-1)] = 0.0;
+
+          for(int idx=Vdw::Nqs-2;idx >= 1;idx--) {
+              d2y_dx2[P_i + idx*Vdw::Nqs] = d2y_dx2[P_i + idx*Vdw::Nqs] * d2y_dx2[P_i + (idx+1)*Vdw::Nqs] + temp_array[idx];
+          }
+
+      }
+
+      delete [] temp_array;
+      delete [] y;
 
       this->initialized = true;
       
@@ -455,12 +491,9 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
   int q_low, q_hi, q;
   double *h_prefactor = new double[this->pbasis];
   double *y = new double[Vdw::Nqs]; 
-  double *d2y_dx2 = new double[Vdw::Nqs * Vdw::Nqs];
   std::complex<double> *h = new std::complex<double>[this->pbasis];
   double P, dP_dq0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
-
-  initialize_spline_interpolation (Vdw::q_mesh, &Vdw::Nqs, d2y_dx2);
 
   for(int ig = 0;ig < this->pbasis;ig++) {
      
@@ -499,8 +532,8 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
           for(int iy = 0;iy < Vdw::Nqs;iy++) y[iy] = 0.0;
           y[P_i] = 1.0;
 
-          P      = a*y[q_low] + b*y[q_hi]  + c*d2y_dx2[P_i + q_low*Vdw::Nqs] + d*d2y_dx2[P_i + q_hi*Vdw::Nqs];
-          dP_dq0 = y[q_hi] - y[q_low]/dq - e*d2y_dx2[P_i + q_low*Vdw::Nqs] + f*d2y_dx2[P_i + q_hi*Vdw::Nqs];
+          P      = a*y[q_low] + b*y[q_hi]  + c*d2y_dx2[P_i + q_low*Vdw::Nqs] + d*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
+          dP_dq0 = y[q_hi] - y[q_low]/dq - e*d2y_dx2[P_i + q_low*Vdw::Nqs] + f*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
 
 
          // --------------------------------------------------------------
@@ -534,17 +567,17 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
      pfft_execute_dft(plan_forward, (double (*)[2])h, (double (*)[2])h);
 
      for(int ix=0;ix < this->pbasis;ix++) {
-         h[ix] = i * tpiba * this->plane_waves->g[ix].a[icar] * h[ix];
+         h[ix] = i * tpiba * this->plane_waves->g[ix].a[icar] * h[ix] * this->plane_waves->gmask[ix];
      }
 //     if (gamma_only) h(nlm(:)) = CONJG(h(nl(:)))
      pfft_execute_dft(plan_back, (double (*)[2])h, (double (*)[2])h);
-     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= std::real(h[ix]);
+     double scale = 1.0 / (double)this->N;
+     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
 
   }
 
 
   delete [] h;
-  delete [] d2y_dx2;
   delete [] y;
   delete [] h_prefactor;
 }
