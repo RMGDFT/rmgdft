@@ -14,10 +14,11 @@
 #define VDW_NRPOINTS  1024
 
 extern "C" {void __vdw_splines_MOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values);}
-extern "C" {void initialize_spline_interpolation (double *x, int *Nx, double *d2y_dx2);}
+extern "C" {void __vdw_splines_MOD_initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
 
 // Needed to deal with some issues when calling f90 module function from C++
 #define  spline_interpolation  __vdw_splines_MOD_spline_interpolation
+#define  initialize_spline_interpolation  __vdw_splines_MOD_initialize_spline_interpolation
 
 class Vdw {
 
@@ -104,6 +105,7 @@ private:
 
 #if USE_PFFT
     pfft_plan plan_forward;
+    pfft_plan plan_back;
 #endif
 
 public:
@@ -112,7 +114,8 @@ public:
 
     void get_q0_on_grid (void);
     void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
-    void vdW_energy(double &Ec);
+    double vdW_energy(void);
+    void get_potential(double *potential, std::complex<double> *u_vdW);
 
     double Fs(double s);
     double dFs_ds(double s);
