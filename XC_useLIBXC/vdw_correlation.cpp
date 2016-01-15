@@ -190,9 +190,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       
       for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
+
+              int idx = 0;
               for(int lines1 = 0;lines1 < tlines;lines1++) {
                   std::getline(kernel_file, line);
-                  int idx = 0;
                   std::istringstream is3(line);
 
                   while(is3 >> Vdw::kernel[idx][q1_i][q2_i]) {
@@ -284,7 +285,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   for(int i = 0;i < pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_SIXTH);
-  
+
+
   // --------------------------------------------------------------------
   // Find the value of q0 for all assigned grid points. q is defined in
   // equations 11 and 12 of DION and q0 is the saturated version of q
@@ -301,7 +303,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   // Now get the potential
   this->plan_back = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
-                                                 pct.pfft_comm, PFFT_BACKWARD, PFFT_TRANSPOSED_NONE| PFFT_DESTROY_INPUT | PFFT_ESTIMATE);
+                                    pct.pfft_comm, PFFT_BACKWARD, PFFT_TRANSPOSED_NONE| PFFT_DESTROY_INPUT | PFFT_ESTIMATE);
  
   this->get_potential(potential, this->thetas);
    
@@ -432,6 +434,12 @@ void Vdw::get_q0_on_grid (void)
   // values we have.
 
   spline_interpolation (Vdw::q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas);
+//for(int idx=0;idx < this->pbasis;idx++){
+    //printf("RHO = %18.12f\n",this->total_rho[idx]);
+    //printf("THETA0 = %12.6e  %12.6e\n",std::real(thetas[idx]),std::imag(thetas[idx]));
+    //printf("GRADRHO = %18.12f  %18.12f  %18.12f\n",gx[idx],gy[idx],gz[idx]);
+//}
+//exit(0);
 
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
@@ -453,10 +461,12 @@ double Vdw::vdW_energy(void)
 
   double vdW_xc_energy = 0.0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
+//printf("TPIBA = %12.6f\n",tpiba);
   for(int ig=0;ig < this->pbasis;ig++) {
 
-      double g = this->plane_waves->gmags[ig] * tpiba;
+      double g = sqrt(this->plane_waves->gmags[ig]) * tpiba;
       this->interpolate_kernel(g, kernel_of_k);
+//printf("kernel_of_k = %12.6f %12.6f %12.6f %12.6f\n",this->plane_waves->gmags[ig],kernel_of_k[9],kernel_of_k[11],kernel_of_k[33]);
       for(int idx=0;idx < Vdw::Nqs;idx++) theta[idx] = thetas[ig + idx*Vdw::Nqs];
 
       for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
@@ -475,7 +485,7 @@ double Vdw::vdW_energy(void)
   }
 
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
-  vdW_xc_energy = t1 * 0.5 * L->omega / (double)this->N;
+  vdW_xc_energy = t1 * 0.5 * L->omega;
   rmg_printf("Van der Waals correlation energy = %16.9f Ha\n", vdW_xc_energy);
 
   delete [] theta;
@@ -572,6 +582,7 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
 //     if (gamma_only) h(nlm(:)) = CONJG(h(nl(:)))
      pfft_execute_dft(plan_back, (double (*)[2])h, (double (*)[2])h);
      double scale = 1.0 / (double)this->N;
+     scale = scale * scale;
      for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
 
   }
@@ -679,7 +690,7 @@ void Vdw::saturate_q(double q, double q_cut, double &q0, double &dq0_dq)
 
     for(int ix = 1;ix <= this->m_cut;ix++) {
        e = e + pow((q/q_cut),(double)ix)/(double)ix;
-       dq0_dq = dq0_dq + pow((q/q_cut),(ix-1));
+       dq0_dq = dq0_dq + pow((q/q_cut),double((ix-1)));
     }
 
     q0     = q_cut*(1.0 - exp(-e));
@@ -774,9 +785,9 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
   double dk2 = dk * dk;
   double A = (Vdw::dk * (k_i+1.0) - k) / Vdw::dk;
   double B = (k - Vdw::dk*k_i) / Vdw::dk;
-  double C = (A*A*A - A) * dk / 6.0;
-  double D = (B*B*B - B) * dk / 6.0;
-
+  double C = (pow(A,3.0) - A) * dk2 / 6.0;
+  double D = (pow(B,3.0) - B) * dk2 / 6.0;
+//printf("ABCD = %18.12f  %18.12f  %18.12f  %18.12f\n",A,B,C,D);
   for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
       for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
       
@@ -784,7 +795,8 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
              +(C*d2phi_dk2[k_i][q1_i][q2_i] + D*d2phi_dk2[k_i+1][q1_i][q2_i]);
 
           kernel_of_k[q2_i + q1_i*Vdw::Nqs] = kernel_of_k[q1_i + q2_i*Vdw::Nqs];
-
+////printf("kernel_of_k  %d   %d   %d   %18.12f  %18.12f  %18.12f  %18.12f\n",q1_i+1,q2_i+1,k_i,
+//kernel[k_i][q1_i][ q2_i],kernel[k_i+1][q1_i][q2_i],d2phi_dk2[k_i][q1_i][q2_i],d2phi_dk2[k_i+1][q1_i][q2_i]);
       }
   }
 

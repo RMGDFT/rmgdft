@@ -68,7 +68,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
   ivec[2] = (this->dimz - 1) / 2;
   index_to_gvector(ivec, gvec);
   this->gcut = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]) / 2.0;
-
+this->gcut=1822.0;
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
           for(int iz = 0;iz < this->dimz;iz++) {
@@ -76,11 +76,13 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
               ivec[1] = iy;
               ivec[2] = iz;
               index_to_gvector(ivec, gvec);
-              this->gmags[idx] = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]);
+              this->gmags[idx] = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
+//printf("GMAG = %12.6f\n",this->gmags[idx]);
               if(this->gmags[idx] <= this->gcut) this->gmask[idx] = 1.0;
-              this->g->a[0] = gvec[0];
-              this->g->a[1] = gvec[1];
-              this->g->a[2] = gvec[2];
+this->gmask[idx] = 1.0;
+              this->g[idx].a[0] = gvec[0];
+              this->g[idx].a[1] = gvec[1];
+              this->g[idx].a[2] = gvec[2];
               idx++;
           }
       }
@@ -113,6 +115,10 @@ void Pw::index_to_gvector(int *index, double *gvector)
   gvector[0] = (double)ivector[0] * L->b0[0] + (double)ivector[1] * L->b1[0] + (double)ivector[2] * L->b2[0];
   gvector[1] = (double)ivector[0] * L->b0[1] + (double)ivector[1] * L->b1[1] + (double)ivector[2] * L->b2[1];
   gvector[2] = (double)ivector[0] * L->b0[2] + (double)ivector[1] * L->b1[2] + (double)ivector[2] * L->b2[2];
+
+  gvector[0] *= L->celldm[0];
+  gvector[1] *= L->celldm[0];
+  gvector[2] *= L->celldm[0];
 }
 
 
