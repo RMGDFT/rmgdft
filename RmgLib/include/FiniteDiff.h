@@ -109,6 +109,9 @@ public:
     void app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
 
+    template <typename RmgType>
+    void app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                                   double gridhx, double gridhy, double gridhz);
 
 
 

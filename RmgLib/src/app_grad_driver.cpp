@@ -46,7 +46,7 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     RmgTimer RT("App_gradient");
     int sbasis;
     FiniteDiff FD(L);
-    sbasis = (dimx + 6) * (dimy + 6) * (dimz + 6);
+    sbasis = (dimx + order) * (dimy + order) * (dimz + order);
     RmgType *rptr = new RmgType[sbasis + 64];
 
     if(order == APP_CI_FOURTH) {
@@ -66,6 +66,16 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
         delete(RT1);
         RT1 = new RmgTimer("App_gradient: computation");
         FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        delete(RT1);
+
+    }
+    else if(order == APP_CI_EIGHT) {
+
+        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, FULL_TRADE);
+        delete(RT1);
+        RT1 = new RmgTimer("App_gradient: computation");
+        FD.app_gradient_eighth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         delete(RT1);
 
     }

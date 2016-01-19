@@ -67,8 +67,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
   ivec[1] = (this->dimy - 1) / 2;
   ivec[2] = (this->dimz - 1) / 2;
   index_to_gvector(ivec, gvec);
-  this->gcut = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]) / 2.0;
-this->gcut=1822.0;
+  this->gcut = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]) / sqrt(3.0);
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
           for(int iz = 0;iz < this->dimz;iz++) {
@@ -78,8 +77,8 @@ this->gcut=1822.0;
               index_to_gvector(ivec, gvec);
               this->gmags[idx] = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
 //printf("GMAG = %12.6f\n",this->gmags[idx]);
-              if(this->gmags[idx] <= this->gcut) this->gmask[idx] = 1.0;
-this->gmask[idx] = 1.0;
+//              if(this->gmags[idx] <= this->gcut) this->gmask[idx] = 1.0;
+              this->gmask[idx] = 1.0;
               this->g[idx].a[0] = gvec[0];
               this->g[idx].a[1] = gvec[1];
               this->g[idx].a[2] = gvec[2];

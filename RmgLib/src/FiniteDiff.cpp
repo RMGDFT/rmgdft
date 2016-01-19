@@ -92,6 +92,11 @@ template void FiniteDiff::app_gradient_sixth<double> (double *, double *, double
 template void FiniteDiff::app_gradient_sixth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
 template void FiniteDiff::app_gradient_sixth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
 
+template void FiniteDiff::app_gradient_eighth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
+template void FiniteDiff::app_gradient_eighth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
+template void FiniteDiff::app_gradient_eighth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
+template void FiniteDiff::app_gradient_eighth<std::complex<float> > (std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, std::complex<float>  *, int, int, int, double , double , double );
+
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
     L = lptr;
@@ -1904,6 +1909,93 @@ void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr
     }                           /* end switch */
 }
 
+template <typename RmgType>
+void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                               double gridhx, double gridhy, double gridhz)
+{
+
+    int ixs = (dimy + 8) * (dimz + 8);
+    int iys = (dimz + 8);
+    int ix1 = dimy * dimz;
+    int iy1 = dimz;
+
+    int ibrav = L->get_ibrav_type();
+
+    RmgType t1x (4.0 / ( 5.0 * gridhx * L->get_xside()));
+    RmgType t2x (-1.0 / (5.0 * gridhx * L->get_xside()));
+    RmgType t3x (4.0 / (105.0 * gridhx * L->get_xside()));
+    RmgType t4x (-1.0 / (280.0 * gridhx * L->get_xside()));
+
+    RmgType t1y (4.0 / ( 5.0 * gridhy * L->get_yside()));
+    RmgType t2y (-1.0 / (5.0 * gridhy * L->get_yside()));
+    RmgType t3y (4.0 / (105.0 * gridhy * L->get_yside()));
+    RmgType t4y (-1.0 / (280.0 * gridhy * L->get_yside()));
+
+    RmgType t1z (4.0/ ( 5.0 * gridhz * L->get_zside()));
+    RmgType t2z (-1.0 / (5.0 * gridhz * L->get_zside()));
+    RmgType t3z (4.0 / (105.0 * gridhz * L->get_zside()));
+    RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
+
+
+    switch (ibrav)
+    {
+
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
+
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+
+                        wxr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
+                            -t4x * rptr[(ix - 4) * ixs + iy * iys + iz] +
+                            -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
+                            -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
+                            -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
+                             t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
+                             t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
+                             t3x * rptr[(ix + 3) * ixs + iy * iys + iz] +
+                             t4x * rptr[(ix + 4) * ixs + iy * iys + iz];
+
+                        wyr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
+                            -t4y * rptr[ix * ixs + (iy - 4) * iys + iz] +
+                            -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
+                            -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
+                            -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
+                             t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
+                             t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
+                             t3y * rptr[ix * ixs + (iy + 3) * iys + iz] +
+                             t4y * rptr[ix * ixs + (iy + 4) * iys + iz];
+
+                        wzr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
+                            -t4z * rptr[ix * ixs + iy * iys + iz - 4] +
+                            -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
+                            -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
+                            -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
+                             t1z * rptr[ix * ixs + iy * iys + iz + 1] +
+                             t2z * rptr[ix * ixs + iy * iys + iz + 2] +
+                             t3z * rptr[ix * ixs + iy * iys + iz + 3] +
+                             t4z * rptr[ix * ixs + iy * iys + iz + 4];
+
+
+                    }               /* end for */
+                }                   /* end for */
+            }                       /* end for */
+
+            break;
+
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+
+    }                           /* end switch */
+
+
+}
 
 // Openmp version. Very simple with no cache optimizations as of yet.
 template <typename RmgType>
