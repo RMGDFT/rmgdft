@@ -25,7 +25,7 @@ CONTAINS
   ! bin a particular x value is in and then loops over all the P_i
   ! functions so we only have to find the bin once.
 
-  SUBROUTINE spline_interpolation (x, Nx, evaluation_points, Ngrid_points, values)
+  SUBROUTINE spline_interpolation (x, Nx, evaluation_points, Ngrid_points, values, d2y_dx2)
 
   INTEGER, PARAMETER :: DP = selected_real_kind(14,200)
   INTEGER, PARAMETER :: sgl = selected_real_kind(6,30)
@@ -36,8 +36,7 @@ CONTAINS
                                                          ! case) and the values of q0 for which we
                                                          ! are interpolating the function.
 
-  !complex(dp), intent(inout) :: values(1:NX,1:Ngrid_points)              ! An output array (allocated outside this
-  complex(dp), intent(inout) :: values(1:Ngrid_points*NX)              ! An output array (allocated outside this
+  complex(dp), intent(inout) :: values(1:Ngrid_points*Nx)              ! An output array (allocated outside this
                                                          ! routine) that stores the interpolated
                                                          ! values of the P_i (SOLER equation 3)
                                                          ! polynomials. The format is
@@ -46,7 +45,7 @@ CONTAINS
   integer :: Ngrid_points, Nx                            ! Total number of grid points to evaluate
                                                          ! and input x points.
 
-  real(dp), allocatable, save :: d2y_dx2(:,:)            ! The second derivatives required to do
+  real(dp), intent(in) :: d2y_dx2(1:Nx*Nx)                   ! The second derivatives required to do
                                                          ! the interpolation.
 
   integer :: i_grid, lower_bound, upper_bound, idx, P_i  ! Some indexing variables.
@@ -67,13 +66,6 @@ CONTAINS
   ! get the second derivatives (d2y_dx2) required to perform the
   ! interpolations. So we allocate the array and call
   ! initialize_spline_interpolation to get d2y_dx2.
-
-  if (.not. allocated(d2y_dx2) ) then
-
-     allocate( d2y_dx2(Nx,Nx) )
-     call initialize_spline_interpolation(x, Nx, d2y_dx2)
-
-  end if
 
   do i_grid=1, Ngrid_points
 
@@ -106,7 +98,7 @@ CONTAINS
 
         !values(i_grid, P_i) = a*y(lower_bound) + b*y(upper_bound) &
         values((P_i-1)*Ngrid_points + i_grid) = a*y(lower_bound) + b*y(upper_bound) &
-             + (c*d2y_dx2(P_i,lower_bound) + d*d2y_dx2(P_i, upper_bound))
+             + (c*d2y_dx2(P_i + (lower_bound-1)*Nx) + d*d2y_dx2(P_i +  (upper_bound-1)*Nx))
      end do
 
   end do

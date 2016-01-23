@@ -43,6 +43,9 @@
 #include <complex>
 #include <iostream>
 #include <fstream>
+#include <fcntl.h>
+#include <sys/stat.h>
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -88,7 +91,6 @@ double Vdw::q_mesh[VDW_NQPOINTS] = {
 double Vdw::kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 
-//const double Vdw::epsr = 1.0e-12;
 const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
 double Vdw::dk;
@@ -107,6 +109,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 {
 
   // Grid parameters
+  this->type = type;
   this->Grid = &G;
   this->T = &T;
   this->L = &L;
@@ -236,10 +239,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       kernel_file.close();
 
       // Plane wave object
-      this->plane_waves = new Pw(G, L, G.default_FG_RATIO);
+      this->plane_waves = new Pw(G, L, G.default_FG_RATIO, ct.is_gamma);
 
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
-      this->d2y_dx2 = new double[Vdw::Nqs*Vdw::Nqs];
+      this->d2y_dx2 = new double[Vdw::Nqs*Vdw::Nqs]();
       double *y = new double[Vdw::Nqs];
       double *temp_array = new double[Vdw::Nqs];
 
@@ -277,15 +280,16 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       
   }
 
-  this->plan_forward = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
-                                                 pct.pfft_comm, PFFT_FORWARD, PFFT_TRANSPOSED_NONE| PFFT_DESTROY_INPUT | PFFT_ESTIMATE);
+  this->plan_forward = pfft_plan_dft_3d(this->densgrid, 
+                                       (double (*)[2])this->thetas, 
+                                       (double (*)[2])this->thetas,
+                                       pct.pfft_comm, PFFT_FORWARD, 
+                                       PFFT_TRANSPOSED_NONE);
 
-  
   // Get total charge and compute it's gradient
-  for(int i = 0;i < pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
+  for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
-  CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_SIXTH);
-
+  CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT);
 
   // --------------------------------------------------------------------
   // Find the value of q0 for all assigned grid points. q is defined in
@@ -305,9 +309,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->plan_back = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
                                     pct.pfft_comm, PFFT_BACKWARD, PFFT_TRANSPOSED_NONE| PFFT_DESTROY_INPUT | PFFT_ESTIMATE);
  
-  this->get_potential(potential, this->thetas);
+//  this->get_potential(potential, this->thetas);
    
-  for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
+//  for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
   delete [] potential;
 }
@@ -346,6 +350,10 @@ Vdw::~Vdw(void)
 
 void Vdw::get_q0_on_grid (void)
 {
+
+  //fftw_plan p2;
+  //p2 = fftw_plan_dft_3d (this->dimx, this->dimy, this->dimz, reinterpret_cast<fftw_complex*>(thetas), reinterpret_cast<fftw_complex*>(thetas), FFTW_FORWARD, FFTW_ESTIMATE);
+
 
   double ec, dq0_dq;
 
@@ -414,6 +422,7 @@ void Vdw::get_q0_on_grid (void)
 
   }
 
+
   // --------------------------------------------------------------------
   // Here we calculate the theta functions of SOLER equation 8. These are
   // defined as
@@ -433,13 +442,7 @@ void Vdw::get_q0_on_grid (void)
   // P_i polynomials defined in equation 3 in SOLER for the particular q0
   // values we have.
 
-  spline_interpolation (Vdw::q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas);
-//for(int idx=0;idx < this->pbasis;idx++){
-    //printf("RHO = %18.12f\n",this->total_rho[idx]);
-    //printf("THETA0 = %12.6e  %12.6e\n",std::real(thetas[idx]),std::imag(thetas[idx]));
-    //printf("GRADRHO = %18.12f  %18.12f  %18.12f\n",gx[idx],gy[idx],gz[idx]);
-//}
-//exit(0);
+  spline_interpolation (Vdw::q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas, d2y_dx2);
 
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
@@ -449,7 +452,10 @@ void Vdw::get_q0_on_grid (void)
 
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
+      //fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]), reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]));
   }
+
+
 }
 
 
@@ -461,32 +467,39 @@ double Vdw::vdW_energy(void)
 
   double vdW_xc_energy = 0.0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
-//printf("TPIBA = %12.6f\n",tpiba);
+  double G_multiplier = 1.0;
+  if(ct.is_gamma) G_multiplier = 2.0;
+
   for(int ig=0;ig < this->pbasis;ig++) {
 
-      double g = sqrt(this->plane_waves->gmags[ig]) * tpiba;
-      this->interpolate_kernel(g, kernel_of_k);
-//printf("kernel_of_k = %12.6f %12.6f %12.6f %12.6f\n",this->plane_waves->gmags[ig],kernel_of_k[9],kernel_of_k[11],kernel_of_k[33]);
-      for(int idx=0;idx < Vdw::Nqs;idx++) theta[idx] = thetas[ig + idx*Vdw::Nqs];
 
-      for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
+      if(this->plane_waves->gmask[ig] == 1.0){
 
-          for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+          double g = sqrt(this->plane_waves->gmags[ig]) * tpiba;
+          this->interpolate_kernel(g, kernel_of_k);
 
-              u_vdW[q2_i*Vdw::Nqs + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i] * this->plane_waves->gmask[ig];
+          for(int idx=0;idx < Vdw::Nqs;idx++) theta[idx] = thetas[ig + idx*this->pbasis];
+
+          for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
+
+              for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+
+                  u_vdW[q2_i*Vdw::Nqs + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i];
+
+              }
+
+              vdW_xc_energy = vdW_xc_energy + G_multiplier * std::real(u_vdW[q2_i*Vdw::Nqs + ig] *
+                              std::conj(theta[q2_i]));
 
           }
-
-          vdW_xc_energy = vdW_xc_energy + std::real(u_vdW[q2_i*Vdw::Nqs + ig] *
-                          std::conj(theta[q2_i]));
-
+          if(this->plane_waves->gmags[ig] < 1.0) vdW_xc_energy /= G_multiplier;
       }
-
   }
 
+  // Sum over all procs and normalize correctly.
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
-  vdW_xc_energy = t1 * 0.5 * L->omega;
-  rmg_printf("Van der Waals correlation energy = %16.9f Ha\n", vdW_xc_energy);
+  vdW_xc_energy = 0.5 * t1 * L->omega / (double)this->N / (double)this->N;
+  rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", vdW_xc_energy);
 
   delete [] theta;
   delete [] u_vdW;
@@ -633,7 +646,6 @@ double Vdw::dFs_ds(double s)
      if(this->type == 4) {
          rdFs_ds = ( 30.0*fa*s + 4.0*fb*pow(s,3.0) + 6.0*fc*pow(s,5.0) ) 
                 / ( 15.0*pow(( 1.0 + 15.0*fa*(s*s) + fb*pow(s,4.0) + fc*pow(s, 6.0) ),(14.0/15.0)) );
-
      }
      else 
      {
@@ -649,7 +661,7 @@ double Vdw::dFs_ds(double s)
 
 double Vdw::kF(double rho)
 {
-    return pow(( 3.0 * PI*PI * rho ), (1.0/3.0));
+    return (double)pow(( 3.0 * PI*PI * rho ), (1.0/3.0));
 }
 
 
@@ -687,10 +699,13 @@ void Vdw::saturate_q(double q, double q_cut, double &q0, double &dq0_dq)
 
     double e      = 0.0;
     dq0_dq = 0.0;
+    double qoqc_p = q / q_cut;
 
     for(int ix = 1;ix <= this->m_cut;ix++) {
-       e = e + pow((q/q_cut),(double)ix)/(double)ix;
-       dq0_dq = dq0_dq + pow((q/q_cut),double((ix-1)));
+//       e = e + pow((q/q_cut), ix)/(double)ix;
+       e = e + qoqc_p/(double)ix;
+       dq0_dq = dq0_dq + pow((q/q_cut),ix-1);
+       qoqc_p = qoqc_p * q / q_cut;
     }
 
     q0     = q_cut*(1.0 - exp(-e));
@@ -782,12 +797,27 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
   // is set on a uniform grid.
   int k_i = (int)(k / Vdw::dk);
 
+  double k_r, k_ii;
+  k_r = modf(k/Vdw::dk, &k_ii);
+  if(fabs(k_r < this->epsr)) {
+
+      for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+          for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
+
+               kernel_of_k[q1_i + q2_i*Vdw::Nqs] = kernel[k_i][q1_i][q2_i];
+               kernel_of_k[q2_i + q1_i*Vdw::Nqs] = kernel[k_i][q2_i][q1_i];
+
+          }
+      }
+      return;
+  } 
+  
   double dk2 = dk * dk;
-  double A = (Vdw::dk * (k_i+1.0) - k) / Vdw::dk;
-  double B = (k - Vdw::dk*k_i) / Vdw::dk;
-  double C = (pow(A,3.0) - A) * dk2 / 6.0;
-  double D = (pow(B,3.0) - B) * dk2 / 6.0;
-//printf("ABCD = %18.12f  %18.12f  %18.12f  %18.12f\n",A,B,C,D);
+  double A = (Vdw::dk * ((double)k_i+1.0) - k) / Vdw::dk;
+  double B = (k - Vdw::dk*(double)k_i) / Vdw::dk;
+  double C = (A*A*A - A) * dk2 / 6.0;
+  double D = (B*B*B - B) * dk2 / 6.0;
+
   for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
       for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
       
@@ -795,9 +825,67 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
              +(C*d2phi_dk2[k_i][q1_i][q2_i] + D*d2phi_dk2[k_i+1][q1_i][q2_i]);
 
           kernel_of_k[q2_i + q1_i*Vdw::Nqs] = kernel_of_k[q1_i + q2_i*Vdw::Nqs];
-////printf("kernel_of_k  %d   %d   %d   %18.12f  %18.12f  %18.12f  %18.12f\n",q1_i+1,q2_i+1,k_i,
-//kernel[k_i][q1_i][ q2_i],kernel[k_i+1][q1_i][q2_i],d2phi_dk2[k_i][q1_i][q2_i],d2phi_dk2[k_i+1][q1_i][q2_i]);
+
       }
   }
 
+}
+
+void Vdw::fft_gradient(double *x, double *gx, double *gy, double *gz)
+{
+
+    pfft_plan forw, inv;
+    double tpiba = 2.0 * PI / this->L->celldm[0];
+    double scale = 1.0 / (double)this->N;
+
+    std::complex<double> czero(0.0,0.0);
+    std::complex<double> ci(0.0,1.0);
+    std::complex<double> *tx = new std::complex<double>[this->pbasis]();
+    std::complex<double> *cgx = new std::complex<double>[this->pbasis];
+
+    for(int ix = 0;ix < this->pbasis;ix++) {
+        tx[ix] = x[ix];
+    }
+
+    forw = pfft_plan_dft_3d(this->densgrid,
+                          (double (*)[2])tx,
+                          (double (*)[2])tx,
+                          pct.pfft_comm, 
+                          PFFT_FORWARD,
+                          PFFT_TRANSPOSED_NONE);
+
+    inv = pfft_plan_dft_3d(this->densgrid,
+                          (double (*)[2])cgx,
+                          (double (*)[2])cgx,
+                          pct.pfft_comm, 
+                          PFFT_BACKWARD,
+                          PFFT_TRANSPOSED_NONE);
+  
+    pfft_execute_dft(forw, (double (*)[2])tx, (double (*)[2])tx);
+   
+    for(int icar=0;icar < 3;icar++) {
+      
+        for(int ix=0;ix < this->pbasis;ix++) cgx[ix] = czero; 
+
+        for(int ig=0;ig < this->pbasis;ig++) {
+            if(this->plane_waves->gmask[ig] == 1.0) {
+                cgx[ig] = ci * tpiba * this->plane_waves->g[ig].a[icar] * tx[ig];
+            }
+        }
+
+        pfft_execute_dft(inv, (double (*)[2])cgx, (double (*)[2])cgx);
+
+        double *ts;
+        if(icar == 0) ts = gx;
+        if(icar == 1) ts = gy;
+        if(icar == 2) ts = gz;
+
+        for(int ix=0;ix < this->pbasis;ix++) ts[ix] = scale * std::real(cgx[ix]);
+    }
+
+    pfft_destroy_plan(forw);
+    pfft_destroy_plan(inv);
+
+    delete [] cgx;
+    delete [] tx;
 }

@@ -72,12 +72,16 @@ private:
     // Plane wave cutoff
     double gcut;
 
+    // true if gamma only
+    bool is_gamma;
+
 public:
-    Pw (BaseGrid &G, Lattice &L, int ratio);
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
     void index_to_gvector(int *index, double *gvector);
 
     ~Pw(void);
 
+    int ng;
     gvector *g;
     double *gmags;
     double *gmask;

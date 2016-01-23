@@ -36,12 +36,13 @@
 #include "Pw.h"
 #include <math.h>
 
-Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
+Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
 
   // Grid parameters
   this->Grid = &G;
   this->L = &L;
+  this->is_gamma = gamma_flag;
   this->pbasis = G.get_P0_BASIS(ratio);
   this->hxgrid = G.get_hxgrid(ratio);
   this->hygrid = G.get_hygrid(ratio);
@@ -57,39 +58,52 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio)
   this->gmags = new double[this->pbasis];
   this->gmask = new double[this->pbasis]();
   this->g = new gvector[this->pbasis];
+  this->ng = 0;
 
-  int idx=0;
+  int idx = -1;
   int ivec[3];
   double gvec[3];
 
-  // Get cutoff
-  ivec[0] = (this->dimx - 1) / 2;
-  ivec[1] = (this->dimy - 1) / 2;
-  ivec[2] = (this->dimz - 1) / 2;
-  index_to_gvector(ivec, gvec);
-  this->gcut = sqrt(gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2]) / sqrt(3.0);
+  // Get G^2 cutoff.
+  ivec[0] = (this->global_dimx - 1) / 2 - 2;
+  ivec[1] = (this->global_dimy - 1) / 2 - 2;
+  ivec[2] = (this->global_dimz - 1) / 2 - 2;
+  gvec[0] = (double)ivec[0] * L.b0[0] + (double)ivec[1] * L.b1[0] + (double)ivec[2] * L.b2[0];
+  gvec[0] *= L.celldm[0];
+  gvec[1] = (double)ivec[0] * L.b0[1] + (double)ivec[1] * L.b1[1] + (double)ivec[2] * L.b2[1];
+  gvec[1] *= L.celldm[0];
+  gvec[2] = (double)ivec[0] * L.b0[2] + (double)ivec[1] * L.b1[2] + (double)ivec[2] * L.b2[2];
+  gvec[2] *= L.celldm[0];
+  this->gcut = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
+  this->gcut = this->gcut / 3.0 + 1;
+  
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
           for(int iz = 0;iz < this->dimz;iz++) {
+              idx++;
               ivec[0] = ix;
               ivec[1] = iy;
               ivec[2] = iz;
-              index_to_gvector(ivec, gvec);
-              this->gmags[idx] = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
-//printf("GMAG = %12.6f\n",this->gmags[idx]);
-//              if(this->gmags[idx] <= this->gcut) this->gmask[idx] = 1.0;
-              this->gmask[idx] = 1.0;
-              this->g[idx].a[0] = gvec[0];
-              this->g[idx].a[1] = gvec[1];
-              this->g[idx].a[2] = gvec[2];
-              idx++;
+              index_to_gvector(ivec, g[idx].a);
+              if((ivec[0] < 0) && this->is_gamma) continue;
+              if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
+              if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
+
+              this->gmags[idx] = g[idx].a[0]*this->g[idx].a[0] + g[idx].a[1]*this->g[idx].a[1] + g[idx].a[2]*this->g[idx].a[2];
+              if(this->gmags[idx] <= this->gcut) {
+                  this->gmask[idx] = 1.0;
+                  this->ng++;
+              }
           }
       }
   }
 
+  //printf("G-vector count  = %d\n", this->ng);
+  //printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
+
 }
 
-// Converts local index into fft array into corresponding unnormalized g-vector on global grid
+// Converts local index into fft array into corresponding g-vector on global grid
 void Pw::index_to_gvector(int *index, double *gvector)
 {
 
@@ -100,15 +114,12 @@ void Pw::index_to_gvector(int *index, double *gvector)
   // Compute fft permutations
   ivector[0] = ivector[0] + index[0];
   if(ivector[0] > this->global_dimx/2) ivector[0] = ivector[0] - this->global_dimx;
-  if(ivector[0] == this->global_dimx/2) ivector[0] = 0;
 
   ivector[1] = ivector[1] + index[1];
   if(ivector[1] > this->global_dimy/2) ivector[1] = ivector[1] - this->global_dimy;
-  if(ivector[1] == this->global_dimy/2) ivector[1] = 0;
 
   ivector[2] = ivector[2] + index[2];
   if(ivector[2] > this->global_dimz/2) ivector[2] = ivector[2] - this->global_dimz;
-  if(ivector[2] == this->global_dimz/2) ivector[2] = 0;
 
   // Generate g-vectors from reciprocal lattice vectors
   gvector[0] = (double)ivector[0] * L->b0[0] + (double)ivector[1] * L->b1[0] + (double)ivector[2] * L->b2[0];
@@ -118,6 +129,10 @@ void Pw::index_to_gvector(int *index, double *gvector)
   gvector[0] *= L->celldm[0];
   gvector[1] *= L->celldm[0];
   gvector[2] *= L->celldm[0];
+
+  index[0] = ivector[0];
+  index[1] = ivector[1];
+  index[2] = ivector[2];
 }
 
 
