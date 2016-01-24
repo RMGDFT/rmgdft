@@ -10,6 +10,7 @@
 #include "grid.h"
 #include "main.h"
 #include "common_prototypes.h"
+#include "input.h"
 
 
 void init_qfunct (void)
