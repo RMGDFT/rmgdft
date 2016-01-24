@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "main.h"
+#include "input.h"
 
 void get_qqq ()
 {

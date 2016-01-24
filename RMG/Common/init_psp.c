@@ -30,6 +30,7 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
+#include "input.h"
 
 #define SMALL 1.e-35
 

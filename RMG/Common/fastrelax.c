@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "input.h"
 
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count)
 {
