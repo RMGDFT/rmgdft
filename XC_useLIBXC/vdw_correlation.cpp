@@ -105,11 +105,13 @@ double *Vdw::d2y_dx2;
 
 */
 
-Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v)
+Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
 
   // Grid parameters
   this->type = type;
+  this->is_gamma = gamma_flag;
+this->is_gamma = false;
   this->Grid = &G;
   this->T = &T;
   this->L = &L;
@@ -129,10 +131,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->m_cut = 12;
 
   // Largest value of q_cut
-  this->q_cut = Vdw::q_mesh[Vdw::Nqs-1];
+  this->q_cut = q_mesh[Vdw::Nqs-1];
 
   // smallest value of q_min
-  this->q_min = Vdw::q_mesh[0];
+  this->q_min = q_mesh[0];
 
   // Local storage
   this->total_rho = new double[this->pbasis];
@@ -143,8 +145,21 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->dq0_drho = new double[this->pbasis]();
   this->dq0_dgradrho = new double[this->pbasis]();
   this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs]();
-  double *potential = new double[this->pbasis]();
 
+  // FFT plans
+  this->plan_forward = pfft_plan_dft_3d(this->densgrid, 
+                                       (double (*)[2])this->thetas, 
+                                       (double (*)[2])this->thetas,
+                                       pct.pfft_comm, 
+                                       PFFT_FORWARD, 
+                                       PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+
+  this->plan_back = pfft_plan_dft_3d(this->densgrid, 
+                                     (pfft_complex *)this->thetas, 
+                                     (pfft_complex *)this->thetas,
+                                     pct.pfft_comm, 
+                                     PFFT_BACKWARD, 
+                                     PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
   // If not initialized we must read in the kernel table
   if(!this->initialized) {
@@ -172,14 +187,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       is1 >> Vdw::r_max;
       Vdw::dk = 2.0 * PI / Vdw::r_max;
       
-      
       // Read in the values of the q points used to generate this kernel.
       int idx = 0;
       for(int meshlines = 0;meshlines < 5;meshlines++) {
           std::getline(kernel_file, line);
           std::istringstream is2(line);
        
-          while(is2 >> Vdw::q_mesh[idx]) {
+          while(is2 >> q_mesh[idx]) {
               idx++;
               if(idx == Vdw::Nqs) break;
           }
@@ -199,14 +213,14 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
                   std::getline(kernel_file, line);
                   std::istringstream is3(line);
 
-                  while(is3 >> Vdw::kernel[idx][q1_i][q2_i]) {
+                  while(is3 >> kernel[idx][q1_i][q2_i]) {
                       idx++;
                       if(idx == (Vdw::Nrpoints + 1)) break;
                   }
               }
 
               for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
-                  Vdw::kernel[jdx][q2_i][q1_i] = Vdw::kernel[jdx][q1_i][q2_i];
+                  kernel[jdx][q2_i][q1_i] = kernel[jdx][q1_i][q2_i];
               }
           }
       }
@@ -223,14 +237,14 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
                   std::getline(kernel_file, line);
                   std::istringstream is4(line);
 
-                  while(is4 >> Vdw::d2phi_dk2[idx][q1_i][q2_i]) {
+                  while(is4 >> d2phi_dk2[idx][q1_i][q2_i]) {
                       idx++;
                       if(idx == (Vdw::Nrpoints + 1)) break;
                   }
               }
 
               for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
-                  Vdw::d2phi_dk2[jdx][q2_i][q1_i] = Vdw::d2phi_dk2[jdx][q1_i][q2_i];
+                  d2phi_dk2[jdx][q2_i][q1_i] = d2phi_dk2[jdx][q1_i][q2_i];
               }
 
           }
@@ -239,7 +253,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       kernel_file.close();
 
       // Plane wave object
-      this->plane_waves = new Pw(G, L, G.default_FG_RATIO, ct.is_gamma);
+      this->plane_waves = new Pw(G, L, G.default_FG_RATIO, is_gamma);
 
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
       this->d2y_dx2 = new double[Vdw::Nqs*Vdw::Nqs]();
@@ -254,20 +268,20 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
           temp_array[0] = 0.0;
 
           for(int idx = 1;idx < Vdw::Nqs - 1;idx++) {
-              double temp1 = (Vdw::q_mesh[idx] - Vdw::q_mesh[idx-1]) / (Vdw::q_mesh[idx+1] - Vdw::q_mesh[idx-1]);
+              double temp1 = (q_mesh[idx] - q_mesh[idx-1]) / (q_mesh[idx+1] - q_mesh[idx-1]);
               double temp2 = temp1 * d2y_dx2[P_i + (idx-1)*Vdw::Nqs] + 2.0;
               d2y_dx2[P_i + idx*Vdw::Nqs] = (temp1 - 1.0) / temp2;
 
-              temp_array[idx] = (y[idx+1] - y[idx]) / (Vdw::q_mesh[idx+1] - Vdw::q_mesh[idx]) - 
-                                (y[idx] - y[idx-1]) / (Vdw::q_mesh[idx] - Vdw::q_mesh[idx-1]);
-              temp_array[idx] = (6.0*temp_array[idx] / (Vdw::q_mesh[idx+1] - Vdw::q_mesh[idx-1]) - 
+              temp_array[idx] = (y[idx+1] - y[idx]) / (q_mesh[idx+1] - q_mesh[idx]) - 
+                                (y[idx] - y[idx-1]) / (q_mesh[idx] - q_mesh[idx-1]);
+              temp_array[idx] = (6.0*temp_array[idx] / (q_mesh[idx+1] - q_mesh[idx-1]) - 
                                  temp1*temp_array[idx-1]) / temp2;
               
           }
 
           d2y_dx2[P_i + Vdw::Nqs*(Vdw::Nqs-1)] = 0.0;
 
-          for(int idx=Vdw::Nqs-2;idx >= 1;idx--) {
+          for(int idx=Vdw::Nqs-2;idx >= 0;idx--) {
               d2y_dx2[P_i + idx*Vdw::Nqs] = d2y_dx2[P_i + idx*Vdw::Nqs] * d2y_dx2[P_i + (idx+1)*Vdw::Nqs] + temp_array[idx];
           }
 
@@ -280,11 +294,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       
   }
 
-  this->plan_forward = pfft_plan_dft_3d(this->densgrid, 
-                                       (double (*)[2])this->thetas, 
-                                       (double (*)[2])this->thetas,
-                                       pct.pfft_comm, PFFT_FORWARD, 
-                                       PFFT_TRANSPOSED_NONE);
 
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
@@ -305,11 +314,37 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   etxc += Ec_nl;
 
 
-  // Now get the potential
-  this->plan_back = pfft_plan_dft_3d(this->densgrid, (double (*)[2])this->thetas, (double (*)[2])this->thetas,
-                                    pct.pfft_comm, PFFT_BACKWARD, PFFT_TRANSPOSED_NONE| PFFT_DESTROY_INPUT | PFFT_ESTIMATE);
- 
-//  this->get_potential(potential, this->thetas);
+
+  // --------------------------------------------------------------------
+  // Here we calculate the potential. This is calculated via equation 10
+  // of SOLER, using the u_i(r) calculated from quations 11 and 12 of
+  // SOLER. Each processor allocates the array to be the size of the full
+  // grid  because, as can be seen in SOLER equation 10, processors need
+  // to access grid points outside their allocated regions. Begin by
+  // FFTing the u_i(k) to get the u_i(r) of SOLER equation 11.
+
+
+  double scale = 1.0 / (double)this->N;
+  for(int iq = 0;iq < Vdw::Nqs;iq++) {
+      pfft_execute_dft(plan_back, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
+      // Remove factor of N from the ffts
+      for(int idx = 0;idx < this->pbasis;idx++) thetas[iq*this->pbasis + idx] *= scale;
+#if 0
+      for(int ix = 0;ix < this->dimx;ix++) {
+        for(int iy = 0;iy < this->dimy;iy++) {
+          for(int iz = 0;iz < this->dimz;iz++) {
+             printf("BACKTRANSFORM  %d  %d  %d   %18.6e  %18.6e\n",ix,iy,iz,std::real(thetas[iq*this->pbasis + ix*this->dimy*this->dimz + iy*this->dimz + iz]),
+                                                std::imag(thetas[iq*this->pbasis + ix*this->dimy*this->dimz + iy*this->dimz + iz]));
+          }
+        }
+      }
+exit(0);
+#endif
+      //fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]), reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]));
+  }
+
+  double *potential = new double[this->pbasis]();
+  this->get_potential(potential, this->thetas);
    
 //  for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
@@ -321,8 +356,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 Vdw::~Vdw(void)
 {
 
-  pfft_destroy_plan(this->plan_back);
-  pfft_destroy_plan(this->plan_forward);
+  pfft_destroy_plan(plan_back);
+  pfft_destroy_plan(plan_forward);
   delete [] this->thetas;
   delete [] this->dq0_dgradrho;
   delete [] this->dq0_drho;
@@ -422,7 +457,6 @@ void Vdw::get_q0_on_grid (void)
 
   }
 
-
   // --------------------------------------------------------------------
   // Here we calculate the theta functions of SOLER equation 8. These are
   // defined as
@@ -442,7 +476,7 @@ void Vdw::get_q0_on_grid (void)
   // P_i polynomials defined in equation 3 in SOLER for the particular q0
   // values we have.
 
-  spline_interpolation (Vdw::q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas, d2y_dx2);
+  spline_interpolation (q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas, d2y_dx2);
 
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
@@ -450,11 +484,10 @@ void Vdw::get_q0_on_grid (void)
       }
   }
 
+
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
-      //fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]), reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]));
   }
-
 
 }
 
@@ -468,7 +501,7 @@ double Vdw::vdW_energy(void)
   double vdW_xc_energy = 0.0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
   double G_multiplier = 1.0;
-  if(ct.is_gamma) G_multiplier = 2.0;
+  if(is_gamma) G_multiplier = 2.0;
 
   for(int ig=0;ig < this->pbasis;ig++) {
 
@@ -476,30 +509,44 @@ double Vdw::vdW_energy(void)
       if(this->plane_waves->gmask[ig] == 1.0){
 
           double g = sqrt(this->plane_waves->gmags[ig]) * tpiba;
-          this->interpolate_kernel(g, kernel_of_k);
 
-          for(int idx=0;idx < Vdw::Nqs;idx++) theta[idx] = thetas[ig + idx*this->pbasis];
+          this->interpolate_kernel(g, kernel_of_k);
+          for(int idx=0;idx < Vdw::Nqs;idx++) {
+             theta[idx] = thetas[ig + idx*this->pbasis];
+          }
 
           for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
 
               for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
 
-                  u_vdW[q2_i*Vdw::Nqs + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i];
+                  u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i];
 
               }
 
-              vdW_xc_energy = vdW_xc_energy + G_multiplier * std::real(u_vdW[q2_i*Vdw::Nqs + ig] *
+              vdW_xc_energy = vdW_xc_energy + G_multiplier * std::real(u_vdW[q2_i*this->pbasis + ig] *
                               std::conj(theta[q2_i]));
 
           }
-          if(this->plane_waves->gmags[ig] < 1.0) vdW_xc_energy /= G_multiplier;
+          if(this->plane_waves->gmags[ig] == 0.0) vdW_xc_energy /= G_multiplier;
       }
   }
 
-  // Sum over all procs and normalize correctly.
+  // Sum over all procs and normalize correctly. The fft of theta introduced a factor
+  // of N which is squared by the product so we cancel it with 1/N^2. The volume element
+  // for the reciprocal integral is (2pi)^3/omega which cancels one of the omega^2 terms
+  // from Eq. 9 of Soler while the (2pi)^3 is cancelled by the implicit factor present
+  // in k.
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
   vdW_xc_energy = 0.5 * t1 * L->omega / (double)this->N / (double)this->N;
   rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", vdW_xc_energy);
+
+  // Save u_vdW
+  if(is_gamma) {
+      for(int ix=0;ix < this->pbasis*Vdw::Nqs;ix++) thetas[ix] = std::conj(u_vdW[ix]);
+  }
+  else {
+      for(int ix=0;ix < this->pbasis*Vdw::Nqs;ix++) thetas[ix] = u_vdW[ix];
+  }
 
   delete [] theta;
   delete [] u_vdW;
@@ -512,16 +559,17 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
 
   std::complex<double> i(0.0,1.0);
   int q_low, q_hi, q;
-  double *h_prefactor = new double[this->pbasis];
+  double *h_prefactor = new double[this->pbasis]();
   double *y = new double[Vdw::Nqs]; 
-  std::complex<double> *h = new std::complex<double>[this->pbasis];
+  std::complex<double> *h = new std::complex<double>[this->pbasis]();
   double P, dP_dq0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
+
 
   for(int ig = 0;ig < this->pbasis;ig++) {
      
       q_low = 0;
-      q_hi = Vdw::Nqs - 1; 
+      q_hi = Vdw::Nqs - 1;
 
       // -----------------------------------------------------------------
       // Figure out which bin our value of q0 is in in the q_mesh.
@@ -538,17 +586,18 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
 
       } // end while
 
+
       if(q_low == q_hi)
            throw RmgFatalException() << "qhi == qlow" << __FILE__ << " at line " << __LINE__ << "\n";
 
-      double dq = Vdw::q_mesh[q_hi] - Vdw::q_mesh[q_low];
+      double dq = q_mesh[q_hi] - q_mesh[q_low];
 
-      double a = (Vdw::q_mesh[q_hi] - q0[ig]) / dq;
-      double b = (q0[ig] - Vdw::q_mesh[q_low]) / dq;
-      double c = (pow(a,3.0) - a)*pow(dq,2/6.0);
-      double d = (pow(b,3.0) - b)*pow(dq,2/6.0);
-      double e = (3.0*pow(a,2.0) - 1.0)*dq/6.0;
-      double f = (3.0*pow(b,2.0) - 1.0)*dq/6.0;
+      double a = (q_mesh[q_hi] - q0[ig]) / dq;
+      double b = (q0[ig] - q_mesh[q_low]) / dq;
+      double c = (a*a*a - a)*pow(dq,2.0/6.0);
+      double d = (b*b*b - b)*pow(dq,2.0/6.0);
+      double e = (3.0*a*a - 1.0)*dq/6.0;
+      double f = (3.0*b*b - 1.0)*dq/6.0;
 
       for(int P_i = 0;P_i < Vdw::Nqs;P_i++) {
 
@@ -566,10 +615,17 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
             h_prefactor[ig] = h_prefactor[ig] + std::real(u_vdW[ig + P_i * this->pbasis] * dP_dq0*dq0_dgradrho[ig]);
          }
       }
-
-
   }
 
+//exit(0);
+//for(int ix=0;ix < this->dimx;ix++) {
+//  for(int iy=0;iy < this->dimy;iy++) {
+//    for(int iz=0;iz < this->dimz;iz++) {
+//        printf("PPPPP = %18.8e\n",potential[iz + iy*this->dimy + ix*this->dimy*this->dimx]);
+//    }
+//  }
+//}
+//exit(0);
 
   for(int icar = 0;icar < 3;icar++) {
 
@@ -579,12 +635,12 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
      if(icar == 2) grad_rho = this->gz;
 
      for(int ix=0;ix < this->pbasis;ix++) {
-         h[ix] = std::real( h_prefactor[ix] * grad_rho[ix] );
+         h[ix] = std::complex<double>(h_prefactor[ix] * grad_rho[ix], 0.0);
      }
 
-     for(int ig = 0;ig < this->pbasis;ig++) {
-        double gradient2 = this->gx[ig]*this->gx[ig] + this->gy[ig]*this->gy[ig] + this->gz[ig]*this->gz[ig];
-        if ( gradient2 > 0.0 ) h[ig] = h[ig] / sqrt( gradient2 );
+     for(int ix = 0;ix < this->pbasis;ix++) {
+        double gradient2 = this->gx[ix]*this->gx[ix] + this->gy[ix]*this->gy[ix] + this->gz[ix]*this->gz[ix];
+        if ( gradient2 > 0.0) h[ix] = h[ix] / sqrt( gradient2 );
      }
 
      pfft_execute_dft(plan_forward, (double (*)[2])h, (double (*)[2])h);
@@ -592,15 +648,34 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
      for(int ix=0;ix < this->pbasis;ix++) {
          h[ix] = i * tpiba * this->plane_waves->g[ix].a[icar] * h[ix] * this->plane_waves->gmask[ix];
      }
-//     if (gamma_only) h(nlm(:)) = CONJG(h(nl(:)))
+
+     if (is_gamma) {
+         for(int ix=0;ix < this->pbasis;ix++) {
+             h[ix] = std::conj(h[ix]);
+         }
+     }
+
      pfft_execute_dft(plan_back, (double (*)[2])h, (double (*)[2])h);
      double scale = 1.0 / (double)this->N;
-     scale = scale * scale;
-     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
-
+//for(int ix=0;ix < this->pbasis;ix++)
+//printf("PCHECK = %18.6e  %18.6e\n",potential[ix],scale * std::real(h[ix]));
+//     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
+//exit(0);
   }
 
-
+ double scale = (double)this->N / L->omega;
+  for(int ix=0;ix < this->pbasis;ix++) potential[ix] *= scale;
+for(int ix=0;ix < this->dimx;ix++) {
+  for(int iy=0;iy < this->dimy;iy++) {
+    for(int iz=0;iz < this->dimz;iz++) {
+        printf("POTENTIAL = %18.8e\n",potential[ix*this->dimy*this->dimz + iy*this->dimz + iz]);
+    }
+  }
+}
+double echeck = 0.0;
+for(int idx=0;idx<this->pbasis;idx++)echeck += this->total_rho[idx] * potential[idx];
+printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
+exit(0);
   delete [] h;
   delete [] y;
   delete [] h_prefactor;
@@ -620,7 +695,7 @@ double Vdw::Fs(double s)
                                          // from JCTC 5, 2745 (2009).
 
   if(this->type == 4) {
-      rFs = pow( 1 + 15.0*fa*(s*s) + fb*pow(s,4.0) + fc*pow(s,6.0) ,(1.0/15.0));
+      rFs = pow( 1 + 15.0*fa*(s*s) + fb*pow(s,4) + fc*pow(s,6) ,(1.0/15.0));
   }
   else 
   {
@@ -644,8 +719,8 @@ double Vdw::dFs_ds(double s)
                                            // from JCTC 5, 2745 (2009).
 
      if(this->type == 4) {
-         rdFs_ds = ( 30.0*fa*s + 4.0*fb*pow(s,3.0) + 6.0*fc*pow(s,5.0) ) 
-                / ( 15.0*pow(( 1.0 + 15.0*fa*(s*s) + fb*pow(s,4.0) + fc*pow(s, 6.0) ),(14.0/15.0)) );
+         rdFs_ds = ( 30.0*fa*s + 4.0*fb*pow(s,3.0) + 6.0*fc*pow(s,5) ) 
+                / ( 15.0*pow(( 1.0 + 15.0*fa*(s*s) + fb*pow(s,4) + fc*pow(s, 6) ),(14.0/15.0)) );
      }
      else 
      {
@@ -699,13 +774,10 @@ void Vdw::saturate_q(double q, double q_cut, double &q0, double &dq0_dq)
 
     double e      = 0.0;
     dq0_dq = 0.0;
-    double qoqc_p = q / q_cut;
 
     for(int ix = 1;ix <= this->m_cut;ix++) {
-//       e = e + pow((q/q_cut), ix)/(double)ix;
-       e = e + qoqc_p/(double)ix;
+       e = e + pow((q/q_cut), ix)/(double)ix;
        dq0_dq = dq0_dq + pow((q/q_cut),ix-1);
-       qoqc_p = qoqc_p * q / q_cut;
     }
 
     q0     = q_cut*(1.0 - exp(-e));
@@ -799,7 +871,7 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
 
   double k_r, k_ii;
   k_r = modf(k/Vdw::dk, &k_ii);
-  if(fabs(k_r < this->epsr)) {
+  if(fabs(k_r) < this->epsr) {
 
       for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
@@ -840,27 +912,27 @@ void Vdw::fft_gradient(double *x, double *gx, double *gy, double *gz)
 
     std::complex<double> czero(0.0,0.0);
     std::complex<double> ci(0.0,1.0);
-    std::complex<double> *tx = new std::complex<double>[this->pbasis]();
+    std::complex<double> *tx = new std::complex<double>[this->pbasis];
     std::complex<double> *cgx = new std::complex<double>[this->pbasis];
-
-    for(int ix = 0;ix < this->pbasis;ix++) {
-        tx[ix] = x[ix];
-    }
 
     forw = pfft_plan_dft_3d(this->densgrid,
                           (double (*)[2])tx,
                           (double (*)[2])tx,
                           pct.pfft_comm, 
                           PFFT_FORWARD,
-                          PFFT_TRANSPOSED_NONE);
+                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
     inv = pfft_plan_dft_3d(this->densgrid,
                           (double (*)[2])cgx,
                           (double (*)[2])cgx,
                           pct.pfft_comm, 
                           PFFT_BACKWARD,
-                          PFFT_TRANSPOSED_NONE);
+                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
   
+    for(int ix = 0;ix < this->pbasis;ix++) {
+        tx[ix] = x[ix];
+    }
+
     pfft_execute_dft(forw, (double (*)[2])tx, (double (*)[2])tx);
    
     for(int icar=0;icar < 3;icar++) {
@@ -870,6 +942,9 @@ void Vdw::fft_gradient(double *x, double *gx, double *gy, double *gz)
         for(int ig=0;ig < this->pbasis;ig++) {
             if(this->plane_waves->gmask[ig] == 1.0) {
                 cgx[ig] = ci * tpiba * this->plane_waves->g[ig].a[icar] * tx[ig];
+            }
+            else {
+                cgx[ig] = std::complex<double>(0.0, 0.0);
             }
         }
 

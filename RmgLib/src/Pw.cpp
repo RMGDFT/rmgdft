@@ -55,14 +55,28 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimz = G.get_NZ_GRID(ratio);
   this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
 
-  this->gmags = new double[this->pbasis];
+  // Magnitudes of the g-vectors
+  this->gmags = new double[this->pbasis]();
+
+  // Mask array which is set to 1.0 for g-vectros with frequencies below the cutoff
+  // and 0.0 otherwise.
   this->gmask = new double[this->pbasis]();
+
+  // G-vector storage. Vectors with frequencies above the cutoff are stored as zeros
   this->g = new gvector[this->pbasis];
+
+  // Number of g-vectors
   this->ng = 0;
 
-  int idx = -1;
   int ivec[3];
   double gvec[3];
+
+  // zero out g-vector array
+  for(int ix=0;ix < this->pbasis;ix++) {
+      this->g->a[0] = 0.0;
+      this->g->a[1] = 0.0;
+      this->g->a[2] = 0.0;
+  }
 
   // Get G^2 cutoff.
   ivec[0] = (this->global_dimx - 1) / 2 - 2;
@@ -74,9 +88,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   gvec[1] *= L.celldm[0];
   gvec[2] = (double)ivec[0] * L.b0[2] + (double)ivec[1] * L.b1[2] + (double)ivec[2] * L.b2[2];
   gvec[2] *= L.celldm[0];
+
   this->gcut = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
-  this->gcut = this->gcut / 3.0 + 1;
+  this->gcut = this->gcut / 3.0;
   
+  int idx = -1;
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
           for(int iz = 0;iz < this->dimz;iz++) {
@@ -84,13 +100,27 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               ivec[0] = ix;
               ivec[1] = iy;
               ivec[2] = iz;
-              index_to_gvector(ivec, g[idx].a);
+
+              // On input local index is stored in ivec. On output global index
+              // is stored in ivec and the associated g-vectors is stored in g
+              index_to_gvector(ivec, gvec);
+              // Gamma only exclude volume with x<0
               if((ivec[0] < 0) && this->is_gamma) continue;
+              // Gamma only exclude plane with x = 0, y < 0
               if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
+              // Gamma only exclude line with x = 0, y = 0, z < 0
               if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
 
-              this->gmags[idx] = g[idx].a[0]*this->g[idx].a[0] + g[idx].a[1]*this->g[idx].a[1] + g[idx].a[2]*this->g[idx].a[2];
-              if(this->gmags[idx] <= this->gcut) {
+              if(((int)fabs(round(gvec[0])) == this->global_dimx/2) || 
+                 ((int)fabs(round(gvec[1])) == this->global_dimy/2) || 
+                 ((int)fabs(round(gvec[2])) == this->global_dimz/2)) continue;
+
+              double tmag = gvec[0]*gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
+              if(tmag <= this->gcut) {
+                  this->gmags[idx] = tmag;
+                  g[idx].a[0] = gvec[0];
+                  g[idx].a[1] = gvec[1];
+                  g[idx].a[2] = gvec[2];
                   this->gmask[idx] = 1.0;
                   this->ng++;
               }
@@ -98,12 +128,14 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       }
   }
 
-  //printf("G-vector count  = %d\n", this->ng);
+  printf("G-vector count  = %d\n", this->ng);
   //printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
 
 }
 
 // Converts local index into fft array into corresponding g-vector on global grid
+// On input index holds the local index
+// On output index holds the global index and gvector holds the corresponding g-vector
 void Pw::index_to_gvector(int *index, double *gvector)
 {
 

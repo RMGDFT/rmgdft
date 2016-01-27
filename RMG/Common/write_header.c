@@ -287,6 +287,10 @@ void write_header (void)
         printf ("    XC using GGA with PBE\n");
         break;
 
+    case VDW:
+        printf ("    XC using VDW\n");
+        break;
+
     case MGGA_TB09:
         printf ("    XC using meta-GGA with TB09\n");
         break;

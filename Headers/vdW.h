@@ -42,6 +42,9 @@ private:
     //
     int type;
 
+    // Gamma flag
+    bool is_gamma;
+
     // Real space basis on this node and grid parameters
     int pbasis;
 
@@ -112,7 +115,7 @@ private:
 #endif
 
 public:
-    Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v);
+    Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
     ~Vdw(void);
 
     void get_q0_on_grid (void);
