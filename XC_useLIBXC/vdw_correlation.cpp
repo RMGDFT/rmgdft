@@ -134,7 +134,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->m_cut = 12;
 
   // Largest value of q_cut
-  this->q_cut = q_mesh[Vdw::Nqs-1];
+  this->q_cut = q_mesh[Nqs-1];
 
   // smallest value of q_min
   this->q_min = q_mesh[0];
@@ -147,19 +147,19 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->q0 = new double[this->pbasis]();
   this->dq0_drho = new double[this->pbasis]();
   this->dq0_dgradrho = new double[this->pbasis]();
-  this->thetas = new std::complex<double> [this->pbasis*Vdw::Nqs]();
+  std::complex<double> *thetas = new std::complex<double> [this->pbasis*Nqs]();
 
   // FFT plans
   this->plan_forward = pfft_plan_dft_3d(this->densgrid, 
-                                       (double (*)[2])this->thetas, 
-                                       (double (*)[2])this->thetas,
+                                       (double (*)[2])thetas, 
+                                       (double (*)[2])thetas,
                                        pct.pfft_comm, 
                                        PFFT_FORWARD, 
                                        PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
   this->plan_back = pfft_plan_dft_3d(this->densgrid, 
-                                     (pfft_complex *)this->thetas, 
-                                     (pfft_complex *)this->thetas,
+                                     (pfft_complex *)thetas, 
+                                     (pfft_complex *)thetas,
                                      pct.pfft_comm, 
                                      PFFT_BACKWARD, 
                                      PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
@@ -173,15 +173,15 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
           throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
       }
      
-      // Read in Vdw::Nqs and Vdw::Nrpoints from header and make sure it matches
+      // Read in Nqs and Nrpoints from header and make sure it matches
       // these are the number of q points and the number of r points used for this kernel file, 
       std::string line;
       std::getline(kernel_file, line);
       std::istringstream is0(line);
-      is0 >> Vdw::Nqs >> Vdw::Nrpoints;
+      is0 >> Nqs >> Nrpoints;
 
-      if((Vdw::Nqs != VDW_NQPOINTS) || (Vdw::Nrpoints != VDW_NRPOINTS)) {
-          throw RmgFatalException() << "Mismatch for Vdw::Nqs or Vdw::Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+      if((Nqs != VDW_NQPOINTS) || (Nrpoints != VDW_NRPOINTS)) {
+          throw RmgFatalException() << "Mismatch for Nqs or Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
       }
 
       // Read in r_max the maximum allowed value of an r point
@@ -198,17 +198,17 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
        
           while(is2 >> q_mesh[idx]) {
               idx++;
-              if(idx == Vdw::Nqs) break;
+              if(idx == Nqs) break;
           }
       }
 
       // For each pair of q values, read in the function phi_q1_q2(k).
       // That is, the fourier transformed kernel function assuming q1 and
       // q2 for all the values of r used.
-      int tlines = (Vdw::Nrpoints + 1) / 4;   // 4 per line
-      if((Vdw::Nrpoints + 1) % 4) tlines++;
+      int tlines = (Nrpoints + 1) / 4;   // 4 per line
+      if((Nrpoints + 1) % 4) tlines++;
       
-      for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+      for(int q1_i = 0;q1_i < Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
 
               int idx = 0;
@@ -218,11 +218,11 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
                   while(is3 >> kernel[idx][q1_i][q2_i]) {
                       idx++;
-                      if(idx == (Vdw::Nrpoints + 1)) break;
+                      if(idx == (Nrpoints + 1)) break;
                   }
               }
 
-              for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
+              for(int jdx = 0;jdx < (Nrpoints + 1);jdx++) {
                   kernel[jdx][q2_i][q1_i] = kernel[jdx][q1_i][q2_i];
               }
           }
@@ -232,7 +232,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       // the second derivative of the above mentiond Fourier transformed
       // kernel function phi_alpha_beta(k). These are used for spline
       // interpolation of the Fourier transformed kernel.
-      for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+      for(int q1_i = 0;q1_i < Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
 
               int idx = 0;
@@ -242,11 +242,11 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
                   while(is4 >> d2phi_dk2[idx][q1_i][q2_i]) {
                       idx++;
-                      if(idx == (Vdw::Nrpoints + 1)) break;
+                      if(idx == (Nrpoints + 1)) break;
                   }
               }
 
-              for(int jdx = 0;jdx < (Vdw::Nrpoints + 1);jdx++) {
+              for(int jdx = 0;jdx < (Nrpoints + 1);jdx++) {
                   d2phi_dk2[jdx][q2_i][q1_i] = d2phi_dk2[jdx][q1_i][q2_i];
               }
 
@@ -259,21 +259,21 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       this->plane_waves = new Pw(G, L, G.default_FG_RATIO, is_gamma);
 
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
-      this->d2y_dx2 = new double[Vdw::Nqs*Vdw::Nqs]();
-      double *y = new double[Vdw::Nqs];
-      double *temp_array = new double[Vdw::Nqs];
+      this->d2y_dx2 = new double[Nqs*Nqs]();
+      double *y = new double[Nqs];
+      double *temp_array = new double[Nqs];
 
-      for(int P_i=0;P_i < Vdw::Nqs;P_i++) {
+      for(int P_i=0;P_i < Nqs;P_i++) {
 
-          for(int ix=0;ix < Vdw::Nqs;ix++) y[ix] = 0.0;          
+          for(int ix=0;ix < Nqs;ix++) y[ix] = 0.0;          
           y[P_i] = 1.0;
           d2y_dx2[P_i] = 0.0;
           temp_array[0] = 0.0;
 
-          for(int idx = 1;idx < Vdw::Nqs - 1;idx++) {
+          for(int idx = 1;idx < Nqs - 1;idx++) {
               double temp1 = (q_mesh[idx] - q_mesh[idx-1]) / (q_mesh[idx+1] - q_mesh[idx-1]);
-              double temp2 = temp1 * d2y_dx2[P_i + (idx-1)*Vdw::Nqs] + 2.0;
-              d2y_dx2[P_i + idx*Vdw::Nqs] = (temp1 - 1.0) / temp2;
+              double temp2 = temp1 * d2y_dx2[P_i + (idx-1)*Nqs] + 2.0;
+              d2y_dx2[P_i + idx*Nqs] = (temp1 - 1.0) / temp2;
 
               temp_array[idx] = (y[idx+1] - y[idx]) / (q_mesh[idx+1] - q_mesh[idx]) - 
                                 (y[idx] - y[idx-1]) / (q_mesh[idx] - q_mesh[idx-1]);
@@ -282,10 +282,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
               
           }
 
-          d2y_dx2[P_i + Vdw::Nqs*(Vdw::Nqs-1)] = 0.0;
+          d2y_dx2[P_i + Nqs*(Nqs-1)] = 0.0;
 
-          for(int idx=Vdw::Nqs-2;idx >= 0;idx--) {
-              d2y_dx2[P_i + idx*Vdw::Nqs] = d2y_dx2[P_i + idx*Vdw::Nqs] * d2y_dx2[P_i + (idx+1)*Vdw::Nqs] + temp_array[idx];
+          for(int idx=Nqs-2;idx >= 0;idx--) {
+              d2y_dx2[P_i + idx*Nqs] = d2y_dx2[P_i + idx*Nqs] * d2y_dx2[P_i + (idx+1)*Nqs] + temp_array[idx];
           }
 
       }
@@ -311,9 +311,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // gradient of the charge-density. These are needed for the potential
   // calculated below. This routine also calculates the thetas.
 
-  this->get_q0_on_grid ();
+  this->get_q0_on_grid (thetas);
 
-  double Ec_nl = this->vdW_energy();
+  double Ec_nl = this->vdW_energy(thetas);
   etxc += Ec_nl;
 
 
@@ -327,17 +327,18 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // FFTing the u_i(k) to get the u_i(r) of SOLER equation 11.
 
 
-  for(int iq = 0;iq < Vdw::Nqs;iq++) {
+  for(int iq = 0;iq < Nqs;iq++) {
       pfft_execute_dft(plan_back, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
       //fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]), reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]));
   }
 
   double *potential = new double[this->pbasis]();
-  this->get_potential(potential, this->thetas);
+  this->get_potential(potential, thetas);
    
-//  for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
+  for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
   delete [] potential;
+  delete [] thetas;
 }
 
 
@@ -347,7 +348,6 @@ Vdw::~Vdw(void)
 
   pfft_destroy_plan(plan_back);
   pfft_destroy_plan(plan_forward);
-  delete [] this->thetas;
   delete [] this->dq0_dgradrho;
   delete [] this->dq0_drho;
   delete [] this->q0;
@@ -370,7 +370,7 @@ Vdw::~Vdw(void)
 //       dq0_drho(ir) = total_rho * d q0 /d rho
 //       dq0_dgradrho = total_rho / |grad_rho| * d q0 / d |grad_rho|
 
-void Vdw::get_q0_on_grid (void)
+void Vdw::get_q0_on_grid (std::complex<double> * thetas)
 {
 
   //fftw_plan p2;
@@ -463,27 +463,27 @@ void Vdw::get_q0_on_grid (void)
   // P_i polynomials defined in equation 3 in SOLER for the particular q0
   // values we have.
 
-  spline_interpolation (q_mesh, &Vdw::Nqs, q0, &this->pbasis, thetas, d2y_dx2);
+  spline_interpolation (q_mesh, &Nqs, q0, &this->pbasis, thetas, d2y_dx2);
 
-  for(int iq = 0;iq < Vdw::Nqs;iq++) {
+  for(int iq = 0;iq < Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
           thetas[ix + iq*this->pbasis] = thetas[ix + iq*this->pbasis] * this->total_rho[ix];
       }
   }
 
 
-  for(int iq = 0;iq < Vdw::Nqs;iq++) {
+  for(int iq = 0;iq < Nqs;iq++) {
       pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
   }
 
 }
 
 
-double Vdw::vdW_energy(void)
+double Vdw::vdW_energy(std::complex<double> *thetas)
 {
-  double *kernel_of_k = new double[Vdw::Nqs*Vdw::Nqs]();
-  std::complex<double> *u_vdW = new std::complex<double>[Vdw::Nqs * this->pbasis]();
-  std::complex<double> *theta = new std::complex<double>[Vdw::Nqs];
+  double *kernel_of_k = new double[Nqs*Nqs]();
+  std::complex<double> *u_vdW = new std::complex<double>[Nqs * this->pbasis]();
+  std::complex<double> *theta = new std::complex<double>[Nqs];
 
   double vdW_xc_energy = 0.0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
@@ -498,15 +498,15 @@ double Vdw::vdW_energy(void)
           double g = sqrt(this->plane_waves->gmags[ig]) * tpiba;
 
           this->interpolate_kernel(g, kernel_of_k);
-          for(int idx=0;idx < Vdw::Nqs;idx++) {
+          for(int idx=0;idx < Nqs;idx++) {
              theta[idx] = thetas[ig + idx*this->pbasis];
           }
 
-          for(int q2_i=0;q2_i < Vdw::Nqs;q2_i++) {
+          for(int q2_i=0;q2_i < Nqs;q2_i++) {
 
-              for(int q1_i=0;q1_i < Vdw::Nqs;q1_i++) {
+              for(int q1_i=0;q1_i < Nqs;q1_i++) {
 
-                  u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Vdw::Nqs + q2_i] * theta[q1_i];
+                  u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Nqs + q2_i] * theta[q1_i];
 
               }
 
@@ -533,10 +533,10 @@ double Vdw::vdW_energy(void)
   if(is_gamma) {
       // This is not correct. I need to conjugate the inverse vectors. Will need a lookup
       // table to map these correctly into the fft grid
-      for(int ix=0;ix < this->pbasis*Vdw::Nqs;ix++) thetas[ix] = std::conj(u_vdW[ix]);
+      for(int ix=0;ix < this->pbasis*Nqs;ix++) thetas[ix] = std::conj(u_vdW[ix]);
   }
   else {
-      for(int ix=0;ix < this->pbasis*Vdw::Nqs;ix++) thetas[ix] = u_vdW[ix];
+      for(int ix=0;ix < this->pbasis*Nqs;ix++) thetas[ix] = u_vdW[ix];
   }
 
   delete [] theta;
@@ -551,7 +551,7 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
   std::complex<double> i(0.0,1.0);
   int q_low, q_hi, q;
   double *h_prefactor = new double[this->pbasis]();
-  double *y = new double[Vdw::Nqs]; 
+  double *y = new double[Nqs]; 
   std::complex<double> *h = new std::complex<double>[this->pbasis]();
   double P, dP_dq0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
@@ -560,7 +560,7 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
   for(int ig = 0;ig < this->pbasis;ig++) {
      
       q_low = 0;
-      q_hi = Vdw::Nqs - 1;
+      q_hi = Nqs - 1;
 
       // -----------------------------------------------------------------
       // Figure out which bin our value of q0 is in in the q_mesh.
@@ -589,18 +589,18 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
       double e = (3.0*a*a - 1.0)*dq/6.0;
       double f = (3.0*b*b - 1.0)*dq/6.0;
 
-      for(int P_i = 0;P_i < Vdw::Nqs;P_i++) {
+      for(int P_i = 0;P_i < Nqs;P_i++) {
 
-          for(int iy = 0;iy < Vdw::Nqs;iy++) y[iy] = 0.0;
+          for(int iy = 0;iy < Nqs;iy++) y[iy] = 0.0;
           y[P_i] = 1.0;
 
-          P      = a*y[q_low] + b*y[q_hi]  + c*d2y_dx2[P_i + q_low*Vdw::Nqs] + d*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
-          dP_dq0 = (y[q_hi] - y[q_low])/dq - e*d2y_dx2[P_i + q_low*Vdw::Nqs] + f*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
+          P      = a*y[q_low] + b*y[q_hi]  + c*d2y_dx2[P_i + q_low*Nqs] + d*d2y_dx2[P_i + q_hi*Nqs];
+          dP_dq0 = (y[q_hi] - y[q_low])/dq - e*d2y_dx2[P_i + q_low*Nqs] + f*d2y_dx2[P_i + q_hi*Nqs];
 
          // --------------------------------------------------------------
          // The first term in equation 10 of SOLER.
          potential[ig] = potential[ig] + std::real(u_vdW[ig + P_i * this->pbasis] * (P + dP_dq0 * dq0_drho[ig]));
-         if (q0[ig] != q_mesh[Vdw::Nqs-1]) {
+         if (q0[ig] != q_mesh[Nqs-1]) {
             h_prefactor[ig] = h_prefactor[ig] + std::real(u_vdW[ig + P_i * this->pbasis] * dP_dq0*dq0_dgradrho[ig]);
          }
       }
@@ -654,10 +654,11 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
   double scale = 1.0 / (double)this->N;
   for(int ix=0;ix < this->pbasis;ix++) potential[ix] *= scale;
 
-double echeck = 0.0;
-for(int idx=0;idx<this->pbasis;idx++)echeck += this->total_rho[idx] * potential[idx];
-printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
-exit(0);
+  //double echeck = 0.0;
+  //for(int idx=0;idx<this->pbasis;idx++) echeck += this->total_rho[idx] * potential[idx];
+  //echeck = RmgSumAll(echeck, this->T->get_MPI_comm());
+  //rmg_printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
+
   delete [] h;
   delete [] y;
   delete [] h_prefactor;
@@ -838,14 +839,14 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
   // Nr_points*2*pi/r_max then we can't perform the interpolation. In
   // that case, a kernel file should be generated with a larger number of
   // radial points.
-  if ( k >= (double)Vdw::Nrpoints*Vdw::dk ) {
+  if ( k >= (double)Nrpoints*Vdw::dk ) {
 
-      //std::cout << "GGGGGGG  " <<  k  << "  "  << (double)Vdw::Nrpoints*Vdw::dk << std::endl;
+      //std::cout << "GGGGGGG  " <<  k  << "  "  << (double)Nrpoints*Vdw::dk << std::endl;
       throw RmgFatalException() << "k value requested is out of range in " << __FILE__ << " at line " << __LINE__ << "\n";
 
   }
 
-  for(int ix = 0;ix < Vdw::Nqs*Vdw::Nqs;ix++) kernel_of_k[ix] = 0.0;
+  for(int ix = 0;ix < Nqs*Nqs;ix++) kernel_of_k[ix] = 0.0;
 
   // This integer division figures out which bin k is in since the kernel
   // is set on a uniform grid.
@@ -855,11 +856,11 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
   k_r = modf(k/Vdw::dk, &k_ii);
   if(fabs(k_r) < this->epsr) {
 
-      for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+      for(int q1_i = 0;q1_i < Nqs;q1_i++) {
           for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
 
-               kernel_of_k[q1_i + q2_i*Vdw::Nqs] = kernel[k_i][q1_i][q2_i];
-               kernel_of_k[q2_i + q1_i*Vdw::Nqs] = kernel[k_i][q2_i][q1_i];
+               kernel_of_k[q1_i + q2_i*Nqs] = kernel[k_i][q1_i][q2_i];
+               kernel_of_k[q2_i + q1_i*Nqs] = kernel[k_i][q2_i][q1_i];
 
           }
       }
@@ -872,13 +873,13 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
   double C = (A*A*A - A) * dk2 / 6.0;
   double D = (B*B*B - B) * dk2 / 6.0;
 
-  for(int q1_i = 0;q1_i < Vdw::Nqs;q1_i++) {
+  for(int q1_i = 0;q1_i < Nqs;q1_i++) {
       for(int q2_i = 0;q2_i <= q1_i;q2_i++) {
       
-          kernel_of_k[q1_i + q2_i*Vdw::Nqs] = A*kernel[k_i][q1_i][ q2_i] + B*kernel[k_i+1][q1_i][q2_i]
+          kernel_of_k[q1_i + q2_i*Nqs] = A*kernel[k_i][q1_i][ q2_i] + B*kernel[k_i+1][q1_i][q2_i]
              +(C*d2phi_dk2[k_i][q1_i][q2_i] + D*d2phi_dk2[k_i+1][q1_i][q2_i]);
 
-          kernel_of_k[q2_i + q1_i*Vdw::Nqs] = kernel_of_k[q1_i + q2_i*Vdw::Nqs];
+          kernel_of_k[q2_i + q1_i*Nqs] = kernel_of_k[q1_i + q2_i*Nqs];
 
       }
   }
