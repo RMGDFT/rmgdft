@@ -1,4 +1,5 @@
 add_library (XC
+Functional.cpp
 xclda_libxc.c
 xclsda_spin_libxc.c
 xcgga_libxc.c

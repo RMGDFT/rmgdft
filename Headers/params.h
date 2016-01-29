@@ -112,6 +112,14 @@
 /* Size of the linear interpolation grid for the potentials */
 #define         MAX_QLIG       	(9000)
 
+/* Maximum number of points to use in the log interpolation grid */
+#define         MAX_LOGINT      (1400)
+
+/* Starting radius for the log interpolation grid */
+#define         LOGINT_START    (0.00001)
+
+/* Log interpolation grid mesh parameter */
+#define         LOGINT_MESHPARM  (1.01)
 
 /* Dimensions of shmem workspace */
 #define		MAX_PWRK	(1024)
