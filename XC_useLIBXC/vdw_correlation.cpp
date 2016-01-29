@@ -111,7 +111,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Grid parameters
   this->type = type;
   this->is_gamma = gamma_flag;
-this->is_gamma = false;
+
+  // Gamma disabled until lookup table into fft grid is completed
+  this->is_gamma = false;
+
   this->Grid = &G;
   this->T = &T;
   this->L = &L;
@@ -138,9 +141,9 @@ this->is_gamma = false;
 
   // Local storage
   this->total_rho = new double[this->pbasis];
-  this->gx = new double[this->pbasis];
-  this->gy = new double[this->pbasis];
-  this->gz = new double[this->pbasis];
+  this->gx = new double[3*this->pbasis];
+  this->gy = this->gx + this->pbasis;
+  this->gz = this->gy + this->pbasis;
   this->q0 = new double[this->pbasis]();
   this->dq0_drho = new double[this->pbasis]();
   this->dq0_dgradrho = new double[this->pbasis]();
@@ -324,22 +327,8 @@ this->is_gamma = false;
   // FFTing the u_i(k) to get the u_i(r) of SOLER equation 11.
 
 
-  double scale = 1.0 / (double)this->N;
   for(int iq = 0;iq < Vdw::Nqs;iq++) {
       pfft_execute_dft(plan_back, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
-      // Remove factor of N from the ffts
-      for(int idx = 0;idx < this->pbasis;idx++) thetas[iq*this->pbasis + idx] *= scale;
-#if 0
-      for(int ix = 0;ix < this->dimx;ix++) {
-        for(int iy = 0;iy < this->dimy;iy++) {
-          for(int iz = 0;iz < this->dimz;iz++) {
-             printf("BACKTRANSFORM  %d  %d  %d   %18.6e  %18.6e\n",ix,iy,iz,std::real(thetas[iq*this->pbasis + ix*this->dimy*this->dimz + iy*this->dimz + iz]),
-                                                std::imag(thetas[iq*this->pbasis + ix*this->dimy*this->dimz + iy*this->dimz + iz]));
-          }
-        }
-      }
-exit(0);
-#endif
       //fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]), reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]));
   }
 
@@ -362,8 +351,6 @@ Vdw::~Vdw(void)
   delete [] this->dq0_dgradrho;
   delete [] this->dq0_drho;
   delete [] this->q0;
-  delete [] this->gz;
-  delete [] this->gy;
   delete [] this->gx;
   delete [] this->total_rho;
 
@@ -527,7 +514,9 @@ double Vdw::vdW_energy(void)
                               std::conj(theta[q2_i]));
 
           }
-          if(this->plane_waves->gmags[ig] == 0.0) vdW_xc_energy /= G_multiplier;
+          // Special case for |g|=0 which is always the first g-vector on the
+          // first node
+          if((ig == 0) && (pct.gridpe == 0)) vdW_xc_energy /= G_multiplier;
       }
   }
 
@@ -542,6 +531,8 @@ double Vdw::vdW_energy(void)
 
   // Save u_vdW
   if(is_gamma) {
+      // This is not correct. I need to conjugate the inverse vectors. Will need a lookup
+      // table to map these correctly into the fft grid
       for(int ix=0;ix < this->pbasis*Vdw::Nqs;ix++) thetas[ix] = std::conj(u_vdW[ix]);
   }
   else {
@@ -586,7 +577,6 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
 
       } // end while
 
-
       if(q_low == q_hi)
            throw RmgFatalException() << "qhi == qlow" << __FILE__ << " at line " << __LINE__ << "\n";
 
@@ -594,8 +584,8 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
 
       double a = (q_mesh[q_hi] - q0[ig]) / dq;
       double b = (q0[ig] - q_mesh[q_low]) / dq;
-      double c = (a*a*a - a)*pow(dq,2.0/6.0);
-      double d = (b*b*b - b)*pow(dq,2.0/6.0);
+      double c = (a*a*a - a)*dq*dq/6.0;
+      double d = (b*b*b - b)*dq*dq/6.0;
       double e = (3.0*a*a - 1.0)*dq/6.0;
       double f = (3.0*b*b - 1.0)*dq/6.0;
 
@@ -605,8 +595,7 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
           y[P_i] = 1.0;
 
           P      = a*y[q_low] + b*y[q_hi]  + c*d2y_dx2[P_i + q_low*Vdw::Nqs] + d*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
-          dP_dq0 = y[q_hi] - y[q_low]/dq - e*d2y_dx2[P_i + q_low*Vdw::Nqs] + f*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
-
+          dP_dq0 = (y[q_hi] - y[q_low])/dq - e*d2y_dx2[P_i + q_low*Vdw::Nqs] + f*Vdw::d2y_dx2[P_i + q_hi*Vdw::Nqs];
 
          // --------------------------------------------------------------
          // The first term in equation 10 of SOLER.
@@ -617,15 +606,6 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
       }
   }
 
-//exit(0);
-//for(int ix=0;ix < this->dimx;ix++) {
-//  for(int iy=0;iy < this->dimy;iy++) {
-//    for(int iz=0;iz < this->dimz;iz++) {
-//        printf("PPPPP = %18.8e\n",potential[iz + iy*this->dimy + ix*this->dimy*this->dimx]);
-//    }
-//  }
-//}
-//exit(0);
 
   for(int icar = 0;icar < 3;icar++) {
 
@@ -643,13 +623,19 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
         if ( gradient2 > 0.0) h[ix] = h[ix] / sqrt( gradient2 );
      }
 
-     pfft_execute_dft(plan_forward, (double (*)[2])h, (double (*)[2])h);
 
+     pfft_execute_dft(plan_forward, (double (*)[2])h, (double (*)[2])h);
      for(int ix=0;ix < this->pbasis;ix++) {
-         h[ix] = i * tpiba * this->plane_waves->g[ix].a[icar] * h[ix] * this->plane_waves->gmask[ix];
+         if(this->plane_waves->gmask[ix] == 1.0) {
+             h[ix] = i * tpiba * this->plane_waves->g[ix].a[icar] * h[ix];
+         }
+         else {
+             h[ix] = std::complex<double>(0.0, 0.0);
+         }
      }
 
      if (is_gamma) {
+         // Not correct yet. Need a lookup table to map back into the fft grid
          for(int ix=0;ix < this->pbasis;ix++) {
              h[ix] = std::conj(h[ix]);
          }
@@ -657,21 +643,17 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
 
      pfft_execute_dft(plan_back, (double (*)[2])h, (double (*)[2])h);
      double scale = 1.0 / (double)this->N;
-//for(int ix=0;ix < this->pbasis;ix++)
-//printf("PCHECK = %18.6e  %18.6e\n",potential[ix],scale * std::real(h[ix]));
-//     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
-//exit(0);
+
+     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
+
   }
 
- double scale = (double)this->N / L->omega;
+
+  // Now correct for the factor of N introduced by the earlier fft
+
+  double scale = 1.0 / (double)this->N;
   for(int ix=0;ix < this->pbasis;ix++) potential[ix] *= scale;
-for(int ix=0;ix < this->dimx;ix++) {
-  for(int iy=0;iy < this->dimy;iy++) {
-    for(int iz=0;iz < this->dimz;iz++) {
-        printf("POTENTIAL = %18.8e\n",potential[ix*this->dimy*this->dimz + iy*this->dimz + iz]);
-    }
-  }
-}
+
 double echeck = 0.0;
 for(int idx=0;idx<this->pbasis;idx++)echeck += this->total_rho[idx] * potential[idx];
 printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);

@@ -58,7 +58,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   // Magnitudes of the g-vectors
   this->gmags = new double[this->pbasis]();
 
-  // Mask array which is set to 1.0 for g-vectros with frequencies below the cutoff
+  // Mask array which is set to 1.0 for g-vectors with frequencies below the cutoff
   // and 0.0 otherwise.
   this->gmask = new double[this->pbasis]();
 
@@ -102,7 +102,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               ivec[2] = iz;
 
               // On input local index is stored in ivec. On output global index
-              // is stored in ivec and the associated g-vectors is stored in g
+              // is stored in ivec and the associated g-vector is stored in g
               index_to_gvector(ivec, gvec);
               // Gamma only exclude volume with x<0
               if((ivec[0] < 0) && this->is_gamma) continue;
