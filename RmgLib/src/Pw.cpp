@@ -128,7 +128,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       }
   }
 
-  printf("G-vector count  = %d\n", this->ng);
+  //printf("G-vector count  = %d\n", this->ng);
   //printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
 
 }

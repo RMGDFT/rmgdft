@@ -133,6 +133,7 @@ public:
     void index_to_gvector(int *index, double *gvec);
     void interpolate_kernel(double k, double *kernel_of_k);
     void fft_gradient(double *x, double *gx, double *gy, double *gz);
+    void info(void);
 
 
 };

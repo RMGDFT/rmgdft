@@ -108,6 +108,9 @@ double *Vdw::d2y_dx2;
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
 
+  if((type != 1) && (type != 2))
+      throw RmgFatalException() << "Vdw type was " << type << " but only 1 or 2 is allowed. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
   // Grid parameters
   this->type = type;
   this->is_gamma = gamma_flag;
@@ -295,6 +298,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       this->initialized = true;
       
+      // Print out run parameters and references
+      this->info();
   }
 
 
@@ -946,4 +951,38 @@ void Vdw::fft_gradient(double *x, double *gx, double *gy, double *gz)
 
     delete [] cgx;
     delete [] tx;
+}
+
+void Vdw::info(void) {
+  // --------------------------------------------------------------------
+  // Here we output some of the parameters being used in the run. This is
+  // important because these parameters are read from the
+  // vdW_kernel_table file. The user should ensure that these are the
+  // parameters they were intending to use on each run.
+
+  rmg_printf("\n     ************************************************************************\n");
+  rmg_printf("     *                                                                      *\n");
+  rmg_printf("     * You are using vdW-DF, which was implemented by the Thonhauser group. *\n");
+  rmg_printf("     * Please cite the following two papers that made this development      *\n");
+  rmg_printf("     * possible and the two reviews that describe the various versions:     *\n");
+  rmg_printf("     *                                                                      *\n");
+  rmg_printf("     *   T. Thonhauser et al., PRL 115, 136402 (2015).                      *\n");
+  rmg_printf("     *   T. Thonhauser et al., PRB 76, 125112 (2007).                       *\n");
+  rmg_printf("     *   K. Berland et al., Rep. Prog. Phys. 78, 066501 (2015).             *\n");
+  rmg_printf("     *   D.C. Langreth et al., J. Phys.: Condens. Matter 21, 084203 (2009). *\n");
+  rmg_printf("     *                                                                      *\n");
+  rmg_printf("     *                                                                      *\n");
+  rmg_printf("     * If you are calculating the stress with vdW-DF, please also cite:     *\n");
+  rmg_printf("     *                                                                      *\n");
+  rmg_printf("     *   R. Sabatini et al., J. Phys.: Condens. Matter 24, 424209 (2012).   *\n");
+  rmg_printf("     *                                                                      *\n");
+  rmg_printf("     ************************************************************************\n\n");
+  
+  rmg_printf("     Carrying out vdW-DF run using the following parameters:\n");
+  rmg_printf("     Nqs    = %d  Npoints = %d  r_max = %12.8f\n", Nqs, Nrpoints, r_max );
+  rmg_printf("     qmesh  = %12.8f  %12.8f  %12.8f  %12.8f\n",q_mesh[0],q_mesh[1],q_mesh[2],q_mesh[3]);
+  for(int idx=4;idx < Nqs;idx+=4)
+      rmg_printf("              %12.8f  %12.8f  %12.8f  %12.8f\n",q_mesh[idx],q_mesh[idx+1],q_mesh[idx+2],q_mesh[idx+3]);
+  rmg_printf("\n\n");
+
 }
