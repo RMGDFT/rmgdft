@@ -21,7 +21,7 @@ void init_derweight_s (SPECIES * sp,
                        fftw_complex * rtptr_y, fftw_complex * rtptr_z, int ip, fftw_plan p1)
 {
 
-    int idx, ix, iy, iz, size, ibegin, iend;
+    int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
     double r, ax[3], bx[3], xc, yc, zc;
     double invdr, t1, hxx, hyy, hzz;
     double complex *weptrx, *weptry, *weptrz, *gwptr;
@@ -31,6 +31,8 @@ void init_derweight_s (SPECIES * sp,
 
     /* nlffdim is size of the non-local box in the double grid */
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
+    coarse_size = sp->nldim * sp->nldim * sp->nldim;
+
 
     my_malloc (weptrx, 4 * size, fftw_complex);
     if (weptrx == NULL)
@@ -103,14 +105,36 @@ void init_derweight_s (SPECIES * sp,
     }                           /* end for */
 
     /*Fourier transform and restricting G-space for all three derivatives */
-    fftw_execute_dft (p1, weptrx, gwptr);
-    pack_gftoc (sp, gwptr, rtptr_x);
+    int broot[3], jdx;
+    int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
+    int istop = 3;
+    if(npes < istop) istop = npes;
+    idx = 0;
+    while(idx < 3) {
+        for(jdx = 0;jdx < istop;jdx++) {
+            broot[idx] = jdx;
+            idx++;
+        }
+    }
 
-    fftw_execute_dft (p1, weptry, gwptr);
-    pack_gftoc (sp, gwptr, rtptr_y);
+    if(pct.gridpe == broot[0]) {
+        fftw_execute_dft (p1, weptrx, gwptr);
+        pack_gftoc (sp, gwptr, rtptr_x);
+    }
 
-    fftw_execute_dft (p1, weptrz, gwptr);
-    pack_gftoc (sp, gwptr, rtptr_z);
+    if(pct.gridpe == broot[1]) {
+        fftw_execute_dft (p1, weptry, gwptr);
+        pack_gftoc (sp, gwptr, rtptr_y);
+    }
+
+    if(pct.gridpe == broot[2]) {
+        fftw_execute_dft (p1, weptrz, gwptr);
+        pack_gftoc (sp, gwptr, rtptr_z);
+    }
+
+    MPI_Bcast(rtptr_x, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
+    MPI_Bcast(rtptr_y, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);
+    MPI_Bcast(rtptr_z, 2*coarse_size, MPI_DOUBLE, broot[2], pct.grid_comm);
 
     my_free (weptrx);
 }

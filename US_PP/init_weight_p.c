@@ -104,15 +104,37 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
     }                           /* end for */
 
-    fftw_execute_dft (p1, weptr1, gwptr);
-    pack_gftoc (sp, gwptr, r1);
+    int broot[3], jdx;
+    int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
+    int istop = 3;
+    if(npes < istop) istop = npes;
+    idx = 0;
+    while(idx < 3) {
+        for(jdx = 0;jdx < istop;jdx++) {
+            broot[idx] = jdx;
+            idx++;
+        }
+    }
 
-    fftw_execute_dft (p1, weptr2, gwptr);
-    pack_gftoc (sp, gwptr, r2);
+    if(pct.gridpe == broot[0]) {
+        fftw_execute_dft (p1, weptr1, gwptr);
+        pack_gftoc (sp, gwptr, r1);
+    }
 
+    if(pct.gridpe == broot[1]) {
+        fftw_execute_dft (p1, weptr2, gwptr);
+        pack_gftoc (sp, gwptr, r2);
+    }
 
-    fftw_execute_dft (p1, weptr3, gwptr);
-    pack_gftoc (sp, gwptr, r3);
+    if(pct.gridpe == broot[2]) {
+        fftw_execute_dft (p1, weptr3, gwptr);
+        pack_gftoc (sp, gwptr, r3);
+    }
+
+    MPI_Bcast(r1, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
+    MPI_Bcast(r2, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);
+    MPI_Bcast(r3, 2*coarse_size, MPI_DOUBLE, broot[2], pct.grid_comm);
+
 
     fftw_free (gwptr);
     fftw_free (weptr3);

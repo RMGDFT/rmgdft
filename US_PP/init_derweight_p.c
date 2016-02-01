@@ -32,8 +32,7 @@ void init_derweight_p (SPECIES * sp,
 
     invdr = 1.0 / sp->drnlig;
 
-
-    /*Number of grid points in th enon-local box in coarse and double grids */
+    /*Number of grid points in the non-local box in coarse and double grids */
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
@@ -150,35 +149,76 @@ void init_derweight_p (SPECIES * sp,
 
     }                           /* end for */
 
-    fftw_execute_dft (p1, weptr1x, gwptr);
-    pack_gftoc (sp, gwptr, r1x);
 
-    fftw_execute_dft (p1, weptr1y, gwptr);
-    pack_gftoc (sp, gwptr, r1y);
-
-    fftw_execute_dft (p1, weptr1z, gwptr);
-    pack_gftoc (sp, gwptr, r1z);
-
-
-
-    fftw_execute_dft (p1, weptr2x, gwptr);
-    pack_gftoc (sp, gwptr, r2x);
-
-    fftw_execute_dft (p1, weptr2y, gwptr);
-    pack_gftoc (sp, gwptr, r2y);
-
-    fftw_execute_dft (p1, weptr2z, gwptr);
-    pack_gftoc (sp, gwptr, r2z);
+    int broot[9], jdx;
+    int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
+    int istop = 9;
+    if(npes < istop) istop = npes;
+    idx = 0;
+    while(idx < 9) {
+        for(jdx = 0;jdx < istop;jdx++) {
+            broot[idx] = jdx;
+            idx++;
+        }
+    }
 
 
-    fftw_execute_dft (p1, weptr3x, gwptr);
-    pack_gftoc (sp, gwptr, r3x);
+    if(pct.gridpe == broot[0]) {
+        fftw_execute_dft (p1, weptr1x, gwptr);
+        pack_gftoc (sp, gwptr, r1x);
+    }
 
-    fftw_execute_dft (p1, weptr3y, gwptr);
-    pack_gftoc (sp, gwptr, r3y);
+    if(pct.gridpe == broot[1]) {
+        fftw_execute_dft (p1, weptr1y, gwptr);
+        pack_gftoc (sp, gwptr, r1y);
+    }
 
-    fftw_execute_dft (p1, weptr3z, gwptr);
-    pack_gftoc (sp, gwptr, r3z);
+    if(pct.gridpe == broot[2]) {
+        fftw_execute_dft (p1, weptr1z, gwptr);
+        pack_gftoc (sp, gwptr, r1z);
+    }
+
+
+    if(pct.gridpe == broot[3]) {
+        fftw_execute_dft (p1, weptr2x, gwptr);
+        pack_gftoc (sp, gwptr, r2x);
+    }
+
+    if(pct.gridpe == broot[4]) {
+        fftw_execute_dft (p1, weptr2y, gwptr);
+        pack_gftoc (sp, gwptr, r2y);
+    }
+
+    if(pct.gridpe == broot[5]) {
+        fftw_execute_dft (p1, weptr2z, gwptr);
+        pack_gftoc (sp, gwptr, r2z);
+    }
+
+
+    if(pct.gridpe == broot[6]) {
+        fftw_execute_dft (p1, weptr3x, gwptr);
+        pack_gftoc (sp, gwptr, r3x);
+    }
+
+    if(pct.gridpe == broot[7]) {
+        fftw_execute_dft (p1, weptr3y, gwptr);
+        pack_gftoc (sp, gwptr, r3y);
+    }
+
+    if(pct.gridpe == broot[8]) {
+        fftw_execute_dft (p1, weptr3z, gwptr);
+        pack_gftoc (sp, gwptr, r3z);
+    }
+
+    MPI_Bcast(r1x, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
+    MPI_Bcast(r1y, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);
+    MPI_Bcast(r1z, 2*coarse_size, MPI_DOUBLE, broot[2], pct.grid_comm);
+    MPI_Bcast(r2x, 2*coarse_size, MPI_DOUBLE, broot[3], pct.grid_comm);
+    MPI_Bcast(r2y, 2*coarse_size, MPI_DOUBLE, broot[4], pct.grid_comm);
+    MPI_Bcast(r2z, 2*coarse_size, MPI_DOUBLE, broot[5], pct.grid_comm);
+    MPI_Bcast(r3x, 2*coarse_size, MPI_DOUBLE, broot[6], pct.grid_comm);
+    MPI_Bcast(r3y, 2*coarse_size, MPI_DOUBLE, broot[7], pct.grid_comm);
+    MPI_Bcast(r3z, 2*coarse_size, MPI_DOUBLE, broot[8], pct.grid_comm);
 
 
 
