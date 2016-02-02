@@ -208,7 +208,9 @@ void initialize(int argc, char **argv)
     num_images = 1;
     lbfgs_init(ct.num_ions, num_images);
 
-    rho = new double[FP0_BASIS];
+    int spinfac = 1;
+    if(ct.spin_flag) spinfac = 2;
+    rho = new double[spinfac * FP0_BASIS];
     rhocore = new double[FP0_BASIS];
     rhoc = new double[FP0_BASIS];
     vh = new double[FP0_BASIS];
@@ -217,9 +219,9 @@ void initialize(int argc, char **argv)
     if (ct.xctype == MGGA_TB09) 
     	tau = new double[FP0_BASIS];
 
-    /* for spin polarized calculation, allocate memory for density of the opposite spin */
+    /* for spin polarized calculation set pointer to memory for density of the opposite spin */
     if(ct.spin_flag)
-            rho_oppo = new double[FP0_BASIS];
+            rho_oppo = rho + FP0_BASIS;
 
 
     /* Initialize some k-point stuff */
@@ -387,9 +389,6 @@ void report ()
       mulliken (states);*/
 
 
-    /* Release the memory for density of opposite spin */
-    if (ct.spin_flag)
-        delete [] rho_oppo;
     if (ct.xctype == MGGA_TB09) 
         delete [] tau;
 
