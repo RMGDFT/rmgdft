@@ -294,6 +294,7 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int nxgrid, int nygrid, int nzgrid, double * xcstart, double * ycstart, double * zcstart);
 
 double linint (double *y, double rv, double invdr);
+double grid_interp (double * y, double r, double invdr, int type);
 void my_barrier (void);
 
 

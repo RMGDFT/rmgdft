@@ -209,4 +209,7 @@
 #define INIT_GAUSSIAN  4
 #define Restart_TDDFT  5
 
+// Interpolation type flags for pseudopotentials
+#define LINEAR_INTERPOLATION 0
+#define LOGARITHMIC_INTERPOLATION 1
 #endif /* CONST_H_INCLUDED */

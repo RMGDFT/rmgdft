@@ -362,6 +362,14 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   double *potential = new double[this->pbasis]();
   this->get_potential(potential, thetas);
+
+  // --------------------------------------------------------------------
+  // The integral of rho(r)*potential(r) for the vtxc output variable.
+  vtxc = 0.0;
+  for(int ix=0;ix<this->pbasis;ix++) vtxc += rho_valence[ix] * potential[ix];
+  vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
+  vtxc = vtxc * L.omega / (double)this->N;
+  
    
   for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
@@ -686,6 +694,7 @@ void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
   //for(int idx=0;idx<this->pbasis;idx++) echeck += this->total_rho[idx] * potential[idx];
   //echeck = RmgSumAll(echeck, this->T->get_MPI_comm());
   //rmg_printf("ECHECK = %18.8e\n",L->omega * echeck / (double)this->N);
+
 
   delete [] h;
   delete [] y;

@@ -19,3 +19,10 @@ void rmg_error_handler(char *message)
 #endif
     MPI_Abort( MPI_COMM_WORLD, 0 );
 }
+
+// Here for fortran routines
+void errore_(char *where, char *message, int ierr)
+{
+  printf("%d  %s\n", where, message);
+
+}

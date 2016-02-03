@@ -24,6 +24,7 @@
 #ifndef RMG_Functional_H
 #define RMG_Functional_H 1
 
+#include <string>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -33,13 +34,58 @@
 class Functional {
 
 private:
+    // BaseGrid class
+    BaseGrid *Grid;
+
+    // TradeImages object to use
+    TradeImages *T;
+
+    // Lattice object
+    Lattice *L;
+
+    int pbasis;     // Grid points on this processing node
+    double hxgrid;
+    double hygrid;
+    double hzgrid;
+    int dimx;
+    int dimy;
+    int dimz;
+
+    // Total number of grid points
+    int N;
+
+
+
+    //
+    std::string dft_name;
+
+    static int iexch;           // type of exchange
+    static int icorr;           // type of correlation
+    static int igcx;            // type of gradient correction on exchange
+    static int igcc;            // type of gradient correction on correlation
+    static int inlc;            // type of non local correction on correlation
+    static int imeta;           // type of meta-GGA
+
+    void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
 
 public:
-   Functional (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
+    Functional (BaseGrid &G, 
+                Lattice &L, 
+                TradeImages &T, 
+                bool gamma_flag);
+
     ~Functional(void);
 
+    void set_dft_from_name(char *newdft_name);
+    void set_dft_from_name(std::string newdft_name);
+    bool dft_is_gradient(void);
+    bool dft_is_meta(void);
+    bool dft_is_hybrid(void);
+    bool igcc_is_lyp(void);
+    bool dft_is_nonlocc(void);
+    bool dft_has_finite_size_correction(void);
+    void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag );
 
 };
-
 
 #endif

@@ -90,7 +90,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")
     set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
-    set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -frepo -cpp -c")
+    set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -frepo -cpp -D__LIBXC=1 -c")
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++ -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
@@ -519,6 +519,7 @@ add_subdirectory (MG)
 add_subdirectory (Misc) 
 add_subdirectory (US_PP) 
 add_subdirectory (XC_useLIBXC) 
+add_subdirectory (XC) 
 add_subdirectory (InternalPseudo) 
 
 # Target specific code subdirectories
