@@ -38,10 +38,12 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
+#include "Functional.h"
 #include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
 #include "ErrorFuncs.h"
 #include "RmgException.h"
+#include "Functional.h"
 #if USE_PFFT
     #include "pfft.h"
 #endif
@@ -450,7 +452,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
     if (ct.runflag != RESTART)
     {
-        get_vxc (rho, rho_oppo, rhocore, vxc);
+        //get_vxc (rho, rho_oppo, rhocore, vxc);
+        double etxc, vtxc;
+        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+
 
         if (ct.spin_flag)
         {

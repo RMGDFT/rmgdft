@@ -34,6 +34,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "Functional.h"
+#include "FiniteDiff.h"
 #include "RmgException.h"
 #include "FiniteDiff.h"
 #include "xc.h"
@@ -53,6 +54,7 @@ extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double 
                                   double *v1x, double *v2x, double *v1c, double *v2c);
 
 
+bool Functional::dft_set=false;
 
 #define SMALL_CHARGE 1.0e-10
 
@@ -94,7 +96,6 @@ Functional::Functional (
               G.get_NY_GRID(G.default_FG_RATIO) *
               G.get_NZ_GRID(G.default_FG_RATIO);
 
-    this->set_dft_from_name("pbe");
 }
 
 
@@ -109,12 +110,24 @@ Functional::~Functional(void)
 
 void Functional::set_dft_from_name(char *newdft_name) 
 {
-    __funct_MOD_set_dft_from_name(newdft_name, std::strlen(newdft_name) );
+    if(!this->dft_set) {
+        __funct_MOD_set_dft_from_name(newdft_name, std::strlen(newdft_name) );
+    }
+    else {
+        std::cout << "Warning! You have attempted to reset the dft type which is a programming error. Ignoring." << std::endl;
+    }
+    this->dft_set = true;
 }
 
 void Functional::set_dft_from_name(std::string newdft_name)
 {
-    __funct_MOD_set_dft_from_name(newdft_name.c_str(), std::strlen(newdft_name.c_str()) );
+    if(!this->dft_set) {
+        __funct_MOD_set_dft_from_name(newdft_name.c_str(), std::strlen(newdft_name.c_str()) );
+    }
+    else {
+        std::cout << "Warning! You have attempted to reset the dft type which is a programming error. Ignoring." << std::endl;
+    }
+    this->dft_set = true;
 }
 
 bool Functional::dft_is_gradient(void)
@@ -196,6 +209,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
    vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
+   //printf("GGGGGGGG  %20.12f  %20.12f\n",vtxc,etxc);
 
 }
 
@@ -212,20 +226,30 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     const double epsg = 1.0e-10;
 
 
-    // calculate the gradient of rho + rho_core in real space
     double *rhoout = new double[this->pbasis];
     double *grho = new double[3*this->pbasis];
+    double *vxc2 = new double[this->pbasis]();
+    double *d2rho = new double[this->pbasis];
     double *gx = grho;
     double *gy = gx + this->pbasis;
     double *gz = gy + this->pbasis;
     double *h = new double[3*this->pbasis]();
 
+    // Get rho plus rhocore
     for(int ix=0;ix < this->pbasis;ix++) rhoout[ix] = rho[ix] + rho_core[ix];
 
+    // calculate the gradient of rho + rho_core
     CPP_app_grad_driver (this->L, this->T, rhoout, gx, gy, gz,
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
+
+
+    // and the Laplacian
+    //app6_del2(rhoout, d2rho, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid);
+    CPP_app_del2_driver (this->L, this->T, rhoout, d2rho, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT);
+
+
 
     for(int k=0;k < this->pbasis;k++) {
 
@@ -237,21 +261,15 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
             if(grho2[0] > epsg) {
                 double sx, sc, v1x, v2x, v1c, v2c;
                 double segno = 1.0;
-                if(fabs(rhoout[k]) < 0.0)segno = -1.0; 
+                if(rhoout[k] < 0.0)segno = -1.0; 
 
                 __funct_MOD_gcxc( &arho, &grho2[0], &sx, &sc, &v1x, &v2x, &v1c, &v2c );
                 //
                 // first term of the gradient correction : D(rho*Exc)/D(rho)
                 v[k] = v[k] +( v1x + v1c );
                 //
-                //
-                // ... h contains :
-                // 
-                // ...    D(rho*Exc) / D(|grad rho|) * (grad rho) / |grad rho|
-                // 
-                h[k] = ( v2x + v2c ) * gx[k];
-                h[k+pbasis] = ( v2x + v2c ) * gy[k];
-                h[k+2*pbasis] = ( v2x + v2c ) * gz[k];
+                //  used later for second term of the gradient correction
+                vxc2[k] = ( v2x + v2c );
                 // 
                 vtxcgc = vtxcgc+( v1x + v1c ) * ( rhoout[k] - rho_core[k] );
                 etxcgc = etxcgc+( sx + sc ) * segno;
@@ -268,20 +286,23 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     // 
     double *dh = new double[this->pbasis]();
 
-    for(int icar=0;icar < 3;icar++) {
+    CPP_app_grad_driver (this->L, this->T, vxc2, 
+                         h, &h[this->pbasis], &h[2*this->pbasis],
+                         this->dimx, this->dimy, this->dimz, 
+                         this->hxgrid, this->hygrid, this->hzgrid, 
+                         APP_CI_EIGHT);
 
-        CPP_app_grad_driver (this->L, this->T, &h[icar*this->pbasis], 
-                            grho, &grho[this->pbasis], &grho[2*this->pbasis],
-                             this->dimx, this->dimy, this->dimz, 
-                             this->hxgrid, this->hygrid, this->hzgrid, 
-                             APP_CI_EIGHT);
-        for(int ix=0;ix < this->pbasis;ix++)dh[ix] += grho[icar*this->pbasis+ix];
+    for(int ix=0;ix < this->pbasis;ix++) {
+        v[ix] -= ( h[ix] * gx[ix] +
+                      h[ix+this->pbasis] * gy[ix] + 
+                      h[ix+2*this->pbasis] * gz[ix] ) ;
+        v[ix] -= vxc2[ix] * d2rho[ix];
+
     }
-    for(int ix=0;ix < this->pbasis;ix++) v[ix] -= dh[ix];
-    for(int ix=0;ix < this->pbasis;ix++) vtxcgc -= rhoout[ix] * dh[ix];
-printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n", 
-    2.0*L->omega*RmgSumAll(vtxcgc, this->T->get_MPI_comm())/(double)this->N,
-    2.0*L->omega*RmgSumAll(etxcgc, this->T->get_MPI_comm())/(double)this->N);
+
+    //printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n", 
+    //2.0*L->omega*RmgSumAll(vtxcgc, this->T->get_MPI_comm())/(double)this->N,
+    //2.0*L->omega*RmgSumAll(etxcgc, this->T->get_MPI_comm())/(double)this->N);
 
     vtxc = vtxc + L->omega * vtxcgc / (double)this->N;
     etxc = etxc + L->omega * etxcgc / (double)this->N;
@@ -289,6 +310,8 @@ printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n",
 
     delete [] dh;
     delete [] h;
+    delete [] vxc2;
+    delete [] d2rho;
     delete [] grho;
     delete [] rhoout;
 

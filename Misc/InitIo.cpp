@@ -71,6 +71,8 @@
 #include "GlobalSums.h"
 #include "RmgException.h"
 #include "InputKey.h"
+#include "InputOpts.h"
+#include "Functional.h"
 #include "hybrid.h"
 
 #if GPU_ENABLED
@@ -283,6 +285,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         }
 
         fclose(fhand);
+    }
+
+    // Set up exchange correlation type
+    InputKey *ik = ControlMap["exchange_correlation_type"];
+    if(*ik->Readintval != AUTO_XC) {
+        std::string xc_type = reordered_xc_type[*ik->Readintval];
+        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+        F.set_dft_from_name(xc_type.c_str());
     }
 
 }

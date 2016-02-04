@@ -56,15 +56,7 @@ private:
 
 
 
-    //
-    std::string dft_name;
-
-    static int iexch;           // type of exchange
-    static int icorr;           // type of correlation
-    static int igcx;            // type of gradient correction on exchange
-    static int igcc;            // type of gradient correction on correlation
-    static int inlc;            // type of non local correction on correlation
-    static int imeta;           // type of meta-GGA
+    static bool dft_set;
 
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
 

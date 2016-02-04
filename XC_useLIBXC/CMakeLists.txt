@@ -1,5 +1,4 @@
 add_library (XC
-Functional.cpp
 xclda_libxc.c
 xclsda_spin_libxc.c
 xcgga_libxc.c
@@ -19,6 +18,4 @@ mix_tau.c
 #quench_tau.c
 #relax_tau.c
 #scf_tau.c
-vdw_correlation.cpp
-vdw_splines.f90
 )

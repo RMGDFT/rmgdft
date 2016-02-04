@@ -44,6 +44,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
+#include "Functional.h"
 #include "../Headers/prototypes.h"
 #include "vdW.h"
 
@@ -107,14 +108,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     /* Generate exchange-correlation potential */
     RmgTimer *RT1 = new RmgTimer("Scf steps: Get vxc");
-    get_vxc (rho, rho_oppo, rhocore, vxc);
+    double etxc, vtxc;
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+    delete F;
     delete(RT1);
 
-    double etxc, vtxc;
-    int type = 1;
-    double *vdw_v = new double[P0_BASIS];
-    Vdw *vdw = new Vdw (*Rmg_G, Rmg_L, *Rmg_T, 1, rho, rhocore, etxc, vtxc, vdw_v);
-    delete [] vdw_v;
+
 
     if (spin_flag)        
     {
@@ -404,7 +404,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         }
 
     }
-
+CONVERGED=false;
     return CONVERGED;
 }                               /* end scf */
 

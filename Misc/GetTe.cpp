@@ -66,6 +66,7 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
+#include "Functional.h"
 #include "GlobalSums.h"
 #include "transition.h"
 
@@ -154,7 +155,10 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Evaluate XC energy and potential */
-    get_vxc_exc(nrho, nrho_oppo, vxc, exc, ct.xctype);
+    double vtxc;
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
+    delete F;
 
 
     esum[1] = 0.0;
@@ -168,11 +172,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
         	esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
 		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
         }
-    }
-    else
-    {
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-        	esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
     }
 
 
@@ -191,13 +190,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     else
     	GlobalSums (esum, 3, pct.grid_comm);
 
-
     /*Electrostatic E */
     ct.ES = 0.5 * vel * esum[0];
-
-    /* XC E */
-    ct.XC = vel * esum[1];
-
 
     /*XC potential energy */
     xcstate = vel * esum[2];
