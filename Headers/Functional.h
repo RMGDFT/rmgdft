@@ -55,7 +55,7 @@ private:
     int N;
 
 
-
+    bool gammaflag;
     static bool dft_set;
 
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
@@ -76,7 +76,8 @@ public:
     bool igcc_is_lyp(void);
     bool dft_is_nonlocc(void);
     bool dft_has_finite_size_correction(void);
-    void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag );
+    void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
+    void nlc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
 
 };
 

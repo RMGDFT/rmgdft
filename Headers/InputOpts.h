@@ -161,7 +161,6 @@ static std::string reordered_xc_type[] = {
         {"tpss"},
         {"m06l"},
         {"tb09"},
-        {"MGGA TB09"},
         {"pbe0"},
         {"hse"},
         {"b3lyp"},

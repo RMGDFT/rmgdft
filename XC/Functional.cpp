@@ -52,7 +52,7 @@ extern "C" void __funct_MOD_xc (double *rho, double *ex, double *ec, double *vx,
 extern "C" void __funct_MOD_nlc (double *rho_valence, double *rho_core, int *nspin, double *ec, double *vx, double *vc);
 extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double *sc, 
                                   double *v1x, double *v2x, double *v1c, double *v2c);
-
+extern "C" int __funct_MOD_get_inlc(void);
 
 bool Functional::dft_set=false;
 
@@ -84,6 +84,7 @@ Functional::Functional (
     this->Grid = &G;
     this->T = &T;
     this->L = &L;
+    this->gammaflag = gamma_flag;
 
     this->pbasis = G.get_P0_BASIS(G.default_FG_RATIO);
     this->hxgrid = G.get_hxgrid(G.default_FG_RATIO);
@@ -160,7 +161,7 @@ bool Functional::dft_is_nonlocc(void)
     return __funct_MOD_dft_is_nonlocc();
 }
 
-void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag )
+void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
 {
 
    double vx[2]{0.0,0.0}, vc[2]{0.0,0.0}, rhoneg[2]{0.0,0.0};
@@ -203,14 +204,37 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
    // And finally any non-local corrections
    if(this->dft_is_nonlocc()) {
-       int nspin = spinflag + 1;
-       __funct_MOD_nlc( rho, rho_core, &nspin, &etxc, &vtxc, v );
+       this->nlc(rho, rho_core, etxc, vtxc, v, spinflag);
+       //__funct_MOD_nlc( rho, rho_core, &nspin, &etxc, &vtxc, v );
    }
 
    vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
    //printf("GGGGGGGG  %20.12f  %20.12f\n",vtxc,etxc);
 
+}
+
+// Applies non-local corrections for the correlation
+void Functional::nlc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
+{
+    int inlc = __funct_MOD_get_inlc();
+
+    // No non-local correction just return
+    if(inlc == 0) return;
+
+    // inlc == 1 corresponds to vdW-DF1 and is the only one programmed currently
+    if(inlc == 1) {
+
+        Vdw *vdw = new Vdw (*this->Grid, *this->L, *this->T, 1, rho, rho_core, etxc, vtxc, v, this->gammaflag);
+
+        delete vdw;
+
+    }
+    else {
+        throw RmgFatalException() << "Non-local correlation correction type not programmed" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+    }
+    
 }
 
 // Applies any gradient corrections

@@ -367,7 +367,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // The integral of rho(r)*potential(r) for the vtxc output variable.
   vtxc = 0.0;
   for(int ix=0;ix<this->pbasis;ix++) vtxc += rho_valence[ix] * potential[ix];
-  vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
+//  vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
   vtxc = vtxc * L.omega / (double)this->N;
   
    
@@ -561,9 +561,12 @@ double Vdw::vdW_energy(std::complex<double> *thetas)
   // for the reciprocal integral is (2pi)^3/omega which cancels one of the omega^2 terms
   // from Eq. 9 of Soler while the (2pi)^3 is cancelled by the implicit factor present
   // in k.
+  // We skip the sum over processors for the returned quantity since that is the convention
+  // followed in higher level routines where vdW_xc_energy is added to the other components
+  // and then summed
+  vdW_xc_energy = 0.5 * vdW_xc_energy * L->omega / (double)this->N / (double)this->N;
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
-  vdW_xc_energy = 0.5 * t1 * L->omega / (double)this->N / (double)this->N;
-  rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", vdW_xc_energy);
+  rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", t1);
 
   // Save u_vdW
   if(is_gamma) {
