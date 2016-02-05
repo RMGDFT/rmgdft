@@ -404,7 +404,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         }
 
     }
-CONVERGED=false;
+
     return CONVERGED;
 }                               /* end scf */
 
