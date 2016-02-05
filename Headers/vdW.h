@@ -42,6 +42,8 @@ extern "C" {void __vdw_splines_MOD_initialize_spline_interpolation (double *x, c
 #define  spline_interpolation  __vdw_splines_MOD_spline_interpolation
 #define  initialize_spline_interpolation  __vdw_splines_MOD_initialize_spline_interpolation
 
+#ifdef __cplusplus
+
 class Vdw {
 
 private:
@@ -162,4 +164,5 @@ public:
 
 
 
+#endif
 #endif

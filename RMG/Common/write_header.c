@@ -27,6 +27,7 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
+#include "Functional.h"
 #if !(_WIN32 || _WIN64)
 #include "svnrev.h"
 #endif
@@ -265,40 +266,7 @@ void write_header (void)
     }
 
 
-    switch (ct.xctype)
-    {
-    case LDA_PZ81:             /* LDA Perdew Zunger 81 */
-        printf ("    XC using LDA with Perdew-Zunger 81\n");
-        break;
-
-    case GGA_BLYP:
-        printf ("    XC using GGA with BLYP\n");
-        break;
-
-    case GGA_XB_CP:            /* GGA X-Becke C-Perdew */
-        printf ("    XC using GGA with X-Becke and C-Perdew\n");
-        break;
-
-    case GGA_XP_CP:            /* GGA X-Perdew C-Perdew */
-        printf ("    XC using GGA with X-Perdew and C-Perdew\n");
-        break;
-
-    case GGA_PBE:
-        printf ("    XC using GGA with PBE\n");
-        break;
-
-    case VDW:
-        printf ("    XC using VDW\n");
-        break;
-
-    case MGGA_TB09:
-        printf ("    XC using meta-GGA with TB09\n");
-        break;
-
-    default:
-        error_handler ("Unknown exchange-correlation functional");
-
-    }                           /* end switch */
+    printf("    XC using %s\n", c_get_dft_name());
 
 
     printf ("\n");

@@ -24,12 +24,18 @@
 #ifndef RMG_Functional_H
 #define RMG_Functional_H 1
 
+
+
+#ifdef __cplusplus
 #include <string>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "vdW.h"
 #include "xc.h"
+
+// C interface functions
+extern "C" const char *c_get_dft_name(void);
 
 class Functional {
 
@@ -58,6 +64,7 @@ private:
     bool gammaflag;
     static bool dft_set;
 
+
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
 
 public:
@@ -69,6 +76,7 @@ public:
     ~Functional(void);
 
     void set_dft_from_name(char *newdft_name);
+    const char *get_dft_name(void);
     void set_dft_from_name(std::string newdft_name);
     bool dft_is_gradient(void);
     bool dft_is_meta(void);
@@ -79,6 +87,10 @@ public:
     void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
     void nlc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
 
+    static std::string saved_dft_name;
 };
 
+#else
+const char *c_get_dft_name(void);
+#endif
 #endif

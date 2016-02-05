@@ -42,6 +42,7 @@
 #include "transition.h"
 
 extern "C" void __funct_MOD_set_dft_from_name( const char *name, std::size_t len );
+extern "C" char *__funct_MOD_get_dft_name(void);
 extern "C" bool __funct_MOD_dft_is_gradient(void);
 extern "C" bool __funct_MOD_dft_is_meta(void);
 extern "C" bool __funct_MOD_dft_is_hybrid(void);
@@ -55,6 +56,7 @@ extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double 
 extern "C" int __funct_MOD_get_inlc(void);
 
 bool Functional::dft_set=false;
+std::string Functional::saved_dft_name;
 
 #define SMALL_CHARGE 1.0e-10
 
@@ -113,6 +115,7 @@ void Functional::set_dft_from_name(char *newdft_name)
 {
     if(!this->dft_set) {
         __funct_MOD_set_dft_from_name(newdft_name, std::strlen(newdft_name) );
+        saved_dft_name = newdft_name;
     }
     else {
         std::cout << "Warning! You have attempted to reset the dft type which is a programming error. Ignoring." << std::endl;
@@ -120,10 +123,19 @@ void Functional::set_dft_from_name(char *newdft_name)
     this->dft_set = true;
 }
 
+const char *Functional::get_dft_name(void)
+{
+    if(!dft_set) {
+        throw RmgFatalException() << "Error! get_dft_name called before dft type was set." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+    return saved_dft_name.c_str();
+}
+
 void Functional::set_dft_from_name(std::string newdft_name)
 {
     if(!this->dft_set) {
         __funct_MOD_set_dft_from_name(newdft_name.c_str(), std::strlen(newdft_name.c_str()) );
+        saved_dft_name = newdft_name;
     }
     else {
         std::cout << "Warning! You have attempted to reset the dft type which is a programming error. Ignoring." << std::endl;
@@ -340,4 +352,10 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     delete [] rhoout;
 
 
+}
+
+
+extern "C" const char *c_get_dft_name(void)
+{
+    return Functional::saved_dft_name.c_str();
 }
