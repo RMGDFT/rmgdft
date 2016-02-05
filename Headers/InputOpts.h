@@ -97,6 +97,8 @@ static std::unordered_map<std::string, int> z_average_output_mode = {
         {"potential and charge density", 1},
         {"wave functions", 2}};
 
+// The integer value maps to the position in reordered_xc_type
+// immediately following
 static std::unordered_map<std::string, int> exchange_correlation_type = {
         {"pz", 0},
         {"PZ", 0},
@@ -119,8 +121,11 @@ static std::unordered_map<std::string, int> exchange_correlation_type = {
         {"PW86PBE", 6},
         {"b86bpbe", 7},
         {"pbesol", 8},
+        {"PBESOL", 8},
         {"q2d", 9},
+        {"Q2D", 9},
         {"hcth", 10},
+        {"HCTH", 10},
         {"olyp", 11},
         {"wc", 12},
         {"sogga", 13},
@@ -130,10 +135,15 @@ static std::unordered_map<std::string, int> exchange_correlation_type = {
         {"tpss", 17},
         {"m06l", 18},
         {"tb09", 19},
+        {"TB09", 19},
         {"MGGA TB09", 19},
+        {"mgga tb09", 19},
         {"pbe0", 20},
+        {"PBE0", 20},
         {"hse", 21},
+        {"HSE", 21},
         {"b3lyp", 22},
+        {"B3LYP", 22},
         {"gaupbe", 23},
         {"vdw-df", 24},
         {"VDW-DF", 24},

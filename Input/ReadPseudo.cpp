@@ -23,6 +23,7 @@
 #include "rmg_error.h"
 #include "RmgException.h"
 #include "MapElements.h"
+#include "InputOpts.h"
 #include "transition.h"
 
 
@@ -65,7 +66,6 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
    
    std::string delims = " \t\n";
 
-   bool uniform = true;
    std::vector<std::string> short_names;
 
    for(int isp = 0;isp < nspecies;isp++) {
