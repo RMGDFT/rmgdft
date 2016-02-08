@@ -258,6 +258,7 @@ void LoadUpf(SPECIES *sp)
 
     // Number of atomic orbitals
     sp->num_atomic_waves = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_wfc", 0);
+    sp->num_atomic_waves_m = 0;
     if(sp->num_atomic_waves  > 0) {
 
         sp->atomic_wave = new double *[sp->num_atomic_waves];
@@ -270,6 +271,11 @@ void LoadUpf(SPECIES *sp)
             sp->atomic_wave[iwf] = UPF_read_mesh_array(PP_CHI, r_total, ibegin);
 
             sp->atomic_wave_l[iwf] = upf_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
+            if(sp->atomic_wave_l[iwf] == 0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
+            if(sp->atomic_wave_l[iwf] == 1) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;
+            if(sp->atomic_wave_l[iwf] == 2) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 5;
+            if(sp->atomic_wave_l[iwf] == 3) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 7;
+
             //sp->atomic_wave_label[j][0] =
             sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
 

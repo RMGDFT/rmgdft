@@ -169,9 +169,17 @@ typedef struct
     /** Sorting flag for wavefunctions. Read from input file. 0=no sort, 1=sort */
     bool sortflag;
 
-    /** Number of states */
+    /** Number of states. May switch between init_states and run_states */
     int num_states;
 
+    /** Number of initialization states */
+    int init_states;
+
+    /** Number of run states */
+    int run_states;
+
+    /** total number of atomic orbitals including the m dependency */
+    int total_atomic_orbitals;
 
     /*Number of states for spin up and down used for initialization*/
     int num_states_up, num_states_down;

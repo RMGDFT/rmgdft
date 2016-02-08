@@ -513,7 +513,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
-
+    ct.num_states = ct.run_states;
+    for (kpt = 0; kpt < ct.num_kpts; kpt++) Kptr[kpt]->nstates = ct.run_states;
 
 
 }                               /* end init */

@@ -213,6 +213,7 @@ void CPP_app_smooth (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
 template <typename RmgType>
 void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
 
+int CountAtomicOrbitals(void);
 
 
 #endif

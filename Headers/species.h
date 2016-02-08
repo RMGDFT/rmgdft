@@ -62,12 +62,19 @@ typedef struct
 
     /*Radius for milliken analysis*/
     double mill_radius;
+
     /*Radius in number of grid points*/
     int mill_dim;
+
     /*Number of radial atomic wave functions - these depend on l only, not on m*/
     int num_atomic_waves;
+
     /*l-numbers for states for which we have atomic orbitals*/
     int atomic_wave_l[5];
+
+    /* total number of atomic wave functions including m-dependence */
+    int num_atomic_waves_m;
+
     double atomic_wave_oc[5];
     
     char atomic_wave_label[5][3];

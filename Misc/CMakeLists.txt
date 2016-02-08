@@ -1,4 +1,5 @@
 add_library (Misc
+CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
 open_restart_file.c

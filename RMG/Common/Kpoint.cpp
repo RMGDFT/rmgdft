@@ -180,9 +180,33 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     }
 
 
-
     /* re-assign the number of states for global variables */
     if(ct.num_states <= 0 ) ct.num_states = num_states_spf[0];
+
+    // When LCAO init is selected we may use more orbitals during the initialization
+    // than during the rest of the run so we need to count the number of atomic orbitals
+    // here and allocate state structures for the largest possible number of states
+    ct.total_atomic_orbitals = CountAtomicOrbitals();
+    if (Verify ("start_mode","LCAO Start", ControlMap)) {
+        ct.init_states = ct.total_atomic_orbitals;
+        if(ct.init_states < ct.num_states) {
+            ct.init_states = ct.num_states;
+            ct.run_states = ct.num_states;
+        }
+        else {
+            ct.run_states = ct.num_states;
+        }
+        rmg_printf("Using %d atomic orbitals for initial wavefunctions.\n", ct.init_states);
+    }
+    else {
+        ct.init_states = ct.num_states;
+        ct.run_states = ct.num_states;
+    }
+
+
+    // Set ct.num_states to ct.init_states. After init it is set to ct.run_states
+    ct.num_states = ct.init_states;
+
 
     /* Allocate memory for the states */
     this->Kstates = new State<KpointType>[ct.num_states];
