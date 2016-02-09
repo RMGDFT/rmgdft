@@ -35,6 +35,7 @@
 #define APP_CI_FOURTH 4
 #define APP_CI_SIXTH 6
 #define APP_CI_EIGHT 8
+#define APP_CI_TEN 10
 
 #ifdef __cplusplus
 #include "Lattice.h"
@@ -113,6 +114,9 @@ public:
     void app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
 
+    template <typename RmgType>
+    void app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+                                   double gridhx, double gridhy, double gridhz);
 
 
 };
