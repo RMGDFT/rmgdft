@@ -432,7 +432,7 @@ double ylm(int l, double *r);
 int listlen (FILE * fh, char *id);
 void print_matrix(double *b, int n, int ldb);
 void sl_init(int *ictxt, int size);
-void sl_exit(int ictxt);
+void sl_exit(int ictxt, int NotDone);
 void set_desca(int *desca, int *ictxt, int size);
 void distribute_mat(int *desca, double *bigmat, double *dismat, int *size);
 void matinit(int *desca, double *dismat, double *globmat, int size);

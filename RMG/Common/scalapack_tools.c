@@ -197,10 +197,12 @@ void sl_init (int *ictxt, int size)
 }
 
 
-void sl_exit (int ictxt)
+void sl_exit (int ictxt, int NotDone)
 {
     Cblacs_gridexit (ictxt);
     pct.scalapack_pe = 0;
+    Cblacs_exit(NotDone);
+    my_free(pct.scalapack_desca);
 }
 
 

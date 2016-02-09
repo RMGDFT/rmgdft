@@ -515,7 +515,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     ct.num_states = ct.run_states;
     for (kpt = 0; kpt < ct.num_kpts; kpt++) Kptr[kpt]->nstates = ct.run_states;
+    if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap) && (ct.num_states != ct.init_states)) {
 
+#if SCALAPACK_LIBS
+        // In case matrix sizes changed
+        if (pct.scalapack_pe) {
+            sl_exit(pct.ictxt, 1);
+        }
+        sl_init (&pct.ictxt, ct.num_states);
+        set_desca (pct.desca, &pct.ictxt, ct.num_states);
+#endif
+
+    }
 
 }                               /* end init */
 
