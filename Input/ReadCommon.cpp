@@ -312,6 +312,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The number of unoccupied orbitals.\n", 
                      "unoccupied_states_per_kpoint must be greater than 0. Terminating.\n");
 
+    If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
+                     "Extra random wavefunctions to use for LCAO starts.\n", 
+                     "extra_random_lcao_states must be greater than 0. Terminating.\n");
+
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "number of excess electrons in the system (useful for doped systems)\n",

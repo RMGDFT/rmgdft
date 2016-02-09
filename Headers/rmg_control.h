@@ -175,6 +175,9 @@ typedef struct
     /** Number of initialization states */
     int init_states;
 
+    /** Extra random states used for LCAO start above and beyond the atomic orbitals. */
+    int extra_random_lcao_states;
+
     /** Number of run states */
     int run_states;
 

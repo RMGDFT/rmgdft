@@ -188,7 +188,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // here and allocate state structures for the largest possible number of states
     ct.total_atomic_orbitals = CountAtomicOrbitals();
     if (Verify ("start_mode","LCAO Start", ControlMap)) {
-        ct.init_states = ct.total_atomic_orbitals;
+        ct.init_states = ct.total_atomic_orbitals + ct.extra_random_lcao_states;
         if(ct.init_states < ct.num_states) {
             ct.init_states = ct.num_states;
             ct.run_states = ct.num_states;
@@ -196,7 +196,14 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         else {
             ct.run_states = ct.num_states;
         }
-        rmg_printf("Using %d atomic orbitals for initial wavefunctions.\n", ct.init_states);
+        if(!ct.extra_random_lcao_states) {
+            rmg_printf("Using %d atomic orbitals for initial wavefunctions.\n", ct.total_atomic_orbitals);
+        }
+        else {
+            rmg_printf("Using %d atomic orbitals and %d random orbitals for initial wavefunctions.\n", 
+                       ct.total_atomic_orbitals, ct.extra_random_lcao_states);
+        }
+
     }
     else {
         ct.init_states = ct.num_states;
