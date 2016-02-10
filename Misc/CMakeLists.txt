@@ -1,4 +1,5 @@
 add_library (Misc
+FftInterpolation.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp

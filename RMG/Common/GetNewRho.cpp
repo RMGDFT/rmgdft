@@ -39,6 +39,7 @@
 #include <complex>
 #include "../Headers/prototypes.h"
 
+void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -82,7 +83,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }                           /*end for kpt */
 
     /* Interpolate onto fine grid, result will be stored in rho*/
-
     switch (ct.interp_flag)
     {
         case 0:
@@ -94,6 +94,11 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         case 2:
             mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;
+#if USE_PFFT
+        case 3:
+            FftInterpolation (*Kpts[0]->G, work, rho, 2);
+            break;
+#endif
 
         default:
 

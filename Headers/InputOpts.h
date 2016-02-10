@@ -75,7 +75,8 @@ static std::unordered_map<std::string, int> md_integration_order = {
 static std::unordered_map<std::string, int> interpolation_type = {
         {"Cubic Polynomial", 0},
         {"B-spline", 1},
-        {"prolong", 2}};
+        {"prolong", 2},
+        {"FFT", 3}};
 
 static std::unordered_map<std::string, int> start_mode = {
         {"Random Start", 0},
