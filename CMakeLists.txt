@@ -31,7 +31,7 @@ INCLUDE (CMakeForceCompiler)
 
 # User editable options
 set (RMG_GPU_ENABLED 0)
-set (RMG_PFFT_LIBS 1) 
+set (RMG_PFFT_LIBS 0) 
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
@@ -91,6 +91,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -ffast-math -mfpmath=sse -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -frepo -cpp -D__LIBXC=1 -c")
+    set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -march=native -lg2c -frepo -cpp -D__LIBXC=1 -c")
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++ -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
@@ -391,11 +392,30 @@ if(NOT RMG_MATH_LIBS)
 endif(NOT RMG_MATH_LIBS)
 
 if(RMG_PFFT_LIBS)
-    find_package(PFFT)
-    if(PFFT_FOUND)
-        add_definitions(-DUSE_PFFT)
-    endif(PFFT_FOUND)
+find_package(PFFT)
+    if(NOT PFFT_FOUND)
+        execute_process(
+        COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/pfft-master.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
+        execute_process(
+        COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
+        execute_process(COMMAND
+        ${PROJECT_SOURCE_DIR}/lib/pfft-master/configure
+        --prefix=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64
+        --libdir=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
+
+        execute_process(COMMAND make  -j 16
+            WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
+        execute_process(COMMAND make install
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
+    endif(NOT PFFT_FOUND)
+
+    find_package(PFFT REQUIRED)
+    include_directories(${PFFT_INCLUDES})
+    add_definitions(-DUSE_PFFT)
 endif(RMG_PFFT_LIBS)
+
+
 
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
