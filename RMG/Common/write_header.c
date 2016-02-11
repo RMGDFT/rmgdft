@@ -178,11 +178,21 @@ void write_header (void)
     printf ("    Fine grid (for charge density):\n");
     printf ("       FG / CG  = %d\n", get_FG_RATIO());
     printf ("    Interpolation type:\n");
-    if (!ct.interp_flag)
-        printf ("       Cubic interpolation\n");
-    else
-        printf ("       B-spline interpolation of %d order, using trade_image%d\n",
+    switch(ct.interp_flag) {
+        case BSPLINE_INTERPOLATION:
+            printf ("       B-spline interpolation of %d order, using trade_image%d\n",
                 ct.interp_order, ct.interp_trade);
+            break;
+        case PROLONG_INTERPOLATION:
+            printf ("       Prolong interpolation\n");
+            break;
+        case FFT_INTERPOLATION:
+            printf ("       FFT interpolation\n");
+            break;
+        default:
+            printf ("       Cubic interpolation\n");
+    }
+
 
 
     printf ("    Double grid (for non-local projectors):\n");

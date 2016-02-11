@@ -209,6 +209,12 @@
 #define INIT_GAUSSIAN  4
 #define Restart_TDDFT  5
 
+// 3-d interpolation types
+#define CUBIC_POLYNOMIAL_INTERPOLATION 0
+#define BSPLINE_INTERPOLATION 1
+#define PROLONG_INTERPOLATION 2
+#define FFT_INTERPOLATION 3
+
 // Interpolation type flags for pseudopotentials
 #define LINEAR_INTERPOLATION 0
 #define LOGARITHMIC_INTERPOLATION 1

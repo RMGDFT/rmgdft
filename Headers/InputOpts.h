@@ -2,6 +2,7 @@
 #define RMG_InputOpts_H 1
 
 #include <unordered_map>
+#include <const.h>
 
 static std::unordered_map<std::string, int> bravais_lattice_type = {
         {"None", 0},
@@ -73,10 +74,10 @@ static std::unordered_map<std::string, int> md_integration_order = {
         {"5th Beeman-Velocity Verlet", 2}};
 
 static std::unordered_map<std::string, int> interpolation_type = {
-        {"Cubic Polynomial", 0},
-        {"B-spline", 1},
-        {"prolong", 2},
-        {"FFT", 3}};
+        {"Cubic Polynomial", CUBIC_POLYNOMIAL_INTERPOLATION},
+        {"B-spline", BSPLINE_INTERPOLATION},
+        {"prolong", PROLONG_INTERPOLATION},
+        {"FFT", FFT_INTERPOLATION}};
 
 static std::unordered_map<std::string, int> start_mode = {
         {"Random Start", 0},

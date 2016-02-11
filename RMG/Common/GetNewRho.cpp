@@ -85,17 +85,17 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     /* Interpolate onto fine grid, result will be stored in rho*/
     switch (ct.interp_flag)
     {
-        case 0:
+        case CUBIC_POLYNOMIAL_INTERPOLATION:
             pack_rho_ctof (work, rho);
             break;
-        case 1:
+        case BSPLINE_INTERPOLATION:
             bspline_interp_full (work, rho);
             break;
-        case 2:
+        case PROLONG_INTERPOLATION:
             mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;
 #if USE_PFFT
-        case 3:
+        case FFT_INTERPOLATION:
             FftInterpolation (*Kpts[0]->G, work, rho, Rmg_G->default_FG_RATIO);
             break;
 #endif
