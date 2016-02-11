@@ -236,7 +236,7 @@ void Functional::nlc(double *rho, double *rho_core, double &etxc, double &vtxc, 
 
     // inlc == 1 corresponds to vdW-DF1 and is the only one programmed currently
     if(inlc == 1) {
-#if PFFT_LIBS
+#if USE_PFFT
         Vdw *vdw = new Vdw (*this->Grid, *this->L, *this->T, 1, rho, rho_core, etxc, vtxc, v, this->gammaflag);
 
         delete vdw;

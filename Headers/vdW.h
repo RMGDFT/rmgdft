@@ -23,7 +23,7 @@
 #ifndef RMG_vdW_H
 #define RMG_vdW_H 1
 
-#if PFFT_LIBS
+#if USE_PFFT
 
 #include "BaseGrid.h"
 #include "Lattice.h"

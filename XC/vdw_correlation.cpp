@@ -62,7 +62,7 @@
 */ 
 
 // Parallel fft library required for now
-#if PFFT_LIBS
+#if USE_PFFT
 
 #include <math.h>
 #include <float.h>

@@ -946,5 +946,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         //std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
     }
 
+    // Van der Waals XC requires PFFT_LIB
+    if (Verify ("exchange_correlation_type", "vdw-df", InputMap)) {
+        if(!USE_PFFT)
+          throw RmgFatalException() << "In order to use Van der Waals corrections RMG must be built with the pfft libraries. Terminating. " << "\n";
+    }
 
 }
