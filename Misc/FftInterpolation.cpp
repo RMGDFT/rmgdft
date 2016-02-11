@@ -40,6 +40,10 @@
 #include "pfft.h"
 
 #if USE_PFFT
+void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
+                            int dimx_c, int dimy_c, int dimz_c, 
+                            int xshift, int yshift, int zshift, 
+                            double scale, int ratio);
 
 // Used to performa a parallel interpolation from the wavefunction grid to the 
 // potential grid using a phase shifting technique
@@ -130,6 +134,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
                           double theta = 2.0*PI*(rp1 + rp2 + rp3);
                           std::complex<double> phase = std::complex<double>(cos(theta), sin(theta));
                           shifted_coarse[idx] = phase * base_coarse[idx];
+//if((p1 == n[0]/2) || (p2 == n[1]/2) || (p3 == n[2]/2))shifted_coarse[idx]=std::complex<double>(0.0, 0.0);
                           idx++;
 
                       }
@@ -165,5 +170,30 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
   delete [] shifted_coarse;
   delete [] base_coarse;
 
+}
+
+void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine, 
+                            int dimx_c, int dimy_c, int dimz_c, 
+                            int xshift, int yshift, int zshift, 
+                            double scale, int ratio)
+{
+
+  // Array strides
+  int incx_c = dimy_c * dimz_c;
+  int incy_c = dimz_c;
+
+  int incx_f = ratio * ratio * dimy_c * dimz_c;
+  int incy_f = ratio * dimz_c;
+
+  // Pack interpolated values into the fine grid
+  for(int ixx = 0;ixx < dimx_c;ixx++) {
+      for(int iyy = 0;iyy < dimy_c;iyy++) {
+          for(int izz = 0;izz < dimz_c;izz++) {
+              fine[(ratio*ixx + xshift)*incx_f + (ratio*iyy + yshift)*incy_f + (ratio*izz + zshift)] = 
+                 scale * (std::real(coarse[ixx*incx_c + iyy*incy_c + izz]));
+
+          }
+      }
+  }
 }
 #endif

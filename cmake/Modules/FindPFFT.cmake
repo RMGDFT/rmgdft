@@ -10,11 +10,16 @@ if (PFFT_INCLUDES)
   set (PFFT_FIND_QUIETLY TRUE)
 endif (PFFT_INCLUDES)
 
-find_path (PFFT_INCLUDES pfft.h)
+find_path (PFFT_INCLUDES pfft.h
+HINTS "/usr/local/include" 
+      "${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/include")
+
 
 find_library (PFFT_LIBRARIES NAMES pfft)
 if(NOT PFFT_LIBRARIES)
-    find_library (PFFT_LIBRARIES NAMES libpfft.a)
+    find_library (PFFT_LIBRARIES NAMES libpfft.a
+                  HINTS "/usr/local/lib64/libpfft.a" 
+                        "${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib/libpfft.a")
 endif(NOT PFFT_LIBRARIES)
 
 # handle the QUIETLY and REQUIRED arguments and set PFFT_FOUND to TRUE if

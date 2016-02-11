@@ -23,6 +23,8 @@
 #ifndef RMG_vdW_H
 #define RMG_vdW_H 1
 
+#if PFFT_LIBS
+
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -164,5 +166,6 @@ public:
 
 
 
+#endif
 #endif
 #endif

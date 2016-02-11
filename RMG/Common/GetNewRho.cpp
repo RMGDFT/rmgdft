@@ -96,7 +96,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
             break;
 #if USE_PFFT
         case 3:
-            FftInterpolation (*Kpts[0]->G, work, rho, 2);
+            FftInterpolation (*Kpts[0]->G, work, rho, Rmg_G->default_FG_RATIO);
             break;
 #endif
 

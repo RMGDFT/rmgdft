@@ -61,6 +61,9 @@
 
 */ 
 
+// Parallel fft library required for now
+#if PFFT_LIBS
+
 #include <math.h>
 #include <float.h>
 #include <complex>
@@ -330,6 +333,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT);
+//  fft_gradient(total_rho, gx, gy, gz);
 
   // --------------------------------------------------------------------
   // Find the value of q0 for all assigned grid points. q is defined in
@@ -1021,3 +1025,5 @@ void Vdw::info(void) {
   rmg_printf("\n\n");
 
 }
+
+#endif
