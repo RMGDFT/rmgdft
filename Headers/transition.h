@@ -50,6 +50,7 @@ extern "C" int init_kpoints (int *mesh, int *is_shift);
 
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
+void GetAugRho(double *augrho);
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
@@ -214,7 +215,7 @@ template <typename RmgType>
 void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
 
 int CountAtomicOrbitals(void);
-
+void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
 
 #endif
 #endif
