@@ -84,13 +84,9 @@ private:
     int dimy;
     int dimz;
     ptrdiff_t densgrid[3];         // for passing to fft routines
-    double *total_rho;
     double *gx;
     double *gy;
     double *gz;
-    double *q0;
-    double *dq0_drho;
-    double *dq0_dgradrho;
 
     // How many terms to include in the sum of SOLER equation 5.
     int m_cut;
@@ -143,10 +139,10 @@ public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
     ~Vdw(void);
 
-    void get_q0_on_grid (std::complex<double> *thetas);
+    void get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> *thetas);
     void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
-    double vdW_energy(std::complex<double> *thetas);
-    void get_potential(double *potential, std::complex<double> *u_vdW);
+    double vdW_energy(double *q0, std::complex<double> *thetas);
+    void get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW);
 
     double Fs(double s);
     double dFs_ds(double s);

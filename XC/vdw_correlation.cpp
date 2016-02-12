@@ -102,7 +102,7 @@
 //
 //
 //                CHANGE THESE VALUES AT YOUR OWN RISK
-
+double *oldtrho=NULL;
 int Vdw::Nqs = VDW_NQPOINTS;
 int Vdw::Nrpoints = VDW_NRPOINTS;
 double Vdw::r_max;
@@ -169,13 +169,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->q_min = q_mesh[0];
 
   // Local storage
-  this->total_rho = new double[this->pbasis];
+  double *total_rho = new double[this->pbasis];
   this->gx = new double[3*this->pbasis];
   this->gy = this->gx + this->pbasis;
   this->gz = this->gy + this->pbasis;
-  this->q0 = new double[this->pbasis]();
-  this->dq0_drho = new double[this->pbasis]();
-  this->dq0_dgradrho = new double[this->pbasis]();
+  double *q0 = new double[this->pbasis]();
+  double *dq0_drho = new double[this->pbasis]();
+  double *dq0_dgradrho = new double[this->pbasis]();
   std::complex<double> *thetas = new std::complex<double> [this->pbasis*Nqs]();
 
   // FFT plans
@@ -331,9 +331,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
-
-  CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT);
-//  fft_gradient(total_rho, gx, gy, gz);
+  //CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
+  fft_gradient(total_rho, gx, gy, gz);
 
   // --------------------------------------------------------------------
   // Find the value of q0 for all assigned grid points. q is defined in
@@ -343,9 +342,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // gradient of the charge-density. These are needed for the potential
   // calculated below. This routine also calculates the thetas.
 
-  this->get_q0_on_grid (thetas);
+  this->get_q0_on_grid (total_rho, q0, dq0_drho, dq0_dgradrho, thetas);
 
-  double Ec_nl = this->vdW_energy(thetas);
+  double Ec_nl = this->vdW_energy(q0, thetas);
   etxc += Ec_nl;
 
 
@@ -365,7 +364,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   }
 
   double *potential = new double[this->pbasis]();
-  this->get_potential(potential, thetas);
+  this->get_potential(q0, dq0_drho, dq0_dgradrho, potential, thetas);
 
   // --------------------------------------------------------------------
   // The integral of rho(r)*potential(r) for the vtxc output variable.
@@ -379,6 +378,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   delete [] potential;
   delete [] thetas;
+  delete [] dq0_dgradrho;
+  delete [] dq0_drho;
+  delete [] q0;
+  delete [] total_rho;
 }
 
 
@@ -388,11 +391,7 @@ Vdw::~Vdw(void)
 
   pfft_destroy_plan(plan_back);
   pfft_destroy_plan(plan_forward);
-  delete [] this->dq0_dgradrho;
-  delete [] this->dq0_drho;
-  delete [] this->q0;
   delete [] this->gx;
-  delete [] this->total_rho;
 
 }
 
@@ -410,7 +409,7 @@ Vdw::~Vdw(void)
 //       dq0_drho(ir) = total_rho * d q0 /d rho
 //       dq0_dgradrho = total_rho / |grad_rho| * d q0 / d |grad_rho|
 
-void Vdw::get_q0_on_grid (std::complex<double> * thetas)
+void Vdw::get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> * thetas)
 {
 
   //fftw_plan p2;
@@ -421,14 +420,14 @@ void Vdw::get_q0_on_grid (std::complex<double> * thetas)
 
   // Initialize q0-related arrays.
   for(int ix = 0;ix < this->pbasis;ix++) {
-      this->q0[ix] = this->q_cut;      
-      this->dq0_drho[ix] = 0.0;
-      this->dq0_dgradrho[ix] = 0.0;
+      q0[ix] = this->q_cut;      
+      dq0_drho[ix] = 0.0;
+      dq0_dgradrho[ix] = 0.0;
   }
 
   for(int ix = 0;ix < this->pbasis;ix++) {
 
-      double trho = this->total_rho[ix];
+      double trho = total_rho[ix];
 
       // -----------------------------------------------------------------
       // This prevents numerical problems. If the charge density is
@@ -459,7 +458,7 @@ void Vdw::get_q0_on_grid (std::complex<double> * thetas)
       // Bring q into its proper bounds.
 
        saturate_q ( q, q_cut, q0[ix], dq0_dq );
-       if (this->q0[ix] < this->q_min) this->q0[ix] = this->q_min;
+       if (q0[ix] < this->q_min) q0[ix] = this->q_min;
 
 
       // -----------------------------------------------------------------
@@ -478,9 +477,9 @@ void Vdw::get_q0_on_grid (std::complex<double> * thetas)
       // The parts in square brackets are what is calculated here. The
       // dP_dq0 term will be interpolated later.
 
-      this->dq0_drho[ix]     = dq0_dq * trho * ( -4.0*PI/3.0 * 
-                            (this->dq0_drho[ix] - ec)/trho + dqx_drho(trho, s) );
-      this->dq0_dgradrho[ix] = dq0_dq * trho * kF(trho) * dFs_ds(s) * ds_dgradrho(trho);
+      dq0_drho[ix]     = dq0_dq * trho * ( -4.0*PI/3.0 * 
+                            (dq0_drho[ix] - ec)/trho + dqx_drho(trho, s) );
+      dq0_dgradrho[ix] = dq0_dq * trho * kF(trho) * dFs_ds(s) * ds_dgradrho(trho);
 
   }
 
@@ -507,7 +506,7 @@ void Vdw::get_q0_on_grid (std::complex<double> * thetas)
 
   for(int iq = 0;iq < Nqs;iq++) {
       for(int ix = 0;ix < this->pbasis;ix++) {
-          thetas[ix + iq*this->pbasis] = thetas[ix + iq*this->pbasis] * this->total_rho[ix];
+          thetas[ix + iq*this->pbasis] = thetas[ix + iq*this->pbasis] * total_rho[ix];
       }
   }
 
@@ -519,7 +518,7 @@ void Vdw::get_q0_on_grid (std::complex<double> * thetas)
 }
 
 
-double Vdw::vdW_energy(std::complex<double> *thetas)
+double Vdw::vdW_energy(double *q0, std::complex<double> *thetas)
 {
   double *kernel_of_k = new double[Nqs*Nqs]();
   std::complex<double> *u_vdW = new std::complex<double>[Nqs * this->pbasis]();
@@ -588,7 +587,7 @@ double Vdw::vdW_energy(std::complex<double> *thetas)
   return vdW_xc_energy;
 }
 
-void Vdw::get_potential(double *potential, std::complex<double> *u_vdW)
+void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW)
 {
 
   std::complex<double> i(0.0,1.0);
@@ -801,15 +800,12 @@ void Vdw::saturate_q(double q, double q_cut, double &q0, double &dq0_dq)
 
     double e      = 0.0;
     dq0_dq = 0.0;
-
     for(int ix = 1;ix <= this->m_cut;ix++) {
-       e = e + pow((q/q_cut), ix)/(double)ix;
        dq0_dq = dq0_dq + pow((q/q_cut),ix-1);
+       e = e + pow((q/q_cut), ix)/(double)ix;
     }
-
     q0     = q_cut*(1.0 - exp(-e));
     dq0_dq = dq0_dq * exp(-e);
-
 }
 
 //-----------------------------------------------------------------------
