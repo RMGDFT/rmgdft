@@ -81,6 +81,14 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
         delete(RT1);
         cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
+    else if(order == APP_CI_TEN) {
+        RmgTimer *RT1 = new RmgTimer("App_del2: trade images");
+        sbasis = (dimx + 10) * (dimy + 10) * (dimz + 10);
+        rptr = new RmgType[sbasis + 64];
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 5, CENTRAL_TRADE);
+        delete(RT1);
+        cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
     else {
 
         rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
