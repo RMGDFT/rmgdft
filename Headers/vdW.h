@@ -73,6 +73,7 @@ private:
 
     // Real space basis on this node and grid parameters
     int pbasis;
+    int fpbasis;
 
     // Total number of grid points
     int N;
@@ -84,6 +85,7 @@ private:
     int dimy;
     int dimz;
     ptrdiff_t densgrid[3];         // for passing to fft routines
+    ptrdiff_t coarsegrid[3];         // for passing to fft routines
     double *gx;
     double *gy;
     double *gz;
@@ -154,7 +156,6 @@ public:
     void pw(double rs, int iflag, double &ec, double &vc);
     void index_to_gvector(int *index, double *gvec);
     void interpolate_kernel(double k, double *kernel_of_k);
-    void fft_gradient(double *x, double *gx, double *gy, double *gz);
     void info(void);
 
 

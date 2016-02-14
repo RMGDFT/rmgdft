@@ -82,7 +82,8 @@
 #include "transition.h"
 #include "Pw.h"
 #include "pfft.h"
-
+extern double *psi_rho;
+void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
 // ----------------------------------------------------------------------
 // The next 2 parameters define the q mesh to be used in the vdW_DF code.
 // These are perhaps the most important to have set correctly. Increasing
@@ -130,7 +131,7 @@ double *Vdw::d2y_dx2;
   
 
 */
-
+double *oldpotential=NULL;
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
 
@@ -331,8 +332,25 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
-  //CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
-  fft_gradient(total_rho, gx, gy, gz);
+
+#if 0
+std::complex<double> *crho = new std::complex<double>[this->pbasis];
+for(int i = 0;i < this->pbasis;i++) crho[i] = std::complex<double>(total_rho[i], 0.0);
+pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
+        for(int ig=0;ig < this->pbasis;ig++) {
+            if(this->plane_waves->gmags[ig] > 0.25*this->plane_waves->gcut) {
+                crho[ig] = std::complex<double>(0.0, 0.0);
+            }
+        }
+pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
+for(int i = 0;i < this->pbasis;i++) total_rho[i] = std::real(crho[i])/(double)this->N;
+delete [] crho;
+#endif
+  CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
+//FftGradient(total_rho, gx, gy, gz, *this->plane_waves);
+
+
+
 
   // --------------------------------------------------------------------
   // Find the value of q0 for all assigned grid points. q is defined in
@@ -360,7 +378,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   for(int iq = 0;iq < Nqs;iq++) {
       pfft_execute_dft(plan_back, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
-      //fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]), reinterpret_cast<fftw_complex*>(&thetas[iq*this->pbasis]));
   }
 
   double *potential = new double[this->pbasis]();
@@ -373,7 +390,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 //  vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
   vtxc = vtxc * L.omega / (double)this->N;
   
-   
   for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
   delete [] potential;
@@ -411,9 +427,6 @@ Vdw::~Vdw(void)
 
 void Vdw::get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> * thetas)
 {
-
-  //fftw_plan p2;
-  //p2 = fftw_plan_dft_3d (this->dimx, this->dimy, this->dimz, reinterpret_cast<fftw_complex*>(thetas), reinterpret_cast<fftw_complex*>(thetas), FFTW_FORWARD, FFTW_ESTIMATE);
 
 
   double ec, dq0_dq;
@@ -926,67 +939,6 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
 
 }
 
-void Vdw::fft_gradient(double *x, double *gx, double *gy, double *gz)
-{
-
-    pfft_plan forw, inv;
-    double tpiba = 2.0 * PI / this->L->celldm[0];
-    double scale = 1.0 / (double)this->N;
-
-    std::complex<double> czero(0.0,0.0);
-    std::complex<double> ci(0.0,1.0);
-    std::complex<double> *tx = new std::complex<double>[this->pbasis];
-    std::complex<double> *cgx = new std::complex<double>[this->pbasis];
-
-    forw = pfft_plan_dft_3d(this->densgrid,
-                          (double (*)[2])tx,
-                          (double (*)[2])tx,
-                          pct.pfft_comm, 
-                          PFFT_FORWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-
-    inv = pfft_plan_dft_3d(this->densgrid,
-                          (double (*)[2])cgx,
-                          (double (*)[2])cgx,
-                          pct.pfft_comm, 
-                          PFFT_BACKWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-  
-    for(int ix = 0;ix < this->pbasis;ix++) {
-        tx[ix] = x[ix];
-    }
-
-    pfft_execute_dft(forw, (double (*)[2])tx, (double (*)[2])tx);
-   
-    for(int icar=0;icar < 3;icar++) {
-      
-        for(int ix=0;ix < this->pbasis;ix++) cgx[ix] = czero; 
-
-        for(int ig=0;ig < this->pbasis;ig++) {
-            if(this->plane_waves->gmask[ig] == 1.0) {
-                cgx[ig] = ci * tpiba * this->plane_waves->g[ig].a[icar] * tx[ig];
-            }
-            else {
-                cgx[ig] = std::complex<double>(0.0, 0.0);
-            }
-        }
-
-        pfft_execute_dft(inv, (double (*)[2])cgx, (double (*)[2])cgx);
-
-        double *ts;
-        if(icar == 0) ts = gx;
-        if(icar == 1) ts = gy;
-        if(icar == 2) ts = gz;
-
-        for(int ix=0;ix < this->pbasis;ix++) ts[ix] = scale * std::real(cgx[ix]);
-    }
-
-    pfft_destroy_plan(forw);
-    pfft_destroy_plan(inv);
-
-    delete [] cgx;
-    delete [] tx;
-}
 
 void Vdw::info(void) {
   // --------------------------------------------------------------------
