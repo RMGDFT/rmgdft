@@ -50,14 +50,23 @@ private:
     // Lattice object
     Lattice *L;
 
-    // Real space basis on this node and globally
-    int pbasis;
-    int global_basis;
-
     // Grid spacings
     double hxgrid;
     double hygrid;
     double hzgrid;
+
+    // true if gamma only
+    bool is_gamma;
+
+public:
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
+    void index_to_gvector(int *index, double *gvector);
+
+    ~Pw(void);
+
+    // Real space basis on this node and globally
+    int pbasis;
+    int global_basis;
 
     // Real space grid dimensions on this node
     int dimx;
@@ -71,15 +80,6 @@ private:
 
     // Plane wave cutoff
     double gcut;
-
-    // true if gamma only
-    bool is_gamma;
-
-public:
-    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
-    void index_to_gvector(int *index, double *gvector);
-
-    ~Pw(void);
 
     int ng;
     gvector *g;
