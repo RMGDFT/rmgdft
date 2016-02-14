@@ -17,6 +17,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "InputKey.h"
+#include "Pw.h"
 #include "typedefs.h"
 
 
@@ -216,6 +217,9 @@ void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz)
 
 int CountAtomicOrbitals(void);
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
+void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves);
+void FftLaplacian(double *x, double *lapx, Pw &pwaves);
+
 
 #endif
 #endif

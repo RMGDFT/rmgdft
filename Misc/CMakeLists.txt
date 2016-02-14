@@ -1,4 +1,6 @@
 add_library (Misc
+FftLaplacian.cpp
+FftGradient.cpp
 FftInterpolation.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
