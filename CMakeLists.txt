@@ -31,7 +31,7 @@ INCLUDE (CMakeForceCompiler)
 
 # User editable options
 set (RMG_GPU_ENABLED 0)
-set (RMG_PFFT_LIBS 0) 
+set (RMG_PFFT_LIBS 1) 
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
@@ -458,20 +458,20 @@ endif(RMG_GPU_ENABLED)
 find_package(LIBXC)
 if(NOT LIBXC_FOUND)
     execute_process(
-    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3.tar -C ${PROJECT_SOURCE_DIR}/lib )
+    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
     execute_process(
-    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
     execute_process(
-    COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/configure
-        --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64
-        --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64/lib
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+    COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/configure
+        --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64
+        --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
     execute_process(COMMAND make install
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/lib64)
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
 endif(NOT LIBXC_FOUND)
 
 find_package(LIBXC REQUIRED)
-include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.0.3/")
+include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
 
 
 find_package(LIBSPG)
