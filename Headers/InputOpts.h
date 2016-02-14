@@ -149,6 +149,10 @@ static std::unordered_map<std::string, int> exchange_correlation_type = {
         {"gaupbe", 23},
         {"vdw-df", 24},
         {"VDW-DF", 24},
+        {"vdw-df-cx", 25},
+        {"VDW-DF-CX", 25},
+        {"sla+pw+pbe+vdw1", 26},
+        {"vdw-df-c09", 27},
         {"AUTO_XC", 99}};
 
 // Internal types accepted by QE routines. Must map to preceding array
@@ -177,7 +181,10 @@ static std::string reordered_xc_type[] = {
         {"hse"},
         {"b3lyp"},
         {"gaupbe"},
-        {"vdw-df"}};
+        {"vdw-df"},
+        {"vdw-df-cx"},
+        {"sla+pw+pbe+vdw1"},
+        {"vdw-df-c09"}};
 
 static std::unordered_map<std::string, int> relax_method = {
         {"Fast Relax", 0},

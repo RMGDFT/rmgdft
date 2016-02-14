@@ -258,7 +258,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
     double grho2[2];
-    const double epsr=1.0e-6;
+    const double epsr=1.0e-10;
     const double epsg = 1.0e-10;
 
 
@@ -282,8 +282,10 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
 
     // and the Laplacian
-    //app6_del2(rhoout, d2rho, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid);
-    CPP_app_del2_driver (this->L, this->T, rhoout, d2rho, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT);
+    CPP_app_del2_driver (this->L, this->T, rhoout, d2rho, 
+                         this->dimx, this->dimy, this->dimz, 
+                         this->hxgrid, this->hygrid, this->hzgrid, 
+                         APP_CI_EIGHT);
 
 
 
@@ -299,7 +301,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                 double segno = 1.0;
                 if(rhoout[k] < 0.0)segno = -1.0; 
 
-                __funct_MOD_gcxc( &arho, &grho2[0], &sx, &sc, &v1x, &v2x, &v1c, &v2c );
+                double pgrho2 = grho2[0] + 0.00000001;
+                __funct_MOD_gcxc( &arho, &pgrho2, &sx, &sc, &v1x, &v2x, &v1c, &v2c );
                 //
                 // first term of the gradient correction : D(rho*Exc)/D(rho)
                 v[k] = v[k] +( v1x + v1c );
@@ -320,15 +323,15 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     // ... second term of the gradient correction :
     // ... \sum_alpha (D / D r_alpha) ( D(rho*Exc)/D(grad_alpha rho) )
     // 
-    double *dh = new double[this->pbasis]();
 
-    CPP_app_grad_driver (this->L, this->T, vxc2, 
-                         h, &h[this->pbasis], &h[2*this->pbasis],
+    CPP_app_grad_driver (this->L, this->T, vxc2, h, 
+                         &h[this->pbasis], &h[2*this->pbasis],
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
 
     for(int ix=0;ix < this->pbasis;ix++) {
+
         v[ix] -= ( h[ix] * gx[ix] +
                       h[ix+this->pbasis] * gy[ix] + 
                       h[ix+2*this->pbasis] * gz[ix] ) ;
@@ -344,7 +347,6 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     etxc = etxc + L->omega * etxcgc / (double)this->N;
 
 
-    delete [] dh;
     delete [] h;
     delete [] vxc2;
     delete [] d2rho;
