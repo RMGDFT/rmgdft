@@ -39,7 +39,7 @@
 
 #if USE_PFFT
 
-#include "RmgParralelFft.h"
+#include "RmgParallelFft.h"
 
 // On input performs a dft of x which is an array distributed in real space across all node
 // using the plane wave structure defined in pwaves. This is then filtered in g-space with

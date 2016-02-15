@@ -38,7 +38,7 @@
 #include "transition.h"
 
 #if USE_PFFT
-#include "RmgParralelFft.h"
+#include "RmgParallelFft.h"
 
 void FftLaplacian(double *x, double *lapx, Pw &pwaves)
 {

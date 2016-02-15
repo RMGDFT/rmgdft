@@ -38,7 +38,7 @@
 #include "transition.h"
 
 #if USE_PFFT
-#include "RmgParralelFft.h"
+#include "RmgParallelFft.h"
 
 void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
                             int dimx_c, int dimy_c, int dimz_c, 

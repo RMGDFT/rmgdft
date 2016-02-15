@@ -20,8 +20,8 @@
  *
 */
 
-#ifndef RMG_RmgParralelFft_H
-#define RMG_RmgParralelFft_H 1
+#ifndef RMG_RmgParallelFft_H
+#define RMG_RmgParallelFft_H 1
 
 #if __cplusplus
 #include <complex>

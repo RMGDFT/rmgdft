@@ -38,7 +38,7 @@
 #include "transition.h"
 
 #if USE_PFFT
-#include "RmgParralelFft.h"
+#include "RmgParallelFft.h"
 
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 {
