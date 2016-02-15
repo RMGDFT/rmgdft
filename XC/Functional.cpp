@@ -259,7 +259,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double vtxcgc = 0.0;
     double grho2[2];
     const double epsr=1.0e-10;
-    const double epsg = 1.0e-10;
+    const double epsg = 1.0e-16;
+    double epsg_guard = sqrt(epsg);
 
 
     double *rhoout = new double[this->pbasis];
@@ -279,6 +280,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
+    //Pw pwaves(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false);
+    //FftGradient(rhoout, gx, gy, gz, pwaves);
 
 
     // and the Laplacian
@@ -286,6 +289,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
+    //FftLaplacian(rhoout, d2rho, pwaves);
 
 
 
@@ -301,7 +305,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                 double segno = 1.0;
                 if(rhoout[k] < 0.0)segno = -1.0; 
 
-                double pgrho2 = grho2[0] + 0.00000001;
+                double pgrho2 = grho2[0] + sqrt(epsg_guard);
                 __funct_MOD_gcxc( &arho, &pgrho2, &sx, &sc, &v1x, &v2x, &v1c, &v2c );
                 //
                 // first term of the gradient correction : D(rho*Exc)/D(rho)
@@ -329,6 +333,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
+    //FftGradient(vxc2, h, &h[this->pbasis], &h[2*this->pbasis], pwaves);
+
 
     for(int ix=0;ix < this->pbasis;ix++) {
 

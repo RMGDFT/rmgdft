@@ -80,10 +80,8 @@
 #include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-#include "Pw.h"
-#include "pfft.h"
-extern double *psi_rho;
-void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
+#include "RmgParralelFft.h"
+
 // ----------------------------------------------------------------------
 // The next 2 parameters define the q mesh to be used in the vdW_DF code.
 // These are perhaps the most important to have set correctly. Increasing
@@ -333,21 +331,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
-#if 0
-  std::complex<double> *crho = new std::complex<double>[this->pbasis];
-  for(int i = 0;i < this->pbasis;i++) crho[i] = std::complex<double>(total_rho[i], 0.0);
-  pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
-          for(int ig=0;ig < this->pbasis;ig++) {
-              if(this->plane_waves->gmags[ig] > 0.25*this->plane_waves->gcut) {
-                  crho[ig] = std::complex<double>(0.0, 0.0);
-              }
-          }
-  pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
-  for(int i = 0;i < this->pbasis;i++) total_rho[i] = std::real(crho[i])/(double)this->N;
-   delete [] crho;
-#endif
-  //CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
-  FftGradient(total_rho, gx, gy, gz, *this->plane_waves);
+  // Filter out higher frequencies here to improve stability
+  FftFilter(total_rho, *this->plane_waves, 0.25);
+  CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
+  //FftGradient(total_rho, gx, gy, gz, *this->plane_waves);
 
 
 
