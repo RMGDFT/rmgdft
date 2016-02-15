@@ -48,6 +48,7 @@ extern "C" void write_restart (char *name, double * vh, double *vxc, double *vh_
         double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
 
 extern "C" int init_kpoints (int *mesh, int *is_shift);
+extern "C" void rfttologgrid(double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double width);
 
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
@@ -219,8 +220,6 @@ int CountAtomicOrbitals(void);
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves);
 void FftLaplacian(double *x, double *lapx, Pw &pwaves);
-
-
 #endif
 #endif
 
