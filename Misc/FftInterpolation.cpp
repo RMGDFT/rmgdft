@@ -36,10 +36,10 @@
 #include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-#include "Pw.h"
-#include "pfft.h"
 
 #if USE_PFFT
+#include "RmgParralelFft.h"
+
 void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
                             int dimx_c, int dimy_c, int dimz_c, 
                             int xshift, int yshift, int zshift, 

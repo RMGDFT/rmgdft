@@ -36,10 +36,9 @@
 #include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-#include "Pw.h"
-#include "pfft.h"
 
 #if USE_PFFT
+#include "RmgParralelFft.h"
 
 void FftLaplacian(double *x, double *lapx, Pw &pwaves)
 {

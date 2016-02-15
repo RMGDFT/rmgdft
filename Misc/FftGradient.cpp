@@ -36,10 +36,9 @@
 #include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-#include "Pw.h"
-#include "pfft.h"
 
 #if USE_PFFT
+#include "RmgParralelFft.h"
 
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 {

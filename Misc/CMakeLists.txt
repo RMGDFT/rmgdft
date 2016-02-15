@@ -1,4 +1,5 @@
 add_library (Misc
+FftFilter.cpp
 FftLaplacian.cpp
 FftGradient.cpp
 FftInterpolation.cpp
