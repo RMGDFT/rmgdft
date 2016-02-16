@@ -36,7 +36,7 @@
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves);
 void FftLaplacian(double *x, double *lapx, Pw &pwaves);
-void FftFilter(double *x, Pw &pwaves, double factor);
+void FftFilter(double *x, Pw &pwaves, int density, double factor);
 
 #endif
 

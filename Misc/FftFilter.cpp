@@ -47,6 +47,7 @@
 // set to zero.
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
+               int density, // IN:     Density of grid being filtered
                double factor)  // IN:     Plane waves with a magnitude greater than factor*gcut are filtered out
                             //         0.0 < factor < 1.0
 {
@@ -56,12 +57,12 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
   ptrdiff_t densgrid[3];
   pfft_plan plan_forward, plan_back;
-  densgrid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
-  densgrid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
-  densgrid[2] = Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+  densgrid[0] = Rmg_G->get_NX_GRID(density);
+  densgrid[1] = Rmg_G->get_NY_GRID(density);
+  densgrid[2] = Rmg_G->get_NZ_GRID(density);
 
-  int global_basis = Rmg_G->get_GLOBAL_BASIS(Rmg_G->default_FG_RATIO);
-  int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+  int global_basis = Rmg_G->get_GLOBAL_BASIS(density);
+  int pbasis = Rmg_G->get_P0_BASIS(density);
 
   std::complex<double> *crho = new std::complex<double>[pbasis];
   plan_forward = pfft_plan_dft_3d(densgrid,
