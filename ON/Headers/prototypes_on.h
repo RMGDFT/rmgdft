@@ -136,7 +136,6 @@ void gram (KPOINT * kpoint, double h, int numst, int maxst, int numpt,
         int maxpt);
 double get_ke (STATE * sp, int tid);
 void global_sums (double * vect, int *length, MPI_Comm comm);
-void init_kbr (void);
 void init_pe_on (void);
 void init_pegrid (void);
 void init_wf (STATE * states);
@@ -378,7 +377,6 @@ void gram (KPOINT * kpoint, double h, int numst, int maxst, int numpt,
         int maxpt);
 double get_ke (STATE * sp, int tid);
 void global_sums (double * vect, int *length, MPI_Comm comm);
-void init_kbr (void);
 void init_pe_on (void);
 void init_pegrid (void);
 void init_wf (STATE * states);

@@ -194,7 +194,6 @@ void init_derweight_p (SPECIES *sp, fftw_complex *rtptr_x,
 void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
                        fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
                        fftw_plan p1);
-void init_kbr (void);
 void init_pe ( int image );
 void init_img_topo ( int dimensionality );
 void init_pegrid (void);
@@ -349,7 +348,6 @@ void get_new_rho (STATE * states, double * rho);
 void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void Output_rho_xsf(double *array_3d, MPI_Comm comm);
-void init_psp (void);
 void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 void mg_eig_state_f (STATE *sp, int tid, double *vtot_psi);

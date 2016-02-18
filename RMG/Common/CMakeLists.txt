@@ -81,7 +81,6 @@ print_density_z_direction.c
 GetDerweight.cpp
 set_pbc.c
 pulay_rho.c
-init_psp.c
 AssignDerweight.cpp
 PartialGamma.cpp
 fire.c

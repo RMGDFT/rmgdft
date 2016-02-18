@@ -144,7 +144,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         make_mask_grid_state(level, states);
 
     /* Initialize the radial potential stuff */
-    //init_kbr();
     InitPseudo(ControlMap);
 
     /* Initialize symmetry stuff */

@@ -31,7 +31,6 @@ add_library (ON_Common
  get_sum_eig.c
  get_wave.c
  InitON.cpp
- init_kbr.c
  init_pe_on.c
  init_rho_atom.c
  init_wf_atom.c
