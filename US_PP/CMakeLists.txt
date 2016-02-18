@@ -3,6 +3,7 @@ Atomic.cpp
 Atomic_Cbindings.cpp
 InitPseudo.cpp
 InitQfunct.cpp
+US_Cbindings.cpp
 lcao_get_rho.c
 init_nuc.c
 init_efield.c
