@@ -1,16 +1,22 @@
 //#include "typedefs.h"
 void SetEnergyWeight (std::complex<double> *ene, std::complex<double> *weight, double EF, int *nenergy);
 void SetEnergyWeightNoneq (std::complex<double> *ene, std::complex<double> *weight, double EF1, double EF, int *nenergy);
-void Run(STATE *, STATE *);
 void QuenchNegf (STATE * states, STATE * states1,  double * vxc, double * vh, double * vnuc, double * vext,
              double * vh_old, double * vxc_old, double * rho, double * rhoc, double * rhocore, double * rho_tf, double * vbias);
-void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
-                STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
-                double * vxc_old);
 
 void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10, 
         std::complex<double> *H01, std::complex<double> *sigma, double lamda_min);
 #ifdef __cplusplus
+
+#include <unordered_map>
+#include "InputKey.h"
+
+void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
+                STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
+                double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
+void Run(STATE *, STATE *, std::unordered_map<std::string, InputKey *>& ControlMap);
+
+
 extern "C" {
 #endif
 
@@ -24,7 +30,6 @@ void read_rho_and_pot (char*, double *, double *, double *, double *, double *);
 void plane_average_rho(double *); 
 void write_rho_x (double *, char*);  // information about vh_init is recorded in zvec array
 void init_comp (double *);
-void init_psp_soft ();
 void init_ext(double *, double, double, double, double);
 
 void zero_lead_image(double*);

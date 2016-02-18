@@ -41,7 +41,6 @@ init_ext.c
 init_gpu.c
 init_loc_xyz.c
 init_pe_on.c
-init_psp_soft.c
 InitNegf.cpp
 #init_state_distribute.c
 interpolation_orbit.c

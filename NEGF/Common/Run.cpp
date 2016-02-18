@@ -59,7 +59,7 @@
 
 extern double *vh_old, *vxc_old;
 
-void Run (STATE * states, STATE * states1)
+void Run (STATE * states, STATE * states1, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
     int size, iprobe, idx_delta, i, j;
     double *vbias;
@@ -119,7 +119,7 @@ void Run (STATE * states, STATE * states1)
 
 
         RmgTimer *RT3 = new RmgTimer("1-TOTAL: init");
-        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old);
+        InitNegf (vh, rho, rhocore, rhoc, rho_tf, states, states1, vnuc, vext, vxc, vh_old, vxc_old, ControlMap);
         delete(RT3);
 
         size = 1;

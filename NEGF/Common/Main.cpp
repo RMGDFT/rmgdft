@@ -186,7 +186,7 @@ int main (int argc, char **argv)
     my_barrier ();
 
     /*  Begin to do the real calculations */
-    Run (states, states1);
+    Run (states, states1, ControlMap);
 
 
     delete(RT);

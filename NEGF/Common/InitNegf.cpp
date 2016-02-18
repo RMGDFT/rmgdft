@@ -66,7 +66,7 @@ void is_state_overlap (STATE *, char *);
 
 void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, double * rho_tf,
                 STATE * states, STATE * states1, double * vnuc, double * vext, double * vxc, double * vh_old,
-                double * vxc_old)
+                double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
     int kpt, ic, idx, ion, ispin, kpt1;
@@ -265,7 +265,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
-    init_psp_soft ();
+    InitPseudo(ControlMap);
 
     /* Initialize the radial qfunction stuff */
     init_qfunct ();
