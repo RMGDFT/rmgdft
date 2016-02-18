@@ -39,9 +39,9 @@ double Atomic::log_r_filtered[MAX_LOGGRID];
 
 // Interpolation parameters
 double Atomic::a;
-double Atomic::inv_a;
+double Atomic_inv_a;
 double Atomic::b;
-double Atomic::inv_b;
+double Atomic_inv_b;
 
 // constructor just sets up logarithmic grid for first instance
 // which is used by all later instances
@@ -59,9 +59,9 @@ Atomic::Atomic(void)
 
 
         b = log((r_filtered[2] - r_filtered[1]) / (r_filtered[1] - r_filtered[0]));
-        inv_b = 1.0 / b;
+        Atomic_inv_b = 1.0 / b;
         a = r_filtered[0];
-        inv_a = 1.0 / a;
+        Atomic_inv_a = 1.0 / a;
         Log_grid_initialized = true;
 
     }
@@ -706,6 +706,8 @@ double *Atomic::GetRgrid(void)
 
 
 // Interpolates function f that is defined on the shared logarithmic grid
+// if you modify this remember to modify the inline version in the header file
+// AtomicInterpolate.h
 double Atomic::Interpolate(double *f, double r)
 {
     double d0, d1, dm;
@@ -718,7 +720,7 @@ double Atomic::Interpolate(double *f, double r)
         if(fabs(f[0]) < 1.0e-5) return 0.0;
     }
 
-    d0 = (log (r*Atomic::inv_a) * Atomic::inv_b);
+    d0 = (log (r*Atomic_inv_a) * Atomic_inv_b);
     ic = (int)d0;
     ic = (ic > 0) ? ic : 1;
 

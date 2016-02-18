@@ -416,7 +416,6 @@ find_package(PFFT)
 endif(RMG_PFFT_LIBS)
 
 
-
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
   find_package(CUDA REQUIRED)

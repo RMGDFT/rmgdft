@@ -7,6 +7,7 @@
 #include <float.h>
 #include <math.h>
 #include "main.h"
+#include "AtomicInterpolate.h"
 
 void qval_R (int ih, int jh, double r, double * x, double * qlig, double * drqlig, int *nhtol,
              int *nhtom, int *indv, double * ylm, double * ylm_x, double * ylm_y, double * ylm_z,
@@ -56,8 +57,8 @@ void qval_R (int ih, int jh, double r, double * x, double * qlig, double * drqli
         q_tpr = qlig + (nmb * sp->nlc + l) * MAX_LOGGRID;
         drq_tpr = drqlig + (nmb * sp->nlc + l) * MAX_LOGGRID;
 
-        qrad = AtomicInterpolate (q_tpr, r);
-        drqrad = AtomicInterpolate (drq_tpr, r);
+        qrad = AtomicInterpolateInline (q_tpr, r);
+        drqrad = AtomicInterpolateInline (drq_tpr, r);
 
         *Q_x += (qrad * ap[lp][ivl][jvl] * ylm_x[lp] + drqrad * ap[lp][ivl][jvl] * ylm[lp] * x_hat);
         *Q_y += (qrad * ap[lp][ivl][jvl] * ylm_y[lp] + drqrad * ap[lp][ivl][jvl] * ylm[lp] * y_hat);

@@ -15,6 +15,7 @@
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
+#include "AtomicInterpolate.h"
 
 void init_derweight_s (SPECIES * sp,
                        fftw_complex * rtptr_x,
@@ -79,7 +80,7 @@ void init_derweight_s (SPECIES * sp,
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
-                t1 = AtomicInterpolate (&sp->drbetalig[ip][0], r);
+                t1 = AtomicInterpolateInline (&sp->drbetalig[ip][0], r);
 
                 weptrx[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[0] / r + 0.0I;
                 weptry[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[1] / r + 0.0I;

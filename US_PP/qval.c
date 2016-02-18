@@ -7,6 +7,7 @@
 #include <math.h>
 #include "main.h"
 #include <float.h>
+#include "AtomicInterpolate.h"
 
 double qval (int ih, int jh, double r, double * ptpr, int *nhtol, int *nhtom,
            int *indv, double * ylm, double ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES * sp)
@@ -44,7 +45,7 @@ double qval (int ih, int jh, double r, double * ptpr, int *nhtol, int *nhtom,
 
         ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_LOGGRID;
         /*shuchun wang */
-        qrad = AtomicInterpolate (ptpr1, r);
+        qrad = AtomicInterpolateInline (ptpr1, r);
         sum += qrad * ap[lp][ivl][jvl] * ylm[lp];
     }
     return (sum);

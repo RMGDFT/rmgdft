@@ -42,9 +42,7 @@ private:
 
     static int Log_grid_initialized;
     static double a;
-    static double inv_a;
     static double b;
-    static double inv_b;
 
     // BaseGrid class
     BaseGrid *Grid;

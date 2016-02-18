@@ -15,6 +15,7 @@
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
+#include "AtomicInterpolate.h"
 
 void init_derweight_d (SPECIES * sp,
                        double complex * rtptr_x,
@@ -144,8 +145,8 @@ void init_derweight_d (SPECIES * sp,
                 rsqd = rsq + 1.0e-20;
                 r4 = rsq * rsq + 1.e-40;
 
-                t1 = t3 * AtomicInterpolate (&sp->drbetalig[ip][0], r);
-                t2 = t3 * AtomicInterpolate (&sp->betalig[ip][0], r);
+                t1 = t3 * AtomicInterpolateInline (&sp->drbetalig[ip][0], r);
+                t2 = t3 * AtomicInterpolateInline (&sp->betalig[ip][0], r);
                 r += 1.0e-10;
 
 

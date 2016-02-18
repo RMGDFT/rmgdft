@@ -15,6 +15,7 @@
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
+#include "AtomicInterpolate.h"
 
 void init_derweight_p (SPECIES * sp,
                        fftw_complex * rtptr_x,
@@ -101,8 +102,8 @@ void init_derweight_p (SPECIES * sp,
 
                 r = metric (ax);
 
-                t1 = AtomicInterpolate (&sp->drbetalig[ip][0], r);
-                t2 = AtomicInterpolate (&sp->betalig[ip][0], r);
+                t1 = AtomicInterpolateInline (&sp->drbetalig[ip][0], r);
+                t2 = AtomicInterpolateInline (&sp->betalig[ip][0], r);
 
                 to_cartesian (ax, bx);
                 x = bx[0];

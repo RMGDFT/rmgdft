@@ -9,7 +9,7 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
-
+#include "AtomicInterpolate.h"
 
 void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
 {
@@ -125,11 +125,11 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
 
-                                vnuc_f[idx] += AtomicInterpolate (&sp->localig[0], r);
+                                vnuc_f[idx] += AtomicInterpolateInline (&sp->localig[0], r);
                                 rhoc_f[idx] += Zv * exp (-r * r / rc2) * rcnorm;
 
                                 if (sp->nlccflag)
-                                    rhocore_f[idx] += AtomicInterpolate (&sp->rhocorelig[0], r);
+                                    rhocore_f[idx] += AtomicInterpolateInline (&sp->rhocorelig[0], r);
 
 
                             }                           /* end for */

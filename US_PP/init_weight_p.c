@@ -9,6 +9,8 @@
 #include <complex.h>
 #include "main.h"
 #include "common_prototypes.h"
+#include "AtomicInterpolate.h"
+
 
 void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
@@ -81,7 +83,7 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 ax[2] = zc;
 
                 r = metric (ax);
-                t1 = AtomicInterpolate (&sp->betalig[ip][0], r);
+                t1 = AtomicInterpolateInline (&sp->betalig[ip][0], r);
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
