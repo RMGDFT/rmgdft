@@ -115,7 +115,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         int done = false;
         while(!done) {
 
-            sp->nldim = radius2grid (sp->nlradius, ct.hmingrid);
+            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 +1;
             sp->nlfdim = ct.nxfgrid * sp->nldim;
 

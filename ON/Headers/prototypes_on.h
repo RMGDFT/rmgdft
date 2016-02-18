@@ -1,7 +1,5 @@
 //#include "typedefs.h"
 void KbpsiComm();
-void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
-          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);
 void GetHvnlij (double *Aij, double *Bij);
@@ -18,8 +16,18 @@ void FillOrbitalBorders(double *, double *, int, int, int, int);
 
 
 #ifdef __cplusplus
+
+#include <unordered_map>
+#include "InputKey.h"
+
+
+void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
+          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
+          double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
+
 extern "C" {
 #endif
+
 
 void orbital_comm(STATE *);
 void init_wf_atom(STATE *);

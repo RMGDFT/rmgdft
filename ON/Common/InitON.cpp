@@ -51,7 +51,8 @@
 
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
-          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old)
+          STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
+          double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
     int ic, idx, ion;
@@ -143,7 +144,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         make_mask_grid_state(level, states);
 
     /* Initialize the radial potential stuff */
-    init_kbr();
+    //init_kbr();
+    InitPseudo(ControlMap);
 
     /* Initialize symmetry stuff */
     //  init_sym();

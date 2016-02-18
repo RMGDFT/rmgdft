@@ -219,7 +219,7 @@ int main(int argc, char **argv)
         vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
 
 
-        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
+        InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
         my_barrier();
 
