@@ -8,7 +8,7 @@
 #include <math.h>
 #include "main.h"
 
-void qval_R (int ih, int jh, double r, double * x, double * qlig, double * drqlig, double invdr, int *nhtol,
+void qval_R (int ih, int jh, double r, double * x, double * qlig, double * drqlig, int *nhtol,
              int *nhtom, int *indv, double * ylm, double * ylm_x, double * ylm_y, double * ylm_z,
              double ap[][9][9], int lpx[][9], int lpl[][9][9], double * Q_x, double * Q_y, double * Q_z,
              SPECIES * sp)
@@ -53,10 +53,11 @@ void qval_R (int ih, int jh, double r, double * x, double * qlig, double * drqli
         else
             error_handler ("L>4");
 
-        q_tpr = qlig + (nmb * sp->nlc + l) * MAX_QLIG;
-        drq_tpr = drqlig + (nmb * sp->nlc + l) * MAX_QLIG;
-        qrad = linint (q_tpr, r, invdr);
-        drqrad = linint (drq_tpr, r, invdr);
+        q_tpr = qlig + (nmb * sp->nlc + l) * MAX_LOGGRID;
+        drq_tpr = drqlig + (nmb * sp->nlc + l) * MAX_LOGGRID;
+
+        qrad = AtomicInterpolate (q_tpr, r);
+        drqrad = AtomicInterpolate (drq_tpr, r);
 
         *Q_x += (qrad * ap[lp][ivl][jvl] * ylm_x[lp] + drqrad * ap[lp][ivl][jvl] * ylm[lp] * x_hat);
         *Q_y += (qrad * ap[lp][ivl][jvl] * ylm_y[lp] + drqrad * ap[lp][ivl][jvl] * ylm[lp] * y_hat);

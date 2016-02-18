@@ -23,7 +23,7 @@ void init_derweight_s (SPECIES * sp,
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
     double r, ax[3], bx[3], xc, yc, zc;
-    double invdr, t1, hxx, hyy, hzz;
+    double t1, hxx, hyy, hzz;
     double complex *weptrx, *weptry, *weptrz, *gwptr;
     int ixx, iyy, izz;
 
@@ -43,8 +43,6 @@ void init_derweight_s (SPECIES * sp,
     hxx = get_hxgrid() / (double) ct.nxfgrid;
     hyy = get_hygrid() / (double) ct.nyfgrid;
     hzz = get_hzgrid() / (double) ct.nzfgrid;
-
-    invdr = 1.0 / sp->drnlig;
 
     /*We assume that ion is in the center of non-local box */
     ibegin = -sp->nlfdim / 2;
@@ -81,9 +79,7 @@ void init_derweight_s (SPECIES * sp,
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
-                //t1 = linint (&sp->drbetalig[ip][0], r, invdr);
                 t1 = AtomicInterpolate (&sp->drbetalig[ip][0], r);
-
 
                 weptrx[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[0] / r + 0.0I;
                 weptry[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[1] / r + 0.0I;

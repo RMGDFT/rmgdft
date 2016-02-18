@@ -380,7 +380,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Initialize the qfunction stuff */
     RT1 = new RmgTimer("Init: qfunct");
-    init_qfunct ();
+    InitQfunct(Kptr[0]->ControlMap);
     delete(RT1);
 
     /* Update items that change when the ionic coordinates change */

@@ -26,7 +26,7 @@ void lforce (double * rho, double * vh)
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
     double r, Zv, rc, rc2, rcnorm, t1;
-    double x[3], invdr;
+    double x[3];
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
     SPECIES *sp;
@@ -97,8 +97,6 @@ void lforce (double * rho, double * vh)
         zstart = iptr->xtal[2] / hzzgrid - dimz/2;
         zend = zstart + dimz;
 
-        invdr = 1.0 / sp->drlig;
-
         fx = fy = fz = 0.0;
 
         for (ix = xstart; ix < xend; ix++)
@@ -139,7 +137,6 @@ void lforce (double * rho, double * vh)
                                 fy += bx[1] * t1 * vh[idx];
                                 fz += bx[2] * t1 * vh[idx];
 
-                                //t1 = linint (&sp->drlocalig[0], r, invdr);
                                 t1 = AtomicInterpolate (&sp->drlocalig[0], r);
                                 fx += -t1 * bx[0] / (r+1.0e-10) * rho[idx];
                                 fy += -t1 * bx[1] / (r+1.0e-10) * rho[idx];

@@ -25,7 +25,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
     double r, Zv, rc, rc2, rcnorm, t1;
-    double x[3], invdr;
+    double x[3];
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
     SPECIES *sp;
@@ -97,7 +97,6 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         zstart = iptr->xtal[2] / hzzgrid - dimz/2;
         zend = zstart + dimz;
 
-        invdr = 1.0 / sp->drlig;
 
         for (ix = xstart; ix < xend; ix++)
         {
@@ -126,12 +125,10 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
 
-                                //vnuc_f[idx] += linint (&sp->localig[0], r, invdr);
                                 vnuc_f[idx] += AtomicInterpolate (&sp->localig[0], r);
                                 rhoc_f[idx] += Zv * exp (-r * r / rc2) * rcnorm;
 
                                 if (sp->nlccflag)
-                                    //rhocore_f[idx] += linint (&sp->rhocorelig[0], r, invdr);
                                     rhocore_f[idx] += AtomicInterpolate (&sp->rhocorelig[0], r);
 
 

@@ -293,7 +293,6 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int nxgrid, int nygrid, int nzgrid, double * xcstart, double * ycstart, double * zcstart);
 
 double linint (double *y, double rv, double invdr);
-double grid_interp (double * y, double r, double invdr, int type);
 void my_barrier (void);
 
 
@@ -352,7 +351,7 @@ void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 void mg_eig_state_f (STATE *sp, int tid, double *vtot_psi);
 void ortho (STATE *states, int kpt);
-double qval (int ih, int jh, double r, double invdr, double *ptpr, int *nhtol,
+double qval (int ih, int jh, double r, double *ptpr, int *nhtol,
            int *nhtom, int *indv, double *ylm, double ap[][9][9], int lpx[][9],
            int lpl[][9][9], SPECIES *sp);
 void reinit_ionic_pp (STATE * states, double * vnuc, double * rhocore, double * rhoc);
@@ -397,7 +396,7 @@ void partial_betaxpsi (int ion, fftw_plan p2, double *newsintR_x,
                        double *newsintI_z, ION *iptr);
 void partial_QI (int ion, double *QI_R, ION *iptr);
 void qval_R (int ih, int jh, double r, double *x, double *qlig, double *drqlig,
-             double invdr, int *nhtol, int *nhtom, int *indv, double *ylm,
+             int *nhtol, int *nhtom, int *indv, double *ylm,
              double *ylm_x, double *ylm_y, double *ylm_z, double ap[][9][9],
              int lpx[][9], int lpl[][9][9], double *Q_x, double *Q_y,
              double *Q_z, SPECIES *sp);

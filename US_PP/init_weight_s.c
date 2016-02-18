@@ -62,7 +62,6 @@ void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
                 r = metric (ax);
 
-                //t1 = linint (&sp->betalig[ip][0], r, invdr);
                 t1 = AtomicInterpolate(&sp->betalig[ip][0], r);
                 idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
                 weptr[idx] = sqrt (1.0 / (4.0 * PI)) * t1 + 0.0I;

@@ -8,7 +8,7 @@
 #include "main.h"
 #include <float.h>
 
-double qval (int ih, int jh, double r, double invdr, double * ptpr, int *nhtol, int *nhtom,
+double qval (int ih, int jh, double r, double * ptpr, int *nhtol, int *nhtom,
            int *indv, double * ylm, double ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES * sp)
 {
     int ivl, jvl;
@@ -42,9 +42,9 @@ double qval (int ih, int jh, double r, double invdr, double * ptpr, int *nhtol, 
         else
             error_handler ("L>4");
 
-        ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_QLIG;
+        ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_LOGGRID;
         /*shuchun wang */
-        qrad = linint (ptpr1, r, invdr);
+        qrad = AtomicInterpolate (ptpr1, r);
         sum += qrad * ap[lp][ivl][jvl] * ylm[lp];
     }
     return (sum);

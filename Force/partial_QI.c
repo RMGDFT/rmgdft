@@ -15,7 +15,7 @@ void partial_QI (int ion, double * QI_R, ION * iptr)
     int ix, iy, iz, size, *dvec;
     int lpx[9][9], lpl[9][9][9];
     int  nh, icount;
-    double x[3], cx[3], r, invdr, ap[25][9][9];
+    double x[3], cx[3], r, ap[25][9][9];
     double ylm[25], ylm_x[25], ylm_y[25], ylm_z[25];
     double xc, yc, zc;
     double *QI_x, *QI_y, *QI_z;
@@ -42,7 +42,6 @@ void partial_QI (int ion, double * QI_R, ION * iptr)
     icount = 0;
     dvec = pct.Qdvec[ion];
 
-    invdr = ONE / sp->drqlig;
     qnmlig_tpr = sp->qnmlig;
     drqnmlig_tpr = sp->drqnmlig;
 
@@ -80,7 +79,7 @@ void partial_QI (int ion, double * QI_R, ION * iptr)
                         {
 
                             idx1 = num * pct.Qidxptrlen[ion] + icount;
-                            qval_R (i, j, r, cx, qnmlig_tpr, drqnmlig_tpr, invdr, sp->nhtol,
+                            qval_R (i, j, r, cx, qnmlig_tpr, drqnmlig_tpr, sp->nhtol,
                                     sp->nhtom, sp->indv, ylm, ylm_x, ylm_y, ylm_z, ap, lpx, lpl,
                                     &QI_x[idx1], &QI_y[idx1], &QI_z[idx1], sp);
                             ++num;

@@ -2,6 +2,7 @@ add_library (US_PP
 Atomic.cpp
 Atomic_Cbindings.cpp
 InitPseudo.cpp
+InitQfunct.cpp
 lcao_get_rho.c
 init_nuc.c
 init_efield.c
@@ -20,7 +21,6 @@ aainit.c
 backout_mask_function.c
 apply_mask_function.c
 get_QnmL.c
-init_qfunct.c
 init_derweight_s.c
 qval.c
 ylmr2_z.c

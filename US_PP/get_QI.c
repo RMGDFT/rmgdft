@@ -23,7 +23,7 @@ void get_QI (void)
     int *Aix, *Aiy, *Aiz;
     int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
-    double x[3], cx[3], r, invdr, ap[25][9][9], ylm[25];
+    double x[3], cx[3], r, ap[25][9][9], ylm[25];
     double xc, yc, zc;
     double hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
@@ -162,7 +162,6 @@ void get_QI (void)
             pct.Qidxptrlen[ion] = icount;
 
 
-            invdr = 1.0 / sp->drqlig;
             QI_tpr = pct.augfunc[ion];
             qnmlig = sp->qnmlig;
 
@@ -199,7 +198,7 @@ void get_QI (void)
                                 {
 
                                     idx1 = num * pct.Qidxptrlen[ion] + icount;
-                                    QI_tpr[idx1] = qval (i, j, r, invdr, qnmlig,sp->nhtol,
+                                    QI_tpr[idx1] = qval (i, j, r, qnmlig,sp->nhtol,
                                                          sp->nhtom, sp->indv, ylm, ap,
                                                          lpx, lpl, sp);
 

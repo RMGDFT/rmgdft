@@ -102,14 +102,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
  
         }
 
-        /*Get drnlig */
-        /*sp->drlig = sqrt(3.0) * (sp->ldim + 1.0) * ct.hmaxgrid / 2.0 /(double)FG_NX; */
-        sp->drlig = sqrt (3.0) * (sp->lradius +1.0);
-        if (ibrav == HEXAGONAL)
-            sp->drlig *= 2.0;
-        t1 = (double) MAX_LOCAL_LIG;
-        sp->drlig /= t1;
-
 
         /*Get nldim */
         int done = false;
@@ -128,14 +120,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
         }
-
-        /*Get drnlig */
-        sp->drnlig = sqrt (3.0) * (sp->nldim + 1.0) * ct.hmaxgrid / 2.0;
-        if (ibrav == HEXAGONAL)
-            sp->drnlig *= 2.0;
-        t1 = (double) MAX_LOCAL_LIG;
-        sp->drnlig /= t1;
-
 
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
@@ -168,10 +152,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Transform to g-space and filter it with filtered function returned on standard log grid
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.25, ct.cparm, sp->localig,
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig);
-
-        //filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, sp->localig, 
-        //&sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, sp->drlocalig);
-
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -214,10 +194,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, 0.25, ct.betacparm, &sp->betalig[ip][0],
             sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
-
-
-           //filter_potential(&sp->beta[ip][0], &sp->r[0], sp->rg_points, sp->nlradius, 0, ct.betacparm, &sp->betalig[ip][0], 
-           //        &sp->rab[0], sp->llbeta[ip], sp->drnlig, sp->gwidth, MAX_LOCAL_LIG, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
 
 
             /* Is this necessary ??? */
@@ -264,9 +240,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.25, ct.cparm, &sp->rhocorelig[0],
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL);
-
-            //filter_potential(work, &sp->r[0], sp->rg_points, sp->lradius, 0.25, ct.cparm, &sp->rhocorelig[0],
-            //              &sp->rab[0], 0, sp->drlig, sp->gwidth, MAX_LOCAL_LIG, sp->lrcut, sp->rwidth, NULL);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density

@@ -101,8 +101,6 @@ void init_derweight_p (SPECIES * sp,
 
                 r = metric (ax);
 
-                //t1 = linint (&sp->drbetalig[ip][0], r, invdr);
-                //t2 = linint (&sp->betalig[ip][0], r, invdr);
                 t1 = AtomicInterpolate (&sp->drbetalig[ip][0], r);
                 t2 = AtomicInterpolate (&sp->betalig[ip][0], r);
 

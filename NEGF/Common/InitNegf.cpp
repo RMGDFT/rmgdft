@@ -268,7 +268,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     InitPseudo(ControlMap);
 
     /* Initialize the radial qfunction stuff */
-    init_qfunct ();
+    InitQfunct(ControlMap);
 
     /* Initialize symmetry stuff */
     //init_sym ();

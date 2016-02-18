@@ -189,15 +189,6 @@ typedef struct
     double *y_index;
     double *z_index;
 
-    /* Local potential linear interpolation grid spacing */
-    double drlig;
-
-    /* Non-local linear interpolation grid spacing */
-    double drnlig;
-
-    /* Qfunction linear interpolation grid spacing */
-    double drqlig;
-
     /*Grid spacing for atomic charge density on linear grid*/
     double drlig_arho;
     

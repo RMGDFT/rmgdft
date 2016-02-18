@@ -33,7 +33,7 @@ void partial_vloc ()
     int ion, idx, overlap, st1;
     int tot_prj, ion1, index;
     int PROJECTOR_SPACE, ix, iy, iz;
-    double r, ax[3], bx[3], xc, yc, zc, t1, invdr;
+    double r, ax[3], bx[3], xc, yc, zc, t1;
     double *vloc_x, *vloc_y, *vloc_z;
     ION *iptr;
     SPECIES *sp;
@@ -94,8 +94,6 @@ void partial_vloc ()
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
-        invdr = 1. / sp->drlig;
- 
         idx = 0;
         xc = iptr->xcstart_loc;
         for (ix = 0; ix < sp->ldim_coar; ix++)
@@ -114,7 +112,7 @@ void partial_vloc ()
                     ax[2] = zc - iptr->xtal[2];
  
                     r = metric(ax);
-                    t1 = linint (sp->drlocalig, r, invdr);
+                    t1 = AtomicInterpolate(sp->drlocalig, r);
                     to_cartesian(ax, bx);
                     r += 1.0e-10;
 

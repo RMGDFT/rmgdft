@@ -217,6 +217,7 @@ void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz)
 
 int CountAtomicOrbitals(void);
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap);
+void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap);
 
 #endif
 #endif

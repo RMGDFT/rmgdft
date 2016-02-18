@@ -173,7 +173,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     /* Initialize qfuction in Cartesin coordinates */
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init: init_qfunc");
-    init_qfunct();
+    InitQfunct(ControlMap);
     delete(RT4);
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init: init_QI");
 

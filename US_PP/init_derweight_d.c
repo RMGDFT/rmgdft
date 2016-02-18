@@ -144,8 +144,6 @@ void init_derweight_d (SPECIES * sp,
                 rsqd = rsq + 1.0e-20;
                 r4 = rsq * rsq + 1.e-40;
 
-                //t1 = t3 * linint (&sp->drbetalig[ip][0], r, invdr);
-                //t2 = t3 * linint (&sp->betalig[ip][0], r, invdr);
                 t1 = t3 * AtomicInterpolate (&sp->drbetalig[ip][0], r);
                 t2 = t3 * AtomicInterpolate (&sp->betalig[ip][0], r);
                 r += 1.0e-10;

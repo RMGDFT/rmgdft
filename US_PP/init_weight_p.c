@@ -81,7 +81,6 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 ax[2] = zc;
 
                 r = metric (ax);
-                //t1 = linint (&sp->betalig[ip][0], r, invdr);
                 t1 = AtomicInterpolate (&sp->betalig[ip][0], r);
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
