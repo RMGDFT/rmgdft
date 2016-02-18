@@ -29,18 +29,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 
-/* Maximum number of points to use in the log interpolation grid */
-#define         MAX_LOGGRID      (1400)
-
-/* Starting radius for the log interpolation grid */
-#define         LOGGRID_START    (0.00001)
-
-/* Log interpolation grid mesh parameter */
-#define         LOGGRID_MESHPARM  (1.01)
-
-#define SMALL 1.0e-8
-
-#define RADIAL_GVECS 1500
+#define RADIAL_GVECS 2500
 
 
 #ifdef __cplusplus
@@ -52,6 +41,10 @@ private:
     double Gcutoff (double g1, double gcut, double width);
 
     static int Log_grid_initialized;
+    static double a;
+    static double inv_a;
+    static double b;
+    static double inv_b;
 
     // BaseGrid class
     BaseGrid *Grid;
@@ -66,6 +59,8 @@ public:
     void FilterPotential (double *potential, double *r, int rg_points, double rmax,
                               double offset, double parm, double* potential_lgrid, double *rab,
                               int l_value, double gwidth, double rcut, double rwidth, double *drpotential_lgrid);
+    double *GetRgrid(void);
+    double Interpolate(double *f, double r);
 
     static double r_filtered[MAX_LOGGRID];
     static double log_r_filtered[MAX_LOGGRID];

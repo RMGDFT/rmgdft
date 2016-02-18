@@ -1,5 +1,6 @@
 add_library (US_PP
 Atomic.cpp
+Atomic_Cbindings.cpp
 lcao_get_rho.c
 init_nuc.c
 init_efield.c

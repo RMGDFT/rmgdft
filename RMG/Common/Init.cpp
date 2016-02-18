@@ -329,7 +329,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //Dprintf ("Initialize the radial potential stuff");
     RmgTimer *RT1 = new RmgTimer("Init: radial potentials");
-    init_psp ();
+    //init_psp ();
+    InitPseudo (Kptr[0]->ControlMap);
     delete(RT1);
 
     /* Initialize symmetry stuff */

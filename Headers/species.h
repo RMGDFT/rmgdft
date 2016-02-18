@@ -166,20 +166,28 @@ typedef struct
     int nbeta;
 
 
-    /* Linear interpolation storage for the compensated local potential
+    /* Log interpolation storage for the compensated local potential
      * and for it's radial derivative.
      */
-    double localig[MAX_LOCAL_LIG];
-    double drlocalig[MAX_LOCAL_LIG];
+    double localig[MAX_LOGGRID];
+    double drlocalig[MAX_LOGGRID];
 
-    /* Linear interpolation storage for the core charge density */
-    double rhocorelig[MAX_LOCAL_LIG];
+    /* Log interpolation storage for the core charge density */
+    double rhocorelig[MAX_LOGGRID];
 
-    /* Utrosoft Vandbelit Projectors on linear interpolation grid */
-    double betalig[MAX_NB][MAX_LOCAL_LIG];
+    /* Utrosoft Vandbelit Projectors on log interpolation grid */
+    double betalig[MAX_NB][MAX_LOGGRID];
 
-    /* Radial derivatives of the Utrosoft Vandbelit Projectors on linear interpolation grid */
-    double drbetalig[MAX_NB][MAX_LOCAL_LIG];
+    /* Radial derivatives of the Utrosoft Vandbelit Projectors on log interpolation grid */
+    double drbetalig[MAX_NB][MAX_LOGGRID];
+
+    /* Array of r and xyz vals used to setup forward fft's for init_weight and init_derweight
+     * the r_index array is dimensioned (nlfdim*nlfdim*nlfdim) while the others are nlfdim
+     */
+    double *r_index;
+    double *x_index;
+    double *y_index;
+    double *z_index;
 
     /* Local potential linear interpolation grid spacing */
     double drlig;

@@ -173,7 +173,8 @@ void nlccforce (double * rho, double * vxc)
                                         axs[1] = bx[1];
                                         axs[2] = bx[2];
                                         r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-                                        sumx +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                        //sumx +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                        sumx +=   AtomicInterpolate (&sp->rhocorelig[0], r) * shift[ishift] * vxc[idx];
                                     }       /* end for */
 
 
@@ -183,7 +184,8 @@ void nlccforce (double * rho, double * vxc)
                                         axs[1] = bx[1] - shift[ishift];
                                         axs[2] = bx[2];
                                         r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-                                        sumy +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                        //sumy +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                        sumy +=   AtomicInterpolate (&sp->rhocorelig[0], r) * shift[ishift] * vxc[idx];
                                     }       /* end for */
 
                                     for (ishift = 0; ishift < 4; ishift++)
@@ -192,7 +194,8 @@ void nlccforce (double * rho, double * vxc)
                                         axs[1] = bx[1];
                                         axs[2] = bx[2] - shift[ishift];
                                         r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-                                        sumz +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                        //sumz +=   linint (&sp->rhocorelig[0], r, invdr) * shift[ishift] * vxc[idx];
+                                        sumz +=   AtomicInterpolate (&sp->rhocorelig[0], r) * shift[ishift] * vxc[idx];
                                     }       /* end for */
                                 }   /* end if */
                             }       /* end for */

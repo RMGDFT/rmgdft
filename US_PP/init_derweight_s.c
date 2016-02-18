@@ -28,7 +28,6 @@ void init_derweight_s (SPECIES * sp,
     int ixx, iyy, izz;
 
 
-
     /* nlffdim is size of the non-local box in the double grid */
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
@@ -82,7 +81,8 @@ void init_derweight_s (SPECIES * sp,
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
-                t1 = linint (&sp->drbetalig[ip][0], r, invdr);
+                //t1 = linint (&sp->drbetalig[ip][0], r, invdr);
+                t1 = AtomicInterpolate (&sp->drbetalig[ip][0], r);
 
 
                 weptrx[idx] = sqrt (1.0 / (4.0 * PI)) * t1 * bx[0] / r + 0.0I;
@@ -97,6 +97,7 @@ void init_derweight_s (SPECIES * sp,
                     weptry[idx] = 0.0;
                     weptrz[idx] = 0.0;
                 }
+
 
             }                   /* end for */
 

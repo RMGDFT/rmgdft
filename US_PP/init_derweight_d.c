@@ -22,7 +22,7 @@ void init_derweight_d (SPECIES * sp,
 {
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
-    double r, ax[3], bx[3], xc, yc, zc, t1, t2, t3, invdr;
+    double r, ax[3], bx[3], xc, yc, zc, t1, t2, t3;
     double x, y, z, rsq, rsqd, r4, xsq, ysq, zsq, y1, y2, y3, y4, y5;
     double dy1_dx, dy1_dy, dy1_dz, dy2_dx, dy2_dy, dy2_dz, dy3_dx, dy3_dy, dy3_dz, dy4_dx, dy4_dy,
         dy4_dz, dy5_dx, dy5_dy, dy5_dz;
@@ -39,8 +39,6 @@ void init_derweight_d (SPECIES * sp,
     double complex *r4x, *r4y, *r4z;
     double complex *r5x, *r5y, *r5z;
     int ixx, iyy, izz;
-
-    invdr = 1.0 / sp->drnlig;
 
 
     /*Number of grid points in the non-local box in coarse and double grids */
@@ -135,6 +133,7 @@ void init_derweight_d (SPECIES * sp,
 
                 to_cartesian (ax, bx);
                 r = metric (ax);
+
                 x = bx[0];
                 y = bx[1];
                 z = bx[2];
@@ -145,8 +144,10 @@ void init_derweight_d (SPECIES * sp,
                 rsqd = rsq + 1.0e-20;
                 r4 = rsq * rsq + 1.e-40;
 
-                t1 = t3 * linint (&sp->drbetalig[ip][0], r, invdr);
-                t2 = t3 * linint (&sp->betalig[ip][0], r, invdr);
+                //t1 = t3 * linint (&sp->drbetalig[ip][0], r, invdr);
+                //t2 = t3 * linint (&sp->betalig[ip][0], r, invdr);
+                t1 = t3 * AtomicInterpolate (&sp->drbetalig[ip][0], r);
+                t2 = t3 * AtomicInterpolate (&sp->betalig[ip][0], r);
                 r += 1.0e-10;
 
 

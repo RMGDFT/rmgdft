@@ -37,6 +37,11 @@ int Atomic::Log_grid_initialized = false;
 double Atomic::r_filtered[MAX_LOGGRID];
 double Atomic::log_r_filtered[MAX_LOGGRID];
 
+// Interpolation parameters
+double Atomic::a;
+double Atomic::inv_a;
+double Atomic::b;
+double Atomic::inv_b;
 
 // constructor just sets up logarithmic grid for first instance
 // which is used by all later instances
@@ -51,12 +56,21 @@ Atomic::Atomic(void)
             r_filtered[idx] = LOGGRID_MESHPARM * r_filtered[idx-1];
             log_r_filtered[idx] = log(r_filtered[idx]);
         }
+
+
+        b = log((r_filtered[2] - r_filtered[1]) / (r_filtered[1] - r_filtered[0]));
+        inv_b = 1.0 / b;
+        a = r_filtered[0];
+        inv_a = 1.0 / a;
         Log_grid_initialized = true;
 
     }
 
 }
 
+Atomic::~Atomic(void)
+{
+}
 
 //  This function is used to filter the high frequencies from a radial function 
 //  defined on a logarithmic grid. It computes a DFT, applies a cutoff function
@@ -79,13 +93,15 @@ void Atomic::RftToLogGrid (
     int istep;
     double t1, t2;
     int npes = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
-
+    const double small = 1.e-35;
 
     /* Get some temporary memory */
     int alloc = rg_points;
     if(alloc < RADIAL_GVECS) alloc = RADIAL_GVECS;
     if (alloc < MAX_LOGGRID)
         alloc = MAX_LOGGRID;
+    if (alloc < MAX_RGRID)
+        alloc = MAX_RGRID;
 
     double *work1 = new double[alloc]();
     double *work2 = new double[alloc]();
@@ -131,7 +147,7 @@ void Atomic::RftToLogGrid (
 
                 t1 = r[idx] * gvec[ift];
 
-                if (t1 > SMALL)
+                if (t1 > small)
                     work1[idx] = f[idx] * sin (t1) / t1;
                 else
                     work1[idx] = f[idx];
@@ -149,7 +165,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                     t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
                 else
                     t2 = 0.0;
@@ -166,7 +182,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
                     t2 -= THREE * cos (t1) / (t1 * t1);
@@ -185,7 +201,7 @@ void Atomic::RftToLogGrid (
             for (int idx = 0; idx < rg_points; idx++)
             {
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
                     t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
@@ -203,7 +219,7 @@ void Atomic::RftToLogGrid (
             for (int idx = 0; idx < rg_points; idx++)
             {
                 t1 = r[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
                     t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
@@ -263,7 +279,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                     t2 = sin (t1) / t1;
                 else
                     t2 = 1.0;
@@ -295,7 +311,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                     t2 = sin (t1) / t1;
                 else
                     t2 = 1.0;
@@ -328,7 +344,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                     t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
                 else
                     t2 = 0.0;
@@ -358,7 +374,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                     t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
                 else
                     t2 = 0.0;
@@ -387,7 +403,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
                     t2 -= THREE * cos (t1) / (t1 * t1);
@@ -420,7 +436,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
                     t2 -= THREE * cos (t1) / (t1 * t1);
@@ -451,7 +467,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
                     t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
@@ -481,7 +497,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
                     t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
@@ -512,7 +528,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
                     t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
@@ -542,7 +558,7 @@ void Atomic::RftToLogGrid (
             {
 
                 t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > SMALL)
+                if (t1 > small)
                 {
                     t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
                     t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
@@ -615,6 +631,8 @@ void Atomic::FilterPotential (
 {
 
     bool der_flag = false;
+    const double small = 1.e-8;
+
 
     if(drpotential_lgrid)
 	der_flag = true;
@@ -633,7 +651,7 @@ void Atomic::FilterPotential (
     if (der_flag)
     {
 
-	radiff (potential_lgrid, drpotential_lgrid, r_filtered, MAX_LOGGRID, LOGGRID_MESHPARM);
+	radiff (potential_lgrid, drpotential_lgrid, r_filtered, MAX_LOGGRID, log(LOGGRID_MESHPARM));
 
 	/* Fix up the first point */
 	drpotential_lgrid[1] = 2.0 * drpotential_lgrid[2] - drpotential_lgrid[3];
@@ -659,14 +677,14 @@ void Atomic::FilterPotential (
 
 		potential_lgrid[idx] *= exp_fac;
 
-		if (fabs (potential_lgrid[idx]) < SMALL)
+		if (fabs (potential_lgrid[idx]) < small)
 		    potential_lgrid[idx] = 0.0;
 
 		if (der_flag)
 		{
 		    drpotential_lgrid[idx] *= exp_fac;
 
-		    if (fabs (drpotential_lgrid[idx]) < SMALL)
+		    if (fabs (drpotential_lgrid[idx]) < small)
 			drpotential_lgrid[idx] = 0.0;
 		}
 
@@ -678,4 +696,46 @@ void Atomic::FilterPotential (
 
 
 } 
+
+
+// Returns a pointer to the shared logarithmic grid
+double *Atomic::GetRgrid(void)
+{
+    return Atomic::r_filtered;
+}
+
+
+// Interpolates function f that is defined on the shared logarithmic grid
+double Atomic::Interpolate(double *f, double r)
+{
+    double d0, d1, dm;
+    double f0, g0, g1, g2, h1, h2, i2;
+    int ic;
+
+    // truncate to nearest integer index into r_filtered array
+    if((r < LOGGRID_START)) {
+        r = LOGGRID_START;
+        if(fabs(f[0]) < 1.0e-5) return 0.0;
+    }
+
+    d0 = (log (r*Atomic::inv_a) * Atomic::inv_b);
+    ic = (int)d0;
+    ic = (ic > 0) ? ic : 1;
+
+    /* cubic interpolation using forward differences */
+    d0 -= (double) (ic);
+    d1 = (d0 - 1.0) * 0.5;
+    dm = (d0 - 2.0) / 3.0;
+
+    f0 = f[ic];
+    g0 = f[ic] - f[ic - 1];
+    g1 = f[ic + 1] - f[ic];
+    g2 = f[ic + 2] - f[ic + 1];
+    h1 = g1 - g0;
+    h2 = g2 - g1;
+    i2 = h2 - h1;
+
+    return f0 + d0 * (g1 + d1 * (h2 + dm * i2));
+    
+}
 

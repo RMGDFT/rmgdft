@@ -14,13 +14,11 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
-    double r, ax[3], bx[3], xc, yc, zc, t1, t2, rsq1, invdr;
+    double r, ax[3], bx[3], xc, yc, zc, t1, t2, rsq1;
     double cc, hxx, hyy, hzz;
     double complex *weptr1, *weptr2, *weptr3, *weptr4, *weptr5, *gwptr;
     double complex *r1, *r2, *r3, *r4, *r5;
     int ixx, iyy, izz;
-
-    invdr = 1.0 / sp->drnlig;
 
 
     /*Number of grid points in th enon-local box in coarse and double grids */
@@ -82,8 +80,10 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
                 to_cartesian (ax, bx);
                 r = metric (ax);
+
                 rsq1 = r * r + 1.0e-20;
-                t1 = linint (&sp->betalig[ip][0], r, invdr);
+                //t1 = linint (&sp->betalig[ip][0], r, invdr);
+                t1 = AtomicInterpolate(&sp->betalig[ip][0], r);
                 t1 = t1 * t2;
                 weptr1[idx] = cc * t1 * bx[0] * bx[1] / rsq1 + 0.0I;
                 weptr2[idx] = cc * t1 * bx[0] * bx[2] / rsq1 + 0.0I;
@@ -93,13 +93,14 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
 
                 if((ix*2 + sp->nlfdim) == 0 || (iy*2 + sp->nlfdim) == 0 || (iz*2 + sp->nlfdim) == 0 )
-    {
+                {
                     weptr1[idx] = 0.0;
                     weptr2[idx] = 0.0;
                     weptr3[idx] = 0.0;
                     weptr4[idx] = 0.0;
                     weptr5[idx] = 0.0;
-}
+                }
+
             }                   /* end for */
 
         }                       /* end for */

@@ -14,12 +14,11 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 {
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
-    double r, ax[3], bx[3], xc, yc, zc, cc, t1, invdr;
+    double r, ax[3], bx[3], xc, yc, zc, cc, t1;
     double hxx, hyy, hzz;
     double complex *weptr1, *weptr2, *weptr3, *gwptr;
     double complex *r1, *r2, *r3;
     int ixx, iyy, izz;
-    invdr = 1.0 / sp->drnlig;
 
 
         /*This is something we need to do only once per species, so do not use wisdom */
@@ -82,7 +81,8 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                 ax[2] = zc;
 
                 r = metric (ax);
-                t1 = linint (&sp->betalig[ip][0], r, invdr);
+                //t1 = linint (&sp->betalig[ip][0], r, invdr);
+                t1 = AtomicInterpolate (&sp->betalig[ip][0], r);
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
@@ -97,6 +97,7 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
                     weptr2[idx] = 0.0;
                     weptr3[idx] = 0.0;
                 }
+
 
             }                   /* end for */
 

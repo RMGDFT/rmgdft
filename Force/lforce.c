@@ -139,7 +139,8 @@ void lforce (double * rho, double * vh)
                                 fy += bx[1] * t1 * vh[idx];
                                 fz += bx[2] * t1 * vh[idx];
 
-                                t1 = linint (&sp->drlocalig[0], r, invdr);
+                                //t1 = linint (&sp->drlocalig[0], r, invdr);
+                                t1 = AtomicInterpolate (&sp->drlocalig[0], r);
                                 fx += -t1 * bx[0] / (r+1.0e-10) * rho[idx];
                                 fy += -t1 * bx[1] / (r+1.0e-10) * rho[idx];
                                 fz += -t1 * bx[2] / (r+1.0e-10) * rho[idx];

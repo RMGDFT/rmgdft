@@ -126,11 +126,13 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
 
-                                vnuc_f[idx] += linint (&sp->localig[0], r, invdr);
+                                //vnuc_f[idx] += linint (&sp->localig[0], r, invdr);
+                                vnuc_f[idx] += AtomicInterpolate (&sp->localig[0], r);
                                 rhoc_f[idx] += Zv * exp (-r * r / rc2) * rcnorm;
 
                                 if (sp->nlccflag)
-                                    rhocore_f[idx] += linint (&sp->rhocorelig[0], r, invdr);
+                                    //rhocore_f[idx] += linint (&sp->rhocorelig[0], r, invdr);
+                                    rhocore_f[idx] += AtomicInterpolate (&sp->rhocorelig[0], r);
 
 
                             }                           /* end for */
@@ -142,6 +144,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
 
         }
     }
+
     /* Check compensating charges */
     ct.crho = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)
