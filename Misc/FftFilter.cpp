@@ -45,7 +45,7 @@
 // set to zero.
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
-               double factor)  // IN:     Plane waves with a magnitude greater than factor*gcut are filtered out
+               double factor)  // IN:     Plane waves with a magnitude greater than factori^2*gcut are filtered out
                             //         0.0 < factor < 1.0
 {
 
@@ -58,6 +58,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   densgrid[1] = pwaves.global_dimy;
   densgrid[2] = pwaves.global_dimz;
 
+  double g2cut = factor*factor*pwaves.gmax;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 
@@ -79,7 +80,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
   pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
   for(int ig=0;ig < pbasis;ig++) {
-      if(pwaves.gmags[ig] > factor*pwaves.gmax) {
+      if(pwaves.gmags[ig] > g2cut) {
           crho[ig] = std::complex<double>(0.0, 0.0);
       }
   }
