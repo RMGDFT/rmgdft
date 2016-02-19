@@ -237,7 +237,7 @@ typedef struct
     int nh;
 
     /*Atomic charge density on linear grid*/
-    double arho_lig[MAX_LOCAL_LIG];
+    double arho_lig[MAX_LOGGRID];
     
 
     int localidx;

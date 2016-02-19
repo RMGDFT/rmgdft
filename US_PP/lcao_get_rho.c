@@ -9,6 +9,7 @@
 #include "grid.h"
 #include "common_prototypes.h"
 #include "main.h"
+#include "AtomicInterpolate.h"
 
 
 void lcao_get_rho (double * arho_f)
@@ -30,8 +31,6 @@ void lcao_get_rho (double * arho_f)
     double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;
-    int i_r;
-    double r1,r2, coef1, coef2, a,b,c;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -73,10 +72,6 @@ void lcao_get_rho (double * arho_f)
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
-
-        b = log((sp->r[2] - sp->r[1])/(sp->r[1] - sp->r[0]));
-        c = (sp->r[0] * exp(b) - sp->r[1])/(1.0 -exp(b) );
-        a = sp->r[0] + c;
 
         dimx =  sp->aradius/(hxxgrid*xside);
         dimy =  sp->aradius/(hyygrid*yside);
@@ -120,19 +115,7 @@ void lcao_get_rho (double * arho_f)
                                 x[1] = iy * hyygrid - iptr->xtal[1];
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
-                                if(r <= sp->r[0])
-                                     i_r= 0;
-                                else
-                                    i_r = (int)(log ( (r+c)/a) /b);
-                                r1 = a *exp (i_r * b) -c;
-                                r2 = a * exp((i_r+1) *b) -c;
-
-                                coef1 = (r2-r)/(r2-r1);
-                                coef2 = (r-r1)/(r2-r1);
-
-                                arho_f[idx] += coef1 * sp->atomic_rho[i_r] 
-                                    + coef2 * sp->atomic_rho[i_r+1];
-
+                                arho_f[idx] += AtomicInterpolateInline (sp->arho_lig, r);
 
 
                             }                       /* end if */
