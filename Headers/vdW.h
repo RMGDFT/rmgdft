@@ -59,8 +59,9 @@ private:
     // Lattice object
     Lattice *L;
 
-    // Pointer to plane wave object
+    // Pointer to plane wave objects
     static Pw *plane_waves;
+    static Pw *plane_waves_c;
 
     // Pointer to second derivatives used in the spline interpolations
     static double *d2y_dx2;
@@ -73,10 +74,12 @@ private:
 
     // Real space basis on this node and grid parameters
     int pbasis;
-    int fpbasis;
+    int pbasis_c;
 
-    // Total number of grid points
+    // Total number of grid points on the dense and coarse grids
+    // and the number used for the intermediate calculations
     int N;
+    int N_c;
 
     double hxgrid;
     double hygrid;
@@ -86,9 +89,6 @@ private:
     int dimz;
     ptrdiff_t densgrid[3];         // for passing to fft routines
     ptrdiff_t coarsegrid[3];         // for passing to fft routines
-    double *gx;
-    double *gy;
-    double *gz;
 
     // How many terms to include in the sum of SOLER equation 5.
     int m_cut;
@@ -135,16 +135,20 @@ private:
 #if USE_PFFT
     pfft_plan plan_forward;
     pfft_plan plan_back;
+    pfft_plan plan_forward_calc;
+    pfft_plan plan_back_calc;
 #endif
 
 public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
     ~Vdw(void);
 
-    void get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> *thetas);
+    void get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> *thetas, 
+                         int ibasis, double *gx, double *gy, double *gz);
     void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
-    double vdW_energy(double *q0, std::complex<double> *thetas);
-    void get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW);
+    double vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc, Pw *pwaves);
+    void get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW, 
+                       int ibasis, int N_calc, double *gx, double *gy, double *gz, Pw *pwaves);
 
     double Fs(double s);
     double dFs_ds(double s);

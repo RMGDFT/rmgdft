@@ -80,6 +80,7 @@
 #include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
+#include "packfuncs.h"
 #include "RmgParallelFft.h"
 
 // ----------------------------------------------------------------------
@@ -120,6 +121,7 @@ const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
 double Vdw::dk;
 Pw *Vdw::plane_waves;
+Pw *Vdw::plane_waves_c;
 double *Vdw::d2y_dx2;
 
 /*
@@ -132,6 +134,8 @@ double *Vdw::d2y_dx2;
 double *oldpotential=NULL;
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
+
+  bool use_coarsegrid=false;
 
   if((type != 1) && (type != 2))
       throw RmgFatalException() << "Vdw type was " << type << " but only 1 or 2 is allowed. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -158,6 +162,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->densgrid[2] = G.get_NZ_GRID(G.default_FG_RATIO);
   this->N = this->densgrid[0] * this->densgrid[1] * this->densgrid[2];
 
+  this->pbasis_c = G.get_P0_BASIS(1);
+  this->coarsegrid[0] = G.get_NX_GRID(1);
+  this->coarsegrid[1] = G.get_NY_GRID(1);
+  this->coarsegrid[2] = G.get_NZ_GRID(1);
+  this->N_c = this->coarsegrid[0] * this->coarsegrid[1] * this->coarsegrid[2];
+
+
   // How many terms to include in the sum of SOLER equation 5.
   this->m_cut = 12;
 
@@ -169,13 +180,33 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   // Local storage
   double *total_rho = new double[this->pbasis];
-  this->gx = new double[3*this->pbasis];
-  this->gy = this->gx + this->pbasis;
-  this->gz = this->gy + this->pbasis;
+  double *gx = new double[3*this->pbasis];
+  double *gy = gx + this->pbasis;
+  double *gz = gy + this->pbasis;
   double *q0 = new double[this->pbasis]();
   double *dq0_drho = new double[this->pbasis]();
   double *dq0_dgradrho = new double[this->pbasis]();
   std::complex<double> *thetas = new std::complex<double> [this->pbasis*Nqs]();
+
+
+  // Set up stuff that determines the precision of the intermediate calculations
+  // if the use_coarsegrid is false then these are just the dimensions of the
+  // input density grid. If use_coarsegrid is true then the dimensions of the
+  // wavefunction grid are used.
+  int calc_basis = this->pbasis;
+  int N_calc = this->N;
+  double filter_ratio = 0.8;
+  double *calc_rho, *calc_gx, *calc_gy, *calc_gz;
+  Pw *planewaves_calc;
+  if(use_coarsegrid) {
+      calc_basis = this->pbasis_c;    // basis size for rho on this PE
+      N_calc = this->N_c;             // total basis size across all nodes
+      filter_ratio = 0.25;
+      calc_rho = new double[calc_basis];
+      calc_gx = new double[3*calc_basis];
+      calc_gy = calc_gx + calc_basis;
+      calc_gz = calc_gy + calc_basis;
+  }
 
   // FFT plans
   this->plan_forward = pfft_plan_dft_3d(this->densgrid, 
@@ -191,6 +222,30 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
                                      pct.pfft_comm, 
                                      PFFT_BACKWARD, 
                                      PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+  if(use_coarsegrid) {
+
+      this->plan_forward_calc = pfft_plan_dft_3d(this->coarsegrid,
+                                                (double (*)[2])thetas,
+                                                (double (*)[2])thetas,
+                                                pct.pfft_comm,
+                                                PFFT_FORWARD,
+                                                PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+
+      this->plan_back_calc = pfft_plan_dft_3d(this->coarsegrid, 
+                                             (pfft_complex *)thetas, 
+                                             (pfft_complex *)thetas,
+                                             pct.pfft_comm, 
+                                             PFFT_BACKWARD, 
+                                             PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+
+  }
+  else {
+
+      this->plan_forward_calc = this->plan_forward;
+      this->plan_back_calc = this->plan_back;
+
+  }
+
 
   // If not initialized we must read in the kernel table
   if(!this->initialized) {
@@ -283,8 +338,11 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       kernel_file.close();
 
-      // Plane wave object
+      // Plane wave objects
       this->plane_waves = new Pw(G, L, G.default_FG_RATIO, is_gamma);
+      if(use_coarsegrid) {
+          this->plane_waves_c = new Pw(G, L, 1, is_gamma);
+      }
 
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
       this->d2y_dx2 = new double[Nqs*Nqs]();
@@ -327,15 +385,34 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       this->info();
   }
 
+  if(use_coarsegrid) {
+      planewaves_calc = this->plane_waves_c;
+  }
+  else {
+      planewaves_calc = this->plane_waves;
+  }
 
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   // Filter out higher frequencies here to improve stability
-  FftFilter(total_rho, *this->plane_waves, G.default_FG_RATIO, 0.8);
+  FftFilter(total_rho, *this->plane_waves, G.default_FG_RATIO, filter_ratio);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
   //FftGradient(total_rho, gx, gy, gz, *this->plane_waves);
 
+  // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
+  if(use_coarsegrid) {
+      get_vtot_psi (calc_rho, total_rho, G.default_FG_RATIO);
+      get_vtot_psi (calc_gx, gx, G.default_FG_RATIO);
+      get_vtot_psi (calc_gy, gy, G.default_FG_RATIO);
+      get_vtot_psi (calc_gz, gz, G.default_FG_RATIO);
+  }
+  else {
+      calc_rho = total_rho;
+      calc_gx = gx;
+      calc_gy = gy;
+      calc_gz = gz;
+  }
 
 
 
@@ -347,9 +424,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // gradient of the charge-density. These are needed for the potential
   // calculated below. This routine also calculates the thetas.
 
-  this->get_q0_on_grid (total_rho, q0, dq0_drho, dq0_dgradrho, thetas);
+  this->get_q0_on_grid (calc_rho, q0, dq0_drho, dq0_dgradrho, thetas, calc_basis, calc_gx, calc_gy, calc_gz);
 
-  double Ec_nl = this->vdW_energy(q0, thetas);
+  double Ec_nl = this->vdW_energy(q0, thetas, calc_basis, N_calc, planewaves_calc);
   etxc += Ec_nl;
 
 
@@ -364,11 +441,19 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
 
   for(int iq = 0;iq < Nqs;iq++) {
-      pfft_execute_dft(plan_back, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
+      pfft_execute_dft(plan_back_calc, (double (*)[2])&thetas[iq*calc_basis], (double (*)[2])&thetas[iq*calc_basis]);
   }
 
   double *potential = new double[this->pbasis]();
-  this->get_potential(q0, dq0_drho, dq0_dgradrho, potential, thetas);
+  double *calc_potential = new double[this->pbasis]();
+  this->get_potential(q0, dq0_drho, dq0_dgradrho, calc_potential, thetas, calc_basis, N_calc, calc_gx, calc_gy, calc_gz, planewaves_calc);
+
+  if(use_coarsegrid) {
+      FftInterpolation (G, calc_potential, potential, G.default_FG_RATIO);
+  }
+  else {
+      for(int ix = 0;ix < this->pbasis;ix++)potential[ix] = calc_potential[ix];
+  }
 
   // --------------------------------------------------------------------
   // The integral of rho(r)*potential(r) for the vtxc output variable.
@@ -379,22 +464,30 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   
   for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
+  if(use_coarsegrid) {
+      pfft_destroy_plan(plan_back_calc);
+      pfft_destroy_plan(plan_forward_calc);
+      delete [] calc_gx;
+      delete [] calc_rho;
+  }
+  pfft_destroy_plan(plan_back);
+  pfft_destroy_plan(plan_forward);
+
+  delete [] calc_potential;
   delete [] potential;
   delete [] thetas;
   delete [] dq0_dgradrho;
   delete [] dq0_drho;
   delete [] q0;
+  delete [] gx;
   delete [] total_rho;
+
 }
 
 
-// Destructor just frees memory
 Vdw::~Vdw(void)
 {
 
-  pfft_destroy_plan(plan_back);
-  pfft_destroy_plan(plan_forward);
-  delete [] this->gx;
 
 }
 
@@ -412,22 +505,23 @@ Vdw::~Vdw(void)
 //       dq0_drho(ir) = total_rho * d q0 /d rho
 //       dq0_dgradrho = total_rho / |grad_rho| * d q0 / d |grad_rho|
 
-void Vdw::get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> * thetas)
+void Vdw::get_q0_on_grid (double *calc_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> * thetas, int ibasis,
+                          double *gx, double *gy, double *gz)
 {
 
 
   double ec, dq0_dq;
 
   // Initialize q0-related arrays.
-  for(int ix = 0;ix < this->pbasis;ix++) {
+  for(int ix = 0;ix < ibasis;ix++) {
       q0[ix] = this->q_cut;      
       dq0_drho[ix] = 0.0;
       dq0_dgradrho[ix] = 0.0;
   }
 
-  for(int ix = 0;ix < this->pbasis;ix++) {
+  for(int ix = 0;ix < ibasis;ix++) {
 
-      double trho = total_rho[ix];
+      double trho = calc_rho[ix];
 
       // -----------------------------------------------------------------
       // This prevents numerical problems. If the charge density is
@@ -443,7 +537,7 @@ void Vdw::get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, doubl
 
       double r_s = pow( 3.0 / (4.0*PI*trho) , (1.0/3.0));
 
-      double s = sqrt( this->gx[ix]*this->gx[ix] + this->gy[ix]*this->gy[ix] + this->gz[ix]*this->gz[ix] ) /
+      double s = sqrt( gx[ix]*gx[ix] + gy[ix]*gy[ix] + gz[ix]*gz[ix] ) /
          (2.0 * kF(trho) * trho );
 
       // -----------------------------------------------------------------
@@ -502,26 +596,26 @@ void Vdw::get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, doubl
   // P_i polynomials defined in equation 3 in SOLER for the particular q0
   // values we have.
 
-  spline_interpolation (q_mesh, &Nqs, q0, &this->pbasis, thetas, d2y_dx2);
+  spline_interpolation (q_mesh, &Nqs, q0, &ibasis, thetas, d2y_dx2);
 
   for(int iq = 0;iq < Nqs;iq++) {
-      for(int ix = 0;ix < this->pbasis;ix++) {
-          thetas[ix + iq*this->pbasis] = thetas[ix + iq*this->pbasis] * total_rho[ix];
+      for(int ix = 0;ix < ibasis;ix++) {
+          thetas[ix + iq*ibasis] = thetas[ix + iq*ibasis] * calc_rho[ix];
       }
   }
 
 
   for(int iq = 0;iq < Nqs;iq++) {
-      pfft_execute_dft(plan_forward, (double (*)[2])&thetas[iq*this->pbasis], (double (*)[2])&thetas[iq*this->pbasis]);
+      pfft_execute_dft(plan_forward_calc, (double (*)[2])&thetas[iq*ibasis], (double (*)[2])&thetas[iq*ibasis]);
   }
 
 }
 
 
-double Vdw::vdW_energy(double *q0, std::complex<double> *thetas)
+double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc, Pw *pwaves)
 {
   double *kernel_of_k = new double[Nqs*Nqs]();
-  std::complex<double> *u_vdW = new std::complex<double>[Nqs * this->pbasis]();
+  std::complex<double> *u_vdW = new std::complex<double>[Nqs * ibasis]();
   std::complex<double> *theta = new std::complex<double>[Nqs];
 
   double vdW_xc_energy = 0.0;
@@ -529,27 +623,27 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas)
   double G_multiplier = 1.0;
   if(is_gamma) G_multiplier = 2.0;
 
-  for(int ig=0;ig < this->pbasis;ig++) {
+  for(int ig=0;ig < ibasis;ig++) {
 
 
-      if(this->plane_waves->gmask[ig] == 1.0){
+      if(pwaves->gmask[ig] == 1.0){
 
-          double g = sqrt(this->plane_waves->gmags[ig]) * tpiba;
+          double g = sqrt(pwaves->gmags[ig]) * tpiba;
 
           this->interpolate_kernel(g, kernel_of_k);
           for(int idx=0;idx < Nqs;idx++) {
-             theta[idx] = thetas[ig + idx*this->pbasis];
+             theta[idx] = thetas[ig + idx*ibasis];
           }
 
           for(int q2_i=0;q2_i < Nqs;q2_i++) {
 
               for(int q1_i=0;q1_i < Nqs;q1_i++) {
 
-                  u_vdW[q2_i*this->pbasis + ig] += kernel_of_k[q1_i*Nqs + q2_i] * theta[q1_i];
+                  u_vdW[q2_i*ibasis + ig] += kernel_of_k[q1_i*Nqs + q2_i] * theta[q1_i];
 
               }
 
-              vdW_xc_energy = vdW_xc_energy + G_multiplier * std::real(u_vdW[q2_i*this->pbasis + ig] *
+              vdW_xc_energy = vdW_xc_energy + G_multiplier * std::real(u_vdW[q2_i*ibasis + ig] *
                               std::conj(theta[q2_i]));
 
           }
@@ -567,7 +661,7 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas)
   // We skip the sum over processors for the returned quantity since that is the convention
   // followed in higher level routines where vdW_xc_energy is added to the other components
   // and then summed
-  vdW_xc_energy = 0.5 * vdW_xc_energy * L->omega / (double)this->N / (double)this->N;
+  vdW_xc_energy = 0.5 * vdW_xc_energy * L->omega / (double)N_calc / (double)N_calc;
   double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
   rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", t1);
 
@@ -575,10 +669,10 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas)
   if(is_gamma) {
       // This is not correct. I need to conjugate the inverse vectors. Will need a lookup
       // table to map these correctly into the fft grid
-      for(int ix=0;ix < this->pbasis*Nqs;ix++) thetas[ix] = std::conj(u_vdW[ix]);
+      for(int ix=0;ix < ibasis*Nqs;ix++) thetas[ix] = std::conj(u_vdW[ix]);
   }
   else {
-      for(int ix=0;ix < this->pbasis*Nqs;ix++) thetas[ix] = u_vdW[ix];
+      for(int ix=0;ix < ibasis*Nqs;ix++) thetas[ix] = u_vdW[ix];
   }
 
   delete [] theta;
@@ -587,19 +681,20 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas)
   return vdW_xc_energy;
 }
 
-void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW)
+void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW, 
+                        int ibasis, int N_calc, double *gx, double *gy, double *gz, Pw *pwaves)
 {
 
   std::complex<double> i(0.0,1.0);
   int q_low, q_hi, q;
-  double *h_prefactor = new double[this->pbasis]();
+  double *h_prefactor = new double[ibasis]();
   double *y = new double[Nqs]; 
-  std::complex<double> *h = new std::complex<double>[this->pbasis]();
+  std::complex<double> *h = new std::complex<double>[ibasis]();
   double P, dP_dq0;
   double tpiba = 2.0 * PI / this->L->celldm[0];
 
 
-  for(int ig = 0;ig < this->pbasis;ig++) {
+  for(int ig = 0;ig < ibasis;ig++) {
      
       q_low = 0;
       q_hi = Nqs - 1;
@@ -641,9 +736,9 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
 
          // --------------------------------------------------------------
          // The first term in equation 10 of SOLER.
-         potential[ig] = potential[ig] + std::real(u_vdW[ig + P_i * this->pbasis] * (P + dP_dq0 * dq0_drho[ig]));
+         potential[ig] = potential[ig] + std::real(u_vdW[ig + P_i * ibasis] * (P + dP_dq0 * dq0_drho[ig]));
          if (q0[ig] != q_mesh[Nqs-1]) {
-            h_prefactor[ig] = h_prefactor[ig] + std::real(u_vdW[ig + P_i * this->pbasis] * dP_dq0*dq0_dgradrho[ig]);
+            h_prefactor[ig] = h_prefactor[ig] + std::real(u_vdW[ig + P_i * ibasis] * dP_dq0*dq0_dgradrho[ig]);
          }
       }
   }
@@ -652,24 +747,24 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
   for(int icar = 0;icar < 3;icar++) {
 
      double *grad_rho;
-     if(icar == 0) grad_rho = this->gx;
-     if(icar == 1) grad_rho = this->gy;
-     if(icar == 2) grad_rho = this->gz;
+     if(icar == 0) grad_rho = gx;
+     if(icar == 1) grad_rho = gy;
+     if(icar == 2) grad_rho = gz;
 
-     for(int ix=0;ix < this->pbasis;ix++) {
+     for(int ix=0;ix < ibasis;ix++) {
          h[ix] = std::complex<double>(h_prefactor[ix] * grad_rho[ix], 0.0);
      }
 
-     for(int ix = 0;ix < this->pbasis;ix++) {
-        double gradient2 = this->gx[ix]*this->gx[ix] + this->gy[ix]*this->gy[ix] + this->gz[ix]*this->gz[ix];
+     for(int ix = 0;ix < ibasis;ix++) {
+        double gradient2 = gx[ix]*gx[ix] + gy[ix]*gy[ix] + gz[ix]*gz[ix];
         if ( gradient2 > 0.0) h[ix] = h[ix] / sqrt( gradient2 );
      }
 
 
-     pfft_execute_dft(plan_forward, (double (*)[2])h, (double (*)[2])h);
-     for(int ix=0;ix < this->pbasis;ix++) {
-         if(this->plane_waves->gmask[ix] == 1.0) {
-             h[ix] = i * tpiba * this->plane_waves->g[ix].a[icar] * h[ix];
+     pfft_execute_dft(plan_forward_calc, (double (*)[2])h, (double (*)[2])h);
+     for(int ix=0;ix < ibasis;ix++) {
+         if(pwaves->gmask[ix] == 1.0) {
+             h[ix] = i * tpiba * pwaves->g[ix].a[icar] * h[ix];
          }
          else {
              h[ix] = std::complex<double>(0.0, 0.0);
@@ -678,23 +773,23 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
 
      if (is_gamma) {
          // Not correct yet. Need a lookup table to map back into the fft grid
-         for(int ix=0;ix < this->pbasis;ix++) {
+         for(int ix=0;ix < ibasis;ix++) {
              h[ix] = std::conj(h[ix]);
          }
      }
 
-     pfft_execute_dft(plan_back, (double (*)[2])h, (double (*)[2])h);
-     double scale = 1.0 / (double)this->N;
+     pfft_execute_dft(plan_back_calc, (double (*)[2])h, (double (*)[2])h);
+     double scale = 1.0 / (double)N_calc;
 
-     for(int ix=0;ix < this->pbasis;ix++) potential[ix] -= scale * std::real(h[ix]);
+     for(int ix=0;ix < ibasis;ix++) potential[ix] -= scale * std::real(h[ix]);
 
   }
 
 
   // Now correct for the factor of N introduced by the earlier fft
 
-  double scale = 1.0 / (double)this->N;
-  for(int ix=0;ix < this->pbasis;ix++) potential[ix] *= scale;
+  double scale = 1.0 / (double)N_calc;
+  for(int ix=0;ix < ibasis;ix++) potential[ix] *= scale;
 
   //double echeck = 0.0;
   //for(int idx=0;idx<this->pbasis;idx++) echeck += this->total_rho[idx] * potential[idx];
