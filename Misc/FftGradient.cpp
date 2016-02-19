@@ -31,9 +31,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "vdW.h"
 #include "RmgException.h"
-#include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
 

@@ -31,9 +31,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "vdW.h"
 #include "RmgException.h"
-#include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
 
@@ -43,11 +41,10 @@
 
 // On input performs a dft of x which is an array distributed in real space across all node
 // using the plane wave structure defined in pwaves. This is then filtered in g-space with
-// the coefficients of all plane waves with a cutoff greater than the maximum value in pwaves
+// the coefficients of all plane waves with a cutoff greater than the maximum value on the grid
 // set to zero.
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
-               int density, // IN:     Density of grid being filtered
                double factor)  // IN:     Plane waves with a magnitude greater than factor*gcut are filtered out
                             //         0.0 < factor < 1.0
 {
@@ -57,12 +54,12 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
   ptrdiff_t densgrid[3];
   pfft_plan plan_forward, plan_back;
-  densgrid[0] = Rmg_G->get_NX_GRID(density);
-  densgrid[1] = Rmg_G->get_NY_GRID(density);
-  densgrid[2] = Rmg_G->get_NZ_GRID(density);
+  densgrid[0] = pwaves.global_dimx;
+  densgrid[1] = pwaves.global_dimy;
+  densgrid[2] = pwaves.global_dimz;
 
-  int global_basis = Rmg_G->get_GLOBAL_BASIS(density);
-  int pbasis = Rmg_G->get_P0_BASIS(density);
+  int global_basis = pwaves.global_basis;
+  int pbasis = pwaves.pbasis;
 
   std::complex<double> *crho = new std::complex<double>[pbasis];
   plan_forward = pfft_plan_dft_3d(densgrid,
@@ -82,12 +79,15 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
   pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
   for(int ig=0;ig < pbasis;ig++) {
-      if(pwaves.gmags[ig] > factor*pwaves.gcut) {
+      if(pwaves.gmags[ig] > factor*pwaves.gmax) {
           crho[ig] = std::complex<double>(0.0, 0.0);
       }
   }
   pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
   for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
+
+  pfft_destroy_plan(plan_back);
+  pfft_destroy_plan(plan_forward);
   delete [] crho;
 
 }

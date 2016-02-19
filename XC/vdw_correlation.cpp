@@ -195,13 +195,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // wavefunction grid are used.
   int calc_basis = this->pbasis;
   int N_calc = this->N;
-  double filter_ratio = 0.8;
+  double filter_ratio = 0.5;
   double *calc_rho, *calc_gx, *calc_gy, *calc_gz;
   Pw *planewaves_calc;
   if(use_coarsegrid) {
       calc_basis = this->pbasis_c;    // basis size for rho on this PE
       N_calc = this->N_c;             // total basis size across all nodes
-      filter_ratio = 0.25;
+      filter_ratio = 0.125;
       calc_rho = new double[calc_basis];
       calc_gx = new double[3*calc_basis];
       calc_gy = calc_gx + calc_basis;
@@ -396,7 +396,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   // Filter out higher frequencies here to improve stability
-  FftFilter(total_rho, *this->plane_waves, G.default_FG_RATIO, filter_ratio);
+  FftFilter(total_rho, *this->plane_waves, filter_ratio);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
   //FftGradient(total_rho, gx, gy, gz, *this->plane_waves);
 

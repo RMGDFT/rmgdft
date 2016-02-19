@@ -31,9 +31,7 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "vdW.h"
 #include "RmgException.h"
-#include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
 
@@ -66,7 +64,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
   int dimx_c = G.get_PX0_GRID(1); 
   int dimy_c = G.get_PY0_GRID(1); 
   int dimz_c = G.get_PZ0_GRID(1); 
-  int dimx_f = G.get_PX0_GRID(ratio); 
   int dimy_f = G.get_PY0_GRID(ratio); 
   int dimz_f = G.get_PZ0_GRID(ratio); 
   double scale = 1.0 / (double)(n[0]*n[1]*n[2]);

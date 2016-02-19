@@ -89,8 +89,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   gvec[2] = (double)ivec[0] * L.b0[2] + (double)ivec[1] * L.b1[2] + (double)ivec[2] * L.b2[2];
   gvec[2] *= L.celldm[0];
 
-  this->gcut = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
-  this->gcut = this->gcut / 3.0;
+  this->gmax = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
+  this->gcut = this->gmax / 3.0;
   
   int idx = -1;
   for(int ix = 0;ix < this->dimx;ix++) {
@@ -111,16 +111,16 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               // Gamma only exclude line with x = 0, y = 0, z < 0
               if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
 
+              this->gmags[idx] = gvec[0]*gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
+              g[idx].a[0] = gvec[0];
+              g[idx].a[1] = gvec[1];
+              g[idx].a[2] = gvec[2];
+
               if(((int)fabs(round(gvec[0])) == this->global_dimx/2) || 
                  ((int)fabs(round(gvec[1])) == this->global_dimy/2) || 
                  ((int)fabs(round(gvec[2])) == this->global_dimz/2)) continue;
 
-              double tmag = gvec[0]*gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
-              if(tmag <= this->gcut) {
-                  this->gmags[idx] = tmag;
-                  g[idx].a[0] = gvec[0];
-                  g[idx].a[1] = gvec[1];
-                  g[idx].a[2] = gvec[2];
+              if(this->gmags[idx] <= this->gcut) {
                   this->gmask[idx] = 1.0;
                   this->ng++;
               }

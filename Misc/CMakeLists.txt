@@ -1,4 +1,5 @@
 add_library (Misc
+FftFreqBin.cpp
 FftFilter.cpp
 FftLaplacian.cpp
 FftGradient.cpp

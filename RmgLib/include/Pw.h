@@ -78,8 +78,9 @@ public:
     int global_dimy;
     int global_dimz;
 
-    // Plane wave cutoff
+    // Plane wave cutoff and max
     double gcut;
+    double gmax;
 
     int ng;
     gvector *g;
