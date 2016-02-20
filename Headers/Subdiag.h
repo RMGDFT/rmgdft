@@ -44,9 +44,7 @@
 #include "Scalapack.h"
 
 template <typename KpointType> void Subdiag(Kpoint<KpointType> *kptr, 
-                                            double *vh, 
-                                            double *vnuc,
-                                            double *vxc,
+                                            double *vtot, 
                                             int subdiag_driver);
 template <typename KpointType>
 void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot);

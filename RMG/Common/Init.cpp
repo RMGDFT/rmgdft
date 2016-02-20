@@ -492,13 +492,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             /*Generate the Dnm_I */
             get_ddd (vtot);
 
+            /*Now we cam do subspace diagonalization */
+            for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+                Subdiag (Kptr[0], vtot, ct.subdiag_driver);
+            }
+
             /*Release vtot memory */
             delete [] vtot;
 
-            /*Now we cam do subspace diagonalization */
-            for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-                Subdiag (Kptr[0], vh, vnuc, vxc, ct.subdiag_driver);
-            }
 
         }                           /*end if(ct.initdiag) */
         else

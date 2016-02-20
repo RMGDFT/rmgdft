@@ -312,7 +312,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         /* do diagonalizations if requested, if not orthogonalize */
         if (diag_this_step) {
 
-            Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
+            Subdiag (Kptr[kpt], vtot, ct.subdiag_driver);
             Betaxpsi (Kptr[kpt]);
             Kptr[kpt]->mix_betaxpsi(0);
             // Projectors are rotated along with orbitals in Subdiag so no need to recalculate

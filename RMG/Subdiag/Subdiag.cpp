@@ -50,11 +50,11 @@
 #endif
 
 
-template void Subdiag<double>(Kpoint<double> *, double *, double *, double *, int);
-template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, double *, double *, double *, int);
+template void Subdiag<double>(Kpoint<double> *, double *, int);
+template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int);
 
 template <typename KpointType>
-void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, int subdiag_driver)
+void Subdiag (Kpoint<KpointType> *kptr, double *vtot, int subdiag_driver)
 {
     RmgTimer RT0("Diagonalization");
     //rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
@@ -136,15 +136,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     }
 
     
-    // Get vtot on fine grid 
-    int FP0_BASIS = kptr->G->get_P0_BASIS(kptr->G->get_default_FG_RATIO());
-    double *vtot = new double[FP0_BASIS];
+    // Get vtot on wavefunction grid 
     double *vtot_eig = new double[kptr->pbasis];
     double *eigs = new double[2*kptr->nstates];
-
-    for (int idx = 0; idx < FP0_BASIS; idx++) {
-        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
-    }
 
     // vtot holds potential on fine grid so restrict it to the orbital grid and store
     // result in vtot_eig
@@ -312,7 +306,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vh, double *vnuc, double *vxc, i
     delete [] Aij;
 #endif
     delete [] vtot_eig;
-    delete [] vtot;
 
 }
 

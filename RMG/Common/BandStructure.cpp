@@ -89,7 +89,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         {
 
 
-            Subdiag (Kptr[kpt], vh, vnuc, vxc, ct.subdiag_driver);
+            Subdiag (Kptr[kpt], vtot, ct.subdiag_driver);
             for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
                 Betaxpsi (Kptr[kpt]);
                 Kptr[kpt]->mix_betaxpsi(0);
