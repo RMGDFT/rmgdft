@@ -56,27 +56,37 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     double scale = tpiba * tpiba / (double)pwaves.global_basis;
     int isize = pwaves.pbasis;
 
-    ptrdiff_t grid[3]; 
-    grid[0] = pwaves.global_dimx;
-    grid[1] = pwaves.global_dimy;
-    grid[2] = pwaves.global_dimz;
-
     std::complex<double> czero(0.0,0.0);
     std::complex<double> *tx = new std::complex<double>[isize];
 
-    forw = pfft_plan_dft_3d(grid,
-                          (double (*)[2])tx,
-                          (double (*)[2])tx,
-                          pct.pfft_comm,
-                          PFFT_FORWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    if(&pwaves == coarse_pwaves) {
+        forw = forward_coarse;
+        inv = backward_coarse;
+    }
+    else if(&pwaves == fine_pwaves) {
+        forw = forward_fine;
+        inv = backward_fine;
+    }
+    else {
+        ptrdiff_t grid[3]; 
+        grid[0] = pwaves.global_dimx;
+        grid[1] = pwaves.global_dimy;
+        grid[2] = pwaves.global_dimz;
 
-    inv = pfft_plan_dft_3d(grid,
-                          (double (*)[2])tx,
-                          (double (*)[2])tx,
-                          pct.pfft_comm,
-                          PFFT_BACKWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+        forw = pfft_plan_dft_3d(grid,
+                              (double (*)[2])tx,
+                              (double (*)[2])tx,
+                              pct.pfft_comm,
+                              PFFT_FORWARD,
+                              PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+
+        inv = pfft_plan_dft_3d(grid,
+                              (double (*)[2])tx,
+                              (double (*)[2])tx,
+                              pct.pfft_comm,
+                              PFFT_BACKWARD,
+                              PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    }
 
     for(int ix = 0;ix < isize;ix++) {
         tx[ix] = std::complex<double>(x[ix], 0.0);
@@ -98,8 +108,10 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     pfft_execute_dft(inv, (double (*)[2])tx, (double (*)[2])tx);
     for(int ix=0;ix < isize;ix++) lapx[ix] = scale * std::real(tx[ix]);
 
-    pfft_destroy_plan(forw);
-    pfft_destroy_plan(inv);
+    if((&pwaves != coarse_pwaves) && (&pwaves != fine_pwaves)) {
+        pfft_destroy_plan(inv);
+        pfft_destroy_plan(forw);
+    }
 
     delete [] tx;
 }
