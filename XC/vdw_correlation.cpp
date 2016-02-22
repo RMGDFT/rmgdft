@@ -135,7 +135,7 @@ double *oldpotential=NULL;
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
 
-  bool use_coarsegrid=false;
+  bool use_coarsegrid=true;
 
   if((type != 1) && (type != 2))
       throw RmgFatalException() << "Vdw type was " << type << " but only 1 or 2 is allowed. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -398,7 +398,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Filter out higher frequencies here to improve stability
   FftFilter(total_rho, *this->plane_waves, filter_ratio);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
-  //FftGradient(total_rho, gx, gy, gz, *this->plane_waves);
+  //FftGradientFine(total_rho, gx, gy, gz);
 
   // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
   if(use_coarsegrid) {

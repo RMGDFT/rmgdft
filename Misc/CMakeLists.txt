@@ -1,4 +1,5 @@
 add_library (Misc
+FftInitPlans.cpp
 FftFreqBin.cpp
 FftFilter.cpp
 FftLaplacian.cpp
