@@ -179,8 +179,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double eig, diag, t1, t2, t4;
     double *work1;
     OrbitalType *nv, *ns;
-    int eig_pre[6] = { 0, 3, 6, 2, 2, 2 };
-    int eig_post[6] = { 0, 3, 6, 2, 2, 2 };
+    int eig_pre[6] = { 0, 6, 6, 6, 6, 6 };
+    int eig_post[6] = { 0, 2, 2, 2, 2, 2 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -193,10 +193,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double hzgrid = G->get_hzgrid(1);
     int levels = ct.eig_parm.levels;
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) levels = 0;
-    if ((ct.runflag == LCAO_START) && (ct.scf_steps < 2)) levels = 1;
     if ((ct.runflag == LCAO_START) && (ct.scf_steps < 1)) levels = 0;
 
-    double sb_step = ct.eig_parm.gl_step / ct.max_zvalence;
+    double Zfac = 2.0 * ct.max_zvalence;
     int pbasis = kptr->pbasis;
     int sbasis = sp->sbasis;
 
@@ -355,7 +354,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         if (cycles == ct.eig_parm.gl_pre)
         {
 
-
             CalcType f1(TWO * eig);
             for (int idx = 0; idx <pbasis; idx++)
             {
@@ -365,30 +363,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             }
 
             /* Pack the residual data into multigrid array */
-            CPP_pack_ptos<CalcType> (sg_psi_t, res_t, dimx, dimy, dimz);
+            CPP_pack_ptos<CalcType> (work1_t, res_t, dimx, dimy, dimz);
 
-            T->trade_images<CalcType> (sg_psi_t, dimx, dimy, dimz, FULL_TRADE);
-
-
-            /* Smooth it once and store the smoothed residual in work1 */
-            t1 = 145.0;
-
-            CPP_app_smooth<CalcType> (sg_psi_t, work1_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
-
-
-            if(potential_acceleration) {
-                t1 = eig - kptr->Kstates[0].eig[0];
-                t1 = -t1*t1 / 10.0;
-            }
-            else {
-                t1 = 0.0;
-            }
 
             /* Do multigrid step with solution returned in sg_twovpsi */
             RT1 = new RmgTimer("Mg_eig: mgrid_solv");
             MG.mgrid_solv<CalcType> (sg_twovpsi_t, work1_t, work2_t,
                         dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, sb_step, t1,
+                        hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                        ct.eig_parm.gl_step, Zfac, 0.0, NULL,
                         G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);

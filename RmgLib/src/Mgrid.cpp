@@ -46,21 +46,38 @@
 #include "boundary_conditions.h"
 
 
-template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::eval_residual (double *, double *, int, int, int, double, double, double, double *);
+template void Mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::eval_residual (float *, float *, int, int, int, double, double, double, float *);
+template void Mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double);
+template void Mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double);
+template void Mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv_schrodinger<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv_schrodinger<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv_schrodinger<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv_schrodinger<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+
+
+template void Mgrid::eval_residual (double *, double *, int, int, int, double, double, double, double *, double *);
+
+template void Mgrid::eval_residual (float *, float *, int, int, int, double, double, double, float *, double *);
+
+template void Mgrid::solv_pois (double *, double *, double *, int, int, int, double, double, double, double, double, double, double *);
+
+template void Mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double, double, double *);
 
 //template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
@@ -78,12 +95,58 @@ Mgrid::~Mgrid(void)
         std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times." << std::endl;
 }
 
+
+// Poisson variant
+template <typename RmgType>
+void Mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
+                 int dimx, int dimy, int dimz,
+                 double gridhx, double gridhy, double gridhz,
+                 int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int *post_cyc, int mu_cyc, double step, 
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim, int boundaryflag)
+{
+    Mgrid::mgrid_solv (v_mat, f_mat, work,
+                 dimx, dimy, dimz,
+                 gridhx, gridhy, gridhz,
+                 level, nb_ids, max_levels, pre_cyc,
+                 post_cyc, mu_cyc, step, 0.0, 0.0, NULL,
+                 gxsize, gysize, gzsize,
+                 gxoffset, gyoffset, gzoffset,
+                 pxdim, pydim, pzdim, boundaryflag);
+
+}
+
+
+template <typename RmgType>
+void Mgrid::mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * work,
+                 int dimx, int dimy, int dimz,
+                 double gridhx, double gridhy, double gridhz,
+                 int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int *post_cyc, int mu_cyc, double step, double *pot,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim, int boundaryflag)
+{
+    Mgrid::mgrid_solv (v_mat, f_mat, work,
+                 dimx, dimy, dimz,
+                 gridhx, gridhy, gridhz,
+                 level, nb_ids, max_levels, pre_cyc,
+                 post_cyc, mu_cyc, step, 0.0, 0.0, pot,
+                 gxsize, gysize, gzsize,
+                 gxoffset, gyoffset, gzoffset,
+                 pxdim, pydim, pzdim, boundaryflag);
+
+}
+
+
 template <typename RmgType>
 void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
                  int level, int *nb_ids, int max_levels, int *pre_cyc,
-                 int *post_cyc, int mu_cyc, double step, double k,
+                 int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
@@ -99,6 +162,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
     RmgType *resid, *newf, *newv, *newwork;
+    double *newpot=NULL;
 
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -107,18 +171,20 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     scale = 2.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     scale = scale + (2.0 / (gridhy * gridhy * L->get_yside() * L->get_yside()));
     scale = scale + (2.0 / (gridhz * gridhz * L->get_zside() * L->get_zside()));
-    scale = step / scale;
+    scale = 1.0 / (scale + Zfac);
+    scale = step * scale;
+
 
 //    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_TRADE);
     T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
 
 
-    for (idx = 0; idx < size; idx++)
+    if(pot) 
     {
-
-        v_mat[idx] = -(RmgType)scale * f_mat[idx];
-
-    }                           /* end for */
+        T->trade_images (pot, dimx, dimy, dimz, FULL_TRADE);
+//        for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * (f_mat[idx] + (RmgType)2.0*(RmgType)pot[idx]*v_mat[idx]);
+    }
+    for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
 
 
 /*
@@ -130,7 +196,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     {
 
         /* solve once */
-        solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+        solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
 
         /* trade boundary info */
@@ -169,7 +235,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     }
 
 /* evaluate residual */
-    eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+    eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
     T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
 
@@ -177,6 +243,12 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 /* set storage pointers in the current workspace */
     newv = &work[0];
     newf = &work[siz2];
+    if(pot) {
+        newpot = &pot[siz2];
+    }
+    else {
+        newpot = NULL;
+    }
     newwork = &work[2 * siz2];
 
 
@@ -184,11 +256,12 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     {
 
         mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        if(pot) mg_restrict (pot, newpot, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                     gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
-                    max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
+                    max_levels, pre_cyc, post_cyc, mu_cyc, step, 2.0*Zfac, k, newpot,
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,
                     pxdim, pydim, pzdim, boundaryflag);
@@ -211,7 +284,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
         {
 
             /* solve once */
-            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
             /* trade boundary info */
             T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
@@ -222,7 +295,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
         if (i < (mu_cyc - 1))
         {
 
-            eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
+            eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
             T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end if */
@@ -909,7 +982,7 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
 
 template <typename RmgType>
 void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz, RmgType * res)
+                    double gridhx, double gridhy, double gridhz, RmgType * res, double *pot)
 {
     int size, idx;
     FiniteDiff FD(L);
@@ -918,9 +991,13 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
     for (idx = 0; idx < size; idx++)
         res[idx] = 0.0;
     FD.app2_del2 (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-    for (idx = 0; idx < size; idx++)
-        res[idx] = f_mat[idx] - res[idx];
+    if(pot) {
+//BBBBBBBBB
+        for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] + (RmgType)0.0 * (RmgType)pot[idx]*mat[idx] - res[idx];
+    }
+    else {
+        for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] - res[idx];
+    }
 
 
 }                               /* end eval_residual */
@@ -929,7 +1006,7 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
 
 template <typename RmgType>
 void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
-                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k)
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, double k, double *pot)
 {
     int size, idx;
     double scale;
@@ -941,8 +1018,9 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
         work[idx] = 0.0;
     diag = -FD.app2_del2 (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
-    scale = step / diag;
-    
+    scale = 1.0 / (diag + Zfac);
+    scale = step * scale;
+ 
     // Non-zero k effectively means we are solving the Helmholtz rather than Poissons equation
     if(k != 0.0) {
 
@@ -956,12 +1034,15 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
      }
      else {
 
-        for (idx = 0; idx < size; idx++)
+        if(pot) 
         {
-
-            vmat[idx] += (RmgType)scale * (work[idx] - fmat[idx]);
-
-        }                           /* end for */
+//BBBBBBBBB
+            for (idx = 0; idx < size; idx++) vmat[idx] += (RmgType)scale * (work[idx] - (RmgType)0.0*vmat[idx]*(RmgType)pot[idx] - fmat[idx]);
+        }
+        else 
+        {
+            for (idx = 0; idx < size; idx++) vmat[idx] += (RmgType)scale * (work[idx] - fmat[idx]);
+        }
 
      }
 

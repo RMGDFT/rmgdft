@@ -28,7 +28,7 @@ extern "C" void mgrid_solv (double * v_mat, double * f_mat, double * work,
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     MG.mgrid_solv<double>( v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz,
-                   level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, k,
+                   level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, 0.0, k, NULL,
                    gxsize, gysize, gzsize,
                    gxoffset, gyoffset, gzoffset,
                    pxdim, pydim, pzdim, boundary_flag);
@@ -51,7 +51,7 @@ extern "C" void eval_residual (double * mat, double * f_mat, int dimx, int dimy,
                     double gridhx, double gridhy, double gridhz, double * res)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
-    MG.eval_residual<double>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res);
+    MG.eval_residual<double>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res, NULL);
 }
 
 extern "C" int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
@@ -64,7 +64,7 @@ extern "C" void solv_pois (double * vmat, double * fmat, double * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
-    MG.solv_pois<double>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, k);
+    MG.solv_pois<double>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 }
 
 extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)

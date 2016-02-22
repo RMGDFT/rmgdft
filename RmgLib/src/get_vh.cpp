@@ -77,7 +77,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
     double t1, vavgcor, diag=0.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
     double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
-    double k_vh;
     Mgrid MG(L, T);
 
     int global_basis = G->get_GLOBAL_BASIS(density);
@@ -93,9 +92,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
     // Solve to a high degree of precision on the coarsest level
     poi_pre[maxlevel] = 25;
-
-    // Multigrid solver can handle both poisson and helmholtz set k_vh=0 for poisson
-    k_vh = 0.0;
 
     int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
@@ -161,11 +157,11 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 /* Transfer res into smoothing grid */
                 CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 
-                MG.mgrid_solv<double> (mglhsarr, sg_res, work,
+                MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz, 
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
                             0, G->get_neighbors(), maxlevel, poi_pre,
-                            poi_post, mucycles, coarse_step, k_vh,
+                            poi_post, mucycles, coarse_step,
                             G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
                             G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);

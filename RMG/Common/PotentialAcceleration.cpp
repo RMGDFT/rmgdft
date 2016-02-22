@@ -103,16 +103,23 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         std::complex<double> orig_psi;
         std::complex<double> I_t(0.0, 1.0);
 
+
+        double t2 = 0.0;
         for(int idx = 0;idx < pbasis;idx++) {
                 orig_psi = std::real(saved_psi[idx]) + std::imag(saved_psi[idx]) * I_t;
                 delta_psi = std::real(tmp_psi_t[idx]) - std::real(saved_psi[idx]) + (std::imag(tmp_psi_t[idx]) - std::imag(saved_psi[idx])) * I_t;
                 res_t[idx] = -4.0 * PI * sp->occupation[0] * std::real( std::conj(delta_psi) * orig_psi +
                                                                          delta_psi * std::conj(orig_psi) + delta_psi*std::conj(delta_psi) );
+                t2 += res_t[idx];
 
 
 //                res_t[idx] = -4.0 * PI * sp->occupation[0] *
 //                           (tmp_psi_t[idx] - (float)saved_psi[idx]) * (2.0*(float)saved_psi[idx] + ((float)tmp_psi_t[idx] - (float)saved_psi[idx]));
         }
+
+        t2 = real_sum_all(t2, pct.grid_comm) / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+        // neutralize cell with a constant background charge
+        for(int idx = 0;idx <pbasis;idx++) res_t[idx] -= t2;
 
         /* Pack delta_rho into multigrid array */
         CPP_pack_ptos<float> (sg_psi_t, res_t, dimx, dimy, dimz);
@@ -120,15 +127,6 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         /* Smooth it once and store the smoothed charge in res */
         CPP_app_smooth1<float> (sg_psi_t, res_t, G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1));
 
-        // neutralize cell with a constant background charge
-        double t2 = 0.0;
-        for(int idx = 0;idx <pbasis;idx++) {
-            t2 += res_t[idx];
-        }
-        t2 = real_sum_all(t2, pct.grid_comm) / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
-        for(int idx = 0;idx <pbasis;idx++) {
-            res_t[idx] -= t2;
-        }
 
         /* Do multigrid step with solution returned in work_t */
         int levels=1;
@@ -136,7 +134,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         RmgTimer *RT1 = new RmgTimer("Mg_eig: mgrid_solv");
         MG.mgrid_solv (work_t, res_t, work2_t,
                     dimx, dimy, dimz, hxgrid,
-                    hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0,
+                    hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, 1.0, 0.0, 0.0, NULL,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
