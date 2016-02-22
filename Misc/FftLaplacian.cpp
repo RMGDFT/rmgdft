@@ -38,6 +38,16 @@
 #if USE_PFFT
 #include "RmgParallelFft.h"
 
+void FftLaplacianCoarse(double *x, double *lapx)
+{
+    FftLaplacian(x, lapx, *coarse_pwaves);
+}
+
+void FftLaplacianFine(double *x, double *lapx)
+{
+    FftLaplacian(x, lapx, *fine_pwaves);
+}
+
 void FftLaplacian(double *x, double *lapx, Pw &pwaves)
 {
 

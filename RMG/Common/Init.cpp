@@ -46,6 +46,7 @@
 #include "Functional.h"
 #if USE_PFFT
     #include "pfft.h"
+    #include "RmgParallelFft.h"
 #endif
 
 static void init_alloc_nonloc_mem (void);
@@ -126,6 +127,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     local_ni, local_i_start, local_no, local_o_start);
     if(alloc_local >  ct.psi_fnbasis)
         RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+
+    // Initialize some commonly used plans
+    FftInitPlans();
 
 #endif
 
