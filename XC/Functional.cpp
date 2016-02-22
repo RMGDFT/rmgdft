@@ -39,6 +39,7 @@
 #include "FiniteDiff.h"
 #include "xc.h"
 #include "RmgSumAll.h"
+#include "RmgParallelFft.h"
 #include "transition.h"
 
 extern "C" void __funct_MOD_set_dft_from_name( const char *name, std::size_t len );
@@ -280,8 +281,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
-    //Pw pwaves(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false);
-    //FftGradient(rhoout, gx, gy, gz, pwaves);
+//    FftGradientFine(rhoout, gx, gy, gz);
 
 
     // and the Laplacian
@@ -289,7 +289,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                          this->dimx, this->dimy, this->dimz, 
                          this->hxgrid, this->hygrid, this->hzgrid, 
                          APP_CI_EIGHT);
-    //FftLaplacian(rhoout, d2rho, pwaves);
+//    FftLaplacianFine(rhoout, d2rho);
 
 
 

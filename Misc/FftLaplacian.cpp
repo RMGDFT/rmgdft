@@ -94,7 +94,6 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
 
     pfft_execute_dft(forw, (double (*)[2])tx, (double (*)[2])tx);
 
-
     for(int ig=0;ig < isize;ig++) {
         if(pwaves.gmask[ig] == 1.0) {
             tx[ig] = -pwaves.gmags[ig] * tx[ig];
@@ -106,6 +105,7 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     if(pct.gridpe == 0) tx[0] = czero;
 
     pfft_execute_dft(inv, (double (*)[2])tx, (double (*)[2])tx);
+
     for(int ix=0;ix < isize;ix++) lapx[ix] = scale * std::real(tx[ix]);
 
     if((&pwaves != coarse_pwaves) && (&pwaves != fine_pwaves)) {
