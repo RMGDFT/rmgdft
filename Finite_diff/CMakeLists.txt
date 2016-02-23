@@ -1,4 +1,8 @@
 add_library (Finite_diff
+ApplyGradient.cpp
+ApplyLaplacian.cpp
+ApplyAOperator.cpp
+ApplyBOperator.cpp
 AppCir.cpp
 AppCilrFourth.cpp
 AppCilrSixth.cpp

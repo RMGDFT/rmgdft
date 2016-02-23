@@ -1,6 +1,4 @@
 add_library (RMG_Common
-ApplyGradient.cpp
-ApplyLaplacian.cpp
 GetAugRho.cpp
 MixRho.cpp
 WriteData.cpp
@@ -11,8 +9,6 @@ LcaoGetAwave.cpp
 LcaoGetPsi.cpp
 ReadData.cpp
 OutputBandPlot.cpp
-ApplyAOperator.cpp
-ApplyBOperator.cpp
 AppCirDriverBeta.cpp
 AssignWeight.cpp
 GetWeight.cpp
