@@ -157,6 +157,7 @@ static std::mutex vtot_sync_mutex;
 template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *);
 template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *);
 template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *);
+template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *);
 
 template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi)

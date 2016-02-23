@@ -80,11 +80,17 @@ void *run_threads(void *v) {
             case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
                if(ct.is_gamma) {
                    kptr_d = (Kpoint<double> *)ss->p3;
-                   MgEigState<double,float> (kptr_d, (State<double> *)ss->sp, ss->vtot);
+                   if(ct.rms > 1.0e-7)
+                       MgEigState<double,float> (kptr_d, (State<double> *)ss->sp, ss->vtot);
+                   else
+                       MgEigState<double,double> (kptr_d, (State<double> *)ss->sp, ss->vtot);
                }
                else {
                    kptr_c = (Kpoint<std::complex<double>> *)ss->p3;
-                   MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot);
+                   if(ct.rms > 1.0e-7)
+                       MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot);
+                   else
+                       MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot);
                }
                break;
             case HYBRID_SKIP:

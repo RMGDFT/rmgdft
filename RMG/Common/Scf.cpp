@@ -243,16 +243,21 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             // Process any remaining states in serial fashion
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                 if(ct.is_gamma) {
-                    MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                    if(ct.rms > 1.0e-7)
+                        MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                    else
+                        MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                 }
                 else {
-                    MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                    if(ct.rms > 1.0e-7)
+                        MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                    else
+                        MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                 }
             }
             delete(RT1);
 
         }
-Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
 
         if(Verify ("freeze_occupied", true, Kptr[kpt]->ControlMap)) {
 
