@@ -50,12 +50,6 @@ private:
     Lattice *L;
 
     int pbasis;     // Grid points on this processing node
-    double hxgrid;
-    double hygrid;
-    double hzgrid;
-    int dimx;
-    int dimy;
-    int dimz;
 
     // Total number of grid points
     int N;

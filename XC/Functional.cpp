@@ -90,12 +90,6 @@ Functional::Functional (
     this->gammaflag = gamma_flag;
 
     this->pbasis = G.get_P0_BASIS(G.default_FG_RATIO);
-    this->hxgrid = G.get_hxgrid(G.default_FG_RATIO);
-    this->hygrid = G.get_hygrid(G.default_FG_RATIO);
-    this->hzgrid = G.get_hzgrid(G.default_FG_RATIO);
-    this->dimx = G.get_PX0_GRID(G.default_FG_RATIO);
-    this->dimy = G.get_PY0_GRID(G.default_FG_RATIO);
-    this->dimz = G.get_PZ0_GRID(G.default_FG_RATIO);
     this->N = G.get_NX_GRID(G.default_FG_RATIO) *
               G.get_NY_GRID(G.default_FG_RATIO) *
               G.get_NZ_GRID(G.default_FG_RATIO);
@@ -277,18 +271,12 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     for(int ix=0;ix < this->pbasis;ix++) rhoout[ix] = rho[ix] + rho_core[ix];
 
     // calculate the gradient of rho + rho_core
-    CPP_app_grad_driver (this->L, this->T, rhoout, gx, gy, gz,
-                         this->dimx, this->dimy, this->dimz, 
-                         this->hxgrid, this->hygrid, this->hzgrid, 
-                         APP_CI_EIGHT);
+    ApplyGradient (rhoout, gx, gy, gz, APP_CI_EIGHT, "Fine");
 //    FftGradientFine(rhoout, gx, gy, gz);
 
 
     // and the Laplacian
-    CPP_app_del2_driver (this->L, this->T, rhoout, d2rho, 
-                         this->dimx, this->dimy, this->dimz, 
-                         this->hxgrid, this->hygrid, this->hzgrid, 
-                         APP_CI_EIGHT);
+    ApplyLaplacian (rhoout, d2rho, APP_CI_EIGHT, "Fine");
 //    FftLaplacianFine(rhoout, d2rho);
 
 
@@ -328,11 +316,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     // ... \sum_alpha (D / D r_alpha) ( D(rho*Exc)/D(grad_alpha rho) )
     // 
 
-    CPP_app_grad_driver (this->L, this->T, vxc2, h, 
-                         &h[this->pbasis], &h[2*this->pbasis],
-                         this->dimx, this->dimy, this->dimz, 
-                         this->hxgrid, this->hygrid, this->hzgrid, 
-                         APP_CI_EIGHT);
+    ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
     //FftGradient(vxc2, h, &h[this->pbasis], &h[2*this->pbasis], pwaves);
 
 
