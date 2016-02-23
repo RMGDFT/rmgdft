@@ -552,9 +552,6 @@ typedef struct
     double *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 #endif
 
-    /* Compression level for some trade images routines */
-    int trade_compression_level;
-
     
    /* RMG2BGW options */
    bool wfng_flag;
@@ -589,58 +586,16 @@ typedef struct
     /* Number of steps after which to output results */
     int outcount;
 
-
-
- 
-    /** Global uniform grid spacing in x */
-    //double hxgrid;
-
-    /** Global uniform grid spacing in y */
-    //double hygrid;
-
-    /** Global uniform grid spacing in z */
-    //double hzgrid;
-
- 
-
-    /** bravais lattice type */
-    //int ibrav;
-
-    /* lengths of the sides of the supercell */
-    //double xside;
-    //double yside;
-    //double zside;
-
- 
-    /** Grid anisotropy defined as the ratio of hmaxgrid to hmingrid. 
-      A value larger than 1.05 can lead to convergence problems. */
-    //double anisotropy;
-
-
- 
-
-
- 
- 
- 
-
     /* Total points for potential */
     int vh_nbasis;
 
-
-
     double BT;
-
    
     /* Total number of electrons */
     double num_el;
-
    
     /* movie flags */
     int rmvmovie, chmovie, xbsmovie;
-
-
- 
 
     /* Desired vector for constrained dynamics */
     double cd_vector[3];
