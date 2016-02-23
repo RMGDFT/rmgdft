@@ -68,11 +68,11 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // Apply A operator to psi
-    ApplyAOperator (L, T, psi, a_psi, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+    ApplyAOperator (psi, a_psi, "Coarse");
 
 
     // Apply B operator to psi
-    ApplyBOperator (L, T, psi, b_psi, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    ApplyBOperator (psi, b_psi, "Coarse");
 
 
     // if complex orbitals apply gradient to orbital and compute dot products
@@ -84,7 +84,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         KpointType *gy = new KpointType[pbasis];
         KpointType *gz = new KpointType[pbasis];
 
-        CPP_app_grad_driver (L, T, psi, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, APP_CI_SIXTH);
+        ApplyGradient (psi, gx, gy, gz, APP_CI_EIGHT, "Coarse");
 
         std::complex<double> I_t(0.0, 1.0);
         for(int idx = 0;idx < pbasis;idx++) {
@@ -111,7 +111,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     // B operating on 2*V*psi stored in work
     KpointType *work_t = new KpointType[sbasis];
-    ApplyBOperator (L, T, sg_twovpsi_t, work_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    ApplyBOperator (sg_twovpsi_t, work_t, "Coarse");
 
     for(int idx = 0; idx < pbasis; idx++) {
 

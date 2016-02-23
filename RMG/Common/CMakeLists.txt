@@ -1,4 +1,5 @@
 add_library (RMG_Common
+ApplyGradient.cpp
 GetAugRho.cpp
 MixRho.cpp
 WriteData.cpp

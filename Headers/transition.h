@@ -55,6 +55,15 @@ extern "C" void write_restart (char *name, double * vh, double *vxc, double *vh_
 
 extern "C" int init_kpoints (int *mesh, int *is_shift);
 
+template <typename RmgType> void AppCir (RmgType * a, RmgType * b, char * grid);
+template <typename RmgType> double AppCil (RmgType * a, RmgType * b, char * grid);
+template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid);
+template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
+template <typename DataType>
+void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid);
+
+
+
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
 void GetAugRho(double *augrho);

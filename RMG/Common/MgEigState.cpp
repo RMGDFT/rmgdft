@@ -232,7 +232,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     RmgTimer *RT1 = new RmgTimer("Mg_eig: apply B operator");
-    ApplyBOperator<CalcType> (L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+    ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse");
     delete(RT1);
 
     // Copy double precision psi into single precison array
@@ -257,7 +257,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
         /* Apply Mehrstellen left hand operators */
         RT1 = new RmgTimer("Mg_eig: apply A operator");
-        diag = ApplyAOperator<CalcType> (L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+        diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse");
         delete(RT1);
         diag = -1.0 / diag;
 
@@ -268,7 +268,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             CalcType *gy = new CalcType[pbasis];
             CalcType *gz = new CalcType[pbasis];
 
-            CPP_app_grad_driver (L, T, tmp_psi_t, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, APP_CI_SIXTH);
+            ApplyGradient (tmp_psi_t, gx, gy, gz, APP_CI_EIGHT, "Coarse");
 
             std::complex<double> I_t(0.0, 1.0);
             for(int idx = 0;idx < pbasis;idx++) {
@@ -298,7 +298,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
         /* B operating on 2*V*psi stored in work1 */
         RT1 = new RmgTimer("Mg_eig: apply B operator");
-        ApplyBOperator<CalcType> (L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+        ApplyBOperator<CalcType> (sg_twovpsi_t, work1_t, "Coarse");
         delete(RT1);
 
         // Add in non-local which has already had B applied in AppNls
@@ -431,7 +431,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
         CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
-
 
     /* Release our memory */
     delete [] kdr;

@@ -252,6 +252,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             delete(RT1);
 
         }
+Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
 
         if(Verify ("freeze_occupied", true, Kptr[kpt]->ControlMap)) {
 
