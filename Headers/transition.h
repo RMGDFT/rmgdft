@@ -61,6 +61,7 @@ template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, ch
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid);
+void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 
 
 

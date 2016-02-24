@@ -47,6 +47,7 @@
 #include "Functional.h"
 #include "../Headers/prototypes.h"
 #include "vdW.h"
+#include "RmgParallelFft.h"
 
 
 
@@ -199,7 +200,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     }
 
-    get_vtot_psi (vtot_psi, vtot, get_FG_RATIO());
+    // Transfer vtot from the fine grid to the wavefunction grid
+    GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
     /*Generate the Dnm_I */
     get_ddd (vtot);
