@@ -62,6 +62,10 @@ template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char 
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid);
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
+template <typename KpointType>
+void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
+             double * rho, double * rho_oppo, double * rhoc, double * rhocore);
+
 
 
 

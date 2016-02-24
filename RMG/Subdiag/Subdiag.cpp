@@ -37,6 +37,7 @@
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
+#include "RmgParallelFft.h"
 
 #include "prototypes.h"
 #include "common_prototypes.h"
@@ -142,7 +143,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot, int subdiag_driver)
 
     // vtot holds potential on fine grid so restrict it to the orbital grid and store
     // result in vtot_eig
-    get_vtot_psi (vtot_eig, vtot, kptr->G->get_default_FG_RATIO());
+    GetVtotPsi (vtot_eig, vtot, kptr->G->default_FG_RATIO);
+
+
 
 
     // Apply operators on each wavefunction

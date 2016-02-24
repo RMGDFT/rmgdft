@@ -347,7 +347,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     case MD_CVT:
     case MD_CPT:
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-        //moldyn (states, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
+        MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
         break;
 
     case BAND_STRUCTURE:
