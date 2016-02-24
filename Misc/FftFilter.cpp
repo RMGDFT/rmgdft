@@ -45,8 +45,8 @@
 // set to zero.
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
-               double factor)  // IN:     Plane waves with a magnitude greater than factori^2*gcut are filtered out
-                            //         0.0 < factor < 1.0
+               double factor)  // IN:  Plane wave filtering factor between (0.0, 1.). Closely corresponds to 
+                            // maximum frequence on a grid of equivalent density.
 {
 
   if((factor <= 0.0) || (factor > 1.0))
@@ -58,7 +58,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   densgrid[1] = pwaves.global_dimy;
   densgrid[2] = pwaves.global_dimz;
 
-  double g2cut = factor*factor*pwaves.gmax;
+  double g2cut = factor*factor*(sqrt(pwaves.gmax) - 3.0)*(sqrt(pwaves.gmax) - 3.0);
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 
