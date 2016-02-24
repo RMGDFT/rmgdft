@@ -36,7 +36,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 {
     RmgTimer RT0("ReinitIonicPotentials");
     int pbasis = Kptr[0]->pbasis;
-printf("Called once\n");
+
     /* Update items that change when the ionic coordinates change */
     init_nuc (vnuc, rhoc, rhocore);
     get_QI ();
