@@ -65,6 +65,7 @@ template void Force<std::complex<double> > (double * rho, double * rho_oppo, dou
 template <typename OrbitalType> void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, 
         double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr)
 {
+    RmgTimer RT0("Force");
     int ion, idx;
     double *vtott, *rho_tot;
 #if VERBOSE
@@ -85,7 +86,6 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     }
 #endif
 
-    //my_malloc (vtott, get_FP0_BASIS(), double);
     vtott = new double[get_FP0_BASIS()];
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
@@ -107,7 +107,9 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* Get the ion-ion component and store. */
+    RmgTimer *RT1 = new RmgTimer("Force: ion-ion");
     iiforce ();
+    delete RT1;
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -140,6 +142,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* Add in the local */
+    RmgTimer *RT2 = new RmgTimer("Force: local");
     if (ct.spin_flag)
     {
         rho_tot = new double[get_FP0_BASIS()];
@@ -150,6 +153,8 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     }
     else
         lforce (rho, vh);
+    delete RT2;
+
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -180,8 +185,9 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* Add in the non-local stuff */
+    RmgTimer *RT3 = new RmgTimer("Force: non-local");
     Nlforce (vtott, Kptr);
-
+    delete RT3;
 
 
 #if VERBOSE
@@ -214,7 +220,9 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* The non-linear core correction part if any */
+    RmgTimer *RT4 = new RmgTimer("Force: core correction");
     nlccforce (rho, vxc);
+    delete RT4;
 
 #if VERBOSE
     if (pct.imgpe == 0)
@@ -240,7 +248,11 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     }
 #endif
 
-    if (!ct.is_gamma) symforce ();
+    if (!ct.is_gamma) {
+        RmgTimer *RT5 = new RmgTimer("Force: symmetrization");
+        symforce ();
+        delete RT5;
+    }
     delete[] vtott;
 
     /* Impose force constraints, if any */
