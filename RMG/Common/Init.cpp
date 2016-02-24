@@ -489,6 +489,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             /*dnmI has to be stup before calling subdiag */
             vtot = new double[FP0_BASIS];
+            double *vtot_psi = new double[P0_BASIS];
 
             for (idx = 0; idx < FP0_BASIS; idx++)
                 vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -496,12 +497,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             /*Generate the Dnm_I */
             get_ddd (vtot);
 
+            // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
+            GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+
             /*Now we cam do subspace diagonalization */
             for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-                Subdiag (Kptr[0], vtot, ct.subdiag_driver);
+                Subdiag (Kptr[0], vtot_psi, ct.subdiag_driver);
             }
 
             /*Release vtot memory */
+            delete [] vtot_psi;
             delete [] vtot;
 
 

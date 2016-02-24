@@ -74,7 +74,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
     get_ddd (vtot);
-    get_vtot_psi (vtot_psi, vtot, get_FG_RATIO());
+    GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
 
     // Loop over k-points
@@ -89,7 +89,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         {
 
 
-            Subdiag (Kptr[kpt], vtot, ct.subdiag_driver);
+            Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
             for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
                 Betaxpsi (Kptr[kpt]);
                 Kptr[kpt]->mix_betaxpsi(0);

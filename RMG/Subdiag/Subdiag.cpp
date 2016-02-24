@@ -55,7 +55,7 @@ template void Subdiag<double>(Kpoint<double> *, double *, int);
 template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int);
 
 template <typename KpointType>
-void Subdiag (Kpoint<KpointType> *kptr, double *vtot, int subdiag_driver)
+void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 {
     RmgTimer RT0("Diagonalization");
     //rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
@@ -137,15 +137,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot, int subdiag_driver)
     }
 
     
-    // Get vtot on wavefunction grid 
-    double *vtot_eig = new double[kptr->pbasis];
     double *eigs = new double[2*kptr->nstates];
-
-    // vtot holds potential on fine grid so restrict it to the orbital grid and store
-    // result in vtot_eig
-    GetVtotPsi (vtot_eig, vtot, kptr->G->default_FG_RATIO);
-
-
 
 
     // Apply operators on each wavefunction
@@ -308,7 +300,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot, int subdiag_driver)
     delete [] Bij;
     delete [] Aij;
 #endif
-    delete [] vtot_eig;
 
 }
 
