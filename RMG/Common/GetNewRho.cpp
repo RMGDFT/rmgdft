@@ -38,8 +38,8 @@
 #include "Kpoint.h"
 #include <complex>
 #include "../Headers/prototypes.h"
+#include "RmgParallelFft.h"
 
-void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
