@@ -6,6 +6,7 @@ FftFilter.cpp
 FftLaplacian.cpp
 FftGradient.cpp
 FftInterpolation.cpp
+FftRestrict.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
