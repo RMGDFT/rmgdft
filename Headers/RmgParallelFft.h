@@ -51,6 +51,8 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves);
 void FftFilter(double *x, Pw &pwaves, double factor);
 
 void FftFreqBin(double *x, Pw &pwaves, double *bins);
+
+void FftRestrict(double *fine, double *coarse, int ratio);
 #endif
 
 #endif
