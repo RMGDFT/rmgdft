@@ -154,6 +154,9 @@ typedef struct
     /* convergence criterion */
     double thr_rms;
 
+    /* preconditioner single/double precision switch threshold */
+    double preconditioner_thr;
+
     /* force convergence criterion */
     double thr_frc;
 

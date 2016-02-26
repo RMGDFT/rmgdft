@@ -245,13 +245,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             // Process any remaining states in serial fashion
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                 if(ct.is_gamma) {
-                    if(ct.rms > 1.0e-7)
+                    if(ct.rms > ct.preconditioner_thr)
                         MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                     else
                         MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                 }
                 else {
-                    if(ct.rms > 1.0e-7)
+                    if(ct.rms > ct.preconditioner_thr)
                         MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
                     else
                         MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
