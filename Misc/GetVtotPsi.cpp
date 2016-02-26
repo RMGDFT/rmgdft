@@ -39,11 +39,11 @@
 // to be represented on the coarse grid are fourier filtered before
 // a restriction operator is applied.
 
-void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio)
+void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
 {
     int idx;
     int ix, iy,iz, idx1;
-
+ 
     int dimx = Rmg_G->get_PX0_GRID(grid_ratio);
     int dimy = Rmg_G->get_PY0_GRID(grid_ratio);
     int dimz = Rmg_G->get_PZ0_GRID(grid_ratio);
@@ -51,9 +51,14 @@ void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio)
     /*If the grids are the same, just copy the data */
     if (grid_ratio == 1)
     {
-        for(idx = 0;idx < dimx*dimy*dimz;idx++) vtot_psi[idx] = vtot[idx];
+        for(idx = 0;idx < dimx*dimy*dimz;idx++) vtot_psi[idx] = in_vtot[idx];
+        return;
     }
-    else if(grid_ratio == 2) {
+
+    double *vtot = new double[dimx*dimy*dimz];
+    for(int idx=0;idx<dimx*dimy*dimz;idx++)vtot[idx] = in_vtot[idx];
+
+    if(grid_ratio == 2) {
 
 #if USE_PFFT
         FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio);
@@ -91,4 +96,5 @@ void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio)
 #endif
         mg_restrict_6 (vtot, vtot_psi, dimx, dimy, dimz, grid_ratio);
     }
+    delete [] vtot;
 }
