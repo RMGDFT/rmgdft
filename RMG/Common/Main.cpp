@@ -210,7 +210,7 @@ void initialize(int argc, char **argv)
 
     int spinfac = 1;
     if(ct.spin_flag) spinfac = 2;
-    rho = new double[spinfac * FP0_BASIS];
+    rho = new double[spinfac * FP0_BASIS]();
     rhocore = new double[FP0_BASIS];
     rhoc = new double[FP0_BASIS];
     vh = new double[FP0_BASIS];
@@ -220,8 +220,7 @@ void initialize(int argc, char **argv)
     	tau = new double[FP0_BASIS];
 
     /* for spin polarized calculation set pointer to memory for density of the opposite spin */
-    if(ct.spin_flag)
-            rho_oppo = rho + FP0_BASIS;
+    rho_oppo = rho + FP0_BASIS;
 
 
     /* Initialize some k-point stuff */
