@@ -79,9 +79,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   }
 
   // Get G^2 cutoff.
-  ivec[0] = (this->global_dimx - 1) / 2 - 2;
-  ivec[1] = (this->global_dimy - 1) / 2 - 2;
-  ivec[2] = (this->global_dimz - 1) / 2 - 2;
+  ivec[0] = (this->global_dimx - 1) / 2;
+  ivec[1] = (this->global_dimy - 1) / 2;
+  ivec[2] = (this->global_dimz - 1) / 2;
   gvec[0] = (double)ivec[0] * L.b0[0] + (double)ivec[1] * L.b1[0] + (double)ivec[2] * L.b2[0];
   gvec[0] *= L.celldm[0];
   gvec[1] = (double)ivec[0] * L.b0[1] + (double)ivec[1] * L.b1[1] + (double)ivec[2] * L.b2[1];
