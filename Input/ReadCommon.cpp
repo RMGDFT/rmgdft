@@ -628,7 +628,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
                      "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
 
-    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-4, 1.0e-7,
+    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-4, 1.0e-6,
                      CHECK_AND_FIX, OPTIONAL,
                      "The RMS value of the change in the total potential where we switch the preconditioner from single to double precision.\n",
                      "preconditioner_threshold must lie in the range (1.0e-04,1.0e-9). Resetting to default value of 1.0e-7.\n");
