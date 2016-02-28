@@ -108,7 +108,7 @@ template <typename OrbitalType>
 void MixBetaxpsi1 (State<OrbitalType> *sp);
 template  <typename OrbitalType> void AppCilrDriver (TradeImages *T, OrbitalType * psi, OrbitalType * a_psi, OrbitalType *b_psi, double *vtot,
     int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
-void MixRho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z, std::unordered_map<std::string, InputKey *>& ControlMap);
+void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map<std::string, InputKey *>& ControlMap);
 
 void DiagScalapack(STATE *, int, double *, double*, double *, double *);
 void DiagElemental(STATE *, int, double *, double*, double *, double *);

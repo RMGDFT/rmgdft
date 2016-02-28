@@ -501,11 +501,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
             /*Now we can do subspace diagonalization */
+            double *new_rho=new double[FP0_BASIS];
             for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-                Subdiag (Kptr[0], vtot_psi, ct.subdiag_driver);
+                Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
                 Betaxpsi (Kptr[kpt]);
                 Kptr[kpt]->mix_betaxpsi(0);
             }
+            // Get new density 
+            GetNewRho(Kptr, new_rho);
+            MixRho(new_rho, rho, rhocore, Kptr[0]->ControlMap);
+            delete [] new_rho;
 
             /*Release vtot memory */
             delete [] vtot_psi;

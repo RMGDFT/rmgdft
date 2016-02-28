@@ -36,10 +36,14 @@
 #include "transition.h"
 
 
-void MixRho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z, std::unordered_map<std::string, InputKey *>& ControlMap)
+void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
     double t1, nspin = (ct.spin_flag + 1.0);
     static double **rhohist=NULL, **residhist=NULL;
+    int length = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int length_x = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
+    int length_y = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
+    int length_z = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
