@@ -913,7 +913,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     int checklevel;
 
-    for(checklevel = 1;checklevel <= lc.eig_parm.levels;checklevel++) {
+    for(checklevel = 1;checklevel < lc.eig_parm.levels;checklevel++) {
         bool eig_level_err = false;
         if ((NX_GRID / (1 << checklevel)) < 3) eig_level_err = true;
         if ((NY_GRID / (1 << checklevel)) < 3) eig_level_err = true;
