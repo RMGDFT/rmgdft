@@ -500,9 +500,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
-            /*Now we cam do subspace diagonalization */
+            /*Now we can do subspace diagonalization */
             for(kpt = 0;kpt < ct.num_kpts;kpt++) {
                 Subdiag (Kptr[0], vtot_psi, ct.subdiag_driver);
+                Betaxpsi (Kptr[kpt]);
+                Kptr[kpt]->mix_betaxpsi(0);
             }
 
             /*Release vtot memory */
