@@ -42,12 +42,13 @@
 
 // On input performs a dft of x which is an array distributed in real space across all nodes
 // using the plane wave structure defined in pwaves. It then computes a frequency histogram
-// of all of the coefficients of the transform.
+// of all of the coefficients of the transform. This is intended as a debugging function
+// and should not be called from a threaded region.
 void FftFreqBin(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
                double *bins)  // IN:OUT   Allocated by calling array. Stores frequency bins. Calling array is
                               // respsponsible for making sure the array is big enough ((int)rint(pwaves.gmax) + 1)
-                              // normalized so that \sum bins = 1.0
+ 
 {
 
   ptrdiff_t grid[3];
@@ -58,10 +59,11 @@ void FftFreqBin(double *x,   // IN:OUT  Input array in real space. Distributed a
 
   int pbasis = pwaves.pbasis;
   int nvecs = (int)rint(sqrt(pwaves.gmax)) + 1;
+  int *binsize = new int[nvecs+1]();
 
   for(int i=0;i < nvecs;i++)bins[i] = 0.0;
 
-  std::complex<double> *cvec = new std::complex<double>[pbasis];
+  std::complex<double> *cvec = new std::complex<double>[pbasis]();
   if(&pwaves == coarse_pwaves) {
       forw = forward_coarse;
   }
@@ -80,23 +82,27 @@ void FftFreqBin(double *x,   // IN:OUT  Input array in real space. Distributed a
   for(int i = 0;i < pbasis;i++) cvec[i] = std::complex<double>(x[i], 0.0);
   pfft_execute_dft(forw, (double (*)[2])cvec, (double (*)[2])cvec);
 
-  double bnorm = 0.0;
   for(int ig=0;ig < pbasis;ig++) {
-      double t1 = std::norm(cvec[ig]);
+      double t1 = sqrt(std::norm(cvec[ig]));
       int gidx = (int)rint(sqrt(pwaves.gmags[ig]));
-      if(gidx < nvecs) bins[gidx] += t1;
-      bnorm += t1;
+      if(gidx <= nvecs) {
+          bins[gidx] += t1;
+          binsize[gidx]++;
+      }
   }
 
-  GlobalSums (bins, nvecs, pct.grid_comm); 
-  bnorm = 1.0 / RmgSumAll(bnorm, pct.grid_comm);
+  MPI_Allreduce(MPI_IN_PLACE, bins, nvecs, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+  MPI_Allreduce(MPI_IN_PLACE, binsize, nvecs, MPI_INT, MPI_SUM, pct.grid_comm);
 
-  for(int i = 0;i < nvecs;i++)
-      bins[i] *= bnorm;
+  for(int i = 0;i < nvecs;i++) {
+      if(binsize[i]) bins[i] /= (double)binsize[i];
+  }
 
   if((&pwaves != coarse_pwaves) && (&pwaves != fine_pwaves)) {
       pfft_destroy_plan(forw);
   }
+
+  delete [] binsize;
   delete [] cvec;
 }
 
