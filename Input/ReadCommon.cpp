@@ -407,6 +407,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
                      "kohn_sham_fd_order must lie in the range (4,10). Resetting to the default value of 6.\n");
 
+    If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.5, 1.2, 0.8,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Time step to use in the kohn-sham multigrid solver on the coarse levels.\n",
+                     "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 0.8.\n");
+
     If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.4, 2.0, 0.66,
                      CHECK_AND_FIX, OPTIONAL,
                      "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",

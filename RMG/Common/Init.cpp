@@ -189,10 +189,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.zcstart = 0.0;
 
 
-    /* Some multigrid parameters */
-    // ct.poi_parm.sb_step = 1.0;
-    ct.eig_parm.sb_step = 1.0;
-
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
 

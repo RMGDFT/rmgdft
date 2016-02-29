@@ -383,8 +383,7 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
             MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
                         dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                         1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
-                        //ct.eig_parm.gl_step, 2.0*Zfac, 0.0, NULL,
-                        1.0, 2.0*Zfac, 0.0, NULL,
+                        ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
                         G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
