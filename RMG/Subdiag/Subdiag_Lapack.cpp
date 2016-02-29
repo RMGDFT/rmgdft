@@ -140,7 +140,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         }
 
 
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: dsygvx/zhegvx/folded spectrum");
+        RmgTimer *RT1 = new RmgTimer("Diagonalization: dsygvx/zhegvx/folded");
         int *ifail = new int[num_states];
         int lwork = 2 * num_states * num_states + 6 * num_states + 2;
         int liwork = 6*num_states;
