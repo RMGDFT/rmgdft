@@ -188,6 +188,7 @@ void BaseThread::set_cpu_affinity(int tid, int procs_per_node, int local_rank)
     cpu_set_t cpuset;
     pthread_t thread;
     int cores = sysconf( _SC_NPROCESSORS_ONLN );
+    if(procs_per_node > cores) return;
 
     if(BaseThread::THREADS_PER_NODE % (cores / procs_per_node)) return;
 
