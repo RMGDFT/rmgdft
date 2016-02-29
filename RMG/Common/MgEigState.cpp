@@ -38,6 +38,7 @@
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"
+#include "RmgParallelFft.h"
 
 
 void CopyAndConvert(int n, double *A, float *B)
@@ -154,15 +155,14 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 
 static std::mutex vtot_sync_mutex;
 
-template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *);
-template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *);
-template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *);
-template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *);
+template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, int);
+template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, int);
+template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, int);
+template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, int);
 
 template <typename OrbitalType, typename CalcType>
-void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi)
+void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, int vcycle)
 {
-
     RmgTimer RT("Mg_eig");
     bool freeze_occupied = true;
 
@@ -180,8 +180,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double eig, diag, t1, t2, t4;
     double *work1;
     OrbitalType *nv, *ns;
-    int eig_pre[6] = { 0, 6, 6, 6, 6, 6 };
-    int eig_post[6] = { 0, 2, 2, 2, 2, 2 };
+    int eig_pre[8] = { 0, 8, 8, 20, 20, 20, 20, 20 };
+    int eig_post[8] = { 0, 2, 2, 2, 2, 2, 2, 2 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -193,8 +193,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
     int levels = ct.eig_parm.levels;
-    if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) levels = 0;
-    if ((ct.runflag == LCAO_START) && (ct.scf_steps < 1)) levels = 0;
+    bool do_mgrid = true;
+    if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
     double Zfac = 2.0 * ct.max_zvalence;
     int pbasis = kptr->pbasis;
@@ -224,7 +224,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         //MixBetaxpsi1(sp);
 
 
-    /* Get the non-local operator and S acting on psi (nv and ns, respectfully) */
+    /* Get the non-local operator and S acting on psi (nv and ns, respectrvely) */
     nv = &kptr->nv[sp->istate * pbasis];
     ns = &kptr->ns[sp->istate * pbasis];
 
@@ -248,9 +248,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
     }
 
-
-
-
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
     {
@@ -260,7 +257,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         RT1 = new RmgTimer("Mg_eig: apply A operator");
         diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse");
         delete(RT1);
-        diag = -1.0 / diag;
 
         // if complex orbitals apply gradient to psi and compute dot products
         if(typeid(OrbitalType) == typeid(std::complex<double>)) {
@@ -303,9 +299,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         delete(RT1);
 
         // Add in non-local which has already had B applied in AppNls
-        for(int idx=0;idx < pbasis;idx++) {
-            work1_t[idx] += 2.0 * nv[idx];
-        }
+        for(int idx=0;idx < pbasis;idx++) work1_t[idx] += 2.0 * nv[idx];
 
         for(int idx=0;idx < pbasis;idx++) {
             work1_t[idx] = work1_t[idx] - work2_t[idx];
@@ -351,17 +345,26 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
         }
 
+        // Get the residual
+        CalcType f1(TWO * eig);
+        for (int idx = 0; idx <pbasis; idx++) res_t[idx] = f1 * res_t[idx] - work1_t[idx];
+// Debug code for multigrid spectral analysis
+#if 0
+if((sp->istate == 0) && (ct.scf_steps==7)) {
+  double *newres = new double[pbasis]();
+  for(int idx=0;idx<pbasis;idx++)newres[idx] = (double)std::real(res_t[idx]);
+  int nvecs = (int)rint(sqrt(coarse_pwaves->gmax)) + 1;
+  double *gmags = new double[nvecs+1]();
+  FftFreqBin((double *)newres, *coarse_pwaves, gmags);
+  if(pct.gridpe==0)
+      for(int idx=0;idx<nvecs;idx++)printf("BINS%d  %d  %20.12e\n",cycles,idx,gmags[idx]);
+  delete [] gmags;
+  delete [] newres;
+}
+#endif
         /* Now either smooth the wavefunction or do a multigrid cycle */
-        if (cycles == ct.eig_parm.gl_pre)
+        if ((cycles == ct.eig_parm.gl_pre) && do_mgrid)
         {
-
-            CalcType f1(TWO * eig);
-            for (int idx = 0; idx <pbasis; idx++)
-            {
-
-                res_t[idx] = f1 * res_t[idx] - work1_t[idx];
-
-            }
 
             /* Pack the residual data into multigrid array */
             CPP_pack_ptos<CalcType> (work1_t, res_t, dimx, dimy, dimz);
@@ -369,14 +372,24 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
             /* Do multigrid step with solution returned in sg_twovpsi */
             RT1 = new RmgTimer("Mg_eig: mgrid_solv");
-            MG.mgrid_solv<CalcType> (sg_twovpsi_t, work1_t, work2_t,
-                        dimx, dimy, dimz, hxgrid,
-                        hygrid, hzgrid, 0, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
-                        ct.eig_parm.gl_step, Zfac, 0.0, NULL,
+            int ixoff, iyoff, izoff;
+            int dx2 = MG.MG_SIZE (dimx, 0, G->get_NX_GRID(1), G->get_PX_OFFSET(1), G->get_PX0_GRID(1), &ixoff, ct.boundaryflag);
+            int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
+            int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
+            CalcType *v_mat = &sg_twovpsi_t[sbasis];
+            CalcType *f_mat = &work1_t[sbasis];
+            MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+
+            MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
+                        dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                        1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                        //ct.eig_parm.gl_step, 2.0*Zfac, 0.0, NULL,
+                        1.0, 2.0*Zfac, 0.0, NULL,
                         G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
             delete(RT1);
+            MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.
@@ -385,27 +398,20 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             t1 = -1.0;
             CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 
-
         }
         else
         {
 
-
             t1 = TWO * eig;
             t2 = ZERO;
-            double t5 = 1.0 / diag;
-            t5 = t5 + 2.0*ct.max_zvalence;
-            t5 = 1.0 / t5;
+            double t5 = diag - Zfac;
+            t5 = -1.0 / t5;
             t4 = ct.eig_parm.gl_step * t5;
-
             for (int idx = 0; idx <pbasis; idx++)
             {
-
-                OrbitalType t5;
-                t5 = t1 * (OrbitalType)res_t[idx] - (OrbitalType)work1_t[idx];
-                t2 += std::norm(t5);
-                tmp_psi_t[idx] += t4 * t5;
-
+                t2 += std::norm(res_t[idx]);
+                OrbitalType t5 = t4 * (OrbitalType)res_t[idx];
+                tmp_psi_t[idx] += t5;
             }
 
             if (cycles == 0)
@@ -428,7 +434,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     if(potential_acceleration)
         PotentialAcceleration(kptr, sp, vtot_psi, nvtot_psi, tmp_psi_t, saved_psi);
 
-
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
         CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
@@ -449,8 +454,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     delete [] work1_t;
     delete [] work2_t;
     delete [] res2_t;
-
-
 
 } // end MgEigState
 

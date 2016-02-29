@@ -85,7 +85,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR);
 
 
-template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi);
+template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, int vcycle);
 
 
 // Gamma point float version

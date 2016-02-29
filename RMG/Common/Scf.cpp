@@ -218,7 +218,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             RT1 = new RmgTimer("Scf steps: Beta x psi");
             Betaxpsi (Kptr[kpt]);
             delete(RT1);
-            Kptr[kpt]->mix_betaxpsi(1);
+            Kptr[kpt]->mix_betaxpsi(0);
             AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
 
             /* Update the wavefunctions */
@@ -231,6 +231,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
               for(ist = 0;ist < T->get_threads_per_node();ist++) {
                   thread_control[ist].job = HYBRID_EIG;
                   thread_control[ist].vtot = vtot_psi;
+                  thread_control[ist].vcycle = vcycle;
                   thread_control[ist].sp = &Kptr[kpt]->Kstates[st1 + ist];
                   thread_control[ist].p3 = (void *)Kptr[kpt];
                   T->set_pptr(ist, &thread_control[ist]);
@@ -245,15 +246,15 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                 if(ct.is_gamma) {
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                        MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
                     else
-                        MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                        MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
                 }
                 else {
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                        MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
                     else
-                        MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi);
+                        MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
                 }
             }
             delete(RT1);

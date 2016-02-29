@@ -81,16 +81,16 @@ void *run_threads(void *v) {
                if(ct.is_gamma) {
                    kptr_d = (Kpoint<double> *)ss->p3;
                    if(ct.rms > ct.preconditioner_thr)
-                       MgEigState<double,float> (kptr_d, (State<double> *)ss->sp, ss->vtot);
+                       MgEigState<double,float> (kptr_d, (State<double> *)ss->sp, ss->vtot, ss->vcycle);
                    else
-                       MgEigState<double,double> (kptr_d, (State<double> *)ss->sp, ss->vtot);
+                       MgEigState<double,double> (kptr_d, (State<double> *)ss->sp, ss->vtot, ss->vcycle);
                }
                else {
                    kptr_c = (Kpoint<std::complex<double>> *)ss->p3;
                    if(ct.rms > ct.preconditioner_thr)
-                       MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot);
+                       MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot, ss->vcycle);
                    else
-                       MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot);
+                       MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss->sp, ss->vtot, ss->vcycle);
                }
                break;
             case HYBRID_SKIP:

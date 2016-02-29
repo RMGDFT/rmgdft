@@ -16,6 +16,9 @@ typedef struct
      * currently being worked on in ortho and subdiag. */
     int kidx;
 
+    // vcycle during multigrid iterations
+    int vcycle;
+
     /* Pointer to current state assigned to the thread when used in sections that process a single state */
     void *sp;
 
