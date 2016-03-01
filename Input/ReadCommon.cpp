@@ -220,10 +220,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "md_nose_oscillation_frequency_THz must be a positive real number.");
 
-    If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Mehrstellen",
+    If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Central",
                      CHECK_AND_FIX, OPTIONAL, discretization_type,
                      "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
-                     "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Mehrstellen\".\n");
+                     "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Central\".\n");
 
     If.RegisterInputKey("energy_output_units", &EnergyOutputType, &lc.energy_output_units, "Hartrees",
                      CHECK_AND_FIX, OPTIONAL, energy_output_units,
@@ -408,10 +408,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner.\n",
                      "kohn_sham_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
 
-    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 10, 6,
+    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 10, 8,
                      CHECK_AND_FIX, OPTIONAL,
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
-                     "kohn_sham_fd_order must lie in the range (4,10). Resetting to the default value of 6.\n");
+                     "kohn_sham_fd_order must lie in the range (4,10). Resetting to the default value of 8.\n");
 
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.5, 1.2, 1.0,
                      CHECK_AND_FIX, OPTIONAL,

@@ -461,7 +461,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double etxc, vtxc;
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
-
+        delete F;
 
         if (ct.spin_flag)
         {
