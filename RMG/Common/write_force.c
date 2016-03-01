@@ -44,8 +44,10 @@ void write_force (void)
     double maxf = 0.0, max_all_f = 0.0;
     double f2;
     double *fp;
+    double efactor = ct.energy_output_conversion[ct.energy_output_units];
+    char *eunits = ct.energy_output_string[ct.energy_output_units];
 
-    printf ("\n\n\n  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:\n\n");
+    printf ("\n\n\n  IONIC POSITIONS [a0] AND FORCES [%s/a0]:\n\n", eunits);
 
 //    if (verify ("atom_constraints", NULL))
 //    {
@@ -67,7 +69,7 @@ void write_force (void)
                 ion + 1,
                 sp->atomic_symbol,
                 iptr->species + 1,
-                iptr->crds[0], iptr->crds[1], iptr->crds[2], fp[0], fp[1], fp[2], iptr->movable);
+                iptr->crds[0], iptr->crds[1], iptr->crds[2], efactor*fp[0], efactor*fp[1], efactor*fp[2], iptr->movable);
 
         if (iptr->movable)
         {
@@ -131,40 +133,40 @@ void write_force (void)
 
         printf ("\n");
         progress_tag ();
-        printf (" mean FX      = %12.8f Ha/a0\n", avfx);
+        printf (" mean FX      = %12.8f %s/a0\n", efactor*avfx, eunits);
         progress_tag ();
-        printf (" mean FY      = %12.8f Ha/a0\n", avfy);
+        printf (" mean FY      = %12.8f %s/a0\n", efactor*avfy, eunits);
         progress_tag ();
-        printf (" mean FZ      = %12.8f Ha/a0\n", avfz);
+        printf (" mean FZ      = %12.8f %s/a0\n", efactor*avfz, eunits);
 
         printf ("\n");
         progress_tag ();
-        printf (" max FX       = %12.8f Ha/a0   (ion %d)\n", maxfx, maxfx_ion + 1);
+        printf (" max FX       = %12.8f %s/a0   (ion %d)\n", efactor*maxfx, eunits, maxfx_ion + 1);
         progress_tag ();
-        printf (" max FY       = %12.8f Ha/a0   (ion %d)\n", maxfy, maxfy_ion + 1);
+        printf (" max FY       = %12.8f %s/a0   (ion %d)\n", efactor*maxfy, eunits, maxfy_ion + 1);
         progress_tag ();
-        printf (" max FZ       = %12.8f Ha/a0   (ion %d)\n", maxfz, maxfz_ion + 1);
+        printf (" max FZ       = %12.8f %s/a0   (ion %d)\n", efactor*maxfz, eunits, maxfz_ion + 1);
         progress_tag ();
-        printf (" max F[x,y,z] = %12.8f Ha/a0\n", max_all_f);
+        printf (" max F[x,y,z] = %12.8f %s/a0\n", efactor*max_all_f, eunits);
         progress_tag ();
-        printf (" max |F|      = %12.8f Ha/a0   (ion %d)\n", maxf, maxf_ion + 1);
+        printf (" max |F|      = %12.8f %s/a0   (ion %d)\n", efactor*maxf, eunits, maxf_ion + 1);
         if (ct.forceflag == MD_FASTRLX)
         {
             progress_tag ();
-            printf (" tolerance    = %12.8f Ha/a0\n", ct.thr_frc);
+            printf (" tolerance    = %12.8f %s/a0\n", efactor*ct.thr_frc, eunits);
         }
 
         printf ("\n");
         progress_tag ();
-        printf (" sum FX       = %12.8f Ha/a0\n", sumx);
+        printf (" sum FX       = %12.8f %s/a0\n", efactor*sumx, eunits);
         progress_tag ();
-        printf (" sum FY       = %12.8f Ha/a0\n", sumy);
+        printf (" sum FY       = %12.8f %s/a0\n", efactor*sumy, eunits);
         progress_tag ();
-        printf (" sum FZ       = %12.8f Ha/a0\n", sumz);
+        printf (" sum FZ       = %12.8f %s/a0\n", efactor*sumz, eunits);
         progress_tag ();
-        printf (" Average      = %12.8f Ha/a0\n", (fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0);
+        printf (" Average      = %12.8f %s/a0\n", efactor*(fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0, eunits);
         progress_tag ();
-        printf (" sqrt < F^2 > = %12.8f Ha/a0\n", avf);
+        printf (" sqrt < F^2 > = %12.8f %s/a0\n", efactor*avf, eunits);
         printf ("\n");
 
     }

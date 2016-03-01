@@ -92,6 +92,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     RmgInputFile If(cfile, InputMap, pct.img_comm);
     std::string CalculationMode;
     std::string DiscretizationType;
+    std::string EnergyOutputType;
     std::string Description;
     std::string Infile;
     std::string Outfile;
@@ -224,7 +225,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
                      "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Mehrstellen\".\n");
 
-    If.RegisterInputKey("energy_output_units", &DiscretizationType, &lc.energy_output_units, "Hartrees",
+    If.RegisterInputKey("energy_output_units", &EnergyOutputType, &lc.energy_output_units, "Hartrees",
                      CHECK_AND_FIX, OPTIONAL, energy_output_units,
                      "Units to be used when writing energy values to the output file. Hartrees or Rydbergs are available.\n", 
                      "energy_output_units must be either \"Hartrees\" or \"Rydbergs\". Setting to \"Hartrees\".\n");
