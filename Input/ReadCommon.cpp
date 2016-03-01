@@ -224,6 +224,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
                      "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Mehrstellen\".\n");
 
+    If.RegisterInputKey("energy_output_units", &DiscretizationType, &lc.energy_output_units, "Hartrees",
+                     CHECK_AND_FIX, OPTIONAL, energy_output_units,
+                     "Units to be used when writing energy values to the output file. Hartrees or Rydbergs are available.\n", 
+                     "energy_output_units must be either \"Hartrees\" or \"Rydbergs\". Setting to \"Hartrees\".\n");
+
     If.RegisterInputKey("boundary_condition_type", NULL, &lc.boundaryflag, "Periodic",
                      CHECK_AND_TERMINATE, OPTIONAL, boundary_condition_type,
                      "Boundary condition type Only periodic is currently implemented.\n", 
@@ -407,10 +412,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
                      "kohn_sham_fd_order must lie in the range (4,10). Resetting to the default value of 6.\n");
 
-    If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.5, 1.2, 0.8,
+    If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.5, 1.2, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Time step to use in the kohn-sham multigrid solver on the coarse levels.\n",
-                     "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 0.8.\n");
+                     "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 1.0.\n");
 
     If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.4, 2.0, 0.66,
                      CHECK_AND_FIX, OPTIONAL,
@@ -962,4 +967,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
           throw RmgFatalException() << "In order to use Van der Waals corrections RMG must be built with the pfft libraries. Terminating. " << "\n";
     }
 
+    // Set up energy output units
+    static char *Hartree_str = "Ha";
+    static char *Rydberg_str = "Ry";
+    lc.energy_output_conversion[0] = 1.0;
+    lc.energy_output_conversion[1] = 2.0;
+    lc.energy_output_string[0] = Hartree_str;
+    lc.energy_output_string[1] = Rydberg_str;
 }

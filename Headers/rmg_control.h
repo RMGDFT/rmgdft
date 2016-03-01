@@ -44,6 +44,11 @@ typedef struct
 typedef struct
 {
 
+    // Energy output units 0=Hartrees, 1=Rydbergs
+    int energy_output_units;
+    double energy_output_conversion[2];
+    char *energy_output_string[2];
+
     // Discretization type flag
     int discretization;
 

@@ -21,6 +21,10 @@ static std::unordered_map<std::string, int> bravais_lattice_type = {
         {"Monoclinic Base Centered", 13},
         {"Triclinic Primitive", 14}};
 
+static std::unordered_map<std::string, int> energy_output_units = {
+        {"Hartrees", 0},
+        {"Rydbergs", 1}};
+
 static std::unordered_map<std::string, int> discretization_type = {
         {"Mehrstellen", 0},
         {"Central", 1}};
