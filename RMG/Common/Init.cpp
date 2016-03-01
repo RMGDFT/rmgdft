@@ -227,18 +227,23 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&ns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
-    custat = cudaMallocHost((void **)&Bns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
-    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+    if(!ct.norm_conserving_pp) {
+        custat = cudaMallocHost((void **)&Bns, ct.num_states * P0_BASIS * sizeof(OrbitalType));
+        RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+        pct.Bns = (double *)Bns;
+    }
 #else
     // Wavefunctions are actually stored here
     rptr = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.num_states * P0_BASIS]();
     ns = new OrbitalType[ct.num_states * P0_BASIS]();
-    Bns = new OrbitalType[ct.num_states * P0_BASIS]();
+    if(!ct.norm_conserving_pp) {
+        Bns = new OrbitalType[ct.num_states * P0_BASIS]();
+        pct.Bns = (double *)Bns;
+    }
 #endif
     pct.nv = (double *)nv;
     pct.ns = (double *)ns;
-    pct.Bns = (double *)Bns;
 
 
     if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
@@ -254,7 +259,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->set_pool(rptr);
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;
-        Kptr[kpt]->Bns = Bns;
+        if(!ct.norm_conserving_pp) Kptr[kpt]->Bns = Bns;
 
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
@@ -531,12 +536,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap) && (ct.num_states != ct.init_states)) {
 
 #if SCALAPACK_LIBS
+    if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
         // In case matrix sizes changed
-        if (pct.scalapack_pe) {
-            sl_exit(pct.ictxt, 1);
-        }
-        sl_init (&pct.ictxt, ct.num_states);
-        set_desca (pct.desca, &pct.ictxt, ct.num_states);
+//        if (pct.scalapack_pe) {
+//            sl_exit(pct.ictxt, 0);
+//        }
+//        sl_init (&pct.ictxt, ct.num_states);
+//        set_desca (pct.desca, &pct.ictxt, ct.num_states);
+    }
 #endif
 
     }

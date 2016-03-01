@@ -69,13 +69,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
 
     if(pct.num_tot_proj == 0)
     {
-        for(int i = 0; i < num_states * P0_BASIS; i++)
-        {
-            nv[i] = ZERO_t;
-            Bns[i] = ZERO_t;
-        }
-        for(int idx = 0;idx < num_states * P0_BASIS;idx++)
-            ns[idx] = psi[idx];
+        for(int i = 0; i < num_states * P0_BASIS; i++) nv[i] = ZERO_t;
+        if(!ct.norm_conserving_pp) for(int i = 0; i < num_states * P0_BASIS; i++) Bns[i] = ZERO_t;
+        for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
 
         return;
     }
