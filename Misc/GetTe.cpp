@@ -155,10 +155,12 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Evaluate XC energy and potential */
+    RmgTimer *RT1 = new RmgTimer("Get vxc");
     double vtxc;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
     delete F;
+    delete RT1;
 
 
     esum[1] = 0.0;

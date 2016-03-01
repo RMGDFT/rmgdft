@@ -66,7 +66,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
 
-    RmgTimer RT0("Scf steps");
+    RmgTimer RT0("Scf steps"), *RT1;
     int st1, diag_this_step;
     int nspin = (spin_flag + 1);
     bool CONVERGED = false;
@@ -80,6 +80,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double max_unocc_res = 0.0;
     double min_occ_res = DBL_MAX;
     double min_unocc_res = DBL_MAX;
+    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
 
     int ist, istop, P0_BASIS, FP0_BASIS;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -107,14 +108,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     }
 
-    /* Generate exchange-correlation potential */
-    RmgTimer *RT1 = new RmgTimer("Scf steps: Get vxc");
-    double etxc, vtxc;
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
-    delete F;
-    delete(RT1);
-
+    /* Calculate total energy and the new exchange-correlation potential */
+    GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
 
     if (spin_flag)        
@@ -303,10 +298,14 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         }
 
 
-        /*wavefunctions have changed, projectors have to be recalculated */
-        RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (Kptr[kpt]);
-        delete(RT1);
+        /* wavefunctions have changed, projectors have to be recalculated
+         * but if we are using potential acceleration and not well converged yet
+         * it is counterproductive to do so */
+        if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6))) {
+            RT1 = new RmgTimer("Scf steps: Beta x psi");
+            Betaxpsi (Kptr[kpt]);
+            delete(RT1);
+        }
 
 
         /* Now we orthognalize and optionally do subspace diagonalization
