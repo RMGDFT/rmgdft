@@ -453,10 +453,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
                      "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25.\n");
 
-    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, -1, 4, -1,
+    If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of multigrid levels to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mg_levels must lie in the range (-1,4) where -1=automatic. Resetting to the default value of 2.\n");
+                     "kohn_sham_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1).\n");
 
     If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
@@ -920,7 +920,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";
 
     // If the user has not specifically set the number of kohn-sham multigrid levels use 2
-    if(lc.eig_parm.levels == -1) lc.eig_parm.levels = 2;
+    if(lc.eig_parm.levels == -1) lc.eig_parm.levels = 3;
 
     int checklevel;
 
