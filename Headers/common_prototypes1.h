@@ -83,8 +83,7 @@ void cross_product (double *a, double *b, double *c);
 double fill_on (STATE *states, double width, double nel, double mix,
            int num_st, int occ_flag);
 
-void find_phase (int nldim, double *nlcdrs, double *phase_sin,
-                 double *phase_cos);
+void find_phase (int nldim, double * nlcdrs, double ** phase_sin, double ** phase_cos);
 //void genvpsi (double *psi, double *twovpsi, double *pvtot, 
 //              double *kd, double kmag, int dimx, int dimy, int dimz);
 void genvpsi_f (float * psi, float * sg_twovpsi, double * vtot, double * kd,
