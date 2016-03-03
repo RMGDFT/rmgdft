@@ -1,4 +1,5 @@
 add_library (US_PP
+FindPhase.cpp
 Atomic.cpp
 Atomic_Cbindings.cpp
 InitPseudo.cpp

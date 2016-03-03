@@ -361,16 +361,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     fflush (NULL);
 
-    //Dprintf ("Get memory for fourier transform phase");
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        iptr = &ct.ions[ion];
-        sp = &ct.sp[iptr->species];
-
-        iptr->fftw_phase_sin = new double[sp->nldim * sp->nldim * sp->nldim];
-        iptr->fftw_phase_cos = new double[sp->nldim * sp->nldim * sp->nldim];
-    }
-
 
     /*Do forward transform for each species and store results on the coarse grid */
     RT1 = new RmgTimer("Init: weights");
@@ -577,6 +567,11 @@ static void init_alloc_nonloc_mem (void)
     pct.weight = NULL;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
+
+        ION *iptr = &ct.ions[ion];
+
+        iptr->fftw_phase_sin = NULL;
+        iptr->fftw_phase_cos = NULL;
 
         pct.idxptrlen[ion] = 0;
         pct.Qidxptrlen[ion] = 0;

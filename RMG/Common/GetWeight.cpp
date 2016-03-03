@@ -67,6 +67,16 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     gbptr = beptr + max_size;
 
+    // Release memory allocated for fftw_phase_sin and fftw_phase_cos prior to 
+    // reallocation (if needed) in find_phase
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        iptr = &ct.ions[ion];
+        if( iptr->fftw_phase_sin ) delete [] iptr->fftw_phase_sin;
+        if( iptr->fftw_phase_cos ) delete [] iptr->fftw_phase_cos;
+        iptr->fftw_phase_sin = NULL;
+        iptr->fftw_phase_cos = NULL;
+    }
 
     for(idx = 0; idx < pct.num_tot_proj * P0_BASIS; idx++)
     {
@@ -107,8 +117,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
 
             /*Calculate the phase factor */
-            find_phase (sp->nldim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
-
+            FindPhase (sp->nldim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)sp->forward_beta;
