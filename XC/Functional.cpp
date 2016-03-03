@@ -272,12 +272,12 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     // calculate the gradient of rho + rho_core
     ApplyGradient (rhoout, gx, gy, gz, APP_CI_EIGHT, "Fine");
-//    FftGradientFine(rhoout, gx, gy, gz);
+    //FftGradientFine(rhoout, gx, gy, gz);
 
 
     // and the Laplacian
     ApplyLaplacian (rhoout, d2rho, APP_CI_EIGHT, "Fine");
-//    FftLaplacianFine(rhoout, d2rho);
+    //FftLaplacianFine(rhoout, d2rho);
 
 
 
@@ -293,7 +293,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                 double segno = 1.0;
                 if(rhoout[k] < 0.0)segno = -1.0; 
 
-                double pgrho2 = grho2[0] + sqrt(epsg_guard);
+                double pgrho2 = grho2[0] + epsg_guard;
                 __funct_MOD_gcxc( &arho, &pgrho2, &sx, &sc, &v1x, &v2x, &v1c, &v2c );
                 //
                 // first term of the gradient correction : D(rho*Exc)/D(rho)
