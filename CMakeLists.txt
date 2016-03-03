@@ -105,6 +105,8 @@ if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
    set(USE_SCALAPACK_LIBS 1)
+   # External packages (e.g. PFFT) need this
+   set($ENV{MPICC} "${CMAKE_C_COMPILER}")
 endif(CRAY_XK)
 
 
@@ -398,6 +400,8 @@ find_package(PFFT)
         COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/pfft-master.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
         execute_process(
         COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
+        execute_process(COMMAND bootstrap.sh 
+            WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
         execute_process(COMMAND
         ${PROJECT_SOURCE_DIR}/lib/pfft-master/configure
         --prefix=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64
