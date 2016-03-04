@@ -82,7 +82,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
     int global_basis = G->get_GLOBAL_BASIS(density);
 
     /* Pre and post smoothings on each level */
-    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
+    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 6, 12, 20, 20, 20, 20 };
     int poi_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
 
     if(maxlevel >= MAX_MG_LEVELS)
