@@ -244,6 +244,7 @@ void read_pseudo (void);
 double real_sum_all (double x, MPI_Comm comm);
 double double_sum_all (double x, MPI_Comm comm);
 double real_min_all (double x, MPI_Comm comm);
+void FftFilterFine(double *x,  double factor);
 
 
 void sortpsi (STATE *states);

@@ -44,11 +44,15 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgTimer.h"
+#include "RmgException.h"
+#include "RmgParallelFft.h"
 
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "transition.h"
-
+#if USE_PFFT
+  #include "pfft.h"
+#endif
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -186,6 +190,32 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     get_qqq();
     delete(RT6);
     fflush(NULL);
+
+#if USE_PFFT
+    int np[3];
+    ptrdiff_t densgrid[3];
+    np[0] = Rmg_G->get_PE_X();
+    np[1] = Rmg_G->get_PE_Y();
+    np[2] = Rmg_G->get_PE_Z();
+    densgrid[0] =  Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
+    densgrid[1] =  Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
+    densgrid[2] =  Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+    pfft_init();
+    if( pfft_create_procmesh(3, pct.grid_comm, np, &pct.pfft_comm) ) {
+        RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+    }
+    // check array sizes
+    ptrdiff_t local_ni[3], local_i_start[3];
+    ptrdiff_t local_no[3], local_o_start[3];
+    int alloc_local = pfft_local_size_dft_3d(densgrid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
+    local_ni, local_i_start, local_no, local_o_start);
+    if(alloc_local >  ct.psi_fnbasis)
+        RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+
+    // Initialize some commonly used plans
+    FftInitPlans();
+
+#endif
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
     double fac;

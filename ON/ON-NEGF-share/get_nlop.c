@@ -42,7 +42,7 @@ void get_nlop(void)
     fftw_plan p2;
     int overlap;
     int coarse_size, st1;
-    double *fftw_phase_sin,*fftw_phase_cos;
+    double *fftw_phase_sin=NULL, *fftw_phase_cos=NULL;
     double vect[3], nlcrds[3];
 
     /*Pointer to the result of forward transform on the coarse grid */
@@ -67,10 +67,6 @@ void get_nlop(void)
     gbptr = beptr + ct.max_nlpoints;
 
     
-    my_malloc( fftw_phase_sin, 2 * ct.max_nlpoints, double );
-    fftw_phase_cos = fftw_phase_sin + ct.max_nlpoints;
-
-
 
     /*
      * PROJECTOR_SPACE = ct.max_nlpoints * ct.max_nl;
@@ -179,7 +175,7 @@ void get_nlop(void)
         coarse_size = sp->nldim *sp->nldim *sp->nldim ;
         
         /*Calculate the phase factor */
-        find_phase (sp->nldim, nlcrds, fftw_phase_sin, fftw_phase_cos);
+        find_phase (sp->nldim, nlcrds, &fftw_phase_sin, &fftw_phase_cos);
 
         /*Temporary pointer to the already calculated forward transform */
         fptr = sp->forward_beta;
@@ -278,7 +274,8 @@ void get_nlop(void)
 //    }
 
     my_free(beptr);
-    my_free(fftw_phase_sin);
+// Must fix this EMIL
+    //my_free(fftw_phase_sin);
 
 #if	DEBUG
     printf("PE: %d leave  get_nlop ...\n", pct.gridpe);
@@ -323,6 +320,10 @@ static void init_alloc_nonloc_mem (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
+        ION *iptr = &ct.ions[ion];
+
+        iptr->fftw_phase_sin = NULL;
+        iptr->fftw_phase_cos = NULL;
 
         pct.Qidxptrlen[ion] = 0;
         pct.lptrlen[ion] = 0;

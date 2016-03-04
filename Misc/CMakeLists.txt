@@ -1,4 +1,5 @@
 add_library (Misc
+Fft_Cbindings.cpp
 GetVtotPsi.cpp
 FftInitPlans.cpp
 FftFreqBin.cpp

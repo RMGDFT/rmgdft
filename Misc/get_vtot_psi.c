@@ -40,6 +40,10 @@ void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio)
     }
     else if(grid_ratio == 2) {
 
+#if USE_PFFT
+    FftFilterFine(vtot,  1.0 / (double)grid_ratio );
+#endif
+
         for(ix = 0; ix < get_FPX0_GRID()/2; ix++)
         for(iy = 0; iy < get_FPY0_GRID()/2; iy++)
         for(iz = 0; iz < get_FPZ0_GRID()/2; iz++)
@@ -51,6 +55,10 @@ void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio)
 
     }
     else if(grid_ratio == 3) {
+
+#if USE_PFFT
+    FftFilterFine(vtot,  1.0 / (double)grid_ratio );
+#endif
 
         for(ix = 0; ix < get_FPX0_GRID()/3; ix++)
         for(iy = 0; iy < get_FPY0_GRID()/3; iy++)

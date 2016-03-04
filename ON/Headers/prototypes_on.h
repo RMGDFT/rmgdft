@@ -102,8 +102,6 @@ void thread_barrier_wait(void);
 int is_loop_over_states(void);
 void cgen_prolong(double coef[], double fraction, int order);
 void xbsmovie (FILE *movie);
-void find_phase (int nldim, double *nlcdrs, double *phase_sin,
-                 double *phase_cos);
 
 void app_grad6(double * f, double * wx, double * wy, double * wz, int dimx, int dimy, int dimz);
 
