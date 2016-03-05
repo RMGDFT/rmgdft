@@ -57,7 +57,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
                 int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz,
                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                int *post_cyc, int mu_cyc, int istate, int *iion, int flag_local)
+                int *post_cyc, double step, 
+                int mu_cyc, int istate, int *iion, int flag_local, double Zfac)
 {
     int i;
     int cycl;
@@ -68,15 +69,11 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
     double *resid, *newf, *newv, *newwork;
 
     int ncycl;
-
-
-    double step;
     int ixoff, iyoff, izoff;
 
     ixoff = 0;
     iyoff = 0;
     izoff = 0;
-    step = 0.3;
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
@@ -87,7 +84,7 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
     scale = 2.0 / (gridhx * gridhx * get_xside() * get_xside());
     scale = scale + (2.0 / (gridhy * gridhy * get_yside() * get_yside()));
     scale = scale + (2.0 / (gridhz * gridhz * get_zside() * get_zside()));
-    scale = step / scale;
+    scale = step / (scale + Zfac);
 
 
 
@@ -103,7 +100,7 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
          */
 
         v_mat[idx] = - scale * f_mat[idx];
-        v_mat[idx] = 0.0;
+//        v_mat[idx] = 0.0;
     }                           /* end for */
 
 
@@ -207,7 +204,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
         /* call mgrid solver on new level */
         mgrid_solv_local(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
                    gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
-                   max_levels, pre_cyc, post_cyc, 1, istate, iion, flag_local);
+                   max_levels, pre_cyc, post_cyc, step,
+                   1, istate, iion, flag_local, 2.0*Zfac);
 
         if (flag_local == 1)
         {

@@ -17,18 +17,21 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     int cycles, ione = 1, nits, stopp0;
     double diag, t1, one = 1.;
     STATE *sp;
+    double Zfac = 2.0 * ct.max_zvalence;
+    int levels = ct.eig_parm.levels;
+    if(ct.scf_steps < 2) levels = 0;
 
     int idx;
     int ixx, iyy, izz;
     /* Pre and post smoothings on each level */
 
 
-    int eig_pre[6] = { 0, 3, 3, 3, 3, 3 };
+    int eig_pre[6] = { 0, 6, 6, 6, 6, 6 };
     int eig_post[6] = { 0, 3, 3, 3, 3, 3 };
 
     double *work3;
 
-    eig_pre[ct.eig_parm.levels] = 50;
+//    eig_pre[ct.eig_parm.levels] = 50;
 
     diag = -1. / ct.Ac;
 #if FD4
@@ -59,7 +62,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
         diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
-        diag = -1.0/diag;
         daxpy(&stopp0, &one, res, &ione, work2, &ione);
 
 
@@ -78,7 +80,8 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
 
             mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
                        get_hxgrid(), get_hygrid(), get_hzgrid(), 0, get_neighbors(),
-                       ct.eig_parm.levels, eig_pre, eig_post, 1, istate, &sp->inum, 1);
+                       ct.eig_parm.levels, eig_pre, eig_post, ct.eig_parm.sb_step,
+                       1, istate, &sp->inum, 1, Zfac);
 
 
             pack_stop(sg_orbit, work2, ixx, iyy, izz);
@@ -89,8 +92,9 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
         }
         else
         {
-
-            t1 = ct.eig_parm.gl_step * diag;    /*shuchun wang */
+            double t5 = diag - Zfac;
+            t5 = -1.0 / t5;
+            t1 = ct.eig_parm.gl_step * t5;
 
         }                       /* end if cycles == ct.eig_parm.gl_pre */
 

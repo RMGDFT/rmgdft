@@ -112,7 +112,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
                 int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz,
                 int level, int *nb_ids, int max_levels, int *pre_cyc,
-                int *post_cyc, int mu_cyc, int istate, int *iion, int flag_local);
+                int *post_cyc, double step, int mu_cyc, 
+                int istate, int *iion, int flag_local, double Zfac);
 
 /* Function prototypes */
 void app_4del2 (double * f, double * work);
