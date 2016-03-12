@@ -155,13 +155,13 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 
 static std::mutex vtot_sync_mutex;
 
-template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, int);
-template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, int);
-template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, int);
-template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, int);
+template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, int);
+template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, int);
+template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, std::complex<double> *, std::complex<double> *, int);
+template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, std::complex<double> *, std::complex<double> *, int);
 
 template <typename OrbitalType, typename CalcType>
-void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, int vcycle)
+void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
     bool freeze_occupied = true;
@@ -179,7 +179,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig, diag, t1, t2, t4;
     double *work1;
-    OrbitalType *nv, *ns;
     int eig_pre[8] = { 0, 8, 8, 20, 20, 20, 20, 20 };
     int eig_post[8] = { 0, 2, 2, 2, 2, 2, 2, 2 };
     int potential_acceleration;
@@ -225,8 +224,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectrvely) */
-    nv = &kptr->nv[sp->istate * pbasis];
-    ns = &kptr->ns[sp->istate * pbasis];
+    //nv = &kptr->nv[sp->istate * pbasis];
+    //ns = &kptr->ns[sp->istate * pbasis];
 
     // Copy double precision ns into temp single precision array */
     CopyAndConvert(pbasis, ns, work1_t);

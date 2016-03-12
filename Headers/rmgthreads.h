@@ -38,6 +38,8 @@ typedef struct
     double *sintR;    // Used for threaded beta_xpsi
     double *sintI;    // Used for threaded beta_xpsi
     double *weiptr;   // Used for threaded beta_xpsi
+    void *nv;         // Non-local operator applied to a specific wavefunction
+    void *ns;         // S-operator applied to a specific wavefunction
     int kpt;    // Used for threaded beta_xpsi
 } SCF_THREAD_CONTROL;
 

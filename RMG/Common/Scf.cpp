@@ -229,6 +229,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
                   thread_control[ist].vcycle = vcycle;
                   thread_control[ist].sp = &Kptr[kpt]->Kstates[st1 + ist];
                   thread_control[ist].p3 = (void *)Kptr[kpt];
+                  thread_control[ist].nv = (void *)&Kptr[kpt]->nv[(st1 + ist) * Kptr[kpt]->pbasis];
+                  thread_control[ist].ns = (void *)&Kptr[kpt]->ns[(st1 + ist) * Kptr[kpt]->pbasis];
                   T->set_pptr(ist, &thread_control[ist]);
               }
 
@@ -241,15 +243,19 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                 if(ct.is_gamma) {
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
+                        MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
+                                                   (double *)&Kptr[kpt]->nv[st1 * Kptr[kpt]->pbasis], (double *)&Kptr[kpt]->ns[st1 * Kptr[kpt]->pbasis], vcycle);
                     else
-                        MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
+                        MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
+                                                   (double *)&Kptr[kpt]->nv[st1 * Kptr[kpt]->pbasis], (double *)&Kptr[kpt]->ns[st1 * Kptr[kpt]->pbasis], vcycle);
                 }
                 else {
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
+                        MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
+                                                   (std::complex<double> *)&Kptr[kpt]->nv[st1 * Kptr[kpt]->pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * Kptr[kpt]->pbasis], vcycle);
                     else
-                        MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, vcycle);
+                        MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
+                                                   (std::complex<double> *)&Kptr[kpt]->nv[st1 * Kptr[kpt]->pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * Kptr[kpt]->pbasis], vcycle);
                 }
             }
             delete(RT1);
