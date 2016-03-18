@@ -1,4 +1,5 @@
 add_library (RMG_Common
+Davidson.cpp
 MolecularDynamics.cpp
 GetAugRho.cpp
 MixRho.cpp

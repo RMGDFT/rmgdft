@@ -189,6 +189,9 @@ typedef struct
     /** Number of run states */
     int run_states;
 
+    /** Maximum number of states, used for davidson */
+    int max_states;
+
     /** total number of atomic orbitals including the m dependency */
     int total_atomic_orbitals;
 

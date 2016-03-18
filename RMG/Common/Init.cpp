@@ -70,9 +70,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     SPECIES *sp;
-    OrbitalType *rptr = NULL, *nv, *ns, *Bns;
+    OrbitalType *rptr = NULL, *nv, *ns, *Bns = NULL;
     double *vtot, *rho_tot, *rptr1=NULL;
-    ION *iptr;
     double time2, fac;
 
     nv = (OrbitalType *)pct.nv;
@@ -188,6 +187,23 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.ycstart = 0.0;
     ct.zcstart = 0.0;
 
+    // Compute some buffer sizes. Have to deal with the interaction of a couple of different options here
+    //
+    //    If an LCAO start is selected we need to allocate sufficient memory for the initial set of orbitals
+    //    which may be larger than the number of orbitals used for the rest of the run.
+    //    If potential acceleration is selected we need another buffer of size (run_states * P0_BASIS). If
+    //    we allocate this in a single large buffer of 2*run_states*P0_BASIS it will probably be enough for
+    //    the initialization even if an LCAO start is selected. Finally if Davidson diagonalization is
+    //    requested we need to allocate memory for the expanded basis.
+
+    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    int alloc_states = ct.run_states;
+    if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap)) alloc_states = ct.init_states;
+    if(potential_acceleration && (alloc_states < 2*ct.run_states)) alloc_states = 2*ct.run_states;
+    if (Verify ("davidson_diagonalization", true, Kptr[0]->ControlMap)) alloc_states = std::max(alloc_states, 2*ct.run_states);
+    ct.max_states = alloc_states;
+    
+
 
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
@@ -221,7 +237,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
-    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.num_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts * alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.num_states * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
@@ -234,7 +250,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts * ct.num_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[ct.num_kpts * alloc_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.num_states * P0_BASIS]();
     ns = new OrbitalType[ct.num_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -246,8 +262,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.ns = (double *)ns;
 
 
-    if((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0)) {
-        rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS]();
+    if(potential_acceleration) {
+        //rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS]();
+        rptr1 = (double *)&rptr[ct.run_states * P0_BASIS];
     }
 
     kpt1 = ct.num_kpts;
