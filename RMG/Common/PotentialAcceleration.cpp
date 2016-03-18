@@ -81,7 +81,6 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         Lattice *L = kptr->L;
         TradeImages *T = kptr->T;
         Mgrid MG(L, T);
-        int sbasis = sp->sbasis;
 
 
         int eig_pre[6] = { 2, 3, 6, 2, 2, 2 };
@@ -89,6 +88,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         int dimx = G->get_PX0_GRID(1);
         int dimy = G->get_PY0_GRID(1);
         int dimz = G->get_PZ0_GRID(1);
+        int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
         double hxgrid = G->get_hxgrid(1);
         double hygrid = G->get_hygrid(1);
         double hzgrid = G->get_hzgrid(1);

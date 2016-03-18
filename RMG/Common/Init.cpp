@@ -194,7 +194,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //    If potential acceleration is selected we need another buffer of size (run_states * P0_BASIS). If
     //    we allocate this in a single large buffer of 2*run_states*P0_BASIS it will probably be enough for
     //    the initialization even if an LCAO start is selected. Finally if Davidson diagonalization is
-    //    requested we need to allocate memory for the expanded basis.
+    //    requested we need to allocate memory for the expanded basis including the diagonalization arrays.
 
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     int alloc_states = ct.run_states;
@@ -211,9 +211,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     cudaError_t custat;
 
     // Figure out how much memory space to reserve on the GPU
-    // 3 blocks of num_states * num_states for diagonalization arrays
+    // 3 blocks of RMG_CUBLASXT_BLOCKSIZE*ct.max_states for diagonalization arrays
     size_t gpu_bufsize, t1;
-    t1 = RMG_CUBLASXT_BLOCKSIZE * ct.num_states * sizeof(OrbitalType);
+    t1 = RMG_CUBLASXT_BLOCKSIZE * ct.max_states * sizeof(OrbitalType);
     gpu_bufsize = 3 * t1;
 #if MAGMA_LIBS
     gpu_bufsize += t1;
@@ -230,8 +230,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     size_t gpu_hostbufsize;
-    gpu_hostbufsize = 2 * ct.num_states * ct.num_states * sizeof(OrbitalType) + 
-                      3 * ct.num_states * std::max(ct.num_states, P0_BASIS) * sizeof(OrbitalType) +
+    gpu_hostbufsize = 2 * ct.max_states * ct.max_states * sizeof(OrbitalType) + 
+                      3 * ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType) +
                       n_win * n_win * sizeof(OrbitalType);
 
     InitGpuMallocHost(gpu_hostbufsize);
@@ -250,7 +250,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts * alloc_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[ct.num_kpts * ct.max_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.num_states * P0_BASIS]();
     ns = new OrbitalType[ct.num_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -287,7 +287,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->Kstates[st1].vh = vh;
             Kptr[kpt]->Kstates[st1].vnuc = vnuc;
             Kptr[kpt]->Kstates[st1].pbasis =P0_BASIS;
-            Kptr[kpt]->Kstates[st1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
+//            Kptr[kpt]->Kstates[st1].sbasis = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
             Kptr[kpt]->Kstates[st1].istate = st1;
             rptr +=P0_BASIS;
             rptr1 +=P0_BASIS;

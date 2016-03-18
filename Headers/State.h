@@ -69,9 +69,6 @@ public:
     /** Total basis size on each processor (dimx*dimy*dimz) */
     int pbasis;
 
-    /* Total basis size in a smoothing grid on each processor (dimx+2)*(dimy+2)*(dimz+2) */
-    int sbasis;
-
     /** Wavefunction residual error computed by multigrid solver */
     double res;
 

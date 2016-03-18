@@ -197,7 +197,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double Zfac = 2.0 * ct.max_zvalence;
     int pbasis = kptr->pbasis;
-    int sbasis = sp->sbasis;
+    int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory */
     CalcType *res2_t = new CalcType[2*sbasis];
