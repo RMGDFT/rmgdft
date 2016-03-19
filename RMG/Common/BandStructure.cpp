@@ -82,7 +82,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
 
         Betaxpsi (Kptr[kpt]);
-        AppNls(Kptr[kpt], Kptr[kpt]->newsint_local);
+        AppNls(Kptr[kpt], Kptr[kpt]->newsint_local, 0, Kptr[kpt]->nstates);
 
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
@@ -93,12 +93,12 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
                 Betaxpsi (Kptr[kpt]);
                 Kptr[kpt]->mix_betaxpsi(0);
-                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
+                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
 
                 // Update betaxpsi        
                 Betaxpsi (Kptr[kpt]);
 
-                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
+                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
                 //            Kptr[kpt]->mix_betaxpsi(0);
 
                 /* Update the wavefunctions */
@@ -151,7 +151,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             /*wavefunctions have changed, projectors have to be recalculated */
             Betaxpsi (Kptr[kpt]);
             Kptr[kpt]->mix_betaxpsi(0);
-            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
+            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
 
         } // end loop scf
 

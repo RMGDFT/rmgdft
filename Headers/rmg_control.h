@@ -720,6 +720,9 @@ typedef struct
     // Flag controlling use of Davidson diagonalization
     bool use_davidson;
 
+    // Non-local block size
+    int non_local_block_size;
+
 } CONTROL;
 
 

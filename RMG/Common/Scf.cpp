@@ -214,7 +214,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             Betaxpsi (Kptr[kpt]);
             delete(RT1);
             Kptr[kpt]->mix_betaxpsi(0);
-            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local);
+            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
 
             /* Update the wavefunctions */
             RT1 = new RmgTimer("Scf steps: Mg_eig");

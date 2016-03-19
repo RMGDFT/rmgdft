@@ -27,6 +27,7 @@
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
+#include "RmgException.h"
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
@@ -42,15 +43,18 @@
 #include "GlobalSums.h"
 #include "blas.h"
 
-template void AppNls<double>(Kpoint<double> *, double *);
-template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *);
+template void AppNls<double>(Kpoint<double> *, double *, int, int);
+template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, int, int);
 
 
 template <typename KpointType>
-void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
+void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, int first_state, int num_states)
 {
 
-    int num_states = kpoint->get_nstates();
+    // Sanity check
+    if(num_states > ct.non_local_block_size)
+        throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
+ 
     int P0_BASIS = kpoint->pbasis;
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
@@ -62,7 +66,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
     double *qqq;
     KpointType *psintR;
 
-    KpointType *psi = kpoint->orbital_storage;
+    KpointType *psi = kpoint->Kstates[first_state].psi;
     KpointType *nv = kpoint->nv;
     KpointType *ns = kpoint->ns;
     KpointType *Bns = kpoint->Bns;
@@ -94,11 +98,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR)
 
     for(int istate = 0; istate < num_states; istate++)
     {
-        int sindex = istate * ct.max_nl;
+        int sindex = (istate + first_state) * ct.max_nl;
         for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
             int proj_index = ion * ct.max_nl;
-            psintR = &sintR[ion * num_states * ct.max_nl + sindex];
+            psintR = &sintR[ion * ct.num_states * ct.max_nl + sindex];
             //psintI = &sintI[ion * num_states * ct.max_nl + sindex];
             /*Actual index of the ion under consideration*/
             int gion = pct.nonloc_ions_list[ion];

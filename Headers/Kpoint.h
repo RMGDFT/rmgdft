@@ -104,10 +104,13 @@ public:
     // Size of the sint arrays
     int sint_size;
 
-    // Pointers to nv, ns, and Bns
+    // Pointers to nv, ns, and Bns. Each of these arrays is dimensioned (NL_BLOCK_SIZE, P0_BASIS).
+    // since we apply the non-local operators in blocks for efficiency and to save memory
     KpointType *nv;
     KpointType *ns;
     KpointType *Bns;
+    int nl_first_state;  // first state in the buffer
+
 
     // Pointers to weight and Bweight and gpu versions
     KpointType *nl_weight;
