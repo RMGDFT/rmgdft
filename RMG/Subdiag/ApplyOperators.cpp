@@ -39,23 +39,20 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *);
-template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, std::complex<double> *, double *);
+template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *, double *, double *);
+template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, std::complex<double> *, double *, 
+              std::complex<double> *, std::complex<double> *);
 
 // Applies A and B operators to one wavefunction
 template <typename KpointType>
-void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot)
+void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, KpointType *nv, KpointType *Bns)
 {
     BaseGrid *G = kptr->G;
-    TradeImages *T = kptr->T;
     Lattice *L = &Rmg_L;
     State<KpointType> *sp = &kptr->Kstates[istate];
     KpointType *psi = kptr->Kstates[istate].psi;
 
     double vel = L->get_omega() / (G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
-    double hxgrid = G->get_hxgrid(1);
-    double hygrid = G->get_hygrid(1);
-    double hzgrid = G->get_hzgrid(1);
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
@@ -122,7 +119,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     // Add in non-local which has already had B applied in AppNls
     for(int idx = 0; idx < pbasis; idx++) {
 
-        a_psi[idx] += TWO * kptr->nv[istate * kptr->pbasis + idx];
+        a_psi[idx] += TWO * nv[idx];
 
     }
 
@@ -137,7 +134,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
         for(int idx = 0; idx < pbasis; idx++) {
 
-            b_psi[idx] += kptr->Bns[istate * kptr->pbasis + idx];
+            b_psi[idx] += Bns[idx];
 
         }
 

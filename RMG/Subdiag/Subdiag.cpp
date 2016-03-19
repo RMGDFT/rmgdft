@@ -89,14 +89,14 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     static KpointType *Aij;
     static KpointType *Bij;
     static KpointType *Sij;
-    KpointType *tmp_array2T = (KpointType *)GpuMallocHost(kptr->pbasis * kptr->nstates * sizeof(KpointType));     
+    KpointType *tmp_array2T = (KpointType *)GpuMallocHost(pbasis * kptr->nstates * sizeof(KpointType));     
 
 #else
 
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
-    KpointType *tmp_array2T = new KpointType[kptr->pbasis * kptr->nstates];
+    KpointType *tmp_array2T = new KpointType[pbasis * kptr->nstates];
 
 #endif
 
@@ -117,7 +117,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     // First time through allocate pinned memory for buffers
     if(!tmp_arrayT) {
 
-        int retval1 = MPI_Alloc_mem(kptr->pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
+        int retval1 = MPI_Alloc_mem(pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
         int retval2 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
         int retval3 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
 
@@ -126,7 +126,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         }
 
         #if GPU_ENABLED
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, kptr->pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
@@ -143,9 +143,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("Diagonalization: apply operators");
 
-
     // Apply Nls
-    AppNls(kptr, kptr->newsint_local, 0, kptr->nstates);
+    AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
+           0, std::min(ct.non_local_block_size, kptr->nstates));
+    int first_nls = 0;
 
 
     // Each thread applies the operator to one wavefunction
@@ -156,24 +157,40 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     istop = istop * T->get_threads_per_node();
     for(int st1=0;st1 < istop;st1 += T->get_threads_per_node()) {
         SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+        // Make sure the non-local operators are applied for the next block if needed
+         int check = first_nls + T->get_threads_per_node();
+         if(check > ct.non_local_block_size) {
+             AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+                    st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
+             first_nls = 0;
+         }
+
         for(int ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
             thread_control[ist].sp = &kptr->Kstates[st1 + ist];
-            thread_control[ist].p1 = (void *)&a_psi[(st1 + ist) * kptr->pbasis];
-            thread_control[ist].p2 = (void *)&b_psi[(st1 + ist) * kptr->pbasis];
+            thread_control[ist].p1 = (void *)&a_psi[(st1 + ist) * pbasis];
+            thread_control[ist].p2 = (void *)&b_psi[(st1 + ist) * pbasis];
             thread_control[ist].p3 = (void *)kptr;
             thread_control[ist].vtot = vtot_eig;
+            thread_control[ist].nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
+            thread_control[ist].Bns = (void *)&kptr->Bns[(first_nls + ist) * pbasis];
+
             T->set_pptr(ist, &thread_control[ist]);
         }
 
         // Thread tasks are set up so wake them
         T->run_thread_tasks(T->get_threads_per_node());
 
+        // Increment index into non-local block
+        first_nls += T->get_threads_per_node();
+
     }
 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < kptr->nstates;st1++) {
-        ApplyOperators (kptr, st1, &a_psi[st1 * kptr->pbasis], &b_psi[st1 * kptr->pbasis], vtot_eig);
+        ApplyOperators (kptr, st1, &a_psi[st1 * pbasis], &b_psi[st1 * pbasis], vtot_eig, 
+                       &kptr->nv[first_nls * pbasis], &kptr->Bns[first_nls * pbasis]);
+        first_nls++;
     }
 
     delete(RT1);

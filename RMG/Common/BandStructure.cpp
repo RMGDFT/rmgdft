@@ -76,7 +76,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     get_ddd (vtot);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
-
+#if 0
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
@@ -159,6 +159,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
 
     } // end loop over kpoints
+#endif
 
 
     delete [] vtot;

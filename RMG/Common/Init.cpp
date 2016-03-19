@@ -241,7 +241,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
-    custat = cudaMallocHost((void **)&ns, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&ns, ct.max_states * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     if(!ct.norm_conserving_pp) {
         custat = cudaMallocHost((void **)&Bns, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
@@ -252,7 +252,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
     rptr = new OrbitalType[ct.num_kpts * ct.max_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
-    ns = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
+    ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
         Bns = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
         pct.Bns = (double *)Bns;

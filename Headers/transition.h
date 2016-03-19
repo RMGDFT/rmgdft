@@ -82,7 +82,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
-template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, int first_state, int num_states);
+template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
+            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, int first_state, int num_states);
+
 
 
 template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, 

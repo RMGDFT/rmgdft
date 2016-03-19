@@ -43,12 +43,15 @@
 #include "GlobalSums.h"
 #include "blas.h"
 
-template void AppNls<double>(Kpoint<double> *, double *, int, int);
-template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, int, int);
+template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, double *, int, int);
+template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+                std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
 
 
 template <typename KpointType>
-void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, int first_state, int num_states)
+void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
+            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, 
+            int first_state, int num_states)
 {
 
     // Sanity check
@@ -66,10 +69,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, int first_state, int 
     double *qqq;
     KpointType *psintR;
 
-    KpointType *psi = kpoint->Kstates[first_state].psi;
-    KpointType *nv = kpoint->nv;
-    KpointType *ns = kpoint->ns;
-    KpointType *Bns = kpoint->Bns;
+//    KpointType *psi = kpoint->Kstates[first_state].psi;
+//    KpointType *nv = kpoint->nv;
+//    KpointType *ns = &kpoint->ns[first_state * P0_BASIS];   // ns is not blocked like nv and Bns since we need the full matrix
+//    KpointType *Bns = kpoint->Bns;
 
     if(pct.num_tot_proj == 0)
     {

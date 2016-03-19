@@ -40,6 +40,7 @@ typedef struct
     double *weiptr;   // Used for threaded beta_xpsi
     void *nv;         // Non-local operator applied to a specific wavefunction
     void *ns;         // S-operator applied to a specific wavefunction
+    void *Bns;        // Bapplied to S-operator applied to a specific wavefunction
     int kpt;    // Used for threaded beta_xpsi
 } SCF_THREAD_CONTROL;
 
