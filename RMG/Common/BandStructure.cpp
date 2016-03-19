@@ -76,50 +76,57 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     get_ddd (vtot);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
-#if 0
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
-
-        Betaxpsi (Kptr[kpt]);
-        AppNls(Kptr[kpt], Kptr[kpt]->newsint_local, 0, Kptr[kpt]->nstates);
+        int pbasis = Kptr[kpt]->pbasis;
 
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
 
-
             Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
             for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
                 Betaxpsi (Kptr[kpt]);
                 Kptr[kpt]->mix_betaxpsi(0);
-                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
-
-                // Update betaxpsi        
-                Betaxpsi (Kptr[kpt]);
-
-                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
-                //            Kptr[kpt]->mix_betaxpsi(0);
 
                 /* Update the wavefunctions */
                 istop = Kptr[kpt]->nstates / T->get_threads_per_node();
                 istop = istop * T->get_threads_per_node();
 
+                // Apply the non-local operators to a block of orbitals
+                AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, Kptr[kpt]->Kstates[0].psi, Kptr[kpt]->nv, Kptr[kpt]->ns, Kptr[kpt]->Bns,
+                       0, std::min(ct.non_local_block_size, Kptr[kpt]->nstates));
+                int first_nls = 0;
+
                 for(st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
                     SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+
+                    // Make sure the non-local operators are applied for the next block if needed
+                    int check = first_nls + T->get_threads_per_node();
+                    if(check > ct.non_local_block_size) {
+                        AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, Kptr[kpt]->Kstates[st1].psi, Kptr[kpt]->nv, &Kptr[kpt]->ns[st1 * pbasis], Kptr[kpt]->Bns,
+                               st1, std::min(ct.non_local_block_size, Kptr[kpt]->nstates - st1));
+                        first_nls = 0;
+                    }
+
                     for(ist = 0;ist < T->get_threads_per_node();ist++) {
                         thread_control[ist].job = HYBRID_EIG;
                         thread_control[ist].vtot = vtot_psi;
                         thread_control[ist].vcycle = vcycle;
                         thread_control[ist].sp = &Kptr[kpt]->Kstates[st1 + ist];
                         thread_control[ist].p3 = (void *)Kptr[kpt];
-                        thread_control[ist].nv = (void *)&Kptr[kpt]->nv[(st1 + ist) * Kptr[kpt]->pbasis];
-                        thread_control[ist].ns = (void *)&Kptr[kpt]->ns[(st1 + ist) * Kptr[kpt]->pbasis];
+                        thread_control[ist].nv = (void *)&Kptr[kpt]->nv[(st1 + ist) * pbasis];
+                        thread_control[ist].ns = (void *)&Kptr[kpt]->ns[(st1 + ist) * pbasis];
                         T->set_pptr(ist, &thread_control[ist]);
                     }
 
                     // Thread tasks are set up so run them
                     T->run_thread_tasks(T->get_threads_per_node());
+
+
+                    // Increment index into non-local block
+                    first_nls += T->get_threads_per_node();
 
                 }
 
@@ -127,11 +134,11 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                 for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
                     if(ct.rms > ct.preconditioner_thr)
                         MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi,
-                                                                                (std::complex<double> *)&Kptr[kpt]->nv[st1 * Kptr[kpt]->pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * Kptr[kpt]->pbasis], vcycle);
+                                                                                (std::complex<double> *)&Kptr[kpt]->nv[st1 * pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
 
                     else
                         MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi,
-                                                                                 (std::complex<double> *)&Kptr[kpt]->nv[st1 * Kptr[kpt]->pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * Kptr[kpt]->pbasis], vcycle);
+                                                                                 (std::complex<double> *)&Kptr[kpt]->nv[st1 * pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
 
                 }
 
@@ -151,7 +158,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             /*wavefunctions have changed, projectors have to be recalculated */
             Betaxpsi (Kptr[kpt]);
             Kptr[kpt]->mix_betaxpsi(0);
-            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, 0, Kptr[kpt]->nstates);
 
         } // end loop scf
 
@@ -159,7 +165,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
 
     } // end loop over kpoints
-#endif
 
 
     delete [] vtot;
