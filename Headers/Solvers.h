@@ -37,12 +37,15 @@
 #include "typedefs.h"
 #include "Kpoint.h"
 
-template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, double *);
-template <typename KpointType> void Davidson(Kpoint<KpointType> *kptr, 
-                                            double *vtot, 
-                                            int subdiag_driver);
+template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, double *vtot);
+template <typename OrbitalType> void Davidson(Kpoint<OrbitalType> *kptr, double *vtot);
+
+
 template <typename KpointType>
 void ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, KpointType *h_psi, double *vtot, KpointType *nv);
+template <typename KpointType>
+void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot);
+
 
 
 #endif

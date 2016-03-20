@@ -200,7 +200,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             MgridSubspace(Kptr[kpt], vtot_psi);
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-
+            Davidson(Kptr[kpt], vtot_psi);
         }
 
     } // end loop over kpoints

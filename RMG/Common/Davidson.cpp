@@ -25,8 +25,6 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "rmg_alloc.h"
-#include "rmg_error.h"
 #include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
@@ -37,12 +35,7 @@
 #include "Solvers.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
-#include "blas.h"
-#include "RmgParallelFft.h"
 
-#include "prototypes.h"
-#include "common_prototypes.h"
-#include "common_prototypes1.h"
 #include "transition.h"
 
 #if GPU_ENABLED
@@ -52,12 +45,38 @@
 #endif
 
 
-template void Davidson<double>(Kpoint<double> *, double *, int);
-template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int);
+// Davidson diagonalization solver
 
-template <typename KpointType>
-void Davidson (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
+template void Davidson<double>(Kpoint<double> *, double *);
+template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, double *);
+
+template <typename OrbitalType>
+void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 {
+
+    int pbasis = kptr->pbasis;
+
+#if GPU_ENABLED
+
+    cublasStatus_t custat;
+    OrbitalType *h_psi = (KpointType *)GpuMallocHost(pbasis * kptr->nstates * sizeof(KpointType));
+
+#else
+
+    OrbitalType *h_psi = new OrbitalType[pbasis * kptr->nstates];
+
+#endif
+
+   // Apply Hamiltonian to current set of eigenvectors
+   ApplyHamiltonianBlock (kptr, 0, kptr->nstates, h_psi, vtot); 
+ 
+#if GPU_ENABLED
+    GpuFreeHost(h_psi);
+#else
+    delete [] h_psi;
+#endif
+
+    
 }
 
 

@@ -32,6 +32,7 @@
 #include "transition.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
+#include "Solvers.h"
 #if GPU_ENABLED
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -106,6 +107,16 @@ void *run_threads(void *v) {
                    State<std::complex<double> > *spc = (State<std::complex<double> > *)ss->sp;
                    ApplyOperators<std::complex<double> > (kptr_c, spc->istate, (std::complex<double> *)ss->p1, (std::complex<double> *)ss->p2, ss->vtot,
                                                           (std::complex<double> *)ss->nv, (std::complex<double> *)ss->Bns);
+               } 
+               break;
+            case HYBRID_APPLY_HAMILTONIAN:
+               if(ct.is_gamma) {
+                   kptr_d = (Kpoint<double> *)ss->p3;
+                   ApplyHamiltonian<double> (kptr_d, ss->istate, (double *)ss->p1, ss->vtot, (double *)ss->nv);
+               }
+               else {
+                   kptr_c = (Kpoint<std::complex<double>> *)ss->p3;
+                   ApplyHamiltonian<std::complex<double> > (kptr_c, ss->istate, (std::complex<double> *)ss->p1, ss->vtot, (std::complex<double> *)ss->nv);
                } 
                break;
             case HYBRID_BETAX_PSI1_CALCULATE:

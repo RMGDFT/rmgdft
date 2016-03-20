@@ -29,7 +29,6 @@
 #include "common_prototypes.h"
 #include "rmgthreads.h"
 
-#include "hybrid.h"
 
 // Turning this off for now while we are in transition
 #undef GPU_ENABLED

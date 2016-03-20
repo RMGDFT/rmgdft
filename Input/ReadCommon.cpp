@@ -625,9 +625,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
                          "Use folded spectrum.");
 
-    If.RegisterInputKey("davidson_diagonalization", &lc.use_davidson, false, 
-                         "Use davidson diagonalization.");
-
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
                         "Flag indicating whether or not to use dynamic timesteps in relaxation mode.\n");
 

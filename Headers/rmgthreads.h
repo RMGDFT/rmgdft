@@ -42,6 +42,7 @@ typedef struct
     void *ns;         // S-operator applied to a specific wavefunction
     void *Bns;        // Bapplied to S-operator applied to a specific wavefunction
     int kpt;    // Used for threaded beta_xpsi
+    int istate;
 } SCF_THREAD_CONTROL;
 
 /* Extern declarations for thread control structures */

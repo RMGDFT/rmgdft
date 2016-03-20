@@ -1,5 +1,6 @@
 add_library (RMG_Common
 ApplyHamiltonian.cpp
+ApplyHamiltonianBlock.cpp 
 Davidson.cpp
 MgridSubspace.cpp
 MolecularDynamics.cpp

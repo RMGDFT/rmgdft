@@ -11,7 +11,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "hybrid.h"
 #include "FiniteDiff.h"
 #include "TradeImages.h"
 

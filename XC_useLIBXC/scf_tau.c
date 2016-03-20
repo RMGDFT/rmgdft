@@ -8,7 +8,6 @@
 #include "BaseThread.h"
 #include "RmgTimer.h"
 
-#include "hybrid.h"
 
 
 static int firststep = TRUE;

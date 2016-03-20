@@ -73,7 +73,6 @@
 #include "InputKey.h"
 #include "InputOpts.h"
 #include "Functional.h"
-#include "hybrid.h"
 
 #if GPU_ENABLED
     #if MAGMA_LIBS

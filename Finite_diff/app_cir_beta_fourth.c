@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <TradeImages.h>
-#include "hybrid.h"
 
 
 void app_cir_beta_fourth (double * a, double * b, int dimx, int dimy, int dimz)

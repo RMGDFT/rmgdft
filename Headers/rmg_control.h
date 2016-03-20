@@ -720,9 +720,6 @@ typedef struct
     // Maximum number of valence electrons for any atomic species
     double max_zvalence;
 
-    // Flag controlling use of Davidson diagonalization
-    bool use_davidson;
-
     // Non-local block size
     int non_local_block_size;
 
