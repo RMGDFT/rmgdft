@@ -58,7 +58,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
-    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
+    int sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);  // for sixth order Mehrstellen need +-2 grid points
 
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     potential_acceleration = potential_acceleration & (ct.scf_steps > 0);

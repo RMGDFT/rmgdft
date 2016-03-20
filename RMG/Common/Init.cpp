@@ -66,7 +66,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RmgTimer RT0("Init");
     int kpt, kpt1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
     int species;
-    int PX0_GRID, PY0_GRID, PZ0_GRID;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     SPECIES *sp;
@@ -79,9 +78,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
-    PX0_GRID = Rmg_G->get_PX0_GRID(1);
-    PY0_GRID = Rmg_G->get_PY0_GRID(1);
-    PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
     FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
     FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
     FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
@@ -250,7 +246,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts * ct.max_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[ct.num_kpts * alloc_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -263,8 +259,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     if(potential_acceleration) {
-        //rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS]();
-        rptr1 = (double *)&rptr[ct.run_states * P0_BASIS];
+        if(ct.is_gamma) {
+            rptr1 = (double *)&rptr[ct.run_states * P0_BASIS];
+        }
+        else {
+            rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS]();
+        }
     }
 
     kpt1 = ct.num_kpts;

@@ -34,7 +34,7 @@
 #include "Kpoint.h"
 #include "RmgGemm.h"
 #include "Subdiag.h"
-#include "Davidson.h"
+#include "Solvers.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "blas.h"

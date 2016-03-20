@@ -1,5 +1,7 @@
 add_library (RMG_Common
+ApplyHamiltonian.cpp
 Davidson.cpp
+MgridSubspace.cpp
 MolecularDynamics.cpp
 GetAugRho.cpp
 MixRho.cpp
