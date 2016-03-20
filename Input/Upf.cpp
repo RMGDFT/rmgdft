@@ -80,7 +80,7 @@ void LoadUpf(SPECIES *sp)
     std::stringstream ss; 
     double  ddd0[6][6];  // Used to read in the PP_DIJ
     double qqq[6][6];    // Used to read in the norms of the augmentation functions (PP_Q)
- 
+
     std::string Msg;
     if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
  
@@ -188,7 +188,6 @@ void LoadUpf(SPECIES *sp)
     // Get the type of pseudopotential
     std::string pp_type = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.pseudo_type");
     boost::to_upper(pp_type);
-
     if(!pp_type.compare(0, 2, "NC")) {
         sp->is_norm_conserving = true;
     }
@@ -474,15 +473,19 @@ void LoadUpf(SPECIES *sp)
     sp->lradius = 9.0;
     sp->nlradius = 5.0425;
     sp->qradius = 4.0425;
+sp->nlradius = 6.0425;
+sp->qradius = 6.0425;
     sp->lrcut = 7.5;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
+//sp->gwidth = 7.0;
     sp->aradius = 9.0;
     sp->acut = 7.0;
     sp->agwidth = 10.0;
     sp->arwidth = 25.0;
     for(int ip = 0;ip < sp->nbeta;ip++) {
-        sp->nlrcut[sp->llbeta[ip]] = 3.0425;
+        sp->nlrcut[sp->llbeta[ip]] = 4.8425;
+//        sp->nlrcut[sp->llbeta[ip]] = 4.5;
     }
 
     // Leftover initializations

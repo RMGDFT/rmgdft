@@ -30,7 +30,6 @@
 #include "const.h"
 #include "State.h"
 #include "Kpoint.h"
-#include "BaseThread.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
 #include "RmgThread.h"
@@ -45,8 +44,8 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "Functional.h"
+#include "Solvers.h"
 #include "../Headers/prototypes.h"
-#include "vdW.h"
 #include "RmgParallelFft.h"
 
 
@@ -67,23 +66,16 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 {
 
     RmgTimer RT0("Scf steps"), *RT1;
-    int st1, diag_this_step;
     int nspin = (spin_flag + 1);
     bool CONVERGED = false;
     double t3;
     double *vtot, *vtot_psi, *new_rho;
     double time1;
     double t[3];                  /* SCF checks and average potential */
-    double mean_occ_res = DBL_MAX;
-    double mean_unocc_res = DBL_MAX;
-    double max_occ_res = 0.0;
     double max_unocc_res = 0.0;
-    double min_occ_res = DBL_MAX;
-    double min_unocc_res = DBL_MAX;
-    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
 
-    int ist, istop, P0_BASIS, FP0_BASIS;
-    BaseThread *T = BaseThread::getBaseThread(0);
+
+    int P0_BASIS, FP0_BASIS;
 
     /* to hold the send data and receive data of eigenvalues */
     double *rho_tot=NULL;   
@@ -204,170 +196,11 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
-        mean_occ_res = 0.0;
-        mean_unocc_res = 0.0;
-        int pbasis = Kptr[kpt]->pbasis;
-
-        for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
-
-            // Update betaxpsi        
-            RT1 = new RmgTimer("Scf steps: Beta x psi");
-            Betaxpsi (Kptr[kpt]);
-            delete(RT1);
-            Kptr[kpt]->mix_betaxpsi(0);
-
-            /* Update the wavefunctions */
-            RT1 = new RmgTimer("Scf steps: Mg_eig");
-            istop = Kptr[kpt]->nstates / T->get_threads_per_node();
-            istop = istop * T->get_threads_per_node();
-
-            // Apply the non-local operators to a block of orbitals
-            AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, Kptr[kpt]->Kstates[0].psi, Kptr[kpt]->nv, Kptr[kpt]->ns, Kptr[kpt]->Bns,
-                   0, std::min(ct.non_local_block_size, Kptr[kpt]->nstates));
-            int first_nls = 0;
- 
-            for(st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
-              SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
-
-              // Make sure the non-local operators are applied for the next block if needed
-              int check = first_nls + T->get_threads_per_node();
-              if(check > ct.non_local_block_size) {
-                  AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, Kptr[kpt]->Kstates[st1].psi, Kptr[kpt]->nv, &Kptr[kpt]->ns[st1 * pbasis], Kptr[kpt]->Bns,
-                         st1, std::min(ct.non_local_block_size, Kptr[kpt]->nstates - st1));
-                  first_nls = 0;
-              }
-            
-              for(ist = 0;ist < T->get_threads_per_node();ist++) {
-                  thread_control[ist].job = HYBRID_EIG;
-                  thread_control[ist].vtot = vtot_psi;
-                  thread_control[ist].vcycle = vcycle;
-                  thread_control[ist].sp = &Kptr[kpt]->Kstates[st1 + ist];
-                  thread_control[ist].p3 = (void *)Kptr[kpt];
-                  thread_control[ist].nv = (void *)&Kptr[kpt]->nv[(first_nls + ist) * pbasis];
-                  thread_control[ist].ns = (void *)&Kptr[kpt]->ns[(st1 + ist) * pbasis];  // ns is not blocked!
-                  T->set_pptr(ist, &thread_control[ist]);
-              }
-
-              // Thread tasks are set up so run them
-              T->run_thread_tasks(T->get_threads_per_node());
-
-              // Increment index into non-local block
-              first_nls += T->get_threads_per_node();
-
-            }
-
-            // Process any remaining states in serial fashion
-            for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
-                if(ct.is_gamma) {
-                    if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<double,float> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
-                                                   (double *)&Kptr[kpt]->nv[first_nls * pbasis], (double *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
-                    else
-                        MgEigState<double,double> ((Kpoint<double> *)Kptr[kpt], (State<double> *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
-                                                   (double *)&Kptr[kpt]->nv[first_nls * pbasis], (double *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
-                }
-                else {
-                    if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<std::complex<double>, std::complex<float> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
-                                                   (std::complex<double> *)&Kptr[kpt]->nv[first_nls * pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
-                    else
-                        MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi, 
-                                                   (std::complex<double> *)&Kptr[kpt]->nv[first_nls * pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
-                }
-                first_nls++;
-            }
-            delete(RT1);
-
+        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap)) {
+            MgridSubspace(Kptr[kpt], vtot_psi);
         }
+        else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
 
-        if(Verify ("freeze_occupied", true, Kptr[kpt]->ControlMap)) {
-
-            // Orbital residual measures (used for some types of calculations
-            Kptr[kpt]->max_unocc_res_index = (int)(ct.gw_residual_fraction * (double)Kptr[kpt]->nstates);
-            Kptr[kpt]->mean_occ_res = 0.0;
-            Kptr[kpt]->min_occ_res = DBL_MAX;
-            Kptr[kpt]->max_occ_res = 0.0;
-            Kptr[kpt]->mean_unocc_res = 0.0;
-            Kptr[kpt]->min_unocc_res = DBL_MAX;
-            Kptr[kpt]->max_unocc_res = 0.0;
-            Kptr[kpt]->highest_occupied = 0;
-            for(int istate = 0;istate < Kptr[kpt]->nstates;istate++) {
-                if(Kptr[kpt]->Kstates[istate].occupation[0] > 0.0) {
-                    Kptr[kpt]->mean_occ_res += Kptr[kpt]->Kstates[istate].res;
-                    mean_occ_res += Kptr[kpt]->Kstates[istate].res;
-                    if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_occ_res)  Kptr[kpt]->max_occ_res = Kptr[kpt]->Kstates[istate].res;
-                    if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_occ_res)  Kptr[kpt]->min_occ_res = Kptr[kpt]->Kstates[istate].res;
-                    if(Kptr[kpt]->Kstates[istate].res >  max_occ_res)  max_occ_res = Kptr[kpt]->Kstates[istate].res;
-                    if(Kptr[kpt]->Kstates[istate].res <  min_occ_res)  min_occ_res = Kptr[kpt]->Kstates[istate].res;
-                    Kptr[kpt]->highest_occupied = istate;
-                }
-                else {
-                    if(istate <= Kptr[kpt]->max_unocc_res_index) {
-                        Kptr[kpt]->mean_unocc_res += Kptr[kpt]->Kstates[istate].res;
-                        mean_unocc_res += Kptr[kpt]->Kstates[istate].res;
-                        if(Kptr[kpt]->Kstates[istate].res >  Kptr[kpt]->max_unocc_res)  Kptr[kpt]->max_unocc_res = Kptr[kpt]->Kstates[istate].res;
-                        if(Kptr[kpt]->Kstates[istate].res <  Kptr[kpt]->min_unocc_res)  Kptr[kpt]->min_unocc_res = Kptr[kpt]->Kstates[istate].res;
-                        if(Kptr[kpt]->Kstates[istate].res >  max_unocc_res)  max_unocc_res = Kptr[kpt]->Kstates[istate].res;
-                        if(Kptr[kpt]->Kstates[istate].res <  min_unocc_res)  min_unocc_res = Kptr[kpt]->Kstates[istate].res;
-                    }
-                }
-            }
-            Kptr[kpt]->mean_occ_res = Kptr[kpt]->mean_occ_res / (double)(Kptr[kpt]->highest_occupied + 1);
-            Kptr[kpt]->mean_unocc_res = Kptr[kpt]->mean_unocc_res / (double)(Kptr[kpt]->max_unocc_res_index -(Kptr[kpt]->highest_occupied + 1));
-            mean_occ_res = mean_occ_res / (double)(ct.num_kpts*(Kptr[kpt]->highest_occupied + 1));
-            mean_unocc_res = mean_unocc_res / (double)(ct.num_kpts*Kptr[kpt]->max_unocc_res_index -(Kptr[kpt]->highest_occupied + 1));
-
-            rmg_printf("Mean/Min/Max unoccupied wavefunction residual for kpoint %d  =  %10.5e  %10.5e  %10.5e\n", kpt, Kptr[kpt]->mean_unocc_res, Kptr[kpt]->min_unocc_res, Kptr[kpt]->max_unocc_res);
-
-        }
-
-
-        /* wavefunctions have changed, projectors have to be recalculated
-         * but if we are using potential acceleration and not well converged yet
-         * it is counterproductive to do so */
-        if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6))) {
-            RT1 = new RmgTimer("Scf steps: Beta x psi");
-            Betaxpsi (Kptr[kpt]);
-            delete(RT1);
-        }
-
-
-        /* Now we orthognalize and optionally do subspace diagonalization
-         * In the gamma point case, orthogonalization is not required when doing subspace diagonalization
-         * For non-gamma point we have to do first orthogonalization and then, optionally subspace diagonalization
-         * the reason is for non-gamma subdiag is not coded to solve generalized eigenvalue problem, it can
-         * only solve the regular eigenvalue problem and that requires that wavefunctions are orthogonal to start with.*/
-
-        diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
-
-        /* do diagonalizations if requested, if not orthogonalize */
-        if (diag_this_step) {
-
-            Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
-            Betaxpsi (Kptr[kpt]);
-            Kptr[kpt]->mix_betaxpsi(0);
-            // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
-            // after diagonalizing.
-
-        }
-        else {
-
-            RT1 = new RmgTimer("Scf steps: Orthogonalization");
-            Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
-            delete(RT1);
-
-            // wavefunctions have changed, projectors have to be recalculated */
-            RT1 = new RmgTimer("Scf steps: Beta x psi");
-            Betaxpsi (Kptr[kpt]);
-            delete(RT1);
-            Kptr[kpt]->mix_betaxpsi(1);
-
-        }
-            
-
-        /* If sorting is requested then sort the states. */
-        if (ct.sortflag) {
-            Kptr[kpt]->sort_orbitals();
         }
 
     } // end loop over kpoints
@@ -429,7 +262,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         if(!firststep && (max_unocc_res < ct.gw_threshold)) {
             rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
             rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
-            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
+//            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
 
             CONVERGED = true;
         }

@@ -72,6 +72,10 @@ static std::unordered_map<std::string, int> subdiag_driver = {
         {"scalapack", 1},
         {"magma", 2}};
 
+static std::unordered_map<std::string, int> kohn_sham_solver = {
+        {"multigrid", MULTIGRID_SOLVER},
+        {"davidson", DAVIDSON_SOLVER}};
+
 static std::unordered_map<std::string, int> md_integration_order = {
         {"2nd Velocity Verlet", 0},
         {"3rd Beeman-Velocity Verlet", 1},

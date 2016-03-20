@@ -218,4 +218,9 @@
 // Interpolation type flags for pseudopotentials
 #define LINEAR_INTERPOLATION 0
 #define LOGARITHMIC_INTERPOLATION 1
+
+// Kohn-sham solver types
+#define MULTIGRID_SOLVER 0
+#define DAVIDSON_SOLVER 1
+
 #endif /* CONST_H_INCLUDED */

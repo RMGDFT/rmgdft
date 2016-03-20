@@ -165,6 +165,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Driver type used for subspace diagonalization of the eigenvectors.\n", 
                      "subdiag_driver must be lapack, scalapack or magma. Resetting to scalapack.\n");
 
+    If.RegisterInputKey("kohn_sham_solver", NULL, &lc.kohn_sham_solver, "multigrid",
+                     CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,
+                     "Kohn-Sham solver.\n", 
+                     "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid.\n");
+
+
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, crds_units,
                      "Units for the atomic coordinates.\n", 

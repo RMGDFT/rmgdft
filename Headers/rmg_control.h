@@ -371,6 +371,9 @@ typedef struct
     /* Diagonalization driver type */
     int subdiag_driver;
 
+    /* Kohn sham solver type */
+    int kohn_sham_solver;
+
     /* Diagonalization flag and period */
     bool initdiag;
     int diag;
