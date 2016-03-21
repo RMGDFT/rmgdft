@@ -48,7 +48,7 @@ template void ApplyHamiltonianBlock<std::complex<double> >(Kpoint<std::complex<d
 template <typename KpointType>
 void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot)
 {
-    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int pbasis = kptr->pbasis;
     BaseThread *T = BaseThread::getBaseThread(0);
 
     int istop = num_states / T->get_threads_per_node();
@@ -66,7 +66,7 @@ void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_s
         int check = first_nls + T->get_threads_per_node();
         if(check > ct.non_local_block_size) {
             AppNls(kptr, kptr->oldsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
-                   st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
+                   st1, std::min(ct.non_local_block_size, num_states - st1));
             first_nls = 0;
         }
 
@@ -76,6 +76,7 @@ void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_s
             thread_control[ist].istate = st1 + ist;
             thread_control[ist].sp = &kptr->Kstates[st1 + ist];
             thread_control[ist].p1 = (void *)&kptr->Kstates[st1 + ist].psi;
+            thread_control[ist].p2 = (void *)&h_psi[(st1 + ist) * pbasis];
             thread_control[ist].p3 = (void *)kptr;
             thread_control[ist].nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
             thread_control[ist].ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
@@ -91,5 +92,10 @@ void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_s
         
     }
 
+    // Process any remaining states in serial fashion
+    for(int st1 = first_state + istop;st1 < num_states;st1++) {
+         ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis], vtot, &kptr->nv[first_nls * pbasis]);
+         first_nls++;
+    }
     
 }

@@ -112,11 +112,11 @@ void *run_threads(void *v) {
             case HYBRID_APPLY_HAMILTONIAN:
                if(ct.is_gamma) {
                    kptr_d = (Kpoint<double> *)ss->p3;
-                   ApplyHamiltonian<double> (kptr_d, ss->istate, (double *)ss->p1, ss->vtot, (double *)ss->nv);
+                   ApplyHamiltonian<double> (kptr_d, (double *)ss->p1, (double *)ss->p2, ss->vtot, (double *)ss->nv);
                }
                else {
                    kptr_c = (Kpoint<std::complex<double>> *)ss->p3;
-                   ApplyHamiltonian<std::complex<double> > (kptr_c, ss->istate, (std::complex<double> *)ss->p1, ss->vtot, (std::complex<double> *)ss->nv);
+                   ApplyHamiltonian<std::complex<double> > (kptr_c, (std::complex<double> *)ss->p1, (std::complex<double> *)ss->p2, ss->vtot, (std::complex<double> *)ss->nv);
                } 
                break;
             case HYBRID_BETAX_PSI1_CALCULATE:
