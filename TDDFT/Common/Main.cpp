@@ -72,6 +72,11 @@
 
 
 
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <string>
+#include <boost/algorithm/string.hpp>
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
@@ -135,6 +140,7 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 using namespace El;
 #endif
 using namespace std;
+int FilenameIncrement1(char *pathname);
 
 int main(int argc, char **argv)
 {
@@ -143,6 +149,7 @@ int main(int argc, char **argv)
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
     double *rho_matrix;
+    double *Hij_t0_dist, *Hij_old;
 
     int Ieldyn=1, iprint = 0;
     int n2, numst,i;
@@ -157,6 +164,8 @@ int main(int argc, char **argv)
 
     char filename[MAX_PATH+200];
     char char_tem[MAX_PATH+200];
+    int ntem, inner_step;
+    double tem;
 
 
 
@@ -186,26 +195,11 @@ int main(int argc, char **argv)
     perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
     rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
 
-    switch(ct.runflag)
+    if(pct.gridpe == 0) 
     {
-        case 1:
-        case 5:
-            if(pct.gridpe == 0) 
-            {
-                ReadPermInfo(ct.infile, perm_ion_index);
-            }
-            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-            break;
-        default:
-            if(pct.gridpe == 0) 
-            {
-                BandwidthReduction(ct.num_ions, ct.ions, perm_ion_index);
-                WritePermInfo(ct.outfile, perm_ion_index);
-            }
-            MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-            PermAtoms(ct.num_ions, ct.ions, perm_ion_index);
-            break;
+        ReadPermInfo(ct.infile, perm_ion_index);
     }
+    MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
     ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
     GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
 
@@ -230,7 +224,8 @@ int main(int argc, char **argv)
     vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
 
 
-    InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
+    InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc,
+vh_old, vxc_old, ControlMap);
 
 
     delete(RTi);
@@ -272,6 +267,8 @@ int main(int argc, char **argv)
     Xij_dist = new double[n2];
     Yij_dist = new double[n2];
     Zij_dist = new double[n2];
+    Hij_t0_dist = new double[n2];
+    Hij_old = new double[n2];
 
     /*  Xij = <phi|x|phi>, Yij = <phi|y|phi>, Zij = <phi|z|phi>  */ 
 
@@ -301,7 +298,31 @@ int main(int argc, char **argv)
     rmg_printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
     rmg_printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
 
+        Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
+                pct.descb, pct.desca[1]);
 
+        GetNewRho_on(states, rho, rho_matrix);
+    dipole_calculation(rho, dipole_ele);
+    rmg_printf("\n  x dipoll2  %f %f", dipole_ion[0], dipole_ele[0]);
+    rmg_printf("\n  y dipoll2  %f %f", dipole_ion[1], dipole_ele[1]);
+    rmg_printf("\n  z dipoll2  %f %f", dipole_ion[2], dipole_ele[2]);
+#if 0
+    DiagScalapack(states, ct.num_states, Hij_00, Bij_00, rho_matrix, theta);
+        GetNewRho_on(states, rho, rho_matrix);
+    write_eigs(states);
+    dipole_calculation(rho, dipole_ele);
+    rmg_printf("\n  x dipoll3  %f %f", dipole_ion[0], dipole_ele[0]);
+    rmg_printf("\n  y dipoll3  %f %f", dipole_ion[1], dipole_ele[1]);
+    rmg_printf("\n  z dipoll3  %f %f", dipole_ion[2], dipole_ele[2]);
+
+    read_rhomatrix(ct.infile, rho_matrix);
+        GetNewRho_on(states, rho, rho_matrix);
+    dipole_calculation(rho, dipole_ele);
+    rmg_printf("\n  x dipoll4  %f %f", dipole_ion[0], dipole_ele[0]);
+    rmg_printf("\n  y dipoll4  %f %f", dipole_ion[1], dipole_ele[1]);
+    rmg_printf("\n  z dipoll4  %f %f", dipole_ion[2], dipole_ele[2]);
+
+#endif
 
     mat_dist_to_global(mat_X, Pn0, pct.desca);
     mat_dist_to_global(matB, Smatrix, pct.desca);
@@ -310,7 +331,7 @@ int main(int argc, char **argv)
 
 
 
-    double time_step = 0.20;
+    double time_step = 0.2;
     double efield[3];
     efield[0] = ct.x_field_0 * ct.e_field;
     efield[1] = ct.y_field_0 * ct.e_field;
@@ -321,7 +342,7 @@ int main(int argc, char **argv)
     if(pct.gridpe == 0)
     {
         sprintf(char_tem, "%s%s", pct.image_path[pct.thisimg], "dipole.dat");
-        int name_incr = FilenameIncrement(char_tem);
+        int name_incr = FilenameIncrement1(char_tem);
         sprintf(filename, "%s.%02d", char_tem, name_incr);
 
         dfi = fopen(filename, "w");
@@ -347,48 +368,61 @@ int main(int argc, char **argv)
     {
         tot_steps = ct.scf_steps + pre_steps;
 
+        ntem = MXLLDA * MXLCOL;
+        dcopy(&ntem, Hij, &ione, Hij_t0_dist, &ione);
+        dcopy(&ntem, Hij, &ione, Hij_old, &ione);
+
         if(tot_steps == 0 ) 
         {
-            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i] 
-                + efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] + efield[2] * Zij_dist[i];
+            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
+                + (efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] +
+                        efield[2] * Zij_dist[i])/time_step *2.0;
         }
-        else
+
+        for(inner_step = 0; inner_step < 4; inner_step++)
         {
 
-            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = time_step*Hij[i];
+            
+            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = 0.5 * time_step*(Hij[i] + Hij_t0_dist[i]);
 
+            
+            mat_dist_to_global(Hij, Hmatrix, pct.desca);
+
+            RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
+            eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
+            delete(RT2a);
+
+            //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
+            mat_global_to_dist(Pn1, mat_X, pct.desca);
+            for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
+
+            Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
+                    pct.descb, pct.desca[1]);
+
+            dcopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
+
+            RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
+            GetNewRho_on(states, rho, rho_matrix);
+            delete(RT4a);
+
+            RmgTimer *RT4b = new RmgTimer("1-TOTAL: Updatepot");
+            UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
+            delete(RT4b);
+
+            RmgTimer *RT4c = new RmgTimer("1-TOTAL: GetHS");
+            GetHS(states, states1, vtot_c, Hij_00, Bij_00);
+            delete(RT4c);
+
+            Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
+                    pct.desca, pct.desca[1]);
+
+            tem = 0;
+            for(i = 0; i < MXLLDA * MXLCOL; i++) tem += (Hij[i] - Hij_old[i])*(Hij[i] - Hij_old[i]);
+            tem = real_sum_all(tem, pct.grid_comm);
+            if(pct.gridpe == 0) printf("\n step = %d, innerstep = %d, Hij - Hij_old = %e\n", tot_steps, inner_step, tem);
+            dcopy(&ntem, Hij, &ione, Hij_old, &ione);
         }
 
-
-        mat_dist_to_global(Hij, Hmatrix, pct.desca);
-
-        RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
-        eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
-        delete(RT2a);
-
-        //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
-        mat_global_to_dist(Pn1, mat_X, pct.desca);
-        for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
-
-        Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
-                pct.descb, pct.desca[1]);
-
-        dcopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
-
-        RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
-        GetNewRho_on(states, rho, rho_matrix);
-        delete(RT4a);
-
-        RmgTimer *RT4b = new RmgTimer("1-TOTAL: Updatepot");
-        UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
-        delete(RT4b);
-
-        RmgTimer *RT4c = new RmgTimer("1-TOTAL: GetHS");
-        GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-        delete(RT4c);
-
-        Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-                pct.desca, pct.desca[1]);
         dipole_calculation(rho, dipole_ele);
 
         dipole_ele[0] -= dipole_ion[0];
@@ -434,9 +468,9 @@ int main(int argc, char **argv)
         close(fhand);
     }
 
-//    get_dm_diag_p(states, matB, mat_X, Hij);
+    //    get_dm_diag_p(states, matB, mat_X, Hij);
 
-//    write_eigs(states);
+    //    write_eigs(states);
 
     delete(RT);
     if(pct.imgpe == 0) fclose(ct.logfile);
@@ -445,6 +479,52 @@ int main(int argc, char **argv)
     MPI_Finalize();
 
     return 0;
+}
+
+
+int FilenameIncrement1(char *pathname)
+{
+
+    int lognum = 0;
+
+    boost::filesystem::path current_path(pathname);
+    std::string dirname  = current_path.parent_path().string(); 
+    std::string basename = boost::filesystem::basename(pathname);
+    if(!dirname.length()) dirname = dirname + "./";
+    // Does parent path exist?
+    if( boost::filesystem::exists(dirname)) {
+
+        // yes so check if it's a file 
+        if(!boost::filesystem::is_directory(dirname)) {
+            throw RmgFatalException() << "Found " << dirname << "  that is not a directory in " __FILE__ << " at line " << __LINE__ << ".\n";
+        }
+
+    }
+    else {
+
+        // no so need to make it
+        if(!boost::filesystem::create_directory(dirname)) {
+            throw RmgFatalException() << "Unable to create logfile directory " << dirname << " in " << __FILE__ << " at line " << __LINE__ << ".\n";
+        }
+
+    }
+
+    
+    char lognum_str[4]; 
+    snprintf(lognum_str, 3, "%02d", lognum);
+    std::string nextname = std::string(pathname) + "." + lognum_str;
+    while (boost::filesystem::exists(nextname))
+    {
+        if (++lognum > 99)
+            throw RmgFatalException() << "You have over 100 logfiles, you need to think of a better job naming scenario!" << "\n";
+        nextname.erase();
+        snprintf(lognum_str, 3, "%02d", lognum);
+        nextname = std::string(pathname) + "." + lognum_str;
+    }
+
+    // return lognum
+    return lognum;
+
 }
 
 

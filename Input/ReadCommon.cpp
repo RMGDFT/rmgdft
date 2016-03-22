@@ -665,7 +665,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The residual value specified by gw_residual_convergence_criterion is applied to this fraction of the total spectrum.\n",
                      "gw_residual_fraction must lie in the range (0.0,1.0). Resetting to default value of 0.90.\n");
 
-    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, 100000.0, 10000.0,
+    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio,
+1000.0, DBL_MAX, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Ratio between target RMS for get_vh and RMS total potential.\n",
                      "hartree_rms_ratio must be in the range (1000.0, 100000.0). Resetting to default value of 10000.0.\n");

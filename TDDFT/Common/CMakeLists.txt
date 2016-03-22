@@ -1,4 +1,5 @@
 add_library (tddft_Common
+read_rhomatrix.c
 dipole_calculation.c
 dot_product_orbit_xyz_orbit.c
 orbit_xyz_orbit.c

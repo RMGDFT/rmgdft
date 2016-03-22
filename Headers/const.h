@@ -207,7 +207,8 @@
 #define LCAO_START 2
 #define INIT_FIREBALL  3
 #define INIT_GAUSSIAN  4
-#define Restart_TDDFT  5
+#define Start_TDDFT  5
+#define Restart_TDDFT  6
 
 // 3-d interpolation types
 #define CUBIC_POLYNOMIAL_INTERPOLATION 0

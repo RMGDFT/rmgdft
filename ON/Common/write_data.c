@@ -269,4 +269,42 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	my_barrier();
 
 
-}                               /* end write_data */
+#if 0
+	sprintf(newname, "%s%s", name, ".rho_matrix");
+
+	/* this datatype describes the mapping of the local array
+	 * to the global array (file)
+	 * */
+
+	sizes[0] = ct.num_states;
+	sizes[1] = ct.num_states;
+
+	subsizes[0] = ct.state_end - ct.state_begin;
+	subsizes[1] = ct.num_states;
+
+	starts[0] = pct.gridpe * (ct.state_end - ct.state_begin);
+	starts[1] = 0;
+
+	/*int order = MPI_ORDER_FORTRAN;*/
+	MPI_Type_create_subarray(2, sizes, subsizes, starts, order, MPI_DOUBLE, &filetype);
+
+	MPI_Type_commit(&filetype);
+
+	MPI_Info_create(&fileinfo);
+
+
+	amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
+	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+
+
+	disp=0;
+	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+
+    
+    idx = (ct.state_end - ct.state_begin) * ct.num_states;
+	MPI_File_write_all(mpi_fhand, work_matrix_row, idx,MPI_DOUBLE, &status);
+	MPI_File_close(&mpi_fhand);
+
+#endif
+	my_barrier();
+}

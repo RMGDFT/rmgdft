@@ -29,6 +29,9 @@ extern "C" {
 #endif
 
 
+void write_rho_x(double *, char*);
+void write_rho_y(double *, char*);
+void write_rho_z(double *, char*);
 void orbital_comm(STATE *);
 void init_wf_atom(STATE *);
 void init_wf_lcao(STATE *);

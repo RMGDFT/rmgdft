@@ -28,10 +28,10 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "Pw.h"
-#include "pfft.h"
 
 
 #if USE_PFFT
+#include "pfft.h"
 void FftInitPlans(void);
 
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
