@@ -37,6 +37,7 @@
 #include "ErrorFuncs.h"
 
 #include "transition.h"
+#include "blas.h"
 
 #if GPU_ENABLED
 #include <cuda.h>
@@ -56,12 +57,13 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     RmgTimer RT0("Davidson"), *RT1;
 
     OrbitalType alpha(1.0);
+    OrbitalType alpha2(2.0);
     OrbitalType beta(0.0);
 
     int pbasis = kptr->pbasis;
     int nstates = kptr->nstates;
     int notconv = nstates;
-    int max_steps = 2;
+    int max_steps = 4;
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
@@ -82,8 +84,8 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     double *eigs = new double[ct.max_states];
     double *eigsw = new double[ct.max_states];
     bool *converged = new bool[ct.max_states]();
-    OrbitalType *global_matrix1 = new OrbitalType[ct.max_states * ct.max_states];
-    OrbitalType *global_matrix2 = new OrbitalType[ct.max_states * ct.max_states];
+    OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states];
+    OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states];
     OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
     for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
@@ -104,6 +106,46 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 
     // Copy current eigs into compact array
     for(int st1 = 0;st1 < nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
+
+#if 1
+    // Compute A matrix
+    RT1 = new RmgTimer("Davidson: matrix setup/reduce");
+    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis, alpha, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
+            NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+#if HAVE_ASYNC_ALLREDUCE
+    // Asynchronously reduce it
+    MPI_Request MPI_reqAij;
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+#else
+    MPI_Allreduce(MPI_IN_PLACE, (double *)hr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
+
+    // Compute S matrix
+    OrbitalType alpha1(vel);
+    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha, psi, pbasis, kptr->ns, pbasis, beta, sr, ct.max_states, 
+             NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+#if HAVE_ASYNC_ALLREDUCE
+    // Wait for Aij request to finish
+    MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+#endif
+
+#if HAVE_ASYNC_ALLREDUCE
+    // Asynchronously reduce Sij request
+    MPI_Request MPI_reqSij;
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+#else
+    MPI_Allreduce(MPI_IN_PLACE, (double *)sr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
+
+#if HAVE_ASYNC_ALLREDUCE
+    // Wait for S request to finish and when done store copy in Sij
+    MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+#endif
+    delete RT1;
+#endif
+
 
 #if 0
     for(int st1=0;st1 < nstates;st1++) {
@@ -160,28 +202,84 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #endif
 
         // Apply Hamiltonian to the new vectors
-kptr->nstates += notconv;
-ct.num_states = kptr->nstates;
-Betaxpsi (kptr);
-kptr->mix_betaxpsi(0);
-Subdiag (kptr, vtot, ct.subdiag_driver);
+        kptr->nstates += notconv;  // Little bit of a hack until we update Betaxpsi
+        ct.num_states = kptr->nstates;
+        Betaxpsi (kptr);
+        kptr->mix_betaxpsi(0);
+        //Subdiag (kptr, vtot, ct.subdiag_driver);
+        kptr->nstates -= notconv;  // And back out the hack
+        ct.num_states = kptr->nstates;
         ApplyHamiltonianBlock (kptr, nb1, notconv, &h_psi[nb1*pbasis], vtot);
 
 
-        // Update the reduced Hamiltonian
-kptr->nstates -= notconv;
-ct.num_states = kptr->nstates;
+        // Update the reduced Hamiltonian and S matrices
+        RmgGemm(trans_a, trans_n, nstates+notconv, notconv, pbasis, alpha, psi, pbasis, &h_psi[nb1*pbasis], pbasis, beta, &hr[nb1*ct.max_states], ct.max_states, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+#if HAVE_ASYNC_ALLREDUCE
+        // Asynchronously reduce it
+        MPI_Request MPI_reqAij;
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+#else
+        MPI_Allreduce(MPI_IN_PLACE, (double *)&hr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
 
+        RmgGemm(trans_a, trans_n, nstates+notconv, notconv, pbasis, alpha, psi, pbasis, &kptr->ns[nb1*pbasis], pbasis, beta, &sr[nb1*ct.max_states], ct.max_states, 
+                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
+#if HAVE_ASYNC_ALLREDUCE
+        // Wait for Aij request to finish
+        MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+#endif
 
+#if HAVE_ASYNC_ALLREDUCE
+        // Asynchronously reduce Sij request
+        MPI_Request MPI_reqSij;
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+#else
+        MPI_Allreduce(MPI_IN_PLACE, (double *)&sr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
+
+#if HAVE_ASYNC_ALLREDUCE
+        // Wait for S request to finish
+        MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+#endif
+
+        nb1 += notconv;
+#if 0
+        for(int i=0;i < nb1;i++) {
+            for(int j=i+1;j < nb1;j++) {
+                hr[j + i*ct.max_states] = hr[i + j*ct.max_states];
+                sr[j + i*ct.max_states] = sr[i + j*ct.max_states];
+            }
+        }
+#endif
+        {
+            int *ifail = new int[nstates];
+            int lwork = 2 * nstates * nstates + 6 * nstates + 2;
+            int liwork = 6*nstates;
+            int eigs_found;
+            double *work2 = new double[2*lwork];
+            int *iwork = new int[liwork];
+            double vx = 0.0;
+            double tol = 1e-15;
+            int ione = 1, info=0;
+
+            dsygvx (&ione, "v", "A", "U", &nstates, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
+                                    &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
+                                    &lwork, iwork, ifail, &info);
+        }
 
         // Copy updated eigenvalues back
-        //for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
+        for(int st=0;st < nstates;st++) {
+           if(pct.gridpe==0)
+           printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
+        }
+        for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
 
     }
 
     // Copy eigs from compact array back into state structure
-//    for(int st = 0;st < nstates;st++) kptr->Kstates[st].eig[0] = eigs[st];
+    for(int st = 0;st < nstates;st++) kptr->Kstates[st].eig[0] = eigs[st];
 
 
 
@@ -193,8 +291,8 @@ ct.num_states = kptr->nstates;
 #endif
 
     delete [] vr;
-    delete [] global_matrix2;
-    delete [] global_matrix1;
+    delete [] sr;
+    delete [] hr;
     delete [] converged;
     delete [] eigsw;
     delete [] eigs;
@@ -202,44 +300,9 @@ ct.num_states = kptr->nstates;
 }
 
 
-#if 0
-    // Compute A matrix
-    RT1 = new RmgTimer("Davidson: matrix setup/reduce");
-    OrbitalType alpha(1.0);
-    OrbitalType beta(0.0);
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis, alpha, kptr->orbital_storage, pbasis, h_psi, pbasis, beta, global_matrix1, nstates, NULLptr, NULLptr, NULLptr, false, true, false, true);
 
-#if HAVE_ASYNC_ALLREDUCE
-    // Asynchronously reduce it
-    MPI_Request MPI_reqAij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
-#else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-#endif
 
-    // Compute S matrix
-    OrbitalType alpha1(vel);
-    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, nstates, NULLptr, NULLptr, NULLptr, false, true, false, true);
 
-#if HAVE_ASYNC_ALLREDUCE
-    // Wait for Aij request to finish
-    MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
-#endif
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Asynchronously reduce Sij request
-    MPI_Request MPI_reqSij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
-#else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix2, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-#endif
-
-#if HAVE_ASYNC_ALLREDUCE
-    // Wait for S request to finish and when done store copy in Sij
-    MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
-#endif
-    delete RT1;
-#endif
     // Now we have reduced the original 
 //    RmgGemm (trans_n, trans_n, pbasis, nstates, nstates, alpha, s_psi, pbasis, global_matrix1, nstates, beta, &kptr->orbital_storage[nstates*pbasis], pbasis, NULLptr, NULLptr, NULLptr, false, true, false, true);
 
