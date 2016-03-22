@@ -53,9 +53,15 @@ template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, do
 template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 {
-//if(ct.scf_steps > 1){MgridSubspace(kptr, vtot);return;}
-    RmgTimer RT0("Diagonalization"), *RT1;
+    RmgTimer RT0("Davidson"), *RT1;
+
+    OrbitalType alpha(1.0);
+    OrbitalType beta(0.0);
+
     int pbasis = kptr->pbasis;
+    int nstates = kptr->nstates;
+    int notconv = nstates;
+    int max_steps = 2;
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
@@ -73,44 +79,147 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     int factor = 2;
     if(ct.is_gamma) factor = 1;
     OrbitalType *NULLptr = NULL;
-
     double *eigs = new double[ct.max_states];
+    double *eigsw = new double[ct.max_states];
+    bool *converged = new bool[ct.max_states]();
     OrbitalType *global_matrix1 = new OrbitalType[ct.max_states * ct.max_states];
     OrbitalType *global_matrix2 = new OrbitalType[ct.max_states * ct.max_states];
+    OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
+    for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
 #if GPU_ENABLED
-
     cublasStatus_t custat;
     OrbitalType *h_psi = (OrbitalType *)GpuMallocHost(pbasis * ct.max_states * sizeof(OrbitalType));
-
 #else
-
     OrbitalType *h_psi = new OrbitalType[pbasis * ct.max_states];
-
 #endif
+
+    // short verstion
+    OrbitalType *psi = kptr->orbital_storage;
 
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // kptr->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in kptr->ns
-    double fd_diag = ApplyHamiltonianBlock (kptr, 0, kptr->nstates, h_psi, vtot); 
+    double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
     OrbitalType *s_psi = kptr->ns;
+
+    // Copy current eigs into compact array
+    for(int st1 = 0;st1 < nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
+
+#if 0
+    for(int st1=0;st1 < nstates;st1++) {
+        for(int idx = 0;idx < pbasis;idx++) {
+            kptr->Kstates[st1+nstates].psi[idx] = (h_psi[st1*pbasis + idx] - eigs[st1] * s_psi[st1*pbasis + idx]) / 
+                                    (fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigs[st1]*kptr->nl_weight[idx]);
+        }
+        //kptr->Kstates[st1+nstates].normalize(kptr->Kstates[st1+nstates].psi, st1+nstates);
+    }
+#endif
+
+    for(int steps = 0;steps < max_steps;steps++) {
+
+        // Reorder eigenvectors
+        int np = 0;
+        for(int st = 0;st < nstates;st++) {
+
+            if(!converged[st]) {
+
+                if(np != st) {
+                    for(int idx=0;idx < ct.max_states;idx++) vr[idx + np*ct.max_states] = vr[idx + st*ct.max_states];
+                }
+                eigsw[nstates + np] = eigs[st];
+                np++;                
+
+            }
+
+        }
+
+        int nb1 = nstates;
+#if 1
+        // expand the basis set with the residuals ( H - e*S )|psi>
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nstates, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nb1*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+        for(int st1=0;st1 < notconv;st1++) {
+            for(int idx=0;idx < pbasis;idx++) psi[(st1 + nb1)*pbasis + idx] = -eigsw[nb1 + st1] * psi[(st1 + nb1)*pbasis + idx];
+        }
+
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nstates, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nb1*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+
+
+        // Apply preconditioner
+        for(int st1=0;st1 < notconv;st1++) {
+            for(int idx = 0;idx < pbasis;idx++) {
+                psi[(st1 + nb1)*pbasis + idx] /= (fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigsw[st1+nb1]*kptr->nl_weight[idx]);
+            }
+            //kptr->Kstates[st1+nstates].normalize(kptr->Kstates[st1+nstates].psi, st1+nstates);
+        }
+
+        // Should we renormalize?
+#endif
+
+        // Apply Hamiltonian to the new vectors
+kptr->nstates += notconv;
+ct.num_states = kptr->nstates;
+Betaxpsi (kptr);
+kptr->mix_betaxpsi(0);
+Subdiag (kptr, vtot, ct.subdiag_driver);
+        ApplyHamiltonianBlock (kptr, nb1, notconv, &h_psi[nb1*pbasis], vtot);
+
+
+        // Update the reduced Hamiltonian
+kptr->nstates -= notconv;
+ct.num_states = kptr->nstates;
+
+
+
+
+        // Copy updated eigenvalues back
+        //for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
+
+    }
+
+    // Copy eigs from compact array back into state structure
+//    for(int st = 0;st < nstates;st++) kptr->Kstates[st].eig[0] = eigs[st];
+
+
+
+
+#if GPU_ENABLED
+    GpuFreeHost(h_psi);
+#else
+    delete [] h_psi;
+#endif
+
+    delete [] vr;
+    delete [] global_matrix2;
+    delete [] global_matrix1;
+    delete [] converged;
+    delete [] eigsw;
+    delete [] eigs;
+
+}
+
+
 #if 0
     // Compute A matrix
     RT1 = new RmgTimer("Davidson: matrix setup/reduce");
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
-    RmgGemm(trans_a, trans_n, kptr->nstates, kptr->nstates, pbasis, alpha, kptr->orbital_storage, pbasis, h_psi, pbasis, beta, global_matrix1, kptr->nstates, NULLptr, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis, alpha, kptr->orbital_storage, pbasis, h_psi, pbasis, beta, global_matrix1, nstates, NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, kptr->nstates * kptr->nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, kptr->nstates * kptr->nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
     // Compute S matrix
     OrbitalType alpha1(vel);
-    RmgGemm (trans_a, trans_n, kptr->nstates, kptr->nstates, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, kptr->nstates, NULLptr, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, nstates, NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -120,9 +229,9 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, kptr->nstates * kptr->nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix2, kptr->nstates * kptr->nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix2, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -131,42 +240,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #endif
     delete RT1;
 #endif
-
-    for(int st1 = 0;st1 < kptr->nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
-
     // Now we have reduced the original 
-//    RmgGemm (trans_n, trans_n, pbasis, kptr->nstates, kptr->nstates, alpha, s_psi, pbasis, global_matrix1, kptr->nstates, beta, &kptr->orbital_storage[kptr->nstates*pbasis], pbasis, NULLptr, NULLptr, NULLptr, false, true, false, true);
+//    RmgGemm (trans_n, trans_n, pbasis, nstates, nstates, alpha, s_psi, pbasis, global_matrix1, nstates, beta, &kptr->orbital_storage[nstates*pbasis], pbasis, NULLptr, NULLptr, NULLptr, false, true, false, true);
 
     // Generate initial set of correction vectors. 
-    for(int st1=0;st1 < kptr->nstates;st1++) {
-        for(int idx = 0;idx < pbasis;idx++) {
-            kptr->Kstates[st1+kptr->nstates].psi[idx] = (h_psi[st1*pbasis + idx] - eigs[st1] * s_psi[st1*pbasis + idx]) / 
-                                    (fd_diag + vtot[idx] +kptr->nv[(st1+kptr->nstates)*pbasis+idx] - eigs[st1]);
-        }
-    }
-
-    kptr->nstates += 12;
-    ct.num_states = kptr->nstates;
-    MgridSubspace(kptr, vtot);
-//Subdiag (kptr, vtot, ct.subdiag_driver);
-
-
-    // Here would be preconditioning
-
-    kptr->nstates -= 12;
-ct.num_states = kptr->nstates;
-
-
-#if GPU_ENABLED
-    GpuFreeHost(h_psi);
-#else
-    delete [] h_psi;
-#endif
-
-    delete [] global_matrix2;
-    delete [] global_matrix1;
-    delete [] eigs;
-
-}
-
-
